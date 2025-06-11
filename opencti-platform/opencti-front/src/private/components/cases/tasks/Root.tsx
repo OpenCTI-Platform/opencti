@@ -107,7 +107,7 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
             )}
             enableSuggestions={false}
             redirectToContent={true}
-            isAuthorizedMembersEnabled={true}
+            disableAuthorizedMembers={true}
           />
           <Box
             sx={{

@@ -512,7 +512,7 @@ const ContainerHeader = (props) => {
   const isAuthorizedMembersEnabled = !disableAuthorizedMembers;
   const currentAccessRight = useGetCurrentUserAccessRight(container.currentUserAccessRight);
   const enableManageAuthorizedMembers = currentAccessRight.canManage && isAuthorizedMembersEnabled;
-  const disableOrgaSharingButton = (!enableManageAuthorizedMembers && currentAccessRight.canEdit)
+  const disableOrgaSharingButton = (!enableManageAuthorizedMembers && !currentAccessRight.canEdit)
     || (enableManageAuthorizedMembers && container.authorized_members?.length > 0);
   const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
 
