@@ -159,6 +159,9 @@ const graphContainerKnowledgeObjectsFragment = graphql`
             ... on Organization {
               name
             }
+            ... on SecurityPlatform {
+              name
+            }
             ... on Sector {
               name
             }
