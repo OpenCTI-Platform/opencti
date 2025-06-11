@@ -1,4 +1,4 @@
-import { type ExclusionListCacheItem } from '../database/exclusionListCache';
+import type { ExclusionListCacheItem } from '../types/exclusionList';
 import { ENTITY_DOMAIN_NAME, ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, ENTITY_URL } from '../schema/stixCyberObservable';
 
 export const getIsRange = (value: string) => value.indexOf('/') !== -1;

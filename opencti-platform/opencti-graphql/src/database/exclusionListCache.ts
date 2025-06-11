@@ -9,13 +9,7 @@ import { logApp, PLATFORM_INSTANCE_ID } from '../config/conf';
 import { redisGetExclusionListCache, redisSetExclusionListCache, redisUpdateExclusionListStatus } from './redis';
 import { FunctionalError } from '../config/errors';
 import type { HashInput } from '../generated/graphql';
-
-export interface ExclusionListCacheItem {
-  id: string
-  types: string[]
-  values: string[]
-  ranges?: number[] // only used for IPs
-}
+import type { ExclusionListCacheItem } from '../types/exclusionList';
 
 let exclusionListCache: ExclusionListCacheItem[] | null = null;
 
