@@ -79,6 +79,13 @@ const ColorPickerField = (props) => {
           input: {
             endAdornment: (
               <InputAdornment position="end">
+                <div
+                  style={{
+                    width: '12px',
+                    height: '12px',
+                    backgroundColor: meta.value || '',
+                  }}
+                />
                 <IconButton aria-label="open" onClick={handleClick} size="large">
                   <ColorLens/>
                 </IconButton>
