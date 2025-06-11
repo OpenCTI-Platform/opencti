@@ -512,15 +512,20 @@ const ContainerHeader = (props) => {
   const isAuthorizedMembersEnabled = !disableAuthorizedMembers;
   const currentAccessRight = useGetCurrentUserAccessRight(container.currentUserAccessRight);
   const enableManageAuthorizedMembers = currentAccessRight.canManage && isAuthorizedMembersEnabled;
-  const disableOrgaSharingButton = (!enableManageAuthorizedMembers && currentAccessRight.canEdit) || (enableManageAuthorizedMembers && container.authorized_members?.length > 0);
+  const disableOrgaSharingButton = (!enableManageAuthorizedMembers && currentAccessRight.canEdit)
+    || (enableManageAuthorizedMembers && container.authorized_members?.length > 0);
   const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
 
-  const initialNumberOfButtons = (!knowledge ? 1 : 0) + (enableQuickSubscription ? 1 : 0) + (enableEnricher ? 1 : 0);
-  const displayEnrollPlaybookButton = initialNumberOfButtons < 3;
-  const displaySharingButton = initialNumberOfButtons < 2
-    || (initialNumberOfButtons < 3 && !enableEnrollPlaybook);
+  let initialNumberOfButtons = (!knowledge ? 1 : 0) + (enableQuickSubscription ? 1 : 0) + (enableEnricher ? 1 : 0);
+  const displayEnrollPlaybookButton = enableEnrollPlaybook && initialNumberOfButtons < 3;
+  if (displayEnrollPlaybookButton) initialNumberOfButtons += 1;
+  const displaySharingButton = !knowledge && disableSharing !== true && initialNumberOfButtons < 3;
+  if (displaySharingButton) initialNumberOfButtons += 1;
+  const displayAuthorizedMembersButton = initialNumberOfButtons < 3;
+  if (displayAuthorizedMembersButton) initialNumberOfButtons += 1;
+
   const displayPopoverMenu = (!knowledge && disableSharing !== true && !displaySharingButton)
-    || (!knowledge && !!enableManageAuthorizedMembers)
+    || (!knowledge && !!enableManageAuthorizedMembers && !displayAuthorizedMembersButton)
     || (enableEnrollPlaybook && !displayEnrollPlaybookButton);
 
   return (
@@ -656,6 +661,18 @@ const ContainerHeader = (props) => {
               />
             )}
             {!knowledge && (
+              <FormAuthorizedMembersDialog
+                id={container.id}
+                owner={container.creators?.[0]}
+                authorizedMembers={authorizedMembersToOptions(
+                  container.authorized_members,
+                )}
+                mutation={containerHeaderEditAuthorizedMembersMutation}
+                open={openAccessRestriction}
+                handleClose={displayAuthorizedMembersButton ? undefined : handleCloseAccessRestriction}
+              />
+            )}
+            {!knowledge && (
               <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
                 <StixCoreObjectFileExport
                   scoId={container.id}
@@ -711,7 +728,7 @@ const ContainerHeader = (props) => {
                         {t_i18n('Share with an organization')}
                       </MenuItem>
                     )}
-                    {!knowledge && (
+                    {!knowledge && !displayAuthorizedMembersButton && (
                       <Security
                         needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
                         hasAccess={!!enableManageAuthorizedMembers}
@@ -743,16 +760,6 @@ const ContainerHeader = (props) => {
 
             {EditComponent}
           </div>
-          <FormAuthorizedMembersDialog
-            id={container.id}
-            owner={container.creators?.[0]}
-            authorizedMembers={authorizedMembersToOptions(
-              container.authorized_members,
-            )}
-            mutation={containerHeaderEditAuthorizedMembersMutation}
-            open={openAccessRestriction}
-            handleClose={handleCloseAccessRestriction}
-          />
         </div>
       </React.Suspense>
     </div>

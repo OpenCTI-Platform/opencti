@@ -569,6 +569,14 @@ const StixDomainObjectHeader = (props) => {
             {disableSharing !== true && (
               <StixCoreObjectSharingList data={stixDomainObject} />
             )}
+            {disableSharing !== true && (
+              <StixCoreObjectSharing
+                elementId={stixDomainObject.id}
+                open={isSharingOpen}
+                variant="header"
+                handleClose={displaySharingButton ? undefined : handleCloseSharing}
+              />
+            )}
             <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
               <StixCoreObjectFileExport
                 scoId={stixDomainObject.id}
@@ -605,7 +613,7 @@ const StixDomainObjectHeader = (props) => {
               <PopoverMenu>
                 {({ closeMenu }) => (
                   <Box>
-                    {disableSharing !== true && (
+                    {disableSharing !== true && !displaySharingButton && (
                       <MenuItem onClick={() => {
                         handleOpenSharing();
                         closeMenu();
@@ -623,7 +631,7 @@ const StixDomainObjectHeader = (props) => {
                         {t_i18n('Enrichment')}
                       </MenuItem>
                     )}
-                    {enableEnrollPlaybook && (
+                    {enableEnrollPlaybook && !displayEnrollPlaybookButton && (
                       <MenuItem onClick={() => {
                         handleOpenEnrollPlaybook();
                         closeMenu();
