@@ -143,6 +143,7 @@ const FintelTemplatesGrid = ({ data }: FintelTemplatesGridProps) => {
             padding: theme.spacing(2),
             borderRadius: theme.spacing(0.5),
             position: 'relative',
+            height: '235px',
           }}
         >
           <div style={{ height: '100%', width: '100%' }} ref={(r) => setDataTableRef(r)}>
