@@ -53,6 +53,8 @@ import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichm
 import PopoverMenu from '../../../../components/PopoverMenu';
 import useOrgaSharingPossible from '../../../../utils/hooks/useOrgaSharingPossible';
 import EETooltip from '../entreprise_edition/EETooltip';
+import StixCoreObjectMenuItemOrganizationSharing
+  from "@components/common/stix_core_objects/StixCoreObjectMenuItemOrganizationSharing";
 
 export const stixDomainObjectMutation = graphql`
   mutation StixDomainObjectHeaderFieldMutation(
@@ -267,8 +269,6 @@ const StixDomainObjectHeader = (props) => {
   const [isEnrichmentOpen, setIsEnrichmentOpen] = useState(false);
 
   const handleCloseEnrollPlaybook = () => setEnrollPlaybookOpen(false);
-
-  const handleOpenSharing = () => setIsSharingOpen(true);
 
   const handleCloseSharing = () => setIsSharingOpen(false);
 
@@ -626,19 +626,12 @@ const StixDomainObjectHeader = (props) => {
                 {({ closeMenu }) => (
                   <Box>
                     {disableSharing !== true && !displaySharingButton && (
-                      <EETooltip title={orgaSharingNotPossibleMessage}>
-                        <span>
-                          <MenuItem
-                            onClick={() => {
-                              handleOpenSharing();
-                              closeMenu();
-                            }}
-                            disabled={!isOrgaSharingPossible}
-                          >
-                            {t_i18n('Share with an organization')}
-                          </MenuItem>
-                        </span>
-                      </EETooltip>
+                      <StixCoreObjectMenuItemOrganizationSharing
+                        isOrgaSharingPossible={isOrgaSharingPossible}
+                        orgaSharingNotPossibleMessage={orgaSharingNotPossibleMessage}
+                        setOpenSharing={setIsSharingOpen}
+                        handleCloseMenu={closeMenu}
+                      />
                     )}
                     {(enableEnricher && isKnowledgeEnricher) && (
                       <MenuItem onClick={() => {

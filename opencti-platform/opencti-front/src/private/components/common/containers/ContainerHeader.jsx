@@ -35,7 +35,7 @@ import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichm
 import { resolveLink } from '../../../../utils/Entity';
 import PopoverMenu from '../../../../components/PopoverMenu';
 import useOrgaSharingPossible from '../../../../utils/hooks/useOrgaSharingPossible';
-import EETooltip from '../entreprise_edition/EETooltip';
+import StixCoreObjectMenuItemOrganizationSharing from '../stix_core_objects/StixCoreObjectMenuItemOrganizationSharing';
 
 export const containerHeaderObjectsQuery = graphql`
   query ContainerHeaderObjectsQuery($id: String!) {
@@ -729,19 +729,12 @@ const ContainerHeader = (props) => {
                 {({ closeMenu }) => (
                   <Box>
                     {displaySharing && !displaySharingButton && (
-                      <EETooltip title={orgaSharingNotPossibleMessage}>
-                        <span>
-                          <MenuItem
-                            onClick={() => {
-                              setOpenSharing(true);
-                              closeMenu();
-                            }}
-                            disabled={!isOrgaSharingPossible}
-                          >
-                            {t_i18n('Share with an organization')}
-                          </MenuItem>
-                        </span>
-                      </EETooltip>
+                      <StixCoreObjectMenuItemOrganizationSharing
+                        isOrgaSharingPossible={isOrgaSharingPossible}
+                        orgaSharingNotPossibleMessage={orgaSharingNotPossibleMessage}
+                        setOpenSharing={setOpenSharing}
+                        handleCloseMenu={closeMenu}
+                      />
                     )}
                     {displayAuthorizedMembers && !displayAuthorizedMembersButton && (
                       <Security

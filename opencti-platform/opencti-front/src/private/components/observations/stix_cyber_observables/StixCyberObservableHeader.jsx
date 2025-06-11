@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import Typography from '@mui/material/Typography';
-import MenuItem from '@mui/material/MenuItem';
 import Box from '@mui/material/Box';
-import EETooltip from '../../common/entreprise_edition/EETooltip';
 import StixCoreObjectSharingList from '../../common/stix_core_objects/StixCoreObjectSharingList';
 import { DraftChip } from '../../common/draft/DraftChip';
 import StixCoreObjectEnrollPlaybook from '../../common/stix_core_objects/StixCoreObjectEnrollPlaybook';
@@ -14,12 +12,11 @@ import StixCoreObjectSharing from '../../common/stix_core_objects/StixCoreObject
 import useGranted, { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCyberObservableEdition from './StixCyberObservableEdition';
 import Security from '../../../../utils/Security';
-import { useFormatter } from '../../../../components/i18n';
 import PopoverMenu from '../../../../components/PopoverMenu';
 import useOrgaSharingPossible from '../../../../utils/hooks/useOrgaSharingPossible';
+import StixCoreObjectMenuItemOrganizationSharing from '../stix_core_objects/StixCoreObjectMenuItemOrganizationSharing';
 
 const StixCyberObservableHeaderComponent = ({ stixCyberObservable }) => {
-  const { t_i18n } = useFormatter();
   const [openSharing, setOpenSharing] = useState(false);
 
   const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]);
@@ -50,19 +47,12 @@ const StixCyberObservableHeaderComponent = ({ stixCyberObservable }) => {
           <PopoverMenu>
             {({ closeMenu }) => (
               <Box>
-                <EETooltip title={orgaSharingNotPossibleMessage}>
-                  <span>
-                    <MenuItem
-                      onClick={() => {
-                        setOpenSharing(true);
-                        closeMenu();
-                      }}
-                      disabled={!isOrgaSharingPossible}
-                    >
-                      {t_i18n('Share with an organization')}
-                    </MenuItem>
-                  </span>
-                </EETooltip>
+                <StixCoreObjectMenuItemOrganizationSharing
+                  isOrgaSharingPossible={isOrgaSharingPossible}
+                  orgaSharingNotPossibleMessage={orgaSharingNotPossibleMessage}
+                  setOpenSharing={setOpenSharing}
+                  handleCloseMenu={closeMenu}
+                />
               </Box>
             )}
           </PopoverMenu>
