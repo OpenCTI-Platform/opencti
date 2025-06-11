@@ -2,7 +2,7 @@ import { v4, v5 } from 'uuid';
 import type { StixInternalExternalReference } from './stix-2-0-smo';
 
 export type StixDate = string | undefined;
-export type StixId = `${string}--${v4 | v5}`; // TODO should we create a common type class for STIX 2.0 and 2.1 ?
+export type StixId = `${string}--${v4 | v5}`;
 
 interface StixFile {
   name: string;

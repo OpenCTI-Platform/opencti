@@ -73,7 +73,7 @@ const buildExternalReferences = (instance: StoreObject): Array<SMO.StixInternalE
       source_name: e.source_name,
       description: e.description,
       url: e.url,
-      hash: e.hashes, // key is "hash" in client python but should be "hashes"
+      hash: e.hashes,
       external_id: e.external_id,
     };
     return cleanObject(data);
@@ -108,9 +108,9 @@ const buildStixDomain = async (instance: StoreEntity | StoreRelation): Promise<S
     revoked: instance.revoked,
     confidence: instance.confidence,
     // lang: instance.lang,
-    labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value), // memo : x_opencti_labels for SCO
+    labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
     object_marking_refs: (instance[INPUT_MARKINGS] ?? []).map((m) => m.standard_id),
-    created_by_ref: instance[INPUT_CREATED_BY]?.standard_id, // memo: x_opencti_created_by_ref for SCO
+    created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     external_references: buildExternalReferences(instance),
   };
 };
