@@ -17,7 +17,13 @@ SUPPORTED_INTERNAL_OBJECTS = [
     "publicdashboard",
 ]
 
-SUPPORTED_STIX_ENTITY_OBJECTS = [
+STIX_META_OBJECTS = [
+    "label",
+    "vocabulary",
+    "kill-chain-phase",
+]
+
+STIX_CORE_OBJECTS = [
     "attack-pattern",
     "campaign",
     "case-incident",
@@ -42,8 +48,6 @@ SUPPORTED_STIX_ENTITY_OBJECTS = [
     "indicator",
     "infrastructure",
     "intrusion-set",
-    "kill-chain-phase",
-    "label",
     "language",
     "location",
     "malware",
@@ -58,9 +62,10 @@ SUPPORTED_STIX_ENTITY_OBJECTS = [
     "x-opencti-task",
     "threat-actor",
     "tool",
-    "vocabulary",
     "vulnerability",
 ]
+
+SUPPORTED_STIX_ENTITY_OBJECTS = STIX_META_OBJECTS + STIX_CORE_OBJECTS
 
 STIX_CYBER_OBSERVABLE_MAPPING = {
     "autonomous-system": "Autonomous-System",
