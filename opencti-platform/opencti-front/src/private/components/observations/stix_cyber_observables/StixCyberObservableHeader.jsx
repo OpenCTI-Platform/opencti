@@ -16,7 +16,7 @@ import StixCyberObservableEdition from './StixCyberObservableEdition';
 import Security from '../../../../utils/Security';
 import { useFormatter } from '../../../../components/i18n';
 import PopoverMenu from '../../../../components/PopoverMenu';
-import useSharingDisabled from '../../../../utils/hooks/useSharingDisabled';
+import useOrgaSharingPossible from '../../../../utils/hooks/useOrgaSharingPossible';
 
 const StixCyberObservableHeaderComponent = ({ stixCyberObservable }) => {
   const { t_i18n } = useFormatter();
@@ -25,7 +25,7 @@ const StixCyberObservableHeaderComponent = ({ stixCyberObservable }) => {
   const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]);
   const isKnowledgeEnricher = useGranted([KNOWLEDGE_KNENRICHMENT]);
 
-  const { isSharingNotPossible, sharingNotPossibleMessage } = useSharingDisabled(stixCyberObservable, false);
+  const { isOrgaSharingPossible, orgaSharingNotPossibleMessage } = useOrgaSharingPossible(stixCyberObservable, false);
 
   return (
     <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -50,14 +50,14 @@ const StixCyberObservableHeaderComponent = ({ stixCyberObservable }) => {
           <PopoverMenu>
             {({ closeMenu }) => (
               <Box>
-                <EETooltip title={sharingNotPossibleMessage}>
+                <EETooltip title={orgaSharingNotPossibleMessage}>
                   <span>
                     <MenuItem
                       onClick={() => {
                         setOpenSharing(true);
                         closeMenu();
                       }}
-                      disabled={isSharingNotPossible}
+                      disabled={!isOrgaSharingPossible}
                     >
                       {t_i18n('Share with an organization')}
                     </MenuItem>

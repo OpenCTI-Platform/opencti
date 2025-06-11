@@ -45,7 +45,7 @@ import { getMainRepresentative } from '../../../../utils/defaultRepresentatives'
 import Transition from '../../../../components/Transition';
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
 import PopoverMenu from '../../../../components/PopoverMenu';
-import useSharingDisabled from '../../../../utils/hooks/useSharingDisabled';
+import useOrgaSharingPossible from '../../../../utils/hooks/useOrgaSharingPossible';
 import EETooltip from '../entreprise_edition/EETooltip';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
@@ -392,7 +392,7 @@ const StixDomainObjectHeader = (props) => {
 
   // if some buttons should be greyed out
   // case sharing
-  const { isSharingNotPossible, sharingNotPossibleMessage } = useSharingDisabled(stixDomainObject, false);
+  const { isOrgaSharingPossible, orgaSharingNotPossibleMessage } = useOrgaSharingPossible(stixDomainObject, false);
   // case enroll in playbook
   const draftContext = useDraftContext();
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -628,14 +628,14 @@ const StixDomainObjectHeader = (props) => {
                 {({ closeMenu }) => (
                   <Box>
                     {disableSharing !== true && !displaySharingButton && (
-                      <EETooltip title={sharingNotPossibleMessage}>
+                      <EETooltip title={orgaSharingNotPossibleMessage}>
                         <span>
                           <MenuItem
                             onClick={() => {
                               handleOpenSharing();
                               closeMenu();
                             }}
-                            disabled={isSharingNotPossible}
+                            disabled={!isOrgaSharingPossible}
                           >
                             {t_i18n('Share with an organization')}
                           </MenuItem>

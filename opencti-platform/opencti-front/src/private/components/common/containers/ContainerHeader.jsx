@@ -33,7 +33,7 @@ import { authorizedMembersToOptions, useGetCurrentUserAccessRight } from '../../
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
 import { resolveLink } from '../../../../utils/Entity';
 import PopoverMenu from '../../../../components/PopoverMenu';
-import useSharingDisabled from '../../../../utils/hooks/useSharingDisabled';
+import useOrgaSharingPossible from '../../../../utils/hooks/useOrgaSharingPossible';
 import EETooltip from '../entreprise_edition/EETooltip';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
@@ -519,7 +519,7 @@ const ContainerHeader = (props) => {
 
   // if some buttons should be greyed out
   // case sharing
-  const { isSharingNotPossible, sharingNotPossibleMessage } = useSharingDisabled(container, true, enableManageAuthorizedMembers);
+  const { isOrgaSharingPossible, orgaSharingNotPossibleMessage } = useOrgaSharingPossible(container, true, enableManageAuthorizedMembers);
   // case enroll in playbook
   const draftContext = useDraftContext();
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -669,7 +669,7 @@ const ContainerHeader = (props) => {
                 elementId={container.id}
                 open={openSharing}
                 variant="header"
-                disabled={isSharingNotPossible}
+                disabled={!isOrgaSharingPossible}
                 handleClose={displaySharingButton ? undefined : handleCloseSharing}
                 inContainer={true}
               />
@@ -734,14 +734,14 @@ const ContainerHeader = (props) => {
                 {({ closeMenu }) => (
                   <Box>
                     {displaySharing && !displaySharingButton && (
-                      <EETooltip title={sharingNotPossibleMessage}>
+                      <EETooltip title={orgaSharingNotPossibleMessage}>
                         <span>
                           <MenuItem
                             onClick={() => {
                               setOpenSharing(true);
                               closeMenu();
                             }}
-                            disabled={isSharingNotPossible}
+                            disabled={!isOrgaSharingPossible}
                           >
                             {t_i18n('Share with an organization')}
                           </MenuItem>
