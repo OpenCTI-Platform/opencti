@@ -35,6 +35,8 @@ import { resolveLink } from '../../../../utils/Entity';
 import PopoverMenu from '../../../../components/PopoverMenu';
 import useSharingDisabled from '../../../../utils/hooks/useSharingDisabled';
 import EETooltip from '../entreprise_edition/EETooltip';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 export const containerHeaderObjectsQuery = graphql`
   query ContainerHeaderObjectsQuery($id: String!) {
@@ -515,7 +517,13 @@ const ContainerHeader = (props) => {
   const currentAccessRight = useGetCurrentUserAccessRight(container.currentUserAccessRight);
   const enableManageAuthorizedMembers = currentAccessRight.canManage && isAuthorizedMembersEnabled;
 
+  // if some buttons should be greyed out
+  // case sharing
   const { isSharingNotPossible, sharingNotPossibleMessage } = useSharingDisabled(container, true, enableManageAuthorizedMembers);
+  // case enroll in playbook
+  const draftContext = useDraftContext();
+  const isEnterpriseEdition = useEnterpriseEdition();
+  const isEnrollPlaybookPossible = !draftContext && isEnterpriseEdition;
 
   const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
 
@@ -719,7 +727,8 @@ const ContainerHeader = (props) => {
                 stixCoreObjectId={container.id}
                 open={openEnrollPlaybook}
                 handleClose={displayEnrollPlaybookButton ? undefined : handleCloseEnrollPlaybook}
-                 />}
+                 />
+            }
             {displayPopoverMenu && (
               <PopoverMenu>
                 {({ closeMenu }) => (
@@ -755,14 +764,19 @@ const ContainerHeader = (props) => {
                       </Security>
                     )}
                     {displayEnrollPlaybook && !displayEnrollPlaybookButton && (
-                      <MenuItem
-                        onClick={() => {
-                          setOpenEnrollPlaybook(true);
-                          closeMenu();
-                        }}
-                      >
-                        {t_i18n('Enroll in playbook')}
-                      </MenuItem>
+                      <EETooltip title={draftContext ? t_i18n('Not available in draft') : t_i18n('Enroll in playbook')}>
+                        <span>
+                          <MenuItem
+                            onClick={() => {
+                              setOpenEnrollPlaybook(true);
+                              closeMenu();
+                            }}
+                            disabled={!isEnrollPlaybookPossible}
+                          >
+                            {t_i18n('Enroll in playbook')}
+                          </MenuItem>
+                        </span>
+                      </EETooltip>
                     )}
                   </Box>
                 )}
