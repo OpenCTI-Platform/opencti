@@ -20,7 +20,7 @@ const StixCoreObjectMenuItemEnrollPlaybook: FunctionComponent<StixCoreObjectMenu
   const draftContext = useDraftContext();
   const isEnterpriseEdition = useEnterpriseEdition();
   const isEnrollPlaybookPossible = !draftContext && isEnterpriseEdition;
-  let title = t_i18n('Enroll in playbook');
+  let title: string | undefined;
   if (draftContext) title = t_i18n('Not available in draft');
   if (!isEnrollPlaybookPossible) t_i18n('Only available in EE');
 
