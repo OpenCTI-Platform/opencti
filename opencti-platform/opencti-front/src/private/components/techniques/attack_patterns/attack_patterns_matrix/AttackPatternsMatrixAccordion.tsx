@@ -12,9 +12,9 @@ import {
   FilteredSubAttackPattern,
   getBoxStyles,
   MinimalAttackPattern,
-} from '@components/techniques/attack_patterns/AttackPatternsMatrix/AttackPatternsMatrixColumns';
+} from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixColumns';
 import { CheckOutlined, CloseOutlined } from '@mui/icons-material';
-import AttackPatternsMatrixColumnsElement from '@components/techniques/attack_patterns/AttackPatternsMatrix/AttackPatternsMatrixColumsElement';
+import AttackPatternsMatrixColumnsElement from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixColumsElement';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
 

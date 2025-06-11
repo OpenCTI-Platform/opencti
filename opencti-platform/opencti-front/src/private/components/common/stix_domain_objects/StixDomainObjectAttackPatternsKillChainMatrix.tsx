@@ -3,7 +3,7 @@ import { TargetEntity } from '@components/common/stix_core_relationships/StixCor
 import {
   StixDomainObjectAttackPatternsKillChainContainer_data$data,
 } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainContainer_data.graphql';
-import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix/AttackPatternsMatrix';
+import AttackPatternsMatrix from '../../techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrix';
 
 interface StixDomainObjectAttackPatternsKillChainMatrixProps {
   searchTerm: string;

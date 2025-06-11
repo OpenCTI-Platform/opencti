@@ -1,7 +1,7 @@
 import { Box, Typography } from '@mui/material';
-import AttackPatternsMatrixShouldCoverIcon from '@components/techniques/attack_patterns/AttackPatternsMatrix/AttackPatternsMatrixShouldCoverIcon';
+import AttackPatternsMatrixShouldCoverIcon from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixShouldCoverIcon';
 import React from 'react';
-import { FilteredAttackPattern, FilteredSubAttackPattern, MinimalAttackPattern } from '@components/techniques/attack_patterns/AttackPatternsMatrix/AttackPatternsMatrixColumns';
+import { FilteredAttackPattern, FilteredSubAttackPattern, MinimalAttackPattern } from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixColumns';
 import useHelper from '../../../../../utils/hooks/useHelper';
 
 interface AttackPatternsMatrixColumnsElementProps {

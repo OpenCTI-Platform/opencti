@@ -1,7 +1,7 @@
 import React from 'react';
 import { Badge } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { FilteredAttackPattern } from '@components/techniques/attack_patterns/AttackPatternsMatrix/AttackPatternsMatrixColumns';
+import { FilteredAttackPattern } from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixColumns';
 import type { Theme } from '../../../../../components/Theme';
 
 interface AttackPatternsMatrixBadgeProps {

@@ -4,10 +4,10 @@ import { AddCircleOutlineOutlined, InfoOutlined } from '@mui/icons-material';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { Link } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
-import { AttackPatternsMatrixProps, attackPatternsMatrixQuery } from '@components/techniques/attack_patterns/AttackPatternsMatrix/AttackPatternsMatrix';
-import AccordionAttackPattern from '@components/techniques/attack_patterns/AttackPatternsMatrix/AttackPatternsMatrixAccordion';
-import AttackPatternsMatrixBadge from '@components/techniques/attack_patterns/AttackPatternsMatrix/AttackPatternsMatrixBadge';
-import AttackPatternsMatrixColumnsElement from '@components/techniques/attack_patterns/AttackPatternsMatrix/AttackPatternsMatrixColumsElement';
+import { AttackPatternsMatrixProps, attackPatternsMatrixQuery } from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrix';
+import AccordionAttackPattern from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixAccordion';
+import AttackPatternsMatrixBadge from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixBadge';
+import AttackPatternsMatrixColumnsElement from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixColumsElement';
 import { AttackPatternsMatrixColumns_data$data, AttackPatternsMatrixColumns_data$key } from '../__generated__/AttackPatternsMatrixColumns_data.graphql';
 import { AttackPatternsMatrixQuery } from '../__generated__/AttackPatternsMatrixQuery.graphql';
 import { truncate } from '../../../../../utils/String';
@@ -230,6 +230,7 @@ const AttackPatternsMatrixColumns = ({
                     return (
                       isSecurityPlatformEnabled && ap.subAttackPatterns?.length ? (
                         <AttackPatternsMatrixBadge
+                          key={ap.attack_pattern_id}
                           attackPattern={ap}
                           color={COLORS.BADGE}
                         >
@@ -246,6 +247,7 @@ const AttackPatternsMatrixColumns = ({
                         </AttackPatternsMatrixBadge>
                       ) : (
                         <AttackPatternsMatrixColumnsElement
+                          key={ap.attack_pattern_id}
                           attackPattern={ap}
                           handleToggleHover={handleToggleHover}
                           handleOpen={handleOpen}

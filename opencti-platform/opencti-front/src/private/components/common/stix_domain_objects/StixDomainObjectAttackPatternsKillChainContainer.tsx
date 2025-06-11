@@ -9,7 +9,7 @@ import {
   StixDomainObjectAttackPatternsKillChainQuery$variables,
 } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainQuery.graphql';
 import { AttackPatternsMatrixQuery } from '@components/techniques/attack_patterns/__generated__/AttackPatternsMatrixQuery.graphql';
-import { attackPatternsMatrixQuery } from '@components/techniques/attack_patterns/AttackPatternsMatrix/AttackPatternsMatrix';
+import { attackPatternsMatrixQuery } from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrix';
 import StixDomainObjectAttackPatternsKillChain, { stixDomainObjectAttackPatternsKillChainQuery } from './StixDomainObjectAttackPatternsKillChain';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
