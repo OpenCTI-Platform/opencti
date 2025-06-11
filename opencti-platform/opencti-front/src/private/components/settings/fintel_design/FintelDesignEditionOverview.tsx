@@ -2,12 +2,10 @@ import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
-import { FormikConfig } from 'formik/dist/types';
 import { Stack } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
-import { adaptFieldValue } from '../../../../utils/String';
 import { FieldOption } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { FintelDesignEditionOverview_fintelDesign$key } from './__generated__/FintelDesignEditionOverview_fintelDesign.graphql';
@@ -44,7 +42,6 @@ const fintelDesignOverviewFragment = graphql`
 interface FintelDesignEditionOverviewProps {
   fintelDesignRef: FintelDesignEditionOverview_fintelDesign$key;
   enableReferences?: boolean;
-  handleClose: () => void;
 }
 
 interface FintelDesignEditionFormValues {
@@ -56,7 +53,7 @@ interface FintelDesignEditionFormValues {
 
 const FintelDesignEditionOverviewComponent: FunctionComponent<
 FintelDesignEditionOverviewProps
-> = ({ fintelDesignRef, handleClose }) => {
+> = ({ fintelDesignRef }) => {
   const { t_i18n } = useFormatter();
   const fintelDesign = useFragment(fintelDesignOverviewFragment, fintelDesignRef);
   const [commit] = useApiMutation(fintelDesignEditionPatchMutation);
@@ -66,30 +63,6 @@ FintelDesignEditionOverviewProps
     description: Yup.string().nullable(),
   });
 
-  const onSubmit: FormikConfig<FintelDesignEditionFormValues>['onSubmit'] = (
-    values,
-    { setSubmitting },
-  ) => {
-    const { message, references, ...otherValues } = values;
-    const commitMessage = message ?? '';
-    const commitReferences = (references ?? []).map(({ value }) => value);
-    const inputValues = Object.entries({
-      ...otherValues,
-    }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
-    commit({
-      variables: {
-        id: fintelDesign.id,
-        input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
-        references: commitReferences,
-      },
-      onCompleted: () => {
-        setSubmitting(false);
-        handleClose();
-      },
-    });
-  };
   const handleSubmitField = (name: string, value: FieldOption | string) => {
     commit({
       variables: {
@@ -109,7 +82,7 @@ FintelDesignEditionOverviewProps
       validateOnChange={true}
       validateOnBlur={true}
       validationSchema={fintelDesignValidation}
-      onSubmit={onSubmit}
+      onSubmit={() => {}}
     >
       {() => (
         <Form>

@@ -39,10 +39,9 @@ const FintelDesignEditionContainer: FunctionComponent<FintelDesignEditionContain
       open={open}
       controlledDial={controlledDial}
     >
-      {({ onClose }) => (
+      {() => (
         <FintelDesignEditionOverview
           fintelDesignRef={fintelDesign}
-          handleClose={onClose}
         />
       )}
     </Drawer>
