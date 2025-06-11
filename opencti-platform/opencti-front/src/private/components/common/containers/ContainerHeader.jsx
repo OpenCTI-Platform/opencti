@@ -516,17 +516,21 @@ const ContainerHeader = (props) => {
     || (enableManageAuthorizedMembers && container.authorized_members?.length > 0);
   const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
 
+  const displaySharing = !knowledge && disableSharing !== true;
+  const displayAuthorizedMembers = !knowledge && !!enableManageAuthorizedMembers;
+  const displayEnrollPlaybook = enableEnrollPlaybook;
+
   let initialNumberOfButtons = (!knowledge ? 1 : 0) + (enableQuickSubscription ? 1 : 0) + (enableEnricher ? 1 : 0);
-  const displayEnrollPlaybookButton = enableEnrollPlaybook && initialNumberOfButtons < 3;
+  const displayEnrollPlaybookButton = displayEnrollPlaybook && initialNumberOfButtons < 3;
   if (displayEnrollPlaybookButton) initialNumberOfButtons += 1;
-  const displaySharingButton = !knowledge && disableSharing !== true && initialNumberOfButtons < 3;
+  const displaySharingButton = displaySharing && initialNumberOfButtons < 3;
   if (displaySharingButton) initialNumberOfButtons += 1;
-  const displayAuthorizedMembersButton = initialNumberOfButtons < 3;
+  const displayAuthorizedMembersButton = displayAuthorizedMembers && initialNumberOfButtons < 3;
   if (displayAuthorizedMembersButton) initialNumberOfButtons += 1;
 
-  const displayPopoverMenu = (!knowledge && disableSharing !== true && !displaySharingButton)
-    || (!knowledge && !!enableManageAuthorizedMembers && !displayAuthorizedMembersButton)
-    || (enableEnrollPlaybook && !displayEnrollPlaybookButton);
+  const displayPopoverMenu = (displaySharing && !displaySharingButton)
+    || (displayAuthorizedMembers && !displayAuthorizedMembersButton)
+    || (displayEnrollPlaybook && !displayEnrollPlaybookButton);
 
   return (
     <div style={containerStyle}>
@@ -650,7 +654,7 @@ const ContainerHeader = (props) => {
               <StixCoreObjectSubscribers triggerData={triggerData} />
             )}
             <StixCoreObjectSharingList data={container} inContainer={true} />
-            {!knowledge && disableSharing !== true && (
+            {displaySharing && (
               <StixCoreObjectSharing
                 elementId={container.id}
                 open={openSharing}
@@ -660,7 +664,7 @@ const ContainerHeader = (props) => {
                 inContainer={true}
               />
             )}
-            {!knowledge && (
+            {displayAuthorizedMembers && (
               <FormAuthorizedMembersDialog
                 id={container.id}
                 owner={container.creators?.[0]}
@@ -708,7 +712,7 @@ const ContainerHeader = (props) => {
                 />
               </Security>
             )}
-            {enableEnrollPlaybook
+            {displayEnrollPlaybook
               && <StixCoreObjectEnrollPlaybook
                 stixCoreObjectId={container.id}
                 open={openEnrollPlaybook}
@@ -718,7 +722,7 @@ const ContainerHeader = (props) => {
               <PopoverMenu>
                 {({ closeMenu }) => (
                   <Box>
-                    {!knowledge && disableSharing !== true && !displaySharingButton && (
+                    {displaySharing && !displaySharingButton && (
                       <MenuItem
                         onClick={() => {
                           setOpenSharing(true);
@@ -728,7 +732,7 @@ const ContainerHeader = (props) => {
                         {t_i18n('Share with an organization')}
                       </MenuItem>
                     )}
-                    {!knowledge && !displayAuthorizedMembersButton && (
+                    {displayAuthorizedMembers && !displayAuthorizedMembersButton && (
                       <Security
                         needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
                         hasAccess={!!enableManageAuthorizedMembers}
@@ -743,7 +747,7 @@ const ContainerHeader = (props) => {
                         </MenuItem>
                       </Security>
                     )}
-                    {enableEnrollPlaybook && !displayEnrollPlaybookButton && (
+                    {displayEnrollPlaybook && !displayEnrollPlaybookButton && (
                       <MenuItem
                         onClick={() => {
                           setOpenEnrollPlaybook(true);
