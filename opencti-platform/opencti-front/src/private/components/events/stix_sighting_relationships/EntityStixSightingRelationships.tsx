@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useContext, useEffect } from 'react';
 import {
   EntityStixSightingRelationshipsLinesPaginationQuery,
   EntityStixSightingRelationshipsLinesPaginationQuery$variables,
@@ -14,6 +14,7 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup, useRemoveIdAndIncorrectKeysFromFilterGroupObject, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
+import { CreateRelationshipContext } from '../../common/stix_core_relationships/CreateRelationshipContextProvider';
 
 export const LOCAL_STORAGE_KEY = 'sightings';
 
@@ -116,6 +117,14 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
   } = viewStorage;
 
   const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['stix-sighting-relationship']);
+
+  const { setState } = useContext(CreateRelationshipContext);
+  // Necessary to reset 'Create Relationship' target types
+  useEffect(() => {
+    setState({
+      stixCoreObjectTypes: ['Stix-Core-Object'],
+    });
+  }, []);
 
   const contextFilters: FilterGroup = {
     mode: 'and',
