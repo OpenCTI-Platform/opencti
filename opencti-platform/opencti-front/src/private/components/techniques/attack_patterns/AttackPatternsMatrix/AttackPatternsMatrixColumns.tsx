@@ -4,17 +4,17 @@ import { AddCircleOutlineOutlined, CheckOutlined, CloseOutlined, InfoOutlined } 
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { Link } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
-import { AttackPatternsMatrixProps, attackPatternsMatrixQuery } from '@components/techniques/attack_patterns/AttackPatternsMatrix';
-import AccordionAttackPattern from '@components/techniques/attack_patterns/AttackPatternsMatrixAccordion';
-import { AttackPatternsMatrixColumns_data$data, AttackPatternsMatrixColumns_data$key } from './__generated__/AttackPatternsMatrixColumns_data.graphql';
-import { AttackPatternsMatrixQuery } from './__generated__/AttackPatternsMatrixQuery.graphql';
-import { truncate } from '../../../../utils/String';
-import { MESSAGING$ } from '../../../../relay/environment';
-import { UserContext } from '../../../../utils/hooks/useAuth';
-import { hexToRGB } from '../../../../utils/Colors';
-import { useFormatter } from '../../../../components/i18n';
-import useHelper from '../../../../utils/hooks/useHelper';
-import type { Theme } from '../../../../components/Theme';
+import { AttackPatternsMatrixProps, attackPatternsMatrixQuery } from '@components/techniques/attack_patterns/AttackPatternsMatrix/AttackPatternsMatrix';
+import AccordionAttackPattern from '@components/techniques/attack_patterns/AttackPatternsMatrix/AttackPatternsMatrixAccordion';
+import { AttackPatternsMatrixColumns_data$data, AttackPatternsMatrixColumns_data$key } from '../__generated__/AttackPatternsMatrixColumns_data.graphql';
+import { AttackPatternsMatrixQuery } from '../__generated__/AttackPatternsMatrixQuery.graphql';
+import { truncate } from '../../../../../utils/String';
+import { MESSAGING$ } from '../../../../../relay/environment';
+import { UserContext } from '../../../../../utils/hooks/useAuth';
+import { hexToRGB } from '../../../../../utils/Colors';
+import { useFormatter } from '../../../../../components/i18n';
+import useHelper from '../../../../../utils/hooks/useHelper';
+import type { Theme } from '../../../../../components/Theme';
 
 export type AttackPattern = NonNullable<NonNullable<NonNullable<AttackPatternsMatrixColumns_data$data['attackPatternsMatrix']>['attackPatternsOfPhases']>[number]['attackPatterns']>[number];
 export type SubAttackPattern = NonNullable<AttackPattern['subAttackPatterns']>[number];

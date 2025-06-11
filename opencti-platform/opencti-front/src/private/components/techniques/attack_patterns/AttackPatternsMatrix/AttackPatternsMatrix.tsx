@@ -1,13 +1,11 @@
 import React, { FunctionComponent } from 'react';
 import { TargetEntity } from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
-import {
-  StixDomainObjectAttackPatternsKillChainContainer_data$data,
-} from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainContainer_data.graphql';
+import { StixDomainObjectAttackPatternsKillChainContainer_data$data, } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainContainer_data.graphql';
 import { graphql } from 'react-relay';
-import Loader from '../../../../components/Loader';
+import Loader from '../../../../../components/Loader';
 import AttackPatternsMatrixColumns from './AttackPatternsMatrixColumns';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { AttackPatternsMatrixQuery } from './__generated__/AttackPatternsMatrixQuery.graphql';
+import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
+import { AttackPatternsMatrixQuery } from '../__generated__/AttackPatternsMatrixQuery.graphql';
 
 export interface AttackPatternsMatrixProps {
   marginRight?: boolean;

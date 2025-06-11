@@ -7,10 +7,10 @@ import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
 import Typography from '@mui/material/Typography';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import { Box, Tooltip } from '@mui/material';
-import { FilteredAttackPattern, FilteredSubAttackPattern, getBoxStyles, MinimalAttackPattern } from '@components/techniques/attack_patterns/AttackPatternsMatrixColumns';
+import { FilteredAttackPattern, FilteredSubAttackPattern, getBoxStyles, MinimalAttackPattern } from '@components/techniques/attack_patterns/AttackPatternsMatrix/AttackPatternsMatrixColumns';
 import { CheckOutlined, CloseOutlined } from '@mui/icons-material';
-import { useFormatter } from '../../../../components/i18n';
-import type { Theme } from '../../../../components/Theme';
+import { useFormatter } from '../../../../../components/i18n';
+import type { Theme } from '../../../../../components/Theme';
 
 interface AccordionAttackPatternProps {
   attackPattern: FilteredAttackPattern,
