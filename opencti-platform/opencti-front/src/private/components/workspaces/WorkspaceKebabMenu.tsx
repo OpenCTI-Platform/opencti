@@ -46,14 +46,14 @@ interface WorkspaceKebabMenuProps {
 
 const noop = () => {};
 
-function useDuplicate(isGranted = false, onDuplicate = noop) {
+const useDuplicate = (isGranted = false, onDuplicate = noop) => {
   const [displayDuplicate, setDisplayDuplicate] = useState(false);
   const handleCloseDuplicate = () => setDisplayDuplicate(false);
   const [duplicating, setDuplicating] = useState(false);
   const handleDashboardDuplication = isGranted ? () => {
     onDuplicate();
     setDisplayDuplicate(true);
-  } : () => {};
+  } : noop;
 
   return {
     displayDuplicate,
@@ -63,9 +63,9 @@ function useDuplicate(isGranted = false, onDuplicate = noop) {
     setDuplicating,
     handleDashboardDuplication,
   };
-}
+};
 
-function useManageAccess(onManageAccess = noop) {
+const useManageAccess = (onManageAccess = noop) => {
   const [displayManageAccess, setDisplayManageAccess] = useState(false);
   const handleCloseManageAccess = () => setDisplayManageAccess(false);
   const handleOpenManageAccess = () => {
@@ -74,9 +74,9 @@ function useManageAccess(onManageAccess = noop) {
   };
 
   return { displayManageAccess, handleOpenManageAccess, handleCloseManageAccess };
-}
+};
 
-function useAddToContainer(onAddToContainer = noop) {
+const useAddToContainer = (onAddToContainer = noop) => {
   const [isAddToContainerDialogOpen, setIsAddToContainerDialogOpen] = useState(false);
   const handleCloseTurnToReportOrCaseContainer = () => setIsAddToContainerDialogOpen(false);
   const handleOpenTurnToReportOrCaseContainer = () => {
@@ -85,9 +85,9 @@ function useAddToContainer(onAddToContainer = noop) {
   };
 
   return { isAddToContainerDialogOpen, handleOpenTurnToReportOrCaseContainer, handleCloseTurnToReportOrCaseContainer };
-}
+};
 
-export default function WorkspaceKebabMenu({ workspace, paginationOptions }: WorkspaceKebabMenuProps) {
+const WorkspaceKebabMenu = ({ workspace, paginationOptions }: WorkspaceKebabMenuProps) => {
   const variant = workspace.type;
   const { id, type } = workspace;
   const navigate = useNavigate();
@@ -190,6 +190,7 @@ export default function WorkspaceKebabMenu({ workspace, paginationOptions }: Wor
         aria-haspopup="true"
         aria-expanded={open ? 'true' : undefined}
         onClick={handleClick}
+        sx={{ height: '100%' }}
       >
         <MoreVert color="primary" fontSize="small" />
       </ToggleButton>
@@ -283,6 +284,7 @@ export default function WorkspaceKebabMenu({ workspace, paginationOptions }: Wor
         {({ onClose }) => (
           <PublicDashboardCreationForm
             onCompleted={onClose}
+            onCancel={onClose}
             dashboard_id={workspace.id || undefined}
           />
         )}
@@ -322,4 +324,6 @@ export default function WorkspaceKebabMenu({ workspace, paginationOptions }: Wor
       />
     </div>
   );
-}
+};
+
+export default WorkspaceKebabMenu;
