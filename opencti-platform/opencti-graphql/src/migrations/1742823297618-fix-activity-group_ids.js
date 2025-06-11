@@ -22,11 +22,20 @@ export const up = async (next) => {
       source: 'if (params.userGroupIdsMap.containsKey(ctx._source.user_id)) { ctx._source.group_ids = params.userGroupIdsMap[ctx._source.user_id]; }',
     },
     query: {
-      range: {
-        created_at: {
-          gte: '2025-04-08T00:00:00'
-        }
-      }
+      bool: {
+        must_not: [{
+          exists: {
+            field: 'group_ids'
+          }
+        }],
+        must: [{
+          range: {
+            created_at: {
+              gte: '2025-04-08T00:00:00'
+            }
+          }
+        }]
+      },
     }
   };
   await elUpdateByQueryForMigration(
