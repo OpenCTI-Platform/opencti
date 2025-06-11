@@ -10,7 +10,7 @@ import { now, observableValue } from '../utils/format';
 import { createWork, updateExpectationsNumber } from './work';
 import { pushToConnector, pushToWorkerForConnector } from '../database/rabbitmq';
 import { isStixDomainObjectShareableContainer } from '../schema/stixDomainObject';
-import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE, INPUT_GRANTED_REFS } from '../schema/general';
+import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_OBJECT, buildRefRelationKey, CONNECTOR_INTERNAL_EXPORT_FILE, INPUT_GRANTED_REFS } from '../schema/general';
 import { isEmptyField, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { notify } from '../database/redis';
@@ -27,6 +27,8 @@ import { checkUserCanShareMarkings } from './user';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { getDraftContext } from '../utils/draftContext';
 import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE } from './backgroundTask-common';
+import { objectOrganization, RELATION_GRANTED_TO } from '../schema/stixRefRelationship';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 
 export const stixDelete = async (context, user, id, opts = {}) => {
   const element = await internalLoadById(context, user, id);
@@ -281,13 +283,22 @@ export const addOrganizationRestriction = async (context, user, fromId, organiza
   }
   const organizationIds = Array.isArray(organizationId) ? organizationId : [organizationId];
   const from = await internalLoadById(context, user, fromId);
+  const currentGrants = from[buildRefRelationKey(RELATION_GRANTED_TO)] ?? [];
+  const organizationsNotCurrentlyGranted = organizationIds.filter((o) => !currentGrants.includes(o));
+  // If entity is not sharable or if entity is already shared with organizations, we can return without doing anything
+  if (!objectOrganization.isRefExistingForTypes(from.entity_type, ENTITY_TYPE_IDENTITY_ORGANIZATION)
+      || organizationsNotCurrentlyGranted.length === 0
+  ) {
+    return from;
+  }
+
   // If container, create a sharing task
   if (isStixDomainObjectShareableContainer(from.entity_type) && !directContainerSharing) {
-    await createSharingTask(context, ACTION_TYPE_SHARE, from.internal_id, organizationIds);
+    await createSharingTask(context, ACTION_TYPE_SHARE, from.internal_id, organizationsNotCurrentlyGranted);
     return from;
   }
   // If standard, just share directly
-  const updates = [{ key: INPUT_GRANTED_REFS, value: organizationIds, operation: UPDATE_OPERATION_ADD }];
+  const updates = [{ key: INPUT_GRANTED_REFS, value: organizationsNotCurrentlyGranted, operation: UPDATE_OPERATION_ADD }];
   // We skip references validation when updating organization sharing
   const data = await updateAttribute(context, user, fromId, from.entity_type, updates, { bypassValidation: true });
   return notify(BUS_TOPICS[ABSTRACT_STIX_OBJECT].EDIT_TOPIC, data.element, user);
@@ -299,13 +310,21 @@ export const removeOrganizationRestriction = async (context, user, fromId, organ
   }
   const organizationIds = Array.isArray(organizationId) ? organizationId : [organizationId];
   const from = await internalLoadById(context, user, fromId);
+  const currentGrants = from[buildRefRelationKey(RELATION_GRANTED_TO)] ?? [];
+  const organizationsCurrentlyGranted = organizationIds.filter((o) => currentGrants.includes(o));
+  // If entity is not sharable or if entity is already shared with organizations, we can return without doing anything
+  if (!objectOrganization.isRefExistingForTypes(from.entity_type, ENTITY_TYPE_IDENTITY_ORGANIZATION)
+      || organizationsCurrentlyGranted.length === 0
+  ) {
+    return from;
+  }
   // If container, create a sharing task
   if (isStixDomainObjectShareableContainer(from.entity_type) && !directContainerSharing) {
-    await createSharingTask(context, ACTION_TYPE_UNSHARE, from.internal_id, organizationIds);
+    await createSharingTask(context, ACTION_TYPE_UNSHARE, from.internal_id, organizationsCurrentlyGranted);
     return from;
   }
   // If standard, just share directly
-  const updates = [{ key: INPUT_GRANTED_REFS, value: organizationIds, operation: UPDATE_OPERATION_REMOVE }];
+  const updates = [{ key: INPUT_GRANTED_REFS, value: organizationsCurrentlyGranted, operation: UPDATE_OPERATION_REMOVE }];
   // We skip references validation when updating organization sharing
   const data = await updateAttribute(context, user, fromId, from.entity_type, updates, { bypassValidation: true });
   return notify(BUS_TOPICS[ABSTRACT_STIX_OBJECT].EDIT_TOPIC, data.element, user);

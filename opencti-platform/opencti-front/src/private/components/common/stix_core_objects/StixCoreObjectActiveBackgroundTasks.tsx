@@ -5,7 +5,7 @@ import { Badge } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
 import { interval } from 'rxjs';
 import { StixCoreObjectActiveBackgroundTasksQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectActiveBackgroundTasksQuery.graphql';
-import { ONE_SECOND } from '../../../../utils/Time';
+import { TEN_SECONDS } from '../../../../utils/Time';
 
 const stixCoreObjectActiveBackgroundTasksQuery = graphql`
   query StixCoreObjectActiveBackgroundTasksQuery($id: ID!) {
@@ -19,7 +19,7 @@ const stixCoreObjectActiveBackgroundTasksQuery = graphql`
   }
 `;
 
-const interval$ = interval(ONE_SECOND);
+const interval$ = interval(TEN_SECONDS);
 
 interface StixCoreObjectBackgroundTaskComponentProps {
   queryRef: PreloadedQuery<StixCoreObjectActiveBackgroundTasksQuery>;
