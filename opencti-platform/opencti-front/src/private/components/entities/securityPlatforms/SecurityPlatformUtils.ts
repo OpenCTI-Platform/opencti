@@ -11,6 +11,7 @@ export const getSecurityPlatformValidator = (mandatoryAttributes: string[]) => {
     createdBy: Yup.object().nullable(),
     objectLabel: Yup.array().nullable(),
     objectMarking: Yup.array().nullable(),
+    x_opencti_workflow_id: Yup.object().nullable(),
   }, mandatoryAttributes);
 
   return useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
