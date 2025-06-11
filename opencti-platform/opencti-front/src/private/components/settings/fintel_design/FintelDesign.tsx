@@ -8,7 +8,7 @@ import { useTheme } from '@mui/styles';
 import Paper from '@mui/material/Paper';
 import { FintelDesign_fintelDesign$key } from '@components/settings/fintel_design/__generated__/FintelDesign_fintelDesign.graphql';
 import CustomizationMenu from '@components/settings/CustomizationMenu';
-import FintelDesignForm, { FintelDesignFormValues } from '@components/settings/fintel_design/FintelDesignForm';
+import FintelDesignForm from '@components/settings/fintel_design/FintelDesignForm';
 import FintelDesignEdition from '@components/settings/fintel_design/FintelDesignEdition';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
@@ -59,8 +59,6 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
   const [pdf, setPdf] = useState<File>();
   const { buildFileFromTemplate } = useFileFromTemplate();
 
-  const [formValues, setFormValues] = useState<FintelDesignFormValues>();
-
   const buildPreview = async () => {
     const template = {
       template_content: '',
@@ -78,7 +76,7 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
   };
   useEffect(() => {
     buildPreview();
-  }, [formValues]);
+  }, [fintelDesign]);
 
   return (
     <>
@@ -123,7 +121,7 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
             >
               <FintelDesignForm
                 fintelDesign={fintelDesign}
-                onChange={(values) => setFormValues(values)}
+                onChange={buildPreview}
               />
             </Paper>
           </Grid>
