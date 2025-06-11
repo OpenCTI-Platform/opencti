@@ -1,18 +1,19 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Badge, Box, ListItemIcon, ListItemText, Menu, MenuItem, Tooltip, Typography } from '@mui/material';
-import { AddCircleOutlineOutlined, CheckOutlined, CloseOutlined, InfoOutlined } from '@mui/icons-material';
+import { Box, ListItemIcon, ListItemText, Menu, MenuItem, Typography } from '@mui/material';
+import { AddCircleOutlineOutlined, InfoOutlined } from '@mui/icons-material';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { Link } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
 import { AttackPatternsMatrixProps, attackPatternsMatrixQuery } from '@components/techniques/attack_patterns/AttackPatternsMatrix/AttackPatternsMatrix';
 import AccordionAttackPattern from '@components/techniques/attack_patterns/AttackPatternsMatrix/AttackPatternsMatrixAccordion';
+import AttackPatternsMatrixBadge from '@components/techniques/attack_patterns/AttackPatternsMatrix/AttackPatternsMatrixBadge';
+import AttackPatternsMatrixColumnsElement from '@components/techniques/attack_patterns/AttackPatternsMatrix/AttackPatternsMatrixColumsElement';
 import { AttackPatternsMatrixColumns_data$data, AttackPatternsMatrixColumns_data$key } from '../__generated__/AttackPatternsMatrixColumns_data.graphql';
 import { AttackPatternsMatrixQuery } from '../__generated__/AttackPatternsMatrixQuery.graphql';
 import { truncate } from '../../../../../utils/String';
 import { MESSAGING$ } from '../../../../../relay/environment';
 import { UserContext } from '../../../../../utils/hooks/useAuth';
 import { hexToRGB } from '../../../../../utils/Colors';
-import { useFormatter } from '../../../../../components/i18n';
 import useHelper from '../../../../../utils/hooks/useHelper';
 import type { Theme } from '../../../../../components/Theme';
 
@@ -117,7 +118,6 @@ const AttackPatternsMatrixColumns = ({
   const theme = useTheme<Theme>();
   const { isFeatureEnable } = useHelper();
   const isSecurityPlatformEnabled = isFeatureEnable('SECURITY_PLATFORM');
-  const { t_i18n } = useFormatter();
   const [hover, setHover] = useState<Record<string, boolean>>({});
   const [anchorEl, setAnchorEl] = useState<EventTarget & Element | null>(null);
   const [selectedAttackPattern, setSelectedAttackPattern] = useState<MinimalAttackPattern | null>(null);
@@ -226,27 +226,12 @@ const AttackPatternsMatrixColumns = ({
                     const isHovered = hover[ap.attack_pattern_id];
                     const hasLevel = ap.level > 0;
                     const { border, backgroundColor } = getBoxStyles(hasLevel, isHovered, theme);
+
                     return (
-                      ap.subAttackPatterns?.length ? (
-                        <Badge
-                          key={ap.attack_pattern_id}
-                          invisible={!ap.level}
-                          badgeContent={ap.subAttackPatternsTotal && `${ap.level}/${ap.subAttackPatternsTotal + 1}`} // We add 1 to count the parent
-                          overlap="rectangular"
-                          anchorOrigin={{
-                            vertical: 'top',
-                            horizontal: 'right',
-                          }}
-                          sx={{
-                            '& .MuiBadge-badge': {
-                              backgroundColor: COLORS.BADGE,
-                              color: theme.palette.common.black,
-                              height: '14px',
-                              minWidth: '14px',
-                              fontSize: '10px',
-                              paddingInline: '4px',
-                            },
-                          }}
+                      isSecurityPlatformEnabled && ap.subAttackPatterns?.length ? (
+                        <AttackPatternsMatrixBadge
+                          attackPattern={ap}
+                          color={COLORS.BADGE}
                         >
                           <AccordionAttackPattern
                             attackPattern={ap}
@@ -258,44 +243,16 @@ const AttackPatternsMatrixColumns = ({
                             isSecurityPlatformEnabled={isSecurityPlatformEnabled}
                             attackPatternIdsToOverlap={attackPatternIdsToOverlap}
                           />
-                        </Badge>
+                        </AttackPatternsMatrixBadge>
                       ) : (
-                        <Box
-                          onMouseEnter={() => handleToggleHover(ap.attack_pattern_id)}
-                          onMouseLeave={() => handleToggleHover(ap.attack_pattern_id)}
-                          onClick={(e) => handleOpen(ap, e)}
-                          sx={{
-                            display: 'flex',
-                            cursor: 'pointer',
-                            border,
-                            backgroundColor,
-                            padding: 1.25,
-                            justifyContent: 'space-between',
-                            gap: 1,
-                            alignItems: 'center',
-                            whiteSpace: 'normal',
-                            width: '100%',
-                          }}
-                        >
-                          <Typography variant="body2" fontSize={10}>
-                            {ap.name}
-                          </Typography>
-                          {isSecurityPlatformEnabled && attackPatternIdsToOverlap?.length !== undefined && ap.level > 0 && (
-                            <Tooltip
-                              title={t_i18n('Should cover')}
-                              sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                height: 19,
-                              }}
-                            >
-                              {ap.isOverlapping
-                                ? <CheckOutlined fontSize="medium" color="success"/>
-                                : <CloseOutlined fontSize="medium" color="error"/>
-                                }
-                            </Tooltip>
-                          )}
-                        </Box>
+                        <AttackPatternsMatrixColumnsElement
+                          attackPattern={ap}
+                          handleToggleHover={handleToggleHover}
+                          handleOpen={handleOpen}
+                          border={border}
+                          backgroundColor={backgroundColor}
+                          attackPatternIdsToOverlap={attackPatternIdsToOverlap}
+                        />
                       )
                     );
                   })}

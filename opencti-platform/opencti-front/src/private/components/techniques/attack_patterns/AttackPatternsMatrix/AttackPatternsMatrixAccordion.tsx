@@ -6,9 +6,15 @@ import IconButton from '@mui/material/IconButton';
 import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
 import Typography from '@mui/material/Typography';
 import AccordionDetails from '@mui/material/AccordionDetails';
-import { Box, Tooltip } from '@mui/material';
-import { FilteredAttackPattern, FilteredSubAttackPattern, getBoxStyles, MinimalAttackPattern } from '@components/techniques/attack_patterns/AttackPatternsMatrix/AttackPatternsMatrixColumns';
+import { Tooltip } from '@mui/material';
+import {
+  FilteredAttackPattern,
+  FilteredSubAttackPattern,
+  getBoxStyles,
+  MinimalAttackPattern,
+} from '@components/techniques/attack_patterns/AttackPatternsMatrix/AttackPatternsMatrixColumns';
 import { CheckOutlined, CloseOutlined } from '@mui/icons-material';
+import AttackPatternsMatrixColumnsElement from '@components/techniques/attack_patterns/AttackPatternsMatrix/AttackPatternsMatrixColumsElement';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
 
@@ -77,7 +83,7 @@ const AccordionAttackPattern = ({
           '& .MuiAccordionSummary-expandIconWrapper.Mui-expanded': {
             transform: 'rotate(90deg)',
           },
-          '.MuiAccordionSummary-content': { marginBlock: 1.25 },
+          '.MuiAccordionSummary-content': { marginBlock: 1.25, alignItems: 'center' },
         }}
       >
         <Typography variant="body2" fontSize={10}>
@@ -108,43 +114,17 @@ const AccordionAttackPattern = ({
         {attackPattern.subAttackPatterns?.map((subAttackPattern: FilteredSubAttackPattern) => {
           const isSubHovered = hover[subAttackPattern.attack_pattern_id];
           const hasSubLevel = subAttackPattern.level > 0;
+          const { border: subBorder, backgroundColor: subBackgroundColor } = getBoxStyles(hasSubLevel, isSubHovered, theme);
           return (
-            <Box
+            <AttackPatternsMatrixColumnsElement
               key={subAttackPattern.attack_pattern_id}
-              onMouseEnter={() => handleToggleHover(subAttackPattern.attack_pattern_id)}
-              onMouseLeave={() => handleToggleHover(subAttackPattern.attack_pattern_id)}
-              onClick={(e) => handleOpen(subAttackPattern, e)}
-              sx={{
-                display: 'flex',
-                cursor: 'pointer',
-                ...getBoxStyles(hasSubLevel, isSubHovered, theme),
-                padding: 1.25,
-                justifyContent: 'space-between',
-                gap: 1,
-                alignItems: 'center',
-                whiteSpace: 'normal',
-                width: '100%',
-              }}
-            >
-              <Typography variant="body2" fontSize={10}>
-                {subAttackPattern.name}
-              </Typography>
-              {isSecurityPlatformEnabled && attackPatternIdsToOverlap?.length !== undefined && subAttackPattern.level > 0 && (
-                <Tooltip
-                  title={t_i18n('Should cover')}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    height: 19,
-                  }}
-                >
-                  {subAttackPattern.isOverlapping
-                    ? <CheckOutlined fontSize="medium" color="success" />
-                    : <CloseOutlined fontSize="medium" color="error" />
-                  }
-                </Tooltip>
-              )}
-            </Box>
+              attackPattern={subAttackPattern}
+              handleToggleHover={handleToggleHover}
+              handleOpen={handleOpen}
+              border={subBorder}
+              backgroundColor={subBackgroundColor}
+              attackPatternIdsToOverlap={attackPatternIdsToOverlap}
+            />
           );
         })}
       </AccordionDetails>
