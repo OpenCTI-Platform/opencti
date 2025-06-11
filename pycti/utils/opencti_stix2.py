@@ -29,8 +29,9 @@ from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
 from pycti.utils.opencti_stix2_update import OpenCTIStix2Update
 from pycti.utils.opencti_stix2_utils import (
     OBSERVABLES_VALUE_INT,
+    STIX_CORE_OBJECTS,
     STIX_CYBER_OBSERVABLE_MAPPING,
-    STIX_OBJECTS,
+    STIX_META_OBJECTS,
 )
 
 datefinder.ValueError = ValueError, OverflowError
@@ -2542,9 +2543,17 @@ class OpenCTIStix2:
 
     def element_operation_delete(self, item, operation):
         # If data is stix, just use the generic stix function for deletion
-        if item["type"] in STIX_OBJECTS:
-            force_delete = operation == "delete_force"
+        force_delete = operation == "delete_force"
+        if item["type"] == "relationship":
+            self.opencti.stix_core_relationship.delete(id=item["id"])
+        elif item["type"] == "sighting":
+            self.opencti.stix_sighting_relationship.delete(id=item["id"])
+        elif item["type"] in STIX_META_OBJECTS:
             self.opencti.stix.delete(id=item["id"], force_delete=force_delete)
+        elif item["type"] in list(STIX_CYBER_OBSERVABLE_MAPPING.keys()):
+            self.opencti.stix_cyber_observable.delete(id=item["id"])
+        elif item["type"] in STIX_CORE_OBJECTS:
+            self.opencti.stix_core_object.delete(id=item["id"])
         else:
             # Element is not knowledge we need to use the right api
             stix_helper = self.get_internal_helper().get(item["type"])
@@ -2552,7 +2561,7 @@ class OpenCTIStix2:
                 stix_helper.delete(id=item["id"])
             else:
                 raise ValueError(
-                    "Delete operation or no stix helper", {"type": item["type"]}
+                    "Delete operation or not found stix helper", {"type": item["type"]}
                 )
 
     def apply_opencti_operation(self, item, operation):
