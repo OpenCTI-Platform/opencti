@@ -5,7 +5,8 @@ import { useGetCurrentUserAccessRight } from '../authorizedMembers';
 import { useFormatter } from '../../components/i18n';
 
 /**
- * Helper function returning whether organization sharing should be disabled or not
+ * In the case of an entity where there is the sharing button
+ * this function returns whether organization sharing should be disabled or not, and a message explaining why in case sharing is disabled
  * Organization sharing should be disabled if:
  * - platform not EE
  * - we are in a draft context
