@@ -14,7 +14,6 @@ import { UserContext } from '../../../../utils/hooks/useAuth';
 import { hexToRGB } from '../../../../utils/Colors';
 import { useFormatter } from '../../../../components/i18n';
 import useHelper from '../../../../utils/hooks/useHelper';
-import { computeLevel } from '../../../../utils/Number';
 import type { Theme } from '../../../../components/Theme';
 
 export type AttackPattern = NonNullable<NonNullable<NonNullable<AttackPatternsMatrixColumns_data$data['attackPatternsMatrix']>['attackPatternsOfPhases']>[number]['attackPatterns']>[number];
@@ -157,17 +156,12 @@ const AttackPatternsMatrixColumns = ({
     return () => subscription.unsubscribe();
   }, []);
 
-  const getAPLevel = (ap: AttackPattern): number => {
+  const getAttackPatternLevel = (ap: AttackPattern): number => {
     return attackPatterns.filter((n) => n.id === ap.attack_pattern_id || (ap.subAttackPatterns?.find((sub) => n.id === sub.attack_pattern_id))).length;
   };
 
-  const getSubLevel = (ap: SubAttackPattern): number => {
-    const matchCount = attackPatterns.filter((n) => n.id === ap.attack_pattern_id).length;
-    const maxCount = Math.max(...attackPatterns.map((n) => {
-      const all = [n, ...(n.parentAttackPatterns?.edges || []).map((e) => e.node)];
-      return all.length;
-    }));
-    return computeLevel(matchCount, 0, maxCount, 0, 10);
+  const getSubAttackPatternLevel = (sap: SubAttackPattern): number => {
+    return attackPatterns.filter((n) => n.id === sap.attack_pattern_id).length;
   };
 
   const filteredData: FilteredData[] | undefined = useMemo(() => attackPatternsMatrix?.attackPatternsOfPhases
@@ -183,10 +177,11 @@ const AttackPatternsMatrixColumns = ({
         || ap.subAttackPatternsSearchText?.toLowerCase().includes(searchTerm.toLowerCase()))
         .map((ap) => ({
           ...ap,
-          level: getAPLevel(ap),
+          level: getAttackPatternLevel(ap),
           subAttackPatterns: ap.subAttackPatterns?.map((sub) => ({
             ...sub,
-            level: getSubLevel(sub),
+            level: getSubAttackPatternLevel(sub),
+            isOverlapping: attackPatternIdsToOverlap?.includes(sub.attack_pattern_id),
           })),
           isOverlapping: attackPatternIdsToOverlap?.includes(ap.attack_pattern_id),
           subAttackPatternsTotal: ap.subAttackPatterns?.length,
@@ -236,7 +231,7 @@ const AttackPatternsMatrixColumns = ({
                         <Badge
                           key={ap.attack_pattern_id}
                           invisible={!ap.level}
-                          badgeContent={!ap.subAttackPatternsTotal ? ap.level : `${ap.level}/${ap.subAttackPatternsTotal}`}
+                          badgeContent={ap.subAttackPatternsTotal && `${ap.level}/${ap.subAttackPatternsTotal + 1}`} // We add 1 to count the parent
                           overlap="rectangular"
                           anchorOrigin={{
                             vertical: 'top',
@@ -265,63 +260,42 @@ const AttackPatternsMatrixColumns = ({
                           />
                         </Badge>
                       ) : (
-                        <Badge
-                          key={ap.attack_pattern_id}
-                          invisible={!ap.level}
-                          badgeContent={!ap.subAttackPatternsTotal ? ap.level : `${ap.level}/${ap.subAttackPatternsTotal}`}
-                          overlap="rectangular"
-                          anchorOrigin={{
-                            vertical: 'top',
-                            horizontal: 'right',
-                          }}
+                        <Box
+                          onMouseEnter={() => handleToggleHover(ap.attack_pattern_id)}
+                          onMouseLeave={() => handleToggleHover(ap.attack_pattern_id)}
+                          onClick={(e) => handleOpen(ap, e)}
                           sx={{
-                            '& .MuiBadge-badge': {
-                              backgroundColor: COLORS.BADGE,
-                              color: theme.palette.common.black,
-                              height: '14px',
-                              minWidth: '14px',
-                              fontSize: '10px',
-                              paddingInline: '4px',
-                            },
+                            display: 'flex',
+                            cursor: 'pointer',
+                            border,
+                            backgroundColor,
+                            padding: 1.25,
+                            justifyContent: 'space-between',
+                            gap: 1,
+                            alignItems: 'center',
+                            whiteSpace: 'normal',
+                            width: '100%',
                           }}
                         >
-                          <Box
-                            onMouseEnter={() => handleToggleHover(ap.attack_pattern_id)}
-                            onMouseLeave={() => handleToggleHover(ap.attack_pattern_id)}
-                            onClick={(e) => handleOpen(ap, e)}
-                            sx={{
-                              display: 'flex',
-                              cursor: 'pointer',
-                              border,
-                              backgroundColor,
-                              padding: 1.25,
-                              justifyContent: 'space-between',
-                              gap: 1,
-                              alignItems: 'center',
-                              whiteSpace: 'normal',
-                              width: '100%',
-                            }}
-                          >
-                            <Typography variant="body2" fontSize={10}>
-                              {ap.name}
-                            </Typography>
-                            {isSecurityPlatformEnabled && attackPatternIdsToOverlap?.length !== undefined && ap.level > 0 && (
-                              <Tooltip
-                                title={t_i18n('Should cover')}
-                                sx={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  height: 19,
-                                }}
-                              >
-                                {ap.isOverlapping
-                                  ? <CheckOutlined fontSize="medium" color="success"/>
-                                  : <CloseOutlined fontSize="medium" color="error"/>
+                          <Typography variant="body2" fontSize={10}>
+                            {ap.name}
+                          </Typography>
+                          {isSecurityPlatformEnabled && attackPatternIdsToOverlap?.length !== undefined && ap.level > 0 && (
+                            <Tooltip
+                              title={t_i18n('Should cover')}
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                height: 19,
+                              }}
+                            >
+                              {ap.isOverlapping
+                                ? <CheckOutlined fontSize="medium" color="success"/>
+                                : <CloseOutlined fontSize="medium" color="error"/>
                                 }
-                              </Tooltip>
-                            )}
-                          </Box>
-                        </Badge>
+                            </Tooltip>
+                          )}
+                        </Box>
                       )
                     );
                   })}

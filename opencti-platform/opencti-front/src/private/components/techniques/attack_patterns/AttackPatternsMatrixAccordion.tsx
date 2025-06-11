@@ -83,6 +83,21 @@ const AccordionAttackPattern = ({
         <Typography variant="body2" fontSize={10}>
           {attackPattern.name}
         </Typography>
+        {isSecurityPlatformEnabled && attackPatternIdsToOverlap?.length !== undefined && attackPattern.level > 0 && (
+          <Tooltip
+            title={t_i18n('Should cover')}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              height: 19,
+            }}
+          >
+            {attackPattern.isOverlapping
+              ? <CheckOutlined fontSize="medium" color="success"/>
+              : <CloseOutlined fontSize="medium" color="error"/>
+            }
+          </Tooltip>
+        )}
       </MuiAccordionSummary>
       <AccordionDetails
         sx={{
@@ -114,7 +129,7 @@ const AccordionAttackPattern = ({
               <Typography variant="body2" fontSize={10}>
                 {subAttackPattern.name}
               </Typography>
-              {isSecurityPlatformEnabled && attackPatternIdsToOverlap?.length !== undefined && attackPattern.level > 0 && (
+              {isSecurityPlatformEnabled && attackPatternIdsToOverlap?.length !== undefined && subAttackPattern.level > 0 && (
                 <Tooltip
                   title={t_i18n('Should cover')}
                   sx={{
