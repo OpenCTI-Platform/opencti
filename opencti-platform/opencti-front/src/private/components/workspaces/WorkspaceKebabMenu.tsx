@@ -11,22 +11,12 @@ import WorkspaceDuplicationDialog from '@components/workspaces/WorkspaceDuplicat
 import Drawer from '@components/common/drawer/Drawer';
 import PublicDashboardCreationForm from '@components/workspaces/dashboards/public_dashboards/PublicDashboardCreationForm';
 import { useNavigate } from 'react-router-dom';
-import { WorkspacePopoverDeletionMutation } from '@components/workspaces/WorkspacePopover';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
 import Security from '../../../utils/Security';
-import useGranted, {
-  EXPLORE_EXUPDATE,
-  EXPLORE_EXUPDATE_EXDELETE,
-  EXPLORE_EXUPDATE_PUBLISH,
-  INVESTIGATION_INUPDATE,
-  INVESTIGATION_INUPDATE_INDELETE,
-} from '../../../utils/hooks/useGranted';
+import useGranted, { EXPLORE_EXUPDATE, EXPLORE_EXUPDATE_PUBLISH, INVESTIGATION_INUPDATE } from '../../../utils/hooks/useGranted';
 import { useFormatter } from '../../../components/i18n';
-import DeleteDialog from '../../../components/DeleteDialog';
-import useApiMutation from '../../../utils/hooks/useApiMutation';
-import { deleteNode, insertNode } from '../../../utils/store';
-import useDeletion from '../../../utils/hooks/useDeletion';
+import { insertNode } from '../../../utils/store';
 
 interface WorkspaceKebabMenuProps {
   workspace: Dashboard_workspace$data | InvestigationGraph_fragment$data;
@@ -83,7 +73,6 @@ const useAddToContainer = (onAddToContainer = noop) => {
 
 const WorkspaceKebabMenu = ({ workspace, paginationOptions }: WorkspaceKebabMenuProps) => {
   const variant = workspace.type;
-  const { id, type } = workspace;
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -107,36 +96,10 @@ const WorkspaceKebabMenu = ({ workspace, paginationOptions }: WorkspaceKebabMenu
   const { displayManageAccess, handleOpenManageAccess, handleCloseManageAccess } = useManageAccess(handleClose);
   const { isAddToContainerDialogOpen, handleOpenTurnToReportOrCaseContainer, handleCloseTurnToReportOrCaseContainer } = useAddToContainer(handleClose);
 
-  const [commit] = useApiMutation(WorkspacePopoverDeletionMutation);
-
   const updater = (store: RecordSourceSelectorProxy) => {
     if (paginationOptions) {
       insertNode(store, 'Pagination_workspaces', paginationOptions, 'workspaceDuplicate');
     }
-  };
-
-  const deletion = useDeletion({ handleClose });
-  const { setDeleting, handleOpenDelete, handleCloseDelete } = deletion;
-
-  const submitDelete = () => {
-    setDeleting(true);
-    commit({
-      variables: { id },
-      updater: (store) => {
-        if (paginationOptions) {
-          deleteNode(store, 'Pagination_workspaces', paginationOptions, id);
-        }
-      },
-      onCompleted: () => {
-        setDeleting(false);
-        handleClose();
-        if (paginationOptions) {
-          handleCloseDelete();
-        } else {
-          navigate(`/dashboard/workspaces/${type}s`);
-        }
-      },
-    });
   };
 
   const goToPublicDashboards = () => {
@@ -216,9 +179,6 @@ const WorkspaceKebabMenu = ({ workspace, paginationOptions }: WorkspaceKebabMenu
           <>
             {workspace.type === 'dashboard' && (
               <>
-                <Security needs={[EXPLORE_EXUPDATE_EXDELETE]} hasAccess={canManage}>
-                  <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
-                </Security>
                 <MenuItem onClick={goToPublicDashboards}>
                   {t_i18n('View associated public dashboards')}
                 </MenuItem>
@@ -226,11 +186,6 @@ const WorkspaceKebabMenu = ({ workspace, paginationOptions }: WorkspaceKebabMenu
                   <MenuItem onClick={handleOpenCreation}>{t_i18n('Create a public dashboard')}</MenuItem>
                 </Security>
               </>
-            )}
-            {workspace.type === 'investigation' && (
-              <Security needs={[INVESTIGATION_INUPDATE_INDELETE]} hasAccess={canManage}>
-                <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
-              </Security>
             )}
           </>
         </Security>
@@ -280,13 +235,6 @@ const WorkspaceKebabMenu = ({ workspace, paginationOptions }: WorkspaceKebabMenu
         setDuplicating={setDuplicating}
         updater={updater}
         paginationOptions={paginationOptions}
-      />
-      <DeleteDialog
-        deletion={deletion}
-        submitDelete={submitDelete}
-        message={workspace.type === 'investigation'
-          ? t_i18n('Do you want to delete this investigation?')
-          : t_i18n('Do you want to delete this dashboard?')}
       />
     </div>
   );
