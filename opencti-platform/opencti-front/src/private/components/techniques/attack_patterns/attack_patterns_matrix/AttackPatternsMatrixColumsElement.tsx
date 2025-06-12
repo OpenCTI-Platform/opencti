@@ -52,7 +52,7 @@ const AttackPatternsMatrixColumnsElement = ({
       <Typography variant="body2" fontSize={10}>
         {attackPattern.name}
       </Typography>
-      {isSecurityPlatformEnabled && !isSecurityPlatform && attackPatternIdsToOverlap?.length !== undefined && attackPattern.level > 0 && (
+      {isSecurityPlatformEnabled && !isSecurityPlatform && attackPatternIdsToOverlap?.length !== undefined && attackPattern.isCovered && (
         <AttackPatternsMatrixShouldCoverIcon
           isOverlapping={attackPattern.isOverlapping || false}
         />

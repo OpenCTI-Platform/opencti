@@ -13,7 +13,7 @@ interface AttackPatternsMatrixBadgeProps {
 const AttackPatternsMatrixBadge = ({ attackPattern, color, children }: AttackPatternsMatrixBadgeProps) => {
   const theme = useTheme<Theme>();
   const attackPatternsCount = (attackPattern.isCovered ? 1 : 0)
-    + (attackPattern?.subAttackPatterns?.filter((sub: FilteredSubAttackPattern) => sub.isCovered).length || 0);
+    + (attackPattern.subAttackPatterns?.filter((sub: FilteredSubAttackPattern) => sub.isCovered).length || 0);
 
   return (
     <Badge
