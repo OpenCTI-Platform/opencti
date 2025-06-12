@@ -24,6 +24,7 @@ const fintelDesignCreationMutation = graphql`
   mutation FintelDesignCreationAddMutation($input: FintelDesignAddInput!) {
     fintelDesignAdd(input: $input) {
       id
+      name
       ...FintelDesignsLine_node
     }
   }
