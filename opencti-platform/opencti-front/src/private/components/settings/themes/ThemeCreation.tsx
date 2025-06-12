@@ -146,8 +146,8 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
         enabledReinitalize={true}
         initialValues={initialValues}
         validationSchema={themeValidator}
-        validateOnChange={false}
-        validateOnBlur={false}
+        validateOnChange={true}
+        validateOnBlur={true}
       >
         {({
           values,
