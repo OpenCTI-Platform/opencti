@@ -3,7 +3,6 @@ import { Box, ListItemIcon, ListItemText, Menu, MenuItem, Typography } from '@mu
 import { AddCircleOutlineOutlined, InfoOutlined } from '@mui/icons-material';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { Link } from 'react-router-dom';
-import { useTheme } from '@mui/material/styles';
 import { AttackPatternsMatrixProps, attackPatternsMatrixQuery } from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrix';
 import AccordionAttackPattern from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixAccordion';
 import AttackPatternsMatrixBadge from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixBadge';
@@ -115,10 +114,8 @@ const AttackPatternsMatrixColumns = ({
   selectedKillChain,
   isModeOnlyActive,
 }: AttackPatternsMatrixColumnsProps) => {
-  const theme = useTheme<Theme>();
   const { isFeatureEnable } = useHelper();
   const isSecurityPlatformEnabled = isFeatureEnable('SECURITY_PLATFORM');
-  const [hover, setHover] = useState<Record<string, boolean>>({});
   const [anchorEl, setAnchorEl] = useState<EventTarget & Element | null>(null);
   const [selectedAttackPattern, setSelectedAttackPattern] = useState<MinimalAttackPattern | null>(null);
   const [navOpen, setNavOpen] = useState(localStorage.getItem('navOpen') === 'true');
@@ -143,10 +140,6 @@ const AttackPatternsMatrixColumns = ({
     const { attack_pattern_id: id, name } = element;
     handleAdd({ id, entity_type: 'Attack-Pattern', name });
     handleClose();
-  };
-
-  const handleToggleHover = (id: string) => {
-    setHover((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
   useEffect(() => {
@@ -223,10 +216,6 @@ const AttackPatternsMatrixColumns = ({
                     <Typography variant="caption">{`${col.attackPatterns?.length} techniques`}</Typography>
                   </Box>
                   {col.attackPatterns?.map((ap) => {
-                    const isHovered = hover[ap.attack_pattern_id];
-                    const hasLevel = ap.level > 0;
-                    const { border, backgroundColor } = getBoxStyles(hasLevel, isHovered, theme);
-
                     return (
                       isSecurityPlatformEnabled && ap.subAttackPatterns?.length ? (
                         <AttackPatternsMatrixBadge
@@ -236,11 +225,7 @@ const AttackPatternsMatrixColumns = ({
                         >
                           <AccordionAttackPattern
                             attackPattern={ap}
-                            handleToggleHover={handleToggleHover}
                             handleOpen={handleOpen}
-                            hover={hover}
-                            border={border}
-                            backgroundColor={backgroundColor}
                             isSecurityPlatformEnabled={isSecurityPlatformEnabled}
                             attackPatternIdsToOverlap={attackPatternIdsToOverlap}
                           />
@@ -249,10 +234,7 @@ const AttackPatternsMatrixColumns = ({
                         <AttackPatternsMatrixColumnsElement
                           key={ap.attack_pattern_id}
                           attackPattern={ap}
-                          handleToggleHover={handleToggleHover}
                           handleOpen={handleOpen}
-                          border={border}
-                          backgroundColor={backgroundColor}
                           attackPatternIdsToOverlap={attackPatternIdsToOverlap}
                         />
                       )

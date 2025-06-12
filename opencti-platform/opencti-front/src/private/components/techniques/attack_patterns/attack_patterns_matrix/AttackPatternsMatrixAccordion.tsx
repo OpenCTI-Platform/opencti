@@ -18,27 +18,23 @@ import type { Theme } from '../../../../../components/Theme';
 
 interface AccordionAttackPatternProps {
   attackPattern: FilteredAttackPattern,
-  handleToggleHover: (id: string) => void,
   handleOpen: (element: MinimalAttackPattern, event: React.MouseEvent) => void,
-  hover: Record<string, boolean>,
-  border: string,
-  backgroundColor: string,
   isSecurityPlatformEnabled: boolean,
   attackPatternIdsToOverlap?: string[]
 }
 
 const AccordionAttackPattern = ({
   attackPattern,
-  handleToggleHover,
   handleOpen,
-  hover,
-  border,
-  backgroundColor,
   isSecurityPlatformEnabled,
   attackPatternIdsToOverlap,
 }: AccordionAttackPatternProps) => {
   const theme = useTheme<Theme>();
   const [expanded, setExpanded] = useState(false);
+  const [isHover, setIsHover] = useState(false);
+
+  const hasLevel = attackPattern.level > 0;
+  const { border, backgroundColor } = getBoxStyles(hasLevel, isHover, theme);
 
   return (
     <MuiAccordion
@@ -49,8 +45,8 @@ const AccordionAttackPattern = ({
       id={attackPattern.attack_pattern_id}
       key={attackPattern.attack_pattern_id}
       slotProps={{ transition: { unmountOnExit: true } }}
-      onMouseEnter={() => handleToggleHover(attackPattern.attack_pattern_id)}
-      onMouseLeave={() => handleToggleHover(attackPattern.attack_pattern_id)}
+      onMouseEnter={() => setIsHover(true)}
+      onMouseLeave={() => setIsHover(false)}
       sx={{
         width: '100%',
         border,
@@ -99,17 +95,11 @@ const AccordionAttackPattern = ({
         }}
       >
         {attackPattern.subAttackPatterns?.map((subAttackPattern: FilteredSubAttackPattern) => {
-          const isSubHovered = hover[subAttackPattern.attack_pattern_id];
-          const hasSubLevel = subAttackPattern.level > 0;
-          const { border: subBorder, backgroundColor: subBackgroundColor } = getBoxStyles(hasSubLevel, isSubHovered, theme);
           return (
             <AttackPatternsMatrixColumnsElement
               key={subAttackPattern.attack_pattern_id}
               attackPattern={subAttackPattern}
-              handleToggleHover={handleToggleHover}
               handleOpen={handleOpen}
-              border={subBorder}
-              backgroundColor={subBackgroundColor}
               attackPatternIdsToOverlap={attackPatternIdsToOverlap}
             />
           );
