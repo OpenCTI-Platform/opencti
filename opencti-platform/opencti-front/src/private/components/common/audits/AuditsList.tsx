@@ -16,7 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import React, { FunctionComponent } from 'react';
 import AuditsListContent, { auditsListContentQuery } from '@components/common/audits/AuditsListContent';
 import { AuditsListContentQuery } from '@components/common/audits/__generated__/AuditsListContentQuery.graphql';
-import { LogsOrdering } from '@components/common/audits/__generated__/AuditsListQuery.graphql';
+import { LogsOrdering, OrderingMode } from '@components/common/audits/__generated__/AuditsListQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
@@ -78,7 +78,7 @@ const AuditsList: FunctionComponent<AuditsListProps> = ({
       types: ['History', 'Activity'],
       first: selection.number ?? 10,
       orderBy: dateAttribute,
-      orderMode: 'desc',
+      orderMode: (selection.sort_mode ?? 'desc') as OrderingMode,
       filters: filters ? sanitizeFilterGroupKeysForBackend(filters) : undefined,
     });
 
