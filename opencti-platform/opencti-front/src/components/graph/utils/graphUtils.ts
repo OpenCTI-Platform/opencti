@@ -91,13 +91,20 @@ export const graphStateToLocalStorage = (state: GraphState) => {
     zoom,
   } = state;
 
-  return {
+  let stateForStorage: Partial<GraphState> = {
     disabledCreators,
     disabledEntityTypes,
     disabledMarkings,
     mode3D,
     modeTree,
     withForces,
-    zoom,
   };
+  if (zoom) {
+    stateForStorage = {
+      ...stateForStorage,
+      zoom,
+    };
+  }
+
+  return stateForStorage;
 };
