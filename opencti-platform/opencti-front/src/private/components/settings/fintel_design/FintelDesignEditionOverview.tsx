@@ -12,21 +12,10 @@ import { FintelDesignEditionOverview_fintelDesign$key } from './__generated__/Fi
 import FintelDesignDeletion from './FintelDesignDeletion';
 
 const fintelDesignEditionPatchMutation = graphql`
-  mutation FintelDesignEditionOverviewFieldPatchMutation($id: ID!, $input: [EditInput!], $file: Upload) {
-    fintelDesignFieldPatch(id: $id, input: $input, file: $file) {
-      id
-      name
-    }
-  }
-`;
-
-export const fintelDesignEditionOverviewFocus = graphql`
-  mutation FintelDesignEditionOverviewFocusMutation(
-    $id: ID!
-    $input: EditContext!
-  ) {
-    fintelDesignContextPatch(id: $id, input: $input) {
-      id
+  mutation FintelDesignEditionOverviewFieldPatchMutation($id: ID!, $input: [EditInput!]) {
+    fintelDesignFieldPatch(id: $id, input: $input) {
+      ...FintelDesignEditionOverview_fintelDesign
+      ...FintelDesign_fintelDesign
     }
   }
 `;
@@ -40,7 +29,7 @@ const fintelDesignOverviewFragment = graphql`
 `;
 
 interface FintelDesignEditionOverviewProps {
-  fintelDesignRef: FintelDesignEditionOverview_fintelDesign$key;
+  data: FintelDesignEditionOverview_fintelDesign$key;
   enableReferences?: boolean;
 }
 
@@ -53,9 +42,9 @@ interface FintelDesignEditionFormValues {
 
 const FintelDesignEditionOverviewComponent: FunctionComponent<
 FintelDesignEditionOverviewProps
-> = ({ fintelDesignRef }) => {
+> = ({ data }) => {
   const { t_i18n } = useFormatter();
-  const fintelDesign = useFragment(fintelDesignOverviewFragment, fintelDesignRef);
+  const fintelDesign = useFragment(fintelDesignOverviewFragment, data);
   const [commit] = useApiMutation(fintelDesignEditionPatchMutation);
 
   const fintelDesignValidation = () => Yup.object().shape({

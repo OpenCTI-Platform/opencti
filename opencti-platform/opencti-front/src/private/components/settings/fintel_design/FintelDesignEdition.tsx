@@ -1,23 +1,35 @@
 import React, { FunctionComponent } from 'react';
-import FintelDesignEditionContainer, { fintelDesignEditionQuery } from '@components/settings/fintel_design/FintelDesignEditionContainer';
-import { fintelDesignEditionOverviewFocus } from '@components/settings/fintel_design/FintelDesignEditionOverview';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
+import FintelDesignEditionOverview from '@components/settings/fintel_design/FintelDesignEditionOverview';
+import Drawer from '@components/common/drawer/Drawer';
+import { graphql } from 'react-relay';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { FintelDesignEditionContainerQuery } from './__generated__/FintelDesignEditionContainerQuery.graphql';
-import { FintelDesignEditionOverviewFocusMutation } from './__generated__/FintelDesignEditionOverviewFocusMutation.graphql';
+import { useFormatter } from '../../../../components/i18n';
+import { FintelDesignEditionOverview_fintelDesign$key } from './__generated__/FintelDesignEditionOverview_fintelDesign.graphql';
+import { FintelDesignEditionFocusMutation } from './__generated__/FintelDesignEditionFocusMutation.graphql';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
+
+export const fintelDesignEditionFocus = graphql`
+  mutation FintelDesignEditionFocusMutation($id: ID! $input: EditContext!) {
+    fintelDesignContextPatch(id: $id, input: $input) {
+      id
+    }
+  }
+`;
 
 interface FintelDesignEditionProps {
   fintelDesignId: string;
+  overviewData: FintelDesignEditionOverview_fintelDesign$key;
 }
 
 const FintelDesignEdition: FunctionComponent<FintelDesignEditionProps> = ({
+  overviewData,
   fintelDesignId,
 }) => {
-  const [commit] = useApiMutation<FintelDesignEditionOverviewFocusMutation>(
-    fintelDesignEditionOverviewFocus,
+  const { t_i18n } = useFormatter();
+  const [commit] = useApiMutation<FintelDesignEditionFocusMutation>(
+    fintelDesignEditionFocus,
   );
+
   const handleClose = () => {
     commit({
       variables: {
@@ -26,22 +38,15 @@ const FintelDesignEdition: FunctionComponent<FintelDesignEditionProps> = ({
       },
     });
   };
-  const queryRef = useQueryLoading<FintelDesignEditionContainerQuery>(
-    fintelDesignEditionQuery,
-    { id: fintelDesignId },
-  );
+
   return (
-    <>
-      {queryRef && (
-        <React.Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
-          <FintelDesignEditionContainer
-            queryRef={queryRef}
-            handleClose={handleClose}
-            controlledDial={EditEntityControlledDial}
-          />
-        </React.Suspense>
-      )}
-    </>
+    <Drawer
+      title={t_i18n('Update a Fintel design')}
+      onClose={handleClose}
+      controlledDial={EditEntityControlledDial}
+    >
+      <FintelDesignEditionOverview data={overviewData}/>
+    </Drawer>
   );
 };
 

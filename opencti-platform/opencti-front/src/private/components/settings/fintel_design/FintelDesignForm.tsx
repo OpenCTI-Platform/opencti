@@ -4,29 +4,29 @@ import * as Yup from 'yup';
 import { FintelDesign_fintelDesign$data } from '@components/settings/fintel_design/__generated__/FintelDesign_fintelDesign.graphql';
 import { graphql } from 'react-relay';
 import CustomFileUploader from '@components/common/files/CustomFileUploader';
-import { FormikConfig } from 'formik/dist/types';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ColorPickerField from '../../../../components/ColorPickerField';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { handleErrorInForm } from '../../../../relay/environment';
 
 const fintelDesignFormFieldPatchMutation = graphql`
-  mutation FintelDesignFormFieldPatchMutation($id: ID!, $input: [EditInput!], $file: Upload) {
-    fintelDesignFieldPatch(id: $id, input: $input, file: $file) {
-      id
-      name
+  mutation FintelDesignFormFieldPatchMutation($id: ID!, $input: [EditInput!]) {
+    fintelDesignFieldPatch(id: $id, input: $input) {
+      ...FintelDesign_fintelDesign
+    }
+  }
+`;
+
+const fintelDesignFormFileUploadMutation = graphql`
+  mutation FintelDesignFormFileUploadMutation($id: ID!, $file: Upload) {
+    fintelDesignFieldPatch(id: $id, file: $file) {
       file_id
-      description
-      gradiantFromColor
-      gradiantToColor
-      textColor
     }
   }
 `;
 
 interface FintelDesignFormProps {
-  onChange: (val: FintelDesignFormValues) => void;
+  onFileUploaded: () => void;
   fintelDesign: FintelDesign_fintelDesign$data;
 }
 
@@ -37,7 +37,7 @@ export type FintelDesignFormValues = {
   textColor?: string | null | undefined
 };
 
-const FintelDesignForm: FunctionComponent<FintelDesignFormProps> = ({ onChange, fintelDesign }) => {
+const FintelDesignForm: FunctionComponent<FintelDesignFormProps> = ({ onFileUploaded, fintelDesign }) => {
   const { t_i18n } = useFormatter();
 
   const initialValues: FintelDesignFormValues = {
@@ -54,51 +54,45 @@ const FintelDesignForm: FunctionComponent<FintelDesignFormProps> = ({ onChange, 
   });
 
   const [commitFieldPatch] = useApiMutation(fintelDesignFormFieldPatchMutation);
+  const [commitFileUpload] = useApiMutation(fintelDesignFormFileUploadMutation);
 
-  const onSubmit: FormikConfig<FintelDesignFormValues>['onSubmit'] = (
-    values,
-    { setSubmitting, setErrors },
-  ) => {
-    setSubmitting(true);
-    const { file } = values;
-    const inputValues = Object.entries(values)
-      .filter(([key, _]) => !['file'].includes(key))
-      .map(([key, value]) => ({ key, value: value ?? [] }));
-
+  const fieldPatch = (name: string, value: unknown) => {
     commitFieldPatch({
       variables: {
         id: fintelDesign.id,
-        input: inputValues,
-        file,
+        input: [{ key: name, value: value ?? [] }],
       },
-      onCompleted: () => {
-        setSubmitting(false);
-        onChange(values);
+    });
+  };
+
+  const fileUpload = (_: string, value: unknown) => {
+    commitFileUpload({
+      variables: {
+        id: fintelDesign.id,
+        file: value,
       },
-      onError: (error: Error) => {
-        handleErrorInForm(error, setErrors);
-        setSubmitting(false);
-      },
+      onCompleted: onFileUploaded,
     });
   };
 
   return (
     <Formik<FintelDesignFormValues>
-      onSubmit={onSubmit}
+      onSubmit={() => {}}
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={fintelDesignValidation}
       validateOnChange={true}
       validateOnBlur={true}
     >
-      {({ setFieldValue, submitForm }) => {
+      {({ setFieldValue }) => {
         return (
           <Form>
             <Field
               component={CustomFileUploader}
               label={t_i18n('Logo')}
               setFieldValue={setFieldValue}
-              onChange={submitForm}
+              onChange={fileUpload}
+              noMargin
             />
             <Field
               component={ColorPickerField}
@@ -106,7 +100,7 @@ const FintelDesignForm: FunctionComponent<FintelDesignFormProps> = ({ onChange, 
               label={t_i18n('Background primary color')}
               placeholder={t_i18n('Default')}
               fullWidth
-              onSubmit={submitForm}
+              onSubmit={fieldPatch}
               variant="standard"
               style={fieldSpacingContainerStyle}
             />
@@ -117,7 +111,7 @@ const FintelDesignForm: FunctionComponent<FintelDesignFormProps> = ({ onChange, 
               placeholder={t_i18n('Default')}
               fullWidth
               setFieldValue={setFieldValue}
-              onSubmit={submitForm}
+              onSubmit={fieldPatch}
               variant="standard"
               style={fieldSpacingContainerStyle}
             />
@@ -128,7 +122,7 @@ const FintelDesignForm: FunctionComponent<FintelDesignFormProps> = ({ onChange, 
               placeholder={t_i18n('Default')}
               fullWidth
               setFieldValue={setFieldValue}
-              onSubmit={submitForm}
+              onSubmit={fieldPatch}
               variant="standard"
               style={fieldSpacingContainerStyle}
             />

@@ -2,7 +2,7 @@ import React, { FunctionComponent, useEffect, useState } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { useParams } from 'react-router-dom';
 import { FintelDesignQuery } from '@components/settings/fintel_design/__generated__/FintelDesignQuery.graphql';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/styles';
 import Paper from '@mui/material/Paper';
@@ -24,7 +24,7 @@ const fintelDesignQuery = graphql`
   query FintelDesignQuery($id: String!) {
     fintelDesign(id: $id) {
       ...FintelDesign_fintelDesign
-      ...FintelDesignsLine_node
+      ...FintelDesignEditionOverview_fintelDesign
     }
   }
 `;
@@ -50,14 +50,15 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
+  const [pdf, setPdf] = useState<File>();
+  const { buildFileFromTemplate } = useFileFromTemplate();
+
   const queryResult = usePreloadedQuery(fintelDesignQuery, queryRef);
   const fintelDesign = useFragment<FintelDesign_fintelDesign$key>(
     fintelDesignComponentFragment,
     queryResult.fintelDesign,
   );
-  if (!fintelDesign) return null;
-  const [pdf, setPdf] = useState<File>();
-  const { buildFileFromTemplate } = useFileFromTemplate();
+  if (!queryResult.fintelDesign || !fintelDesign) return null;
 
   const buildPreview = async () => {
     const template = {
@@ -94,20 +95,21 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
           <Typography
             variant="h1"
             gutterBottom={true}
-            style={{ marginRight: 10 }}
           >
             {fintelDesign.name}
           </Typography>
           <div>
-            <FintelDesignEdition fintelDesignId={fintelDesign.id}/>
+            <FintelDesignEdition
+              fintelDesignId={fintelDesign.id}
+              overviewData={queryResult.fintelDesign}
+            />
           </div>
         </div>
         <Grid
-          container={true}
-          spacing={3}
-          style={{ margin: 0, paddingRight: 20 }}
+          container spacing={3}
+          sx={{ marginTop: 2 }}
         >
-          <Grid item xs={4} style={{ paddingLeft: 0 }}>
+          <Grid size={{ xs: 4 }}>
             <Typography variant="h4" gutterBottom={true}>
               {t_i18n('Configuration')}
             </Typography>
@@ -121,11 +123,11 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
             >
               <FintelDesignForm
                 fintelDesign={fintelDesign}
-                onChange={buildPreview}
+                onFileUploaded={buildPreview}
               />
             </Paper>
           </Grid>
-          <Grid item xs={8}>
+          <Grid size={{ xs: 8 }} sx={{ height: 'calc(100vh - 250px)' }}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Preview')}
             </Typography>
@@ -134,6 +136,7 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
                 marginTop: theme.spacing(1),
                 padding: '15px',
                 borderRadius: 6,
+                height: '100%',
               }}
               variant="outlined"
             >
