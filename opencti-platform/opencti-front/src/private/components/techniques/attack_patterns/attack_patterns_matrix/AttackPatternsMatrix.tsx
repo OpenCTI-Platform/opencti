@@ -4,10 +4,10 @@ import {
   StixDomainObjectAttackPatternsKillChainContainer_data$data,
 } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainContainer_data.graphql';
 import { graphql } from 'react-relay';
-import Loader from '../../../../components/Loader';
+import { AttackPatternsMatrixQuery } from '@components/techniques/attack_patterns/attack_patterns_matrix/__generated__/AttackPatternsMatrixQuery.graphql';
+import Loader from '../../../../../components/Loader';
 import AttackPatternsMatrixColumns from './AttackPatternsMatrixColumns';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { AttackPatternsMatrixQuery } from './__generated__/AttackPatternsMatrixQuery.graphql';
+import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 
 export interface AttackPatternsMatrixProps {
   marginRight?: boolean;
