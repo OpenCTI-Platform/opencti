@@ -64,7 +64,7 @@ const SecurityPlatformKnowledgeComponent = ({
               entityLink={link}
               allDirections
               currentView={''}
-              enableContextualView={true}
+              enableContextualView={false}
               isRelationReversed={true}
             />
         }
@@ -79,7 +79,7 @@ const SecurityPlatformKnowledgeComponent = ({
               entityLink={link}
               allDirections
               currentView={''}
-              enableContextualView={true}
+              enableContextualView={false}
               isRelationReversed={true}
             />
          }
