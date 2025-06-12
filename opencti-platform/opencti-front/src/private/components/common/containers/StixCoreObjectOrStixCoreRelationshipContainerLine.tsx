@@ -8,7 +8,7 @@ import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import { ListItemButton } from '@mui/material';
-import { containerTypes } from 'src/utils/hooks/useAttributes';
+import { typesWithFintelTemplates } from 'src/utils/hooks/useAttributes';
 import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -67,7 +67,7 @@ StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps
   const classes = useStyles();
   const { fd } = useFormatter();
 
-  const isContainer = containerTypes.includes(node.entity_type);
+  const isContainer = typesWithFintelTemplates.includes(node.entity_type);
   let redirectionLink = `${resolveLink(node.entity_type)}/${node.id}`;
   if (redirectionMode !== 'overview' && isContainer) redirectionLink += `/${redirectionMode}`;
 
