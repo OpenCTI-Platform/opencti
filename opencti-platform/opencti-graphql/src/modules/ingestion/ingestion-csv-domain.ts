@@ -28,6 +28,7 @@ import { SYSTEM_USER } from '../../utils/access';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import type { BasicStoreSettings } from '../../types/settings';
 import { findDefaultIngestionGroup } from '../../domain/group';
+import bcrypt from "bcryptjs";
 
 const MINIMAL_CSV_FEED_COMPATIBLE_VERSION = '6.6.0';
 export const CSV_FEED_FEATURE_FLAG = 'CSV_FEED';
@@ -51,19 +52,19 @@ export const findCsvMapperForIngestionById = (context: AuthContext, user: AuthUs
 };
 
 export const createOnTheFlyUser = async (context: AuthContext, user: AuthUser, input: IngestionCsvAddInput) => {
-  const groups = await findDefaultIngestionGroup(context);
+  const groups = await findDefaultIngestionGroup(context, user);
   if (groups.length === 0) {
     throw FunctionalError('You have not defined a default group for ingestion users', {});
   }
   const { platform_organization } = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const newlyCreatedUser = await addUser(context, context.user, {
-    user_email: `${input.user_id}@opencti.invalid`,
+  const newlyCreatedUser = await addUser(context, user, {
+    user_email: `${bcrypt.hashSync(input.user_id)}@opencti.invalid`,
     name: input.user_id,
     prevent_default_groups: true,
     groups: groups[0],
     objectOrganization: platform_organization ? [platform_organization] : [],
     external: true,
-    user_confidence_level: { max_confidence: +input.confidence_level, overrides: {} }
+    user_confidence_level: { max_confidence: +input.confidence_level, overrides: [] }
   });
   return newlyCreatedUser;
 };
@@ -87,6 +88,8 @@ export const addIngestionCsv = async (context: AuthContext, user: AuthUser, inpu
       ...((({ automatic_user: _, confidence_level: __, ...inputWithoutAutomaticFields }) => inputWithoutAutomaticFields)(parsedInput)),
       user_id: onTheFlyCreatedUser.id,
     };
+  } else {
+    updatedInput = input;
   }
 
   const { element, isCreation } = await createEntity(

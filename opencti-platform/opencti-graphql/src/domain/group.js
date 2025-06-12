@@ -39,8 +39,8 @@ export const findAll = async (context, user, args) => {
   return listEntities(context, user, [ENTITY_TYPE_GROUP], args);
 };
 
-export const findDefaultIngestionGroup = async (context) => {
-  return findAll(context, context.user, {
+export const findDefaultIngestionGroup = async (context, user) => {
+  return findAll(context, user, {
     filters: {
       mode: 'and',
       filters: [
