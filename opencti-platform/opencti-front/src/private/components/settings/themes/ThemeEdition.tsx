@@ -103,12 +103,16 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
       enabledReinitalize={true}
       initialValues={theme}
     >
-      {({ submitForm }) => (
+      {({ submitForm, resetForm, isValid }) => (
         <Drawer
           title={t_i18n('Update a theme')}
           open={open}
           onClose={() => {
-            submitForm();
+            if (isValid) {
+              submitForm();
+            } else {
+              resetForm();
+            }
             handleClose();
           }}
         >

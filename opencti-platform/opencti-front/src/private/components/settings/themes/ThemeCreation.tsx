@@ -152,7 +152,6 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
         {({
           values,
           isSubmitting,
-          isValid,
           submitForm,
         }) => (
           <Form>
@@ -316,7 +315,7 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
                 variant="contained"
                 color="secondary"
                 onClick={submitForm}
-                disabled={!isValid}
+                disabled={isSubmitting}
                 style={{
                   marginLeft: theme.spacing(2),
                 }}
