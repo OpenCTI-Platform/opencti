@@ -6,16 +6,14 @@ import IconButton from '@mui/material/IconButton';
 import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
 import Typography from '@mui/material/Typography';
 import AccordionDetails from '@mui/material/AccordionDetails';
-import { Tooltip } from '@mui/material';
 import {
   FilteredAttackPattern,
   FilteredSubAttackPattern,
   getBoxStyles,
   MinimalAttackPattern,
 } from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixColumns';
-import { CheckOutlined, CloseOutlined } from '@mui/icons-material';
 import AttackPatternsMatrixColumnsElement from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixColumsElement';
-import { useFormatter } from '../../../../../components/i18n';
+import AttackPatternsMatrixShouldCoverIcon from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixShouldCoverIcon';
 import type { Theme } from '../../../../../components/Theme';
 
 interface AccordionAttackPatternProps {
@@ -40,7 +38,6 @@ const AccordionAttackPattern = ({
   attackPatternIdsToOverlap,
 }: AccordionAttackPatternProps) => {
   const theme = useTheme<Theme>();
-  const { t_i18n } = useFormatter();
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -90,19 +87,9 @@ const AccordionAttackPattern = ({
           {attackPattern.name}
         </Typography>
         {isSecurityPlatformEnabled && attackPatternIdsToOverlap?.length !== undefined && attackPattern.level > 0 && (
-          <Tooltip
-            title={t_i18n('Should cover')}
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              height: 19,
-            }}
-          >
-            {attackPattern.isOverlapping
-              ? <CheckOutlined fontSize="medium" color="success"/>
-              : <CloseOutlined fontSize="medium" color="error"/>
-            }
-          </Tooltip>
+          <AttackPatternsMatrixShouldCoverIcon
+            isOverlapping={attackPattern.isOverlapping || false}
+          />
         )}
       </MuiAccordionSummary>
       <AccordionDetails
