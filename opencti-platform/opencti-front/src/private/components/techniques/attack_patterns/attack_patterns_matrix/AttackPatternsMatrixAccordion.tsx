@@ -17,10 +17,11 @@ import AttackPatternsMatrixShouldCoverIcon from '@components/techniques/attack_p
 import type { Theme } from '../../../../../components/Theme';
 
 interface AccordionAttackPatternProps {
-  attackPattern: FilteredAttackPattern,
-  handleOpen: (element: MinimalAttackPattern, event: React.MouseEvent) => void,
-  isSecurityPlatformEnabled: boolean,
-  attackPatternIdsToOverlap?: string[]
+  attackPattern: FilteredAttackPattern;
+  handleOpen: (element: MinimalAttackPattern, event: React.MouseEvent) => void;
+  isSecurityPlatformEnabled: boolean;
+  attackPatternIdsToOverlap?: string[];
+  isSecurityPlatform: boolean;
 }
 
 const AccordionAttackPattern = ({
@@ -28,13 +29,14 @@ const AccordionAttackPattern = ({
   handleOpen,
   isSecurityPlatformEnabled,
   attackPatternIdsToOverlap,
+  isSecurityPlatform,
 }: AccordionAttackPatternProps) => {
   const theme = useTheme<Theme>();
   const [expanded, setExpanded] = useState(false);
   const [isHover, setIsHover] = useState(false);
 
   const hasLevel = attackPattern.level > 0;
-  const { border, backgroundColor } = getBoxStyles(hasLevel, isHover, theme);
+  const { border, backgroundColor } = getBoxStyles(hasLevel, isHover, isSecurityPlatform, theme);
 
   return (
     <MuiAccordion
@@ -101,6 +103,7 @@ const AccordionAttackPattern = ({
               attackPattern={subAttackPattern}
               handleOpen={handleOpen}
               attackPatternIdsToOverlap={attackPatternIdsToOverlap}
+              isSecurityPlatform={isSecurityPlatform}
             />
           );
         })}

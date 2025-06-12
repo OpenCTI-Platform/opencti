@@ -232,13 +232,14 @@ const AttackPatternsMatrixColumns = ({
                         <AttackPatternsMatrixBadge
                           key={ap.attack_pattern_id}
                           attackPattern={ap}
-                          color={COLORS.BADGE}
+                          color={isSecurityPlatform ? COLORS.BADGE_SECURITY_POSTURE : COLORS.BADGE}
                         >
                           <AccordionAttackPattern
                             attackPattern={ap}
                             handleOpen={handleOpen}
                             isSecurityPlatformEnabled={isSecurityPlatformEnabled}
                             attackPatternIdsToOverlap={attackPatternIdsToOverlap}
+                            isSecurityPlatform={isSecurityPlatform}
                           />
                         </AttackPatternsMatrixBadge>
                       ) : (
@@ -247,6 +248,7 @@ const AttackPatternsMatrixColumns = ({
                           attackPattern={ap}
                           handleOpen={handleOpen}
                           attackPatternIdsToOverlap={attackPatternIdsToOverlap}
+                          isSecurityPlatform={isSecurityPlatform}
                         />
                       )
                     );
