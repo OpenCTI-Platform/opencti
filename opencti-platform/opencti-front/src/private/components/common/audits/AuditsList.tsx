@@ -16,10 +16,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import React, { FunctionComponent } from 'react';
 import AuditsListContent, { auditsListContentQuery } from '@components/common/audits/AuditsListContent';
 import { AuditsListContentQuery } from '@components/common/audits/__generated__/AuditsListContentQuery.graphql';
+import { LogsOrdering } from '@components/common/audits/__generated__/AuditsListQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets, sanitizeFilterGroupKeysForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -30,18 +31,18 @@ interface AuditsListProps {
   height?: number,
   startDate?: string | null,
   endDate?: string | null,
-  dataSelection: WidgetDataSelection,
+  dataSelection: WidgetDataSelection[],
   parameters?: WidgetParameters,
 }
 
-const AuditsList = ({
+const AuditsList: FunctionComponent<AuditsListProps> = ({
   variant,
   height,
   startDate,
   endDate,
   dataSelection,
   parameters,
-}): FunctionComponent<AuditsListProps> => {
+}) => {
   const { t_i18n } = useFormatter();
   const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -65,17 +66,20 @@ const AuditsList = ({
       );
     }
     const selection = dataSelection[0];
-    const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
+    const dateAttribute = (selection.date_attribute && selection.date_attribute.length > 0
       ? selection.date_attribute
-      : 'timestamp';
-    const { filters } = buildFiltersAndOptionsForWidgets(selection.filters, { removeTypeAll: true, startDate, endDate, dateAttribute });
+      : 'timestamp') as LogsOrdering;
+    const { filters } = buildFiltersAndOptionsForWidgets(
+      selection.filters ?? undefined,
+      { removeTypeAll: true, startDate: startDate ?? undefined, endDate: endDate ?? undefined, dateAttribute },
+    );
 
     const queryRef = useQueryLoading<AuditsListContentQuery>(auditsListContentQuery, {
       types: ['History', 'Activity'],
       first: selection.number ?? 10,
       orderBy: dateAttribute,
       orderMode: 'desc',
-      filters,
+      filters: filters ? sanitizeFilterGroupKeysForBackend(filters) : undefined,
     });
 
     return (
@@ -92,7 +96,7 @@ const AuditsList = ({
   return (
     <WidgetContainer
       height={height}
-      title={parameters.title ?? t_i18n('Audits list')}
+      title={parameters?.title ?? t_i18n('Audits list')}
       variant={variant}
     >
       {renderContent()}

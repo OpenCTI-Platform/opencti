@@ -1,6 +1,6 @@
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
-import React, { CSSProperties, ReactNode } from 'react';
+import React, { CSSProperties, FunctionComponent, ReactNode } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -18,17 +18,17 @@ interface WidgetContainerProps {
   children: ReactNode
   height?: CSSProperties['height']
   title?: string
-  variant: string
+  variant?: string
   withoutTitle?: boolean
 }
 
-const WidgetContainer = ({
+const WidgetContainer: FunctionComponent<WidgetContainerProps> = ({
   children,
   height,
   title,
   variant,
   withoutTitle = false,
-}: WidgetContainerProps) => {
+}) => {
   const classes = useStyles();
 
   return (
