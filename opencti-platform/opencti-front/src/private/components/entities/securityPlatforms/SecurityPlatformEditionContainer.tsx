@@ -24,7 +24,7 @@ const SecurityPlatformEditionContainer: FunctionComponent<securityPlatformContai
 
   return (
     <Drawer
-      title={t_i18n('Update an security platform')}
+      title={t_i18n('Update a security platform')}
       onClose={handleClose}
       context={editContext}
       controlledDial={controlledDial}
