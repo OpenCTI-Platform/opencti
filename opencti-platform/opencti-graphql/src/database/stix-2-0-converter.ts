@@ -131,8 +131,6 @@ export const convertMalwareToStix = async (instance: StoreEntity, type: string):
     implementation_languages: instance.implementation_languages,
     capabilities: instance.capabilities,
     operating_system_refs: (instance[INPUT_OPERATING_SYSTEM] ?? []).map((m) => m.standard_id),
-    samples: (instance[INPUT_SAMPLE] ?? []).map((m) => { return { id: m.id, }; }),
     sample_refs: (instance[INPUT_SAMPLE] ?? []).map((m) => m.standard_id),
-    x_opencti_sample_refs_ids: (instance[INPUT_SAMPLE] ?? []).map((m) => m.internal_id),
   };
 };
