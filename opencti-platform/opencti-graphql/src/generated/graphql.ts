@@ -4109,6 +4109,7 @@ export type ContextData = {
   from_id?: Maybe<Scalars['String']['output']>;
   message: Scalars['String']['output'];
   to_id?: Maybe<Scalars['String']['output']>;
+  workspace_type?: Maybe<Scalars['String']['output']>;
 };
 
 export enum CountriesOrdering {
@@ -12369,7 +12370,7 @@ export type Log = {
 
 export type LogConnection = {
   __typename?: 'LogConnection';
-  edges?: Maybe<Array<Maybe<LogEdge>>>;
+  edges: Array<LogEdge>;
   pageInfo: PageInfo;
 };
 
@@ -31859,7 +31860,7 @@ export type ResolversTypes = ResolversObject<{
   LocationEditMutations: ResolverTypeWrapper<Omit<LocationEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Location']>, contextPatch?: Maybe<ResolversTypes['Location']>, fieldPatch?: Maybe<ResolversTypes['Location']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Location']> }>;
   LocationsOrdering: LocationsOrdering;
   Log: ResolverTypeWrapper<Omit<Log, 'context_data'> & { context_data?: Maybe<ResolversTypes['ContextData']> }>;
-  LogConnection: ResolverTypeWrapper<Omit<LogConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['LogEdge']>>> }>;
+  LogConnection: ResolverTypeWrapper<Omit<LogConnection, 'edges'> & { edges: Array<ResolversTypes['LogEdge']> }>;
   LogEdge: ResolverTypeWrapper<Omit<LogEdge, 'node'> & { node: ResolversTypes['Log'] }>;
   LogsOrdering: LogsOrdering;
   LogsWorkerConfig: ResolverTypeWrapper<LogsWorkerConfig>;
@@ -32692,7 +32693,7 @@ export type ResolversParentTypes = ResolversObject<{
   LocationEdge: Omit<LocationEdge, 'node'> & { node: ResolversParentTypes['Location'] };
   LocationEditMutations: Omit<LocationEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Location']>, contextPatch?: Maybe<ResolversParentTypes['Location']>, fieldPatch?: Maybe<ResolversParentTypes['Location']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Location']> };
   Log: Omit<Log, 'context_data'> & { context_data?: Maybe<ResolversParentTypes['ContextData']> };
-  LogConnection: Omit<LogConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['LogEdge']>>> };
+  LogConnection: Omit<LogConnection, 'edges'> & { edges: Array<ResolversParentTypes['LogEdge']> };
   LogEdge: Omit<LogEdge, 'node'> & { node: ResolversParentTypes['Log'] };
   LogsWorkerConfig: LogsWorkerConfig;
   MacAddr: Omit<MacAddr, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
@@ -34460,6 +34461,7 @@ export type ContextDataResolvers<ContextType = any, ParentType extends Resolvers
   from_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   to_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  workspace_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -37285,7 +37287,7 @@ export type LogResolvers<ContextType = any, ParentType extends ResolversParentTy
 }>;
 
 export type LogConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['LogConnection'] = ResolversParentTypes['LogConnection']> = ResolversObject<{
-  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['LogEdge']>>>, ParentType, ContextType>;
+  edges?: Resolver<Array<ResolversTypes['LogEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;

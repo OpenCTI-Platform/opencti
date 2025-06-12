@@ -63,7 +63,7 @@ interface AuditsListContentProps {
 const AuditsListContent: FunctionComponent<AuditsListContentProps> = ({
   queryRef,
 }) => {
-  const bodyItemStyle = {
+  const bodyItemStyle: React.CSSProperties = {
     height: 20,
     fontSize: 13,
     float: 'left',
@@ -96,9 +96,9 @@ const AuditsListContent: FunctionComponent<AuditsListContentProps> = ({
             const message = useGenerateAuditMessage(audit);
             const link = audit.context_data?.entity_type
               ? `${resolveLink(
-                audit.context_data?.entity_type === 'Workspace'
-                  ? audit.context_data?.workspace_type
-                  : audit.context_data?.entity_type,
+                audit.context_data?.entity_type === 'Workspace' && audit.context_data?.workspace_type
+                  ? audit.context_data.workspace_type
+                  : audit.context_data.entity_type,
               )}/${audit.context_data?.entity_id}`
               : undefined;
             return (
@@ -113,7 +113,7 @@ const AuditsListContent: FunctionComponent<AuditsListContentProps> = ({
                   paddingRight: 0,
                 }}
                 divider={true}
-                component={link ? Link : undefined}
+                component={link ? Link : 'div'}
                 to={link}
               >
                 <ListItemIcon>
