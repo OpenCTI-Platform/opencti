@@ -17,7 +17,8 @@ import { hexToRGB } from '../../../../../utils/Colors';
 import useHelper from '../../../../../utils/hooks/useHelper';
 import type { Theme } from '../../../../../components/Theme';
 
-export type AttackPattern = NonNullable<NonNullable<NonNullable<AttackPatternsMatrixColumns_data$data['attackPatternsMatrix']>['attackPatternsOfPhases']>[number]['attackPatterns']>[number];
+export type AttackPatternsOfPhase = NonNullable<NonNullable<AttackPatternsMatrixColumns_data$data['attackPatternsMatrix']>['attackPatternsOfPhases']>[number];
+export type AttackPattern = NonNullable<AttackPatternsOfPhase['attackPatterns']>[number];
 export type SubAttackPattern = NonNullable<AttackPattern['subAttackPatterns']>[number];
 export type MinimalAttackPattern = {
   attack_pattern_id: string;
@@ -37,12 +38,8 @@ export type FilteredAttackPattern = AttackPattern & {
 };
 
 type FilteredData = {
-  readonly kill_chain_id: string;
-  readonly kill_chain_name: string;
-  readonly x_opencti_order: number;
   attackPatterns: FilteredAttackPattern[] | undefined;
-  readonly phase_name: string;
-};
+} & AttackPatternsOfPhase;
 
 interface AttackPatternsMatrixColumnsProps extends AttackPatternsMatrixProps {
   queryRef: PreloadedQuery<AttackPatternsMatrixQuery>;
