@@ -8,7 +8,7 @@ import * as Yup from 'yup';
 import Button from '@mui/material/Button';
 import { Stack } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import inject18n from '../../../components/i18n';
+import inject18n, { useFormatter } from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import { SubscriptionFocus } from '../../../components/Subscription';
 import { commitMutation } from '../../../relay/environment';
@@ -67,13 +67,9 @@ export const workspaceEditionOverviewFocus = graphql`
   }
 `;
 
-const workspaceValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-});
-
-const WorkspaceEditionOverviewComponent = ({ paginationOptions, t, workspace, context }) => {
+const WorkspaceEditionOverviewComponent = ({ paginationOptions, workspace, context }) => {
   const { id } = workspace;
+  const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const initialValues = pick(['name', 'description'], workspace);
 
@@ -81,6 +77,11 @@ const WorkspaceEditionOverviewComponent = ({ paginationOptions, t, workspace, co
   const { deleting, setDeleting, handleOpenDelete, handleCloseDelete } = deletion;
 
   const [commit] = useApiMutation(WorkspacePopoverDeletionMutation);
+
+  const workspaceValidation = () => Yup.object().shape({
+    name: Yup.string().required(t_i18n('This field is required')),
+    description: Yup.string().nullable(),
+  });
 
   const handleChangeFocus = (name) => {
     commitMutation({
@@ -95,7 +96,7 @@ const WorkspaceEditionOverviewComponent = ({ paginationOptions, t, workspace, co
   };
 
   const handleSubmitField = (name, value) => {
-    workspaceValidation(t)
+    workspaceValidation()
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
@@ -136,7 +137,7 @@ const WorkspaceEditionOverviewComponent = ({ paginationOptions, t, workspace, co
     <Formik
       enableReinitialize={true}
       initialValues={initialValues}
-      validationSchema={workspaceValidation(t)}
+      validationSchema={workspaceValidation()}
       onSubmit={() => true}
     >
       {() => (
@@ -144,7 +145,7 @@ const WorkspaceEditionOverviewComponent = ({ paginationOptions, t, workspace, co
           <Field
             component={TextField}
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
@@ -155,7 +156,7 @@ const WorkspaceEditionOverviewComponent = ({ paginationOptions, t, workspace, co
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -173,14 +174,14 @@ const WorkspaceEditionOverviewComponent = ({ paginationOptions, t, workspace, co
               onClick={handleOpenDelete}
               disabled={deleting}
             >
-              {t('Delete')}
+              {t_i18n('Delete')}
             </Button>
             <DeleteDialog
               deletion={deletion}
               submitDelete={submitDelete}
               message={workspace.type === 'investigation'
-                ? t('Do you want to delete this investigation?')
-                : t('Do you want to delete this dashboard?')}
+                ? t_i18n('Do you want to delete this investigation?')
+                : t_i18n('Do you want to delete this dashboard?')}
             />
           </Stack>
         </Form>
