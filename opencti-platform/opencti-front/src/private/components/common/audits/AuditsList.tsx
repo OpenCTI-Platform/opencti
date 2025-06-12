@@ -14,9 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import React, { FunctionComponent } from 'react';
-import AuditsListContent, { auditsListContentQuery } from '@components/common/audits/AuditsListContent';
-import { AuditsListContentQuery } from '@components/common/audits/__generated__/AuditsListContentQuery.graphql';
-import { LogsOrdering, OrderingMode } from '@components/common/audits/__generated__/AuditsListQuery.graphql';
+import AuditsListContent, { auditsListContentQuery } from './AuditsListContent';
+import { AuditsListContentQuery } from './__generated__/AuditsListContentQuery.graphql';
+import { LogsOrdering, OrderingMode } from './__generated__/AuditsListQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
