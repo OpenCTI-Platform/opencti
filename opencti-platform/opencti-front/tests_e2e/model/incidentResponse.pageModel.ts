@@ -5,7 +5,7 @@ export default class IncidentResponsePage {
   constructor(private page: Page) {}
 
   getPage() {
-    return this.page.getByTestId('incident-page');
+    return this.page.getByTestId('incident-response-page');
   }
 
   openNewIncidentResponseForm() {
