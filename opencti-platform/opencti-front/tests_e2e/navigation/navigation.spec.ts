@@ -68,7 +68,7 @@ const navigateNotes = async (page: Page) => {
  * @param page
  */
 const navigateExternalReferences = async (page: Page) => {
-  const externalReferencesFromInitData = 'Navigation test external reference entity';
+  const externalReferencesFromInitData = 'Navigation External Ref Test';
 
   const externalReferencePage = new ExternalReferencePage(page);
   await externalReferencePage.navigateFromMenu();
