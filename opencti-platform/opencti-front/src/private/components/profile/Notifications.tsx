@@ -187,6 +187,8 @@ const Notifications: FunctionComponent = () => {
     filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
   };
 
+  const currentUserIDFilter = { key: 'user_id', values: [me.id], operator: 'eq', mode: 'or' };
+  const toolbarFilters = { ...contextFilters, filters: [...contextFilters.filters, currentUserIDFilter] };
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,
@@ -430,7 +432,7 @@ const Notifications: FunctionComponent = () => {
         )}
         taskScope={'USER'}
         lineFragment={notificationsLineFragment}
-        toolbarFilters={contextFilters}
+        toolbarFilters={toolbarFilters}
         exportContext={{ entity_type: 'Notification' }}
         availableEntityTypes={['Notification']}
         actions={renderActions}
