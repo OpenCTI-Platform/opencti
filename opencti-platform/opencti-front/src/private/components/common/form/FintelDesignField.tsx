@@ -106,9 +106,22 @@ type FintelDesignFieldProps = Omit<FintelDesignFieldComponentProps, 'queryRef'>;
 
 const FintelDesignField = ({ ...props }: FintelDesignFieldProps) => {
   const queryRef = useQueryLoading<FintelDesignFieldQuery>(fintelDesignFieldQuery);
-
+  const { name, label } = props;
   return queryRef ? (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+    <React.Suspense fallback={
+      <Field
+        component={AutocompleteField}
+        name={name}
+        disabled={true}
+        fullWidth={true}
+        options={[]}
+        renderOption={() => null}
+        textfieldprops={{
+          label,
+        }}
+      />
+      }
+    >
       <FintelDesignFieldComponent {...props} queryRef={queryRef} />
     </React.Suspense>
   ) : (
