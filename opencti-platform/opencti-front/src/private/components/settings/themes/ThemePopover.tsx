@@ -3,7 +3,6 @@ import { IconButton, Menu, MenuItem } from '@mui/material';
 import React, { FunctionComponent, useState } from 'react';
 import { Disposable } from 'relay-runtime';
 import { useFormatter } from '../../../../components/i18n';
-import useDeletion from '../../../../utils/hooks/useDeletion';
 import ThemeEdition from './ThemeEdition';
 import { ThemesLine_data$data } from './__generated__/ThemesLine_data.graphql';
 import ThemeDeletion from './ThemeDeletion';
@@ -44,7 +43,6 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
     handleClose();
   };
   const handleCloseUpdate = () => setDisplayUpdate(false);
-  const deletion = useDeletion({ handleClose });
   const handleExport = () => {
     handleExportJson(theme);
   };
@@ -89,28 +87,18 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
           </MenuItem>
         </Security>
         {!theme.system_default && (
-          <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-            <MenuItem
-              onClick={deletion.handleOpenDelete}
-              aria-label={t_i18n('Delete')}
-              disabled={isCurrentTheme}
-            >
-              {t_i18n('Delete')}
-            </MenuItem>
-          </Security>
+          <ThemeDeletion
+            id={theme.id}
+            disabled={isCurrentTheme}
+            handleRefetch={handleRefetch}
+            paginationOptions={paginationOptions}
+          />
         )}
       </Menu>
       <ThemeEdition
         theme={theme}
         open={displayUpdate}
         handleClose={handleCloseUpdate}
-      />
-      <ThemeDeletion
-        id={theme.id}
-        open={deletion.displayDelete}
-        handleClose={deletion.handleCloseDelete}
-        handleRefetch={handleRefetch}
-        paginationOptions={paginationOptions}
       />
     </div>
   );
