@@ -62,7 +62,7 @@ export const convertToStixType = (type) => {
   if (type === 'StixFile') {
     return 'file';
   }
-  if (['Sector', 'Organization', 'Individual', 'System'].includes(type)) {
+  if (['Sector', 'Organization', 'Individual', 'System', 'SecurityPlatform'].includes(type)) {
     return 'identity';
   }
   if (['Threat-Actor-Group', 'Threat-Actor-Individual'].includes(type)) {
