@@ -39,7 +39,8 @@ import Security from '../../../../utils/Security';
 import useGranted, {
   KNOWLEDGE_KNENRICHMENT,
   KNOWLEDGE_KNGETEXPORT_KNASKEXPORT,
-  KNOWLEDGE_KNUPDATE
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNORGARESTRICT
 } from '../../../../utils/hooks/useGranted';
 import CommitMessage from '../form/CommitMessage';
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
@@ -50,7 +51,6 @@ import { getMainRepresentative } from '../../../../utils/defaultRepresentatives'
 import Transition from '../../../../components/Transition';
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
 import PopoverMenu from '../../../../components/PopoverMenu';
-import useIsOrgaSharingPossible from '../../../../utils/hooks/useIsOrgaSharingPossible';
 
 export const stixDomainObjectMutation = graphql`
   mutation StixDomainObjectHeaderFieldMutation(
@@ -388,10 +388,6 @@ const StixDomainObjectHeader = (props) => {
   };
   const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
 
-  // if some buttons should be greyed out
-  // case sharing
-  const isOrgaSharingPossible = useIsOrgaSharingPossible(stixDomainObject, false);
-
   let initialNumberOfButtons = 1 + (isKnowledgeUpdater ? 1 : 0) + (enableQuickSubscription ? 1 : 0);
   const displayEnrollPlaybookButton = enableEnrollPlaybook && initialNumberOfButtons < 3;
   if (displayEnrollPlaybookButton) initialNumberOfButtons += 1;
@@ -625,8 +621,8 @@ const StixDomainObjectHeader = (props) => {
                       <StixCoreObjectMenuItemUnderEE
                         setOpen={setIsSharingOpen}
                         title={t_i18n('Share with an organization')}
-                        isDisabled={!isOrgaSharingPossible}
                         handleCloseMenu={closeMenu}
+                        needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}
                       />
                     )}
                     {(enableEnricher && isKnowledgeEnricher) && (

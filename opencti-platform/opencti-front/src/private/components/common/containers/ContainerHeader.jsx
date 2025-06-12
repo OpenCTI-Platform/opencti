@@ -26,14 +26,18 @@ import { useFormatter } from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
-import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNENRICHMENT,
+  KNOWLEDGE_KNGETEXPORT_KNASKEXPORT,
+  KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS,
+  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
+} from '../../../../utils/hooks/useGranted';
 import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObjectQuickSubscription';
 import StixCoreObjectFileExport from '../stix_core_objects/StixCoreObjectFileExport';
 import { authorizedMembersToOptions, useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
 import { resolveLink } from '../../../../utils/Entity';
 import PopoverMenu from '../../../../components/PopoverMenu';
-import useIsOrgaSharingPossible from '../../../../utils/hooks/useIsOrgaSharingPossible';
 
 export const containerHeaderObjectsQuery = graphql`
   query ContainerHeaderObjectsQuery($id: String!) {
@@ -514,9 +518,9 @@ const ContainerHeader = (props) => {
   const currentAccessRight = useGetCurrentUserAccessRight(container.currentUserAccessRight);
   const enableManageAuthorizedMembers = currentAccessRight.canManage && isAuthorizedMembersEnabled;
 
-  // if some buttons should be greyed out
-  // case sharing
-  const isOrgaSharingPossible = useIsOrgaSharingPossible(container, true, enableManageAuthorizedMembers);
+  // sharing buttons should be disabled for containers according to some autorized members conditions
+  const isSharingDisabled = (!enableManageAuthorizedMembers && !currentAccessRight.canEdit)
+    || (enableManageAuthorizedMembers && container.authorized_members && container.authorized_members.length > 0);
 
   const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
 
@@ -662,7 +666,7 @@ const ContainerHeader = (props) => {
                 elementId={container.id}
                 open={openSharing}
                 variant="header"
-                disabled={!isOrgaSharingPossible}
+                disabled={isSharingDisabled}
                 handleClose={displaySharingButton ? undefined : handleCloseSharing}
                 inContainer={true}
               />
@@ -730,8 +734,9 @@ const ContainerHeader = (props) => {
                       <StixCoreObjectMenuItemUnderEE
                         setOpen={setOpenSharing}
                         title={t_i18n('Share with an organization')}
-                        isDisabled={!isOrgaSharingPossible}
+                        isDisabled={isSharingDisabled}
                         handleCloseMenu={closeMenu}
+                        needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}
                       />
                     )}
                     {displayAuthorizedMembers && !displayAuthorizedMembersButton && (

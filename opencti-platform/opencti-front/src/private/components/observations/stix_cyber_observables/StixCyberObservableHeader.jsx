@@ -9,11 +9,10 @@ import StixCoreObjectContainer from '../../common/stix_core_objects/StixCoreObje
 import { truncate } from '../../../../utils/String';
 import StixCoreObjectEnrichment from '../../common/stix_core_objects/StixCoreObjectEnrichment';
 import StixCoreObjectSharing from '../../common/stix_core_objects/StixCoreObjectSharing';
-import useGranted, { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/hooks/useGranted';
 import StixCyberObservableEdition from './StixCyberObservableEdition';
 import Security from '../../../../utils/Security';
 import PopoverMenu from '../../../../components/PopoverMenu';
-import useIsOrgaSharingPossible from '../../../../utils/hooks/useIsOrgaSharingPossible';
 import StixCoreObjectMenuItemUnderEE from '../../common/stix_core_objects/StixCoreObjectMenuItemUnderEE';
 import { useFormatter } from '../../../../components/i18n';
 
@@ -23,8 +22,6 @@ const StixCyberObservableHeaderComponent = ({ stixCyberObservable }) => {
 
   const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]);
   const isKnowledgeEnricher = useGranted([KNOWLEDGE_KNENRICHMENT]);
-
-  const isOrgaSharingPossible = useIsOrgaSharingPossible(stixCyberObservable, false);
 
   return (
     <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -52,8 +49,8 @@ const StixCyberObservableHeaderComponent = ({ stixCyberObservable }) => {
                 <StixCoreObjectMenuItemUnderEE
                   setOpen={setOpenSharing}
                   title={t_i18n('Share with an organization')}
-                  isDisabled={!isOrgaSharingPossible}
                   handleCloseMenu={closeMenu}
+                  needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}
                 />
               </Box>
             )}
