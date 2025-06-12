@@ -162,7 +162,7 @@ const IngestionJson = () => {
 
   return (
     <div className={classes.container}>
-      <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('JSON feeds'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('JSON Feeds'), current: true }]} />
       <IngestionMenu/>
       {!isEnterpriseEdition ? (
         <EnterpriseEdition feature="JSON Feed" />
