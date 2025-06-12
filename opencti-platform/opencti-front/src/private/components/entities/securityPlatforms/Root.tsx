@@ -137,6 +137,7 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
                   <SecurityPlatformEdition securityPlatformId={securityPlatform.id} />
                 </Security>
               )}
+              disableSharing={true}
             />
             <Box
               sx={{

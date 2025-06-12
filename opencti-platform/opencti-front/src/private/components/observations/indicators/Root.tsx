@@ -116,6 +116,7 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
               </Security>
             )}
             noAliases={true}
+            enableEnricher={true}
             enableEnrollPlaybook={true}
           />
           <Box

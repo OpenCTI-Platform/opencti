@@ -23,6 +23,7 @@ import MenuItem from '@mui/material/MenuItem';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import { useTheme } from '@mui/styles';
+import StixCoreObjectMenuItemUnderEE from '../stix_core_objects/StixCoreObjectMenuItemUnderEE';
 import StixCoreObjectSharingList from '../stix_core_objects/StixCoreObjectSharingList';
 import { DraftChip } from '../draft/DraftChip';
 import StixCoreObjectEnrollPlaybook from '../stix_core_objects/StixCoreObjectEnrollPlaybook';
@@ -35,7 +36,7 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
-import useGranted, { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/hooks/useGranted';
 import CommitMessage from '../form/CommitMessage';
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
 import { truncate } from '../../../../utils/String';
@@ -258,11 +259,7 @@ const StixDomainObjectHeader = (props) => {
   const [isSharingOpen, setIsSharingOpen] = useState(false);
   const [isEnrichmentOpen, setIsEnrichmentOpen] = useState(false);
 
-  const handleOpenEnrollPlaybook = () => setEnrollPlaybookOpen(true);
-
   const handleCloseEnrollPlaybook = () => setEnrollPlaybookOpen(false);
-
-  const handleOpenSharing = () => setIsSharingOpen(true);
 
   const handleCloseSharing = () => setIsSharingOpen(false);
 
@@ -386,10 +383,13 @@ const StixDomainObjectHeader = (props) => {
   };
   const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
 
-  const initialNumberOfButtons = 1 + (isKnowledgeUpdater ? 1 : 0) + (enableQuickSubscription ? 1 : 0);
-  const displayEnrollPlaybookButton = initialNumberOfButtons < 3;
-  const displaySharingButton = initialNumberOfButtons < 2 || (initialNumberOfButtons < 3 && !enableEnrollPlaybook);
-  const displayPopoverMenu = (disableSharing !== true && !displaySharingButton) || (enableEnrollPlaybook && !displayEnrollPlaybookButton);
+  let initialNumberOfButtons = 1 + (isKnowledgeUpdater ? 1 : 0) + (enableQuickSubscription ? 1 : 0);
+  const displayEnrollPlaybookButton = enableEnrollPlaybook && initialNumberOfButtons < 3;
+  if (displayEnrollPlaybookButton) initialNumberOfButtons += 1;
+  const displaySharingButton = disableSharing !== true && initialNumberOfButtons < 3;
+
+  const displayPopoverMenu = (disableSharing !== true && !displaySharingButton)
+    || (enableEnrollPlaybook && !displayEnrollPlaybookButton);
 
   return (
     <React.Suspense fallback={<span />}>
@@ -568,6 +568,14 @@ const StixDomainObjectHeader = (props) => {
             {disableSharing !== true && (
               <StixCoreObjectSharingList data={stixDomainObject} />
             )}
+            {disableSharing !== true && (
+              <StixCoreObjectSharing
+                elementId={stixDomainObject.id}
+                open={isSharingOpen}
+                variant="header"
+                handleClose={displaySharingButton ? undefined : handleCloseSharing}
+              />
+            )}
             <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
               <StixCoreObjectFileExport
                 scoId={stixDomainObject.id}
@@ -604,14 +612,13 @@ const StixDomainObjectHeader = (props) => {
               <PopoverMenu>
                 {({ closeMenu }) => (
                   <Box>
-                    {disableSharing !== true && (
-                      <MenuItem onClick={() => {
-                        handleOpenSharing();
-                        closeMenu();
-                      }}
-                      >
-                        {t_i18n('Share with an organization')}
-                      </MenuItem>
+                    {disableSharing !== true && !displaySharingButton && (
+                      <StixCoreObjectMenuItemUnderEE
+                        setOpen={setIsSharingOpen}
+                        title={t_i18n('Share with an organization')}
+                        handleCloseMenu={closeMenu}
+                        needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}
+                      />
                     )}
                     {(enableEnricher && isKnowledgeEnricher) && (
                       <MenuItem onClick={() => {
@@ -622,14 +629,13 @@ const StixDomainObjectHeader = (props) => {
                         {t_i18n('Enrichment')}
                       </MenuItem>
                     )}
-                    {enableEnrollPlaybook && (
-                      <MenuItem onClick={() => {
-                        handleOpenEnrollPlaybook();
-                        closeMenu();
-                      }}
-                      >
-                        {t_i18n('Enroll in playbook')}
-                      </MenuItem>
+                    {enableEnrollPlaybook && !displayEnrollPlaybookButton && (
+                      <StixCoreObjectMenuItemUnderEE
+                        title={t_i18n('Enroll in playbook')}
+                        setOpen={setEnrollPlaybookOpen}
+                        handleCloseMenu={closeMenu}
+                        needs={[KNOWLEDGE_KNENRICHMENT]}
+                      />
                     )}
                   </Box>
                 )}

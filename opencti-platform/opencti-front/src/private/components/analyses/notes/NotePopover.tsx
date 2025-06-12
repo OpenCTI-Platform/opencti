@@ -8,12 +8,13 @@ import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import StixCoreObjectEnrollPlaybook from '@components/common/stix_core_objects/StixCoreObjectEnrollPlaybook';
 import StixCoreObjectEnrichment from '@components/common/stix_core_objects/StixCoreObjectEnrichment';
+import StixCoreObjectMenuItemUnderEE from '@components/common/stix_core_objects/StixCoreObjectMenuItemUnderEE';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { noteEditionQuery } from './NoteEdition';
 import NoteEditionContainer from './NoteEditionContainer';
-import { CollaborativeSecurity } from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import Security, { CollaborativeSecurity } from '../../../../utils/Security';
+import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import { StixCoreObjectOrStixCoreRelationshipNoteCard_node$data } from './__generated__/StixCoreObjectOrStixCoreRelationshipNoteCard_node.graphql';
 import { NoteEditionContainerQuery$data } from './__generated__/NoteEditionContainerQuery.graphql';
 import { deleteNode } from '../../../../utils/store';
@@ -126,7 +127,11 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
             {t_i18n('Remove from this entity')}
           </MenuItem>
         )}
-        <MenuItem onClick={handleOpenEnroll}>{t_i18n('Enroll in playbook')}</MenuItem>
+        <StixCoreObjectMenuItemUnderEE
+          setOpen={handleOpenEnroll}
+          title={t_i18n('Enroll in playbook')}
+          needs={[KNOWLEDGE_KNENRICHMENT]}
+        />
         <CollaborativeSecurity
           data={note}
           needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}
@@ -134,7 +139,9 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
           <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
         </CollaborativeSecurity>
       </Menu>
-      <StixCoreObjectEnrichment stixCoreObjectId={id} onClose={undefined} isOpen={undefined} />
+      <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+        <StixCoreObjectEnrichment stixCoreObjectId={id} onClose={undefined} isOpen={undefined} />
+      </Security>
       <StixCoreObjectEnrollPlaybook stixCoreObjectId={id} open={displayEnroll} handleClose={handleCloseEnroll} />
       <DeleteDialog
         deletion={deletion}

@@ -8,8 +8,8 @@ import { ViewColumnOutlined } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { useTheme } from '@mui/styles';
-import MenuItem from '@mui/material/MenuItem';
 import { Box } from '@mui/material';
+import StixCoreObjectMenuItemUnderEE from '../stix_core_objects/StixCoreObjectMenuItemUnderEE';
 import StixCoreObjectSharingList from '../stix_core_objects/StixCoreObjectSharingList';
 import StixCoreObjectBackgroundTasks from '../stix_core_objects/StixCoreObjectActiveBackgroundTasks';
 import StixCoreObjectEnrollPlaybook from '../stix_core_objects/StixCoreObjectEnrollPlaybook';
@@ -26,7 +26,12 @@ import { useFormatter } from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
-import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNENRICHMENT,
+  KNOWLEDGE_KNGETEXPORT_KNASKEXPORT,
+  KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS,
+  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
+} from '../../../../utils/hooks/useGranted';
 import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObjectQuickSubscription';
 import StixCoreObjectFileExport from '../stix_core_objects/StixCoreObjectFileExport';
 import { authorizedMembersToOptions, useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
@@ -512,16 +517,27 @@ const ContainerHeader = (props) => {
   const isAuthorizedMembersEnabled = !disableAuthorizedMembers;
   const currentAccessRight = useGetCurrentUserAccessRight(container.currentUserAccessRight);
   const enableManageAuthorizedMembers = currentAccessRight.canManage && isAuthorizedMembersEnabled;
-  const disableOrgaSharingButton = (!enableManageAuthorizedMembers && currentAccessRight.canEdit) || (enableManageAuthorizedMembers && container.authorized_members?.length > 0);
+
+  // sharing buttons should be disabled for containers according to some autorized members conditions
+  const isSharingDisabled = (!enableManageAuthorizedMembers && !currentAccessRight.canEdit)
+    || (enableManageAuthorizedMembers && container.authorized_members && container.authorized_members.length > 0);
+
   const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
 
-  const initialNumberOfButtons = (!knowledge ? 1 : 0) + (enableQuickSubscription ? 1 : 0) + (enableEnricher ? 1 : 0);
-  const displayEnrollPlaybookButton = initialNumberOfButtons < 3;
-  const displaySharingButton = initialNumberOfButtons < 2
-    || (initialNumberOfButtons < 3 && !enableEnrollPlaybook);
-  const displayPopoverMenu = (!knowledge && disableSharing !== true && !displaySharingButton)
-    || (!knowledge && !!enableManageAuthorizedMembers)
-    || (enableEnrollPlaybook && !displayEnrollPlaybookButton);
+  const displaySharing = !knowledge && disableSharing !== true;
+  const displayAuthorizedMembers = !knowledge && !!enableManageAuthorizedMembers;
+  const displayEnrollPlaybook = enableEnrollPlaybook;
+
+  let initialNumberOfButtons = (!knowledge ? 1 : 0) + (enableQuickSubscription ? 1 : 0) + (enableEnricher ? 1 : 0);
+  const displayEnrollPlaybookButton = displayEnrollPlaybook && initialNumberOfButtons < 3;
+  if (displayEnrollPlaybookButton) initialNumberOfButtons += 1;
+  const displaySharingButton = displaySharing && initialNumberOfButtons < 3;
+  if (displaySharingButton) initialNumberOfButtons += 1;
+  const displayAuthorizedMembersButton = displayAuthorizedMembers && initialNumberOfButtons < 3;
+
+  const displayPopoverMenu = (displaySharing && !displaySharingButton)
+    || (displayAuthorizedMembers && !displayAuthorizedMembersButton)
+    || (displayEnrollPlaybook && !displayEnrollPlaybookButton);
 
   return (
     <div style={containerStyle}>
@@ -645,14 +661,26 @@ const ContainerHeader = (props) => {
               <StixCoreObjectSubscribers triggerData={triggerData} />
             )}
             <StixCoreObjectSharingList data={container} inContainer={true} />
-            {!knowledge && disableSharing !== true && (
+            {displaySharing && (
               <StixCoreObjectSharing
                 elementId={container.id}
                 open={openSharing}
                 variant="header"
-                disabled={disableOrgaSharingButton}
+                disabled={isSharingDisabled}
                 handleClose={displaySharingButton ? undefined : handleCloseSharing}
                 inContainer={true}
+              />
+            )}
+            {displayAuthorizedMembers && (
+              <FormAuthorizedMembersDialog
+                id={container.id}
+                owner={container.creators?.[0]}
+                authorizedMembers={authorizedMembersToOptions(
+                  container.authorized_members,
+                )}
+                mutation={containerHeaderEditAuthorizedMembersMutation}
+                open={openAccessRestriction}
+                handleClose={displayAuthorizedMembersButton ? undefined : handleCloseAccessRestriction}
               />
             )}
             {!knowledge && (
@@ -691,50 +719,42 @@ const ContainerHeader = (props) => {
                 />
               </Security>
             )}
-            {enableEnrollPlaybook
+            {displayEnrollPlaybook
               && <StixCoreObjectEnrollPlaybook
                 stixCoreObjectId={container.id}
                 open={openEnrollPlaybook}
                 handleClose={displayEnrollPlaybookButton ? undefined : handleCloseEnrollPlaybook}
-                 />}
+                 />
+            }
             {displayPopoverMenu && (
               <PopoverMenu>
                 {({ closeMenu }) => (
                   <Box>
-                    {!knowledge && disableSharing !== true && !displaySharingButton && (
-                      <MenuItem
-                        onClick={() => {
-                          setOpenSharing(true);
-                          closeMenu();
-                        }}
-                      >
-                        {t_i18n('Share with an organization')}
-                      </MenuItem>
+                    {displaySharing && !displaySharingButton && (
+                      <StixCoreObjectMenuItemUnderEE
+                        setOpen={setOpenSharing}
+                        title={t_i18n('Share with an organization')}
+                        isDisabled={isSharingDisabled}
+                        handleCloseMenu={closeMenu}
+                        needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}
+                      />
                     )}
-                    {!knowledge && (
-                      <Security
+                    {displayAuthorizedMembers && !displayAuthorizedMembersButton && (
+                      <StixCoreObjectMenuItemUnderEE
+                        setOpen={setOpenAccessRestriction}
+                        title={t_i18n('Manage access restriction')}
+                        handleCloseMenu={closeMenu}
+                        isDisabled={!enableManageAuthorizedMembers}
                         needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
-                        hasAccess={!!enableManageAuthorizedMembers}
-                      >
-                        <MenuItem
-                          onClick={() => {
-                            setOpenAccessRestriction(true);
-                            closeMenu();
-                          }}
-                        >
-                          {t_i18n('Manage access restriction')}
-                        </MenuItem>
-                      </Security>
+                      />
                     )}
-                    {enableEnrollPlaybook && !displayEnrollPlaybookButton && (
-                      <MenuItem
-                        onClick={() => {
-                          setOpenEnrollPlaybook(true);
-                          closeMenu();
-                        }}
-                      >
-                        {t_i18n('Enroll in playbook')}
-                      </MenuItem>
+                    {displayEnrollPlaybook && !displayEnrollPlaybookButton && (
+                      <StixCoreObjectMenuItemUnderEE
+                        title={t_i18n('Enroll in playbook')}
+                        setOpen={setOpenEnrollPlaybook}
+                        handleCloseMenu={closeMenu}
+                        needs={[KNOWLEDGE_KNENRICHMENT]}
+                      />
                     )}
                   </Box>
                 )}
@@ -743,16 +763,6 @@ const ContainerHeader = (props) => {
 
             {EditComponent}
           </div>
-          <FormAuthorizedMembersDialog
-            id={container.id}
-            owner={container.creators?.[0]}
-            authorizedMembers={authorizedMembersToOptions(
-              container.authorized_members,
-            )}
-            mutation={containerHeaderEditAuthorizedMembersMutation}
-            open={openAccessRestriction}
-            handleClose={handleCloseAccessRestriction}
-          />
         </div>
       </React.Suspense>
     </div>
