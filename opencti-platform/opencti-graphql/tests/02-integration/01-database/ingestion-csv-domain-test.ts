@@ -5,15 +5,16 @@ import { IngestionAuthType, type IngestionCsvAddInput } from '../../../src/gener
 import { enableCEAndUnSetOrganization, enableEEAndSetOrganization } from '../../utils/testQueryHelper';
 import { getFakeAuthUser } from '../../utils/domainQueryHelper';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
-import { findAll as findAllGroup } from '../../../src/domain/group';
+import { findDefaultIngestionGroup } from '../../../src/domain/group';
 import type { BasicGroupEntity } from '../../../src/types/store';
 import { findById as findUserById } from '../../../src/domain/user';
-import { executionContext } from '../../../src/utils/access';
+import { executionContext, SYSTEM_USER } from '../../../src/utils/access';
 
 describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
   const ingestionCreatedIds: string[] = [];
   let ingestionUser: AuthUser;
   let testContext: AuthContext;
+  let ingestionDefaultGroupId: string;
 
   beforeAll(async () => {
     ingestionUser = getFakeAuthUser('CsvFeedIngestionDomain');
@@ -29,24 +30,11 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
   });
 
   it('should default group be set to Connector on startup', async () => {
-    const groups: BasicGroupEntity[] = await findAllGroup(testContext, ingestionUser, {
-      filters: {
-        mode: 'and',
-        filters: [
-          {
-            key: ['auto_integration_assignation'],
-            values: [
-              'global',
-            ],
-          },
-        ],
-        filterGroups: [],
-      },
-      connectionFormat: false
-    }) as BasicGroupEntity[];
-    expect(groups.length).toBe(1);
-    expect(groups[0].name).toBe('Connectors');
-    expect(groups[0].auto_integration_assignation).toStrictEqual(['global']);
+    const ingestionDefaultGroups: BasicGroupEntity[] = await findDefaultIngestionGroup(testContext, ingestionUser) as BasicGroupEntity[];
+    expect(ingestionDefaultGroups.length).toBe(1);
+    expect(ingestionDefaultGroups[0].name).toBe('Connectors');
+    expect(ingestionDefaultGroups[0].auto_integration_assignation).toStrictEqual(['global']);
+    ingestionDefaultGroupId = ingestionDefaultGroups[0].id;
   });
 
   it('should create a CSV Feed with auto user creation works fine without platform org', async () => {
@@ -62,9 +50,12 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
     ingestionCreatedIds.push(ingestionCreated.id);
     expect(ingestionCreated.user_id).toBeDefined();
 
-    const createdUser = await findUserById(testContext, ingestionUser, ingestionCreated.user_id);
+    const createdUser = await findUserById(testContext, SYSTEM_USER, ingestionCreated.user_id);
     expect(createdUser.name).toBe('[F] CSV Feed to test auto user creation without platform org');
     expect(createdUser.user_email).toBe('CSVFeedtotestautousercreationwithoutlatformorg@opencti.invalid');
+    const userInDefaultGroup: BasicGroupEntity = createdUser.groups.some((group: BasicGroupEntity) => group.id === ingestionDefaultGroupId);
+    expect(userInDefaultGroup.name).toBe('Connectors'); // just to check that user is in default ingestion group
+    expect(createdUser.groups.length, 'Platform default group should not apply, only default ingestion group').toBe(1);
   });
 
   it.todo('should create a CSV Feed with auto user creation works fine with platform org', async () => {
