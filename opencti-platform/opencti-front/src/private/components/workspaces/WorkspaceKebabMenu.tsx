@@ -131,7 +131,8 @@ const WorkspaceKebabMenu = ({ workspace, paginationOptions }: WorkspaceKebabMenu
   return (
     <div>
       <ToggleButton
-        value={'More actions'}
+        aria-label={t_i18n('Popover of actions')}
+        value="popover"
         size="small"
         color="primary"
         id="workspace-kebab-button"
@@ -171,24 +172,18 @@ const WorkspaceKebabMenu = ({ workspace, paginationOptions }: WorkspaceKebabMenu
           </Security>
         )}
         {variant === 'dashboard' && (
-          <Security needs={[EXPLORE_EXUPDATE_PUBLISH]} hasAccess={canManage}>
-            <MenuItem onClick={handleDashboardDuplication}>{t_i18n('Duplicate the dashboard')}</MenuItem>
-          </Security>
-        )}
-        <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]} hasAccess={canEdit}>
           <>
-            {workspace.type === 'dashboard' && (
-              <>
-                <MenuItem onClick={goToPublicDashboards}>
-                  {t_i18n('View associated public dashboards')}
-                </MenuItem>
-                <Security needs={[EXPLORE_EXUPDATE_PUBLISH]} hasAccess={canManage}>
-                  <MenuItem onClick={handleOpenCreation}>{t_i18n('Create a public dashboard')}</MenuItem>
-                </Security>
-              </>
-            )}
+            <Security needs={[EXPLORE_EXUPDATE]} hasAccess={canEdit}>
+              <MenuItem onClick={handleDashboardDuplication}>{t_i18n('Duplicate the dashboard')}</MenuItem>
+            </Security>
+            <MenuItem onClick={goToPublicDashboards}>
+              {t_i18n('View associated public dashboards')}
+            </MenuItem>
+            <Security needs={[EXPLORE_EXUPDATE_PUBLISH]} hasAccess={canManage}>
+              <MenuItem onClick={handleOpenCreation}>{t_i18n('Create a public dashboard')}</MenuItem>
+            </Security>
           </>
-        </Security>
+        )}
       </Menu>
 
       <WorkspaceManageAccessDialog

@@ -88,8 +88,7 @@ test('Dashboard CRUD', async ({ page }) => {
   await dashboardPage.getItemFromList(dashboardName).click();
   await expect(dashboardDetailsPage.getDashboardDetailsPage()).toBeVisible();
   await expect(dashboardDetailsPage.getTitle(dashboardName)).toBeVisible();
-  await dashboardDetailsPage.getActionsPopover().click();
-  await dashboardDetailsPage.getActionButton('Update').click();
+  await dashboardDetailsPage.getEditButton().click();
   expect(await dashboardUpdateForm.descriptionField.value()).toEqual('Test e2e Description');
   await dashboardUpdateForm.getCloseButton().click();
 
@@ -99,8 +98,7 @@ test('Dashboard CRUD', async ({ page }) => {
   // region Update dashboard properties
   // ----------------------------------
 
-  await dashboardDetailsPage.getActionsPopover().click();
-  await dashboardDetailsPage.getActionButton('Update').click();
+  await dashboardDetailsPage.getEditButton().click();
   await expect(dashboardUpdateForm.getUpdateTitle()).toBeVisible();
   await dashboardUpdateForm.nameField.fill(updateDashboardName);
   await dashboardUpdateForm.getUpdateTitle().click();
@@ -143,8 +141,8 @@ test('Dashboard CRUD', async ({ page }) => {
   // region Delete a dashboard
   // -------------------------
 
-  await dashboardDetailsPage.getActionsPopover().click();
-  await dashboardDetailsPage.getActionButton('Delete').click();
+  await dashboardDetailsPage.getEditButton().click();
+  await dashboardDetailsPage.getDeleteButton().click();
   await expect(dashboardDetailsPage.getConfirmButton()).toBeVisible();
   await dashboardDetailsPage.getConfirmButton().click();
   await expect(dashboardPage.getPageTitle()).toBeVisible();
@@ -159,9 +157,8 @@ test('Dashboard CRUD', async ({ page }) => {
   // From dashboard overview - export
   await leftBarPage.clickOnMenu('Dashboards', 'Custom dashboards');
   await dashboardPage.getItemFromList(updateDashboardName).click();
-  await dashboardDetailsPage.getActionsPopover().click();
   const downloadPromise = page.waitForEvent('download');
-  await dashboardDetailsPage.getActionButton('Export').click();
+  await dashboardDetailsPage.getExportButton().click();
   await page.mouse.click(10, 10); // To close action menu
   const download = await downloadPromise;
   expect(download.suggestedFilename()).toBeDefined();
@@ -175,8 +172,8 @@ test('Dashboard CRUD', async ({ page }) => {
   await fileChooser.setFiles(`./test-results/e2e-files/${download.suggestedFilename()}`);
   await expect(dashboardDetailsPage.getDashboardDetailsPage()).toBeVisible();
   await expect(dashboardDetailsPage.getTitle(updateDashboardName)).toBeVisible();
-  await dashboardDetailsPage.getActionsPopover().click();
-  await dashboardDetailsPage.getActionButton('Delete').click();
+  await dashboardDetailsPage.getEditButton().click();
+  await dashboardDetailsPage.getDeleteButton().click();
   await dashboardDetailsPage.getConfirmButton().click();
 
   // Import dashboard with exhaustive list of widgets
@@ -212,8 +209,8 @@ test('Dashboard CRUD', async ({ page }) => {
   // End Export dashboard as PDF
 
   // Delete imported dashboard
-  await dashboardDetailsPage.getActionsPopover().click();
-  await dashboardDetailsPage.getActionButton('Delete').click();
+  await dashboardDetailsPage.getEditButton().click();
+  await dashboardDetailsPage.getDeleteButton().click();
   await dashboardDetailsPage.getConfirmButton().click();
 
   // ---------
@@ -293,8 +290,8 @@ test('Dashboard CRUD', async ({ page }) => {
 
   await leftBarPage.clickOnMenu('Dashboards', 'Custom dashboards');
   await dashboardPage.getItemFromList(updateDashboardName).click();
-  await dashboardDetailsPage.getActionsPopover().click();
-  await dashboardDetailsPage.getActionButton('Delete').click();
+  await dashboardDetailsPage.getEditButton().click();
+  await dashboardDetailsPage.getDeleteButton().click();
   await dashboardDetailsPage.getConfirmButton().click();
 });
 
@@ -353,12 +350,12 @@ test('Dashboard restriction access', async ({ page }) => {
   // --------------------------------
 
   await dashboardPage.getItemFromList(dashboardName).click();
-  await accessRestriction.openForm();
+  await dashboardDetailsPage.getActionsPopover().click();
+  await accessRestriction.openFormInMenu();
   await accessRestriction.addAccess('Jean Michel', 'can view');
   await accessRestriction.save();
 
   await goToDashboardAsJeanMichel(dashboardName);
-  await expect(dashboardDetailsPage.getActionsPopover()).toBeHidden();
   await expect(widgetsPage.getCreateWidgetButton()).toBeHidden();
 
   // ---------
@@ -368,24 +365,25 @@ test('Dashboard restriction access', async ({ page }) => {
   // --------------------------------
 
   await goToDashboardAsAdmin(dashboardName);
-  await accessRestriction.openForm();
+  await dashboardDetailsPage.getActionsPopover().click();
+  await accessRestriction.openFormInMenu();
   await accessRestriction.editAccess('Jean Michel', 'can edit');
   await accessRestriction.save();
 
   await goToDashboardAsJeanMichel(dashboardName);
+  await expect(dashboardDetailsPage.getEditButton()).toBeVisible();
+  await expect(dashboardDetailsPage.getExportButton()).toBeVisible();
   await dashboardDetailsPage.getActionsPopover().click();
-  await expect(dashboardDetailsPage.getActionButton('Update')).toBeVisible();
   await expect(dashboardDetailsPage.getActionButton('Duplicate')).toBeVisible();
-  await expect(dashboardDetailsPage.getActionButton('Export')).toBeVisible();
-  await expect(dashboardDetailsPage.getActionButton('Delete')).toBeHidden();
+  await expect(dashboardDetailsPage.getDeleteButton()).toBeHidden();
+  await page.locator('body').click();
 
   // Try to update
-  await dashboardDetailsPage.getActionButton('Update').click();
+  await dashboardDetailsPage.getEditButton().click();
   await dashboardUpdateForm.nameField.fill('restriction updated');
   await dashboardUpdateForm.getCloseButton().click();
   await expect(dashboardDetailsPage.getTitle('restriction updated')).toBeVisible();
-  await dashboardDetailsPage.getActionsPopover().click();
-  await dashboardDetailsPage.getActionButton('Update').click();
+  await dashboardDetailsPage.getEditButton().click();
   await dashboardUpdateForm.nameField.fill(dashboardName);
   await dashboardUpdateForm.getCloseButton().click();
   await expect(dashboardDetailsPage.getTitle(dashboardName)).toBeVisible();
@@ -397,8 +395,8 @@ test('Dashboard restriction access', async ({ page }) => {
   await leftBar.clickOnMenu('Dashboards', 'Custom dashboards');
   await expect(dashboardPage.getItemFromList(`${dashboardName} - copy`)).toBeVisible();
   await dashboardPage.getItemFromList(`${dashboardName} - copy`).click();
-  await dashboardDetailsPage.getActionsPopover().click();
-  await dashboardDetailsPage.getActionButton('Delete').click();
+  await dashboardDetailsPage.getEditButton().click();
+  await dashboardDetailsPage.getDeleteButton().click();
   await dashboardDetailsPage.getConfirmButton().click();
 
   // Try to export
@@ -437,8 +435,8 @@ test('Dashboard restriction access', async ({ page }) => {
   await accessRestriction.addAccess('Jean Michel', 'can manage');
   await accessRestriction.save();
   await goToDashboardAsJeanMichel(dashboardName);
-  await dashboardDetailsPage.getActionsPopover().click();
-  await dashboardDetailsPage.getActionButton('Delete').click();
+  await dashboardDetailsPage.getEditButton().click();
+  await dashboardDetailsPage.getDeleteButton().click();
   await dashboardDetailsPage.getConfirmButton().click();
   await expect(dashboardPage.getItemFromList(dashboardName)).toBeHidden();
 

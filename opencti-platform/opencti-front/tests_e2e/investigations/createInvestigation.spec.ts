@@ -17,7 +17,7 @@ test('Create a new investigations page', async ({ page }) => {
   await investigationsForm.fillTagInput('Add Test Tag e2e');
   await investigationsForm.getTagInput().press('Enter');
   await expect(investigationDetailsPage.getTag('Add Test Tag e2e')).toBeVisible();
-  await investigationDetailsPage.openPopUpButton().click();
+  await investigationDetailsPage.getEditButton().click();
   await investigationDetailsPage.getDeleteButton().click();
   await investigationDetailsPage.getConfirmButton().click();
   await page.goto('/dashboard/workspaces/investigations');
