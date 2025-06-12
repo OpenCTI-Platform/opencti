@@ -274,8 +274,8 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
   const disableVerify = (values: IngestionCsvAddInput): boolean => {
     const { name, uri, csv_mapper_type, csv_mapper_id, csv_mapper } = values;
 
-    if (!uri && name) {
-      return true; // Disable if URI is missing
+    if (!uri || !name) {
+      return true; // Disable if URI or name is missing
     }
 
     const canVerifyWithId = !!csv_mapper_type && !!csv_mapper_id;
