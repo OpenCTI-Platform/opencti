@@ -16,6 +16,7 @@ import { ThemesLinesSearchQuery$variables } from './__generated__/ThemesLinesSea
 import { serializeThemeManifest } from './ThemeType';
 import { useDynamicSchemaCreationValidation, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import ThemeDetectDuplicate from './ThemeDetectDuplicate';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 export const createThemeMutation = graphql`
   mutation ThemeCreationCreateMutation($input: ThemeAddInput!) {
@@ -152,7 +153,6 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
         {({
           values,
           isSubmitting,
-          isValid,
           submitForm,
         }) => (
           <Form>
@@ -174,11 +174,7 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
               component={ColorPickerField}
               name="theme_background"
               label={t_i18n('Background color')}
-              placeholder={t_i18n('Default')}
-              InputLabelProps={{
-                shrink: true,
-              }}
-              style={{ marginTop: 20 }}
+              style={fieldSpacingContainerStyle}
               fullWidth
               required
               variant="standard"
@@ -187,11 +183,7 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
               component={ColorPickerField}
               name="theme_paper"
               label={t_i18n('Paper color')}
-              placeholder={t_i18n('Default')}
-              InputLabelProps={{
-                shrink: true,
-              }}
-              style={{ marginTop: 20 }}
+              style={fieldSpacingContainerStyle}
               fullWidth
               required
               variant="standard"
@@ -200,11 +192,7 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
               component={ColorPickerField}
               name="theme_nav"
               label={t_i18n('Navigation color')}
-              placeholder={t_i18n('Default')}
-              InputLabelProps={{
-                shrink: true,
-              }}
-              style={{ marginTop: 20 }}
+              style={fieldSpacingContainerStyle}
               fullWidth
               required
               variant="standard"
@@ -213,11 +201,7 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
               component={ColorPickerField}
               name="theme_primary"
               label={t_i18n('Primary color')}
-              placeholder={t_i18n('Default')}
-              InputLabelProps={{
-                shrink: true,
-              }}
-              style={{ marginTop: 20 }}
+              style={fieldSpacingContainerStyle}
               fullWidth
               required
               variant="standard"
@@ -226,11 +210,7 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
               component={ColorPickerField}
               name="theme_secondary"
               label={t_i18n('Secondary color')}
-              placeholder={t_i18n('Default')}
-              InputLabelProps={{
-                shrink: true,
-              }}
-              style={{ marginTop: 20 }}
+              style={fieldSpacingContainerStyle}
               fullWidth
               required
               variant="standard"
@@ -239,11 +219,7 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
               component={ColorPickerField}
               name="theme_accent"
               label={t_i18n('Accent color')}
-              placeholder={t_i18n('Default')}
-              InputLabelProps={{
-                shrink: true,
-              }}
-              style={{ marginTop: 20 }}
+              style={fieldSpacingContainerStyle}
               fullWidth
               required
               variant="standard"
@@ -252,11 +228,7 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
               component={ColorPickerField}
               name="theme_text_color"
               label={t_i18n('Text color')}
-              placeholder={t_i18n('Default')}
-              InputLabelProps={{
-                shrink: true,
-              }}
-              style={{ marginTop: 20 }}
+              style={fieldSpacingContainerStyle}
               fullWidth
               required
               variant="standard"
@@ -266,11 +238,7 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
               variant="standard"
               name="theme_logo"
               label={t_i18n('Logo URL')}
-              placeholder={t_i18n('Default')}
-              InputLabelProps={{
-                shrink: true,
-              }}
-              style={{ marginTop: 20 }}
+              style={fieldSpacingContainerStyle}
               fullWidth
             />
             <Field
@@ -278,11 +246,7 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
               variant="standard"
               name="theme_logo_collapsed"
               label={t_i18n('Logo URL (collapsed)')}
-              placeholder={t_i18n('Default')}
-              InputLabelProps={{
-                shrink: true,
-              }}
-              style={{ marginTop: 20 }}
+              style={fieldSpacingContainerStyle}
               fullWidth
             />
             <Field
@@ -290,11 +254,7 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
               variant="standard"
               name="theme_logo_login"
               label={t_i18n('Logo URL (login)')}
-              placeholder={t_i18n('Default')}
-              InputLabelProps={{
-                shrink: true,
-              }}
-              style={{ marginTop: 20 }}
+              style={fieldSpacingContainerStyle}
               fullWidth
             />
             <div style={{
@@ -316,7 +276,7 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
                 variant="contained"
                 color="secondary"
                 onClick={submitForm}
-                disabled={!isValid}
+                disabled={isSubmitting}
                 style={{
                   marginLeft: theme.spacing(2),
                 }}
