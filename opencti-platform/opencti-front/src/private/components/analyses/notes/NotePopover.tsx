@@ -130,6 +130,7 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
         <StixCoreObjectMenuItemUnderEE
           setOpen={handleOpenEnroll}
           title={t_i18n('Enroll in playbook')}
+          needs={[KNOWLEDGE_KNENRICHMENT]}
         />
         <CollaborativeSecurity
           data={note}

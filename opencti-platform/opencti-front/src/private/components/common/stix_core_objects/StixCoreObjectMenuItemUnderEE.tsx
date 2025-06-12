@@ -4,7 +4,6 @@ import React, { FunctionComponent } from 'react';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import { useFormatter } from '../../../../components/i18n';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import { KNOWLEDGE_KNENRICHMENT } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 
 interface StixCoreObjectMenuItemUnderEEProps {
@@ -12,12 +11,14 @@ interface StixCoreObjectMenuItemUnderEEProps {
   handleCloseMenu?: () => void,
   title: string,
   isDisabled?: boolean,
+  needs?: string[]
 }
 
 const StixCoreObjectMenuItemUnderEE: FunctionComponent<StixCoreObjectMenuItemUnderEEProps> = ({
   setOpen,
   handleCloseMenu,
   title,
+  needs,
   isDisabled = false,
 }) => {
   const { t_i18n } = useFormatter();
@@ -35,7 +36,7 @@ const StixCoreObjectMenuItemUnderEE: FunctionComponent<StixCoreObjectMenuItemUnd
   }
 
   return (
-    <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+    <Security needs={needs ?? []}>
       <EETooltip title={tooltipContent}>
         <span>
           <MenuItem

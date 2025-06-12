@@ -643,6 +643,7 @@ const StixDomainObjectHeader = (props) => {
                         title={t_i18n('Enroll in playbook')}
                         setOpen={setEnrollPlaybookOpen}
                         handleCloseMenu={closeMenu}
+                        needs={[KNOWLEDGE_KNENRICHMENT]}
                       />
                     )}
                   </Box>

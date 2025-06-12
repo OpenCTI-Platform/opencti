@@ -8,7 +8,6 @@ import { ViewColumnOutlined } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { useTheme } from '@mui/styles';
-import MenuItem from '@mui/material/MenuItem';
 import { Box } from '@mui/material';
 import StixCoreObjectMenuItemUnderEE from '../stix_core_objects/StixCoreObjectMenuItemUnderEE';
 import StixCoreObjectSharingList from '../stix_core_objects/StixCoreObjectSharingList';
@@ -736,25 +735,20 @@ const ContainerHeader = (props) => {
                       />
                     )}
                     {displayAuthorizedMembers && !displayAuthorizedMembersButton && (
-                      <Security
+                      <StixCoreObjectMenuItemUnderEE
+                        setOpen={setOpenAccessRestriction}
+                        title={t_i18n('Manage access restriction')}
+                        handleCloseMenu={closeMenu}
+                        isDisabled={!enableManageAuthorizedMembers}
                         needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
-                        hasAccess={!!enableManageAuthorizedMembers}
-                      >
-                        <MenuItem
-                          onClick={() => {
-                            setOpenAccessRestriction(true);
-                            closeMenu();
-                          }}
-                        >
-                          {t_i18n('Manage access restriction')}
-                        </MenuItem>
-                      </Security>
+                      />
                     )}
                     {displayEnrollPlaybook && !displayEnrollPlaybookButton && (
                       <StixCoreObjectMenuItemUnderEE
                         title={t_i18n('Enroll in playbook')}
                         setOpen={setOpenEnrollPlaybook}
                         handleCloseMenu={closeMenu}
+                        needs={[KNOWLEDGE_KNENRICHMENT]}
                       />
                     )}
                   </Box>
