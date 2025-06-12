@@ -1,11 +1,14 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText } from '@mui/material';
-import React, { FunctionComponent, useState } from 'react';
+import { MenuItem } from '@mui/material';
+import React, { FunctionComponent } from 'react';
 import { Disposable, graphql, RecordSourceSelectorProxy } from 'relay-runtime';
-import Transition from '../../../../components/Transition';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { deleteNode } from '../../../../utils/store';
 import { ThemesLinesSearchQuery$variables } from './__generated__/ThemesLinesSearchQuery.graphql';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import useDeletion from '../../../../utils/hooks/useDeletion';
+import DeleteDialog from '../../../../components/DeleteDialog';
 
 const deleteThemeMutation = graphql`
   mutation ThemeDeletionMutation($id: ID!) {
@@ -15,21 +18,18 @@ const deleteThemeMutation = graphql`
 
 interface ThemeDeletionProps {
   id: string;
-  open: boolean;
-  handleClose: () => void;
+  disabled: boolean;
   handleRefetch: () => Disposable;
   paginationOptions: ThemesLinesSearchQuery$variables;
 }
 
 const ThemeDeletion: FunctionComponent<ThemeDeletionProps> = ({
   id,
-  open,
-  handleClose,
+  disabled,
   handleRefetch,
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
-  const [deleting, setDeleting] = useState<boolean>(false);
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
     values: { entity_type: t_i18n('Theme') },
@@ -39,8 +39,11 @@ const ThemeDeletion: FunctionComponent<ThemeDeletionProps> = ({
     undefined,
     { successMessage: deleteSuccessMessage },
   );
+  const handleClose = () => {};
+  const deletion = useDeletion({ handleClose });
+  const { setDeleting, handleOpenDelete, deleting } = deletion;
 
-  const handleDelete = () => {
+  const submitDelete = () => {
     setDeleting(true);
     commit({
       variables: { id },
@@ -59,27 +62,22 @@ const ThemeDeletion: FunctionComponent<ThemeDeletionProps> = ({
   };
 
   return (
-    <Dialog
-      PaperProps={{ elevation: 1 }}
-      open={open}
-      keepMounted
-      TransitionComponent={Transition}
-      onClose={handleClose}
-    >
-      <DialogContent>
-        <DialogContentText>
-          {t_i18n('Do you want to delete this theme?')}
-        </DialogContentText>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={handleClose} disabled={deleting}>
-          {t_i18n('Cancel')}
-        </Button>
-        <Button color="secondary" onClick={handleDelete} disabled={deleting}>
+    <>
+      <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+        <MenuItem
+          onClick={handleOpenDelete}
+          aria-label={t_i18n('Delete')}
+          disabled={disabled || deleting}
+        >
           {t_i18n('Delete')}
-        </Button>
-      </DialogActions>
-    </Dialog>
+        </MenuItem>
+      </Security>
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={submitDelete}
+        message={t_i18n('Do you want to delete this theme?')}
+      />
+    </>
   );
 };
 

@@ -37,16 +37,15 @@ export const findById = (
   ENTITY_TYPE_THEME,
 );
 
-export const addTheme = async (
+const checkExistingTheme = async (
   context: AuthContext,
-  user: AuthUser,
-  input: ThemeAddInput,
+  name: string,
 ) => {
   const existingTheme = await elLoadBy(
     context,
     SYSTEM_USER,
     'name',
-    input.name,
+    name,
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error elLoadBy in engine.js implicitly defines type as null
     ENTITY_TYPE_THEME
@@ -59,6 +58,14 @@ export const addTheme = async (
       { theme_id: existingTheme.internal_id }
     );
   }
+};
+
+export const addTheme = async (
+  context: AuthContext,
+  user: AuthUser,
+  input: ThemeAddInput,
+) => {
+  await checkExistingTheme(context, input.name);
   const created = await createEntity(context, user, input, ENTITY_TYPE_THEME);
 
   await publishUserAction({
@@ -88,9 +95,11 @@ export const findAll = async (
 ).then(async (storeEntityConnection) => {
   if (storeEntityConnection.edges.length > 0) return storeEntityConnection;
 
-  // If there are no themes present, add the default light and dark themes.
-  await addTheme(context, SYSTEM_USER, defaultLightTheme);
-  await addTheme(context, SYSTEM_USER, defaultDarkTheme);
+  // If there are no themes present when searching globally, add the default light and dark themes.
+  if (Object.keys(opts).length < 1) {
+    await addTheme(context, SYSTEM_USER, defaultLightTheme);
+    await addTheme(context, SYSTEM_USER, defaultDarkTheme);
+  }
 
   return listEntitiesPaginated<BasicStoreEntityTheme>(
     context,
@@ -205,6 +214,7 @@ export const themeImport = async (
     name: parsedData.configuration.name,
     manifest: parsedData.configuration.manifest,
   };
+  await checkExistingTheme(context, mappedData.name);
   const importThemeCreation = await createEntity(context, user, mappedData, ENTITY_TYPE_THEME);
   const themeId = importThemeCreation.id;
   await publishUserAction({

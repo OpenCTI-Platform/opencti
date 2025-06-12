@@ -100,15 +100,21 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
     <Formik
       onSubmit={handleSubmit}
       validationSchema={themeValidator}
+      validateOnChange={true}
+      validateOnBlur={true}
       enabledReinitalize={true}
       initialValues={theme}
     >
-      {({ submitForm }) => (
+      {({ submitForm, resetForm, isValid }) => (
         <Drawer
           title={t_i18n('Update a theme')}
           open={open}
           onClose={() => {
-            submitForm();
+            if (isValid) {
+              submitForm();
+            } else {
+              resetForm();
+            }
             handleClose();
           }}
         >
