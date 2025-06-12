@@ -178,6 +178,9 @@ export const resolveIdentityClass = (identityType: string): string => {
   if (identityType === 'System') {
     return 'system';
   }
+  if (identityType === 'securityplatform') {
+    return 'securityplatform';
+  }
   return 'organization';
 };
 
