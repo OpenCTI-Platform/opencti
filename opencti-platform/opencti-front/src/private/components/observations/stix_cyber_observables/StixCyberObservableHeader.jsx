@@ -13,16 +13,18 @@ import useGranted, { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE } from '../../..
 import StixCyberObservableEdition from './StixCyberObservableEdition';
 import Security from '../../../../utils/Security';
 import PopoverMenu from '../../../../components/PopoverMenu';
-import useOrgaSharingPossible from '../../../../utils/hooks/useOrgaSharingPossible';
-import StixCoreObjectMenuItemOrganizationSharing from '../../common/stix_core_objects/StixCoreObjectMenuItemOrganizationSharing';
+import useIsOrgaSharingPossible from '../../../../utils/hooks/useIsOrgaSharingPossible';
+import StixCoreObjectMenuItemUnderEE from '../../common/stix_core_objects/StixCoreObjectMenuItemUnderEE';
+import { useFormatter } from '../../../../components/i18n';
 
 const StixCyberObservableHeaderComponent = ({ stixCyberObservable }) => {
   const [openSharing, setOpenSharing] = useState(false);
+  const { t_i18n } = useFormatter();
 
   const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]);
   const isKnowledgeEnricher = useGranted([KNOWLEDGE_KNENRICHMENT]);
 
-  const { isOrgaSharingPossible, orgaSharingNotPossibleMessage } = useOrgaSharingPossible(stixCyberObservable, false);
+  const isOrgaSharingPossible = useIsOrgaSharingPossible(stixCyberObservable, false);
 
   return (
     <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -47,10 +49,10 @@ const StixCyberObservableHeaderComponent = ({ stixCyberObservable }) => {
           <PopoverMenu>
             {({ closeMenu }) => (
               <Box>
-                <StixCoreObjectMenuItemOrganizationSharing
-                  isOrgaSharingPossible={isOrgaSharingPossible}
-                  orgaSharingNotPossibleMessage={orgaSharingNotPossibleMessage}
-                  setOpenSharing={setOpenSharing}
+                <StixCoreObjectMenuItemUnderEE
+                  setOpen={setOpenSharing}
+                  title={t_i18n('Share with an organization')}
+                  isDisabled={!isOrgaSharingPossible}
                   handleCloseMenu={closeMenu}
                 />
               </Box>

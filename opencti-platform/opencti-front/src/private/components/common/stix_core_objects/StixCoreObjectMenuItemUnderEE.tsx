@@ -7,35 +7,45 @@ import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { KNOWLEDGE_KNENRICHMENT } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 
-interface StixCoreObjectMenuItemEnrollPlaybookProps {
-  setOpenEnrollPlaybook: (v: boolean) => void,
+interface StixCoreObjectMenuItemUnderEEProps {
+  setOpen: (v: boolean) => void,
   handleCloseMenu?: () => void,
+  title: string,
+  isDisabled?: boolean,
 }
 
-const StixCoreObjectMenuItemEnrollPlaybook: FunctionComponent<StixCoreObjectMenuItemEnrollPlaybookProps> = ({
-  setOpenEnrollPlaybook,
+const StixCoreObjectMenuItemUnderEE: FunctionComponent<StixCoreObjectMenuItemUnderEEProps> = ({
+  setOpen,
   handleCloseMenu,
+  title,
+  isDisabled = false,
 }) => {
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
   const isEnterpriseEdition = useEnterpriseEdition();
-  const isEnrollPlaybookPossible = !draftContext && isEnterpriseEdition;
-  let title: string | undefined;
-  if (draftContext) title = t_i18n('Not available in draft');
-  if (!isEnrollPlaybookPossible) t_i18n('Only available in EE');
+  const isActionPossible = !draftContext && isEnterpriseEdition && !isDisabled;
+
+  let tooltipContent: string | undefined;
+  if (draftContext) {
+    tooltipContent = t_i18n('Not available in draft');
+  } else if (!isEnterpriseEdition) {
+    tooltipContent = t_i18n('Only available in EE');
+  } else if (isDisabled) {
+    tooltipContent = t_i18n('You are not allowed to do this');
+  }
 
   return (
     <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
-      <EETooltip title={title}>
+      <EETooltip title={tooltipContent}>
         <span>
           <MenuItem
             onClick={() => {
-              setOpenEnrollPlaybook(true);
+              setOpen(true);
               handleCloseMenu?.();
             }}
-            disabled={!isEnrollPlaybookPossible}
+            disabled={!isActionPossible}
           >
-            {t_i18n('Enroll in playbook')}
+            {title}
           </MenuItem>
         </span>
       </EETooltip>
@@ -43,4 +53,4 @@ const StixCoreObjectMenuItemEnrollPlaybook: FunctionComponent<StixCoreObjectMenu
   );
 };
 
-export default StixCoreObjectMenuItemEnrollPlaybook;
+export default StixCoreObjectMenuItemUnderEE;

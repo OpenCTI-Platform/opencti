@@ -10,7 +10,7 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { useTheme } from '@mui/styles';
 import MenuItem from '@mui/material/MenuItem';
 import { Box } from '@mui/material';
-import StixCoreObjectMenuItemEnrollPlaybook from '../stix_core_objects/StixCoreObjectMenuItemEnrollPlaybook';
+import StixCoreObjectMenuItemUnderEE from '../stix_core_objects/StixCoreObjectMenuItemUnderEE';
 import StixCoreObjectSharingList from '../stix_core_objects/StixCoreObjectSharingList';
 import StixCoreObjectBackgroundTasks from '../stix_core_objects/StixCoreObjectActiveBackgroundTasks';
 import StixCoreObjectEnrollPlaybook from '../stix_core_objects/StixCoreObjectEnrollPlaybook';
@@ -34,8 +34,7 @@ import { authorizedMembersToOptions, useGetCurrentUserAccessRight } from '../../
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
 import { resolveLink } from '../../../../utils/Entity';
 import PopoverMenu from '../../../../components/PopoverMenu';
-import useOrgaSharingPossible from '../../../../utils/hooks/useOrgaSharingPossible';
-import StixCoreObjectMenuItemOrganizationSharing from '../stix_core_objects/StixCoreObjectMenuItemOrganizationSharing';
+import useIsOrgaSharingPossible from '../../../../utils/hooks/useIsOrgaSharingPossible';
 
 export const containerHeaderObjectsQuery = graphql`
   query ContainerHeaderObjectsQuery($id: String!) {
@@ -518,7 +517,7 @@ const ContainerHeader = (props) => {
 
   // if some buttons should be greyed out
   // case sharing
-  const { isOrgaSharingPossible, orgaSharingNotPossibleMessage } = useOrgaSharingPossible(container, true, enableManageAuthorizedMembers);
+  const isOrgaSharingPossible = useIsOrgaSharingPossible(container, true, enableManageAuthorizedMembers);
 
   const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
 
@@ -729,10 +728,10 @@ const ContainerHeader = (props) => {
                 {({ closeMenu }) => (
                   <Box>
                     {displaySharing && !displaySharingButton && (
-                      <StixCoreObjectMenuItemOrganizationSharing
-                        isOrgaSharingPossible={isOrgaSharingPossible}
-                        orgaSharingNotPossibleMessage={orgaSharingNotPossibleMessage}
-                        setOpenSharing={setOpenSharing}
+                      <StixCoreObjectMenuItemUnderEE
+                        setOpen={setOpenSharing}
+                        title={t_i18n('Share with an organization')}
+                        isDisabled={!isOrgaSharingPossible}
                         handleCloseMenu={closeMenu}
                       />
                     )}
@@ -752,8 +751,9 @@ const ContainerHeader = (props) => {
                       </Security>
                     )}
                     {displayEnrollPlaybook && !displayEnrollPlaybookButton && (
-                      <StixCoreObjectMenuItemEnrollPlaybook
-                        setOpenEnrollPlaybook={setOpenEnrollPlaybook}
+                      <StixCoreObjectMenuItemUnderEE
+                        title={t_i18n('Enroll in playbook')}
+                        setOpen={setOpenEnrollPlaybook}
                         handleCloseMenu={closeMenu}
                       />
                     )}
