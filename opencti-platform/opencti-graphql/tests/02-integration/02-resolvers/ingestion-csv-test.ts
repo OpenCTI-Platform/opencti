@@ -6,6 +6,8 @@ import { patchCsvIngestion } from '../../../src/modules/ingestion/ingestion-csv-
 import { now } from '../../../src/utils/format';
 import { SYSTEM_USER } from '../../../src/utils/access';
 import pjson from '../../../package.json';
+import { IngestionAuthType, type IngestionCsvAddInput, IngestionCsvMapperType } from '../../../src/generated/graphql';
+import { findById as findUserById } from '../../../src/domain/user';
 
 describe('CSV ingestion resolver standard behavior', () => {
   let singleColumnCsvMapperId = '';
@@ -65,35 +67,41 @@ describe('CSV ingestion resolver standard behavior', () => {
     expect(createSingleColumnCsvFeedsWithInlineMapperIngesterQueryResult?.data?.ingestionCsvAdd?.ingestion_running).toBeFalsy();
   });
 
-  it('should create a CSV feeds ingester with inline CSV Mapper', async () => {
-    const CSV_FEED_INGESTER_TO_CREATE = {
-      input: {
-        authentication_type: 'none',
-        name: 'Single column',
-        uri: 'https://lists.blocklist.de/lists/all.txt',
-        csv_mapper: JSON.stringify(singleColumnCsvMapper),
-        csv_mapper_type: 'inline',
-        user_id: ADMIN_USER.id
-      }
+  it('should create a CSV feeds ingester with inline CSV Mapper and auto user', async () => {
+    const input : IngestionCsvAddInput = {
+      authentication_type: IngestionAuthType.None,
+      name: 'Single column inline and auto user',
+      uri: 'https://lists.blocklist.de/lists/all.txt',
+      csv_mapper: JSON.stringify(singleColumnCsvMapper),
+      csv_mapper_type: IngestionCsvMapperType.Inline,
+      automatic_user: true,
+      user_id: ''
     };
+
     const createSingleColumnCsvFeedsIngesterQueryResult = await queryAsUserWithSuccess(USER_DISINFORMATION_ANALYST.client, {
       query: gql`
       mutation createSingleColumnCsvFeedsIngester($input: IngestionCsvAddInput!) {
         ingestionCsvAdd(input: $input) {
-        id
-        entity_type
-        csv_mapper_type
-        ingestion_running
-          }
+          id
+          entity_type
+          csv_mapper_type
+          ingestion_running
+          user_id
+        }
       },
       `,
-      variables: CSV_FEED_INGESTER_TO_CREATE
+      variables: { input }
     });
     const csvFeedIngester = createSingleColumnCsvFeedsIngesterQueryResult?.data?.ingestionCsvAdd;
     expect(csvFeedIngester.id).toBeDefined();
     expect(csvFeedIngester.csv_mapper_type).toBe('inline');
-    expect(createSingleColumnCsvFeedsIngesterQueryResult?.data?.ingestionCsvAdd?.entity_type).toBe('IngestionCsv');
-    expect(createSingleColumnCsvFeedsIngesterQueryResult?.data?.ingestionCsvAdd?.ingestion_running).toBeFalsy();
+    expect(csvFeedIngester.entity_type).toBe('IngestionCsv');
+    expect(csvFeedIngester.ingestion_running).toBeFalsy();
+
+    const userIdCreated = csvFeedIngester.user_id;
+    const createdUser = await findUserById(testContext, ADMIN_USER, userIdCreated);
+    expect(createdUser.name).toBe('[F] Single column inline and auto user');
+    expect(createdUser.user_email).toContain('@opencti.invalid');
   });
 
   it('should create a CSV feeds ingester with authentication', async () => {
