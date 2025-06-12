@@ -2577,6 +2577,7 @@
   "relationship_src": "送信元",
   "relationship_src-payload": "送信元ペイロード",
   "relationship_static-analysis-of": "静的解析による",
+  "relationship_stix-core-relationship": "関係",
   "relationship_stix-sighting-relationship": "目撃",
   "relationship_subnarrative-of": "サブナラティブ",
   "relationship_subtechnique-of": "サブテクニック",
