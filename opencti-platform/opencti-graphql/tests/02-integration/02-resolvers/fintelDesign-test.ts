@@ -24,7 +24,7 @@ const LIST_QUERY = gql`
           id
           name
           description
-          url
+          file_id
           gradiantFromColor
           gradiantToColor
           textColor
@@ -41,7 +41,7 @@ const READ_QUERY = gql`
       standard_id
       name
       description
-      url
+      file_id
       gradiantFromColor
       gradiantToColor
       textColor
@@ -60,12 +60,12 @@ const CREATE_QUERY = gql`
 `;
 
 const EDIT_QUERY = gql`
-  mutation FintelDesignEdit($id: ID!, $input: [EditInput!]!) {
-    fintelDesignFieldPatch(id: $id, input: $input) {
+  mutation FintelDesignEdit($id: ID!, $input: [EditInput!], $file: Upload) {
+    fintelDesignFieldPatch(id: $id, input: $input, file: $file) {
       id
       name
       description
-      url
+      file_id
       textColor
       gradiantToColor
       gradiantFromColor
@@ -78,7 +78,6 @@ describe('Fintel Design resolver standard behavior', () => {
   const fintelDesignInput = {
     name: 'Test Fintel Design',
     description: 'A design for testing',
-    url: 'https://example.com/design',
     gradiantFromColor: '#ffffff',
     gradiantToColor: '#000000',
     textColor: '#333333',

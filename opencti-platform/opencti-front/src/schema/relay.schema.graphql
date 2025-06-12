@@ -9258,7 +9258,8 @@ type Mutation {
   pirUnflagElement(id: ID!, input: PirUnflagElementInput!): ID
   fintelDesignAdd(input: FintelDesignAddInput!): FintelDesign
   fintelDesignDelete(id: ID!): ID
-  fintelDesignFieldPatch(id: ID!, input: [EditInput!]!): FintelDesign
+  fintelDesignFieldPatch(id: ID!, input: [EditInput!], file: Upload): FintelDesign
+  fintelDesignContextPatch(id: ID!, input: EditContext!): FintelDesign
   securityPlatformAdd(input: SecurityPlatformAddInput!): SecurityPlatform
   securityPlatformDelete(id: ID!): ID
   securityPlatformFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): SecurityPlatform
@@ -13325,7 +13326,7 @@ type FintelDesign implements BasicObject & InternalObject {
   parent_types: [String]!
   name: String!
   description: String
-  url: String
+  file_id: String
   gradiantFromColor: String
   gradiantToColor: String
   textColor: String
@@ -13334,10 +13335,10 @@ type FintelDesign implements BasicObject & InternalObject {
 input FintelDesignAddInput {
   name: String!
   description: String
-  url: String
   gradiantFromColor: String
   gradiantToColor: String
   textColor: String
+  file: Upload
 }
 
 type FintelDesignEdge {
