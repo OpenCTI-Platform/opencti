@@ -259,7 +259,7 @@ const TasksList = ({ data }) => {
         const taskWorkExpectedNumber = task.work?.tracking?.import_expected_number ?? 0;
         const progressNumberDisplay = task.work ? ` ${taskWorkProcessedNumber}/${taskWorkExpectedNumber}` : '';
         const provisioningNumberDisplay = task.work && (task.work.status === 'wait' || task.work.status === 'progress')
-          ? ` (Provisioning: ${task.task_processed_number}/${task.task_processed_number})`
+          ? ` (Provisioning: ${task.task_processed_number}/${task.task_expected_number})`
           : '';
         const progressFullText = `${t_i18n('Progress')}${progressNumberDisplay}${provisioningNumberDisplay}`;
         let progressValue = 0;
