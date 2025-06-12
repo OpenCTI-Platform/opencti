@@ -39,6 +39,24 @@ export const findAll = async (context, user, args) => {
   return listEntities(context, user, [ENTITY_TYPE_GROUP], args);
 };
 
+export const findDefaultIngestionGroup = async (context) => {
+  return findAll(context, context.user, {
+    filters: {
+      mode: 'and',
+      filters: [
+        {
+          key: ['auto_integration_assignation'],
+          values: [
+            'global',
+          ],
+        },
+      ],
+      filterGroups: [],
+    },
+    connectionFormat: false,
+  });
+};
+
 export const groupAllowedMarkings = async (context, user, groupId) => {
   return listAllToEntitiesThroughRelations(context, user, groupId, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION);
 };
