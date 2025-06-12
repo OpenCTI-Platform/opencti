@@ -58,8 +58,6 @@ const initCSVCreateForm: IngestionCsvAddInput = {
   name: '',
   description: '',
   uri: '',
-  csv_mapper_type: 'id', // should be modified in chunk 3 when we can create CSV inline
-  csv_mapper: '',
   csv_mapper_id: '',
   scheduling_period: 'PT1H',
   authentication_type: 'none',
@@ -144,7 +142,6 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
   const classes = useStyles();
   const isGranted = useGranted([SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]);
   const { me } = useAuth();
-
   const [open, setOpen] = useState(false);
   const [isCreateDisabled, setIsCreateDisabled] = useState(true);
   const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = useState(false);
@@ -210,8 +207,6 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
       description: values.description,
       scheduling_period: values.scheduling_period,
       uri: values.uri,
-      csv_mapper_type: values.csv_mapper_type,
-      csv_mapper: values.csv_mapper,
       csv_mapper_id: typeof values.csv_mapper_id === 'string' ? values.csv_mapper_id : values.csv_mapper_id?.value,
       authentication_type: values.authentication_type,
       authentication_value: authenticationValue,

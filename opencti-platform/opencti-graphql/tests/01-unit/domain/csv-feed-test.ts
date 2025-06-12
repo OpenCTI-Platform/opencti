@@ -20,7 +20,7 @@ describe('csvFeedGetCsvMapper', () => {
     const ingestionCsv: BasicStoreEntityIngestionCsv = {
       id: 'test-id-inline',
       csv_mapper_type: IngestionCsvMapperType.Inline,
-      csv_mapper: '{"openCTI_version":"6.6.6","type":"csvMapper"}',
+      csv_mapper: '{"id":"1","openCTI_version":"6.6.6","type":"csvMapper"}',
       csv_mapper_id: 'some-id', // this won't be used
     } as unknown as BasicStoreEntityIngestionCsv;
 
@@ -28,8 +28,10 @@ describe('csvFeedGetCsvMapper', () => {
 
     const result = csvFeedGetCsvMapper(context, ingestionCsv);
 
-    expect(result.id).toBeTruthy();
-    expect(result.type).toEqual('csvMapper');
-    expect(result.openCTI_version).toEqual('6.6.6');
+    expect(result).toEqual({
+      id: '1',
+      type: 'csvMapper',
+      openCTI_version: '6.6.6'
+    });
   });
 });
