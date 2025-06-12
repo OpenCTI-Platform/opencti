@@ -130,7 +130,7 @@ export const userWithOrigin = (req, user) => {
     socket: 'query',
     ip: req?.ip,
     user_id: user.id,
-    group_ids: user.group_ids,
+    group_ids: user.groups?.map((g) => g.internal_id) ?? [],
     organization_ids: user.organizations?.map((o) => o.internal_id) ?? [],
     user_metadata: { ...headers_metadata },
     referer: req?.headers.referer,

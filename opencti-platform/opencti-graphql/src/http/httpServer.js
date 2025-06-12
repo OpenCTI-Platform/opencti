@@ -89,7 +89,7 @@ const createHttpServer = async () => {
           socket: 'subscription',
           ip: webSocket._socket.remoteAddress,
           user_id: wsSession.user?.id,
-          group_ids: wsSession.user?.group_ids,
+          group_ids: wsSession.user?.groups?.map((g) => g.internal_id) ?? [],
           organization_ids: wsSession.user?.organizations?.map((o) => o.internal_id) ?? [],
         };
         const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
