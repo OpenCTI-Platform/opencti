@@ -9,6 +9,7 @@ import { findDefaultIngestionGroup } from '../../../src/domain/group';
 import type { BasicGroupEntity } from '../../../src/types/store';
 import { findById as findUserById } from '../../../src/domain/user';
 import { executionContext, SYSTEM_USER } from '../../../src/utils/access';
+import type { BasicStoreEntityOrganization } from '../../../src/modules/organization/organization-types';
 
 describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
   const ingestionCreatedIds: string[] = [];
@@ -42,8 +43,9 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
       authentication_type: IngestionAuthType.None,
       name: 'CSV Feed to test auto user creation without platform org',
       uri: 'http://fakefeed.invalid',
-      user_id: '',
-      automatic_user: true
+      user_id: '[F] CSV Feed to test auto user creation without platform org',
+      automatic_user: true,
+      confidence_level: '42'
     };
     const ingestionCreated = await addIngestionCsv(testContext, ingestionUser, ingestionCsvInput);
     expect(ingestionCreated.name).toBe('CSV Feed to test auto user creation without platform org');
@@ -52,15 +54,41 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
 
     const createdUser = await findUserById(testContext, SYSTEM_USER, ingestionCreated.user_id);
     expect(createdUser.name).toBe('[F] CSV Feed to test auto user creation without platform org');
-    expect(createdUser.user_email).toBe('CSVFeedtotestautousercreationwithoutlatformorg@opencti.invalid');
-    const userInDefaultGroup: BasicGroupEntity = createdUser.groups.some((group: BasicGroupEntity) => group.id === ingestionDefaultGroupId);
-    expect(userInDefaultGroup.name).toBe('Connectors'); // just to check that user is in default ingestion group
+    expect(createdUser.user_confidence_level?.max_confidence).toBe(42);
+    expect(createdUser.user_email.endsWith('@opencti.invalid'), `${createdUser.user_email} should ends with @opencti.invalid'`).toBeTruthy();
+    const userInDefaultGroup: BasicGroupEntity[] = createdUser.groups.filter((group: BasicGroupEntity) => group.id === ingestionDefaultGroupId);
+    expect(userInDefaultGroup[0].name).toBe('Connectors'); // just to check that user is in default ingestion group
     expect(createdUser.groups.length, 'Platform default group should not apply, only default ingestion group').toBe(1);
+    expect(createdUser.organizations.length, 'There is no platform org, so user should not have an organization').toBe(0);
   });
 
-  it.todo('should create a CSV Feed with auto user creation works fine with platform org', async () => {
+  it('should create a CSV Feed with auto user creation works fine with platform org', async () => {
     await enableEEAndSetOrganization(PLATFORM_ORGANIZATION);
-    // const platformOrganizationId = await getOrganizationIdByName(PLATFORM_ORGANIZATION.name);
+    const platformOrganization = await getOrganizationIdByName(PLATFORM_ORGANIZATION.name);
+
+    const ingestionCsvInput: IngestionCsvAddInput = {
+      authentication_type: IngestionAuthType.None,
+      name: 'CSV Feed to test auto user creation with platform org',
+      uri: 'http://fakefeed.invalid',
+      user_id: '[F] CSV Feed to test auto user creation with platform org',
+      automatic_user: true,
+      confidence_level: '81'
+    };
+    const ingestionCreated = await addIngestionCsv(testContext, ingestionUser, ingestionCsvInput);
+    expect(ingestionCreated.name).toBe('CSV Feed to test auto user creation with platform org');
+    ingestionCreatedIds.push(ingestionCreated.id);
+    expect(ingestionCreated.user_id).toBeDefined();
+
+    const createdUser = await findUserById(testContext, SYSTEM_USER, ingestionCreated.user_id);
+    expect(createdUser.name).toBe('[F] CSV Feed to test auto user creation with platform org');
+    expect(createdUser.user_confidence_level?.max_confidence).toBe(81);
+    expect(createdUser.user_email.endsWith('@opencti.invalid'), `${createdUser.user_email} should ends with @opencti.invalid'`).toBeTruthy();
+    const userInDefaultGroup: BasicGroupEntity[] = createdUser.groups.filter((group: BasicGroupEntity) => group.id === ingestionDefaultGroupId);
+    expect(userInDefaultGroup[0].name).toBe('Connectors'); // just to check that user is in default ingestion group
+    expect(createdUser.groups.length, 'Platform default group should not apply, only default ingestion group').toBe(1);
+
+    const userOrganizations: BasicGroupEntity[] = createdUser.groups.filter((org: BasicStoreEntityOrganization) => org.id === platformOrganization.id);
+    expect(userOrganizations.length, 'There is one platform org, so user should have one organization').toBe(1);
   });
 
   it.todo('should create a CSV Feed with System user works fine', async () => {

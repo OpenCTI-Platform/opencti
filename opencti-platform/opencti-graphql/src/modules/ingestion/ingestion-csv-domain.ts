@@ -1,11 +1,13 @@
 import { v4 as uuid } from 'uuid';
 import type { FileHandle } from 'fs/promises';
+import bcrypt from 'bcryptjs';
+import { v4 as uuid } from 'uuid';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityIngestionCsv, ENTITY_TYPE_INGESTION_CSV } from './ingestion-types';
 import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
-import { type CsvMapperTestResult, type EditInput, type IngestionCsvAddInput, IngestionCsvMapperType } from '../../generated/graphql';
+import { type CsvMapperTestResult, type EditInput, type IngestionCsvAddInput, IngestionCsvMapperType, type UserAddInput } from '../../generated/graphql';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS, isFeatureEnabled, PLATFORM_VERSION } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
@@ -20,7 +22,7 @@ import { registerConnectorForIngestion, unregisterConnectorForIngestion } from '
 import type { StixObject } from '../../types/stix-2-1-common';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
-import { FunctionalError } from '../../config/errors';
+import { FunctionalError, ValidationError } from '../../config/errors';
 import { convertRepresentationsIds } from '../internal/mapper-utils';
 import { addUser } from '../../domain/user';
 import { getEntityFromCache } from '../../database/cache';
@@ -28,7 +30,7 @@ import { SYSTEM_USER } from '../../utils/access';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import type { BasicStoreSettings } from '../../types/settings';
 import { findDefaultIngestionGroup } from '../../domain/group';
-import bcrypt from "bcryptjs";
+import type { BasicGroupEntity } from '../../types/store';
 
 const MINIMAL_CSV_FEED_COMPATIBLE_VERSION = '6.6.0';
 export const CSV_FEED_FEATURE_FLAG = 'CSV_FEED';
@@ -52,20 +54,29 @@ export const findCsvMapperForIngestionById = (context: AuthContext, user: AuthUs
 };
 
 export const createOnTheFlyUser = async (context: AuthContext, user: AuthUser, input: IngestionCsvAddInput) => {
-  const groups = await findDefaultIngestionGroup(context, user);
-  if (groups.length === 0) {
+  const defaultIngestionGroups: BasicGroupEntity[] = await findDefaultIngestionGroup(context, user) as BasicGroupEntity[];
+  if (defaultIngestionGroups.length < 1) {
     throw FunctionalError('You have not defined a default group for ingestion users', {});
   }
   const { platform_organization } = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const newlyCreatedUser = await addUser(context, user, {
+
+  let userInput: UserAddInput = {
+    password: uuid(),
     user_email: `${bcrypt.hashSync(input.user_id)}@opencti.invalid`,
     name: input.user_id,
     prevent_default_groups: true,
-    groups: groups[0],
-    objectOrganization: platform_organization ? [platform_organization] : [],
-    external: true,
-    user_confidence_level: { max_confidence: +input.confidence_level, overrides: [] }
-  });
+    groups: [defaultIngestionGroups[0].id],
+    objectOrganization: platform_organization ? [platform_organization] : []
+  };
+
+  if (input.confidence_level) {
+    const userConfidence = parseFloat(input.confidence_level);
+    if (userConfidence < 0 || userConfidence > 100 || !Number.isInteger(userConfidence)) {
+      throw ValidationError('The confidence_level should be an integer between 0 and 100', 'confidence_level');
+    }
+    userInput = { ...userInput, user_confidence_level: { max_confidence: userConfidence, overrides: [] } };
+  }
+  const newlyCreatedUser = await addUser(context, user, userInput);
   return newlyCreatedUser;
 };
 
