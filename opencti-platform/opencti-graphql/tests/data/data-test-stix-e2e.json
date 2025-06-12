@@ -915,6 +915,32 @@
       "x_opencti_id": "91bced0e-63dc-4ea6-ab6d-7137706b1d87",
       "x_opencti_type": "Grouping",
       "type": "grouping"
+    },
+    {
+      "id": "notes--1d2cb936-0259-52f6-ac06-dcb8f5536733",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2024-07-30T13:15:37.447Z",
+      "modified": "2024-07-30T13:15:37.447Z",
+      "name": "Navigation test note entity",
+      "context": "unspecified",
+      "x_opencti_id": "91bced0e-63dc-4ea6-ab6d-7137706b1d88",
+      "x_opencti_type": "Notes",
+      "type": "notes"
+    },
+    {
+      "id": "external-references--1d2cb936-0259-52f6-ac06-dcb8f5536734",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2024-07-30T13:15:37.447Z",
+      "modified": "2024-07-30T13:15:37.447Z",
+      "name": "Navigation External Ref Test",
+      "context": "unspecified",
+      "x_opencti_id": "91bced0e-63dc-4ea6-ab6d-7137706b1d89",
+      "x_opencti_type": "External-References",
+      "type": "external-references"
     }
   ]
 }
