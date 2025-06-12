@@ -71,13 +71,14 @@ const AccordionAttackPattern = ({
         sx={{
           minHeight: 0,
           paddingLeft: 0,
+          paddingRight: 1.25,
           backgroundColor,
           whiteSpace: 'wrap',
           flexDirection: 'row-reverse',
           '& .MuiAccordionSummary-expandIconWrapper.Mui-expanded': {
             transform: 'rotate(90deg)',
           },
-          '.MuiAccordionSummary-content': { marginBlock: 1.25, alignItems: 'center' },
+          '.MuiAccordionSummary-content': { justifyContent: 'space-between', marginBlock: 1.25, alignItems: 'center' },
         }}
       >
         <Typography variant="body2" fontSize={10}>
