@@ -5,7 +5,7 @@ import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import { Dashboard_workspace$data } from '@components/workspaces/dashboards/__generated__/Dashboard_workspace.graphql';
 import handleExportJson from 'src/private/components/workspaces/workspaceExportHandler';
-import { fetchQuery, QueryRenderer } from 'src/relay/environment';
+import { fetchQuery } from 'src/relay/environment';
 import Security from 'src/utils/Security';
 import { nowUTC } from 'src/utils/Time';
 import { EXPLORE_EXUPDATE } from 'src/utils/hooks/useGranted';
@@ -20,7 +20,6 @@ import WorkspaceHeaderTagManager from '@components/workspaces/workspaceHeader/Wo
 import Button from '@mui/material/Button';
 import WorkspaceEditionContainer from '@components/workspaces/WorkspaceEditionContainer';
 import { useFormatter } from '../../../../components/i18n';
-import WorkspacePopoverContainerQuery from '../WorkspacePopoverContainerQuery';
 
 const workspaceHeaderToStixReportBundleQuery = graphql`
   query WorkspaceHeaderToStixReportBundleQuery($id: String!) {
@@ -42,10 +41,6 @@ type WorkspaceHeaderProps = {
   },
   handleAddWidget?: () => void;
 };
-
-interface EditionQueryRendererProps {
-  workspace: Dashboard_workspace$data | InvestigationGraph_fragment$data
-}
 
 const WorkspaceHeader = ({
   workspace,
@@ -125,22 +120,11 @@ const WorkspaceHeader = ({
           </Security>
         </div>
       </div>
-      <QueryRenderer
-        query={WorkspacePopoverContainerQuery}
-        variables={{ id: workspace.id }}
-        render={({ props: editionProps }: { props: EditionQueryRendererProps }) => {
-          if (!editionProps) {
-            return <div />;
-          }
-          return (
-            <WorkspaceEditionContainer
-              workspace={editionProps.workspace}
-              handleClose={handleCloseEdit}
-              open={displayEdit}
-              type={workspace.type}
-            />
-          );
-        }}
+      <WorkspaceEditionContainer
+        workspace={workspace}
+        handleClose={handleCloseEdit}
+        open={displayEdit}
+        type={workspace.type}
       />
     </>
   );

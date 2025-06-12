@@ -205,6 +205,7 @@ const WorkspaceEditionOverview = createFragmentContainer(
         id
         name
         description
+        type
       }
     `,
   },
