@@ -17,11 +17,23 @@ export default class DashboardDetailsPage {
   }
 
   getActionsPopover() {
-    return this.page.getByLabel('Workspace popover of actions');
+    return this.page.getByLabel('Popover of actions');
   }
 
   getActionButton(name: string) {
     return this.page.getByRole('menuitem', { name });
+  }
+
+  getEditButton() {
+    return this.page.getByRole('button', { name: 'Update' });
+  }
+
+  getExportButton() {
+    return this.page.getByRole('button', { name: 'Export', exact: true });
+  }
+
+  getDeleteButton() {
+    return this.page.getByRole('button', { name: 'Delete' });
   }
 
   getConfirmButton() {

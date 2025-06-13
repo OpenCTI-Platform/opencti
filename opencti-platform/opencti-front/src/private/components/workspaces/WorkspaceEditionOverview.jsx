@@ -1,15 +1,23 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql, createFragmentContainer } from 'react-relay';
 import { Formik, Form, Field } from 'formik';
 import withStyles from '@mui/styles/withStyles';
 import { compose, pick } from 'ramda';
 import * as Yup from 'yup';
-import inject18n from '../../../components/i18n';
+import Button from '@mui/material/Button';
+import { Stack } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import inject18n, { useFormatter } from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import { SubscriptionFocus } from '../../../components/Subscription';
 import { commitMutation } from '../../../relay/environment';
 import MarkdownField from '../../../components/fields/MarkdownField';
+import useDeletion from '../../../utils/hooks/useDeletion';
+import { deleteNode } from '../../../utils/store';
+import useApiMutation from '../../../utils/hooks/useApiMutation';
+import DeleteDialog from '../../../components/DeleteDialog';
+import WorkspacePopoverDeletionMutation from './WorkspacePopoverDeletionMutation';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -59,82 +67,128 @@ export const workspaceEditionOverviewFocus = graphql`
   }
 `;
 
-const workspaceValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-});
+const WorkspaceEditionOverviewComponent = ({ paginationOptions, workspace, context }) => {
+  const { id } = workspace;
+  const { t_i18n } = useFormatter();
+  const navigate = useNavigate();
+  const initialValues = pick(['name', 'description'], workspace);
 
-class WorkspaceEditionOverviewComponent extends Component {
-  handleChangeFocus(name) {
+  const deletion = useDeletion({ handleClose: () => {} });
+  const { deleting, setDeleting, handleOpenDelete, handleCloseDelete } = deletion;
+
+  const [commit] = useApiMutation(WorkspacePopoverDeletionMutation);
+
+  const workspaceValidation = () => Yup.object().shape({
+    name: Yup.string().required(t_i18n('This field is required')),
+    description: Yup.string().nullable(),
+  });
+
+  const handleChangeFocus = (name) => {
     commitMutation({
       mutation: workspaceEditionOverviewFocus,
       variables: {
-        id: this.props.workspace.id,
+        id,
         input: {
           focusOn: name,
         },
       },
     });
-  }
+  };
 
-  handleSubmitField(name, value) {
-    workspaceValidation(this.props.t)
+  const handleSubmitField = (name, value) => {
+    workspaceValidation()
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
           mutation: workspaceMutationFieldPatch,
           variables: {
-            id: this.props.workspace.id,
+            id,
             input: { key: name, value: value || '' },
           },
         });
       })
       .catch(() => false);
-  }
+  };
 
-  render() {
-    const { t, workspace, context } = this.props;
-    const initialValues = pick(['name', 'description'], workspace);
-    return (
-      <Formik
-        enableReinitialize={true}
-        initialValues={initialValues}
-        validationSchema={workspaceValidation(t)}
-        onSubmit={() => true}
-      >
-        {() => (
-          <Form>
-            <Field
-              component={TextField}
-              name="name"
-              label={t('Name')}
-              fullWidth={true}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="name" />
+  const submitDelete = () => {
+    const { type } = workspace;
+    setDeleting(true);
+    commit({
+      variables: { id },
+      updater: (store) => {
+        if (paginationOptions) {
+          deleteNode(store, 'Pagination_workspaces', paginationOptions, id);
+        }
+      },
+      onCompleted: () => {
+        setDeleting(false);
+        if (paginationOptions) {
+          handleCloseDelete();
+        } else if (type) {
+          navigate(`/dashboard/workspaces/${type}s`);
+        } else {
+          navigate('/dashboard');
+        }
+      },
+    });
+  };
+
+  return (
+    <Formik
+      enableReinitialize={true}
+      initialValues={initialValues}
+      validationSchema={workspaceValidation()}
+      onSubmit={() => true}
+    >
+      {() => (
+        <Form>
+          <Field
+            component={TextField}
+            name="name"
+            label={t_i18n('Name')}
+            fullWidth={true}
+            onFocus={handleChangeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="name" />
               }
-            />
-            <Field
-              component={MarkdownField}
-              name="description"
-              label={t('Description')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={{ marginTop: 20 }}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="description" />
+          />
+          <Field
+            component={MarkdownField}
+            name="description"
+            label={t_i18n('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={{ marginTop: 20 }}
+            onFocus={handleChangeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="description" />
               }
+          />
+          <Stack flexDirection="row" justifyContent="flex-end" mt={2}>
+            <Button
+              color="error"
+              variant="contained"
+              onClick={handleOpenDelete}
+              disabled={deleting}
+            >
+              {t_i18n('Delete')}
+            </Button>
+            <DeleteDialog
+              deletion={deletion}
+              submitDelete={submitDelete}
+              message={workspace.type === 'investigation'
+                ? t_i18n('Do you want to delete this investigation?')
+                : t_i18n('Do you want to delete this dashboard?')}
             />
-          </Form>
-        )}
-      </Formik>
-    );
-  }
-}
+          </Stack>
+        </Form>
+      )}
+    </Formik>
+  );
+};
 
 WorkspaceEditionOverviewComponent.propTypes = {
   classes: PropTypes.object,
@@ -152,6 +206,7 @@ const WorkspaceEditionOverview = createFragmentContainer(
         id
         name
         description
+        type
       }
     `,
   },

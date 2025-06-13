@@ -299,6 +299,7 @@ export default createFragmentContainer(DashboardComponent, {
       }
       currentUserAccessRight
       ...WorkspaceManageAccessDialog_authorizedMembers
+      ...WorkspaceEditionContainer_workspace
     }
   `,
 });

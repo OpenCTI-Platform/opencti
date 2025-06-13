@@ -47,6 +47,7 @@ const investigationGraphFragment = graphql`
     }
     currentUserAccessRight
     ...WorkspaceManageAccessDialog_authorizedMembers
+    ...WorkspaceEditionContainer_workspace
   }
 `;
 

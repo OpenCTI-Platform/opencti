@@ -96,7 +96,7 @@ const WorkspaceWidgetConfig = ({ workspace, widget, onComplete, closeMenu }: Wor
                   {t_i18n('Import Widget')}
                 </Button>
                 <Button
-                  variant='contained'
+                  variant='outlined'
                   disableElevation
                   sx={{ marginLeft: 1 }}
                   onClick={handleOpenWidgetConfig}

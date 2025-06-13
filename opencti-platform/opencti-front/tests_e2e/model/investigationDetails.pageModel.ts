@@ -13,15 +13,15 @@ export default class InvestigationDetailsPage {
   }
 
   openPopUpButton() {
-    return this.page.getByLabel('Workspace popover of actions');
+    return this.page.getByLabel('Popover of actions');
   }
 
   getEditButton() {
-    return this.page.getByRole('menuitem', { name: 'Update' });
+    return this.page.getByRole('button', { name: 'Update' });
   }
 
   getDeleteButton() {
-    return this.page.getByRole('menuitem', { name: 'Delete' });
+    return this.page.getByRole('button', { name: 'Delete' });
   }
 
   getConfirmButton() {

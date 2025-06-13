@@ -1,7 +1,7 @@
 import IconButton from '@mui/material/IconButton';
 import { DotsHorizontalCircleOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
-import { CloseOutlined, Delete, LabelOutlined } from '@mui/icons-material';
+import { CloseOutlined, Delete, AddOutlined } from '@mui/icons-material';
 import React, { useState } from 'react';
 import { useFormatter } from 'src/components/i18n';
 import { FormikConfig } from 'formik/dist/types';
@@ -85,17 +85,6 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
 
   return (
     <>
-      <div style={{ display: 'flex', gap: 7 }}>
-        {tags.slice(0, 2).map(
-          (tag) => tag.length > 0 && (
-            <Chip
-              key={tag}
-              label={tag}
-              onDelete={deleteTag(tag)}
-            />
-          ),
-        )}
-      </div>
       <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]} hasAccess={canEdit}>
         <>
           {tags.length > 1 ? (
@@ -118,14 +107,14 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
                 {isTagInputOpen ? (
                   <CloseOutlined fontSize="small" />
                 ) : (
-                  <LabelOutlined fontSize="small" />
+                  <AddOutlined fontSize="small" />
                 )}
               </IconButton>
             </Tooltip>
           )}
 
           <Slide
-            direction="left"
+            direction="right"
             in={isTagInputOpen}
             mountOnEnter
             unmountOnExit
@@ -210,6 +199,17 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
           </Dialog>
         </>
       </Security>
+      <div style={{ display: 'flex', gap: 7 }}>
+        {tags.slice(0, 2).map(
+          (tag) => tag.length > 0 && (
+            <Chip
+              key={tag}
+              label={tag}
+              onDelete={deleteTag(tag)}
+            />
+          ),
+        )}
+      </div>
     </>
   );
 };

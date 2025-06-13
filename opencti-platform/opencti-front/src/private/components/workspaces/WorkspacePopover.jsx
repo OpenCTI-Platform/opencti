@@ -4,7 +4,6 @@ import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
 import Box from '@mui/material/Box';
 import MoreVert from '@mui/icons-material/MoreVert';
-import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
@@ -23,6 +22,8 @@ import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
 import stopEvent from '../../../utils/domEvent';
 import DeleteDialog from '../../../components/DeleteDialog';
 import useDeletion from '../../../utils/hooks/useDeletion';
+import WorkspaceEditionQuery from './WorkspacePopoverContainerQuery';
+import WorkspacePopoverDeletionMutation from './WorkspacePopoverDeletionMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -31,20 +32,6 @@ const useStyles = makeStyles(() => ({
     margin: 0,
   },
 }));
-
-const workspaceEditionQuery = graphql`
-  query WorkspacePopoverContainerQuery($id: String!) {
-    workspace(id: $id) {
-      ...WorkspaceEditionContainer_workspace
-    }
-  }
-`;
-
-const WorkspacePopoverDeletionMutation = graphql`
-  mutation WorkspacePopoverDeletionMutation($id: ID!) {
-    workspaceDelete(id: $id)
-  }
-`;
 
 const WorkspacePopover = ({ workspace, paginationOptions }) => {
   const { id, type } = workspace;
@@ -227,7 +214,7 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
           : t_i18n('Do you want to delete this dashboard?')}
       />
       <QueryRenderer
-        query={workspaceEditionQuery}
+        query={WorkspaceEditionQuery}
         variables={{ id }}
         render={({ props: editionProps }) => {
           if (!editionProps) {
