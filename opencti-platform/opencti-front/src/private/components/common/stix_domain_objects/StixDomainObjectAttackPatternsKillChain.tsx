@@ -47,7 +47,6 @@ import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import { fetchQuery } from '../../../../relay/environment';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 export const stixDomainObjectAttackPatternsKillChainQuery = graphql`
   query StixDomainObjectAttackPatternsKillChainQuery(
