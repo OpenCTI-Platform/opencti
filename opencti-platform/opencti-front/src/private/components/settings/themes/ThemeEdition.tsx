@@ -100,6 +100,8 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
     <Formik
       onSubmit={handleSubmit}
       validationSchema={themeValidator}
+      validateOnChange={true}
+      validateOnBlur={true}
       enabledReinitalize={true}
       initialValues={theme}
     >
