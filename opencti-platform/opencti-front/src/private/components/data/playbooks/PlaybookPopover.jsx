@@ -35,6 +35,12 @@ import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import stopEvent from '../../../../utils/domEvent';
 
+const playbookPopoverDeletionMutation = graphql`
+  mutation PlaybookPopoverDeletionMutation($id: ID!) {
+    playbookDelete(id: $id)
+  }
+`;
+
 const PlaybookPopover = (props) => {
   const { playbookId, running, paginationOptions } = props;
   const { t_i18n } = useFormatter();
@@ -65,12 +71,39 @@ const PlaybookPopover = (props) => {
     setDisplayStop(true);
     handleClose(event);
   };
+
   const deletion = useDeletion({ handleClose: () => setAnchorEl(null) });
   const { setDeleting, handleOpenDelete } = deletion;
+
   const handleCloseStop = (event) => {
     setDisplayStop(false);
     stopEvent(event);
   };
+
+  const submitDelete = (event) => {
+    setDeleting(true);
+    stopEvent(event);
+    commitMutation({
+      mutation: playbookPopoverDeletionMutation,
+      variables: {
+        id: playbookId,
+      },
+      updater: (store) => {
+        if (paginationOptions) {
+          deleteNode(
+            store,
+            'Pagination_playbooks',
+            paginationOptions,
+            playbookId,
+          );
+        }
+      },
+      onCompleted: () => {
+        setDeleting(false);
+      },
+    });
+  };
+
   const submitStart = (event) => {
     setStarting(true);
     stopEvent(event);
@@ -86,6 +119,7 @@ const PlaybookPopover = (props) => {
       },
     });
   };
+
   const submitStop = (event) => {
     setStopping(true);
     stopEvent(event);
@@ -101,6 +135,7 @@ const PlaybookPopover = (props) => {
       },
     });
   };
+
   return (
     <>
       <IconButton
@@ -120,8 +155,13 @@ const PlaybookPopover = (props) => {
         ) : (
           <MenuItem onClick={handleOpenStart}>{t_i18n('Start')}</MenuItem>
         )}
-        <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+        {paginationOptions && <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>}
       </Menu>
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={submitDelete}
+        message={t_i18n('Do you want to delete this playbook?')}
+      />
       <Dialog
         slotProps={{ paper: { elevation: 1 } }}
         open={displayStart}

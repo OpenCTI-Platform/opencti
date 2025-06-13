@@ -14,7 +14,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import React, { useEffect, useState } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -44,33 +43,6 @@ import ItemIcon from '../../../../components/ItemIcon';
 
 const interval$ = interval(FIVE_SECONDS);
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  title: {
-    float: 'left',
-    textTransform: 'uppercase',
-  },
-  popover: {
-    float: 'left',
-    marginTop: '-13px',
-  },
-  status: {
-    float: 'left',
-  },
-  chip: {
-    fontSize: 12,
-    lineHeight: '12px',
-    height: 25,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-  },
-  activity: {
-    marginTop: -10,
-    float: 'right',
-  },
-}));
-
 const inlineStyles = {
   green: {
     backgroundColor: 'rgba(76, 175, 80, 0.08)',
@@ -97,7 +69,6 @@ const PlaybookHeaderComponent = ({
   playbook: PlaybookHeader_playbook$data;
   relay: RelayRefetchProp;
 }) => {
-  const classes = useStyles();
   const theme = useTheme();
 
   useEffect(() => {
@@ -114,37 +85,53 @@ const PlaybookHeaderComponent = ({
   const [rawData, setRawData] = useState<string | null | undefined>(null);
   const { t_i18n, nsdt, n } = useFormatter();
   return (
-    <>
+    <div style={{ display: 'flex' }}>
       <Typography
         variant="h1"
         gutterBottom={true}
-        classes={{ root: classes.title }}
+        style={{
+          float: 'left',
+          textTransform: 'uppercase',
+          marginRight: 20,
+        }}
       >
         {playbook.name}
       </Typography>
-      <div>
-        <PlaybookEdition id={playbook.id}/>
+      <div style={{ float: 'left' }}>
+        <Chip
+          style={{
+            fontSize: 12,
+            lineHeight: '12px',
+            height: 25,
+            textTransform: 'uppercase',
+            borderRadius: 4,
+            ...(playbook.playbook_running ? inlineStyles.green : inlineStyles.red),
+          }}
+          label={
+            playbook.playbook_running
+              ? t_i18n('Playbook is running')
+              : t_i18n('Playbook is stopped')
+          }
+        />
       </div>
-      <div className={classes.popover}>
+      <div style={{
+        marginTop: '-3px',
+        float: 'right',
+      }}
+      >
         <PlaybookPopover
           playbookId={playbook.id}
           running={playbook.playbook_running}
         />
       </div>
-      <div className={classes.status}>
-        <Chip
-          classes={{ root: classes.chip }}
-          style={
-              playbook.playbook_running ? inlineStyles.green : inlineStyles.red
-            }
-          label={
-              playbook.playbook_running
-                ? t_i18n('Playbook is running')
-                : t_i18n('Playbook is stopped')
-            }
-        />
+      <div style={{ float: 'right' }}>
+        <PlaybookEdition id={playbook.id}/>
       </div>
-      <div className={classes.activity}>
+      <div style={{
+        marginTop: -9,
+        float: 'right',
+      }}
+      >
         <ToggleButtonGroup
           size="small"
           color="secondary"
@@ -156,8 +143,14 @@ const PlaybookHeaderComponent = ({
           <ToggleButton value="cards" aria-label="cards">
             <div>
               <Chip
-                classes={{ root: classes.chip }}
-                style={{ marginRight: 14 }}
+                style={{
+                  fontSize: 12,
+                  lineHeight: '12px',
+                  height: 25,
+                  textTransform: 'uppercase',
+                  borderRadius: 4,
+                  marginRight: 14,
+                }}
                 label={`${n(playbook.queue_messages)} ${t_i18n('messages in queue')}`}
               />
             </div>
@@ -185,7 +178,7 @@ const PlaybookHeaderComponent = ({
                   dense={true}
                   divider={openExecution !== lastExecution.id}
                   onClick={() => setOpenExecution(openExecution ? null : lastExecution.id)
-                    }
+                  }
                 >
                   <ListItemIcon style={{ marginLeft: 10 }}>
                     <ItemIcon type="Playbook" color={theme.palette.primary.main}/>
@@ -218,23 +211,23 @@ const PlaybookHeaderComponent = ({
                         onClick={() => setRawData(step.error ?? step.bundle_or_patch)}
                       >
                         <ListItemIcon>
-                            <Tooltip title={t_i18n(step.status)}>
-                              {step.status === 'success' ? (
-                                <CheckCircleOutlined
-                                  fontSize="small"
-                                  color="success"
-                                />
-                              ) : (
-                                <ErrorOutlined fontSize="small" color="error"/>
-                              )}
-                            </Tooltip>
-                          </ListItemIcon>
+                          <Tooltip title={t_i18n(step.status)}>
+                            {step.status === 'success' ? (
+                              <CheckCircleOutlined
+                                fontSize="small"
+                                color="success"
+                              />
+                            ) : (
+                              <ErrorOutlined fontSize="small" color="error"/>
+                            )}
+                          </Tooltip>
+                        </ListItemIcon>
                         <ListItemText
-                            primary={step.message}
-                            secondary={`${t_i18n('Execution ended at')} ${nsdt(
-                              step.out_timestamp,
-                            )}`}
-                          />
+                          primary={step.message}
+                          secondary={`${t_i18n('Execution ended at')} ${nsdt(
+                            step.out_timestamp,
+                          )}`}
+                        />
                       </ListItemButton>
                     ))}
                   </List>
@@ -258,7 +251,7 @@ const PlaybookHeaderComponent = ({
         </DialogContent>
       </Dialog>
       <div className="clearfix"/>
-    </>
+    </div>
   );
 };
 
