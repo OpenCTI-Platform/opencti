@@ -1,3 +1,4 @@
+import { v4 as uuid } from 'uuid';
 import type { FileHandle } from 'fs/promises';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
@@ -44,25 +45,33 @@ export const findCsvMapperForIngestionById = (context: AuthContext, user: AuthUs
 };
 
 export const addIngestionCsv = async (context: AuthContext, user: AuthUser, input: IngestionCsvAddInput) => {
-  if (input.authentication_value) {
-    verifyIngestionAuthenticationContent(input.authentication_type, input.authentication_value);
+  const parsedInput: IngestionCsvAddInput = {
+    ...input,
+    csv_mapper: input.csv_mapper ? JSON.stringify({
+      ...JSON.parse(input.csv_mapper),
+      id: uuid()
+    }) : input.csv_mapper
+  };
+  if (parsedInput.authentication_value) {
+    verifyIngestionAuthenticationContent(parsedInput.authentication_type, parsedInput.authentication_value);
   }
-  const { element, isCreation } = await createEntity(context, user, input, ENTITY_TYPE_INGESTION_CSV, { complete: true });
+
+  const { element, isCreation } = await createEntity(context, user, parsedInput, ENTITY_TYPE_INGESTION_CSV, { complete: true });
   if (isCreation) {
     await registerConnectorForIngestion(context, {
       id: element.id,
       type: 'CSV',
       name: element.name,
       is_running: element.ingestion_running ?? false,
-      connector_user_id: input.user_id
+      connector_user_id: parsedInput.user_id
     });
     await publishUserAction({
       user,
       event_type: 'mutation',
       event_scope: 'create',
       event_access: 'administration',
-      message: `creates csv ingestion \`${input.name}\``,
-      context_data: { id: element.id, entity_type: ENTITY_TYPE_INGESTION_CSV, input }
+      message: `creates csv ingestion \`${parsedInput.name}\``,
+      context_data: { id: element.id, entity_type: ENTITY_TYPE_INGESTION_CSV, input: parsedInput as unknown } // input was known as unknown
     });
   }
   return element;
@@ -81,8 +90,20 @@ export const ingestionCsvEditField = async (context: AuthContext, user: AuthUser
       verifyIngestionAuthenticationContent(ingestionConfiguration.authentication_type, authenticationValueField.value[0]);
     }
   }
+  const parsedInput = input.map((editInput) => {
+    if (editInput.key === 'csv_mapper') {
+      return {
+        ...editInput,
+        value: editInput.value ? JSON.stringify({
+          ...JSON.parse(editInput.value as unknown as string),
+          id: uuid()
+        }) : editInput.value
+      };
+    }
+    return editInput;
+  });
 
-  const { element } = await updateAttribute(context, user, ingestionId, ENTITY_TYPE_INGESTION_CSV, input);
+  const { element } = await updateAttribute(context, user, ingestionId, ENTITY_TYPE_INGESTION_CSV, parsedInput);
   await registerConnectorForIngestion(context, {
     id: element.id,
     type: 'CSV',
@@ -95,8 +116,8 @@ export const ingestionCsvEditField = async (context: AuthContext, user: AuthUser
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `updates \`${input.map((i) => i.key).join(', ')}\` for csv ingestion \`${element.name}\``,
-    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_CSV, input }
+    message: `updates \`${parsedInput.map((i) => i.key).join(', ')}\` for csv ingestion \`${element.name}\``,
+    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_CSV, input: parsedInput as unknown }
   });
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
 };
@@ -207,6 +228,7 @@ export const csvFeedAddInputFromImport = async (context: AuthContext, user: Auth
   }
 
   return {
+    markings: [], // On some config, marking is missing
     ...parsedData.configuration,
     csvMapper: transformCsvMapperConfig(parsedData.configuration.csv_mapper.configuration, context, user),
   };
@@ -214,7 +236,6 @@ export const csvFeedAddInputFromImport = async (context: AuthContext, user: Auth
 
 export const csvFeedGetCsvMapper = (context: AuthContext, ingestionCsv: BasicStoreEntityIngestionCsv) => {
   return ingestionCsv.csv_mapper_type === 'inline' ? {
-    id: ingestionCsv.id,
     ...JSON.parse(ingestionCsv.csv_mapper!)
   } : findCsvMapperForIngestionById(context, context.user!, ingestionCsv.csv_mapper_id!);
 };
@@ -222,7 +243,6 @@ export const csvFeedGetCsvMapper = (context: AuthContext, ingestionCsv: BasicSto
 const getCsvMapper = async (context: AuthContext, ingestionCsv: BasicStoreEntityIngestionCsv) => {
   if (ingestionCsv.csv_mapper_type === 'inline') {
     return {
-      id: ingestionCsv.id,
       ...JSON.parse(ingestionCsv.csv_mapper!)
     };
   }
@@ -249,7 +269,8 @@ export const csvFeedMapperExport = async (context: AuthContext, user: AuthUser, 
     description,
     uri,
     authentication_type,
-    markings
+    markings,
+    scheduling_period
   } = ingestionCsv;
   const csv_mapper = await getCsvMapper(context, ingestionCsv);
   const parsedRepresentations: CsvMapperRepresentation[] = csv_mapper.representations;
@@ -264,6 +285,7 @@ export const csvFeedMapperExport = async (context: AuthContext, user: AuthUser, 
       authentication_type,
       authentication_value: '',
       markings,
+      scheduling_period,
       csv_mapper_type: 'inline',
       csv_mapper: {
         configuration: {
