@@ -65,7 +65,8 @@ import {
   STIX_REF_RELATIONSHIP_TYPES
 } from '../schema/stixRefRelationship';
 import {
-  ABSTRACT_BASIC_RELATIONSHIP, ABSTRACT_STIX_OBJECT,
+  ABSTRACT_BASIC_RELATIONSHIP,
+  ABSTRACT_STIX_OBJECT,
   ABSTRACT_STIX_REF_RELATIONSHIP,
   BASE_TYPE_RELATION,
   buildRefRelationKey,
@@ -185,7 +186,6 @@ import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWork
 import { ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, isStixCyberObservable } from '../schema/stixCyberObservable';
 import { lockResources } from '../lock/master-lock';
 import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_UPDATE_LINKED } from '../modules/draftWorkspace/draftOperations';
-import {listEntities} from "./middleware-loader";
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -2827,7 +2827,8 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         // Check dynamic
         const dynamicFilter = dynamic?.values ?? [];
         if (isNotEmptyField(dynamicFilter)) {
-          const relatedEntities = await listEntities(context, user, [ABSTRACT_STIX_OBJECT], {
+          const computedIndices = computeQueryIndices([], [ABSTRACT_STIX_OBJECT]);
+          const relatedEntities = await elPaginate(context, user, computedIndices, {
             connectionFormat: false,
             first: MAX_RUNTIME_RESOLUTION_SIZE,
             bypassSizeLimit: true, // ensure that max runtime prevent on ES_MAX_PAGINATION

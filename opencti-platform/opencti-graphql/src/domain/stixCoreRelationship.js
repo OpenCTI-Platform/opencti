@@ -4,7 +4,7 @@ import { ApolloServerErrorCode } from '@apollo/server/errors';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { createRelation, deleteElementById, deleteRelationsByFromAndTo, timeSeriesRelations, updateAttribute } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
-import {FunctionalError, UnsupportedError} from '../config/errors';
+import { FunctionalError, UnsupportedError } from '../config/errors';
 import { elCount } from '../database/engine';
 import { fillTimeSeries, isEmptyField, isNotEmptyField, READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS } from '../database/utils';
 import { isStixCoreRelationship, stixCoreRelationshipOptions } from '../schema/stixCoreRelationship';
