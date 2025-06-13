@@ -92,33 +92,26 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
       ]}
       />
       <CustomizationMenu />
-      <div style={{ marginBottom: 23 }}>
-        <Typography
-          variant="h1"
-          gutterBottom={true}
-          style={{ float: 'left', marginRight: 20 }}
-        >
-          {decayRule.name}
-        </Typography>
-        <ItemBoolean
-          status={decayRule.active ?? false}
-          label={decayRule.active ? t_i18n('Active') : t_i18n('Inactive')}
-        />
-        {!decayRule.built_in && (
-          <div style={{ float: 'right' }}>
-            <DecayRuleEdition decayRule={decayRule} />
-          </div>
-        )}
-        {!decayRule.built_in && (
-          <div style={{
-            float: 'right',
-            marginTop: '-8px',
-          }}
+      <div style={{ marginBottom: 23, display: 'flex' }}>
+        <div style={{ display: 'flex', flex: 1 }}>
+          <Typography
+            variant="h1"
+            gutterBottom={true}
+            style={{ marginRight: 20 }}
           >
+            {decayRule.name}
+          </Typography>
+          <ItemBoolean
+            status={decayRule.active ?? false}
+            label={decayRule.active ? t_i18n('Active') : t_i18n('Inactive')}
+          />
+        </div>
+        {!decayRule.built_in && (
+          <>
             <DecayRulePopover decayRule={decayRule} />
-          </div>
+            <DecayRuleEdition decayRule={decayRule} />
+          </>
         )}
-
       </div>
       <div className="clearfix" />
       <Grid
