@@ -125,8 +125,6 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   entityType,
 }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isSecurityPlatformEnabled = isFeatureEnable('SECURITY_PLATFORM');
   const isSecurityPlatform = entityType === 'SecurityPlatform';
   const [targetEntities, setTargetEntities] = useState<TargetEntity[]>([]);
   const [selectedKillChain, setSelectedKillChain] = useState('mitre-attack');
@@ -394,7 +392,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
               </Tooltip>
             </Box>
 
-              {isSecurityPlatformEnabled && !isSecurityPlatform && (
+              {!isSecurityPlatform && (
                 <Box
                   style={{
                     float: 'left',

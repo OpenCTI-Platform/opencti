@@ -20,7 +20,6 @@ import type { Theme } from '../../../../../components/Theme';
 interface AccordionAttackPatternProps {
   attackPattern: FilteredAttackPattern;
   handleOpen: (element: MinimalAttackPattern, event: React.MouseEvent) => void;
-  isSecurityPlatformEnabled: boolean;
   attackPatternIdsToOverlap?: string[];
   isSecurityPlatform: boolean;
 }
@@ -28,7 +27,6 @@ interface AccordionAttackPatternProps {
 const AccordionAttackPattern = ({
   attackPattern,
   handleOpen,
-  isSecurityPlatformEnabled,
   attackPatternIdsToOverlap,
   isSecurityPlatform,
 }: AccordionAttackPatternProps) => {
@@ -84,8 +82,7 @@ const AccordionAttackPattern = ({
         <Typography variant="body2" fontSize={10}>
           {attackPattern.name}
         </Typography>
-        {isSecurityPlatformEnabled
-          && attackPatternIdsToOverlap?.length !== undefined
+        {attackPatternIdsToOverlap?.length !== undefined
           && (attackPattern.isCovered || isSubAttackPatternCovered(attackPattern as FilteredAttackPattern))
           && (
           <AttackPatternsMatrixShouldCoverIcon

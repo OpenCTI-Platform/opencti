@@ -55,8 +55,4 @@ const SECURITY_PLATFORM_DEFINITION: ModuleDefinition<StoreEntitySecurityPlatform
   converter_2_1: convertSecurityPlatformToStix
 };
 
-const isSecurityPlatformEnabled = isFeatureEnabled('SECURITY_PLATFORM');
-
-if (isSecurityPlatformEnabled) {
-  registerDefinition(SECURITY_PLATFORM_DEFINITION);
-}
+registerDefinition(SECURITY_PLATFORM_DEFINITION);
