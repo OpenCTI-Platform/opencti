@@ -1,22 +1,36 @@
 import React, { FunctionComponent } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import ListLines from '../../../../components/list_lines/ListLines';
-import ContainerStixCyberObservablesLines, { containerStixCyberObservablesLinesQuery } from './ContainerStixCyberObservablesLines';
-import StixCyberObservablesRightBar from '../../observations/stix_cyber_observables/StixCyberObservablesRightBar';
+import ContainerStixCyberObservablesLines, {
+  containerStixCyberObservablesLinesQuery
+} from './ContainerStixCyberObservablesLines';
 import ToolBar from '../../data/ToolBar';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { ModuleHelper } from '../../../../utils/platformModulesHelper';
-import { ContainerStixCyberObservablesLinesQuery, ContainerStixCyberObservablesLinesQuery$variables } from './__generated__/ContainerStixCyberObservablesLinesQuery.graphql';
+import {
+  ContainerStixCyberObservablesLinesQuery,
+  ContainerStixCyberObservablesLinesQuery$variables
+} from './__generated__/ContainerStixCyberObservablesLinesQuery.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { ContainerStixCyberObservables_container$data } from './__generated__/ContainerStixCyberObservables_container.graphql';
+import {
+  ContainerStixCyberObservables_container$data
+} from './__generated__/ContainerStixCyberObservables_container.graphql';
 import useCopy from '../../../../utils/hooks/useCopy';
-import { ContainerStixCyberObservablesLinesSearchQuery$data } from './__generated__/ContainerStixCyberObservablesLinesSearchQuery.graphql';
+import {
+  ContainerStixCyberObservablesLinesSearchQuery$data
+} from './__generated__/ContainerStixCyberObservablesLinesSearchQuery.graphql';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import ExportContextProvider from '../../../../utils/ExportContextProvider';
 import { ContainerStixCyberObservableLineDummy } from './ContainerStixCyberObservableLine';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
-import { ContainerStixCyberObservableLine_node$data } from './__generated__/ContainerStixCyberObservableLine_node.graphql';
-import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import {
+  ContainerStixCyberObservableLine_node$data
+} from './__generated__/ContainerStixCyberObservableLine_node.graphql';
+import {
+  emptyFilterGroup,
+  isFilterGroupNotEmpty,
+  useRemoveIdAndIncorrectKeysFromFilterGroupObject
+} from '../../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
@@ -98,7 +112,6 @@ ContainerStixCyberObservablesComponentProps
     handleSwitchGlobalMode,
     handleSwitchLocalMode,
     handleSetNumberOfElements,
-    handleAddProperty,
   } = helpers;
   const {
     selectedElements,
