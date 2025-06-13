@@ -65,7 +65,7 @@ import {
   STIX_REF_RELATIONSHIP_TYPES
 } from '../schema/stixRefRelationship';
 import {
-  ABSTRACT_BASIC_RELATIONSHIP,
+  ABSTRACT_BASIC_RELATIONSHIP, ABSTRACT_STIX_OBJECT,
   ABSTRACT_STIX_REF_RELATIONSHIP,
   BASE_TYPE_RELATION,
   buildRefRelationKey,
@@ -185,6 +185,7 @@ import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWork
 import { ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, isStixCyberObservable } from '../schema/stixCyberObservable';
 import { lockResources } from '../lock/master-lock';
 import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_UPDATE_LINKED } from '../modules/draftWorkspace/draftOperations';
+import {listEntities} from "./middleware-loader";
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -2817,16 +2818,36 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         const regardingFilters = [];
         const id = filter.values.find((i) => i.key === 'id');
         const type = filter.values.find((i) => i.key === 'relationship_type');
+        const dynamic = filter.values.find((i) => i.key === 'dynamic');
         if (!id && !type) {
           throw UnsupportedError('Id or relationship type are needed for this filtering key', { key: INSTANCE_REGARDING_OF });
         }
-        const ids = id?.values;
+        const ids = id?.values ?? [];
         const operator = id?.operator ?? 'eq';
+        // Check dynamic
+        const dynamicFilter = dynamic?.values ?? [];
+        if (isNotEmptyField(dynamicFilter)) {
+          const relatedEntities = await listEntities(context, user, [ABSTRACT_STIX_OBJECT], {
+            connectionFormat: false,
+            first: MAX_RUNTIME_RESOLUTION_SIZE,
+            bypassSizeLimit: true, // ensure that max runtime prevent on ES_MAX_PAGINATION
+            baseData: true,
+            filters: dynamicFilter[0]
+          });
+          if (relatedEntities.length > 0) {
+            const relatedIds = relatedEntities.map((n) => n.id);
+            ids.push(...relatedIds);
+          } else {
+            ids.push('<invalid id>'); // To force empty result in the query result
+          }
+        }
+        // Check type
         if (type && type.operator && type.operator !== 'eq') {
           throw UnsupportedError('regardingOf only support types equality restriction');
         }
         const types = type?.values;
-        const keys = isEmptyField(types) ? buildRefRelationKey('*', '*') : types.map((t) => buildRefRelationKey(t, '*'));
+        const keys = isEmptyField(types) ? buildRefRelationKey('*', '*')
+          : types.map((t) => buildRefRelationKey(t, '*'));
         if (isEmptyField(ids)) {
           keys.forEach((relKey) => {
             regardingFilters.push({ key: [relKey], operator, values: ['EXISTS'] });
