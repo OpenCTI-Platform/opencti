@@ -264,7 +264,7 @@ describe('Relations listing', () => {
     expect(entityTypeMap.get('external-reference')).toBe(7);
     expect(entityTypeMap.get('object-marking')).toBe(29);
     expect(entityTypeMap.get('operating-system')).toBe(1);
-    expect(stixRefRelationships.edges.length).toEqual(130);
+    expect(stixRefRelationships.edges.length).toEqual(132);
   });
   it('should list relations with roles', async () => {
     const stixRelations = await listRelations(testContext, ADMIN_USER, 'uses', {

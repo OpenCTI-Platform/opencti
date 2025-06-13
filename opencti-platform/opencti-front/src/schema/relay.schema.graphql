@@ -8321,6 +8321,8 @@ type Query {
   ingestionCsv(id: String!): IngestionCsv
   ingestionCsvs(first: Int, after: ID, orderBy: IngestionCsvOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionCsvConnection
   csvFeedAddInputFromImport(file: Upload!): CSVFeedAddInputFromImport!
+  defaultIngestionGroupCount: Int
+  userAlreadyExists(filters: FilterGroup): Boolean
   ingestionJson(id: String!): IngestionJson
   ingestionJsons(first: Int, after: ID, orderBy: IngestionJsonOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionJsonConnection
   indicator(id: String!): Indicator

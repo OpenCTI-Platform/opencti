@@ -3765,6 +3765,7 @@
   "You do not have any access to the knowledge of this OpenCTI instance.": "이 OpenCTI 인스턴스의 지식에 액세스할 수 없습니다.",
   "You have more than 50 values": "50개 이상의 값이 있습니다",
   "You have no subscription for the moment.": "현재 구독이 없습니다.",
+  "You have not defined a default group for ingestion users": "수집 사용자에 대한 기본 그룹을 정의하지 않았습니다",
   "You have successfully logged out.": "성공적으로 로그아웃했습니다.",
   "You have unsaved changes": "저장되지 않은 변경 사항이 있습니다",
   "You just need to try?": "시도해 보시겠습니까?",

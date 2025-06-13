@@ -20540,6 +20540,7 @@ export type Query = {
   dataSources?: Maybe<DataSourceConnection>;
   decayRule?: Maybe<DecayRule>;
   decayRules?: Maybe<DecayRuleConnection>;
+  defaultIngestionGroupCount?: Maybe<Scalars['Int']['output']>;
   deleteOperation?: Maybe<DeleteOperation>;
   deleteOperations?: Maybe<DeleteOperationConnection>;
   disseminationList?: Maybe<DisseminationList>;
@@ -20816,6 +20817,7 @@ export type Query = {
   triggersKnowledge?: Maybe<TriggerConnection>;
   triggersKnowledgeCount?: Maybe<Scalars['Int']['output']>;
   user?: Maybe<User>;
+  userAlreadyExists?: Maybe<Scalars['Boolean']['output']>;
   users?: Maybe<UserConnection>;
   vocabularies?: Maybe<VocabularyConnection>;
   vocabulary?: Maybe<Vocabulary>;
@@ -23548,6 +23550,11 @@ export type QueryTriggersKnowledgeCountArgs = {
 
 export type QueryUserArgs = {
   id: Scalars['String']['input'];
+};
+
+
+export type QueryUserAlreadyExistsArgs = {
+  filters?: InputMaybe<FilterGroup>;
 };
 
 
@@ -41158,6 +41165,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   dataSources?: Resolver<Maybe<ResolversTypes['DataSourceConnection']>, ParentType, ContextType, Partial<QueryDataSourcesArgs>>;
   decayRule?: Resolver<Maybe<ResolversTypes['DecayRule']>, ParentType, ContextType, RequireFields<QueryDecayRuleArgs, 'id'>>;
   decayRules?: Resolver<Maybe<ResolversTypes['DecayRuleConnection']>, ParentType, ContextType, Partial<QueryDecayRulesArgs>>;
+  defaultIngestionGroupCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   deleteOperation?: Resolver<Maybe<ResolversTypes['DeleteOperation']>, ParentType, ContextType, RequireFields<QueryDeleteOperationArgs, 'id'>>;
   deleteOperations?: Resolver<Maybe<ResolversTypes['DeleteOperationConnection']>, ParentType, ContextType, Partial<QueryDeleteOperationsArgs>>;
   disseminationList?: Resolver<Maybe<ResolversTypes['DisseminationList']>, ParentType, ContextType, RequireFields<QueryDisseminationListArgs, 'id'>>;
@@ -41434,6 +41442,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   triggersKnowledge?: Resolver<Maybe<ResolversTypes['TriggerConnection']>, ParentType, ContextType, Partial<QueryTriggersKnowledgeArgs>>;
   triggersKnowledgeCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, Partial<QueryTriggersKnowledgeCountArgs>>;
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryUserArgs, 'id'>>;
+  userAlreadyExists?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<QueryUserAlreadyExistsArgs>>;
   users?: Resolver<Maybe<ResolversTypes['UserConnection']>, ParentType, ContextType, Partial<QueryUsersArgs>>;
   vocabularies?: Resolver<Maybe<ResolversTypes['VocabularyConnection']>, ParentType, ContextType, Partial<QueryVocabulariesArgs>>;
   vocabulary?: Resolver<Maybe<ResolversTypes['Vocabulary']>, ParentType, ContextType, RequireFields<QueryVocabularyArgs, 'id'>>;

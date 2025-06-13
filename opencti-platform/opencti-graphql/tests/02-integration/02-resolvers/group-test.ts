@@ -52,6 +52,7 @@ describe('Group resolver standard behavior', () => {
   let groupInternalId: string; // the one we will use in all tests
   const groupsToDeleteIds: string[] = []; // keep track for deletion at the end of the tests
   let markingDefinitionInternalId: string; // the marking used in these tests
+
   it('should group created', async () => {
     const CREATE_QUERY = gql`
       mutation GroupAdd($input: GroupAddInput!) {
@@ -268,6 +269,7 @@ describe('Group resolver standard behavior', () => {
       variables: { id: groupInternalId, input: { key: 'auto_integration_assignation', value: ['global'] } },
     });
     expect(queryResult.data.groupEdit.fieldPatch.auto_integration_assignation).toEqual(['global']);
+
   });
   it('should return default group for ingestion users', async () => {
     const queryResult = await queryAsAdmin({
@@ -289,7 +291,46 @@ describe('Group resolver standard behavior', () => {
     });
     expect(queryResult.data?.groups.edges[0].node.id).toEqual(groupInternalId);
     expect(queryResult.data?.groups.edges.length).toEqual(1);
+    // Put back default group Connectors and remove another group
+    const queryDefault = await queryAsAdmin({
+      query: LIST_QUERY,
+      variables: {
+        filters: {
+          mode: 'and',
+          filters: [
+            {
+              key: 'auto_integration_assignation',
+              values: [
+                'global'
+              ]
+            }
+          ],
+          filterGroups: []
+        }
+      }
+    });
+
+    const UPDATE_QUERY = gql`
+        mutation GroupEdit($id: ID!, $input: [EditInput]!) {
+            groupEdit(id: $id) {
+                fieldPatch(input: $input) {
+                    id
+                    name
+                    auto_integration_assignation
+                }
+            }
+        }
+    `;
+    await queryAsUserWithSuccess(USER_PLATFORM_ADMIN.client, {
+      query: UPDATE_QUERY,
+      variables: { id: queryDefault.data?.groups.edges[0].node.id, input: { key: 'auto_integration_assignation', value: ['global'] } },
+    });
+    await queryAsUserWithSuccess(USER_PLATFORM_ADMIN.client, {
+      query: UPDATE_QUERY,
+      variables: { id: groupInternalId, input: { key: 'auto_integration_assignation', value: [] } },
+    });
   });
+
   it('should have nothing shareable at the group creation', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: groupInternalId } });
     const maxMarkings = queryResult?.data?.group.max_shareable_marking;

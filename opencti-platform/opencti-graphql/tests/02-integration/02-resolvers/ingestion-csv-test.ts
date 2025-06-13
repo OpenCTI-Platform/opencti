@@ -1,6 +1,12 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, queryAsAdmin, testContext, USER_DISINFORMATION_ANALYST, USER_PARTICIPATE } from '../../utils/testQuery';
+import {
+  ADMIN_USER,
+  queryAsAdmin,
+  testContext,
+  USER_DISINFORMATION_ANALYST,
+  USER_PARTICIPATE,
+} from '../../utils/testQuery';
 import { createUploadFromTestDataFile, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { patchCsvIngestion } from '../../../src/modules/ingestion/ingestion-csv-domain';
 import { now } from '../../../src/utils/format';

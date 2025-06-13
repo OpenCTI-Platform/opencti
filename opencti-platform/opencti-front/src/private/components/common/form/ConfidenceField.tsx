@@ -54,7 +54,7 @@ const ConfidenceField: FunctionComponent<ConfidenceFieldProps> = ({
   const userEffectiveMaxConfidence = getEffectiveConfidenceLevel(entityType);
   return (
     <>{showAlert ? (<Alert
-      classes={{root: classes.alert, message: classes.message}}
+      classes={{ root: classes.alert, message: classes.message }}
       severity="info"
       icon={false}
       variant="outlined"

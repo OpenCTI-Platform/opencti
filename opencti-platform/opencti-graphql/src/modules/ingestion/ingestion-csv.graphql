@@ -76,6 +76,8 @@ type Query {
     csvFeedAddInputFromImport(
         file: Upload!
     ): CSVFeedAddInputFromImport! @auth(for: [INGESTION, CSVMAPPERS])
+    defaultIngestionGroupCount: Int @auth(for: [INGESTION])
+    userAlreadyExists(filters: FilterGroup): Boolean @auth(for: [INGESTION])
 }
 
 # Mutations
