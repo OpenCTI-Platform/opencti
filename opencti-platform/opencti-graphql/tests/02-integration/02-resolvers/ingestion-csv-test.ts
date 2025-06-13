@@ -75,7 +75,7 @@ describe('CSV ingestion resolver standard behavior', () => {
       csv_mapper: JSON.stringify(singleColumnCsvMapper),
       csv_mapper_type: IngestionCsvMapperType.Inline,
       automatic_user: true,
-      user_id: ''
+      user_id: '[F] Single column inline and auto user'
     };
 
     const createSingleColumnCsvFeedsIngesterQueryResult = await queryAsUserWithSuccess(USER_DISINFORMATION_ANALYST.client, {
