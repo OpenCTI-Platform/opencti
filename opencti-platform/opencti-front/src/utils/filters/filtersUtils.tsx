@@ -770,7 +770,7 @@ export const useAvailableFilterKeysForEntityTypes = (entityTypes: string[]) => {
   return generateUniqueItemsArray(filterKeysMap.keys() ?? []);
 };
 
-const notCleanableFilterKeys = ['entity_type', 'authorized_members.id'];
+const notCleanableFilterKeys = ['entity_type', 'authorized_members.id', 'user_id'];
 
 export const useRemoveIdAndIncorrectKeysFromFilterGroupObject = (filters?: FilterGroup | null, entityTypes = ['Stix-Core-Object']): FilterGroup | undefined => {
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(entityTypes).concat(notCleanableFilterKeys);
@@ -813,17 +813,18 @@ export const removeIdAndIncorrectKeysFromFilterGroupObject = (filters: FilterGro
   if (!filters) {
     return undefined;
   }
+  const fullAvailableFilterKeys = availableFilterKeys.concat(notCleanableFilterKeys);
   return {
     mode: filters.mode,
     filters: filters.filters
-      .filter((f) => availableFilterKeys.includes(f.key))
+      .filter((f) => fullAvailableFilterKeys.includes(f.key))
       .filter((f) => ['nil', 'not_nil'].includes(f.operator ?? 'eq') || f.values.length > 0)
       .map((f) => {
         const newFilter = { ...f };
         delete newFilter.id;
         return newFilter;
       }),
-    filterGroups: filters.filterGroups.map((group) => removeIdAndIncorrectKeysFromFilterGroupObject(group, availableFilterKeys)) as FilterGroup[],
+    filterGroups: filters.filterGroups.map((group) => removeIdAndIncorrectKeysFromFilterGroupObject(group, fullAvailableFilterKeys)) as FilterGroup[],
   };
 };
 
