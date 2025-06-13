@@ -873,7 +873,7 @@ const LeftBar = () => {
                 { type: 'SecurityPlatform', link: '/dashboard/entities/security_platforms', label: 'Security platforms', icon: <SecurityOutlined fontSize="small" /> },
                 { type: 'System', link: '/dashboard/entities/systems', label: 'Systems', icon: <StorageOutlined fontSize="small" /> },
                 { type: 'Individual', link: '/dashboard/entities/individuals', label: 'Individuals', icon: <PersonOutlined fontSize="small" /> },
-              ].filter(Boolean),
+              ],
             )}
             {!hideLocations && (
               <MenuItem
