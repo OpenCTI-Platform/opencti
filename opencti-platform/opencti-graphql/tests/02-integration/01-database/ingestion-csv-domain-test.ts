@@ -5,7 +5,7 @@ import { type EditInput, IngestionAuthType, type IngestionCsvAddInput } from '..
 import { enableCEAndUnSetOrganization, enableEEAndSetOrganization } from '../../utils/testQueryHelper';
 import { getFakeAuthUser, getOrganizationEntity } from '../../utils/domainQueryHelper';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
-import { findDefaultIngestionGroup, groupEditField } from '../../../src/domain/group';
+import { findDefaultIngestionGroups, groupEditField } from '../../../src/domain/group';
 import type { BasicGroupEntity } from '../../../src/types/store';
 import { findById as findUserById } from '../../../src/domain/user';
 import { executionContext, SYSTEM_USER } from '../../../src/utils/access';
@@ -30,7 +30,7 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
   });
 
   it('should default group be set to Connector on startup', async () => {
-    const ingestionDefaultGroups: BasicGroupEntity[] = await findDefaultIngestionGroup(currentTestContext, ingestionUser) as BasicGroupEntity[];
+    const ingestionDefaultGroups: BasicGroupEntity[] = await findDefaultIngestionGroups(currentTestContext, ingestionUser) as BasicGroupEntity[];
     expect(ingestionDefaultGroups.length).toBe(1);
     expect(ingestionDefaultGroups[0].name).toBe('Connectors');
     expect(ingestionDefaultGroups[0].auto_integration_assignation).toStrictEqual(['global']);

@@ -1,13 +1,19 @@
 import { v4 as uuid } from 'uuid';
 import type { FileHandle } from 'fs/promises';
-import bcrypt from 'bcryptjs';
-import { v4 as uuid } from 'uuid';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityIngestionCsv, ENTITY_TYPE_INGESTION_CSV } from './ingestion-types';
 import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
-import { type CsvMapperTestResult, type EditInput, type IngestionCsvAddInput, IngestionCsvMapperType, type UserAddInput } from '../../generated/graphql';
+import {
+  type CsvMapperTestResult,
+  type EditInput,
+  type IngestionCsvAddInput,
+  IngestionCsvMapperType,
+  type QueryUserAlreadyExistsArgs,
+  type UserAddInput,
+  type UserConnection
+} from '../../generated/graphql';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS, isFeatureEnabled, PLATFORM_VERSION } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
@@ -24,12 +30,12 @@ import { extractContentFrom } from '../../utils/fileToContent';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import { FunctionalError, ValidationError } from '../../config/errors';
 import { convertRepresentationsIds } from '../internal/mapper-utils';
-import { addUser } from '../../domain/user';
+import { addUser, findAll } from '../../domain/user';
 import { getEntityFromCache } from '../../database/cache';
 import { SYSTEM_USER } from '../../utils/access';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import type { BasicStoreSettings } from '../../types/settings';
-import { findDefaultIngestionGroup } from '../../domain/group';
+import { findDefaultIngestionGroups } from '../../domain/group';
 import type { BasicGroupEntity } from '../../types/store';
 
 const MINIMAL_CSV_FEED_COMPATIBLE_VERSION = '6.6.0';
@@ -53,8 +59,19 @@ export const findCsvMapperForIngestionById = (context: AuthContext, user: AuthUs
   return storeLoadById<BasicStoreEntityCsvMapper>(context, user, csvMapperId, ENTITY_TYPE_CSV_MAPPER);
 };
 
+export const defaultIngestionGroupsCount = async (context: AuthContext) => {
+  // We use SYSTEM_USER because manage ingestion should be enough to create a CSV Feed
+  const defaultGroupLength = await findDefaultIngestionGroups(context, SYSTEM_USER);
+  return defaultGroupLength.length ?? 0;
+};
+
+export const userAlreadyExists = async (context: AuthContext, args: QueryUserAlreadyExistsArgs) => {
+  const users = await findAll(context, context.user, args) as UserConnection;
+  return users.edges.length > 0;
+};
+
 export const createOnTheFlyUser = async (context: AuthContext, user: AuthUser, input: IngestionCsvAddInput) => {
-  const defaultIngestionGroups: BasicGroupEntity[] = await findDefaultIngestionGroup(context, user) as BasicGroupEntity[];
+  const defaultIngestionGroups: BasicGroupEntity[] = await findDefaultIngestionGroups(context, user) as BasicGroupEntity[];
   if (defaultIngestionGroups.length < 1) {
     throw FunctionalError('You have not defined a default group for ingestion users', {});
   }
@@ -62,7 +79,7 @@ export const createOnTheFlyUser = async (context: AuthContext, user: AuthUser, i
 
   let userInput: UserAddInput = {
     password: uuid(),
-    user_email: `${bcrypt.hashSync(input.user_id)}@opencti.invalid`,
+    user_email: `automatic+${uuid()}@opencti.invalid`,
     name: input.user_id,
     prevent_default_groups: true,
     groups: [defaultIngestionGroups[0].id],
@@ -81,34 +98,36 @@ export const createOnTheFlyUser = async (context: AuthContext, user: AuthUser, i
 };
 
 export const addIngestionCsv = async (context: AuthContext, user: AuthUser, input: IngestionCsvAddInput) => {
-  const parsedInput: IngestionCsvAddInput = {
-    ...input,
+  if (input.authentication_value) {
+    verifyIngestionAuthenticationContent(input.authentication_type, input.authentication_value);
+  }
+
+  let onTheFlyCreatedUser;
+  let finalInput;
+  if (isFeatureEnabled('CSV_FEED') && input.automatic_user) {
+    onTheFlyCreatedUser = await createOnTheFlyUser(context, user, input);
+    finalInput = {
+      ...((({ automatic_user: _, confidence_level: __, ...inputWithoutAutomaticFields }) => inputWithoutAutomaticFields)(input)),
+      user_id: onTheFlyCreatedUser.id,
+    };
+  } else {
+    finalInput = {
+      ...((({ automatic_user: _, confidence_level: __, ...inputWithoutAutomaticFields }) => inputWithoutAutomaticFields)(input))
+    };
+  }
+
+  finalInput = {
+    ...finalInput,
     csv_mapper: input.csv_mapper ? JSON.stringify({
       ...JSON.parse(input.csv_mapper),
       id: uuid()
     }) : input.csv_mapper
   };
-  if (parsedInput.authentication_value) {
-    verifyIngestionAuthenticationContent(parsedInput.authentication_type, parsedInput.authentication_value);
-  }
-  let onTheFlyCreatedUser;
-  let updatedInput;
-  if (isFeatureEnabled('CSV_FEED') && parsedInput.automatic_user) {
-    onTheFlyCreatedUser = await createOnTheFlyUser(context, user, parsedInput);
-    updatedInput = {
-      ...((({ automatic_user: _, confidence_level: __, ...inputWithoutAutomaticFields }) => inputWithoutAutomaticFields)(parsedInput)),
-      user_id: onTheFlyCreatedUser.id,
-    };
-  } else {
-    updatedInput = {
-      ...((({ automatic_user: _, confidence_level: __, ...inputWithoutAutomaticFields }) => inputWithoutAutomaticFields)(input))
-    };
-  }
 
   const { element, isCreation } = await createEntity(
     context,
     user,
-    isFeatureEnabled('CSV_FEED') && parsedInput.automatic_user ? updatedInput : parsedInput,
+    finalInput,
     ENTITY_TYPE_INGESTION_CSV,
     { complete: true }
   );
@@ -118,15 +137,15 @@ export const addIngestionCsv = async (context: AuthContext, user: AuthUser, inpu
       type: 'CSV',
       name: element.name,
       is_running: element.ingestion_running ?? false,
-      connector_user_id: isFeatureEnabled('CSV_FEED') && input.automatic_user ? onTheFlyCreatedUser.id : parsedInput.user_id
+      connector_user_id: isFeatureEnabled('CSV_FEED') && input.automatic_user ? onTheFlyCreatedUser.id : finalInput.user_id
     });
     await publishUserAction({
       user,
       event_type: 'mutation',
       event_scope: 'create',
       event_access: 'administration',
-      message: `creates csv ingestion \`${parsedInput.name}\``,
-      context_data: { id: element.id, entity_type: ENTITY_TYPE_INGESTION_CSV, input: parsedInput as unknown } // input was known as unknown
+      message: `creates csv ingestion \`${finalInput.name}\``,
+      context_data: { id: element.id, entity_type: ENTITY_TYPE_INGESTION_CSV, input: finalInput as unknown } // input was known as unknown
     });
   }
   return element;

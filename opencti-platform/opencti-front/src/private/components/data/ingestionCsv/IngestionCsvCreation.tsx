@@ -28,6 +28,7 @@ import Tab from '@mui/material/Tab';
 import IngestionCsvInlineMapperForm from '@components/data/ingestionCsv/IngestionCsvInlineMapperForm';
 import IngestionCsvCreationUserHandling from '@components/data/ingestionCsv/IngestionCsvCreationUserHandling';
 import IngestionCsvInlineWrapper from '@components/data/ingestionCsv/IngestionCsvInlineWrapper';
+import { IngestionCsvCreationUsersQuery$data } from '@components/data/ingestionCsv/__generated__/IngestionCsvCreationUsersQuery.graphql';
 import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -95,16 +96,9 @@ export const ingestionCsvCreationUsersQuery = graphql`
     query IngestionCsvCreationUsersQuery(
         $filters: FilterGroup
     ) {
-        users(
+        userAlreadyExists(
             filters: $filters
-        ) {
-            edges {
-                node {
-                    id
-                    name
-                }
-            }
-        }
+        )
     }
 `;
 
@@ -240,7 +234,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
         {
           key: ['name'],
           values: [
-            values.user_id.value,
+            (values.user_id as FieldOption).value,
           ],
         },
       ],
@@ -248,7 +242,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
     } })
       .toPromise();
 
-    if (existingUsers.users.edges.length > 0) {
+    if ((existingUsers as IngestionCsvCreationUsersQuery$data)?.userAlreadyExists) {
       setSubmitting(false);
       setFieldError('user_id', t_i18n('This user already exists. Change the feed\'s name to change the automatically created user\'s name'));
       return;

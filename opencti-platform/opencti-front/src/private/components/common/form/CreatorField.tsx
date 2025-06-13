@@ -57,7 +57,7 @@ const CreatorField: FunctionComponent<CreatorFieldProps> = ({
   containerStyle,
   onChange,
   showConfidence = false,
-  disabled=false
+  disabled = false,
 }) => {
   const { t_i18n } = useFormatter();
   const isGrantedToUsers = useGranted([SETTINGS_SETACCESSES]);
