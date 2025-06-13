@@ -78,7 +78,7 @@ test('Custom theme creation, edition, and deletion', async ({ page }) => {
   // Delete theme
   await page.getByTestId(`${THEME.name}-popover`).click();
   await page.getByLabel('Delete').click();
-  await page.getByRole('button', { name: 'Delete' }).click();
+  await page.getByRole('button', { name: 'Confirm' }).click();
   expect(await page.getByText('Theme successfully deleted').count() > 0);
 });
 
