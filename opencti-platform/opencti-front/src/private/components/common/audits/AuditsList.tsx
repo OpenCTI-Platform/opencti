@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import React, { FunctionComponent } from 'react';
-import AuditsListComponent, { auditsListContentQuery } from './AuditsListComponent';
+import AuditsListComponent, { auditsListComponentQuery } from './AuditsListComponent';
 import { AuditsListContentQuery, LogsOrdering, OrderingMode } from './__generated__/AuditsListContentQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
@@ -73,7 +73,7 @@ const AuditsList: FunctionComponent<AuditsListProps> = ({
       { removeTypeAll: true, startDate: startDate ?? undefined, endDate: endDate ?? undefined, dateAttribute },
     );
 
-    const queryRef = useQueryLoading<AuditsListContentQuery>(auditsListContentQuery, {
+    const queryRef = useQueryLoading<AuditsListContentQuery>(auditsListComponentQuery, {
       types: ['History', 'Activity'],
       first: selection.number ?? 10,
       orderBy: dateAttribute,

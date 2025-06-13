@@ -4,8 +4,8 @@ import { AuditsListContentQuery } from '@components/common/audits/__generated__/
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetListAudits from '../../../../components/dashboard/WidgetListAudits';
 
-export const auditsListContentQuery = graphql`
-  query AuditsListContentQuery(
+export const auditsListComponentQuery = graphql`
+  query AuditsListComponentQuery(
     $types: [String!]
     $first: Int
     $orderBy: LogsOrdering
@@ -52,7 +52,7 @@ interface AuditsListComponentProps {
 const AuditsListComponent: FunctionComponent<AuditsListComponentProps> = ({
   queryRef,
 }) => {
-  const queryData = usePreloadedQuery<AuditsListContentQuery>(auditsListContentQuery, queryRef);
+  const queryData = usePreloadedQuery<AuditsListContentQuery>(auditsListComponentQuery, queryRef);
 
   if (queryData && queryData.audits?.edges && queryData.audits.edges.length > 0) {
     const data = queryData.audits.edges;
