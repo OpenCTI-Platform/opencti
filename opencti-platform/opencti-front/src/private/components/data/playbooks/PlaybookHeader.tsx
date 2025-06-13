@@ -85,19 +85,18 @@ const PlaybookHeaderComponent = ({
   const [rawData, setRawData] = useState<string | null | undefined>(null);
   const { t_i18n, nsdt, n } = useFormatter();
   return (
-    <div style={{ display: 'flex' }}>
-      <Typography
-        variant="h1"
-        gutterBottom={true}
-        style={{
-          float: 'left',
-          textTransform: 'uppercase',
-          marginRight: 20,
-        }}
-      >
-        {playbook.name}
-      </Typography>
-      <div style={{ float: 'left' }}>
+    <div style={{ display: 'flex', alignItems: 'center' }}>
+      <div style={{ display: 'flex', flex: 1 }}>
+        <Typography
+          variant="h1"
+          gutterBottom={true}
+          style={{
+            textTransform: 'uppercase',
+            marginRight: 20,
+          }}
+        >
+          {playbook.name}
+        </Typography>
         <Chip
           style={{
             fontSize: 12,
@@ -114,24 +113,7 @@ const PlaybookHeaderComponent = ({
           }
         />
       </div>
-      <div style={{
-        marginTop: '-3px',
-        float: 'right',
-      }}
-      >
-        <PlaybookPopover
-          playbookId={playbook.id}
-          running={playbook.playbook_running}
-        />
-      </div>
-      <div style={{ float: 'right' }}>
-        <PlaybookEdition id={playbook.id}/>
-      </div>
-      <div style={{
-        marginTop: -9,
-        float: 'right',
-      }}
-      >
+      <div style={{ marginLeft: 10, marginRight: 10, marginTop: -9 }}>
         <ToggleButtonGroup
           size="small"
           color="secondary"
@@ -164,6 +146,13 @@ const PlaybookHeaderComponent = ({
             </Tooltip>
           </ToggleButton>
         </ToggleButtonGroup>
+      </div>
+      <PlaybookPopover
+        playbookId={playbook.id}
+        running={playbook.playbook_running}
+      />
+      <div style={{ float: 'right', marginLeft: 1 }}>
+        <PlaybookEdition id={playbook.id}/>
       </div>
       <Drawer
         open={openLastExecutions}

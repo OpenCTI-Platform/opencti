@@ -24,8 +24,8 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
-import { useNavigate } from 'react-router-dom';
 import DialogTitle from '@mui/material/DialogTitle';
+import ToggleButton from '@mui/material/ToggleButton';
 import { commitMutation } from '../../../../relay/environment';
 import { playbookMutationFieldPatch } from './PlaybookEditionForm';
 import { deleteNode } from '../../../../utils/store';
@@ -44,7 +44,6 @@ const playbookPopoverDeletionMutation = graphql`
 const PlaybookPopover = (props) => {
   const { playbookId, running, paginationOptions } = props;
   const { t_i18n } = useFormatter();
-  const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
   const [displayStart, setDisplayStart] = useState(false);
   const [starting, setStarting] = useState(false);
@@ -136,15 +135,21 @@ const PlaybookPopover = (props) => {
     });
   };
 
+  const MoreVertButton = paginationOptions ? IconButton : ToggleButton;
+
   return (
     <>
-      <IconButton
+      <MoreVertButton
         onClick={handleOpen}
         aria-haspopup="true"
+        value="popover"
         color="primary"
+        size={paginationOptions ? 'medium' : 'small'}
       >
-        <MoreVert />
-      </IconButton>
+        {paginationOptions
+          ? <MoreVert />
+          : <MoreVert fontSize="small" color="primary"/>}
+      </MoreVertButton>
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
