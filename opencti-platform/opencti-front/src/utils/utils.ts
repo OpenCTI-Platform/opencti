@@ -56,16 +56,6 @@ export const getPaddingRight = (locationPath: string, entityId: string, entityTy
   let paddingRight = 0;
   if (entityId) {
     if (
-      locationPath.includes(
-        `${entityTypePath}/${entityId}/entities`,
-      )
-      || locationPath.includes(
-        `${entityTypePath}/${entityId}/observables`,
-      )
-    ) {
-      paddingRight = 250;
-    }
-    if (
       applyKnowledgePadding && locationPath.includes(
         `${entityTypePath}/${entityId}/knowledge`,
       )
