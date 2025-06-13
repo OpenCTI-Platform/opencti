@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import React, { FunctionComponent } from 'react';
-import AuditsListContent, { auditsListContentQuery } from './AuditsListContent';
+import AuditsListComponent, { auditsListContentQuery } from './AuditsListComponent';
 import { AuditsListContentQuery, LogsOrdering, OrderingMode } from './__generated__/AuditsListContentQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
@@ -85,7 +85,7 @@ const AuditsList: FunctionComponent<AuditsListProps> = ({
       <>
         {queryRef && (
           <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-            <AuditsListContent queryRef={queryRef} />
+            <AuditsListComponent queryRef={queryRef} />
           </React.Suspense>
         )}
       </>
