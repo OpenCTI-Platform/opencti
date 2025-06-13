@@ -11,7 +11,7 @@ const AttackPatternsMatrixShouldCoverIcon = ({ isOverlapping }: AttackPatternsMa
   const { t_i18n } = useFormatter();
   return (
     <Tooltip
-      title={t_i18n('Should cover')}
+      title={isOverlapping ? t_i18n('Security posture should cover the threat') : t_i18n('Security posture does not cover the threat')}
       sx={{
         display: 'flex',
         alignItems: 'center',

@@ -90,6 +90,7 @@ const SecurityPlatformKnowledgeComponent = ({
             <StixDomainObjectAttackPatterns
               stixDomainObjectId={securityPlatform.id}
               disableExport={false}
+              entityType={securityPlatform.entity_type}
             />
         }
         />

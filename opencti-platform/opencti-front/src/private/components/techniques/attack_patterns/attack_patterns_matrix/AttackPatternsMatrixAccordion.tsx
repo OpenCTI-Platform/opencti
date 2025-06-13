@@ -10,6 +10,7 @@ import {
   FilteredAttackPattern,
   FilteredSubAttackPattern,
   getBoxStyles,
+  isSubAttackPatternCovered,
   MinimalAttackPattern,
 } from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixColumns';
 import AttackPatternsMatrixColumnsElement from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixColumsElement';
@@ -17,10 +18,11 @@ import AttackPatternsMatrixShouldCoverIcon from '@components/techniques/attack_p
 import type { Theme } from '../../../../../components/Theme';
 
 interface AccordionAttackPatternProps {
-  attackPattern: FilteredAttackPattern,
-  handleOpen: (element: MinimalAttackPattern, event: React.MouseEvent) => void,
-  isSecurityPlatformEnabled: boolean,
-  attackPatternIdsToOverlap?: string[]
+  attackPattern: FilteredAttackPattern;
+  handleOpen: (element: MinimalAttackPattern, event: React.MouseEvent) => void;
+  isSecurityPlatformEnabled: boolean;
+  attackPatternIdsToOverlap?: string[];
+  isSecurityPlatform: boolean;
 }
 
 const AccordionAttackPattern = ({
@@ -28,13 +30,12 @@ const AccordionAttackPattern = ({
   handleOpen,
   isSecurityPlatformEnabled,
   attackPatternIdsToOverlap,
+  isSecurityPlatform,
 }: AccordionAttackPatternProps) => {
   const theme = useTheme<Theme>();
   const [expanded, setExpanded] = useState(false);
-  const [isHover, setIsHover] = useState(false);
-
-  const hasLevel = attackPattern.level > 0;
-  const { border, backgroundColor } = getBoxStyles(hasLevel, isHover, theme);
+  const [isHovered, setIsHovered] = useState(false);
+  const { border, backgroundColor } = getBoxStyles({ attackPattern, isHovered, isSecurityPlatform, theme });
 
   return (
     <MuiAccordion
@@ -45,8 +46,8 @@ const AccordionAttackPattern = ({
       id={attackPattern.attack_pattern_id}
       key={attackPattern.attack_pattern_id}
       slotProps={{ transition: { unmountOnExit: true } }}
-      onMouseEnter={() => setIsHover(true)}
-      onMouseLeave={() => setIsHover(false)}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       sx={{
         width: '100%',
         border,
@@ -70,23 +71,27 @@ const AccordionAttackPattern = ({
         sx={{
           minHeight: 0,
           paddingLeft: 0,
+          paddingRight: 1.25,
           backgroundColor,
           whiteSpace: 'wrap',
           flexDirection: 'row-reverse',
           '& .MuiAccordionSummary-expandIconWrapper.Mui-expanded': {
             transform: 'rotate(90deg)',
           },
-          '.MuiAccordionSummary-content': { marginBlock: 1.25, alignItems: 'center' },
+          '.MuiAccordionSummary-content': { justifyContent: 'space-between', marginBlock: 1.25, alignItems: 'center' },
         }}
       >
         <Typography variant="body2" fontSize={10}>
           {attackPattern.name}
         </Typography>
-        {isSecurityPlatformEnabled && attackPatternIdsToOverlap?.length !== undefined && attackPattern.level > 0 && (
+        {isSecurityPlatformEnabled
+          && attackPatternIdsToOverlap?.length !== undefined
+          && (attackPattern.isCovered || isSubAttackPatternCovered(attackPattern as FilteredAttackPattern))
+          && (
           <AttackPatternsMatrixShouldCoverIcon
             isOverlapping={attackPattern.isOverlapping || false}
           />
-        )}
+          )}
       </MuiAccordionSummary>
       <AccordionDetails
         sx={{
@@ -101,6 +106,7 @@ const AccordionAttackPattern = ({
               attackPattern={subAttackPattern}
               handleOpen={handleOpen}
               attackPatternIdsToOverlap={attackPatternIdsToOverlap}
+              isSecurityPlatform={isSecurityPlatform}
             />
           );
         })}

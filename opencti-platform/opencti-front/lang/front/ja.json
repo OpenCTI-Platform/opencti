@@ -2904,6 +2904,8 @@
   "Security platform": "セキュリティ・プラットフォーム",
   "Security platform type": "セキュリティプラットフォームの種類",
   "Security platforms": "セキュリティ・プラットフォーム",
+  "Security posture does not cover the threat": "セキュリティ態勢は脅威をカバーしない",
+  "Security posture should cover the threat": "セキュリティ態勢は脅威をカバーすべきである",
   "See all entities created by user": "ユーザーが作成したすべてのエンティティを見る",
   "See all relationships created by user": "ユーザーが作成したすべての関係を見る",
   "See more": "もっと見る",

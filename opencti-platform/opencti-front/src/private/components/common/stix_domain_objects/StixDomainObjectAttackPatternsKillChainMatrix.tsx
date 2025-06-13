@@ -10,7 +10,7 @@ interface StixDomainObjectAttackPatternsKillChainMatrixProps {
   data: StixDomainObjectAttackPatternsKillChainContainer_data$data;
   handleAdd: (entity: TargetEntity) => void;
   selectedKillChain: string;
-  isEntity?: boolean;
+  entityType?: string;
   attackPatternIdsToOverlap?: string[];
   isModeOnlyActive: boolean;
 }
@@ -20,7 +20,7 @@ const StixDomainObjectAttackPatternsKillChainMatrix: FunctionComponent<StixDomai
     data,
     handleAdd,
     selectedKillChain,
-    isEntity,
+    entityType,
     attackPatternIdsToOverlap,
     isModeOnlyActive,
   },
@@ -30,7 +30,7 @@ const StixDomainObjectAttackPatternsKillChainMatrix: FunctionComponent<StixDomai
     <AttackPatternsMatrix
       attackPatterns={attackPatterns}
       searchTerm={searchTerm}
-      marginRight={!isEntity}
+      entityType={entityType}
       handleAdd={handleAdd}
       selectedKillChain={selectedKillChain}
       attackPatternIdsToOverlap={attackPatternIdsToOverlap}

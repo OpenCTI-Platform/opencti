@@ -101,7 +101,7 @@ interface StixDomainObjectAttackPatternsKillChainProps {
   defaultStopTime?: string;
   storageKey: string;
   killChainDataQueryRef: PreloadedQuery<AttackPatternsMatrixQuery>;
-  isEntity?: boolean;
+  entityType?: string;
 }
 
 const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjectAttackPatternsKillChainProps> = ({
@@ -122,11 +122,12 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   defaultStopTime,
   storageKey,
   killChainDataQueryRef,
-  isEntity,
+  entityType,
 }) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const isSecurityPlatformEnabled = isFeatureEnable('SECURITY_PLATFORM');
+  const isSecurityPlatform = entityType === 'SecurityPlatform';
   const [targetEntities, setTargetEntities] = useState<TargetEntity[]>([]);
   const [selectedKillChain, setSelectedKillChain] = useState('mitre-attack');
   const [selectedSecurityPlatforms, setSelectedSecurityPlatforms] = useState<EntityOption[]>([]);
@@ -393,7 +394,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
               </Tooltip>
             </Box>
 
-              {isSecurityPlatformEnabled && (
+              {isSecurityPlatformEnabled && !isSecurityPlatform && (
                 <Box
                   style={{
                     float: 'left',
@@ -418,7 +419,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
               )}
             </>
           )}
-          {!isEntity && (<div style={{ float: 'right', margin: 0 }}>
+          {!entityType && (<div style={{ float: 'right', margin: 0 }}>
             <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
               {[...viewButtons]}
               {typeof handleToggleExports === 'function' && (
@@ -486,7 +487,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             handleAdd={handleAdd}
             selectedKillChain={selectedKillChain}
             attackPatternIdsToOverlap={attackPatternIdsToOverlap}
-            isEntity={isEntity}
+            entityType={entityType}
             isModeOnlyActive={isModeOnlyActive}
           />
         )}
@@ -527,7 +528,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             <StixCoreRelationshipCreationFromEntity
               entityId={stixDomainObjectId}
               isRelationReversed={false}
-              paddingRight={isEntity ? 0 : 220}
+              paddingRight={entityType ? 0 : 220}
               onCreate={refetch}
               targetStixDomainObjectTypes={['Attack-Pattern']}
               paginationOptions={paginationOptions}

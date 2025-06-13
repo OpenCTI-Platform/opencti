@@ -15,25 +15,26 @@ interface AttackPatternsMatrixColumnsElementProps {
   attackPattern: FilteredAttackPattern | FilteredSubAttackPattern;
   handleOpen: (element: MinimalAttackPattern, event: React.MouseEvent) => void;
   attackPatternIdsToOverlap?: string[];
+  isSecurityPlatform: boolean;
 }
 
 const AttackPatternsMatrixColumnsElement = ({
   attackPattern,
   handleOpen,
   attackPatternIdsToOverlap,
+  isSecurityPlatform,
 }: AttackPatternsMatrixColumnsElementProps) => {
   const theme = useTheme<Theme>();
   const { isFeatureEnable } = useHelper();
   const isSecurityPlatformEnabled = isFeatureEnable('SECURITY_PLATFORM');
-  const [isHover, setIsHover] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
-  const hasLevel = attackPattern.level > 0;
-  const { border, backgroundColor } = getBoxStyles(hasLevel, isHover, theme);
+  const { border, backgroundColor } = getBoxStyles({ attackPattern, isHovered, isSecurityPlatform, theme });
 
   return (
     <Box
-      onMouseEnter={() => setIsHover(true)}
-      onMouseLeave={() => setIsHover(false)}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       onClick={(e) => handleOpen(attackPattern, e)}
       sx={{
         display: 'flex',
@@ -51,7 +52,7 @@ const AttackPatternsMatrixColumnsElement = ({
       <Typography variant="body2" fontSize={10}>
         {attackPattern.name}
       </Typography>
-      {isSecurityPlatformEnabled && attackPatternIdsToOverlap?.length !== undefined && attackPattern.level > 0 && (
+      {isSecurityPlatformEnabled && !isSecurityPlatform && attackPatternIdsToOverlap?.length !== undefined && attackPattern.isCovered && (
         <AttackPatternsMatrixShouldCoverIcon
           isOverlapping={attackPattern.isOverlapping || false}
         />

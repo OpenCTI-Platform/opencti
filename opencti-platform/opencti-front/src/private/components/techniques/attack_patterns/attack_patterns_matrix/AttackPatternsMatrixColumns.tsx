@@ -27,13 +27,12 @@ export type MinimalAttackPattern = {
   name: string;
 };
 export type FilteredSubAttackPattern = SubAttackPattern & {
-  level: number;
+  isCovered: boolean;
   isOverlapping?: boolean;
-  subAttackPatternsTotal?: number;
 };
 
 export type FilteredAttackPattern = AttackPattern & {
-  level: number;
+  isCovered: boolean;
   isOverlapping?: boolean;
   subAttackPatternsTotal?: number;
   subAttackPatterns: FilteredSubAttackPattern[] | undefined;
@@ -59,7 +58,10 @@ const COLORS = {
   DEFAULT_BG_HOVER: '#ffffff',
   HIGHLIGHT: '#b71c1c',
   HIGHLIGHT_HOVER: '#d32f2f',
+  HIGHLIGHT_SECURITY_POSTURE: '#1b5e20',
+  HIGHLIGHT_SECURITY_POSTURE_HOVER: '#2e7d32',
   BADGE: '#fa5e5e',
+  BADGE_SECURITY_POSTURE: '#79ed98',
 };
 
 export const attackPatternsMatrixColumnsFragment = graphql`
@@ -88,14 +90,47 @@ export const attackPatternsMatrixColumnsFragment = graphql`
   }
 `;
 
-export const getBoxStyles = (hasLevel: boolean, isHovered: boolean, theme: Theme) => {
-  if (hasLevel) {
-    const highlightedColor = isHovered ? COLORS.HIGHLIGHT_HOVER : COLORS.HIGHLIGHT;
+export const isSubAttackPatternCovered = (attackPattern: FilteredAttackPattern) => {
+  return attackPattern.subAttackPatterns?.some((sub: FilteredSubAttackPattern) => sub.isCovered);
+};
+
+export const getBoxStyles = ({
+  attackPattern,
+  isHovered,
+  isSecurityPlatform,
+  theme,
+}: {
+  attackPattern: FilteredAttackPattern | FilteredSubAttackPattern;
+  isHovered: boolean;
+  isSecurityPlatform: boolean;
+  theme: Theme;
+}) => {
+  // Handle colors for Security Platform page
+  const highlightColor = isSecurityPlatform
+    ? COLORS.HIGHLIGHT_SECURITY_POSTURE
+    : COLORS.HIGHLIGHT;
+  const highlightHoverColor = isSecurityPlatform
+    ? COLORS.HIGHLIGHT_SECURITY_POSTURE_HOVER
+    : COLORS.HIGHLIGHT_HOVER;
+
+  // Is directly covered
+  if (attackPattern.isCovered) {
+    const color = isHovered ? highlightHoverColor : highlightColor;
     return {
-      border: `1px solid ${highlightedColor}`,
-      backgroundColor: hexToRGB(highlightedColor, 0.2),
+      border: `1px solid ${color}`,
+      backgroundColor: hexToRGB(color, 0.2),
     };
   }
+
+  // Covered by sub-attack patterns
+  if (isSubAttackPatternCovered(attackPattern as FilteredAttackPattern)) {
+    const color = isHovered ? highlightHoverColor : highlightColor;
+    return {
+      border: `1px solid ${color}`,
+      backgroundColor: COLORS.DEFAULT_BG,
+    };
+  }
+
   return {
     border: `1px solid ${theme.palette.background.accent}`,
     backgroundColor: isHovered
@@ -108,7 +143,7 @@ const AttackPatternsMatrixColumns = ({
   queryRef,
   attackPatterns,
   attackPatternIdsToOverlap,
-  marginRight = false,
+  entityType,
   searchTerm = '',
   handleAdd,
   selectedKillChain,
@@ -119,6 +154,7 @@ const AttackPatternsMatrixColumns = ({
   const [anchorEl, setAnchorEl] = useState<EventTarget & Element | null>(null);
   const [selectedAttackPattern, setSelectedAttackPattern] = useState<MinimalAttackPattern | null>(null);
   const [navOpen, setNavOpen] = useState(localStorage.getItem('navOpen') === 'true');
+  const isSecurityPlatform = entityType === 'SecurityPlatform';
 
   const data = usePreloadedQuery<AttackPatternsMatrixQuery>(attackPatternsMatrixQuery, queryRef);
   const { attackPatternsMatrix } = useFragment<AttackPatternsMatrixColumns_data$key>(
@@ -149,8 +185,12 @@ const AttackPatternsMatrixColumns = ({
     return () => subscription.unsubscribe();
   }, []);
 
+  const isAttackPatternCovered = (ap: AttackPattern | SubAttackPattern) => {
+    return attackPatterns.filter((n) => n.id === ap.attack_pattern_id).length > 0;
+  };
+
   const getAttackPatternLevel = (ap: AttackPattern): number => {
-    return attackPatterns.filter((n) => n.id === ap.attack_pattern_id || (ap.subAttackPatterns?.find((sub) => n.id === sub.attack_pattern_id))).length;
+    return attackPatterns.filter((n) => n.id === ap.attack_pattern_id).length;
   };
 
   const getSubAttackPatternLevel = (sap: SubAttackPattern): number => {
@@ -171,23 +211,25 @@ const AttackPatternsMatrixColumns = ({
         .map((ap) => ({
           ...ap,
           level: getAttackPatternLevel(ap),
+          isCovered: isAttackPatternCovered(ap),
           subAttackPatterns: ap.subAttackPatterns?.map((sub) => ({
             ...sub,
             level: getSubAttackPatternLevel(sub),
+            isCovered: isAttackPatternCovered(sub),
             isOverlapping: attackPatternIdsToOverlap?.includes(sub.attack_pattern_id),
           })),
           isOverlapping: attackPatternIdsToOverlap?.includes(ap.attack_pattern_id),
           subAttackPatternsTotal: ap.subAttackPatterns?.length,
         }))
-        .filter((o) => (isModeOnlyActive ? o.level > 0 : o.level >= 0))
+        .filter((o) => (isModeOnlyActive ? o.isCovered : true))
         .sort((f, s) => f.name.localeCompare(s.name)),
     })), [attackPatternsMatrix, searchTerm, attackPatterns, attackPatternIdsToOverlap, isModeOnlyActive]);
 
   const matrixWidth = useMemo(() => {
     const baseOffset = LAYOUT_SIZE.BASE_WIDTH + (navOpen ? LAYOUT_SIZE.NAV_WIDTH : 0);
-    const rightOffset = marginRight ? LAYOUT_SIZE.MARGIN_RIGHT_WIDTH : 0;
+    const rightOffset = entityType ? LAYOUT_SIZE.MARGIN_RIGHT_WIDTH : 0;
     return baseOffset + rightOffset;
-  }, [marginRight, navOpen]);
+  }, [entityType, navOpen]);
 
   return (
     <UserContext.Consumer>
@@ -221,13 +263,14 @@ const AttackPatternsMatrixColumns = ({
                         <AttackPatternsMatrixBadge
                           key={ap.attack_pattern_id}
                           attackPattern={ap}
-                          color={COLORS.BADGE}
+                          color={isSecurityPlatform ? COLORS.BADGE_SECURITY_POSTURE : COLORS.BADGE}
                         >
                           <AccordionAttackPattern
                             attackPattern={ap}
                             handleOpen={handleOpen}
                             isSecurityPlatformEnabled={isSecurityPlatformEnabled}
                             attackPatternIdsToOverlap={attackPatternIdsToOverlap}
+                            isSecurityPlatform={isSecurityPlatform}
                           />
                         </AttackPatternsMatrixBadge>
                       ) : (
@@ -236,6 +279,7 @@ const AttackPatternsMatrixColumns = ({
                           attackPattern={ap}
                           handleOpen={handleOpen}
                           attackPatternIdsToOverlap={attackPatternIdsToOverlap}
+                          isSecurityPlatform={isSecurityPlatform}
                         />
                       )
                     );
