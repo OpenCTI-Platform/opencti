@@ -100,7 +100,9 @@ export const addIngestionCsv = async (context: AuthContext, user: AuthUser, inpu
       user_id: onTheFlyCreatedUser.id,
     };
   } else {
-    updatedInput = input;
+    updatedInput = {
+      ...((({ automatic_user: _, confidence_level: __, ...inputWithoutAutomaticFields }) => inputWithoutAutomaticFields)(input))
+    };
   }
 
   const { element, isCreation } = await createEntity(
