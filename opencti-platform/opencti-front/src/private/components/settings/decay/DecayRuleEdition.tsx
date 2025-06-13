@@ -47,12 +47,10 @@ interface DecayRuleEditionFormData {
 interface DecayRuleEditionFormProps {
   decayRuleId: string;
   initialValues: DecayRuleEditionFormData;
-  onCompleted?: () => void;
 }
 const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
   decayRuleId,
   initialValues,
-  onCompleted,
 }) => {
   const { t_i18n } = useFormatter();
   const [commitUpdate] = useApiMutation(decayRuleEditionMutation);
@@ -65,11 +63,6 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
           variables: {
             id: decayRuleId,
             input: { key: name, value: value || '' },
-          },
-          onCompleted: () => {
-            if (onCompleted) {
-              onCompleted();
-            }
           },
           onError: (error: Error) => {
             handleError(error);

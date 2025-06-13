@@ -33,6 +33,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import { useTheme } from '@mui/material';
 import ListItemButton from '@mui/material/ListItemButton';
+import PlaybookEdition from '@components/data/playbooks/PlaybookEdition';
 import Drawer from '../../common/drawer/Drawer';
 import { PlaybookHeader_playbook$data } from './__generated__/PlaybookHeader_playbook.graphql';
 import { useFormatter } from '../../../../components/i18n';
@@ -121,6 +122,9 @@ const PlaybookHeaderComponent = ({
       >
         {playbook.name}
       </Typography>
+      <div>
+        <PlaybookEdition id={playbook.id}/>
+      </div>
       <div className={classes.popover}>
         <PlaybookPopover
           playbookId={playbook.id}
@@ -131,13 +135,13 @@ const PlaybookHeaderComponent = ({
         <Chip
           classes={{ root: classes.chip }}
           style={
-            playbook.playbook_running ? inlineStyles.green : inlineStyles.red
-          }
+              playbook.playbook_running ? inlineStyles.green : inlineStyles.red
+            }
           label={
-            playbook.playbook_running
-              ? t_i18n('Playbook is running')
-              : t_i18n('Playbook is stopped')
-          }
+              playbook.playbook_running
+                ? t_i18n('Playbook is running')
+                : t_i18n('Playbook is stopped')
+            }
         />
       </div>
       <div className={classes.activity}>
@@ -181,10 +185,10 @@ const PlaybookHeaderComponent = ({
                   dense={true}
                   divider={openExecution !== lastExecution.id}
                   onClick={() => setOpenExecution(openExecution ? null : lastExecution.id)
-                  }
+                    }
                 >
                   <ListItemIcon style={{ marginLeft: 10 }}>
-                    <ItemIcon type="Playbook" color={theme.palette.primary.main} />
+                    <ItemIcon type="Playbook" color={theme.palette.primary.main}/>
                   </ListItemIcon>
                   <ListItemText
                     primary={`${t_i18n('Execution at')} ${nsdt(
@@ -195,9 +199,9 @@ const PlaybookHeaderComponent = ({
                     )}`}
                   />
                   {openExecution === lastExecution.id ? (
-                    <ExpandLessOutlined />
+                    <ExpandLessOutlined/>
                   ) : (
-                    <ExpandMoreOutlined />
+                    <ExpandMoreOutlined/>
                   )}
                 </ListItemButton>
                 <Collapse
@@ -214,23 +218,23 @@ const PlaybookHeaderComponent = ({
                         onClick={() => setRawData(step.error ?? step.bundle_or_patch)}
                       >
                         <ListItemIcon>
-                          <Tooltip title={t_i18n(step.status)}>
-                            {step.status === 'success' ? (
-                              <CheckCircleOutlined
-                                fontSize="small"
-                                color="success"
-                              />
-                            ) : (
-                              <ErrorOutlined fontSize="small" color="error" />
-                            )}
-                          </Tooltip>
-                        </ListItemIcon>
+                            <Tooltip title={t_i18n(step.status)}>
+                              {step.status === 'success' ? (
+                                <CheckCircleOutlined
+                                  fontSize="small"
+                                  color="success"
+                                />
+                              ) : (
+                                <ErrorOutlined fontSize="small" color="error"/>
+                              )}
+                            </Tooltip>
+                          </ListItemIcon>
                         <ListItemText
-                          primary={step.message}
-                          secondary={`${t_i18n('Execution ended at')} ${nsdt(
-                            step.out_timestamp,
-                          )}`}
-                        />
+                            primary={step.message}
+                            secondary={`${t_i18n('Execution ended at')} ${nsdt(
+                              step.out_timestamp,
+                            )}`}
+                          />
                       </ListItemButton>
                     ))}
                   </List>
@@ -253,7 +257,7 @@ const PlaybookHeaderComponent = ({
           <pre>{rawData}</pre>
         </DialogContent>
       </Dialog>
-      <div className="clearfix" />
+      <div className="clearfix"/>
     </>
   );
 };
