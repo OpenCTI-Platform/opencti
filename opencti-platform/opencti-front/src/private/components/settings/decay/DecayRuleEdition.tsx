@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import { Field, FieldArray, Form, Formik } from 'formik';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer from '@components/common/drawer/Drawer';
 import * as R from 'ramda';
 import { AddOutlined, Delete } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
@@ -11,6 +11,8 @@ import Box from '@mui/material/Box';
 import { InformationOutline } from 'mdi-material-ui';
 import { FormikConfig } from 'formik/dist/types';
 import ObservableTypesField from '@components/common/form/ObservableTypesField';
+import { Stack } from '@mui/material';
+import DecayRuleDeletion from '@components/settings/decay/DecayRuleDeletion';
 import decayRuleValidator from './DecayRuleValidator';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
@@ -20,6 +22,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { handleError } from '../../../../relay/environment';
 import { DecayRule_decayRule$data } from './__generated__/DecayRule_decayRule.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 export const decayRuleEditionMutation = graphql`
   mutation DecayRuleEditionMutation($id: ID!, $input: [EditInput!]!) {
@@ -159,7 +162,7 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
                   </Box>
                 </Typography>
                 {values.decay_points && values.decay_points.length > 0 && (
-                  values.decay_points.map((decay_point, index) => (
+                  values.decay_points.map((_, index) => (
                     <div key={index} style={{ display: 'flex' }}>
                       <div style={{ flex: 1 }}>
                         <Field
@@ -227,6 +230,11 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
             onChange={handleSubmitField}
             containerstyle={fieldSpacingContainerStyle}
           />
+          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
+            <DecayRuleDeletion
+              id={decayRuleId}
+            />
+          </Stack>
         </Form>
       )}
     </Formik>
@@ -254,7 +262,7 @@ const DecayRuleEdition: FunctionComponent<DecayRuleEditionProps> = ({
   return (
     <Drawer
       title={t_i18n('Update a decay rule')}
-      variant={DrawerVariant.updateWithPanel}
+      controlledDial={EditEntityControlledDial}
     >
       <DecayRuleEditionForm
         decayRuleId={decayRule.id}

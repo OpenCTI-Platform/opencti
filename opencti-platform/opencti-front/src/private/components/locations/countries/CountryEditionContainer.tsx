@@ -37,7 +37,7 @@ const CountryEditionContainer: FunctionComponent<CountryEditionContainerProps> =
   if (country) {
     return (
       <Drawer
-        title={t_i18n('Update an country')}
+        title={t_i18n('Update a country')}
         context={country.editContext}
         onClose={handleClose}
         open={open}
