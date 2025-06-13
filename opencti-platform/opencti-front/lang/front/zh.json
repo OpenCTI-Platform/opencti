@@ -5,6 +5,8 @@
   "... successfully deleted": "{entity_type} 成功删除",
   "{count} days": "{count}天",
   "{count} email address(es) extracted from pasted text": "{count} 从粘贴的文本中提取的电子邮件地址",
+  "{entityType} `{entityName}` added to `{pirName}`": "{entityType}{entityName}`添加到`{pirName}`中",
+  "{entityType} `{entityName}` removed from `{pirName}`": "{entityType}从\"{entityName}\"中移除\"{pirName}\"。",
   "+ N override(s)": "+ {count} 覆盖",
   "0 equals no maximum": "0 等于没有最大值",
   "1 day": "1 天",
