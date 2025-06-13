@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import React, { FunctionComponent } from 'react';
-import AuditsListComponent, { auditsListComponentQuery } from './AuditsListComponent';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { AuditsListContentQuery, LogsOrdering, OrderingMode } from './__generated__/AuditsListContentQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
@@ -24,6 +24,67 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import type { WidgetDataSelection, WidgetParameters } from '../../../../utils/widget/widget';
+import WidgetListAudits from '../../../../components/dashboard/WidgetListAudits';
+import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
+
+const auditsListComponentQuery = graphql`
+  query AuditsListComponentQuery(
+    $types: [String!]
+    $first: Int
+    $orderBy: LogsOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    audits(
+      types: $types
+      first: $first
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) {
+      edges {
+        node {
+          id
+          entity_type
+          event_status
+          event_type
+          event_scope
+          timestamp
+          user {
+            id
+            entity_type
+            name
+          }
+          context_data {
+            entity_id
+            entity_type
+            entity_name
+            message
+            workspace_type
+          }
+        }
+      }
+    }
+  }
+`;
+
+interface AuditsListComponentProps {
+  queryRef: PreloadedQuery<AuditsListContentQuery>,
+}
+
+const AuditsListComponent: FunctionComponent<AuditsListComponentProps> = ({
+  queryRef,
+}) => {
+  const queryData = usePreloadedQuery<AuditsListContentQuery>(auditsListComponentQuery, queryRef);
+
+  if (queryData && queryData.audits?.edges && queryData.audits.edges.length > 0) {
+    const data = queryData.audits.edges;
+    return (
+      <WidgetListAudits data={data} />
+    );
+  }
+  return <WidgetNoData />;
+};
 
 interface AuditsListProps {
   variant?: string,
