@@ -67,18 +67,14 @@ const Root = () => {
           path="/organizations/:organizationId/*"
           element={boundaryWrapper(RootOrganization)}
         />
-        {enableSecurityPlatformFeatureFlag && (
-        <>
-          <Route
-            path="/security_platforms"
-            element={boundaryWrapper(Security)}
-          />
-          <Route
-            path="/security_platforms/:securityPlatformId/*"
-            element={boundaryWrapper(RootSecurity)}
-          />
-        </>
-        )}
+        <Route
+          path="/security_platforms"
+          element={boundaryWrapper(Security)}
+        />
+        <Route
+          path="/security_platforms/:securityPlatformId/*"
+          element={boundaryWrapper(RootSecurity)}
+        />
         <Route
           path="/systems"
           element={boundaryWrapper(Systems)}
