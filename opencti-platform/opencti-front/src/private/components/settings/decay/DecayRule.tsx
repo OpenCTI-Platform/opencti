@@ -92,12 +92,11 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
       ]}
       />
       <CustomizationMenu />
-      <div style={{ marginBottom: 23, display: 'flex' }}>
-        <div style={{ display: 'flex', flex: 1 }}>
+      <div style={{ marginBottom: theme.spacing(3), display: 'flex' }}>
+        <div style={{ display: 'flex', flex: 1, alignItems: 'center' }}>
           <Typography
             variant="h1"
-            gutterBottom={true}
-            style={{ marginRight: 20 }}
+            style={{ marginBottom: 0, marginRight: 20 }}
           >
             {decayRule.name}
           </Typography>
@@ -113,7 +112,6 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
           </>
         )}
       </div>
-      <div className="clearfix" />
       <Grid
         container={true}
         spacing={3}

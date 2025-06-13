@@ -86,13 +86,13 @@ const PlaybookHeaderComponent = ({
   const { t_i18n, nsdt, n } = useFormatter();
   return (
     <div style={{ display: 'flex', alignItems: 'center' }}>
-      <div style={{ display: 'flex', flex: 1 }}>
+      <div style={{ display: 'flex', flex: 1, alignItems: 'center' }}>
         <Typography
           variant="h1"
-          gutterBottom={true}
           style={{
             textTransform: 'uppercase',
             marginRight: 20,
+            marginBottom: 0,
           }}
         >
           {playbook.name}
@@ -113,47 +113,47 @@ const PlaybookHeaderComponent = ({
           }
         />
       </div>
-      <div style={{ marginLeft: 10, marginRight: 10, marginTop: -9 }}>
-        <ToggleButtonGroup
-          size="small"
-          color="secondary"
-          value={openLastExecutions}
-          exclusive={true}
-          onChange={() => setOpenLastExecutions(!openLastExecutions)}
-          style={{ margin: '7px 0 0 5px' }}
+      <ToggleButtonGroup
+        size="small"
+        color="secondary"
+        value={openLastExecutions}
+        exclusive={true}
+        onChange={() => setOpenLastExecutions(!openLastExecutions)}
+        style={{ margin: '0 4px 0 0' }}
+      >
+        <ToggleButton
+          value="cards"
+          aria-label="cards"
+          style={{ padding: '5px' }}
         >
-          <ToggleButton value="cards" aria-label="cards">
-            <div>
-              <Chip
-                style={{
-                  fontSize: 12,
-                  lineHeight: '12px',
-                  height: 25,
-                  textTransform: 'uppercase',
-                  borderRadius: 4,
-                  marginRight: 14,
-                }}
-                label={`${n(playbook.queue_messages)} ${t_i18n('messages in queue')}`}
-              />
-            </div>
-            <Tooltip title={t_i18n('Open last execution traces')}>
-              <Badge
-                badgeContent={(playbook.last_executions ?? []).length}
-                color="secondary"
-              >
-                <ManageHistoryOutlined color="primary"/>
-              </Badge>
-            </Tooltip>
-          </ToggleButton>
-        </ToggleButtonGroup>
-      </div>
+          <div>
+            <Chip
+              style={{
+                fontSize: 12,
+                lineHeight: '12px',
+                height: 25,
+                textTransform: 'uppercase',
+                borderRadius: 4,
+                marginRight: 14,
+              }}
+              label={`${n(playbook.queue_messages)} ${t_i18n('messages in queue')}`}
+            />
+          </div>
+          <Tooltip title={t_i18n('Open last execution traces')}>
+            <Badge
+              badgeContent={(playbook.last_executions ?? []).length}
+              color="secondary"
+            >
+              <ManageHistoryOutlined fontSize='small' color="primary" />
+            </Badge>
+          </Tooltip>
+        </ToggleButton>
+      </ToggleButtonGroup>
       <PlaybookPopover
         playbookId={playbook.id}
         running={playbook.playbook_running}
       />
-      <div style={{ marginLeft: 1 }}>
-        <PlaybookEdition id={playbook.id}/>
-      </div>
+      <PlaybookEdition id={playbook.id}/>
       <Drawer
         open={openLastExecutions}
         onClose={() => setOpenLastExecutions(false)}
