@@ -16,7 +16,6 @@ import { truncate } from '../../../../../utils/String';
 import { MESSAGING$ } from '../../../../../relay/environment';
 import { UserContext } from '../../../../../utils/hooks/useAuth';
 import { hexToRGB } from '../../../../../utils/Colors';
-import useHelper from '../../../../../utils/hooks/useHelper';
 import type { Theme } from '../../../../../components/Theme';
 
 export type AttackPatternsOfPhase = NonNullable<NonNullable<AttackPatternsMatrixColumns_data$data['attackPatternsMatrix']>['attackPatternsOfPhases']>[number];
@@ -149,8 +148,6 @@ const AttackPatternsMatrixColumns = ({
   selectedKillChain,
   isModeOnlyActive,
 }: AttackPatternsMatrixColumnsProps) => {
-  const { isFeatureEnable } = useHelper();
-  const isSecurityPlatformEnabled = isFeatureEnable('SECURITY_PLATFORM');
   const [anchorEl, setAnchorEl] = useState<EventTarget & Element | null>(null);
   const [selectedAttackPattern, setSelectedAttackPattern] = useState<MinimalAttackPattern | null>(null);
   const [navOpen, setNavOpen] = useState(localStorage.getItem('navOpen') === 'true');
@@ -259,7 +256,7 @@ const AttackPatternsMatrixColumns = ({
                   </Box>
                   {col.attackPatterns?.map((ap) => {
                     return (
-                      isSecurityPlatformEnabled && ap.subAttackPatterns?.length ? (
+                      ap.subAttackPatterns?.length ? (
                         <AttackPatternsMatrixBadge
                           key={ap.attack_pattern_id}
                           attackPattern={ap}
@@ -268,7 +265,6 @@ const AttackPatternsMatrixColumns = ({
                           <AccordionAttackPattern
                             attackPattern={ap}
                             handleOpen={handleOpen}
-                            isSecurityPlatformEnabled={isSecurityPlatformEnabled}
                             attackPatternIdsToOverlap={attackPatternIdsToOverlap}
                             isSecurityPlatform={isSecurityPlatform}
                           />

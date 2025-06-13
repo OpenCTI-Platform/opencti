@@ -4,7 +4,6 @@ import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import { createdAt, creators, updatedAt } from '../../schema/attribute-definition';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, type StixSecurityPlatform, type StoreEntitySecurityPlatform } from './securityPlatform-types';
 import convertSecurityPlatformToStix from './securityPlatform-converter';
-import { isFeatureEnabled } from '../../config/conf';
 import { RELATION_SHOULD_COVER } from '../../schema/stixCoreRelationship';
 import { REL_NEW } from '../../database/stix';
 import { ENTITY_TYPE_ATTACK_PATTERN } from '../../schema/stixDomainObject';
@@ -55,8 +54,4 @@ const SECURITY_PLATFORM_DEFINITION: ModuleDefinition<StoreEntitySecurityPlatform
   converter_2_1: convertSecurityPlatformToStix
 };
 
-const isSecurityPlatformEnabled = isFeatureEnabled('SECURITY_PLATFORM');
-
-if (isSecurityPlatformEnabled) {
-  registerDefinition(SECURITY_PLATFORM_DEFINITION);
-}
+registerDefinition(SECURITY_PLATFORM_DEFINITION);

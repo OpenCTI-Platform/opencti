@@ -7,7 +7,6 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { boundaryWrapper } from '../Error';
 import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
 import Loader from '../../../components/Loader';
-import useHelper from '../../../utils/hooks/useHelper';
 
 const Sectors = lazy(() => import('./Sectors'));
 const RootSector = lazy(() => import('./sectors/Root'));
@@ -23,9 +22,6 @@ const Individuals = lazy(() => import('./Individuals'));
 const RootIndividual = lazy(() => import('./individuals/Root'));
 
 const Root = () => {
-  const { isFeatureEnable } = useHelper();
-  const enableSecurityPlatformFeatureFlag = isFeatureEnable('SECURITY_PLATFORM');
-
   let redirect: string | null = null;
   if (!useIsHiddenEntity('Sector')) {
     redirect = 'sectors';
@@ -33,7 +29,7 @@ const Root = () => {
     redirect = 'events';
   } else if (!useIsHiddenEntity('Organization')) {
     redirect = 'organizations';
-  } else if (!useIsHiddenEntity('Security-Platform') && enableSecurityPlatformFeatureFlag) {
+  } else if (!useIsHiddenEntity('Security-Platform')) {
     redirect = 'security_platforms';
   } else if (!useIsHiddenEntity('System')) {
     redirect = 'systems';
@@ -71,18 +67,14 @@ const Root = () => {
           path="/organizations/:organizationId/*"
           element={boundaryWrapper(RootOrganization)}
         />
-        {enableSecurityPlatformFeatureFlag && (
-        <>
-          <Route
-            path="/security_platforms"
-            element={boundaryWrapper(Security)}
-          />
-          <Route
-            path="/security_platforms/:securityPlatformId/*"
-            element={boundaryWrapper(RootSecurity)}
-          />
-        </>
-        )}
+        <Route
+          path="/security_platforms"
+          element={boundaryWrapper(Security)}
+        />
+        <Route
+          path="/security_platforms/:securityPlatformId/*"
+          element={boundaryWrapper(RootSecurity)}
+        />
         <Route
           path="/systems"
           element={boundaryWrapper(Systems)}
