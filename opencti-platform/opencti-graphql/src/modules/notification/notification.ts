@@ -116,7 +116,7 @@ const NOTIFICATION_DEFINITION: ModuleDefinition<StoreEntityNotification, StixNot
       editDefault: false,
       multiple: false,
       upsert: false,
-      isFilterable: true
+      isFilterable: false
     },
     authorizedMembers,
     authorizedAuthorities,
