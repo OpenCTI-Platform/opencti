@@ -13,12 +13,11 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { PlaybookEditionFormQuery } from '@components/data/playbooks/__generated__/PlaybookEditionFormQuery.graphql';
-import { FormikConfig } from 'formik/dist/types';
 import { PlaybookEditionForm_playbook$key } from '@components/data/playbooks/__generated__/PlaybookEditionForm_playbook.graphql';
 import { Stack } from '@mui/material';
 import PlaybookDeletion from '@components/data/playbooks/PlaybookDeletion';
@@ -58,10 +57,14 @@ interface PlaybookEditionFormData {
   description: string | null | undefined
 }
 
-const PlaybookEditionForm = ({ queryRef }: { queryRef: PreloadedQuery<PlaybookEditionFormQuery> }) => {
+interface PlaybookEditionFormProps {
+  queryRef: PreloadedQuery<PlaybookEditionFormQuery>,
+}
+
+const PlaybookEditionForm: FunctionComponent<PlaybookEditionFormProps> = ({ queryRef }) => {
   const { playbook } = usePreloadedQuery<PlaybookEditionFormQuery>(playbookEditionFormQuery, queryRef);
   const playbookData = useFragment<PlaybookEditionForm_playbook$key>(playbookEditionFragment, playbook);
-  if (!playbookData) return <div/>;
+  if (!playbookData) return null;
 
   const { t_i18n } = useFormatter();
   const initialValues: PlaybookEditionFormData = {
@@ -69,7 +72,7 @@ const PlaybookEditionForm = ({ queryRef }: { queryRef: PreloadedQuery<PlaybookEd
     description: playbookData.description,
   };
 
-  const playbookValidation = () => Yup.object().shape({
+  const playbookValidation = Yup.object().shape({
     name: Yup.string().required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
   });
@@ -77,7 +80,7 @@ const PlaybookEditionForm = ({ queryRef }: { queryRef: PreloadedQuery<PlaybookEd
   const [commitUpdate] = useApiMutation(playbookMutationFieldPatch);
 
   const handleSubmitField = (name: string, value: string) => {
-    playbookValidation()
+    playbookValidation
       .validateAt(name, { [name]: value })
       .then(() => {
         commitUpdate({
@@ -89,14 +92,13 @@ const PlaybookEditionForm = ({ queryRef }: { queryRef: PreloadedQuery<PlaybookEd
       })
       .catch(() => false);
   };
-  const onSubmit: FormikConfig<PlaybookEditionFormData>['onSubmit'] = () => {};
 
   return (
     <Formik
       enableReinitialize={true}
       initialValues={initialValues}
-      validationSchema={playbookValidation()}
-      onSubmit={onSubmit}
+      validationSchema={playbookValidation}
+      onSubmit={() => {}}
     >
       {() => (
         <Form>

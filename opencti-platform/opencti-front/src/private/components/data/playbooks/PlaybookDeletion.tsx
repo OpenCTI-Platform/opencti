@@ -67,13 +67,13 @@ const PlaybookDeletion = ({ id }: { id: string }) => {
   return (
     <>
       <Button
-          color="error"
-          variant="contained"
-          onClick={handleOpenDelete}
-          disabled={deleting}
-          sx={{ marginTop: 2 }}
-           >
-          {t_i18n('Delete')}
+        color="error"
+        variant="contained"
+        onClick={handleOpenDelete}
+        disabled={deleting}
+        sx={{ marginTop: 2 }}
+         >
+        {t_i18n('Delete')}
         </Button>
       <DeleteDialog
         deletion={deletion}

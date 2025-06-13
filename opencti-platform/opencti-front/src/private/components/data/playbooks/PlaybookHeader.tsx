@@ -151,7 +151,7 @@ const PlaybookHeaderComponent = ({
         playbookId={playbook.id}
         running={playbook.playbook_running}
       />
-      <div style={{ float: 'right', marginLeft: 1 }}>
+      <div style={{ marginLeft: 1 }}>
         <PlaybookEdition id={playbook.id}/>
       </div>
       <Drawer
@@ -239,7 +239,6 @@ const PlaybookHeaderComponent = ({
           <pre>{rawData}</pre>
         </DialogContent>
       </Dialog>
-      <div className="clearfix"/>
     </div>
   );
 };
