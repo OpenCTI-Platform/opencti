@@ -26,6 +26,7 @@ const CustomizationMenu: FunctionComponent = () => {
     {
       path: '/dashboard/settings/customization/fintel_designs',
       label: 'Fintel design',
+      isEE: true,
     },
     {
       path: '/dashboard/settings/customization/exclusion_lists',

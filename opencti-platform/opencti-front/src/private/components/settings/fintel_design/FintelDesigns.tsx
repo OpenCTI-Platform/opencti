@@ -8,6 +8,7 @@ import {
 import FintelDesignCreation from '@components/settings/fintel_design/FintelDesignCreation';
 import { FintelDesignsLines_data$data } from '@components/settings/fintel_design/__generated__/FintelDesignsLines_data.graphql';
 import { FintelDesignsLine_node$data } from '@components/settings/fintel_design/__generated__/FintelDesignsLine_node.graphql';
+import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
 import { useFormatter } from '../../../../components/i18n';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
@@ -20,6 +21,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import PageContainer from '../../../../components/PageContainer';
 import AlertInfo from '../../../../components/AlertInfo';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 const fintelDesignsQuery = graphql`
   query FintelDesignsLinesPaginationQuery(
@@ -90,6 +92,7 @@ const fintelDesignsLineFragment = graphql`
 const LOCAL_STORAGE_KEY = 'view-fintel-designs';
 
 const FintelDesigns = () => {
+  const isEnterpriseEdition = useEnterpriseEdition();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Fintel design | Customization | Settings'));
@@ -162,23 +165,29 @@ const FintelDesigns = () => {
             { label: t_i18n('Fintel design'), current: true },
           ]}
         />
-        <AlertInfo
-          content={t_i18n('If no design configuration is detected, the default settings will be applied.')}
-        />
-        {queryRef && (
-        <DataTable
-          dataColumns={dataColumns}
-          resolvePath={(data: FintelDesignsLines_data$data) => data.fintelDesigns?.edges?.map((n) => n?.node)}
-          storageKey={LOCAL_STORAGE_KEY}
-          initialValues={initialValues}
-          toolbarFilters={contextFilters}
-          useComputeLink={getRedirectionLink}
-          lineFragment={fintelDesignsLineFragment}
-          disableLineSelection
-          preloadedPaginationProps={preloadedPaginationProps}
-          createButton={<FintelDesignCreation paginationOptions={queryPaginationOptions} />}
-          icon={() => <ItemIcon type="fintel-design" />}
-        />
+        {!isEnterpriseEdition ? (
+          <EnterpriseEdition feature="Fintel design" />
+        ) : (
+          <>
+            <AlertInfo
+              content={t_i18n('If no design configuration is detected, the default settings will be applied.')}
+            />
+            {queryRef && (
+            <DataTable
+              dataColumns={dataColumns}
+              resolvePath={(data: FintelDesignsLines_data$data) => data.fintelDesigns?.edges?.map((n) => n?.node)}
+              storageKey={LOCAL_STORAGE_KEY}
+              initialValues={initialValues}
+              toolbarFilters={contextFilters}
+              useComputeLink={getRedirectionLink}
+              lineFragment={fintelDesignsLineFragment}
+              disableLineSelection
+              preloadedPaginationProps={preloadedPaginationProps}
+              createButton={<FintelDesignCreation paginationOptions={queryPaginationOptions} />}
+              icon={() => <ItemIcon type="fintel-design" />}
+            />
+            )}
+          </>
         )}
       </PageContainer>
     </>
