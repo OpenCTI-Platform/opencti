@@ -14,7 +14,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import React, { useEffect, useState } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -33,6 +32,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import { useTheme } from '@mui/material';
 import ListItemButton from '@mui/material/ListItemButton';
+import PlaybookEdition from '@components/data/playbooks/PlaybookEdition';
 import Drawer from '../../common/drawer/Drawer';
 import { PlaybookHeader_playbook$data } from './__generated__/PlaybookHeader_playbook.graphql';
 import { useFormatter } from '../../../../components/i18n';
@@ -42,33 +42,6 @@ import Transition from '../../../../components/Transition';
 import ItemIcon from '../../../../components/ItemIcon';
 
 const interval$ = interval(FIVE_SECONDS);
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  title: {
-    float: 'left',
-    textTransform: 'uppercase',
-  },
-  popover: {
-    float: 'left',
-    marginTop: '-13px',
-  },
-  status: {
-    float: 'left',
-  },
-  chip: {
-    fontSize: 12,
-    lineHeight: '12px',
-    height: 25,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-  },
-  activity: {
-    marginTop: -10,
-    float: 'right',
-  },
-}));
 
 const inlineStyles = {
   green: {
@@ -96,7 +69,6 @@ const PlaybookHeaderComponent = ({
   playbook: PlaybookHeader_playbook$data;
   relay: RelayRefetchProp;
 }) => {
-  const classes = useStyles();
   const theme = useTheme();
 
   useEffect(() => {
@@ -113,26 +85,27 @@ const PlaybookHeaderComponent = ({
   const [rawData, setRawData] = useState<string | null | undefined>(null);
   const { t_i18n, nsdt, n } = useFormatter();
   return (
-    <>
-      <Typography
-        variant="h1"
-        gutterBottom={true}
-        classes={{ root: classes.title }}
-      >
-        {playbook.name}
-      </Typography>
-      <div className={classes.popover}>
-        <PlaybookPopover
-          playbookId={playbook.id}
-          running={playbook.playbook_running}
-        />
-      </div>
-      <div className={classes.status}>
+    <div style={{ display: 'flex', alignItems: 'center' }}>
+      <div style={{ display: 'flex', flex: 1, alignItems: 'center' }}>
+        <Typography
+          variant="h1"
+          style={{
+            textTransform: 'uppercase',
+            marginRight: 20,
+            marginBottom: 0,
+          }}
+        >
+          {playbook.name}
+        </Typography>
         <Chip
-          classes={{ root: classes.chip }}
-          style={
-            playbook.playbook_running ? inlineStyles.green : inlineStyles.red
-          }
+          style={{
+            fontSize: 12,
+            lineHeight: '12px',
+            height: 25,
+            textTransform: 'uppercase',
+            borderRadius: 4,
+            ...(playbook.playbook_running ? inlineStyles.green : inlineStyles.red),
+          }}
           label={
             playbook.playbook_running
               ? t_i18n('Playbook is running')
@@ -140,34 +113,47 @@ const PlaybookHeaderComponent = ({
           }
         />
       </div>
-      <div className={classes.activity}>
-        <ToggleButtonGroup
-          size="small"
-          color="secondary"
-          value={openLastExecutions}
-          exclusive={true}
-          onChange={() => setOpenLastExecutions(!openLastExecutions)}
-          style={{ margin: '7px 0 0 5px' }}
+      <ToggleButtonGroup
+        size="small"
+        color="secondary"
+        value={openLastExecutions}
+        exclusive={true}
+        onChange={() => setOpenLastExecutions(!openLastExecutions)}
+        style={{ margin: '0 4px 0 0' }}
+      >
+        <ToggleButton
+          value="cards"
+          aria-label="cards"
+          style={{ padding: '5px' }}
         >
-          <ToggleButton value="cards" aria-label="cards">
-            <div>
-              <Chip
-                classes={{ root: classes.chip }}
-                style={{ marginRight: 14 }}
-                label={`${n(playbook.queue_messages)} ${t_i18n('messages in queue')}`}
-              />
-            </div>
-            <Tooltip title={t_i18n('Open last execution traces')}>
-              <Badge
-                badgeContent={(playbook.last_executions ?? []).length}
-                color="secondary"
-              >
-                <ManageHistoryOutlined color="primary"/>
-              </Badge>
-            </Tooltip>
-          </ToggleButton>
-        </ToggleButtonGroup>
-      </div>
+          <div>
+            <Chip
+              style={{
+                fontSize: 12,
+                lineHeight: '12px',
+                height: 25,
+                textTransform: 'uppercase',
+                borderRadius: 4,
+                marginRight: 14,
+              }}
+              label={`${n(playbook.queue_messages)} ${t_i18n('messages in queue')}`}
+            />
+          </div>
+          <Tooltip title={t_i18n('Open last execution traces')}>
+            <Badge
+              badgeContent={(playbook.last_executions ?? []).length}
+              color="secondary"
+            >
+              <ManageHistoryOutlined fontSize='small' color="primary" />
+            </Badge>
+          </Tooltip>
+        </ToggleButton>
+      </ToggleButtonGroup>
+      <PlaybookPopover
+        playbookId={playbook.id}
+        running={playbook.playbook_running}
+      />
+      <PlaybookEdition id={playbook.id}/>
       <Drawer
         open={openLastExecutions}
         onClose={() => setOpenLastExecutions(false)}
@@ -184,7 +170,7 @@ const PlaybookHeaderComponent = ({
                   }
                 >
                   <ListItemIcon style={{ marginLeft: 10 }}>
-                    <ItemIcon type="Playbook" color={theme.palette.primary.main} />
+                    <ItemIcon type="Playbook" color={theme.palette.primary.main}/>
                   </ListItemIcon>
                   <ListItemText
                     primary={`${t_i18n('Execution at')} ${nsdt(
@@ -195,9 +181,9 @@ const PlaybookHeaderComponent = ({
                     )}`}
                   />
                   {openExecution === lastExecution.id ? (
-                    <ExpandLessOutlined />
+                    <ExpandLessOutlined/>
                   ) : (
-                    <ExpandMoreOutlined />
+                    <ExpandMoreOutlined/>
                   )}
                 </ListItemButton>
                 <Collapse
@@ -221,7 +207,7 @@ const PlaybookHeaderComponent = ({
                                 color="success"
                               />
                             ) : (
-                              <ErrorOutlined fontSize="small" color="error" />
+                              <ErrorOutlined fontSize="small" color="error"/>
                             )}
                           </Tooltip>
                         </ListItemIcon>
@@ -253,8 +239,7 @@ const PlaybookHeaderComponent = ({
           <pre>{rawData}</pre>
         </DialogContent>
       </Dialog>
-      <div className="clearfix" />
-    </>
+    </div>
   );
 };
 

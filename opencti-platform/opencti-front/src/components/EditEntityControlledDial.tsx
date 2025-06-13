@@ -21,7 +21,7 @@ const EditEntityControlledDial = ({
       variant={variant}
       size={size}
       aria-label={buttonLabel}
-      style={style ?? { marginLeft: '3px' }}
+      style={style ?? { marginLeft: '4px' }}
     >
       {buttonLabel}
     </Button>

@@ -24,10 +24,10 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
-import { useNavigate } from 'react-router-dom';
 import DialogTitle from '@mui/material/DialogTitle';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
-import PlaybookEdition, { playbookMutationFieldPatch } from './PlaybookEdition';
+import ToggleButton from '@mui/material/ToggleButton';
+import { commitMutation } from '../../../../relay/environment';
+import { playbookMutationFieldPatch } from './PlaybookEditionForm';
 import { deleteNode } from '../../../../utils/store';
 import { useFormatter } from '../../../../components/i18n';
 import Transition from '../../../../components/Transition';
@@ -41,23 +41,10 @@ const playbookPopoverDeletionMutation = graphql`
   }
 `;
 
-const playbookEditionQuery = graphql`
-  query PlaybookPopoverEditionQuery($id: String!) {
-    playbook(id: $id) {
-      id
-      name
-      playbook_running
-      playbook_definition
-    }
-  }
-`;
-
 const PlaybookPopover = (props) => {
   const { playbookId, running, paginationOptions } = props;
   const { t_i18n } = useFormatter();
-  const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
-  const [displayUpdate, setDisplayUpdate] = useState(false);
   const [displayStart, setDisplayStart] = useState(false);
   const [starting, setStarting] = useState(false);
   const [displayStop, setDisplayStop] = useState(false);
@@ -69,10 +56,6 @@ const PlaybookPopover = (props) => {
   const handleClose = (event) => {
     stopEvent(event);
     setAnchorEl(null);
-  };
-  const handleOpenUpdate = (event) => {
-    setDisplayUpdate(true);
-    handleClose(event);
   };
   const handleOpenStart = (event) => {
     setAnchorEl(null);
@@ -87,12 +70,15 @@ const PlaybookPopover = (props) => {
     setDisplayStop(true);
     handleClose(event);
   };
+
   const deletion = useDeletion({ handleClose: () => setAnchorEl(null) });
   const { setDeleting, handleOpenDelete } = deletion;
+
   const handleCloseStop = (event) => {
     setDisplayStop(false);
     stopEvent(event);
   };
+
   const submitDelete = (event) => {
     setDeleting(true);
     stopEvent(event);
@@ -113,12 +99,10 @@ const PlaybookPopover = (props) => {
       },
       onCompleted: () => {
         setDeleting(false);
-        if (!paginationOptions) {
-          navigate('/dashboard/data/processing/automation');
-        }
       },
     });
   };
+
   const submitStart = (event) => {
     setStarting(true);
     stopEvent(event);
@@ -134,6 +118,7 @@ const PlaybookPopover = (props) => {
       },
     });
   };
+
   const submitStop = (event) => {
     setStopping(true);
     stopEvent(event);
@@ -149,15 +134,22 @@ const PlaybookPopover = (props) => {
       },
     });
   };
+
+  const MoreVertButton = paginationOptions ? IconButton : ToggleButton;
+
   return (
     <>
-      <IconButton
+      <MoreVertButton
         onClick={handleOpen}
         aria-haspopup="true"
+        value="popover"
         color="primary"
+        size={paginationOptions ? 'medium' : 'small'}
       >
-        <MoreVert />
-      </IconButton>
+        {paginationOptions
+          ? <MoreVert />
+          : <MoreVert fontSize="small" color="primary"/>}
+      </MoreVertButton>
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
@@ -168,25 +160,8 @@ const PlaybookPopover = (props) => {
         ) : (
           <MenuItem onClick={handleOpenStart}>{t_i18n('Start')}</MenuItem>
         )}
-        <MenuItem onClick={handleOpenUpdate}>{t_i18n('Update')}</MenuItem>
-        <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+        {paginationOptions && <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>}
       </Menu>
-      <QueryRenderer
-        query={playbookEditionQuery}
-        variables={{ id: playbookId }}
-        render={({ props: resultProps }) => {
-          if (resultProps) {
-            return (
-              <PlaybookEdition
-                playbook={resultProps.playbook}
-                handleClose={() => setDisplayUpdate(false)}
-                open={displayUpdate}
-              />
-            );
-          }
-          return <div />;
-        }}
-      />
       <DeleteDialog
         deletion={deletion}
         submitDelete={submitDelete}
