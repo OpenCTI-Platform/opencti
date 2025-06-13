@@ -401,9 +401,8 @@ test('Dashboard restriction access', async ({ page }) => {
 
   // Try to export
   await dashboardPage.getItemFromList(dashboardName).click();
-  await dashboardDetailsPage.getActionsPopover().click();
   const downloadPromise = page.waitForEvent('download');
-  await dashboardDetailsPage.getActionButton('Export').click();
+  await dashboardDetailsPage.getExportButton().click();
   const download = await downloadPromise;
   expect(download.suggestedFilename().endsWith(`${dashboardName}.json`)).toBe(true);
   await page.mouse.click(10, 10); // To close action menu
@@ -415,7 +414,8 @@ test('Dashboard restriction access', async ({ page }) => {
   // -------------------------------------
 
   await goToDashboardAsAdmin(dashboardName);
-  await accessRestriction.openForm();
+  await dashboardDetailsPage.getActionsPopover().click();
+  await accessRestriction.openFormInMenu();
   await accessRestriction.deleteAccess('Jean Michel');
   await accessRestriction.save();
 
@@ -431,7 +431,8 @@ test('Dashboard restriction access', async ({ page }) => {
   // ----------------------------------
 
   await goToDashboardAsAdmin(dashboardName);
-  await accessRestriction.openForm();
+  await dashboardDetailsPage.getActionsPopover().click();
+  await accessRestriction.openFormInMenu();
   await accessRestriction.addAccess('Jean Michel', 'can manage');
   await accessRestriction.save();
   await goToDashboardAsJeanMichel(dashboardName);
