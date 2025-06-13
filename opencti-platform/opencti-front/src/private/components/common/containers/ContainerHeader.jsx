@@ -483,9 +483,7 @@ const ContainerHeader = (props) => {
     alignItems: 'center',
     marginBottom: theme.spacing(1),
   };
-  console.log('curentMode', currentMode);
   const overrideContainerStyle = knowledge || currentMode === 'graph' || currentMode === 'correlation';
-  console.log('overrideContainerStyle', overrideContainerStyle);
   if (overrideContainerStyle) {
     // container knowledge / graph style
     containerStyle = {
