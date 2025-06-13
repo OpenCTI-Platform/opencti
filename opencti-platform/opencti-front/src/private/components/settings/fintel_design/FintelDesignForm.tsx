@@ -90,6 +90,7 @@ const FintelDesignForm: FunctionComponent<FintelDesignFormProps> = ({ onFileUplo
             <Field
               component={CustomFileUploader}
               label={t_i18n('Logo')}
+              name="file"
               setFieldValue={setFieldValue}
               onChange={fileUpload}
               noMargin

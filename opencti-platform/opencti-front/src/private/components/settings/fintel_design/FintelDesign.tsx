@@ -128,7 +128,7 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
             </Paper>
           </Grid>
           <Grid size={{ xs: 8 }} sx={{ height: 'calc(100vh - 250px)' }}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Typography variant="h4" gutterBottom={true}>
               {t_i18n('Preview')}
             </Typography>
             <Paper
