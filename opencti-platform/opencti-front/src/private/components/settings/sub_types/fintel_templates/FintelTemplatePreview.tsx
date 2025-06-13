@@ -76,7 +76,7 @@ const FintelTemplatePreview = ({
   const buildPreview = async (
     scoId: string,
     scoName: string,
-    fintelDesign: FintelDesign,
+    fintelDesign: FintelDesign | null | undefined,
     maxMarkings: string[],
     fileMarkings: string[],
   ) => {
@@ -97,11 +97,11 @@ const FintelTemplatePreview = ({
 
   useEffect(() => {
     const { fileMarkings, entity, contentMaxMarkings, fintelDesign } = formValues ?? {};
-    if (!entity || !isTabActive || !fintelDesign) return;
+    if (!entity || !isTabActive) return;
     buildPreview(
       entity.value,
       entity.label,
-      fintelDesign.value,
+      fintelDesign?.value ?? null,
       (contentMaxMarkings ?? []).map((m) => m.value),
       (fileMarkings ?? []).map((m) => m.label),
     );

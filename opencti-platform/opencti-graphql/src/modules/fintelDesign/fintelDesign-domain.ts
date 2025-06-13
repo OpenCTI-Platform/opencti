@@ -10,16 +10,20 @@ import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { type FileUploadData, uploadToStorage } from '../../database/file-storage-helper';
 import { guessMimeType } from '../../database/file-storage';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
+import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 
 export const findById = async (context: AuthContext, user: AuthUser, id: string): Promise<BasicStoreEntityFintelDesign> => {
+  await checkEnterpriseEdition(context);
   return storeLoadById(context, user, id, ENTITY_TYPE_FINTEL_DESIGN);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityFintelDesign>) => {
+export const findAll = async (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityFintelDesign>) => {
+  await checkEnterpriseEdition(context);
   return listEntitiesPaginated<BasicStoreEntityFintelDesign>(context, user, [ENTITY_TYPE_FINTEL_DESIGN], opts);
 };
 
 export const addFintelDesign = async (context: AuthContext, user: AuthUser, fintelDesign: FintelDesignAddInput) => {
+  await checkEnterpriseEdition(context);
   const created = await createEntity(context, user, fintelDesign, ENTITY_TYPE_FINTEL_DESIGN);
   await publishUserAction({
     user,
@@ -52,6 +56,7 @@ export const fintelDesignEditField = async (
   user: AuthUser,
   args: MutationFintelDesignFieldPatchArgs,
 ) => {
+  await checkEnterpriseEdition(context);
   const { id, file, input } = args;
   const fintelDesign = await findById(context, user, id);
   if (!fintelDesign) {
@@ -84,6 +89,7 @@ export const fintelDesignEditField = async (
 };
 
 export const fintelDesignDelete = async (context: AuthContext, user: AuthUser, designId: string) => {
+  await checkEnterpriseEdition(context);
   const deleted = await deleteElementById(
     context,
     user,
@@ -108,6 +114,7 @@ export const fintelDesignDelete = async (context: AuthContext, user: AuthUser, d
 };
 
 export const fintelDesignEditContext = async (context: AuthContext, user: AuthUser, fintelDesignId: string, input?: EditContext) => {
+  await checkEnterpriseEdition(context);
   if (input) {
     await setEditContext(user, fintelDesignId, input);
   }

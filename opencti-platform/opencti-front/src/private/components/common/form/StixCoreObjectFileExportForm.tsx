@@ -395,7 +395,7 @@ const StixCoreObjectFileExportForm = ({
                       optionLength={80}
                     />
                     )}
-                    {values.connector.value === BUILT_IN_FROM_TEMPLATE.value && (
+                    {values.connector.value === BUILT_IN_FROM_TEMPLATE.value && values.format === 'application/pdf' && (
                       <FintelDesignField
                         name="fintelDesign"
                         label={t_i18n('Fintel design')}
