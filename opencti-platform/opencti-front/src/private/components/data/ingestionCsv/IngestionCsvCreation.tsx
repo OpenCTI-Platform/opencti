@@ -27,6 +27,7 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import IngestionCsvInlineMapperForm from '@components/data/ingestionCsv/IngestionCsvInlineMapperForm';
 import IngestionCsvCreationUserHandling from '@components/data/ingestionCsv/IngestionCsvCreationUserHandling';
+import IngestionCsvInlineWrapper from '@components/data/ingestionCsv/IngestionCsvInlineWrapper';
 import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -304,7 +305,9 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
             </Tabs>
           </Box>
           <Box sx={{ display: currentTab === 1 ? 'block' : 'none' }}>
-            <IngestionCsvInlineMapperForm csvMapper={values.csv_mapper ? JSON.parse(values.csv_mapper) : undefined} setCSVMapperFieldValue={setFieldValue} />
+            <IngestionCsvInlineWrapper>
+              <IngestionCsvInlineMapperForm csvMapper={values.csv_mapper ? JSON.parse(values.csv_mapper) : undefined} setCSVMapperFieldValue={setFieldValue} />
+            </IngestionCsvInlineWrapper>
           </Box>
           <Form>
             <Box sx={{ display: currentTab === 0 ? 'block' : 'none' }}>

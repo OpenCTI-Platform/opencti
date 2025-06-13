@@ -15,8 +15,6 @@ import {
   CsvMapperRepresentationAttributesForm_allSchemaAttributes$key,
 } from '@components/data/csvMapper/representations/attributes/__generated__/CsvMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
 import { useFragment } from 'react-relay';
-import { csvMappers_SchemaAttributesQuery } from '@components/data/csvMapper/__generated__/csvMappers_SchemaAttributesQuery.graphql';
-import { csvMappers_MappersQuery, csvMappers_MappersQuery$variables } from '@components/data/csvMapper/__generated__/csvMappers_MappersQuery.graphql';
 import { CsvMapperAddInput, csvMapperToFormData, formDataToCsvMapper } from '@components/data/csvMapper/CsvMapperUtils';
 import Box from '@mui/material/Box';
 import { useFormatter } from '../../../../components/i18n';
@@ -25,11 +23,8 @@ import SwitchField from '../../../../components/fields/SwitchField';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { representationInitialization } from '../csvMapper/representations/RepresentationUtils';
 import { useComputeDefaultValues } from '../../../../utils/hooks/useDefaultValues';
-import CsvMappersProvider, { mappersQuery, schemaAttributesQuery, useCsvMappersData } from '../csvMapper/csvMappers.data';
+import { useCsvMappersData } from '../csvMapper/csvMappers.data';
 import { CsvMapperRepresentationAttributesFormFragment } from '../csvMapper/representations/attributes/CsvMapperRepresentationAttributesForm';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { LOCAL_STORAGE_KEY_CSV_MAPPERS } from '../CsvMappers';
 
 const csvMapperValidation = (t_i18n: (s: string) => string) => Yup.object().shape({
   has_header: Yup.boolean().required(t_i18n('This field is required')),
@@ -53,15 +48,6 @@ interface CsvMapperFormProps {
 }
 
 const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper = defaultCsvMapperValue, setCSVMapperFieldValue }) => {
-  const { paginationOptions } = usePaginationLocalStorage<csvMappers_MappersQuery$variables>(
-    LOCAL_STORAGE_KEY_CSV_MAPPERS,
-    {
-      sortBy: 'name',
-      orderAsc: false,
-      view: 'lines',
-      searchTerm: '',
-    },
-  );
   const { t_i18n } = useFormatter();
   const computeDefaultValues = useComputeDefaultValues();
   const { schemaAttributes } = useCsvMappersData();
@@ -157,223 +143,206 @@ const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ c
     setHasError(Object.values(errors).filter((v) => v).length > 0);
   };
 
-  const queryRefSchemaAttributes = useQueryLoading<csvMappers_SchemaAttributesQuery>(
-    schemaAttributesQuery,
-  );
-  const queryRefMappers = useQueryLoading<csvMappers_MappersQuery>(
-    mappersQuery,
-    paginationOptions,
-  );
-
-  if (!queryRefMappers || !queryRefSchemaAttributes) {
-    return null;
-  }
-
   const handleOnSubmit = (values: CsvMapperFormData) => {
     setCSVMapperFieldValue('csv_mapper', JSON.stringify(formDataToCsvMapper(values)));
   };
   return (
-    <CsvMappersProvider
-      mappersQueryRef={queryRefMappers}
-      schemaAttributesQueryRef={queryRefSchemaAttributes}
-    >
-      <CsvMapperProvider>
-        <Formik<CsvMapperFormData>
-          enableReinitialize
-          initialValues={completedCsvMapper}
-          validationSchema={csvMapperValidation(t_i18n)}
-          onSubmit={handleOnSubmit}
-        >
-          {({ setFieldValue, values, dirty }) => {
-            useEffect(() => {
-              if (dirty && !hasError) {
-                setCSVMapperFieldValue('csv_mapper', JSON.stringify(formDataToCsvMapper(values)));
-              }
-            }, [values, dirty, hasError]);
-            return (
-              <Form>
-                <Box sx={ {
-                  display: 'flex',
-                  alignItems: 'center',
-                  marginTop: 2.5,
-                }}
-                >
-                  <Field
-                    component={SwitchField}
-                    type="checkbox"
-                    name="has_header"
-                    label={t_i18n('My CSV file contains headers')}
-                  />
-                  <Tooltip
-                    title={t_i18n(
-                      'If this option is selected, we will skip the first line of your CSV file',
-                    )}
-                  >
-                    <InformationOutline
-                      fontSize="small"
-                      color="primary"
-                      style={{ cursor: 'default' }}
-                    />
-                  </Tooltip>
-                </Box>
-                <Box sx={{
-                  marginTop: 2.5,
-                }}
-                >
-                  <Typography>{t_i18n('CSV separator')}</Typography>
-                  <Box sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                  }}
-                  >
-                    <RadioGroup
-                      aria-label="CSV separator"
-                      name="separator"
-                      style={{ flexDirection: 'row' }}
-                      value={values.separator}
-                      onChange={(event: SelectChangeEvent) => setFieldValue('separator', event.target.value)}
-                    >
-                      <FormControlLabel
-                        value=","
-                        control={<Radio/>}
-                        label={t_i18n('Comma')}
-                      />
-                      <FormControlLabel
-                        value=";"
-                        control={<Radio/>}
-                        label={t_i18n('Semicolon')}
-                      />
-                      <FormControlLabel
-                        value={'|'}
-                        control={<Radio/>}
-                        label={t_i18n('Pipe')}
-                      />
-                    </RadioGroup>
-                  </Box>
-                </Box>
-                <Box
-                  sx={{
-                    marginTop: 2.5,
-                    display: 'flex',
-                    alignItems: 'end',
-                    gap: '8px',
-
-                  }}
-                >
-                  <Field
-                    component={TextField}
-                    name="skip_line_char"
-                    label={t_i18n('Char to escape line')}
-                  />
-                  <Tooltip
-                    title={t_i18n(
-                      'Every line that begins with this character will be skipped during parsing (for example: #).',
-                    )}
-                  >
-                    <InformationOutline
-                      fontSize="small"
-                      color="primary"
-                      style={{ cursor: 'default' }}
-                    />
-                  </Tooltip>
-                </Box>
-
-                <Box sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  marginTop: 2.5,
-                }}
-                >
-                  <Typography variant="h3" sx={{ m: 0 }}>
-                    {t_i18n('Representations for entity')}
-                  </Typography>
-                  <IconButton
-                    color="secondary"
-                    aria-label="Add"
-                    onClick={() => onAddEntityRepresentation(setFieldValue, values)
-                  }
-                    size="large"
-                  >
-                    <Add fontSize="small"/>
-                  </IconButton>
-                </Box>
-                <FieldArray
-                  name="entity_representations"
-                  render={(arrayHelpers) => (
-                    <>
-                      {values.entity_representations.map((_, idx) => (
-                        <Box
-                          key={`entity-${idx}`}
-                          sx={{
-                            marginTop: 2.5,
-                            display: 'flex',
-                          }}
-                        >
-                          <Field
-                            component={CsvMapperRepresentationForm}
-                            name={`entity_representations[${idx}]`}
-                            index={idx}
-                            availableTypes={availableEntityTypes}
-                            handleRepresentationErrors={handleRepresentationErrors}
-                            prefixLabel="entity_"
-                            onDelete={() => arrayHelpers.remove(idx)}
-                          />
-                        </Box>
-                      ))}
-                    </>
-                  )}
+    <CsvMapperProvider>
+      <Formik<CsvMapperFormData>
+        enableReinitialize
+        initialValues={completedCsvMapper}
+        validationSchema={csvMapperValidation(t_i18n)}
+        onSubmit={handleOnSubmit}
+      >
+        {({ setFieldValue, values, dirty }) => {
+          useEffect(() => {
+            if (dirty && !hasError) {
+              setCSVMapperFieldValue('csv_mapper', JSON.stringify(formDataToCsvMapper(values)));
+            }
+          }, [values, dirty, hasError]);
+          return (
+            <Form>
+              <Box sx={ {
+                display: 'flex',
+                alignItems: 'center',
+                marginTop: 2.5,
+              }}
+              >
+                <Field
+                  component={SwitchField}
+                  type="checkbox"
+                  name="has_header"
+                  label={t_i18n('My CSV file contains headers')}
                 />
-
+                <Tooltip
+                  title={t_i18n(
+                    'If this option is selected, we will skip the first line of your CSV file',
+                  )}
+                >
+                  <InformationOutline
+                    fontSize="small"
+                    color="primary"
+                    style={{ cursor: 'default' }}
+                  />
+                </Tooltip>
+              </Box>
+              <Box sx={{
+                marginTop: 2.5,
+              }}
+              >
+                <Typography>{t_i18n('CSV separator')}</Typography>
                 <Box sx={{
                   display: 'flex',
                   alignItems: 'center',
-                  marginTop: 2.5,
                 }}
                 >
-                  <Typography variant="h3" sx={{ m: 0 }}>
-                    {t_i18n('Representations for relationship')}
-                  </Typography>
-                  <IconButton
-                    color="secondary"
-                    aria-label="Add"
-                    onClick={() => onAddRelationshipRepresentation(setFieldValue, values)
-                  }
-                    size="large"
+                  <RadioGroup
+                    aria-label="CSV separator"
+                    name="separator"
+                    style={{ flexDirection: 'row' }}
+                    value={values.separator}
+                    onChange={(event: SelectChangeEvent) => setFieldValue('separator', event.target.value)}
                   >
-                    <Add fontSize="small"/>
-                  </IconButton>
+                    <FormControlLabel
+                      value=","
+                      control={<Radio/>}
+                      label={t_i18n('Comma')}
+                    />
+                    <FormControlLabel
+                      value=";"
+                      control={<Radio/>}
+                      label={t_i18n('Semicolon')}
+                    />
+                    <FormControlLabel
+                      value={'|'}
+                      control={<Radio/>}
+                      label={t_i18n('Pipe')}
+                    />
+                  </RadioGroup>
                 </Box>
-                <FieldArray
-                  name="relationship_representations"
-                  render={(arrayHelpers) => (
-                    <>
-                      {values.relationship_representations.map((_, idx) => (
-                        <Box sx={{
+              </Box>
+              <Box
+                sx={{
+                  marginTop: 2.5,
+                  display: 'flex',
+                  alignItems: 'end',
+                  gap: '8px',
+
+                }}
+              >
+                <Field
+                  component={TextField}
+                  name="skip_line_char"
+                  label={t_i18n('Char to escape line')}
+                />
+                <Tooltip
+                  title={t_i18n(
+                    'Every line that begins with this character will be skipped during parsing (for example: #).',
+                  )}
+                >
+                  <InformationOutline
+                    fontSize="small"
+                    color="primary"
+                    style={{ cursor: 'default' }}
+                  />
+                </Tooltip>
+              </Box>
+
+              <Box sx={{
+                display: 'flex',
+                alignItems: 'center',
+                marginTop: 2.5,
+              }}
+              >
+                <Typography variant="h3" sx={{ m: 0 }}>
+                  {t_i18n('Representations for entity')}
+                </Typography>
+                <IconButton
+                  color="secondary"
+                  aria-label="Add"
+                  onClick={() => onAddEntityRepresentation(setFieldValue, values)
+                  }
+                  size="large"
+                >
+                  <Add fontSize="small"/>
+                </IconButton>
+              </Box>
+              <FieldArray
+                name="entity_representations"
+                render={(arrayHelpers) => (
+                  <>
+                    {values.entity_representations.map((_, idx) => (
+                      <Box
+                        key={`entity-${idx}`}
+                        sx={{
                           marginTop: 2.5,
                           display: 'flex',
                         }}
-                          key={`relationship-${idx}`}
-                        >
-                          <Field
-                            component={CsvMapperRepresentationForm}
-                            name={`relationship_representations[${idx}]`}
-                            index={idx}
-                            availableTypes={availableRelationshipTypes}
-                            handleRepresentationErrors={handleRepresentationErrors}
-                            prefixLabel="relationship_"
-                            onDelete={() => arrayHelpers.remove(idx)}
-                          />
-                        </Box>
-                      ))}
-                    </>
-                  )}
-                />
-              </Form>
-            );
-          }}
-        </Formik>
-      </CsvMapperProvider>
-    </CsvMappersProvider>
+                      >
+                        <Field
+                          component={CsvMapperRepresentationForm}
+                          name={`entity_representations[${idx}]`}
+                          index={idx}
+                          availableTypes={availableEntityTypes}
+                          handleRepresentationErrors={handleRepresentationErrors}
+                          prefixLabel="entity_"
+                          onDelete={() => arrayHelpers.remove(idx)}
+                        />
+                      </Box>
+                    ))}
+                  </>
+                )}
+              />
+
+              <Box sx={{
+                display: 'flex',
+                alignItems: 'center',
+                marginTop: 2.5,
+              }}
+              >
+                <Typography variant="h3" sx={{ m: 0 }}>
+                  {t_i18n('Representations for relationship')}
+                </Typography>
+                <IconButton
+                  color="secondary"
+                  aria-label="Add"
+                  onClick={() => onAddRelationshipRepresentation(setFieldValue, values)
+                  }
+                  size="large"
+                >
+                  <Add fontSize="small"/>
+                </IconButton>
+              </Box>
+              <FieldArray
+                name="relationship_representations"
+                render={(arrayHelpers) => (
+                  <>
+                    {values.relationship_representations.map((_, idx) => (
+                      <Box sx={{
+                        marginTop: 2.5,
+                        display: 'flex',
+                      }}
+                        key={`relationship-${idx}`}
+                      >
+                        <Field
+                          component={CsvMapperRepresentationForm}
+                          name={`relationship_representations[${idx}]`}
+                          index={idx}
+                          availableTypes={availableRelationshipTypes}
+                          handleRepresentationErrors={handleRepresentationErrors}
+                          prefixLabel="relationship_"
+                          onDelete={() => arrayHelpers.remove(idx)}
+                        />
+                      </Box>
+                    ))}
+                  </>
+                )}
+              />
+            </Form>
+          );
+        }}
+      </Formik>
+    </CsvMapperProvider>
   );
 };
 

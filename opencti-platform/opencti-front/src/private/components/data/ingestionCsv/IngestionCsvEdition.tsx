@@ -37,6 +37,7 @@ import { USER_CHOICE_MARKING_CONFIG } from '../../../../utils/csvMapperUtils';
 import { BASIC_AUTH, BEARER_AUTH, CERT_AUTH, extractCA, extractCert, extractKey, extractPassword, extractUsername } from '../../../../utils/ingestionAuthentificationUtils';
 import PasswordTextField from '../../../../components/PasswordTextField';
 import SwitchField from '../../../../components/fields/SwitchField';
+import IngestionCsvInlineWrapper from './IngestionCsvInlineWrapper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -349,7 +350,9 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
             </Tabs>
           </Box>
           <Box sx={{ display: currentTab === 1 ? 'block' : 'none' }}>
-            <IngestionCsvInlineMapperForm csvMapper={values.csv_mapper ? JSON.parse(values.csv_mapper) : undefined} setCSVMapperFieldValue={handleSubmitField} />
+            <IngestionCsvInlineWrapper>
+              <IngestionCsvInlineMapperForm csvMapper={values.csv_mapper ? JSON.parse(values.csv_mapper) : undefined} setCSVMapperFieldValue={handleSubmitField} />
+            </IngestionCsvInlineWrapper>
           </Box>
           <Form>
             <Box sx={{ display: currentTab === 0 ? 'block' : 'none' }}>
