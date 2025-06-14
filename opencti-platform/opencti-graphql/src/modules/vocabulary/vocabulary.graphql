@@ -86,6 +86,7 @@ type Vocabulary implements BasicObject & StixObject & StixMetaObject {
   usages: Int!
   aliases: [String!]
   builtIn: Boolean
+  is_hidden: Boolean
   order: Int
 }
 

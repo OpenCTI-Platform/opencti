@@ -1170,6 +1170,7 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
     { key: 'female' },
     { key: 'nonbinary' },
     { key: 'other' },
+    { key: 'unknown' },
   ],
   marital_status_ov: [
     { key: 'annulled' },

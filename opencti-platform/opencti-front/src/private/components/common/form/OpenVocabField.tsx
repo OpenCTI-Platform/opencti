@@ -43,6 +43,7 @@ export const vocabularyQuery = graphql`
           id
           name
           description
+          is_hidden
         }
       }
     }
@@ -71,6 +72,7 @@ Omit<OpenVocabProps, 'type'>
   );
   const openVocabList = (vocabularies?.edges ?? [])
     .map(({ node }) => node)
+    .filter((node) => node.is_hidden !== true)
     .map(({ name: value, description }) => ({
       value,
       label: value,
