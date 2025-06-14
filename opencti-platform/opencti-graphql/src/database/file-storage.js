@@ -8,7 +8,7 @@ import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { getDefaultRoleAssumerWithWebIdentity } from '@aws-sdk/client-sts';
 import mime from 'mime-types';
 import nconf from 'nconf';
-import conf, { booleanConf, ENABLED_FILE_INDEX_MANAGER, logApp, logS3Debug } from '../config/conf';
+import conf, { booleanConf, logApp, logS3Debug } from '../config/conf';
 import { now, sinceNowInMinutes, truncate, utcDate } from '../utils/format';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { createWork, deleteWorkForFile } from '../domain/work';
@@ -31,6 +31,7 @@ import { enrichWithRemoteCredentials } from '../config/credentials';
 import { isUserHasCapability, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, SETTINGS_SUPPORT, validateMarking } from '../utils/access';
 import { internalLoadById } from './middleware-loader';
 import { getDraftContext } from '../utils/draftContext';
+import { isModuleActivated } from './cluster-module';
 import { getDraftFilePrefix, isDraftFile } from './draft-utils';
 
 // Minio configuration
@@ -150,8 +151,8 @@ export const deleteFile = async (context, user, id) => {
   // Delete index file
   await deleteDocumentIndex(context, user, id);
   // delete in index if file has been indexed
-  // TODO test if file index manager is activated (dependency cycle issue with isModuleActivated)
-  if (ENABLED_FILE_INDEX_MANAGER && isAttachmentProcessorEnabled()) {
+  const isFileIndexModuleActivated = await isModuleActivated('FILE_INDEX_MANAGER');
+  if (isFileIndexModuleActivated && isAttachmentProcessorEnabled()) {
     logApp.debug(`[FILE STORAGE] delete file ${id} in index`);
     await elDeleteFilesByIds([id])
       .catch((err) => {
