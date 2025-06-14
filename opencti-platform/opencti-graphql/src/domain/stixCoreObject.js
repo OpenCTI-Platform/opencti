@@ -105,7 +105,6 @@ import { AI_BUS } from '../modules/ai/ai-types';
 import { lockResources } from '../lock/master-lock';
 import { editAuthorizedMembers } from '../utils/authorizedMembers';
 import { elRemoveElementFromDraft } from '../database/draft-engine';
-import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { FILES_UPDATE_KEY, getDraftChanges, isDraftFile } from '../database/draft-utils';
 import { askJobImport } from './connector';
@@ -160,9 +159,7 @@ export const stixCoreBackgroundActiveOperations = async (context, user, id) => {
     const backTask = backTasks[index];
     let isConcerned = false;
     if (backTask.type === 'QUERY') {
-      const excludedById = (backTask.task_excluded_ids ?? []).includes(stixElement.extensions[STIX_EXT_OCTI].id);
-      const filters = JSON.parse(backTask.task_filters);
-      isConcerned = !excludedById && await isStixMatchFilterGroup(context, user, stixElement, filters);
+      isConcerned = false;
     }
     if (backTask.type === 'LIST') {
       isConcerned = (backTask.task_ids ?? []).includes(stixElement.extensions[STIX_EXT_OCTI].id);

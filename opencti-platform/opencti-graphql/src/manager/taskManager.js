@@ -289,6 +289,7 @@ const standardOperationCallback = async (context, user, task, actionType, operat
 
 const containerOperationCallback = async (context, user, task, containers, operations) => {
   const withNeighbours = operations[0].context.options?.includeNeighbours;
+  const operationType = operations[0].type;
   return async (elements) => {
     const elementIds = new Set();
     const elementStandardIds = new Set();
@@ -311,7 +312,7 @@ const containerOperationCallback = async (context, user, task, containers, opera
     }
     // Build limited stix object to limit memory footprint
     const containerOperations = [{
-      type: 'ADD',
+      type: operationType,
       context: {
         field: INPUT_OBJECTS,
         values: Array.from(elementIds)
