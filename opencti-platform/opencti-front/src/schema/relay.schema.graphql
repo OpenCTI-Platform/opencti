@@ -1449,6 +1449,7 @@ type Settings implements InternalObject & BasicObject {
   platform_feature_flags: [Module!]
   platform_critical_alerts: [PlatformCriticalAlert!]!
   platform_trash_enabled: Boolean!
+  platform_translations: String
   platform_protected_sensitive_config: PlatformProtectedSensitiveConfig!
   created_at: DateTime!
   updated_at: DateTime!
@@ -10275,6 +10276,7 @@ type Vocabulary implements BasicObject & StixObject & StixMetaObject {
   usages: Int!
   aliases: [String!]
   builtIn: Boolean
+  is_hidden: Boolean
   order: Int
 }
 

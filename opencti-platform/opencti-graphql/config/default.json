@@ -128,6 +128,7 @@
     "performance_logger": false,
     "map_tile_server_dark": "https://map.opencti.io/styles/filigran-dark2/{z}/{x}/{y}.png",
     "map_tile_server_light": "https://map.opencti.io/styles/filigran-light2/{z}/{x}/{y}.png",
+    "translations": "{}",
     "reference_attachment": false,
     "python_execution": "native",
     "python_execution_venv": "../../../.python-venv/lib/python3.12/site-packages",
