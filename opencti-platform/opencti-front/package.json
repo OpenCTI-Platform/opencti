@@ -121,7 +121,7 @@
     "@types/react-test-renderer": "19.1.0",
     "@types/react-transition-group": "4",
     "@types/relay-runtime": "17.0.4",
-    "@types/relay-test-utils": "17.0.0",
+    "@types/relay-test-utils": "19.0.0",
     "@vitejs/plugin-react": "4.4.1",
     "babel-plugin-relay": "17.0.0",
     "chokidar": "4.0.3",
