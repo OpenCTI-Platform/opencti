@@ -1,6 +1,7 @@
-import { buildStixObject, cleanObject } from '../../database/stix-2-1-converter';
+import { buildStixObject } from '../../database/stix-2-1-converter';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { StixSupportPackage, StoreEntitySupportPackage } from './support-types';
+import { cleanObject } from '../../database/stix-converter-utils';
 
 const convertSupportPackageToStix = (instance: StoreEntitySupportPackage): StixSupportPackage => {
   const stixObject = buildStixObject(instance);
