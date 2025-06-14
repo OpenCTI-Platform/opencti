@@ -177,7 +177,7 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
               )}
               onViewAs={handleChangeViewAs}
               viewAs={viewAs}
-              disableSharing
+              disableSharing={individual.isUser}
             />
             <Box
               sx={{
