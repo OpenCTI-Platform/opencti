@@ -70,7 +70,7 @@
     "react-dom": "18.3.1",
     "react-draggable": "4.4.6",
     "react-force-graph-2d": "1.27.1",
-    "react-force-graph-3d": "1.24.4",
+    "react-force-graph-3d": "1.27.0",
     "react-grid-layout": "1.5.1",
     "react-intl": "7.1.11",
     "react-leaflet": "4.2.1",
