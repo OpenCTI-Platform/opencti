@@ -8230,14 +8230,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/relay-test-utils@npm:17.0.0":
-  version: 17.0.0
-  resolution: "@types/relay-test-utils@npm:17.0.0"
+"@types/relay-test-utils@npm:19.0.0":
+  version: 19.0.0
+  resolution: "@types/relay-test-utils@npm:19.0.0"
   dependencies:
     "@types/react": "npm:*"
     "@types/react-relay": "npm:*"
     "@types/relay-runtime": "npm:*"
-  checksum: 10/979c9cf297cc41c5b427631b2425e95225e6234923572e590bebcbdbf657921702923c7268ec591e26277141de97759406dbf0c053a89c168017b5e4df151254
+  checksum: 10/68b713e48426968fc0c28f3797c3ed415a81f7fe44b2ce206fd3c95be998dc1d7aee7f57586988b5ee4520655399548da7d114ab8c3a9839b3802deeee24f0e9
   languageName: node
   linkType: hard
 
@@ -17817,7 +17817,7 @@ __metadata:
     "@types/react-test-renderer": "npm:19.1.0"
     "@types/react-transition-group": "npm:4"
     "@types/relay-runtime": "npm:17.0.4"
-    "@types/relay-test-utils": "npm:17.0.0"
+    "@types/relay-test-utils": "npm:19.0.0"
     "@vitejs/plugin-react": "npm:4.4.1"
     analytics: "npm:0.8.16"
     apexcharts: "npm:4.4.0"
