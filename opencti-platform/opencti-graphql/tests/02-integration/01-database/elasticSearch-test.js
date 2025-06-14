@@ -48,7 +48,7 @@ const elWhiteUser = async () => {
   return buildStandardUser([{ internal_id: TLP_WHITE.internal_id, standard_id: TLP_WHITE.standard_id }], ALL_TLP);
 };
 
-const VOCABULARY_COUNT = 346;
+const VOCABULARY_COUNT = 347;
 
 describe('Elasticsearch configuration test', () => {
   it('should configuration correct', async () => {
@@ -598,7 +598,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Tracking-Number')).toBe(1);
     expect(entityTypeMap.get('User')).toBe(TESTING_USERS.length + 1);
     expect(entityTypeMap.get('Vocabulary')).toBe(VOCABULARY_COUNT);
-    expect(data.edges.length).toEqual(542);
+    expect(data.edges.length).toEqual(543);
   });
   it('should entity paginate with field exist filter', async () => {
     const filters = {
