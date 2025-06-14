@@ -78,11 +78,11 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
     <div className={classes.node}>
       <ItemIcon type={data.component.icon} variant="inline" />
       <div style={{ float: 'left' }}>
-        <Tooltip title={data.name}>
-          <div className={classes.name}>{data.name}</div>
+        <Tooltip title={t_i18n(data.name)}>
+          <div className={classes.name}>{t_i18n(data.name)}</div>
         </Tooltip>
-        <Tooltip title={data.component.description}>
-          <div className={classes.component}>{data.component.description}</div>
+        <Tooltip title={t_i18n(data.component.description)}>
+          <div className={classes.component}>{t_i18n(data.component.description)}</div>
         </Tooltip>
       </div>
       <div className="clearfix" />
