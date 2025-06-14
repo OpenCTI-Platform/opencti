@@ -1,25 +1,24 @@
 import { Page } from '@playwright/test';
 import LeftBarPage from './menu/leftBar.pageModel';
 
-export default class EventsIncidentPage {
-  pageUrl = '/dashboard/events/incidents';
+export default class CaseRftPage {
   constructor(private page: Page) {}
 
-  async goto() {
-    await this.page.goto(this.pageUrl);
-  }
-
-  getPage() {
-    return this.page.getByTestId('incident-page');
+  getCaseRftFormCreate() {
+    return this.page.getByRole('button', { name: 'Create a request for takedown' });
   }
 
   getItemFromList(name: string) {
     return this.page.getByText(name, { exact: true });
   }
 
+  getPage() {
+    return this.page.getByTestId('rft-page');
+  }
+
   async navigateFromMenu() {
     const leftBarPage = new LeftBarPage(this.page);
     await leftBarPage.open();
-    await leftBarPage.clickOnMenu('Events', 'Incidents');
+    await leftBarPage.clickOnMenu('Cases', 'Requests for takedown');
   }
 }

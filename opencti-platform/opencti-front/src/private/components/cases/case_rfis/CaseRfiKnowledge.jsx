@@ -157,6 +157,7 @@ class CaseRfiKnowledgeComponent extends Component {
           padding: 0,
         }}
         id={location.pathname.includes('matrix') ? 'parent' : 'container'}
+        data-testid="case-rfi-knowledge"
       >
         {mode !== 'graph' && (
         <ContainerHeader

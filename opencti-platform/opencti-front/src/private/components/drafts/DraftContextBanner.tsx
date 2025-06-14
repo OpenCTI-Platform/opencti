@@ -28,10 +28,10 @@ const interval$ = interval(TEN_SECONDS * 3);
 
 const draftContextBannerFragment = graphql`
   fragment DraftContextBanner_data on DraftWorkspace {
-      id
-      name
-      draft_status
-      processingCount
+    id
+    name
+    draft_status
+    processingCount
   }
 `;
 
@@ -87,7 +87,6 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
 
   const { name, processingCount } = useFragment<DraftContextBanner_data$key>(draftContextBannerFragment, draftWorkspace);
   const currentlyProcessing = processingCount > 0;
-
   const handleExitDraft = () => {
     commitExitDraft({
       variables: {

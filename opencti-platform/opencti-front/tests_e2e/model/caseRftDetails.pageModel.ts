@@ -1,13 +1,13 @@
 import { Page } from '@playwright/test';
 import SDOTabs from './SDOTabs.pageModel';
 
-export default class CaseRfiDetailsPage {
+export default class CaseRftDetailsPage {
   tabs = new SDOTabs(this.page);
 
   constructor(private page: Page) {}
 
   getPage() {
-    return this.page.getByTestId('case-rfi-details-page');
+    return this.page.getByTestId('case-rft-details-page');
   }
 
   getTitle(name: string) {
