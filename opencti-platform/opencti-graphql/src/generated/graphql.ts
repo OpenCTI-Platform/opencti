@@ -24097,6 +24097,7 @@ export type Settings = BasicObject & InternalObject & {
   platform_theme_light_primary?: Maybe<Scalars['String']['output']>;
   platform_theme_light_secondary?: Maybe<Scalars['String']['output']>;
   platform_title?: Maybe<Scalars['String']['output']>;
+  platform_translations?: Maybe<Scalars['String']['output']>;
   platform_trash_enabled: Scalars['Boolean']['output'];
   platform_url?: Maybe<Scalars['String']['output']>;
   platform_user_statuses: Array<UserStatus>;
@@ -30023,6 +30024,7 @@ export type Vocabulary = BasicObject & StixMetaObject & StixObject & {
   draftVersion?: Maybe<DraftVersion>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  is_hidden?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
@@ -40283,6 +40285,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_theme_light_primary?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_theme_light_secondary?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  platform_translations?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_trash_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   platform_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_user_statuses?: Resolver<Array<ResolversTypes['UserStatus']>, ParentType, ContextType>;
@@ -42210,6 +42213,7 @@ export type VocabularyResolvers<ContextType = any, ParentType extends ResolversP
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  is_hidden?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
