@@ -51,6 +51,10 @@ export const findAll = async (context, user, args) => {
     return { edges: [] };
   }
   const type = isEmptyField(dynamicArgs.relationship_type) ? ABSTRACT_STIX_RELATIONSHIP : dynamicArgs.relationship_type;
+  const types = Array.isArray(type) ? type : [type];
+  if (!types.every((t) => isStixRelationship(t))) {
+    throw UnsupportedError('This API only support Stix relationships', { type });
+  }
   return listRelationsPaginated(context, user, type, R.dissoc('relationship_type', dynamicArgs));
 };
 
