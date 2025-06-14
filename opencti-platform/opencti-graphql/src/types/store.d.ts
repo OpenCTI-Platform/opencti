@@ -662,6 +662,7 @@ interface StoreEntityIdentity extends StoreEntity, BasicIdentityEntity {}
 
 interface BasicGroupEntity extends BasicStoreEntity {
   [RELATION_MEMBER_OF]: string[];
+  auto_integration_assignation: string[];
 }
 
 interface BasicOrganizationEntity extends BasicStoreEntity {
