@@ -450,7 +450,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Tracking-Number')).toBe(1);
     expect(entityTypeMap.get('User')).toBe(TESTING_USERS.length + 1);
     expect(entityTypeMap.get('Vocabulary')).toBe(VOCABULARY_COUNT);
-    expect(data.edges.length).toEqual(533 + TESTING_ORGS.length + TESTING_USERS.length + TESTING_ROLES.length + TESTING_GROUPS.length);
+    expect(data.edges.length).toEqual(534 + TESTING_ORGS.length + TESTING_USERS.length + TESTING_ROLES.length + TESTING_GROUPS.length);
     const filterBaseTypes = R.uniq(R.map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('ENTITY');
@@ -735,7 +735,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Label')).toBe(13);
     expect(entityTypeMap.get('Kill-Chain-Phase')).toBe(2);
     expect(entityTypeMap.get('External-Reference')).toBe(7);
-    expect(data.edges.length).toEqual(553);
+    expect(data.edges.length).toEqual(554);
     const createdDates = R.map((e) => e.node.created, data.edges);
     let previousCreatedDate = null;
     for (let index = 0; index < createdDates.length; index += 1) {
