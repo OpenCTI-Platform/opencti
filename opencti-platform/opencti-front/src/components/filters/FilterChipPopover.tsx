@@ -13,6 +13,7 @@ import { addDays, subDays } from 'date-fns';
 import { useTheme } from '@mui/material/styles';
 import {
   DEFAULT_WITHIN_FILTER_VALUES,
+  emptyFilterGroup,
   FilterSearchContext,
   getAvailableOperatorForFilter,
   getSelectedOptions,
@@ -34,6 +35,8 @@ import useAttributes from '../../utils/hooks/useAttributes';
 import BasicFilterInput from './BasicFilterInput';
 import QuickRelativeDateFiltersButtons from './QuickRelativeDateFiltersButtons';
 import DateRangeFilter from './DateRangeFilter';
+// eslint-disable-next-line import/no-cycle
+import FilterFiltersInput from './FilterFiltersInput';
 
 interface FilterChipMenuProps {
   handleClose: () => void;
@@ -195,6 +198,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     const filterType = fDef?.type;
     return (
       filterType === 'date'
+      || filterType === 'filters'
       || isNumericFilter(filterType)
       || isBasicTextFilter(fDef)
     );
@@ -322,10 +326,11 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       />
     );
   };
-  const getSpecificFilter = (fDefinition?: FilterDefinition): ReactNode => {
+  const getSpecificFilter = (fDefinition?: FilterDefinition, subKey?: string): ReactNode => {
+    const computedValues = filterValues.find((f) => f.key === fDefinition?.filterKey)?.values ?? [];
     if (fDefinition?.type === 'date') {
       if (filterOperator === 'within') {
-        const values = filterValues.length > 0 ? filterValues : DEFAULT_WITHIN_FILTER_VALUES;
+        const values = computedValues.length > 0 ? computedValues : DEFAULT_WITHIN_FILTER_VALUES;
         return (
           <DateRangeFilter
             filter={filter}
@@ -335,14 +340,25 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
           />
         );
       }
-      return <BasicFilterDate value={filterValues.length > 0 ? filterValues[0] : undefined} />;
+      return <BasicFilterDate value={computedValues.length > 0 ? computedValues[0] : undefined} />;
+    }
+    if (fDefinition?.type === 'filters') {
+      const values = computedValues.length > 0 ? computedValues[0] : emptyFilterGroup;
+      return (
+        <FilterFiltersInput
+          filter={filter}
+          childKey={subKey}
+          filterValues={values}
+          helpers={helpers}
+        />
+      );
     }
     if (isNumericFilter(fDefinition?.type)) {
       return (
         <BasicFilterInput
           filter={filter}
           filterKey={filterKey}
-          filterValues={filterValues}
+          filterValues={computedValues}
           helpers={helpers}
           label={filterLabel}
           type={'number'}
@@ -384,7 +400,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
           ))}
         </Select>
         {noValueOperator && isSpecificFilter(finalFilterDefinition) && (
-          <>{getSpecificFilter(finalFilterDefinition)}</>
+          <>{getSpecificFilter(finalFilterDefinition, subKey)}</>
         )}
         {noValueOperator && !isSpecificFilter(finalFilterDefinition) && (
           <>{buildAutocompleteFilter(subKey ?? fKey, finalFilterDefinition?.label ?? t_i18n(fKey), subKey)}</>

@@ -162,6 +162,8 @@ const relationshipsStixCoreRelationshipsLinesQuery = graphql`
     $orderBy: StixCoreRelationshipsOrdering
     $orderMode: OrderingMode
     $filters: FilterGroup
+    $dynamicFrom: FilterGroup
+    $dynamicTo: FilterGroup
   ) {
     ...RelationshipsStixCoreRelationshipsLines_data
     @arguments(
@@ -175,6 +177,8 @@ const relationshipsStixCoreRelationshipsLinesQuery = graphql`
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
+      dynamicFrom: $dynamicFrom
+      dynamicTo: $dynamicTo
     )
   }
 `;
@@ -194,7 +198,9 @@ export const relationshipsStixCoreRelationshipsLinesFragment = graphql`
       defaultValue: created
     }
     orderMode: { type: "OrderingMode", defaultValue: desc }
-    filters: { type: "FilterGroup" }
+    filters: { type: "FilterGroup" },
+    dynamicFrom: { type: "FilterGroup"  }
+    dynamicTo: { type: "FilterGroup"  }
   )
   @refetchable(queryName: "RelationshipsStixCoreRelationshipsLinesRefetchQuery") {
     stixCoreRelationships(
@@ -208,6 +214,8 @@ export const relationshipsStixCoreRelationshipsLinesFragment = graphql`
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
+      dynamicFrom: $dynamicFrom
+      dynamicTo: $dynamicTo
     ) @connection(key: "Pagination_stixCoreRelationships") {
       edges {
         node {

@@ -663,6 +663,39 @@ filterKeysSchema.set('Stix-Core-Object', new Map([
     },
   ],
   [
+    'dynamicRegardingOf',
+    {
+      filterKey: 'regardingOf',
+      label: 'In regards of (dynamic)',
+      type: 'nested',
+      multiple: true,
+      subEntityTypes: [
+        'Media-Content',
+      ],
+      elementsForFilterValuesSearch: [],
+      subFilters: [
+        {
+          filterKey: 'relationship_type',
+          label: 'Relationship type',
+          type: 'string',
+          multiple: true,
+          subEntityTypes: [],
+          elementsForFilterValuesSearch: [],
+        },
+        {
+          filterKey: 'dynamic',
+          label: 'Filters',
+          type: 'filters',
+          multiple: false,
+          subEntityTypes: [],
+          elementsForFilterValuesSearch: [
+            'Stix-Core-Object',
+          ],
+        },
+      ],
+    },
+  ],
+  [
     'computed_reliability',
     {
       filterKey: 'computed_reliability',

@@ -165,7 +165,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
               filterDefinition={filterDefinition}
               filterOperator={filterOperator}
             />
-            {filterKey !== 'regardingOf' && last(filterValues) !== id && (
+            {filterKey !== 'regardingOf' && filterKey !== 'dynamicRegardingOf' && last(filterValues) !== id && (
               <div
                 className={operatorClassName}
                 onClick={operatorOnClick}
@@ -179,7 +179,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
     );
   });
 
-  if (filterKey === 'regardingOf') {
+  if (filterKey === 'regardingOf' || filterKey === 'dynamicRegardingOf') {
     const sortedFilterValues = [...filterValues].sort((a, b) => -a.key.localeCompare(b.key)); // display type first, then id
 
     // add warning for (relationship type / ids) combinations that may not display all the results because of denormalization
@@ -221,6 +221,34 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
                   <>&nbsp;=</>
                 </>
               );
+              if (subKey === 'dynamic') {
+                return (
+                  <Fragment key={val.key}>
+                    <Tooltip
+                      title={
+                        <FilterValues
+                          label={keyLabel}
+                          tooltip={true}
+                          currentFilter={val}
+                          filtersRepresentativesMap={filtersRepresentativesMap}
+                        />
+                        }
+                    >
+                      <Box
+                        sx={{
+                          padding: '0 4px',
+                          display: 'flex',
+                        }}
+                      >
+                        <Chip
+                          label={t_i18n('Dynamic filter')}
+                          color={chipColor}
+                        />
+                      </Box>
+                    </Tooltip>
+                  </Fragment>
+                );
+              }
               return (
                 <Fragment key={val.key}>
                   <Tooltip

@@ -139,6 +139,7 @@ import {
   complexConversionFilterKeys,
   COMPUTED_RELIABILITY_FILTER,
   IDS_FILTER,
+  INSTANCE_DYNAMIC_REGARDING_OF,
   INSTANCE_REGARDING_OF,
   INSTANCE_RELATION_FILTER,
   INSTANCE_RELATION_TYPES_FILTER,
@@ -2814,13 +2815,13 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         throw UnsupportedError('A filter with these multiple keys is not supported}', { keys: arrayKeys });
       }
       const filterKey = arrayKeys[0];
-      if (filterKey === INSTANCE_REGARDING_OF) {
+      if (filterKey === INSTANCE_REGARDING_OF || filterKey === INSTANCE_DYNAMIC_REGARDING_OF) {
         const regardingFilters = [];
         const id = filter.values.find((i) => i.key === 'id');
         const type = filter.values.find((i) => i.key === 'relationship_type');
         const dynamic = filter.values.find((i) => i.key === 'dynamic');
-        if (!id && !type) {
-          throw UnsupportedError('Id or relationship type are needed for this filtering key', { key: INSTANCE_REGARDING_OF });
+        if (!id && !dynamic && !type) {
+          throw UnsupportedError('Id or dynamic or relationship type are needed for this filtering key', { key: filterKey });
         }
         const ids = id?.values ?? [];
         const operator = id?.operator ?? 'eq';

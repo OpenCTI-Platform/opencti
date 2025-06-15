@@ -23,6 +23,7 @@ interface FiltersProps {
   handleSwitchFilter?: HandleAddFilter;
   handleSwitchGlobalMode?: () => void;
   handleSwitchLocalMode?: (filter: Filter) => void;
+  handleFiltersChange?: (currentFilter: FilterGroup | undefined) => void;
   searchContext?: FilterSearchContext;
   type?: string;
   helpers?: handleFilterHelpers;
@@ -41,6 +42,7 @@ const Filters: FunctionComponent<FiltersProps> = ({
   handleRemoveFilter,
   handleSwitchGlobalMode,
   handleSwitchLocalMode,
+  handleFiltersChange,
   searchContext,
   type,
   helpers,
@@ -49,9 +51,7 @@ const Filters: FunctionComponent<FiltersProps> = ({
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
-  const [filters, setFilters] = useState<FilterGroup | undefined>(
-    emptyFilterGroup,
-  );
+  const [filters, setFilters] = useState<FilterGroup | undefined>(emptyFilterGroup);
   const [inputValues, setInputValues] = useState<FilterElementsInputValue[]>(
     [],
   );
@@ -73,11 +73,19 @@ const Filters: FunctionComponent<FiltersProps> = ({
         event.stopPropagation();
         event.preventDefault();
       }
-      setFilters(constructHandleAddFilter(filters, key, id, filterKeysSchema, operator));
+      if (handleFiltersChange) {
+        handleFiltersChange(constructHandleAddFilter(filters, key, id, filterKeysSchema, operator));
+      } else {
+        setFilters(constructHandleAddFilter(filters, key, id, filterKeysSchema, operator));
+      }
     });
   const defaultHandleRemoveFilter = handleRemoveFilter
     || ((key, operator = 'eq') => {
-      setFilters(constructHandleRemoveFilter(filters, key, operator));
+      if (handleFiltersChange) {
+        handleFiltersChange(constructHandleRemoveFilter(filters, key, operator));
+      } else {
+        setFilters(constructHandleRemoveFilter(filters, key, operator));
+      }
     });
   const handleSearch = () => {
     handleCloseFilters();

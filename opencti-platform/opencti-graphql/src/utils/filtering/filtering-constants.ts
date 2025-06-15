@@ -17,10 +17,13 @@ export const OBJECT_CONTAINS_FILTER = 'objects';
 export const RELATION_TO_SIGHTING_FILTER = 'toSightingId';
 // ---- entities
 export const INSTANCE_REGARDING_OF = 'regardingOf'; // Combination of relationship types and id for entity filtering
+export const INSTANCE_DYNAMIC_REGARDING_OF = 'dynamicRegardingOf'; // Combination of relationship types and id for entity filtering
 // ---- relationships
 // TODO remove and migration in favor of exploiting directly 'connections' in the relationship model
-export const RELATION_TO_FILTER = 'toId';
 export const RELATION_FROM_FILTER = 'fromId';
+export const RELATION_DYNAMIC_FROM_FILTER = 'dynamicFrom';
+export const RELATION_TO_FILTER = 'toId';
+export const RELATION_DYNAMIC_TO_FILTER = 'dynamicTo';
 export const INSTANCE_RELATION_FILTER = 'fromOrToId'; // Use for relationship context, renamed from entityId
 export const RELATION_FROM_ROLE_FILTER = 'fromRole';
 export const RELATION_TO_ROLE_FILTER = 'toRole';
@@ -90,6 +93,7 @@ export const complexConversionFilterKeys = [
   TYPE_FILTER, // values should match any parent_types
   RELATION_TYPE_FILTER, // values should match any parent_types
   INSTANCE_REGARDING_OF,
+  INSTANCE_DYNAMIC_REGARDING_OF,
   WORKFLOW_FILTER, // values should match the parent workflow pattern id
   X_OPENCTI_WORKFLOW_ID, // values should match the parent workflow pattern id
   SOURCE_RELIABILITY_FILTER, // reliability of the author
@@ -140,6 +144,7 @@ export const specialFilterKeys = [
 export const specialFilterKeysWhoseValueToResolve = [
   SIGHTED_BY_FILTER, // relation between elements linked by a stix sighting relationship
   INSTANCE_REGARDING_OF,
+  INSTANCE_DYNAMIC_REGARDING_OF,
   `rel_${RELATION_OBJECT}`,
   CREATOR_FILTER, // technical creator
   RELATION_FROM_FILTER, // nested relation for the from of a relationship

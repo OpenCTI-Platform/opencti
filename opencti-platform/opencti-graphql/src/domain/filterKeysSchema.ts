@@ -23,12 +23,15 @@ import {
   CONTEXT_ENTITY_TYPE_FILTER,
   CONTEXT_OBJECT_LABEL_FILTER,
   CONTEXT_OBJECT_MARKING_FILTER,
+  INSTANCE_DYNAMIC_REGARDING_OF,
   INSTANCE_REGARDING_OF,
   IS_INFERRED_FILTER,
   MEMBERS_GROUP_FILTER,
   MEMBERS_ORGANIZATION_FILTER,
   MEMBERS_USER_FILTER,
   OBJECT_CONTAINS_FILTER,
+  RELATION_DYNAMIC_FROM_FILTER,
+  RELATION_DYNAMIC_TO_FILTER,
   REPRESENTATIVE_FILTER,
   TYPE_FILTER,
   WORKFLOW_FILTER
@@ -229,6 +232,32 @@ const completeFilterDefinitionMapWithSpecialKeys = (
         }
       ]
     });
+    filterDefinitionsMap.set(INSTANCE_DYNAMIC_REGARDING_OF, {
+      filterKey: INSTANCE_DYNAMIC_REGARDING_OF,
+      type: 'nested',
+      label: 'In regards of (dynamic)',
+      multiple: true,
+      subEntityTypes,
+      elementsForFilterValuesSearch: [],
+      subFilters: [
+        {
+          filterKey: 'relationship_type',
+          type: 'string',
+          label: 'Relationship type',
+          multiple: true,
+          elementsForFilterValuesSearch: [],
+          subEntityTypes: [],
+        },
+        {
+          filterKey: 'dynamic',
+          type: 'filters',
+          label: 'Filters',
+          multiple: false,
+          elementsForFilterValuesSearch: ['Stix-Core-Object'],
+          subEntityTypes: [],
+        }
+      ]
+    });
     // Computed reliability (reliability of the entity, or of its author if no reliability is set)
     filterDefinitionsMap.set(COMPUTED_RELIABILITY_FILTER, {
       filterKey: COMPUTED_RELIABILITY_FILTER,
@@ -365,6 +394,22 @@ const completeFilterDefinitionMapWithSpecialKeys = (
       multiple: false,
       subEntityTypes,
       elementsForFilterValuesSearch: [ENTITY_TYPE_STATUS_TEMPLATE],
+    });
+    filterDefinitionsMap.set(RELATION_DYNAMIC_FROM_FILTER, {
+      filterKey: RELATION_DYNAMIC_FROM_FILTER,
+      type: 'filters',
+      label: 'Dynamic from',
+      multiple: false,
+      elementsForFilterValuesSearch: ['Stix-Core-Object'],
+      subEntityTypes: [],
+    });
+    filterDefinitionsMap.set(RELATION_DYNAMIC_TO_FILTER, {
+      filterKey: RELATION_DYNAMIC_TO_FILTER,
+      type: 'filters',
+      label: 'Dynamic to',
+      multiple: false,
+      elementsForFilterValuesSearch: ['Stix-Core-Object'],
+      subEntityTypes: [],
     });
   }
 };

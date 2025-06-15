@@ -11,6 +11,7 @@ import {
   CONTEXT_OBJECT_LABEL_FILTER,
   CONTEXT_OBJECT_MARKING_FILTER,
   filterKeysWithMeValue,
+  INSTANCE_DYNAMIC_REGARDING_OF,
   INSTANCE_REGARDING_OF,
   ME_FILTER_VALUE,
   MEMBERS_GROUP_FILTER,
@@ -157,6 +158,8 @@ export const extractFilterGroupValues = (inputFilters: FilterGroup, key: string 
     if (f.key.includes(INSTANCE_REGARDING_OF)) {
       const regardingIds = f.values.find((v) => v.key === 'id')?.values ?? [];
       ids.push(...regardingIds);
+    } else if (f.key.includes(INSTANCE_DYNAMIC_REGARDING_OF)) {
+      ids.push('dynamic_regarding_of');
     } else {
       ids.push(...f.values);
     }
