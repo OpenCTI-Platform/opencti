@@ -1075,6 +1075,7 @@
   "Duplicate a JSON feed": "JSON 피드 복제하기",
   "Duplicate a JSON mapper": "JSON 매퍼 복제",
   "Duplicate the dashboard": "대시보드 복제",
+  "Dynamic filter": "동적 필터",
   "Dynamic source filters": "동적 소스 필터",
   "Dynamic target filters": "동적 대상 필터",
   "Each line must contain a valid email address": "각 줄에는 유효한 이메일 주소가 포함되어야 합니다",

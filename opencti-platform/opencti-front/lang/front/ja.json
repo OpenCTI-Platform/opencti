@@ -1075,6 +1075,7 @@
   "Duplicate a JSON feed": "JSONフィードを複製する",
   "Duplicate a JSON mapper": "JSONマッパーを複製する",
   "Duplicate the dashboard": "ダッシュボードの複製",
+  "Dynamic filter": "ダイナミック・フィルター",
   "Dynamic source filters": "ダイナミック・ソース・フィルタ",
   "Dynamic target filters": "動的ターゲットフィルタ",
   "Each line must contain a valid email address": "各行には有効なEメールアドレスを記載すること",
