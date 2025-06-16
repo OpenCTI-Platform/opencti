@@ -108,7 +108,6 @@ const navigateGroupings = async (page: Page) => {
 
   // -- Entities
   await groupingsDetailsPage.tabs.goToEntitiesTab();
-  await expect(page.getByText('Entity types')).toBeVisible();
   await expect(page.getByText('Add entity')).toBeVisible();
 
   // -- Artifact / Observables
@@ -168,7 +167,6 @@ const navigateReports = async (page: Page) => {
 
   // -- Entities
   await reportDetailsPage.tabs.goToEntitiesTab();
-  await expect(page.getByText('Entity types')).toBeVisible();
   await expect(page.getByText('Add entity')).toBeVisible();
 
   // -- Artifact / Observables
