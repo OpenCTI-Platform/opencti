@@ -134,7 +134,7 @@ const AuditsList: FunctionComponent<AuditsListProps> = ({
       { removeTypeAll: true, startDate: startDate ?? undefined, endDate: endDate ?? undefined, dateAttribute },
     );
 
-    const queryRef = useQueryLoading<AuditsListContentQuery>(auditsListComponentQuery, {
+    const queryRef = useQueryLoading<AuditsListComponentQuery>(auditsListComponentQuery, {
       types: ['History', 'Activity'],
       first: selection.number ?? 10,
       orderBy: dateAttribute,
