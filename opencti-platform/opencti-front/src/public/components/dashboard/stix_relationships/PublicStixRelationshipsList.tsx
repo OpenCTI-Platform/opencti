@@ -367,6 +367,11 @@ const publicStixRelationshipsListQuery = graphql`
                             name
                             description
                           }
+                          ... on SecurityPlatform {
+                            name
+                            description
+                            security_platform_type
+                          }
                           ... on Sector {
                             name
                             description

@@ -123,6 +123,11 @@ const publicStixCoreObjectsListQuery = graphql`
             x_opencti_aliases
             x_opencti_organization_type
           }
+          ... on SecurityPlatform {
+              name
+              description
+              security_platform_type
+          }
           ... on Sector {
             name
             description

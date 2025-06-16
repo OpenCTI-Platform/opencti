@@ -96,6 +96,10 @@ const stixCoreObjectsAttributesQuery = graphql`
             ... on Organization {
                 name
                 description
+            }            
+            ... on SecurityPlatform {
+                name
+                description
             }
             ... on Sector {
                 name
