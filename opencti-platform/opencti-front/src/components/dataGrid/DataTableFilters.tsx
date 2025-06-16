@@ -145,6 +145,7 @@ const DataTableFilters = ({
               page={page}
               setPage={setPage}
               numberOfElements={numberOfElements}
+              redirectionModeEnabled={redirectionModeEnabled}
             />
           )}
           <ToggleButtonGroup
