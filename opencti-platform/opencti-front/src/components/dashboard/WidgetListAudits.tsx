@@ -5,7 +5,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import React from 'react';
 import { useTheme } from '@mui/styles';
-import { AuditsListContentQuery$data } from '@components/common/audits/__generated__/AuditsListContentQuery.graphql';
+import { AuditsListComponentQuery$data } from '../../private/components/common/audits/__generated__/AuditsListComponentQuery.graphql';
 import MarkdownDisplay from '../MarkdownDisplay';
 import ItemIcon from '../ItemIcon';
 import { resolveLink } from '../../utils/Entity';
@@ -14,7 +14,7 @@ import type { Theme } from '../Theme';
 import { useFormatter } from '../i18n';
 
 interface WidgetListAuditsProps {
-  data: NonNullable<AuditsListContentQuery$data['audits']>['edges']
+  data: NonNullable<AuditsListComponentQuery$data['audits']>['edges']
 }
 
 const WidgetListAudits = ({ data }: WidgetListAuditsProps) => {
