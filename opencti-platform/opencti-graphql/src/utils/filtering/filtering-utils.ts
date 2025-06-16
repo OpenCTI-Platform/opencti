@@ -21,6 +21,8 @@ import {
   OPINIONS_METRICS_MEAN_FILTER,
   OPINIONS_METRICS_MIN_FILTER,
   OPINIONS_METRICS_TOTAL_FILTER,
+  RELATION_DYNAMIC_FROM_FILTER,
+  RELATION_DYNAMIC_TO_FILTER,
   SIGHTED_BY_FILTER,
   specialFilterKeys
 } from './filtering-constants';
@@ -138,7 +140,7 @@ export const extractFilterKeys = (filterGroup: FilterGroup): string[] => {
  * if key is specified: extract all the values corresponding to the specified keys
  * if key is specified and reverse=true: extract all the ids NOT corresponding to any key
  */
-export const extractFilterGroupValues = (inputFilters: FilterGroup, key: string | string[] | null = null, reverse = false): string[] => {
+export const extractFilterGroupValues = (inputFilters: FilterGroup, key: string | string[] | null = null, reverse = false, getDynamic = false): (string | FilterGroup)[] => {
   const keysToKeep = Array.isArray(key) ? key : [key];
   const { filters = [], filterGroups = [] } = inputFilters;
   let filteredFilters = [];
@@ -158,8 +160,12 @@ export const extractFilterGroupValues = (inputFilters: FilterGroup, key: string 
     if (f.key.includes(INSTANCE_REGARDING_OF)) {
       const regardingIds = f.values.find((v) => v.key === 'id')?.values ?? [];
       ids.push(...regardingIds);
-    } else if (f.key.includes(INSTANCE_DYNAMIC_REGARDING_OF)) {
-      ids.push('dynamic_regarding_of');
+    } else if (f.key.includes(INSTANCE_DYNAMIC_REGARDING_OF) || f.key.includes(RELATION_DYNAMIC_FROM_FILTER) || f.key.includes(RELATION_DYNAMIC_TO_FILTER)) {
+      if (getDynamic) {
+        ids.push(...f.values);
+      } else {
+        ids.push('dynamic');
+      }
     } else {
       ids.push(...f.values);
     }
@@ -167,9 +173,9 @@ export const extractFilterGroupValues = (inputFilters: FilterGroup, key: string 
 
   // recurse on filter groups
   if (filterGroups.length > 0) {
-    ids.push(...filterGroups.map((group) => extractFilterGroupValues(group, key, reverse)).flat());
+    ids.push(...filterGroups.map((group) => extractFilterGroupValues(group, key, reverse, getDynamic)).flat());
   }
-  return uniq(ids);
+  return getDynamic ? ids : uniq(ids as string[]);
 };
 
 /**

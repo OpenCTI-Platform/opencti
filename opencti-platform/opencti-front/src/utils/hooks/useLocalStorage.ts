@@ -788,19 +788,10 @@ export const usePaginationLocalStorage = <U>(
     } as FilterGroup;
     filters = isFilterGroupNotEmpty(newFilters) ? newFilters : undefined;
   }
-
-  // Extract dynamic from / to
-  const dynamicFrom = filters?.filters.map((filter) => filter.key === 'dynamicFrom').at(0) || null;
-  const dynamicTo = filters?.filters.map((filter) => filter.key === 'dynamicTo').at(0) || null;
-  const cleanFilters = filters ? { ...filters, filters: filters.filters.filter((filter) => filter.key !== 'dynamicFrom' && filter.key !== 'dynamicTo') } : filters;
-
   const cleanPaginationOptions = {
     ...paginationOptions,
-    dynamicFrom,
-    dynamicTo,
-    filters: cleanFilters,
+    filters,
   };
-
   return {
     viewStorage,
     helpers,

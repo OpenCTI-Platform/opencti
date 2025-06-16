@@ -9,6 +9,7 @@ import FilterIconButton from '../FilterIconButton';
 
 interface BasicFilterInputProps {
   filter?: Filter;
+  filterKey: string;
   childKey?: string;
   helpers?: handleFilterHelpers;
   filterValues: FilterGroup;
@@ -30,6 +31,9 @@ const FilterFiltersInput: FunctionComponent<BasicFilterInputProps> = ({
         const sanitizedCurrentFilter = sanitizeFiltersStructure(currentFilter);
         const representation = { key: childKey, values: [sanitizedCurrentFilter] };
         helpers?.handleChangeRepresentationFilter(filter?.id ?? '', childFilter, representation);
+      } else {
+        const sanitizedCurrentFilter = sanitizeFiltersStructure(currentFilter);
+        helpers?.handleReplaceFilterValues(filter?.id ?? '', [sanitizedCurrentFilter]);
       }
     }
   };

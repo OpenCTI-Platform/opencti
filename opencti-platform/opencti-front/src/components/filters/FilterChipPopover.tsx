@@ -327,7 +327,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     );
   };
   const getSpecificFilter = (fDefinition?: FilterDefinition, subKey?: string): ReactNode => {
-    const computedValues = filterValues.find((f) => f.key === fDefinition?.filterKey)?.values ?? [];
+    const computedValues = filterValues.find((f) => f.key === fDefinition?.filterKey)?.values ?? filterValues;
     if (fDefinition?.type === 'date') {
       if (filterOperator === 'within') {
         const values = computedValues.length > 0 ? computedValues : DEFAULT_WITHIN_FILTER_VALUES;
@@ -347,6 +347,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       return (
         <FilterFiltersInput
           filter={filter}
+          filterKey={filterKey}
           childKey={subKey}
           filterValues={values}
           helpers={helpers}

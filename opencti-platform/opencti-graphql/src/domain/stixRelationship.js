@@ -9,8 +9,9 @@ import { elCount, MAX_RUNTIME_RESOLUTION_SIZE } from '../database/engine';
 import { STIX_SPEC_VERSION, stixCoreRelationshipsMapping } from '../database/stix';
 import { UnsupportedError } from '../config/errors';
 import { schemaTypesDefinition } from '../schema/schema-types';
-import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
+import { extractFilterGroupValues, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { isStixRelationship } from '../schema/stixRelationship';
+import { RELATION_DYNAMIC_FROM_FILTER, RELATION_DYNAMIC_TO_FILTER } from '../utils/filtering/filtering-constants';
 
 export const buildArgsFromDynamicFilters = async (context, user, args) => {
   const { dynamicFrom, dynamicTo } = args;
@@ -46,7 +47,25 @@ export const buildArgsFromDynamicFilters = async (context, user, args) => {
 };
 
 export const findAll = async (context, user, args) => {
-  const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, args);
+  let finalArgs = args;
+  const finalFilters = args?.filters;
+  if (finalFilters) {
+    const dynamicFrom = extractFilterGroupValues(finalFilters, RELATION_DYNAMIC_FROM_FILTER, false, true);
+    if (dynamicFrom && dynamicFrom.length > 0 && isFilterGroupNotEmpty(dynamicFrom[0])) {
+      finalArgs = {
+        ...args,
+        dynamicFrom: dynamicFrom[0],
+      };
+    }
+    const dynamicTo = extractFilterGroupValues(finalFilters, RELATION_DYNAMIC_TO_FILTER, false, true);
+    if (dynamicTo && dynamicTo.length > 0 && isFilterGroupNotEmpty(dynamicTo[0])) {
+      finalArgs = {
+        ...args,
+        dynamicTo: dynamicTo[0],
+      };
+    }
+  }
+  const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, finalArgs);
   if (isEmptyDynamic) {
     return { edges: [] };
   }

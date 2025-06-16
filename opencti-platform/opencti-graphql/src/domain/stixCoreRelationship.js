@@ -14,14 +14,42 @@ import { buildRelationsFilter, listRelations, storeLoadById } from '../database/
 import { askListExport, exportTransformFilters } from './stix';
 import { workToExportFile } from './work';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
-import { addFilter } from '../utils/filtering/filtering-utils';
+import { addFilter, extractFilterGroupValues, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { buildArgsFromDynamicFilters, stixRelationshipsDistribution } from './stixRelationship';
 import { elRemoveElementFromDraft } from '../database/draft-engine';
+import { RELATION_DYNAMIC_FROM_FILTER, RELATION_DYNAMIC_TO_FILTER } from '../utils/filtering/filtering-constants';
 
 export const findAll = async (context, user, args) => {
-  const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, args);
+  let finalArgs = args;
+  const finalFilters = args?.filters;
+  if (finalFilters) {
+    const dynamicFrom = extractFilterGroupValues(finalFilters, RELATION_DYNAMIC_FROM_FILTER, false, true);
+    if (dynamicFrom && dynamicFrom.length > 0 && isFilterGroupNotEmpty(dynamicFrom[0])) {
+      finalArgs = {
+        ...args,
+        dynamicFrom: dynamicFrom[0],
+      };
+    }
+    const dynamicTo = extractFilterGroupValues(finalFilters, RELATION_DYNAMIC_TO_FILTER, false, true);
+    if (dynamicTo && dynamicTo.length > 0 && isFilterGroupNotEmpty(dynamicTo[0])) {
+      finalArgs = {
+        ...args,
+        dynamicTo: dynamicTo[0],
+      };
+    }
+  }
+  const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, finalArgs);
   if (isEmptyDynamic) {
-    return { edges: [] };
+    return {
+      edges: [],
+      pageInfo: {
+        startCursor: '',
+        endCursor: '',
+        hasNextPage: false,
+        hasPreviousPage: false,
+        globalCount: 0
+      }
+    };
   }
   const type = isEmptyField(dynamicArgs.relationship_type) ? ABSTRACT_STIX_CORE_RELATIONSHIP : dynamicArgs.relationship_type;
   const types = Array.isArray(type) ? type : [type];

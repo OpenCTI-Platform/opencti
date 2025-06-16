@@ -94,6 +94,8 @@ export const complexConversionFilterKeys = [
   RELATION_TYPE_FILTER, // values should match any parent_types
   INSTANCE_REGARDING_OF,
   INSTANCE_DYNAMIC_REGARDING_OF,
+  RELATION_DYNAMIC_FROM_FILTER,
+  RELATION_DYNAMIC_TO_FILTER,
   WORKFLOW_FILTER, // values should match the parent workflow pattern id
   X_OPENCTI_WORKFLOW_ID, // values should match the parent workflow pattern id
   SOURCE_RELIABILITY_FILTER, // reliability of the author
@@ -145,6 +147,8 @@ export const specialFilterKeysWhoseValueToResolve = [
   SIGHTED_BY_FILTER, // relation between elements linked by a stix sighting relationship
   INSTANCE_REGARDING_OF,
   INSTANCE_DYNAMIC_REGARDING_OF,
+  RELATION_DYNAMIC_FROM_FILTER,
+  RELATION_DYNAMIC_TO_FILTER,
   `rel_${RELATION_OBJECT}`,
   CREATOR_FILTER, // technical creator
   RELATION_FROM_FILTER, // nested relation for the from of a relationship

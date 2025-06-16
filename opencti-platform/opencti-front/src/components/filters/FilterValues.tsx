@@ -295,6 +295,22 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
       <>{values}</>
     );
   }
+  if (filterKey === 'dynamicFrom' || filterKey === 'dynamicTo') {
+    return (
+      <>
+        <strong
+          className={menuClassName}
+          onClick={onCLick}
+        >
+          {label}
+        </strong>{' '}
+        <Chip
+          label={t_i18n('Dynamic filter')}
+          color={chipColor}
+        />
+      </>
+    );
+  }
   return (
     <>
       <strong

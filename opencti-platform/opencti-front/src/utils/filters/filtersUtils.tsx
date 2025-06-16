@@ -352,7 +352,7 @@ export const useBuildFiltersForTemplateWidgets = () => {
 // return the i18n label corresponding to a filter value
 export const filterValue = (filterKey: string, value?: string | null, filterType?: string, filterOperator?: string) => {
   const { t_i18n, nsd, smhd } = useFormatter();
-  if (filterKey === 'regardingOf' || filterKey === 'dynamicRegardingOf' || filterKey === 'dynamic') {
+  if (filterKey === 'regardingOf' || filterKey === 'dynamicRegardingOf' || filterKey === 'dynamic' || filterKey === 'dynamicFrom' || filterKey === 'dynamicTo') {
     return JSON.stringify(value);
   }
   if (
