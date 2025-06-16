@@ -223,6 +223,11 @@ export const entitiesFragment = graphql`
       description
       x_opencti_aliases
     }
+    ... on SecurityPlatform {
+        name
+        description
+        security_platform_type
+    }
     ... on Sector {
       name
       description
