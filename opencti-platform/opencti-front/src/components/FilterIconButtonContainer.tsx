@@ -271,7 +271,7 @@ FilterIconButtonContainerProps
     }
   }
   const allFilterKeys = displayedFilters.map((filter) => filter.key);
-  const allRegardingOf = allFilterKeys.every((key) => key === 'regardingOf');
+  const allRegardingOfFilterKeys = allFilterKeys.every((key) => key === 'regardingOf');
   const buildKeyLabel = (filterOperator: string, filterLabel: string, values: string[]) => {
     const isOperatorDisplayed = filterOperatorsWithIcon.includes(filterOperator);
     return (
@@ -327,7 +327,7 @@ FilterIconButtonContainerProps
   return (
     <Tooltip
       title={
-        allRegardingOf
+        allRegardingOfFilterKeys
           ? undefined
           : tooltipContent
     }
