@@ -1,9 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import ListLines from '../../../../components/list_lines/ListLines';
-import ContainerStixCyberObservablesLines, {
-  containerStixCyberObservablesLinesQuery
-} from './ContainerStixCyberObservablesLines';
+import ContainerStixCyberObservablesLines, { containerStixCyberObservablesLinesQuery } from './ContainerStixCyberObservablesLines';
 import ToolBar from '../../data/ToolBar';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { ModuleHelper } from '../../../../utils/platformModulesHelper';
