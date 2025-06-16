@@ -23,14 +23,14 @@ export const findAll = async (context, user, args) => {
   let finalArgs = args;
   const finalFilters = args?.filters;
   if (finalFilters) {
-    const dynamicFrom = extractDynamicFilterGroupValues(finalFilters, RELATION_DYNAMIC_FROM_FILTER, false, true);
+    const dynamicFrom = extractDynamicFilterGroupValues(finalFilters, RELATION_DYNAMIC_FROM_FILTER);
     if (dynamicFrom && dynamicFrom.length > 0 && isFilterGroupNotEmpty(dynamicFrom[0])) {
       finalArgs = {
         ...args,
         dynamicFrom: dynamicFrom[0],
       };
     }
-    const dynamicTo = extractDynamicFilterGroupValues(finalFilters, RELATION_DYNAMIC_TO_FILTER, false, true);
+    const dynamicTo = extractDynamicFilterGroupValues(finalFilters, RELATION_DYNAMIC_TO_FILTER);
     if (dynamicTo && dynamicTo.length > 0 && isFilterGroupNotEmpty(dynamicTo[0])) {
       finalArgs = {
         ...args,
