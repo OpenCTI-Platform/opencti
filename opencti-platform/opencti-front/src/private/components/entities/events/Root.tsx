@@ -135,7 +135,6 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
               entityType="Event"
               stixDomainObject={event}
               enableQuickSubscription={true}
-              disableSharing
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <EventEdition eventId={event.id} />
