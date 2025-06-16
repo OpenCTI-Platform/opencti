@@ -675,7 +675,7 @@ export const getDefaultOperatorFilter = (
  * Subkeys are nested inside special filter that combine several fields (filter values is not a string[] but object[])
  */
 export const getAvailableOperatorForFilterSubKey = (filterKey: string, subKey: string): string[] => {
-  if (filterKey === 'regardingOf') {
+  if (filterKey === 'regardingOf' || filterKey === 'dynamicRegardingOf') {
     if ((subKey === 'id' || subKey === 'dynamic') || subKey === 'relationship_type') {
       return ['eq'];
     }

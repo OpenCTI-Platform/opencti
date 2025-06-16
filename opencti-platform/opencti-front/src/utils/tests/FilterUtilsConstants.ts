@@ -665,7 +665,7 @@ filterKeysSchema.set('Stix-Core-Object', new Map([
   [
     'dynamicRegardingOf',
     {
-      filterKey: 'regardingOf',
+      filterKey: 'dynamicRegardingOf',
       label: 'In regards of (dynamic)',
       type: 'nested',
       multiple: true,
