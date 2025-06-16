@@ -2522,9 +2522,20 @@ class OpenCTIStix2:
         )
         if sharing_direct_container is None:
             sharing_direct_container = item["sharing_direct_container"]
-        self.opencti.stix_core_object.organization_share(
-            item["id"], organization_ids, sharing_direct_container
-        )
+
+        if item["type"] == "relationship":
+            self.opencti.stix_core_relationship.organization_share(
+                item["id"], organization_ids, sharing_direct_container
+            )
+        elif item["type"] == "sighting":
+            self.opencti.stix_sighting_relationship.organization_share(
+                item["id"], organization_ids, sharing_direct_container
+            )
+        else:
+            # Element is considered stix core object
+            self.opencti.stix_core_object.organization_share(
+                item["id"], organization_ids, sharing_direct_container
+            )
 
     def organization_unshare(self, item):
         organization_ids = self.opencti.get_attribute_in_extension(
@@ -2537,9 +2548,19 @@ class OpenCTIStix2:
         )
         if sharing_direct_container is None:
             sharing_direct_container = item["sharing_direct_container"]
-        self.opencti.stix_core_object.organization_unshare(
-            item["id"], organization_ids, sharing_direct_container
-        )
+        if item["type"] == "relationship":
+            self.opencti.stix_core_relationship.organization_unshare(
+                item["id"], organization_ids, sharing_direct_container
+            )
+        elif item["type"] == "sighting":
+            self.opencti.stix_sighting_relationship.organization_unshare(
+                item["id"], organization_ids, sharing_direct_container
+            )
+        else:
+            # Element is considered stix core object
+            self.opencti.stix_core_object.organization_unshare(
+                item["id"], organization_ids, sharing_direct_container
+            )
 
     def element_operation_delete(self, item, operation):
         # If data is stix, just use the generic stix function for deletion
@@ -2564,11 +2585,20 @@ class OpenCTIStix2:
                     "Delete operation or not found stix helper", {"type": item["type"]}
                 )
 
+    def element_remove_from_draft(self, item):
+        if item["type"] == "relationship":
+            self.opencti.stix_core_relationship.remove_from_draft(id=item["id"])
+        elif item["type"] == "sighting":
+            self.opencti.stix_sighting_relationship.remove_from_draft(id=item["id"])
+        else:
+            # Element is considered stix core object
+            self.opencti.stix_core_object.remove_from_draft(id=item["id"])
+
     def apply_opencti_operation(self, item, operation):
         if operation == "delete" or operation == "delete_force":
             self.element_operation_delete(item=item, operation=operation)
         elif operation == "revert_draft":
-            self.opencti.stix_core_object.remove_from_draft(id=item["id"])
+            self.element_remove_from_draft(item=item)
         elif operation == "restore":
             self.opencti.trash.restore(item["id"])
         elif operation == "merge":
