@@ -653,23 +653,27 @@ const ContainerHeader = (props) => {
         )}
         <div>
           <div style={{ display: 'flex' }}>
-            <StixCoreObjectBackgroundTasks
-              id={container.id}
-              actionsFilter={['SHARE', 'UNSHARE', 'SHARE_MULTIPLE', 'UNSHARE_MULTIPLE']}
-            />
+            {!knowledge && (
+              <StixCoreObjectBackgroundTasks
+                id={container.id}
+                actionsFilter={['SHARE', 'UNSHARE', 'SHARE_MULTIPLE', 'UNSHARE_MULTIPLE']}
+              />
+            )}
             {enableQuickSubscription && (
               <StixCoreObjectSubscribers triggerData={triggerData} />
             )}
-            <StixCoreObjectSharingList data={container} inContainer={true} />
             {displaySharing && (
-              <StixCoreObjectSharing
-                elementId={container.id}
-                open={openSharing}
-                variant="header"
-                disabled={isSharingDisabled}
-                handleClose={displaySharingButton ? undefined : handleCloseSharing}
-                inContainer={true}
-              />
+              <>
+                <StixCoreObjectSharingList data={container} inContainer={true} />
+                <StixCoreObjectSharing
+                  elementId={container.id}
+                  open={openSharing}
+                  variant="header"
+                  disabled={isSharingDisabled}
+                  handleClose={displaySharingButton ? undefined : handleCloseSharing}
+                  inContainer={true}
+                />
+              </>
             )}
             {displayAuthorizedMembers && (
               <FormAuthorizedMembersDialog
