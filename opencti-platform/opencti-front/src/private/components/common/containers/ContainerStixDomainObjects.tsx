@@ -9,7 +9,6 @@ import { ContainerStixDomainObjectLineDummy } from '@components/common/container
 import { ContainerStixDomainObjects_container$key } from '@components/common/containers/__generated__/ContainerStixDomainObjects_container.graphql';
 import ListLines from '../../../../components/list_lines/ListLines';
 import ContainerStixDomainObjectsLines, { containerStixDomainObjectsLinesQuery } from './ContainerStixDomainObjectsLines';
-import StixDomainObjectsRightBar from '../stix_domain_objects/StixDomainObjectsRightBar';
 import ToolBar from '../../data/ToolBar';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
@@ -58,9 +57,7 @@ const ContainerStixDomainObjectsFragment = graphql`
     }
 `;
 
-const ContainerStixDomainObjects = ({
-  container, enableReferences,
-}: {
+const ContainerStixDomainObjects = ({ container, enableReferences }: {
   container: ContainerStixDomainObjects_container$key;
   enableReferences?: boolean
 }) => {
@@ -86,7 +83,6 @@ const ContainerStixDomainObjects = ({
       sortBy: 'name',
       orderAsc: false,
       openExports: false,
-      types: [],
     },
   );
   const {
@@ -96,7 +92,6 @@ const ContainerStixDomainObjects = ({
     sortBy,
     orderAsc,
     openExports,
-    types,
   } = viewStorage;
 
   const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['Stix-Domain-Object']);
@@ -106,7 +101,7 @@ const ContainerStixDomainObjects = ({
       { key: 'objects', values: [containerData.id], operator: 'eq' },
       {
         key: 'entity_type',
-        values: (types && types.length > 0) ? types : ['Stix-Domain-Object'],
+        values: ['Stix-Domain-Object'],
         operator: 'eq',
         mode: 'or',
       },
@@ -248,11 +243,6 @@ const ContainerStixDomainObjects = ({
             container={containerData}
             warning={true}
             warningMessage={t_i18n('Be careful, you are about to delete the selected entities (not the relationships)')}
-          />
-          <StixDomainObjectsRightBar
-            types={types ?? []}
-            handleToggle={storageHelpers.handleToggleTypes}
-            handleClear={storageHelpers.handleClearTypes}
           />
         </React.Suspense>
       )}

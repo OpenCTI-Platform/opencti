@@ -2,7 +2,6 @@ import React, { FunctionComponent } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import ListLines from '../../../../components/list_lines/ListLines';
 import ContainerStixCyberObservablesLines, { containerStixCyberObservablesLinesQuery } from './ContainerStixCyberObservablesLines';
-import StixCyberObservablesRightBar from '../../observations/stix_cyber_observables/StixCyberObservablesRightBar';
 import ToolBar from '../../data/ToolBar';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { ModuleHelper } from '../../../../utils/platformModulesHelper';
@@ -25,7 +24,6 @@ import ContainerAddStixCoreObjectsInLine from './ContainerAddStixCoreObjectsInLi
 export const ContainerStixCyberObservablesLinesSearchQuery = graphql`
   query ContainerStixCyberObservablesLinesSearchQuery(
     $id: String!
-    $types: [String]
     $search: String
     $filters: FilterGroup
     $count: Int
@@ -33,7 +31,6 @@ export const ContainerStixCyberObservablesLinesSearchQuery = graphql`
     container(id: $id) {
       id
       objects(
-        types: $types
         search: $search
         first: $count
         filters: $filters
@@ -81,7 +78,6 @@ ContainerStixCyberObservablesComponentProps
       sortBy: 'created_at',
       orderAsc: false,
       openExports: false,
-      types: [] as string[],
     },
   );
   const {
@@ -91,7 +87,6 @@ ContainerStixCyberObservablesComponentProps
     sortBy,
     orderAsc,
     openExports,
-    types,
   } = viewStorage;
   const {
     handleRemoveFilter,
@@ -102,7 +97,6 @@ ContainerStixCyberObservablesComponentProps
     handleSwitchGlobalMode,
     handleSwitchLocalMode,
     handleSetNumberOfElements,
-    handleAddProperty,
   } = helpers;
   const {
     selectedElements,
@@ -116,19 +110,6 @@ ContainerStixCyberObservablesComponentProps
   } = useEntityToggle<ContainerStixCyberObservableLine_node$data>(
     LOCAL_STORAGE_KEY,
   );
-  const handleClear = () => {
-    handleAddProperty('types', []);
-  };
-  const handleToggle = (type: string) => {
-    if (types?.includes(type)) {
-      handleAddProperty(
-        'types',
-        types.filter((x) => x !== type),
-      );
-    } else {
-      handleAddProperty('types', types ? [...types, type] : [type]);
-    }
-  };
   const getValuesForCopy = (
     data: ContainerStixCyberObservablesLinesSearchQuery$data,
   ) => {
@@ -149,7 +130,7 @@ ContainerStixCyberObservablesComponentProps
       },
       {
         key: 'entity_type',
-        values: types && types.length > 0 ? types : ['Stix-Cyber-Observable'],
+        values: ['Stix-Cyber-Observable'],
         operator: 'eq',
         mode: 'or',
       },
@@ -303,11 +284,6 @@ ContainerStixCyberObservablesComponentProps
               handleCopy={handleCopy}
               warning={true}
               warningMessage={t_i18n('Be careful, you are about to delete the selected observables (not the relationships)')}
-            />
-            <StixCyberObservablesRightBar
-              types={types ?? []}
-              handleToggle={handleToggle}
-              handleClear={handleClear}
             />
           </ExportContextProvider>
         )}

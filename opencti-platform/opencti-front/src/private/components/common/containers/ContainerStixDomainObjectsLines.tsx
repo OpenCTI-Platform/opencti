@@ -35,7 +35,6 @@ export const containerStixDomainObjectsLinesQuery = graphql`
   query ContainerStixDomainObjectsLinesQuery(
     $id: String!
     $search: String
-    $types: [String]
     $count: Int!
     $cursor: ID
     $orderBy: StixObjectOrStixRelationshipsOrdering
@@ -45,7 +44,6 @@ export const containerStixDomainObjectsLinesQuery = graphql`
     ...ContainerStixDomainObjectsLines_container
     @arguments(
       search: $search
-      types: $types
       count: $count
       cursor: $cursor
       orderBy: $orderBy
@@ -58,7 +56,6 @@ export const containerStixDomainObjectsLinesQuery = graphql`
 export const containerStixDomainObjectsLinesFragment = graphql`
   fragment ContainerStixDomainObjectsLines_container on Query
   @argumentDefinitions(
-    types: { type: "[String]" }
     search: { type: "String" }
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
@@ -88,7 +85,6 @@ export const containerStixDomainObjectsLinesFragment = graphql`
         x_opencti_color
       }
       objects(
-        types: $types
         search: $search
         first: $count
         after: $cursor
