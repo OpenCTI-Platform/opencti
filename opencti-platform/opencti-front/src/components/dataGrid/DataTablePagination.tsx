@@ -100,7 +100,7 @@ const DataTablePagination = ({
       ],
     },
     {
-      label: t_i18n('Redirect mode'),
+      label: t_i18n('Redirection mode'),
       menuLevel: 0,
       value: 'redirect-mode',
       nestedOptions: [
