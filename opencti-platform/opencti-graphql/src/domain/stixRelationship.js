@@ -9,7 +9,7 @@ import { elCount, MAX_RUNTIME_RESOLUTION_SIZE } from '../database/engine';
 import { STIX_SPEC_VERSION, stixCoreRelationshipsMapping } from '../database/stix';
 import { UnsupportedError } from '../config/errors';
 import { schemaTypesDefinition } from '../schema/schema-types';
-import { extractDynamicFilterGroupValues, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
+import { clearKeyFromFilterGroup, extractDynamicFilterGroupValues, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { RELATION_DYNAMIC_FROM_FILTER, RELATION_DYNAMIC_TO_FILTER } from '../utils/filtering/filtering-constants';
 
@@ -55,6 +55,7 @@ export const findAll = async (context, user, args) => {
       finalArgs = {
         ...args,
         dynamicFrom: dynamicFrom[0],
+        filters: clearKeyFromFilterGroup(finalArgs.filters, RELATION_DYNAMIC_FROM_FILTER),
       };
     }
     const dynamicTo = extractDynamicFilterGroupValues(finalFilters, RELATION_DYNAMIC_TO_FILTER);
@@ -62,6 +63,7 @@ export const findAll = async (context, user, args) => {
       finalArgs = {
         ...args,
         dynamicTo: dynamicTo[0],
+        filters: clearKeyFromFilterGroup(finalArgs.filters, RELATION_DYNAMIC_TO_FILTER),
       };
     }
   }

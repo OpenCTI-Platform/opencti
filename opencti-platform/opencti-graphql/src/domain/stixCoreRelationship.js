@@ -14,7 +14,7 @@ import { buildRelationsFilter, listRelations, storeLoadById } from '../database/
 import { askListExport, exportTransformFilters } from './stix';
 import { workToExportFile } from './work';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
-import { addFilter, extractDynamicFilterGroupValues, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
+import { addFilter, clearKeyFromFilterGroup, extractDynamicFilterGroupValues, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { buildArgsFromDynamicFilters, stixRelationshipsDistribution } from './stixRelationship';
 import { elRemoveElementFromDraft } from '../database/draft-engine';
 import { RELATION_DYNAMIC_FROM_FILTER, RELATION_DYNAMIC_TO_FILTER } from '../utils/filtering/filtering-constants';
@@ -26,15 +26,17 @@ export const findAll = async (context, user, args) => {
     const dynamicFrom = extractDynamicFilterGroupValues(finalFilters, RELATION_DYNAMIC_FROM_FILTER);
     if (dynamicFrom && dynamicFrom.length > 0 && isFilterGroupNotEmpty(dynamicFrom[0])) {
       finalArgs = {
-        ...args,
+        ...finalArgs,
         dynamicFrom: dynamicFrom[0],
+        filters: clearKeyFromFilterGroup(finalArgs.filters, RELATION_DYNAMIC_FROM_FILTER),
       };
     }
     const dynamicTo = extractDynamicFilterGroupValues(finalFilters, RELATION_DYNAMIC_TO_FILTER);
     if (dynamicTo && dynamicTo.length > 0 && isFilterGroupNotEmpty(dynamicTo[0])) {
       finalArgs = {
-        ...args,
+        ...finalArgs,
         dynamicTo: dynamicTo[0],
+        filters: clearKeyFromFilterGroup(finalArgs.filters, RELATION_DYNAMIC_TO_FILTER),
       };
     }
   }

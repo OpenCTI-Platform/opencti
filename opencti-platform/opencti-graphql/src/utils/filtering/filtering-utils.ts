@@ -140,7 +140,7 @@ export const extractFilterKeys = (filterGroup: FilterGroup): string[] => {
  * if key is specified: extract all the values corresponding to the specified keys
  * if key is specified and reverse=true: extract all the ids NOT corresponding to any key
  */
-export const extractFilterGroupValues = (inputFilters: FilterGroup, key: string | string[] | null = null, reverse = false, getDynamic = false): string[] => {
+export const extractFilterGroupValues = (inputFilters: FilterGroup, key: string | string[] | null = null, reverse = false): string[] => {
   const keysToKeep = Array.isArray(key) ? key : [key];
   const { filters = [], filterGroups = [] } = inputFilters;
   let filteredFilters = [];
@@ -168,9 +168,9 @@ export const extractFilterGroupValues = (inputFilters: FilterGroup, key: string 
   });
   // recurse on filter groups
   if (filterGroups.length > 0) {
-    ids.push(...filterGroups.map((group) => extractFilterGroupValues(group, key, reverse, getDynamic)).flat());
+    ids.push(...filterGroups.map((group) => extractFilterGroupValues(group, key, reverse)).flat());
   }
-  return getDynamic ? ids : uniq(ids as string[]);
+  return uniq(ids);
 };
 
 /**
@@ -202,6 +202,20 @@ export const extractDynamicFilterGroupValues = (inputFilters: FilterGroup, key: 
     ids.push(...filterGroups.map((group) => extractDynamicFilterGroupValues(group, key, reverse)).flat());
   }
   return ids;
+};
+
+/**
+ * clear selected key(s) from filters
+ */
+export const clearKeyFromFilterGroup = (inputFilters: FilterGroup, key: string | string[]): FilterGroup => {
+  const keysToRemove = Array.isArray(key) ? key : [key];
+  const { filters = [], filterGroups = [] } = inputFilters;
+  const filteredFilters = filters.filter((f) => (Array.isArray(f.key) ? f.key.every((k) => !keysToRemove.includes(k)) : !keysToRemove.includes(f.key)));
+  let filteredFilterGroups: FilterGroup[] = [];
+  if (filterGroups.length > 0) {
+    filteredFilterGroups = filterGroups.map((group) => clearKeyFromFilterGroup(group, key));
+  }
+  return { filters: filteredFilters, filterGroups: filteredFilterGroups, mode: inputFilters.mode };
 };
 
 /**
