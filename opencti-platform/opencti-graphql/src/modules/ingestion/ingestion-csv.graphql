@@ -22,6 +22,7 @@ type IngestionCsv implements InternalObject & BasicObject {
     last_execution_date: DateTime
     markings: [String!]
     toConfigurationExport: String!
+    duplicateCsvMapper: CsvMapper!
 }
 
 enum IngestionCsvOrdering {

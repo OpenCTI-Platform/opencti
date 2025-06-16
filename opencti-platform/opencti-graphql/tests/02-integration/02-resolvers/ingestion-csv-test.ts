@@ -8,6 +8,8 @@ import { SYSTEM_USER } from '../../../src/utils/access';
 import pjson from '../../../package.json';
 import { IngestionAuthType, type IngestionCsvAddInput, IngestionCsvMapperType } from '../../../src/generated/graphql';
 import { findById as findUserById } from '../../../src/domain/user';
+import { regenerateCsvMapperUUID } from '../../../src/modules/ingestion/ingestion-converter';
+import type { CsvMapperResolved } from '../../../src/modules/internal/csvMapper/csvMapper-types';
 
 const DELETE_USER_QUERY = gql`
     mutation userDelete($id: ID!) {
@@ -42,6 +44,13 @@ describe('CSV ingestion resolver standard behavior', () => {
       skipLineChar: ''
     }
   };
+  const singleColumnCsvMapperForCsvFeedInline = JSON.stringify({
+    has_header: false,
+    name: 'Single column CSV mapper',
+    separator: ',',
+    representations: [{ id: '75c3c21c-0a92-497f-962d-4e6e1a488481', type: 'entity', target: { entity_type: 'IPv4-Addr' }, attributes: [{ key: 'value', column: { column_name: 'A' }, based_on: null }] }],
+    skipLineChar: ''
+  });
 
   beforeAll(async () => {
     const SINGLE_COLUMN_CSV_MAPPER = singleColumnCsvMapper;
@@ -105,7 +114,7 @@ describe('CSV ingestion resolver standard behavior', () => {
       authentication_type: IngestionAuthType.None,
       name: 'Single column inline and auto user',
       uri: 'https://lists.blocklist.de/lists/all.txt',
-      csv_mapper: JSON.stringify(singleColumnCsvMapper),
+      csv_mapper: singleColumnCsvMapperForCsvFeedInline,
       csv_mapper_type: IngestionCsvMapperType.Inline,
       automatic_user: true,
       user_id: '[F] Single column inline and auto user'
@@ -398,5 +407,276 @@ describe('CSV ingestion resolver standard behavior', () => {
     expect(queryResult.data?.csvFeedAddInputFromImport.csvMapper).toBeDefined();
     expect(queryResult.data?.csvFeedAddInputFromImport.csvMapper.name).toBe('Inline CSV Feed');
     expect(queryResult.data?.csvFeedAddInputFromImport.name).toBe('Test name');
+  });
+
+  it('should regenerate UUID of the CSVMapper', async () => {
+    const data: CsvMapperResolved = {
+      name: 'C2IntelFeeds',
+      has_header: true,
+      separator: ',',
+      skipLineChar: '',
+      representations: [
+        {
+          id: 'cd610730-daa2-4d97-ba12-e277b74569d3',
+          type: 'entity',
+          target: {
+            entity_type: 'IPv4-Addr',
+            column_based: null
+          },
+          attributes: [
+            {
+              key: 'value',
+              column: {
+                column_name: 'A',
+                configuration: null
+              },
+              based_on: null
+            },
+            {
+              key: 'x_opencti_description',
+              column: {
+                column_name: 'B',
+                configuration: null
+              },
+              based_on: null
+            }
+          ]
+        },
+        {
+          id: '90ab48b0-88ab-4165-b8e8-9232e6cfa566',
+          type: 'entity',
+          target: {
+            entity_type: 'Autonomous-System',
+            column_based: null
+          },
+          attributes: [
+            {
+              key: 'number',
+              column: {
+                column_name: 'C',
+                configuration: null
+              },
+              based_on: null
+            }
+          ]
+        },
+        {
+          id: '4c7165ef-12bd-48f0-aaf2-645d2186da0d',
+          type: 'entity',
+          target: {
+            entity_type: 'Kill-Chain-Phase',
+            column_based: null
+          },
+          attributes: [
+            {
+              key: 'kill_chain_name',
+              column: {
+                column_name: 'E',
+                configuration: null
+              },
+              based_on: null
+            },
+            {
+              key: 'phase_name',
+              column: {
+                column_name: 'E',
+                configuration: null
+              },
+              based_on: null
+            },
+            {
+              key: 'x_opencti_order',
+              column: {
+                column_name: 'I',
+                configuration: null
+              },
+              based_on: null
+            }
+          ]
+        },
+        {
+          id: '6cac2022-04bf-4b5a-b03f-0d2aa878609e',
+          type: 'entity',
+          target: {
+            entity_type: 'Report',
+            column_based: null
+          },
+          attributes: [
+            {
+              key: 'name',
+              column: {
+                column_name: 'D',
+                configuration: null
+              },
+              based_on: null
+            },
+            {
+              key: 'published',
+              column: {
+                column_name: 'E',
+                configuration: {
+                  pattern_date: 'DD.MM.YYYY',
+                  separator: null
+                }
+              },
+              default_values: [
+                {
+                  id: '2025-06-15T22:00:00.000Z',
+                  name: '2025-06-15T22:00:00.000Z'
+                }
+              ],
+              based_on: null
+            }
+          ]
+        },
+        {
+          id: 'e05fe3ac-1f15-49c2-bdb7-9062a6beb5aa',
+          type: 'relationship',
+          target: {
+            entity_type: 'belongs-to',
+            column_based: null
+          },
+          attributes: [
+            {
+              key: 'from',
+              column: null,
+              based_on: {
+                representations: [
+                  'cd610730-daa2-4d97-ba12-e277b74569d3'
+                ]
+              }
+            },
+            {
+              key: 'to',
+              column: null,
+              based_on: {
+                representations: [
+                  '90ab48b0-88ab-4165-b8e8-9232e6cfa566'
+                ]
+              }
+            },
+            {
+              key: 'killChainPhases',
+              column: {
+                column_name: null,
+                configuration: {
+                  pattern_date: null,
+                  separator: ','
+                }
+              },
+              based_on: {
+                representations: [
+                  '4c7165ef-12bd-48f0-aaf2-645d2186da0d'
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      id: '1f919f34-b610-40d6-b681-053cdb2fb026'
+    } as unknown as CsvMapperResolved;
+    const extractId = data.representations.map((r) => r.id);
+    const test = regenerateCsvMapperUUID(data);
+    // We verify that at least each id is different after regenerating UUID.
+    test.representations.forEach((r) => {
+      expect(extractId.includes(r.id)).toBeFalsy();
+      r.attributes.forEach((attr) => {
+        (attr?.based_on?.representations ?? []).forEach((rep) => {
+          expect(rep.includes(r.id)).toBeFalsy();
+        });
+      });
+    });
+  });
+
+  it('should duplicate with same CSV Mapper ID as we are link to an existing CSVMapper Id', async () => {
+    const CSV_FEED_INGESTER_TO_CREATE = {
+      input: {
+        authentication_type: 'none',
+        name: 'Single column',
+        uri: 'https://lists.blocklist.de/lists/all.txt',
+        csv_mapper_id: singleColumnCsvMapperId,
+        user_id: ADMIN_USER.id,
+        csv_mapper_type: 'id'
+      }
+    };
+    const createCsvFeedWithId = await queryAsAdmin({
+      query: gql`
+        mutation createSingleColumnCsvFeedsIngester($input: IngestionCsvAddInput!) {
+          ingestionCsvAdd(input: $input) {
+            id
+            entity_type
+            ingestion_running
+            csvMapper {
+              id
+            }
+          }
+        },
+      `,
+      variables: CSV_FEED_INGESTER_TO_CREATE
+    });
+    const csvFeedId = createCsvFeedWithId?.data?.ingestionCsvAdd?.id;
+    const csvMapperId = createCsvFeedWithId?.data?.ingestionCsvAdd?.csvMapper.id;
+
+    const getCsvFeedForDuplication = await queryAsAdmin({
+      query: gql`
+        query ingestionCsv($id: String!) {
+          ingestionCsv(id: $id) {
+            id
+            duplicateCsvMapper {
+              id
+            }
+          }
+        },
+      `,
+      variables: {
+        id: csvFeedId
+      }
+    });
+    expect(getCsvFeedForDuplication?.data?.ingestionCsv.duplicateCsvMapper.id).toEqual(csvMapperId);
+  });
+
+  it('should duplicate with different CSVMapperId as we inline CSVMapper', async () => {
+    const input : IngestionCsvAddInput = {
+      authentication_type: IngestionAuthType.None,
+      name: 'Single column inline and auto user',
+      uri: 'https://lists.blocklist.de/lists/all.txt',
+      csv_mapper: singleColumnCsvMapperForCsvFeedInline,
+      csv_mapper_type: IngestionCsvMapperType.Inline,
+      user_id: ADMIN_USER.id
+    };
+    const createCsvFeed = await queryAsAdmin({
+      query: gql`
+        mutation createSingleColumnCsvFeedsIngester($input: IngestionCsvAddInput!) {
+          ingestionCsvAdd(input: $input) {
+            id
+            entity_type
+            ingestion_running
+            csvMapper {
+              id
+            }
+          }
+        },
+      `,
+      variables: { input }
+    });
+    const csvFeedId = createCsvFeed?.data?.ingestionCsvAdd?.id;
+    const csvMapperId = createCsvFeed?.data?.ingestionCsvAdd?.csvMapper.id;
+
+    const getCsvFeedForDuplication = await queryAsAdmin({
+      query: gql`
+        query ingestionCsv($id: String!) {
+          ingestionCsv(id: $id) {
+            id
+            duplicateCsvMapper {
+              id
+            }
+          }
+        },
+      `,
+      variables: {
+        id: csvFeedId
+      }
+    });
+    expect(csvMapperId).not.toEqual(getCsvFeedForDuplication?.data?.ingestionCsv.duplicateCsvMapper.id);
   });
 });

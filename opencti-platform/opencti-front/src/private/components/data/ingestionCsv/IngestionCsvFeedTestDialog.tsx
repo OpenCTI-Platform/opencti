@@ -14,6 +14,7 @@ import { handleError } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { getAuthenticationValue } from '../../../../utils/ingestionAuthentificationUtils';
 import { FieldOption } from '../../../../utils/field';
+import { CsvMapperAddInput } from '../csvMapper/CsvMapperUtils';
 
 const ingestionCsvFeedTestMutation = graphql`
   mutation IngestionCsvFeedTestDialogMutation($input: IngestionCsvAddInput!) {
@@ -32,7 +33,7 @@ interface ingestionCsvFeedTestDialogProps {
     name: string,
     description?: string | null,
     authentication_type: string,
-    csv_mapper?: string,
+    csv_mapper?: CsvMapperAddInput,
     csv_mapper_type?: string,
     authentication_value?: string | null,
     uri: string,
@@ -75,7 +76,7 @@ const IngestionCsvFeedTestDialog: FunctionComponent<ingestionCsvFeedTestDialogPr
           ingestion_running: values.ingestion_running,
           user_id: typeof values.user_id === 'string' ? values.user_id : values.user_id.value,
           csv_mapper_id: typeof values.csv_mapper_id === 'string' ? values.csv_mapper_id : values.csv_mapper_id?.value,
-          csv_mapper: values.csv_mapper,
+          csv_mapper: values.csv_mapper ? JSON.stringify((values.csv_mapper)) : undefined,
           csv_mapper_type: values.csv_mapper_type,
           markings: values.markings.map((marking) => marking.value),
         },
