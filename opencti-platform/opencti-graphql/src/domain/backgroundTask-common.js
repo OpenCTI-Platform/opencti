@@ -247,7 +247,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
   }
 };
 
-export const createWorkForBackgroundTask = async (context, taskId, connectorId) => {
+const createWorkForBackgroundTask = async (context, taskId, connectorId) => {
   const connector = { internal_id: connectorId, connector_type: ConnectorType.ExternalImport };
   const args = { background_task_id: taskId, receivedTime: now() };
   return createWork(context, SYSTEM_USER, connector, `background task @ ${now()}`, connector.internal_id, args);

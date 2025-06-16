@@ -42,7 +42,6 @@ import {
   ACTION_TYPE_SHARE_MULTIPLE,
   ACTION_TYPE_UNSHARE,
   ACTION_TYPE_UNSHARE_MULTIPLE,
-  createWorkForBackgroundTask,
   TASK_TYPE_LIST,
   TASK_TYPE_QUERY,
   TASK_TYPE_RULE
@@ -51,7 +50,7 @@ import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { BackgroundTaskScope } from '../generated/graphql';
 import { getDraftContext } from '../utils/draftContext';
 import { addFilter } from '../utils/filtering/filtering-utils';
-import { getBestBackgroundConnectorId, pushToWorkerForConnector } from '../database/rabbitmq';
+import { pushToWorkerForConnector } from '../database/rabbitmq';
 import { updateExpectationsNumber } from '../domain/work';
 import { convertStoreToStix, convertTypeToStixType } from '../database/stix-2-1-converter';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
@@ -528,16 +527,6 @@ const workerTaskHandler = async (context, user, task, actionType, operations) =>
 const taskHandlerGenerator = (context) => {
   return async (rawTask) => {
     const task = { ...rawTask };
-    // If task was created before task migration to worker, we need to initialize a connector_id and and a work_id for it
-    if (!task.connector_id) {
-      task.connector_id = await getBestBackgroundConnectorId(context, SYSTEM_USER);
-      await updateTask(context, task.id, { connector_id: task.connector_id });
-    }
-    if (!task.work_id) {
-      const work = await createWorkForBackgroundTask(context, task.id, task.connector_id);
-      task.work_id = work.id;
-      await updateTask(context, task.id, { work_id: task.work_id });
-    }
     const isQueryTask = task.type === TASK_TYPE_QUERY;
     const isListTask = task.type === TASK_TYPE_LIST;
     const isRuleTask = task.type === TASK_TYPE_RULE;
