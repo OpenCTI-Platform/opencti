@@ -28,6 +28,7 @@ const DataTablePagination = ({
       viewStorage: {
         pageSize,
         numberOfElements: storedNOE = { original: 0, number: 0, symbol: '' },
+        redirectionMode,
       },
       helpers,
     },
@@ -98,6 +99,34 @@ const DataTablePagination = ({
         },
       ],
     },
+    {
+      label: t_i18n('Redirect mode'),
+      menuLevel: 0,
+      value: 'redirect-mode',
+      nestedOptions: [
+        {
+          label: t_i18n('Redirecting to the Overview section'),
+          value: 'overview',
+          menuLevel: 1,
+          onClick: () => helpers.handleAddProperty('redirectionMode', 'overview'),
+          selected: redirectionMode === 'overview',
+        },
+        {
+          label: t_i18n('Redirecting to the Knowledge section'),
+          value: 'knowledge',
+          menuLevel: 1,
+          onClick: () => helpers.handleAddProperty('redirectionMode', 'knowledge'),
+          selected: redirectionMode === 'knowledge',
+        },
+        {
+          label: t_i18n('Redirecting to the Content section'),
+          value: 'content',
+          menuLevel: 1,
+          onClick: () => helpers.handleAddProperty('redirectionMode', 'content'),
+          selected: redirectionMode === 'content',
+        },
+      ],
+    },
   ];
 
   return (
@@ -163,7 +192,7 @@ const DataTablePagination = ({
         menuButtonProps={{
           variant: 'outlined',
           size: 'small',
-          color: 'pagination',
+          color: 'primary',
           style: {
             padding: 6,
             minWidth: 36,
