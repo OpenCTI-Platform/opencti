@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, it, expect } from 'vitest';
+import gql from 'graphql-tag';
 import { addIngestionCsv, deleteIngestionCsv } from '../../../src/modules/ingestion/ingestion-csv-domain';
-import { PLATFORM_ORGANIZATION, USER_EDITOR } from '../../utils/testQuery';
+import { adminQuery, PLATFORM_ORGANIZATION, USER_EDITOR } from '../../utils/testQuery';
 import { type EditInput, IngestionAuthType, type IngestionCsvAddInput } from '../../../src/generated/graphql';
 import { enableCEAndUnSetOrganization, enableEEAndSetOrganization } from '../../utils/testQueryHelper';
 import { getFakeAuthUser, getOrganizationEntity } from '../../utils/domainQueryHelper';
@@ -10,6 +11,26 @@ import type { BasicGroupEntity } from '../../../src/types/store';
 import { findById as findUserById } from '../../../src/domain/user';
 import { executionContext, SYSTEM_USER } from '../../../src/utils/access';
 
+const DELETE_USER_QUERY = gql`
+    mutation userDelete($id: ID!) {
+        userEdit(id: $id) {
+            delete
+        }
+    }
+`;
+
+const READ_USER_QUERY = gql`
+    query user($id: String!) {
+        user(id: $id) {
+            id
+            name
+            description
+            user_confidence_level {
+                max_confidence
+            }
+        }
+    }
+`;
 describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
   const ingestionCreatedIds: string[] = [];
   let ingestionUser: AuthUser;
@@ -59,6 +80,15 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
     expect(userInDefaultGroup[0].name).toBe('Connectors'); // just to check that user is in default ingestion group
     expect(createdUser.groups.length, 'Platform default group should not apply, only default ingestion group').toBe(1);
     expect(createdUser.organizations.length, 'There is no platform org, so user should not have an organization').toBe(0);
+    // Delete just created user
+    await adminQuery({
+      query: DELETE_USER_QUERY,
+      variables: { id: createdUser.id },
+    });
+    // Verify no longer found
+    const queryResult = await adminQuery({ query: READ_USER_QUERY, variables: { id: createdUser.id } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.user).toBeNull();
   });
 
   it('should create a CSV Feed with auto user creation works fine with platform org', async () => {
@@ -87,6 +117,15 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
     expect(createdUser.groups.length, 'Platform default group should not apply, only default ingestion group').toBe(1);
     expect(createdUser.organizations.length, 'There is one platform org, so user should have one organization').toBe(1);
     expect(createdUser.organizations[0].id).toBe(platformOrganization.id);
+    // Delete just created user
+    await adminQuery({
+      query: DELETE_USER_QUERY,
+      variables: { id: createdUser.id },
+    });
+    // Verify no longer found
+    const queryResult = await adminQuery({ query: READ_USER_QUERY, variables: { id: createdUser.id } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.user).toBeNull();
   });
 
   it('should create a CSV Feed with System user works fine', async () => {
@@ -139,6 +178,15 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
     const userInDefaultGroup: BasicGroupEntity[] = createdUser.groups.filter((group: BasicGroupEntity) => group.id === ingestionDefaultGroupId);
     expect(userInDefaultGroup[0].name).toBe('Connectors'); // just to check that user is in default ingestion group
     expect(createdUser.groups.length, 'Platform default group should not apply, only default ingestion group').toBe(1);
+    // Delete just created user
+    await adminQuery({
+      query: DELETE_USER_QUERY,
+      variables: { id: createdUser.id },
+    });
+    // Verify no longer found
+    const queryResult = await adminQuery({ query: READ_USER_QUERY, variables: { id: createdUser.id } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.user).toBeNull();
   });
 
   it('should create a CSV Feed with auto user creation be refused when no default group', async () => {
@@ -161,5 +209,10 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
     // put back default group
     input = [{ key: 'auto_integration_assignation', value: ['global'] }];
     await groupEditField(currentTestContext, SYSTEM_USER, ingestionDefaultGroupId, input);
+
+    const ingestionDefaultGroups: BasicGroupEntity[] = await findDefaultIngestionGroups(currentTestContext, ingestionUser) as BasicGroupEntity[];
+    expect(ingestionDefaultGroups.length).toBe(1);
+    expect(ingestionDefaultGroups[0].name).toBe('Connectors');
+    expect(ingestionDefaultGroups[0].auto_integration_assignation).toStrictEqual(['global']);
   });
 });

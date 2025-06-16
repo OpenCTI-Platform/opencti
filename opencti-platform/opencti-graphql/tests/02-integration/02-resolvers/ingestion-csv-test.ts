@@ -1,12 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import {
-  ADMIN_USER,
-  queryAsAdmin,
-  testContext,
-  USER_DISINFORMATION_ANALYST,
-  USER_PARTICIPATE,
-} from '../../utils/testQuery';
+import { ADMIN_USER, adminQuery, queryAsAdmin, testContext, USER_DISINFORMATION_ANALYST, USER_PARTICIPATE } from '../../utils/testQuery';
 import { createUploadFromTestDataFile, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { patchCsvIngestion } from '../../../src/modules/ingestion/ingestion-csv-domain';
 import { now } from '../../../src/utils/format';
@@ -14,6 +8,27 @@ import { SYSTEM_USER } from '../../../src/utils/access';
 import pjson from '../../../package.json';
 import { IngestionAuthType, type IngestionCsvAddInput, IngestionCsvMapperType } from '../../../src/generated/graphql';
 import { findById as findUserById } from '../../../src/domain/user';
+
+const DELETE_USER_QUERY = gql`
+    mutation userDelete($id: ID!) {
+        userEdit(id: $id) {
+            delete
+        }
+    }
+`;
+
+const READ_USER_QUERY = gql`
+    query user($id: String!) {
+        user(id: $id) {
+            id
+            name
+            description
+            user_confidence_level {
+                max_confidence
+            }
+        }
+    }
+`;
 
 describe('CSV ingestion resolver standard behavior', () => {
   let singleColumnCsvMapperId = '';
@@ -73,6 +88,18 @@ describe('CSV ingestion resolver standard behavior', () => {
     expect(createSingleColumnCsvFeedsWithInlineMapperIngesterQueryResult?.data?.ingestionCsvAdd?.ingestion_running).toBeFalsy();
   });
 
+  it('should count default groups be one from initialization', async () => {
+    const defaultIngestionGroupCountResult = await queryAsUserWithSuccess(USER_DISINFORMATION_ANALYST.client, {
+      query: gql`
+        query IngestionCsvCreationUserHandlingDefaultGroupForIngestionUsersQuery {
+          defaultIngestionGroupCount
+        }
+      `,
+      variables: {}
+    });
+    expect(defaultIngestionGroupCountResult.data.defaultIngestionGroupCount).toBe(1);
+  });
+
   it('should create a CSV feeds ingester with inline CSV Mapper and auto user', async () => {
     const input : IngestionCsvAddInput = {
       authentication_type: IngestionAuthType.None,
@@ -108,6 +135,15 @@ describe('CSV ingestion resolver standard behavior', () => {
     const createdUser = await findUserById(testContext, ADMIN_USER, userIdCreated);
     expect(createdUser.name).toBe('[F] Single column inline and auto user');
     expect(createdUser.user_email).toContain('@opencti.invalid');
+    // Delete just created user
+    await adminQuery({
+      query: DELETE_USER_QUERY,
+      variables: { id: createdUser.id },
+    });
+    // Verify no longer found
+    const queryResult = await adminQuery({ query: READ_USER_QUERY, variables: { id: createdUser.id } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.user).toBeNull();
   });
 
   it('should create a CSV feeds ingester with authentication', async () => {

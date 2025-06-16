@@ -60,7 +60,7 @@ export const findCsvMapperForIngestionById = (context: AuthContext, user: AuthUs
 };
 
 export const defaultIngestionGroupsCount = async (context: AuthContext) => {
-  // We use SYSTEM_USER because manage ingestion should be enough to create a CSV Feed
+  // We use SYSTEM_USER because manage ingestion should be enough to create an ingestion Feed
   const defaultGroupLength = await findDefaultIngestionGroups(context, SYSTEM_USER);
   return defaultGroupLength.length ?? 0;
 };
