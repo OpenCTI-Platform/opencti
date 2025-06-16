@@ -531,21 +531,27 @@ const workerTaskHandler = async (context, user, task, actionType, operations) =>
   return updateTask(context, task.id, { completed: true });
 };
 
+// If task was created before task migration to worker, we need to initialize a connector_id and and a work_id for it
+const handleTaskMigrationToWorker = async (context, task) => {
+  const updatedTask = task;
+  if (updatedTask.task_expected_number > 0) {
+    if (!updatedTask.connector_id) {
+      updatedTask.connector_id = await getBestBackgroundConnectorId(context, SYSTEM_USER);
+      await updateTask(context, updatedTask.id, { connector_id: updatedTask.connector_id });
+    }
+    if (!updatedTask.work_id) {
+      const work = await createWorkForBackgroundTask(context, updatedTask.id, updatedTask.connector_id);
+      updatedTask.work_id = work.id;
+      await updateTask(context, updatedTask.id, { work_id: updatedTask.work_id });
+    }
+  }
+  return updatedTask;
+};
+
 const taskHandlerGenerator = (context) => {
   return async (rawTask) => {
-    const task = { ...rawTask };
-    if (task.task_expected_number > 0) {
-      // If task was created before task migration to worker, we need to initialize a connector_id and and a work_id for it
-      if (!task.connector_id) {
-        task.connector_id = await getBestBackgroundConnectorId(context, SYSTEM_USER);
-        await updateTask(context, task.id, { connector_id: task.connector_id });
-      }
-      if (!task.work_id) {
-        const work = await createWorkForBackgroundTask(context, task.id, task.connector_id);
-        task.work_id = work.id;
-        await updateTask(context, task.id, { work_id: task.work_id });
-      }
-    }
+    const initTask = { ...rawTask };
+    const task = await handleTaskMigrationToWorker(context, initTask);
     const isQueryTask = task.type === TASK_TYPE_QUERY;
     const isListTask = task.type === TASK_TYPE_LIST;
     const isRuleTask = task.type === TASK_TYPE_RULE;
