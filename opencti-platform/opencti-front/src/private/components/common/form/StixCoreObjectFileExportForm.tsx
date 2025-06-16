@@ -395,13 +395,15 @@ const StixCoreObjectFileExportForm = ({
                       optionLength={80}
                     />
                     )}
-                    {values.connector.value === BUILT_IN_FROM_TEMPLATE.value && values.format === 'application/pdf' && (
-                      <FintelDesignField
-                        name="fintelDesign"
-                        label={t_i18n('Fintel design')}
-                        style={fieldSpacingContainerStyle}
-                      />
-                    )}
+                    {((values.connector.value === BUILT_IN_FROM_TEMPLATE.value && values.format === 'application/pdf')
+                      || (values.connector.value === BUILT_IN_HTML_TO_PDF.value && values.fileToExport?.value.startsWith('fromTemplate/')))
+                      && (
+                        <FintelDesignField
+                          name="fintelDesign"
+                          label={t_i18n('Fintel design')}
+                          style={fieldSpacingContainerStyle}
+                        />
+                      )}
                     {!isBuiltInConnector(values.connector.value) && (
                     <Field
                       component={SelectField}
