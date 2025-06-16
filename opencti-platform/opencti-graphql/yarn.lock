@@ -3164,16 +3164,14 @@ __metadata:
   linkType: hard
 
 "@langchain/mistralai@npm:^0.2.0":
-  version: 0.2.0
-  resolution: "@langchain/mistralai@npm:0.2.0"
+  version: 0.2.1
+  resolution: "@langchain/mistralai@npm:0.2.1"
   dependencies:
     "@mistralai/mistralai": "npm:^1.3.1"
     uuid: "npm:^10.0.0"
-    zod: "npm:^3.23.8"
-    zod-to-json-schema: "npm:^3.22.4"
   peerDependencies:
-    "@langchain/core": ">=0.3.7 <0.4.0"
-  checksum: 10/4eef5208b3bfa8f37e74458fce4d5fe9ca5a8a39043c574c82d39807a7a154a4e385deeeef6dfcbbe5c937d6ac6a1d5d033fc920247a27e040c21035722fa3d3
+    "@langchain/core": ">=0.3.58 <0.4.0"
+  checksum: 10/1a42c8032c6d2e25e92497c30ab85a5d79985e789b1480abe165d563e07770ad8da026d2909c5df34986a3d331208754d9615da4d07674f01fa8f917ec2aa5bf
   languageName: node
   linkType: hard
 
@@ -15271,7 +15269,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod-to-json-schema@npm:^3.22.4, zod-to-json-schema@npm:^3.24.1":
+"zod-to-json-schema@npm:^3.24.1":
   version: 3.24.4
   resolution: "zod-to-json-schema@npm:3.24.4"
   peerDependencies:
@@ -15280,7 +15278,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:3.24.2, zod@npm:^3.22.4, zod@npm:^3.23.8":
+"zod@npm:3.24.2, zod@npm:^3.22.4":
   version: 3.24.2
   resolution: "zod@npm:3.24.2"
   checksum: 10/604c62a8cf8e330d78b106a557f4b44f5d14845d20b1360a423ccc09b58cb8525ccf7e4b40cf1bd4852d22393d2c67774b5817ec5a2fedab25f543b36ed15943
