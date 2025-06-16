@@ -64,6 +64,7 @@ const localStorageToPaginationOptions = (
   delete localOptions.view;
   delete localOptions.zoom;
   delete localOptions.latestAddFilterId;
+  delete localOptions.latestAddFilterKey;
   delete localOptions.pageSize;
   delete localOptions.savedFilters;
   // Rebuild some pagination options
@@ -281,6 +282,7 @@ export const usePaginationLocalStorage = <U>(
         ...viewStorage,
         filters: JSON.parse(savedFilters.filters),
         latestAddFilterId: undefined,
+        latestAddFilterKey: undefined,
         savedFilters,
       };
       setValue(newValue);
@@ -316,6 +318,7 @@ export const usePaginationLocalStorage = <U>(
           ...viewStorage,
           filters: handleRemoveFilterUtil({ filters, id }),
           latestAddFilterId: undefined,
+          latestAddFilterKey: undefined,
         };
         setValue(newValue);
         dispatch(`${key}_paginationStorage`, newValue);
@@ -480,6 +483,7 @@ export const usePaginationLocalStorage = <U>(
           ...viewStorage,
           filters: handleRemoveRepresentationFilterUtil({ filters, id, value }),
           latestAddFilterId: undefined,
+          latestAddFilterKey: undefined,
         };
         setValue(newValue);
         dispatch(`${key}_paginationStorage`, newValue);
@@ -498,6 +502,7 @@ export const usePaginationLocalStorage = <U>(
                 operator: findCorrespondingFilter.operator === 'not_eq' ? 'not_nil' : 'nil',
               }),
               latestAddFilterId: id,
+              latestAddFilterKey: findCorrespondingFilter.key,
             };
             setValue(newValue);
             dispatch(`${key}_paginationStorage`, newValue);
@@ -509,6 +514,7 @@ export const usePaginationLocalStorage = <U>(
           ...viewStorage,
           filters: handleAddRepresentationFilterUtil({ filters, id, value }),
           latestAddFilterId: undefined,
+          latestAddFilterKey: undefined,
         };
         setValue(newValue);
         dispatch(`${key}_paginationStorage`, newValue);
@@ -524,6 +530,7 @@ export const usePaginationLocalStorage = <U>(
           ...viewStorage,
           filters: handleChangeRepresentationFilterUtil({ filters, id, oldValue, newValue }),
           latestAddFilterId: undefined,
+          latestAddFilterKey: undefined,
         };
         setValue(newStorageValue);
         dispatch(`${key}_paginationStorage`, newStorageValue);
@@ -532,6 +539,7 @@ export const usePaginationLocalStorage = <U>(
           ...viewStorage,
           filters: handleRemoveRepresentationFilterUtil({ filters, id, value: oldValue }),
           latestAddFilterId: undefined,
+          latestAddFilterKey: undefined,
         };
         setValue(newStorageValue);
         dispatch(`${key}_paginationStorage`, newStorageValue);
@@ -540,6 +548,7 @@ export const usePaginationLocalStorage = <U>(
           ...viewStorage,
           filters: handleAddRepresentationFilterUtil({ filters, id, value: newValue }),
           latestAddFilterId: undefined,
+          latestAddFilterKey: undefined,
         };
         setValue(newStorageValue);
         dispatch(`${key}_paginationStorage`, newStorageValue);
@@ -554,6 +563,7 @@ export const usePaginationLocalStorage = <U>(
         ...viewStorage,
         filters: handleReplaceFilterValuesUtil({ filters, id, values }),
         latestAddFilterId: undefined,
+        latestAddFilterKey: undefined,
       };
       setValue(newStorageValue);
       dispatch(`${key}_paginationStorage`, newStorageValue);
@@ -565,6 +575,7 @@ export const usePaginationLocalStorage = <U>(
           ...viewStorage,
           filters: handleAddSingleValueFilterUtil({ filters, id, valueId }),
           latestAddFilterId: undefined,
+          latestAddFilterKey: undefined,
         };
         setValue(newValue);
         dispatch(`${key}_paginationStorage`, newValue);
@@ -629,6 +640,7 @@ export const usePaginationLocalStorage = <U>(
           ...viewStorage,
           filters: newBaseFilters,
           latestAddFilterId: undefined,
+          latestAddFilterKey: undefined,
         };
         setValue(newValue);
         dispatch(`${key}_paginationStorage`, newValue);
@@ -641,6 +653,7 @@ export const usePaginationLocalStorage = <U>(
           ...viewStorage,
           filters: handleSwitchLocalModeUtil({ filters, filter }),
           latestAddFilterId: undefined,
+          latestAddFilterKey: undefined,
         };
         setValue(newValue);
         dispatch(`${key}_paginationStorage`, newValue);
@@ -721,6 +734,7 @@ export const usePaginationLocalStorage = <U>(
         ...viewStorage,
         filters,
         latestAddFilterId: undefined,
+        latestAddFilterKey: undefined,
       };
       setValue(newValue);
       dispatch(`${key}_paginationStorage`, newValue);
@@ -731,6 +745,7 @@ export const usePaginationLocalStorage = <U>(
         ...viewStorage,
         filters: handleAddFilterWithEmptyValueUtil({ filters: filters ?? emptyFilterGroup, filter }),
         latestAddFilterId: filter.id,
+        latestAddFilterKey: filter.key,
       };
       setValue(newValue);
       dispatch(`${key}_paginationStorage`, newValue);
@@ -742,6 +757,7 @@ export const usePaginationLocalStorage = <U>(
           ...viewStorage,
           filters: handleChangeOperatorFiltersUtil({ filters, id, operator }),
           latestAddFilterId: undefined,
+          latestAddFilterKey: undefined,
         };
         setValue(newValue);
         dispatch(`${key}_paginationStorage`, newValue);
@@ -772,12 +788,10 @@ export const usePaginationLocalStorage = <U>(
     } as FilterGroup;
     filters = isFilterGroupNotEmpty(newFilters) ? newFilters : undefined;
   }
-
   const cleanPaginationOptions = {
     ...paginationOptions,
     filters,
   };
-
   return {
     viewStorage,
     helpers,

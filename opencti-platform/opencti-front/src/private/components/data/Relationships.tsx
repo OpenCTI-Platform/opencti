@@ -194,7 +194,7 @@ export const relationshipsStixCoreRelationshipsLinesFragment = graphql`
       defaultValue: created
     }
     orderMode: { type: "OrderingMode", defaultValue: desc }
-    filters: { type: "FilterGroup" }
+    filters: { type: "FilterGroup" },
   )
   @refetchable(queryName: "RelationshipsStixCoreRelationshipsLinesRefetchQuery") {
     stixCoreRelationships(

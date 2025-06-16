@@ -68,6 +68,14 @@ export const findFiltersRepresentatives = async (context: AuthContext, user: Aut
       color: null,
     });
   }
+  if (idsToResolve.includes('dynamic_regarding_of')) {
+    filtersRepresentatives.push({
+      id: 'dynamic_regarding_of',
+      value: 'Custom filters',
+      entity_type: 'Instance',
+      color: null,
+    });
+  }
   // resolve ME_FILTER_VALUE differently
   if (idsToResolve.includes(ME_FILTER_VALUE)) {
     filtersRepresentatives.push({

@@ -1075,6 +1075,7 @@
   "Duplicate a JSON feed": "复制一个 JSON 源",
   "Duplicate a JSON mapper": "复制一个 JSON 映射器",
   "Duplicate the dashboard": "复制仪表板",
+  "Dynamic filter": "动态过滤器",
   "Dynamic source filters": "动态源过滤器",
   "Dynamic target filters": "动态目标过滤器",
   "Each line must contain a valid email address": "每行必须包含一个有效的电子邮件地址",

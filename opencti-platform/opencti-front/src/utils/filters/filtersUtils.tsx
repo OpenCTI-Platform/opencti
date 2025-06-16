@@ -352,7 +352,7 @@ export const useBuildFiltersForTemplateWidgets = () => {
 // return the i18n label corresponding to a filter value
 export const filterValue = (filterKey: string, value?: string | null, filterType?: string, filterOperator?: string) => {
   const { t_i18n, nsd, smhd } = useFormatter();
-  if (filterKey === 'regardingOf') {
+  if (filterKey === 'regardingOf' || filterKey === 'dynamicRegardingOf' || filterKey === 'dynamic' || filterKey === 'dynamicFrom' || filterKey === 'dynamicTo') {
     return JSON.stringify(value);
   }
   if (
@@ -396,6 +396,13 @@ export const isFilterEditable = (filtersRestrictions: FiltersRestrictions | unde
 // TODO:
 //  these functions are used to sanitize the keys inside filters before serialization and saving into backend
 //  This is due to format inconsistencies between back and front formats and will be unnecessary once fixed.
+
+export const sanitizeFiltersStructure = (filterGroup: FilterGroup): FilterGroup => ({
+  ...filterGroup,
+  filters: (filterGroup.filters || []).filter(
+    (filter) => Array.isArray(filter.values) && filter.values.length > 0,
+  ),
+});
 
 // when a filter group is serialized, we need to make sure the keys are all arrays as per graphql TS typing emission
 // GQL input coercion allows to use non-array value of same type as inside the array
@@ -668,8 +675,8 @@ export const getDefaultOperatorFilter = (
  * Subkeys are nested inside special filter that combine several fields (filter values is not a string[] but object[])
  */
 export const getAvailableOperatorForFilterSubKey = (filterKey: string, subKey: string): string[] => {
-  if (filterKey === 'regardingOf') {
-    if (subKey === 'id' || subKey === 'relationship_type') {
+  if (filterKey === 'regardingOf' || filterKey === 'dynamicRegardingOf') {
+    if ((subKey === 'id' || subKey === 'dynamic') || subKey === 'relationship_type') {
       return ['eq'];
     }
   }

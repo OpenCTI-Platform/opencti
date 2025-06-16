@@ -17,6 +17,8 @@ export interface LocalStorage {
     original?: number
   }
   filters?: FilterGroup
+  dynamicFromFilters?: FilterGroup
+  dynamicToFilters?: FilterGroup
   id?: string
   searchTerm?: string
   category?: string
@@ -36,6 +38,7 @@ export interface LocalStorage {
   timeField?: string
   dashboard?: string
   latestAddFilterId?: string
+  latestAddFilterKey?: string
   pageSize?: string
   savedFilters?: SavedFiltersSelectionData
 }

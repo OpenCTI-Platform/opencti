@@ -76,7 +76,7 @@ export const handleAddSingleValueFilterUtil = ({ filters, id, valueId }: Filters
 
 export const handleReplaceFilterValuesUtil = ({ filters, id, values }: FiltersLocalStorageUtilProps<{
   id: string,
-  values: string[],
+  values: string[] | FilterGroup[],
 }>): FilterGroup => {
   return updateFilters(filters, (f) => (f.id === id ? { ...f, values } : f));
 };

@@ -11,6 +11,7 @@ import {
   CONTEXT_OBJECT_LABEL_FILTER,
   CONTEXT_OBJECT_MARKING_FILTER,
   filterKeysWithMeValue,
+  INSTANCE_DYNAMIC_REGARDING_OF,
   INSTANCE_REGARDING_OF,
   ME_FILTER_VALUE,
   MEMBERS_GROUP_FILTER,
@@ -20,6 +21,8 @@ import {
   OPINIONS_METRICS_MEAN_FILTER,
   OPINIONS_METRICS_MIN_FILTER,
   OPINIONS_METRICS_TOTAL_FILTER,
+  RELATION_DYNAMIC_FROM_FILTER,
+  RELATION_DYNAMIC_TO_FILTER,
   SIGHTED_BY_FILTER,
   specialFilterKeys
 } from './filtering-constants';
@@ -157,16 +160,62 @@ export const extractFilterGroupValues = (inputFilters: FilterGroup, key: string 
     if (f.key.includes(INSTANCE_REGARDING_OF)) {
       const regardingIds = f.values.find((v) => v.key === 'id')?.values ?? [];
       ids.push(...regardingIds);
+    } else if (f.key.includes(INSTANCE_DYNAMIC_REGARDING_OF) || f.key.includes(RELATION_DYNAMIC_FROM_FILTER) || f.key.includes(RELATION_DYNAMIC_TO_FILTER)) {
+      ids.push('dynamic');
     } else {
       ids.push(...f.values);
     }
   });
-
   // recurse on filter groups
   if (filterGroups.length > 0) {
     ids.push(...filterGroups.map((group) => extractFilterGroupValues(group, key, reverse)).flat());
   }
   return uniq(ids);
+};
+
+/**
+ * extract all the values (dynamic filters) from a filter group
+ * if key is specified: extract all the values corresponding to the specified keys
+ * if key is specified and reverse=true: extract all the ids NOT corresponding to any key
+ */
+export const extractDynamicFilterGroupValues = (inputFilters: FilterGroup, key: string | string[] | null = null, reverse = false): FilterGroup[] => {
+  const keysToKeep = Array.isArray(key) ? key : [key];
+  const { filters = [], filterGroups = [] } = inputFilters;
+  let filteredFilters = [];
+  if (key) {
+    filteredFilters = reverse
+    // we prefer to handle single key and multi keys here, but theoretically it should be arrays every time
+      ? filters.filter((f) => (Array.isArray(f.key) ? f.key.every((k) => !keysToKeep.includes(k)) : !keysToKeep.includes(f.key)))
+      : filters.filter((f) => (Array.isArray(f.key) ? f.key.some((k) => keysToKeep.includes(k)) : keysToKeep.includes(f.key)));
+  } else {
+    filteredFilters = filters;
+  }
+  const ids = [];
+  // we need to extract the ids that need representatives resolution
+  filteredFilters.forEach((f) => {
+    if (f.key.includes(INSTANCE_DYNAMIC_REGARDING_OF) || f.key.includes(RELATION_DYNAMIC_FROM_FILTER) || f.key.includes(RELATION_DYNAMIC_TO_FILTER)) {
+      ids.push(...f.values);
+    }
+  });
+  // recurse on filter groups
+  if (filterGroups.length > 0) {
+    ids.push(...filterGroups.map((group) => extractDynamicFilterGroupValues(group, key, reverse)).flat());
+  }
+  return ids;
+};
+
+/**
+ * clear selected key(s) from filters
+ */
+export const clearKeyFromFilterGroup = (inputFilters: FilterGroup, key: string | string[]): FilterGroup => {
+  const keysToRemove = Array.isArray(key) ? key : [key];
+  const { filters = [], filterGroups = [] } = inputFilters;
+  const filteredFilters = filters.filter((f) => (Array.isArray(f.key) ? f.key.every((k) => !keysToRemove.includes(k)) : !keysToRemove.includes(f.key)));
+  let filteredFilterGroups: FilterGroup[] = [];
+  if (filterGroups.length > 0) {
+    filteredFilterGroups = filterGroups.map((group) => clearKeyFromFilterGroup(group, key));
+  }
+  return { filters: filteredFilters, filterGroups: filteredFilterGroups, mode: inputFilters.mode };
 };
 
 /**

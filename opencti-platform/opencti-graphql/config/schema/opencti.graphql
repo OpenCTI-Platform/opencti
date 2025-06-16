@@ -13847,6 +13847,8 @@ type Query {
     confidences: [Int]
     search: String
     filters: FilterGroup
+    dynamicFrom: FilterGroup
+    dynamicTo: FilterGroup
     stix: Boolean
   ): StixCoreRelationshipConnection @auth(for: [KNOWLEDGE])
   stixCoreRelationshipsTimeSeries(
