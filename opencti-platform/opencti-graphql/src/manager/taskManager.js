@@ -90,12 +90,11 @@ const findTasksToExecute = async (context) => {
 };
 
 export const taskRule = async (context, user, task, callback) => {
-  const { task_position, rule, enable } = task;
+  const { rule, enable } = task;
   const ruleDefinition = await getRule(context, user, rule);
   if (enable) {
     const { scan } = ruleDefinition;
-    // task_position is no longer used, but we still handle it to properly process task that were processing before task migrated to worker
-    const options = { baseData: true, orderMode: 'asc', orderBy: 'updated_at', ...buildEntityFilters(scan.types, scan), after: task_position };
+    const options = { baseData: true, orderMode: 'asc', orderBy: 'updated_at', ...buildEntityFilters(scan.types, scan) };
     const finalOpts = { ...options, connectionFormat: false, callback };
     await elList(context, RULE_MANAGER_USER, READ_DATA_INDICES_WITHOUT_INFERRED, finalOpts);
   } else {
@@ -104,8 +103,7 @@ export const taskRule = async (context, user, task, callback) => {
       filters: [{ key: `${RULE_PREFIX}${rule}`, values: ['EXISTS'] }],
       filterGroups: [],
     };
-    // task_position is no longer used, but we still handle it to properly process task that were processing before task migrated to worker
-    const options = { baseData: true, orderMode: 'asc', orderBy: 'updated_at', filters, after: task_position };
+    const options = { baseData: true, orderMode: 'asc', orderBy: 'updated_at', filters };
     const finalOpts = { ...options, connectionFormat: false, callback };
     await elList(context, RULE_MANAGER_USER, READ_DATA_INDICES, finalOpts);
   }
@@ -122,11 +120,7 @@ export const taskQuery = async (context, user, task, callback) => {
 };
 
 export const taskList = async (context, user, task, callback) => {
-  const { task_position, task_ids, scope, task_order_mode } = task;
-  // task_position is no longer used, but we still handle it to properly process task that were processing before task migrated to worker
-  const isUndefinedPosition = R.isNil(task_position) || R.isEmpty(task_position);
-  const startIndex = isUndefinedPosition ? 0 : task_ids.findIndex((id) => task_position === id) + 1;
-  const ids = task_ids.slice(startIndex);
+  const { task_ids, scope, task_order_mode } = task;
   const options = {
     orderMode: task_order_mode || 'desc',
     // processing elements in descending order makes possible restoring from trash elements with dependencies
@@ -134,7 +128,7 @@ export const taskList = async (context, user, task, callback) => {
     baseData: true,
     includeDeletedInDraft: true,
   };
-  const elements = await internalFindByIds(context, user, ids, options);
+  const elements = await internalFindByIds(context, user, task_ids, options);
   callback(elements);
 };
 
