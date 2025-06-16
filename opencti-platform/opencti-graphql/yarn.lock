@@ -2735,16 +2735,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graphql-tools/import@npm:7.0.18":
-  version: 7.0.18
-  resolution: "@graphql-tools/import@npm:7.0.18"
+"@graphql-tools/import@npm:7.0.19":
+  version: 7.0.19
+  resolution: "@graphql-tools/import@npm:7.0.19"
   dependencies:
     "@graphql-tools/utils": "npm:^10.8.6"
     resolve-from: "npm:5.0.0"
     tslib: "npm:^2.4.0"
   peerDependencies:
     graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
-  checksum: 10/739086fcaffefa8efa38648477fd4aea41a87b5fa3f78552a2a7b6249dce1d84d84e164e61c73811d6ce9e8f5754b6bab675f7255482bf5ba080f83759a37138
+  checksum: 10/78ce39f05d30894d850201669b3acad774406514ae7a4c13058f52465786405b6bc59f4255f01bcd046bee74bbbcde54a49a6d23fae7d7666ed7abdfca8fbae3
   languageName: node
   linkType: hard
 
@@ -11737,7 +11737,7 @@ __metadata:
     "@graphql-codegen/introspection": "npm:4.0.3"
     "@graphql-codegen/typescript": "npm:4.1.6"
     "@graphql-codegen/typescript-resolvers": "npm:4.5.0"
-    "@graphql-tools/import": "npm:7.0.18"
+    "@graphql-tools/import": "npm:7.0.19"
     "@graphql-tools/merge": "npm:9.0.24"
     "@graphql-tools/schema": "npm:10.0.23"
     "@graphql-tools/utils": "npm:10.8.6"
