@@ -48,12 +48,12 @@ export const buildArgsFromDynamicFilters = async (context, user, args) => {
 
 export const findAll = async (context, user, args) => {
   let finalArgs = args;
-  const finalFilters = args?.filters;
+  const finalFilters = args.filters;
   if (finalFilters) {
     const dynamicFrom = extractDynamicFilterGroupValues(finalFilters, RELATION_DYNAMIC_FROM_FILTER);
     if (dynamicFrom && dynamicFrom.length > 0 && isFilterGroupNotEmpty(dynamicFrom[0])) {
       finalArgs = {
-        ...args,
+        ...finalArgs,
         dynamicFrom: dynamicFrom[0],
         filters: clearKeyFromFilterGroup(finalArgs.filters, RELATION_DYNAMIC_FROM_FILTER),
       };
@@ -61,7 +61,7 @@ export const findAll = async (context, user, args) => {
     const dynamicTo = extractDynamicFilterGroupValues(finalFilters, RELATION_DYNAMIC_TO_FILTER);
     if (dynamicTo && dynamicTo.length > 0 && isFilterGroupNotEmpty(dynamicTo[0])) {
       finalArgs = {
-        ...args,
+        ...finalArgs,
         dynamicTo: dynamicTo[0],
         filters: clearKeyFromFilterGroup(finalArgs.filters, RELATION_DYNAMIC_TO_FILTER),
       };
