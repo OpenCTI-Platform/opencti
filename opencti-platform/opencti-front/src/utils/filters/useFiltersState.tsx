@@ -62,7 +62,7 @@ const useFiltersState = (initFilters: FilterGroup | null = emptyFilterGroup, def
         latestAddFilterId: undefined,
       }));
     },
-    handleReplaceFilterValues: (id: string, values: string[]) => {
+    handleReplaceFilterValues: (id: string, values: string[] | FilterGroup[]) => {
       setFiltersState((prevState) => ({
         ...prevState,
         filters: handleReplaceFilterValuesUtil({ filters: prevState.filters, id, values }),

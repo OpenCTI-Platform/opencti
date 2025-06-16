@@ -140,7 +140,7 @@ export const extractFilterKeys = (filterGroup: FilterGroup): string[] => {
  * if key is specified: extract all the values corresponding to the specified keys
  * if key is specified and reverse=true: extract all the ids NOT corresponding to any key
  */
-export const extractFilterGroupValues = (inputFilters: FilterGroup, key: string | string[] | null = null, reverse = false, getDynamic = false): (string | FilterGroup)[] => {
+export const extractFilterGroupValues = (inputFilters: FilterGroup, key: string | string[] | null = null, reverse = false, getDynamic = false): string[] => {
   const keysToKeep = Array.isArray(key) ? key : [key];
   const { filters = [], filterGroups = [] } = inputFilters;
   let filteredFilters = [];
@@ -161,21 +161,47 @@ export const extractFilterGroupValues = (inputFilters: FilterGroup, key: string 
       const regardingIds = f.values.find((v) => v.key === 'id')?.values ?? [];
       ids.push(...regardingIds);
     } else if (f.key.includes(INSTANCE_DYNAMIC_REGARDING_OF) || f.key.includes(RELATION_DYNAMIC_FROM_FILTER) || f.key.includes(RELATION_DYNAMIC_TO_FILTER)) {
-      if (getDynamic) {
-        ids.push(...f.values);
-      } else {
-        ids.push('dynamic');
-      }
+      ids.push('dynamic');
     } else {
       ids.push(...f.values);
     }
   });
-
   // recurse on filter groups
   if (filterGroups.length > 0) {
     ids.push(...filterGroups.map((group) => extractFilterGroupValues(group, key, reverse, getDynamic)).flat());
   }
   return getDynamic ? ids : uniq(ids as string[]);
+};
+
+/**
+ * extract all the values (dynamic filters) from a filter group
+ * if key is specified: extract all the values corresponding to the specified keys
+ * if key is specified and reverse=true: extract all the ids NOT corresponding to any key
+ */
+export const extractDynamicFilterGroupValues = (inputFilters: FilterGroup, key: string | string[] | null = null, reverse = false): FilterGroup[] => {
+  const keysToKeep = Array.isArray(key) ? key : [key];
+  const { filters = [], filterGroups = [] } = inputFilters;
+  let filteredFilters = [];
+  if (key) {
+    filteredFilters = reverse
+    // we prefer to handle single key and multi keys here, but theoretically it should be arrays every time
+      ? filters.filter((f) => (Array.isArray(f.key) ? f.key.every((k) => !keysToKeep.includes(k)) : !keysToKeep.includes(f.key)))
+      : filters.filter((f) => (Array.isArray(f.key) ? f.key.some((k) => keysToKeep.includes(k)) : keysToKeep.includes(f.key)));
+  } else {
+    filteredFilters = filters;
+  }
+  const ids = [];
+  // we need to extract the ids that need representatives resolution
+  filteredFilters.forEach((f) => {
+    if (f.key.includes(INSTANCE_DYNAMIC_REGARDING_OF) || f.key.includes(RELATION_DYNAMIC_FROM_FILTER) || f.key.includes(RELATION_DYNAMIC_TO_FILTER)) {
+      ids.push(...f.values);
+    }
+  });
+  // recurse on filter groups
+  if (filterGroups.length > 0) {
+    ids.push(...filterGroups.map((group) => extractDynamicFilterGroupValues(group, key, reverse)).flat());
+  }
+  return ids;
 };
 
 /**
