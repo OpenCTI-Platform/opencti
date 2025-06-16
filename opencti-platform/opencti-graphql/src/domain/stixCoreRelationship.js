@@ -21,7 +21,7 @@ import { RELATION_DYNAMIC_FROM_FILTER, RELATION_DYNAMIC_TO_FILTER } from '../uti
 
 export const findAll = async (context, user, args) => {
   let finalArgs = args;
-  const finalFilters = args?.filters;
+  const finalFilters = args.filters;
   if (finalFilters) {
     const dynamicFrom = extractDynamicFilterGroupValues(finalFilters, RELATION_DYNAMIC_FROM_FILTER);
     if (dynamicFrom && dynamicFrom.length > 0 && isFilterGroupNotEmpty(dynamicFrom[0])) {
