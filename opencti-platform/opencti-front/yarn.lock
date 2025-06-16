@@ -8127,13 +8127,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-relay@npm:*, @types/react-relay@npm:16.0.6":
+"@types/react-relay@npm:*":
   version: 16.0.6
   resolution: "@types/react-relay@npm:16.0.6"
   dependencies:
     "@types/react": "npm:*"
     "@types/relay-runtime": "npm:*"
   checksum: 10/a8f370e4a4fe8728eb80939b16ae0c8e056b6e9019b3b1e75fe2c60797bb27db76cc4b84a5e3f6b7036449ed3925110ddc7d0d8ebcd838d56e15b4133e4a38b2
+  languageName: node
+  linkType: hard
+
+"@types/react-relay@npm:18.2.1":
+  version: 18.2.1
+  resolution: "@types/react-relay@npm:18.2.1"
+  dependencies:
+    "@types/react": "npm:*"
+    "@types/relay-runtime": "npm:*"
+  checksum: 10/9f9f5311ebedd3e9910eee8447c6bab1262344a56407f9d003a3448a3d0ba8bc814a3afa95338346a4fa0fc0aefa3daed5406835b98036fbbb7ef644794decde
   languageName: node
   linkType: hard
 
@@ -17811,7 +17821,7 @@ __metadata:
     "@types/react-csv": "npm:1.1.10"
     "@types/react-dom": "npm:18.3.6"
     "@types/react-grid-layout": "npm:1.3.5"
-    "@types/react-relay": "npm:16.0.6"
+    "@types/react-relay": "npm:18.2.1"
     "@types/react-router-dom": "npm:5.3.3"
     "@types/react-syntax-highlighter": "npm:15.5.13"
     "@types/react-test-renderer": "npm:19.1.0"
