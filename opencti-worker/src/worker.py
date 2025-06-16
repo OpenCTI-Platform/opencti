@@ -53,9 +53,10 @@ max_ingestion_units_count = meter.create_gauge(
     description="Maximum number of ingestion units (configuration)",
 )
 running_ingestion_units_gauge = meter.create_gauge(
-        name="opencti_running_ingestion_units",
-        description="Number of running ingestion units",
+    name="opencti_running_ingestion_units",
+    description="Number of running ingestion units",
 )
+
 
 @dataclass(unsafe_hash=True)
 class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
@@ -607,7 +608,6 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                 resource=resource, metric_readers=[PrometheusMetricReader()]
             )
             metrics.set_meter_provider(provider)
-
 
         # Check if openCTI is available
         self.api = OpenCTIApiClient(
