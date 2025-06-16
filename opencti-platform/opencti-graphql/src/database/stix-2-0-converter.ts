@@ -81,7 +81,7 @@ const buildExternalReferences = (instance: StoreObject): Array<SMO.StixInternalE
 };
 
 // Builders
-const buildStixObject = async (instance: StoreObject): Promise<S.StixObject> => {
+const buildStixObject = (instance: StoreObject): S.StixObject => {
   return {
     id: instance.standard_id,
     x_opencti_id: instance.id,
@@ -90,19 +90,20 @@ const buildStixObject = async (instance: StoreObject): Promise<S.StixObject> => 
     type: convertTypeToStix2Type(instance.entity_type),
     x_opencti_granted_refs: (instance[INPUT_GRANTED_REFS] ?? []).map((m) => m.standard_id),
     x_opencti_workflow_id: instance.x_opencti_workflow_id,
-    x_opencti_files: await Promise.all((instance.x_opencti_files ?? []).map(async (file: StoreFileWithRefs) => ({
+    x_opencti_files: ((instance.x_opencti_files ?? []).map((file: StoreFileWithRefs) => ({
       name: file.name,
-      data: await getFileContent(file.id, 'base64'),
+      uri: `/storage/get/${file.id}`,
       mime_type: file.mime_type,
       version: file.version,
+      object_marking_refs: (file[INPUT_MARKINGS] ?? []).filter((f) => f).map((f) => f.standard_id),
     }))),
   };
 };
 
 // General
-const buildStixDomain = async (instance: StoreEntity | StoreRelation): Promise<S.StixDomainObject> => {
+const buildStixDomain = (instance: StoreEntity | StoreRelation): S.StixDomainObject => {
   return {
-    ...await buildStixObject(instance),
+    ...buildStixObject(instance),
     created: convertToStixDate(instance.created),
     modified: convertToStixDate(instance.modified),
     revoked: instance.revoked,
@@ -115,10 +116,10 @@ const buildStixDomain = async (instance: StoreEntity | StoreRelation): Promise<S
   };
 };
 
-export const convertMalwareToStix = async (instance: StoreEntity, type: string): Promise<SDO.StixMalware> => {
+export const convertMalwareToStix = (instance: StoreEntity, type: string): SDO.StixMalware => {
   assertType(ENTITY_TYPE_MALWARE, type);
   return {
-    ...await buildStixDomain(instance),
+    ...buildStixDomain(instance),
     name: instance.name,
     description: instance.description,
     malware_types: instance.malware_types,
