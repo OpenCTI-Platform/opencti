@@ -48,21 +48,41 @@ const FintelDesignForm: FunctionComponent<FintelDesignFormProps> = ({ onFileUplo
   };
 
   const fintelDesignValidation = () => Yup.object().shape({
-    gradiantFromColor: Yup.string().nullable(),
-    gradiantToColor: Yup.string().nullable(),
+    gradiantFromColor: Yup.string().matches(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, t_i18n('Invalid hexa color code')).nullable(),
+    gradiantToColor: Yup.string().matches(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, t_i18n('Invalid hexa color code')).nullable(),
     textColor: Yup.string().nullable(),
+    file: Yup.mixed()
+      .test(
+        'fileFormat',
+        'Unsupported file format',
+        (value: unknown) => {
+          if (!(value instanceof File)) {
+            return false; // typecheck
+          }
+          if (!value) {
+            return true; // File is not required
+          }
+          const allowedFormats = ['image/jpeg', 'image/png'];
+          return allowedFormats.includes(value?.type);
+        },
+      ),
   });
 
   const [commitFieldPatch] = useApiMutation(fintelDesignFormFieldPatchMutation);
   const [commitFileUpload] = useApiMutation(fintelDesignFormFileUploadMutation);
 
   const fieldPatch = (name: string, value: unknown) => {
-    commitFieldPatch({
-      variables: {
-        id: fintelDesign.id,
-        input: [{ key: name, value: value ?? [] }],
-      },
-    });
+    fintelDesignValidation()
+      .validateAt(name, { [name]: value })
+      .then(() => {
+        commitFieldPatch({
+          variables: {
+            id: fintelDesign.id,
+            input: [{ key: name, value: value ?? [] }],
+          },
+        });
+      })
+      .catch(() => false);
   };
 
   const fileUpload = (_: string, value: unknown) => {
@@ -89,7 +109,8 @@ const FintelDesignForm: FunctionComponent<FintelDesignFormProps> = ({ onFileUplo
           <Form>
             <Field
               component={CustomFileUploader}
-              label={t_i18n('Logo')}
+              label={t_i18n('Logo (png, jpg)')}
+              acceptMimeTypes="image/jpeg, image/png"
               name="file"
               setFieldValue={setFieldValue}
               onChange={fileUpload}
@@ -111,7 +132,6 @@ const FintelDesignForm: FunctionComponent<FintelDesignFormProps> = ({ onFileUplo
               label={t_i18n('Background secondary color')}
               placeholder={t_i18n('Default')}
               fullWidth
-              setFieldValue={setFieldValue}
               onSubmit={fieldPatch}
               variant="standard"
               style={fieldSpacingContainerStyle}
@@ -122,7 +142,6 @@ const FintelDesignForm: FunctionComponent<FintelDesignFormProps> = ({ onFileUplo
               label={t_i18n('Text color')}
               placeholder={t_i18n('Default')}
               fullWidth
-              setFieldValue={setFieldValue}
               onSubmit={fieldPatch}
               variant="standard"
               style={fieldSpacingContainerStyle}
