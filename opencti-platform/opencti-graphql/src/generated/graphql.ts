@@ -23556,7 +23556,7 @@ export type QueryUserArgs = {
 
 
 export type QueryUserAlreadyExistsArgs = {
-  filters?: InputMaybe<FilterGroup>;
+  name: Scalars['String']['input'];
 };
 
 
@@ -41444,7 +41444,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   triggersKnowledge?: Resolver<Maybe<ResolversTypes['TriggerConnection']>, ParentType, ContextType, Partial<QueryTriggersKnowledgeArgs>>;
   triggersKnowledgeCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, Partial<QueryTriggersKnowledgeCountArgs>>;
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryUserArgs, 'id'>>;
-  userAlreadyExists?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<QueryUserAlreadyExistsArgs>>;
+  userAlreadyExists?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryUserAlreadyExistsArgs, 'name'>>;
   users?: Resolver<Maybe<ResolversTypes['UserConnection']>, ParentType, ContextType, Partial<QueryUsersArgs>>;
   vocabularies?: Resolver<Maybe<ResolversTypes['VocabularyConnection']>, ParentType, ContextType, Partial<QueryVocabulariesArgs>>;
   vocabulary?: Resolver<Maybe<ResolversTypes['Vocabulary']>, ParentType, ContextType, RequireFields<QueryVocabularyArgs, 'id'>>;

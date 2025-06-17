@@ -94,10 +94,10 @@ const ingestionCsvCreationMutation = graphql`
 
 export const ingestionCsvCreationUsersQuery = graphql`
     query IngestionCsvCreationUsersQuery(
-        $filters: FilterGroup
+        $name: String!
     ) {
         userAlreadyExists(
-            filters: $filters
+            name: $name
         )
     }
 `;
@@ -228,26 +228,18 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
     { setSubmitting, resetForm, setFieldError },
   ) => {
     // Check if user does not already exist.
-    const existingUsers = await fetchQuery(ingestionCsvCreationUsersQuery, { filters: {
-      mode: 'and',
-      filters: [
-        {
-          key: ['name'],
-          values: [
-            (values.user_id as FieldOption).value,
-          ],
-        },
-      ],
-      filterGroups: [],
-    } })
-      .toPromise();
+    if (isFeatureEnable('CSV_FEED') && values.automatic_user !== false) {
+      const existingUsers = await fetchQuery(ingestionCsvCreationUsersQuery, {
+        name: (values.user_id as FieldOption).value,
+      })
+        .toPromise();
 
-    if ((existingUsers as IngestionCsvCreationUsersQuery$data)?.userAlreadyExists) {
-      setSubmitting(false);
-      setFieldError('user_id', t_i18n('This user already exists. Change the feed\'s name to change the automatically created user\'s name'));
-      return;
+      if ((existingUsers as IngestionCsvCreationUsersQuery$data)?.userAlreadyExists) {
+        setSubmitting(false);
+        setFieldError('user_id', t_i18n('This user already exists. Change the feed\'s name to change the automatically created user\'s name'));
+        return;
+      }
     }
-
     let authenticationValue = ingestionCsvData?.authentication_value ?? values.authentication_value;
     if (values.authentication_type === 'basic') {
       authenticationValue = `${values.username}:${values.password}`;

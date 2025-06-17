@@ -189,7 +189,7 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
     expect(queryResult.data.user).toBeNull();
   });
 
-  it('should create a CSV Feed with auto user creation be refused when no default group', async () => {
+  it('should a CSV Feed with auto user creation be refused when no default group', async () => {
     // remove default group in config
     let input: [EditInput] = [{ key: 'auto_integration_assignation', value: [] }];
     await groupEditField(currentTestContext, SYSTEM_USER, ingestionDefaultGroupId, input);
@@ -215,4 +215,5 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
     expect(ingestionDefaultGroups[0].name).toBe('Connectors');
     expect(ingestionDefaultGroups[0].auto_integration_assignation).toStrictEqual(['global']);
   });
+
 });

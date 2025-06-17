@@ -24,7 +24,7 @@ const ingestionCsvResolvers: Resolvers = {
     ingestionCsvs: (_, args, context) => findAllPaginated(context, context.user, args),
     csvFeedAddInputFromImport: (_, { file }, context) => csvFeedAddInputFromImport(context, context.user, file),
     defaultIngestionGroupCount: (_, __, context) => defaultIngestionGroupsCount(context),
-    userAlreadyExists: (_, filters, context) => userAlreadyExists(context, filters)
+    userAlreadyExists: (_, { name }, context) => userAlreadyExists(context, name)
   },
   IngestionCsv: {
     user: (ingestionCsv, _, context) => creatorLoader.load(ingestionCsv.user_id, context, context.user),
