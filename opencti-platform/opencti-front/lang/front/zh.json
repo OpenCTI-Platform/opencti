@@ -3766,6 +3766,7 @@
   "You do not have any access to the knowledge of this OpenCTI instance.": "您无权访问此OpenCTI实例的知识数据。",
   "You have more than 50 values": "您有超过 50 个值",
   "You have no subscription for the moment.": "您暂时没有订阅。",
+  "You have not defined a default group for ingestion users": "您没有为摄取用户定义默认组",
   "You have successfully logged out.": "您已成功注销。",
   "You have unsaved changes": "您有未保存的更改",
   "You just need to try?": "你只需要试试？",

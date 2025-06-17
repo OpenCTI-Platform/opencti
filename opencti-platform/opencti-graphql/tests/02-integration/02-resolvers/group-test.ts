@@ -4,11 +4,10 @@ import { queryAsAdmin, testContext, TESTING_GROUPS, USER_PLATFORM_ADMIN, ADMIN_U
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
-import { adminQueryWithError, queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
+import { adminQueryWithError, queryAsAdminWithSuccess, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { getGroupEntityByName } from '../../utils/domainQueryHelper';
 import type { BasicStoreEntityMarkingDefinition } from '../../../src/types/store';
 import { deleteElementById } from '../../../src/database/middleware';
-import { queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 
 const LIST_QUERY = gql`
   query groups($first: Int, $after: ID, $orderBy: GroupsOrdering, $orderMode: OrderingMode, $search: String, $filters: FilterGroup) {
@@ -52,6 +51,7 @@ describe('Group resolver standard behavior', () => {
   let groupInternalId: string; // the one we will use in all tests
   const groupsToDeleteIds: string[] = []; // keep track for deletion at the end of the tests
   let markingDefinitionInternalId: string; // the marking used in these tests
+
   it('should group created', async () => {
     const CREATE_QUERY = gql`
       mutation GroupAdd($input: GroupAddInput!) {
@@ -228,7 +228,8 @@ describe('Group resolver standard behavior', () => {
     expect(queryResult?.data?.groupEdit.fieldPatch.name).toEqual('Group - test');
   });
   it('should update select default group for ingestion users', async () => {
-    const queryDefault = await queryAsAdmin({
+    // GIVEN that Connectors is the default ingestion group (per initialization)
+    const queryDefaultIngestionGroup = await queryAsAdmin({
       query: LIST_QUERY,
       variables: {
         filters: {
@@ -245,7 +246,10 @@ describe('Group resolver standard behavior', () => {
         }
       }
     });
+    expect(queryDefaultIngestionGroup?.data?.groups.edges.length).toBe(1);
+    expect(queryDefaultIngestionGroup?.data?.groups.edges[0].node.name).toBe('Connectors');
 
+    // WHEN Connectors is removed from default ingestion group
     const UPDATE_QUERY = gql`
         mutation GroupEdit($id: ID!, $input: [EditInput]!) {
             groupEdit(id: $id) {
@@ -260,36 +264,75 @@ describe('Group resolver standard behavior', () => {
     // remove default group Connectors set in data-initialization
     await queryAsUserWithSuccess(USER_PLATFORM_ADMIN.client, {
       query: UPDATE_QUERY,
-      variables: { id: queryDefault.data?.groups.edges[0].node.id, input: { key: 'auto_integration_assignation', value: [] } },
+      variables: { id: queryDefaultIngestionGroup.data?.groups.edges[0].node.id, input: { key: 'auto_integration_assignation', value: [] } },
     });
-    // Add the field to another group
+
+    // THEN we should have zero default ingestion group
+    const defaultIngestionGroupCountResultNoGroup = await queryAsAdminWithSuccess({
+      query: gql`
+        query IngestionCsvCreationUserHandlingDefaultGroupForIngestionUsersQuery {
+          defaultIngestionGroupCount
+        }
+      `,
+      variables: {}
+    });
+    expect(defaultIngestionGroupCountResultNoGroup?.data?.defaultIngestionGroupCount).toBe(0);
+
+    // AND WHEN 'groupInternalId' is set as default ingestion group
     const queryResult = await queryAsUserWithSuccess(USER_PLATFORM_ADMIN.client, {
       query: UPDATE_QUERY,
       variables: { id: groupInternalId, input: { key: 'auto_integration_assignation', value: ['global'] } },
     });
     expect(queryResult.data.groupEdit.fieldPatch.auto_integration_assignation).toEqual(['global']);
-  });
-  it('should return default group for ingestion users', async () => {
-    const queryResult = await queryAsAdmin({
-      query: LIST_QUERY,
-      variables: {
-        filters: {
-          mode: 'and',
-          filters: [
-            {
-              key: 'auto_integration_assignation',
-              values: [
-                'global'
-              ]
-            }
-          ],
-          filterGroups: []
+
+    // THEN we should have one default ingestion group again
+    const defaultIngestionGroupCountResult = await queryAsAdminWithSuccess({
+      query: gql`
+        query IngestionCsvCreationUserHandlingDefaultGroupForIngestionUsersQuery {
+          defaultIngestionGroupCount
         }
-      }
+      `,
+      variables: {}
     });
-    expect(queryResult.data?.groups.edges[0].node.id).toEqual(groupInternalId);
-    expect(queryResult.data?.groups.edges.length).toEqual(1);
+    expect(defaultIngestionGroupCountResult?.data?.defaultIngestionGroupCount).toBe(1);
   });
+
+  it('should return default group for ingestion users', async () => {
+    const connectorsGroup = await getGroupEntityByName('Connectors');
+
+    const UPDATE_QUERY = gql`
+        mutation GroupEdit($id: ID!, $input: [EditInput]!) {
+            groupEdit(id: $id) {
+                fieldPatch(input: $input) {
+                    id
+                    name
+                    auto_integration_assignation
+                }
+            }
+        }
+    `;
+    await queryAsUserWithSuccess(USER_PLATFORM_ADMIN.client, {
+      query: UPDATE_QUERY,
+      variables: { id: connectorsGroup.id, input: { key: 'auto_integration_assignation', value: ['global'] } },
+    });
+
+    await queryAsUserWithSuccess(USER_PLATFORM_ADMIN.client, {
+      query: UPDATE_QUERY,
+      variables: { id: groupInternalId, input: { key: 'auto_integration_assignation', value: [] } },
+    });
+
+    // At the end we should be back with Connectors as default ingestion group
+    const defaultIngestionGroupCountResult = await queryAsAdminWithSuccess({
+      query: gql`
+        query IngestionCsvCreationUserHandlingDefaultGroupForIngestionUsersQuery {
+          defaultIngestionGroupCount
+        }
+      `,
+      variables: {}
+    });
+    expect(defaultIngestionGroupCountResult?.data?.defaultIngestionGroupCount).toBe(1);
+  });
+
   it('should have nothing shareable at the group creation', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: groupInternalId } });
     const maxMarkings = queryResult?.data?.group.max_shareable_marking;

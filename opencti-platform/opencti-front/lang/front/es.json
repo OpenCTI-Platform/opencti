@@ -3766,6 +3766,7 @@
   "You do not have any access to the knowledge of this OpenCTI instance.": "No tienes acceso al conocimiento de esta instancia de OpenCTI.",
   "You have more than 50 values": "Tiene más de 50 valores",
   "You have no subscription for the moment.": "No tienes ninguna suscripción por el momento.",
+  "You have not defined a default group for ingestion users": "No ha definido un grupo por defecto para los usuarios de ingestión",
   "You have successfully logged out.": "Has cerrado sesión con éxito.",
   "You have unsaved changes": "Tiene cambios sin guardar",
   "You just need to try?": "¿Sólo necesita probar?",

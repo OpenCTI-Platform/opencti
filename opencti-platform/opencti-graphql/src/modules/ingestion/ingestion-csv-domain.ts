@@ -5,7 +5,15 @@ import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../dat
 import { type BasicStoreEntityIngestionCsv, ENTITY_TYPE_INGESTION_CSV } from './ingestion-types';
 import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
-import { type CsvMapperTestResult, type EditInput, type IngestionCsvAddInput, IngestionCsvMapperType } from '../../generated/graphql';
+import {
+  type CsvMapperTestResult,
+  type EditInput,
+  type IngestionCsvAddInput,
+  IngestionCsvMapperType,
+  type QueryUserAlreadyExistsArgs,
+  type UserAddInput,
+  type UserConnection
+} from '../../generated/graphql';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS, isFeatureEnabled, PLATFORM_VERSION } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
@@ -20,8 +28,15 @@ import { registerConnectorForIngestion, unregisterConnectorForIngestion } from '
 import type { StixObject } from '../../types/stix-2-1-common';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
-import { FunctionalError } from '../../config/errors';
+import { FunctionalError, ValidationError } from '../../config/errors';
 import { convertRepresentationsIds } from '../internal/mapper-utils';
+import { addUser, findAll } from '../../domain/user';
+import { getEntityFromCache } from '../../database/cache';
+import { SYSTEM_USER } from '../../utils/access';
+import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
+import type { BasicStoreSettings } from '../../types/settings';
+import { findDefaultIngestionGroups } from '../../domain/group';
+import type { BasicGroupEntity } from '../../types/store';
 
 const MINIMAL_CSV_FEED_COMPATIBLE_VERSION = '6.6.0';
 export const CSV_FEED_FEATURE_FLAG = 'CSV_FEED';
@@ -44,34 +59,93 @@ export const findCsvMapperForIngestionById = (context: AuthContext, user: AuthUs
   return storeLoadById<BasicStoreEntityCsvMapper>(context, user, csvMapperId, ENTITY_TYPE_CSV_MAPPER);
 };
 
+export const defaultIngestionGroupsCount = async (context: AuthContext) => {
+  // We use SYSTEM_USER because manage ingestion should be enough to create an ingestion Feed
+  const defaultGroupLength = await findDefaultIngestionGroups(context, SYSTEM_USER);
+  return defaultGroupLength.length ?? 0;
+};
+
+export const userAlreadyExists = async (context: AuthContext, args: QueryUserAlreadyExistsArgs) => {
+  const users = await findAll(context, context.user, args) as UserConnection;
+  return users.edges.length > 0;
+};
+
+export const createOnTheFlyUser = async (context: AuthContext, user: AuthUser, input: IngestionCsvAddInput) => {
+  const defaultIngestionGroups: BasicGroupEntity[] = await findDefaultIngestionGroups(context, user) as BasicGroupEntity[];
+  if (defaultIngestionGroups.length < 1) {
+    throw FunctionalError('You have not defined a default group for ingestion users', {});
+  }
+  const { platform_organization } = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+
+  let userInput: UserAddInput = {
+    password: uuid(),
+    user_email: `automatic+${uuid()}@opencti.invalid`,
+    name: input.user_id,
+    prevent_default_groups: true,
+    groups: [defaultIngestionGroups[0].id],
+    objectOrganization: platform_organization ? [platform_organization] : []
+  };
+
+  if (input.confidence_level) {
+    const userConfidence = parseFloat(input.confidence_level);
+    if (userConfidence < 0 || userConfidence > 100 || !Number.isInteger(userConfidence)) {
+      throw ValidationError('The confidence_level should be an integer between 0 and 100', 'confidence_level');
+    }
+    userInput = { ...userInput, user_confidence_level: { max_confidence: userConfidence, overrides: [] } };
+  }
+  const newlyCreatedUser = await addUser(context, user, userInput);
+  return newlyCreatedUser;
+};
+
 export const addIngestionCsv = async (context: AuthContext, user: AuthUser, input: IngestionCsvAddInput) => {
-  const parsedInput: IngestionCsvAddInput = {
-    ...input,
+  if (input.authentication_value) {
+    verifyIngestionAuthenticationContent(input.authentication_type, input.authentication_value);
+  }
+
+  let onTheFlyCreatedUser;
+  let finalInput;
+  if (isFeatureEnabled('CSV_FEED') && input.automatic_user) {
+    onTheFlyCreatedUser = await createOnTheFlyUser(context, user, input);
+    finalInput = {
+      ...((({ automatic_user: _, confidence_level: __, ...inputWithoutAutomaticFields }) => inputWithoutAutomaticFields)(input)),
+      user_id: onTheFlyCreatedUser.id,
+    };
+  } else {
+    finalInput = {
+      ...((({ automatic_user: _, confidence_level: __, ...inputWithoutAutomaticFields }) => inputWithoutAutomaticFields)(input))
+    };
+  }
+
+  finalInput = {
+    ...finalInput,
     csv_mapper: input.csv_mapper ? JSON.stringify({
       ...JSON.parse(input.csv_mapper),
       id: uuid()
     }) : input.csv_mapper
   };
-  if (parsedInput.authentication_value) {
-    verifyIngestionAuthenticationContent(parsedInput.authentication_type, parsedInput.authentication_value);
-  }
 
-  const { element, isCreation } = await createEntity(context, user, parsedInput, ENTITY_TYPE_INGESTION_CSV, { complete: true });
+  const { element, isCreation } = await createEntity(
+    context,
+    user,
+    finalInput,
+    ENTITY_TYPE_INGESTION_CSV,
+    { complete: true }
+  );
   if (isCreation) {
     await registerConnectorForIngestion(context, {
       id: element.id,
       type: 'CSV',
       name: element.name,
       is_running: element.ingestion_running ?? false,
-      connector_user_id: parsedInput.user_id
+      connector_user_id: isFeatureEnabled('CSV_FEED') && input.automatic_user ? onTheFlyCreatedUser.id : finalInput.user_id
     });
     await publishUserAction({
       user,
       event_type: 'mutation',
       event_scope: 'create',
       event_access: 'administration',
-      message: `creates csv ingestion \`${parsedInput.name}\``,
-      context_data: { id: element.id, entity_type: ENTITY_TYPE_INGESTION_CSV, input: parsedInput as unknown } // input was known as unknown
+      message: `creates csv ingestion \`${finalInput.name}\``,
+      context_data: { id: element.id, entity_type: ENTITY_TYPE_INGESTION_CSV, input: finalInput as unknown } // input was known as unknown
     });
   }
   return element;

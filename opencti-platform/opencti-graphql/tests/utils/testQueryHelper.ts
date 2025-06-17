@@ -228,7 +228,7 @@ export const enableEEAndSetOrganization = async (organization: OrganizationTestD
   ];
   const settingsResult = await settingsEditField(testContext, ADMIN_USER, platformSettings.id, input);
 
-  expect(settingsResult.platform_organization).not.toBeUndefined();
+  expect(settingsResult.platform_organization).toBe(platformOrganizationId);
   resetCacheForEntity(ENTITY_TYPE_SETTINGS);
 };
 

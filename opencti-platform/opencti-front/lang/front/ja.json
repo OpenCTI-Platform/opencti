@@ -3766,6 +3766,7 @@
   "You do not have any access to the knowledge of this OpenCTI instance.": "このOpenCTIインスタンスのナレッジデータにアクセスする権限がありません。",
   "You have more than 50 values": "50以上の値があります",
   "You have no subscription for the moment.": "現在、サブスクリプションはありません。",
+  "You have not defined a default group for ingestion users": "インジェスト・ユーザーのデフォルト・グループが定義されていません。",
   "You have successfully logged out.": "ログアウトが完了しました。",
   "You have unsaved changes": "未保存の変更があります",
   "You just need to try?": "試す必要がありますか？",
