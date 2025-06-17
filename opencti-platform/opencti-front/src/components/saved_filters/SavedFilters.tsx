@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import { SavedFiltersQuery, SavedFiltersQuery$variables } from 'src/components/saved_filters/__generated__/SavedFiltersQuery.graphql';
@@ -65,11 +65,13 @@ const SavedFilters = ({ currentSavedFilter, setCurrentSavedFilter }: SavedFilter
     <>
       {queryRef
         ? (
-          <SavedFiltersComponent
-            queryRef={queryRef}
-            currentSavedFilter={currentSavedFilter}
-            setCurrentSavedFilter={setCurrentSavedFilter}
-          />
+          <Suspense fallback={<SavedFiltersAutocomplete isDisabled/>}>
+            <SavedFiltersComponent
+              queryRef={queryRef}
+              currentSavedFilter={currentSavedFilter}
+              setCurrentSavedFilter={setCurrentSavedFilter}
+            />
+          </Suspense>
         )
         : <SavedFiltersAutocomplete isDisabled />
       }
