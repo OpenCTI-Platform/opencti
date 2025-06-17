@@ -13959,7 +13959,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"is-svg@npm:^6.0.0":
+"is-svg@npm:6.0.0":
   version: 6.0.0
   resolution: "is-svg@npm:6.0.0"
   dependencies:
@@ -16450,7 +16450,7 @@ __metadata:
     http-proxy-middleware: "npm:3.0.5"
     i18n-auto-translation: "npm:2.2.1"
     invert-color: "npm:2.0.0"
-    is-svg: "npm:^6.0.0"
+    is-svg: "npm:6.0.0"
     js-base64: "npm:3.7.7"
     js-file-download: "npm:0.4.12"
     jsdom: "npm:26.1.0"
