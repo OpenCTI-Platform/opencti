@@ -8,7 +8,7 @@ export interface CvssFieldUpdate {
 
 // --- Shared logic ---
 
-const getCvssCriticity = (score: number | null): string | null => {
+export const getCvssCriticity = (score: number | null): string | null => {
   if (typeof score !== 'number' || score < 0 || score > 10) return null;
   if (score === 0.0) return 'Unknown';
   if (score <= 3.9) return 'LOW';
