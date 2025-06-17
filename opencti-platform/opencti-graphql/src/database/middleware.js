@@ -232,6 +232,17 @@ import { isRequestAccessEnabled } from '../modules/requestAccess/requestAccessUt
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
 import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
+import {
+  isValidCvss2Vector,
+  isValidCvss3Vector,
+  isValidCvss4Vector,
+  parseCvss2Vector,
+  parseCvss3Vector,
+  parseCvss4Vector,
+  updateCvss2VectorWithScores,
+  updateCvss3VectorWithScores,
+  updateCvss4VectorWithScores
+} from '../utils/vulnerabilities';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -2010,6 +2021,83 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
       });
     }
   }
+  // Vulnerabilities logics
+  const processedKeys = new Set();
+  // Helper function to safely get vector value
+  const getVectorValue = (updates, key) => {
+    const update = updates.find((e) => e.key === key);
+    return update?.value?.[0];
+  };
+  // Helper function to add updates without duplicates
+  const addUniqueUpdates = (updates, newUpdates) => {
+    for (const update of newUpdates) {
+      if (!processedKeys.has(update.key)) {
+        processedKeys.add(update.key);
+        updates.push(update);
+      }
+    }
+  };
+  // CVSS 4.0 processing
+  const cvss4VectorUpdate = updates.find((e) => e.key === 'x_opencti_cvss_v4_vector');
+  if (cvss4VectorUpdate) {
+    const vector = cvss4VectorUpdate.value?.[0];
+    if (!isValidCvss4Vector(vector)) {
+      throw FunctionalError('This is not a valid CVSS4 vector');
+    }
+    addUniqueUpdates(updates, parseCvss4Vector(vector));
+  } else {
+    const cvss4FieldUpdates = updates.filter((e) => e.key.startsWith('x_opencti_cvss_v4_')
+        && !e.key.includes('base')
+        && !e.key.includes('vector'));
+    if (cvss4FieldUpdates.length > 0) {
+      addUniqueUpdates(updates, updateCvss4VectorWithScores(
+        initial.x_opencti_cvss_v4_vector,
+        cvss4FieldUpdates
+      ));
+    }
+  }
+
+  // Vulnerabilities logics
+  if (updates.some((e) => e.key === 'x_opencti_cvss_v4_vector')) {
+    const vectorUpdate = updates.filter((e) => e.key === 'x_opencti_cvss_v4_vector').at(0);
+    const vector = vectorUpdate?.value?.at(0);
+    if (!isValidCvss4Vector(vector)) {
+      throw FunctionalError('This is not a valid CVSS4 vector');
+    }
+    updates.push(...parseCvss4Vector(vector));
+  } else if (updates.some((e) => e.key.startsWith('x_opencti_cvss_v4_'))) {
+    const updatedVectorParts = updates.filter((e) => e.key.startsWith('x_opencti_cvss_v4_') && !e.key.includes('base'));
+    if (updatedVectorParts.length > 0) {
+      updates.push(...updateCvss4VectorWithScores(initial.x_opencti_cvss_v4_vector, updatedVectorParts));
+    }
+  }
+  if (updates.some((e) => e.key === 'x_opencti_cvss_vector')) {
+    const vectorUpdate = updates.filter((e) => e.key === 'x_opencti_cvss_vector').at(0);
+    const vector = vectorUpdate?.value?.at(0);
+    if (!isValidCvss3Vector(vector)) {
+      throw FunctionalError('This is not a valid CVSS3 vector');
+    }
+    updates.push(...parseCvss3Vector(vector));
+  } else if (updates.some((e) => e.key.startsWith('x_opencti_cvss_'))) {
+    const updatedVectorParts = updates.filter((e) => e.key.startsWith('x_opencti_cvss_') && !e.key.includes('base') && !e.key.includes('temporal') && !e.key.startsWith('x_opencti_cvss_v'));
+    if (updatedVectorParts.length > 0) {
+      updates.push(...updateCvss3VectorWithScores(initial.x_opencti_cvss_vector, updatedVectorParts));
+    }
+  }
+  if (updates.some((e) => e.key === 'x_opencti_cvss_v2_vector')) {
+    const vectorUpdate = updates.filter((e) => e.key === 'x_opencti_cvss_v2_vector').at(0);
+    const vector = vectorUpdate?.value?.at(0);
+    if (!isValidCvss2Vector(vector)) {
+      throw FunctionalError('This is not a valid CVSS2 vector');
+    }
+    updates.push(...parseCvss2Vector(vector));
+  } else if (updates.some((e) => e.key.startsWith('x_opencti_cvss_v2_'))) {
+    const updatedVectorParts = updates.filter((e) => e.key.startsWith('x_opencti_cvss_v2_') && !e.key.includes('base') && !e.key.includes('temporal'));
+    if (updatedVectorParts.length > 0) {
+      updates.push(...updateCvss2VectorWithScores(initial.x_opencti_cvss_v2_vector, updatedVectorParts));
+    }
+  }
+
   if (updates.some((e) => e.key === 'authorized_authorities')) {
     accessOperation = 'manage-authorities-access';
   }

@@ -8224,13 +8224,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ae-cvss-calculator@npm:1.0.8":
-  version: 1.0.8
-  resolution: "ae-cvss-calculator@npm:1.0.8"
-  checksum: 10/989e3bba7b45498e86f29ce2c5894c0441314cd106436705bef12c6c52c18fbcc995fedf49ea60207a53ce9374a42e3263065cb7dc98e0df6c97eb14146306ef
-  languageName: node
-  linkType: hard
-
 "agent-base@npm:6":
   version: 6.0.2
   resolution: "agent-base@npm:6.0.2"
@@ -16412,7 +16405,6 @@ __metadata:
     "@types/relay-runtime": "npm:19.0.0"
     "@types/relay-test-utils": "npm:19.0.0"
     "@vitejs/plugin-react": "npm:4.4.1"
-    ae-cvss-calculator: "npm:1.0.8"
     analytics: "npm:0.8.16"
     apexcharts: "npm:4.4.0"
     axios: "npm:1.9.0"

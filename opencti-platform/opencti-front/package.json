@@ -26,7 +26,6 @@
     "@rjsf/mui": "5.24.10",
     "@rjsf/utils": "5.24.10",
     "@rjsf/validator-ajv8": "5.24.3",
-    "ae-cvss-calculator": "1.0.8",
     "analytics": "0.8.16",
     "apexcharts": "4.4.0",
     "axios": "1.9.0",
