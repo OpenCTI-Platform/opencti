@@ -103,7 +103,7 @@ export const parseCvss4Vector = (vector: string | null | undefined, initialScore
     { key: 'x_opencti_cvss_v4_base_severity', value: [getCvssCriticity(scores.overall)] },
   ] : [...parsedVector, ...nulls, { key: 'x_opencti_cvss_v4_base_severity', value: [getCvssCriticity(initialScore ?? 0)] }];
   if (asObject) {
-    return Object.fromEntries(result.map(({ key, value }) => [key, value]));
+    return Object.fromEntries(result.map(({ key, value }) => [key, value[0]]));
   }
   return result;
 };
