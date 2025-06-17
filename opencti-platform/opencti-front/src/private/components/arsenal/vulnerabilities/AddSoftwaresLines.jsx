@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { createPaginationContainer, graphql } from 'react-relay';
 import { compose } from 'ramda';
-import capitalize from '@mui/utils/capitalize';
 import inject18n from '../../../../components/i18n';
 import StixCoreRelationshipCreationFromEntityList from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityList';
 

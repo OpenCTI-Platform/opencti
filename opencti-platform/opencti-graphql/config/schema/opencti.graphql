@@ -7351,7 +7351,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   x_opencti_cvss_v4_availability_impact_s: String
   x_opencti_cvss_v4_exploit_maturity: String
   # Others
-  x_opencti_cwe: String
+  x_opencti_cwe: [String]
   x_opencti_cisa_kev: Boolean
   x_opencti_epss_score: Float
   x_opencti_epss_percentile: Float
@@ -7436,7 +7436,7 @@ input VulnerabilityAddInput {
   x_opencti_cvss_v4_availability_impact_s: String
   x_opencti_cvss_v4_exploit_maturity: String
   # Others
-  x_opencti_cwe: String
+  x_opencti_cwe: [String]
   x_opencti_cisa_kev: Boolean
   x_opencti_epss_score: Float
   x_opencti_epss_percentile: Float

@@ -5,7 +5,7 @@
   "main": "src/front.tsx",
   "dependencies": {
     "@analytics/google-analytics": "1.1.0",
-    "@cfworker/json-schema": "^4.1.1",
+    "@cfworker/json-schema": "4.1.1",
     "@ckeditor/ckeditor5-react": "9.5.0",
     "@date-fns/upgrade": "1.0.3",
     "@date-io/date-fns": "3.2.1",
@@ -26,6 +26,7 @@
     "@rjsf/mui": "5.24.10",
     "@rjsf/utils": "5.24.10",
     "@rjsf/validator-ajv8": "5.24.3",
+    "ae-cvss-calculator": "1.0.8",
     "analytics": "0.8.16",
     "apexcharts": "4.4.0",
     "axios": "1.9.0",

@@ -1659,7 +1659,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cfworker/json-schema@npm:^4.1.1":
+"@cfworker/json-schema@npm:4.1.1":
   version: 4.1.1
   resolution: "@cfworker/json-schema@npm:4.1.1"
   checksum: 10/62fd08bb2e6b4f0fe7c2b8f8c19f17f94b6a34feba7f455f228898ab435eda8aae082fcf6b0fe8a235a72e0ec0041922fdcd4c526acc32d45084272f000c1af9
@@ -8221,6 +8221,13 @@ __metadata:
   bin:
     acorn: bin/acorn
   checksum: 10/d1379bbee224e8d44c3c3946e6ba6973e999fbdd4e22e41c3455d7f9b6f72f7ce18d3dc218002e1e48eea789539cf1cb6d1430c81838c6744799c712fb557d92
+  languageName: node
+  linkType: hard
+
+"ae-cvss-calculator@npm:1.0.8":
+  version: 1.0.8
+  resolution: "ae-cvss-calculator@npm:1.0.8"
+  checksum: 10/989e3bba7b45498e86f29ce2c5894c0441314cd106436705bef12c6c52c18fbcc995fedf49ea60207a53ce9374a42e3263065cb7dc98e0df6c97eb14146306ef
   languageName: node
   linkType: hard
 
@@ -16360,7 +16367,7 @@ __metadata:
   resolution: "opencti-front@workspace:."
   dependencies:
     "@analytics/google-analytics": "npm:1.1.0"
-    "@cfworker/json-schema": "npm:^4.1.1"
+    "@cfworker/json-schema": "npm:4.1.1"
     "@ckeditor/ckeditor5-react": "npm:9.5.0"
     "@date-fns/upgrade": "npm:1.0.3"
     "@date-io/date-fns": "npm:3.2.1"
@@ -16405,6 +16412,7 @@ __metadata:
     "@types/relay-runtime": "npm:19.0.0"
     "@types/relay-test-utils": "npm:19.0.0"
     "@vitejs/plugin-react": "npm:4.4.1"
+    ae-cvss-calculator: "npm:1.0.8"
     analytics: "npm:0.8.16"
     apexcharts: "npm:4.4.0"
     axios: "npm:1.9.0"

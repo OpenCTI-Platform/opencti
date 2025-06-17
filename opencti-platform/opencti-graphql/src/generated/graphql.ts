@@ -31475,7 +31475,7 @@ export type Vulnerability = BasicObject & StixCoreObject & StixDomainObject & St
   x_opencti_cvss_v4_user_interaction?: Maybe<Scalars['String']['output']>;
   x_opencti_cvss_v4_vector?: Maybe<Scalars['String']['output']>;
   x_opencti_cvss_vector?: Maybe<Scalars['String']['output']>;
-  x_opencti_cwe?: Maybe<Scalars['String']['output']>;
+  x_opencti_cwe?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   x_opencti_epss_percentile?: Maybe<Scalars['Float']['output']>;
   x_opencti_epss_score?: Maybe<Scalars['Float']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
@@ -31694,7 +31694,7 @@ export type VulnerabilityAddInput = {
   x_opencti_cvss_v4_user_interaction?: InputMaybe<Scalars['String']['input']>;
   x_opencti_cvss_v4_vector?: InputMaybe<Scalars['String']['input']>;
   x_opencti_cvss_vector?: InputMaybe<Scalars['String']['input']>;
-  x_opencti_cwe?: InputMaybe<Scalars['String']['input']>;
+  x_opencti_cwe?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_epss_percentile?: InputMaybe<Scalars['Float']['input']>;
   x_opencti_epss_score?: InputMaybe<Scalars['Float']['input']>;
   x_opencti_score?: InputMaybe<Scalars['Int']['input']>;
@@ -44297,7 +44297,7 @@ export type VulnerabilityResolvers<ContextType = any, ParentType extends Resolve
   x_opencti_cvss_v4_user_interaction?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_cvss_v4_vector?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_cvss_vector?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  x_opencti_cwe?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_cwe?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   x_opencti_epss_percentile?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   x_opencti_epss_score?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
