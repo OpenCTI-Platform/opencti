@@ -56,11 +56,11 @@ const FintelDesignForm: FunctionComponent<FintelDesignFormProps> = ({ onFileUplo
         'fileFormat',
         'Unsupported file format',
         (value: unknown) => {
-          if (!(value instanceof File)) {
-            return false; // typecheck
-          }
           if (!value) {
             return true; // File is not required
+          }
+          if (!(value instanceof File)) {
+            return false; // typecheck
           }
           const allowedFormats = ['image/jpeg', 'image/png'];
           return allowedFormats.includes(value?.type);
