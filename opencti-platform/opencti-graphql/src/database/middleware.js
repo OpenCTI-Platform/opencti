@@ -2070,7 +2070,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   } else if (updates.some((e) => e.key.startsWith('x_opencti_cvss_v2_'))) {
     const updatedVectorParts = updates.filter((e) => e.key.startsWith('x_opencti_cvss_v2_') && !e.key.includes('base') && !e.key.includes('temporal'));
     if (updatedVectorParts.length > 0) {
-      updates.push(...updateCvss2Vector(initial.x_opencti_cvss_v2_vector, updatedVectorParts, baseScore));
+      updates.push(...updateCvss2Vector(initial.x_opencti_cvss_v2_vector, updatedVectorParts, initial.x_opencti_cvss_v2_base_score));
     }
   }
   // end of vulnerabilities logics
