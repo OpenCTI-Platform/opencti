@@ -59,6 +59,12 @@ const DashboardComponent = ({ data, noToolbar }) => {
   const [idToResize, setIdToResize] = useState();
   const handleResize = (updatedWidget) => setIdToResize(updatedWidget);
 
+  const userHasEditAccess = workspace.currentUserAccessRight === 'admin'
+    || workspace.currentUserAccessRight === 'edit';
+  const userHasUpdateCapa = useGranted([EXPLORE_EXUPDATE]);
+  const userCanEdit = userHasEditAccess && userHasUpdateCapa;
+  const isWrite = userCanEdit && !noToolbar;
+
   useEffect(() => {
     const timeout = setTimeout(() => {
       window.dispatchEvent(new Event('resize'));
@@ -74,15 +80,9 @@ const DashboardComponent = ({ data, noToolbar }) => {
       : { widgets: {}, config: {} };
   }, [workspace]);
 
-  const widgets = useMemo(() => {
+  const widgetsArray = useMemo(() => {
     return Object.values(manifest.widgets).map((widget) => widget);
   }, [manifest]);
-
-  const userHasEditAccess = workspace.currentUserAccessRight === 'admin'
-    || workspace.currentUserAccessRight === 'edit';
-  const userHasUpdateCapa = useGranted([EXPLORE_EXUPDATE]);
-  const userCanEdit = userHasEditAccess && userHasUpdateCapa;
-  const isWrite = userCanEdit && !noToolbar;
 
   const saveManifest = (newManifest, noRefresh = false) => {
     const strManifest = serializeDashboardManifestForBackend(newManifest);
@@ -128,12 +128,12 @@ const DashboardComponent = ({ data, noToolbar }) => {
 
   const getLastWidget = () => {
     // Get last row.
-    const y = Object.values(widgets).reduce(
+    const y = Object.values(widgetsArray).reduce(
       (max, { layout }) => (layout.y > max ? layout.y : max),
       0,
     );
     // Last layout of the row.
-    return Object.values(widgets)
+    return Object.values(widgetsArray)
       .filter(({ layout }) => layout.y === y)
       .reduce((max, w) => (w.layout.x >= (max?.layout?.x ?? 0) ? w : max), null);
   };
@@ -254,7 +254,7 @@ const DashboardComponent = ({ data, noToolbar }) => {
         onResizeStart={userCanEdit ? (_, { i }) => handleResize(i) : undefined}
         onResizeStop={userCanEdit ? handleResize : undefined}
       >
-        {widgets.map((widget) => {
+        {widgetsArray.map((widget) => {
           return (
             <Paper
               key={widget.id}
