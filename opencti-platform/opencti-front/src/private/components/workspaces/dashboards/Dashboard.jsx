@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import * as R from 'ramda';
-import { createFragmentContainer, graphql } from 'react-relay';
+import { graphql, useFragment } from 'react-relay';
 import RGL, { WidthProvider } from 'react-grid-layout';
 import Paper from '@mui/material/Paper';
 import { v4 as uuid } from 'uuid';
@@ -19,7 +19,9 @@ import { fromB64, toB64 } from '../../../../utils/String';
 import { ErrorBoundary } from '../../Error';
 import { deserializeDashboardManifestForFrontend, serializeDashboardManifestForBackend } from '../../../../utils/filters/filtersUtils';
 
-const COL_WIDTH = 30;
+const NB_COLS = 12;
+const WIDGET_DEFAULT_WIDTH = 4;
+const WIDGET_DEFAULT_HEIGHT = 2;
 
 const dashboardLayoutMutation = graphql`
   mutation DashboardLayoutMutation($id: ID!, $input: [EditInput!]!) {
@@ -29,7 +31,27 @@ const dashboardLayoutMutation = graphql`
   }
 `;
 
-const DashboardComponent = ({ workspace, noToolbar }) => {
+const dashboardFragment = graphql`
+  fragment Dashboard_workspace on Workspace {
+    id
+    type
+    name
+    description
+    manifest
+    tags
+    owner {
+      id
+      name
+      entity_type
+    }
+    currentUserAccessRight
+    ...WorkspaceManageAccessDialog_authorizedMembers
+    ...WorkspaceEditionContainer_workspace
+  }
+`;
+
+const DashboardComponent = ({ data, noToolbar }) => {
+  const workspace = useFragment(dashboardFragment, data);
   const ReactGridLayout = useMemo(() => WidthProvider(RGL), []);
   const theme = useTheme();
 
@@ -104,39 +126,44 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
     saveManifest(newManifest);
   };
 
-  const getMaxY = () => {
-    return Object.values(manifest.widgets).reduce(
-      (max, n) => (n.layout.y > max ? n.layout.y : max),
+  const getLastWidget = () => {
+    // Get last row.
+    const y = Object.values(widgets).reduce(
+      (max, { layout }) => (layout.y > max ? layout.y : max),
       0,
     );
-  };
-
-  const getMaxX = () => {
-    const y = getMaxY();
-    const maxX = Object.values(manifest.widgets)
-      .filter((n) => n.layout.y === y)
-      .reduce((max, n) => (n.layout.x > max ? n.layout.x : max), 0);
-    return maxX + 4;
+    // Last layout of the row.
+    return Object.values(widgets)
+      .filter(({ layout }) => layout.y === y)
+      .reduce((max, w) => (w.layout.x >= (max?.layout?.x ?? 0) ? w : max), null);
   };
 
   const handleAddWidget = (widgetManifest) => {
-    let maxX = getMaxX();
-    let maxY = getMaxY();
-    if (maxX >= COL_WIDTH - 4) {
-      maxX = 0;
-      maxY += 2;
+    let x = 0;
+    let y = 0;
+    const lastWidget = getLastWidget();
+    if (lastWidget) {
+      const { layout } = lastWidget;
+      const hasRoomOnRow = NB_COLS - (layout.x + layout.w) >= WIDGET_DEFAULT_WIDTH;
+      x = hasRoomOnRow ? layout.x + layout.w : 0;
+      y = hasRoomOnRow ? layout.y : layout.y + layout.h;
     }
-    const newManifest = {
+    saveManifest({
       ...manifest,
       widgets: {
         ...manifest.widgets,
         [widgetManifest.id]: {
           ...widgetManifest,
-          layout: { i: widgetManifest.id, x: maxX, y: maxY, w: 4, h: 2 },
+          layout: {
+            i: widgetManifest.id,
+            x,
+            y,
+            w: WIDGET_DEFAULT_WIDTH,
+            h: WIDGET_DEFAULT_HEIGHT,
+          },
         },
       },
-    };
-    saveManifest(newManifest);
+    });
   };
 
   const handleUpdateWidget = (widgetManifest) => {
@@ -219,7 +246,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
         className="layout"
         margin={[20, 20]}
         rowHeight={50}
-        cols={12}
+        cols={NB_COLS}
         draggableCancel=".noDrag"
         isDraggable={userCanEdit ? !noToolbar : false}
         isResizable={userCanEdit ? !noToolbar : false}
@@ -283,23 +310,4 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
   );
 };
 
-export default createFragmentContainer(DashboardComponent, {
-  workspace: graphql`
-    fragment Dashboard_workspace on Workspace {
-      id
-      type
-      name
-      description
-      manifest
-      tags
-      owner {
-        id
-        name
-        entity_type
-      }
-      currentUserAccessRight
-      ...WorkspaceManageAccessDialog_authorizedMembers
-      ...WorkspaceEditionContainer_workspace
-    }
-  `,
-});
+export default DashboardComponent;
