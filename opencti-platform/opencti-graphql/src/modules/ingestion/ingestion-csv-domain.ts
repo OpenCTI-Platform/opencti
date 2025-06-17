@@ -5,15 +5,7 @@ import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../dat
 import { type BasicStoreEntityIngestionCsv, ENTITY_TYPE_INGESTION_CSV } from './ingestion-types';
 import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
-import {
-  type CsvMapperTestResult,
-  type EditInput,
-  type IngestionCsvAddInput,
-  IngestionCsvMapperType,
-  type QueryUserAlreadyExistsArgs,
-  type UserAddInput,
-  type UserConnection
-} from '../../generated/graphql';
+import { type CsvMapperTestResult, type EditInput, type IngestionCsvAddInput, IngestionCsvMapperType, type UserAddInput } from '../../generated/graphql';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS, isFeatureEnabled, PLATFORM_VERSION } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
@@ -30,13 +22,13 @@ import { extractContentFrom } from '../../utils/fileToContent';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import { FunctionalError, ValidationError } from '../../config/errors';
 import { convertRepresentationsIds } from '../internal/mapper-utils';
-import { addUser, findAll } from '../../domain/user';
+import { addUser, findAll as findAllUser } from '../../domain/user';
 import { getEntityFromCache } from '../../database/cache';
 import { SYSTEM_USER } from '../../utils/access';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import type { BasicStoreSettings } from '../../types/settings';
 import { findDefaultIngestionGroups } from '../../domain/group';
-import type { BasicGroupEntity } from '../../types/store';
+import type { BasicGroupEntity, BasicStoreCommon } from '../../types/store';
 
 const MINIMAL_CSV_FEED_COMPATIBLE_VERSION = '6.6.0';
 export const CSV_FEED_FEATURE_FLAG = 'CSV_FEED';
@@ -65,15 +57,31 @@ export const defaultIngestionGroupsCount = async (context: AuthContext) => {
   return defaultGroupLength.length ?? 0;
 };
 
-export const userAlreadyExists = async (context: AuthContext, args: QueryUserAlreadyExistsArgs) => {
-  const users = await findAll(context, context.user, args) as UserConnection;
-  return users.edges.length > 0;
+export const userAlreadyExists = async (context: AuthContext, name: string) => {
+  // We use SYSTEM_USER because manage ingestion should be enough to create an ingestion Feed
+  const users = await findAllUser(context, SYSTEM_USER, {
+    filters: {
+      mode: 'and',
+      filters: [
+        {
+          key: ['name'],
+          values: [name],
+        },
+      ],
+      filterGroups: [],
+    },
+    connectionFormat: false }) as BasicStoreCommon[];
+  return users.length > 0;
 };
 
 export const createOnTheFlyUser = async (context: AuthContext, user: AuthUser, input: IngestionCsvAddInput) => {
   const defaultIngestionGroups: BasicGroupEntity[] = await findDefaultIngestionGroups(context, user) as BasicGroupEntity[];
   if (defaultIngestionGroups.length < 1) {
     throw FunctionalError('You have not defined a default group for ingestion users', {});
+  }
+  const isUserAlreadyExisting = await userAlreadyExists(context, input.user_id);
+  if (isUserAlreadyExisting) {
+    throw FunctionalError('This user already exists. Change the feed\'s name to change the automatically created user\'s name', {});
   }
   const { platform_organization } = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
 
