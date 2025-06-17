@@ -25,7 +25,7 @@ export type HandleOperatorFilter = (
 export interface handleFilterHelpers {
   handleSwitchGlobalMode: () => void;
   handleSwitchLocalMode: (filter: Filter) => void;
-  handleRemoveRepresentationFilter: (id: string, valueId: string) => void;
+  handleRemoveRepresentationFilter: (id: string, valueId: string | Filter | undefined) => void;
   handleRemoveFilterById: (id: string) => void;
   handleChangeOperatorFilters: HandleOperatorFilter;
   handleAddSingleValueFilter: (id: string, valueId?: string) => void;
