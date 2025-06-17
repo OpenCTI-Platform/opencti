@@ -1,6 +1,7 @@
 import * as htmlToImage from 'html-to-image';
 import fileDownload from 'js-file-download';
 import pdfMake from 'pdfmake';
+import isSvg from 'is-svg';
 
 const ignoredClasses = [
   'MuiDialog-root',
@@ -160,4 +161,15 @@ export const getBase64ImageFromURL = (url) => {
     img.onerror = (error) => reject(error);
     img.src = url;
   });
+};
+
+export const isImageFromUrlSvg = async (url) => {
+  const response = await fetch(url);
+  const blob = await response.blob();
+  const content = await blob.text();
+  const imageIsSvg = isSvg(content);
+  return {
+    isSvg: imageIsSvg,
+    content: imageIsSvg ? content : '',
+  };
 };

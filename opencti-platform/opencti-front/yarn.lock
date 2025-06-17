@@ -3308,6 +3308,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@file-type/xml@npm:^0.4.3":
+  version: 0.4.3
+  resolution: "@file-type/xml@npm:0.4.3"
+  dependencies:
+    sax: "npm:^1.4.1"
+    strtok3: "npm:^10.2.2"
+  checksum: 10/35e2b2453e51c7a4249bf95d1b9313a076c4ada58214c6f97876bbd79f2b226edcb128a4e656df04c2b4e948bd2474f7e1374853f765baa4c32cce9d0b039365
+  languageName: node
+  linkType: hard
+
 "@floating-ui/core@npm:^1.7.1":
   version: 1.7.1
   resolution: "@floating-ui/core@npm:1.7.1"
@@ -6904,6 +6914,13 @@ __metadata:
   peerDependencies:
     "@testing-library/dom": ">=7.21.4"
   checksum: 10/34b74fff56a0447731a94b40d4cf246deb8dbc1c1e3aec93acd1c3377a760bb062e979f1572bb34ec164ad28ee2a391744b42d0d6d6cc16c4ce527e5e09610e1
+  languageName: node
+  linkType: hard
+
+"@tokenizer/token@npm:^0.3.0":
+  version: 0.3.0
+  resolution: "@tokenizer/token@npm:0.3.0"
+  checksum: 10/889c1f1e63ac7c92c0ea22d4a2861142f1b43c3d92eb70ec42aa9e9851fab2e9952211d50f541b287781280df2f979bf5600a9c1f91fbc61b7fcf9994e9376a5
   languageName: node
   linkType: hard
 
@@ -13942,6 +13959,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"is-svg@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "is-svg@npm:6.0.0"
+  dependencies:
+    "@file-type/xml": "npm:^0.4.3"
+  checksum: 10/b95519cf7b0dde12c014a65c865aecf2a03fc6565ab50b34eceda0a3029d10450ea1e9a55f9961dc650493aa8bb13a8a5a0f6d8f47cddc7eb22b14a10f477c8b
+  languageName: node
+  linkType: hard
+
 "is-symbol@npm:^1.0.4, is-symbol@npm:^1.1.1":
   version: 1.1.1
   resolution: "is-symbol@npm:1.1.1"
@@ -16424,6 +16450,7 @@ __metadata:
     http-proxy-middleware: "npm:3.0.5"
     i18n-auto-translation: "npm:2.2.1"
     invert-color: "npm:2.0.0"
+    is-svg: "npm:^6.0.0"
     js-base64: "npm:3.7.7"
     js-file-download: "npm:0.4.12"
     jsdom: "npm:26.1.0"
@@ -18482,7 +18509,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sax@npm:^1.2.4":
+"sax@npm:^1.2.4, sax@npm:^1.4.1":
   version: 1.4.1
   resolution: "sax@npm:1.4.1"
   checksum: 10/b1c784b545019187b53a0c28edb4f6314951c971e2963a69739c6ce222bfbc767e54d320e689352daba79b7d5e06d22b5d7113b99336219d6e93718e2f99d335
@@ -19195,6 +19222,15 @@ __metadata:
   version: 2.0.1
   resolution: "strip-json-comments@npm:2.0.1"
   checksum: 10/1074ccb63270d32ca28edfb0a281c96b94dc679077828135141f27d52a5a398ef5e78bcf22809d23cadc2b81dfbe345eb5fd8699b385c8b1128907dec4a7d1e1
+  languageName: node
+  linkType: hard
+
+"strtok3@npm:^10.2.2":
+  version: 10.3.1
+  resolution: "strtok3@npm:10.3.1"
+  dependencies:
+    "@tokenizer/token": "npm:^0.3.0"
+  checksum: 10/bb7950cc9ce98ec742a5db360630f0b004f16197959ae28d8c8dad4f8f0e405d71cfdc992483038ba29a0b4cbd7227618ad2492005b510d84a3fc5903df0c13f
   languageName: node
   linkType: hard
 

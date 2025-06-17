@@ -7,7 +7,7 @@ import { FintelDesign } from '@components/common/form/FintelDesignField';
 import { APP_BASE_PATH, fileUri } from '../../relay/environment';
 import { capitalizeWords } from '../String';
 import logoWhite from '../../static/images/logo_text_white.png';
-import { getBase64ImageFromURL } from '../Image';
+import { getBase64ImageFromURL, isImageFromUrlSvg } from '../Image';
 import FONTS from './utils/pdfFonts';
 import determineOrientation from './utils/pdfOrientation';
 import setImagesWidth from './utils/pdfImageWidth';
@@ -81,17 +81,21 @@ export const htmlToPdfReport = async (
   fintelDesign?: FintelDesign | null | undefined,
 ) => {
   const formattedTemplateName = capitalizeWords(templateName);
-  let logoBase64;
+  let logo;
+  let isLogoSvg = false;
 
   if (fintelDesign?.file_id) {
     const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(
       fintelDesign?.file_id,
     )}`;
-    logoBase64 = await getBase64ImageFromURL(url);
+    const { isSvg, content: svgContent } = await isImageFromUrlSvg(url);
+    isLogoSvg = isSvg;
+    if (!isLogoSvg) logo = await getBase64ImageFromURL(url);
+    else logo = svgContent;
   }
 
-  if (!logoBase64) {
-    logoBase64 = await getBase64ImageFromURL(fileUri(logoWhite));
+  if (!logo) {
+    logo = await getBase64ImageFromURL(fileUri(logoWhite));
   }
 
   let htmlData = removeUnnecessaryHtml(content);
@@ -136,7 +140,8 @@ export const htmlToPdfReport = async (
       {
         columns: [
           {
-            image: logoBase64,
+            image: !isLogoSvg ? logo : undefined,
+            svg: isLogoSvg ? logo : undefined,
             width: 133,
           },
           {
@@ -173,7 +178,8 @@ export const htmlToPdfReport = async (
         }],
       },
       {
-        image: logoBase64,
+        image: !isLogoSvg ? logo : undefined,
+        svg: isLogoSvg ? logo : undefined,
         width: 133,
         alignment: 'center',
         margin: [0, 380, 0, 0],

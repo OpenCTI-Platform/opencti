@@ -62,7 +62,7 @@ const FintelDesignForm: FunctionComponent<FintelDesignFormProps> = ({ onFileUplo
           if (!(value instanceof File)) {
             return false; // typecheck
           }
-          const allowedFormats = ['image/jpeg', 'image/png'];
+          const allowedFormats = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'];
           return allowedFormats.includes(value?.type);
         },
       ),
@@ -110,7 +110,7 @@ const FintelDesignForm: FunctionComponent<FintelDesignFormProps> = ({ onFileUplo
             <Field
               component={CustomFileUploader}
               label={t_i18n('Logo (png, jpg)')}
-              acceptMimeTypes="image/jpeg, image/png"
+              acceptMimeTypes="image/jpeg, image/png, image/webp, image/svg+xml"
               name="file"
               setFieldValue={setFieldValue}
               onChange={fileUpload}
