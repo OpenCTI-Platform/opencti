@@ -7333,10 +7333,10 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   x_opencti_cvss_v2_exploitability: String
   x_opencti_cvss_v2_remediation_level: String
   x_opencti_cvss_v2_report_confidence: String
-  x_opencti_cvss_v2_temporal_score: String
+  x_opencti_cvss_v2_temporal_score: Float
   # CVSS 4
   x_opencti_cvss_v4_vector: String
-  x_opencti_cvss_v4_base_score: String
+  x_opencti_cvss_v4_base_score: Float
   x_opencti_cvss_v4_base_severity: String
   x_opencti_cvss_v4_attack_vector: String
   x_opencti_cvss_v4_attack_complexity: String
@@ -7418,10 +7418,10 @@ input VulnerabilityAddInput {
   x_opencti_cvss_v2_exploitability: String
   x_opencti_cvss_v2_remediation_level: String
   x_opencti_cvss_v2_report_confidence: String
-  x_opencti_cvss_v2_temporal_score: String
+  x_opencti_cvss_v2_temporal_score: Float
   # CVSS 4
   x_opencti_cvss_v4_vector: String
-  x_opencti_cvss_v4_base_score: String
+  x_opencti_cvss_v4_base_score: Float
   x_opencti_cvss_v4_base_severity: String
   x_opencti_cvss_v4_attack_vector: String
   x_opencti_cvss_v4_attack_complexity: String

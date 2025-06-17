@@ -24,7 +24,7 @@ const useStyles = makeStyles(() => ({
   chipHigh: {
     textTransform: 'uppercase',
     borderRadius: 4,
-    width: 80,
+    width: 150,
     fontSize: 18,
     lineHeight: '18px',
     height: 38,

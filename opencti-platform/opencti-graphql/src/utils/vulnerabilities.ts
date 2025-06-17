@@ -59,7 +59,7 @@ export const isValidCvss4Vector = (vector: string | null | undefined): boolean =
     });
 };
 
-export const parseCvss4Vector = (vector: string | null | undefined, asObject = false): CvssFieldUpdate[] | Record<string, unknown> => {
+export const parseCvss4Vector = (vector: string | null | undefined, initialScore: number | null | undefined, asObject = false): CvssFieldUpdate[] | Record<string, unknown> => {
   const mapping: Record<string, string> = {
     AV: 'x_opencti_cvss_v4_attack_vector',
     AC: 'x_opencti_cvss_v4_attack_complexity',
@@ -96,24 +96,67 @@ export const parseCvss4Vector = (vector: string | null | undefined, asObject = f
   const nulls = missing.map((key) => ({ key, value: [null] }));
   const calculator = new Cvss4P0(vector!);
   const scores = calculator.calculateScores();
-  const result = [
+  const result = isEmptyField(initialScore) ? [
     ...parsedVector,
     ...nulls,
     { key: 'x_opencti_cvss_v4_base_score', value: [scores.overall] },
     { key: 'x_opencti_cvss_v4_base_severity', value: [getCvssCriticity(scores.overall)] },
-  ];
+  ] : [...parsedVector, ...nulls, { key: 'x_opencti_cvss_v4_base_severity', value: [getCvssCriticity(initialScore ?? 0)] }];
   if (asObject) {
     return Object.fromEntries(result.map(({ key, value }) => [key, value]));
   }
   return result;
 };
 
-export const updateCvss4VectorWithScores = (
+// Define allowed metric keys
+type Cvss4Metric =
+    | 'AV' | 'AC' | 'AT' | 'PR' | 'UI'
+    | 'VC' | 'VI' | 'VA'
+    | 'SC' | 'SI' | 'SA'
+    | 'E';
+
+type Cvss4ValueMap = {
+  [metric in Cvss4Metric]: Record<string, string>
+};
+
+const CVSS4_VALUE_MAP: Cvss4ValueMap = {
+  AV: { N: 'NETWORK', A: 'ADJACENT', L: 'LOCAL', P: 'PHYSICAL' },
+  AC: { L: 'LOW', H: 'HIGH' },
+  AT: { N: 'NONE', P: 'PRESENT' },
+  PR: { N: 'NONE', L: 'LOW', H: 'HIGH' },
+  UI: { N: 'NONE', R: 'REQUIRED' },
+  VC: { H: 'HIGH', L: 'LOW', N: 'NONE' },
+  VI: { H: 'HIGH', L: 'LOW', N: 'NONE' },
+  VA: { H: 'HIGH', L: 'LOW', N: 'NONE' },
+  SC: { H: 'HIGH', L: 'LOW', N: 'NONE' },
+  SI: { H: 'HIGH', L: 'LOW', N: 'NONE' },
+  SA: { H: 'HIGH', L: 'LOW', N: 'NONE' },
+  E: { X: 'NOT_DEFINED', A: 'UNRELIABLE', P: 'PROOF_OF_CONCEPT', F: 'FUNCTIONAL', H: 'HIGH' }
+};
+
+export const cvss4NormalizeValue = (metric: Cvss4Metric, val: unknown): string => {
+  if (!val) return '';
+  const valueUpper = String(val).trim().toUpperCase();
+  // Direct letter match
+  if (CVSS4_VALUE_MAP[metric] && valueUpper in CVSS4_VALUE_MAP[metric]) {
+    return valueUpper;
+  }
+  // String (true value) match
+  if (CVSS4_VALUE_MAP[metric]) {
+    const found = Object.entries(CVSS4_VALUE_MAP[metric])
+      .find(([, full]) => full === valueUpper || full === String(val).trim());
+    if (found) return found[0];
+  }
+  return valueUpper;
+};
+
+export const updateCvss4Vector = (
   existingVector: string | null | undefined,
   updates: CvssFieldUpdate[],
+  initialScore: number | null | undefined,
   asObject = false,
 ): CvssFieldUpdate[] | Record<string, unknown> => {
-  const keyMap: Record<string, string> = {
+  const keyMap: Record<string, Cvss4Metric> = {
     x_opencti_cvss_v4_attack_vector: 'AV',
     x_opencti_cvss_v4_attack_complexity: 'AC',
     x_opencti_cvss_v4_attack_requirements: 'AT',
@@ -141,7 +184,7 @@ export const updateCvss4VectorWithScores = (
     if (metric) {
       const val = Array.isArray(value) ? value[0] : value;
       if (val !== null && val !== undefined) {
-        parts.set(metric, String(val));
+        parts.set(metric, cvss4NormalizeValue(metric, String(val)));
       }
     }
   });
@@ -149,13 +192,16 @@ export const updateCvss4VectorWithScores = (
   const updatedVector = `CVSS:4.0/${ordered.filter((k) => parts.has(k)).map((k) => `${k}:${parts.get(k)}`).join('/')}`;
   const calculator = new Cvss4P0(updatedVector);
   const scores = calculator.calculateScores();
-  const result = [
+  const result = isEmptyField(initialScore) ? [
     { key: 'x_opencti_cvss_v4_vector', value: [updatedVector] },
     { key: 'x_opencti_cvss_v4_base_score', value: [scores.overall] },
     { key: 'x_opencti_cvss_v4_base_severity', value: [getCvssCriticity(scores.overall)] }
+  ] : [
+    { key: 'x_opencti_cvss_v4_vector', value: [updatedVector] },
+    { key: 'x_opencti_cvss_v4_base_severity', value: [getCvssCriticity(initialScore ?? 0)] }
   ];
   if (asObject) {
-    return Object.fromEntries(result.map(({ key, value }) => [key, value]));
+    return Object.fromEntries(result.map(({ key, value }) => [key, value[0]]));
   }
   return result;
 };
@@ -190,7 +236,7 @@ export const isValidCvss3Vector = (vector: string | null | undefined): boolean =
     });
 };
 
-export const parseCvss3Vector = (vector: string | null | undefined, asObject = false): CvssFieldUpdate[] | Record<string, unknown> => {
+export const parseCvss3Vector = (vector: string | null | undefined, initialScore: number | null | undefined, asObject = false): CvssFieldUpdate[] | Record<string, unknown> => {
   const mapping: Record<string, string> = {
     AV: 'x_opencti_cvss_attack_vector',
     AC: 'x_opencti_cvss_attack_complexity',
@@ -228,15 +274,15 @@ export const parseCvss3Vector = (vector: string | null | undefined, asObject = f
   const nulls = missingKeys.map((key) => ({ key, value: [null] }));
   const cvss3 = new Cvss3P1(vector!);
   const scores = cvss3.calculateScores();
-  const result = [
+  const result = isEmptyField(initialScore) ? [
     ...parsedVector,
     ...nulls,
     { key: 'x_opencti_cvss_base_score', value: [scores.overall] },
     { key: 'x_opencti_cvss_base_severity', value: [getCvssCriticity(scores.overall)] },
     { key: 'x_opencti_cvss_temporal_score', value: [isNotEmptyField(scores.temporal) ? scores.temporal : null] }
-  ];
+  ] : [...parsedVector, ...nulls, { key: 'x_opencti_cvss_base_severity', value: [getCvssCriticity(initialScore ?? 0)] }];
   if (asObject) {
-    return Object.fromEntries(result.map(({ key, value }) => [key, value]));
+    return Object.fromEntries(result.map((e) => [e.key, e.value[0]]));
   }
   return result;
 };
@@ -244,7 +290,8 @@ export const parseCvss3Vector = (vector: string | null | undefined, asObject = f
 export const updateCvss3VectorWithScores = (
   existingVector: string | null | undefined,
   updates: CvssFieldUpdate[],
-  asObject = false
+  initialScore: number | null | undefined,
+  asObject = false,
 ): CvssFieldUpdate[] | Record<string, unknown> => {
   const keyMap: Record<string, string> = {
     x_opencti_cvss_attack_vector: 'AV',
@@ -281,14 +328,14 @@ export const updateCvss3VectorWithScores = (
   const updatedVector = `CVSS:3.1/${ordered.filter((k) => parts.has(k)).map((k) => `${k}:${parts.get(k)}`).join('/')}`;
   const calculator = new Cvss3P1(updatedVector);
   const scores = calculator.calculateScores();
-  const result = [
+  const result = isEmptyField(initialScore) ? [
     { key: 'x_opencti_cvss_vector', value: [updatedVector] },
     { key: 'x_opencti_cvss_base_score', value: [scores.overall] },
     { key: 'x_opencti_cvss_base_severity', value: [getCvssCriticity(scores.overall)] },
     { key: 'x_opencti_cvss_temporal_score', value: [isNotEmptyField(scores.temporal) ? scores.temporal : null] }
-  ];
+  ] : [{ key: 'x_opencti_cvss_vector', value: [updatedVector] }, { key: 'x_opencti_cvss_base_severity', value: [getCvssCriticity(initialScore ?? 0)] }];
   if (asObject) {
-    return Object.fromEntries(result.map(({ key, value }) => [key, value]));
+    return Object.fromEntries(result.map((e) => [e.key, e.value[0]]));
   }
   return result;
 };
@@ -322,7 +369,7 @@ export const isValidCvss2Vector = (vector: string | null | undefined): boolean =
     });
 };
 
-export const parseCvss2Vector = (vector: string | null | undefined, asObject = false): CvssFieldUpdate[] | Record<string, unknown> => {
+export const parseCvss2Vector = (vector: string | null | undefined, initialScore: number | null | undefined, asObject = false): CvssFieldUpdate[] | Record<string, unknown> => {
   const mapping: Record<string, string> = {
     AV: 'x_opencti_cvss_v2_access_vector',
     AC: 'x_opencti_cvss_v2_access_complexity',
@@ -359,23 +406,28 @@ export const parseCvss2Vector = (vector: string | null | undefined, asObject = f
   const nulls = missingKeys.map((key) => ({ key, value: [null] }));
   const cvss2 = new Cvss2(vector!);
   const scores = cvss2.calculateScores();
-  const result = [
+  const result = isEmptyField(initialScore) ? [
     ...parsedVector,
     ...nulls,
     { key: 'x_opencti_cvss_v2_vector', value: [vector] },
     { key: 'x_opencti_cvss_v2_base_score', value: [scores.base] },
     { key: 'x_opencti_cvss_v2_temporal_score', value: [isNotEmptyField(scores.temporal) ? scores.temporal : null] }
+  ] : [
+    ...parsedVector,
+    ...nulls,
+    { key: 'x_opencti_cvss_v2_vector', value: [vector] },
   ];
   if (asObject) {
-    return Object.fromEntries(result.map(({ key, value }) => [key, value]));
+    return Object.fromEntries(result.map((e) => [e.key, e.value[0]]));
   }
   return result;
 };
 
-export const updateCvss2VectorWithScores = (
+export const updateCvss2Vector = (
   existingVector: string | null | undefined,
   updates: CvssFieldUpdate[],
-  asObject = false
+  initialScore: number | null | undefined,
+  asObject = false,
 ): CvssFieldUpdate[] | Record<string, unknown> => {
   const keyMap: Record<string, string> = {
     x_opencti_cvss_v2_access_vector: 'AV',
@@ -409,13 +461,13 @@ export const updateCvss2VectorWithScores = (
   const updatedVector = ordered.filter((k) => parts.has(k)).map((k) => `${k}:${parts.get(k)}`).join('/');
   const calculator = new Cvss2(updatedVector);
   const scores = calculator.calculateScores();
-  const result = [
+  const result = isEmptyField(initialScore) ? [
     { key: 'x_opencti_cvss_v2_vector', value: [updatedVector] },
     { key: 'x_opencti_cvss_v2_base_score', value: [scores.base] },
     { key: 'x_opencti_cvss_v2_temporal_score', value: [isNotEmptyField(scores.temporal) ? scores.temporal : null] }
-  ];
+  ] : [{ key: 'x_opencti_cvss_v2_vector', value: [updatedVector] }];
   if (asObject) {
-    return Object.fromEntries(result.map(({ key, value }) => [key, value]));
+    return Object.fromEntries(result.map((e) => [e.key, e.value[0]]));
   }
   return result;
 };
