@@ -15,6 +15,7 @@ import FilterValuesContent from '../FilterValuesContent';
 import { FilterRepresentative } from './FiltersModel';
 import { Filter, FilterGroup } from '../../utils/filters/filtersHelpers-types';
 import useSchema from '../../utils/hooks/useSchema';
+import TasksFilterValueContainer from '../TasksFilterValueContainer';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -222,17 +223,17 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
                 </>
               );
               if (subKey === 'dynamic') {
-                if (!val.values.every((v: FilterGroup) => isFilterGroupNotEmpty(v))) return <div key={val.key}/>;
+                const dynamicValues = val.values;
+                if (!dynamicValues.every((v: FilterGroup) => isFilterGroupNotEmpty(v))) return <div key={val.key}/>;
                 return (
                   <Fragment key={val.key}>
                     <Tooltip
                       title={
-                        <FilterValues
-                          label={keyLabel}
-                          tooltip={true}
-                          currentFilter={val}
-                          filtersRepresentativesMap={filtersRepresentativesMap}
-                        />
+                        dynamicValues.map((v: FilterGroup) => (
+                          <TasksFilterValueContainer
+                            key={dynamicValues.indexOf(v)}
+                            filters={v}
+                          />))
                         }
                     >
                       <Box
