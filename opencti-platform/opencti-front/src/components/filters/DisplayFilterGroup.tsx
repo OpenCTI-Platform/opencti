@@ -13,7 +13,6 @@ import Chip from '@mui/material/Chip';
 import { useFormatter } from '../i18n';
 import { FilterRepresentative } from './FiltersModel';
 import { Filter, FilterGroup } from '../../utils/filters/filtersHelpers-types';
-import TasksFilterValueContainer from '../TasksFilterValueContainer';
 
 interface DisplayFiltersValuesProps {
   filtersRepresentativesMap: Map<string, FilterRepresentative>,
@@ -56,133 +55,6 @@ const DisplayFiltersValues: FunctionComponent<DisplayFiltersValuesProps> = ({
   );
 };
 
-interface DisplayFiltersFiltersProps {
-  filtersRepresentativesMap: Map<string, FilterRepresentative>,
-  filters: Filter[],
-  parentMode: string,
-}
-
-const DisplayFiltersFilters: FunctionComponent<DisplayFiltersFiltersProps> = ({
-  filtersRepresentativesMap,
-  filters,
-  parentMode,
-}) => {
-  const { t_i18n } = useFormatter();
-  return filters.map((f, i) => {
-    const { key, operator, values, mode, id } = f;
-    return (
-      <Box
-        key={id ?? key}
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: 'auto 1fr',
-          gap: '8px',
-          alignItems: 'center',
-        }}
-      >
-        {i !== 0 && (
-          <Box
-            sx={{
-              textTransform: 'uppercase',
-              fontWeight: 'bold',
-              display: 'inline-block',
-              borderRadius: '24px',
-              padding: '8px 16px',
-              fontFamily: 'Consolas, monaco, monospace',
-              backgroundColor: '#01478d',
-            }}
-          >
-            {parentMode}
-          </Box>
-        )}
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '16px',
-            borderRadius: '24px',
-            padding: '0 16px',
-            backgroundColor: 'rgba(255, 255, 255, 0.16)',
-            width: 'fit-content',
-          }}
-        >
-          <span>{t_i18n(key)}</span>
-          <Box
-            sx={{
-              textTransform: 'uppercase',
-              fontFamily: 'Consolas, monaco, monospace',
-              backgroundColor: 'rgb(74 117 162)',
-              fontWeight: 'bold',
-              display: 'inline-block',
-              margin: '0 8px',
-              padding: '8px',
-            }}
-          >
-            {' '}
-            {operator}
-          </Box>
-          <Box sx={{ display: 'inline-block' }}>
-            {key === 'regardingOf' || key === 'dynamicRegardingOf'
-              ? <>
-                {values
-                  .filter((v) => v.key === 'relationship_type')
-                  .flat()
-                  .map((value) => {
-                    return (<span key={'relationship_type'}>
-                      <DisplayFiltersValues
-                        filtersRepresentativesMap={filtersRepresentativesMap}
-                        values={value.values}
-                      />
-                    </span>);
-                  })}
-                {values.filter((v) => v.key === 'id' || v.key === 'dynamic').length > 0
-                  && <Box
-                    sx={{
-                      paddingTop: 2,
-                      textTransform: 'uppercase',
-                      fontFamily: 'Consolas, monaco, monospace',
-                      backgroundColor: 'rgba(255, 255, 255, .1)',
-                      fontWeight: 'bold',
-                      display: 'inline-block',
-                      margin: '0 8px',
-                      padding: '8px',
-                    }}
-                     >
-                    {t_i18n('WITH')}
-                  </Box>
-                }
-                {values.filter((v) => v.key === 'id').flat().map((value) => {
-                  return (<span key={'id'}>
-                    <DisplayFiltersValues
-                      filtersRepresentativesMap={filtersRepresentativesMap}
-                      values={value.values}
-                    />
-                  </span>);
-                })}
-                {values.filter((v) => v.key === 'dynamic').flat().map((value) => {
-                  return (<span key={'id'}>
-                    {value.values.map((v: FilterGroup) => (
-                      <TasksFilterValueContainer
-                        key={value.values.indexOf(v)}
-                        filters={v}
-                      />))
-                    }
-                  </span>);
-                })}
-              </>
-              : <DisplayFiltersValues
-                  filtersRepresentativesMap={filtersRepresentativesMap}
-                  values={values}
-                  mode={mode ?? 'or'}
-                />
-            }
-          </Box>
-        </Box>
-      </Box>
-    );
-  });
-};
-
 interface DisplayFilterGroupsProps {
   filtersRepresentativesMap: Map<string, FilterRepresentative>,
   filterGroups: FilterGroup[],
@@ -194,6 +66,122 @@ const DisplayFiltersFilterGroups: FunctionComponent<DisplayFilterGroupsProps> = 
   filterGroups,
   filterMode,
 }) => {
+  const { t_i18n } = useFormatter();
+  const displayFilterFilters = (filters: Filter[], parentMode: string) => {
+    return filters.map((f, i) => {
+      const { key, operator, values, mode, id } = f;
+      return (
+        <Box
+          key={id ?? key}
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: 'auto 1fr',
+            gap: '8px',
+            alignItems: 'center',
+          }}
+        >
+          {i !== 0 && (
+            <Box
+              sx={{
+                textTransform: 'uppercase',
+                fontWeight: 'bold',
+                display: 'inline-block',
+                borderRadius: '24px',
+                padding: '8px 16px',
+                fontFamily: 'Consolas, monaco, monospace',
+                backgroundColor: '#01478d',
+              }}
+            >
+              {parentMode}
+            </Box>
+          )}
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px',
+              borderRadius: '24px',
+              padding: '0 16px',
+              backgroundColor: 'rgba(255, 255, 255, 0.16)',
+              width: 'fit-content',
+            }}
+          >
+            <span>{t_i18n(key)}</span>
+            <Box
+              sx={{
+                textTransform: 'uppercase',
+                fontFamily: 'Consolas, monaco, monospace',
+                backgroundColor: 'rgb(74 117 162)',
+                fontWeight: 'bold',
+                display: 'inline-block',
+                margin: '0 8px',
+                padding: '8px',
+              }}
+            >
+              {' '}
+              {operator}
+            </Box>
+            <Box sx={{ display: 'inline-block' }}>
+              {key === 'regardingOf' || key === 'dynamicRegardingOf'
+                ? <>
+                  {values
+                    .filter((v) => v.key === 'relationship_type')
+                    .flat()
+                    .map((value) => {
+                      return (<span key={'relationship_type'}>
+                        <DisplayFiltersValues
+                          filtersRepresentativesMap={filtersRepresentativesMap}
+                          values={value.values}
+                        />
+                      </span>);
+                    })}
+                  {values.filter((v) => v.key === 'id' || v.key === 'dynamic').length > 0
+                    && <Box
+                      sx={{
+                        paddingTop: 2,
+                        textTransform: 'uppercase',
+                        fontFamily: 'Consolas, monaco, monospace',
+                        backgroundColor: 'rgba(255, 255, 255, .1)',
+                        fontWeight: 'bold',
+                        display: 'inline-block',
+                        margin: '0 8px',
+                        padding: '8px',
+                      }}
+                       >
+                      {t_i18n('WITH')}
+                    </Box>
+                  }
+                  {values.filter((v) => v.key === 'id').flat().map((value) => {
+                    return (<span key={'id'}>
+                      <DisplayFiltersValues
+                        filtersRepresentativesMap={filtersRepresentativesMap}
+                        values={value.values}
+                      />
+                    </span>);
+                  })}
+                  {values.filter((v) => v.key === 'dynamic').flat().map((value) => {
+                    return (<span key={'id'}>
+                      <DisplayFiltersFilterGroups
+                        filterGroups={value.values}
+                        filtersRepresentativesMap={filtersRepresentativesMap}
+                        filterMode={'and'}
+                      />
+                    </span>);
+                  })}
+                </>
+                : <DisplayFiltersValues
+                    filtersRepresentativesMap={filtersRepresentativesMap}
+                    values={values}
+                    mode={mode ?? 'or'}
+                  />
+              }
+            </Box>
+          </Box>
+        </Box>
+      );
+    });
+  };
+
   return filterGroups.map((f, i) => {
     return (
       <Fragment key={i}>
@@ -222,11 +210,7 @@ const DisplayFiltersFilterGroups: FunctionComponent<DisplayFilterGroupsProps> = 
           }}
         >
           <Stack sx={{ gap: '8px', paddingBottom: '8px' }}>
-            <DisplayFiltersFilters
-              filtersRepresentativesMap={filtersRepresentativesMap}
-              filters={f.filters}
-              parentMode={f.mode}
-            />
+            {displayFilterFilters(f.filters, f.mode)}
           </Stack>
           {f.filterGroups.length > 0 && (
             <Stack direction="row">
