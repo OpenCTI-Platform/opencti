@@ -170,7 +170,8 @@ const stixCoreRelationshipCreationFromEntityListRelationAdd = graphql`
           }
         }
         ... on Vulnerability {
-          ...VulnerabilitySoftwares_vulnerability
+          ...VulnerabilitySoftwaresHas_vulnerability
+          ...VulnerabilitySoftwaresRemediates_vulnerability
         }
         ... on StixCyberObservable {
           ...StixCyberObservableIndicators_stixCyberObservable

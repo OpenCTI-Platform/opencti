@@ -66,7 +66,7 @@ class AddSoftwares extends Component {
   }
 
   render() {
-    const { t, classes, vulnerability, vulnerabilitySoftwares } = this.props;
+    const { t, classes, vulnerability, vulnerabilitySoftwares, relationshipType } = this.props;
     const paginationOptions = {
       search: this.state.search,
     };
@@ -102,6 +102,7 @@ class AddSoftwares extends Component {
                 <AddSoftwaresLines
                   vulnerability={vulnerability}
                   vulnerabilitySoftwares={vulnerabilitySoftwares}
+                  relationshipType={relationshipType}
                   data={props}
                 />
               );
@@ -124,6 +125,7 @@ class AddSoftwares extends Component {
 AddSoftwares.propTypes = {
   vulnerability: PropTypes.object,
   vulnerabilitySoftwares: PropTypes.array,
+  relationshipType: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
 };

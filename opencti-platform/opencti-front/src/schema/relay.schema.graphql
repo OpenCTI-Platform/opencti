@@ -5354,16 +5354,54 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   name: String!
   description: String
   x_opencti_aliases: [String]
+  x_opencti_cvss_vector: String
   x_opencti_cvss_base_score: Float
   x_opencti_cvss_base_severity: String
   x_opencti_cvss_attack_vector: String
+  x_opencti_cvss_attack_complexity: String
+  x_opencti_cvss_privileges_required: String
+  x_opencti_cvss_user_interaction: String
+  x_opencti_cvss_scope: String
+  x_opencti_cvss_confidentiality_impact: String
   x_opencti_cvss_integrity_impact: String
   x_opencti_cvss_availability_impact: String
-  x_opencti_cvss_confidentiality_impact: String
+  x_opencti_cvss_exploit_code_maturity: String
+  x_opencti_cvss_remediation_level: String
+  x_opencti_cvss_report_confidence: String
+  x_opencti_cvss_temporal_score: Float
+  x_opencti_cvss_v2_vector: String
+  x_opencti_cvss_v2_base_score: Float
+  x_opencti_cvss_v2_access_vector: String
+  x_opencti_cvss_v2_access_complexity: String
+  x_opencti_cvss_v2_authentication: String
+  x_opencti_cvss_v2_confidentiality_impact: String
+  x_opencti_cvss_v2_integrity_impact: String
+  x_opencti_cvss_v2_availability_impact: String
+  x_opencti_cvss_v2_exploitability: String
+  x_opencti_cvss_v2_remediation_level: String
+  x_opencti_cvss_v2_report_confidence: String
+  x_opencti_cvss_v2_temporal_score: String
+  x_opencti_cvss_v4_vector: String
+  x_opencti_cvss_v4_base_score: String
+  x_opencti_cvss_v4_base_severity: String
+  x_opencti_cvss_v4_attack_vector: String
+  x_opencti_cvss_v4_attack_complexity: String
+  x_opencti_cvss_v4_attack_requirements: String
+  x_opencti_cvss_v4_privileges_required: String
+  x_opencti_cvss_v4_user_interaction: String
+  x_opencti_cvss_v4_confidentiality_impact_v: String
+  x_opencti_cvss_v4_confidentiality_impact_s: String
+  x_opencti_cvss_v4_integrity_impact_v: String
+  x_opencti_cvss_v4_integrity_impact_s: String
+  x_opencti_cvss_v4_availability_impact_v: String
+  x_opencti_cvss_v4_availability_impact_s: String
+  x_opencti_cvss_v4_exploit_maturity: String
+  x_opencti_cwe: String
   x_opencti_cisa_kev: Boolean
   x_opencti_epss_score: Float
   x_opencti_epss_percentile: Float
-  softwares(first: Int, after: ID, orderBy: StixCyberObservablesOrdering, orderMode: OrderingMode): StixCyberObservableConnection
+  x_opencti_score: Int
+  softwares(relationshipType: String, first: Int, after: ID, orderBy: StixCyberObservablesOrdering, orderMode: OrderingMode): StixCyberObservableConnection
   creators: [Creator!]
   toStix: String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
@@ -5382,15 +5420,53 @@ input VulnerabilityAddInput {
   name: String!
   description: String
   x_opencti_aliases: [String]
+  x_opencti_cvss_vector: String
   x_opencti_cvss_base_score: Float
   x_opencti_cvss_base_severity: String
   x_opencti_cvss_attack_vector: String
+  x_opencti_cvss_attack_complexity: String
+  x_opencti_cvss_privileges_required: String
+  x_opencti_cvss_user_interaction: String
+  x_opencti_cvss_scope: String
+  x_opencti_cvss_confidentiality_impact: String
   x_opencti_cvss_integrity_impact: String
   x_opencti_cvss_availability_impact: String
-  x_opencti_cvss_confidentiality_impact: String
+  x_opencti_cvss_exploit_code_maturity: String
+  x_opencti_cvss_remediation_level: String
+  x_opencti_cvss_report_confidence: String
+  x_opencti_cvss_temporal_score: Float
+  x_opencti_cvss_v2_vector: String
+  x_opencti_cvss_v2_base_score: Float
+  x_opencti_cvss_v2_access_vector: String
+  x_opencti_cvss_v2_access_complexity: String
+  x_opencti_cvss_v2_authentication: String
+  x_opencti_cvss_v2_confidentiality_impact: String
+  x_opencti_cvss_v2_integrity_impact: String
+  x_opencti_cvss_v2_availability_impact: String
+  x_opencti_cvss_v2_exploitability: String
+  x_opencti_cvss_v2_remediation_level: String
+  x_opencti_cvss_v2_report_confidence: String
+  x_opencti_cvss_v2_temporal_score: String
+  x_opencti_cvss_v4_vector: String
+  x_opencti_cvss_v4_base_score: String
+  x_opencti_cvss_v4_base_severity: String
+  x_opencti_cvss_v4_attack_vector: String
+  x_opencti_cvss_v4_attack_complexity: String
+  x_opencti_cvss_v4_attack_requirement: String
+  x_opencti_cvss_v4_privileges_required: String
+  x_opencti_cvss_v4_user_interaction: String
+  x_opencti_cvss_v4_confidentiality_impact_v: String
+  x_opencti_cvss_v4_confidentiality_impact_s: String
+  x_opencti_cvss_v4_integrity_impact_v: String
+  x_opencti_cvss_v4_integrity_impact_s: String
+  x_opencti_cvss_v4_availability_impact_v: String
+  x_opencti_cvss_v4_availability_impact_s: String
+  x_opencti_cvss_v4_exploit_maturity: String
+  x_opencti_cwe: String
   x_opencti_cisa_kev: Boolean
   x_opencti_epss_score: Float
   x_opencti_epss_percentile: Float
+  x_opencti_score: Int
   confidence: Int
   revoked: Boolean
   lang: String

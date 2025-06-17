@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { createPaginationContainer, graphql } from 'react-relay';
 import { compose } from 'ramda';
+import capitalize from '@mui/utils/capitalize';
 import inject18n from '../../../../components/i18n';
 import StixCoreRelationshipCreationFromEntityList from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityList';
 
@@ -21,14 +22,14 @@ export const addSoftwaresMutationRelationDelete = graphql`
 
 class AddSoftwaresLinesContainer extends Component {
   render() {
-    const { data, vulnerabilitySoftwares, vulnerability } = this.props;
+    const { data, vulnerabilitySoftwares, vulnerability, relationshipType } = this.props;
     return (
       <StixCoreRelationshipCreationFromEntityList
         entity={vulnerability}
-        relationshipType={'has'}
+        relationshipType={relationshipType}
         availableDatas={data?.stixCyberObservables}
         existingDatas={vulnerabilitySoftwares}
-        updaterOptions={ { path: 'softwares', params: { first: 10 } } }
+        updaterOptions={ { path: 'softwares', params: { relationshipType, first: 10 } } }
         isRelationReversed={true}
       />
     );
@@ -38,6 +39,7 @@ class AddSoftwaresLinesContainer extends Component {
 AddSoftwaresLinesContainer.propTypes = {
   vulnerability: PropTypes.object,
   vulnerabilitySoftwares: PropTypes.array,
+  relationshipType: PropTypes.string,
   data: PropTypes.object,
 };
 

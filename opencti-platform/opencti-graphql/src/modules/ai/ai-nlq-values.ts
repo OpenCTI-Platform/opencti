@@ -805,6 +805,8 @@ export enum FilterEnum {
   X_OPENCTI_CISA_KEV = 'x_opencti_cisa_kev',
   X_OPENCTI_EPSS_SCORE = 'x_opencti_epss_score',
   X_OPENCTI_EPSS_PERCENTILE = 'x_opencti_epss_percentile',
+
+  // AUTRES
   X_OPENCTI_DETECTION = 'x_opencti_detection',
   X_OPENCTI_MAIN_OBSERVABLE_TYPE = 'x_opencti_main_observable_type',
   X_OPENCTI_SCORE = 'x_opencti_score',

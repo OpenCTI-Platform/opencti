@@ -333,17 +333,52 @@ interface BasicStoreEntity extends BasicStoreCommon {
   source: string;
   severity: string;
   incident_type: string;
+  // custom
   x_opencti_location_type: string;
   x_opencti_reliability: string;
   x_opencti_organization_type: string;
-  x_opencti_cvss_attack_vector: string;
-  x_opencti_cvss_availability_impact: string;
+  // CVSS3
+  x_opencti_cvss_vector: string;
   x_opencti_cvss_base_severity: string;
+  x_opencti_cvss_attack_vector: string;
+  x_opencti_cvss_attack_complexity: string;
+  x_opencti_cvss_privileges_required: string;
+  x_opencti_cvss_user_interaction: string;
+  x_opencti_cvss_scope: string;
   x_opencti_cvss_confidentiality_impact: string;
   x_opencti_cvss_integrity_impact: string;
-  x_opencti_cisa_kev: boolean;
-  x_opencti_epss_score: number;
-  x_opencti_epss_percentile: number;
+  x_opencti_cvss_availability_impact: string;
+  x_opencti_cvss_exploit_code_maturity: string;
+  x_opencti_cvss_remediation_level: string;
+  x_opencti_cvss_report_confidence: string;
+  // CVSS2
+  x_opencti_cvss_v2_vector: string;
+  x_opencti_cvss_v2_access_vector: string;
+  x_opencti_cvss_v2_access_complexity: string;
+  x_opencti_cvss_v2_authentication: string;
+  x_opencti_cvss_v2_confidentiality_impact: string;
+  x_opencti_cvss_v2_integrity_impact: string;
+  x_opencti_cvss_v2_availability_impact: string;
+  x_opencti_cvss_v2_exploitability: string;
+  x_opencti_cvss_v2_remediation_level: string;
+  x_opencti_cvss_v2_report_confidence: string;
+  // CVSS4
+  x_opencti_cvss_v4_vector: string;
+  x_opencti_cvss_v4_base_severity: string;
+  x_opencti_cvss_v4_attack_vector: string;
+  x_opencti_cvss_v4_attack_complexity: string;
+  x_opencti_cvss_v4_attack_requirements: string;
+  x_opencti_cvss_v4_privileges_required: string;
+  x_opencti_cvss_v4_user_interaction: string;
+  x_opencti_cvss_v4_confidentiality_impact_v: string;
+  x_opencti_cvss_v4_confidentiality_impact_s: string;
+  x_opencti_cvss_v4_integrity_impact_v: string;
+  x_opencti_cvss_v4_integrity_impact_s: string;
+  x_opencti_cvss_v4_availability_impact_v: string;
+  x_opencti_cvss_v4_availability_impact_s: string;
+  x_opencti_cvss_v4_exploit_maturity: string;
+  // Others
+  x_opencti_cwe: string;
   x_opencti_main_observable_type: string;
   x_opencti_lastname: string;
   x_opencti_firstname: string;
@@ -353,9 +388,7 @@ interface BasicStoreEntity extends BasicStoreCommon {
   // rels
   [RELATION_CREATED_BY]: string;
   [RELATION_OBJECT]: Array<string>;
-  // Array
-  x_mitre_permissions_required: Array<string>;
-  x_mitre_platforms: Array<string>;
+  // array
   collection_layers: Array<string>;
   received_lines: Array<string>;
   parent_types: Array<string>;
@@ -375,6 +408,10 @@ interface BasicStoreEntity extends BasicStoreCommon {
   architecture_execution_envs: Array<string>;
   implementation_languages: Array<string>;
   capabilities: Array<string>;
+  note_types: Array<string>;
+  // custom
+  x_mitre_permissions_required: Array<string>;
+  x_mitre_platforms: Array<string>;
   // dates
   created: Date;
   modified: Date;
@@ -388,20 +425,31 @@ interface BasicStoreEntity extends BasicStoreCommon {
   // boolean
   revoked: boolean;
   is_family: boolean;
-  x_opencti_detection: boolean;
   is_inferred: boolean;
+  // custom
+  x_opencti_detection: boolean;
+  x_opencti_cisa_kev: boolean;
   // number
   number_observed: number;
   confidence: number;
   latitude: string;
   longitude: string;
   precision: number;
-  x_opencti_order: number;
-  x_opencti_cvss_base_score: number;
-  x_opencti_score: number;
+  // custom
   usages: number;
-  note_types: Array<string>;
   likelihood: number;
+  x_opencti_order: number;
+  x_opencti_score: number;
+  x_opencti_epss_score: number;
+  x_opencti_epss_percentile: number;
+  // CVSS3
+  x_opencti_cvss_base_score: number;
+  x_opencti_cvss_temporal_score: number;
+  // CVSS2
+  x_opencti_cvss_v2_base_score: number;
+  x_opencti_cvss_v2_temporal_score: number;
+  // CVSS4
+  x_opencti_cvss_v4_base_score: number;
 }
 
 interface StoreEntity extends BasicStoreEntity, StoreCommon {
