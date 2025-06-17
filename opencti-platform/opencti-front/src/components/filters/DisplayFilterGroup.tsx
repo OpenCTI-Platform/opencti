@@ -13,6 +13,7 @@ import Chip from '@mui/material/Chip';
 import { useFormatter } from '../i18n';
 import { FilterRepresentative } from './FiltersModel';
 import { Filter, FilterGroup } from '../../utils/filters/filtersHelpers-types';
+import TasksFilterValueContainer from '../TasksFilterValueContainer';
 
 interface DisplayFiltersValuesProps {
   filtersRepresentativesMap: Map<string, FilterRepresentative>,
@@ -121,7 +122,7 @@ const DisplayFiltersFilters: FunctionComponent<DisplayFiltersFiltersProps> = ({
             {operator}
           </Box>
           <Box sx={{ display: 'inline-block' }}>
-            {key === 'regardingOf'
+            {key === 'regardingOf' || key === 'dynamicRegardingOf'
               ? <>
                 {values
                   .filter((v) => v.key === 'relationship_type')
@@ -134,7 +135,7 @@ const DisplayFiltersFilters: FunctionComponent<DisplayFiltersFiltersProps> = ({
                       />
                     </span>);
                   })}
-                {values.filter((v) => v.key === 'id').length > 0
+                {values.filter((v) => v.key === 'id' || v.key === 'dynamic').length > 0
                   && <Box
                     sx={{
                       paddingTop: 2,
@@ -156,6 +157,16 @@ const DisplayFiltersFilters: FunctionComponent<DisplayFiltersFiltersProps> = ({
                       filtersRepresentativesMap={filtersRepresentativesMap}
                       values={value.values}
                     />
+                  </span>);
+                })}
+                {values.filter((v) => v.key === 'dynamic').flat().map((value) => {
+                  return (<span key={'id'}>
+                    {value.values.map((v: FilterGroup) => (
+                      <TasksFilterValueContainer
+                        key={value.values.indexOf(v)}
+                        filters={v}
+                      />))
+                    }
                   </span>);
                 })}
               </>
