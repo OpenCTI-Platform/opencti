@@ -88,7 +88,7 @@ const useFiltersState = (initFilters: FilterGroup | null = emptyFilterGroup, def
         latestAddFilterId: undefined,
       }));
     },
-    handleRemoveRepresentationFilter: (id: string, value: string) => {
+    handleRemoveRepresentationFilter: (id: string, value: string | Filter | undefined) => {
       setFiltersState((prevState) => ({
         ...prevState,
         filters: handleRemoveRepresentationFilterUtil({ filters: prevState.filters, id, value }),
