@@ -42,6 +42,7 @@ import {
   ACTION_TYPE_SHARE_MULTIPLE,
   ACTION_TYPE_UNSHARE,
   ACTION_TYPE_UNSHARE_MULTIPLE,
+  createWorkForBackgroundTask,
   TASK_TYPE_LIST,
   TASK_TYPE_QUERY,
   TASK_TYPE_RULE
@@ -50,7 +51,7 @@ import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { BackgroundTaskScope } from '../generated/graphql';
 import { getDraftContext } from '../utils/draftContext';
 import { addFilter } from '../utils/filtering/filtering-utils';
-import { pushToWorkerForConnector } from '../database/rabbitmq';
+import { getBestBackgroundConnectorId, pushToWorkerForConnector } from '../database/rabbitmq';
 import { updateExpectationsNumber } from '../domain/work';
 import { convertStoreToStix, convertTypeToStixType } from '../database/stix-2-1-converter';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
@@ -89,11 +90,12 @@ const findTasksToExecute = async (context) => {
 };
 
 export const taskRule = async (context, user, task, callback) => {
-  const { rule, enable } = task;
+  const { task_position, rule, enable } = task;
   const ruleDefinition = await getRule(context, user, rule);
   if (enable) {
     const { scan } = ruleDefinition;
-    const options = { baseData: true, orderMode: 'asc', orderBy: 'updated_at', ...buildEntityFilters(scan.types, scan) };
+    // task_position is no longer used, but we still handle it to properly process task that were processing before task migrated to worker
+    const options = { baseData: true, orderMode: 'asc', orderBy: 'updated_at', ...buildEntityFilters(scan.types, scan), after: task_position };
     const finalOpts = { ...options, connectionFormat: false, callback };
     await elList(context, RULE_MANAGER_USER, READ_DATA_INDICES_WITHOUT_INFERRED, finalOpts);
   } else {
@@ -102,7 +104,8 @@ export const taskRule = async (context, user, task, callback) => {
       filters: [{ key: `${RULE_PREFIX}${rule}`, values: ['EXISTS'] }],
       filterGroups: [],
     };
-    const options = { baseData: true, orderMode: 'asc', orderBy: 'updated_at', filters };
+    // task_position is no longer used, but we still handle it to properly process task that were processing before task migrated to worker
+    const options = { baseData: true, orderMode: 'asc', orderBy: 'updated_at', filters, after: task_position };
     const finalOpts = { ...options, connectionFormat: false, callback };
     await elList(context, RULE_MANAGER_USER, READ_DATA_INDICES, finalOpts);
   }
@@ -119,7 +122,11 @@ export const taskQuery = async (context, user, task, callback) => {
 };
 
 export const taskList = async (context, user, task, callback) => {
-  const { task_ids, scope, task_order_mode } = task;
+  const { task_position, task_ids, scope, task_order_mode } = task;
+  // task_position is no longer used, but we still handle it to properly process task that were processing before task migrated to worker
+  const isUndefinedPosition = R.isNil(task_position) || R.isEmpty(task_position);
+  const startIndex = isUndefinedPosition ? 0 : task_ids.findIndex((id) => task_position === id) + 1;
+  const ids = task_ids.slice(startIndex);
   const options = {
     orderMode: task_order_mode || 'desc',
     // processing elements in descending order makes possible restoring from trash elements with dependencies
@@ -127,7 +134,7 @@ export const taskList = async (context, user, task, callback) => {
     baseData: true,
     includeDeletedInDraft: true,
   };
-  const elements = await internalFindByIds(context, user, task_ids, options);
+  const elements = await internalFindByIds(context, user, ids, options);
   callback(elements);
 };
 
@@ -289,6 +296,7 @@ const standardOperationCallback = async (context, user, task, actionType, operat
 
 const containerOperationCallback = async (context, user, task, containers, operations) => {
   const withNeighbours = operations[0].context.options?.includeNeighbours;
+  const operationType = operations[0].type;
   return async (elements) => {
     const elementIds = new Set();
     const elementStandardIds = new Set();
@@ -311,7 +319,7 @@ const containerOperationCallback = async (context, user, task, containers, opera
     }
     // Build limited stix object to limit memory footprint
     const containerOperations = [{
-      type: 'ADD',
+      type: operationType,
       context: {
         field: INPUT_OBJECTS,
         values: Array.from(elementIds)
@@ -523,9 +531,27 @@ const workerTaskHandler = async (context, user, task, actionType, operations) =>
   return updateTask(context, task.id, { completed: true });
 };
 
+// If task was created before task migration to worker, we need to initialize a connector_id and and a work_id for it
+const handleTaskMigrationToWorker = async (context, task) => {
+  const updatedTask = task;
+  if (updatedTask.task_expected_number > 0) {
+    if (!updatedTask.connector_id) {
+      updatedTask.connector_id = await getBestBackgroundConnectorId(context, SYSTEM_USER);
+      await updateTask(context, updatedTask.id, { connector_id: updatedTask.connector_id });
+    }
+    if (!updatedTask.work_id) {
+      const work = await createWorkForBackgroundTask(context, updatedTask.id, updatedTask.connector_id);
+      updatedTask.work_id = work.id;
+      await updateTask(context, updatedTask.id, { work_id: updatedTask.work_id });
+    }
+  }
+  return updatedTask;
+};
+
 const taskHandlerGenerator = (context) => {
   return async (rawTask) => {
-    const task = { ...rawTask };
+    const initTask = { ...rawTask };
+    const task = await handleTaskMigrationToWorker(context, initTask);
     const isQueryTask = task.type === TASK_TYPE_QUERY;
     const isListTask = task.type === TASK_TYPE_LIST;
     const isRuleTask = task.type === TASK_TYPE_RULE;

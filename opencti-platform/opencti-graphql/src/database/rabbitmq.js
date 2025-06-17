@@ -196,7 +196,7 @@ export const getBestBackgroundConnectorId = async (context, user) => {
     metricsCache.set('cached_metrics', stats);
   }
   // Find the least used push queue
-  const targetQueues = stats.queues.filter((queue) => queue.name.includes(`${RABBIT_QUEUE_PREFIX}push_background-task`));
+  const targetQueues = stats.queues.filter((queue) => queue.name.startsWith(`${RABBIT_QUEUE_PREFIX}push_background-task`));
   const bestQueue = targetQueues.sort((a, b) => (a.messages ?? 0) - (b.messages ?? 0))[0];
   return bestQueue.name.substring(`${RABBIT_QUEUE_PREFIX}push_`.length);
 };

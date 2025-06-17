@@ -15,7 +15,6 @@ import { isEmptyField, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
-import { createQueryTask } from './backgroundTask';
 import { internalFindByIds, internalLoadById, storeLoadById } from '../database/middleware-loader';
 import { completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
 import { checkAndConvertFilters } from '../utils/filtering/filtering-utils';
@@ -26,7 +25,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { checkUserCanShareMarkings } from './user';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { getDraftContext } from '../utils/draftContext';
-import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE } from './backgroundTask-common';
+import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from './backgroundTask-common';
 import { objectOrganization, RELATION_GRANTED_TO } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 
@@ -247,19 +246,7 @@ export const exportTransformFilters = (filteringArgs, orderOptions, userId) => {
   };
 };
 
-export const generateFiltersForSharingTask = (containerId) => {
-  return {
-    mode: 'and',
-    filters: [{
-      key: ['ids'],
-      values: [containerId],
-    }],
-    filterGroups: [],
-  };
-};
-
 const createSharingTask = async (context, type, containerId, organizationId) => {
-  const filters = generateFiltersForSharingTask(containerId);
   const organizationIds = Array.isArray(organizationId) ? organizationId : [organizationId];
   const organizations = await internalFindByIds(context, context.user, organizationIds, { baseData: true, baseFields: ['name'] });
   const organizationNames = organizations.map((o) => o.name).join('|');
@@ -269,12 +256,12 @@ const createSharingTask = async (context, type, containerId, organizationId) => 
   // containerId required to send an event after all container content is shared.
   const input = {
     description: sharingDescription,
-    filters: JSON.stringify(filters),
+    ids: [containerId],
     actions: [{ type, context: { values: organizationIds }, containerId }],
     scope: 'KNOWLEDGE',
     orderMode: 'asc'
   };
-  await createQueryTask(context, context.user, input);
+  await createListTask(context, context.user, input);
 };
 
 export const addOrganizationRestriction = async (context, user, fromId, organizationId, directContainerSharing) => {
