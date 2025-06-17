@@ -1972,7 +1972,7 @@
   "Login": "Usuario",
   "Login messages": "Mensajes de inicio de sesión",
   "Login to the platform": "Inicio de sesión en la plataforma",
-  "Logo (png, jpg)": "Logo (png, jpg)",
+  "Logo (png, jpg, svg or webp)": "Logotipo (png, jpg, svg o webp)",
   "Logo URL": "Dirección URL del logo",
   "Logo URL (collapsed)": "URL del logotipo (colapsada)",
   "Logo URL (login)": "URL del logotipo (conectado)",

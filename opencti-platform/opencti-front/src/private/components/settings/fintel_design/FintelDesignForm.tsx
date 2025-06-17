@@ -109,7 +109,7 @@ const FintelDesignForm: FunctionComponent<FintelDesignFormProps> = ({ onFileUplo
           <Form>
             <Field
               component={CustomFileUploader}
-              label={t_i18n('Logo (png, jpg)')}
+              label={t_i18n('Logo (png, jpg, svg or webp)')}
               acceptMimeTypes="image/jpeg, image/png, image/webp, image/svg+xml"
               name="file"
               setFieldValue={setFieldValue}
