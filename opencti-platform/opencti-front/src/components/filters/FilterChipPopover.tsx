@@ -343,7 +343,8 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       return <BasicFilterDate value={computedValues.length > 0 ? computedValues[0] : undefined} />;
     }
     if (fDefinition?.type === 'filters') {
-      const values = computedValues.length > 0 ? computedValues[0] : emptyFilterGroup;
+      const finalComputedValues = computedValues.filter((v: object) => 'filters' in v);
+      const values = finalComputedValues.length > 0 ? finalComputedValues[0] : emptyFilterGroup;
       return (
         <FilterFiltersInput
           filter={filter}

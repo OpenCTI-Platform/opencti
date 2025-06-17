@@ -9,11 +9,11 @@ import { WarningOutlined } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { useFormatter } from '../i18n';
 import type { Theme } from '../Theme';
-import { FiltersRestrictions, isFilterEditable, isRegardingOfFilterWarning, useFilterDefinition } from '../../utils/filters/filtersUtils';
+import { FiltersRestrictions, isFilterEditable, isFilterGroupNotEmpty, isRegardingOfFilterWarning, useFilterDefinition } from '../../utils/filters/filtersUtils';
 import { isDateIntervalTranslatable, translateDateInterval, truncate } from '../../utils/String';
 import FilterValuesContent from '../FilterValuesContent';
 import { FilterRepresentative } from './FiltersModel';
-import { Filter } from '../../utils/filters/filtersHelpers-types';
+import { Filter, FilterGroup } from '../../utils/filters/filtersHelpers-types';
 import useSchema from '../../utils/hooks/useSchema';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -222,6 +222,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
                 </>
               );
               if (subKey === 'dynamic') {
+                if (!val.values.every((v: FilterGroup) => isFilterGroupNotEmpty(v))) return <div key={val.key}/>;
                 return (
                   <Fragment key={val.key}>
                     <Tooltip
