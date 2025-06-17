@@ -54,7 +54,7 @@ const ItemCvssScore = ({ score, style }: ItemCvssScoreProps) => {
         ? inlineStyles.whiteLight
         : inlineStyles.whiteDark;
     }
-  }; 7;
+  };
 
   if (score === null || score === undefined) return '-';
 
