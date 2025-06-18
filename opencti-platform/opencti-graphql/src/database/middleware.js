@@ -1,9 +1,9 @@
 import moment from 'moment';
 import * as R from 'ramda';
 import DataLoader from 'dataloader';
-import { Promise } from 'bluebird';
-import { compareUnsorted } from 'js-deep-equals';
-import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
+import {Promise} from 'bluebird';
+import {compareUnsorted} from 'js-deep-equals';
+import {SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION} from '@opentelemetry/semantic-conventions';
 import * as jsonpatch from 'fast-json-patch';
 import nconf from 'nconf';
 import {
@@ -19,7 +19,7 @@ import {
   UnsupportedError,
   ValidationError
 } from '../config/errors';
-import { extractEntityRepresentativeName } from './entity-representative';
+import {extractEntityRepresentativeName} from './entity-representative';
 import {
   buildPagination,
   computeAverage,
@@ -91,8 +91,16 @@ import {
   X_DETECTION,
   X_WORKFLOW_ID
 } from '../schema/identifier';
-import { notify, redisAddDeletions, storeCreateEntityEvent, storeCreateRelationEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './redis';
-import { cleanStixIds } from './stix';
+import {
+  notify,
+  redisAddDeletions,
+  storeCreateEntityEvent,
+  storeCreateRelationEvent,
+  storeDeleteEvent,
+  storeMergeEvent,
+  storeUpdateEvent
+} from './redis';
+import {cleanStixIds} from './stix';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
   ABSTRACT_STIX_CORE_OBJECT,
@@ -112,7 +120,7 @@ import {
   REL_INDEX_PREFIX,
   RULE_PREFIX
 } from '../schema/general';
-import { isAnId, isValidDate } from '../schema/schemaUtils';
+import {isAnId, isValidDate} from '../schema/schemaUtils';
 import {
   isStixRefRelationship,
   RELATION_CREATED_BY,
@@ -122,9 +130,9 @@ import {
   RELATION_OBJECT_MARKING,
   STIX_REF_RELATIONSHIP_TYPES
 } from '../schema/stixRefRelationship';
-import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER } from '../schema/internalObject';
-import { isStixCoreObject } from '../schema/stixCoreObject';
-import { isBasicRelationship } from '../schema/stixRelationship';
+import {ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER} from '../schema/internalObject';
+import {isStixCoreObject} from '../schema/stixCoreObject';
+import {isBasicRelationship} from '../schema/stixRelationship';
 import {
   dateForEndAttributes,
   dateForLimitsAttributes,
@@ -134,7 +142,7 @@ import {
   isUpdatedAtObject,
   noReferenceAttributes
 } from '../schema/fieldDataAdapter';
-import { isStixCoreRelationship, RELATION_REVOKED_BY } from '../schema/stixCoreRelationship';
+import {isStixCoreRelationship, RELATION_REVOKED_BY} from '../schema/stixCoreRelationship';
 import {
   ATTRIBUTE_ADDITIONAL_NAMES,
   ATTRIBUTE_ALIASES,
@@ -147,13 +155,22 @@ import {
   resolveAliasesField,
   STIX_ORGANIZATIONS_UNRESTRICTED
 } from '../schema/stixDomainObject';
-import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable, isStixCyberObservableHashedObservable } from '../schema/stixCyberObservable';
-import conf, { BUS_TOPICS, extendedErrors, logApp } from '../config/conf';
-import { FROM_START_STR, mergeDeepRightAll, now, prepareDate, UNTIL_END_STR, utcDate } from '../utils/format';
-import { checkObservableSyntax } from '../utils/syntax';
-import { elUpdateRemovedFiles } from './file-search';
+import {
+  ENTITY_TYPE_EXTERNAL_REFERENCE,
+  ENTITY_TYPE_LABEL,
+  ENTITY_TYPE_MARKING_DEFINITION
+} from '../schema/stixMetaObject';
+import {isStixSightingRelationship} from '../schema/stixSightingRelationship';
+import {
+  ENTITY_HASHED_OBSERVABLE_ARTIFACT,
+  ENTITY_HASHED_OBSERVABLE_STIX_FILE,
+  isStixCyberObservable,
+  isStixCyberObservableHashedObservable
+} from '../schema/stixCyberObservable';
+import conf, {BUS_TOPICS, extendedErrors, logApp} from '../config/conf';
+import {FROM_START_STR, mergeDeepRightAll, now, prepareDate, UNTIL_END_STR, utcDate} from '../utils/format';
+import {checkObservableSyntax} from '../utils/syntax';
+import {elUpdateRemovedFiles} from './file-search';
 import {
   controlUserRestrictDeleteAgainstElement,
   executionContext,
@@ -170,10 +187,10 @@ import {
   userFilterStoreElements,
   validateUserAccessOperation
 } from '../utils/access';
-import { isRuleUser, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules-utils';
-import { instanceMetaRefsExtractor, isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
-import { createEntityAutoEnrichment } from '../domain/enrichment';
-import { convertExternalReferenceToStix, convertStoreToStix } from './stix-2-1-converter';
+import {isRuleUser, RULES_ATTRIBUTES_BEHAVIOR} from '../rules/rules-utils';
+import {instanceMetaRefsExtractor, isSingleRelationsRef,} from '../schema/stixEmbeddedRelationship';
+import {createEntityAutoEnrichment} from '../domain/enrichment';
+import {convertExternalReferenceToStix, convertStoreToStix} from './stix-2-1-converter';
 import {
   buildAggregationRelationFilter,
   buildEntityFilters,
@@ -186,18 +203,40 @@ import {
   listRelations,
   storeLoadById
 } from './middleware-loader';
-import { checkRelationConsistency, isRelationConsistent } from '../utils/modelConsistency';
-import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from './cache';
-import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from '../domain/backgroundTask-common';
-import { ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabulary/vocabulary-types';
-import { getVocabulariesCategories, getVocabularyCategoryForField, isEntityFieldAnOpenVocabulary, updateElasticVocabularyValue } from '../modules/vocabulary/vocabulary-utils';
-import { depsKeysRegister, isDateAttribute, isMultipleAttribute, isNumericAttribute, isObjectAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
-import { fillDefaultValues, getAttributesConfiguration, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
-import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
-import { validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
-import { telemetry } from '../config/tracing';
-import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
-import { generateCreateMessage, generateRestoreMessage, generateUpdatePatchMessage, MAX_OPERATIONS_FOR_MESSAGE, MAX_PATCH_ELEMENTS_FOR_MESSAGE } from './generate-message';
+import {checkRelationConsistency, isRelationConsistent} from '../utils/modelConsistency';
+import {getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache} from './cache';
+import {ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask} from '../domain/backgroundTask-common';
+import {ENTITY_TYPE_VOCABULARY, vocabularyDefinitions} from '../modules/vocabulary/vocabulary-types';
+import {
+  getVocabulariesCategories,
+  getVocabularyCategoryForField,
+  isEntityFieldAnOpenVocabulary,
+  updateElasticVocabularyValue
+} from '../modules/vocabulary/vocabulary-utils';
+import {
+  depsKeysRegister,
+  isDateAttribute,
+  isMultipleAttribute,
+  isNumericAttribute,
+  isObjectAttribute,
+  schemaAttributesDefinition
+} from '../schema/schema-attributes';
+import {
+  fillDefaultValues,
+  getAttributesConfiguration,
+  getEntitySettingFromCache
+} from '../modules/entitySetting/entitySetting-utils';
+import {schemaRelationsRefDefinition} from '../schema/schema-relationsRef';
+import {validateInputCreation, validateInputUpdate} from '../schema/schema-validator';
+import {telemetry} from '../config/tracing';
+import {cleanMarkings, handleMarkingOperations} from '../utils/markingDefinition-utils';
+import {
+  generateCreateMessage,
+  generateRestoreMessage,
+  generateUpdatePatchMessage,
+  MAX_OPERATIONS_FOR_MESSAGE,
+  MAX_PATCH_ELEMENTS_FOR_MESSAGE
+} from './generate-message';
 import {
   authorizedMembers,
   authorizedMembersActivationDate,
@@ -209,10 +248,10 @@ import {
   updatedAt,
   xOpenctiStixIds
 } from '../schema/attribute-definition';
-import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
-import { FilterMode, FilterOperator } from '../generated/graphql';
-import { getMandatoryAttributesForSetting } from '../modules/entitySetting/entitySetting-attributeUtils';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
+import {ENTITY_TYPE_INDICATOR} from '../modules/indicator/indicator-types';
+import {FilterMode, FilterOperator} from '../generated/graphql';
+import {getMandatoryAttributesForSetting} from '../modules/entitySetting/entitySetting-attributeUtils';
+import {ENTITY_TYPE_IDENTITY_ORGANIZATION} from '../modules/organization/organization-types';
 import {
   adaptUpdateInputsConfidence,
   controlCreateInputWithUserConfidence,
@@ -220,19 +259,19 @@ import {
   controlUserConfidenceAgainstElement,
   shouldCheckConfidenceOnRefRelationship
 } from '../utils/confidence-level';
-import { buildEntityData, buildInnerRelation, buildRelationData } from './data-builder';
-import { isIndividualAssociatedToUser, verifyCanDeleteIndividual, verifyCanDeleteOrganization } from './data-consistency';
-import { deleteAllObjectFiles, moveAllFilesFromEntityToAnother, uploadToStorage } from './file-storage-helper';
-import { getFileContent, storeFileConverter } from './file-storage';
-import { getDraftContext } from '../utils/draftContext';
-import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
-import { lockResources } from '../lock/master-lock';
-import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
-import { isRequestAccessEnabled } from '../modules/requestAccess/requestAccessUtils';
-import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
-import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
-import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
-import { generateVulnerabilitiesUpdates, getCvssCriticity, isValidCvssVector, parseCvssVector, updateCvssVector } from '../utils/vulnerabilities';
+import {buildEntityData, buildInnerRelation, buildRelationData} from './data-builder';
+import {isIndividualAssociatedToUser, verifyCanDeleteIndividual, verifyCanDeleteOrganization} from './data-consistency';
+import {deleteAllObjectFiles, moveAllFilesFromEntityToAnother, uploadToStorage} from './file-storage-helper';
+import {getFileContent, storeFileConverter} from './file-storage';
+import {getDraftContext} from '../utils/draftContext';
+import {getDraftChanges, isDraftSupportedEntity} from './draft-utils';
+import {lockResources} from '../lock/master-lock';
+import {STIX_EXT_OCTI} from '../types/stix-2-1-extensions';
+import {isRequestAccessEnabled} from '../modules/requestAccess/requestAccessUtils';
+import {ENTITY_TYPE_CONTAINER_CASE_RFI} from '../modules/case/case-rfi/case-rfi-types';
+import {ENTITY_TYPE_ENTITY_SETTING} from '../modules/entitySetting/entitySetting-types';
+import {RELATION_ACCESSES_TO} from '../schema/internalRelationship';
+import {generateVulnerabilitiesUpdates} from '../utils/vulnerabilities';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
