@@ -1,6 +1,7 @@
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { StixEntitySetting, StoreEntityEntitySetting } from './entitySetting-types';
-import { buildStixObject, cleanObject } from '../../database/stix-2-1-converter';
+import { buildStixObject } from '../../database/stix-2-1-converter';
+import { cleanObject } from '../../database/stix-converter-utils';
 
 const convertEntitySettingToStix = (instance: StoreEntityEntitySetting): StixEntitySetting => {
   const stixObject = buildStixObject(instance);

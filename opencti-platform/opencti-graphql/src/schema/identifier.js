@@ -19,8 +19,9 @@ import { isStixSightingRelationship } from './stixSightingRelationship';
 import { isEmptyField, isNotEmptyField, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { now } from '../utils/format';
 import { isBasicRelationship } from './stixRelationship';
-import { cleanObject, convertTypeToStixType } from '../database/stix-2-1-converter';
+import { convertTypeToStixType } from '../database/stix-2-1-converter';
 import { INPUT_DST, INPUT_SRC, isStixRefRelationship } from './stixRefRelationship';
+import { cleanObject } from '../database/stix-converter-utils';
 
 // region hashes
 const MD5 = 'MD5';
