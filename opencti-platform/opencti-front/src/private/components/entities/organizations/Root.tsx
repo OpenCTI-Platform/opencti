@@ -180,6 +180,7 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
               )}
               onViewAs={handleChangeViewAs}
               viewAs={viewAs}
+              redirectToContent={true}
             />
             <Box
               sx={{

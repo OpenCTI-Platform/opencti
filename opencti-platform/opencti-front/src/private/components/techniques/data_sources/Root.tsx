@@ -110,6 +110,7 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
                 <DataSourceEdition dataSourceId={dataSource.id} />
               </Security>
             )}
+            redirectToContent={true}
           />
           <Box
             sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 4 }}

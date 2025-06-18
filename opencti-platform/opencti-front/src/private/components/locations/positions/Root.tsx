@@ -150,6 +150,7 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
               )}
               enableQuickSubscription={true}
               isOpenctiAlias={true}
+              redirectToContent={true}
             />
             <Box
               sx={{

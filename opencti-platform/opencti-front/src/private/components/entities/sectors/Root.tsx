@@ -149,6 +149,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
                   <SectorEdition sectorId={sector.id} />
                 </Security>
               )}
+              redirectToContent={true}
             />
             <Box
               sx={{

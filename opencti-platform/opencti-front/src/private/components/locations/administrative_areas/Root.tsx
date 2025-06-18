@@ -149,6 +149,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
               )}
               enableQuickSubscription={true}
               isOpenctiAlias={true}
+              redirectToContent={true}
             />
             <Box
               sx={{
