@@ -86,8 +86,10 @@ const StixCoreObjectContainer = ({ elementId }: StixCoreObjectContainerProps) =>
   const [includeNeighbours, setIncludeNeighbours] = useState<boolean>();
   const [searchInputValue, setSearchInputValue] = useState<string>('');
 
-  useEffect(() => {
-    fetchQuery(stixCoreObjectContainerContainersQuery, {})
+  const fetchContainerList = (search: string) => {
+    fetchQuery(stixCoreObjectContainerContainersQuery, {
+      search,
+    })
       .toPromise()
       .then((data) => {
         const stixCoreObjectContainer = data as StixCoreObjectContainerContainersQuery$data;
@@ -96,10 +98,16 @@ const StixCoreObjectContainer = ({ elementId }: StixCoreObjectContainerProps) =>
           type: edge?.node.entity_type ?? '',
           id: edge?.node.id ?? '',
         })) ?? [];
-
         setOptionList([...newContainerList]);
       });
-  }, []);
+  };
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      fetchContainerList(searchInputValue);
+    }, 500);
+    return () => clearTimeout(timeoutId);
+  }, [searchInputValue]);
 
   const handleToggleAddInContainer = (isOpen: boolean) => () => setDisplayAddInContainer(isOpen);
   const handleToggleContainerCreationDrawer = (isOpen: boolean) => () => setIsContainerCreationDrawerOpen(isOpen);
@@ -151,11 +159,6 @@ const StixCoreObjectContainer = ({ elementId }: StixCoreObjectContainerProps) =>
         );
       },
     });
-  };
-
-  const getOnlyAvailableOptions = () => {
-    const selectedContainerIdList = selectedContainers.map((container) => container.id);
-    return optionList.filter((option) => !selectedContainerIdList.includes(option.id));
   };
 
   return (
@@ -214,6 +217,7 @@ const StixCoreObjectContainer = ({ elementId }: StixCoreObjectContainerProps) =>
             fullWidth
             selectOnFocus
             autoHighlight
+            filterOptions={(options) => options} // used to block internal filtering of the material-ui component
             value={selectedContainers}
             multiple
             renderInput={(params) => (
@@ -243,7 +247,7 @@ const StixCoreObjectContainer = ({ elementId }: StixCoreObjectContainerProps) =>
               />
             )}
             noOptionsText={t_i18n('No available options')}
-            options={getOnlyAvailableOptions()}
+            options={optionList}
             onInputChange={handleSearch}
             inputValue={searchInputValue}
             onChange={(_, currentSelectedOptions: OptionListType[]) => handleChangeActionInputValues(currentSelectedOptions)}
