@@ -2748,9 +2748,25 @@ class OpenCTIStix2:
         )
 
         stix2_splitter = OpenCTIStix2Splitter()
-        _, bundles = stix2_splitter.split_bundle_with_expectations(
-            stix_bundle, False, event_version
+        _, incompatible_elements, bundles = (
+            stix2_splitter.split_bundle_with_expectations(
+                stix_bundle, False, event_version
+            )
         )
+
+        # Report every element ignored during bundle splitting
+        if work_id is not None:
+            for incompatible_element in incompatible_elements:
+                self.opencti.work.report_expectation(
+                    work_id,
+                    {
+                        "error": "Incompatible element in bundle",
+                        "source": "Element "
+                        + incompatible_element["id"]
+                        + " is incompatible and couldn't be processed",
+                    },
+                )
+
         # Import every element in a specific order
         imported_elements = []
         for bundle in bundles:
