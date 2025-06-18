@@ -19,10 +19,6 @@ import { fromB64, toB64 } from '../../../../utils/String';
 import { ErrorBoundary } from '../../Error';
 import { deserializeDashboardManifestForFrontend, serializeDashboardManifestForBackend } from '../../../../utils/filters/filtersUtils';
 
-const NB_COLS = 12;
-const WIDGET_DEFAULT_WIDTH = 4;
-const WIDGET_DEFAULT_HEIGHT = 2;
-
 const dashboardLayoutMutation = graphql`
   mutation DashboardLayoutMutation($id: ID!, $input: [EditInput!]!) {
     workspaceFieldPatch(id: $id, input: $input) {
@@ -74,7 +70,9 @@ const DashboardComponent = ({ data, noToolbar }) => {
     };
   }, []);
 
-  // Map of widget layouts, refreshed when workspace is updated (thanks to useEffect below).
+  // Map of widget layouts, refreshed when workspace is updated (thanks to useMemo below).
+  // We use a local map of layouts to avoid a lot of computation when only changing position
+  // or dimension of widgets.
   const [widgetsLayouts, setWidgetsLayouts] = useState({});
 
   // Deserialized manifest, refreshed when workspace is updated.
@@ -87,6 +85,7 @@ const DashboardComponent = ({ data, noToolbar }) => {
   // Array of all widgets, refreshed when workspace is updated.
   const widgetsArray = useMemo(() => {
     const widgets = Object.values(manifest.widgets).map((widget) => widget);
+    // Sync our local layouts.
     setWidgetsLayouts(
       widgets.reduce((res, widget) => {
         res[widget.id] = widget.layout;
@@ -110,10 +109,7 @@ const DashboardComponent = ({ data, noToolbar }) => {
     }, {});
     const manifestToSave = {
       ...newManifest,
-      widgets: {
-        ...newManifest.widgets,
-        ...syncWidgets,
-      },
+      widgets: syncWidgets,
     };
 
     const strManifest = serializeDashboardManifestForBackend(manifestToSave);
@@ -171,8 +167,8 @@ const DashboardComponent = ({ data, noToolbar }) => {
             i: widgetConfig.id,
             x: 0,
             y: 1000, // 1000 will be replaced automatically by a new row at the end of existing ones.
-            w: WIDGET_DEFAULT_WIDTH,
-            h: WIDGET_DEFAULT_HEIGHT,
+            w: 4,
+            h: 2,
           },
         },
       },
@@ -212,8 +208,8 @@ const DashboardComponent = ({ data, noToolbar }) => {
       }, {});
       setWidgetsLayouts(newLayouts);
       // Triggering a manifest save with the same manifest.
-      // As this function make a sync between manifest and local layouts,
-      // it will make the save of layouts modification.
+      // As this function makes a sync between manifest and local layouts
+      // it will make the update of layouts modification.
       saveManifest(manifest, true);
     }
   };
@@ -255,7 +251,7 @@ const DashboardComponent = ({ data, noToolbar }) => {
         className="layout"
         margin={[20, 20]}
         rowHeight={50}
-        cols={NB_COLS}
+        cols={12}
         draggableCancel=".noDrag"
         isDraggable={userCanEdit ? !noToolbar : false}
         isResizable={userCanEdit ? !noToolbar : false}
