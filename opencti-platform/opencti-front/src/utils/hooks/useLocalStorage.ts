@@ -661,7 +661,6 @@ export const usePaginationLocalStorage = <U>(
       dispatch(`${key}_paginationStorage`, newValue);
     },
     handleSetNumberOfElements: (nbElements: { number?: number; symbol?: string; original?: number; }) => {
-      console.log("In set set number of elems", nbElements)
       if (!R.equals(nbElements, viewStorage.numberOfElements)) {
         const { number, symbol, original } = nbElements;
         const newValue = {
