@@ -8,6 +8,7 @@ import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
+import { Stack } from '@mui/material';
 import { buildDate, formatDate } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -456,14 +457,16 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
           )}
         </Formik>
         {typeof handleDelete === 'function' && (
-          <Button
-            variant="contained"
-            onClick={() => handleDelete()}
-            classes={{ root: classes.button }}
-            disabled={inferred}
-          >
-            {t_i18n('Delete')}
-          </Button>
+          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
+            <Button
+              variant="contained"
+              onClick={() => handleDelete()}
+              classes={{ root: classes.button }}
+              disabled={inferred}
+            >
+              {t_i18n('Delete')}
+            </Button>
+          </Stack>
         )}
       </div>
     </>
