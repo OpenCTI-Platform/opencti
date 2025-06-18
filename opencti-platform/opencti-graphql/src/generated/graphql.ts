@@ -31679,7 +31679,7 @@ export type VulnerabilityAddInput = {
   x_opencti_cvss_v2_temporal_score?: InputMaybe<Scalars['Float']['input']>;
   x_opencti_cvss_v2_vector?: InputMaybe<Scalars['String']['input']>;
   x_opencti_cvss_v4_attack_complexity?: InputMaybe<Scalars['String']['input']>;
-  x_opencti_cvss_v4_attack_requirement?: InputMaybe<Scalars['String']['input']>;
+  x_opencti_cvss_v4_attack_requirements?: InputMaybe<Scalars['String']['input']>;
   x_opencti_cvss_v4_attack_vector?: InputMaybe<Scalars['String']['input']>;
   x_opencti_cvss_v4_availability_impact_s?: InputMaybe<Scalars['String']['input']>;
   x_opencti_cvss_v4_availability_impact_v?: InputMaybe<Scalars['String']['input']>;

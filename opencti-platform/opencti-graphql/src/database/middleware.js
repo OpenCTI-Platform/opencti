@@ -232,18 +232,7 @@ import { isRequestAccessEnabled } from '../modules/requestAccess/requestAccessUt
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
 import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
-import {
-  getCvssCriticity,
-  isValidCvss2Vector,
-  isValidCvss3Vector,
-  isValidCvss4Vector,
-  parseCvss2Vector,
-  parseCvss3Vector,
-  parseCvss4Vector,
-  updateCvss2Vector,
-  updateCvss3VectorWithScores,
-  updateCvss4Vector
-} from '../utils/vulnerabilities';
+import { getCvssCriticity, isValidCvssVector, parseCvssVector, updateCvssVector } from '../utils/vulnerabilities';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -2027,10 +2016,10 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   if (updates.some((e) => e.key === 'x_opencti_cvss_v4_vector')) {
     const vectorUpdate = updates.filter((e) => e.key === 'x_opencti_cvss_v4_vector').at(0);
     const vector = vectorUpdate?.value?.at(0);
-    if (!isValidCvss4Vector(vector)) {
+    if (!isValidCvssVector('cvss4', vector)) {
       throw FunctionalError('This is not a valid CVSS4 vector');
     }
-    updates.push(...parseCvss4Vector(vector));
+    updates.push(...parseCvssVector('cvss4', vector));
   } else if (updates.some((e) => e.key.startsWith('x_opencti_cvss_v4_'))) {
     let baseScore = initial.x_opencti_cvss_v4_base_score;
     if (updates.some((e) => e.key === 'x_opencti_cvss_v4_base_score')) {
@@ -2039,16 +2028,16 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     }
     const updatedVectorParts = updates.filter((e) => e.key.startsWith('x_opencti_cvss_v4_') && !e.key.includes('base'));
     if (updatedVectorParts.length > 0) {
-      updates.push(...updateCvss4Vector(initial.x_opencti_cvss_v4_vector, updatedVectorParts, baseScore));
+      updates.push(...updateCvssVector('cvss4', initial.x_opencti_cvss_v4_vector, updatedVectorParts, baseScore));
     }
   }
   if (updates.some((e) => e.key === 'x_opencti_cvss_vector')) {
     const vectorUpdate = updates.filter((e) => e.key === 'x_opencti_cvss_vector').at(0);
     const vector = vectorUpdate?.value?.at(0);
-    if (!isValidCvss3Vector(vector)) {
+    if (!isValidCvssVector('cvss3', vector)) {
       throw FunctionalError('This is not a valid CVSS3 vector');
     }
-    updates.push(...parseCvss3Vector(vector));
+    updates.push(...parseCvssVector('cvss3', vector));
   } else if (updates.some((e) => e.key.startsWith('x_opencti_cvss_'))) {
     let baseScore = initial.x_opencti_cvss_base_score;
     if (updates.some((e) => e.key === 'x_opencti_cvss_base_score')) {
@@ -2057,20 +2046,20 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     }
     const updatedVectorParts = updates.filter((e) => e.key.startsWith('x_opencti_cvss_') && !e.key.includes('base') && !e.key.includes('temporal') && !e.key.startsWith('x_opencti_cvss_v'));
     if (updatedVectorParts.length > 0) {
-      updates.push(...updateCvss3VectorWithScores(initial.x_opencti_cvss_vector, updatedVectorParts, baseScore));
+      updates.push(...updateCvssVector('cvss3', initial.x_opencti_cvss_vector, updatedVectorParts, baseScore));
     }
   }
   if (updates.some((e) => e.key === 'x_opencti_cvss_v2_vector')) {
     const vectorUpdate = updates.filter((e) => e.key === 'x_opencti_cvss_v2_vector').at(0);
     const vector = vectorUpdate?.value?.at(0);
-    if (!isValidCvss2Vector(vector)) {
+    if (!isValidCvssVector('cvss2', vector)) {
       throw FunctionalError('This is not a valid CVSS2 vector');
     }
-    updates.push(...parseCvss2Vector(vector));
+    updates.push(...parseCvssVector('cvss2', vector));
   } else if (updates.some((e) => e.key.startsWith('x_opencti_cvss_v2_'))) {
     const updatedVectorParts = updates.filter((e) => e.key.startsWith('x_opencti_cvss_v2_') && !e.key.includes('base') && !e.key.includes('temporal'));
     if (updatedVectorParts.length > 0) {
-      updates.push(...updateCvss2Vector(initial.x_opencti_cvss_v2_vector, updatedVectorParts, initial.x_opencti_cvss_v2_base_score));
+      updates.push(...updateCvssVector('cvss2', initial.x_opencti_cvss_v2_vector, updatedVectorParts, initial.x_opencti_cvss_v2_base_score));
     }
   }
   // end of vulnerabilities logics

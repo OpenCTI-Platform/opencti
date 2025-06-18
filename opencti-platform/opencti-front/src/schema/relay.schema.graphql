@@ -5452,7 +5452,7 @@ input VulnerabilityAddInput {
   x_opencti_cvss_v4_base_severity: String
   x_opencti_cvss_v4_attack_vector: String
   x_opencti_cvss_v4_attack_complexity: String
-  x_opencti_cvss_v4_attack_requirement: String
+  x_opencti_cvss_v4_attack_requirements: String
   x_opencti_cvss_v4_privileges_required: String
   x_opencti_cvss_v4_user_interaction: String
   x_opencti_cvss_v4_confidentiality_impact_v: String
