@@ -267,7 +267,7 @@ const StixDomainObjectHeader = (props) => {
     // navigate with fileName in query params to select the created file
     const fileParams = { currentFileId: fileName, contentSelected: false };
     const urlParams = new URLSearchParams(fileParams).toString();
-    const entityLink = `${resolveLink(stixDomainObject.entity_type)}/${stixDomainObject.id}`;
+    const entityLink = `${resolveLink(entityType)}/${stixDomainObject.id}`;
     const targetTab = redirectToContent ? 'content' : 'files';
     navigate(`${entityLink}/${targetTab}?${urlParams}`);
   };

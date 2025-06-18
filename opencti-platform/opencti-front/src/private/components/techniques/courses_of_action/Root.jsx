@@ -117,6 +117,7 @@ class RootCourseOfAction extends Component {
                         </Security>
                       )}
                       isOpenctiAlias={true}
+                      redirectToContent={true}
                     />
                     <Box
                       sx={{

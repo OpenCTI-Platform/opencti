@@ -115,6 +115,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
               </Security>
             )}
             enableQuickSubscription={true}
+            redirectToContent={true}
           />
           <Box
             sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 3 }}
