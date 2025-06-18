@@ -34,6 +34,8 @@ import CommitMessage from '../../common/form/CommitMessage';
 import type { Theme } from '../../../../components/Theme';
 import { StixSightingRelationshipEditionOverviewQuery } from './__generated__/StixSightingRelationshipEditionOverviewQuery.graphql';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -458,14 +460,16 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
         </Formik>
         {typeof handleDelete === 'function' && (
           <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
-            <Button
-              variant="contained"
-              onClick={() => handleDelete()}
-              classes={{ root: classes.button }}
-              disabled={inferred}
-            >
-              {t_i18n('Delete')}
-            </Button>
+            <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+              <Button
+                variant="contained"
+                onClick={() => handleDelete()}
+                classes={{ root: classes.button }}
+                disabled={inferred}
+              >
+                {t_i18n('Delete')}
+              </Button>
+            </Security>
           </Stack>
         )}
       </div>
