@@ -20,6 +20,7 @@ export const insertNode = (
   relKey,
 ) => {
   // Build record ids
+  console.log("Start insert node number");
   let record;
   if (objectId) {
     record = store.get(objectId);
@@ -30,6 +31,7 @@ export const insertNode = (
   const params = { ...filters };
   delete params.count;
   delete params.id;
+  delete params.setNumberOfElements;
   let conn;
   if (Object.keys(params).length === 0) {
     conn = ConnectionHandler.getConnection(record, key);
@@ -54,6 +56,10 @@ export const insertNode = (
     if (!isNodeInConnection(payload, conn)) {
       const newEdge = payload.setLinkedRecord(payload, 'node');
       ConnectionHandler.insertEdgeBefore(conn, newEdge);
+      console.log("Store calling set number before: ", filters);
+      filters.setNumberOfElements({ number: 5 });
+      console.log("Calling set number after: ", { setElement: filters.setNumberOfElements });
+      console.log("Calling set number");
     }
   } else {
     throw new Error(`Cant insert node on not found connection ${key} with filters ${JSON.stringify(params)}`);
