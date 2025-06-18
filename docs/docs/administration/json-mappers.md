@@ -54,12 +54,12 @@ Fields might have options besides the mandatory path. The explanation is the sam
 
 ## JSON Mapper validity
 
-The only parameter required to save a CSV Mapper is a name. The creation and refinement of its representations can be done iteratively.
+The only parameter required to save a JSON Mapper is a name. The creation and refinement of its representations can be done iteratively.
 
-Nonetheless, all CSV Mappers go through a quick validation that checks if all the representations have all their mandatory fields set. 
-Only valid mappers can be run by the users on their CSV files.
+Nonetheless, all JSON Mappers go through a quick validation that checks if all the representations have all their mandatory fields set. 
+Only valid mappers can be run by the users on their JSON files.
 
-Mapper validity is visible in the list of CSV Mappers as shown below.
+Mapper validity is visible in the list of JSON Mappers as shown below.
 
 ![An invalid JSON Mapper](assets/json-mapper/json-mappers-invalid.png)
 

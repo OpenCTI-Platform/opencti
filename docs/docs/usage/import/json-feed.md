@@ -1,6 +1,6 @@
 # JSON Feeds
 
-JSON feed ingester enables users to import any web json api.
+JSON feed ingester enables users to import any Web JSON API.
 
 <a id="best-practices-section"></a>
 ## Best practices
