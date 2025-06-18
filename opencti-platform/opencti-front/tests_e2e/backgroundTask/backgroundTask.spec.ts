@@ -22,6 +22,7 @@ import DataTablePage from '../model/DataTable.pageModel';
  * Verify entity count for both labels 'background-task-filter-add-label' and 'background-task-search-add-label'
  * @param page
  */
+
 test('Verify background tasks execution', { tag: ['@mutation', '@incident', '@task', '@filter'] }, async ({ page }) => {
   const incidentPage = new EventsIncidentPage(page);
   const filter = new FiltersPageModel(page);
