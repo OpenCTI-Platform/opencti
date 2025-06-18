@@ -1918,14 +1918,13 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             os.rename(write_file, final_write_file)
 
         stix2_splitter = OpenCTIStix2Splitter()
-        (
-            expectations_number,
-            bundles,
-        ) = stix2_splitter.split_bundle_with_expectations(
-            bundle=bundle,
-            use_json=True,
-            event_version=event_version,
-            cleanup_inconsistent_bundle=cleanup_inconsistent_bundle,
+        (expectations_number, _, bundles) = (
+            stix2_splitter.split_bundle_with_expectations(
+                bundle=bundle,
+                use_json=True,
+                event_version=event_version,
+                cleanup_inconsistent_bundle=cleanup_inconsistent_bundle,
+            )
         )
 
         if len(bundles) == 0:
