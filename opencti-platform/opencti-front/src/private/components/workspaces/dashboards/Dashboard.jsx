@@ -74,21 +74,52 @@ const DashboardComponent = ({ data, noToolbar }) => {
     };
   }, []);
 
+  // Map of widget layouts, refreshed when workspace is updated (thanks to useEffect below).
+  const [widgetsLayouts, setWidgetsLayouts] = useState({});
+
+  // Deserialized manifest, refreshed when workspace is updated.
   const manifest = useMemo(() => {
     return workspace.manifest && workspace.manifest.length > 0
       ? deserializeDashboardManifestForFrontend(fromB64(workspace.manifest))
       : { widgets: {}, config: {} };
   }, [workspace]);
 
+  // Array of all widgets, refreshed when workspace is updated.
   const widgetsArray = useMemo(() => {
-    return Object.values(manifest.widgets).map((widget) => widget);
+    const widgets = Object.values(manifest.widgets).map((widget) => widget);
+    setWidgetsLayouts(
+      widgets.reduce((res, widget) => {
+        res[widget.id] = widget.layout;
+        return res;
+      }, {}),
+    );
+    return widgets;
   }, [manifest]);
 
   const saveManifest = (newManifest, noRefresh = false) => {
-    const strManifest = serializeDashboardManifestForBackend(newManifest);
+    // Need to sync manifest with local layouts before sending for update.
+    // A desync occurs when resizing or moving a widget because in those cases
+    // we skip a complete reload to avoid performance issue.
+    const syncWidgets = Object.values(newManifest.widgets).reduce((res, widget) => {
+      const localLayout = widgetsLayouts[widget.id];
+      res[widget.id] = {
+        ...widget,
+        layout: localLayout || widget.layout,
+      };
+      return res;
+    }, {});
+    const manifestToSave = {
+      ...newManifest,
+      widgets: {
+        ...newManifest.widgets,
+        ...syncWidgets,
+      },
+    };
+
+    const strManifest = serializeDashboardManifestForBackend(manifestToSave);
     const newManifestEncoded = toB64(strManifest);
     // Sometimes (in case of layout adjustment) we do not want to re-fetch
-    // all the manifest because widgets data is still the same and it's costly
+    // all the manifest because widgets data is still the same, and it's costly
     // in performance.
     const mutation = noRefresh ? dashboardLayoutMutation : workspaceMutationFieldPatch;
     if (workspace.manifest !== newManifestEncoded) {
@@ -100,6 +131,9 @@ const DashboardComponent = ({ data, noToolbar }) => {
             key: 'manifest',
             value: newManifestEncoded,
           },
+        },
+        onCompleted: () => {
+          setDeleting(false);
         },
       });
     }
@@ -126,38 +160,17 @@ const DashboardComponent = ({ data, noToolbar }) => {
     saveManifest(newManifest);
   };
 
-  const getLastWidget = () => {
-    // Get last row.
-    const y = Object.values(widgetsArray).reduce(
-      (max, { layout }) => (layout.y > max ? layout.y : max),
-      0,
-    );
-    // Last layout of the row.
-    return Object.values(widgetsArray)
-      .filter(({ layout }) => layout.y === y)
-      .reduce((max, w) => (w.layout.x >= (max?.layout?.x ?? 0) ? w : max), null);
-  };
-
-  const handleAddWidget = (widgetManifest) => {
-    let x = 0;
-    let y = 0;
-    const lastWidget = getLastWidget();
-    if (lastWidget) {
-      const { layout } = lastWidget;
-      const hasRoomOnRow = NB_COLS - (layout.x + layout.w) >= WIDGET_DEFAULT_WIDTH;
-      x = hasRoomOnRow ? layout.x + layout.w : 0;
-      y = hasRoomOnRow ? layout.y : layout.y + layout.h;
-    }
+  const handleAddWidget = (widgetConfig) => {
     saveManifest({
       ...manifest,
       widgets: {
         ...manifest.widgets,
-        [widgetManifest.id]: {
-          ...widgetManifest,
+        [widgetConfig.id]: {
+          ...widgetConfig,
           layout: {
-            i: widgetManifest.id,
-            x,
-            y,
+            i: widgetConfig.id,
+            x: 0,
+            y: 1000, // 1000 will be replaced automatically by a new row at the end of existing ones.
             w: WIDGET_DEFAULT_WIDTH,
             h: WIDGET_DEFAULT_HEIGHT,
           },
@@ -176,36 +189,32 @@ const DashboardComponent = ({ data, noToolbar }) => {
 
   const handleDeleteWidget = (widgetId) => {
     setDeleting(true);
-    const newManifest = R.assoc(
-      'widgets',
-      R.dissoc(widgetId, manifest.widgets),
-      manifest,
-    );
-    saveManifest(newManifest);
+    const newWidgets = { ...manifest.widgets };
+    delete newWidgets[widgetId];
+    saveManifest({
+      ...manifest,
+      widgets: newWidgets,
+    });
   };
 
-  const handleDuplicateWidget = (widgetManifest) => {
-    const newId = uuid();
-    const newManifest = R.assoc(
-      'widgets',
-      R.assoc(newId, R.assoc('id', newId, widgetManifest), manifest.widgets),
-      manifest,
-    );
-    saveManifest(newManifest);
+  const handleDuplicateWidget = (widgetToDuplicate) => {
+    handleAddWidget({
+      ...widgetToDuplicate,
+      id: uuid(),
+    });
   };
 
   const onLayoutChange = (layouts) => {
     if (!deleting) {
-      const layoutsObject = R.indexBy(R.prop('i'), layouts);
-      const newManifest = R.assoc(
-        'widgets',
-        R.map(
-          (n) => R.assoc('layout', layoutsObject[n.id], n),
-          manifest.widgets,
-        ),
-        manifest,
-      );
-      saveManifest(newManifest, true);
+      const newLayouts = layouts.reduce((res, layout) => {
+        res[layout.i] = layout;
+        return res;
+      }, {});
+      setWidgetsLayouts(newLayouts);
+      // Triggering a manifest save with the same manifest.
+      // As this function make a sync between manifest and local layouts,
+      // it will make the save of layouts modification.
+      saveManifest(manifest, true);
     }
   };
 
@@ -255,10 +264,11 @@ const DashboardComponent = ({ data, noToolbar }) => {
         onResizeStop={userCanEdit ? handleResize : undefined}
       >
         {widgetsArray.map((widget) => {
+          if (!widgetsLayouts[widget.id]) return null;
           return (
             <Paper
               key={widget.id}
-              data-grid={widget.layout}
+              data-grid={widgetsLayouts[widget.id]}
               style={paperStyle}
               variant="outlined"
             >
