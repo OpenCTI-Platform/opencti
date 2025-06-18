@@ -1,18 +1,6 @@
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import React, { CSSProperties, FunctionComponent, ReactNode } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles({
-  paper: {
-    minHeight: 110,
-    height: '100%',
-    margin: '4px 0 0 0',
-    borderRadius: 4,
-  },
-});
 
 interface WidgetContainerProps {
   children: ReactNode
@@ -29,8 +17,6 @@ const WidgetContainer: FunctionComponent<WidgetContainerProps> = ({
   variant,
   withoutTitle = false,
 }) => {
-  const classes = useStyles();
-
   return (
     <div style={{ height: height || '100%' }}>
       {!withoutTitle && (
@@ -48,7 +34,15 @@ const WidgetContainer: FunctionComponent<WidgetContainerProps> = ({
         </Typography>
       )}
       {variant !== 'inLine' && variant !== 'inEntity' ? (
-        <Paper classes={{ root: classes.paper }} variant="outlined">
+        <Paper
+          style={{
+            minHeight: 110,
+            height: '100%',
+            margin: '4px 0 0 0',
+            borderRadius: 4,
+          }}
+          variant="outlined"
+        >
           {children}
         </Paper>
       ) : (
