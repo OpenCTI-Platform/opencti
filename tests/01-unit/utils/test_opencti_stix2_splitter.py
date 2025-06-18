@@ -10,7 +10,7 @@ def test_split_bundle():
     stix_splitter = OpenCTIStix2Splitter()
     with open("./tests/data/enterprise-attack.json") as file:
         content = file.read()
-    expectations, bundles = stix_splitter.split_bundle_with_expectations(content)
+    expectations, _, bundles = stix_splitter.split_bundle_with_expectations(content)
     assert expectations == 7016
 
 
@@ -18,7 +18,7 @@ def test_split_test_bundle():
     stix_splitter = OpenCTIStix2Splitter()
     with open("./tests/data/DATA-TEST-STIX2_v2.json") as file:
         content = file.read()
-    expectations, bundles = stix_splitter.split_bundle_with_expectations(content)
+    expectations, _, bundles = stix_splitter.split_bundle_with_expectations(content)
     assert expectations == 59
     base_bundles = json.loads(content)["objects"]
     for base in base_bundles:
@@ -40,13 +40,13 @@ def test_split_mono_entity_bundle():
     stix_splitter = OpenCTIStix2Splitter()
     with open("./tests/data/mono-bundle-entity.json") as file:
         content = file.read()
-    expectations, bundles = stix_splitter.split_bundle_with_expectations(content)
+    expectations, _, bundles = stix_splitter.split_bundle_with_expectations(content)
     assert expectations == 1
     json_bundle = json.loads(bundles[0])["objects"][0]
     assert json_bundle["created_by_ref"] == "fa42a846-8d90-4e51-bc29-71d5b4802168"
     # Split with cleanup_inconsistent_bundle
     stix_splitter = OpenCTIStix2Splitter()
-    expectations, bundles = stix_splitter.split_bundle_with_expectations(
+    expectations, _, bundles = stix_splitter.split_bundle_with_expectations(
         bundle=content, cleanup_inconsistent_bundle=True
     )
     assert expectations == 1
@@ -58,11 +58,11 @@ def test_split_mono_relationship_bundle():
     stix_splitter = OpenCTIStix2Splitter()
     with open("./tests/data/mono-bundle-relationship.json") as file:
         content = file.read()
-    expectations, bundles = stix_splitter.split_bundle_with_expectations(content)
+    expectations, _, bundles = stix_splitter.split_bundle_with_expectations(content)
     assert expectations == 1
     # Split with cleanup_inconsistent_bundle
     stix_splitter = OpenCTIStix2Splitter()
-    expectations, bundles = stix_splitter.split_bundle_with_expectations(
+    expectations, _, bundles = stix_splitter.split_bundle_with_expectations(
         bundle=content, cleanup_inconsistent_bundle=True
     )
     assert expectations == 0
@@ -72,7 +72,7 @@ def test_split_capec_bundle():
     stix_splitter = OpenCTIStix2Splitter()
     with open("./tests/data/mitre_att_capec.json") as file:
         content = file.read()
-    expectations, bundles = stix_splitter.split_bundle_with_expectations(content)
+    expectations, _, bundles = stix_splitter.split_bundle_with_expectations(content)
     assert expectations == 2610
 
 
@@ -80,11 +80,11 @@ def test_split_internal_ids_bundle():
     stix_splitter = OpenCTIStix2Splitter()
     with open("./tests/data/bundle_with_internal_ids.json") as file:
         content = file.read()
-    expectations, bundles = stix_splitter.split_bundle_with_expectations(content)
+    expectations, _, bundles = stix_splitter.split_bundle_with_expectations(content)
     assert expectations == 4
     # Split with cleanup_inconsistent_bundle
     stix_splitter = OpenCTIStix2Splitter()
-    expectations, bundles = stix_splitter.split_bundle_with_expectations(
+    expectations, _, bundles = stix_splitter.split_bundle_with_expectations(
         bundle=content, cleanup_inconsistent_bundle=True
     )
     assert expectations == 4
@@ -101,11 +101,11 @@ def test_split_missing_refs_bundle():
     stix_splitter = OpenCTIStix2Splitter()
     with open("./tests/data/missing_refs.json") as file:
         content = file.read()
-    expectations, bundles = stix_splitter.split_bundle_with_expectations(content)
+    expectations, _, bundles = stix_splitter.split_bundle_with_expectations(content)
     assert expectations == 4
     # Split with cleanup_inconsistent_bundle
     stix_splitter = OpenCTIStix2Splitter()
-    expectations, bundles = stix_splitter.split_bundle_with_expectations(
+    expectations, _, bundles = stix_splitter.split_bundle_with_expectations(
         bundle=content, cleanup_inconsistent_bundle=True
     )
     assert expectations == 3
@@ -115,7 +115,7 @@ def test_split_cyclic_bundle():
     stix_splitter = OpenCTIStix2Splitter()
     with open("./tests/data/cyclic-bundle.json") as file:
         content = file.read()
-    expectations, bundles = stix_splitter.split_bundle_with_expectations(content)
+    expectations, _, bundles = stix_splitter.split_bundle_with_expectations(content)
     assert expectations == 6
     for bundle in bundles:
         json_bundle = json.loads(bundle)
