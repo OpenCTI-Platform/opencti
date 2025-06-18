@@ -1,5 +1,7 @@
 import { Cvss2, Cvss3P1, Cvss4P0 } from 'ae-cvss-calculator';
 import { isNotEmptyField, isEmptyField } from '../database/utils';
+import { FunctionalError } from '../config/errors';
+import type { Vulnerability } from '../generated/graphql';
 
 // --- Types ---
 
@@ -7,7 +9,7 @@ type CvssVersion = 'cvss2' | 'cvss3' | 'cvss4';
 
 export interface CvssFieldUpdate {
   key: string;
-  value: (string | null)[];
+  value: (string | number | null)[];
 }
 
 export interface CvssConfig {
@@ -265,11 +267,25 @@ const getFullValue = (
   value: string | null,
   config: CvssConfig
 ): string | null => {
-  if (!metric) return value;
+  if (!metric || value === null) return value;
   const map = config.codeToFull[metric];
   if (!map) return value;
-  if (value !== null && Object.values(map).includes(value)) return value;
-  if (value !== null && map[value]) return map[value];
+
+  // Try code lookup (input might be a code, e.g., "N")
+  if (map[value]) return map[value];
+
+  // Try full label lookup, case-insensitive
+  const found = Object.values(map).find(
+    (full) => full.toLowerCase() === value.toLowerCase()
+  );
+  if (found) return found;
+
+  // If still not found, maybe user entered the code in lowercase ("n" instead of "N")
+  const codeFromLower = Object.keys(map).find(
+    (code) => code.toLowerCase() === value.toLowerCase()
+  );
+  if (codeFromLower) return map[codeFromLower];
+
   return value;
 };
 
@@ -280,13 +296,28 @@ const getCodeValue = (
 ): string => {
   const map = config.fullToCode[metric];
   if (!map) return value;
+
+  // Direct match (case-sensitive)
   if (map[value]) return map[value];
+
+  // Case-insensitive full label match
+  const found = Object.entries(map).find(
+    ([full]) => full.toLowerCase() === value.toLowerCase()
+  );
+  if (found) return found[1];
+
+  // Also, code input in lowercase? ("n" instead of "N")
+  const codeFromLower = Object.entries(map).find(
+    ([, code]) => code.toLowerCase() === value.toLowerCase()
+  );
+  if (codeFromLower) return codeFromLower[1];
+
   return value;
 };
 
 // --- CVSS Criticity ---
 
-export const getCvssCriticity = (score: number | null): string | null => {
+export const getCvssCriticity = (score: number | null | undefined): string | null => {
   if (typeof score !== 'number' || score < 0 || score > 10) return null;
   if (score === 0.0) return 'Unknown';
   if (score <= 3.9) return 'LOW';
@@ -325,7 +356,7 @@ export const isValidCvssVector = (
 export const parseCvssVector = (
   version: CvssVersion,
   vector: string | null | undefined,
-  initialScore: number | null | undefined,
+  initialScore: number | null | undefined = null,
   asObject = false
 ): CvssFieldUpdate[] | Record<string, unknown> => {
   const config = cvssMappings[version];
@@ -353,14 +384,14 @@ export const parseCvssVector = (
   const seen = new Set<string>();
   const parts = (config.prefix ? vector!.replace(config.prefix, '') : vector!).split('/');
   const parsedVector: CvssFieldUpdate[] = parts
-    .map((part) => {
+    .map((part): CvssFieldUpdate | null => {
       const [rawKey, rawValue] = part.split(':');
       const key = rawKey?.toUpperCase();
-      let value: string | null = rawValue !== undefined ? rawValue.toUpperCase() : null;
-      value = getFullValue(key, value, config) ?? null; // force null if undefined
+      let value: string | null = rawValue !== undefined ? rawValue : null;
+      value = getFullValue(key, value, config) ?? null;
       if (key && codeToOpencti[key] && !seen.has(key)) {
         seen.add(key);
-        return { key: codeToOpencti[key], value: [value] };
+        return { key: codeToOpencti[key], value: [value as string | number | null] };
       }
       return null;
     })
@@ -479,4 +510,58 @@ export const updateCvssVector = (
     if (severityKey) result.push({ key: severityKey, value: [getCvssCriticity(initialScore ?? 0)] });
   }
   return asObject ? Object.fromEntries(result.map((e) => [e.key, e.value[0]])) : result;
+};
+
+export const generateVulnerabilitiesUpdates = (initial: Vulnerability, updates: CvssFieldUpdate[]) => {
+  const newUpdates = [];
+  if (updates.some((e) => e.key === 'x_opencti_cvss_v2_vector')) {
+    const vectorUpdate = updates.filter((e) => e.key === 'x_opencti_cvss_v2_vector').at(0);
+    const vector = vectorUpdate?.value?.at(0) as string;
+    if (!isValidCvssVector('cvss2', vector)) {
+      throw FunctionalError('This is not a valid CVSS2 vector');
+    }
+    newUpdates.push(...parseCvssVector('cvss2', vector) as CvssFieldUpdate[]);
+  } else if (updates.some((e) => e.key.startsWith('x_opencti_cvss_v2_'))) {
+    const updatedVectorParts = updates.filter((e) => e.key.startsWith('x_opencti_cvss_v2_') && !e.key.includes('base') && !e.key.includes('temporal'));
+    if (updatedVectorParts.length > 0) {
+      newUpdates.push(...updateCvssVector('cvss2', initial.x_opencti_cvss_v2_vector, updatedVectorParts, initial.x_opencti_cvss_v2_base_score) as CvssFieldUpdate[]);
+    }
+  }
+  if (updates.some((e) => e.key === 'x_opencti_cvss_vector')) {
+    const vectorUpdate = updates.filter((e) => e.key === 'x_opencti_cvss_vector').at(0);
+    const vector = vectorUpdate?.value?.at(0) as string;
+    if (!isValidCvssVector('cvss3', vector)) {
+      throw FunctionalError('This is not a valid CVSS3 vector');
+    }
+    newUpdates.push(...parseCvssVector('cvss3', vector) as CvssFieldUpdate[]);
+  } else if (updates.some((e) => e.key.startsWith('x_opencti_cvss_'))) {
+    let baseScore = initial.x_opencti_cvss_base_score;
+    if (updates.some((e) => e.key === 'x_opencti_cvss_base_score')) {
+      baseScore = updates.filter((e) => e.key === 'x_opencti_cvss_base_score').at(0)?.value.at(0) as number;
+      newUpdates.push({ key: 'x_opencti_cvss_base_severity', values: [getCvssCriticity(baseScore)] });
+    }
+    const updatedVectorParts = updates.filter((e) => e.key.startsWith('x_opencti_cvss_') && !e.key.includes('base') && !e.key.includes('temporal') && !e.key.startsWith('x_opencti_cvss_v'));
+    if (updatedVectorParts.length > 0) {
+      newUpdates.push(...updateCvssVector('cvss3', initial.x_opencti_cvss_vector, updatedVectorParts, baseScore) as CvssFieldUpdate[]);
+    }
+  }
+  if (updates.some((e) => e.key === 'x_opencti_cvss_v4_vector')) {
+    const vectorUpdate = updates.filter((e) => e.key === 'x_opencti_cvss_v4_vector').at(0);
+    const vector = vectorUpdate?.value?.at(0) as string;
+    if (!isValidCvssVector('cvss4', vector)) {
+      throw FunctionalError('This is not a valid CVSS4 vector');
+    }
+    newUpdates.push(...parseCvssVector('cvss4', vector) as CvssFieldUpdate[]);
+  } else if (updates.some((e) => e.key.startsWith('x_opencti_cvss_v4_'))) {
+    let baseScore = initial.x_opencti_cvss_v4_base_score;
+    if (updates.some((e) => e.key === 'x_opencti_cvss_v4_base_score')) {
+      baseScore = updates.filter((e) => e.key === 'x_opencti_cvss_v4_base_score').at(0)?.value.at(0) as number;
+      newUpdates.push({ key: 'x_opencti_cvss_v4_base_severity', values: [getCvssCriticity(baseScore)] });
+    }
+    const updatedVectorParts = updates.filter((e) => e.key.startsWith('x_opencti_cvss_v4_') && !e.key.includes('base'));
+    if (updatedVectorParts.length > 0) {
+      newUpdates.push(...updateCvssVector('cvss4', initial.x_opencti_cvss_v4_vector, updatedVectorParts, baseScore) as CvssFieldUpdate[]);
+    }
+  }
+  return newUpdates;
 };
