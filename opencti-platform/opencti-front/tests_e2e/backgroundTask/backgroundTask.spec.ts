@@ -83,6 +83,20 @@ test('Verify background tasks execution', { tag: ['@mutation', '@incident', '@ta
     loopCurrent += 1;
   }
   await expect(page.getByText('Waiting')).toBeHidden();
+  const isOneCompleteTaskPresent = async () => {
+    await sleep(5000);
+    await tasksPage.goto();
+    await expect(tasksPage.getPage()).toBeVisible();
+    const isOneOrMoreCompleteVisible = await page.getByText('Complete').first().isVisible();
+    return isOneOrMoreCompleteVisible;
+  };
+
+  let isCompleteVisible = await isOneCompleteTaskPresent();
+  while (isCompleteVisible && loopCurrent < loopCount) {
+    // eslint-disable-next-line no-await-in-loop
+    isCompleteVisible = await isOneCompleteTaskPresent();
+    loopCurrent += 1;
+  }
   await expect(page.getByText('Complete').first()).toBeVisible();
   // END Region Background task page
 
