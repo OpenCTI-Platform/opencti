@@ -20,13 +20,20 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-export interface Option {
-  value: string | null;
+export interface OptionBase {
   label: string;
   color?: string;
   [key: string]: ReactNode;
   type?: string;
   standard_id?: string;
+}
+
+export interface Option extends OptionBase {
+  value: string;
+}
+
+export interface FilterOption extends OptionBase {
+  value: string | null;
 }
 
 interface RelationFieldProps {

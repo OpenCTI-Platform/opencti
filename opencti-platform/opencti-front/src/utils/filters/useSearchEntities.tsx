@@ -26,7 +26,7 @@ import { killChainPhasesSearchQuery } from '@components/settings/KillChainPhases
 import { KillChainPhasesSearchQuery$data } from '@components/settings/__generated__/KillChainPhasesSearchQuery.graphql';
 import { triggersQueriesSearchQuery } from '@components/profile/triggers/TriggersQueries';
 import { TriggersQueriesSearchQuery$data } from '@components/profile/triggers/__generated__/TriggersQueriesSearchQuery.graphql';
-import { OptionValue } from '@components/common/lists/FilterAutocomplete';
+import { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import { usersLinesSearchQuery } from '@components/settings/users/UsersLines';
 import { UsersLinesSearchQuery$data } from '@components/settings/users/__generated__/UsersLinesSearchQuery.graphql';
 import useAuth, { FilterDefinition } from '../hooks/useAuth';
@@ -243,7 +243,7 @@ const workspacesQuery = graphql`
   }
 `;
 
-export type EntityValue = OptionValue;
+export type EntityValue = FilterOptionValue;
 
 const useSearchEntities = ({
   availableEntityTypes,

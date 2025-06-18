@@ -1,7 +1,7 @@
 export const fieldSpacingContainerStyle = { marginTop: 20, width: '100%' };
 
 export interface AutoCompleteOption {
-  value: string | null;
+  value: string;
   label: string;
   color?: string;
   type?: string;

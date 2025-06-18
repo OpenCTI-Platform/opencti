@@ -8,7 +8,7 @@ import useSearchEntities from '../../../../utils/filters/useSearchEntities';
 import type { Theme } from '../../../../components/Theme';
 import SearchScopeElement from './SearchScopeElement';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
-import { Option } from '../form/ReferenceField';
+import { FilterOption } from '../form/ReferenceField';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -25,7 +25,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-export interface OptionValue extends Option {
+export interface FilterOptionValue extends FilterOption {
   type: string;
   parentTypes?: string[];
   group?: string;
@@ -92,7 +92,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
     availableEntityTypes,
     availableRelationshipTypes,
   }) as [
-    Record<string, OptionValue[]>,
+    Record<string, FilterOptionValue[]>,
     (
       filterKey: string,
       cacheEntities: Record<
@@ -103,7 +103,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
       Record<string, { label: string; value: string; type: string }[]>
       >,
       event: SyntheticEvent,
-    ) => Record<string, OptionValue[]>,
+    ) => Record<string, FilterOptionValue[]>,
   ]; // change when useSearchEntities will be in TS
   const isStixObjectTypes = [
     'fromId',
@@ -113,7 +113,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
     'indicates',
     'contextEntityId',
   ].includes(filterKey);
-  const handleChange = (event: SyntheticEvent, value: OptionValue | null) => {
+  const handleChange = (event: SyntheticEvent, value: FilterOptionValue | null) => {
     if (value) {
       if (
         (event as unknown as MouseEvent).altKey
@@ -143,7 +143,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
       availableRelationFilterTypes={availableRelationFilterTypes}
     />
   );
-  let options: OptionValue[] = [];
+  let options: FilterOptionValue[] = [];
   if (isStixObjectTypes) {
     if (searchScope[filterKey] && searchScope[filterKey].length > 0) {
       options = (entities[filterKey] || [])
