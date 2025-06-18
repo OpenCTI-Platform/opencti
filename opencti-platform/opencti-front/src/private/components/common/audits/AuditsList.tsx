@@ -107,10 +107,31 @@ const AuditsList: FunctionComponent<AuditsListProps> = ({
   const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
   const isEnterpriseEdition = useEnterpriseEdition();
 
-  const renderContent = () => {
-    if (!isGrantedToSettings || !isEnterpriseEdition) {
-      return (
-        <div style={{ display: 'table', height: '100%', width: '100%' }}>
+  const selection = dataSelection[0];
+  const dateAttribute = (selection.date_attribute && selection.date_attribute.length > 0
+    ? selection.date_attribute
+    : 'timestamp') as LogsOrdering;
+  const { filters } = buildFiltersAndOptionsForWidgets(
+    selection.filters ?? undefined,
+    { removeTypeAll: true, startDate: startDate ?? undefined, endDate: endDate ?? undefined, dateAttribute },
+  );
+
+  const queryRef = useQueryLoading<AuditsListComponentQuery>(auditsListComponentQuery, {
+    types: ['History', 'Activity'],
+    first: selection.number ?? 10,
+    orderBy: dateAttribute,
+    orderMode: (selection.sort_mode ?? 'desc') as OrderingMode,
+    filters: filters ? sanitizeFilterGroupKeysForBackend(filters) : undefined,
+  });
+
+  return (
+    <WidgetContainer
+      height={height}
+      title={parameters?.title ?? t_i18n('Audits list')}
+      variant={variant}
+    >
+      {(!isGrantedToSettings || !isEnterpriseEdition)
+        ? <div style={{ display: 'table', height: '100%', width: '100%' }}>
           <span
             style={{
               display: 'table-cell',
@@ -123,43 +144,13 @@ const AuditsList: FunctionComponent<AuditsListProps> = ({
               : t_i18n('You are not authorized to see this data.')}
           </span>
         </div>
-      );
-    }
-    const selection = dataSelection[0];
-    const dateAttribute = (selection.date_attribute && selection.date_attribute.length > 0
-      ? selection.date_attribute
-      : 'timestamp') as LogsOrdering;
-    const { filters } = buildFiltersAndOptionsForWidgets(
-      selection.filters ?? undefined,
-      { removeTypeAll: true, startDate: startDate ?? undefined, endDate: endDate ?? undefined, dateAttribute },
-    );
-
-    const queryRef = useQueryLoading<AuditsListComponentQuery>(auditsListComponentQuery, {
-      types: ['History', 'Activity'],
-      first: selection.number ?? 10,
-      orderBy: dateAttribute,
-      orderMode: (selection.sort_mode ?? 'desc') as OrderingMode,
-      filters: filters ? sanitizeFilterGroupKeysForBackend(filters) : undefined,
-    });
-
-    return (
-      <>
-        {queryRef && (
-          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-            <AuditsListComponent queryRef={queryRef} />
-          </React.Suspense>
-        )}
-      </>
-    );
-  };
-
-  return (
-    <WidgetContainer
-      height={height}
-      title={parameters?.title ?? t_i18n('Audits list')}
-      variant={variant}
-    >
-      {renderContent()}
+        : <>
+          {queryRef && (
+            <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
+              <AuditsListComponent queryRef={queryRef}/>
+            </React.Suspense>
+          )}
+        </>}
     </WidgetContainer>
   );
 };
