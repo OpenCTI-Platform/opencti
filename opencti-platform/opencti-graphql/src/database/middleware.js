@@ -2013,22 +2013,17 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   }
 
   // Vulnerabilities logics
-  if (updates.some((e) => e.key === 'x_opencti_cvss_v4_vector')) {
-    const vectorUpdate = updates.filter((e) => e.key === 'x_opencti_cvss_v4_vector').at(0);
+  if (updates.some((e) => e.key === 'x_opencti_cvss_v2_vector')) {
+    const vectorUpdate = updates.filter((e) => e.key === 'x_opencti_cvss_v2_vector').at(0);
     const vector = vectorUpdate?.value?.at(0);
-    if (!isValidCvssVector('cvss4', vector)) {
-      throw FunctionalError('This is not a valid CVSS4 vector');
+    if (!isValidCvssVector('cvss2', vector)) {
+      throw FunctionalError('This is not a valid CVSS2 vector');
     }
-    updates.push(...parseCvssVector('cvss4', vector));
-  } else if (updates.some((e) => e.key.startsWith('x_opencti_cvss_v4_'))) {
-    let baseScore = initial.x_opencti_cvss_v4_base_score;
-    if (updates.some((e) => e.key === 'x_opencti_cvss_v4_base_score')) {
-      baseScore = getCvssCriticity(updates.filter((e) => e.key === 'x_opencti_cvss_v4_base_score').at(0));
-      updates.push({ key: 'x_opencti_cvss_v4_base_severity', values: [getCvssCriticity(baseScore)] });
-    }
-    const updatedVectorParts = updates.filter((e) => e.key.startsWith('x_opencti_cvss_v4_') && !e.key.includes('base'));
+    updates.push(...parseCvssVector('cvss2', vector));
+  } else if (updates.some((e) => e.key.startsWith('x_opencti_cvss_v2_'))) {
+    const updatedVectorParts = updates.filter((e) => e.key.startsWith('x_opencti_cvss_v2_') && !e.key.includes('base') && !e.key.includes('temporal'));
     if (updatedVectorParts.length > 0) {
-      updates.push(...updateCvssVector('cvss4', initial.x_opencti_cvss_v4_vector, updatedVectorParts, baseScore));
+      updates.push(...updateCvssVector('cvss2', initial.x_opencti_cvss_v2_vector, updatedVectorParts, initial.x_opencti_cvss_v2_base_score));
     }
   }
   if (updates.some((e) => e.key === 'x_opencti_cvss_vector')) {
@@ -2049,17 +2044,22 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
       updates.push(...updateCvssVector('cvss3', initial.x_opencti_cvss_vector, updatedVectorParts, baseScore));
     }
   }
-  if (updates.some((e) => e.key === 'x_opencti_cvss_v2_vector')) {
-    const vectorUpdate = updates.filter((e) => e.key === 'x_opencti_cvss_v2_vector').at(0);
+  if (updates.some((e) => e.key === 'x_opencti_cvss_v4_vector')) {
+    const vectorUpdate = updates.filter((e) => e.key === 'x_opencti_cvss_v4_vector').at(0);
     const vector = vectorUpdate?.value?.at(0);
-    if (!isValidCvssVector('cvss2', vector)) {
-      throw FunctionalError('This is not a valid CVSS2 vector');
+    if (!isValidCvssVector('cvss4', vector)) {
+      throw FunctionalError('This is not a valid CVSS4 vector');
     }
-    updates.push(...parseCvssVector('cvss2', vector));
-  } else if (updates.some((e) => e.key.startsWith('x_opencti_cvss_v2_'))) {
-    const updatedVectorParts = updates.filter((e) => e.key.startsWith('x_opencti_cvss_v2_') && !e.key.includes('base') && !e.key.includes('temporal'));
+    updates.push(...parseCvssVector('cvss4', vector));
+  } else if (updates.some((e) => e.key.startsWith('x_opencti_cvss_v4_'))) {
+    let baseScore = initial.x_opencti_cvss_v4_base_score;
+    if (updates.some((e) => e.key === 'x_opencti_cvss_v4_base_score')) {
+      baseScore = getCvssCriticity(updates.filter((e) => e.key === 'x_opencti_cvss_v4_base_score').at(0));
+      updates.push({ key: 'x_opencti_cvss_v4_base_severity', values: [getCvssCriticity(baseScore)] });
+    }
+    const updatedVectorParts = updates.filter((e) => e.key.startsWith('x_opencti_cvss_v4_') && !e.key.includes('base'));
     if (updatedVectorParts.length > 0) {
-      updates.push(...updateCvssVector('cvss2', initial.x_opencti_cvss_v2_vector, updatedVectorParts, initial.x_opencti_cvss_v2_base_score));
+      updates.push(...updateCvssVector('cvss4', initial.x_opencti_cvss_v4_vector, updatedVectorParts, baseScore));
     }
   }
   // end of vulnerabilities logics

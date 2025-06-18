@@ -418,6 +418,9 @@ export const updateCvssVector = (
   initialScore: number | null | undefined,
   asObject = false
 ): CvssFieldUpdate[] | Record<string, unknown> => {
+  if (updates.length === 0) {
+    return {};
+  }
   const config = cvssMappings[version];
   const { openctiToCode, ordered, prefix, baseVectorKey, baseScoreKey, temporalScoreKey, severityKey } = config;
   const initialParts: [string, string | undefined][] = (existingVector || '')
