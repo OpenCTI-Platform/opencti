@@ -177,6 +177,7 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
               )}
               onViewAs={handleChangeViewAs}
               viewAs={viewAs}
+              redirectToContent={true}
               disableSharing={individual.isUser}
             />
             <Box
