@@ -141,6 +141,7 @@ import {
   ATTRIBUTE_ALIASES_OPENCTI,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
+  ENTITY_TYPE_VULNERABILITY,
   isStixDomainObjectIdentity,
   isStixDomainObjectShareableContainer,
   isStixObjectAliased,
@@ -2013,9 +2014,11 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   }
 
   // Vulnerabilities updates
-  const vulnerabilitiesUpdates = generateVulnerabilitiesUpdates(initial, updates);
-  if (vulnerabilitiesUpdates.length > 0) {
-    updates.push(...vulnerabilitiesUpdates);
+  if (initial.entity_type === ENTITY_TYPE_VULNERABILITY) {
+    const vulnerabilitiesUpdates = generateVulnerabilitiesUpdates(initial, updates);
+    if (vulnerabilitiesUpdates.length > 0) {
+      updates.push(...vulnerabilitiesUpdates);
+    }
   }
 
   if (updates.some((e) => e.key === 'authorized_authorities')) {
