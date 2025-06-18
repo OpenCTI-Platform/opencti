@@ -95,12 +95,13 @@ const DashboardComponent = ({ data, noToolbar }) => {
     return widgets;
   }, [manifest]);
 
-  const saveManifest = (newManifest, noRefresh = false) => {
+  const saveManifest = (newManifest, opts = { layouts: widgetsLayouts, noRefresh: false }) => {
+    const { layouts, noRefresh } = opts;
     // Need to sync manifest with local layouts before sending for update.
     // A desync occurs when resizing or moving a widget because in those cases
     // we skip a complete reload to avoid performance issue.
     const syncWidgets = Object.values(newManifest.widgets).reduce((res, widget) => {
-      const localLayout = widgetsLayouts[widget.id];
+      const localLayout = layouts[widget.id];
       res[widget.id] = {
         ...widget,
         layout: localLayout || widget.layout,
@@ -210,7 +211,7 @@ const DashboardComponent = ({ data, noToolbar }) => {
       // Triggering a manifest save with the same manifest.
       // As this function makes a sync between manifest and local layouts
       // it will make the update of layouts modification.
-      saveManifest(manifest, true);
+      saveManifest(manifest, { layouts: newLayouts, noRefresh: true });
     }
   };
 
