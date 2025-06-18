@@ -137,7 +137,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     isSubKey?: boolean,
   ) => Record<string, OptionValue[]>,
   ];
-  const handleChange = (checked: boolean, value: string, childKey?: string) => {
+  const handleChange = (checked: boolean, value: string | null, childKey?: string) => {
     if (childKey) {
       const childFilters = filter?.values.filter((val) => val.key === childKey) as Filter[];
       const childFilter = childFilters && childFilters.length > 0 ? childFilters[0] : undefined;

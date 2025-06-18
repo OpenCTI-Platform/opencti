@@ -21,7 +21,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 export interface Option {
-  value: string;
+  value: string | null;
   label: string;
   color?: string;
   [key: string]: ReactNode;

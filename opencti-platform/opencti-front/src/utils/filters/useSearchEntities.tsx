@@ -287,8 +287,8 @@ const useSearchEntities = ({
 
   const searchEntities = (
     filterKey: string,
-    cacheEntities: Record< string, { label: string; value: string; type: string }[] >,
-    setCacheEntities: Dispatch< Record<string, { label: string; value: string; type: string }[]> >,
+    cacheEntities: Record< string, { label: string; value: string | null; type: string }[] >,
+    setCacheEntities: Dispatch< Record<string, { label: string; value: string | null; type: string }[]> >,
     event: BaseSyntheticEvent,
     isSubKey?: boolean,
   ) => {
@@ -348,7 +348,7 @@ const useSearchEntities = ({
           unionSetEntities(key, [
             {
               label: t_i18n('No label'),
-              value: '',
+              value: null,
               type: 'Label',
               color: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
             },
