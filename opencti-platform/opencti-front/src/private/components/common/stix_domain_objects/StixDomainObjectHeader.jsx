@@ -23,6 +23,7 @@ import MenuItem from '@mui/material/MenuItem';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import { useTheme } from '@mui/styles';
+import { useNavigate } from 'react-router-dom';
 import { DraftChip } from '../draft/DraftChip';
 import StixCoreObjectEnrollPlaybook from '../stix_core_objects/StixCoreObjectEnrollPlaybook';
 import StixCoreObjectFileExportButton from '../stix_core_objects/StixCoreObjectFileExportButton';
@@ -44,6 +45,7 @@ import { getMainRepresentative } from '../../../../utils/defaultRepresentatives'
 import Transition from '../../../../components/Transition';
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
 import useHelper from '../../../../utils/hooks/useHelper';
+import { resolveLink } from '../../../../utils/Entity';
 
 export const stixDomainObjectMutation = graphql`
   mutation StixDomainObjectHeaderFieldMutation(
@@ -244,6 +246,7 @@ const StixDomainObjectHeader = (props) => {
     enableQuickSubscription,
     enableEnricher,
     enableEnrollPlaybook,
+    redirectToContent,
   } = props;
   const openAliasesCreate = false;
   const [openAlias, setOpenAlias] = useState(false);
@@ -256,6 +259,16 @@ const StixDomainObjectHeader = (props) => {
   const isKnowledgeEnricher = useGranted([KNOWLEDGE_KNENRICHMENT]);
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const navigate = useNavigate();
+
+  const handleExportCompleted = (fileName) => {
+    // navigate with fileName in query params to select the created file
+    const fileParams = { currentFileId: fileName, contentSelected: false };
+    const urlParams = new URLSearchParams(fileParams).toString();
+    const entityLink = `${resolveLink(stixDomainObject.entity_type)}/${stixDomainObject.id}`;
+    const targetTab = redirectToContent ? 'content' : 'files';
+    navigate(`${entityLink}/${targetTab}?${urlParams}`);
+  };
 
   const handleToggleOpenAliases = () => {
     setOpenAliases(!openAliases);
@@ -570,6 +583,7 @@ const StixDomainObjectHeader = (props) => {
                 scoId={stixDomainObject.id}
                 scoEntityType={entityType}
                 OpenFormComponent={StixCoreObjectFileExportButton}
+                onExportCompleted={handleExportCompleted}
               />
             </Security>
             {isKnowledgeUpdater && (
