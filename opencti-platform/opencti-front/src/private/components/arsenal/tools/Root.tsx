@@ -148,6 +148,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
               )}
               enableEnricher={isFABReplaced}
               enableQuickSubscription={true}
+              redirectToContent={true}
             />
             <Box
               sx={{

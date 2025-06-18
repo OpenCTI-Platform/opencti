@@ -148,6 +148,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
               )}
               enableEnricher={isFABReplaced}
               enableQuickSubscription={true}
+              redirectToContent={true}
             />
             <Box
               sx={{

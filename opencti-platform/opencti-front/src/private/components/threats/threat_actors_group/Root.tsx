@@ -154,6 +154,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
               )}
               enableEnricher={isFABReplaced}
               enableQuickSubscription={true}
+              redirectToContent={true}
             />
             <Box
               sx={{

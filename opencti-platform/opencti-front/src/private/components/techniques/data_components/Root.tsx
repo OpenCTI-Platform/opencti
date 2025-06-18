@@ -119,6 +119,7 @@ const RootDataComponent = () => {
                       </Security>
                     )}
                     noAliases={true}
+                    redirectToContent={true}
                   />
                   <Box
                     sx={{

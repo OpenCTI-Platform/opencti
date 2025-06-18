@@ -148,6 +148,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
               )}
               enableEnricher={isFABReplaced}
               enableQuickSubscription={true}
+              redirectToContent={true}
             />
             <Box
               sx={{
