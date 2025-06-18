@@ -246,6 +246,18 @@ const cvssMappings: Record<CvssVersion, CvssConfig> = {
   },
 };
 
+const cvss2OutputKeyCase: Record<string, string> = {
+  AV: 'AV',
+  AC: 'AC',
+  AU: 'Au',
+  C: 'C',
+  I: 'I',
+  A: 'A',
+  E: 'E',
+  RL: 'RL',
+  RC: 'RC',
+};
+
 // --- Helpers ---
 
 const getFullValue = (
@@ -427,7 +439,12 @@ export const updateCvssVector = (
     }
   });
   const updatedVector = (prefix || '')
-      + ordered.filter((k) => parts.has(k)).map((k) => `${k}:${parts.get(k)}`).join('/');
+      + ordered
+        .filter((k) => parts.has(k))
+        .map((k) => (version === 'cvss2'
+          ? `${cvss2OutputKeyCase[k] || k}:${parts.get(k)}`
+          : `${k}:${parts.get(k)}`))
+        .join('/');
   let scores: any = null;
   if (version === 'cvss3') {
     scores = new Cvss3P1(updatedVector).calculateScores();
