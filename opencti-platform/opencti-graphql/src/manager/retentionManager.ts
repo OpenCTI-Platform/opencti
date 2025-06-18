@@ -1,5 +1,5 @@
 import moment, { type Moment } from 'moment';
-import { Promise as BluePromise } from 'bluebird';
+import * as R from 'ramda';
 import { findAll as findRetentionRulesToExecute } from '../domain/retentionRule';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { deleteElementById, patchAttribute } from '../database/middleware';
@@ -28,13 +28,15 @@ const RETENTION_MANAGER_START_ENABLED = booleanConf('retention_manager:enabled',
 const SCHEDULE_TIME = conf.get('retention_manager:interval') || 30000;
 const RETENTION_MANAGER_KEY = conf.get('retention_manager:lock_key') || 'retention_manager_lock';
 const RETENTION_BATCH_SIZE = conf.get('retention_manager:batch_size') || 1500;
-const RETENTION_MAX_CONCURRENCY = conf.get('retention_manager:max_deletion_concurrency') || 10;
+const RETENTION_MAX_CONCURRENCY = conf.get('retention_manager:max_deletion_concurrency') || 2;
 export const RETENTION_SCOPE_VALUES = Object.values(RetentionRuleScope);
 export const RETENTION_UNIT_VALUES = Object.values(RetentionUnit);
 
+let shutdown = false;
+
 export const deleteElement = async (context: AuthContext, scope: string, nodeId: string, nodeEntityType?: string) => {
   if (scope === 'knowledge') {
-    await deleteElementById(context, RETENTION_MANAGER_USER, nodeId, nodeEntityType, { forceDelete: true });
+    await deleteElementById(context, RETENTION_MANAGER_USER, nodeId, nodeEntityType, { forceDelete: true, forceRefresh: false });
   } else if (scope === 'file' || scope === 'workbench') {
     await deleteFile(context, RETENTION_MANAGER_USER, nodeId);
   } else {
@@ -95,7 +97,18 @@ const executeProcessing = async (context: AuthContext, retentionRule: RetentionR
         }
       }
     };
-    await BluePromise.map(elements, deleteFn, { concurrency: RETENTION_MAX_CONCURRENCY });
+    const concurrentElements = R.splitEvery<BasicStoreCommonEdge<StoreObject>>(RETENTION_MAX_CONCURRENCY, elements);
+    for (let i = 0; i < concurrentElements.length; i += 1) {
+      if (shutdown) {
+        break;
+      }
+      const parallelElements = concurrentElements[i];
+      const promises: Promise<void>[] = [];
+      parallelElements.forEach((elem) => {
+        promises.push(deleteFn(elem));
+      });
+      await Promise.all(promises);
+    }
     logApp.debug(`[OPENCTI] Retention manager deleted ${elements.length} in ${new Date().getTime() - start} ms`);
   }
   // Patch the last execution of the rule
@@ -127,6 +140,7 @@ const RETENTION_MANAGER_DEFINITION: ManagerDefinition = {
   executionContext: 'retention_manager',
   cronSchedulerHandler: {
     handler: retentionHandler,
+    shutdown: () => { shutdown = true; },
     interval: SCHEDULE_TIME,
     lockKey: RETENTION_MANAGER_KEY,
     lockInHandlerParams: true,

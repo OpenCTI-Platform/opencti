@@ -3432,7 +3432,8 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
         await deleteAllObjectFiles(context, user, element);
       }
       // Delete all linked elements
-      await elDeleteElements(context, user, [element], { forceDelete });
+      const forceRefresh = opts.forceRefresh ?? true;
+      await elDeleteElements(context, user, [element], { forceDelete, forceRefresh });
       // Publish event in the stream
       event = await storeDeleteEvent(context, user, element, opts);
     }

@@ -16,6 +16,7 @@ export interface HandlerInput {
 
 export interface ManagerCronScheduler {
   handler: (input?: any) => Promise<void>
+  shutdown?: () => void;
   interval: number
   lockKey: string
   infiniteInterval?: number
@@ -152,11 +153,16 @@ const initManager = (manager: ManagerDefinition) => {
       logApp.info(`[OPENCTI-MODULE] Stopping ${manager.label}`);
       shutdown = true;
       if (scheduler) {
+        if (manager.cronSchedulerHandler?.shutdown) {
+          manager.cronSchedulerHandler?.shutdown();
+        }
         const asyncCleanInterval = manager.cronSchedulerHandler && manager.cronSchedulerHandler.dynamicSchedule
           ? clearDynamicIntervalAsync : clearIntervalAsync;
         await asyncCleanInterval(scheduler);
       }
-      if (streamScheduler) await clearIntervalAsync(streamScheduler);
+      if (streamScheduler) {
+        await clearIntervalAsync(streamScheduler);
+      }
       return true;
     },
   };
