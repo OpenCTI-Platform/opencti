@@ -2,6 +2,7 @@ import React from 'react';
 import Button from '@mui/material/Button';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
+import { Stack } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
@@ -64,7 +65,7 @@ const TaskDeletion = ({
   };
 
   return (
-    <div style={{ margin: 0 }}>
+    <Stack flexDirection="row" justifyContent="flex-end" gap={2} m={0}>
       <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
         <Button
           color="error"
@@ -81,7 +82,7 @@ const TaskDeletion = ({
         submitDelete={submitDelete}
         message={t_i18n('Do you want to delete this task?')}
       />
-    </div>
+    </Stack>
   );
 };
 

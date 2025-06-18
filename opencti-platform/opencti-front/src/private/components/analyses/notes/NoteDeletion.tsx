@@ -2,6 +2,7 @@ import React, { FunctionComponent } from 'react';
 import Button from '@mui/material/Button';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
+import { Stack } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import { StixCoreObjectOrStixCoreRelationshipNoteCard_node$data } from './__generated__/StixCoreObjectOrStixCoreRelationshipNoteCard_node.graphql';
 import { deleteNode } from '../../../../utils/store';
@@ -65,7 +66,7 @@ const NoteDeletion: FunctionComponent<NoteDeletionProps> = ({
     });
   };
   return (
-    <>
+    <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
       <Button
         color="error"
         variant="contained"
@@ -80,7 +81,7 @@ const NoteDeletion: FunctionComponent<NoteDeletionProps> = ({
         submitDelete={submitDelete}
         message={t_i18n('Do you want to delete this note?')}
       />
-    </>
+    </Stack>
   );
 };
 
