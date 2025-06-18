@@ -1,5 +1,5 @@
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
-import { buildStixObject, cleanObject } from '../../database/stix-2-1-converter';
+import { buildStixObject } from '../../database/stix-2-1-converter';
 import type {
   StixIngestionCsv,
   StixIngestionJson,
@@ -12,6 +12,7 @@ import type {
   StoreEntityIngestionTaxii,
   StoreEntityIngestionTaxiiCollection
 } from './ingestion-types';
+import { cleanObject } from '../../database/stix-converter-utils';
 
 export const convertIngestionRssToStix = (instance: StoreEntityIngestionRss): StixIngestionRss => {
   const stixObject = buildStixObject(instance);

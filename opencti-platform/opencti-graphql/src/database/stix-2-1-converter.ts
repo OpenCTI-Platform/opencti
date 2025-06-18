@@ -34,7 +34,6 @@ import {
   INPUT_SRC,
   INPUT_SRC_PAYLOAD,
   INPUT_VALUES,
-  objects,
   RELATION_GRANTED_TO,
   RELATION_IN_PIR,
   RELATION_OBJECT_MARKING
@@ -119,11 +118,11 @@ import {
   INPUT_OBJECTS,
   INPUT_PARTICIPANT
 } from '../schema/general';
-import { FROM_START, FROM_START_STR, UNTIL_END, UNTIL_END_STR } from '../utils/format';
 import { isRelationBuiltin, STIX_SPEC_VERSION } from './stix';
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { isInternalObject } from '../schema/internalObject';
 import { isInternalId, isStixId } from '../schema/schemaUtils';
+import { assertType, cleanObject, convertToStixDate } from './stix-converter-utils';
 
 export const isTrustedStixId = (stixId: string): boolean => {
   const segments = stixId.split('--');
@@ -154,44 +153,11 @@ export const convertTypeToStixType = (type: string): string => {
   }
   return type.toLowerCase();
 };
-const assertType = (type: string, instanceType: string) => {
-  if (instanceType !== type) {
-    throw UnsupportedError('Incompatible type', { instanceType, type });
-  }
-};
 const isValidStix = (data: S.StixObject): boolean => {
   // TODO @JRI @SAM
   return !R.isEmpty(data);
 };
-export const cleanObject = <T>(data: T): T => {
-  const obj: T = { ...data };
-  // eslint-disable-next-line no-restricted-syntax
-  for (const key in data) {
-    // cleanup empty keys except object_refs
-    if (key !== objects.stixName && isEmptyField(obj[key])) {
-      delete obj[key];
-    }
-  }
-  return obj;
-};
-export const convertToStixDate = (date: Date | string | undefined): S.StixDate => {
-  if (date === undefined) {
-    return undefined;
-  }
-  // date type from graphql
-  if (date instanceof Date) {
-    const time = date.getTime();
-    if (time === FROM_START || time === UNTIL_END) {
-      return undefined;
-    }
-    return date.toISOString();
-  }
-  // date string from the database
-  if (date === FROM_START_STR || date === UNTIL_END_STR) {
-    return undefined;
-  }
-  return date;
-};
+
 export const convertObjectReferences = (instance: StoreEntity, isInferred = false) => {
   const objectRefs = instance[INPUT_OBJECTS] ?? [];
   return objectRefs.filter((r) => {

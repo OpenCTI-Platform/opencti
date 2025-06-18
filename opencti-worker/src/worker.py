@@ -365,7 +365,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                         else None
                     )
                     stix2_splitter = OpenCTIStix2Splitter()
-                    expectations, bundles = (
+                    expectations, _, bundles = (
                         stix2_splitter.split_bundle_with_expectations(
                             content_json, False, event_version
                         )
