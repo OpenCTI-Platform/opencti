@@ -94,7 +94,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
     availableEntityTypes,
     availableRelationshipTypes,
   }) as [
-    Record<string, OptionValue[]>,
+    Record<string, FilterOptionValue[]>,
     (
       filterKey: string,
       cacheEntities: Record<
@@ -105,7 +105,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
       Record<string, { label: string; value: string; type: string }[]>
       >,
       event: SyntheticEvent,
-    ) => Record<string, OptionValue[]>,
+    ) => Record<string, FilterOptionValue[]>,
   ]; // change when useSearchEntities will be in TS
   const isStixObjectTypes = [
     'fromId',
@@ -115,7 +115,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
     'indicates',
     'contextEntityId',
   ].includes(filterKey);
-  const handleChange = (event: SyntheticEvent, value: OptionValue | null) => {
+  const handleChange = (event: SyntheticEvent, value: FilterOptionValue | null) => {
     if (value) {
       if (
         (event as unknown as MouseEvent).altKey
@@ -145,7 +145,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
       availableRelationFilterTypes={availableRelationFilterTypes}
     />
   );
-  let options: OptionValue[] = [];
+  let options: FilterOptionValue[] = [];
   if (isStixObjectTypes) {
     if (searchScope[filterKey] && searchScope[filterKey].length > 0) {
       options = (entities[filterKey] || [])

@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { v4 as uuid } from 'uuid';
-import { OptionValue } from '@components/common/lists/FilterAutocomplete';
+import { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import React from 'react';
 import { subDays } from 'date-fns';
 import { useFormatter } from '../../components/i18n';
@@ -910,16 +910,16 @@ export const isStixObjectTypes = [
 ];
 
 export const getSelectedOptions = (
-  entitiesOptions: OptionValue[],
+  entitiesOptions: FilterOptionValue[],
   filterValues: string[],
   filtersRepresentativesMap: Map<string,
   FilterRepresentative>,
   t_i18n: (s: string) => string,
-): OptionValue[] => {
+): FilterOptionValue[] => {
   // we try to get first the element from the search
   // and if we did not find we tried one from filterRepresentative
   // Most of the time element from search should be sufficient
-  const mapFilterValues: OptionValue[] = [];
+  const mapFilterValues: FilterOptionValue[] = [];
   filterValues.forEach((value: string) => {
     const mapRepresentative = entitiesOptions.find((f) => f.value === value);
     if (mapRepresentative) {
