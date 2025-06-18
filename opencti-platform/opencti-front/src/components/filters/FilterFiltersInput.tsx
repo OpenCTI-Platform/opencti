@@ -2,7 +2,7 @@ import React, { FunctionComponent, useEffect, useRef } from 'react';
 import Filters from '@components/common/lists/Filters';
 import Box from '@mui/material/Box';
 import { Filter, FilterGroup, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
-import { emptyFilterGroup, sanitizeFiltersStructure, useAvailableFilterKeysForEntityTypes } from '../../utils/filters/filtersUtils';
+import { emptyFilterGroup, isFilterGroupNotEmpty, sanitizeFiltersStructure, useAvailableFilterKeysForEntityTypes } from '../../utils/filters/filtersUtils';
 import useFiltersState from '../../utils/filters/useFiltersState';
 // eslint-disable-next-line import/no-cycle
 import FilterIconButton from '../FilterIconButton';
@@ -29,8 +29,12 @@ const FilterFiltersInput: FunctionComponent<BasicFilterInputProps> = ({
         const childFilters = filter?.values.filter((val) => val.key === childKey) as Filter[];
         const childFilter = childFilters && childFilters.length > 0 ? childFilters[0] : undefined;
         const sanitizedCurrentFilter = sanitizeFiltersStructure(currentFilter);
-        const representation = { key: childKey, values: [sanitizedCurrentFilter] };
-        helpers?.handleChangeRepresentationFilter(filter?.id ?? '', childFilter, representation);
+        if (isFilterGroupNotEmpty(sanitizedCurrentFilter)) {
+          const representation = { key: childKey, values: [sanitizedCurrentFilter] };
+          helpers?.handleChangeRepresentationFilter(filter?.id ?? '', childFilter, representation);
+        } else {
+          helpers?.handleRemoveRepresentationFilter(filter?.id ?? '', childFilter);
+        }
       } else {
         const sanitizedCurrentFilter = sanitizeFiltersStructure(currentFilter);
         helpers?.handleReplaceFilterValues(filter?.id ?? '', [sanitizedCurrentFilter]);

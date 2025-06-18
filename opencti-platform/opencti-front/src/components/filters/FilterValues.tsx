@@ -9,12 +9,13 @@ import { WarningOutlined } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { useFormatter } from '../i18n';
 import type { Theme } from '../Theme';
-import { FiltersRestrictions, isFilterEditable, isRegardingOfFilterWarning, useFilterDefinition } from '../../utils/filters/filtersUtils';
+import { FiltersRestrictions, isFilterEditable, isFilterGroupNotEmpty, isRegardingOfFilterWarning, useFilterDefinition } from '../../utils/filters/filtersUtils';
 import { isDateIntervalTranslatable, translateDateInterval, truncate } from '../../utils/String';
 import FilterValuesContent from '../FilterValuesContent';
 import { FilterRepresentative } from './FiltersModel';
-import { Filter } from '../../utils/filters/filtersHelpers-types';
+import { Filter, FilterGroup } from '../../utils/filters/filtersHelpers-types';
 import useSchema from '../../utils/hooks/useSchema';
+import TasksFilterValueContainer from '../TasksFilterValueContainer';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -222,16 +223,17 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
                 </>
               );
               if (subKey === 'dynamic') {
+                const dynamicValues = val.values;
+                if (!dynamicValues.every((v: FilterGroup) => isFilterGroupNotEmpty(v))) return <div key={val.key}/>;
                 return (
                   <Fragment key={val.key}>
                     <Tooltip
                       title={
-                        <FilterValues
-                          label={keyLabel}
-                          tooltip={true}
-                          currentFilter={val}
-                          filtersRepresentativesMap={filtersRepresentativesMap}
-                        />
+                        dynamicValues.map((v: FilterGroup) => (
+                          <TasksFilterValueContainer
+                            key={dynamicValues.indexOf(v)}
+                            filters={v}
+                          />))
                         }
                     >
                       <Box
