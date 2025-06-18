@@ -208,10 +208,11 @@ const ES_PRIMARY_SHARD_SIZE = conf.get('elasticsearch:max_primary_shard_size') |
 const ES_MAX_DOCS = conf.get('elasticsearch:max_docs') || 75000000;
 
 const TOO_MANY_CLAUSES = 'too_many_nested_clauses';
-export const BULK_TIMEOUT = '5m';
+const DOCUMENT_MISSING_EXCEPTION = 'document_missing_exception';
+export const ES_RETRY_ON_CONFLICT = 30;
+export const BULK_TIMEOUT = '1h';
 const MAX_TERMS_SPLIT = 65000; // By default, Elasticsearch limits the terms query to a maximum of 65,536 terms. You can change this limit using the index.
 const ES_MAX_MAPPINGS = 3000;
-export const ES_RETRY_ON_CONFLICT = 5;
 const MAX_AGGREGATION_SIZE = 100;
 
 export const ROLE_FROM = 'from';
@@ -3569,7 +3570,9 @@ export const elBulk = async (args) => {
   return elRawBulk(args).then((data) => {
     if (data.errors) {
       const errors = data.items.map((i) => i.index?.error || i.update?.error).filter((f) => f !== undefined);
-      throw DatabaseError('Bulk indexing fail', { errors });
+      if (errors.filter((err) => err.type !== DOCUMENT_MISSING_EXCEPTION).length > 0) {
+        throw DatabaseError('Bulk indexing fail', { errors });
+      }
     }
     return data;
   });
@@ -3677,7 +3680,8 @@ export const getRelationsToRemove = async (context, user, elements, opts = {}) =
   await getRelatedRelations(context, user, ids, relationsToRemove, 0, relationsToRemoveMap, opts);
   return { relations: R.flatten(relationsToRemove), relationsToRemoveMap };
 };
-export const elDeleteInstances = async (instances) => {
+export const elDeleteInstances = async (instances, opts = {}) => {
+  const { forceRefresh = true } = opts;
   // If nothing to delete, return immediately to prevent elastic to delete everything
   if (instances.length > 0) {
     logApp.debug(`[SEARCH] Deleting ${instances.length} instances`);
@@ -3687,11 +3691,12 @@ export const elDeleteInstances = async (instances) => {
       const bodyDelete = instancesBulk.flatMap((doc) => {
         return [{ delete: { _index: doc._index, _id: doc._id ?? doc.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } }];
       });
-      await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyDelete });
+      await elBulk({ refresh: forceRefresh, timeout: BULK_TIMEOUT, body: bodyDelete });
     }
   }
 };
-export const elRemoveRelationConnection = async (context, user, elementsImpact) => {
+export const elRemoveRelationConnection = async (context, user, elementsImpact, opts = {}) => {
+  const { forceRefresh = true } = opts;
   const impacts = Object.entries(elementsImpact);
   if (impacts.length > 0) {
     const idsToResolve = impacts.map(([k]) => k);
@@ -3757,7 +3762,7 @@ export const elRemoveRelationConnection = async (context, user, elementsImpact) 
       });
       const bodyUpdate = R.flatten(bodyUpdateRaw);
       if (bodyUpdate.length > 0) {
-        await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
+        await elBulk({ refresh: forceRefresh, timeout: BULK_TIMEOUT, body: bodyUpdate });
       }
       // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
       if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
@@ -3998,13 +4003,13 @@ export const elDeleteElements = async (context, user, elements, opts = {}) => {
     await createDeleteOperationElement(context, user, elements[0], entitiesToDelete);
   }
   // 01. Start by clearing connections rel
-  await elRemoveRelationConnection(context, user, elementsImpact);
+  await elRemoveRelationConnection(context, user, elementsImpact, opts);
   // 02. Remove all related relations and elements
   logApp.debug('[SEARCH] Deleting related relations', { size: relations.length });
-  await elDeleteInstances(relations);
+  await elDeleteInstances(relations, opts);
   // 03/ Remove all elements
   logApp.debug('[SEARCH] Deleting elements', { size: elements.length });
-  await elDeleteInstances(elements);
+  await elDeleteInstances(elements, opts);
 };
 
 const createDeleteOperationElement = async (context, user, mainElement, deletedElements) => {

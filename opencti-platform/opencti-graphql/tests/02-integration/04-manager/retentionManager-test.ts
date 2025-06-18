@@ -342,17 +342,17 @@ describe('Retention Manager tests ', () => {
     const workbenches = await allFilesForPaths(testContext, ADMIN_USER, [pendingPath]);
     expect(workbenches.length).toEqual(1); // the 2 created workbenches - workbench1 that should have been deleted
     // delete report
-    await deleteElement(context, 'knowledge', report1Id, ENTITY_TYPE_CONTAINER_REPORT); // should delete report1
+    await deleteElement(context, 'knowledge', report1Id, { knowledgeType: ENTITY_TYPE_CONTAINER_REPORT, forceRefresh: true }); // should delete report1
     const report1deleted = await elLoadById(testContext, ADMIN_USER, report1Id);
     expect(report1deleted).toBeUndefined();
   });
   it('should not delete organization with members', async () => {
-    await expect(() => deleteElement(context, 'knowledge', TEST_ORGANIZATION.id, ENTITY_TYPE_IDENTITY_ORGANIZATION))
+    await expect(() => deleteElement(context, 'knowledge', TEST_ORGANIZATION.id, { knowledgeType: ENTITY_TYPE_IDENTITY_ORGANIZATION }))
       .rejects.toThrowError('Cannot delete an organization that has members.');
   });
   it('should not delete individual associated to user', async () => {
     const individualUserId = 'identity--cfb1de38-c40a-5f51-81f3-35036a4e3b91'; // admin individual
-    await expect(() => deleteElement(context, 'knowledge', individualUserId, ENTITY_TYPE_IDENTITY_INDIVIDUAL))
+    await expect(() => deleteElement(context, 'knowledge', individualUserId, { knowledgeType: ENTITY_TYPE_IDENTITY_INDIVIDUAL }))
       .rejects.toThrowError('Cannot delete an individual corresponding to a user');
   });
 });
