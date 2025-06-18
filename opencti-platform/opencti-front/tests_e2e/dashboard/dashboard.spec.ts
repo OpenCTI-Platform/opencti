@@ -138,6 +138,8 @@ test('Dashboard CRUD', async ({ page }) => {
   // ---------
   // endregion
 
+  await page.waitForTimeout(1000);
+
   // region Delete a dashboard
   // -------------------------
 
