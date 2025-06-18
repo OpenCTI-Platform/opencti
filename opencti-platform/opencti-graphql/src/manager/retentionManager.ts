@@ -34,9 +34,16 @@ export const RETENTION_UNIT_VALUES = Object.values(RetentionUnit);
 
 let shutdown = false;
 
-export const deleteElement = async (context: AuthContext, scope: string, nodeId: string, nodeEntityType?: string) => {
+interface DeleteOpts {
+  knowledgeType?: string
+  forceRefresh?: boolean
+}
+
+export const deleteElement = async (context: AuthContext, scope: string, nodeId: string, opts: DeleteOpts = {}) => {
   if (scope === 'knowledge') {
-    await deleteElementById(context, RETENTION_MANAGER_USER, nodeId, nodeEntityType, { forceDelete: true, forceRefresh: false });
+    const { knowledgeType } = opts;
+    const deleteOpts = { forceDelete: true, forceRefresh: opts.forceRefresh ?? false };
+    await deleteElementById(context, RETENTION_MANAGER_USER, nodeId, knowledgeType, deleteOpts);
   } else if (scope === 'file' || scope === 'workbench') {
     await deleteFile(context, RETENTION_MANAGER_USER, nodeId);
   } else {
@@ -82,7 +89,7 @@ const executeProcessing = async (context: AuthContext, retentionRule: RetentionR
         const canElementBeDeleted = await canDeleteElement(context, RETENTION_MANAGER_USER, node);
         if (canElementBeDeleted) { // filter elements that can't be deleted (ex: user individuals)
           const humanDuration = moment.duration(utcDate(up).diff(utcDate())).humanize();
-          await deleteElement(context, scope, scope === 'knowledge' ? node.internal_id : node.id, node.entity_type);
+          await deleteElement(context, scope, scope === 'knowledge' ? node.internal_id : node.id, { knowledgeType: node.entity_type });
           logApp.debug(`[OPENCTI] Retention manager deleting ${node.id} after ${humanDuration}`);
         } else {
           // remove element from counters, since we can't delete it
