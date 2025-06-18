@@ -31,6 +31,7 @@ import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted'
 import TaskScope from '../../../../components/TaskScope';
 import { deserializeFilterGroupForFrontend, isFilterFormatCorrect, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 import { convertFiltersFromOldFormat } from '../../../../utils/filters/filtersFromOldFormat';
+import { deleteNode } from '../../../../utils/store';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -100,7 +101,7 @@ const TasksListFragment = graphql`
       orderMode: $orderMode
       includeAuthorities: $includeAuthorities
       filters: $filters
-    ) {
+    ) @connection(key: "Pagination_backgroundTasks") {
       edges {
         node {
           id
@@ -140,7 +141,7 @@ const TasksListFragment = graphql`
     }
   }
 `;
-const TasksList = ({ data }) => {
+const TasksList = ({ data, options }) => {
   const classes = useStyles();
   const { t_i18n, nsdt, n } = useFormatter();
   const [displayMessages, setDisplayMessages] = useState(false);
@@ -168,6 +169,11 @@ const TasksList = ({ data }) => {
       mutation: tasksListTaskDeletionMutation,
       variables: {
         id: taskId,
+      },
+      updater: (store) => {
+        if (options) {
+          deleteNode(store, 'Pagination_backgroundTasks', options, taskId);
+        }
       },
       onCompleted: () => {
         MESSAGING$.notifySuccess('The task has been deleted');
