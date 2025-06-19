@@ -8335,10 +8335,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/relay-runtime@npm:19.0.0":
-  version: 19.0.0
-  resolution: "@types/relay-runtime@npm:19.0.0"
-  checksum: 10/596c02beccf59a13fd34d147e24010a12f9530c6eb975163e57ff93e2b62afa03f78369261a7c25c587f0266eb0374c940bbdb8075bd7745c4e6f0d01a4a85f1
+"@types/relay-runtime@npm:19.0.2":
+  version: 19.0.2
+  resolution: "@types/relay-runtime@npm:19.0.2"
+  checksum: 10/cba6508234efe4714204cba61e3b6f3517ac92454e6333de085f275fae6c647324c4499a8458dd19782cb47cdb00c76f3a29685783bf979d319342d4c20ee056
   languageName: node
   linkType: hard
 
@@ -17957,7 +17957,7 @@ __metadata:
     "@types/react-syntax-highlighter": "npm:15.5.13"
     "@types/react-test-renderer": "npm:19.1.0"
     "@types/react-transition-group": "npm:4"
-    "@types/relay-runtime": "npm:19.0.0"
+    "@types/relay-runtime": "npm:19.0.2"
     "@types/relay-test-utils": "npm:19.0.0"
     "@vitejs/plugin-react": "npm:4.4.1"
     analytics: "npm:0.8.16"
