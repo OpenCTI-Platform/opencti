@@ -50,8 +50,10 @@ export const insertNode = (
     } else {
       payload = store.getRootField(rootField);
     }
-    // If payload id not already in the list, add the node
+    // If payload id not already in the list, add the node and increment global count
     if (!isNodeInConnection(payload, conn)) {
+      const newEdge = payload.setLinkedRecord(payload, 'node');
+      ConnectionHandler.insertEdgeBefore(conn, newEdge);
       const pageInfo = conn.getLinkedRecord('pageInfo');
       if (!pageInfo) return;
       const globalCount = pageInfo.getValue('globalCount');
