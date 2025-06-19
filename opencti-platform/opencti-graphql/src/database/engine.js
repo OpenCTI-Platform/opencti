@@ -65,7 +65,7 @@ import {
   STIX_REF_RELATIONSHIP_TYPES
 } from '../schema/stixRefRelationship';
 import {
-  ABSTRACT_BASIC_RELATIONSHIP,
+  ABSTRACT_BASIC_RELATIONSHIP, ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_OBJECT,
   ABSTRACT_STIX_REF_RELATIONSHIP,
   BASE_TYPE_RELATION,
@@ -2828,7 +2828,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         // Check dynamic
         const dynamicFilter = dynamic?.values ?? [];
         if (isNotEmptyField(dynamicFilter)) {
-          const computedIndices = computeQueryIndices([], [ABSTRACT_STIX_OBJECT]);
+          const computedIndices = computeQueryIndices([], [ABSTRACT_STIX_CORE_OBJECT]);
           const relatedEntities = await elPaginate(context, user, computedIndices, {
             connectionFormat: false,
             first: MAX_RUNTIME_RESOLUTION_SIZE,
