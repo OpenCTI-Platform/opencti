@@ -142,7 +142,7 @@ const cvssMappings: Record<CvssVersion, CvssConfig> = {
       A: { N: 'None', L: 'Low', H: 'High' },
       E: { X: 'Not Defined', U: 'Unproven', P: 'Proof-of-Concept', F: 'Functional', H: 'High' },
       RL: { X: 'Not Defined', O: 'Official Fix', T: 'Temporary Fix', W: 'Workaround', U: 'Unavailable' },
-      RC: { X: 'Not Defined', U: 'Unconfirmed', R: 'Reasonable', C: 'Confirmed' },
+      RC: { X: 'Not Defined', U: 'Unknown', R: 'Reasonable', C: 'Confirmed' },
     },
     fullToCode: {
       AV: { Network: 'N', Adjacent: 'A', Local: 'L', Physical: 'P' },
@@ -155,7 +155,7 @@ const cvssMappings: Record<CvssVersion, CvssConfig> = {
       A: { None: 'N', Low: 'L', High: 'H' },
       E: { 'Not Defined': 'X', Unproven: 'U', 'Proof-of-Concept': 'P', Functional: 'F', High: 'H' },
       RL: { 'Not Defined': 'X', 'Official Fix': 'O', 'Temporary Fix': 'T', Workaround: 'W', Unavailable: 'U' },
-      RC: { 'Not Defined': 'X', Unconfirmed: 'U', Reasonable: 'R', Confirmed: 'C' },
+      RC: { 'Not Defined': 'X', Unknown: 'U', Reasonable: 'R', Confirmed: 'C' },
     },
     ordered: ['AV', 'AC', 'PR', 'UI', 'S', 'C', 'I', 'A', 'E', 'RL', 'RC'],
     prefix: 'CVSS:3.1/',
@@ -219,7 +219,7 @@ const cvssMappings: Record<CvssVersion, CvssConfig> = {
       SC: { H: 'High', L: 'Low', N: 'None' },
       SI: { H: 'High', L: 'Low', N: 'None' },
       SA: { H: 'High', L: 'Low', N: 'None' },
-      E: { X: 'Not Defined', A: 'Unreliable', P: 'Proof-of-Concept', U: 'Unproven' }
+      E: { X: 'Not Defined', A: 'Attacked', P: 'Proof-of-Concept', U: 'Unreported' }
     },
     fullToCode: {
       AV: { Network: 'N', Adjacent: 'A', Local: 'L', Physical: 'P' },
@@ -233,7 +233,7 @@ const cvssMappings: Record<CvssVersion, CvssConfig> = {
       SC: { High: 'H', Low: 'L', None: 'N' },
       SI: { High: 'H', Low: 'L', None: 'N' },
       SA: { High: 'H', Low: 'L', None: 'N' },
-      E: { 'Not Defined': 'X', Unreliable: 'A', 'Proof-of-Concept': 'P', Unproven: 'U' }
+      E: { 'Not Defined': 'X', Attacked: 'A', 'Proof-of-Concept': 'P', Unreported: 'U' }
     },
     ordered: [
       'AV', 'AC', 'AT', 'PR', 'UI',
@@ -317,16 +317,20 @@ const getCodeValue = (
 
 // --- CVSS Criticity ---
 
-export const getCvssCriticity = (score: number | null | undefined): string | null => {
-  if (typeof score !== 'number' || score < 0 || score > 10) return null;
-  if (score === 0.0) return 'Unknown';
-  if (score <= 3.9) return 'LOW';
-  if (score <= 6.9) return 'MEDIUM';
-  if (score <= 8.9) return 'HIGH';
+export const getCvssCriticity = (score: number | string | null | undefined): string => {
+  if (score === null || score === undefined) return 'Unknown';
+  let finalScore = score;
+  if (typeof finalScore !== 'number') {
+    finalScore = parseFloat(finalScore as string);
+  }
+  if (finalScore === 0.0) return 'Unknown';
+  if (finalScore <= 3.9) return 'LOW';
+  if (finalScore <= 6.9) return 'MEDIUM';
+  if (finalScore <= 8.9) return 'HIGH';
   return 'CRITICAL';
 };
 
-// --- API (fully typed) ---
+// --- API ---
 
 export const isValidCvssVector = (
   version: CvssVersion,
@@ -538,7 +542,7 @@ export const generateVulnerabilitiesUpdates = (initial: Vulnerability, updates: 
     let baseScore = initial.x_opencti_cvss_base_score;
     if (updates.some((e) => e.key === 'x_opencti_cvss_base_score')) {
       baseScore = updates.filter((e) => e.key === 'x_opencti_cvss_base_score').at(0)?.value.at(0) as number;
-      newUpdates.push({ key: 'x_opencti_cvss_base_severity', values: [getCvssCriticity(baseScore)] });
+      newUpdates.push({ key: 'x_opencti_cvss_base_severity', value: [getCvssCriticity(baseScore)] });
     }
     const updatedVectorParts = updates.filter((e) => e.key.startsWith('x_opencti_cvss_') && !e.key.includes('base') && !e.key.includes('temporal') && !e.key.startsWith('x_opencti_cvss_v'));
     if (updatedVectorParts.length > 0) {
@@ -556,7 +560,7 @@ export const generateVulnerabilitiesUpdates = (initial: Vulnerability, updates: 
     let baseScore = initial.x_opencti_cvss_v4_base_score;
     if (updates.some((e) => e.key === 'x_opencti_cvss_v4_base_score')) {
       baseScore = updates.filter((e) => e.key === 'x_opencti_cvss_v4_base_score').at(0)?.value.at(0) as number;
-      newUpdates.push({ key: 'x_opencti_cvss_v4_base_severity', values: [getCvssCriticity(baseScore)] });
+      newUpdates.push({ key: 'x_opencti_cvss_v4_base_severity', value: [getCvssCriticity(baseScore)] });
     }
     const updatedVectorParts = updates.filter((e) => e.key.startsWith('x_opencti_cvss_v4_') && !e.key.includes('base'));
     if (updatedVectorParts.length > 0) {

@@ -13,6 +13,12 @@ const inlineStyles = {
     color: '#2b2b2b',
     border: '1px solid #2b2b2b',
   },
+  blueGrey: {
+    backgroundColor: 'rgba(96, 125, 139, 0.08)',
+    color: '#607d8b',
+    borderColor: '#607d8b',
+    fontStyle: 'italic',
+  },
   green: {
     backgroundColor: 'rgba(76, 175, 80, 0.08)',
     color: '#4caf50',
@@ -45,6 +51,7 @@ const ItemCvssScore = ({ score, style }: ItemCvssScoreProps) => {
 
   const getChipStyleFromCVSS3Score = (cvssScore: number) => {
     switch (true) {
+      case cvssScore === 0: return inlineStyles.blueGrey;
       case cvssScore <= 3: return inlineStyles.green;
       case cvssScore <= 5: return inlineStyles.blue;
       case cvssScore <= 7: return inlineStyles.orange;
