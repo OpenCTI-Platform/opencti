@@ -21,6 +21,15 @@ const useStyles = makeStyles(() => ({
     borderRadius: 4,
     width: 80,
   },
+  chipHigh: {
+    textTransform: 'uppercase',
+    borderRadius: 4,
+    width: 150,
+    fontSize: 18,
+    lineHeight: '18px',
+    height: 38,
+    marginLeft: 20,
+  },
 }));
 
 const inlineStyles = {
@@ -50,7 +59,7 @@ const inlineStyles = {
 interface ItemSeverityProps {
   label: string;
   severity?: string | null;
-  variant?: 'inList';
+  variant?: 'inList' | 'high';
 }
 
 const computeSeverityStyle = (severity: string | undefined | null) => {
@@ -74,7 +83,13 @@ const ItemSeverity: FunctionComponent<ItemSeverityProps> = ({
   variant,
 }) => {
   const classes = useStyles();
-  const style = variant === 'inList' ? classes.chipInList : classes.chip;
+  let style = classes.chip;
+  if (variant === 'inList') {
+    style = classes.chipInList;
+  }
+  if (variant === 'high') {
+    style = classes.chipHigh;
+  }
   const classStyle = computeSeverityStyle(severity);
   return (
     <Chip classes={{ root: style }} style={classStyle} label={label} />

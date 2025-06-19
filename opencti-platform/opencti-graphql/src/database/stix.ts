@@ -1166,7 +1166,8 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   // endregion
   // region SOFTWARE
   [`${ENTITY_SOFTWARE}_${ENTITY_TYPE_VULNERABILITY}`]: [
-    { name: RELATION_HAS, type: REL_EXTENDED }
+    { name: RELATION_HAS, type: REL_EXTENDED },
+    { name: RELATION_REMEDIATES, type: REL_EXTENDED }
   ],
   [`${ENTITY_SOFTWARE}_${ENTITY_SOFTWARE}`]: [
     { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }

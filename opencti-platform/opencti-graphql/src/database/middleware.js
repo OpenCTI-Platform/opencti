@@ -141,6 +141,7 @@ import {
   ATTRIBUTE_ALIASES_OPENCTI,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
+  ENTITY_TYPE_VULNERABILITY,
   isStixDomainObjectIdentity,
   isStixDomainObjectShareableContainer,
   isStixObjectAliased,
@@ -232,6 +233,7 @@ import { isRequestAccessEnabled } from '../modules/requestAccess/requestAccessUt
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
 import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
+import { generateVulnerabilitiesUpdates } from '../utils/vulnerabilities';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -2010,6 +2012,15 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
       });
     }
   }
+
+  // Vulnerabilities updates
+  if (initial.entity_type === ENTITY_TYPE_VULNERABILITY) {
+    const vulnerabilitiesUpdates = generateVulnerabilitiesUpdates(initial, updates);
+    if (vulnerabilitiesUpdates.length > 0) {
+      updates.push(...vulnerabilitiesUpdates);
+    }
+  }
+
   if (updates.some((e) => e.key === 'authorized_authorities')) {
     accessOperation = 'manage-authorities-access';
   }

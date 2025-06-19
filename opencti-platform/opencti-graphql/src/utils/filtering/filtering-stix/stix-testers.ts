@@ -437,12 +437,12 @@ export const testEpssScore = (stix: any, filter: Filter) => {
 };
 
 export const testCvssScore = (stix: any, filter: Filter) => {
-  const stixValue: number | null = stix.x_opencti_cvss_base_score ?? stix.extensions?.[STIX_EXT_OCTI].base_score ?? null;
+  const stixValue: number | null = stix.x_opencti_cvss_base_score ?? stix.extensions?.[STIX_EXT_OCTI].cvss_base_score ?? null;
   return testNumericFilter(filter, stixValue);
 };
 
 export const testCvssSeverity = (stix: any, filter: Filter) => {
-  const stixValue: string | null = stix.x_opencti_cvss_base_severity ?? stix.extensions?.[STIX_EXT_OCTI].base_severity ?? null;
+  const stixValue: string | null = stix.x_opencti_cvss_base_severity ?? stix.extensions?.[STIX_EXT_OCTI].cvss_base_severity ?? null;
   const value = stixValue ? [stixValue] : [];
   return testStringFilter(filter, value);
 };

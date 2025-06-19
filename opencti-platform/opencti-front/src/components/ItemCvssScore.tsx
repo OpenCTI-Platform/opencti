@@ -62,9 +62,9 @@ const ItemCvssScore = ({ score, style }: ItemCvssScoreProps) => {
     <Chip
       style={{
         ...style,
-        fontSize: 12,
-        lineHeight: '12px',
-        height: 25,
+        fontSize: 18,
+        lineHeight: '18px',
+        height: 38,
         textTransform: 'uppercase',
         borderRadius: 4,
         ...getChipStyleFromCVSS3Score(score),
