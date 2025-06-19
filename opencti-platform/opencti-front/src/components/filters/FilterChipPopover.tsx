@@ -260,7 +260,6 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     return (
       <Autocomplete
         multiple
-        disabled={disabled}
         key={fKey}
         getOptionLabel={(option) => option.label ?? ''}
         noOptionsText={t_i18n('No available options')}
@@ -294,9 +293,9 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
           />
         )}
         renderOption={(props, option) => {
-          const checked = subKey
-            ? filterValues.filter((fVal) => fVal && fVal.key === subKey && fVal.values.includes(option.value)).length > 0
-            : filterValues.includes(option.value);
+          const actualFilterValues = subKey ? filterValues.filter((fVal) => fVal && fVal.key === subKey).at(0)?.values ?? [] : filterValues;
+          const checked = actualFilterValues.includes(option.value);
+          const disabledOptions = disabled && checked && actualFilterValues.length === 1;
           return (
             <Tooltip title={option.label} key={option.label} followCursor>
               <li
@@ -306,7 +305,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
                     e.stopPropagation();
                   }
                 }}
-                onClick={() => handleChange(!checked, option.value, subKey)}
+                onClick={() => (disabledOptions ? {} : handleChange(!checked, option.value, subKey))}
                 style={{
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
@@ -315,7 +314,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
                   margin: 0,
                 }}
               >
-                <Checkbox checked={checked} />
+                <Checkbox checked={checked} disabled={disabledOptions} />
                 <ItemIcon type={option.type} color={option.color} />
                 <span style={{ padding: '0 4px 0 4px' }}>
                   {option.label}
