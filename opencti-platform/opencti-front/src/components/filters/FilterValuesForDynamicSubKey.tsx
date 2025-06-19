@@ -17,15 +17,10 @@ export const filterValuesForDynamicSubKeyQuery = graphql`
   query FilterValuesForDynamicSubKeyQuery(
     $filters: FilterGroup
   ) {
-    stixCoreObjects(
+    stixCoreObjectsNumber(
       filters: $filters
-      first: 110
     ) {
-      edges {
-        node {
-          id
-        }
-      }
+      total
     }
   }
 `;
@@ -42,8 +37,8 @@ const FilterValuesForDynamicSubKeyContainer = ({
   chipColor,
 }: FilterValuesForDynamicSubKeyContainerProps) => {
   const { t_i18n } = useFormatter();
-  const { stixCoreObjects } = usePreloadedQuery(filterValuesForDynamicSubKeyQuery, queryRef);
-  const numberOfIdsTargeted = stixCoreObjects?.edges.length ?? 0;
+  const { stixCoreObjectsNumber } = usePreloadedQuery(filterValuesForDynamicSubKeyQuery, queryRef);
+  const numberOfIdsTargeted = stixCoreObjectsNumber?.total ?? 0;
   const displayWarning = numberOfIdsTargeted > 100;
 
   return (
