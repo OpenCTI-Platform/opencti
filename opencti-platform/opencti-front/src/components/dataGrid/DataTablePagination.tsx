@@ -1,7 +1,7 @@
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
-import React, { type Dispatch, type SetStateAction, useCallback, useEffect } from 'react';
+import React, { type Dispatch, type SetStateAction, Suspense, useCallback, useEffect } from 'react';
 import { ArrowLeft, ArrowRight } from '@mui/icons-material';
 import { ButtonGroup } from '@mui/material';
 import Button from '@mui/material/Button';
@@ -194,21 +194,23 @@ const DataTablePagination = ({
           <ArrowRight />
         </Button>
       </ButtonGroup>
-      <NestedMenuButton
-        menuButtonProps={{
-          variant: 'outlined',
-          size: 'small',
-          color: 'primary',
-          style: {
-            padding: 6,
-            minWidth: 36,
-            border: 'none',
-          },
-        }}
-        menuButtonChildren={<TableTuneIcon />}
-        options={nestedMenuOptions}
-        menuLevels={2}
-      />
+      <Suspense>
+        <NestedMenuButton
+          menuButtonProps={{
+            variant: 'outlined',
+            size: 'small',
+            color: 'primary',
+            style: {
+              padding: 6,
+              minWidth: 36,
+              border: 'none',
+            },
+          }}
+          menuButtonChildren={<TableTuneIcon/>}
+          options={nestedMenuOptions}
+          menuLevels={2}
+        />
+      </Suspense>
     </Box>
   );
 };
