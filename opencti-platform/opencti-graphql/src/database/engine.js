@@ -2838,7 +2838,13 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
           });
           if (relatedEntities.length > 0) {
             const relatedIds = relatedEntities.map((n) => n.id);
-            ids.push(...relatedIds);
+            // if too many ids (the dynamic filter is not restricted enough)
+            // we take only some ids into account to avoid a too heavy query that will fail
+            if (relatedIds.length < 100) {
+              ids.push(...relatedIds);
+            } else {
+              ids.push(...R.take(100, relatedIds));
+            }
           } else {
             ids.push('<invalid id>'); // To force empty result in the query result
           }
