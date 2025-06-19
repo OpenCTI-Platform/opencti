@@ -107,7 +107,7 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
             } else {
               targetEntityType = targetEntity.entity_type;
             }
-            const isReversed = node.from.id === stixCyberObservableId;
+            const isReversed = node.from && node.from.id === stixCyberObservableId;
             // eslint-disable-next-line no-nested-ternary
             const link = !restricted
               ? targetEntity.parent_types.includes('stix-core-relationship')
