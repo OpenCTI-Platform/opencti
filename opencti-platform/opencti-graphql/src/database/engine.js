@@ -66,7 +66,7 @@ import {
 } from '../schema/stixRefRelationship';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
-  ABSTRACT_STIX_CORE_OBJECT,
+  ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_OBJECT,
   ABSTRACT_STIX_REF_RELATIONSHIP,
   BASE_TYPE_RELATION,
   buildRefRelationKey,
@@ -133,7 +133,7 @@ import {
 import { convertTypeToStixType } from './stix-2-1-converter';
 import { extractEntityRepresentativeName, extractRepresentative } from './entity-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
-import { checkAndConvertFilters, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
+import { addFilter, checkAndConvertFilters, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import {
   ALIAS_FILTER,
   complexConversionFilterKeys,
@@ -2828,23 +2828,18 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         // Check dynamic
         const dynamicFilter = dynamic?.values ?? [];
         if (isNotEmptyField(dynamicFilter)) {
-          const computedIndices = computeQueryIndices([], [ABSTRACT_STIX_CORE_OBJECT]);
+          const computedIndices = computeQueryIndices([], [ABSTRACT_STIX_OBJECT]);
           const relatedEntities = await elPaginate(context, user, computedIndices, {
             connectionFormat: false,
-            first: MAX_RUNTIME_RESOLUTION_SIZE,
+            first: 900, // if too many ids (the dynamic filter is not restricted enough)
+            // we take only some ids into account to avoid a too heavy query that will fail
             bypassSizeLimit: true, // ensure that max runtime prevent on ES_MAX_PAGINATION
             baseData: true,
-            filters: dynamicFilter[0]
+            filters: addFilter(dynamicFilter[0], TYPE_FILTER, [ABSTRACT_STIX_CORE_OBJECT]),
           });
           if (relatedEntities.length > 0) {
             const relatedIds = relatedEntities.map((n) => n.id);
-            // if too many ids (the dynamic filter is not restricted enough)
-            // we take only some ids into account to avoid a too heavy query that will fail
-            if (relatedIds.length > 100) {
-              ids.push(...R.take(100, relatedIds));
-            } else {
-              ids.push(...relatedIds);
-            }
+            ids.push(...relatedIds);
           } else {
             ids.push('<invalid id>'); // To force empty result in the query result
           }
