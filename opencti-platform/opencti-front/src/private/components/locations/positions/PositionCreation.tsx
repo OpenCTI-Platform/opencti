@@ -5,7 +5,7 @@ import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import ConfidenceField from '@components/common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
@@ -15,17 +15,15 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { insertNode } from '../../../../utils/store';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
-import { Option } from '../../common/form/ReferenceField';
+import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { PositionCreationMutation, PositionCreationMutation$variables } from './__generated__/PositionCreationMutation.graphql';
 import { PositionsLinesPaginationQuery$variables } from './__generated__/PositionsLinesPaginationQuery.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import useHelper from '../../../../utils/hooks/useHelper';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import { splitMultilines } from '../../../../utils/String';
 import BulkTextModal from '../../../../components/fields/BulkTextField/BulkTextModal';
@@ -61,9 +59,9 @@ interface PositionAddInput {
   longitude: string;
   street_address: string;
   postal_code: string;
-  createdBy: Option | null;
-  objectMarking: Option[];
-  objectLabel: Option[];
+  createdBy: FieldOption | null;
+  objectMarking: FieldOption[];
+  objectLabel: FieldOption[];
   externalReferences: { value: string }[];
   file: File | null;
 }
@@ -92,8 +90,9 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
   const { t_i18n } = useFormatter();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
-  const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(POSITION_TYPE);
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     latitude: Yup.number()
@@ -106,11 +105,9 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
       .nullable()
       .max(1000, t_i18n('The value is too long')),
     postal_code: Yup.string().nullable().max(1000, t_i18n('The value is too long')),
-  };
-  const positionValidator = useSchemaCreationValidation(
-    POSITION_TYPE,
-    basicShape,
-  );
+  }, mandatoryAttributes);
+
+  const positionValidator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
 
   const [commit] = useApiMutation<PositionCreationMutation>(
     positionMutation,
@@ -194,6 +191,8 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
     <Formik<PositionAddInput>
       initialValues={initialValues}
       validationSchema={positionValidator}
+      validateOnChange={false}
+      validateOnBlur={false}
       onSubmit={onSubmit}
       onReset={onReset}
     >
@@ -230,6 +229,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
               variant="standard"
               name="name"
               label={t_i18n('Name')}
+              required={(mandatoryAttributes.includes('name'))}
               fullWidth={true}
               detectDuplicate={['Position']}
             />
@@ -237,6 +237,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
+              required={(mandatoryAttributes.includes('description'))}
               fullWidth={true}
               multiline={true}
               rows={4}
@@ -251,6 +252,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
               variant="standard"
               name="latitude"
               label={t_i18n('Latitude')}
+              required={(mandatoryAttributes.includes('latitude'))}
               fullWidth={true}
               style={fieldSpacingContainerStyle}
             />
@@ -259,6 +261,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
               variant="standard"
               name="longitude"
               label={t_i18n('Longitude')}
+              required={(mandatoryAttributes.includes('longitude'))}
               fullWidth={true}
               style={fieldSpacingContainerStyle}
             />
@@ -267,6 +270,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
               variant="standard"
               name="street_address"
               label={t_i18n('Street address')}
+              required={(mandatoryAttributes.includes('street_address'))}
               fullWidth={true}
               style={fieldSpacingContainerStyle}
             />
@@ -274,28 +278,33 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
               component={TextField}
               variant="standard"
               name="postal_code"
+              required={(mandatoryAttributes.includes('postal_code'))}
               label={t_i18n('Postal code')}
               fullWidth={true}
               style={fieldSpacingContainerStyle}
             />
             <CreatedByField
               name="createdBy"
+              required={(mandatoryAttributes.includes('createdBy'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ObjectLabelField
               name="objectLabel"
+              required={(mandatoryAttributes.includes('objectLabel'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.objectLabel}
             />
             <ObjectMarkingField
               name="objectMarking"
+              required={(mandatoryAttributes.includes('objectMarking'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ExternalReferencesField
               name="externalReferences"
+              required={(mandatoryAttributes.includes('externalReferences'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.externalReferences}
@@ -345,10 +354,8 @@ const PositionCreation = ({
 }: {
   paginationOptions: PositionsLinesPaginationQuery$variables;
 }) => {
-  const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_positions', paginationOptions, 'positionAdd');
 
   const CreatePositionControlledDial = (props: DrawerControlledDialProps) => (
@@ -357,9 +364,8 @@ const PositionCreation = ({
   return (
     <Drawer
       title={t_i18n('Create a position')}
-      variant={isFABReplaced ? undefined : DrawerVariant.create}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
-      controlledDial={isFABReplaced ? CreatePositionControlledDial : undefined}
+      controlledDial={CreatePositionControlledDial}
     >
       {({ onClose }) => (
         <PositionCreationForm

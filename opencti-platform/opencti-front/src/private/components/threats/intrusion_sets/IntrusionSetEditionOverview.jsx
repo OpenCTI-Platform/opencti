@@ -4,6 +4,7 @@ import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import { useTheme } from '@mui/styles';
+import { Stack } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -19,7 +20,6 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-import useHelper from '../../../../utils/hooks/useHelper';
 import IntrusionSetDeletion from './IntrusionSetDeletion';
 
 const intrusionSetMutationFieldPatch = graphql`
@@ -89,8 +89,6 @@ const INTRUSION_SET_TYPE = 'Intrusion-Set';
 const IntrusionSetEditionOverviewComponent = (props) => {
   const { intrusionSet, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const theme = useTheme();
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(
@@ -280,13 +278,10 @@ const IntrusionSetEditionOverviewComponent = (props) => {
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced
-              ? <IntrusionSetDeletion
-                  id={intrusionSet.id}
-                />
-              : <div />
-            }
+          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
+            <IntrusionSetDeletion
+              id={intrusionSet.id}
+            />
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
@@ -297,7 +292,7 @@ const IntrusionSetEditionOverviewComponent = (props) => {
                 id={intrusionSet.id}
               />
             )}
-          </div>
+          </Stack>
         </Form>
       )}
     </Formik>

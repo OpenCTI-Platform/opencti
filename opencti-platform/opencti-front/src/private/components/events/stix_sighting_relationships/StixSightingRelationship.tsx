@@ -4,7 +4,6 @@ import { graphql } from 'react-relay';
 import Breadcrumbs from 'src/components/Breadcrumbs';
 import { useFormatter } from 'src/components/i18n';
 import { Button, styled } from '@mui/material';
-import useHelper from 'src/utils/hooks/useHelper';
 import Security from 'src/utils/Security';
 import { KNOWLEDGE_KNUPDATE } from 'src/utils/hooks/useGranted';
 import StixSightingRelationshipEdition, { stixSightingRelationshipEditionDeleteMutation } from './StixSightingRelationshipEdition';
@@ -35,8 +34,6 @@ StixSightingRelationshipProps
   const navigate = useNavigate();
   const [editOpen, setEditOpen] = useState<boolean>(false);
   const { sightingId } = useParams() as { sightingId: string };
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const handleOpenEdit = () => setEditOpen(true);
   const handleCloseEdit = () => setEditOpen(false);
@@ -78,7 +75,7 @@ StixSightingRelationshipProps
                   { label: t_i18n('Sighting'), current: true },
                 ]}
                 />
-                {isFABReplaced && (
+                {(
                   <Security needs={[KNOWLEDGE_KNUPDATE]}>
                     <Button
                       variant='contained'
@@ -95,7 +92,6 @@ StixSightingRelationshipProps
                 entityId={entityId}
                 stixSightingRelationship={result.props.stixSightingRelationship}
                 paddingRight={paddingRight}
-                isFABReplaced={isFABReplaced}
               />
               {/* Edition Drawer, hidden by default */}
               <Security needs={[KNOWLEDGE_KNUPDATE]}>

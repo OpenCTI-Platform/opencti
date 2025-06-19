@@ -4,6 +4,7 @@ import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import { useTheme } from '@mui/styles';
+import { Stack } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -20,7 +21,6 @@ import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeCon
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import CampaignDeletion from './CampaignDeletion';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const campaignMutationFieldPatch = graphql`
   mutation CampaignEditionOverviewFieldPatchMutation(
@@ -91,8 +91,6 @@ const CampaignEditionOverviewComponent = (props) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
 
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { mandatoryAttributes } = useIsMandatoryAttribute(
     CAMPAIGN_TYPE,
   );
@@ -273,13 +271,10 @@ const CampaignEditionOverviewComponent = (props) => {
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced
-              ? <CampaignDeletion
-                  id={campaign.id}
-                />
-              : <div />
-            }
+          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
+            <CampaignDeletion
+              id={campaign.id}
+            />
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
@@ -290,7 +285,7 @@ const CampaignEditionOverviewComponent = (props) => {
                 id={campaign.id}
               />
             )}
-          </div>
+          </Stack>
         </Form>
       )}
     </Formik>

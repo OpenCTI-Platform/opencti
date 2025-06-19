@@ -72,7 +72,7 @@ export const aiLanguage: { value: string, label: string, name: string }[] = [
 ];
 
 interface AppIntlProviderProps {
-  settings: AppIntlProvider_settings$data | { platform_language: string },
+  settings: AppIntlProvider_settings$data | { platform_language: string, platform_translations: string },
   children: ReactNode,
 }
 
@@ -83,7 +83,9 @@ const AppIntlProvider: FunctionComponent<AppIntlProviderProps> = ({ settings, ch
     ? settings.platform_language
     : locale;
   const lang: PlatformLang = me?.language && me.language !== 'auto' ? me.language : platformLang;
+  const translation = JSON.parse(settings.platform_translations ?? '{}');
   const baseMessages = i18n.messages[lang] || i18n.messages[DEFAULT_LANG as keyof typeof i18n.messages];
+  const messages = { ...baseMessages, ...(translation[lang] ?? {}) };
   const supportedLocales: PlatformLang[] = availableLanguage.map(({ value }) => value);
   const selectedLocale = supportedLocales.includes(lang) ? lang : 'en-us';
   moment.locale(selectedLocale);
@@ -92,7 +94,7 @@ const AppIntlProvider: FunctionComponent<AppIntlProviderProps> = ({ settings, ch
     <IntlProvider
       locale={lang}
       key={lang}
-      messages={baseMessages}
+      messages={messages}
       onError={(err) => {
         if (err.code === 'MISSING_TRANSLATION') {
           return;
@@ -114,6 +116,7 @@ export const ConnectedIntlProvider = createFragmentContainer(AppIntlProvider, {
   settings: graphql`
     fragment AppIntlProvider_settings on Settings {
       platform_language
+      platform_translations
     }
   `,
 });

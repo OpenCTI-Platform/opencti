@@ -7,8 +7,7 @@ import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
-import useHelper from '../../../../utils/hooks/useHelper';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '../../common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import ColorPickerField from '../../../../components/ColorPickerField';
 import { insertNode } from '../../../../utils/store';
@@ -46,8 +45,6 @@ MarkingDefinitionCreationProps
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const markingDefinitionValidation = Yup.object().shape({
     definition_type: Yup.string().required(t_i18n('This field is required')),
@@ -100,11 +97,7 @@ MarkingDefinitionCreationProps
   return (
     <Drawer
       title={t_i18n('Create a marking definition')}
-      variant={isFABReplaced ? undefined : DrawerVariant.createWithPanel}
-      controlledDial={isFABReplaced
-        ? CreateMarkingDefinitionControlledDial
-        : undefined
-      }
+      controlledDial={CreateMarkingDefinitionControlledDial}
     >
       {({ onClose }) => (
         <Formik

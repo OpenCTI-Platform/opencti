@@ -53,6 +53,10 @@ const StixCoreObjectSubscribers: FunctionComponent<ContainerHeaderSharedProps> =
 
   const [{ triggersKnowledge, triggersKnowledgeCount }] = useRefetchableFragment<TriggerQuery, FragmentKey>(stixCoreObjectTriggersFragment, triggerData);
 
+  if (!triggersKnowledgeCount) {
+    return (<div/>);
+  }
+
   return (
     <React.Fragment>
       <Button
@@ -60,7 +64,7 @@ const StixCoreObjectSubscribers: FunctionComponent<ContainerHeaderSharedProps> =
         variant="text"
         color={hasSetAccess ? 'primary' : 'inherit'}
         style={{
-          cursor: hasSetAccess && triggersKnowledgeCount && triggersKnowledgeCount > 0 ? 'pointer' : 'default',
+          cursor: hasSetAccess ? 'pointer' : 'default',
           marginRight: 10,
           whiteSpace: 'nowrap',
         }}
@@ -69,10 +73,10 @@ const StixCoreObjectSubscribers: FunctionComponent<ContainerHeaderSharedProps> =
             bgcolor: 'transparent',
           },
         } : undefined}
-        onClick={() => (hasSetAccess && triggersKnowledgeCount && triggersKnowledgeCount > 0 ? setDisplaySubscribers(true) : null)}
+        onClick={() => (hasSetAccess ? setDisplaySubscribers(true) : null)}
         disableRipple={!hasSetAccess}
       >
-        {triggersKnowledgeCount ?? '0'} {t_i18n('subscribers')}
+        {triggersKnowledgeCount} {t_i18n('subscribers')}
       </Button>
       {hasSetAccess && (
         <Drawer

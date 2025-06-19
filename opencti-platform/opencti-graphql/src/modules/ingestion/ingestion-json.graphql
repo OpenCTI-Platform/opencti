@@ -1,0 +1,122 @@
+type IngestionHeader {
+    name: String!
+    value: String!
+}
+
+type IngestionQueryAttribute {
+    type: String
+    from: String
+    to: String
+    data_operation: String
+    state_operation: String
+    default: String
+    exposed: String
+}
+
+type IngestionJson implements InternalObject & BasicObject {
+    id: ID!
+    entity_type: String!
+    connector_id: String!
+    standard_id: String!
+    parent_types: [String]!
+    created_at: DateTime
+    updated_at: DateTime
+    name: String!
+    description: String
+    scheduling_period: String
+    uri: String!
+    verb: String!
+    body: String
+    pagination_with_sub_page: Boolean
+    pagination_with_sub_page_attribute_path: String
+    pagination_with_sub_page_query_verb: String
+    headers: [IngestionHeader!]
+    query_attributes: [IngestionQueryAttribute!]
+    jsonMapper: JsonMapper!
+    authentication_type: IngestionAuthType!
+    authentication_value: String
+    user_id: String!
+    user: Creator
+    ingestion_running: Boolean
+    last_execution_date: DateTime
+    markings: [String!]
+}
+
+enum IngestionJsonOrdering {
+    name
+    created_at
+    updated_at
+    uri
+    mapper
+    _score
+}
+
+type IngestionJsonConnection {
+    pageInfo: PageInfo!
+    edges: [IngestionJsonEdge!]!
+}
+
+type IngestionJsonEdge {
+    cursor: String!
+    node: IngestionJson!
+}
+
+# Queries
+type Query {
+    ingestionJson(id: String!): IngestionJson @auth(for: [INGESTION])
+    ingestionJsons(
+        first: Int
+        after: ID
+        orderBy: IngestionJsonOrdering
+        orderMode: OrderingMode
+        filters: FilterGroup
+        includeAuthorities: Boolean
+        search: String
+    ): IngestionJsonConnection @auth(for: [INGESTION])
+}
+
+# Mutations
+input HeaderInput {
+    name: String!
+    value: String!
+}
+
+input QueryAttribute {
+    type: String
+    from: String
+    to: String
+    data_operation: String
+    state_operation: String
+    default: String
+    exposed: String
+}
+
+input IngestionJsonAddInput {
+    name: String! @constraint(minLength: 2, format: "not-blank")
+    description: String
+    scheduling_period: String
+    authentication_type: IngestionAuthType!
+    authentication_value: String
+    current_state_date: DateTime
+    uri: String! @constraint(minLength: 5)
+    verb: String!
+    body: String
+    pagination_with_sub_page: Boolean
+    pagination_with_sub_page_attribute_path: String
+    pagination_with_sub_page_query_verb: String
+    headers: [HeaderInput!]
+    query_attributes: [QueryAttribute!]
+    json_mapper_id: String!
+    ingestion_running: Boolean
+    user_id: String!
+    markings: [String!]
+}
+
+type Mutation {
+    ingestionJsonTester(input: IngestionJsonAddInput!): JsonMapperTestResult @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
+    ingestionJsonAdd(input: IngestionJsonAddInput!): IngestionJson @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
+    ingestionJsonResetState(id: ID!): IngestionJson @auth(for: [INGESTION_SETINGESTIONS])
+    ingestionJsonDelete(id: ID!): ID @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
+    ingestionJsonFieldPatch(id: ID!, input: [EditInput!]!): IngestionJson @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
+    ingestionJsonEdit(id: ID!, input: IngestionJsonAddInput!): IngestionJson @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
+}

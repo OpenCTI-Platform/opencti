@@ -1,15 +1,12 @@
 import React from 'react';
-import { FieldProps } from 'formik';
 import { Alert, Typography } from '@mui/material';
-import TextField from '../../TextField';
+import TextField, { TextFieldProps } from '../../TextField';
 import { useFormatter } from '../../i18n';
 import { splitMultilines } from '../../../utils/String';
 
-// TODO make TextField component as typescript and reuse its props
-interface BulkTextFieldProps extends FieldProps<string> {
-  [key: string]: unknown
+type BulkTextFieldProps = TextFieldProps & {
   bulkType?: 'entities' | 'observables'
-}
+};
 
 const BulkTextField = ({
   bulkType = 'entities',

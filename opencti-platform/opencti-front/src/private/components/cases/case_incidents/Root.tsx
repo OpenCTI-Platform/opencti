@@ -22,7 +22,6 @@ import ContainerStixDomainObjects from '../../common/containers/ContainerStixDom
 import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import { RootIncidentCaseQuery } from './__generated__/RootIncidentCaseQuery.graphql';
 import CaseIncident from './CaseIncident';
-import CaseIncidentPopover from './CaseIncidentPopover';
 import IncidentKnowledge from './IncidentKnowledge';
 import { RootIncidentQuery } from '../../events/incidents/__generated__/RootIncidentQuery.graphql';
 import { RootIncidentSubscription } from '../../events/incidents/__generated__/RootIncidentSubscription.graphql';
@@ -33,7 +32,6 @@ import useGranted, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } 
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import CaseIncidentEdition from './CaseIncidentEdition';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootIncidentCaseSubscription($id: ID!) {
@@ -91,8 +89,6 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
     [caseId],
   );
   const location = useLocation();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const enableReferences = useIsEnforceReference('Case-Incident') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
@@ -117,8 +113,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
       />
       <ContainerHeader
         container={caseData}
-        PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
-        EditComponent={isFABReplaced && (
+        EditComponent={(
           <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={currentAccessRight.canEdit}>
             <CaseIncidentEdition caseId={caseData.id} />
           </Security>

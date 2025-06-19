@@ -2,7 +2,7 @@ import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -12,7 +12,6 @@ import { Add } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import useHelper from 'src/utils/hooks/useHelper';
 import { NotesLinesPaginationQuery$variables } from '@components/analyses/__generated__/NotesLinesPaginationQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -22,12 +21,11 @@ import MarkdownField from '../../../../components/fields/MarkdownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import TextField from '../../../../components/TextField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import type { Theme } from '../../../../components/Theme';
 import { insertNode } from '../../../../utils/store';
-import { Option } from '../../common/form/ReferenceField';
 import SliderField from '../../../../components/fields/SliderField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { NoteCreationMutation$variables } from './__generated__/NoteCreationMutation.graphql';
@@ -93,9 +91,9 @@ interface NoteAddInput {
   note_types: string[];
   confidence: number | undefined;
   likelihood?: number;
-  createdBy: Option | undefined;
-  objectMarking: Option[];
-  objectLabel: Option[];
+  createdBy: FieldOption | undefined;
+  objectMarking: FieldOption[];
+  objectLabel: FieldOption[];
   externalReferences: { value: string }[];
   file: File | undefined;
 }
@@ -111,8 +109,8 @@ interface NoteFormProps {
   updater: (store: RecordSourceSelectorProxy, key: string) => void;
   onClose?: () => void;
   inputValue?: string;
-  defaultCreatedBy?: Option;
-  defaultMarkingDefinitions?: Option[];
+  defaultCreatedBy?: FieldOption;
+  defaultMarkingDefinitions?: FieldOption[];
   defaultConfidence?: number;
 }
 
@@ -334,8 +332,6 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const updater = (store: RecordSourceSelectorProxy, key: string) => {
@@ -348,8 +344,7 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
     return (
       <Drawer
         title={t_i18n('Create a note')}
-        variant={isFABReplaced ? undefined : DrawerVariant.create}
-        controlledDial={isFABReplaced ? CreateNoteControlledDial : undefined}
+        controlledDial={CreateNoteControlledDial}
       >
         <NoteCreationForm
           inputValue={inputValue}

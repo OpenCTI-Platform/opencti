@@ -22,7 +22,7 @@ const DraftBlock: FunctionComponent<DraftBlockProps> = ({ title, body, sx }) => 
 
   return (
     <Link
-      to={`/dashboard/drafts/${draftContext?.id}`}
+      to={`/dashboard/data/import/draft/${draftContext?.id}`}
       style={{
         border: `1px solid ${hexToRGB(draftColor, 0.5)}`,
         color: draftColor,

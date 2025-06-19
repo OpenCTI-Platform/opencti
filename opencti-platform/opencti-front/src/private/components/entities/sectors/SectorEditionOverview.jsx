@@ -3,6 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
+import { Stack } from '@mui/material';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -14,11 +15,10 @@ import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-import useHelper from '../../../../utils/hooks/useHelper';
 import SectorDeletion from './SectorDeletion';
 
 const sectorMutationFieldPatch = graphql`
@@ -80,19 +80,22 @@ const sectorMutationRelationDelete = graphql`
   }
 `;
 
+const SECTOR_TYPE = 'Sector';
+
 const SectorEditionOverviewComponent = (props) => {
   const { sector, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
-  const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(SECTOR_TYPE);
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
-  };
-  const sectorValidator = useSchemaEditionValidation('Sector', basicShape);
+    createdBy: Yup.object().nullable(),
+    objectMarking: Yup.array().nullable(),
+  }, mandatoryAttributes);
+  const sectorValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
   const queries = {
     fieldPatch: sectorMutationFieldPatch,
@@ -173,6 +176,8 @@ const SectorEditionOverviewComponent = (props) => {
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={sectorValidator}
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
     >
       {({
@@ -190,6 +195,7 @@ const SectorEditionOverviewComponent = (props) => {
             variant="standard"
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -201,6 +207,7 @@ const SectorEditionOverviewComponent = (props) => {
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -234,6 +241,7 @@ const SectorEditionOverviewComponent = (props) => {
           )}
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             helpertext={
@@ -243,6 +251,7 @@ const SectorEditionOverviewComponent = (props) => {
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />
@@ -250,12 +259,10 @@ const SectorEditionOverviewComponent = (props) => {
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced
-              ? <SectorDeletion
-                  id={sector.id}
-                />
-              : <div />}
+          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
+            <SectorDeletion
+              id={sector.id}
+            />
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
@@ -266,7 +273,7 @@ const SectorEditionOverviewComponent = (props) => {
                 id={sector.id}
               />
             )}
-          </div>
+          </Stack>
         </Form>
       )}
     </Formik>

@@ -3,6 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
+import { Stack } from '@mui/material';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -18,7 +19,6 @@ import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeCon
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-import useHelper from '../../../../utils/hooks/useHelper';
 import NarrativeDeletion from './NarrativeDeletion';
 
 const narrativeMutationFieldPatch = graphql`
@@ -85,8 +85,6 @@ const NARRATIVE_TYPE = 'Narrative';
 const NarrativeEditionOverviewComponent = (props) => {
   const { narrative, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { mandatoryAttributes } = useIsMandatoryAttribute(NARRATIVE_TYPE);
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
@@ -269,12 +267,10 @@ const NarrativeEditionOverviewComponent = (props) => {
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced
-              ? <NarrativeDeletion
-                  id={narrative.id}
-                />
-              : <div />}
+          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
+            <NarrativeDeletion
+              id={narrative.id}
+            />
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
@@ -285,7 +281,7 @@ const NarrativeEditionOverviewComponent = (props) => {
                 id={narrative.id}
               />
             )}
-          </div>
+          </Stack>
         </Form>
       )}
     </Formik>

@@ -9,7 +9,6 @@ import MenuItem from '@mui/material/MenuItem';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-import { Option } from '@components/common/form/ReferenceField';
 import { FormikConfig } from 'formik/dist/types';
 import * as Yup from 'yup';
 import { BUILT_IN_FROM_TEMPLATE, BUILT_IN_HTML_TO_PDF } from '@components/common/stix_core_objects/StixCoreObjectFileExport';
@@ -26,22 +25,23 @@ import CardActionArea from '@mui/material/CardActionArea';
 import CardContent from '@mui/material/CardContent';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import { useFormatter } from '../../../../components/i18n';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import SelectField from '../../../../components/fields/SelectField';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import TextField from '../../../../components/TextField';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useAI from '../../../../utils/hooks/useAI';
 import { now } from '../../../../utils/Time';
+import FintelDesignField, { FintelDesignFieldOption } from './FintelDesignField';
 
-export type FileOption = Pick<Option, 'label' | 'value'> & {
+export type FileOption = Pick<FieldOption, 'label' | 'value'> & {
   fileMarkings: {
     id: string
     name: string
   }[]
 };
 
-export type ConnectorOption = Option & {
+export type ConnectorOption = FieldOption & {
   connectorScope: readonly string[]
 };
 
@@ -50,10 +50,11 @@ export interface StixCoreObjectFileExportFormInputs {
   format: string;
   type: string | null;
   fileToExport: FileOption | null;
-  template: Option | null;
+  template: FieldOption | null;
   exportFileName: string | null;
-  contentMaxMarkings: Option[];
-  fileMarkings: Option[];
+  contentMaxMarkings: FieldOption[];
+  fileMarkings: FieldOption[];
+  fintelDesign: FintelDesignFieldOption | null;
 }
 
 export interface StixCoreObjectFileExportFormProps {
@@ -61,13 +62,14 @@ export interface StixCoreObjectFileExportFormProps {
   onClose: () => void
   onSubmit: FormikConfig<StixCoreObjectFileExportFormInputs>['onSubmit']
   connectors: ConnectorOption[]
-  templates?: Option[]
+  templates?: FieldOption[]
   fileOptions?: FileOption[]
   defaultValues?: {
     connector: string
     format: string
     template?: string
     fileToExport?: string
+    fintelDesign?: FintelDesignFieldOption,
   }
   scoName?: string
   handleOpenAskAi: () => void
@@ -127,6 +129,7 @@ const StixCoreObjectFileExportForm = ({
       is: (val: ConnectorOption | null) => val?.value === BUILT_IN_FROM_TEMPLATE.value,
       then: (schema) => schema.required(t_i18n('This field is required')),
     }),
+    fintelDesigns: Yup.object().nullable(),
     fileToExport: Yup.object().nullable().when('connector', {
       is: (val: ConnectorOption | null) => val?.value === BUILT_IN_HTML_TO_PDF.value,
       then: (schema) => schema.required(t_i18n('This field is required')),
@@ -156,6 +159,7 @@ const StixCoreObjectFileExportForm = ({
     fileToExport: defaultFileToExport ?? null,
     exportFileName: null,
     contentMaxMarkings: [],
+    fintelDesign: null,
     fileMarkings: defaultFileToExport?.fileMarkings.map(({ id, name }) => ({ label: name, value: id })) ?? [],
   };
   const isConnectorValid = (option: ConnectorOption, selectedFormat: string) => {
@@ -351,7 +355,7 @@ const StixCoreObjectFileExportForm = ({
                     getOptionDisabled={(option: ConnectorOption) => !isConnectorValid(option, values.format)}
                     renderOption={(
                       props: React.HTMLAttributes<HTMLLIElement>,
-                      option: Option,
+                      option: FieldOption,
                     ) => <li {...props}>{option.label}</li>}
                     textfieldprops={{ label: t_i18n('Connector') }}
                     optionLength={80}
@@ -367,7 +371,7 @@ const StixCoreObjectFileExportForm = ({
                       options={templates}
                       renderOption={(
                         props: React.HTMLAttributes<HTMLLIElement>,
-                        option: Option,
+                        option: FieldOption,
                       ) => <li {...props}>{option.label}</li>}
                       textfieldprops={{ label: t_i18n('Template') }}
                       optionLength={80}
@@ -382,7 +386,7 @@ const StixCoreObjectFileExportForm = ({
                       options={fileOptions}
                       renderOption={(
                         props: React.HTMLAttributes<HTMLLIElement>,
-                        option: Option,
+                        option: FieldOption,
                       ) => <li {...props}>{option.label}</li>}
                       textfieldprops={{
                         label: t_i18n('File to export'),
@@ -390,6 +394,13 @@ const StixCoreObjectFileExportForm = ({
                       }}
                       optionLength={80}
                     />
+                    )}
+                    {values.connector.value === BUILT_IN_FROM_TEMPLATE.value && values.format === 'application/pdf' && (
+                      <FintelDesignField
+                        name="fintelDesign"
+                        label={t_i18n('Fintel design')}
+                        style={fieldSpacingContainerStyle}
+                      />
                     )}
                     {!isBuiltInConnector(values.connector.value) && (
                     <Field

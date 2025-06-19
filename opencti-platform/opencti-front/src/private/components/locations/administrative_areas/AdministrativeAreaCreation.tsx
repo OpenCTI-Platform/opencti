@@ -5,7 +5,7 @@ import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import ConfidenceField from '@components/common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -17,14 +17,12 @@ import { insertNode } from '../../../../utils/store';
 import { AdministrativeAreasLinesPaginationQuery$variables } from './__generated__/AdministrativeAreasLinesPaginationQuery.graphql';
 import { AdministrativeAreaCreationMutation, AdministrativeAreaCreationMutation$variables } from './__generated__/AdministrativeAreaCreationMutation.graphql';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
-import { Option } from '../../common/form/ReferenceField';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
+import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import useHelper from '../../../../utils/hooks/useHelper';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import { splitMultilines } from '../../../../utils/String';
 import { handleErrorInForm } from '../../../../relay/environment';
@@ -59,10 +57,10 @@ interface AdministrativeAreaAddInput {
   latitude: string;
   longitude: string;
   confidence: number | null
-  createdBy: Option | null;
-  objectMarking: Option[];
-  objectLabel: Option[];
-  externalReferences: Option[];
+  createdBy: FieldOption | null;
+  objectMarking: FieldOption[];
+  objectLabel: FieldOption[];
+  externalReferences: FieldOption[];
   file: File | null;
 }
 
@@ -92,8 +90,9 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
   const { t_i18n } = useFormatter();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
-  const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(ADMINISTRATIVE_AREA_TYPE);
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     latitude: Yup.number()
@@ -102,11 +101,8 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
     longitude: Yup.number()
       .typeError(t_i18n('This field must be a number'))
       .nullable(),
-  };
-  const administrativeAreaValidator = useSchemaCreationValidation(
-    ADMINISTRATIVE_AREA_TYPE,
-    basicShape,
-  );
+  }, mandatoryAttributes);
+  const administrativeAreaValidator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
 
   const [commit] = useApiMutation<AdministrativeAreaCreationMutation>(
     administrativeAreaMutation,
@@ -189,6 +185,8 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
     <Formik<AdministrativeAreaAddInput>
       initialValues={initialValues}
       validationSchema={administrativeAreaValidator}
+      validateOnChange={false}
+      validateOnBlur={false}
       onSubmit={onSubmit}
       onReset={onReset}
     >
@@ -225,6 +223,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
               variant="standard"
               name="name"
               label={t_i18n('Name')}
+              required={(mandatoryAttributes.includes('name'))}
               fullWidth={true}
               detectDuplicate={['Administrative-Area']}
             />
@@ -232,6 +231,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
+              required={(mandatoryAttributes.includes('description'))}
               fullWidth={true}
               multiline={true}
               rows={4}
@@ -246,6 +246,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
               variant="standard"
               name="latitude"
               label={t_i18n('Latitude')}
+              required={(mandatoryAttributes.includes('latitude'))}
               fullWidth={true}
               style={fieldSpacingContainerStyle}
             />
@@ -254,6 +255,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
               variant="standard"
               name="longitude"
               label={t_i18n('Longitude')}
+              required={(mandatoryAttributes.includes('longitude'))}
               fullWidth={true}
               style={fieldSpacingContainerStyle}
             />
@@ -261,23 +263,27 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
               name="createdBy"
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
+              required={(mandatoryAttributes.includes('createdBy'))}
             />
             <ObjectLabelField
               name="objectLabel"
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.objectLabel}
+              required={(mandatoryAttributes.includes('objectLabel'))}
             />
             <ObjectMarkingField
               name="objectMarking"
               setFieldValue={setFieldValue}
               style={fieldSpacingContainerStyle}
+              required={(mandatoryAttributes.includes('objectMarking'))}
             />
             <ExternalReferencesField
               name="externalReferences"
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.externalReferences}
+              required={(mandatoryAttributes.includes('externalReferences'))}
             />
             <Field
               component={CustomFileUploader}
@@ -324,10 +330,8 @@ const AdministrativeAreaCreation = ({
 }: {
   paginationOptions: AdministrativeAreasLinesPaginationQuery$variables;
 }) => {
-  const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const updater = (store: RecordSourceSelectorProxy) => {
     insertNode(
       store,
@@ -343,9 +347,8 @@ const AdministrativeAreaCreation = ({
   return (
     <Drawer
       title={t_i18n('Create an area')}
-      variant={isFABReplaced ? undefined : DrawerVariant.create}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
-      controlledDial={isFABReplaced ? CreateAreaControlledDial : undefined}
+      controlledDial={CreateAreaControlledDial}
     >
       {({ onClose }) => (
         <AdministrativeAreaCreationForm

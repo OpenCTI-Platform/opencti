@@ -11,9 +11,8 @@ import { FormikConfig } from 'formik/dist/types';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { IndicatorsLinesPaginationQuery$variables } from '@components/observations/__generated__/IndicatorsLinesPaginationQuery.graphql';
-import useHelper from 'src/utils/hooks/useHelper';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -27,11 +26,10 @@ import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { insertNode } from '../../../../utils/store';
 import type { Theme } from '../../../../components/Theme';
-import { Option } from '../../common/form/ReferenceField';
 import { IndicatorCreationMutation, IndicatorCreationMutation$variables } from './__generated__/IndicatorCreationMutation.graphql';
 import { parse } from '../../../../utils/Time';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
@@ -92,10 +90,10 @@ interface IndicatorAddInput {
   valid_from: Date | null
   valid_until: Date | null
   description: string
-  createdBy: Option | undefined
-  objectMarking: Option[]
-  killChainPhases: Option[]
-  objectLabel: Option[]
+  createdBy: FieldOption | undefined
+  objectMarking: FieldOption[]
+  killChainPhases: FieldOption[]
+  objectLabel: FieldOption[]
   externalReferences: { value: string }[]
   x_opencti_detection: boolean
   x_opencti_score: number
@@ -421,13 +419,11 @@ interface IndicatorCreationProps {
 
 const IndicatorCreation: FunctionComponent<IndicatorCreationProps> = ({ paginationOptions, contextual, display }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const onReset = () => handleClose();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const CreateIndicatorControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType='Indicator' {...props} />
   );
@@ -471,8 +467,7 @@ const IndicatorCreation: FunctionComponent<IndicatorCreationProps> = ({ paginati
   return (
     <Drawer
       title={t_i18n('Create an indicator')}
-      variant={isFABReplaced ? undefined : DrawerVariant.create}
-      controlledDial={isFABReplaced ? CreateIndicatorControlledDial : undefined}
+      controlledDial={CreateIndicatorControlledDial}
     >
       {({ onClose }) => (
         <IndicatorCreationForm

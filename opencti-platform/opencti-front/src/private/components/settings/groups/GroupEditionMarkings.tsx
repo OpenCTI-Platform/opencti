@@ -16,8 +16,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { GroupEditionMarkings_group$data } from './__generated__/GroupEditionMarkings_group.graphql';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import ItemIcon from '../../../../components/ItemIcon';
-import { Option } from '../../common/form/ReferenceField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { convertMarking } from '../../../../utils/edition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { checkIsMarkingAllowed } from '../../../../utils/markings/markingsFiltering';
@@ -159,7 +158,7 @@ const GroupEditionMarkingsComponent = ({
       });
     }
   };
-  const handleToggleDefaultValues = (values: Option[]) => {
+  const handleToggleDefaultValues = (values: FieldOption[]) => {
     const ids = values.map((v) => v.value);
     commitDefaultValues({
       variables: {
@@ -315,7 +314,7 @@ const GroupEditionMarkingsComponent = ({
                         options={resolvedGroupMarkingDefinitions}
                         renderOption={(
                           renderProps: React.HTMLAttributes<HTMLLIElement>,
-                          option: Option,
+                          option: FieldOption,
                         ) => (
                           <li {...renderProps}>
                             <div
@@ -330,7 +329,7 @@ const GroupEditionMarkingsComponent = ({
                             <div className={classes.text}>{option.label}</div>
                           </li>
                         )}
-                        onChange={(name: string, values: Option[]) => handleToggleDefaultValues(values)
+                        onChange={(name: string, values: FieldOption[]) => handleToggleDefaultValues(values)
                         }
                       />
                       <Typography variant="h2" style={{ marginTop: 30 }}>

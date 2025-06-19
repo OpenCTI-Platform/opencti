@@ -10,10 +10,6 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import { Infrastructure_infrastructure$key } from './__generated__/Infrastructure_infrastructure.graphql';
-import useHelper from '../../../../utils/hooks/useHelper';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import InfrastructureEdition from './InfrastructureEdition';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -85,8 +81,6 @@ const Infrastructure = ({
     infrastructureFragment,
     data,
   );
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   return (
     <>
       <Grid
@@ -128,11 +122,6 @@ const Infrastructure = ({
           />
         </Grid>
       </Grid>
-      {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <InfrastructureEdition infrastructureId={infrastructureData.id} />
-        </Security>
-      )}
     </>
   );
 };

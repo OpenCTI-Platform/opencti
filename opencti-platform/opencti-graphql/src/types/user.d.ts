@@ -47,6 +47,8 @@ interface AuthUser extends BasicStoreIdentifier {
   user_confidence_level: ConfidenceLevel | null
   personal_notifiers?: Array<string>
   draft_context?: string | undefined
+  otp_activated?: boolean;
+  otp_secret?: string;
 }
 
 interface AuthContext {

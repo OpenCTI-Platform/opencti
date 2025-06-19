@@ -4,17 +4,17 @@ import { Field, Form, Formik, FormikConfig } from 'formik';
 import Button from '@mui/material/Button';
 import { graphql } from 'react-relay';
 import * as Yup from 'yup';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { VocabulariesLinesPaginationQuery$variables } from '@components/settings/__generated__/VocabulariesLinesPaginationQuery.graphql';
 import TextField from '../../../../components/TextField';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { VocabularyAddInput, VocabularyCategory, VocabularyCreationMutation } from './__generated__/VocabularyCreationMutation.graphql';
 import { insertNode } from '../../../../utils/store';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { Option } from '../../common/form/ReferenceField';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSoloField';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 interface VocabularyCreationProps {
   paginationOptions: VocabulariesLinesPaginationQuery$variables;
@@ -94,10 +94,14 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
     });
   };
 
+  const CreateVocabularyControlledDial = (props: DrawerControlledDialProps) => (
+    <CreateEntityControlledDial entityType='Vocabulary' {...props} />
+  );
+
   return (
     <Drawer
       title={t_i18n('Create a vocabulary')}
-      variant={DrawerVariant.createWithPanel}
+      controlledDial={CreateVocabularyControlledDial}
     >
       {({ onClose }) => (
         <Formik<FormInterface>
@@ -143,7 +147,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
                 options={[]}
                 renderOption={(
                   props: Record<string, unknown>,
-                  option: Option,
+                  option: FieldOption,
                 ) => (
                   <li {...props}>
                     <div className={classes.text}>{option.label}</div>

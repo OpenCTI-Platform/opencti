@@ -4,7 +4,7 @@ import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import ConfidenceField from '@components/common/form/ConfidenceField';
-import useHelper from 'src/utils/hooks/useHelper';
+import { Stack } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -14,12 +14,11 @@ import MarkdownField from '../../../../components/fields/MarkdownField';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 import { CountryEditionOverview_country$key } from './__generated__/CountryEditionOverview_country.graphql';
-import { Option } from '../../common/form/ReferenceField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import CountryDeletion from './CountryDeletion';
@@ -116,6 +115,8 @@ const countryEditionOverviewFragment = graphql`
   }
 `;
 
+const COUNTRY_TYPE = 'Country';
+
 interface CountryEditionOverviewProps {
   countryRef: CountryEditionOverview_country$key;
   context?: readonly (GenericContext | null)[] | null;
@@ -127,11 +128,11 @@ interface CountryEditionFormValues {
   name: string;
   description: string | null;
   confidence: number | undefined | null;
-  createdBy: Option | undefined;
-  objectMarking: Option[];
-  x_opencti_workflow_id: Option;
+  createdBy: FieldOption | undefined;
+  objectMarking: FieldOption[];
+  x_opencti_workflow_id: FieldOption;
   message?: string;
-  references?: Option[];
+  references?: FieldOption[];
 }
 
 const CountryEditionOverviewComponent: FunctionComponent<
@@ -139,14 +140,17 @@ CountryEditionOverviewProps
 > = ({ countryRef, context, enableReferences = false, handleClose }) => {
   const { t_i18n } = useFormatter();
   const country = useFragment(countryEditionOverviewFragment, countryRef);
-  const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(COUNTRY_TYPE);
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
-  };
-  const countryValidator = useSchemaEditionValidation('Country', basicShape);
+    createdBy: Yup.object().nullable(),
+    objectMarking: Yup.array().nullable(),
+  }, mandatoryAttributes);
+  const countryValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
   const queries = {
     fieldPatch: countryMutationFieldPatch,
     relationAdd: countryMutationRelationAdd,
@@ -187,11 +191,11 @@ CountryEditionOverviewProps
       },
     });
   };
-  const handleSubmitField = (name: string, value: Option | string) => {
+  const handleSubmitField = (name: string, value: FieldOption | string) => {
     if (!enableReferences) {
       let finalValue: unknown = value as string;
       if (name === 'x_opencti_workflow_id') {
-        finalValue = (value as Option).value;
+        finalValue = (value as FieldOption).value;
       }
       countryValidator
         .validateAt(name, { [name]: value })
@@ -211,16 +215,16 @@ CountryEditionOverviewProps
     description: country.description ?? '',
     references: [],
     confidence: country.confidence,
-    createdBy: convertCreatedBy(country) as Option,
+    createdBy: convertCreatedBy(country) as FieldOption,
     objectMarking: convertMarkings(country),
-    x_opencti_workflow_id: convertStatus(t_i18n, country) as Option,
+    x_opencti_workflow_id: convertStatus(t_i18n, country) as FieldOption,
   };
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   return (
     <Formik
       enableReinitialize={true}
       initialValues={initialValues as never}
+      validateOnChange={true}
+      validateOnBlur={true}
       validationSchema={countryValidator}
       onSubmit={onSubmit}
     >
@@ -239,6 +243,7 @@ CountryEditionOverviewProps
             variant="standard"
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -250,6 +255,7 @@ CountryEditionOverviewProps
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -268,7 +274,7 @@ CountryEditionOverviewProps
             editContext={context}
             variant="edit"
           />
-          {country?.workflowEnabled && (
+          {country.workflowEnabled && (
             <StatusField
               name="x_opencti_workflow_id"
               type="Country"
@@ -286,6 +292,7 @@ CountryEditionOverviewProps
           )}
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             helpertext={
@@ -295,6 +302,7 @@ CountryEditionOverviewProps
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />
@@ -302,13 +310,10 @@ CountryEditionOverviewProps
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced
-              ? <CountryDeletion
-                  id={country.id}
-                />
-              : <div/>
-              }
+          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
+            <CountryDeletion
+              id={country.id}
+            />
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
@@ -319,7 +324,7 @@ CountryEditionOverviewProps
                 id={country.id}
               />
             )}
-          </div>
+          </Stack>
         </Form>
       )}
     </Formik>

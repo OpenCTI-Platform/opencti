@@ -432,10 +432,6 @@ class ListLines extends Component {
                   )}
                 </ToggleButtonGroup>
               )}
-              {/*
-                * Passing in createButton because cannot use hooks here.
-                * More permanent solution once FAB_REPLACEMENT is completed.
-                */}
               {createButton}
             </div>
           </div>

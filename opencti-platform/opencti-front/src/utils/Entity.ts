@@ -12,6 +12,8 @@ export const resolveLink = (type = 'unknown'): string | null => {
       return '/dashboard/threats/campaigns';
     case 'FintelTemplate':
       return '/dashboard/settings/customization/entity_types';
+    case 'FintelDesign':
+      return '/dashboard/settings/customization/fintel_designs';
     case 'Note':
       return '/dashboard/analyses/notes';
     case 'Observed-Data':
@@ -32,6 +34,8 @@ export const resolveLink = (type = 'unknown'): string | null => {
       return '/dashboard/entities/individuals';
     case 'Organization':
       return '/dashboard/entities/organizations';
+    case 'SecurityPlatform':
+      return '/dashboard/entities/security_platforms';
     case 'Sector':
       return '/dashboard/entities/sectors';
     case 'System':
@@ -99,7 +103,7 @@ export const resolveLink = (type = 'unknown'): string | null => {
     case 'Group':
       return '/dashboard/settings/accesses/groups';
     case 'DraftWorkspace':
-      return '/dashboard/drafts';
+      return '/dashboard/data/import/draft';
     case 'Stix-Cyber-Observable':
     case 'Autonomous-System':
     case 'Directory':
@@ -133,6 +137,8 @@ export const resolveLink = (type = 'unknown'): string | null => {
     case 'Media-Content':
     case 'Persona':
       return '/dashboard/observations/observables';
+    case 'Pir':
+      return '/dashboard/pirs';
     default:
       return null;
   }
@@ -172,6 +178,9 @@ export const resolveIdentityClass = (identityType: string): string => {
   if (identityType === 'System') {
     return 'system';
   }
+  if (identityType === 'SecurityPlatform') {
+    return 'securityplatform';
+  }
   return 'organization';
 };
 
@@ -184,6 +193,9 @@ export const resolveIdentityType = (identityClass: string): string => {
   }
   if (identityClass === 'system') {
     return 'System';
+  }
+  if (identityClass === 'securityplatform') {
+    return 'SecurityPlatform';
   }
   return 'Organization';
 };

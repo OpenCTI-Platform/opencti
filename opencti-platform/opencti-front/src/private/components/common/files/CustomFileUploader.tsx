@@ -27,6 +27,7 @@ interface CustomFileUploadProps extends Partial<FieldProps<File | null | undefin
   noFileSelectedLabel?: string
   noMargin?: boolean
   required?: boolean;
+  onChange?: (key: string, value: File | undefined) => void;
 }
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -76,6 +77,7 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
   noFileSelectedLabel,
   noMargin = false,
   required = false,
+  onChange,
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
@@ -99,7 +101,7 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
     }
   }, [formikErrors]);
 
-  const onChange = async (event: FormEvent) => {
+  const internalOnChange = async (event: FormEvent) => {
     const inputElement = event.target as HTMLInputElement;
     const eventTargetValue = inputElement.value as string;
     const file = inputElement.files?.[0];
@@ -130,6 +132,8 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
     }
 
     await setFieldValue('file', inputElement.files?.[0]);
+    onChange?.('file', inputElement.files?.[0]);
+
     if (isEmbeddedInExternalReferenceCreation) {
       const externalIdValue = (
         document.getElementById('external_id') as HTMLInputElement
@@ -156,7 +160,7 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
         <Button
           component="label"
           variant="contained"
-          onChange={onChange}
+          onChange={internalOnChange}
           className={classes.button}
           disabled={disabled}
         >

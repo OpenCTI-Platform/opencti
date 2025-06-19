@@ -2,154 +2,21 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { propOr } from 'ramda';
-import { createFragmentContainer, createRefetchContainer, graphql, useFragment } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import { Route, Routes } from 'react-router-dom';
-import { containerAddStixCoreObjectsLinesRelationAddMutation } from '../../common/containers/ContainerAddStixCoreObjectsLines';
+import StixDomainObjectAttackPatterns from '../../common/stix_domain_objects/StixDomainObjectAttackPatterns';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
+import { QueryRenderer } from '../../../../relay/environment';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import { constructHandleAddFilter, constructHandleRemoveFilter, emptyFilterGroup, filtersAfterSwitchLocalMode } from '../../../../utils/filters/filtersUtils';
-import CaseRftPopover from './CaseRftPopover';
 import CaseRftKnowledgeGraph, { caseRftKnowledgeGraphQuery } from './CaseRftKnowledgeGraph';
 import CaseRftKnowledgeTimeLine, { caseRftKnowledgeTimeLineQuery } from './CaseRftKnowledgeTimeLine';
 import CaseRftKnowledgeCorrelation, { caseRftKnowledgeCorrelationQuery } from './CaseRftKnowledgeCorrelation';
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 import withRouter from '../../../../utils/compat_router/withRouter';
-
-export const caseRftKnowledgeAttackPatternsGraphQuery = graphql`
-    query CaseRftKnowledgeAttackPatternsGraphQuery($id: String!) {
-        caseRft(id: $id) {
-            id
-            name
-            x_opencti_graph_data
-            confidence
-            createdBy {
-                ... on Identity {
-                    id
-                    name
-                    entity_type
-                }
-            }
-            objectMarking {
-                id
-                definition_type
-                definition
-                x_opencti_order
-                x_opencti_color
-            }
-            ...CaseRftKnowledgeAttackPatterns_fragment
-        }
-    }
-`;
-
-const CaseRftAttackPatternsFragment = graphql`
-    fragment CaseRftKnowledgeAttackPatterns_fragment on CaseRft {
-        objects(all: true, types: ["Attack-Pattern"]) {
-            edges {
-                node {
-                    ... on AttackPattern {
-                        id
-                        entity_type
-                        parent_types
-                        name
-                        description
-                        x_mitre_platforms
-                        x_mitre_permissions_required
-                        x_mitre_id
-                        x_mitre_detection
-                        isSubAttackPattern
-                        parentAttackPatterns {
-                            edges {
-                                node {
-                                    id
-                                    name
-                                    description
-                                    x_mitre_id
-                                }
-                            }
-                        }
-                        subAttackPatterns {
-                            edges {
-                                node {
-                                    id
-                                    name
-                                    description
-                                    x_mitre_id
-                                }
-                            }
-                        }
-                        killChainPhases {
-                            id
-                            kill_chain_name
-                            phase_name
-                            x_opencti_order
-                        }
-                    }
-                }
-            }
-        }
-    }
-`;
-
-const AttackPatternMatrixComponent = (props) => {
-  const {
-    data,
-    caseData,
-    currentKillChain,
-    currentModeOnlyActive,
-    currentColorsReversed,
-    handleChangeKillChain,
-    handleToggleColorsReversed,
-    handleToggleModeOnlyActive,
-  } = props;
-  const attackPatternObjects = useFragment(CaseRftAttackPatternsFragment, data.caseRft);
-  const attackPatterns = (attackPatternObjects.objects.edges)
-    .map((n) => n.node)
-    .filter((n) => n.entity_type === 'Attack-Pattern');
-
-  const handleAddEntity = (entity) => {
-    const input = {
-      toId: entity.id,
-      relationship_type: 'object',
-    };
-    commitMutation({
-      mutation: containerAddStixCoreObjectsLinesRelationAddMutation,
-      variables: {
-        id: caseData.id,
-        input,
-      },
-      onCompleted: () => {
-        props.relay.refetch({ id: caseData.id });
-      },
-    });
-  };
-
-  return (
-    <AttackPatternsMatrix
-      entity={caseData}
-      attackPatterns={attackPatterns}
-      currentKillChain={currentKillChain}
-      currentModeOnlyActive={currentModeOnlyActive}
-      currentColorsReversed={currentColorsReversed}
-      handleChangeKillChain={handleChangeKillChain}
-      handleToggleColorsReversed={handleToggleColorsReversed}
-      handleToggleModeOnlyActive={handleToggleModeOnlyActive}
-      handleAdd={handleAddEntity}
-    />
-  );
-};
-
-const AttackPatternMatrixContainer = createRefetchContainer(
-  AttackPatternMatrixComponent,
-  {
-    data: CaseRftAttackPatternsFragment,
-  },
-  caseRftKnowledgeAttackPatternsGraphQuery,
-);
 
 class CaseRftKnowledgeComponent extends Component {
   constructor(props) {
@@ -162,7 +29,6 @@ class CaseRftKnowledgeComponent extends Component {
     );
     this.state = {
       currentModeOnlyActive: propOr(false, 'currentModeOnlyActive', params),
-      currentColorsReversed: propOr(false, 'currentColorsReversed', params),
       currentKillChain: propOr('mitre-attack', 'currentKillChain', params),
       timeLineDisplayRelationships: propOr(
         false,
@@ -183,25 +49,6 @@ class CaseRftKnowledgeComponent extends Component {
       LOCAL_STORAGE_KEY,
       this.state,
     );
-  }
-
-  handleToggleModeOnlyActive() {
-    this.setState(
-      { currentModeOnlyActive: !this.state.currentModeOnlyActive },
-      () => this.saveView(),
-    );
-  }
-
-  handleToggleColorsReversed() {
-    this.setState(
-      { currentColorsReversed: !this.state.currentColorsReversed },
-      () => this.saveView(),
-    );
-  }
-
-  handleChangeKillChain(event) {
-    const { value } = event.target;
-    this.setState({ currentKillChain: value }, () => this.saveView());
   }
 
   handleToggleTimeLineDisplayRelationships() {
@@ -276,9 +123,6 @@ class CaseRftKnowledgeComponent extends Component {
       enableReferences,
     } = this.props;
     const {
-      currentModeOnlyActive,
-      currentColorsReversed,
-      currentKillChain,
       timeLineFilters,
       timeLineDisplayRelationships,
       timeLineFunctionalDate,
@@ -317,7 +161,6 @@ class CaseRftKnowledgeComponent extends Component {
         {mode !== 'graph' && (
         <ContainerHeader
           container={caseData}
-          PopoverComponent={<CaseRftPopover id={caseData.id}/>}
           link={`/dashboard/cases/rfts/${caseData.id}/knowledge`}
           modes={['graph', 'timeline', 'correlation', 'matrix']}
           currentMode={mode}
@@ -431,31 +274,11 @@ class CaseRftKnowledgeComponent extends Component {
           <Route
             path="/matrix"
             element={(
-              <QueryRenderer
-                query={caseRftKnowledgeAttackPatternsGraphQuery}
-                variables={{ id: caseData.id }}
-                render={({ props }) => {
-                  if (props && props.caseRft) {
-                    return (
-                      <AttackPatternMatrixContainer
-                        data={props}
-                        caseData={caseData}
-                        currentKillChain={currentKillChain}
-                        currentModeOnlyActive={currentModeOnlyActive}
-                        currentColorsReversed={currentColorsReversed}
-                        handleChangeKillChain={this.handleChangeKillChain.bind(this)}
-                        handleToggleColorsReversed={this.handleToggleColorsReversed.bind(this)}
-                        handleToggleModeOnlyActive={this.handleToggleModeOnlyActive.bind(this)}
-                      />
-                    );
-                  }
-                  return (
-                    <Loader
-                      variant={LoaderVariant.inElement}
-                      withTopMargin={true}
-                    />
-                  );
-                }}
+              <StixDomainObjectAttackPatterns
+                stixDomainObjectId={caseData.id}
+                defaultStartTime={caseData.first_seen}
+                defaultStopTime={caseData.last_seen}
+                entityType={caseData.entity_type}
               />
             )}
           />
@@ -475,9 +298,6 @@ class CaseRftKnowledgeComponent extends Component {
 
 CaseRftKnowledgeComponent.propTypes = {
   caseData: PropTypes.object,
-  mode: PropTypes.string,
-  classes: PropTypes.object,
-  t: PropTypes.func,
   navigate: PropTypes.func,
   enableReferences: PropTypes.bool,
 };

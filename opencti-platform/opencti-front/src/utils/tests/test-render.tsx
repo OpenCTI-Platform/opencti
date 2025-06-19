@@ -69,7 +69,7 @@ export const ProvidersWrapper = ({ children, relayEnv, userContext }: ProvidersW
 
   return (
     <RelayEnvironmentProvider environment={relayEnv}>
-      <AppIntlProvider settings={{ platform_language: 'auto' }}>
+      <AppIntlProvider settings={{ platform_language: 'auto', platform_translations: '{}' }}>
         <ThemeProvider theme={createTheme()}>
           <UserContext.Provider value={defaultUserContext as UserContextType}>
             {children}

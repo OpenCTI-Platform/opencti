@@ -12,7 +12,6 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
-import useHelper from '../../../utils/hooks/useHelper';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY = 'channels';
@@ -104,8 +103,6 @@ const channelsLinesFragment = graphql`
 
 const Channels = () => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Channels | Arsenal'));
   const initialValues = {
@@ -170,17 +167,12 @@ const Channels = () => {
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={channelLineFragment}
           exportContext={{ entity_type: 'Channel' }}
-          createButton={isFABReplaced && (
+          createButton={(
             <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
               <ChannelCreation paginationOptions={queryPaginationOptions} />
             </Security>
           )}
         />
-      )}
-      {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <ChannelCreation paginationOptions={queryPaginationOptions} />
-        </Security>
       )}
     </>
   );

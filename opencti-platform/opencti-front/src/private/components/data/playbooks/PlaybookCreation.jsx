@@ -20,13 +20,12 @@ import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { useNavigate } from 'react-router-dom';
-import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
+import Drawer from '../../common/drawer/Drawer';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import { insertNode } from '../../../../utils/store';
 import { useFormatter } from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
-import useHelper from '../../../../utils/hooks/useHelper';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -66,8 +65,6 @@ const PlaybookCreation = ({ paginationOptions }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     commitMutation({
       mutation: PlaybookCreationMutation,
@@ -93,8 +90,7 @@ const PlaybookCreation = ({ paginationOptions }) => {
   return (
     <Drawer
       title={t_i18n('Create a playbook')}
-      variant={isFABReplaced ? undefined : DrawerVariant.createWithPanel}
-      controlledDial={isFABReplaced ? CreatePlaybookControlledDial : undefined}
+      controlledDial={CreatePlaybookControlledDial}
     >
       {({ onClose }) => (
         <Formik

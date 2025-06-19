@@ -193,7 +193,10 @@ const StixCoreObjectContentFilesList = ({
                         <span style={{ paddingBottom: theme.spacing(0.5) }}>
                           {fld(file.lastModified ?? moment())}
                         </span>
-                        <ItemMarkings markingDefinitions={file.objectMarking} limit={1} />
+                        <ItemMarkings
+                          markingDefinitions={file.objectMarking ?? []}
+                          limit={1}
+                        />
                       </div>
                 )}
                   />

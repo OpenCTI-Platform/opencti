@@ -17,6 +17,7 @@ generates:
       mappers:
         Feed: ../types/store.d#BasicStoreEntityFeed
         Channel: ../modules/channel/channel-types#BasicStoreEntityChannel
+        Catalog: ../modules/catalog/catalog-types#GraphqlCatalog
         Language: ../modules/language/language-types#BasicStoreEntityLanguage
         Event: ../modules/event/event-types#BasicStoreEntityEvent
         Narrative: ../modules/narrative/narrative-types#BasicStoreEntityNarrative
@@ -45,9 +46,11 @@ generates:
         IngestionTaxiiCollection: ../modules/ingestion/ingestion-types#BasicStoreEntityIngestionTaxiiCollection
         Indicator: ../modules/indicator/indicator-types#BasicStoreEntityIndicator
         IngestionCsv: ../modules/ingestion/ingestion-types#BasicStoreEntityIngestionCsv
+        IngestionJson: ../modules/ingestion/ingestion-types#BasicStoreEntityIngestionJson
         DecayRule: ../modules/decayRule/decayRule-types#BasicStoreEntityDecayRule
         Organization: ../modules/organization/organization-types#BasicStoreEntityOrganization
         CsvMapper: ../modules/internal/csvMapper/csvMapper-types#BasicStoreEntityCsvMapper
+        JsonMapper: ../modules/internal/jsonMapper/jsonMapper-types#BasicStoreEntityJsonMapper
         Playbook: ../modules/playbook/playbook-types#BasicStoreEntityPlaybook
         PublicDashboard: ../modules/publicDashboard/publicDashboard-types#BasicStoreEntityPublicDashboard
         DeleteOperation: ../modules/deleteOperation/deleteOperation-types#BasicStoreEntityDeleteOperation
@@ -56,6 +59,10 @@ generates:
         ExclusionList: ../modules/exclusionList/exclusionList-types#BasicStoreEntityExclusionList
         FintelTemplate: ../modules/fintelTemplate/fintelTemplate-types#BasicStoreEntityFintelTemplate
         SavedFilter: ../modules/savedFilter/savedFilter-types#BasicStoreEntitySavedFilter
+        FintelDesign: ../modules/fintelDesign/fintelDesign-types#BasicStoreEntityFintelDesign
+        Pir: ../modules/pir/pir-types#BasicStoreEntityPir
+        SecurityPlatform: ../modules/securityPlatform/securityPlatform-types#BasicStoreEntitySecurityPlatform
+
   ./graphql.schema.json:
     plugins:
       - "introspection"

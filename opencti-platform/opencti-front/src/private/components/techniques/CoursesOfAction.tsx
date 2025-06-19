@@ -15,7 +15,6 @@ import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
-import useHelper from '../../../utils/hooks/useHelper';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY = 'coursesOfAction';
@@ -104,8 +103,6 @@ export const coursesOfActionLinesFragment = graphql`
 
 const CoursesOfAction = () => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Courses of Action | Techniques'));
 
@@ -166,17 +163,12 @@ const CoursesOfAction = () => {
           lineFragment={CourseOfActionLineFragment}
           resolvePath={(data: CoursesOfActionLines_data$data) => data.coursesOfAction?.edges?.map((e) => e?.node)}
           storageKey={LOCAL_STORAGE_KEY}
-          createButton={isFABReplaced && (
+          createButton={(
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <CourseOfActionCreation paginationOptions={queryPaginationOptions} />
             </Security>
           )}
         />
-      )}
-      {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <CourseOfActionCreation paginationOptions={queryPaginationOptions} />
-        </Security>
       )}
     </>
   );

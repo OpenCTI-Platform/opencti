@@ -6,9 +6,8 @@ import DialogActions from '@mui/material/DialogActions';
 import React from 'react';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import Button from '@mui/material/Button';
-import { Option } from '@components/common/form/ReferenceField';
 import AssociatedEntityField, { AssociatedEntityOption } from '@components/common/form/AssociatedEntityField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useFormatter } from '../../../../components/i18n';
 
 type FileImportMarkingSelectionPopupProps = {
@@ -19,7 +18,7 @@ type FileImportMarkingSelectionPopupProps = {
 };
 
 export type SubmittedFormValues = {
-  fileMarkings: Option[];
+  fileMarkings: FieldOption[];
   associatedEntity: AssociatedEntityOption;
 };
 

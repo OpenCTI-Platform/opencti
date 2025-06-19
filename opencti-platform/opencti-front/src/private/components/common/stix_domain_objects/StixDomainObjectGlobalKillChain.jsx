@@ -219,9 +219,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                               />
                               <ItemMarkings
                                 variant="inList"
-                                markingDefinitions={
-                                stixDomainObject.objectMarking ?? []
-                              }
+                                markingDefinitions={stixDomainObject.objectMarking ?? []}
                                 limit={1}
                               />
                               <ItemYears

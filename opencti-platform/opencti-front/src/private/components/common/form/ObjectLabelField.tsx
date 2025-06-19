@@ -9,8 +9,8 @@ import { LabelsQuerySearchQuery$data } from '../../settings/__generated__/Labels
 import { LabelCreationContextualMutation$data } from '../../settings/labels/__generated__/LabelCreationContextualMutation.graphql';
 import LabelCreation from '../../settings/labels/LabelCreation';
 import { labelsSearchQuery } from '../../settings/LabelsQuery';
-import { Option } from './ReferenceField';
 import ItemIcon from '../../../../components/ItemIcon';
+import { FieldOption } from '../../../../utils/field';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -35,9 +35,9 @@ interface ObjectLabelFieldProps {
   helpertext?: string;
   dryrun?: boolean;
   required?: boolean;
-  setFieldValue?: (name: string, value: Option[]) => void;
-  values?: Option[];
-  onChange?: (name: string, value: Option[]) => void;
+  setFieldValue?: (name: string, value: FieldOption[]) => void;
+  values?: FieldOption[];
+  onChange?: (name: string, value: FieldOption[]) => void;
 }
 
 const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({
@@ -54,7 +54,7 @@ const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({
   const { t_i18n } = useFormatter();
 
   const [labelCreation, setLabelCreation] = useState(false);
-  const [labels, setLabels] = useState<Option[]>([]);
+  const [labels, setLabels] = useState<FieldOption[]>([]);
   const [labelInput, setLabelInput] = useState('');
 
   const searchLabels = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -71,7 +71,7 @@ const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({
             label: node.value,
             value: node.id,
             color: node.color,
-          }) as Option,
+          }) as FieldOption,
         );
         setLabels(union(labels, newLabels));
       });
@@ -98,7 +98,7 @@ const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({
         onChange={onChange}
         renderOption={(
           props: React.HTMLAttributes<HTMLLIElement>,
-          option: Option,
+          option: FieldOption,
         ) => (
           <li {...props}>
             <div className={classes.icon} style={{ color: option.color }}>

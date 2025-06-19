@@ -3,6 +3,7 @@ import { graphql, useFragment } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
+import { Stack } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -11,18 +12,16 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
-import { Option } from '../../common/form/ReferenceField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import { DataSourceEditionOverview_dataSource$key } from './__generated__/DataSourceEditionOverview_dataSource.graphql';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { dataComponentEditionOverviewFocus } from '../data_components/DataComponentEditionOverview';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-import useHelper from '../../../../utils/hooks/useHelper';
 import DataSourceDeletion from './DataSourceDeletion';
 
 const dataSourceMutationFieldPatch = graphql`
@@ -137,14 +136,14 @@ interface DataSourceEditionOverviewProps {
 interface DataSourceEditionFormValues {
   name: string;
   description: string | null;
-  x_opencti_workflow_id: Option;
-  createdBy: Option | undefined;
+  x_opencti_workflow_id: FieldOption;
+  createdBy: FieldOption | undefined;
   confidence: number | null;
   x_mitre_platforms: string[] | null;
   collection_layers: string[];
-  objectMarking: Option[];
+  objectMarking: FieldOption[];
   message?: string;
-  references?: Option[];
+  references?: FieldOption[];
 }
 
 const DataSourceEditionOverview: FunctionComponent<
@@ -152,8 +151,6 @@ DataSourceEditionOverviewProps
 > = ({ data, context, enableReferences = false, handleClose }) => {
   const { t_i18n } = useFormatter();
   const dataSource = useFragment(dataSourceEditionOverviewFragment, data);
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { mandatoryAttributes } = useIsMandatoryAttribute(DATA_SOURCE_TYPE);
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
@@ -213,12 +210,12 @@ DataSourceEditionOverviewProps
 
   const handleSubmitField = (
     name: string,
-    value: Option | string | string[] | number | number[],
+    value: FieldOption | string | string[] | number | number[],
   ) => {
     if (!enableReferences) {
       let finalValue: unknown = value as string;
       if (name === 'x_opencti_workflow_id') {
-        finalValue = (value as Option).value;
+        finalValue = (value as FieldOption).value;
       }
       dataSourceValidator
         .validateAt(name, { [name]: value })
@@ -239,7 +236,7 @@ DataSourceEditionOverviewProps
     description: dataSource.description,
     createdBy: convertCreatedBy(dataSource),
     objectMarking: convertMarkings(dataSource),
-    x_opencti_workflow_id: convertStatus(t_i18n, dataSource) as Option,
+    x_opencti_workflow_id: convertStatus(t_i18n, dataSource) as FieldOption,
     confidence: dataSource.confidence,
     x_mitre_platforms: dataSource.x_mitre_platforms || [],
     collection_layers: dataSource.collection_layers || [],
@@ -301,7 +298,7 @@ DataSourceEditionOverviewProps
               <SubscriptionFocus context={context} fieldName="description" />
             }
           />
-          {dataSource?.workflowEnabled && (
+          {dataSource.workflowEnabled && (
             <StatusField
               name="x_opencti_workflow_id"
               type="Data-Source"
@@ -362,12 +359,10 @@ DataSourceEditionOverviewProps
             multiple={true}
             editContext={context}
           />
-          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced
-              ? <DataSourceDeletion
-                  id={dataSource.id}
-                />
-              : <div />}
+          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
+            <DataSourceDeletion
+              id={dataSource.id}
+            />
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
@@ -378,7 +373,7 @@ DataSourceEditionOverviewProps
                 id={dataSource.id}
               />
             )}
-          </div>
+          </Stack>
         </Form>
       )}
     </Formik>

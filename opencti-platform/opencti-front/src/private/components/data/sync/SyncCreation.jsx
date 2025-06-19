@@ -13,7 +13,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
 import Grid from '@mui/material/Grid';
-import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
+import Drawer from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, fetchQuery, handleErrorInForm, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -29,7 +29,6 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import { deserializeFilterGroupForFrontend } from '../../../../utils/filters/filtersUtils';
 import PasswordTextField from '../../../../components/PasswordTextField';
-import useHelper from '../../../../utils/hooks/useHelper';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -107,8 +106,6 @@ const CreateSynchronizerControlledDial = (props) => (
 
 const SyncCreation = ({ paginationOptions }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const classes = useStyles();
 
   const [verified, setVerified] = useState(false);
@@ -197,11 +194,7 @@ const SyncCreation = ({ paginationOptions }) => {
   return (
     <Drawer
       title={t_i18n('Create a synchronizer')}
-      variant={isFABReplaced ? undefined : DrawerVariant.createWithPanel}
-      controlledDial={isFABReplaced
-        ? CreateSynchronizerControlledDial
-        : undefined
-      }
+      controlledDial={CreateSynchronizerControlledDial}
     >
       {({ onClose }) => (
         <Formik

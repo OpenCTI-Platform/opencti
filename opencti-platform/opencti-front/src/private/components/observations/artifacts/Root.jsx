@@ -109,10 +109,7 @@ class RootArtifact extends Component {
                       { label: stixCyberObservable.observable_value, current: true },
                     ]}
                     />
-                    <StixCyberObservableHeader
-                      stixCyberObservable={stixCyberObservable}
-                      isArtifact={true}
-                    />
+                    <StixCyberObservableHeader stixCyberObservable={stixCyberObservable} />
                     <Box
                       sx={{
                         borderBottom: 1,

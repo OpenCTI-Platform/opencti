@@ -1,19 +1,19 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
-import { Option } from '@components/common/form/ReferenceField';
 import { Field } from 'formik';
 import { Label } from 'mdi-material-ui';
 import { useFormatter } from '../../../../../components/i18n';
 import { fetchQuery } from '../../../../../relay/environment';
 import AutocompleteField from '../../../../../components/AutocompleteField';
 import { StatusTemplateFieldScopedSearchQuery$data } from './__generated__/StatusTemplateFieldScopedSearchQuery.graphql';
+import { FieldOption } from '../../../../../utils/field';
 
 interface StatusTemplateFieldScopedProps {
   name: string;
-  setFieldValue: (field: string, value: Option) => void;
+  setFieldValue: (field: string, value: FieldOption) => void;
   helpertext: string;
   required?: boolean;
-  onChange?: (field: string, value: Option) => void;
+  onChange?: (field: string, value: FieldOption) => void;
   style?: Record<string, string | number>;
   scope: string;
   label: string;
@@ -38,7 +38,7 @@ const StatusTemplateFieldScoped: FunctionComponent<StatusTemplateFieldScopedProp
   scope,
 }) => {
   const { t_i18n } = useFormatter();
-  const [statusTemplates, setStatusTemplates] = useState<Option[]>([]);
+  const [statusTemplates, setStatusTemplates] = useState<FieldOption[]>([]);
 
   const searchStatusTemplates = (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -51,7 +51,7 @@ const StatusTemplateFieldScoped: FunctionComponent<StatusTemplateFieldScopedProp
       .then((data) => {
         const queryData: StatusTemplateFieldScopedSearchQuery$data = data as unknown as StatusTemplateFieldScopedSearchQuery$data;
         const fieldData = queryData?.statusTemplatesByStatusScope?.map((statusData) => {
-          return { label: statusData?.name, value: statusData?.id, color: statusData?.color } as Option;
+          return { label: statusData?.name, value: statusData?.id, color: statusData?.color } as FieldOption;
         }) || [];
         setStatusTemplates(fieldData);
       });

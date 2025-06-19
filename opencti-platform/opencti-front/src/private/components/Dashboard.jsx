@@ -9,7 +9,7 @@ import { Biohazard, ShieldSearch } from 'mdi-material-ui';
 import { assoc, head, last, map, pluck } from 'ramda';
 import React, { Suspense } from 'react';
 import { graphql, useFragment, usePreloadedQuery } from 'react-relay';
-import DashboardSettings, { PLATFORM_DASHBOARD } from './DashboardSettings';
+import { PLATFORM_DASHBOARD } from './DashboardSettings';
 import StixRelationshipsDistributionList from './common/stix_relationships/StixRelationshipsDistributionList';
 import StixRelationshipsPolarArea from './common/stix_relationships/StixRelationshipsPolarArea';
 import StixCoreObjectsList from './common/stix_core_objects/StixCoreObjectsList';
@@ -621,7 +621,6 @@ const DashboardComponent = ({ queryRef }) => {
           <DefaultDashboard timeField={default_time_field} />
         )}
       </div>
-      <DashboardSettings />
     </UserContext.Provider>
   );
 };

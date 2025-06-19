@@ -24,6 +24,7 @@ import {
   buildPagination,
   computeAverage,
   extractIdsFromStoreObject,
+  extractObjectsPirsFromInputs,
   extractObjectsRestrictionsFromInputs,
   fillTimeSeries,
   INDEX_INFERRED_RELATIONSHIPS,
@@ -957,7 +958,8 @@ const createContainerSharingTask = (context, type, element, relations = []) => {
   }
   // If element needs to be updated, start a SHARE background task
   if (targetGrantIds.length > 0) {
-    const input = { ids: targetGrantIds, scope: 'KNOWLEDGE', actions: [{ type, context: { values: elementGrants } }] };
+    const sharingDescription = `${type} organizations of ${element.name} to contained objects`;
+    const input = { ids: targetGrantIds, scope: 'KNOWLEDGE', actions: [{ type, context: { values: elementGrants } }], description: sharingDescription };
     taskPromise = createListTask(context, context.user, input);
   }
   return taskPromise;
@@ -2312,7 +2314,20 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
         external_references: references.map((ref) => convertExternalReferenceToStix(ref))
       } : undefined;
       const relatedRestrictions = extractObjectsRestrictionsFromInputs(updatedInputs, initial.entity_type);
-      const event = await storeUpdateEvent(context, user, initial, updatedInstance, message, { ...opts, commit, related_restrictions: relatedRestrictions });
+      const { pir_ids } = extractObjectsPirsFromInputs(updatedInputs, initial.entity_type);
+      const event = await storeUpdateEvent(
+        context,
+        user,
+        initial,
+        updatedInstance,
+        message,
+        {
+          ...opts,
+          commit,
+          related_restrictions: relatedRestrictions,
+          pir_ids
+        }
+      );
       return { element: updatedInstance, event, isCreation: false };
     }
     // Return updated element after waiting for it.

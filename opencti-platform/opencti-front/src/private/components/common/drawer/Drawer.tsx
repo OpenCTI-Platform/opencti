@@ -68,7 +68,7 @@ const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => c
 
 export interface DrawerControlledDialProps {
   onOpen: () => void;
-  onClose: () => void;
+  onClose?: () => void;
 }
 export type DrawerControlledDialType = ({ onOpen, onClose }: DrawerControlledDialProps) => React.ReactElement;
 
@@ -126,6 +126,8 @@ const Drawer = forwardRef(({
       component = children({ onClose: handleClose });
     } else {
       component = React.cloneElement(children as React.ReactElement, {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         onClose: handleClose,
       });
     }

@@ -1,15 +1,13 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
-import Fab from '@mui/material/Fab';
-import { Add } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import { Dialog, DialogContent } from '@mui/material';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import DialogTitle from '@mui/material/DialogTitle';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { DataComponentsLinesPaginationQuery$variables } from '@components/techniques/__generated__/DataComponentsLinesPaginationQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
@@ -19,16 +17,14 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { insertNode } from '../../../../utils/store';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { Option } from '../../common/form/ReferenceField';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { DataComponentCreationMutation, DataComponentCreationMutation$variables } from './__generated__/DataComponentCreationMutation.graphql';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import useHelper from '../../../../utils/hooks/useHelper';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import { splitMultilines } from '../../../../utils/String';
 import BulkTextModal from '../../../../components/fields/BulkTextField/BulkTextModal';
@@ -56,10 +52,10 @@ const dataComponentMutation = graphql`
 interface DataComponentAddInput {
   name: string
   description: string
-  createdBy: Option | null
-  objectMarking: Option[]
-  objectLabel: Option[]
-  externalReferences: Option[]
+  createdBy: FieldOption | null
+  objectMarking: FieldOption[]
+  objectLabel: FieldOption[]
+  externalReferences: FieldOption[]
   confidence: number | null
   file: File | null
 }
@@ -325,10 +321,8 @@ const DataComponentCreation: FunctionComponent<{
   inputValue,
   paginationOptions,
 }) => {
-  const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -348,9 +342,8 @@ const DataComponentCreation: FunctionComponent<{
   const renderClassic = () => (
     <Drawer
       title={t_i18n('Create a data component')}
-      variant={isFABReplaced ? undefined : DrawerVariant.create}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
-      controlledDial={isFABReplaced ? CreateDataComponentControlledDial : undefined}
+      controlledDial={CreateDataComponentControlledDial}
     >
       {({ onClose }) => (
         <DataComponentCreationForm
@@ -366,27 +359,9 @@ const DataComponentCreation: FunctionComponent<{
   );
   const renderContextual = () => (
     <div style={{ display: display ? 'block' : 'none' }}>
-      {isFABReplaced
-        ? (
-          <div style={{ marginTop: '5px' }}>
-            {CreateDataComponentControlledDialContextual}
-          </div>
-        ) : (
-          <Fab
-            onClick={handleOpen}
-            color="secondary"
-            aria-label="Add"
-            style={{
-              position: 'fixed',
-              bottom: 30,
-              right: 30,
-              zIndex: 2000,
-            }}
-          >
-            <Add />
-          </Fab>
-        )
-      }
+      <div style={{ marginTop: '5px' }}>
+        {CreateDataComponentControlledDialContextual}
+      </div>
       <Dialog open={open} onClose={handleClose} slotProps={{ paper: { elevation: 1 } }}>
         <DialogTitle>
           {t_i18n('Create a data component')}

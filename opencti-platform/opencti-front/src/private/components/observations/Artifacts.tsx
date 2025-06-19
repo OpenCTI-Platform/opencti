@@ -1,5 +1,4 @@
 import React, { FunctionComponent } from 'react';
-import useHelper from 'src/utils/hooks/useHelper';
 import { graphql } from 'react-relay';
 import { ArtifactsLinesPaginationQuery, ArtifactsLinesPaginationQuery$variables } from '@components/observations/__generated__/ArtifactsLinesPaginationQuery.graphql';
 import { ArtifactsLines_data$data } from '@components/observations/__generated__/ArtifactsLines_data.graphql';
@@ -134,7 +133,6 @@ const Artifacts: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Artifacts | Observations'));
-  const { isFeatureEnable } = useHelper();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -162,8 +160,6 @@ const Artifacts: FunctionComponent = () => {
     artifactsLinesQuery,
     queryPaginationOptions,
   );
-
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const dataColumns: DataTableProps['dataColumns'] = {
     observable_value: { percentWidth: 13, isSortable: isRuntimeSort },
@@ -199,7 +195,7 @@ const Artifacts: FunctionComponent = () => {
             lineFragment={artifactLineFragment}
             preloadedPaginationProps={preloadedPaginationOptions}
             exportContext={{ entity_type: 'Artifact' }}
-            createButton={isFABReplaced && (
+            createButton={(
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <ArtifactCreation
                   paginationOptions={queryPaginationOptions}
@@ -207,13 +203,6 @@ const Artifacts: FunctionComponent = () => {
               </Security>
             )}
           />
-        )}
-        {!isFABReplaced && (
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <ArtifactCreation
-              paginationOptions={queryPaginationOptions}
-            />
-          </Security>
         )}
       </ExportContextProvider>
     </div>

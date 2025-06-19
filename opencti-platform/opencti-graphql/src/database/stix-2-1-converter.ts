@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { v4 as uuidv4, version as uuidVersion } from 'uuid';
-import { isEmptyField, isInferredIndex } from './utils';
+import { isEmptyField, isInferredIndex, isNotEmptyField } from './utils';
 import { extractEntityRepresentativeName } from './entity-representative';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { isBasicObject } from '../schema/stixCoreObject';
@@ -35,6 +35,7 @@ import {
   INPUT_SRC_PAYLOAD,
   INPUT_VALUES,
   RELATION_GRANTED_TO,
+  RELATION_IN_PIR,
   RELATION_OBJECT_MARKING
 } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../schema/stixMetaObject';
@@ -110,6 +111,7 @@ import {
   INPUT_CREATED_BY,
   INPUT_EXTERNAL_REFS,
   INPUT_GRANTED_REFS,
+  INPUT_IN_PIR,
   INPUT_KILLCHAIN,
   INPUT_LABELS,
   INPUT_MARKINGS,
@@ -137,14 +139,14 @@ export const convertTypeToStixType = (type: string): string => {
   if (type.toLowerCase() === ENTITY_HASHED_OBSERVABLE_STIX_FILE.toLowerCase()) {
     return 'file';
   }
-  if (isStixCoreRelationship(type)) {
-    return 'relationship';
-  }
   if (isInternalRelationship(type)) {
     return 'internal-relationship';
   }
   if (isStixSightingRelationship(type)) {
     return 'sighting';
+  }
+  if (isBasicRelationship(type)) {
+    return 'relationship';
   }
   if (isStixDomainObjectThreatActor(type)) {
     return 'threat-actor';
@@ -199,8 +201,9 @@ export const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtensi
     participant_ids: (instance[INPUT_PARTICIPANT] ?? []).map((m) => m.internal_id),
     authorized_members: instance.restricted_members ?? undefined,
     workflow_id: instance.x_opencti_workflow_id,
-    labels_ids: (instance[INPUT_LABELS] ?? []).map((m) => m.internal_id),
+    labels_ids: (instance[INPUT_LABELS] ?? []).map((m) => m.internal_id).filter((id) => isNotEmptyField(id)),
     created_by_ref_id: instance[INPUT_CREATED_BY]?.internal_id,
+    pir_refs_ids: (instance[INPUT_IN_PIR] ?? []).map((m) => m.internal_id),
   };
   return cleanObject(octiExtensions);
 };
@@ -352,8 +355,9 @@ export const convertIdentityToStix = (instance: StoreEntityIdentity, type: strin
         firstname: instance.x_opencti_firstname,
         lastname: instance.x_opencti_lastname,
         organization_type: instance.x_opencti_organization_type,
-        reliability: instance.x_opencti_reliability
-      })
+        reliability: instance.x_opencti_reliability,
+        score: instance.x_opencti_score,
+      }),
     }
   };
 };
@@ -1172,11 +1176,13 @@ const convertRelationToStix = (instance: StoreRelation): SRO.StixRelation => {
         source_type: instance.from.entity_type,
         source_ref_object_marking_refs: instance.from[RELATION_OBJECT_MARKING] ?? [],
         source_ref_granted_refs: instance.from[RELATION_GRANTED_TO] ?? [],
+        source_ref_pir_refs: instance.from[RELATION_IN_PIR] ?? [],
         target_value: extractEntityRepresentativeName(instance.to),
         target_ref: instance.to.internal_id,
         target_type: instance.to.entity_type,
         target_ref_object_marking_refs: instance.to[RELATION_OBJECT_MARKING] ?? [],
         target_ref_granted_refs: instance.to[RELATION_GRANTED_TO] ?? [],
+        target_ref_pir_refs: instance.to[RELATION_IN_PIR] ?? [],
         kill_chain_phases: buildKillChainPhases(instance)
       })
     }

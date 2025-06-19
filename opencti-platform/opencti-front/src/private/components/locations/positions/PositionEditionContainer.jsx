@@ -3,13 +3,10 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import PositionEditionOverview from './PositionEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
-import useHelper from '../../../../utils/hooks/useHelper';
+import Drawer from '../../common/drawer/Drawer';
 
 const PositionEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { handleClose, position, open, controlledDial } = props;
   const { editContext } = position;
   return (
@@ -17,9 +14,8 @@ const PositionEditionContainer = (props) => {
       title={t_i18n('Update a position')}
       open={open}
       onClose={handleClose}
-      variant={!isFABReplaced && open == null ? DrawerVariant.update : undefined}
       context={editContext}
-      controlledDial={isFABReplaced ? controlledDial : undefined}
+      controlledDial={controlledDial}
     >
       <>
         <PositionEditionOverview

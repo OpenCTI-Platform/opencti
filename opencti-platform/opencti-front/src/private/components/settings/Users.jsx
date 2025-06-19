@@ -60,7 +60,7 @@ const Users = () => {
     userCreateButton = (
       <SettingsOrganizationUserCreation
         paginationOptions={paginationOptions}
-        variant="fab"
+        variant="controlledDial"
       />
     );
   }

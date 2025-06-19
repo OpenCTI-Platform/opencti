@@ -1,11 +1,10 @@
-import { Option } from '@components/common/form/ReferenceField';
 import { FormikConfig } from 'formik/dist/types';
 import * as Yup from 'yup';
 import { Field, Form, Formik } from 'formik';
 import { Dialog, DialogTitle, DialogContent, MenuItem, DialogActions, Button } from '@mui/material';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import React from 'react';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import SelectField from '../../../../components/fields/SelectField';
 import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
@@ -13,7 +12,7 @@ import { useFormatter } from '../../../../components/i18n';
 export interface CreateFileFormInputs {
   name: string
   type: string
-  fileMarkings: Option[]
+  fileMarkings: FieldOption[]
 }
 
 interface CreateFileFormProps {

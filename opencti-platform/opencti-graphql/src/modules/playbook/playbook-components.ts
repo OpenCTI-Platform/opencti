@@ -56,7 +56,8 @@ import {
   ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_TOOL,
-  isStixDomainObjectContainer
+  isStixDomainObjectContainer,
+  STIX_DOMAIN_OBJECT_CONTAINER_CASES
 } from '../../schema/stixDomainObject';
 import type { CyberObjectExtension, StixBundle, StixCoreObject, StixCyberObject, StixDomainObject, StixObject, StixOpenctiExtension } from '../../types/stix-2-1-common';
 import { STIX_EXT_MITRE, STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-2-1-extensions';
@@ -89,13 +90,15 @@ import { ENTITY_TYPE_INDICATOR, type StixIndicator } from '../indicator/indicato
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../case/case-rft/case-rft-types';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../case/feedback/feedback-types';
-import { ENTITY_TYPE_CONTAINER_TASK } from '../task/task-types';
+import { ENTITY_TYPE_CONTAINER_TASK, type StixTask, type StoreEntityTask } from '../task/task-types';
 import { EditOperation, FilterMode } from '../../generated/graphql';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { schemaTypesDefinition } from '../../schema/schema-types';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
 import { generateCreateMessage } from '../../database/generate-message';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
+import { findAllByCaseTemplateId } from '../task/task-domain';
+import type { BasicStoreEntityTaskTemplate } from '../task/task-template/task-template-types';
 import type { BasicStoreSettings } from '../../types/settings';
 
 const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixObject => {
@@ -423,6 +426,7 @@ const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfiguration> = 
 
 interface ContainerWrapperConfiguration {
   container_type: string
+  caseTemplates: { label: string, value: string }[]
   all: boolean
   newContainer: boolean
 }
@@ -430,8 +434,15 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_SCHEMA: JSONSchemaType<ContainerWrapp
   type: 'object',
   properties: {
     container_type: { type: 'string', $ref: 'Container type', default: '', oneOf: [] },
+    caseTemplates: {
+      type: 'array',
+      uniqueItems: true,
+      default: [],
+      $ref: 'Case templates',
+      items: { type: 'string', oneOf: [] }
+    },
     all: { type: 'boolean', $ref: 'Wrap all elements included in the bundle', default: false },
-    newContainer: { type: 'boolean', $ref: 'Create a new container at each run', default: false }
+    newContainer: { type: 'boolean', $ref: 'Create a new container at each run', default: false },
   },
   required: ['container_type'],
 };
@@ -448,7 +459,42 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_AVAILABLE_CONTAINERS = [
   ENTITY_TYPE_CONTAINER_TASK,
 ];
 
-const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperConfiguration> = {
+export const buildStixTaskFromTaskTemplate = (taskTemplate: BasicStoreEntityTaskTemplate, container: StixContainer) => {
+  const taskData = {
+    name: taskTemplate.name,
+    description: taskTemplate.description,
+  };
+  const taskStandardId = generateStandardId(ENTITY_TYPE_CONTAINER_TASK, taskData);
+  const storeTask = {
+    internal_id: generateInternalId(),
+    standard_id: taskStandardId,
+    entity_type: ENTITY_TYPE_CONTAINER_TASK,
+    parent_types: getParentTypes(ENTITY_TYPE_CONTAINER_TASK),
+    ...taskData,
+  } as StoreEntityTask;
+  const task = convertStoreToStix(storeTask) as StixTask;
+  task.object_refs = [container.id];
+  task.object_marking_refs = container.object_marking_refs;
+  return task;
+};
+
+export const addTaskFromCaseTemplates = async (
+  caseTemplates: { label: string, value: string }[],
+  container: StixContainer,
+) => {
+  const context = executionContext('playbook_components');
+  const tasks = [];
+  for (let i = 0; i < caseTemplates.length; i += 1) {
+    const taskTemplates = await findAllByCaseTemplateId(context, AUTOMATION_MANAGER_USER, caseTemplates[i].value);
+    for (let j = 0; j < taskTemplates.length; j += 1) {
+      const task = buildStixTaskFromTaskTemplate(taskTemplates[j], container);
+      tasks.push(task);
+    }
+  }
+  return tasks;
+};
+
+export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperConfiguration> = {
   id: 'PLAYBOOK_CONTAINER_WRAPPER_COMPONENT',
   name: 'Container wrapper',
   description: 'Create a container and wrap the element inside it',
@@ -463,7 +509,7 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperCo
     return R.mergeDeepRight<JSONSchemaType<ContainerWrapperConfiguration>, any>(PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_SCHEMA, schemaElement);
   },
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
-    const { container_type, all, newContainer } = playbookNode.configuration;
+    const { container_type, all, newContainer, caseTemplates } = playbookNode.configuration;
     if (!PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_AVAILABLE_CONTAINERS.includes(container_type)) {
       throw FunctionalError('this container type is incompatible with the Container Wrapper playbook component', { container_type });
     }
@@ -496,14 +542,14 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperCo
         ...containerData
       } as StoreCommon;
       const container = convertStoreToStix(storeContainer) as StixContainer;
-      // add all objects in the container if requested in the playbook confif
+      // add all objects in the container if requested in the playbook config
       if (all) {
         container.object_refs = bundle.objects.map((o: StixObject) => o.id);
       } else {
         container.object_refs = [baseData.id];
       }
       // Specific remapping of some attributes, waiting for a complete binding solution in the UI
-      // Following attributes are the same as the base instance: markings, labels, created_by, assignees, partcipants
+      // Following attributes are the same as the base instance: markings, labels, created_by, assignees, participants
       if (baseData.object_marking_refs) {
         container.object_marking_refs = baseData.object_marking_refs;
       }
@@ -522,6 +568,10 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperCo
       // if the base instance is an incident and we wrap into an Incident Case, we set the same severity
       if ((<StixIncident>baseData).severity && container_type === ENTITY_TYPE_CONTAINER_CASE_INCIDENT) {
         (<StixCaseIncident>container).severity = (<StixIncident>baseData).severity;
+      }
+      if (STIX_DOMAIN_OBJECT_CONTAINER_CASES.includes(container_type) && caseTemplates.length > 0) {
+        const tasks = await addTaskFromCaseTemplates(caseTemplates, container);
+        bundle.objects.push(...tasks);
       }
       bundle.objects.push(container);
     }
@@ -606,6 +656,7 @@ const attributePathMapping: any = {
   x_opencti_score: {
     [ENTITY_TYPE_INDICATOR]: `/extensions/${STIX_EXT_OCTI}/score`,
     [ABSTRACT_STIX_CYBER_OBSERVABLE]: `/extensions/${STIX_EXT_OCTI_SCO}/score`,
+    [ENTITY_TYPE_IDENTITY_ORGANIZATION]: `/extensions/${STIX_EXT_OCTI}/score`,
   },
   x_opencti_detection: {
     [ENTITY_TYPE_INDICATOR]: `/extensions/${STIX_EXT_OCTI}/detection`,

@@ -2,7 +2,6 @@ import { graphql } from 'relay-runtime';
 import React from 'react';
 import { useFragment } from 'react-relay';
 import { Grid } from '@mui/material';
-import useHelper from '../../../../utils/hooks/useHelper';
 import { StixCyberObservable_stixCyberObservable$key } from './__generated__/StixCyberObservable_stixCyberObservable.graphql';
 import StixCyberObservableDetails from './StixCyberObservableDetails';
 import StixCyberObservableOverview from './StixCyberObservableOverview';
@@ -11,9 +10,6 @@ import StixCoreObjectOrStixRelationshipLastContainers from '../../common/contain
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import StixCyberObservableEdition from './StixCyberObservableEdition';
 
 const stixCyberObservableFragment = graphql`
   fragment StixCyberObservable_stixCyberObservable on StixCyberObservable {
@@ -65,8 +61,6 @@ const StixCyberObservable: React.FC<StixCyberObservableProps> = ({
     stixCyberObservableFragment,
     stixCyberObservableData,
   );
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   return (
     <div data-testid='observable-details-page'>
       <Grid
@@ -112,13 +106,6 @@ const StixCyberObservable: React.FC<StixCyberObservableProps> = ({
           />
         </Grid>
       </Grid>
-      {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <StixCyberObservableEdition
-            stixCyberObservableId={stixCyberObservable.id}
-          />
-        </Security>
-      )}
     </div>
   );
 };

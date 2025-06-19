@@ -14,7 +14,6 @@ import AdministrativeArea from './AdministrativeArea';
 import AdministrativeAreaKnowledge from './AdministrativeAreaKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
-import AdministrativeAreaPopover from './AdministrativeAreaPopover';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
@@ -30,7 +29,6 @@ import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import AdministrativeAreaEdition from './AdministrativeAreaEdition';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootAdministrativeAreasSubscription($id: ID!) {
@@ -88,8 +86,6 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
   );
   useSubscription(subConfig);
   const location = useLocation();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(administrativeAreaQuery, queryRef);
   const { forceUpdate } = useForceUpdate();
@@ -137,10 +133,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
               entityType="Administrative-Area"
               disableSharing={true}
               stixDomainObject={administrativeArea}
-              PopoverComponent={
-                <AdministrativeAreaPopover id={administrativeArea.id} />
-            }
-              EditComponent={isFABReplaced && (
+              EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <AdministrativeAreaEdition
                     administrativeAreaId={administrativeArea.id}

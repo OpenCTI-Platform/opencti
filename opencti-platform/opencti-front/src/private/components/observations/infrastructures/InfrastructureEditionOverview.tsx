@@ -3,6 +3,7 @@ import { graphql, useFragment } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
+import { Stack } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -17,15 +18,13 @@ import StatusField from '../../common/form/StatusField';
 import { buildDate, formatDate } from '../../../../utils/Time';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { InfrastructureEditionOverview_infrastructure$key } from './__generated__/InfrastructureEditionOverview_infrastructure.graphql';
-import { Option } from '../../common/form/ReferenceField';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-import useHelper from '../../../../utils/hooks/useHelper';
 import InfrastructureDeletion from './InfrastructureDeletion';
 
 const infrastructureMutationFieldPatch = graphql`
@@ -144,11 +143,11 @@ interface InfrastructureEditionOverviewProps {
 
 interface InfrastructureEditionFormValues {
   message?: string
-  references?: Option[]
-  createdBy: Option | undefined
-  x_opencti_workflow_id: Option
-  objectMarking?: Option[]
-  killChainPhases?: Option[];
+  references?: FieldOption[]
+  createdBy: FieldOption | undefined
+  x_opencti_workflow_id: FieldOption
+  objectMarking?: FieldOption[]
+  killChainPhases?: FieldOption[];
   first_seen: null | Date;
   last_seen: null | Date;
   confidence: number | null | undefined;
@@ -162,8 +161,6 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
 }) => {
   const { t_i18n } = useFormatter();
   const infrastructure = useFragment(infrastructureEditionOverviewFragment, infrastructureData);
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { mandatoryAttributes } = useIsMandatoryAttribute(
     INFRASTRUCTURE_TYPE,
   );
@@ -231,11 +228,11 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
     });
   };
 
-  const handleSubmitField = (name: string, value: Option | string | string[] | number | number[] | null) => {
+  const handleSubmitField = (name: string, value: FieldOption | string | string[] | number | number[] | null) => {
     if (!enableReferences) {
       let finalValue = value;
       if (name === 'x_opencti_workflow_id') {
-        finalValue = (value as Option).value;
+        finalValue = (value as FieldOption).value;
       }
       infrastructureValidator
         .validateAt(name, { [name]: value })
@@ -254,10 +251,10 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
   const initialValues = {
     name: infrastructure.name,
     description: infrastructure.description,
-    createdBy: convertCreatedBy(infrastructure) as Option,
+    createdBy: convertCreatedBy(infrastructure) as FieldOption,
     objectMarking: convertMarkings(infrastructure),
     killChainPhases: convertKillChainPhases(infrastructure),
-    x_opencti_workflow_id: convertStatus(t_i18n, infrastructure) as Option,
+    x_opencti_workflow_id: convertStatus(t_i18n, infrastructure) as FieldOption,
     confidence: infrastructure.confidence,
     first_seen: buildDate(infrastructure.first_seen),
     last_seen: buildDate(infrastructure.last_seen),
@@ -412,12 +409,10 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced
-              ? <InfrastructureDeletion
-                  id={infrastructure.id}
-                />
-              : <div />}
+          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
+            <InfrastructureDeletion
+              id={infrastructure.id}
+            />
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
@@ -428,7 +423,7 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
                 id={infrastructure.id}
               />
             )}
-          </div>
+          </Stack>
         </Form>
       )}
     </Formik>

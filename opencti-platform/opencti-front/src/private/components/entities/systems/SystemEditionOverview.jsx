@@ -3,6 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
+import { Stack } from '@mui/material';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -15,11 +16,10 @@ import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../ut
 import StatusField from '../../common/form/StatusField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-import useHelper from '../../../../utils/hooks/useHelper';
 import SystemDeletion from './SystemDeletion';
 
 const systemMutationFieldPatch = graphql`
@@ -81,21 +81,24 @@ const systemMutationRelationDelete = graphql`
   }
 `;
 
+const SYSTEM_TYPE = 'System';
+
 const SystemEditionOverviewComponent = (props) => {
   const { system, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
-  const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(SYSTEM_TYPE);
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     contact_information: Yup.string().nullable(),
     x_opencti_reliability: Yup.string().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
-  };
-  const systemValidator = useSchemaEditionValidation('System', basicShape);
+    createdBy: Yup.object().nullable(),
+    objectMarking: Yup.array().nullable(),
+  }, mandatoryAttributes);
+  const systemValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
   const queries = {
     fieldPatch: systemMutationFieldPatch,
@@ -176,6 +179,8 @@ const SystemEditionOverviewComponent = (props) => {
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={systemValidator}
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
     >
       {({
@@ -194,6 +199,7 @@ const SystemEditionOverviewComponent = (props) => {
             name="name"
             disabled={external}
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -205,6 +211,7 @@ const SystemEditionOverviewComponent = (props) => {
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -228,6 +235,7 @@ const SystemEditionOverviewComponent = (props) => {
             variant="standard"
             name="contact_information"
             label={t_i18n('Contact information')}
+            required={(mandatoryAttributes.includes('contact_information'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -242,6 +250,7 @@ const SystemEditionOverviewComponent = (props) => {
             label={t_i18n('Reliability')}
             type="reliability_ov"
             name="x_opencti_reliability"
+            required={(mandatoryAttributes.includes('x_opencti_reliability'))}
             onChange={setFieldValue}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -265,6 +274,7 @@ const SystemEditionOverviewComponent = (props) => {
           )}
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             helpertext={
@@ -274,6 +284,7 @@ const SystemEditionOverviewComponent = (props) => {
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />
@@ -281,12 +292,10 @@ const SystemEditionOverviewComponent = (props) => {
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced
-              ? <SystemDeletion
-                  id={system.id}
-                />
-              : <div />}
+          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
+            <SystemDeletion
+              id={system.id}
+            />
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
@@ -297,7 +306,7 @@ const SystemEditionOverviewComponent = (props) => {
                 id={system.id}
               />
             )}
-          </div>
+          </Stack>
         </Form>
       )}
     </Formik>

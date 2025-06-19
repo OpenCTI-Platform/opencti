@@ -12,6 +12,7 @@ import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import type { Theme } from '../../../../components/Theme';
+import ItemScore from '../../../../components/ItemScore';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -66,6 +67,14 @@ const OrganizationDetailsComponent: FunctionComponent<OrganizationDetailsCompone
               source={organization.description}
               limit={400}
             />
+            <Typography
+              variant="h3"
+              gutterBottom={true}
+              style={{ marginTop: 20 }}
+            >
+              {t_i18n('Score')}
+            </Typography>
+            <ItemScore score={organization.x_opencti_score} />
           </Grid>
           <Grid item xs={6}>
             <Typography variant="h3" gutterBottom={true}>
@@ -103,6 +112,7 @@ const OrganizationDetails = createFragmentContainer(
             id
             description
             contact_information
+            x_opencti_score
             x_opencti_reliability
             x_opencti_organization_type
             objectLabel {

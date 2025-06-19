@@ -1,5 +1,4 @@
 import React, { FunctionComponent } from 'react';
-import useHelper from 'src/utils/hooks/useHelper';
 import { graphql } from 'react-relay';
 import { CaseRfisLinesCasesPaginationQuery, CaseRfisLinesCasesPaginationQuery$variables } from '@components/cases/__generated__/CaseRfisLinesCasesPaginationQuery.graphql';
 import { CaseRfisLinesCases_data$data } from '@components/cases/__generated__/CaseRfisLinesCases_data.graphql';
@@ -128,7 +127,6 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Requests for Information | Cases'));
-  const { isFeatureEnable } = useHelper();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -144,7 +142,6 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
     LOCAL_STORAGE_KEY,
     initialValues,
   );
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const {
     filters,
@@ -204,17 +201,12 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={caseFragment}
           exportContext={{ entity_type: 'Case-Rfi' }}
-          createButton={isFABReplaced && (
+          createButton={(
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <CaseRfiCreation paginationOptions={queryPaginationOptions} />
             </Security>
           )}
         />
-      )}
-      {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <CaseRfiCreation paginationOptions={queryPaginationOptions} />
-        </Security>
       )}
     </>
   );

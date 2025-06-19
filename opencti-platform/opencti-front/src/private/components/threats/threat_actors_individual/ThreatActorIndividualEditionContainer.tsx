@@ -3,7 +3,7 @@ import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import Drawer, { DrawerControlledDialType, DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialType } from '@components/common/drawer/Drawer';
 import {
   ThreatActorIndividualEditionOverview_ThreatActorIndividual$key,
 } from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualEditionOverview_ThreatActorIndividual.graphql';
@@ -24,7 +24,6 @@ import ThreatActorIndividualEditionDemographics from './ThreatActorIndividualEdi
 import ThreatActorIndividualEditionBiographics from './ThreatActorIndividualEditionBiographics';
 import { ThreatActorIndividualEditionContainerQuery } from './__generated__/ThreatActorIndividualEditionContainerQuery.graphql';
 import ThreatActorIndividualEditionDetails from './ThreatActorIndividualEditionDetails';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 interface ThreatActorIndividualEditionContainerProps {
   queryRef: PreloadedQuery<ThreatActorIndividualEditionContainerQuery>;
@@ -54,8 +53,6 @@ const ThreatActorIndividualEditionContainer: FunctionComponent<
 ThreatActorIndividualEditionContainerProps
 > = ({ handleClose, queryRef, open, controlledDial }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { threatActorIndividual } = usePreloadedQuery<ThreatActorIndividualEditionContainerQuery>(
     ThreatActorIndividualEditionQuery,
     queryRef,
@@ -68,11 +65,10 @@ ThreatActorIndividualEditionContainerProps
     return (
       <Drawer
         title={t_i18n('Update a threat actor individual')}
-        variant={!isFABReplaced && open == null ? DrawerVariant.update : undefined}
         context={threatActorIndividual?.editContext}
         onClose={handleClose}
         open={open}
-        controlledDial={isFABReplaced ? controlledDial : undefined}
+        controlledDial={controlledDial}
       >
         {({ onClose }) => (
           <>

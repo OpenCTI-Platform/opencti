@@ -35,7 +35,7 @@ interface TextFieldAskAiProps {
   currentValue: string;
   setFieldValue: (value: string) => void;
   format: 'text' | 'html' | 'markdown';
-  variant: 'markdown' | 'html' | 'text' | null;
+  variant?: 'markdown' | 'html' | 'text' | null;
   disabled?: boolean;
   style?: object;
 }

@@ -71,6 +71,7 @@ import {
   RELATION_REMEDIATES,
   RELATION_RESOLVES_TO,
   RELATION_REVOKED_BY,
+  RELATION_SHOULD_COVER,
   RELATION_SUBTECHNIQUE_OF,
   RELATION_TARGETS,
   RELATION_USES,
@@ -89,6 +90,7 @@ import { FunctionalError, UnsupportedError } from '../config/errors';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
+import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../modules/securityPlatform/securityPlatform-types';
 
 const MAX_TRANSIENT_STIX_IDS = 200;
 export const STIX_SPEC_VERSION = '2.1';
@@ -249,6 +251,21 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   // region CHANNEL
   [`${ENTITY_TYPE_CHANNEL}_${ENTITY_TYPE_CHANNEL}`]: [
     { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_TYPE_CHANNEL}_${ENTITY_TYPE_IDENTITY_ORGANIZATION}`]: [
+    { name: RELATION_BELONGS_TO, type: REL_EXTENDED }
+  ],
+  [`${ENTITY_TYPE_CHANNEL}_${ENTITY_TYPE_IDENTITY_INDIVIDUAL}`]: [
+    { name: RELATION_BELONGS_TO, type: REL_EXTENDED }
+  ],
+  [`${ENTITY_TYPE_CHANNEL}_${ENTITY_TYPE_THREAT_ACTOR_GROUP}`]: [
+    { name: RELATION_BELONGS_TO, type: REL_EXTENDED }
+  ],
+  [`${ENTITY_TYPE_CHANNEL}_${ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL}`]: [
+    { name: RELATION_BELONGS_TO, type: REL_EXTENDED }
+  ],
+  [`${ENTITY_TYPE_CHANNEL}_${ENTITY_TYPE_INTRUSION_SET}`]: [
+    { name: RELATION_BELONGS_TO, type: REL_EXTENDED }
   ],
   // endregion
   // region COURSE_OF_ACTION
@@ -761,6 +778,11 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   // region ORGANIZATION
   [`${ENTITY_TYPE_IDENTITY_ORGANIZATION}_${ENTITY_TYPE_IDENTITY_ORGANIZATION}`]: [
     { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
+  ],
+  // endregion
+  // region SECURITY_PLATFORM
+  [`${ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM}_${ENTITY_TYPE_ATTACK_PATTERN}`]: [
+    { name: RELATION_SHOULD_COVER, type: REL_NEW }
   ],
   // endregion
   // region THREAT_ACTOR

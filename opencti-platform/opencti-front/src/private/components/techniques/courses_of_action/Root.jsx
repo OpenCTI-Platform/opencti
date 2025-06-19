@@ -12,7 +12,6 @@ import { QueryRenderer, requestSubscription } from '../../../../relay/environmen
 import CourseOfAction from './CourseOfAction';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
-import CourseOfActionPopover from './CourseOfActionPopover';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -57,6 +56,7 @@ const courseOfActionQuery = graphql`
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
       ...StixCoreObjectContent_stixCoreObject
+      ...StixCoreObjectSharingListFragment
     }
     connectorsForImport {
       ...FileManager_connectorsImport
@@ -111,7 +111,6 @@ class RootCourseOfAction extends Component {
                     <StixDomainObjectHeader
                       entityType="Course-Of-Action"
                       stixDomainObject={courseOfAction}
-                      PopoverComponent={<CourseOfActionPopover/>}
                       EditComponent={(
                         <Security needs={[KNOWLEDGE_KNUPDATE]}>
                           <CourseOfActionEdition courseOfActionId={courseOfAction.id} />

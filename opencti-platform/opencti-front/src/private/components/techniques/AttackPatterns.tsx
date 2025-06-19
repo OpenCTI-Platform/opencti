@@ -13,7 +13,6 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
-import useHelper from '../../../utils/hooks/useHelper';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
@@ -101,8 +100,6 @@ const attackPatternsLinesFragment = graphql`
 
 const AttackPatterns = () => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Attack Patterns | Techniques'));
   const initialValues = {
@@ -166,17 +163,12 @@ const AttackPatterns = () => {
           preloadedPaginationProps={preloadedPaginationOptions}
           lineFragment={attackPatternLineFragment}
           exportContext={{ entity_type: 'Attack-Pattern' }}
-          createButton={isFABReplaced && (
+          createButton={(
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <AttackPatternCreation paginationOptions={queryPaginationOptions} />
             </Security>
           )}
         />
-      )}
-      {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <AttackPatternCreation paginationOptions={queryPaginationOptions} />
-        </Security>
       )}
     </>
   );

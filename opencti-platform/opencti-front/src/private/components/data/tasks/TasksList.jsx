@@ -106,6 +106,7 @@ const TasksListFragment = graphql`
         node {
           id
           type
+          description
           initiator {
             name
           }
@@ -135,6 +136,32 @@ const TasksListFragment = graphql`
             task_filters
             task_search
             scope
+          }
+          work {
+            id
+            connector {
+              name
+            }
+            user {
+              name
+            }
+            completed_time
+            received_time
+            tracking {
+              import_expected_number
+              import_processed_number
+            }
+            messages {
+              timestamp
+              message
+            }
+            errors {
+              timestamp
+              message
+            }
+            status
+            timestamp
+            draft_context  
           }
         }
       }
@@ -176,7 +203,7 @@ const TasksList = ({ data, options }) => {
         }
       },
       onCompleted: () => {
-        MESSAGING$.notifySuccess('The task has been deleted');
+        MESSAGING$.notifySuccess(t_i18n('The task has been deleted'));
       },
     });
   };
@@ -215,9 +242,14 @@ const TasksList = ({ data, options }) => {
         if (task.completed) {
           status = 'complete';
         } else if (task.task_processed_number > 0) {
-          status = 'progress';
+          status = 'provisioning';
         } else {
           status = 'wait';
+        }
+        if (task.work) {
+          if (task.work.status === 'wait' || task.work.status === 'progress') {
+            status = 'processing';
+          }
         }
         let filters = null;
         let listIds = '';
@@ -228,6 +260,29 @@ const TasksList = ({ data, options }) => {
         } else if (task.task_ids) {
           listIds = truncate(R.join(', ', task.task_ids), 60);
         }
+        const lastTaskExecutionDate = task.work ? task.work.completed_time : task.last_execution_date;
+        const taskWorkProcessedNumber = task.work?.tracking?.import_processed_number ?? 0;
+        const taskWorkExpectedNumber = task.work?.tracking?.import_expected_number ?? 0;
+        const progressNumberDisplay = task.work ? ` ${taskWorkProcessedNumber}/${taskWorkExpectedNumber}` : '';
+        const provisioningNumberDisplay = task.work && (task.work.status === 'wait' || task.work.status === 'progress')
+          ? ` (Provisioning: ${task.task_processed_number}/${task.task_processed_number})`
+          : '';
+        const progressFullText = `${t_i18n('Progress')}${progressNumberDisplay}${provisioningNumberDisplay}`;
+        let progressValue = 0;
+        if (task.work) {
+          if (task.work.status === 'complete') {
+            progressValue = 100;
+          } else if (task.work.status === 'wait') {
+            progressValue = 0;
+          } else if (taskWorkExpectedNumber) {
+            progressValue = Math.round((100 * (taskWorkProcessedNumber)) / (taskWorkExpectedNumber));
+          } else {
+            progressValue = 0;
+          }
+        } else {
+          progressValue = 100;
+        }
+        const taskErrors = [...task.errors, ...(task.work?.errors ?? [])];
         return (
           <Paper
             key={task.id}
@@ -238,10 +293,16 @@ const TasksList = ({ data, options }) => {
             <Grid container={true} spacing={3}>
               <Grid item xs={5}>
                 <Grid container={true} spacing={1}>
+                  {task.description && (
                   <Grid item xs={12}>
                     <Typography variant="h3" gutterBottom={true}>
-                      {t_i18n('Targeted entities')} ({n(task.task_expected_number)}
-                      )
+                      {`${t_i18n('Description')}: ${task.description}`}
+                    </Typography>
+                  </Grid>
+                  )}
+                  <Grid item xs={12}>
+                    <Typography variant="h3" gutterBottom={true}>
+                      {t_i18n('Targeted entities')} ({n(task.task_expected_number)})
                     </Typography>
                     {task.task_search && (
                     <span>
@@ -357,7 +418,7 @@ const TasksList = ({ data, options }) => {
                         ? t_i18n('Task end time')
                         : t_i18n('Task last execution time')}
                     </Typography>
-                    {nsdt(task.last_execution_date)}
+                    {nsdt(lastTaskExecutionDate)}
                   </Grid>
                   {(task.scope ?? task.type)
                       && <Grid item xs={2}>
@@ -366,7 +427,7 @@ const TasksList = ({ data, options }) => {
                         </Typography>
                         <TaskScope scope={task.scope ?? task.type} label={t_i18n(task.scope ?? task.type)} />
                       </Grid>
-                    }
+                  }
                   <Grid item xs={2}>
                     <Typography variant="h3" gutterBottom={true}>
                       {t_i18n('Status')}
@@ -375,36 +436,26 @@ const TasksList = ({ data, options }) => {
                   </Grid>
                   <Grid item xs={10}>
                     <Typography variant="h3" gutterBottom={true}>
-                      {t_i18n('Progress')}
+                      {progressFullText}
                     </Typography>
                     <LinearProgress
                       classes={{ root: classes.progress }}
                       variant="determinate"
-                      value={
-                          // eslint-disable-next-line no-nested-ternary
-                          task.task_expected_number === 0
-                            ? 0
-                            : task.completed
-                              ? 100
-                              : Math.round(
-                                (task.task_processed_number
-                                  / task.task_expected_number)
-                                  * 100,
-                              )
-                        }
+                      value={progressValue}
                     />
                   </Grid>
                 </Grid>
+                <br/>
               </Grid>
               <Button
                 style={{ position: 'absolute', right: 10, top: 10 }}
-                variant={task.errors.length > 0 ? 'contained' : 'outlined'}
+                variant={taskErrors.length > 0 ? 'contained' : 'outlined'}
                 color={'error'}
-                disabled={task.errors.length === 0}
-                onClick={() => handleOpenErrors(task.errors)}
+                disabled={taskErrors.length === 0}
+                onClick={() => handleOpenErrors(taskErrors)}
                 size="small"
               >
-                {task.errors.length} {t_i18n('errors')}
+                {taskErrors.length} {t_i18n('errors')}
               </Button>
               {task.scope // if task.scope exists = it is list task or a query task
                 ? <Button

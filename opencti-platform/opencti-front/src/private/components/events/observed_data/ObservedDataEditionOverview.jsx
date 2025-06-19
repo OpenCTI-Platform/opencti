@@ -3,6 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
+import { Stack } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -20,7 +21,6 @@ import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeCo
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import ObservedDataDeletion from './ObservedDataDeletion';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 export const observedDataMutationFieldPatch = graphql`
   mutation ObservedDataEditionOverviewFieldPatchMutation(
@@ -88,8 +88,6 @@ const OBSERVED_DATA_TYPE = 'Observed-Data';
 const ObservedDataEditionOverviewComponent = (props) => {
   const { observedData, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { mandatoryAttributes } = useIsMandatoryAttribute(OBSERVED_DATA_TYPE);
   const basicShape = yupShapeConditionalRequired({
     first_observed: Yup.date()
@@ -312,13 +310,10 @@ const ObservedDataEditionOverviewComponent = (props) => {
               setFieldValue={setFieldValue}
               onChange={editor.changeMarking}
             />
-            <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-              {isFABReplaced
-                ? <ObservedDataDeletion
-                    id={observedData.id}
-                  />
-                : <div />
-              }
+            <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
+              <ObservedDataDeletion
+                id={observedData.id}
+              />
               {enableReferences && (
                 <CommitMessage
                   submitForm={submitForm}
@@ -329,7 +324,7 @@ const ObservedDataEditionOverviewComponent = (props) => {
                   id={observedData.id}
                 />
               )}
-            </div>
+            </Stack>
           </Form>
         </div>
       )}

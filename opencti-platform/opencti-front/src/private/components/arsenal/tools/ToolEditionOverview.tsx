@@ -5,6 +5,7 @@ import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import { GenericContext } from '@components/common/model/GenericContextModel';
 import { useTheme } from '@mui/styles';
+import { Stack } from '@mui/material';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -14,7 +15,6 @@ import { adaptFieldValue } from '../../../../utils/String';
 import StatusField from '../../common/form/StatusField';
 import { convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatus } from '../../../../utils/edition';
 import { useFormatter } from '../../../../components/i18n';
-import { Option } from '../../common/form/ReferenceField';
 import { ToolEditionOverview_tool$key } from './__generated__/ToolEditionOverview_tool.graphql';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import OpenVocabField from '../../common/form/OpenVocabField';
@@ -23,8 +23,7 @@ import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEdito
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import type { Theme } from '../../../../components/Theme';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import useHelper from '../../../../utils/hooks/useHelper';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import ToolDeletion from './ToolDeletion';
 
 export const toolMutationFieldPatch = graphql`
@@ -132,11 +131,11 @@ interface ToolEditionFormValues {
   name?: string;
   description?: string;
   tool_version?: string;
-  createdBy?: Option
-  killChainPhases?: Option[];
-  objectMarking?: Option[];
-  x_opencti_workflow_id?: Option
-  references: Option[];
+  createdBy?: FieldOption
+  killChainPhases?: FieldOption[];
+  objectMarking?: FieldOption[];
+  x_opencti_workflow_id?: FieldOption
+  references: FieldOption[];
   message?: string;
 }
 
@@ -148,8 +147,6 @@ const ToolEditionOverview: FunctionComponent<ToolEditionOverviewProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const tool = useFragment(toolEditionOverviewFragment, toolRef);
 
@@ -233,10 +230,10 @@ const ToolEditionOverview: FunctionComponent<ToolEditionOverviewProps> = ({
     confidence: tool.confidence,
     tool_types: tool.tool_types ?? [],
     tool_version: tool.tool_version ?? '',
-    createdBy: convertCreatedBy(tool) as Option,
+    createdBy: convertCreatedBy(tool) as FieldOption,
     killChainPhases: convertKillChainPhases(tool),
     objectMarking: convertMarkings(tool),
-    x_opencti_workflow_id: convertStatus(t_i18n, tool) as Option,
+    x_opencti_workflow_id: convertStatus(t_i18n, tool) as FieldOption,
     references: [],
   };
 
@@ -339,9 +336,9 @@ const ToolEditionOverview: FunctionComponent<ToolEditionOverviewProps> = ({
             onSubmit={handleSubmitField}
             helperText={<SubscriptionFocus context={context} fieldName="tool_version" />}
           />
-          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced ? <ToolDeletion id={tool.id} /> : <div />}
-          </div>
+          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
+            <ToolDeletion id={tool.id} />
+          </Stack>
           {enableReferences && (
             <CommitMessage
               submitForm={submitForm}

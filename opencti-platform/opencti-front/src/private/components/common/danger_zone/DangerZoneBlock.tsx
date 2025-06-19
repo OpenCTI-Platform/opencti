@@ -63,6 +63,8 @@ const DangerZoneBlock: FunctionComponent<DangerZoneBlockProps> = ({ title, compo
           {currentTitle}
         </Typography>
         {React.cloneElement(component as ReactElement, {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
           disabled: isSensitive && !isAllowed,
           style: {
             borderColor: isSensitive ? hexToRGB(theme.palette.dangerZone.main, 0.5) : undefined,
@@ -76,6 +78,8 @@ const DangerZoneBlock: FunctionComponent<DangerZoneBlockProps> = ({ title, compo
   if (typeof children === 'function') {
     child = children({ disabled: !isAllowed });
   } else {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     child = React.cloneElement(children as ReactElement, { disabled: !isAllowed, isSensitive });
   }
 

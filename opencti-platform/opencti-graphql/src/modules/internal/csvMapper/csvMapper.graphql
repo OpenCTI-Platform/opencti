@@ -9,6 +9,7 @@ type AttributeColumn {
   configuration: AttributeColumnConfiguration
 }
 type AttributeBasedOn {
+  identifier: String
   representations: [String]
 }
 type AttributeRef {
@@ -111,6 +112,22 @@ type CsvMapperSchemaAttribute {
 type CsvMapperSchemaAttributes {
   name: String!
   attributes: [CsvMapperSchemaAttribute!]!
+}
+
+# Ordering
+enum JsonMapperOrdering {
+  name
+  _score
+}
+
+# Relay connections
+type JsonMapperConnection {
+  pageInfo: PageInfo!
+  edges: [JsonMapperEdge!]!
+}
+type JsonMapperEdge {
+  cursor: String!
+  node: JsonMapper!
 }
 
 # Queries

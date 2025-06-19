@@ -64,10 +64,10 @@ const useStyles = makeStyles((theme) => ({
 
 const StixDomainObjectOverview = ({
   stixDomainObject,
-  withoutMarking,
+  withoutMarking = false,
   withPattern = false,
-  displayAssignees,
-  displayParticipants,
+  displayAssignees = false,
+  displayParticipants = false,
   displayConfidence = true,
   displayReliability = true,
   displayOpinions = true,
@@ -182,9 +182,7 @@ const StixDomainObjectOverview = ({
                 {t_i18n('Marking')}
               </Typography>
               <ItemMarkings
-                markingDefinitions={
-                    stixDomainObject.objectMarking ?? []
-                  }
+                markingDefinitions={stixDomainObject.objectMarking ?? []}
               />
             </>
             )}

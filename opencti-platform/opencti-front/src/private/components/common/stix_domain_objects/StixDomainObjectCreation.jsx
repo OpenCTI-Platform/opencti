@@ -5,10 +5,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import MenuItem from '@mui/material/MenuItem';
-import Fab from '@mui/material/Fab';
-import { Add } from '@mui/icons-material';
 import { Select } from '@mui/material';
-import makeStyles from '@mui/styles/makeStyles';
 import { ConnectionHandler } from 'relay-runtime';
 import Alert from '@mui/lab/Alert';
 import { useFormatter } from '../../../../components/i18n';
@@ -119,17 +116,6 @@ const BULK_ENTITIES = [
   'Tool',
   'Vulnerability',
 ];
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles({
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 2000,
-  },
-});
 
 const sharedUpdater = (
   store,
@@ -818,7 +804,6 @@ const StixDomainObjectCreation = ({
   display,
   open,
   speeddial,
-  fabReplaced = false,
   controlledDialStyles = {},
   handleClose,
   paginationKey,
@@ -826,7 +811,6 @@ const StixDomainObjectCreation = ({
   onCompleted,
   isFromBulkRelation,
 }) => {
-  const classes = useStyles();
   const [status, setStatus] = useState({ open: false, type: null });
   const [queryRef, loadQuery] = useQueryLoader(
     stixDomainObjectCreationAllTypesQuery,
@@ -863,7 +847,7 @@ const StixDomainObjectCreation = ({
 
   return (
     <>
-      {fabReplaced && !speeddial && (
+      {!speeddial && (
         <CreateEntityControlledDial
           entityType={stixDomainObjectTypes}
           onOpen={stateHandleOpen}
@@ -872,16 +856,6 @@ const StixDomainObjectCreation = ({
         />
       )}
       <div style={{ display: display ? 'block' : 'none' }}>
-        {!fabReplaced && !speeddial && (
-          <Fab
-            onClick={stateHandleOpen}
-            color="primary"
-            aria-label="Add"
-            className={classes.createButton}
-          >
-            <Add />
-          </Fab>
-        )}
         {isOpen && queryRef && (
           <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
             <StixDomainPanel

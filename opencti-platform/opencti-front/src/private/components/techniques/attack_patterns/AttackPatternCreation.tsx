@@ -6,12 +6,10 @@ import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { AttackPatternsLinesPaginationQuery$variables } from '@components/techniques/__generated__/AttackPatternsLinesPaginationQuery.graphql';
 import ConfidenceField from '@components/common/form/ConfidenceField';
-import useHelper from 'src/utils/hooks/useHelper';
-import { Dialog, DialogContent, DialogTitle, Fab } from '@mui/material';
-import { Add } from '@mui/icons-material';
+import { Dialog, DialogContent, DialogTitle } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -21,11 +19,10 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import type { Theme } from '../../../../components/Theme';
-import { Option } from '../../common/form/ReferenceField';
 import { AttackPatternCreationMutation, AttackPatternCreationMutation$variables } from './__generated__/AttackPatternCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -92,10 +89,10 @@ interface AttackPatternAddInput {
   description: string
   x_mitre_id: string
   confidence: number | undefined
-  createdBy: Option | undefined
-  objectMarking: Option[]
-  killChainPhases: Option[]
-  objectLabel: Option[]
+  createdBy: FieldOption | undefined
+  objectMarking: FieldOption[]
+  killChainPhases: FieldOption[]
+  objectLabel: FieldOption[]
   externalReferences: { value: string }[]
   file: File | undefined
 }
@@ -298,8 +295,6 @@ const AttackPatternCreation = ({
   paginationOptions: AttackPatternsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const [open, setOpen] = useState<boolean>(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -319,8 +314,7 @@ const AttackPatternCreation = ({
   const renderClassic = () => (
     <Drawer
       title={t_i18n('Create an attack pattern')}
-      variant={isFABReplaced ? undefined : DrawerVariant.create}
-      controlledDial={isFABReplaced ? CreateAttackPatternControlledDial : undefined}
+      controlledDial={CreateAttackPatternControlledDial}
     >
       {({ onClose }) => (
         <AttackPatternCreationForm
@@ -337,27 +331,9 @@ const AttackPatternCreation = ({
       display: display ? 'block' : 'none',
     }}
     >
-      {isFABReplaced
-        ? (
-          <div style={{ marginTop: '5px' }}>
-            {CreateAttackPatternControlledDialContextual}
-          </div>
-        ) : (
-          <Fab
-            onClick={handleOpen}
-            color="secondary"
-            aria-label="Add"
-            style={{
-              position: 'fixed',
-              bottom: 30,
-              right: 30,
-              zIndex: 2000,
-            }}
-          >
-            <Add />
-          </Fab>
-        )
-      }
+      <div style={{ marginTop: '5px' }}>
+        {CreateAttackPatternControlledDialContextual}
+      </div>
       <Dialog open={open} onClose={handleClose} slotProps={{ paper: { elevation: 1 } }}>
         <DialogTitle>{t_i18n('Create an attack pattern')}</DialogTitle>
         <DialogContent>

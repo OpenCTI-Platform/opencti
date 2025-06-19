@@ -25,7 +25,6 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
-import useHelper from '../../../utils/hooks/useHelper';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY_THREAT_ACTORS_INDIVIDUAL = 'threatActorsIndividuals';
@@ -58,8 +57,6 @@ const ThreatActorsIndividual = () => {
     queryPaginationOptions,
   );
 
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const renderCards = () => {
     const {
       numberOfElements,
@@ -100,7 +97,7 @@ const ThreatActorsIndividual = () => {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         handleChangeView={helpers.handleChangeView}
-        createButton={isFABReplaced && (
+        createButton={(
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <ThreatActorIndividualCreation paginationOptions={queryPaginationOptions} />
           </Security>
@@ -184,7 +181,7 @@ const ThreatActorsIndividual = () => {
                 </Tooltip>
               </ToggleButton>),
             ]}
-            createButton={isFABReplaced && (
+            createButton={(
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <ThreatActorIndividualCreation paginationOptions={queryPaginationOptions} />
               </Security>
@@ -199,11 +196,6 @@ const ThreatActorsIndividual = () => {
     <>
       <Breadcrumbs elements={[{ label: t_i18n('Threats') }, { label: t_i18n('Threat actors (individual)'), current: true }]} />
       {viewStorage.view !== 'lines' ? renderCards() : renderList()}
-      {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <ThreatActorIndividualCreation paginationOptions={queryPaginationOptions} />
-        </Security>
-      )}
     </>
   );
 };

@@ -1,4 +1,4 @@
-import React, { CSSProperties, ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import React, { CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
 import { graphql, PreloadedQuery, useFragment } from 'react-relay';
 import { useTheme } from '@mui/material/styles';
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
@@ -157,6 +157,9 @@ const graphContainerKnowledgeObjectsFragment = graphql`
               name
             }
             ... on Organization {
+              name
+            }
+            ... on SecurityPlatform {
               name
             }
             ... on Sector {
@@ -452,7 +455,6 @@ interface GraphContainerKnowledgeComponentProps {
   onPositionsChanged: (positions: OctiGraphPositions) => void
   containerHeaderProps: {
     mode: string
-    PopoverComponent: ReactNode
     link: string
     modes: string[]
   }
@@ -471,7 +473,6 @@ const GraphContainerKnowledgeComponent = ({
     link,
     mode,
     modes,
-    PopoverComponent,
   },
 }: GraphContainerKnowledgeComponentProps) => {
   const ref = useRef(null);
@@ -510,7 +511,6 @@ const GraphContainerKnowledgeComponent = ({
         enableSuggestions
         container={dataHeader}
         currentMode={mode}
-        PopoverComponent={PopoverComponent}
         link={link}
         modes={modes}
         onApplied={(suggestions: ObjectToParse[]) => {

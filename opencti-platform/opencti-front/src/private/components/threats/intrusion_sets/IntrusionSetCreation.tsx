@@ -5,7 +5,7 @@ import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -15,15 +15,13 @@ import MarkdownField from '../../../../components/fields/MarkdownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { insertNode } from '../../../../utils/store';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
-import { Option } from '../../common/form/ReferenceField';
 import { IntrusionSetCreationMutation, IntrusionSetCreationMutation$variables } from './__generated__/IntrusionSetCreationMutation.graphql';
 import { IntrusionSetsCardsPaginationQuery$variables } from './__generated__/IntrusionSetsCardsPaginationQuery.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import useHelper from '../../../../utils/hooks/useHelper';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import { splitMultilines } from '../../../../utils/String';
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
@@ -55,9 +53,9 @@ interface IntrusionSetAddInput {
   name: string;
   description: string;
   confidence: number | null;
-  createdBy: Option | null;
-  objectMarking: Option[];
-  objectLabel: Option[];
+  createdBy: FieldOption | null;
+  objectMarking: FieldOption[];
+  objectLabel: FieldOption[];
   externalReferences: { value: string }[];
   file: File | null;
 }
@@ -308,7 +306,6 @@ const IntrusionSetCreation = ({
 }: {
   paginationOptions: IntrusionSetsCardsPaginationQuery$variables;
 }) => {
-  const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);
 
@@ -319,7 +316,6 @@ const IntrusionSetCreation = ({
     'intrusionSetAdd',
   );
 
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const CreateIntrusionSetControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType='Intrusion-Set' {...props} />
   );
@@ -327,8 +323,7 @@ const IntrusionSetCreation = ({
   return (
     <Drawer
       title={t_i18n('Create an intrusion set')}
-      variant={isFABReplaced ? undefined : DrawerVariant.create}
-      controlledDial={isFABReplaced ? CreateIntrusionSetControlledDial : undefined}
+      controlledDial={CreateIntrusionSetControlledDial}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
     >
       {({ onClose }) => (

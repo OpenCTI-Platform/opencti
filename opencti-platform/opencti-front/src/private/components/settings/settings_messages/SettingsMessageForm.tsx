@@ -7,14 +7,13 @@ import * as Yup from 'yup';
 import Button from '@mui/material/Button';
 import Drawer from '@components/common/drawer/Drawer';
 import ObjectMembersField from '@components/common/form/ObjectMembersField';
-import { Option } from '@components/common/form/ReferenceField';
 import ColorPickerField from '../../../../components/ColorPickerField';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { SettingsMessagesLine_settingsMessage$data } from './__generated__/SettingsMessagesLine_settingsMessage.graphql';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -56,7 +55,7 @@ type SettingsMessageInput = Partial<
 Pick<
 SettingsMessagesLine_settingsMessage$data,
 'id' | 'activated' | 'message' | 'dismissible'
-> & { recipients: Option[] }
+> & { recipients: FieldOption[] }
 >;
 
 const SettingsMessageForm = ({

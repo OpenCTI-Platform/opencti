@@ -1,12 +1,12 @@
-import { AutoCompleteOption } from './field';
+import { FieldOption } from './field';
 
 export const INPUT_AUTHORIZED_MEMBERS = 'restricted_members';
 
 export type AccessRight = 'none' | 'view' | 'edit' | 'admin';
 
-export interface AuthorizedMemberOption extends AutoCompleteOption {
+export interface AuthorizedMemberOption extends FieldOption {
   accessRight: AccessRight
-  groupsRestriction: AutoCompleteOption[]
+  groupsRestriction: FieldOption[]
 }
 
 export const ALL_MEMBERS_AUTHORIZED_CONFIG = {

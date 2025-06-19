@@ -19,7 +19,7 @@ import { AccessRight, ALL_MEMBERS_AUTHORIZED_CONFIG, AuthorizedMemberOption, Cre
 import SwitchField from '../../../../components/fields/SwitchField';
 import useAuth from '../../../../utils/hooks/useAuth';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
-import { AutoCompleteOption, fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 
 /**
@@ -51,7 +51,7 @@ interface AuthorizedMembersFieldProps
 // Type of data for internal form, not exposed to others.
 interface AuthorizedMembersFieldInternalValue {
   applyAccesses: boolean;
-  newAccessMember: AutoCompleteOption | null;
+  newAccessMember: FieldOption | null;
   newAccessRight: AccessRight;
   allAccessRight: AccessRight;
   creatorAccessRight: AccessRight;

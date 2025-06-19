@@ -2,17 +2,12 @@ import React from 'react';
 import { graphql, createFragmentContainer } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
-import useHelper from '../../../../utils/hooks/useHelper';
 import GroupingDetails from './GroupingDetails';
-import GroupingEdition from './GroupingEdition';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../external_references/StixCoreObjectExternalReferences';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
-import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -24,11 +19,8 @@ const useStyles = makeStyles(() => ({
 
 const GroupingComponent = ({ grouping }) => {
   const classes = useStyles();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const overviewLayoutCustomization = useOverviewLayoutCustomization(grouping.entity_type);
-  const { canEdit } = useGetCurrentUserAccessRight(grouping.currentUserAccessRight);
 
   return (
     <div data-testid='grouping-details-page'>
@@ -85,11 +77,6 @@ const GroupingComponent = ({ grouping }) => {
           })
         }
       </Grid>
-      {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={canEdit}>
-          <GroupingEdition groupingId={grouping.id} />
-        </Security>
-      )}
     </div>
   );
 };

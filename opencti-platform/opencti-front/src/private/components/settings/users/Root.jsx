@@ -7,7 +7,6 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import makeStyles from '@mui/styles/makeStyles';
-import UserPopover, { userEditionQuery } from './UserPopover';
 import AccessesMenu from '../AccessesMenu';
 import Security from '../../../../utils/Security';
 import { VIRTUAL_ORGANIZATION_ADMIN, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
@@ -16,20 +15,22 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import User from './User';
 import UserAnalytics from './UserAnalytics';
 import { useFormatter } from '../../../../components/i18n';
-import useAuth from '../../../../utils/hooks/useAuth';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import UserEdition from './UserEdition';
-import useHelper from '../../../../utils/hooks/useHelper';
+
+const userEditionQuery = graphql`
+  query RootUserEditionQuery($id: String!) {
+    user(id: $id) {
+      ...UserEdition_user
+    }
+  }
+`;
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles(() => ({
   title: {
     float: 'left',
-  },
-  popover: {
-    float: 'left',
-    marginTop: '-13px',
   },
 }));
 
@@ -96,10 +97,7 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
-  const { me } = useAuth();
   const { user: data } = usePreloadedQuery(userQuery, queryRef);
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const userEditionData = useLazyLoadQuery(
     userEditionQuery,
     { id: userId },
@@ -123,13 +121,6 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
           >
             {data.name}
           </Typography>
-          {!isFABReplaced && <div className={classes.popover}>
-            <UserPopover
-              userId={data.id}
-              userEditionData={userEditionData}
-              disabled={data.id === me.id}
-            />
-          </div>}
           <UserEdition userEditionData={userEditionData} />
           <div className="clearfix" />
           <Box

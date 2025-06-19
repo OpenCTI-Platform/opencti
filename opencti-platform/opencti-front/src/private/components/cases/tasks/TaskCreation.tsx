@@ -14,12 +14,11 @@ import MarkdownField from '../../../../components/fields/MarkdownField';
 import TextField from '../../../../components/TextField';
 import type { Theme } from '../../../../components/Theme';
 import { handleErrorInForm } from '../../../../relay/environment';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import { Option } from '../../common/form/ReferenceField';
 import { TaskCreationMutation, TaskCreationMutation$variables } from './__generated__/TaskCreationMutation.graphql';
 import { insertNode } from '../../../../utils/store';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -62,9 +61,9 @@ interface FormikTaskAddInput {
   name: string
   due_date?: Date | null
   description?: string
-  objectAssignee?: Option[]
-  objectLabel?: Option[]
-  objectMarking: Option[]
+  objectAssignee?: FieldOption[]
+  objectLabel?: FieldOption[]
+  objectMarking: FieldOption[]
 }
 
 interface TaskCreationProps {

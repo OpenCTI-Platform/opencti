@@ -1,4 +1,4 @@
-import React, { FunctionComponent, MouseEvent } from 'react';
+import React, { FunctionComponent, MouseEvent, RefObject, useRef } from 'react';
 import { ArrowDropDown, ArrowDropUp, MoreVert } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import SimpleDraggrable from 'react-draggable';
@@ -71,6 +71,7 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
   sortBy,
   orderAsc,
 }) => {
+  const draggableRef = useRef<HTMLDivElement>(null);
   const classes = useStyles({ column });
 
   const {
@@ -137,6 +138,7 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
 
       {variant !== DataTableVariant.inline && variant !== DataTableVariant.widget && (
         <SimpleDraggrable
+          nodeRef={draggableRef as unknown as RefObject<HTMLDivElement>}
           position={{ x: 3, y: -3 }}
           axis="x"
           onStop={(_, { lastX }) => {
@@ -172,7 +174,7 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
             }
           }}
         >
-          <div className={classes.draggable} />
+          <div ref={draggableRef} className={classes.draggable} />
         </SimpleDraggrable>
       )}
     </div>

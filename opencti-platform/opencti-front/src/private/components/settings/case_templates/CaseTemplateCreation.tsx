@@ -4,8 +4,7 @@ import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import * as Yup from 'yup';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
-import useHelper from 'src/utils/hooks/useHelper';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
@@ -43,8 +42,6 @@ const CaseTemplateCreation: FunctionComponent<CaseTemplateCreationProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const caseTemplateValidation = Yup.object().shape({
     name: Yup.string().required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
@@ -90,8 +87,7 @@ const CaseTemplateCreation: FunctionComponent<CaseTemplateCreationProps> = ({
   return (
     <Drawer
       title={t_i18n('Create a case template')}
-      variant={isFABReplaced ? undefined : DrawerVariant.createWithPanel}
-      controlledDial={isFABReplaced ? CreateCaseTemplateControlledDial : undefined}
+      controlledDial={CreateCaseTemplateControlledDial}
     >
       {({ onClose }) => (
         <Formik

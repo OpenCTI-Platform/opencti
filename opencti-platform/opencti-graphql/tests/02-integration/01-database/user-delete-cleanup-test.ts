@@ -5,10 +5,10 @@ import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
 import { addNotification, addTrigger, myNotificationsFind, triggerGet } from '../../../src/modules/notification/notification-domain';
 import type { MemberAccessInput, TriggerLiveAddInput, WorkspaceAddInput } from '../../../src/generated/graphql';
-import { addUser, assignGroupToUser, findById as findUserById, isUserTheLastAdmin, userDelete } from '../../../src/domain/user';
-import { addWorkspace, workspaceEditAuthorizedMembers, findById as findWorkspaceById } from '../../../src/modules/workspace/workspace-domain';
-import type { NotificationAddInput } from '../../../src/modules/notification/notification-types';
 import { TriggerEventType, TriggerType } from '../../../src/generated/graphql';
+import { addUser, assignGroupToUser, findById as findUserById, isUserTheLastAdmin, userDelete } from '../../../src/domain/user';
+import { addWorkspace, findById as findWorkspaceById, workspaceEditAuthorizedMembers } from '../../../src/modules/workspace/workspace-domain';
+import type { NotificationAddInput } from '../../../src/modules/notification/notification-types';
 
 /**
  * Create a new user in elastic for this test purpose using domain APIs only.
@@ -56,7 +56,7 @@ describe('Testing user delete on cascade [issue/3720]', () => {
     // GIVEN a user
     // AND an admin ADMIN_USER having rights to create/delete users
     const adminContext: AuthContext = { user: ADMIN_USER, tracing: undefined, source: 'integration-test', otp_mandatory: false, user_inside_platform_organization: false };
-    const userToDeletedAuth = await createUserForTest(adminContext, ADMIN_USER, 'iwillbegonesoon');
+    const userToDeletedAuth = await createUserForTest(adminContext, ADMIN_USER, 'iwillbegonesoon') as AuthUser;
     const userToDeleteContext: AuthContext = { user: userToDeletedAuth, tracing: undefined, source: 'integration-test', otp_mandatory: false, user_inside_platform_organization: false };
 
     // AND user having a Trigger

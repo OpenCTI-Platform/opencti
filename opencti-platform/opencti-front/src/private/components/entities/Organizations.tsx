@@ -4,7 +4,6 @@ import {
   OrganizationsLinesPaginationQuery$variables,
 } from '@components/entities/organizations/__generated__/OrganizationsLinesPaginationQuery.graphql';
 import { OrganizationLineDummy } from '@components/entities/organizations/OrganizationLine';
-import useHelper from 'src/utils/hooks/useHelper';
 import ListLines from '../../../components/list_lines/ListLines';
 import OrganizationsLines, { organizationsLinesQuery } from './organizations/OrganizationsLines';
 import OrganizationCreation from './organizations/OrganizationCreation';
@@ -21,8 +20,6 @@ const LOCAL_STORAGE_KEY = 'organizations';
 
 const Organizations = () => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Organizations | Entities'));
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<OrganizationsLinesPaginationQuery$variables>(
@@ -94,9 +91,11 @@ const Organizations = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
-        createButton={isFABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <OrganizationCreation paginationOptions={paginationOptions} />
-        </Security>}
+        createButton={(
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <OrganizationCreation paginationOptions={paginationOptions} />
+          </Security>
+        )}
       >
         {queryRef && (
           <React.Suspense
@@ -130,11 +129,6 @@ const Organizations = () => {
     <>
       <Breadcrumbs elements={[{ label: t_i18n('Entities') }, { label: t_i18n('Organizations'), current: true }]} />
       {renderLines()}
-      {!isFABReplaced
-        && <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <OrganizationCreation paginationOptions={paginationOptions} />
-        </Security>
-      }
     </>
   );
 };

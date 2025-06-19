@@ -1,4 +1,4 @@
-import React, { FunctionComponent, ReactNode, useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { union } from 'ramda';
 import { Field } from 'formik';
 import { CampaignOutlined } from '@mui/icons-material';
@@ -13,6 +13,7 @@ import AutocompleteField from '../../../../../components/AutocompleteField';
 import AlertLiveCreation from './AlertLiveCreation';
 import { AlertLiveCreationActivityMutation$data } from './__generated__/AlertLiveCreationActivityMutation.graphql';
 import { AlertingPaginationQuery$variables } from './__generated__/AlertingPaginationQuery.graphql';
+import { FieldOption } from '../../../../../utils/field';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -64,13 +65,6 @@ interface TriggersFieldProps {
   }[];
   helpertext?: string;
   paginationOptions?: AlertingPaginationQuery$variables;
-}
-
-interface Option {
-  value: string;
-  label: string;
-  color?: string;
-  [key: string]: ReactNode;
 }
 
 const AlertsField: FunctionComponent<TriggersFieldProps> = ({
@@ -155,7 +149,7 @@ const AlertsField: FunctionComponent<TriggersFieldProps> = ({
         onChange={typeof onChange === 'function' ? onChange : null}
         renderOption={(
           props: React.HTMLAttributes<HTMLLIElement>,
-          option: Option,
+          option: FieldOption,
         ) => (
           <li {...props}>
             <div className={classes.icon} style={{ color: option.color }}>

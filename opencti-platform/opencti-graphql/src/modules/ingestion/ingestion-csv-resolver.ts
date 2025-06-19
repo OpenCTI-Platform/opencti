@@ -3,10 +3,12 @@ import { batchCreator } from '../../domain/user';
 import type { Resolvers } from '../../generated/graphql';
 import {
   addIngestionCsv,
+  csvFeedAddInputFromImport,
+  csvFeedGetCsvMapper,
+  csvFeedMapperExport,
   deleteIngestionCsv,
   findAllPaginated,
   findById,
-  findCsvMapperForIngestionById,
   ingestionCsvEditField,
   ingestionCsvResetState,
   testCsvIngestionMapping
@@ -18,10 +20,12 @@ const ingestionCsvResolvers: Resolvers = {
   Query: {
     ingestionCsv: (_, { id }, context) => findById(context, context.user, id),
     ingestionCsvs: (_, args, context) => findAllPaginated(context, context.user, args),
+    csvFeedAddInputFromImport: (_, { file }, context) => csvFeedAddInputFromImport(context, context.user, file),
   },
   IngestionCsv: {
     user: (ingestionCsv, _, context) => creatorLoader.load(ingestionCsv.user_id, context, context.user),
-    csvMapper: (ingestionCsv, _, context) => findCsvMapperForIngestionById(context, context.user, ingestionCsv.csv_mapper_id),
+    csvMapper: (ingestionCsv, _, context) => csvFeedGetCsvMapper(context, ingestionCsv),
+    toConfigurationExport: (ingestionCsv, _, context) => csvFeedMapperExport(context, context.user, ingestionCsv)
   },
   Mutation: {
     ingestionCsvTester: (_, { input }, context) => {

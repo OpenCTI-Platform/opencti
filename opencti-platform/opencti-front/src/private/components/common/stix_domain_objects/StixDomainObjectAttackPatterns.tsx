@@ -17,9 +17,10 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 
 interface StixDomainObjectAttackPatternsProps {
   stixDomainObjectId: string,
-  defaultStartTime: string,
-  defaultStopTime: string,
+  defaultStartTime?: string,
+  defaultStopTime?: string,
   disableExport: boolean,
+  entityType?: string,
 }
 
 const StixDomainObjectAttackPatterns: FunctionComponent<StixDomainObjectAttackPatternsProps> = ({
@@ -27,6 +28,7 @@ const StixDomainObjectAttackPatterns: FunctionComponent<StixDomainObjectAttackPa
   defaultStartTime,
   defaultStopTime,
   disableExport,
+  entityType,
 }) => {
   const LOCAL_STORAGE_KEY = `attack-patterns-${stixDomainObjectId}`;
   const {
@@ -86,13 +88,14 @@ const StixDomainObjectAttackPatterns: FunctionComponent<StixDomainObjectAttackPa
             stixDomainObjectId={stixDomainObjectId}
             filters={filters}
             searchTerm={searchTerm}
-            view={view}
+            view={entityType ? 'matrix' : view}
             defaultStartTime={defaultStartTime}
             defaultStopTime={defaultStopTime}
             disableExport={disableExport}
             openExports={openExports}
             availableFilterKeys={availableFilterKeys}
             storageKey={LOCAL_STORAGE_KEY}
+            entityType={entityType}
           />
         </React.Suspense>
       )}

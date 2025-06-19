@@ -3,24 +3,26 @@ import { TargetEntity } from '@components/common/stix_core_relationships/StixCor
 import {
   StixDomainObjectAttackPatternsKillChainContainer_data$data,
 } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainContainer_data.graphql';
-import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix';
+import AttackPatternsMatrix from '../../techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrix';
 
 interface StixDomainObjectAttackPatternsKillChainMatrixProps {
   searchTerm: string;
   data: StixDomainObjectAttackPatternsKillChainContainer_data$data;
-  handleToggleColorsReversed: () => void;
-  currentColorsReversed: boolean;
   handleAdd: (entity: TargetEntity) => void;
   selectedKillChain: string;
+  entityType?: string;
+  attackPatternIdsToOverlap?: string[];
+  isModeOnlyActive: boolean;
 }
 const StixDomainObjectAttackPatternsKillChainMatrix: FunctionComponent<StixDomainObjectAttackPatternsKillChainMatrixProps> = (
   {
     searchTerm,
     data,
-    handleToggleColorsReversed,
-    currentColorsReversed,
     handleAdd,
     selectedKillChain,
+    entityType,
+    attackPatternIdsToOverlap,
+    isModeOnlyActive,
   },
 ) => {
   const attackPatterns = (data.attackPatterns?.edges ?? []).map((n) => n.node);
@@ -28,12 +30,11 @@ const StixDomainObjectAttackPatternsKillChainMatrix: FunctionComponent<StixDomai
     <AttackPatternsMatrix
       attackPatterns={attackPatterns}
       searchTerm={searchTerm}
-      marginRight={true}
-      handleToggleColorsReversed={handleToggleColorsReversed}
-      currentColorsReversed={currentColorsReversed}
-      noBottomBar={true}
+      entityType={entityType}
       handleAdd={handleAdd}
       selectedKillChain={selectedKillChain}
+      attackPatternIdsToOverlap={attackPatternIdsToOverlap}
+      isModeOnlyActive={isModeOnlyActive}
     />
   );
 };

@@ -1,5 +1,4 @@
 import React, { FunctionComponent } from 'react';
-import useHelper from 'src/utils/hooks/useHelper';
 import { graphql } from 'react-relay';
 import { NotesLines_data$data } from '@components/analyses/__generated__/NotesLines_data.graphql';
 import { NotesLinesPaginationQuery, NotesLinesPaginationQuery$variables } from '@components/analyses/__generated__/NotesLinesPaginationQuery.graphql';
@@ -144,8 +143,6 @@ const Notes: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Notes | Analyses'));
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -216,17 +213,12 @@ const Notes: FunctionComponent = () => {
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={notesLineFragment}
           exportContext={{ entity_type: 'Note' }}
-          createButton={isFABReplaced && (
+          createButton={(
             <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
               <NoteCreation paginationOptions={queryPaginationOptions} />
             </Security>
           )}
         />
-      )}
-      {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
-          <NoteCreation paginationOptions={queryPaginationOptions} />
-        </Security>
       )}
     </>
   );

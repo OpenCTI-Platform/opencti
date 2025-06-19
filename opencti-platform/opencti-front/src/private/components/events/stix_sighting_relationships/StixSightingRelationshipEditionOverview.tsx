@@ -20,11 +20,10 @@ import MarkdownField from '../../../../components/fields/MarkdownField';
 import StatusField from '../../common/form/StatusField';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useIsEnforceReference, useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { adaptFieldValue } from '../../../../utils/String';
-import { Option } from '../../common/form/ReferenceField';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import {
   StixSightingRelationshipEditionOverview_stixSightingRelationship$data,
@@ -193,11 +192,11 @@ interface StixSightingRelationshipAddInput {
   last_seen: null | Date;
   description: string | null,
   x_opencti_negative: boolean | null,
-  x_opencti_workflow_id: Option;
-  createdBy: Option | undefined;
-  objectMarking: Option[];
+  x_opencti_workflow_id: FieldOption;
+  createdBy: FieldOption | undefined;
+  objectMarking: FieldOption[];
   message?: string
-  references?: Option[]
+  references?: FieldOption[]
 }
 
 const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<StixSightingRelationshipEditionOverviewProps, 'queryRef'>> = ({
@@ -278,8 +277,8 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
     last_seen: buildDate(stixSightingRelationship.last_seen),
     description: stixSightingRelationship.description ?? null,
     x_opencti_negative: stixSightingRelationship.x_opencti_negative,
-    x_opencti_workflow_id: convertStatus(t_i18n, stixSightingRelationship) as Option,
-    createdBy: convertCreatedBy(stixSightingRelationship) as Option,
+    x_opencti_workflow_id: convertStatus(t_i18n, stixSightingRelationship) as FieldOption,
+    createdBy: convertCreatedBy(stixSightingRelationship) as FieldOption,
     objectMarking: convertMarkings(stixSightingRelationship),
     references: [],
   };

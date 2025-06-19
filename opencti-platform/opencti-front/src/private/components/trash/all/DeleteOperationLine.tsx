@@ -134,7 +134,11 @@ export const DeleteOperationLine: React.FC<DeleteOperationLineComponentProps> = 
               {fldt(data.created_at)}
             </Box>
             <Box sx={{ ...cellSx, width: dataColumns.objectMarking.width ?? 'inherit' }}>
-              <ItemMarkings variant="inList" markingDefinitions={data.objectMarking ?? []} limit={1}/>
+              <ItemMarkings
+                variant="inList"
+                markingDefinitions={data.objectMarking ?? []}
+                limit={1}
+              />
             </Box>
           </div>
         }

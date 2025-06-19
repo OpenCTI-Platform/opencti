@@ -1,13 +1,15 @@
 import makeStyles from '@mui/styles/makeStyles';
 import Alert from '@mui/material/Alert';
-import React from 'react';
+import React, { useContext } from 'react';
 import IngestionMenu from '@components/data/IngestionMenu';
 import IngestionCsvLines, { ingestionCsvLinesQuery } from '@components/data/ingestionCsv/IngestionCsvLines';
 import { IngestionCsvLinesPaginationQuery, IngestionCsvLinesPaginationQuery$variables } from '@components/data/ingestionCsv/__generated__/IngestionCsvLinesPaginationQuery.graphql';
 import { IngestionCsvLineDummy } from '@components/data/ingestionCsv/IngestionCsvLine';
 import { IngestionCsvCreationContainer } from '@components/data/ingestionCsv/IngestionCsvCreation';
+import IngestionCsvImport from '@components/data/ingestionCsv/IngestionCsvImport';
+import { IngestionCsvCreationContainerDeprecated } from '@components/data/ingestionCsv/IngestionCsvCreationDeprecated';
 import { useFormatter } from '../../../components/i18n';
-import useAuth from '../../../utils/hooks/useAuth';
+import useAuth, { UserContext } from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import { INGESTION_MANAGER } from '../../../utils/platformModulesHelper';
 import ListLines from '../../../components/list_lines/ListLines';
@@ -16,6 +18,9 @@ import { INGESTION_SETINGESTIONS } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import useHelper from '../../../utils/hooks/useHelper';
+import { isNotEmptyField } from '../../../utils/utils';
+import GradientButton from '../../../components/GradientButton';
 
 const LOCAL_STORAGE_KEY = 'ingestionCsvs';
 
@@ -30,8 +35,14 @@ const useStyles = makeStyles(() => ({
 
 const IngestionCsv = () => {
   const classes = useStyles();
+  const { settings } = useContext(UserContext);
+  const importFromHubUrl = isNotEmptyField(settings?.platform_xtmhub_url)
+    ? `${settings.platform_xtmhub_url}/redirect/octi_integration_feeds?octi_instance_id=${settings.id}`
+    : '';
+
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
+  const { isFeatureEnable } = useHelper();
   setTitle(t_i18n('CSV Feeds | Ingestion | Data'));
   const { platformModuleHelpers } = useAuth();
   const {
@@ -96,12 +107,43 @@ const IngestionCsv = () => {
         keyword={searchTerm}
         createButton={
           <Security needs={[INGESTION_SETINGESTIONS]}>
-            <IngestionCsvCreationContainer
-              open={false}
-              handleClose={() => { }}
-              paginationOptions={paginationOptions}
-              isDuplicated={false}
-            />
+            <>
+              {isFeatureEnable('CSV_FEED')
+                && <IngestionCsvImport
+                  paginationOptions={paginationOptions}
+                   />}
+              {isFeatureEnable('CSV_FEED') && isNotEmptyField(importFromHubUrl) && (
+                <GradientButton
+                  size="small"
+                  sx={{ marginLeft: 1 }}
+                  href={importFromHubUrl}
+                  target="_blank"
+                  title={t_i18n('Import from Hub')}
+                >
+                  {t_i18n('Import from Hub')}
+                </GradientButton>
+              )}
+              {isFeatureEnable('CSV_FEED')
+                ? <IngestionCsvCreationContainer
+                    paginationOptions={paginationOptions}
+                    drawerSettings={
+                {
+                  title: t_i18n('Create a CSV Feed'),
+                  button: t_i18n('Create'),
+                }
+                }
+                  /> : <IngestionCsvCreationContainerDeprecated
+                    paginationOptions={paginationOptions}
+                    drawerSettings={
+                    {
+                      title: t_i18n('Create a CSV Feed'),
+                      button: t_i18n('Create'),
+                    }
+                  }
+                       />
+              }
+
+            </>
           </Security>
         }
       >

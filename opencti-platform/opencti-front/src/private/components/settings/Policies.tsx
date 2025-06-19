@@ -13,6 +13,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { VpnKeyOutlined } from '@mui/icons-material';
 import ListItemText from '@mui/material/ListItemText';
+import GroupSetDefaultGroupForIngestionUsers from '@components/settings/groups/GroupSetDefaultGroupForIngestionUsers';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import Dialog from '@mui/material/Dialog';
@@ -25,7 +26,6 @@ import DangerZoneBlock from '../common/danger_zone/DangerZoneBlock';
 import AccessesMenu from './AccessesMenu';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
 import { useFormatter } from '../../../components/i18n';
-import { Option } from '../common/form/ReferenceField';
 import SwitchField from '../../../components/fields/SwitchField';
 import TextField from '../../../components/TextField';
 import { Policies$key } from './__generated__/Policies.graphql';
@@ -38,9 +38,11 @@ import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import ItemBoolean from '../../../components/ItemBoolean';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
+import useHelper from '../../../utils/hooks/useHelper';
 import Transition from '../../../components/Transition';
 import type { Theme } from '../../../components/Theme';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { FieldOption } from '../../../utils/field';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -126,6 +128,7 @@ interface PoliciesComponentProps {
 const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
   queryRef,
 }) => {
+  const { isFeatureEnable } = useHelper();
   const isEnterpriseEdition = useEnterpriseEdition();
   const [openPlatformOrganizationChanges, setOpenPlatformOrganizationChanges] = useState<boolean>(false);
 
@@ -148,7 +151,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Policies | Security | Settings'));
-  const handleSubmitField = (name: string, value: string | string[] | Option | null) => {
+  const handleSubmitField = (name: string, value: string | string[] | FieldOption | null) => {
     policiesValidation()
       .validateAt(name, { [name]: value })
       .then(() => {
@@ -157,7 +160,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
             id: settings.id,
             input: {
               key: name,
-              value: ((value as Option)?.value ?? value) || '',
+              value: ((value as FieldOption)?.value ?? value) || '',
             },
           },
         });
@@ -179,6 +182,8 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
     platform_banner_level: settings.platform_banner_level,
     platform_banner_text: settings.platform_banner_text,
     otp_mandatory: settings.otp_mandatory,
+    default_group_for_ingestion_users: null,
+
   };
   const authProviders = settings.platform_providers;
   return (
@@ -276,7 +281,10 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n('Authentication strategies')}
                     </Typography>
-                    <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+                    <Paper style={{
+                      marginTop: 10,
+                    }} classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined"
+                    >
                       <List style={{ marginTop: -20 }}>
                         {authProviders.map((provider) => (
                           <ListItem key={provider.strategy} divider={true}>
@@ -419,7 +427,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                         component={TextField}
                         type="number"
                         variant="standard"
-                        style={{ marginTop: 20 }}
+                        sx={{ marginTop: 20 }}
                         name="password_policy_min_uppercase"
                         label={t_i18n(
                           'Number of uppercase chars must be greater or equals to',
@@ -434,6 +442,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                       />
                     </Paper>
                   </Grid>
+                  {isFeatureEnable('CSV_FEED') && <GroupSetDefaultGroupForIngestionUsers/>}
                   <Grid item xs={6}>
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n('Login messages')}

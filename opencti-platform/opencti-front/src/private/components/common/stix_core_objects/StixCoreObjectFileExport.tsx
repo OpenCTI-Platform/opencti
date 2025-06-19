@@ -16,7 +16,6 @@ import {
 } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContentFilesUploadStixCoreObjectMutation.graphql';
 import { stixCoreObjectContentFilesUploadStixCoreObjectMutation } from '@components/common/stix_core_objects/StixCoreObjectContentFiles';
 import axios from 'axios';
-import { Option } from '@components/common/form/ReferenceField';
 import StixCoreObjectAskAI from '@components/common/stix_core_objects/StixCoreObjectAskAI';
 import { fileManagerExportMutation } from '../files/FileManager';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -28,6 +27,7 @@ import { htmlToPdf, htmlToPdfReport } from '../../../../utils/htmlToPdf/htmlToPd
 import useFileFromTemplate from '../../../../utils/outcome_template/engine/useFileFromTemplate';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import useGranted, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
+import { FieldOption } from '../../../../utils/field';
 
 export const BUILT_IN_HTML_TO_PDF = {
   value: 'builtInHtmlToPdf',
@@ -207,7 +207,7 @@ const StixCoreObjectFileExportComponent = ({
     })),
   });
 
-  const templateOptions: Option[] = (stixCoreObject?.fintelTemplates ?? []).map((t) => ({
+  const templateOptions: FieldOption[] = (stixCoreObject?.fintelTemplates ?? []).map((t) => ({
     value: t.id,
     label: t.name,
   }));
@@ -257,7 +257,6 @@ const StixCoreObjectFileExportComponent = ({
     if ((!values.fileToExport && !values.template) || !values.exportFileName) {
       throw Error(t_i18n('Invalid form to export a template'));
     }
-
     const { setSubmitting, resetForm } = helpers;
     const uploadFile = (variables: StixCoreObjectContentFilesUploadStixCoreObjectMutation$variables) => {
       commitUploadFile({
@@ -304,7 +303,7 @@ const StixCoreObjectFileExportComponent = ({
           const templateName = values.template.label;
           const fileName = `${values.exportFileName}.pdf`;
           const fileMarkingNames = values.fileMarkings.map(({ label }) => label);
-          const PDF = await htmlToPdfReport(scoName ?? '', templateContent, templateName, fileMarkingNames);
+          const PDF = await htmlToPdfReport(scoName ?? '', templateContent, templateName, fileMarkingNames, values.fintelDesign?.value);
           PDF.getBlob((blob) => {
             uploadFile({
               id: scoId,
@@ -330,7 +329,7 @@ const StixCoreObjectFileExportComponent = ({
         const fileName = `${values.exportFileName}.pdf`;
         const isFromTemplate = fileId.startsWith('fromTemplate');
         const PDF = isFromTemplate
-          ? await htmlToPdfReport(scoName ?? '', fileData, name, fileMarkingNames)
+          ? await htmlToPdfReport(scoName ?? '', fileData, name, fileMarkingNames, values.fintelDesign?.value)
           : htmlToPdf(fileId, fileData);
         PDF.getBlob((blob) => {
           uploadFile({

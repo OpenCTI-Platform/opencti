@@ -4,6 +4,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { useTheme } from '@mui/styles';
+import { Stack } from '@mui/material';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -21,7 +22,6 @@ import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import ThreatActorGroupDeletion from './ThreatActorGroupDeletion';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const ThreatActorGroupMutationFieldPatch = graphql`
   mutation ThreatActorGroupEditionOverviewFieldPatchMutation(
@@ -90,8 +90,6 @@ const THREAT_ACTOR_GROUP_TYPE = 'Threat-Actor-Group';
 const ThreatActorGroupEditionOverviewComponent = (props) => {
   const { threatActorGroup, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const theme = useTheme();
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(THREAT_ACTOR_GROUP_TYPE);
@@ -295,13 +293,10 @@ const ThreatActorGroupEditionOverviewComponent = (props) => {
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced
-              ? <ThreatActorGroupDeletion
-                  id={threatActorGroup.id}
-                />
-              : <div />
-            }
+          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
+            <ThreatActorGroupDeletion
+              id={threatActorGroup.id}
+            />
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
@@ -312,7 +307,7 @@ const ThreatActorGroupEditionOverviewComponent = (props) => {
                 id={threatActorGroup.id}
               />
             )}
-          </div>
+          </Stack>
         </Form>
       )}
     </Formik>

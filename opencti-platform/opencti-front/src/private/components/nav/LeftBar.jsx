@@ -35,6 +35,7 @@ import {
   PersonOutlined,
   PlaceOutlined,
   PublicOutlined,
+  SecurityOutlined,
   SourceOutlined,
   SpeakerNotesOutlined,
   StorageOutlined,
@@ -46,6 +47,7 @@ import {
   WebAssetOutlined,
   WifiTetheringOutlined,
   WorkspacesOutlined,
+  TrackChanges,
 } from '@mui/icons-material';
 import {
   AccountMultipleOutline,
@@ -217,6 +219,7 @@ const LeftBar = () => {
     settings: { platform_whitemark },
   } = useAuth();
   const navigate = useNavigate();
+  const { isFeatureEnable } = useHelper();
   const isEnterpriseEdition = useEnterpriseEdition();
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
   const isGrantedToImport = useGranted([KNOWLEDGE_KNASKIMPORT]);
@@ -325,6 +328,7 @@ const LeftBar = () => {
     'Sector',
     'Event',
     'Organization',
+    'Security-platforms',
     'System',
     'Individual',
   );
@@ -559,8 +563,8 @@ const LeftBar = () => {
             <StyledTooltip title={!navOpen && t_i18n('Draft overview')} placement="right">
               <MenuItem
                 component={Link}
-                to={`/dashboard/drafts/${draftContext.id}/`}
-                selected={location.pathname.includes(`/dashboard/drafts/${draftContext.id}/`)}
+                to={`/dashboard/data/import/draft/${draftContext.id}/`}
+                selected={location.pathname.includes(`/dashboard/data/import/draft/${draftContext.id}/`)}
                 dense={true}
                 classes={{ root: classes.menuItem }}
               >
@@ -576,6 +580,29 @@ const LeftBar = () => {
               </MenuItem>
             </StyledTooltip>
           )}
+          <Security needs={[KNOWLEDGE]}>
+            {!draftContext && isFeatureEnable('Pir') && (
+              <StyledTooltip title={!navOpen && t_i18n('PIR')} placement="right">
+                <MenuItem
+                  component={Link}
+                  to="/dashboard/pirs"
+                  selected={location.pathname.includes('/dashboard/pirs')}
+                  dense={true}
+                  classes={{ root: classes.menuItem }}
+                >
+                  <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                    <TrackChanges />
+                  </ListItemIcon>
+                  {navOpen && (
+                    <ListItemText
+                      classes={{ primary: classes.menuItemText }}
+                      primary={t_i18n('PIR')}
+                    />
+                  )}
+                </MenuItem>
+              </StyledTooltip>
+            )}
+          </Security>
         </MenuList>
         <Divider />
         <Security needs={[KNOWLEDGE]}>
@@ -843,6 +870,7 @@ const LeftBar = () => {
                 { type: 'Sector', link: '/dashboard/entities/sectors', label: 'Sectors', icon: <DomainOutlined fontSize="small" /> },
                 { type: 'Event', link: '/dashboard/entities/events', label: 'Events', icon: <EventOutlined fontSize="small" /> },
                 { type: 'Organization', link: '/dashboard/entities/organizations', label: 'Organizations', icon: <AccountBalanceOutlined fontSize="small" /> },
+                { type: 'SecurityPlatform', link: '/dashboard/entities/security_platforms', label: 'Security platforms', icon: <SecurityOutlined fontSize="small" /> },
                 { type: 'System', link: '/dashboard/entities/systems', label: 'Systems', icon: <StorageOutlined fontSize="small" /> },
                 { type: 'Individual', link: '/dashboard/entities/individuals', label: 'Individuals', icon: <PersonOutlined fontSize="small" /> },
               ],
@@ -887,7 +915,7 @@ const LeftBar = () => {
             <Security needs={[MODULES, KNOWLEDGE, TAXIIAPI, CSVMAPPERS, INGESTION]}>
               <MenuItem
                 ref={anchors.data}
-                selected={!navOpen && location.pathname.includes('/dashboard/data')}
+                selected={!navOpen && location.pathname.includes('/dashboard/data') && !draftContext}
                 dense={true}
                 classes={{ root: classes.menuItem }}
                 onClick={(e) => (isMobile || navOpen ? handleSelectedMenuToggle('data') : handleGoToPage(e, '/dashboard/data'))}
@@ -918,29 +946,6 @@ const LeftBar = () => {
                 ],
               )}
             </Security>
-            {!draftContext && (
-              <Security needs={[KNOWLEDGE]}>
-                <StyledTooltip title={!navOpen && t_i18n('Drafts')} placement="right">
-                  <MenuItem
-                    component={Link}
-                    to="/dashboard/drafts"
-                    selected={location.pathname.includes('/dashboard/drafts')}
-                    dense={true}
-                    classes={{ root: classes.menuItem }}
-                  >
-                    <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                      <ArchitectureOutlined/>
-                    </ListItemIcon>
-                    {navOpen && (
-                    <ListItemText
-                      classes={{ primary: classes.menuItemText }}
-                      primary={t_i18n('Drafts')}
-                    />
-                    )}
-                  </MenuItem>
-                </StyledTooltip>
-              </Security>
-            )}
             {
               isTrashEnable() && (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>

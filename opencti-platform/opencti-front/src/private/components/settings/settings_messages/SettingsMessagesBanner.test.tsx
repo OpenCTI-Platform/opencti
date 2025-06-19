@@ -28,7 +28,7 @@ describe('Settings Messages', () => {
   const createComponent = (divElement: HTMLDivElement, environment: RelayMockEnvironment) => {
     ReactDOM.createRoot(divElement).render(
       <RelayEnvironmentProvider environment={environment}>
-        <AppIntlProvider settings={{ platform_language: 'auto' }}>
+        <AppIntlProvider settings={{ platform_language: 'auto', platform_translations: '{}' }}>
           <ThemeProvider theme={createTheme()}>
             <SettingsMessagesBanner />
           </ThemeProvider>

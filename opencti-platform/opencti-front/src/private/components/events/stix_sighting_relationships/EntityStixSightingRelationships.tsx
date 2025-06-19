@@ -5,7 +5,6 @@ import {
 } from '@components/events/stix_sighting_relationships/__generated__/EntityStixSightingRelationshipsLinesPaginationQuery.graphql';
 import makeStyles from '@mui/styles/makeStyles';
 import { EntityStixSightingRelationshipLineDummy } from '@components/events/stix_sighting_relationships/EntityStixSightingRelationshipLine';
-import useHelper from 'src/utils/hooks/useHelper';
 import ListLines from '../../../../components/list_lines/ListLines';
 import EntityStixSightingRelationshipsLines, { entityStixSightingRelationshipsLinesQuery } from './EntityStixSightingRelationshipsLines';
 import StixSightingRelationshipCreationFromEntity from './StixSightingRelationshipCreationFromEntity';
@@ -97,7 +96,6 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
   disableExport,
 }) => {
   const classes = useStyles();
-  const { isFeatureEnable } = useHelper();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<EntityStixSightingRelationshipsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
@@ -141,8 +139,6 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
     entityStixSightingRelationshipsLinesQuery,
     finalPaginationOptions,
   );
-
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const renderLines = () => {
     const dataColumns = {
@@ -213,7 +209,7 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
           secondaryAction={true}
           paginationOptions={finalPaginationOptions}
           numberOfElements={numberOfElements}
-          createButton={isFABReplaced && (
+          createButton={(
             <SightingCreationComponent
               isTo={isTo}
               entityId={entityId}
@@ -255,15 +251,6 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
   return (
     <div className={classes.container}>
       {renderLines()}
-      {!isFABReplaced && (
-        <SightingCreationComponent
-          isTo={isTo}
-          entityId={entityId}
-          noPadding={noPadding}
-          paginationOptions={finalPaginationOptions}
-          stixCoreObjectTypes={stixCoreObjectTypes}
-        />
-      )}
     </div>
   );
 };

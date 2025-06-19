@@ -1,5 +1,4 @@
 import React from 'react';
-import useHelper from 'src/utils/hooks/useHelper';
 import { graphql } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import { IndicatorsLinesPaginationQuery, IndicatorsLinesPaginationQuery$variables } from '@components/observations/__generated__/IndicatorsLinesPaginationQuery.graphql';
@@ -121,8 +120,6 @@ const Indicators = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Indicators | Observations'));
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
@@ -208,17 +205,12 @@ const Indicators = () => {
           lineFragment={indicatorLineFragment}
           preloadedPaginationProps={preloadedPaginationOptions}
           exportContext={{ entity_type: 'Indicator' }}
-          createButton={isFABReplaced && (
+          createButton={(
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <IndicatorCreation paginationOptions={queryPaginationOptions} />
             </Security>
           )}
         />
-      )}
-      {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <IndicatorCreation paginationOptions={queryPaginationOptions} />
-        </Security>
       )}
     </>
   );

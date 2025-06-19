@@ -85,6 +85,9 @@ const Triggers: FunctionComponent = () => {
         numberOfElements={numberOfElements}
         secondaryAction={true}
         entityTypes={['Trigger']}
+        createButton={(
+          <TriggerCreation paginationOptions={paginationOptions} />
+        )}
       >
         {queryRef && (
           <React.Suspense
@@ -117,7 +120,6 @@ const Triggers: FunctionComponent = () => {
     <>
       <Breadcrumbs elements={[{ label: t_i18n('Triggers'), current: true }]} />
       {renderLines()}
-      <TriggerCreation paginationOptions={paginationOptions} />
     </>
   );
 };

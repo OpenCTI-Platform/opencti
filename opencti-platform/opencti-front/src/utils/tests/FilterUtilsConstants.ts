@@ -2264,7 +2264,7 @@ filterKeysSchema.set('Stix-Core-Object', new Map([
     'gender',
     {
       filterKey: 'gender',
-      label: 'Gender',
+      label: 'Gender/Sex',
       type: 'vocabulary',
       multiple: false,
       subEntityTypes: [

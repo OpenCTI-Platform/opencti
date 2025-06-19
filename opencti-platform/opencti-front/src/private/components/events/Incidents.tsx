@@ -1,5 +1,4 @@
 import React, { FunctionComponent } from 'react';
-import useHelper from 'src/utils/hooks/useHelper';
 import { IncidentsLinesQuery, IncidentsLinesQuery$variables } from './incidents/__generated__/IncidentsLinesQuery.graphql';
 import { IncidentsLines_data$data } from './incidents/__generated__/IncidentsLines_data.graphql';
 import { incidentLineFragment } from './incidents/IncidentLine';
@@ -22,9 +21,6 @@ export const LOCAL_STORAGE_KEY = 'incidents';
 
 const Incidents: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
-
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Incidents | Events'));
@@ -92,17 +88,12 @@ const Incidents: FunctionComponent = () => {
           toolbarFilters={contextFilters}
           exportContext={{ entity_type: 'Incident' }}
           availableEntityTypes={['Incident']}
-          createButton={isFABReplaced && (
+          createButton={(
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <IncidentCreation paginationOptions={queryPaginationOptions} />
             </Security>
           )}
         />
-      )}
-      {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <IncidentCreation paginationOptions={queryPaginationOptions} />
-        </Security>
       )}
     </div>
   );

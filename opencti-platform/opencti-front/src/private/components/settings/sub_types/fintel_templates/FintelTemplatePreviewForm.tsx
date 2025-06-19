@@ -1,4 +1,3 @@
-import { Option } from '@components/common/form/ReferenceField';
 import * as Yup from 'yup';
 import { Field, Form, Formik } from 'formik';
 import React, { useEffect } from 'react';
@@ -7,15 +6,17 @@ import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE } from '@co
 import { useParams } from 'react-router-dom';
 import EntitySelectField from '@components/common/form/EntitySelectField';
 import { EntityOption } from '@components/common/form/EntitySelect';
-import { fieldSpacingContainerStyle } from '../../../../../utils/field';
+import FintelDesignField, { FintelDesignFieldOption } from '@components/common/form/FintelDesignField';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../../utils/field';
 import { useFormatter } from '../../../../../components/i18n';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import { isEmptyObject } from '../../../../../utils/object';
 
 export interface FintelTemplatePreviewFormInputs {
   entity: EntityOption | null;
-  contentMaxMarkings: Option[];
-  fileMarkings: Option[];
+  fintelDesign: FintelDesignFieldOption | null;
+  contentMaxMarkings: FieldOption[];
+  fileMarkings: FieldOption[];
 }
 
 interface FintelTemplatePreviewFormProps {
@@ -36,6 +37,7 @@ const FintelTemplatePreviewForm = ({
 
   const initialValues: FintelTemplatePreviewFormInputs = {
     entity: null,
+    fintelDesign: null,
     contentMaxMarkings: [],
     fileMarkings: [],
   };
@@ -62,6 +64,11 @@ const FintelTemplatePreviewForm = ({
               component={EntitySelectField}
               types={[subTypeId]}
               label={t_i18n('Entity')}
+            />
+            <FintelDesignField
+              name="fintelDesign"
+              label={t_i18n('Fintel design')}
+              onChange={setFieldValue}
             />
             <ObjectMarkingField
               name="contentMaxMarkings"

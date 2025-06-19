@@ -15,9 +15,9 @@ import { STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
 import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
 import { telemetry } from '../config/tracing';
 import type { BasicStoreSettings } from '../types/settings';
-import { ACCOUNT_STATUS_ACTIVE } from '../config/conf';
+import { ACCOUNT_STATUS_ACTIVE, isFeatureEnabled } from '../config/conf';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
-import { FunctionalError } from '../config/errors';
+import { FunctionalError, UnsupportedError } from '../config/errors';
 import { extractIdsFromStoreObject, isNotEmptyField, REDACTED_INFORMATION } from '../database/utils';
 import { isStixObject } from '../schema/stixCoreObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
@@ -54,6 +54,7 @@ export const DECAY_MANAGER_USER_UUID = '7f176d74-9084-4d23-8138-22ac78549547';
 export const GARBAGE_COLLECTION_MANAGER_USER_UUID = 'c30d12be-d5fb-4724-88e7-8a7c9a4516c2';
 const TELEMETRY_MANAGER_USER_UUID = 'c30d12be-d5fb-4724-88e7-8a7c9a4516c3';
 export const REDACTED_USER_UUID = '31afac4e-6b99-44a0-b91b-e04738d31461';
+const PIR_MANAGER_USER_UUID = '1e20b6e5-e0f7-46f2-bacb-c37e4f8707a2';
 
 export const MEMBER_ACCESS_ALL = 'ALL';
 export const MEMBER_ACCESS_CREATOR = 'CREATOR';
@@ -71,6 +72,7 @@ type ObjectWithCreators = {
 const administratorRoleId = uuidv4();
 export const ADMINISTRATOR_ROLE: UserRole = {
   id: administratorRoleId,
+  entity_type: 'Role',
   internal_id: administratorRoleId,
   name: ROLE_ADMINISTRATOR
 };
@@ -78,6 +80,7 @@ export const ADMINISTRATOR_ROLE: UserRole = {
 const defaultRoleId = uuidv4();
 export const DEFAULT_ROLE: UserRole = {
   id: defaultRoleId,
+  entity_type: 'Role',
   internal_id: defaultRoleId,
   name: ROLE_DEFAULT
 };
@@ -355,6 +358,37 @@ export const EXPIRATION_MANAGER_USER: AuthUser = {
   restrict_delete: false,
 };
 
+export const PIR_MANAGER_USER: AuthUser = {
+  entity_type: 'User',
+  id: PIR_MANAGER_USER_UUID,
+  internal_id: PIR_MANAGER_USER_UUID,
+  individual_id: undefined,
+  name: 'PIR MANAGER',
+  user_email: 'PIR MANAGER',
+  origin: { user_id: PIR_MANAGER_USER_UUID, socket: 'internal' },
+  roles: [ADMINISTRATOR_ROLE],
+  groups: [],
+  capabilities: [{ name: BYPASS }],
+  organizations: [],
+  allowed_marking: [],
+  max_shareable_marking: [],
+  default_marking: [],
+  api_token: '',
+  account_lock_after_date: undefined,
+  account_status: ACCOUNT_STATUS_ACTIVE,
+  administrated_organizations: [],
+  effective_confidence_level: {
+    max_confidence: 100,
+    overrides: [],
+  },
+  user_confidence_level: {
+    max_confidence: 100,
+    overrides: [],
+  },
+  no_creators: false,
+  restrict_delete: false,
+};
+
 export interface AuthorizedMember { id: string, access_right: string, groups_restriction_ids?: string[] | null }
 
 class TracingContext {
@@ -380,6 +414,12 @@ class TracingContext {
   }
 }
 
+export const enforceEnableFeatureFlag = (flag: string) => {
+  if (!isFeatureEnabled(flag)) {
+    throw UnsupportedError('Feature is disabled', { flag });
+  }
+};
+
 export const executionContext = (source: string, auth?: AuthUser, draftContext?: string): AuthContext => {
   const tracer = trace.getTracer('instrumentation-opencti', '1.0.0');
   const tracing = new TracingContext(tracer);
@@ -394,6 +434,7 @@ export const INTERNAL_USERS = {
   [DECAY_MANAGER_USER.id]: DECAY_MANAGER_USER,
   [EXPIRATION_MANAGER_USER.id]: EXPIRATION_MANAGER_USER,
   [REDACTED_USER.id]: REDACTED_USER,
+  [PIR_MANAGER_USER.id]: PIR_MANAGER_USER,
 };
 
 export const INTERNAL_USERS_WITHOUT_REDACTED = {
@@ -403,6 +444,7 @@ export const INTERNAL_USERS_WITHOUT_REDACTED = {
   [AUTOMATION_MANAGER_USER.id]: AUTOMATION_MANAGER_USER,
   [EXPIRATION_MANAGER_USER.id]: EXPIRATION_MANAGER_USER,
   [DECAY_MANAGER_USER.id]: DECAY_MANAGER_USER,
+  [PIR_MANAGER_USER.id]: PIR_MANAGER_USER,
 };
 
 export const isBypassUser = (user: AuthUser): boolean => {

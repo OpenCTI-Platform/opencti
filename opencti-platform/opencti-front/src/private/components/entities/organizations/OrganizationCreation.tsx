@@ -5,7 +5,7 @@ import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import ConfidenceField from '@components/common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
@@ -14,24 +14,23 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
-import { Option } from '../../common/form/ReferenceField';
 import { OrganizationCreationMutation, OrganizationCreationMutation$variables } from './__generated__/OrganizationCreationMutation.graphql';
 import { OrganizationsLinesPaginationQuery$variables } from './__generated__/OrganizationsLinesPaginationQuery.graphql';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import useHelper from '../../../../utils/hooks/useHelper';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import { splitMultilines } from '../../../../utils/String';
 import BulkTextModal from '../../../../components/fields/BulkTextField/BulkTextModal';
 import ProgressBar from '../../../../components/ProgressBar';
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
+import TextField from '../../../../components/TextField';
 
 const organizationMutation = graphql`
   mutation OrganizationCreationMutation($input: OrganizationAddInput!) {
@@ -59,9 +58,10 @@ interface OrganizationAddInput {
   confidence: number | null
   x_opencti_reliability: string | undefined
   x_opencti_organization_type: string | undefined
-  createdBy: Option | null
-  objectMarking: Option[]
-  objectLabel: Option[]
+  x_opencti_score: string | undefined
+  createdBy: FieldOption | undefined
+  objectMarking: FieldOption[]
+  objectLabel: FieldOption[]
   externalReferences: { value: string }[]
   file: File | null
 }
@@ -70,8 +70,8 @@ interface OrganizationFormProps {
   updater: (store: RecordSourceSelectorProxy, key: string) => void
   onReset?: () => void;
   onCompleted?: () => void;
-  defaultCreatedBy?: { value: string, label: string }
-  defaultMarkingDefinitions?: { value: string, label: string }[]
+  defaultCreatedBy?: FieldOption;
+  defaultMarkingDefinitions?: FieldOption[];
   inputValue?: string;
   bulkModalOpen?: boolean;
   onBulkModalClose: () => void;
@@ -90,10 +90,9 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
   const { t_i18n } = useFormatter();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
-  const basicShape = {
-    name: Yup.string()
-      .min(2)
-      .required(t_i18n('This field is required')),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(ORGANIZATION_TYPE);
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().min(2),
     description: Yup.string()
       .nullable(),
     confidence: Yup.number().nullable(),
@@ -101,8 +100,14 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
       .nullable(),
     x_opencti_reliability: Yup.string()
       .nullable(),
-  };
-  const organizationValidator = useSchemaCreationValidation(ORGANIZATION_TYPE, basicShape);
+    x_opencti_score: Yup.number().integer(t_i18n('The value must be an integer'))
+      .nullable()
+      .min(0, t_i18n('The value must be greater than or equal to 0'))
+      .max(100, t_i18n('The value must be less than or equal to 100')),
+    createdBy: Yup.object().nullable(),
+    objectMarking: Yup.array().nullable(),
+  }, mandatoryAttributes);
+  const organizationValidator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
 
   const [commit] = useApiMutation<OrganizationCreationMutation>(
     organizationMutation,
@@ -142,6 +147,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
         description: values.description,
         x_opencti_reliability: values.x_opencti_reliability,
         x_opencti_organization_type: values.x_opencti_organization_type,
+        x_opencti_score: values.x_opencti_score ? parseInt(values.x_opencti_score, 10) : undefined,
         createdBy: values.createdBy?.value,
         confidence: parseInt(String(values.confidence), 10),
         objectMarking: values.objectMarking.map((v) => v.value),
@@ -173,18 +179,21 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
       description: '',
       x_opencti_reliability: undefined,
       x_opencti_organization_type: undefined,
-      createdBy: defaultCreatedBy ?? null,
+      createdBy: defaultCreatedBy ?? undefined, // undefined for Require Fields Flagging, if Configured Mandatory Field
       confidence: null,
       objectMarking: defaultMarkingDefinitions ?? [],
       objectLabel: [],
       externalReferences: [],
       file: null,
+      x_opencti_score: undefined,
     },
   );
 
   return <Formik<OrganizationAddInput>
     initialValues={initialValues}
     validationSchema={organizationValidator}
+    validateOnChange={false}
+    validateOnBlur={false}
     onSubmit={onSubmit}
     onReset={onReset}
          >
@@ -228,6 +237,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
             variant="standard"
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             detectDuplicate={['Organization']}
           />
@@ -235,6 +245,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -249,6 +260,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
             label={t_i18n('Organization type')}
             type="organization_type_ov"
             name="x_opencti_organization_type"
+            required={(mandatoryAttributes.includes('x_opencti_organization_type'))}
             containerStyle={fieldSpacingContainerStyle}
             multiple={false}
             onChange={setFieldValue}
@@ -257,28 +269,43 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
             label={t_i18n('Reliability')}
             type="reliability_ov"
             name="x_opencti_reliability"
+            required={(mandatoryAttributes.includes('x_opencti_reliability'))}
             containerStyle={fieldSpacingContainerStyle}
             multiple={false}
             onChange={setFieldValue}
           />
+          <Field
+            component={TextField}
+            variant="standard"
+            name="x_opencti_score"
+            required={(mandatoryAttributes.includes('x_opencti_score'))}
+            label={t_i18n('Score')}
+            fullWidth={true}
+            type="number"
+            style={fieldSpacingContainerStyle}
+          />
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
           <ObjectLabelField
             name="objectLabel"
+            required={(mandatoryAttributes.includes('objectLabel'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.objectLabel}
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
           <ExternalReferencesField
             name="externalReferences"
+            required={(mandatoryAttributes.includes('externalReferences'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.externalReferences}
@@ -326,8 +353,6 @@ const OrganizationCreation = ({ paginationOptions }: {
 }) => {
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_organizations',
@@ -341,9 +366,8 @@ const OrganizationCreation = ({ paginationOptions }: {
   return (
     <Drawer
       title={t_i18n('Create an organization')}
-      variant={isFABReplaced ? undefined : DrawerVariant.create}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
-      controlledDial={isFABReplaced ? CreateOrganizationControlledDial : undefined}
+      controlledDial={CreateOrganizationControlledDial}
     >
       {({ onClose }) => (
         <OrganizationCreationForm

@@ -2,18 +2,18 @@ import type { AuthContext, AuthUser } from '../../../types/user';
 import type { BasicStoreEntityCsvMapper, CsvMapperParsed, CsvMapperRepresentation, CsvMapperResolved } from './csvMapper-types';
 import { CsvMapperRepresentationType } from './csvMapper-types';
 import { isEmptyField, isNotEmptyField } from '../../../database/utils';
-import { isStixRelationshipExceptRef } from '../../../schema/stixRelationship';
-import { isStixObject } from '../../../schema/stixCoreObject';
 import { fillDefaultValues, getEntitySettingFromCache } from '../../entitySetting/entitySetting-utils';
 import { FunctionalError } from '../../../config/errors';
 import { schemaRelationsRefDefinition } from '../../../schema/schema-relationsRef';
 import { INTERNAL_REFS } from '../../../domain/attribute-utils';
 import { internalFindByIds } from '../../../database/middleware-loader';
-import type { BasicStoreEntity, BasicStoreObject } from '../../../types/store';
+import type { BasicStoreEntity } from '../../../types/store';
 import { extractRepresentative } from '../../../database/entity-representative';
 import type { MandatoryType, ObjectAttribute } from '../../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
-import { idsValuesRemap } from '../../../database/stix-2-1-converter';
+import { representationLabel } from '../mapper-utils';
+import { isStixRelationshipExceptRef } from '../../../schema/stixRelationship';
+import { isStixObject } from '../../../schema/stixCoreObject';
 
 export interface CsvMapperSchemaAttribute {
   name: string
@@ -38,12 +38,18 @@ const isCsvMapperRepresentation = (object: any): object is CsvMapperRepresentati
   return object.id && (object.type === CsvMapperRepresentationType.Entity || object.type === CsvMapperRepresentationType.Relationship);
 };
 
-const representationLabel = (idx: number, representation: CsvMapperRepresentation) => {
-  const number = `#${idx + 1}`;
-  if (isEmptyField(representation.target.entity_type)) {
-    return `${number} New ${representation.type} representation`;
+export const isCsvValidRepresentationType = (representation: CsvMapperRepresentation) => {
+  if (representation.type === CsvMapperRepresentationType.Relationship) {
+    if (!isStixRelationshipExceptRef(representation.target.entity_type)) {
+      throw FunctionalError('Unknown relationship', { type: representation.target.entity_type });
+    }
+  } else if (representation.type === CsvMapperRepresentationType.Entity) {
+    if (!isStixObject(representation.target.entity_type)) {
+      throw FunctionalError('Unknown entity', { type: representation.target.entity_type });
+    }
+  } else {
+    throw FunctionalError('Unknown representation type', { type: representation.type });
   }
-  return `${number} ${representation.target.entity_type}`;
 };
 
 export const parseCsvMapper = (mapper: any): CsvMapperParsed => {
@@ -111,20 +117,6 @@ export const parseCsvMapperWithDefaultValues = async (context: AuthContext, user
   };
 };
 
-export const isValidRepresentationType = (representation: CsvMapperRepresentation) => {
-  if (representation.type === CsvMapperRepresentationType.Relationship) {
-    if (!isStixRelationshipExceptRef(representation.target.entity_type)) {
-      throw FunctionalError('Unknown relationship', { type: representation.target.entity_type });
-    }
-  } else if (representation.type === CsvMapperRepresentationType.Entity) {
-    if (!isStixObject(representation.target.entity_type)) {
-      throw FunctionalError('Unknown entity', { type: representation.target.entity_type });
-    }
-  } else {
-    throw FunctionalError('Unknown representation type', { type: representation.type });
-  }
-};
-
 export const validateCsvMapper = async (context: AuthContext, user: AuthUser, mapper: CsvMapperParsed) => {
   if (!Array.isArray(mapper.representations) || mapper.representations.some((rep) => !isCsvMapperRepresentation(rep))) {
     throw FunctionalError('CSV mapper representations is not an array of CsvMapperRepresentation objects', { mapper_name: mapper.name });
@@ -137,7 +129,7 @@ export const validateCsvMapper = async (context: AuthContext, user: AuthUser, ma
 
   await Promise.all(Array.from(mapper.representations.entries()).map(async ([idx, representation]) => {
     // Validate target type
-    isValidRepresentationType(representation);
+    isCsvValidRepresentationType(representation);
 
     // Validate required attributes
     const entitySetting = await getEntitySettingFromCache(context, representation.target.entity_type);
@@ -233,32 +225,4 @@ export const getHashesNames = (entityType: string) => {
     return [];
   }
   return (hashesDefinition as ObjectAttribute).mappings.map((mapping) => (mapping.name));
-};
-
-// csv mapper representatives converter for default values ids
-// Export => ids must be converted to standard id
-// Import => ids must be converted back to internal id
-export const convertRepresentationsIds = async (context: AuthContext, user: AuthUser, representations: CsvMapperRepresentation[], from: 'internal' | 'stix') => {
-  // First iteration to resolve all ids to translate
-  const resolvingIds: string[] = [];
-  representations.forEach((representation) => {
-    representation.attributes.forEach((attribute) => {
-      const defaultValues = attribute.default_values;
-      if (defaultValues) {
-        defaultValues.forEach((value) => resolvingIds.push(value));
-      }
-    });
-  });
-  // Resolve then second iteration to replace the ids
-  const resolveOpts = { baseData: true, toMap: true, mapWithAllIds: true };
-  const resolvedMap = await internalFindByIds(context, user, resolvingIds, resolveOpts);
-  const idsMap = resolvedMap as unknown as { [k: string]: BasicStoreObject };
-  representations.forEach((representation) => {
-    representation.attributes.forEach((attribute) => {
-      if (attribute && attribute.default_values) {
-        // eslint-disable-next-line no-param-reassign
-        attribute.default_values = idsValuesRemap(attribute.default_values, idsMap, from, true);
-      }
-    });
-  });
 };

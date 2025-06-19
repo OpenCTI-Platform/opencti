@@ -65,6 +65,7 @@ import { KNOWLEDGE_KNUPDATE } from '../../../../../utils/hooks/useGranted';
 import Security from '../../../../../utils/Security';
 import DeleteDialog from '../../../../../components/DeleteDialog';
 import useDeletion from '../../../../../utils/hooks/useDeletion';
+import Breadcrumbs from '../../../../../components/Breadcrumbs';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -957,7 +958,7 @@ const WorkbenchFileContentComponent = ({
                 )}/${file.metaData.entity.id}`;
                 navigate(`${entityLink}/files`);
               } else {
-                navigate('/dashboard/drafts');
+                navigate('/dashboard/data/import/draft');
               }
             },
             onError: (error) => {
@@ -4181,15 +4182,23 @@ const WorkbenchFileContentComponent = ({
     );
   };
   // endregion
-
+  const fileName = file.name.replace('.json', '');
   return (
     <div className={classes.container}>
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Data') },
+          { label: t_i18n('Import'), link: '/dashboard/data/import' },
+          { label: t_i18n('Analyst workbenches'), link: '/dashboard/data/import/workbench' },
+          { label: fileName, current: true },
+        ]}
+      />
       <Typography
         variant="h1"
         gutterBottom={true}
         classes={{ root: classes.title }}
       >
-        {file.name.replace('.json', '')}
+        {fileName}
       </Typography>
       <div className={classes.popover}>
         <WorkbenchFilePopover file={file} />

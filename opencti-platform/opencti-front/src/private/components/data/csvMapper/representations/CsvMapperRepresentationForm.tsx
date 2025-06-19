@@ -4,7 +4,6 @@ import CsvMapperRepresentationAttributesForm from '@components/data/csvMapper/re
 import MUIAutocomplete from '@mui/material/Autocomplete';
 import { SelectChangeEvent } from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
-import { Option } from '@components/common/form/ReferenceField';
 import makeStyles from '@mui/styles/makeStyles';
 import Tooltip from '@mui/material/Tooltip';
 import { Accordion, AccordionDetails } from '@mui/material';
@@ -22,6 +21,7 @@ import ItemIcon from '../../../../../components/ItemIcon';
 import type { Theme } from '../../../../../components/Theme';
 import useDeletion from '../../../../../utils/hooks/useDeletion';
 import DeleteDialog from '../../../../../components/DeleteDialog';
+import { FieldOption } from '../../../../../utils/field';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -45,7 +45,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-export interface RepresentationFormEntityOption extends Option {
+export interface RepresentationFormEntityOption extends FieldOption {
   type: string;
   id: string;
 }
@@ -92,7 +92,7 @@ CsvMapperRepresentationFormProps
 
   // -- EVENTS --
 
-  const handleChangeEntityType = async (option: Option | null) => {
+  const handleChangeEntityType = async (option: FieldOption | null) => {
     const newValue: CsvMapperRepresentationFormData = {
       ...value,
       attributes: {},

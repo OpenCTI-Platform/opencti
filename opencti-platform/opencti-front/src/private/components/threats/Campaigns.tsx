@@ -19,7 +19,6 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
-import useHelper from '../../../utils/hooks/useHelper';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY = 'campaigns';
@@ -51,9 +50,6 @@ const Campaigns = () => {
     campaignsCardsQuery,
     queryPaginationOptions,
   );
-
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const renderCards = () => {
     const {
@@ -95,7 +91,7 @@ const Campaigns = () => {
         paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
         handleChangeView={helpers.handleChangeView}
-        createButton={isFABReplaced && (
+        createButton={(
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <CampaignCreation paginationOptions={queryPaginationOptions} />
           </Security>
@@ -181,7 +177,7 @@ const Campaigns = () => {
                 </Tooltip>
               </ToggleButton>),
             ]}
-            createButton={isFABReplaced && (
+            createButton={(
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <CampaignCreation paginationOptions={queryPaginationOptions} />
               </Security>
@@ -196,11 +192,6 @@ const Campaigns = () => {
     <>
       <Breadcrumbs elements={[{ label: t_i18n('Threats') }, { label: t_i18n('Campaigns'), current: true }]} />
       {viewStorage.view !== 'lines' ? renderCards() : renderList()}
-      {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <CampaignCreation paginationOptions={queryPaginationOptions} />
-        </Security>
-      )}
     </>
   );
 };

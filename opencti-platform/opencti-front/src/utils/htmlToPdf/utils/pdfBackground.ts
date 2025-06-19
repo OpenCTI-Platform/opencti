@@ -1,7 +1,7 @@
 import { DynamicBackground } from 'pdfmake/interfaces';
 
-const pdfBackground: DynamicBackground = (currentPage, pageSize) => {
-  return {
+const pdfBackground = (linearGradiant: string[] | undefined): DynamicBackground => {
+  return (currentPage, pageSize) => ({
     canvas: currentPage > 1
       ? []
       : [{
@@ -10,9 +10,9 @@ const pdfBackground: DynamicBackground = (currentPage, pageSize) => {
         y: 0,
         w: pageSize.width,
         h: pageSize.height,
-        linearGradient: ['#00020C', '#001BDA'],
+        linearGradient: linearGradiant,
       }],
-  };
+  });
 };
 
 export default pdfBackground;

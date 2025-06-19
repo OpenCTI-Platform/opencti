@@ -1,5 +1,4 @@
 import React, { FunctionComponent } from 'react';
-import useHelper from 'src/utils/hooks/useHelper';
 import { graphql } from 'react-relay';
 import { DataComponentsLinesPaginationQuery, DataComponentsLinesPaginationQuery$variables } from '@components/techniques/__generated__/DataComponentsLinesPaginationQuery.graphql';
 import { DataComponentsLines_data$data } from '@components/techniques/__generated__/DataComponentsLines_data.graphql';
@@ -102,8 +101,6 @@ const dataComponentsLinesFragment = graphql`
 
 const DataComponents: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Data Components | Techniques'));
 
@@ -162,17 +159,12 @@ const DataComponents: FunctionComponent = () => {
           resolvePath={(data: DataComponentsLines_data$data) => data.dataComponents?.edges?.map((n) => n?.node)}
           lineFragment={dataComponentFragment}
           exportContext={{ entity_type: 'Data-Component' }}
-          createButton={isFABReplaced && (
+          createButton={(
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <DataComponentCreation paginationOptions={queryPaginationOptions} />
             </Security>
           )}
         />
-      )}
-      {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <DataComponentCreation paginationOptions={queryPaginationOptions} />
-        </Security>
       )}
     </>
   );

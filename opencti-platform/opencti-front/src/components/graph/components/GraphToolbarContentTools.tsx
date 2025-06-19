@@ -1,4 +1,3 @@
-import ContainerAddStixCoreObjectsInGraph from '@components/common/containers/ContainerAddStixCoreObjectsInGraph';
 import React, { useState } from 'react';
 import { DeleteOutlined, LinkOutlined, VisibilityOutlined } from '@mui/icons-material';
 import { GraphQLTaggedNode } from 'relay-runtime/lib/query/RelayModernGraphQLTag';
@@ -17,6 +16,7 @@ import { convertCreatedBy, convertMarkings } from '../../../utils/edition';
 import { useGraphContext } from '../GraphContext';
 import { ObjectToParse } from '../utils/useGraphParser';
 import GraphToolbarRemoveConfirm, { GraphToolbarDeleteConfirmProps } from './GraphToolbarRemoveConfirm';
+import ContainerAddStixCoreObjectsInLine from '../../../private/components/common/containers/ContainerAddStixCoreObjectsInLine';
 
 export interface GraphToolbarContentToolsProps {
   stixCoreObjectRefetchQuery?: GraphQLTaggedNode
@@ -116,17 +116,27 @@ const GraphToolbarContentTools = ({
   return (
     <>
       {entity && context !== 'investigation' && (
-        <ContainerAddStixCoreObjectsInGraph
+        <ContainerAddStixCoreObjectsInLine
           knowledgeGraph={context !== 'correlation'}
           containerId={entity.id}
           containerStixCoreObjects={rawObjects.map((o) => ({ node: o }))}
           defaultCreatedBy={entity.createdBy ?? null}
-          defaultMarkingDefinitions={entity.objectMarking ?? []}
+          defaultMarkingDefinitions={(entity.objectMarking ?? []) as unknown[]}
           targetStixCoreObjectTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
-          onAdd={addNode}
+          onAdd={addNode as (node: { id: string; }) => void}
           onDelete={removeFromAddPanel}
-          confidence={entity.confidence}
+          confidence={entity.confidence ?? undefined}
           enableReferences={enableReferences}
+          paginationOptions={{
+            count: 0,
+            cursor: undefined,
+            filters: undefined,
+            id: '',
+            orderBy: undefined,
+            orderMode: undefined,
+            search: undefined,
+            types: undefined,
+          }}
         />
       )}
       {entity && context === 'investigation' && (

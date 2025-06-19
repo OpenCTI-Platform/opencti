@@ -4,3 +4,4 @@ export const MAX_WIDTH_PORTRAIT = 680;
 export const WHITE = '#FFFFFF';
 export const GREY = '#7A7C85';
 export const DARK = '#00020C';
+export const DARK_BLUE = '#001BDA';

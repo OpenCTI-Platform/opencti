@@ -6,8 +6,7 @@ import Button from '@mui/material/Button';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
-import useHelper from 'src/utils/hooks/useHelper';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { ObservedDatasLinesPaginationQuery$variables } from '@components/events/__generated__/ObservedDatasLinesPaginationQuery.graphql';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
@@ -21,10 +20,9 @@ import StixCoreObjectsField from '../../common/form/StixCoreObjectsField';
 import { insertNode } from '../../../../utils/store';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import type { Theme } from '../../../../components/Theme';
-import { Option } from '../../common/form/ReferenceField';
 import { ObservedDataCreationMutation, ObservedDataCreationMutation$variables } from './__generated__/ObservedDataCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -67,9 +65,9 @@ interface ObservedDataAddInput {
   last_observed: Date | null;
   number_observed: number;
   confidence: number | undefined;
-  createdBy: Option | undefined;
-  objectMarking: Option[];
-  objectLabel: Option[];
+  createdBy: FieldOption | undefined;
+  objectMarking: FieldOption[];
+  objectLabel: FieldOption[];
   externalReferences: { value: string }[];
   file: File | undefined;
 }
@@ -280,22 +278,19 @@ const ObservedDataCreation = ({
   paginationOptions: ObservedDatasLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_observedDatas',
     paginationOptions,
     'observedDataAdd',
   );
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const CreateObservedDataControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType='Observed-Data' {...props} />
   );
   return (
     <Drawer
       title={t_i18n('Create an observed data')}
-      variant={isFABReplaced ? undefined : DrawerVariant.create}
-      controlledDial={isFABReplaced ? CreateObservedDataControlledDial : undefined}
+      controlledDial={CreateObservedDataControlledDial}
     >
       {({ onClose }) => (
         <ObservedDataCreationForm

@@ -1,6 +1,5 @@
 import React, { Suspense } from 'react';
 import { graphql } from 'react-relay';
-import ReportPopover from './ReportPopover';
 import { ReportKnowledgeGraphQuery$data } from './__generated__/ReportKnowledgeGraphQuery.graphql';
 import useReportKnowledgeGraphDeleteRelation from './useReportKnowledgeGraphDeleteRelation';
 import { OctiGraphPositions } from '../../../../components/graph/graph.types';
@@ -106,7 +105,6 @@ const ReportKnowledgeGraph = ({
           modes: ['graph', 'content', 'timeline', 'correlation', 'matrix'],
           mode,
           link: `/dashboard/analyses/reports/${id}/knowledge`,
-          PopoverComponent: <ReportPopover id={id} />,
         }}
         onAddRelation={addRelationInGraph}
         onDeleteRelation={deleteRelationInGraph}

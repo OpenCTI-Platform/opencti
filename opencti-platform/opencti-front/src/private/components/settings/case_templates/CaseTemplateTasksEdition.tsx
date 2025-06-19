@@ -5,9 +5,8 @@ import * as Yup from 'yup';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import TextField from '../../../../components/TextField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
-import { Option } from '../../common/form/ReferenceField';
 import { CaseTemplateTasksLine_node$data } from './__generated__/CaseTemplateTasksLine_node.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
@@ -28,7 +27,7 @@ const CaseTemplateTasksEdition = ({ task }: { task: CaseTemplateTasksLine_node$d
   };
   const taskValidator = useSchemaEditionValidation('Task', basicShape);
   const [commitFieldPatch] = useApiMutation(caseTemplateMutationFieldPatch);
-  const onSubmit = (name: string, value: Option | Option[] | string) => {
+  const onSubmit = (name: string, value: FieldOption | FieldOption[] | string) => {
     taskValidator
       .validateAt(name, { [name]: value })
       .then(() => {

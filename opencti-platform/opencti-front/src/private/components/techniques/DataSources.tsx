@@ -2,7 +2,6 @@ import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import { DataSourcesLines_data$data } from '@components/techniques/__generated__/DataSourcesLines_data.graphql';
 import { DataSourcesLinesPaginationQuery, DataSourcesLinesPaginationQuery$variables } from '@components/techniques/__generated__/DataSourcesLinesPaginationQuery.graphql';
-import useHelper from 'src/utils/hooks/useHelper';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
@@ -106,8 +105,6 @@ const dataSourcesLinesFragment = graphql`
 
 const DataSources: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Data Sources | Techniques'));
 
@@ -166,17 +163,12 @@ const DataSources: FunctionComponent = () => {
           preloadedPaginationProps={preloadedPaginationOptions}
           lineFragment={dataSourceLineFragment}
           exportContext={{ entity_type: 'Data-Source' }}
-          createButton={isFABReplaced && (
+          createButton={(
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <DataSourceCreation paginationOptions={queryPaginationOptions} />
             </Security>
           )}
         />
-      )}
-      {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <DataSourceCreation paginationOptions={queryPaginationOptions} />
-        </Security>
       )}
     </>
   );

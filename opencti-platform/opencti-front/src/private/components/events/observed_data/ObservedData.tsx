@@ -3,17 +3,13 @@ import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import { ObservedData_observedData$key } from '@components/events/observed_data/__generated__/ObservedData_observedData.graphql';
 import ObservedDataDetails from './ObservedDataDetails';
-import ObservedDataEdition from './ObservedDataEdition';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 export const observedDataFragment = graphql`
   fragment ObservedData_observedData on ObservedData {
@@ -73,8 +69,6 @@ interface ObservedDataProps {
 const ObservedData: React.FC<ObservedDataProps> = ({ observedDataData }) => {
   const observedData = useFragment <ObservedData_observedData$key>(observedDataFragment, observedDataData);
   const overviewLayoutCustomization = useOverviewLayoutCustomization(observedData.entity_type);
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   return (
     <>
@@ -146,11 +140,6 @@ const ObservedData: React.FC<ObservedDataProps> = ({ observedDataData }) => {
           })
         }
       </Grid>
-      {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <ObservedDataEdition observedDataId={observedData.id} />
-        </Security>
-      )}
     </>
   );
 };

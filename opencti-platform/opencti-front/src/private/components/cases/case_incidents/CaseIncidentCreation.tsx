@@ -7,7 +7,7 @@ import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import * as Yup from 'yup';
 import { useNavigate } from 'react-router-dom';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { handleErrorInForm } from 'src/relay/environment';
 import { CaseIncidentsLinesCasesPaginationQuery$variables } from '@components/cases/__generated__/CaseIncidentsLinesCasesPaginationQuery.graphql';
 import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
@@ -18,7 +18,7 @@ import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import TextField from '../../../../components/TextField';
 import type { Theme } from '../../../../components/Theme';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import CaseTemplateField from '../../common/form/CaseTemplateField';
@@ -29,14 +29,12 @@ import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { Option } from '../../common/form/ReferenceField';
 import { CaseIncidentAddInput, CaseIncidentCreationCaseMutation } from './__generated__/CaseIncidentCreationCaseMutation.graphql';
 import RichTextField from '../../../../components/fields/RichTextField';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import useHelper from '../../../../utils/hooks/useHelper';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
@@ -81,15 +79,15 @@ interface FormikCaseIncidentAddInput {
   description: string;
   content: string;
   file: File | undefined;
-  createdBy: Option | undefined;
-  objectMarking: Option[];
-  objectAssignee: Option[];
-  objectParticipant: Option[];
-  objectLabel: Option[];
-  externalReferences: Option[];
+  createdBy: FieldOption | undefined;
+  objectMarking: FieldOption[];
+  objectAssignee: FieldOption[];
+  objectParticipant: FieldOption[];
+  objectLabel: FieldOption[];
+  externalReferences: FieldOption[];
   created: Date | null;
   response_types: string[];
-  caseTemplates?: Option[];
+  caseTemplates?: FieldOption[];
   authorized_members: {
     value: string,
     accessRight: string,
@@ -425,14 +423,12 @@ const CaseIncidentCreation = ({
   paginationOptions: CaseIncidentsLinesCasesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_incidents_caseIncidents',
     paginationOptions,
     'caseIncidentAdd',
   );
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const CreateCaseIncidentControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType='Case-Incident' {...props} />
   );
@@ -440,8 +436,7 @@ const CaseIncidentCreation = ({
   return (
     <Drawer
       title={t_i18n('Create an incident response')}
-      variant={isFABReplaced ? undefined : DrawerVariant.create}
-      controlledDial={isFABReplaced ? CreateCaseIncidentControlledDial : undefined}
+      controlledDial={CreateCaseIncidentControlledDial}
     >
       <CaseIncidentCreationForm updater={updater} />
     </Drawer>

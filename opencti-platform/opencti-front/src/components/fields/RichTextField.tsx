@@ -46,7 +46,7 @@ const RichTextField = ({
 }: RichTextFieldProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const editorReference = useRef<ClassicEditor>();
+  const editorReference = useRef<ClassicEditor>(undefined);
   const [fullScreen, setFullScreen] = useState(false);
   const [, meta] = useField(name);
 

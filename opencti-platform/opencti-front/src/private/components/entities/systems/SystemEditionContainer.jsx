@@ -3,13 +3,10 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import SystemEditionOverview from './SystemEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
-import useHelper from '../../../../utils/hooks/useHelper';
+import Drawer from '../../common/drawer/Drawer';
 
 const SystemEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const { handleClose, system, open, controlledDial } = props;
   const { editContext } = system;
@@ -19,9 +16,8 @@ const SystemEditionContainer = (props) => {
       title={t_i18n('Update a system')}
       open={open}
       onClose={handleClose}
-      variant={!FABReplaced && open == null ? DrawerVariant.update : undefined}
       context={editContext}
-      controlledDial={FABReplaced ? controlledDial : undefined}
+      controlledDial={controlledDial}
     >
       <SystemEditionOverview
         system={system}

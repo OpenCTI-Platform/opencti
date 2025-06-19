@@ -1,5 +1,4 @@
 import React, { FunctionComponent } from 'react';
-import useHelper from 'src/utils/hooks/useHelper';
 import CountriesLines, { countriesLinesQuery } from './countries/CountriesLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import ListLines from '../../../components/list_lines/ListLines';
@@ -18,8 +17,6 @@ const LOCAL_STORAGE_KEY = 'countries';
 
 const Countries: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Countries | Locations'));
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CountriesLinesPaginationQuery$variables>(
@@ -85,9 +82,11 @@ const Countries: FunctionComponent = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
-        createButton={FABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <CountryCreation paginationOptions={paginationOptions} />
-        </Security>}
+        createButton={(
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <CountryCreation paginationOptions={paginationOptions} />
+          </Security>
+        )}
       >
         {queryRef && (
           <React.Suspense
@@ -116,11 +115,6 @@ const Countries: FunctionComponent = () => {
     <>
       <Breadcrumbs elements={[{ label: t_i18n('Locations') }, { label: t_i18n('Countries'), current: true }]} />
       {renderLines()}
-      {!FABReplaced
-        && <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <CountryCreation paginationOptions={paginationOptions} />
-        </Security>
-      }
     </>
   );
 };

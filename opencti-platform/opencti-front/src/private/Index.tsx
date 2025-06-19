@@ -38,6 +38,7 @@ const RootDrafts = lazy(() => import('./components/drafts/Root'));
 const RootWorkspaces = lazy(() => import('./components/workspaces/Root'));
 const RootSettings = lazy(() => import('./components/settings/Root'));
 const RootAudit = lazy(() => import('./components/settings/activity/audit/Root'));
+const RootPir = lazy(() => import('./components/pir/Root'));
 
 interface IndexProps {
   settings: RootSettings$data
@@ -45,7 +46,7 @@ interface IndexProps {
 
 const Index = ({ settings }: IndexProps) => {
   const theme = useTheme<Theme>();
-  const { isTrashEnable } = useHelper();
+  const { isTrashEnable, isFeatureEnable } = useHelper();
   const {
     bannerSettings: { bannerHeight },
   } = useAuth();
@@ -98,7 +99,12 @@ const Index = ({ settings }: IndexProps) => {
         <Box component="main" sx={boxSx}>
           <Suspense fallback={<Loader />}>
             <Routes>
-              <Route path="/" element={draftContext?.id ? <Navigate to={`/dashboard/drafts/${draftContext.id}/`} replace={true} /> : boundaryWrapper(Dashboard)}/>
+              <Route path="/" element={draftContext?.id
+                ? (
+                  <Navigate to={`/dashboard/data/import/draft/${draftContext.id}/`} replace={true}/>
+                )
+                : boundaryWrapper(Dashboard)}
+              />
               {/* Search need to be rework */}
               <Route path="/search/*" element={boundaryWrapper(RootSearch)} />
               <Route path="/id/:id" element={boundaryWrapper(StixObjectOrStixRelationship)} />
@@ -112,9 +118,10 @@ const Index = ({ settings }: IndexProps) => {
               {/* Need to refactor below */}
               <Route path="/entities/*" element={boundaryWrapper(RootEntities)}/>
               <Route path="/locations/*" element={boundaryWrapper(RootLocation)}/>
+              <Route path="/data/import/draft/*" element={boundaryWrapper(RootDrafts)}/>
               <Route path="/data/*" element={boundaryWrapper(RootData)}/>
               {isTrashEnable() && (<Route path="/trash/*" element={boundaryWrapper(RootTrash)}/>)}
-              <Route path="/drafts/*" element={boundaryWrapper(RootDrafts)}/>
+              {isFeatureEnable('Pir') && <Route path="/pirs/*" element={boundaryWrapper(RootPir)}/>}
               <Route path="/workspaces/*" element={boundaryWrapper(RootWorkspaces)}/>
               <Route path="/settings/*" element={boundaryWrapper(RootSettings)}/>
               <Route path="/audits/*" element={boundaryWrapper(RootAudit)}/>

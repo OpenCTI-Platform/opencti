@@ -1,11 +1,8 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Drawer, Fab, useTheme } from '@mui/material';
-import { Edit } from '@mui/icons-material';
+import { Drawer, useTheme } from '@mui/material';
 import { graphql } from 'react-relay';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { stixCyberObservableEditionOverviewFocus } from './StixCyberObservableEditionOverview';
-import useHelper from '../../../../utils/hooks/useHelper';
-import { useFormatter } from '../../../../components/i18n';
 import ThemeDark from '../../../../components/ThemeDark';
 import ThemeLight from '../../../../components/ThemeLight';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -34,11 +31,8 @@ const StixCyberObservableEdition: FunctionComponent<StixCyberObservableEditionPr
   open: graphOpen,
   handleClose: handleGraphClose,
 }) => {
-  const { t_i18n } = useFormatter();
   const [open, setOpen] = useState<boolean>(false);
   const [commit] = useApiMutation(stixCyberObservableEditionOverviewFocus);
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { palette: { mode } } = useTheme();
   const theme = mode === 'dark'
     ? ThemeDark()
@@ -63,24 +57,7 @@ const StixCyberObservableEdition: FunctionComponent<StixCyberObservableEditionPr
 
   const renderClassic = () => (
     <>
-      {isFABReplaced
-        ? (
-          <EditEntityControlledDial onOpen={handleOpen} onClose={() => {}}/>
-        ) : (
-          <Fab
-            onClick={handleOpen}
-            color="primary"
-            aria-label={t_i18n('Update')}
-            style={{
-              position: 'fixed',
-              bottom: 30,
-              right: 30,
-            }}
-          >
-            <Edit />
-          </Fab>
-        )
-      }
+      <EditEntityControlledDial onOpen={handleOpen} onClose={() => {}}/>
       <Drawer
         open={open}
         anchor="right"

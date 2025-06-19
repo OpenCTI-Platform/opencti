@@ -1,5 +1,4 @@
 import React, { FunctionComponent } from 'react';
-import useHelper from 'src/utils/hooks/useHelper';
 import { graphql } from 'react-relay';
 import { CaseRftsLinesCasesPaginationQuery, CaseRftsLinesCasesPaginationQuery$variables } from '@components/cases/__generated__/CaseRftsLinesCasesPaginationQuery.graphql';
 import { CaseRftsLinesCases_data$data } from '@components/cases/__generated__/CaseRftsLinesCases_data.graphql';
@@ -127,7 +126,6 @@ export const LOCAL_STORAGE_KEY = 'caseRfts';
 
 const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Requests for Takedown | Cases'));
   const {
@@ -145,7 +143,6 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
     LOCAL_STORAGE_KEY,
     initialValues,
   );
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const {
     filters,
@@ -211,17 +208,12 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={caseFragment}
           exportContext={{ entity_type: 'Case-Rft' }}
-          createButton={isFABReplaced && (
+          createButton={(
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <CaseRftCreation paginationOptions={queryPaginationOptions} />
             </Security>
           )}
         />
-      )}
-      {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <CaseRftCreation paginationOptions={queryPaginationOptions} />
-        </Security>
       )}
     </>
   );

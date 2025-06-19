@@ -26,6 +26,7 @@ const ColorPickerField = (props) => {
     onSubmit,
   } = props;
   const [, meta] = useField(name);
+
   const internalOnChange = React.useCallback(
     (event) => {
       const { value } = event.target;
@@ -78,6 +79,13 @@ const ColorPickerField = (props) => {
           input: {
             endAdornment: (
               <InputAdornment position="end">
+                <div
+                  style={{
+                    width: '12px',
+                    height: '12px',
+                    backgroundColor: meta.value || '',
+                  }}
+                />
                 <IconButton aria-label="open" onClick={handleClick} size="large">
                   <ColorLens/>
                 </IconButton>

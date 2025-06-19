@@ -6,7 +6,7 @@ import { graphql } from 'react-relay';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import CustomFileUploader from '@components/common/files/CustomFileUploader';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import ConfidenceField from '@components/common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -15,15 +15,13 @@ import MarkdownField from '../../../../components/fields/MarkdownField';
 import { insertNode } from '../../../../utils/store';
 import { RegionsLinesPaginationQuery$variables } from './__generated__/RegionsLinesPaginationQuery.graphql';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
-import { Option } from '../../common/form/ReferenceField';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { RegionCreationMutation, RegionCreationMutation$variables } from './__generated__/RegionCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import useHelper from '../../../../utils/hooks/useHelper';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import { splitMultilines } from '../../../../utils/String';
 import { handleErrorInForm } from '../../../../relay/environment';
@@ -54,10 +52,10 @@ interface RegionAddInput {
   name: string;
   description: string;
   confidence: number | null;
-  createdBy: Option | null;
-  objectMarking: Option[];
-  objectLabel: Option[];
-  externalReferences: Option[];
+  createdBy: FieldOption | null;
+  objectMarking: FieldOption[];
+  objectLabel: FieldOption[];
+  externalReferences: FieldOption[];
   file: File | null;
 }
 
@@ -65,8 +63,8 @@ interface RegionFormProps {
   updater: (store: RecordSourceSelectorProxy, key: string) => void;
   onReset?: () => void;
   onCompleted?: () => void;
-  defaultCreatedBy?: Option;
-  defaultMarkingDefinitions?: Option[];
+  defaultCreatedBy?: FieldOption;
+  defaultMarkingDefinitions?: FieldOption[];
   inputValue?: string;
   bulkModalOpen?: boolean;
   onBulkModalClose: () => void;
@@ -87,12 +85,14 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
   const { t_i18n } = useFormatter();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
-  const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(REGION_TYPE);
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
-  };
-  const regionValidator = useSchemaCreationValidation(REGION_TYPE, basicShape);
+  }, mandatoryAttributes);
+
+  const regionValidator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
 
   const [commit] = useApiMutation<RegionCreationMutation>(
     regionMutation,
@@ -168,6 +168,8 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
     <Formik<RegionAddInput>
       initialValues={initialValues}
       validationSchema={regionValidator}
+      validateOnChange={false}
+      validateOnBlur={false}
       onSubmit={onSubmit}
       onReset={onReset}
     >
@@ -204,6 +206,7 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
               variant="standard"
               name="name"
               label={t_i18n('Name')}
+              required={(mandatoryAttributes.includes('name'))}
               fullWidth={true}
               detectDuplicate={['Region']}
             />
@@ -211,6 +214,7 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
+              required={(mandatoryAttributes.includes('description'))}
               fullWidth={true}
               multiline={true}
               rows="4"
@@ -222,22 +226,26 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
             />
             <CreatedByField
               name="createdBy"
+              required={(mandatoryAttributes.includes('createdBy'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ObjectLabelField
               name="objectLabel"
+              required={(mandatoryAttributes.includes('objectLabel'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.objectLabel}
             />
             <ObjectMarkingField
               name="objectMarking"
+              required={(mandatoryAttributes.includes('objectMarking'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ExternalReferencesField
               name="externalReferences"
+              required={(mandatoryAttributes.includes('externalReferences'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.externalReferences}
@@ -287,10 +295,8 @@ const RegionCreation = ({
 }: {
   paginationOptions: RegionsLinesPaginationQuery$variables;
 }) => {
-  const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_regions', paginationOptions, 'regionAdd');
 
   const CreateRegionControlledDial = (props: DrawerControlledDialProps) => (
@@ -299,9 +305,8 @@ const RegionCreation = ({
   return (
     <Drawer
       title={t_i18n('Create a region')}
-      variant={isFABReplaced ? undefined : DrawerVariant.create}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
-      controlledDial={isFABReplaced ? CreateRegionControlledDial : undefined}
+      controlledDial={CreateRegionControlledDial}
     >
       {({ onClose }) => (
         <RegionCreationForm

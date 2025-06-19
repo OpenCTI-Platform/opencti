@@ -13,9 +13,8 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { Option } from '../../common/form/ReferenceField';
 import type { Theme } from '../../../../components/Theme';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { OpinionCreationMutation$variables } from './__generated__/OpinionCreationMutation.graphql';
@@ -74,9 +73,9 @@ interface OpinionAddInput {
   opinion: string
   explanation: string
   confidence: number | undefined
-  createdBy?: Option
-  objectMarking: Option[]
-  objectLabel: Option[]
+  createdBy?: FieldOption
+  objectMarking: FieldOption[]
+  objectLabel: FieldOption[]
   externalReferences: { value: string }[]
   file: File | undefined
 }
@@ -85,8 +84,8 @@ interface OpinionFormProps {
   updater: (store: RecordSourceSelectorProxy, key: string) => void;
   onReset?: () => void;
   onCompleted?: () => void;
-  defaultCreatedBy?: Option;
-  defaultMarkingDefinitions?: Option[];
+  defaultCreatedBy?: FieldOption;
+  defaultMarkingDefinitions?: FieldOption[];
   defaultConfidence?: number;
   inputValue?: string;
 }

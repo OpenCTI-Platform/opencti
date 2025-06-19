@@ -7,13 +7,10 @@ import { useFormatter } from '../../../../components/i18n';
 import IntrusionSetEditionOverview from './IntrusionSetEditionOverview';
 import IntrusionSetEditionDetails from './IntrusionSetEditionDetails';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
-import useHelper from '../../../../utils/hooks/useHelper';
+import Drawer from '../../common/drawer/Drawer';
 
 const IntrusionSetEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const { handleClose, intrusionSet, open, controlledDial } = props;
   const { editContext } = intrusionSet;
@@ -27,9 +24,8 @@ const IntrusionSetEditionContainer = (props) => {
       title={t_i18n('Update an intrusion set')}
       open={open}
       onClose={handleClose}
-      variant={!isFABReplaced && open == null ? DrawerVariant.update : undefined}
       context={editContext}
-      controlledDial={isFABReplaced ? controlledDial : undefined}
+      controlledDial={controlledDial}
     >
       <>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>

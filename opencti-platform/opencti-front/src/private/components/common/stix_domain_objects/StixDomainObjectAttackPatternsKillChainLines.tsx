@@ -222,14 +222,11 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                               />
                               <ItemMarkings
                                 variant="inList"
-                                markingDefinitions={
-                                attackPattern.objectMarking ?? []
-                              }
+                                markingDefinitions={attackPattern.objectMarking ?? []}
                                 limit={1}
                               />
                             </ListItemButton>
                           </ListItem>
-
                           {coursesOfAction && (
                           <Collapse
                             in={expandedLines[attackPattern.id] !== false}

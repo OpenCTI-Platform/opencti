@@ -1,6 +1,5 @@
 import { head, isEmpty } from 'ramda';
 import { FormikValues } from 'formik/dist/types';
-import { Option } from '@components/common/form/ReferenceField';
 import { useCallback } from 'react';
 import useEntitySettings from './useEntitySettings';
 import useAuth from './useAuth';
@@ -9,6 +8,7 @@ import { isEmptyField } from '../utils';
 import { now } from '../Time';
 import { AuthorizedMembers, authorizedMembersToOptions, INPUT_AUTHORIZED_MEMBERS } from '../authorizedMembers';
 import useConfidenceLevel from './useConfidenceLevel';
+import { FieldOption } from '../field';
 
 const DEFAULT_CONFIDENCE = 75;
 
@@ -68,7 +68,7 @@ export const useComputeDefaultValues = () => {
       return head(defaultValues.map((v) => v.name)) ?? '';
     }
     if (multiple) {
-      return defaultValues.map((v) => ({ value: v.id, label: v.name } as Option));
+      return defaultValues.map((v) => ({ value: v.id, label: v.name } as FieldOption));
     }
     // Handle boolean
     if (type === 'boolean') {
@@ -127,7 +127,7 @@ const useDefaultValues = <Values extends FormikValues>(
           attr.defaultValues,
         );
         if (attr.name === INPUT_AUTHORIZED_MEMBERS) {
-          const creatorRule = (defaultValues[attr.name] as Option[])?.find((v) => v.value === 'CREATOR');
+          const creatorRule = (defaultValues[attr.name] as FieldOption[])?.find((v) => v.value === 'CREATOR');
           if (creatorRule) {
             creatorRule.value = me.id;
             creatorRule.label = me.name;

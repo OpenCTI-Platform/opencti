@@ -2,12 +2,10 @@ import React, { FunctionComponent } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
-import useHelper from 'src/utils/hooks/useHelper';
 import ExternalReferenceOverview from './ExternalReferenceOverview';
 import ExternalReferenceDetails from './ExternalReferenceDetails';
 import ExternalReferenceEdition from './ExternalReferenceEdition';
 import Security from '../../../../utils/Security';
-import ExternalReferencePopover from './ExternalReferencePopover';
 import ExternalReferenceHeader from './ExternalReferenceHeader';
 import ExternalReferenceFileImportViewer from './ExternalReferenceFileImportViewer';
 import ExternalReferenceStixCoreObjects from './ExternalReferenceStixCoreObjects';
@@ -41,17 +39,12 @@ const ExternalReferenceComponent: FunctionComponent<
 ExternalReferenceComponentProps
 > = ({ externalReference, connectorsImport }) => {
   const classes = useStyles();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const overviewLayoutCustomization = useOverviewLayoutCustomization('External-Reference');
   return (
     <div className={classes.container}>
       <ExternalReferenceHeader
         externalReference={externalReference}
-        PopoverComponent={
-          <ExternalReferencePopover id={externalReference.id} handleRemove={undefined} variant={'inLine'}/>
-        }
-        EditComponent={isFABReplaced && (
+        EditComponent={(
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <ExternalReferenceEdition externalReferenceId={externalReference.id} />
           </Security>
@@ -99,11 +92,6 @@ ExternalReferenceComponentProps
         })
         }
       </Grid>
-      {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <ExternalReferenceEdition externalReferenceId={externalReference.id} />
-        </Security>
-      )}
     </div>
   );
 };

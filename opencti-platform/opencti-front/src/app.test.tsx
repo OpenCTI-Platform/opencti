@@ -52,7 +52,7 @@ describe('App', () => {
     const { getByDisplayValue } = render(
       <RelayEnvironmentProvider environment={environment}>
         <BrowserRouter basename={APP_BASE_PATH}>
-          <AppIntlProvider settings={{ platform_language: 'auto' }}>
+          <AppIntlProvider settings={{ platform_language: 'auto', platform_translations: '{}' }}>
             <ThemeProvider theme={createTheme()}>
               <UserContext.Provider value={UserContextValue}>
                 <Profile/>

@@ -3,7 +3,6 @@ import { Field, Form, Formik } from 'formik';
 import { graphql, useFragment } from 'react-relay';
 import * as Yup from 'yup';
 import CountryField from '@components/common/form/CountryField';
-import { Option } from '@components/common/form/ReferenceField';
 import {
   ThreatActorIndividualEditionOverviewFocus,
   ThreatActorIndividualMutationRelationDelete,
@@ -11,7 +10,7 @@ import {
 } from '@components/threats/threat_actors_individual/ThreatActorIndividualEditionOverview';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import { useFormatter } from '../../../../components/i18n';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import MarkdownField from '../../../../components/fields/MarkdownField';
@@ -140,7 +139,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
 
   const handleSubmitField = (
     name: string,
-    value: string | string[] | Option | null,
+    value: string | string[] | FieldOption | null,
     operation: EditOperation = 'replace',
   ) => {
     threatActorIndividualValidator
@@ -148,7 +147,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
       .then(() => {
         let finalValue = value;
         if (name === 'bornIn' || name === 'ethnicity') {
-          finalValue = (value as Option)?.value ?? '';
+          finalValue = (value as FieldOption)?.value ?? '';
         }
         editor.fieldPatch({
           variables: {

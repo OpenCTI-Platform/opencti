@@ -15,7 +15,7 @@ import { mergeDeepRightAll, now, utcDate } from '../utils/format';
 import { convertStoreToStix } from './stix-2-1-converter';
 import type { BasicStoreCommon, StoreObject, StoreRelation } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
-import type { BaseEvent, CreateEventOpts, DeleteEvent, EventOpts, MergeEvent, SseEvent, StreamDataEvent, UpdateEvent, UpdateEventOpts } from '../types/event';
+import type { BaseEvent, CreateEventOpts, DataEvent, DeleteEvent, EventOpts, MergeEvent, SseEvent, StreamDataEvent, UpdateEvent, UpdateEventOpts } from '../types/event';
 import type { StixCoreObject } from '../types/stix-2-1-common';
 import type { EditContext } from '../generated/graphql';
 import { telemetry } from '../config/tracing';
@@ -559,6 +559,7 @@ export const buildStixUpdateEvent = (user: AuthUser, previousStix: StixCoreObjec
       patch,
       reverse_patch: previousPatch,
       related_restrictions: opts.related_restrictions,
+      pir_ids: opts.pir_ids
     }
   };
 };
@@ -697,6 +698,7 @@ interface StreamOption {
   withInternal?: boolean;
   autoReconnect?: boolean;
   streamName?: string;
+  streamBatchTime?: number
 }
 
 export const createStreamProcessor = <T extends BaseEvent> (
@@ -783,6 +785,42 @@ export const createStreamProcessor = <T extends BaseEvent> (
   };
 };
 // endregion
+
+// region fetch stream event range
+export const fetchStreamEventsRangeFromEventId = async (
+  client: Cluster | Redis,
+  startEventId: string,
+  callback: (events: Array<SseEvent<DataEvent>>, lastEventId: string) => void,
+  opts: StreamOption = {},
+) => {
+  let effectiveStartEventId = startEventId;
+  const [startTimestamp] = startEventId.split('-');
+  const endTimestamp = startTimestamp + (opts.streamBatchTime ?? STREAM_BATCH_TIME);
+  try {
+    // Consume the data stream
+    const streamResult = await client.call(
+      'XRANGE',
+      opts.streamName ?? REDIS_STREAM_NAME,
+      startTimestamp,
+      endTimestamp
+    ) as any[];
+    // Process the event results
+    if (streamResult && streamResult.length > 0) {
+      const lastElementId = await processStreamResult(streamResult, callback, opts.withInternal);
+      if (lastElementId) {
+        effectiveStartEventId = lastElementId;
+      }
+    } else {
+      await processStreamResult([], callback, opts.withInternal);
+    }
+  } catch (err) {
+    logApp.error('Redis stream consume fail', { cause: err });
+    if (opts.autoReconnect) {
+      await waitInSec(2);
+    }
+  }
+  return { lastEventId: effectiveStartEventId };
+};
 
 // region opencti notification stream
 export const NOTIFICATION_STREAM_NAME = `${REDIS_PREFIX}stream.notification`;
@@ -915,11 +953,9 @@ export const redisDeleteSupportPackageNodeStatus = (supportPackageId: string) =>
   const setKeyId = `support:${supportPackageId}`;
   return getClientBase().del(setKeyId);
 };
-
 // endregion - support package handling
 
 // region - exclusion list cache handling
-
 const EXCLUSION_LIST_STATUS_KEY = 'exclusion_list_status';
 const EXCLUSION_LIST_CACHE_KEY = 'exclusion_list_cache';
 export const redisUpdateExclusionListStatus = async (exclusionListStatus: object) => {
@@ -946,15 +982,50 @@ export const redisSetExclusionListCache = async (cache: ExclusionListCacheItem[]
   const stringifiedCache = JSON.stringify(cache);
   await getClientBase().set(EXCLUSION_LIST_CACHE_KEY, stringifiedCache);
 };
-
 // endregion - exclusion list cache handling
+
+// region - forgot password handling
+
+export const OTP_TTL = conf.get('app:forgot_password:otp_ttl_second') || 600;
+
+export const redisSetForgotPasswordOtp = async (
+  transactionId: string,
+  data: { email: string; hashedOtp: string; mfa_activated: boolean; mfa_validated: boolean; userId: string },
+  ttl: number = OTP_TTL
+) => {
+  const forgotPasswordOtpKeyName = `forgot_password_otp_${transactionId}`;
+  const pointerKey = `forgot_password_transactionId_${data.email}`;
+  await getClientBase().setex(forgotPasswordOtpKeyName, ttl, JSON.stringify(data));
+  await getClientBase().setex(pointerKey, ttl, transactionId);
+};
+export const redisGetForgotPasswordOtp = async (id: string) => {
+  const keyName = `forgot_password_otp_${id}`;
+  const str = await getClientBase().get(keyName) ?? '{}';
+  const values: { hashedOtp: string, email: string, mfa_activated: boolean, mfa_validated: boolean, userId: string } = JSON.parse(str);
+  const ttl = await getClientBase().ttl(keyName);
+  return { ...values, ttl };
+};
+export const redisGetForgotPasswordOtpPointer = async (email: string) => {
+  const pointerKey = `forgot_password_transactionId_${email}`;
+  const id = await getClientBase().get(pointerKey);
+  const ttl = await getClientBase().ttl(pointerKey);
+  return { id, ttl };
+};
+export const redisDelForgotPassword = async (id: string, email: string) => {
+  const otpKeyName = `forgot_password_otp_${id}`;
+  const pointerKeyName = `forgot_password_transactionId_${email}`;
+  await getClientBase().del(otpKeyName);
+  await getClientBase().del(pointerKeyName);
+};
+
+// endregion - forgot password handling
 
 // region - telemetry gauges
 const TELEMETRY_EVENT_KEY = 'telemetry_events';
 /**
  * Increment a gauge by its name
  * @param gaugeName
- * @param countToAdd: 1 or more to be added in count
+ * @param countToAdd 1 or more to be added in count
  */
 export const redisSetTelemetryAdd = async (gaugeName: string, countToAdd: number) => {
   const currentCountStr = await getClientBase().hget(TELEMETRY_EVENT_KEY, gaugeName);
@@ -987,3 +1058,14 @@ export const redisClearTelemetry = async () => {
   return getClientBase().del(TELEMETRY_EVENT_KEY);
 };
 // endregion - telemetry gauges
+
+// region connector logs
+export const redisSetConnectorLogs = async (connectorId: string, logs: string[]) => {
+  const data = JSON.stringify(logs);
+  await getClientBase().set(`connector-${connectorId}-logs`, data);
+};
+export const redisGetConnectorLogs = async (connectorId: string): Promise<string[]> => {
+  const rawLogs = await getClientBase().get(`connector-${connectorId}-logs`);
+  return rawLogs ? JSON.parse(rawLogs) : [];
+};
+// endregion

@@ -23,7 +23,7 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
   const {
     useDataTablePaginationLocalStorage: {
       helpers,
-      viewStorage: { filters, savedFilters },
+      viewStorage: { savedFilters },
     },
   } = useDataTableContext();
 
@@ -36,10 +36,21 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
     value: item,
   }));
 
+  const handleReset = () => {
+    setSelectedSavedFilter(undefined);
+    setCurrentSavedFilter(undefined);
+    setInputValue('');
+    helpers.handleRemoveSavedFilters();
+  };
+
   useEffect(() => {
     if (savedFilters) {
       const currentSavedFilters = options.find((item) => item.value.id === savedFilters.id);
-      if (!currentSavedFilters) return;
+      if (!currentSavedFilters || !data.length) {
+        helpers.handleRemoveSavedFilters();
+        return;
+      }
+
       setSelectedSavedFilter(currentSavedFilters);
       setCurrentSavedFilter(currentSavedFilters.value);
       setInputValue(currentSavedFilters.label);
@@ -54,26 +65,16 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
       });
       setInputValue(currentSavedFilter.name);
     }
+    if (!currentSavedFilter && selectedSavedFilter) {
+      handleReset();
+    }
   }, [currentSavedFilter]);
-
-  const handleReset = () => {
-    setSelectedSavedFilter(undefined);
-    setCurrentSavedFilter(undefined);
-    setInputValue('');
-    helpers.handleRemoveSavedFilters();
-  };
 
   useEffect(() => {
     if (isDisabled && !!selectedSavedFilter) {
       handleReset();
     }
   }, [isDisabled]);
-
-  useEffect(() => {
-    if (!filters?.filters.length && !filters?.filterGroups.length) {
-      handleReset();
-    }
-  }, [filters]);
 
   const handleChange = (selectionOption: AutocompleteOptionType) => {
     setSelectedSavedFilter(selectionOption);
@@ -102,7 +103,12 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
         inputValue={inputValue}
       />
       {!!savedFilterToDelete && (
-        <SavedFilterDeleteDialog savedFilterToDelete={savedFilterToDelete} onClose={resetSavedFilterToDelete} onReset={handleReset} />
+        <SavedFilterDeleteDialog
+          savedFilterToDelete={savedFilterToDelete}
+          onClose={resetSavedFilterToDelete}
+          onReset={handleReset}
+          shouldResetFilters={savedFilterToDelete === selectedSavedFilter?.value.id}
+        />
       )}
     </>
   );

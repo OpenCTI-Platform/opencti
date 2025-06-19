@@ -907,6 +907,14 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
     { key: 'brand-abuse' },
   ],
   // S
+  security_platform_type_ov: [
+    { key: 'EDR' },
+    { key: 'XDR' },
+    { key: 'SIEM' },
+    { key: 'SOAR' },
+    { key: 'NDR' },
+    { key: 'ISPM' },
+  ],
   service_status_ov: [
     {
       key: 'SERVICE_CONTINUE_PENDING',
@@ -1162,6 +1170,7 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
     { key: 'female' },
     { key: 'nonbinary' },
     { key: 'other' },
+    { key: 'unknown' },
   ],
   marital_status_ov: [
     { key: 'annulled' },

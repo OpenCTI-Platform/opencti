@@ -53,6 +53,8 @@ class TaskStatus extends Component {
     const style = variant === 'inList' ? classes.chipInList : classes.chip;
     switch (status) {
       case 'progress':
+      case 'provisioning':
+      case 'processing':
         return (
           <Chip
             classes={{ root: style }}

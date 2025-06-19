@@ -128,6 +128,7 @@
     "performance_logger": false,
     "map_tile_server_dark": "https://map.opencti.io/styles/filigran-dark2/{z}/{x}/{y}.png",
     "map_tile_server_light": "https://map.opencti.io/styles/filigran-light2/{z}/{x}/{y}.png",
+    "translations": "{}",
     "reference_attachment": false,
     "python_execution": "native",
     "python_execution_venv": "../../../.python-venv/lib/python3.12/site-packages",
@@ -151,6 +152,9 @@
     "dissemination_list": {
       "to_email": "no-reply@filigran.io",
       "max_list_size": 500
+    },
+    "forgot_password": {
+      "otp_ttl_second": 600
     }
   },
   "demo_mode": false,
@@ -299,7 +303,9 @@
   "publisher_manager": {
     "enabled": true,
     "lock_key": "publisher_manager_lock",
-    "interval": 10000
+    "interval": 10000,
+    "enable_buffering": true,
+    "buffering_seconds": 60
   },
   "sync_manager": {
     "enabled": true,
@@ -331,6 +337,12 @@
     "lock_key": "file_index_manager_lock",
     "stream_lock_key": "file_index_manager_stream_lock",
     "interval": 60000
+  },
+  "pir_manager": {
+    "enabled": true,
+    "lock_key": "pir_manager_lock",
+    "interval": 30000,
+    "time_range": 180000
   },
   "exclusion_list_cache_build_manager": {
     "enabled": true,

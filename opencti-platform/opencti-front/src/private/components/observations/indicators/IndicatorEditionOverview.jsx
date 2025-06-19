@@ -4,6 +4,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
+import { Stack } from '@mui/material';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -25,7 +26,6 @@ import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeCon
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import IndicatorDeletion from './IndicatorDeletion';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const indicatorMutationFieldPatch = graphql`
   mutation IndicatorEditionOverviewFieldPatchMutation(
@@ -86,8 +86,6 @@ const IndicatorEditionOverviewComponent = ({
   enableReferences,
 }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { mandatoryAttributes } = useIsMandatoryAttribute(INDICATOR_TYPE);
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
@@ -432,11 +430,8 @@ const IndicatorEditionOverviewComponent = ({
               />
             }
           />
-          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced
-              ? <IndicatorDeletion id={indicator.id} />
-              : <div />
-            }
+          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
+            <IndicatorDeletion id={indicator.id} />
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
@@ -447,7 +442,7 @@ const IndicatorEditionOverviewComponent = ({
                 id={indicator.id}
               />
             )}
-          </div>
+          </Stack>
         </Form>
       )}
     </Formik>

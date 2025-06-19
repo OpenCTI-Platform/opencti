@@ -1120,6 +1120,7 @@ type BackgroundTaskAction {
 interface BackgroundTask {
   id: ID!
   type: BackgroundTaskType
+  description: String
   initiator: Creator
   actions: [BackgroundTaskAction]
   created_at: DateTime
@@ -1128,11 +1129,13 @@ interface BackgroundTask {
   task_expected_number: Int
   task_processed_number: Int
   errors: [BackgroundTaskError]
+  work: Work
 }
 
 type RuleTask implements BackgroundTask {
   id: ID!
   type: BackgroundTaskType
+  description: String
   initiator: Creator
   actions: [BackgroundTaskAction]
   created_at: DateTime
@@ -1143,11 +1146,13 @@ type RuleTask implements BackgroundTask {
   errors: [BackgroundTaskError]
   rule: ID!
   enable: Boolean
+  work: Work
 }
 
 type ListTask implements BackgroundTask {
   id: ID!
   type: BackgroundTaskType
+  description: String
   initiator: Creator
   actions: [BackgroundTaskAction]
   created_at: DateTime
@@ -1160,11 +1165,13 @@ type ListTask implements BackgroundTask {
   authorized_members: [MemberAccess!]
   authorized_authorities: [String]
   task_ids: [ID!]
+  work: Work
 }
 
 type QueryTask implements BackgroundTask {
   id: ID!
   type: BackgroundTaskType
+  description: String
   initiator: Creator
   actions: [BackgroundTaskAction]
   created_at: DateTime
@@ -1178,6 +1185,7 @@ type QueryTask implements BackgroundTask {
   authorized_authorities: [String]
   task_filters: String!
   task_search: String
+  work: Work
 }
 
 type BackgroundTaskConnectionEdge {
@@ -1209,12 +1217,14 @@ input BackgroundTaskActionInput {
 
 input ListTaskAddInput {
   ids: [ID!]
+  description: String
   actions: [BackgroundTaskActionInput]!
   scope: BackgroundTaskScope!
 }
 
 input QueryTaskAddInput {
   filters: String
+  description: String
   search: String
   excluded_ids: [ID]
   actions: [BackgroundTaskActionInput]!
@@ -1439,6 +1449,7 @@ type Settings implements InternalObject & BasicObject {
   platform_feature_flags: [Module!]
   platform_critical_alerts: [PlatformCriticalAlert!]!
   platform_trash_enabled: Boolean!
+  platform_translations: String
   platform_protected_sensitive_config: PlatformProtectedSensitiveConfig!
   created_at: DateTime!
   updated_at: DateTime!
@@ -1495,6 +1506,7 @@ type Group implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  auto_integration_assignation: [String]!
   parent_types: [String]!
   name: String!
   default_assignation: Boolean
@@ -1893,6 +1905,7 @@ enum ConnectorType {
   INTERNAL_ANALYSIS
   INTERNAL_EXPORT_FILE
   STREAM
+  INTERNAL_INGESTION_PIR
 }
 
 input ConnectorWithConfig {
@@ -1955,6 +1968,11 @@ input StixCyberObservablesExportAskInput {
   selectedIds: [String]
 }
 
+input ContractConfigInput {
+  key: String!
+  value: [String!]
+}
+
 input RegisterConnectorInput {
   id: ID!
   name: String!
@@ -1964,6 +1982,45 @@ input RegisterConnectorInput {
   only_contextual: Boolean
   playbook_compatible: Boolean
   listen_callback_uri: String
+}
+
+input EditManagedConnectorInput {
+  id: ID!
+  name: String!
+  connector_user_id: ID!
+  manager_contract_configuration: [ContractConfigInput!]!
+}
+
+input AddManagedConnectorInput {
+  name: String!
+  connector_user_id: ID!
+  catalog_id: ID!
+  manager_contract_image: String!
+  manager_contract_configuration: [ContractConfigInput!]!
+}
+
+input RegisterConnectorsManagerInput {
+  id: ID!
+  name: String!
+}
+
+input UpdateConnectorManagerStatusInput {
+  id: ID!
+}
+
+input RequestConnectorStatusInput {
+  id: ID!
+  status: ConnectorRequestStatus!
+}
+
+input CurrentConnectorStatusInput {
+  id: ID!
+  status: ConnectorCurrentStatus!
+}
+
+input LogsConnectorStatusInput {
+  id: ID!
+  logs: [String!]!
 }
 
 type RabbitMQConnection {
@@ -2019,6 +2076,26 @@ type ConnectorQueueDetails {
   messages_size: Float!
 }
 
+type ConnectorContractConfiguration {
+  key: String!
+  value: String
+}
+
+enum ConnectorRequestStatus {
+  starting
+  stopping
+}
+
+enum ConnectorCurrentStatus {
+  started
+  stopped
+}
+
+type ManagerContractConfiguration {
+  key: String
+  value: String
+}
+
 type Connector implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
@@ -2036,6 +2113,7 @@ type Connector implements BasicObject & InternalObject {
   connector_schema: String
   connector_schema_ui: String
   connector_state_reset: Boolean
+  connector_state_timestamp: DateTime
   connector_user_id: ID
   connector_user: User
   connector_queue_details: ConnectorQueueDetails!
@@ -2044,8 +2122,45 @@ type Connector implements BasicObject & InternalObject {
   created_at: DateTime
   config: ConnectorConfig
   works(status: String): [Work]
+  is_managed: Boolean
+  manager_current_status: String
+  manager_requested_status: String
+  manager_contract_image: String
+  manager_contract_definition: String
+  manager_contract_configuration: [ManagerContractConfiguration!]
+  manager_connector_logs: [String!]
+  manager_contract_hash: String
   built_in: Boolean
   configurations: [ConnectorConfiguration!]
+}
+
+type ManagedConnector implements BasicObject & InternalObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  name: String!
+  connector_user_id: ID
+  connector_user: User
+  connector_state_timestamp: DateTime
+  manager: ConnectorManager
+  manager_contract_image: String!
+  manager_current_status: String
+  manager_requested_status: String!
+  manager_contract_configuration: [ConnectorContractConfiguration!]!
+  manager_contract_hash: String!
+  manager_connector_logs: [String!]!
+}
+
+type ConnectorManager implements BasicObject & InternalObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  name: String!
+  last_sync_execution: DateTime
+  about_version: String!
+  active: Boolean!
 }
 
 type RuleExecutionError {
@@ -2744,9 +2859,15 @@ type AttackPatternForMatrix {
   name: String!
   description: String
   x_mitre_id: String
-  subAttackPatternsIds: [String!]
+  subAttackPatterns: [SubAttackPatternForMatrix!]
   subAttackPatternsSearchText: String
   killChainPhasesIds: [String!]
+}
+
+type SubAttackPatternForMatrix {
+  attack_pattern_id: String!
+  name: String!
+  description: String
 }
 
 type AttackPatternsByKillChain {
@@ -7498,11 +7619,11 @@ type StixObjectOrStixRelationshipRefEdge {
   node: StixObjectOrStixRelationship!
 }
 
-union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | Task | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | EntitySetting | ManagerConfiguration | Creator | Group | Workspace | CsvMapper | Status | PublicDashboard
+union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | Task | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | EntitySetting | ManagerConfiguration | Creator | Group | Workspace | CsvMapper | Status | PublicDashboard | Pir
 
-union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | CsvMapper | PublicDashboard
+union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | CsvMapper | PublicDashboard | Pir
 
-union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | Narrative | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | PublicDashboard
+union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | Narrative | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | PublicDashboard
 
 enum StixRelationshipsOrdering {
   entity_type
@@ -7809,6 +7930,7 @@ enum StixRefRelationshipsOrdering {
   toPatternType
   toCreatedAt
   _score
+  pir_score
 }
 
 type StixRefRelationshipConnection {
@@ -7855,6 +7977,8 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   groupings(first: Int): GroupingConnection
   cases(first: Int): CaseConnection
   toStix: String
+  pir_explanations: [PirExplanation!]
+  pir_score: Int
   creators: [Creator!]
   editContext: [EditUserContext!]
 }
@@ -7882,6 +8006,7 @@ input StixRefRelationshipAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+  pir_explanations: [PirExplanationInput!]
 }
 
 input StixRefRelationshipsAddInput {
@@ -7931,7 +8056,10 @@ type Query {
   role(id: String!): Role
   capabilities(first: Int): CapabilityConnection
   connector(id: String!): Connector
-  connectors: [Connector!]
+  connectors: [Connector!]!
+  connectorManager(managerId: ID!): ConnectorManager!
+  connectorManagers: [ConnectorManager!]!
+  connectorsForManagers: [ManagedConnector!]
   connectorsForWorker: [Connector]
   connectorsForExport: [Connector]
   connectorsForImport: [Connector]
@@ -7978,6 +8106,7 @@ type Query {
   stixCoreObjectAskAiActivity(id: ID!, language: String, forceRefresh: Boolean): AiActivity
   stixCoreObjectAskAiForecast(id: ID!, language: String, forceRefresh: Boolean): AiForecast
   stixCoreObjectAskAiHistory(id: ID!, language: String, forceRefresh: Boolean): AiHistory
+  stixCoreBackgroundActiveOperations(id: ID!): [BackgroundTask!]
   stixCoreObjects(first: Int, after: ID, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixCoreObjectConnection
   stixCoreObjectsRestricted(first: Int, after: ID, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixCoreObjectConnection
   globalSearch(first: Int, after: ID, search: String, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup): StixCoreObjectConnection
@@ -8109,6 +8238,8 @@ type Query {
   csvMapperTest(configuration: String!, content: String!): CsvMapperTestResult @deprecated(reason: "[>=6.4 & <6.7]. Use `csvMapperTest mutation`.")
   channel(id: String!): Channel
   channels(first: Int, after: ID, orderBy: ChannelsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): ChannelConnection
+  catalog(id: String!): Catalog
+  catalogs: [Catalog!]!
   language(id: String!): Language
   languages(first: Int, after: ID, orderBy: LanguagesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): LanguageConnection
   event(id: String!): Event
@@ -8189,6 +8320,9 @@ type Query {
   ingestionTaxiiCollections(first: Int, after: ID, orderBy: IngestionTaxiiCollectionOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionTaxiiCollectionConnection
   ingestionCsv(id: String!): IngestionCsv
   ingestionCsvs(first: Int, after: ID, orderBy: IngestionCsvOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionCsvConnection
+  csvFeedAddInputFromImport(file: Upload!): CSVFeedAddInputFromImport!
+  ingestionJson(id: String!): IngestionJson
+  ingestionJsons(first: Int, after: ID, orderBy: IngestionJsonOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionJsonConnection
   indicator(id: String!): Indicator
   indicators(first: Int, after: ID, orderBy: IndicatorsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): IndicatorConnection
   indicatorsTimeSeries(objectId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!, filters: FilterGroup): [TimeSeries]
@@ -8202,6 +8336,8 @@ type Query {
   csvMappers(first: Int, after: ID, orderBy: CsvMapperOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): CsvMapperConnection
   csvMapperSchemaAttributes: [CsvMapperSchemaAttributes!]!
   csvMapperAddInputFromImport(file: Upload!): CsvMapperAddInputFromImport!
+  jsonMapper(id: ID!): JsonMapper
+  jsonMappers(first: Int, after: ID, orderBy: JsonMapperOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): JsonMapperConnection
   publicDashboard(id: String!): PublicDashboard
   publicDashboards(first: Int, after: ID, orderBy: PublicDashboardsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): PublicDashboardConnection
   publicDashboardByUriKey(uri_key: String!): PublicDashboard
@@ -8232,6 +8368,12 @@ type Query {
   disseminationList(id: ID!): DisseminationList
   disseminationLists(first: Int, after: ID, orderBy: DisseminationListOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DisseminationListConnection
   savedFilters(first: Int, after: ID, orderBy: SavedFilterOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): SavedFilterConnection
+  pir(id: ID!): Pir
+  pirs(first: Int, after: ID, orderBy: PirOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): PirConnection
+  fintelDesign(id: String!): FintelDesign
+  fintelDesigns(first: Int, after: ID, orderBy: FintelDesignOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): FintelDesignConnection
+  securityPlatform(id: String!): SecurityPlatform
+  securityPlatforms(first: Int, after: ID, orderBy: SecurityPlatformOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): SecurityPlatformConnection
 }
 
 type Subscription {
@@ -8338,7 +8480,7 @@ type SynchronizerEditMutations {
 }
 
 type StixEditMutations {
-  delete: ID
+  delete(forceDelete: Boolean): ID
   merge(stixObjectsIds: [String]!): StixObject
 }
 
@@ -8364,6 +8506,7 @@ type ExternalReferenceEditMutations {
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(fromId: StixRef!, relationship_type: String!): ExternalReference
   askEnrichment(connectorId: ID!): Work
+  askEnrichments(connectorIds: [ID!]!): [Work!]
   importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean): File
 }
 
@@ -8410,9 +8553,11 @@ type StixCoreObjectEditMutations {
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationsAdd(input: StixRefRelationshipsAddInput!, commitMessage: String, references: [String]): StixCoreObject
   relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): StixCoreObject
-  restrictionOrganizationAdd(organizationId: ID!): StixCoreObject
-  restrictionOrganizationDelete(organizationId: ID!): StixCoreObject
+  clearAccessRestriction: StixCoreObject
+  restrictionOrganizationAdd(organizationId: [ID!]!, directContainerSharing: Boolean): StixCoreObject
+  restrictionOrganizationDelete(organizationId: [ID!]!, directContainerSharing: Boolean): StixCoreObject
   askEnrichment(connectorId: ID!): Work
+  askEnrichments(connectorIds: [ID!]!): [Work!]
   askAnalysis(contentSource: String!, contentType: AnalysisContentType!, connectorId: ID): Work
   analysisPush(file: Upload!, contentSource: String!, contentType: AnalysisContentType!, analysisType: String!): File
   analysisClear(contentSource: String!, contentType: AnalysisContentType!): Boolean
@@ -8691,8 +8836,8 @@ type StixCoreRelationshipEditMutations {
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationsAdd(input: StixRefRelationshipsAddInput!, commitMessage: String, references: [String]): StixCoreRelationship
   relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): StixCoreRelationship
-  restrictionOrganizationAdd(organizationId: ID!): StixCoreRelationship
-  restrictionOrganizationDelete(organizationId: ID!): StixCoreRelationship
+  restrictionOrganizationAdd(organizationId: [ID!]!, directContainerSharing: Boolean): StixCoreRelationship
+  restrictionOrganizationDelete(organizationId: [ID!]!, directContainerSharing: Boolean): StixCoreRelationship
   removeFromDraft: ID
 }
 
@@ -8704,8 +8849,8 @@ type StixSightingRelationshipEditMutations {
   relationAdd(input: StixRefRelationshipAddInput!): StixSightingRelationship
   relationsAdd(input: StixRefRelationshipsAddInput!, commitMessage: String, references: [String]): StixSightingRelationship
   relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): StixSightingRelationship
-  restrictionOrganizationAdd(organizationId: ID!): StixSightingRelationship
-  restrictionOrganizationDelete(organizationId: ID!): StixSightingRelationship
+  restrictionOrganizationAdd(organizationId: [ID!]!, directContainerSharing: Boolean): StixSightingRelationship
+  restrictionOrganizationDelete(organizationId: [ID!]!, directContainerSharing: Boolean): StixSightingRelationship
   removeFromDraft: ID
 }
 
@@ -8743,6 +8888,9 @@ type Mutation {
   retentionRuleEdit(id: ID!): RetentionRuleEditMutations
   ruleSetActivation(id: ID!, enable: Boolean!): Rule!
   ruleManagerClean(eventId: ID): RuleManager!
+  ruleApply(elementId: ID!, ruleId: ID!): Boolean
+  ruleClear(elementId: ID!, ruleId: ID!): Boolean
+  rulesRescan(elementId: ID!): Boolean
   frontendErrorLog(message: String!, codeStack: String, componentStack: String): Boolean
   token(input: UserLoginInput): String
   otpActivation(input: UserOTPActivationInput): MeUser
@@ -8771,8 +8919,15 @@ type Mutation {
   roleEdit(id: ID!): RoleEditMutations
   pingConnector(id: ID!, state: String, connectorInfo: ConnectorInfoInput): Connector
   registerConnector(input: RegisterConnectorInput): Connector
+  managedConnectorEdit(input: EditManagedConnectorInput): ManagedConnector
+  managedConnectorAdd(input: AddManagedConnectorInput): ManagedConnector
+  registerConnectorsManager(input: RegisterConnectorsManagerInput): ConnectorManager
+  updateConnectorManagerStatus(input: UpdateConnectorManagerStatusInput): ConnectorManager
   resetStateConnector(id: ID!): Connector
   deleteConnector(id: ID!): ID!
+  updateConnectorRequestedStatus(input: RequestConnectorStatusInput!): ManagedConnector
+  updateConnectorCurrentStatus(input: CurrentConnectorStatusInput!): ManagedConnector
+  updateConnectorLogs(input: LogsConnectorStatusInput!): ID!
   updateConnectorTrigger(id: ID!, input: [EditInput]!): Connector
   feedAdd(input: FeedAddInput!): Feed
   feedDelete(id: ID!): ID!
@@ -9015,6 +9170,12 @@ type Mutation {
   ingestionCsvResetState(id: ID!): IngestionCsv
   ingestionCsvDelete(id: ID!): ID
   ingestionCsvFieldPatch(id: ID!, input: [EditInput!]!): IngestionCsv
+  ingestionJsonTester(input: IngestionJsonAddInput!): JsonMapperTestResult
+  ingestionJsonAdd(input: IngestionJsonAddInput!): IngestionJson
+  ingestionJsonResetState(id: ID!): IngestionJson
+  ingestionJsonDelete(id: ID!): ID
+  ingestionJsonFieldPatch(id: ID!, input: [EditInput!]!): IngestionJson
+  ingestionJsonEdit(id: ID!, input: IngestionJsonAddInput!): IngestionJson
   indicatorAdd(input: IndicatorAddInput!): Indicator
   indicatorDelete(id: ID!): ID
   indicatorFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): Indicator
@@ -9039,6 +9200,11 @@ type Mutation {
   csvMapperTest(configuration: String!, file: Upload!): CsvMapperTestResult
   csvMapperDelete(id: ID!): ID
   csvMapperFieldPatch(id: ID!, input: [EditInput!]!): CsvMapper
+  jsonMapperAdd(input: JsonMapperAddInput!): JsonMapper
+  jsonMapperTest(configuration: String!, file: Upload!): JsonMapperTestResult
+  jsonMapperDelete(id: ID!): ID
+  jsonMapperImport(file: Upload!): String!
+  jsonMapperFieldPatch(id: ID!, input: [EditInput!]!): JsonMapper
   publicDashboardAdd(input: PublicDashboardAddInput!): PublicDashboard
   publicDashboardDelete(id: ID!): ID
   publicDashboardFieldPatch(id: ID!, input: [EditInput!]!): PublicDashboard
@@ -9086,6 +9252,26 @@ type Mutation {
   savedFilterFieldPatch(id: ID!, input: [EditInput!]): SavedFilter
   requestAccessAdd(input: RequestAccessAddInput!): ID
   requestAccessConfigure(input: RequestAccessConfigureInput!): RequestAccessConfiguration
+  pirAdd(input: PirAddInput!): Pir
+  pirFieldPatch(id: ID!, input: [EditInput!]!): Pir
+  pirDelete(id: ID!): ID
+  pirFlagElement(id: ID!, input: PirFlagElementInput!): ID
+  pirUnflagElement(id: ID!, input: PirUnflagElementInput!): ID
+  fintelDesignAdd(input: FintelDesignAddInput!): FintelDesign
+  fintelDesignDelete(id: ID!): ID
+  fintelDesignFieldPatch(id: ID!, input: [EditInput!], file: Upload): FintelDesign
+  fintelDesignContextPatch(id: ID!, input: EditContext!): FintelDesign
+  securityPlatformAdd(input: SecurityPlatformAddInput!): SecurityPlatform
+  securityPlatformDelete(id: ID!): ID
+  securityPlatformFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): SecurityPlatform
+  securityPlatformContextPatch(id: ID!, input: EditContext!): SecurityPlatform
+  securityPlatformContextClean(id: ID!): SecurityPlatform
+  securityPlatformRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
+  securityPlatformRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): SecurityPlatform
+  askSendOtp(input: AskSendOtpInput!): String
+  verifyOtp(input: VerifyOtpInput!): VerifyOtp
+  verifyMfa(input: VerifyMfaInput!): Boolean
+  changePassword(input: ChangePasswordInput!): Boolean
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -9189,6 +9375,31 @@ input ChannelAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+}
+
+type Catalog implements InternalObject & BasicObject {
+  id: ID!
+  entity_type: String!
+  standard_id: String!
+  parent_types: [String!]!
+  name: String!
+  description: String!
+  contracts: [String!]!
+}
+
+enum CatalogsOrdering {
+  name
+  _score
+}
+
+type CatalogConnection {
+  pageInfo: PageInfo!
+  edges: [CatalogEdge!]!
+}
+
+type CatalogEdge {
+  cursor: String!
+  node: Catalog!
 }
 
 type Language implements BasicObject & StixCoreObject & StixDomainObject & StixObject {
@@ -10011,6 +10222,7 @@ enum VocabularyCategory {
   report_types_ov
   request_for_information_types_ov
   request_for_takedown_types_ov
+  security_platform_type_ov
   service_status_ov
   service_type_ov
   start_type_ov
@@ -10064,6 +10276,7 @@ type Vocabulary implements BasicObject & StixObject & StixMetaObject {
   usages: Int!
   aliases: [String!]
   builtIn: Boolean
+  is_hidden: Boolean
   order: Int
 }
 
@@ -11572,6 +11785,7 @@ type IngestionRss implements InternalObject & BasicObject {
   updated_at: DateTime
   name: String!
   description: String
+  scheduling_period: String
   uri: String!
   user: Creator
   defaultCreatedBy: Identity
@@ -11603,6 +11817,7 @@ type IngestionRssEdge {
 input IngestionRssAddInput {
   name: String!
   description: String
+  scheduling_period: String
   uri: String!
   current_state_date: DateTime
   ingestion_running: Boolean
@@ -11731,7 +11946,9 @@ type IngestionCsv implements InternalObject & BasicObject {
   updated_at: DateTime
   name: String!
   description: String
+  scheduling_period: String
   uri: String!
+  csv_mapper_type: IngestionCsvMapperType
   csvMapper: CsvMapper!
   authentication_type: IngestionAuthType!
   authentication_value: String
@@ -11742,6 +11959,7 @@ type IngestionCsv implements InternalObject & BasicObject {
   current_state_date: DateTime
   last_execution_date: DateTime
   markings: [String!]
+  toConfigurationExport: String!
 }
 
 enum IngestionCsvOrdering {
@@ -11751,6 +11969,11 @@ enum IngestionCsvOrdering {
   uri
   mapper
   _score
+}
+
+enum IngestionCsvMapperType {
+  inline
+  id
 }
 
 type IngestionCsvConnection {
@@ -11763,14 +11986,128 @@ type IngestionCsvEdge {
   node: IngestionCsv!
 }
 
+type CSVFeedAddInputFromImport {
+  name: String!
+  description: String!
+  uri: String!
+  authentication_type: String!
+  markings: [String!]!
+  authentication_value: String!
+  csvMapper: CsvMapperAddInputFromImport!
+  csv_mapper_type: IngestionCsvMapperType
+  scheduling_period: String
+}
+
 input IngestionCsvAddInput {
   name: String!
   description: String
+  scheduling_period: String
   authentication_type: IngestionAuthType!
   authentication_value: String
   current_state_date: DateTime
   uri: String!
-  csv_mapper_id: String!
+  csv_mapper_id: String
+  csv_mapper: String
+  csv_mapper_type: IngestionCsvMapperType
+  ingestion_running: Boolean
+  user_id: String!
+  markings: [String!]
+}
+
+type IngestionHeader {
+  name: String!
+  value: String!
+}
+
+type IngestionQueryAttribute {
+  type: String
+  from: String
+  to: String
+  data_operation: String
+  state_operation: String
+  default: String
+  exposed: String
+}
+
+type IngestionJson implements InternalObject & BasicObject {
+  id: ID!
+  entity_type: String!
+  connector_id: String!
+  standard_id: String!
+  parent_types: [String]!
+  created_at: DateTime
+  updated_at: DateTime
+  name: String!
+  description: String
+  scheduling_period: String
+  uri: String!
+  verb: String!
+  body: String
+  pagination_with_sub_page: Boolean
+  pagination_with_sub_page_attribute_path: String
+  pagination_with_sub_page_query_verb: String
+  headers: [IngestionHeader!]
+  query_attributes: [IngestionQueryAttribute!]
+  jsonMapper: JsonMapper!
+  authentication_type: IngestionAuthType!
+  authentication_value: String
+  user_id: String!
+  user: Creator
+  ingestion_running: Boolean
+  last_execution_date: DateTime
+  markings: [String!]
+}
+
+enum IngestionJsonOrdering {
+  name
+  created_at
+  updated_at
+  uri
+  mapper
+  _score
+}
+
+type IngestionJsonConnection {
+  pageInfo: PageInfo!
+  edges: [IngestionJsonEdge!]!
+}
+
+type IngestionJsonEdge {
+  cursor: String!
+  node: IngestionJson!
+}
+
+input HeaderInput {
+  name: String!
+  value: String!
+}
+
+input QueryAttribute {
+  type: String
+  from: String
+  to: String
+  data_operation: String
+  state_operation: String
+  default: String
+  exposed: String
+}
+
+input IngestionJsonAddInput {
+  name: String!
+  description: String
+  scheduling_period: String
+  authentication_type: IngestionAuthType!
+  authentication_value: String
+  current_state_date: DateTime
+  uri: String!
+  verb: String!
+  body: String
+  pagination_with_sub_page: Boolean
+  pagination_with_sub_page_attribute_path: String
+  pagination_with_sub_page_query_verb: String
+  headers: [HeaderInput!]
+  query_attributes: [QueryAttribute!]
+  json_mapper_id: String!
   ingestion_running: Boolean
   user_id: String!
   markings: [String!]
@@ -12044,6 +12381,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   x_opencti_aliases: [String]
   x_opencti_reliability: String
   x_opencti_organization_type: String
+  x_opencti_score: Int
   sectors: SectorConnection
   members(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): UserConnection
   authorized_authorities: [String]
@@ -12073,6 +12411,7 @@ enum OrganizationsOrdering {
   updated_at
   x_opencti_organization_type
   x_opencti_workflow_id
+  x_opencti_score
   _score
 }
 
@@ -12099,6 +12438,7 @@ input OrganizationAddInput {
   lang: String
   x_opencti_organization_type: String
   x_opencti_reliability: String
+  x_opencti_score: Int
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
@@ -12138,6 +12478,7 @@ type AttributeColumn {
 }
 
 type AttributeBasedOn {
+  identifier: String
   representations: [String]
 }
 
@@ -12245,6 +12586,21 @@ type CsvMapperSchemaAttributes {
   attributes: [CsvMapperSchemaAttribute!]!
 }
 
+enum JsonMapperOrdering {
+  name
+  _score
+}
+
+type JsonMapperConnection {
+  pageInfo: PageInfo!
+  edges: [JsonMapperEdge!]!
+}
+
+type JsonMapperEdge {
+  cursor: String!
+  node: JsonMapper!
+}
+
 input AttributeColumnConfigurationInput {
   separator: String
   pattern_date: String
@@ -12299,6 +12655,109 @@ input CsvMapperAddInput {
   separator: String!
   representations: String!
   skipLineChar: String
+}
+
+enum JsonMapperRepresentationType {
+  entity
+  relationship
+}
+
+type AttributePath {
+  path: String!
+  independent: Boolean
+  configuration: AttributeColumnConfiguration
+}
+
+type ComplexVariable {
+  path: String!
+  variable: String!
+  independent: Boolean
+}
+
+type ComplexPath {
+  formula: String!
+  variables: [ComplexVariable!]
+  configuration: AttributeColumnConfiguration
+}
+
+type JsonMapperRepresentationAttribute {
+  key: String!
+  mode: String!
+  attr_path: AttributePath
+  complex_path: ComplexPath
+  based_on: AttributeBasedOn
+  default_values: [DefaultValue!]
+}
+
+type JsonMapperRepresentationTarget {
+  entity_type: String!
+  path: String!
+}
+
+type JsonMapperRepresentation {
+  id: ID!
+  type: JsonMapperRepresentationType!
+  target: JsonMapperRepresentationTarget!
+  identifier: String
+  attributes: [JsonMapperRepresentationAttribute!]!
+  from: String
+  to: String
+}
+
+interface JsonAttributeColumnConfiguration {
+  separator: String
+  pattern_date: String
+  timezone: String
+}
+
+type JsonComplexPathVariable {
+  path: String
+  variable: String
+  independent: Boolean
+}
+
+type JsonComplexPathConfiguration {
+  complex: JsonComplexPathConfiguration
+  formula: String
+}
+
+type JsonComplexPath {
+  complex: JsonComplexPathConfiguration
+  configuration: JsonAttributeColumnConfiguration
+}
+
+type JsonMapperVariable {
+  name: String!
+  path: JsonComplexPath
+}
+
+type JsonMapper implements InternalObject & BasicObject {
+  id: ID!
+  entity_type: String!
+  standard_id: String!
+  parent_types: [String!]!
+  name: String!
+  variables: [JsonMapperVariable!]
+  representations: [JsonMapperRepresentation!]!
+  errors: String
+  toConfigurationExport: String!
+}
+
+type JsonMapperTestResult {
+  objects: String!
+  nbRelationships: Int!
+  nbEntities: Int!
+  state: String!
+}
+
+type JsonMapperAddInputFromImport {
+  name: String!
+  representations: [JsonMapperRepresentation!]!
+}
+
+input JsonMapperAddInput {
+  name: String!
+  representations: String!
 }
 
 type PublicDashboard implements InternalObject & BasicObject {
@@ -12787,4 +13246,238 @@ input RequestAccessConfigureInput {
   approved_status_id: ID
   declined_status_id: ID
   approval_admin: [ID]
+}
+
+type PirCriterion {
+  filters: String!
+  weight: Int!
+}
+
+type PirExplanation {
+  dependency_ids: [ID!]!
+  criterion: PirCriterion!
+}
+
+type Pir implements InternalObject & BasicObject {
+  id: ID!
+  entity_type: String!
+  standard_id: String!
+  parent_types: [String!]!
+  created_at: DateTime!
+  updated_at: DateTime!
+  creators: [Creator!]
+  objectMarking: [MarkingDefinition!]
+  name: String!
+  description: String
+  pir_rescan_days: Int!
+  pir_criteria: [PirCriterion!]!
+  pir_filters: String!
+  lastEventId: String!
+}
+
+enum PirOrdering {
+  name
+  created_at
+  updated_at
+  creator
+}
+
+type PirConnection {
+  pageInfo: PageInfo!
+  edges: [PirEdge!]!
+}
+
+type PirEdge {
+  cursor: String!
+  node: Pir!
+}
+
+input PirCriterionInput {
+  weight: Int!
+  filters: FilterGroup!
+}
+
+input PirExplanationInput {
+  dependency_ids: [ID!]!
+  criterion: PirCriterionInput!
+}
+
+input PirAddInput {
+  name: String!
+  description: String
+  pir_rescan_days: Int!
+  pir_criteria: [PirCriterionInput!]!
+  pir_filters: FilterGroup!
+  objectMarking: [String!]
+}
+
+input PirFlagElementInput {
+  relationshipId: ID!
+  sourceId: ID!
+  matchingCriteria: [PirCriterionInput!]!
+}
+
+input PirUnflagElementInput {
+  relationshipId: ID!
+  sourceId: ID!
+}
+
+type FintelDesign implements BasicObject & InternalObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  name: String!
+  description: String
+  file_id: String
+  gradiantFromColor: String
+  gradiantToColor: String
+  textColor: String
+}
+
+input FintelDesignAddInput {
+  name: String!
+  description: String
+  gradiantFromColor: String
+  gradiantToColor: String
+  textColor: String
+  file: Upload
+}
+
+type FintelDesignEdge {
+  cursor: String!
+  node: FintelDesign
+}
+
+type FintelDesignConnection {
+  pageInfo: PageInfo!
+  edges: [FintelDesignEdge!]!
+}
+
+enum FintelDesignOrdering {
+  name
+  created_at
+}
+
+type SecurityPlatform implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Identity {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  representative: Representative!
+  x_opencti_stix_ids: [StixId]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  draftVersion: DraftVersion
+  x_opencti_inferences: [Inference]
+  createdBy: Identity
+  numberOfConnectedElement: Int!
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
+  externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
+  observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
+  cases(first: Int): CaseConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
+  stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
+  stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime
+  modified: DateTime
+  x_opencti_graph_data: String
+  objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
+  avatar: OpenCtiFile
+  identity_class: String!
+  name: String!
+  description: String
+  contact_information: String
+  roles: [String]
+  x_opencti_aliases: [String]
+  x_opencti_reliability: String
+  security_platform_type: String
+  creators: [Creator!]
+  toStix: String
+  importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext!]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
+}
+
+enum SecurityPlatformOrdering {
+  name
+  confidence
+  created
+  created_at
+  modified
+  updated_at
+  security_platform_type
+  _score
+}
+
+type SecurityPlatformConnection {
+  pageInfo: PageInfo!
+  edges: [SecurityPlatformEdge!]!
+}
+
+type SecurityPlatformEdge {
+  cursor: String!
+  node: SecurityPlatform!
+}
+
+input SecurityPlatformAddInput {
+  name: String!
+  description: String
+  security_platform_type: String
+  confidence: Int
+  createdBy: String
+  objectMarking: [String]
+  objectLabel: [String]
+  created: DateTime
+  modified: DateTime
+  revoked: Boolean
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
+  x_opencti_workflow_id: String
+  externalReferences: [String]
+  update: Boolean
+}
+
+input AskSendOtpInput {
+  email: String!
+}
+
+input VerifyOtpInput {
+  otp: String!
+  transactionId: String!
+}
+
+input VerifyMfaInput {
+  code: String!
+  transactionId: String!
+}
+
+input ChangePasswordInput {
+  transactionId: String!
+  otp: String!
+  newPassword: String!
+}
+
+type VerifyOtp {
+  mfa_activated: Boolean!
 }

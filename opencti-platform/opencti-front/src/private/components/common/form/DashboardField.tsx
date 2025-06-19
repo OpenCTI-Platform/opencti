@@ -6,10 +6,9 @@ import AutocompleteField from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { DashboardFieldQuery } from './__generated__/DashboardFieldQuery.graphql';
-import { Option } from './ReferenceField';
 import ItemIcon from '../../../../components/ItemIcon';
 import { GenericContext } from '../model/GenericContextModel';
 
@@ -62,8 +61,8 @@ const DashboardFieldComponent: FunctionComponent<DashboardFieldProps> = ({
       component={AutocompleteField}
       name="default_dashboard"
       multiple={false}
-      onChange={(name: string, value: Option) => onChange(name, value?.value ?? null)}
-      isOptionEqualToValue={(option: Option, { value }: Option) => option.value === value}
+      onChange={(name: string, value: FieldOption) => onChange(name, value?.value ?? null)}
+      isOptionEqualToValue={(option: FieldOption, { value }: FieldOption) => option.value === value}
       textfieldprops={{
         variant: 'standard',
         label: t_i18n('Default dashboard'),
@@ -80,7 +79,7 @@ const DashboardFieldComponent: FunctionComponent<DashboardFieldProps> = ({
       style={fieldSpacingContainerStyle}
       renderOption={(
         props: React.HTMLAttributes<HTMLLIElement>,
-        option: Option,
+        option: FieldOption,
       ) => (
         <li {...props}>
           <div className={classes.icon} style={{ color: option.color }}>

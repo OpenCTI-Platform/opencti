@@ -1,11 +1,12 @@
 import * as R from 'ramda';
-import { type AttributeDefinition, authorizedMembers, createdAt, creators, draftContext, errors, id, updatedAt } from '../../schema/attribute-definition';
+import { type AttributeDefinition, authorizedMembers, createdAt, creators, draftContext, errors, id, lastEventId, updatedAt } from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import {
   ENTITY_TYPE_ACTIVITY,
   ENTITY_TYPE_BACKGROUND_TASK,
   ENTITY_TYPE_CAPABILITY,
   ENTITY_TYPE_CONNECTOR,
+  ENTITY_TYPE_CONNECTOR_MANAGER,
   ENTITY_TYPE_FEED,
   ENTITY_TYPE_GROUP,
   ENTITY_TYPE_HISTORY,
@@ -28,6 +29,9 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { EVENT_ACCESS_VALUES, EVENT_SCOPE_VALUES, EVENT_STATUS_VALUES, EVENT_TYPE_VALUES } from '../../manager/activityListener';
 import { RETENTION_SCOPE_VALUES, RETENTION_UNIT_VALUES } from '../../manager/retentionManager';
+import { ENTITY_TYPE_PIR } from '../pir/pir-types';
+import { COMPOSER_FF } from '../catalog/catalog-types';
+import { CSV_FEED_FEATURE_FLAG } from '../ingestion/ingestion-csv-domain';
 
 const HistoryDefinition: AttributeDefinition[] = [
   { name: 'event_type', label: 'Event type', type: 'string', format: 'enum', values: EVENT_TYPE_VALUES, editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true },
@@ -134,6 +138,7 @@ const HistoryDefinition: AttributeDefinition[] = [
       { name: 'input', label: 'Input', type: 'object', format: 'flat', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
       { name: 'external_references', label: 'External references', type: 'object', format: 'flat', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
       { name: 'marking_definitions', label: 'Marking definitions', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
+      { name: 'pir_ids', label: 'PIR IDS', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_PIR], editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true, featureFlag: 'Pir' },
     ]
   },
   { ...creators, isFilterable: false },
@@ -191,6 +196,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'platform_consent_confirm_text', label: 'Consent confirm text', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'platform_banner_text', label: 'Banner text', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'platform_banner_level', label: 'Banner level', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'platform_translations', label: 'Translations', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'otp_mandatory', label: 'OTP mandatory', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'password_policy_min_length', label: 'Min policy length', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'password_policy_max_length', label: 'Max policy length', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
@@ -278,6 +284,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
           ] },
       ]
     },
+    { name: 'auto_integration_assignation', label: 'Default Group used for integration user creation', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: true, featureFlag: CSV_FEED_FEATURE_FLAG },
   ],
   [ENTITY_TYPE_USER]: [
     { name: 'user_email', label: 'Email', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
@@ -356,7 +363,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'active', label: 'Status', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true }
   ],
   [ENTITY_TYPE_RULE_MANAGER]: [
-    { name: 'lastEventId', label: 'Last event id', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    lastEventId,
     errors
   ],
   [ENTITY_TYPE_CAPABILITY]: [
@@ -376,10 +383,23 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'connector_scope', label: 'Connector scope', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'connector_state', label: 'Connector state', type: 'string', format: 'json', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'connector_state_reset', label: 'State reset', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'connector_state_timestamp', label: 'State reset timestamp', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'connector_trigger_filters', label: 'Connector trigger filters', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'connector_user_id', label: 'Connector user id', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'playbook_compatible', label: 'Compatible with playbooks', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'listen_callback_uri', label: 'Listen through http callback', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    // region composer
+    { featureFlag: COMPOSER_FF, name: 'catalog_id', label: 'Connector catalog', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { featureFlag: COMPOSER_FF, name: 'manager_current_status', label: 'Connector manager current status', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { featureFlag: COMPOSER_FF, name: 'manager_requested_status', label: 'Connector manager requested status', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { featureFlag: COMPOSER_FF, name: 'manager_contract_image', label: 'Connector manager image', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { featureFlag: COMPOSER_FF, name: 'manager_contract_configuration', label: 'Connector manager', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: true },
+    // endregion
+  ],
+  [ENTITY_TYPE_CONNECTOR_MANAGER]: [
+    { ...updatedAt, update: true }, // Allow change of updated_at for connector ping
+    { featureFlag: COMPOSER_FF, name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { featureFlag: COMPOSER_FF, name: 'last_sync_execution', label: 'Last execution', type: 'date', editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: true },
   ],
   [ENTITY_TYPE_TAXII_COLLECTION]: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
@@ -453,6 +473,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'timestamp', label: 'Timestamp', type: 'date', editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: true },
     { name: 'updated_at', label: 'Updated at', type: 'date', editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: true },
     { name: 'event_source_id', label: 'Event source', type: 'string', format: 'short', editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: false },
+    { name: 'background_task_id', label: 'Tasks', type: 'string', format: 'short', editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: false },
     { name: 'event_type', label: 'Event type', type: 'string', format: 'enum', values: EVENT_TYPE_VALUES, editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: true },
     { name: 'user_id', label: 'User ID', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_USER], editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: false },
     { name: 'connector_id', label: 'Connector ID', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: true },
@@ -493,11 +514,14 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
       isFilterable: false
     },
     { name: 'type', label: 'Type', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
     { name: 'scope', label: 'Scope', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'rule', label: 'Rule', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'enable', label: 'Is enabled', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'completed', label: 'Completed', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'initiator_id', label: 'Initiator', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'work_id', label: 'Work', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'connector_id', label: 'Connector ID', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     draftContext,
     { name: 'task_filters', label: 'Task filters', type: 'string', format: 'json', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'task_search', label: 'Search', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },

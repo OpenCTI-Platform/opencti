@@ -4,6 +4,7 @@ import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import { useTheme } from '@mui/styles';
+import { Stack } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -16,9 +17,8 @@ import { adaptFieldValue } from '../../../../utils/String';
 import StatusField from '../../common/form/StatusField';
 import { convertAssignees, convertCreatedBy, convertMarkings, convertParticipants, convertStatus } from '../../../../utils/edition';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
-import { Option } from '../../common/form/ReferenceField';
 import { IncidentEditionOverview_incident$key } from './__generated__/IncidentEditionOverview_incident.graphql';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
@@ -27,7 +27,6 @@ import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import type { Theme } from '../../../../components/Theme';
 import IncidentDeletion from './IncidentDeletion';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const incidentMutationFieldPatch = graphql`
   mutation IncidentEditionOverviewFieldPatchMutation(
@@ -149,12 +148,12 @@ interface IncidentEditionOverviewProps {
 
 interface IncidentEditionFormValues {
   message?: string;
-  references?: Option[];
-  createdBy: Option | undefined;
-  x_opencti_workflow_id: Option;
-  objectMarking?: Option[];
-  objectAssignee?: Option[];
-  objectParticipant?: Option[];
+  references?: FieldOption[];
+  createdBy: FieldOption | undefined;
+  x_opencti_workflow_id: FieldOption;
+  objectMarking?: FieldOption[];
+  objectAssignee?: FieldOption[];
+  objectParticipant?: FieldOption[];
 
 }
 
@@ -221,7 +220,7 @@ IncidentEditionOverviewProps
     if (!enableReferences) {
       let finalValue: string = value as string;
       if (name === 'x_opencti_workflow_id') {
-        finalValue = (value as unknown as Option).value;
+        finalValue = (value as unknown as FieldOption).value;
       }
       incidentValidator
         .validateAt(name, { [name]: value })
@@ -242,16 +241,14 @@ IncidentEditionOverviewProps
     description: incident.description,
     incident_type: incident.incident_type,
     severity: incident.severity,
-    createdBy: convertCreatedBy(incident) as Option,
+    createdBy: convertCreatedBy(incident) as FieldOption,
     objectMarking: convertMarkings(incident),
     objectAssignee: convertAssignees(incident),
     objectParticipant: convertParticipants(incident),
-    x_opencti_workflow_id: convertStatus(t_i18n, incident) as Option,
+    x_opencti_workflow_id: convertStatus(t_i18n, incident) as FieldOption,
     confidence: incident.confidence,
     references: [],
   };
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   return (
     <Formik<IncidentEditionFormValues>
       enableReinitialize={true}
@@ -351,7 +348,7 @@ IncidentEditionOverviewProps
             style={fieldSpacingContainerStyle}
             onChange={editor.changeParticipant}
           />
-          {incident?.workflowEnabled && (
+          {incident.workflowEnabled && (
             <StatusField
               name="x_opencti_workflow_id"
               type="Incident"
@@ -388,13 +385,10 @@ IncidentEditionOverviewProps
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced
-              ? <IncidentDeletion
-                  id={incident.id}
-                />
-              : <div/>
-              }
+          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
+            <IncidentDeletion
+              id={incident.id}
+            />
             {enableReferences && (
             <CommitMessage
               submitForm={submitForm}
@@ -405,7 +399,7 @@ IncidentEditionOverviewProps
               id={incident.id}
             />
             )}
-          </div>
+          </Stack>
         </Form>
       )}
     </Formik>

@@ -11,8 +11,7 @@ import { Field, Formik, FormikHelpers } from 'formik';
 import DialogTitle from '@mui/material/DialogTitle';
 import * as Yup from 'yup';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
-import { Option } from '@components/common/form/ReferenceField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
@@ -52,7 +51,7 @@ type FreeTextUploaderType = {
 
 type SubmittedValuesType = {
   content: string;
-  fileMarkings: Option[];
+  fileMarkings: FieldOption[];
 };
 
 const FreeTextUploader = ({ color, entityId, onUploadSuccess, size }: FreeTextUploaderType) => {

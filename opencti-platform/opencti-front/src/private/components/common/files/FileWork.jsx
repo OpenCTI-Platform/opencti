@@ -67,9 +67,7 @@ const FileWorkComponent = (props) => {
   const deletion = useDeletion({});
   const { handleOpenDelete, handleCloseDelete, setDeleting } = deletion;
 
-  const navigateToDraft = (draftId) => {
-    navigate(`/dashboard/drafts/${draftId}`);
-  };
+  const navigateToDraft = (draftId) => navigate(`/dashboard/data/import/draft/${draftId}`);
 
   const handleDelete = (id) => {
     setWorkId(id);

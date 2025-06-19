@@ -125,7 +125,9 @@ const CaseTaskOverview: FunctionComponent<CaseTaskOverviewProps> = ({
               >
                 {t_i18n('Marking')}
               </Typography>
-              <ItemMarkings markingDefinitions={data.objectMarking}/>
+              <ItemMarkings
+                markingDefinitions={data.objectMarking}
+              />
             </>
           )}
         </Grid>

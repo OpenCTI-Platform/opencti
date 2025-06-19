@@ -19,7 +19,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface ItemOperationsProps {
-  draftOperation: string
+  draftOperation?: string
 }
 
 const operationStylesLight = {
@@ -98,7 +98,7 @@ const ItemOperations: FunctionComponent<ItemOperationsProps> = ({ draftOperation
       case 'delete_linked':
         return t_i18n('deleted as a result of the deletion of a linked entity');
       default:
-        return t_i18n(draftOperation);
+        return draftOperation ? t_i18n(draftOperation) : '';
     }
   };
 

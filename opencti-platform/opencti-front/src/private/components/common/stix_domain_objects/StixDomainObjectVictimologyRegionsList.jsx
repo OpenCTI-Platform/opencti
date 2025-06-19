@@ -367,9 +367,7 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                           />
                           <ItemMarkings
                             variant="inList"
-                            markingDefinitions={
-                            stixCoreRelationship.objectMarking ?? []
-                          }
+                            markingDefinitions={stixCoreRelationship.objectMarking ?? []}
                             limit={1}
                           />
                           <ItemYears
@@ -507,9 +505,7 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                     />
                                     <ItemMarkings
                                       variant="inList"
-                                      markingDefinitions={
-                                      stixCoreRelationship.objectMarking ?? []
-                                    }
+                                      markingDefinitions={stixCoreRelationship.objectMarking ?? []}
                                       limit={1}
                                     />
                                     <ItemYears

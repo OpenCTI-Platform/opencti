@@ -6,14 +6,13 @@ import { graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import makeStyles from '@mui/styles/makeStyles';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
+import Drawer from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
-import useHelper from '../../../../utils/hooks/useHelper';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -66,8 +65,6 @@ const GroupCreation = ({ paginationOptions }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const { group_confidence_level, ...rest } = values;
@@ -105,8 +102,7 @@ const GroupCreation = ({ paginationOptions }) => {
   return (
     <Drawer
       title={t_i18n('Create a group')}
-      variant={isFABReplaced ? undefined : DrawerVariant.createWithPanel}
-      controlledDial={isFABReplaced ? CreateGroupControlledDial : undefined}
+      controlledDial={CreateGroupControlledDial}
     >
       {({ onClose }) => (
         <Formik

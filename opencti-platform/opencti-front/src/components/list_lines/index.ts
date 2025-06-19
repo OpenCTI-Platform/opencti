@@ -1,6 +1,10 @@
 import React, { FunctionComponent, ReactElement, ReactNode } from 'react';
-import { Option } from '@components/common/form/ReferenceField';
 import { FilterGroup } from '../../utils/filters/filtersHelpers-types';
+import { FieldOption } from '../../utils/field';
+
+interface ListLineOption extends FieldOption {
+  description: ReactNode
+}
 
 export interface DataColumn {
   isSortable: boolean;
@@ -33,5 +37,5 @@ export type ListLines = FunctionComponent<unknown>;
 
 export type RenderOption = (
   props: React.AllHTMLAttributes<never>,
-  { value, description }: Option
+  { value, description }: ListLineOption
 ) => ReactElement;

@@ -15,7 +15,6 @@ import Security from 'src/utils/Security';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import { QueryRenderer } from '../../../../relay/environment';
 import Grouping from './Grouping';
-import GroupingPopover from './GroupingPopover';
 import GroupingKnowledge from './GroupingKnowledge';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader from '../../../../components/Loader';
@@ -30,7 +29,6 @@ import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE, KNOWLEDGE_KNUPDATE } 
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import GroupingEdition from './GroupingEdition';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootGroupingSubscription($id: ID!) {
@@ -89,8 +87,6 @@ const RootGrouping = () => {
     [groupingId],
   );
   const location = useLocation();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const enableReferences = useIsEnforceReference('Grouping') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
@@ -117,10 +113,7 @@ const RootGrouping = () => {
                   />
                   <ContainerHeader
                     container={grouping}
-                    PopoverComponent={
-                      <GroupingPopover id={groupingId} />
-                    }
-                    EditComponent={isFABReplaced && (
+                    EditComponent={(
                       <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={currentAccessRight.canEdit}>
                         <GroupingEdition groupingId={grouping.id} />
                       </Security>

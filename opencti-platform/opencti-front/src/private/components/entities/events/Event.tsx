@@ -2,7 +2,6 @@ import { graphql } from 'relay-runtime';
 import React from 'react';
 import { useFragment } from 'react-relay';
 import { Grid } from '@mui/material';
-import useHelper from '../../../../utils/hooks/useHelper';
 import { Event_event$key } from './__generated__/Event_event.graphql';
 import EventDetails from './EventDetails';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -11,9 +10,6 @@ import StixCoreObjectOrStixRelationshipLastContainers from '../../common/contain
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import EventEdition from './EventEdition';
 
 const eventFragment = graphql`
   fragment Event_event on Event {
@@ -76,8 +72,6 @@ const Event: React.FC<EventProps> = ({ eventData }) => {
     eventFragment,
     eventData,
   );
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   return (
     <>
       <Grid
@@ -115,11 +109,6 @@ const Event: React.FC<EventProps> = ({ eventData }) => {
         stixCoreObjectOrStixCoreRelationshipId={event.id}
         defaultMarkings={event.objectMarking ?? []}
       />
-      {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <EventEdition eventId={event.id} />
-        </Security>
-      )}
     </>
   );
 };

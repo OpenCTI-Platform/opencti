@@ -1,15 +1,15 @@
 import React, { Dispatch, FunctionComponent, SetStateAction, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import type { Option } from './ReferenceField';
 import ReferenceField from './ReferenceField';
 import { ArtifactFieldGetQuery } from './__generated__/ArtifactFieldGetQuery.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { GqlFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { FieldOption } from '../../../../utils/field';
 
 interface ArtifactFieldProps {
   attributeName: string;
-  attributeValue?: Option;
-  onChange: (name: string, value: Option) => void;
+  attributeValue?: FieldOption;
+  onChange: (name: string, value: FieldOption) => void;
 }
 
 export const artifactQuery = graphql`
@@ -31,8 +31,8 @@ export const artifactQuery = graphql`
 interface ArtifactFieldComponentProps {
   queryRef: PreloadedQuery<ArtifactFieldGetQuery>;
   attributeName: string;
-  attributeValue?: Option;
-  onChange: (name: string, value: Option) => void;
+  attributeValue?: FieldOption;
+  onChange: (name: string, value: FieldOption) => void;
   setSearch: Dispatch<SetStateAction<string | null>>;
 }
 

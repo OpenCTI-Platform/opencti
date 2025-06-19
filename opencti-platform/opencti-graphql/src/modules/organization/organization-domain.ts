@@ -23,6 +23,7 @@ import { AlreadyDeletedError, FunctionalError } from '../../config/errors';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
 import type { BasicStoreCommon, BasicStoreEntity } from '../../types/store';
+import { checkScore } from '../../utils/format';
 
 // region CRUD
 export const findById = (context: AuthContext, user: AuthUser, organizationId: string) => {
@@ -34,6 +35,9 @@ export const findAll = (context: AuthContext, user: AuthUser, args: EntityOption
 };
 
 export const addOrganization = async (context: AuthContext, user: AuthUser, organization: OrganizationAddInput) => {
+  if (organization.x_opencti_score) {
+    checkScore(organization.x_opencti_score);
+  }
   const organizationWithClass = { identity_class: ENTITY_TYPE_IDENTITY_ORGANIZATION.toLowerCase(), ...organization };
   const created = await createEntity(context, user, organizationWithClass, ENTITY_TYPE_IDENTITY_ORGANIZATION);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);

@@ -8,7 +8,7 @@ import useSearchEntities from '../../../../utils/filters/useSearchEntities';
 import type { Theme } from '../../../../components/Theme';
 import SearchScopeElement from './SearchScopeElement';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
-import { Option } from '../form/ReferenceField';
+import { FieldOption } from '../../../../utils/field';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -25,7 +25,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-export interface OptionValue extends Option {
+export interface OptionValue extends FieldOption {
   type: string;
   parentTypes?: string[];
   group?: string;

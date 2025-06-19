@@ -17,8 +17,7 @@ import { parse } from '../../../../utils/Time';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { Option } from '../../common/form/ReferenceField';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { ThreatActorIndividualEditionDetails_ThreatActorIndividual$key } from './__generated__/ThreatActorIndividualEditionDetails_ThreatActorIndividual.graphql';
 import { ThreatActorIndividualEditionDetailsFocusMutation } from './__generated__/ThreatActorIndividualEditionDetailsFocusMutation.graphql';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
@@ -92,9 +91,9 @@ interface ThreatActorIndividualEditionDetailsProps {
 
 interface ThreatActorIndividualEditionDetailsFormValues {
   message?: string;
-  references?: Option[];
-  first_seen?: Option;
-  last_seen?: Option;
+  references?: FieldOption[];
+  first_seen?: FieldOption;
+  last_seen?: FieldOption;
   goals: string;
 }
 

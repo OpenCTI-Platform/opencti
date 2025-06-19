@@ -7,6 +7,8 @@ import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWork
 import { ENTITY_TYPE_EXCLUSION_LIST } from '../modules/exclusionList/exclusionList-types';
 import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../modules/fintelTemplate/fintelTemplate-types';
 import { ENTITY_TYPE_SAVED_FILTER } from '../modules/savedFilter/savedFilter-types';
+import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
+import { ENTITY_TYPE_FINTEL_DESIGN } from '../modules/fintelDesign/fintelDesign-types';
 
 export const ENTITY_TYPE_SETTINGS = 'Settings';
 export const ENTITY_TYPE_MIGRATION_STATUS = 'MigrationStatus';
@@ -18,6 +20,7 @@ export const ENTITY_TYPE_RULE = 'Rule';
 export const ENTITY_TYPE_ROLE = 'Role';
 export const ENTITY_TYPE_CAPABILITY = 'Capability';
 export const ENTITY_TYPE_CONNECTOR = 'Connector';
+export const ENTITY_TYPE_CONNECTOR_MANAGER = 'ConnectorManager';
 export const ENTITY_TYPE_HISTORY = 'History';
 export const ENTITY_TYPE_ACTIVITY = 'Activity';
 export const ENTITY_TYPE_WORK = 'work';
@@ -47,6 +50,7 @@ const DATED_INTERNAL_OBJECTS = [
   ENTITY_TYPE_DRAFT_WORKSPACE,
   ENTITY_TYPE_EXCLUSION_LIST,
   ENTITY_TYPE_SAVED_FILTER,
+  ENTITY_TYPE_PIR
 ];
 const INTERNAL_OBJECTS = [
   ENTITY_TYPE_SETTINGS,
@@ -67,6 +71,7 @@ const INTERNAL_OBJECTS = [
   ENTITY_TYPE_RULE_MANAGER,
   ENTITY_TYPE_CAPABILITY,
   ENTITY_TYPE_CONNECTOR,
+  ENTITY_TYPE_CONNECTOR_MANAGER,
   ENTITY_TYPE_WORKSPACE,
   ENTITY_TYPE_PUBLIC_DASHBOARD,
   ENTITY_TYPE_HISTORY,
@@ -77,6 +82,8 @@ const INTERNAL_OBJECTS = [
   ENTITY_TYPE_EXCLUSION_LIST,
   ENTITY_TYPE_FINTEL_TEMPLATE,
   ENTITY_TYPE_SAVED_FILTER,
+  ENTITY_TYPE_PIR,
+  ENTITY_TYPE_FINTEL_DESIGN
 ];
 const HISTORY_OBJECTS = [ENTITY_TYPE_WORK];
 

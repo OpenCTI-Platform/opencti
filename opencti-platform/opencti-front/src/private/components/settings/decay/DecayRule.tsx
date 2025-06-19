@@ -5,11 +5,11 @@ import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import Tooltip from '@mui/material/Tooltip';
-import makeStyles from '@mui/styles/makeStyles';
 import { InformationOutline } from 'mdi-material-ui';
 import DecayChart, { DecayHistory } from '@components/settings/decay/DecayChart';
 import { useParams } from 'react-router-dom';
 import { DecayRuleQuery } from '@components/settings/decay/__generated__/DecayRuleQuery.graphql';
+import { useTheme } from '@mui/styles';
 import DecayRuleEdition from './DecayRuleEdition';
 import DecayRulePopover from './DecayRulePopover';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
@@ -22,36 +22,6 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import type { Theme } from '../../../../components/Theme';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 50px 0',
-  },
-  gridContainer: {
-    marginBottom: 20,
-  },
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: '15px',
-    borderRadius: 6,
-  },
-  paperFlex: {
-    flex: 1,
-    margin: '6px 0 0 0',
-    padding: '15px',
-    borderRadius: 6,
-  },
-  popover: {
-    float: 'left',
-    marginTop: '-13px',
-  },
-  title: {
-    float: 'left',
-  },
-}));
 
 const decayRuleQuery = graphql`
   query DecayRuleQuery($id: String!) {
@@ -92,7 +62,7 @@ interface DecayRuleComponentProps {
 
 const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
+  const theme = useTheme<Theme>();
   const queryResult = usePreloadedQuery(decayRuleQuery, queryRef);
   const decayRule = useFragment<DecayRule_decayRule$key>(decayRuleFragment, queryResult.decayRule);
 
@@ -109,7 +79,11 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
   }
 
   return (
-    <div className={classes.container}>
+    <div style={{
+      margin: 0,
+      padding: '0 200px 50px 0',
+    }}
+    >
       <Breadcrumbs elements={[
         { label: t_i18n('Settings') },
         { label: t_i18n('Customization') },
@@ -118,40 +92,43 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
       ]}
       />
       <CustomizationMenu />
-      {!decayRule.built_in && (
-        <DecayRuleEdition decayRule={decayRule} />
-      )}
-      <div style={{ marginBottom: 23 }}>
-        <Typography
-          variant="h1"
-          gutterBottom={true}
-          classes={{ root: classes.title }}
-          style={decayRule.built_in ? { marginRight: 20 } : {}}
-        >
-          {decayRule.name}
-        </Typography>
-        <ItemBoolean
-          status={decayRule.active ?? false}
-          label={decayRule.active ? t_i18n('Active') : t_i18n('Inactive')}
-        />
+      <div style={{ marginBottom: theme.spacing(3), display: 'flex' }}>
+        <div style={{ display: 'flex', flex: 1, alignItems: 'center' }}>
+          <Typography
+            variant="h1"
+            style={{ marginBottom: 0, marginRight: 20 }}
+          >
+            {decayRule.name}
+          </Typography>
+          <ItemBoolean
+            status={decayRule.active ?? false}
+            label={decayRule.active ? t_i18n('Active') : t_i18n('Inactive')}
+          />
+        </div>
         {!decayRule.built_in && (
-          <div className={classes.popover}>
+          <>
             <DecayRulePopover decayRule={decayRule} />
-          </div>
+            <DecayRuleEdition decayRule={decayRule} />
+          </>
         )}
       </div>
-      <div className="clearfix" />
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        style={{ marginBottom: 20 }}
       >
         <Grid item xs={6}>
           <Box sx={{ display: 'flex', height: '100%', flexDirection: 'column' }}>
             <Typography variant="h4" gutterBottom={true}>
               {t_i18n('Configuration')}
             </Typography>
-            <Paper classes={{ root: classes.paperFlex }} variant="outlined">
+            <Paper style={{
+              flex: 1,
+              margin: '6px 0 0 0',
+              padding: '15px',
+              borderRadius: 6,
+            }} variant="outlined"
+            >
               <Grid container={true} spacing={3}>
                 <Grid item xs={12}>
                   <Typography variant="h3" gutterBottom={true}>
@@ -210,13 +187,23 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Impact')}
           </Typography>
-          <Paper classes={{ root: classes.paper }} variant="outlined">
+          <Paper style={{
+            marginTop: theme.spacing(1),
+            padding: '15px',
+            borderRadius: 6,
+          }} variant="outlined"
+          >
             {decayRule.appliedIndicatorsCount} {t_i18n('indicators currently impacted by this rule')}
           </Paper>
           <Typography variant="h4" gutterBottom={true} style={{ marginTop: 10 }}>
             {t_i18n('Life curve')}
           </Typography>
-          <Paper classes={{ root: classes.paper }} variant="outlined">
+          <Paper style={{
+            marginTop: theme.spacing(1),
+            padding: '15px',
+            borderRadius: 6,
+          }} variant="outlined"
+          >
             <DecayChart
               decayCurvePoint={chartCurvePoints}
               revokeScore={decayRule.decay_revoke_score}

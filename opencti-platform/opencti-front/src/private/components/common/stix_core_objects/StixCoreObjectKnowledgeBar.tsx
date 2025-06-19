@@ -41,6 +41,7 @@ const stixCoreObjectKnowledgeBarFragment = graphql`
         "compromises"
         "located-at"
         "variant-of"
+        "belongs-to"
       ]
     ) {
       label

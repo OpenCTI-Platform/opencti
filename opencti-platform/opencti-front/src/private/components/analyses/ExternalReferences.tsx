@@ -1,5 +1,4 @@
 import React, { FunctionComponent } from 'react';
-import useHelper from 'src/utils/hooks/useHelper';
 import { graphql } from 'react-relay';
 import {
   ExternalReferencesLinesPaginationQuery,
@@ -105,8 +104,6 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('External References | Analyses'));
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -165,7 +162,7 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={externalReferencesLineFragment}
           entityTypes={['External-Reference']}
-          createButton={isFABReplaced && (
+          createButton={(
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <ExternalReferenceCreation
                 paginationOptions={queryPaginationOptions}
@@ -174,14 +171,6 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
             </Security>
           )}
         />
-      )}
-      {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <ExternalReferenceCreation
-            paginationOptions={queryPaginationOptions}
-            openContextual={false}
-          />
-        </Security>
       )}
     </>
   );

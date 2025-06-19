@@ -10,29 +10,27 @@ import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Box from '@mui/material/Box';
 import makeStyles from '@mui/styles/makeStyles';
-import { Option } from '@components/common/form/ReferenceField';
 import { FormikConfig } from 'formik/dist/types';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
 import { emptyFilterGroup, serializeFilterGroupForBackend, stixFilters } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '../../common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import { PaginationOptions } from '../../../../components/list_lines';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 interface StreamCollectionCreationProps {
   paginationOptions: PaginationOptions
 }
 
 interface StreamCollectionCreationForm {
-  authorized_members: Option[]
+  authorized_members: FieldOption[]
   stream_public: boolean
   name: string
   description: string
@@ -95,8 +93,6 @@ const StreamCollectionCreation: FunctionComponent<StreamCollectionCreationProps>
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const onSubmit: FormikConfig<StreamCollectionCreationForm>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
     const jsonFilters = serializeFilterGroupForBackend(filters);
@@ -134,8 +130,7 @@ const StreamCollectionCreation: FunctionComponent<StreamCollectionCreationProps>
   return (
     <Drawer
       title={t_i18n('Create a stream')}
-      variant={isFABReplaced ? undefined : DrawerVariant.createWithPanel}
-      controlledDial={isFABReplaced ? CreateStreamCollectionControlledDial : undefined}
+      controlledDial={CreateStreamCollectionControlledDial}
       onClose={helpers.handleClearAllFilters}
     >
       {({ onClose }) => (
@@ -144,7 +139,7 @@ const StreamCollectionCreation: FunctionComponent<StreamCollectionCreationProps>
             name: '',
             description: '',
             stream_public: false,
-            authorized_members: [] as Option[],
+            authorized_members: [] as FieldOption[],
           }}
           validationSchema={streamCollectionCreationValidation(t_i18n('This field is required'))}
           onSubmit={onSubmit}

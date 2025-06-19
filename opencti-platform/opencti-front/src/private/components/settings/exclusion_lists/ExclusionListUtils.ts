@@ -1,11 +1,11 @@
 import * as Yup from 'yup';
-import { Option } from '@components/common/form/ReferenceField';
+import { FieldOption } from '../../../../utils/field';
 
 const ipAddrList = ['IPv4-Addr', 'IPv6-Addr'];
 const observableTypeList = ['Artifact', 'Domain-Name', 'Hostname', 'Url', 'StixFile', 'Email-Addr'];
 export const availableEntityTypes = [...observableTypeList, ...ipAddrList];
 
-const entityTypeListValidator = (entityTypeList?: Option[]) => {
+const entityTypeListValidator = (entityTypeList?: FieldOption[]) => {
   if (!entityTypeList) return false;
   let containIpAddr = false;
   let containObservableType = false;
@@ -27,7 +27,7 @@ export const exclusionListUpdateValidator = (t: (n: string) => string) => Yup.ob
   exclusion_list_entity_types: Yup.array().min(1, t('Minimum one entity type')).test(
     'entityTypeListValidator',
     t('Incompatible types, can\'t mix IP types with other types'),
-    (value?: Option[]) => entityTypeListValidator(value),
+    (value?: FieldOption[]) => entityTypeListValidator(value),
   ).required(t('This field is required')),
 });
 
@@ -38,7 +38,7 @@ export const exclusionListCreationValidator = (t: (value: string) => string, isC
     exclusion_list_entity_types: Yup.array().min(1, t('Minimum one entity type')).test(
       'entityTypeListValidator',
       t('Incompatible types, can\'t mix IP types with other types'),
-      (value?: Option[]) => entityTypeListValidator(value),
+      (value?: FieldOption[]) => entityTypeListValidator(value),
     ).required(t('This field is required')),
     file: isCreatedWithFile ? Yup.mixed().required(t('This field is required')) : Yup.mixed().nullable(),
     content: isCreatedWithFile ? Yup.string().nullable() : Yup.string().required(t('This field is required')),

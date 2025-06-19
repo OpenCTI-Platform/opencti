@@ -145,13 +145,15 @@ class TimeRange extends React.Component {
           <Tracks left={false} right={false}>
             {({ tracks, getTrackProps }) => (
               <>
-                {tracks?.map(({ id, source, target }) => <Track
-                  error={error}
-                  key={id}
-                  source={source}
-                  target={target}
-                  getTrackProps={getTrackProps}
-                                                         />)}
+                {tracks?.map(({ id, source, target }) => (
+                  <Track
+                    error={error}
+                    key={id}
+                    source={source}
+                    target={target}
+                    getTrackProps={getTrackProps}
+                  />
+                ))}
               </>
             )}
           </Tracks>
@@ -216,11 +218,6 @@ TimeRange.propTypes = {
   sliderRailClassName: PropTypes.string,
   step: PropTypes.number,
   formatTick: PropTypes.func,
-};
-
-TimeRange.defaultProps = {
-  disabledIntervals: [],
-  ticksNumber: 48,
 };
 
 export default TimeRange;

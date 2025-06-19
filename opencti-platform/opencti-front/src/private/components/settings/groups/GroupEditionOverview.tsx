@@ -18,7 +18,6 @@ import { GroupEditionOverview_group$data } from './__generated__/GroupEditionOve
 import GroupHiddenTypesField from './GroupHiddenTypesField';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import type { Theme } from '../../../../components/Theme';
-import useHelper from '../../../../utils/hooks/useHelper';
 import GroupDeletionDialog from './GroupDeletionDialog';
 
 export const groupMutationFieldPatch = graphql`
@@ -85,8 +84,6 @@ interface GroupEditionOverviewComponentProps {
 const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewComponentProps> = ({ group, context }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const basicShape: ObjectShape = {
     name: Yup.string().required(t_i18n('This field is required')),
@@ -242,9 +239,7 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
                 fieldName="restrict_delete"
               />
             </FormHelperText>
-            {isFABReplaced && (
-              <GroupDeletionDialog groupId={group.id} />
-            )}
+            <GroupDeletionDialog groupId={group.id} />
           </Form>
         )}
       </Formik>

@@ -10,12 +10,11 @@ import Box from '@mui/material/Box';
 import makeStyles from '@mui/styles/makeStyles';
 import { RetentionLinesPaginationQuery$variables } from '@components/settings/retention/__generated__/RetentionLinesPaginationQuery.graphql';
 import { FormikConfig } from 'formik/dist/types';
-import { Option } from '@components/common/form/ReferenceField';
 import { RetentionCreationCheckMutation$data } from '@components/settings/retention/__generated__/RetentionCreationCheckMutation.graphql';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import Alert from '@mui/material/Alert';
 import MenuItem from '@mui/material/MenuItem';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '../../common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -26,9 +25,8 @@ import { insertNode } from '../../../../utils/store';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import SelectField from '../../../../components/fields/SelectField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import type { Theme } from '../../../../components/Theme';
-import useHelper from '../../../../utils/hooks/useHelper';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -86,8 +84,6 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
   const { t_i18n } = useFormatter();
   const [filters, helpers] = useFiltersState();
   const [verified, setVerified] = useState(false);
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object', 'stix-core-relationship']);
   const onSubmit: FormikConfig<RetentionFormValues>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
     const scope = values.scope.value;
@@ -155,12 +151,8 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
   return (
     <Drawer
       title={t_i18n('Create a retention policy')}
-      variant={isFABReplaced ? undefined : DrawerVariant.createWithPanel}
       onClose={helpers.handleClearAllFilters}
-      controlledDial={isFABReplaced
-        ? CreateRetentionControlledDial
-        : undefined
-      }
+      controlledDial={CreateRetentionControlledDial}
     >
       {({ onClose }) => (
         <Formik
@@ -230,7 +222,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                   { value: 'file', label: t_i18n('File') },
                   { value: 'workbench', label: t_i18n('Workbench') },
                 ]}
-                renderOption={(prop: Record<string, unknown>, option: Option) => (
+                renderOption={(prop: Record<string, unknown>, option: FieldOption) => (
                   <li {...prop}>
                     <div className={classes.text}>{t_i18n(option.label)}</div>
                   </li>

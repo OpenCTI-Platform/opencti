@@ -9,7 +9,7 @@ import EEMenu from '../common/entreprise_edition/EEMenu';
 import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
-import useGranted, { KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES, CSVMAPPERS } from '../../../utils/hooks/useGranted';
+import useGranted, { CSVMAPPERS, KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES } from '../../../utils/hooks/useGranted';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -28,13 +28,11 @@ const ProcessingMenu = () => {
   const location = useLocation();
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const {
-    bannerSettings: { bannerHeightNumber },
-  } = useAuth();
+  const { bannerSettings: { bannerHeightNumber } } = useAuth();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const isAdministrator = useGranted([SETTINGS_SETACCESSES]);
   const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]);
-  const isCsvMapperUpdater = useGranted([CSVMAPPERS]);
+  const isMapperUpdater = useGranted([CSVMAPPERS]);
   return (
     <Drawer
       variant="permanent"
@@ -69,7 +67,7 @@ const ProcessingMenu = () => {
             <ListItemText primary={t_i18n('Tasks')} />
           </MenuItem>
         )}
-        {isCsvMapperUpdater && (
+        {isMapperUpdater && (
           <MenuItem
             component={Link}
             to={'/dashboard/data/processing/csv_mapper'}
@@ -79,6 +77,18 @@ const ProcessingMenu = () => {
             dense={false}
           >
             <ListItemText primary={t_i18n('CSV Mappers')} />
+          </MenuItem>
+        )}
+        {isMapperUpdater && (
+          <MenuItem
+            component={Link}
+            to={'/dashboard/data/processing/json_mapper'}
+            selected={location.pathname.includes(
+              '/dashboard/data/processing/json_mapper',
+            )}
+            dense={false}
+          >
+            <ListItemText primary={t_i18n('JSON Mappers')} />
           </MenuItem>
         )}
       </MenuList>

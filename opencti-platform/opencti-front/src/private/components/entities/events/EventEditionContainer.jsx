@@ -3,13 +3,10 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import EventEditionOverview from './EventEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
-import useHelper from '../../../../utils/hooks/useHelper';
+import Drawer from '../../common/drawer/Drawer';
 
 const EventEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const { handleClose, event, open, controlledDial } = props;
   const { editContext } = event;
@@ -19,9 +16,8 @@ const EventEditionContainer = (props) => {
       title={t_i18n('Update an event')}
       open={open}
       onClose={handleClose}
-      variant={!FABReplaced && open == null ? DrawerVariant.update : undefined}
       context={editContext}
-      controlledDial={FABReplaced ? controlledDial : undefined}
+      controlledDial={controlledDial}
     >
       <EventEditionOverview
         event={event}

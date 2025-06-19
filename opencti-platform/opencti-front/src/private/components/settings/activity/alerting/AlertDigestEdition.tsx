@@ -14,11 +14,10 @@ import TextField from '../../../../../components/TextField';
 import type { Theme } from '../../../../../components/Theme';
 import TimePickerField from '../../../../../components/TimePickerField';
 import { convertNotifiers, convertTriggers } from '../../../../../utils/edition';
-import { fieldSpacingContainerStyle } from '../../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../../utils/field';
 import { dayStartDate, parse } from '../../../../../utils/Time';
 import ObjectMembersField from '../../../common/form/ObjectMembersField';
 import NotifierField from '../../../common/form/NotifierField';
-import { Option } from '../../../common/form/ReferenceField';
 import { AlertDigestEdition_trigger$key } from './__generated__/AlertDigestEdition_trigger.graphql';
 import { AlertEditionQuery } from './__generated__/AlertEditionQuery.graphql';
 import { AlertingPaginationQuery$variables } from './__generated__/AlertingPaginationQuery.graphql';
@@ -35,8 +34,8 @@ interface AlertDigestEditionProps {
 
 interface AlertDigestFormValues {
   name?: string
-  notifiers: Option[];
-  recipients: Option[];
+  notifiers: FieldOption[];
+  recipients: FieldOption[];
   trigger_ids: { value: string }[];
   period: string;
 }
@@ -116,7 +115,7 @@ const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryR
       },
     });
   };
-  const handleSubmitField = (name: string, value: Option | string | string[]) => {
+  const handleSubmitField = (name: string, value: FieldOption | string | string[]) => {
     return digestTriggerValidation(t_i18n).validateAt(name, { [name]: value }).then(() => {
       commitFieldPatch({
         variables: {

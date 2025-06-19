@@ -14,7 +14,6 @@ import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreOb
 import Sector from './Sector';
 import SectorKnowledge from './SectorKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import SectorPopover from './SectorPopover';
 import FileManager from '../../common/files/FileManager';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
@@ -28,7 +27,6 @@ import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import SectorEdition from './SectorEdition';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootSectorSubscription($id: ID!) {
@@ -88,8 +86,6 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
   }), [sectorId]);
 
   const location = useLocation();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { t_i18n } = useFormatter();
   useSubscription<RootSectorSubscription>(subConfig);
 
@@ -143,8 +139,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
               stixDomainObject={sector}
               isOpenctiAlias={true}
               enableQuickSubscription={true}
-              PopoverComponent={<SectorPopover id={sector.id}/>}
-              EditComponent={isFABReplaced && (
+              EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <SectorEdition sectorId={sector.id} />
                 </Security>

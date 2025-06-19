@@ -3,7 +3,7 @@ import { FormikConfig } from 'formik/dist/types';
 import React from 'react';
 import { graphql } from 'react-relay';
 import * as Yup from 'yup';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import GroupField from '@components/common/form/GroupField';
 import { GenericContext } from '@components/common/model/GenericContextModel';
 import OpenVocabField from '@components/common/form/OpenVocabField';
@@ -12,17 +12,15 @@ import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
 import DashboardField from '../../common/form/DashboardField';
-import { Option } from '../../common/form/ReferenceField';
 import { SettingsOrganization_organization$data } from './__generated__/SettingsOrganization_organization.graphql';
 import SettingsOrganizationHiddenTypesField from './SettingsOrganizationHiddenTypesField';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import useHelper from '../../../../utils/hooks/useHelper';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 const organizationMutationFieldPatch = graphql`
@@ -84,9 +82,9 @@ interface SettingsOrganizationFormValues {
   description: string | null;
   x_opencti_organization_type: string | null;
   contact_information: string | null;
-  default_dashboard: Option | null;
+  default_dashboard: FieldOption | null;
   message?: string;
-  references?: Option[];
+  references?: FieldOption[];
   grantable_groups: { label: string; value: string; }[];
 }
 
@@ -115,8 +113,6 @@ const SettingsOrganizationEdition = ({
 }: SettingsOrganizationEditionProps) => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const basicShape = {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
@@ -198,12 +194,8 @@ const SettingsOrganizationEdition = ({
   return (
     <Drawer
       title={t_i18n('Update the organization')}
-      variant={isFABReplaced ? undefined : DrawerVariant.updateWithPanel}
       context={context}
-      controlledDial={isFABReplaced
-        ? UpdateSettingsOrganizationControlledDial
-        : undefined
-      }
+      controlledDial={UpdateSettingsOrganizationControlledDial}
     >
       {({ onClose }) => (
         <Formik<SettingsOrganizationFormValues>

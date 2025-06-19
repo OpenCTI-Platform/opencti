@@ -1,15 +1,11 @@
 import React, { FunctionComponent } from 'react';
 import { graphql } from 'relay-runtime';
-import useHelper from 'src/utils/hooks/useHelper';
 import { Grid } from '@mui/material';
-import { CollaborativeSecurity } from 'src/utils/Security';
-import { KNOWLEDGE_KNUPDATE } from 'src/utils/hooks/useGranted';
 import { useFragment } from 'react-relay';
 import ContainerStixObjectsOrStixRelationships from '@components/common/containers/ContainerStixObjectsOrStixRelationships';
 import StixCoreObjectLatestHistory from '@components/common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixDomainObjectOverview from '@components/common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../external_references/StixCoreObjectExternalReferences';
-import NoteEdition from './NoteEdition';
 import { Note_note$key } from './__generated__/Note_note.graphql';
 import NoteDetails from './NoteDetails';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
@@ -74,8 +70,6 @@ const NoteComponent: FunctionComponent<NoteComponentProps> = ({
   enableReferences,
 }) => {
   const note = useFragment(NoteComponentFragment, noteFragment);
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const overviewLayoutCustomization = useOverviewLayoutCustomization(note.entity_type);
 
   return (<>
@@ -133,11 +127,6 @@ const NoteComponent: FunctionComponent<NoteComponentProps> = ({
         })
       }
     </Grid>
-    {!isFABReplaced && (
-      <CollaborativeSecurity data={note} needs={[KNOWLEDGE_KNUPDATE]}>
-        <NoteEdition noteId={note.id} />
-      </CollaborativeSecurity>
-    )}
   </>);
 };
 

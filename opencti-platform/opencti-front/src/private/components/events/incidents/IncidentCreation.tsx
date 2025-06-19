@@ -7,8 +7,7 @@ import * as R from 'ramda';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
-import useHelper from 'src/utils/hooks/useHelper';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { IncidentsLinesQuery$variables } from '@components/events/incidents/__generated__/IncidentsLinesQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
@@ -21,11 +20,10 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { insertNode } from '../../../../utils/store';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { isEmptyField } from '../../../../utils/utils';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import type { Theme } from '../../../../components/Theme';
-import { Option } from '../../common/form/ReferenceField';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
@@ -69,12 +67,12 @@ interface IncidentAddInput {
   incident_type: string;
   severity: string;
   source: string;
-  createdBy: Option | undefined;
-  objectMarking: Option[];
-  objectLabel: Option[];
-  objectAssignee: Option[];
-  objectParticipant: Option[];
-  externalReferences: Option[];
+  createdBy: FieldOption | undefined;
+  objectMarking: FieldOption[];
+  objectLabel: FieldOption[];
+  objectAssignee: FieldOption[];
+  objectParticipant: FieldOption[];
+  externalReferences: FieldOption[];
   file: File | undefined;
 }
 
@@ -82,8 +80,8 @@ interface IncidentCreationProps {
   updater: (store: RecordSourceSelectorProxy, key: string) => void;
   onReset?: () => void;
   onCompleted?: () => void;
-  defaultCreatedBy?: Option;
-  defaultMarkingDefinitions?: Option[];
+  defaultCreatedBy?: FieldOption;
+  defaultMarkingDefinitions?: FieldOption[];
   defaultConfidence?: number;
   inputValue?: string;
 }
@@ -307,17 +305,14 @@ const IncidentCreation = ({
   paginationOptions: IncidentsLinesQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_incidents', paginationOptions, 'incidentAdd');
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const CreateIncidentControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType='Incident' {...props} />
   );
   return (
     <Drawer
       title={t_i18n('Create an incident')}
-      variant={isFABReplaced ? undefined : DrawerVariant.create}
-      controlledDial={isFABReplaced ? CreateIncidentControlledDial : undefined}
+      controlledDial={CreateIncidentControlledDial}
     >
       {({ onClose }) => (
         <IncidentCreationForm

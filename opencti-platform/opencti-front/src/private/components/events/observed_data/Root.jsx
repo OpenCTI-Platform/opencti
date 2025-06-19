@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
 import { Route, Routes, Link } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
@@ -10,7 +9,6 @@ import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreR
 import withRouter from '../../../../utils/compat_router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import ObservedData from './ObservedData';
-import ObservedDataPopover from './ObservedDataPopover';
 import FileManager from '../../common/files/FileManager';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import ContainerHeader from '../../common/containers/ContainerHeader';
@@ -122,7 +120,6 @@ class RootObservedData extends Component {
                   />
                   <ContainerHeader
                     container={observedData}
-                    PopoverComponent={<ObservedDataPopover />}
                     EditComponent={(
                       <Security needs={[KNOWLEDGE_KNUPDATE]}>
                         <ObservedDataEdition observedDataId={observedData.id} />
@@ -231,10 +228,5 @@ class RootObservedData extends Component {
     );
   }
 }
-
-RootObservedData.propTypes = {
-  children: PropTypes.node,
-  match: PropTypes.object,
-};
 
 export default R.compose(inject18n, withRouter)(RootObservedData);

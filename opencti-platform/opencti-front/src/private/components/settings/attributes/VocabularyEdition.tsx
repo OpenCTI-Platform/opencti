@@ -10,12 +10,12 @@ import { useFormatter } from '../../../../components/i18n';
 import formikFieldToEditInput from '../../../../utils/FormikUtils';
 import type { Theme } from '../../../../components/Theme';
 import { useVocabularyCategory_Vocabularynode$data } from '../../../../utils/hooks/__generated__/useVocabularyCategory_Vocabularynode.graphql';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { MESSAGING$ } from '../../../../relay/environment';
 import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSoloField';
-import { Option } from '../../common/form/ReferenceField';
 import { RelayError } from '../../../../relay/relayTypes';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import SwitchField from '../../../../components/fields/SwitchField';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -41,6 +41,7 @@ const attributeValidation = (t: (s: string) => string) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string().nullable(),
   order: Yup.number().nullable().integer(t('The value must be a number')),
+  is_hidden: Yup.boolean().nullable(),
 });
 
 interface VocabularyEditionFormikValues {
@@ -48,6 +49,7 @@ interface VocabularyEditionFormikValues {
   description: string;
   aliases: { id: string; label: string; value: string }[];
   order: number | null | undefined;
+  is_hidden: boolean | null | undefined;
 }
 
 const VocabularyEdition = ({
@@ -107,6 +109,7 @@ const VocabularyEdition = ({
         })) as { id: string; label: string; value: string }[],
         description: vocab.description ?? '',
         order: vocab.order,
+        is_hidden: vocab.is_hidden,
       }}
       validationSchema={attributeValidation(t_i18n)}
       onSubmit={onSubmit}
@@ -143,7 +146,7 @@ const VocabularyEdition = ({
             }))}
             renderOption={(
               props: Record<string, unknown>,
-              option: Option,
+              option: FieldOption,
             ) => (
               <li {...props}>
                 <div className={classes.text}>{option.label}</div>
@@ -159,6 +162,13 @@ const VocabularyEdition = ({
             fullWidth={true}
             type="number"
             style={{ marginTop: 20 }}
+          />
+          <Field
+            component={SwitchField}
+            type="checkbox"
+            name="is_hidden"
+            label={t_i18n('Hidden?')}
+            containerstyle={fieldSpacingContainerStyle}
           />
           <div className={classes.buttons}>
             <Button

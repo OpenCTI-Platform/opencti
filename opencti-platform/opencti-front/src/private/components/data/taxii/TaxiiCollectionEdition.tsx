@@ -8,7 +8,6 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import Box from '@mui/material/Box';
 import makeStyles from '@mui/styles/makeStyles';
-import { Option } from '@components/common/form/ReferenceField';
 import { TaxiiCollectionEdition_taxiiCollection$data } from '@components/data/taxii/__generated__/TaxiiCollectionEdition_taxiiCollection.graphql';
 import { FormikConfig } from 'formik/dist/types';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
@@ -18,7 +17,7 @@ import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
 import { deserializeFilterGroupForFrontend, serializeFilterGroupForBackend, useAvailableFilterKeysForEntityTypes } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
-import { AutoCompleteOption, fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { convertAuthorizedMembers } from '../../../../utils/edition';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 
@@ -36,7 +35,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface TaxiiCollectionCreationForm {
-  restricted_members: AutoCompleteOption[] | null
+  restricted_members: FieldOption[] | null
   taxii_public?: boolean | null
   name: string | null
   description: string | null
@@ -76,7 +75,7 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
     score_to_confidence: taxiiCollection.score_to_confidence,
   };
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(taxiiCollection.filters) ?? undefined);
-  const handleSubmitField = (name: string, value: Option[] | string) => {
+  const handleSubmitField = (name: string, value: FieldOption[] | string) => {
     taxiiCollectionValidation(t_i18n('This field is required'))
       .validateAt(name, { [name]: value })
       .then(() => {
@@ -97,7 +96,7 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
       .catch(() => false);
   };
 
-  const handleSubmitFieldOptions = (name: string, value: Option[]) => taxiiCollectionValidation(t_i18n('This field is required'))
+  const handleSubmitFieldOptions = (name: string, value: FieldOption[]) => taxiiCollectionValidation(t_i18n('This field is required'))
     .validateAt(name, { [name]: value })
     .then(() => {
       commitMutation({

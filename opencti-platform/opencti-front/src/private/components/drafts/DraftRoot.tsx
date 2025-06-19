@@ -2,7 +2,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { Suspense, useEffect } from 'react';
-import { Route, Routes, useParams, Link, useLocation, Navigate } from 'react-router-dom';
+import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -16,6 +16,7 @@ import { graphql, useFragment, usePreloadedQuery, useQueryLoader } from 'react-r
 import { interval } from 'rxjs';
 import ConnectorWorkLine from '@components/data/connectors/ConnectorWorkLine';
 import Paper from '@mui/material/Paper';
+import ImportFilesContent from '@components/data/import/ImportFilesContent';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import Loader, { LoaderVariant } from '../../../components/Loader';
@@ -24,7 +25,6 @@ import { getCurrentTab } from '../../../utils/utils';
 import { useFormatter } from '../../../components/i18n';
 import { MESSAGING$ } from '../../../relay/environment';
 import { RelayError } from '../../../relay/relayTypes';
-import Import from '../data/import/Import';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { TEN_SECONDS } from '../../../utils/Time';
 
@@ -124,10 +124,13 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
     <>
       {isDraftReadOnly && (
       <>
-        <Breadcrumbs elements={[
-          { label: t_i18n('Drafts'), link: '/dashboard/drafts' },
-          { label: name, current: true },
-        ]}
+        <Breadcrumbs
+          elements={[
+            { label: t_i18n('Data') },
+            { label: t_i18n('Import'), link: '/dashboard/data/import' },
+            { label: t_i18n('Drafts'), link: '/dashboard/data/import/draft' },
+            { label: name, current: true },
+          ]}
         />
         {validationWork && (
         <Paper
@@ -159,44 +162,44 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
       >
         <Tabs
           id="tabs-container"
-          value={getCurrentTab(location.pathname, draftId, '/dashboard/drafts/entities')}
+          value={getCurrentTab(location.pathname, draftId, '/dashboard/data/import/draft/entities')}
         >
           <Tab
             component={Link}
-            to={`/dashboard/drafts/${draftId}/entities`}
-            value={`/dashboard/drafts/${draftId}/entities`}
+            to={`/dashboard/data/import/draft/${draftId}/entities`}
+            value={`/dashboard/data/import/draft/${draftId}/entities`}
             label={
               <span>{t_i18n('Entities')} ({objectsCount.entitiesCount})</span>
             }
           />
           <Tab
             component={Link}
-            to={`/dashboard/drafts/${draftId}/observables`}
-            value={`/dashboard/drafts/${draftId}/observables`}
+            to={`/dashboard/data/import/draft/${draftId}/observables`}
+            value={`/dashboard/data/import/draft/${draftId}/observables`}
             label={
               <span>{t_i18n('Observables')} ({objectsCount.observablesCount})</span>
             }
           />
           <Tab
             component={Link}
-            to={`/dashboard/drafts/${draftId}/relationships`}
-            value={`/dashboard/drafts/${draftId}/relationships`}
+            to={`/dashboard/data/import/draft/${draftId}/relationships`}
+            value={`/dashboard/data/import/draft/${draftId}/relationships`}
             label={
               <span>{t_i18n('Relationships')} ({objectsCount.relationshipsCount})</span>
             }
           />
           <Tab
             component={Link}
-            to={`/dashboard/drafts/${draftId}/sightings`}
-            value={`/dashboard/drafts/${draftId}/sightings`}
+            to={`/dashboard/data/import/draft/${draftId}/sightings`}
+            value={`/dashboard/data/import/draft/${draftId}/sightings`}
             label={
               <span>{t_i18n('Sightings')} ({objectsCount.sightingsCount})</span>
             }
           />
           <Tab
             component={Link}
-            to={`/dashboard/drafts/${draftId}/containers`}
-            value={`/dashboard/drafts/${draftId}/containers`}
+            to={`/dashboard/data/import/draft/${draftId}/containers`}
+            value={`/dashboard/data/import/draft/${draftId}/containers`}
             label={
               <span>{t_i18n('Containers')} ({objectsCount.containersCount})</span>
             }
@@ -204,8 +207,8 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
           {!isDraftReadOnly && (
           <Tab
             component={Link}
-            to={`/dashboard/drafts/${draftId}/files`}
-            value={`/dashboard/drafts/${draftId}/files`}
+            to={`/dashboard/data/import/draft/${draftId}/files`}
+            value={`/dashboard/data/import/draft/${draftId}/files`}
             label={t_i18n('Files')}
           />)}
         </Tabs>
@@ -213,7 +216,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
       <Routes>
         <Route
           path="/"
-          element={<Navigate to={`/dashboard/drafts/${draftId}/entities`} replace={true} />}
+          element={<Navigate to={`/dashboard/data/import/draft/${draftId}/entities`} replace={true}/>}
         />
         <Route
           path="/entities"
@@ -237,7 +240,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
         />
         <Route
           path="/files"
-          element={<Import inDraftOverview/>}
+          element={<ImportFilesContent inDraftOverview/>}
         />
       </Routes>
     </>

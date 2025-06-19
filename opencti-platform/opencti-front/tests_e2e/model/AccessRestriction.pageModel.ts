@@ -12,6 +12,10 @@ export default class AccessRestrictionPageModel {
     return this.page.getByRole('button', { name: 'Manage access restriction' }).click();
   }
 
+  openFormInMenu() {
+    return this.page.getByRole('menuitem', { name: 'Manage access restriction' }).click();
+  }
+
   async addAccess(identity: string, level: 'can view' | 'can edit' | 'can manage') {
     await this.identityAutocomplete.selectOption(identity);
     await this.accessSelect.selectOption(level);

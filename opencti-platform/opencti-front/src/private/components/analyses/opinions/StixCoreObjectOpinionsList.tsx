@@ -42,6 +42,7 @@ export const stixCoreObjectOpinionsListQuery = graphql`
             id
           }
           objectMarking {
+            id
             definition_type
             definition
           }

@@ -19,7 +19,6 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ArtifactField from '../../common/form/ArtifactField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { useFormatter } from '../../../../components/i18n';
-import useHelper from '../../../../utils/hooks/useHelper';
 import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory';
 import { adaptFieldValue } from '../../../../utils/String';
 import { convertMarkings } from '../../../../utils/edition';
@@ -98,8 +97,6 @@ const StixCyberObservableEditionOverviewComponent = ({
 }) => {
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { isVocabularyField, fieldToCategory } = useVocabularyCategory();
   const { booleanAttributes, dateAttributes, ignoredAttributes, multipleAttributes, numberAttributes } = useAttributes();
   const onSubmit = (values, { setSubmitting }) => {
@@ -561,11 +558,9 @@ const StixCyberObservableEditionOverviewComponent = ({
                     setFieldValue={setFieldValue}
                     onChange={handleChangeObjectMarking}
                   />
-                  {isFABReplaced && (
-                    <StixCyberObservableDeletion
-                      id={stixCyberObservable.id}
-                    />
-                  )}
+                  <StixCyberObservableDeletion
+                    id={stixCyberObservable.id}
+                  />
                 </Form>
               )}
             </Formik>

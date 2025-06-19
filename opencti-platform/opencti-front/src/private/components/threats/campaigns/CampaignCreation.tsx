@@ -5,7 +5,7 @@ import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -14,16 +14,14 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import { Option } from '../../common/form/ReferenceField';
 import { CampaignCreationMutation, CampaignCreationMutation$variables } from './__generated__/CampaignCreationMutation.graphql';
 import { CampaignsCardsPaginationQuery$variables } from './__generated__/CampaignsCardsPaginationQuery.graphql';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import useHelper from '../../../../utils/hooks/useHelper';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import { splitMultilines } from '../../../../utils/String';
 import BulkTextModal from '../../../../components/fields/BulkTextField/BulkTextModal';
@@ -55,9 +53,9 @@ interface CampaignAddInput {
   name: string;
   description: string;
   confidence: number | null;
-  createdBy: Option | null;
-  objectMarking: Option[];
-  objectLabel: Option[];
+  createdBy: FieldOption | null;
+  objectMarking: FieldOption[];
+  objectLabel: FieldOption[];
   externalReferences: { value: string }[];
   file: File | null;
 }
@@ -306,12 +304,10 @@ const CampaignCreation = ({
 }: {
   paginationOptions: CampaignsCardsPaginationQuery$variables;
 }) => {
-  const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_campaigns', paginationOptions, 'campaignAdd');
 
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const CreateCampaignControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType='Campaign' {...props} />
   );
@@ -319,8 +315,7 @@ const CampaignCreation = ({
   return (
     <Drawer
       title={t_i18n('Create a campaign')}
-      variant={isFABReplaced ? undefined : DrawerVariant.create}
-      controlledDial={isFABReplaced ? CreateCampaignControlledDial : undefined}
+      controlledDial={CreateCampaignControlledDial}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
     >
       {({ onClose }) => (

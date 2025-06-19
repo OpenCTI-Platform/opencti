@@ -6,7 +6,6 @@ import { omit } from 'ramda';
 import * as Yup from 'yup';
 import { makeStyles } from '@mui/styles';
 import { graphql } from 'react-relay';
-import Fab from '@mui/material/Fab';
 import MenuItem from '@mui/material/MenuItem';
 import { Add } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
@@ -24,7 +23,6 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { insertNode } from '../../../../utils/store';
-import useHelper from '../../../../utils/hooks/useHelper';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -40,11 +38,6 @@ const useStyles = makeStyles((theme) => ({
   createButton: {
     float: 'left',
     marginTop: -15,
-  },
-  createButtonFab: {
-    position: 'fixed',
-    bottom: 30,
-    right: 230,
   },
 }));
 
@@ -96,8 +89,6 @@ const SettingsOrganizationUserCreation = ({
   const { me, settings } = useAuth();
   const { t_i18n } = useFormatter();
   const classes = useStyles();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const [openAddUser, setOpenAddUser] = useState(false);
   const onReset = () => setOpenAddUser(false);
   const onSubmit = (values, { setSubmitting, resetForm }) => {
@@ -137,38 +128,27 @@ const SettingsOrganizationUserCreation = ({
       },
     });
   };
-  let createButton = (
-    <Fab
-      onClick={() => setOpenAddUser(true)}
-      color="secondary"
-      aria-label="Add"
-      className={classes.createButtonFab}
-    >
-      <Add />
-    </Fab>
-  );
-  if (isFABReplaced) {
-    createButton = (
-      <CreateOrgUserControlledDial
-        onOpen={() => setOpenAddUser(true)}
-        onClose={() => setOpenAddUser(false)}
-      />
-    );
-  }
 
   return (
     <>
-      {variant === 'fab' ? (createButton) : (
-        <IconButton
-          color="primary"
-          aria-label="Add"
-          onClick={() => setOpenAddUser(true)}
-          classes={{ root: classes.createButton }}
-          size="large"
-        >
-          <Add fontSize="small" />
-        </IconButton>
-      )}
+      {variant === 'controlledDial'
+        ? (
+          <CreateOrgUserControlledDial
+            onOpen={() => setOpenAddUser(true)}
+            onClose={() => setOpenAddUser(false)}
+          />
+        ) : (
+          <IconButton
+            color="primary"
+            aria-label="Add"
+            onClick={() => setOpenAddUser(true)}
+            classes={{ root: classes.createButton }}
+            size="large"
+          >
+            <Add fontSize="small" />
+          </IconButton>
+        )
+      }
       <Drawer
         open={openAddUser}
         title={t_i18n('Create a user')}

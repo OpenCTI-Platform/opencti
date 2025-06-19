@@ -15,11 +15,10 @@ import SelectField from '../../../../components/fields/SelectField';
 import TextField from '../../../../components/TextField';
 import TimePickerField from '../../../../components/TimePickerField';
 import { convertEventTypes, convertNotifiers, convertTriggers, filterEventTypesOptions, instanceEventTypesOptions } from '../../../../utils/edition';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { deserializeFilterGroupForFrontend, serializeFilterGroupForBackend, stixFilters } from '../../../../utils/filters/filtersUtils';
 import { dayStartDate, formatTimeForToday, parse } from '../../../../utils/Time';
 import NotifierField from '../../common/form/NotifierField';
-import { Option } from '../../common/form/ReferenceField';
 import Filters from '../../common/lists/Filters';
 import { TriggerEditionOverview_trigger$key } from './__generated__/TriggerEditionOverview_trigger.graphql';
 import { TriggerEventType } from './__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
@@ -222,7 +221,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
   };
   const handleSubmitField = (
     name: string,
-    value: Option | string | string[],
+    value: FieldOption | string | string[],
   ) => {
     return triggerValidation()
       .validateAt(name, { [name]: value })

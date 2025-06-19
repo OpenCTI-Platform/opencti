@@ -11,21 +11,18 @@ import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
-import useHelper from 'src/utils/hooks/useHelper';
 import { NOTE_TYPE, noteCreationUserMutation } from './NoteCreation';
 import { insertNode } from '../../../../utils/store';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import type { Theme } from '../../../../components/Theme';
-import { Option } from '../../common/form/ReferenceField';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNPARTICIPATE } from '../../../../utils/hooks/useGranted';
-import AddNotes from './AddNotes';
 import StixCoreObjectOrStixCoreRelationshipNoteCard from './StixCoreObjectOrStixCoreRelationshipNoteCard';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -134,8 +131,8 @@ export interface NoteAddInput {
   confidence: number | undefined;
   note_types: string[];
   likelihood?: number;
-  objectMarking: Option[];
-  objectLabel: Option[];
+  objectMarking: FieldOption[];
+  objectLabel: FieldOption[];
 }
 
 interface DefaultMarking {
@@ -166,8 +163,6 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
   title,
 }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { mandatoryAttributes } = useIsMandatoryAttribute(NOTE_TYPE);
   const classes = useStyles();
   const basicShape = yupShapeConditionalRequired({
@@ -256,18 +251,11 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
           >
             <EditOutlined fontSize="small" />
           </IconButton>
-          {isFABReplaced
-            ? <AddNotesFunctionalComponent
-                stixCoreObjectOrStixCoreRelationshipId={id}
-                stixCoreObjectOrStixCoreRelationshipNotes={data}
-                paginationOptions={paginationOptions}
-              />
-            : <AddNotes
-                stixCoreObjectOrStixCoreRelationshipId={id}
-                stixCoreObjectOrStixCoreRelationshipNotes={notes}
-                paginationOptions={paginationOptions}
-              />
-          }
+          <AddNotesFunctionalComponent
+            stixCoreObjectOrStixCoreRelationshipId={id}
+            stixCoreObjectOrStixCoreRelationshipNotes={data}
+            paginationOptions={paginationOptions}
+          />
         </>
       </Security>
       <div className="clearfix" />

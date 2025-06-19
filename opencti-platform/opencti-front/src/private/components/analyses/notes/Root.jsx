@@ -1,5 +1,4 @@
 import React, { useMemo } from 'react';
-import PropTypes from 'prop-types';
 import { Link, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { graphql, useSubscription } from 'react-relay';
 import Box from '@mui/material/Box';
@@ -15,7 +14,6 @@ import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObject
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
-import NotePopover from './NotePopover';
 import { CollaborativeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import NoteEdition from './NoteEdition';
@@ -94,7 +92,6 @@ const RootNote = () => {
                     placeholder={
                       <ContainerHeader
                         container={props.note}
-                        PopoverComponent={<NotePopover note={note} id={note.id} />}
                         EditComponent={
                           <CollaborativeSecurity data={note} needs={[KNOWLEDGE_KNUPDATE]}>
                             <NoteEdition noteId={note.id}/>
@@ -109,7 +106,6 @@ const RootNote = () => {
                   >
                     <ContainerHeader
                       container={note}
-                      PopoverComponent={<NotePopover note={note}/>}
                       EditComponent={
                         <CollaborativeSecurity data={note} needs={[KNOWLEDGE_KNUPDATE]}>
                           <NoteEdition noteId={note.id}/>
@@ -178,11 +174,6 @@ const RootNote = () => {
       />
     </>
   );
-};
-
-RootNote.propTypes = {
-  children: PropTypes.node,
-  match: PropTypes.object,
 };
 
 export default RootNote;

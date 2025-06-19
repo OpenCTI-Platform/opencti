@@ -8,18 +8,19 @@ import { QueryRenderer } from '../../../../relay/environment';
 import StixCoreObjectEnrollPlaybookLines, { stixCoreObjectEnrollPlaybookLinesQuery } from './StixCoreObjectEnrollPlaybookLines';
 import { useFormatter } from '../../../../components/i18n';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 interface StixCoreObjectEnrollPlaybookLinesProps {
   stixCoreObjectId: string,
-  handleClose: () => void,
-  open: boolean,
+  handleClose?: () => void,
+  open?: boolean,
 }
 
-const StixCoreObjectEnrollPlaybook: FunctionComponent<StixCoreObjectEnrollPlaybookLinesProps> = ({ stixCoreObjectId, handleClose, open }) => {
+const StixCoreObjectEnrollPlaybook: FunctionComponent<StixCoreObjectEnrollPlaybookLinesProps> = ({
+  stixCoreObjectId,
+  handleClose,
+  open,
+}) => {
   const [openDrawer, setOpenDrawer] = useState(false);
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
   const disabledInDraft = !!draftContext;
@@ -30,15 +31,16 @@ const StixCoreObjectEnrollPlaybook: FunctionComponent<StixCoreObjectEnrollPlaybo
   const handleCloseEnrollPlaybook = () => {
     setOpenDrawer(false);
   };
+
   return (
     <>
-      {(isFABReplaced || !handleClose) && (
+      {!handleClose && (
         <EETooltip title={disabledInDraft ? t_i18n('Not available in draft') : t_i18n('Enroll in playbook')}>
           <ToggleButton
             onClick={() => !disabledInDraft && handleOpenEnrollPlaybook()}
             value="enroll"
             size="small"
-            style={{ marginRight: 3 }}
+            style={{ marginRight: 3, height: '100%' }}
           >
             <PrecisionManufacturingOutlined fontSize="small" color={disabledInDraft ? 'disabled' : 'primary' }/>
           </ToggleButton>

@@ -15,7 +15,7 @@ import Button from '@mui/material/Button';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import { DialogTitle } from '@mui/material';
+import { Box, DialogTitle } from '@mui/material';
 import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
@@ -23,6 +23,8 @@ import MenuItem from '@mui/material/MenuItem';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import { useTheme } from '@mui/styles';
+import StixCoreObjectMenuItemUnderEE from '../stix_core_objects/StixCoreObjectMenuItemUnderEE';
+import StixCoreObjectSharingList from '../stix_core_objects/StixCoreObjectSharingList';
 import { DraftChip } from '../draft/DraftChip';
 import StixCoreObjectEnrollPlaybook from '../stix_core_objects/StixCoreObjectEnrollPlaybook';
 import StixCoreObjectFileExportButton from '../stix_core_objects/StixCoreObjectFileExportButton';
@@ -34,7 +36,7 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
-import useGranted, { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/hooks/useGranted';
 import CommitMessage from '../form/CommitMessage';
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
 import { truncate } from '../../../../utils/String';
@@ -43,7 +45,7 @@ import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObject
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import Transition from '../../../../components/Transition';
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
-import useHelper from '../../../../utils/hooks/useHelper';
+import PopoverMenu from '../../../../components/PopoverMenu';
 
 export const stixDomainObjectMutation = graphql`
   mutation StixDomainObjectHeaderFieldMutation(
@@ -233,11 +235,9 @@ const StixDomainObjectHeader = (props) => {
   const {
     stixDomainObject,
     isOpenctiAlias,
-    PopoverComponent,
     EditComponent,
     viewAs,
     onViewAs,
-    disablePopover,
     disableSharing,
     noAliases,
     entityType, // Should migrate all the parent component to call the useIsEnforceReference as the top
@@ -254,37 +254,35 @@ const StixDomainObjectHeader = (props) => {
   const [aliasToDelete, setAliasToDelete] = useState(null);
   const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]);
   const isKnowledgeEnricher = useGranted([KNOWLEDGE_KNENRICHMENT]);
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
-  const handleToggleOpenAliases = () => {
-    setOpenAliases(!openAliases);
-  };
+  const [isEnrollPlaybookOpen, setEnrollPlaybookOpen] = useState(false);
+  const [isSharingOpen, setIsSharingOpen] = useState(false);
+  const [isEnrichmentOpen, setIsEnrichmentOpen] = useState(false);
 
-  const handleToggleCreateAlias = () => {
-    setOpenAlias(!openAlias);
-  };
+  const handleCloseEnrollPlaybook = () => setEnrollPlaybookOpen(false);
 
-  const handleOpenCommitCreate = () => {
-    setOpenCommitCreate(true);
-  };
+  const handleCloseSharing = () => setIsSharingOpen(false);
 
-  const handleCloseCommitCreate = () => {
-    setOpenCommitCreate(false);
-  };
+  const handleOpenEnrichment = () => setIsEnrichmentOpen(true);
+
+  const handleCloseEnrichment = () => setIsEnrichmentOpen(false);
+
+  const handleToggleOpenAliases = () => setOpenAliases(!openAliases);
+
+  const handleToggleCreateAlias = () => setOpenAlias(!openAlias);
+
+  const handleOpenCommitCreate = () => setOpenCommitCreate(true);
+
+  const handleCloseCommitCreate = () => setOpenCommitCreate(false);
 
   const handleOpenCommitDelete = (label) => {
     setOpenCommitDelete(true);
     setAliasToDelete(label);
   };
 
-  const handleCloseCommitDelete = () => {
-    setOpenCommitDelete(false);
-  };
+  const handleCloseCommitDelete = () => setOpenCommitDelete(false);
 
-  const handleChangeNewAlias = (name, value) => {
-    setNewAlias(value);
-  };
+  const handleChangeNewAlias = (_, value) => setNewAlias(value);
 
   const getCurrentAliases = () => {
     return isOpenctiAlias
@@ -384,6 +382,14 @@ const StixDomainObjectHeader = (props) => {
     },
   };
   const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
+
+  let initialNumberOfButtons = 1 + (isKnowledgeUpdater ? 1 : 0) + (enableQuickSubscription ? 1 : 0);
+  const displayEnrollPlaybookButton = enableEnrollPlaybook && initialNumberOfButtons < 3;
+  if (displayEnrollPlaybookButton) initialNumberOfButtons += 1;
+  const displaySharingButton = disableSharing !== true && initialNumberOfButtons < 3;
+
+  const displayPopoverMenu = (disableSharing !== true && !displaySharingButton)
+    || (enableEnrollPlaybook && !displayEnrollPlaybookButton);
 
   return (
     <React.Suspense fallback={<span />}>
@@ -560,9 +566,14 @@ const StixDomainObjectHeader = (props) => {
               <StixCoreObjectSubscribers triggerData={triggerData} />
             )}
             {disableSharing !== true && (
+              <StixCoreObjectSharingList data={stixDomainObject} />
+            )}
+            {disableSharing !== true && (
               <StixCoreObjectSharing
                 elementId={stixDomainObject.id}
+                open={isSharingOpen}
                 variant="header"
+                handleClose={displaySharingButton ? undefined : handleCloseSharing}
               />
             )}
             <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
@@ -584,27 +595,52 @@ const StixDomainObjectHeader = (props) => {
               />
             )}
             {(enableEnricher && isKnowledgeEnricher) && (
-              <StixCoreObjectEnrichment stixCoreObjectId={stixDomainObject.id} />
+              <StixCoreObjectEnrichment
+                onClose={handleCloseEnrichment}
+                isOpen={isEnrichmentOpen}
+                stixCoreObjectId={stixDomainObject.id}
+              />
             )}
-            {isFABReplaced && enableEnrollPlaybook && (
-              <StixCoreObjectEnrollPlaybook stixCoreObjectId={stixDomainObject.id} />
+            {enableEnrollPlaybook && (
+              <StixCoreObjectEnrollPlaybook
+                open={isEnrollPlaybookOpen}
+                handleClose={displayEnrollPlaybookButton ? undefined : handleCloseEnrollPlaybook}
+                stixCoreObjectId={stixDomainObject.id}
+              />
             )}
-            {isKnowledgeUpdater && (
-              <div>
-                {/* TODO remove this when all components are pure function without compose() */}
-                {!React.isValidElement(PopoverComponent) ? (
-                  <PopoverComponent
-                    disabled={disablePopover}
-                    id={stixDomainObject.id}
-                  />
-                ) : (
-                  React.cloneElement(PopoverComponent, {
-                    id: stixDomainObject.id,
-                    disabled: disablePopover,
-                  })
+            {displayPopoverMenu ? (
+              <PopoverMenu>
+                {({ closeMenu }) => (
+                  <Box>
+                    {disableSharing !== true && !displaySharingButton && (
+                      <StixCoreObjectMenuItemUnderEE
+                        setOpen={setIsSharingOpen}
+                        title={t_i18n('Share with an organization')}
+                        handleCloseMenu={closeMenu}
+                        needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}
+                      />
+                    )}
+                    {(enableEnricher && isKnowledgeEnricher) && (
+                      <MenuItem onClick={() => {
+                        handleOpenEnrichment();
+                        closeMenu();
+                      }}
+                      >
+                        {t_i18n('Enrichment')}
+                      </MenuItem>
+                    )}
+                    {enableEnrollPlaybook && !displayEnrollPlaybookButton && (
+                      <StixCoreObjectMenuItemUnderEE
+                        title={t_i18n('Enroll in playbook')}
+                        setOpen={setEnrollPlaybookOpen}
+                        handleCloseMenu={closeMenu}
+                        needs={[KNOWLEDGE_KNENRICHMENT]}
+                      />
+                    )}
+                  </Box>
                 )}
-              </div>
-            )}
+              </PopoverMenu>
+            ) : null}
             {EditComponent}
           </div>
         </div>
@@ -773,6 +809,14 @@ const StixDomainObjectHeader = (props) => {
             </Form>
           )}
         </Formik>
+      )}
+      {disableSharing !== true && (
+        <StixCoreObjectSharing
+          open={isSharingOpen}
+          handleClose={handleCloseSharing}
+          elementId={stixDomainObject.id}
+          variant="header"
+        />
       )}
     </React.Suspense>
   );

@@ -40,13 +40,13 @@ import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import ItemIcon from '../../../../../components/ItemIcon';
 import GroupField from '../../../common/form/GroupField';
 import ObjectOrganizationField from '../../../common/form/ObjectOrganizationField';
-import { Option } from '../../../common/form/ReferenceField';
 import EnterpriseEdition from '../../../common/entreprise_edition/EnterpriseEdition';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { SETTINGS_SECURITYACTIVITY } from '../../../../../utils/hooks/useGranted';
 import Security from '../../../../../utils/Security';
 import useConnectedDocumentModifier from '../../../../../utils/hooks/useConnectedDocumentModifier';
+import { FieldOption } from '../../../../../utils/field';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -116,7 +116,7 @@ ConfigurationComponentProps
   );
   const currentListeners = (settings.activity_listeners ?? []).map((a) => a.id);
   const onChangeData = (resetForm: () => void) => {
-    return (name: string, data: Option) => {
+    return (name: string, data: FieldOption) => {
       if (!currentListeners.includes(data.value)) {
         const value = R.uniq([...currentListeners, data.value]);
         commit({

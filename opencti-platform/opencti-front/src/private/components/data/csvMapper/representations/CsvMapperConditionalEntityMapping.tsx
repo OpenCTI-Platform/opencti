@@ -8,11 +8,11 @@ import { InformationOutline } from 'mdi-material-ui';
 import { alphabet } from '@components/data/csvMapper/representations/attributes/AttributeUtils';
 import { useCsvMapperContext } from '@components/data/csvMapper/CsvMapperContext';
 import { useTheme } from '@mui/styles';
-import { Option } from '@components/common/form/ReferenceField';
 import { useFormatter } from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
 import SwitchField from '../../../../../components/fields/SwitchField';
 import type { Theme } from '../../../../../components/Theme';
+import { FieldOption } from '../../../../../utils/field';
 
 interface CsvMapperConditionalEntityMappingProps
   extends FieldProps<CsvMapperColumnBasedFormData> {
@@ -28,7 +28,7 @@ CsvMapperConditionalEntityMappingProps
   const { dynamicMappingColumn, setDynamicMappingColumn } = useCsvMapperContext();
 
   const columnOptions = alphabet(26);
-  const operatorOptions: Option[] = [
+  const operatorOptions: FieldOption[] = [
     { label: t_i18n('Equal'), value: 'eq' },
     { label: t_i18n('Not equal'), value: 'not_eq' }];
   const { setFieldValue } = form;
@@ -42,7 +42,7 @@ CsvMapperConditionalEntityMappingProps
     }
   };
 
-  const handleOperatorSelect = async (operator: Option | null) => {
+  const handleOperatorSelect = async (operator: FieldOption | null) => {
     await setFieldValue(`${representationName}.column_based.operator`, operator?.value);
   };
 
@@ -121,7 +121,7 @@ CsvMapperConditionalEntityMappingProps
           />
         )}
       />
-      <MUIAutocomplete<Option>
+      <MUIAutocomplete<FieldOption>
         selectOnFocus
         openOnFocus
         autoComplete

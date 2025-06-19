@@ -39,6 +39,7 @@ const READ_QUERY = gql`
       standard_id
       name
       description
+      x_opencti_score
       sectors {
         edges {
           node {
@@ -61,6 +62,16 @@ const READ_QUERY = gql`
   }
 `;
 
+const UPDATE_QUERY = gql`
+  mutation OrganizationEdit($id: ID!, $input: [EditInput]!) {
+    organizationFieldPatch(id: $id, input: $input) {
+      id
+      name
+      x_opencti_score
+    }
+  }
+`;
+
 const DELETE_QUERY = gql`
   mutation organizationDelete($id: ID!) {
     organizationDelete(id: $id)
@@ -77,6 +88,7 @@ describe('Organization resolver standard behavior', () => {
           id
           name
           description
+          x_opencti_score
         }
       }
     `;
@@ -86,6 +98,7 @@ describe('Organization resolver standard behavior', () => {
         name: 'Organization',
         stix_id: organizationStixId,
         description: 'Organization description',
+        x_opencti_score: 50,
       },
     };
     const organization = await queryAsAdmin({
@@ -95,6 +108,7 @@ describe('Organization resolver standard behavior', () => {
     expect(organization).not.toBeNull();
     expect(organization.data.organizationAdd).not.toBeNull();
     expect(organization.data.organizationAdd.name).toEqual('Organization');
+    expect(organization.data.organizationAdd.x_opencti_score).toEqual(50);
     organizationInternalId = organization.data.organizationAdd.id;
   });
   it('should organization loaded by internal id', async () => {
@@ -142,19 +156,18 @@ describe('Organization resolver standard behavior', () => {
     expect(queryResult.data.organizations.edges.length).toEqual(9);
   });
   it('should update organization', async () => {
-    const UPDATE_QUERY = gql`
-      mutation OrganizationEdit($id: ID!, $input: [EditInput]!) {
-        organizationFieldPatch(id: $id, input: $input) {
-          id
-          name
-        }
-      }
-    `;
     const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
       variables: { id: organizationInternalId, input: { key: 'name', value: ['Organization - test'] } },
     });
     expect(queryResult.data.organizationFieldPatch.name).toEqual('Organization - test');
+  });
+  it('should update score', async () => {
+    const queryResult = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: organizationInternalId, input: { key: 'x_opencti_score', value: 10 } },
+    });
+    expect(queryResult.data.organizationFieldPatch.x_opencti_score).toEqual(10);
   });
   it('should context patch organization', async () => {
     const CONTEXT_PATCH_QUERY = gql`

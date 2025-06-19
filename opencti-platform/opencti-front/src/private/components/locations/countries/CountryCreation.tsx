@@ -6,7 +6,7 @@ import { graphql } from 'react-relay';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import CustomFileUploader from '@components/common/files/CustomFileUploader';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import ConfidenceField from '@components/common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -16,14 +16,12 @@ import { CountriesLinesPaginationQuery$variables } from './__generated__/Countri
 import { insertNode } from '../../../../utils/store';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
-import { Option } from '../../common/form/ReferenceField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
+import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { CountryCreationMutation, CountryCreationMutation$variables } from './__generated__/CountryCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import useHelper from '../../../../utils/hooks/useHelper';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import { splitMultilines } from '../../../../utils/String';
 import { handleErrorInForm } from '../../../../relay/environment';
@@ -54,10 +52,10 @@ interface CountryAddInput {
   name: string;
   description: string;
   confidence: number | null;
-  createdBy: Option | null;
-  objectMarking: Option[];
-  objectLabel: Option[];
-  externalReferences: Option[];
+  createdBy: FieldOption | null;
+  objectMarking: FieldOption[];
+  objectLabel: FieldOption[];
+  externalReferences: FieldOption[];
   file: File | null;
 }
 
@@ -87,15 +85,14 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({
   const { t_i18n } = useFormatter();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
-  const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(COUNTRY_TYPE);
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
-  };
-  const countryValidator = useSchemaCreationValidation(
-    COUNTRY_TYPE,
-    basicShape,
-  );
+  }, mandatoryAttributes);
+
+  const countryValidator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
 
   const [commit] = useApiMutation<CountryCreationMutation>(
     countryMutation,
@@ -171,6 +168,8 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({
     <Formik<CountryAddInput>
       initialValues={initialValues}
       validationSchema={countryValidator}
+      validateOnChange={false}
+      validateOnBlur={false}
       onSubmit={onSubmit}
       onReset={onReset}
     >
@@ -207,6 +206,7 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({
               variant="standard"
               name="name"
               label={t_i18n('Name')}
+              required={(mandatoryAttributes.includes('name'))}
               fullWidth={true}
               detectDuplicate={['Country']}
             />
@@ -214,6 +214,7 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
+              required={(mandatoryAttributes.includes('description'))}
               fullWidth={true}
               multiline={true}
               rows="4"
@@ -225,22 +226,26 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({
             />
             <CreatedByField
               name="createdBy"
+              required={(mandatoryAttributes.includes('createdBy'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ObjectLabelField
               name="objectLabel"
+              required={(mandatoryAttributes.includes('objectLabel'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.objectLabel}
             />
             <ObjectMarkingField
               name="objectMarking"
+              required={(mandatoryAttributes.includes('objectMarking'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ExternalReferencesField
               name="externalReferences"
+              required={(mandatoryAttributes.includes('externalReferences'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.externalReferences}
@@ -290,10 +295,8 @@ const CountryCreation = ({
 }: {
   paginationOptions: CountriesLinesPaginationQuery$variables;
 }) => {
-  const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_countries', paginationOptions, 'countryAdd');
 
   const CreateCountryControlledDial = (props: DrawerControlledDialProps) => (
@@ -302,9 +305,8 @@ const CountryCreation = ({
   return (
     <Drawer
       title={t_i18n('Create a country')}
-      variant={isFABReplaced ? undefined : DrawerVariant.create}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
-      controlledDial={isFABReplaced ? CreateCountryControlledDial : undefined}
+      controlledDial={CreateCountryControlledDial}
     >
       {({ onClose }) => (
         <CountryCreationForm

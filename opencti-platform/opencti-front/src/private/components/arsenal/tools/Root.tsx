@@ -22,10 +22,8 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import { RootToolQuery } from './__generated__/RootToolQuery.graphql';
 import { RootToolSubscription } from './__generated__/RootToolSubscription.graphql';
-import useHelper from '../../../../utils/hooks/useHelper';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import ToolPopover from './ToolPopover';
 import ToolKnowledge from './ToolKnowledge';
 
 const subscription = graphql`
@@ -65,6 +63,7 @@ const toolQuery = graphql`
       ...WorkbenchFileViewer_entity
       ...PictureManagementViewer_entity
       ...StixCoreObjectContent_stixCoreObject
+      ...StixCoreObjectSharingListFragment
     }
     connectorsForImport {
       ...FileManager_connectorsImport
@@ -89,8 +88,6 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
   const location = useLocation();
   const { t_i18n } = useFormatter();
   useSubscription<RootToolSubscription>(subConfig);
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const {
     tool,
@@ -140,13 +137,12 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
             <StixDomainObjectHeader
               entityType="Tool"
               stixDomainObject={tool}
-              PopoverComponent={<ToolPopover id={tool.id} />}
-              EditComponent={isFABReplaced && (
+              EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <ToolEdition toolId={tool.id} />
                 </Security>
               )}
-              enableEnricher={isFABReplaced}
+              enableEnricher={true}
               enableQuickSubscription={true}
             />
             <Box

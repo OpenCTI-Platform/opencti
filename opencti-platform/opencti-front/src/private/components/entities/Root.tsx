@@ -14,6 +14,8 @@ const Events = lazy(() => import('./Events'));
 const RootEvent = lazy(() => import('./events/Root'));
 const Organizations = lazy(() => import('./Organizations'));
 const RootOrganization = lazy(() => import('./organizations/Root'));
+const Security = lazy(() => import('./SecurityPlatforms'));
+const RootSecurity = lazy(() => import('./securityPlatforms/Root'));
 const Systems = lazy(() => import('./Systems'));
 const RootSystem = lazy(() => import('./systems/Root'));
 const Individuals = lazy(() => import('./Individuals'));
@@ -27,6 +29,8 @@ const Root = () => {
     redirect = 'events';
   } else if (!useIsHiddenEntity('Organization')) {
     redirect = 'organizations';
+  } else if (!useIsHiddenEntity('Security-Platform')) {
+    redirect = 'security_platforms';
   } else if (!useIsHiddenEntity('System')) {
     redirect = 'systems';
   } else if (!useIsHiddenEntity('Individual')) {
@@ -62,6 +66,14 @@ const Root = () => {
         <Route
           path="/organizations/:organizationId/*"
           element={boundaryWrapper(RootOrganization)}
+        />
+        <Route
+          path="/security_platforms"
+          element={boundaryWrapper(Security)}
+        />
+        <Route
+          path="/security_platforms/:securityPlatformId/*"
+          element={boundaryWrapper(RootSecurity)}
         />
         <Route
           path="/systems"

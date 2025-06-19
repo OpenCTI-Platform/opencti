@@ -102,8 +102,9 @@ const ChannelKnowledgeComponent = ({
           element={
             <EntityStixCoreRelationships
               key={location.pathname}
+              allDirections
               entityId={channel.id}
-              relationshipTypes={['uses']}
+              relationshipTypes={['uses', 'belongs-to']}
               isRelationReversed={true}
               entityLink={link}
               stixCoreObjectTypes={[
@@ -123,12 +124,13 @@ const ChannelKnowledgeComponent = ({
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={channel.id}
-              relationshipTypes={['uses']}
+              relationshipTypes={['uses', 'belongs-to']}
               stixCoreObjectTypes={['Threat-Actor']}
               entityLink={link}
               isRelationReversed={true}
+              allDirections
             />
-            }
+          }
         />
         <Route
           path="/intrusion_sets"
@@ -136,12 +138,13 @@ const ChannelKnowledgeComponent = ({
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={channel.id}
-              relationshipTypes={['uses']}
+              relationshipTypes={['uses', 'belongs-to']}
               stixCoreObjectTypes={['Intrusion-Set']}
               entityLink={link}
               isRelationReversed={true}
+              allDirections
             />
-            }
+          }
         />
         <Route
           path="/campaigns"
@@ -175,10 +178,11 @@ const ChannelKnowledgeComponent = ({
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={channel.id}
-              relationshipTypes={['amplifies', 'derived-from']}
+              relationshipTypes={['amplifies', 'derived-from', 'belongs-to']}
               stixCoreObjectTypes={['Channel']}
               entityLink={link}
               isRelationReversed={false}
+              allDirections
             />
             }
         />

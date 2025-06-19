@@ -4,18 +4,15 @@ import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@mui/material/Button';
-import Fab from '@mui/material/Fab';
-import { Add } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
 import CustomFileUploader from '@components/common/files/CustomFileUploader';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { CoursesOfActionLinesPaginationQuery$variables } from '@components/techniques/__generated__/CoursesOfActionLinesPaginationQuery.graphql';
 import ConfidenceField from '@components/common/form/ConfidenceField';
-import useHelper from 'src/utils/hooks/useHelper';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -24,11 +21,10 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import type { Theme } from '../../../../components/Theme';
-import { Option } from '../../common/form/ReferenceField';
 import { CourseOfActionCreationMutation, CourseOfActionCreationMutation$variables } from './__generated__/CourseOfActionCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -37,17 +33,6 @@ import CreateEntityControlledDial from '../../../../components/CreateEntityContr
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
-  createButtonContextual: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 2000,
-  },
   buttons: {
     marginTop: 20,
     textAlign: 'right',
@@ -81,9 +66,9 @@ interface CourseOfActionAddInput {
   name: string
   description: string
   confidence: number | undefined
-  createdBy: Option | undefined
-  objectMarking: Option[]
-  objectLabel: Option[]
+  createdBy: FieldOption | undefined
+  objectMarking: FieldOption[]
+  objectLabel: FieldOption[]
   externalReferences: { value: string }[]
   file: File | undefined
 }
@@ -281,11 +266,8 @@ const CourseOfActionCreation: FunctionComponent<CourseOfActionFormProps> = ({
   display,
   inputValue,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -306,8 +288,7 @@ const CourseOfActionCreation: FunctionComponent<CourseOfActionFormProps> = ({
     return (
       <Drawer
         title={t_i18n('Create a course of action')}
-        variant={isFABReplaced ? undefined : DrawerVariant.create}
-        controlledDial={isFABReplaced ? CreateCourseOfActionControlledDial : undefined}
+        controlledDial={CreateCourseOfActionControlledDial}
       >
         {({ onClose }) => (
           <CourseOfActionCreationForm
@@ -323,22 +304,9 @@ const CourseOfActionCreation: FunctionComponent<CourseOfActionFormProps> = ({
   const renderContextual = () => {
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
-        {isFABReplaced
-          ? (
-            <div style={{ marginTop: '5px' }}>
-              {CreateCourseOfActionControlledDialContextual}
-            </div>
-          ) : (
-            <Fab
-              onClick={handleOpen}
-              color="secondary"
-              aria-label="Add"
-              className={classes.createButtonContextual}
-            >
-              <Add />
-            </Fab>
-          )
-        }
+        <div style={{ marginTop: '5px' }}>
+          {CreateCourseOfActionControlledDialContextual}
+        </div>
         <Dialog open={open} onClose={handleClose} slotProps={{ paper: { elevation: 1 } }}>
           <DialogTitle>{t_i18n('Create a course of action')}</DialogTitle>
           <DialogContent>

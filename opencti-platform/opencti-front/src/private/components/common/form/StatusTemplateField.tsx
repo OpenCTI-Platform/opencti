@@ -8,8 +8,8 @@ import AutocompleteField from '../../../../components/AutocompleteField';
 import StatusTemplateCreation from '../../settings/status_templates/StatusTemplateCreation';
 import { useFormatter } from '../../../../components/i18n';
 import { StatusTemplateFieldSearchQuery$data } from './__generated__/StatusTemplateFieldSearchQuery.graphql';
-import { Option } from './ReferenceField';
 import { StatusTemplateCreationContextualMutation$data } from '../../settings/status_templates/__generated__/StatusTemplateCreationContextualMutation.graphql';
+import { FieldOption } from '../../../../utils/field';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -30,10 +30,10 @@ const useStyles = makeStyles(() => ({
 
 interface StatusTemplateFieldProps {
   name: string;
-  setFieldValue: (field: string, value: Option) => void;
+  setFieldValue: (field: string, value: FieldOption) => void;
   helpertext: string;
   required?: boolean;
-  onChange?: (field: string, value: Option) => void;
+  onChange?: (field: string, value: FieldOption) => void;
   style?: Record<string, string | number>;
 }
 

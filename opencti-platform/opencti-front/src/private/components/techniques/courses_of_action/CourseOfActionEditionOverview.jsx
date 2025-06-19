@@ -3,6 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
+import { Stack } from '@mui/material';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -19,7 +20,6 @@ import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import CourseOfActionDeletion from './CouseOfActionDeletion';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const courseOfActionMutationFieldPatch = graphql`
   mutation CourseOfActionEditionOverviewFieldPatchMutation(
@@ -88,8 +88,6 @@ const COURSE_OF_ACTION_TYPE = 'Course-Of-Action';
 const CourseOfActionEditionOverviewComponent = (props) => {
   const { courseOfAction, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { mandatoryAttributes } = useIsMandatoryAttribute(COURSE_OF_ACTION_TYPE);
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
@@ -331,12 +329,10 @@ const CourseOfActionEditionOverviewComponent = (props) => {
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced
-              ? <CourseOfActionDeletion
-                  id={courseOfAction.id}
-                />
-              : <div />}
+          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
+            <CourseOfActionDeletion
+              id={courseOfAction.id}
+            />
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
@@ -347,7 +343,7 @@ const CourseOfActionEditionOverviewComponent = (props) => {
                 id={courseOfAction.id}
               />
             )}
-          </div>
+          </Stack>
         </Form>
       )}
     </Formik>

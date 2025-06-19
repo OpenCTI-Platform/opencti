@@ -60,8 +60,8 @@ export const GraphProvider = ({
   const { t_i18n } = useFormatter();
   const { buildGraphData, buildCorrelationData } = useGraphParser();
 
-  const graphRef2D = useRef<GraphRef2D | undefined>();
-  const graphRef3D = useRef<GraphRef3D | undefined>();
+  const graphRef2D = useRef<GraphRef2D | undefined>(undefined);
+  const graphRef3D = useRef<GraphRef3D | undefined>(undefined);
 
   const DEFAULT_STATE: GraphState = {
     mode3D: false,

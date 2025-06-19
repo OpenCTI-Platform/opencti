@@ -44,6 +44,7 @@ import Unknown from '../../../static/images/entities/unknown.svg';
 import StixCyberObservable from '../../../static/images/entities/stix-cyber-observable.svg';
 import Relationship from '../../../static/images/entities/relationship.svg';
 import { fileUri } from '../../../relay/environment';
+import SecurityPlatform from '../../../static/images/entities/security-platform.svg';
 
 interface GraphImage {
   img: HTMLImageElement
@@ -140,6 +141,10 @@ const GRAPH_IMAGES: GraphImages = {
   Organization: {
     rawImg: Organization,
     img: generateHtmlImageElement(Organization),
+  },
+  SecurityPlatform: {
+    rawImg: SecurityPlatform,
+    img: generateHtmlImageElement(SecurityPlatform),
   },
   Sector: {
     rawImg: Sector,

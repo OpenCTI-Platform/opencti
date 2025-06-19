@@ -19,7 +19,6 @@ import ContainerHeader from '../../common/containers/ContainerHeader';
 import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import CaseTask from './Task';
-import TasksPopover from './TaskPopover';
 import { RootTaskQuery } from './__generated__/RootTaskQuery.graphql';
 import { RootTaskSubscription } from './__generated__/RootTaskSubscription.graphql';
 import { useFormatter } from '../../../../components/i18n';
@@ -28,7 +27,6 @@ import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings
 import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import TaskEdition from './TaskEdition';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootTaskSubscription($id: ID!) {
@@ -57,6 +55,7 @@ const TaskQuery = graphql`
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
       ...StixCoreObjectContent_stixCoreObject
+      ...ContainerHeader_container
     }
     connectorsForExport {
       ...StixCoreObjectFilesAndHistory_connectorsExport
@@ -76,17 +75,19 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
     [taskId],
   );
   const location = useLocation();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const enableReferences = useIsEnforceReference('Task') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
+
   useSubscription(subConfig);
+
   const {
     task: data,
     connectorsForExport,
     connectorsForImport,
   } = usePreloadedQuery<RootTaskQuery>(TaskQuery, queryRef);
+
   const paddingRight = getPaddingRight(location.pathname, data?.id, '/dashboard/cases/tasks');
+
   return (
     <>
       {data ? (
@@ -99,8 +100,7 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
           />
           <ContainerHeader
             container={data}
-            PopoverComponent={<TasksPopover id={data.id} />}
-            EditComponent={isFABReplaced && (
+            EditComponent={(
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <TaskEdition caseId={data.id} />
               </Security>
@@ -108,7 +108,6 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
             enableSuggestions={false}
             redirectToContent={true}
             disableAuthorizedMembers={true}
-            enableEnricher={true}
           />
           <Box
             sx={{

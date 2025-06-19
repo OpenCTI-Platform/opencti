@@ -4,7 +4,7 @@ import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import ConfidenceField from '@components/common/form/ConfidenceField';
-import useHelper from 'src/utils/hooks/useHelper';
+import { Stack } from '@mui/material';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -15,11 +15,10 @@ import { adaptFieldValue } from '../../../../utils/String';
 import StatusField from '../../common/form/StatusField';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import { useFormatter } from '../../../../components/i18n';
-import { Option } from '../../common/form/ReferenceField';
 import { AdministrativeAreaEditionOverview_administrativeArea$key } from './__generated__/AdministrativeAreaEditionOverview_administrativeArea.graphql';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import AdministrativeAreaDeletion from './AdministrativeAreaDeletion';
@@ -119,6 +118,8 @@ export const administrativeAreaEditionOverviewFragment = graphql`
   }
 `;
 
+const ADMINISTRATIVE_AREA_TYPE = 'Administrative-Area';
+
 interface AdministrativeAreaEditionOverviewProps {
   administrativeAreaRef: AdministrativeAreaEditionOverview_administrativeArea$key;
   context?: readonly (GenericContext | null)[] | null;
@@ -128,10 +129,10 @@ interface AdministrativeAreaEditionOverviewProps {
 
 interface AdministrativeAreaEditionFormValues {
   message?: string;
-  references?: Option[];
-  createdBy: Option | undefined;
-  x_opencti_workflow_id: Option;
-  objectMarking?: Option[];
+  references?: FieldOption[];
+  createdBy: FieldOption | undefined;
+  x_opencti_workflow_id: FieldOption;
+  objectMarking?: FieldOption[];
 }
 
 // eslint-disable-next-line max-len
@@ -148,8 +149,9 @@ AdministrativeAreaEditionOverviewProps
     administrativeAreaEditionOverviewFragment,
     administrativeAreaRef,
   );
-  const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(ADMINISTRATIVE_AREA_TYPE);
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     latitude: Yup.number()
@@ -160,11 +162,11 @@ AdministrativeAreaEditionOverviewProps
       .nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
-  };
-  const administrativeAreaValidator = useSchemaEditionValidation(
-    'Administrative-Area',
-    basicShape,
-  );
+    createdBy: Yup.object().nullable(),
+    objectMarking: Yup.array().nullable(),
+  }, mandatoryAttributes);
+  const administrativeAreaValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
+
   const queries = {
     fieldPatch: administrativeAreaMutationFieldPatch,
     relationAdd: administrativeAreaMutationRelationAdd,
@@ -202,11 +204,11 @@ AdministrativeAreaEditionOverviewProps
       },
     });
   };
-  const handleSubmitField = (name: string, value: Option | string | null) => {
+  const handleSubmitField = (name: string, value: FieldOption | string | null) => {
     if (!enableReferences) {
       let finalValue: string = value as string;
       if (name === 'x_opencti_workflow_id') {
-        finalValue = (value as Option).value;
+        finalValue = (value as FieldOption).value;
       }
       administrativeAreaValidator
         .validateAt(name, { [name]: value })
@@ -229,16 +231,16 @@ AdministrativeAreaEditionOverviewProps
     confidence: administrativeArea.confidence,
     createdBy: convertCreatedBy(administrativeArea),
     objectMarking: convertMarkings(administrativeArea),
-    x_opencti_workflow_id: convertStatus(t_i18n, administrativeArea) as Option,
+    x_opencti_workflow_id: convertStatus(t_i18n, administrativeArea) as FieldOption,
     references: [],
   };
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   return (
     <Formik
       enableReinitialize={true}
       initialValues={initialValues as never}
       validationSchema={administrativeAreaValidator}
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
     >
       {({
@@ -256,6 +258,7 @@ AdministrativeAreaEditionOverviewProps
             variant="standard"
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -267,6 +270,7 @@ AdministrativeAreaEditionOverviewProps
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -292,6 +296,7 @@ AdministrativeAreaEditionOverviewProps
             name="latitude"
             type="number"
             label={t_i18n('Latitude')}
+            required={(mandatoryAttributes.includes('latitude'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={(name: string, value: string) => handleSubmitField(name, (value === '' ? null : value))}
@@ -306,6 +311,7 @@ AdministrativeAreaEditionOverviewProps
             name="longitude"
             type="number"
             label={t_i18n('Longitude')}
+            required={(mandatoryAttributes.includes('longitude'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={(name: string, value: string) => handleSubmitField(name, (value === '' ? null : value))}
@@ -313,7 +319,7 @@ AdministrativeAreaEditionOverviewProps
               <SubscriptionFocus context={context} fieldName="longitude" />
             }
           />
-          {administrativeArea?.workflowEnabled && (
+          {administrativeArea.workflowEnabled && (
             <StatusField
               name="x_opencti_workflow_id"
               type="Administrative-Area"
@@ -331,6 +337,7 @@ AdministrativeAreaEditionOverviewProps
           )}
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             helpertext={
@@ -340,6 +347,7 @@ AdministrativeAreaEditionOverviewProps
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />
@@ -347,13 +355,10 @@ AdministrativeAreaEditionOverviewProps
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced
-              ? <AdministrativeAreaDeletion
-                  id={administrativeArea.id}
-                />
-              : <div/>
-            }
+          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
+            <AdministrativeAreaDeletion
+              id={administrativeArea.id}
+            />
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
@@ -364,7 +369,7 @@ AdministrativeAreaEditionOverviewProps
                 id={administrativeArea.id}
               />
             )}
-          </div>
+          </Stack>
         </Form>
       )}
     </Formik>

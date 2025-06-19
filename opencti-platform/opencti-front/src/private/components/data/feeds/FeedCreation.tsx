@@ -26,7 +26,6 @@ import { FormikConfig } from 'formik/dist/types';
 import { FeedCreationAllTypesQuery$data } from '@components/data/feeds/__generated__/FeedCreationAllTypesQuery.graphql';
 import { FeedAttributeMappingInput } from '@components/data/feeds/__generated__/FeedEditionMutation.graphql';
 import { StixCyberObservablesLinesAttributesQuery$data } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservablesLinesAttributesQuery.graphql';
-import { Option } from '@components/common/form/ReferenceField';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
 import inject18n, { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -46,15 +45,14 @@ import {
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { isNotEmptyField } from '../../../../utils/utils';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '../../common/drawer/Drawer';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
+import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
 import { PaginationOptions } from '../../../../components/list_lines';
 import { FilterDefinition } from '../../../../utils/hooks/useAuth';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 export const feedCreationAllTypesQuery = graphql`
     query FeedCreationAllTypesQuery {
@@ -140,7 +138,7 @@ interface FeedAddInput {
   feed_types: string[];
   feed_public: boolean;
   feed_attributes: FeedAttributeMappingInput[];
-  authorized_members: Option[];
+  authorized_members: FieldOption[];
 }
 
 interface FeedCreationFormProps {
@@ -171,8 +169,6 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
   const { onDrawerClose, open, paginationOptions, isDuplicated, feed } = props;
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const [selectedTypes, setSelectedTypes] = useState(feed?.feed_types ?? []);
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(feed?.filters) ?? emptyFilterGroup);
@@ -358,8 +354,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
   return (
     <Drawer
       title={isDuplicated ? (t_i18n('Duplicate a feed')) : (t_i18n('Create a feed'))}
-      variant={isFABReplaced || isDuplicated ? undefined : DrawerVariant.createWithPanel}
-      controlledDial={isFABReplaced && !isDuplicated ? CreateFeedControlledDial : undefined }
+      controlledDial={!isDuplicated ? CreateFeedControlledDial : undefined }
       open={open}
       onClose={onHandleClose}
     >

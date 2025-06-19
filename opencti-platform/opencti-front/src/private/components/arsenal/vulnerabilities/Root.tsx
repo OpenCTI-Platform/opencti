@@ -12,7 +12,6 @@ import Vulnerability from './Vulnerability';
 import VulnerabilityKnowledge from './VulnerabilityKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
-import VulnerabilityPopover from './VulnerabilityPopover';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
@@ -23,7 +22,6 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import { RootVulnerabilityQuery } from './__generated__/RootVulnerabilityQuery.graphql';
 import { RootVulnerabilitySubscription } from './__generated__/RootVulnerabilitySubscription.graphql';
-import useHelper from '../../../../utils/hooks/useHelper';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import VulnerabilityEdition from './VulnerabilityEdition';
@@ -64,6 +62,7 @@ const vulnerabilityQuery = graphql`
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
       ...StixCoreObjectContent_stixCoreObject
+      ...StixCoreObjectSharingListFragment
     }
     connectorsForImport {
       ...FileManager_connectorsImport
@@ -88,8 +87,6 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
   const location = useLocation();
   const { t_i18n } = useFormatter();
   useSubscription<RootVulnerabilitySubscription>(subConfig);
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const {
     vulnerability,
@@ -140,13 +137,12 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
             <StixDomainObjectHeader
               entityType="Vulnerability"
               stixDomainObject={vulnerability}
-              PopoverComponent={<VulnerabilityPopover id={vulnerabilityId} />}
-              EditComponent={isFABReplaced && (
+              EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <VulnerabilityEdition vulnerabilityId={vulnerabilityId} />
                 </Security>
               )}
-              enableEnricher={isFABReplaced}
+              enableEnricher={true}
               enableQuickSubscription={true}
               isOpenctiAlias={true}
             />

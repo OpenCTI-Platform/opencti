@@ -12,13 +12,15 @@ import { ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types'
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
 import { wait } from './utils';
+import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 
 const STORE_ENTITIES_LINKS: Record<string, string[]> = {
-  // Filters must be reset depending on stream and triggers modifications
+  // Resolved Filters in cache must be reset depending on connector/stream/triggers/playbooks/Pir modifications
   [ENTITY_TYPE_STREAM_COLLECTION]: [ENTITY_TYPE_RESOLVED_FILTERS],
   [ENTITY_TYPE_TRIGGER]: [ENTITY_TYPE_RESOLVED_FILTERS],
   [ENTITY_TYPE_PLAYBOOK]: [ENTITY_TYPE_RESOLVED_FILTERS],
   [ENTITY_TYPE_CONNECTOR]: [ENTITY_TYPE_RESOLVED_FILTERS],
+  [ENTITY_TYPE_PIR]: [ENTITY_TYPE_RESOLVED_FILTERS],
 };
 
 const cache: any = {};
@@ -35,22 +37,15 @@ const buildStoreEntityMap = <T extends BasicStoreIdentifier>(entities: Array<T>)
     if (entity.standard_id) {
       ids.push(entity.standard_id);
     }
+    if (entity.entity_type === ENTITY_TYPE_PUBLIC_DASHBOARD) {
+      ids.push((entity as unknown as BasicStoreEntityPublicDashboard).uri_key);
+    }
     for (let index = 0; index < ids.length; index += 1) {
       const id = ids[index];
       entityById.set(id, entity);
     }
   }
   return entityById;
-};
-
-const buildStorePublicDashboardMap = <T extends BasicStoreEntityPublicDashboard>(entities: Array<T>) => {
-  const entityByUriKey = new Map();
-  for (let i = 0; i < entities.length; i += 1) {
-    const entity = entities[i];
-    const { uri_key } = entity;
-    entityByUriKey.set(uri_key, entity);
-  }
-  return entityByUriKey;
 };
 
 export const writeCacheForEntity = (entityType: string, data: unknown) => {
@@ -167,12 +162,9 @@ export const getEntitiesListFromCache = async <T extends BasicStoreIdentifier | 
 export const getEntitiesMapFromCache = async <T extends BasicStoreIdentifier | StixObject>(
   context: AuthContext, user: AuthUser, type: string
 ): Promise<Map<string | StixId, T>> => {
+  // Filters is already a map
   if (type === ENTITY_TYPE_RESOLVED_FILTERS) {
     return await getEntitiesFromCache(context, user, type) as Map<string, T>; // map of <standard_id, instance>
-  }
-  if (type === ENTITY_TYPE_PUBLIC_DASHBOARD) {
-    const data = await getEntitiesFromCache(context, user, type) as BasicStoreEntityPublicDashboard[];
-    return buildStorePublicDashboardMap(data); // map of <uri_key, instance>
   }
   const data = await getEntitiesFromCache(context, user, type) as BasicStoreIdentifier[];
   return buildStoreEntityMap(data); // map of <id, instance> for all the instance ids (internal_id, standard_id, stix ids)

@@ -3,6 +3,7 @@ import { graphql, useFragment } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
+import { Stack } from '@mui/material';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -13,14 +14,12 @@ import { useFormatter } from '../../../../components/i18n';
 import { DataComponentEditionOverview_dataComponent$key } from './__generated__/DataComponentEditionOverview_dataComponent.graphql';
 import StatusField from '../../common/form/StatusField';
 import CommitMessage from '../../common/form/CommitMessage';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { Option } from '../../common/form/ReferenceField';
 import { adaptFieldValue } from '../../../../utils/String';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-import useHelper from '../../../../utils/hooks/useHelper';
 import DataComponentDeletion from './DataComponentDeletion';
 
 const dataComponentMutationFieldPatch = graphql`
@@ -132,20 +131,18 @@ interface DataComponentEditionOverviewComponentProps {
 interface DataComponentAddInput {
   name: string
   description: string | null
-  createdBy: Option | undefined
-  objectMarking: Option[]
-  x_opencti_workflow_id: Option
+  createdBy: FieldOption | undefined
+  objectMarking: FieldOption[]
+  x_opencti_workflow_id: FieldOption
   confidence: number | undefined
   message?: string
-  references?: Option[]
+  references?: FieldOption[]
 }
 
 const DataComponentEditionOverview: FunctionComponent<
 DataComponentEditionOverviewComponentProps
 > = ({ data, context, enableReferences = false, handleClose }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const dataComponent = useFragment(DataComponentEditionOverviewFragment, data);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(DATA_COMPONENT_TYPE);
@@ -206,12 +203,12 @@ DataComponentEditionOverviewComponentProps
 
   const handleSubmitField = (
     name: string,
-    value: string | Option | number | number[] | null,
+    value: string | FieldOption | number | number[] | null,
   ) => {
     if (!enableReferences) {
       let finalValue: unknown = value as string;
       if (name === 'x_opencti_workflow_id') {
-        finalValue = (value as Option).value;
+        finalValue = (value as FieldOption).value;
       }
       dataComponentValidator
         .validateAt(name, { [name]: value })
@@ -230,9 +227,9 @@ DataComponentEditionOverviewComponentProps
   const initialValues: DataComponentAddInput = {
     name: dataComponent.name,
     description: dataComponent.description ?? '',
-    createdBy: convertCreatedBy(dataComponent) as Option,
+    createdBy: convertCreatedBy(dataComponent) as FieldOption,
     objectMarking: convertMarkings(dataComponent),
-    x_opencti_workflow_id: convertStatus(t_i18n, dataComponent) as Option,
+    x_opencti_workflow_id: convertStatus(t_i18n, dataComponent) as FieldOption,
     confidence: dataComponent.confidence ?? undefined,
     references: [],
   };
@@ -327,12 +324,10 @@ DataComponentEditionOverviewComponentProps
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced
-              ? <DataComponentDeletion
-                  id={dataComponent.id}
-                />
-              : <div />}
+          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
+            <DataComponentDeletion
+              id={dataComponent.id}
+            />
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
@@ -343,7 +338,7 @@ DataComponentEditionOverviewComponentProps
                 id={dataComponent.id}
               />
             )}
-          </div>
+          </Stack>
         </Form>
       )}
     </Formik>

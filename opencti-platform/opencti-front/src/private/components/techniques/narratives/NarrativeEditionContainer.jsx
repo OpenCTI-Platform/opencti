@@ -3,13 +3,10 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import NarrativeEditionOverview from './NarrativeEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
-import useHelper from '../../../../utils/hooks/useHelper';
+import Drawer from '../../common/drawer/Drawer';
 
 const NarrativeEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const { handleClose, narrative, open, controlledDial } = props;
   const { editContext } = narrative;
@@ -19,9 +16,8 @@ const NarrativeEditionContainer = (props) => {
       title={t_i18n('Update a narrative')}
       open={open}
       onClose={handleClose}
-      variant={!isFABReplaced && open == null ? DrawerVariant.update : undefined}
       context={editContext}
-      controlledDial={isFABReplaced ? controlledDial : undefined}
+      controlledDial={controlledDial}
     >
       <NarrativeEditionOverview
         narrative={narrative}

@@ -14,7 +14,6 @@ import { RoleEditionOverview_role$data } from './__generated__/RoleEditionOvervi
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
 import Transition from '../../../../components/Transition';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const roleMutationFieldPatch = graphql`
   mutation RoleEditionOverviewFieldPatchMutation(
@@ -63,8 +62,6 @@ interface RoleEditionOverviewComponentProps {
 const RoleEditionOverviewComponent: FunctionComponent<RoleEditionOverviewComponentProps> = ({ role, context }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const navigate = useNavigate();
   const [deleting, setDeleting] = useState(false);
   const [displayDelete, setDisplayDelete] = useState(false);
@@ -154,7 +151,7 @@ const RoleEditionOverviewComponent: FunctionComponent<RoleEditionOverviewCompone
                 <SubscriptionFocus context={context} fieldName="description" />
               }
             />
-            {isFABReplaced && (<>
+            <>
               <Button
                 onClick={handleOpenDelete}
                 variant='contained'
@@ -192,7 +189,7 @@ const RoleEditionOverviewComponent: FunctionComponent<RoleEditionOverviewCompone
                   </Button>
                 </DialogActions>
               </Dialog>
-            </>)}
+            </>
           </Form>
         )}
       </Formik>

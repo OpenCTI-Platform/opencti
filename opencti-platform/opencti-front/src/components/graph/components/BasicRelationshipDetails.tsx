@@ -63,7 +63,10 @@ const BasicRelationshipDetails: FunctionComponent<BasicRelationshipDetailsProps>
         {t_i18n('Marking')}
       </Typography>
       {relation.markedBy && relation.markedBy.length > 0 ? (
-        <ItemMarkings markingDefinitions={relation.markedBy} limit={2}/>
+        <ItemMarkings
+          markingDefinitions={relation.markedBy}
+          limit={2}
+        />
       ) : ('-')}
     </div>
   );

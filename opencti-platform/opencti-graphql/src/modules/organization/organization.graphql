@@ -106,6 +106,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   x_opencti_reliability: String
   # Organization
   x_opencti_organization_type: String
+  x_opencti_score: Int
   sectors: SectorConnection
   members(
     first: Int
@@ -159,6 +160,7 @@ enum OrganizationsOrdering {
   updated_at
   x_opencti_organization_type
   x_opencti_workflow_id
+  x_opencti_score
   _score
 }
 
@@ -200,6 +202,7 @@ input OrganizationAddInput {
   lang: String
   x_opencti_organization_type: String
   x_opencti_reliability: String
+  x_opencti_score: Int @constraint(min: 0, max: 100)
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]

@@ -47,6 +47,7 @@ const investigationGraphFragment = graphql`
     }
     currentUserAccessRight
     ...WorkspaceManageAccessDialog_authorizedMembers
+    ...WorkspaceEditionContainer_workspace
   }
 `;
 
@@ -507,6 +508,8 @@ const InvestigationGraphComponent = ({
       <WorkspaceHeader
         workspace={investigation}
         variant="investigation"
+        handleAddWidget={undefined}
+        adjust={undefined}
       />
       <div style={graphContainerStyle} ref={ref}>
         <Graph parentRef={ref} onPositionsChanged={savePositions}>
