@@ -66,7 +66,8 @@ import {
 } from '../schema/stixRefRelationship';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
-  ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_OBJECT,
+  ABSTRACT_STIX_CORE_OBJECT,
+  ABSTRACT_STIX_OBJECT,
   ABSTRACT_STIX_REF_RELATIONSHIP,
   BASE_TYPE_RELATION,
   buildRefRelationKey,
@@ -133,12 +134,7 @@ import {
 import { convertTypeToStixType } from './stix-2-1-converter';
 import { extractEntityRepresentativeName, extractRepresentative } from './entity-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
-import {
-  addFilter,
-  checkAndConvertFilters,
-  isFilterGroupNotEmpty,
-  MAX_NUMBER_DYNAMIC_IDS_RESULT
-} from '../utils/filtering/filtering-utils';
+import { addFilter, checkAndConvertFilters, isFilterGroupNotEmpty, MAX_NUMBER_DYNAMIC_IDS_RESULT } from '../utils/filtering/filtering-utils';
 import {
   ALIAS_FILTER,
   complexConversionFilterKeys,
