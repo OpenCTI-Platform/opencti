@@ -301,7 +301,7 @@ describe('User resolver standard behavior', () => {
   });
   it('should list users', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data?.users.edges.length).toEqual(TESTING_USERS.length + 3);
+    expect(queryResult.data?.users.edges.length).toEqual(TESTING_USERS.length + 4);
   });
   it('should update user', async () => {
     const UPDATE_QUERY = gql`
@@ -734,10 +734,10 @@ describe('User list members query behavior', () => {
   it('Should user lists all members', async () => {
     const queryResult = await editorQuery({ query: LIST_MEMBERS_QUERY });
     const usersEdges = queryResult.data.members.edges as { node: Member }[];
-    expect(usersEdges.length).toEqual(24);
+    expect(usersEdges.length).toEqual(25);
     expect(usersEdges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_USER).length).toEqual(TESTING_USERS.length + 1); // +1 = Plus admin user
     expect(usersEdges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_GROUP).length).toEqual(TESTING_GROUPS.length + 3); // 3 built-in groups
-    expect(usersEdges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_IDENTITY_ORGANIZATION).length).toEqual(8);
+    expect(usersEdges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_IDENTITY_ORGANIZATION).length).toEqual(7);
   });
 });
 

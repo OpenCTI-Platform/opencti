@@ -8,7 +8,7 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import {
   type CsvMapperTestResult,
   type EditInput,
-  IngestionCsvAddAutoUserInput,
+  type IngestionCsvAddAutoUserInput,
   type IngestionCsvAddInput,
   IngestionCsvMapperType,
   IngestionAuthType,
@@ -88,7 +88,7 @@ export const userAlreadyExists = async (context: AuthContext, name: string) => {
   return users.length > 0;
 };
 
-export const createOnTheFlyUser = async (context: AuthContext, user: AuthUser, input: { userName: string, confidenceLevel: string }) => {
+export const createOnTheFlyUser = async (context: AuthContext, user: AuthUser, input: { userName: string, confidenceLevel: string | null | undefined }) => {
   const defaultIngestionGroups: BasicGroupEntity[] = await findDefaultIngestionGroups(context, user) as BasicGroupEntity[];
   if (defaultIngestionGroups.length < 1) {
     throw FunctionalError('You have not defined a default group for ingestion users', {});
@@ -123,11 +123,14 @@ export const addIngestionCsv = async (context: AuthContext, user: AuthUser, inpu
   if (input.authentication_value) {
     verifyIngestionAuthenticationContent(input.authentication_type, input.authentication_value);
   }
+  if (input.user_id.length < 2) {
+    throw FunctionalError('You have not choosen a user responsible for data creation', {});
+  }
 
   let onTheFlyCreatedUser;
   let finalInput;
   if (isFeatureEnabled('CSV_FEED') && input.automatic_user) {
-    onTheFlyCreatedUser = await createOnTheFlyUser(context, user, { userName: input.user_id ?? '', confidenceLevel: input.confidence_level ?? '50' });
+    onTheFlyCreatedUser = await createOnTheFlyUser(context, user, { userName: input.user_id, confidenceLevel: input.confidence_level });
     finalInput = {
       ...((({ automatic_user: _, confidence_level: __, ...inputWithoutAutomaticFields }) => inputWithoutAutomaticFields)(input)),
       user_id: onTheFlyCreatedUser.id,

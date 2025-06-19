@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import CreatorField from '@components/common/form/CreatorField';
 import Button from '@mui/material/Button';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -53,7 +53,12 @@ export interface EditionCsvAddAutoUserInput {
   confidence_level: string
 }
 
-const IngestionCsvEditionUserHandling = ({ feedName, ingestionCsvDataId }) => {
+interface IngestionCsvEditionUserHandlingProps {
+  feedName: string
+  ingestionCsvDataId: string
+  onAutoUserCreated: () => void;
+}
+const IngestionCsvEditionUserHandling: FunctionComponent<IngestionCsvEditionUserHandlingProps> = ({ feedName, ingestionCsvDataId, onAutoUserCreated }) => {
   const { t_i18n } = useFormatter();
 
   const [openDialog, setOpenDialog] = useState(false);
@@ -94,6 +99,7 @@ const IngestionCsvEditionUserHandling = ({ feedName, ingestionCsvDataId }) => {
         },
       },
       onCompleted: () => {
+        onAutoUserCreated();
         setSubmitting(false);
         setOpenDialog(false);
       },
@@ -108,8 +114,11 @@ const IngestionCsvEditionUserHandling = ({ feedName, ingestionCsvDataId }) => {
         variant="outlined"
         sx={{ padding: '0px 10px 0px 10px', marginTop: '20px' }}
       >
-        {t_i18n('You have set System as a creator. Create a specific user for this feed to ensure traceabilitiy of your data')}
-        <Button onClick={() => setOpenDialog(true)}>{'Create a user for this feed'}</Button>
+        <Box>
+          {t_i18n('You have set System as a creator. Create a specific user for this feed to ensure traceabilitiy of your data')}
+        </Box>
+        <Button onClick={() => setOpenDialog(true)}>{t_i18n('Create a user for this feed')}</Button>
+
       </Alert>
 
       <Formik<EditionCsvAddAutoUserInput>
@@ -142,7 +151,6 @@ const IngestionCsvEditionUserHandling = ({ feedName, ingestionCsvDataId }) => {
                 </Box>
                 <Box sx={{ margin: '20px 70px 0' }}>
                   <ConfidenceField
-                    sx={{ marginTop: '20px' }}
                     name="confidence_level"
                     entityType={'User'}
                     containerStyle={fieldSpacingContainerStyle}

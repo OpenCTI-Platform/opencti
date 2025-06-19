@@ -218,7 +218,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
     cert: Yup.string().nullable(),
     key: Yup.string().nullable(),
     ca: Yup.string().nullable(),
-    user_id: Yup.object().nullable(),
+    user_id: Yup.object(),
     automatic_user: Yup.boolean(),
     confidence_level: Yup.string().nullable(),
   });
@@ -240,6 +240,11 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
         setFieldError('user_id', t_i18n('This user already exists. Change the feed\'s name to change the automatically created user\'s name'));
         return;
       }
+    }
+    if (typeof values.user_id === 'string' ? values.user_id.length < 2 : values.user_id?.value.length < 2) {
+      setSubmitting(false);
+      setFieldError('user_id', t_i18n('Please choose a user responsible for data creation'));
+      return;
     }
     let authenticationValue = ingestionCsvData?.authentication_value ?? values.authentication_value;
     if (values.authentication_type === 'basic') {
@@ -375,7 +380,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                 ? <IngestionCsvCreationUserHandling/>
                 : <CreatorField
                     name="user_id"
-                    label={t_i18n('User responsible for data creation (empty = System)')}
+                    label={t_i18n('User responsible for data creation')}
                     containerStyle={fieldSpacingContainerStyle}
                     onChange={(_, option) => onCreatorSelection(option)}
                     showConfidence

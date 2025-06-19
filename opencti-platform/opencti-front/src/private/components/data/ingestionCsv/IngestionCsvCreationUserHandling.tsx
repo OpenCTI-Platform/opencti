@@ -57,7 +57,7 @@ const IngestionCsvCreationUserHandlingComponent = ({ queryRef }: IngestionCsvCre
       type="checkbox"
       name="automatic_user"
       checked={values.automatic_user ?? true}
-      label={'Automatically create a user'}
+      label={t_i18n('Automatically create a user')}
     />
     { displayDefaultGroupWarning && values.automatic_user && <Box sx={{ width: '100%', marginTop: 3 }}>
       <Alert
@@ -72,7 +72,7 @@ const IngestionCsvCreationUserHandlingComponent = ({ queryRef }: IngestionCsvCre
   </Box>
     <CreatorField
       name="user_id"
-      label={t_i18n('User responsible for data creation (empty = System)')}
+      label={t_i18n('User responsible for data creation')}
       containerStyle={fieldSpacingContainerStyle}
       showConfidence disabled={values.automatic_user !== false}
     />

@@ -6,17 +6,12 @@ import {
   ingestionCsvAddAutoUser
 } from '../../../src/modules/ingestion/ingestion-csv-domain';
 import { adminQuery, PLATFORM_ORGANIZATION, USER_EDITOR } from '../../utils/testQuery';
-import {
-  type EditInput,
-  IngestionAuthType,
-  IngestionCsvAddAutoUserInput,
-  type IngestionCsvAddInput
-} from '../../../src/generated/graphql';
+import { type EditInput, IngestionAuthType, type IngestionCsvAddAutoUserInput, type IngestionCsvAddInput } from '../../../src/generated/graphql';
 import { enableCEAndUnSetOrganization, enableEEAndSetOrganization } from '../../utils/testQueryHelper';
 import { getFakeAuthUser, getOrganizationEntity } from '../../utils/domainQueryHelper';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
 import { findDefaultIngestionGroups, groupEditField } from '../../../src/domain/group';
-import type { BasicGroupEntity } from '../../../src/types/store';
+import type {BasicGroupEntity, BasicStoreCommon} from '../../../src/types/store';
 import { findById as findUserById } from '../../../src/domain/user';
 import { executionContext, SYSTEM_USER } from '../../../src/utils/access';
 
@@ -137,16 +132,17 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
     expect(queryResult.data.user).toBeNull();
   });
 
-  it('should create a CSV Feed with System user works fine', async () => {
+  it('should create a CSV Feed with System user refused', async () => {
     const ingestionCsvInput: IngestionCsvAddInput = {
       authentication_type: IngestionAuthType.None,
       name: 'CSV Feed to test with system user',
       uri: 'http://fakefeed.invalid',
       user_id: ''
     };
-    const ingestionCreated = await addIngestionCsv(currentTestContext, ingestionUser, ingestionCsvInput);
-    expect(ingestionCreated.name).toBe('CSV Feed to test with system user');
-    ingestionCreatedIds.push(ingestionCreated.id);
+
+    await expect(async () => {
+      await addIngestionCsv(currentTestContext, ingestionUser, ingestionCsvInput);
+    }).rejects.toThrowError('You have not choosen a user responsible for data creation');
   });
 
   it('should create a CSV Feed with existing user, confidence should be ignored', async () => {
@@ -258,7 +254,7 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
 describe('Ingestion CSV domain - ingestionCsvAddAutoUser', async () => {
   let ingestionUser: AuthUser;
   let currentTestContext: AuthContext;
-  let ingestionCreated;
+  let ingestionCreated: BasicStoreCommon;
   beforeAll(async () => {
     ingestionUser = getFakeAuthUser('CsvFeedIngestionDomain');
     ingestionUser.capabilities = [{ name: 'KNOWLEDGE' }, { name: 'INGESTION_SETINGESTIONS' }];
@@ -267,9 +263,11 @@ describe('Ingestion CSV domain - ingestionCsvAddAutoUser', async () => {
     // Add new ingestionFeed
     const ingestionCsvInput: IngestionCsvAddInput = {
       authentication_type: IngestionAuthType.None,
-      name: 'CSV Feed to test with system user',
+      name: 'CSV Feed to test with auto user',
       uri: 'http://fakefeed.invalid',
-      user_id: ''
+      user_id: '[F] CSV Feed to test with auto user',
+      automatic_user: true,
+      confidence_level: '32'
     };
     ingestionCreated = await addIngestionCsv(currentTestContext, ingestionUser, ingestionCsvInput);
   });
