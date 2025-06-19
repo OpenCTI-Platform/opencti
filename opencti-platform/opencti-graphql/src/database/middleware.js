@@ -787,7 +787,8 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
       const destKey = dst || src;
       const id = input[src];
       const isValidType = depTypes.length > 0 ? depTypes.includes(type) : true;
-      if (isValidType && !R.isNil(id) && !R.isEmpty(id)) {
+      const isAlreadyResolved = Array.isArray(id) ? id[0]?._id : id?._id;
+      if (isValidType && !R.isNil(id) && !R.isEmpty(id) && !isAlreadyResolved) {
         const isListing = Array.isArray(id);
         const hasOpenVocab = isEntityFieldAnOpenVocabulary(destKey, type);
         // Handle specific case of object label that can be directly the value instead of the key.
@@ -2917,11 +2918,9 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
     throw UnsupportedError('Relation cant be created with the same source and target', errorData);
   }
   const entitySetting = await getEntitySettingFromCache(context, relationshipType);
-  const filledInput = fillDefaultValues(user, input, entitySetting);
-  await validateEntityAndRelationCreation(context, user, filledInput, relationshipType, entitySetting, opts);
 
   // We need to check existing dependencies
-  const resolvedInput = await inputResolveRefs(context, user, filledInput, relationshipType, entitySetting);
+  let resolvedInput = await inputResolveRefs(context, user, input, relationshipType, entitySetting);
   const { from, to } = resolvedInput;
 
   // when creating stix ref, we must check confidence on from side (this count has modifying this element itself)
@@ -2986,6 +2985,13 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
       // resolve all refs so we can upsert properly
       existingRelationship = await storeLoadByIdWithRefs(context, user, R.head(filteredRelations).internal_id);
     }
+    if (!existingRelationship) {
+      // We do not use default values on upsert.
+      resolvedInput = fillDefaultValues(user, resolvedInput, entitySetting);
+      resolvedInput = await inputResolveRefs(context, user, resolvedInput, relationshipType, entitySetting);
+    }
+    await validateEntityAndRelationCreation(context, user, resolvedInput, relationshipType, entitySetting, opts);
+
     // endregion
     if (existingRelationship) {
       // If upsert come from a rule, do a specific upsert.
@@ -3171,6 +3177,7 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
     // region - Pre-Check
     if (existingEntities.length === 0) { // We do not use default values on upsert.
       resolvedInput = fillDefaultValues(user, resolvedInput, entitySetting);
+      resolvedInput = await inputResolveRefs(context, user, resolvedInput, type, entitySetting);
     }
     await validateEntityAndRelationCreation(context, user, resolvedInput, type, entitySetting, opts);
     // endregion
@@ -3458,7 +3465,8 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
         await deleteAllObjectFiles(context, user, element);
       }
       // Delete all linked elements
-      await elDeleteElements(context, user, [element], { forceDelete });
+      const forceRefresh = opts.forceRefresh ?? true;
+      await elDeleteElements(context, user, [element], { forceDelete, forceRefresh });
       // Publish event in the stream
       event = await storeDeleteEvent(context, user, element, opts);
     }
