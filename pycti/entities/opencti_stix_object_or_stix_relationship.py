@@ -293,14 +293,54 @@ class StixObjectOrStixRelationship:
             ... on Vulnerability {
                 name
                 description
+                x_opencti_aliases
+                x_opencti_cvss_vector
                 x_opencti_cvss_base_score
                 x_opencti_cvss_base_severity
                 x_opencti_cvss_attack_vector
+                x_opencti_cvss_attack_complexity
+                x_opencti_cvss_privileges_required
+                x_opencti_cvss_user_interaction
+                x_opencti_cvss_scope
+                x_opencti_cvss_confidentiality_impact
                 x_opencti_cvss_integrity_impact
                 x_opencti_cvss_availability_impact
+                x_opencti_cvss_exploit_code_maturity
+                x_opencti_cvss_remediation_level
+                x_opencti_cvss_report_confidence
+                x_opencti_cvss_temporal_score
+                x_opencti_cvss_v2_vector
+                x_opencti_cvss_v2_base_score
+                x_opencti_cvss_v2_access_vector
+                x_opencti_cvss_v2_access_complexity
+                x_opencti_cvss_v2_authentication
+                x_opencti_cvss_v2_confidentiality_impact
+                x_opencti_cvss_v2_integrity_impact
+                x_opencti_cvss_v2_availability_impact
+                x_opencti_cvss_v2_exploitability
+                x_opencti_cvss_v2_remediation_level
+                x_opencti_cvss_v2_report_confidence
+                x_opencti_cvss_v2_temporal_score
+                x_opencti_cvss_v4_vector
+                x_opencti_cvss_v4_base_score
+                x_opencti_cvss_v4_base_severity
+                x_opencti_cvss_v4_attack_vector
+                x_opencti_cvss_v4_attack_complexity
+                x_opencti_cvss_v4_attack_requirements
+                x_opencti_cvss_v4_privileges_required
+                x_opencti_cvss_v4_user_interaction
+                x_opencti_cvss_v4_confidentiality_impact_v
+                x_opencti_cvss_v4_confidentiality_impact_s
+                x_opencti_cvss_v4_integrity_impact_v
+                x_opencti_cvss_v4_integrity_impact_s
+                x_opencti_cvss_v4_availability_impact_v
+                x_opencti_cvss_v4_availability_impact_s
+                x_opencti_cvss_v4_exploit_maturity
+                x_opencti_cwe
                 x_opencti_cisa_kev
                 x_opencti_epss_score
                 x_opencti_epss_percentile
+                x_opencti_score
             }
             ... on Incident {
                 name
