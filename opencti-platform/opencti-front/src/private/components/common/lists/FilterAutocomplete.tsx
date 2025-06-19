@@ -48,6 +48,7 @@ interface FilterAutocompleteProps {
   availableRelationFilterTypes?: Record<string, string[]>;
   openOnFocus?: boolean;
   filterLabel: string;
+  disabled?: boolean;
 }
 
 const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) => {
@@ -62,6 +63,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
     availableRelationFilterTypes,
     openOnFocus,
     filterLabel,
+    disabled,
   } = props;
   const { t_i18n } = useFormatter();
   const classes = useStyles();
@@ -159,6 +161,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
   return (
     <MUIAutocomplete
       key={filterKey}
+      disabled={disabled}
       selectOnFocus={true}
       openOnFocus={openOnFocus}
       autoSelect={false}

@@ -13,7 +13,8 @@ import Loader, { LoaderVariant } from '../Loader';
 import { FilterValuesForDynamicSubKeyQuery } from './__generated__/FilterValuesForDynamicSubKeyQuery.graphql';
 import { sanitizeFilterGroupKeysForBackend } from '../../utils/filters/filtersUtils';
 
-const MAX_NUMBER_DYNAMIC_IDS_RESULT = 500;
+// TODO, use MAX_RUNTIME_RESOLUTION_SIZE from backend
+const MAX_NUMBER_DYNAMIC_IDS_RESULT = 5000;
 
 export const filterValuesForDynamicSubKeyQuery = graphql`
   query FilterValuesForDynamicSubKeyQuery(

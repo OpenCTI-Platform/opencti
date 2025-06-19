@@ -37,6 +37,7 @@ type ListFiltersProps = {
   required?: boolean;
   entityTypes: string[];
   isDatatable?: boolean;
+  disabled?: boolean;
 };
 
 type ParametersType = {
@@ -67,6 +68,7 @@ const ListFilters = ({
   required = false,
   entityTypes,
   isDatatable = false,
+  disabled = false,
 }: ListFiltersProps) => {
   const { t_i18n } = useFormatter();
   const [currentSavedFilter, setCurrentSavedFilter] = useState<SavedFiltersSelectionData>();
@@ -158,6 +160,7 @@ const ListFilters = ({
       ) : (
         <>
           <MUIAutocomplete
+            disabled={disabled}
             options={options as OptionType[]}
             groupBy={isNotUniqEntityTypes ? ((option) => option?.groupLabel ?? '') : undefined}
             sx={{ width: 200 }}
@@ -194,6 +197,7 @@ const ListFilters = ({
               color={color}
               onClick={handleClearFilters}
               size='small'
+              disabled={disabled}
             >
               <FilterListOffOutlined fontSize='small' />
             </IconButton>

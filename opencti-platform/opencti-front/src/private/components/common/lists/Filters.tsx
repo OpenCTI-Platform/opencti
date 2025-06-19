@@ -100,6 +100,7 @@ const Filters: FunctionComponent<FiltersProps> = ({
   const filterElement = (
     <FiltersElement
       variant={variant}
+      disabled={disabled}
       keyword={keyword}
       availableFilterKeys={availableFilterKeys}
       searchContext={searchContext ?? { entityTypes }}
@@ -147,6 +148,7 @@ const Filters: FunctionComponent<FiltersProps> = ({
           required={required}
           entityTypes={entityTypes}
           isDatatable={isDatatable}
+          disabled={disabled}
         />
       ) : (
         <ListFiltersWithoutLocalStorage
