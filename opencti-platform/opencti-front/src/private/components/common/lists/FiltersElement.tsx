@@ -50,6 +50,7 @@ export interface FiltersElementProps {
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
   availableRelationFilterTypes?: Record<string, string[]>;
+  disabled?: boolean;
 }
 
 const FiltersElement: FunctionComponent<FiltersElementProps> = ({
@@ -64,6 +65,7 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
   availableEntityTypes,
   availableRelationshipTypes,
   availableRelationFilterTypes,
+  disabled = false,
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
@@ -98,6 +100,7 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
               fullWidth={true}
               value={keyword}
               onChange={handleChangeKeyword}
+              disabled={disabled}
             />
           </Grid>
         )}
@@ -134,6 +137,7 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
                 availableRelationFilterTypes={availableRelationFilterTypes}
                 openOnFocus={true}
                 filterLabel={filterLabel}
+                disabled={disabled}
               />
             </Grid>
           );

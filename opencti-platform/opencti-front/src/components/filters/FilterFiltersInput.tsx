@@ -13,6 +13,7 @@ interface BasicFilterInputProps {
   childKey?: string;
   helpers?: handleFilterHelpers;
   filterValues: FilterGroup;
+  disabled?: boolean;
 }
 
 const FilterFiltersInput: FunctionComponent<BasicFilterInputProps> = ({
@@ -20,6 +21,7 @@ const FilterFiltersInput: FunctionComponent<BasicFilterInputProps> = ({
   childKey,
   helpers,
   filterValues,
+  disabled = false,
 }) => {
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object']);
   const [filters, filterHelpers] = useFiltersState(filterValues ?? emptyFilterGroup);
@@ -61,6 +63,7 @@ const FilterFiltersInput: FunctionComponent<BasicFilterInputProps> = ({
           availableFilterKeys={availableFilterKeys}
           helpers={filterHelpers}
           searchContext={{ entityTypes: ['Stix-Core-Object'] }}
+          disabled={disabled}
         />
       </Box>
       <FilterIconButton

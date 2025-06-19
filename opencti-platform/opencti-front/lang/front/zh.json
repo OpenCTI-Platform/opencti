@@ -174,6 +174,7 @@
   "All reports": "所有报告",
   "All rule targets": "所有规则目标",
   "All the results may not be displayed for these filter values, read documentation for more information.": "这些过滤值可能无法显示所有结果，{link} 获取更多信息",
+  "All the results may not be displayed since the Dynamic filter targets too many entities.": "由于动态筛选器针对的实体太多，可能无法显示所有结果。",
   "All threats": "所有威胁",
   "All types of relationship": "关系的所有类型",
   "All types of target": "所有类型的目标",

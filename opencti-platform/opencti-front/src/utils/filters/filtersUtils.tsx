@@ -408,7 +408,7 @@ export const sanitizeFiltersStructure = (filterGroup: FilterGroup): FilterGroup 
 // GQL input coercion allows to use non-array value of same type as inside the array
 // but when we serialize (stringify) filters they end up parsed inside the backend, that expects strictly arrays
 // --> saved filters MUST be properly sanitized
-const sanitizeFilterGroupKeysForBackend = (
+export const sanitizeFilterGroupKeysForBackend = (
   filterGroup: FilterGroup,
 ): GqlFilterGroup => {
   return {
