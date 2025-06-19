@@ -107,6 +107,7 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
             } else {
               targetEntityType = targetEntity.entity_type;
             }
+            const isReversed = node.from.id === stixCyberObservableId;
             // eslint-disable-next-line no-nested-ternary
             const link = !restricted
               ? targetEntity.parent_types.includes('stix-core-relationship')
@@ -146,7 +147,7 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
                   disabled={restricted}
                 >
                   <ListItemIcon classes={{ root: classes.itemIcon }}>
-                    <ItemIcon type={node.entity_type} />
+                    <ItemIcon type={node.entity_type} isReversed={isReversed} />
                   </ListItemIcon>
                   <ListItemText
                     primary={
