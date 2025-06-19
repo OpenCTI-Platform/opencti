@@ -62,7 +62,7 @@ steps:
       - if [ $(wget --server-response "http://opencti-live-start:4200/health?health_access_key=cihealthkey" -O opencti-live-start-health 2>&1 | grep -c "200 OK") != 1 ]; then echo "ERROR opencti-live-start has not start correctly"; exit 1; fi
       - if [ $(wget --server-response "http://opencti-direct-start:4300/health?health_access_key=cihealthkey" -O opencti-direct-start 2>&1 | grep -c "200 OK") != 1 ]; then echo "ERROR opencti-direct-start has not start correctly"; exit 1; fi
       - if [ $(wget --server-response "http://opencti-restore-start:4400/health?health_access_key=cihealthkey" -O opencti-restore-start 2>&1 | grep -c "200 OK") != 1 ]; then echo "ERROR opencti-restore-start has not start correctly"; exit 1; fi
-      - NODE_OPTIONS=--max_old_space_size=8192 yarn test draft-utils
+      - NODE_OPTIONS=--max_old_space_size=8192 yarn test
     depends_on:
       - dependencies-checkout
 
@@ -87,9 +87,9 @@ steps:
       - cd opencti-platform/opencti-front
       - yarn install
       - yarn build
-#      - yarn check-ts
-#      - yarn lint
-#      - NODE_OPTIONS=--max_old_space_size=8192 yarn test
+      - yarn check-ts
+      - yarn lint
+      - NODE_OPTIONS=--max_old_space_size=8192 yarn test
 
   - name: frontend-e2e-tests
     image: node:22.16.0
