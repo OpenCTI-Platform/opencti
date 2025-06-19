@@ -9248,6 +9248,7 @@ type Mutation {
   ingestionCsvResetState(id: ID!): IngestionCsv
   ingestionCsvDelete(id: ID!): ID
   ingestionCsvFieldPatch(id: ID!, input: [EditInput!]!): IngestionCsv
+  ingestionCsvAddAutoUser(id: ID!, input: IngestionCsvAddAutoUserInput!): IngestionCsv
   ingestionJsonTester(input: IngestionJsonAddInput!): JsonMapperTestResult
   ingestionJsonAdd(input: IngestionJsonAddInput!): IngestionJson
   ingestionJsonResetState(id: ID!): IngestionJson
@@ -12093,6 +12094,11 @@ input IngestionCsvAddInput {
   automatic_user: Boolean
   confidence_level: String
   markings: [String!]
+}
+
+input IngestionCsvAddAutoUserInput {
+  user_name: String!
+  confidence_level: String!
 }
 
 type IngestionHeader {

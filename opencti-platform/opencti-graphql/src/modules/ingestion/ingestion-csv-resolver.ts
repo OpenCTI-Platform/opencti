@@ -10,7 +10,7 @@ import {
   defaultIngestionGroupsCount,
   deleteIngestionCsv,
   findAllPaginated,
-  findById,
+  findById, ingestionCsvAddAutoUser,
   ingestionCsvEditField,
   ingestionCsvResetState,
   testCsvIngestionMapping,
@@ -48,6 +48,9 @@ const ingestionCsvResolvers: Resolvers = {
     },
     ingestionCsvFieldPatch: (_, { id, input }, context) => {
       return ingestionCsvEditField(context, context.user, id, input);
+    },
+    ingestionCsvAddAutoUser: (_, { id, input }, context) => {
+      return ingestionCsvAddAutoUser(context, context.user, id, input);
     },
   },
 };

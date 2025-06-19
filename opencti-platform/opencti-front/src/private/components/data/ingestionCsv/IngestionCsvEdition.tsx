@@ -1,5 +1,5 @@
 import { graphql, useFragment } from 'react-relay';
-import React, { FunctionComponent, useState, useMemo } from 'react';
+import React, {FunctionComponent, UIEvent, useState, useMemo } from 'react';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import { ExternalReferencesValues } from '@components/common/form/ExternalReferencesField';
@@ -43,6 +43,16 @@ import PasswordTextField from '../../../../components/PasswordTextField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { RootMe_data$data } from '../../../__generated__/RootMe_data.graphql';
 import IngestionCsvInlineWrapper from './IngestionCsvInlineWrapper';
+import Transition from "../../../../components/Transition";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import {AlertTitle} from "@mui/material";
+import DialogActions from "@mui/material/DialogActions";
+import Dialog from "@mui/material/Dialog";
+import ConfidenceField from "@components/common/form/ConfidenceField";
+import IngestionCsvEditionUserHandling from "@components/data/ingestionCsv/IngestionCsvEditionUserHandling";
+import useHelper from "../../../../utils/hooks/useHelper";
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -224,6 +234,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
   enableReferences = false,
 }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const ingestionCsvData = useFragment(ingestionCsvEditionFragment, ingestionCsv);
@@ -454,6 +465,10 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                 containerStyle={fieldSpacingContainerStyle}
                 showConfidence
               />
+              {isFeatureEnable('CSV_FEED') && ingestionCsvData.user.name === 'SYSTEM'
+&& <IngestionCsvEditionUserHandling key={values.name} feedName={values.name} ingestionCsvDataId={ingestionCsvData.id}/>
+
+              }
               <Box sx={{
                 marginTop: 2,
               }}

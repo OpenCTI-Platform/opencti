@@ -5,7 +5,15 @@ import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../dat
 import { type BasicStoreEntityIngestionCsv, ENTITY_TYPE_INGESTION_CSV } from './ingestion-types';
 import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
-import { type CsvMapperTestResult, type EditInput, IngestionAuthType, type IngestionCsvAddInput, IngestionCsvMapperType, type UserAddInput } from '../../generated/graphql';
+import {
+  type CsvMapperTestResult,
+  type EditInput,
+  IngestionCsvAddAutoUserInput,
+  type IngestionCsvAddInput,
+  IngestionCsvMapperType,
+  IngestionAuthType,
+  type UserAddInput
+} from '../../generated/graphql';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS, isFeatureEnabled, PLATFORM_VERSION } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
@@ -80,12 +88,12 @@ export const userAlreadyExists = async (context: AuthContext, name: string) => {
   return users.length > 0;
 };
 
-export const createOnTheFlyUser = async (context: AuthContext, user: AuthUser, input: IngestionCsvAddInput) => {
+export const createOnTheFlyUser = async (context: AuthContext, user: AuthUser, input: { userName: string, confidenceLevel: string }) => {
   const defaultIngestionGroups: BasicGroupEntity[] = await findDefaultIngestionGroups(context, user) as BasicGroupEntity[];
   if (defaultIngestionGroups.length < 1) {
     throw FunctionalError('You have not defined a default group for ingestion users', {});
   }
-  const isUserAlreadyExisting = await userAlreadyExists(context, input.user_id);
+  const isUserAlreadyExisting = await userAlreadyExists(context, input.userName);
   if (isUserAlreadyExisting) {
     throw FunctionalError('This user already exists. Change the feed\'s name to change the automatically created user\'s name', {});
   }
@@ -94,14 +102,14 @@ export const createOnTheFlyUser = async (context: AuthContext, user: AuthUser, i
   let userInput: UserAddInput = {
     password: uuid(),
     user_email: `automatic+${uuid()}@opencti.invalid`,
-    name: input.user_id,
+    name: input.userName,
     prevent_default_groups: true,
     groups: [defaultIngestionGroups[0].id],
     objectOrganization: platform_organization ? [platform_organization] : []
   };
 
-  if (input.confidence_level) {
-    const userConfidence = parseFloat(input.confidence_level);
+  if (input.confidenceLevel) {
+    const userConfidence = parseFloat(input.confidenceLevel);
     if (userConfidence < 0 || userConfidence > 100 || !Number.isInteger(userConfidence)) {
       throw ValidationError('The confidence_level should be an integer between 0 and 100', 'confidence_level');
     }
@@ -119,7 +127,7 @@ export const addIngestionCsv = async (context: AuthContext, user: AuthUser, inpu
   let onTheFlyCreatedUser;
   let finalInput;
   if (isFeatureEnabled('CSV_FEED') && input.automatic_user) {
-    onTheFlyCreatedUser = await createOnTheFlyUser(context, user, input);
+    onTheFlyCreatedUser = await createOnTheFlyUser(context, user, { userName: input.user_id ?? '', confidenceLevel: input.confidence_level ?? '50' });
     finalInput = {
       ...((({ automatic_user: _, confidence_level: __, ...inputWithoutAutomaticFields }) => inputWithoutAutomaticFields)(input)),
       user_id: onTheFlyCreatedUser.id,
@@ -211,6 +219,14 @@ export const ingestionCsvEditField = async (context: AuthContext, user: AuthUser
     context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_CSV, input: parsedInput as unknown }
   });
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
+};
+
+export const ingestionCsvAddAutoUser = async (context: AuthContext, user: AuthUser, ingestionId: string, input: IngestionCsvAddAutoUserInput) => {
+  // Create new user
+  const onTheFlyCreatedUser = await createOnTheFlyUser(context, user, { userName: input.user_name, confidenceLevel: input.confidence_level });
+
+  // Associate this user to the CSVFeed
+  return ingestionCsvEditField(context, user, ingestionId, [{ key: 'user_id', value: [onTheFlyCreatedUser.id] }]);
 };
 
 export const ingestionCsvResetState = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
