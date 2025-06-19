@@ -157,6 +157,13 @@ const DashboardComponent = ({ data, noToolbar }) => {
     saveManifest(newManifest);
   };
 
+  const getNextRow = () => {
+    return Object.values(widgetsArray).reduce((max, { layout }) => {
+      const widgetEndRow = layout.y + layout.h;
+      return widgetEndRow > max ? widgetEndRow : max;
+    }, 0);
+  };
+
   const handleAddWidget = (widgetConfig) => {
     saveManifest({
       ...manifest,
@@ -167,7 +174,7 @@ const DashboardComponent = ({ data, noToolbar }) => {
           layout: {
             i: widgetConfig.id,
             x: 0,
-            y: 1000, // 1000 will be replaced automatically by a new row at the end of existing ones.
+            y: getNextRow(),
             w: 4,
             h: 2,
           },
