@@ -960,7 +960,7 @@ const createContainerSharingTask = (context, type, element, relations = []) => {
   if (targetGrantIds.length > 0) {
     const sharingDescription = `${type} organizations of ${element.name} to contained objects`;
     const input = { ids: targetGrantIds, scope: 'KNOWLEDGE', actions: [{ type, context: { values: elementGrants } }], description: sharingDescription };
-    taskPromise = createListTask(context, context.user, input);
+    taskPromise = createListTask(context, SYSTEM_USER, input);
   }
   return taskPromise;
 };
