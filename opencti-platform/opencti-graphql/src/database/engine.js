@@ -2233,85 +2233,97 @@ const buildLocalMustFilter = async (validFilter) => {
       }
       valuesFiltering.push({ range: { [headKey]: { gte: values[0], lte: values[1] } } });
     } else {
-      for (let i = 0; i < values.length; i += 1) {
-        if (values[i] === 'EXISTS') {
-          if (arrayKeys.length > 1) {
-            throw UnsupportedError('Filter must have only one field', { keys: arrayKeys });
+      // case where we would like to build a terms query
+      const isTermsQuery = (operator === 'eq' || operator === 'not_eq') && values.length > 0
+        && arrayKeys.every((k) => !k.includes('*') && (k.endsWith(ID_INTERNAL) || k.endsWith(ID_INFERRED)));
+      if (isTermsQuery) {
+        const targets = operator === 'eq' ? valuesFiltering : noValuesFiltering;
+        for (let i = 0; i < arrayKeys.length; i += 1) {
+          targets.push({
+            terms: { [`${arrayKeys[i]}.keyword`]: values }
+          });
+        }
+      } else {
+        for (let i = 0; i < values.length; i += 1) {
+          if (values[i] === 'EXISTS') {
+            if (arrayKeys.length > 1) {
+              throw UnsupportedError('Filter must have only one field', { keys: arrayKeys });
+            }
+            valuesFiltering.push({ exists: { field: headKey } });
+          } else if (operator === 'eq' || operator === 'not_eq') {
+            const targets = operator === 'eq' ? valuesFiltering : noValuesFiltering;
+            targets.push({
+              multi_match: {
+                fields: arrayKeys.map((k) => buildFieldForQuery(k)),
+                query: values[i].toString(),
+              },
+            });
+          } else if (operator === 'match') {
+            valuesFiltering.push({
+              multi_match: {
+                fields: arrayKeys,
+                query: values[i].toString(),
+              },
+            });
+          } else if (operator === 'wildcard' || operator === 'not_wildcard') {
+            const targets = operator === 'wildcard' ? valuesFiltering : noValuesFiltering;
+            targets.push({
+              query_string: {
+                query: values[i] === '*' ? values[i] : `"${values[i].toString()}"`,
+                fields: arrayKeys,
+              },
+            });
+          } else if (operator === 'contains' || operator === 'not_contains') {
+            const targets = operator === 'contains' ? valuesFiltering : noValuesFiltering;
+            const val = specialElasticCharsEscape(values[i].toString());
+            targets.push({
+              query_string: {
+                query: `*${val.replace(/\s/g, '\\ ')}*`,
+                analyze_wildcard: true,
+                fields: arrayKeys.map((k) => `${k}.keyword`),
+              },
+            });
+          } else if (operator === 'starts_with' || operator === 'not_starts_with') {
+            const targets = operator === 'starts_with' ? valuesFiltering : noValuesFiltering;
+            const val = specialElasticCharsEscape(values[i].toString());
+            targets.push({
+              query_string: {
+                query: `${val.replace(/\s/g, '\\ ')}*`,
+                analyze_wildcard: true,
+                fields: arrayKeys.map((k) => `${k}.keyword`),
+              },
+            });
+          } else if (operator === 'ends_with' || operator === 'not_ends_with') {
+            const targets = operator === 'ends_with' ? valuesFiltering : noValuesFiltering;
+            const val = specialElasticCharsEscape(values[i].toString());
+            targets.push({
+              query_string: {
+                query: `*${val.replace(/\s/g, '\\ ')}`,
+                analyze_wildcard: true,
+                fields: arrayKeys.map((k) => `${k}.keyword`),
+              },
+            });
+          } else if (operator === 'script') {
+            valuesFiltering.push({
+              script: {
+                script: values[i].toString()
+              },
+            });
+          } else if (operator === 'search') {
+            const shouldSearch = elGenerateFieldTextSearchShould(values[i].toString(), arrayKeys);
+            const bool = {
+              bool: {
+                should: shouldSearch,
+                minimum_should_match: 1,
+              },
+            };
+            valuesFiltering.push(bool);
+          } else { // range operators
+            if (arrayKeys.length > 1) {
+              throw UnsupportedError('Range filter must have only one field', { keys: arrayKeys });
+            }
+            valuesFiltering.push({ range: { [headKey]: { [operator]: values[i] } } });
           }
-          valuesFiltering.push({ exists: { field: headKey } });
-        } else if (operator === 'eq' || operator === 'not_eq') {
-          const targets = operator === 'eq' ? valuesFiltering : noValuesFiltering;
-          targets.push({
-            multi_match: {
-              fields: arrayKeys.map((k) => buildFieldForQuery(k)),
-              query: values[i].toString(),
-            },
-          });
-        } else if (operator === 'match') {
-          valuesFiltering.push({
-            multi_match: {
-              fields: arrayKeys,
-              query: values[i].toString(),
-            },
-          });
-        } else if (operator === 'wildcard' || operator === 'not_wildcard') {
-          const targets = operator === 'wildcard' ? valuesFiltering : noValuesFiltering;
-          targets.push({
-            query_string: {
-              query: values[i] === '*' ? values[i] : `"${values[i].toString()}"`,
-              fields: arrayKeys,
-            },
-          });
-        } else if (operator === 'contains' || operator === 'not_contains') {
-          const targets = operator === 'contains' ? valuesFiltering : noValuesFiltering;
-          const val = specialElasticCharsEscape(values[i].toString());
-          targets.push({
-            query_string: {
-              query: `*${val.replace(/\s/g, '\\ ')}*`,
-              analyze_wildcard: true,
-              fields: arrayKeys.map((k) => `${k}.keyword`),
-            },
-          });
-        } else if (operator === 'starts_with' || operator === 'not_starts_with') {
-          const targets = operator === 'starts_with' ? valuesFiltering : noValuesFiltering;
-          const val = specialElasticCharsEscape(values[i].toString());
-          targets.push({
-            query_string: {
-              query: `${val.replace(/\s/g, '\\ ')}*`,
-              analyze_wildcard: true,
-              fields: arrayKeys.map((k) => `${k}.keyword`),
-            },
-          });
-        } else if (operator === 'ends_with' || operator === 'not_ends_with') {
-          const targets = operator === 'ends_with' ? valuesFiltering : noValuesFiltering;
-          const val = specialElasticCharsEscape(values[i].toString());
-          targets.push({
-            query_string: {
-              query: `*${val.replace(/\s/g, '\\ ')}`,
-              analyze_wildcard: true,
-              fields: arrayKeys.map((k) => `${k}.keyword`),
-            },
-          });
-        } else if (operator === 'script') {
-          valuesFiltering.push({
-            script: {
-              script: values[i].toString()
-            },
-          });
-        } else if (operator === 'search') {
-          const shouldSearch = elGenerateFieldTextSearchShould(values[i].toString(), arrayKeys);
-          const bool = {
-            bool: {
-              should: shouldSearch,
-              minimum_should_match: 1,
-            },
-          };
-          valuesFiltering.push(bool);
-        } else { // range operators
-          if (arrayKeys.length > 1) {
-            throw UnsupportedError('Range filter must have only one field', { keys: arrayKeys });
-          }
-          valuesFiltering.push({ range: { [headKey]: { [operator]: values[i] } } });
         }
       }
     }
@@ -2823,6 +2835,9 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         if (!id && !dynamic && !type) {
           throw UnsupportedError('Id or dynamic or relationship type are needed for this filtering key', { key: filterKey });
         }
+        if (dynamic && !type?.values?.length) {
+          throw UnsupportedError('Relationship type is needed for dynamic in regards of filtering', { key: filterKey, type });
+        }
         const ids = id?.values ?? [];
         const operator = id?.operator ?? 'eq';
         // Check dynamic
@@ -2849,7 +2864,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         }
         const types = type?.values;
         const keys = isEmptyField(types) ? buildRefRelationKey('*', '*')
-          : types.map((t) => buildRefRelationKey(t, '*'));
+          : types.flatMap((t) => [buildRefRelationKey(t, ID_INTERNAL), buildRefRelationKey(t, ID_INFERRED)]);
         if (isEmptyField(ids)) {
           keys.forEach((relKey) => {
             regardingFilters.push({ key: [relKey], operator, values: ['EXISTS'] });
