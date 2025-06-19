@@ -57,7 +57,7 @@ export const insertNode = (
       const pageInfo = conn.getLinkedRecord('pageInfo');
       if (!pageInfo) return;
       const globalCount = pageInfo.getValue('globalCount');
-      if (!globalCount || !Number.isInteger(globalCount)) return;
+      if (!Number.isInteger(globalCount)) return;
       pageInfo.setValue(globalCount + 1, 'globalCount');
     }
   } else {
