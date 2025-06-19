@@ -31,6 +31,8 @@ interface FilterValuesForDynamicSubKeyContainerProps {
   chipColor?: ChipOwnProps['color'];
 }
 
+const MAX_NUMBER_DYNAMIC_IDS_RESULT = 900;
+
 const FilterValuesForDynamicSubKeyContainer = ({
   queryRef,
   filterValue,
@@ -39,7 +41,7 @@ const FilterValuesForDynamicSubKeyContainer = ({
   const { t_i18n } = useFormatter();
   const { stixCoreObjectsNumber } = usePreloadedQuery(filterValuesForDynamicSubKeyQuery, queryRef);
   const numberOfIdsTargeted = stixCoreObjectsNumber?.total ?? 0;
-  const displayWarning = numberOfIdsTargeted > 100;
+  const displayWarning = numberOfIdsTargeted > MAX_NUMBER_DYNAMIC_IDS_RESULT;
 
   return (
     <Fragment>

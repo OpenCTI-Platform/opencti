@@ -38,6 +38,11 @@ export const emptyFilterGroup: FilterGroup = {
   filterGroups: [],
 };
 
+// for dynamic_regardingOf filter
+// if too many ids matches the dynamic filter (i.e. the dynamic filter is not restricted enough)
+// we take only MAX_NUMBER_DYNAMIC_IDS_RESULT ids into account to avoid a too heavy query that will fail
+export const MAX_NUMBER_DYNAMIC_IDS_RESULT = 900;
+
 //----------------------------------------------------------------------------------------------------------------------
 // Basic utility functions
 

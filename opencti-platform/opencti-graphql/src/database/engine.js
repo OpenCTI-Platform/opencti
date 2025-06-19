@@ -133,7 +133,12 @@ import {
 import { convertTypeToStixType } from './stix-2-1-converter';
 import { extractEntityRepresentativeName, extractRepresentative } from './entity-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
-import { addFilter, checkAndConvertFilters, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
+import {
+  addFilter,
+  checkAndConvertFilters,
+  isFilterGroupNotEmpty,
+  MAX_NUMBER_DYNAMIC_IDS_RESULT
+} from '../utils/filtering/filtering-utils';
 import {
   ALIAS_FILTER,
   complexConversionFilterKeys,
@@ -2831,7 +2836,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
           const computedIndices = computeQueryIndices([], [ABSTRACT_STIX_OBJECT]);
           const relatedEntities = await elPaginate(context, user, computedIndices, {
             connectionFormat: false,
-            first: 900, // if too many ids (the dynamic filter is not restricted enough)
+            first: MAX_NUMBER_DYNAMIC_IDS_RESULT, // if too many ids (the dynamic filter is not restricted enough)
             // we take only some ids into account to avoid a too heavy query that will fail
             bypassSizeLimit: true, // ensure that max runtime prevent on ES_MAX_PAGINATION
             baseData: true,
