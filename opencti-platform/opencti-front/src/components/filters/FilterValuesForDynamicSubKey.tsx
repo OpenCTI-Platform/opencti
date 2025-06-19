@@ -45,7 +45,6 @@ const FilterValuesForDynamicSubKeyContainer = ({
   const { stixCoreObjects } = usePreloadedQuery(filterValuesForDynamicSubKeyQuery, queryRef);
   const numberOfIdsTargeted = stixCoreObjects?.edges.length ?? 0;
   const displayWarning = numberOfIdsTargeted > 100;
-  console.log('displayWarning', displayWarning);
 
   return (
     <Fragment>
