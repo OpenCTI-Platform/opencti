@@ -2835,6 +2835,9 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         if (!id && !dynamic && !type) {
           throw UnsupportedError('Id or dynamic or relationship type are needed for this filtering key', { key: filterKey });
         }
+        if (dynamic && !type?.values?.length) {
+          throw UnsupportedError('Relationship type is needed for dynamic in regards of filtering', { key: filterKey, type });
+        }
         const ids = id?.values ?? [];
         const operator = id?.operator ?? 'eq';
         // Check dynamic
