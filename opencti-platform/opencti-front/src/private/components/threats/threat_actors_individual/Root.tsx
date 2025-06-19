@@ -168,6 +168,7 @@ const RootThreatActorIndividualComponent = ({
               )}
               enableEnricher={isFABReplaced}
               enableQuickSubscription={true}
+              redirectToContent={true}
             />
             <Box
               sx={{

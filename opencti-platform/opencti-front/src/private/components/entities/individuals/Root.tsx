@@ -181,6 +181,7 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
               )}
               onViewAs={handleChangeViewAs}
               viewAs={viewAs}
+              redirectToContent={true}
             />
             <Box
               sx={{

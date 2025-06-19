@@ -144,6 +144,7 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
                   <AttackPatternEdition attackPatternId={attackPattern.id} />
                 </Security>
               )}
+              redirectToContent={true}
             />
             <Box
               sx={{

@@ -143,6 +143,7 @@ const RootCityComponent = ({ queryRef, cityId }) => {
               )}
               enableQuickSubscription={true}
               isOpenctiAlias={true}
+              redirectToContent={true}
             />
             <Box
               sx={{
