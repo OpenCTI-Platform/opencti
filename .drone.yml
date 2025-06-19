@@ -108,7 +108,7 @@ steps:
       - yarn install
       - npx playwright install --with-deps chromium
       - yarn build
-#      - yarn test:e2e
+      - yarn test:e2e
     depends_on:
       - frontend-tests
 

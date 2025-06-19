@@ -35,6 +35,12 @@ import { convertWidgetsIds } from './workspace-utils';
 
 export const PLATFORM_DASHBOARD = 'cf093b57-713f-404b-a210-a1c5c8cb3791';
 
+export const sanitizeElementForPublishAction = (element: BasicStoreEntityWorkspace) => {
+  // Because manifest can be huge we remove this data from activity logs.
+  const sanitizeElement = { ...element, manifest: undefined };
+  return sanitizeElement;
+};
+
 export const findById = (
   context: AuthContext,
   user: AuthUser,
@@ -239,7 +245,7 @@ export const workspaceDelete = async (
     context_data: {
       id: workspaceId,
       entity_type: ENTITY_TYPE_WORKSPACE,
-      input: deleted,
+      input: sanitizeElementForPublishAction(deleted),
     },
   });
   return workspaceId;
@@ -397,7 +403,7 @@ export const workspaceImportConfiguration = async (context: AuthContext, user: A
     context_data: {
       id: workspaceId,
       entity_type: ENTITY_TYPE_WORKSPACE,
-      input: importWorkspaceCreation,
+      input: sanitizeElementForPublishAction(importWorkspaceCreation),
     },
   });
   await notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].ADDED_TOPIC, importWorkspaceCreation, user);
@@ -408,13 +414,14 @@ export const duplicateWorkspace = async (context: AuthContext, user: AuthUser, i
   const authorizedMembers = initializeAuthorizedMembers([], user);
   const workspaceToCreate = { ...input, restricted_members: authorizedMembers };
   const created = await createEntity(context, user, workspaceToCreate, ENTITY_TYPE_WORKSPACE);
+  const sanitizeElement = { ...input, manifest: undefined };
   await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: 'create',
     event_access: 'extended',
     message: `creates ${created.type} workspace \`${created.name}\` from custom-named duplication`,
-    context_data: { id: created.id, entity_type: ENTITY_TYPE_WORKSPACE, input },
+    context_data: { id: created.id, entity_type: ENTITY_TYPE_WORKSPACE, input: sanitizeElement },
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].ADDED_TOPIC, created, user);
 };
@@ -460,7 +467,7 @@ export const workspaceImportWidgetConfiguration = async (
     context_data: {
       id: workspaceId,
       entity_type: ENTITY_TYPE_WORKSPACE,
-      input: element,
+      input: sanitizeElementForPublishAction(element),
     },
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, element, user);

@@ -181,7 +181,7 @@
     "verify-translation": "node script/verify-translation.js",
     "sort-translation": "node script/sort-translation-files.js",
     "auto-translation:all": "node script/auto-translate.js && npm run sort-translation",
-    "test:e2e": "E2E_TEST=true yarn playwright test --workers=1 --retries=2",
+    "test:e2e": "E2E_TEST=true yarn playwright test --workers=1 --retries=1 -x",
     "test:e2e:ui": "E2E_TEST=true yarn playwright test --ui --workers=1",
     "generate-test-e2e": "npx playwright codegen http://localhost:3000/",
     "test:e2e:coverage": "E2E_TEST=true E2E_COVERAGE=true yarn playwright test && yarn show-report-e2e",
