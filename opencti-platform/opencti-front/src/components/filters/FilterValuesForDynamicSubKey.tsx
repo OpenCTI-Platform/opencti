@@ -13,6 +13,8 @@ import Loader, { LoaderVariant } from '../Loader';
 import { FilterValuesForDynamicSubKeyQuery } from './__generated__/FilterValuesForDynamicSubKeyQuery.graphql';
 import { sanitizeFilterGroupKeysForBackend } from '../../utils/filters/filtersUtils';
 
+const MAX_NUMBER_DYNAMIC_IDS_RESULT = 500;
+
 export const filterValuesForDynamicSubKeyQuery = graphql`
   query FilterValuesForDynamicSubKeyQuery(
     $filters: FilterGroup
@@ -30,8 +32,6 @@ interface FilterValuesForDynamicSubKeyContainerProps {
   filterValue: FilterGroup;
   chipColor?: ChipOwnProps['color'];
 }
-
-const MAX_NUMBER_DYNAMIC_IDS_RESULT = 900;
 
 const FilterValuesForDynamicSubKeyContainer = ({
   queryRef,
