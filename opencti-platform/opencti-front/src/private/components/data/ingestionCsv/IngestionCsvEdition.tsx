@@ -1,5 +1,5 @@
 import { graphql, useFragment } from 'react-relay';
-import React, {FunctionComponent, UIEvent, useState} from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import { ExternalReferencesValues } from '@components/common/form/ExternalReferencesField';
@@ -20,6 +20,7 @@ import IngestionSchedulingField from '@components/data/IngestionSchedulingField'
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import IngestionCsvInlineMapperForm from '@components/data/ingestionCsv/IngestionCsvInlineMapperForm';
+import IngestionCsvEditionUserHandling from '@components/data/ingestionCsv/IngestionCsvEditionUserHandling';
 import { convertMapper, convertUser } from '../../../../utils/edition';
 import { useFormatter } from '../../../../components/i18n';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
@@ -38,16 +39,7 @@ import { BASIC_AUTH, BEARER_AUTH, CERT_AUTH, extractCA, extractCert, extractKey,
 import PasswordTextField from '../../../../components/PasswordTextField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import IngestionCsvInlineWrapper from './IngestionCsvInlineWrapper';
-import Transition from "../../../../components/Transition";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import {AlertTitle} from "@mui/material";
-import DialogActions from "@mui/material/DialogActions";
-import Dialog from "@mui/material/Dialog";
-import ConfidenceField from "@components/common/form/ConfidenceField";
-import IngestionCsvEditionUserHandling from "@components/data/ingestionCsv/IngestionCsvEditionUserHandling";
-import useHelper from "../../../../utils/hooks/useHelper";
+import useHelper from '../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -396,12 +388,12 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
               />
               <CreatorField
                 name="user_id"
-                label={t_i18n('User responsible for data creation (empty = System)')}
+                label={t_i18n('User responsible for data creation')}
                 onChange={handleSubmitField}
                 containerStyle={fieldSpacingContainerStyle}
                 showConfidence
               />
-              {isFeatureEnable('CSV_FEED') && ingestionCsvData.user.name === 'SYSTEM'
+              {isFeatureEnable('CSV_FEED') && ingestionCsvData.user?.name === 'SYSTEM'
 && <IngestionCsvEditionUserHandling key={values.name} feedName={values.name} ingestionCsvDataId={ingestionCsvData.id}/>
 
               }
