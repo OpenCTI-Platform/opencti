@@ -287,6 +287,7 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
   }
   if (isStixSightingRelationship(relationshipType)) {
     relToCreate.push(...buildInnerRelation(data, input.createdBy, RELATION_CREATED_BY));
+    relToCreate.push(...buildInnerRelation(data, input.externalReferences, RELATION_EXTERNAL_REFERENCE));
   }
   // 05. Prepare the final data
   const created = R.pipe(
