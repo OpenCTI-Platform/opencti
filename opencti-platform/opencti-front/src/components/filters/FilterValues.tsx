@@ -13,9 +13,9 @@ import { FiltersRestrictions, isFilterEditable, isFilterGroupNotEmpty, isRegardi
 import { isDateIntervalTranslatable, translateDateInterval, truncate } from '../../utils/String';
 import FilterValuesContent from '../FilterValuesContent';
 import { FilterRepresentative } from './FiltersModel';
-import { Filter, FilterGroup } from '../../utils/filters/filtersHelpers-types';
+import { Filter } from '../../utils/filters/filtersHelpers-types';
 import useSchema from '../../utils/hooks/useSchema';
-import TasksFilterValueContainer from '../TasksFilterValueContainer';
+import FilterValuesForDynamicSubKey from './FilterValuesForDynamicSubKey';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -223,32 +223,16 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
                 </>
               );
               if (subKey === 'dynamic') {
-                const dynamicValues = val.values;
-                if (!dynamicValues.every((v: FilterGroup) => isFilterGroupNotEmpty(v))) return <div key={val.key}/>;
+                const [dynamicValue] = val.values;
+                if (!isFilterGroupNotEmpty(dynamicValue)) {
+                  return <div key={val.key}/>;
+                }
                 return (
-                  <Fragment key={val.key}>
-                    <Tooltip
-                      title={
-                        dynamicValues.map((v: FilterGroup) => (
-                          <TasksFilterValueContainer
-                            key={dynamicValues.indexOf(v)}
-                            filters={v}
-                          />))
-                        }
-                    >
-                      <Box
-                        sx={{
-                          padding: '0 4px',
-                          display: 'flex',
-                        }}
-                      >
-                        <Chip
-                          label={t_i18n('Dynamic filter')}
-                          color={chipColor}
-                        />
-                      </Box>
-                    </Tooltip>
-                  </Fragment>
+                  <FilterValuesForDynamicSubKey
+                    key={val.key}
+                    filterValue={dynamicValue}
+                    chipColor={chipColor}
+                  />
                 );
               }
               return (
