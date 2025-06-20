@@ -5,6 +5,8 @@
   "... successfully deleted": "{entity_type} 성공적으로 삭제되었습니다",
   "{count} days": "{count} 일",
   "{count} email address(es) extracted from pasted text": "붙여넣은 텍스트에서 추출한 {count} 이메일 주소",
+  "{entityType} `{entityName}` added to `{pirName}`": "{entityType} `{entityName}`이 `{pirName}`에 추가되었습니다",
+  "{entityType} `{entityName}` removed from `{pirName}`": "{entityType} `{entityName}`이 `{pirName}`에서 제거되었습니다",
   "+ N override(s)": "+ {count} 재정의",
   "0 equals no maximum": "0은 최대치 없음",
   "1 day": "1 일",
