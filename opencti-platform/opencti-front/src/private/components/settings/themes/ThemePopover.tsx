@@ -90,6 +90,7 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
           <ThemeDeletion
             id={theme.id}
             disabled={isCurrentTheme}
+            handleClose={handleClose}
             handleRefetch={handleRefetch}
             paginationOptions={paginationOptions}
           />

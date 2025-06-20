@@ -143,6 +143,12 @@ export const editTheme = async (
   id: string,
   input: EditInput[],
 ) => {
+  // Check if new name conflicts with an existing theme's name
+  const updatedName = input.find(({ key }) => key === 'name')?.value?.[0];
+  if (updatedName && typeof updatedName === 'string') {
+    await checkExistingTheme(context, updatedName);
+  }
+
   const { element } = await updateAttribute(
     context,
     user,

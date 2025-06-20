@@ -8,6 +8,7 @@ import { useFormatter } from '../../../../components/i18n';
 import ColorPickerField from '../../../../components/ColorPickerField';
 import ThemeType, { serializeThemeManifest } from './ThemeType';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import ThemeDetectDuplicate from './ThemeDetectDuplicate';
 
 const editThemeMutation = graphql`
   mutation ThemeEditionMutation(
@@ -105,7 +106,7 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
       enabledReinitalize={true}
       initialValues={theme}
     >
-      {({ submitForm, resetForm, isValid }) => (
+      {({ submitForm, resetForm, isValid, values }) => (
         <Drawer
           title={t_i18n('Update a theme')}
           open={open}
@@ -125,8 +126,14 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
               name="name"
               label={t_i18n('Name')}
               style={{ marginTop: 0 }}
+              helperText={(
+                <ThemeDetectDuplicate
+                  themeName={values.name}
+                />
+              )}
               fullWidth
               disabled={theme.system_default}
+              required
             />
             <Field
               component={ColorPickerField}
@@ -139,6 +146,7 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
               fullWidth
               style={{ marginTop: 20 }}
               variant="standard"
+              required
             />
             <Field
               component={ColorPickerField}
@@ -151,6 +159,7 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
               fullWidth
               style={{ marginTop: 20 }}
               variant="standard"
+              required
             />
             <Field
               component={ColorPickerField}
@@ -163,6 +172,7 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
               fullWidth
               style={{ marginTop: 20 }}
               variant="standard"
+              required
             />
             <Field
               component={ColorPickerField}
@@ -175,6 +185,7 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
               fullWidth
               style={{ marginTop: 20 }}
               variant="standard"
+              required
             />
             <Field
               component={ColorPickerField}
@@ -187,6 +198,7 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
               fullWidth
               style={{ marginTop: 20 }}
               variant="standard"
+              required
             />
             <Field
               component={ColorPickerField}
@@ -199,6 +211,7 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
               fullWidth
               style={{ marginTop: 20 }}
               variant="standard"
+              required
             />
             <Field
               component={ColorPickerField}
@@ -211,6 +224,7 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
               style={{ marginTop: 20 }}
               fullWidth
               variant="standard"
+              required
             />
             <Field
               component={TextField}

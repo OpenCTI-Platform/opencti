@@ -1,4 +1,5 @@
-import { buildStixDomain, cleanObject } from '../../database/stix-2-1-converter';
+import { buildStixDomain } from '../../database/stix-2-1-converter';
+import { cleanObject } from '../../database/stix-converter-utils';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { StixTheme, StoreEntityTheme } from './theme-types';
 
