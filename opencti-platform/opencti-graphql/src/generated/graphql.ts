@@ -11324,6 +11324,7 @@ export type IngestionCsv = BasicObject & InternalObject & {
   current_state_date?: Maybe<Scalars['DateTime']['output']>;
   current_state_hash?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Scalars['String']['output']>;
+  duplicateCsvMapper: CsvMapper;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   ingestion_running?: Maybe<Scalars['Boolean']['output']>;
@@ -38348,6 +38349,7 @@ export type IngestionCsvResolvers<ContextType = any, ParentType extends Resolver
   current_state_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   current_state_hash?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  duplicateCsvMapper?: Resolver<ResolversTypes['CsvMapper'], ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   ingestion_running?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;

@@ -41,6 +41,7 @@ import { BASIC_AUTH, CERT_AUTH, extractCA, extractCert, extractKey, extractPassw
 import useAuth from '../../../../utils/hooks/useAuth';
 import PasswordTextField from '../../../../components/PasswordTextField';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import { CsvMapperAddInput } from '../csvMapper/CsvMapperUtils';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -104,7 +105,7 @@ export interface IngestionCsvAddInput {
   scheduling_period?: string | null
   uri: string
   csv_mapper_type?: IngestionCsvMapperType
-  csv_mapper?: string
+  csv_mapper?: CsvMapperAddInput
   csv_mapper_id?: string | FieldOption
   authentication_type: IngestionAuthType | string
   authentication_value?: string | null
@@ -237,8 +238,8 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
     ...ingestionCsvData,
     name: `${ingestionCsvData.name}`,
     scheduling_period: ingestionCsvData.scheduling_period ?? 'PT1H',
-    csv_mapper_type: ingestionCsvData.csv_mapper_type ?? 'id',
-    csv_mapper: JSON.stringify(ingestionCsvData.csvMapper),
+    csv_mapper_type: 'id',
+    csv_mapper: undefined,
     csv_mapper_id: convertMapper(ingestionCsvData, 'csvMapper'),
     user_id: convertUser(ingestionCsvData, 'user'),
     username: ingestionCsvData.authentication_type === BASIC_AUTH ? extractUsername(ingestionCsvData.authentication_value) : undefined,
