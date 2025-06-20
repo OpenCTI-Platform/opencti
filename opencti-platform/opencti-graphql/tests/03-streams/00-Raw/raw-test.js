@@ -25,13 +25,21 @@ describe('Raw streams tests', () => {
       // Read all events from the beginning.
       const events = await fetchStreamEvents(`http://localhost:${PORT}/stream`, { from: '0' });
       writeTestDataToFile(JSON.stringify(events), 'raw-test-all-event.json');
-      // Check the number of events
-      // 01 - CHECK CREATE EVENTS.
+
+      // 00 - Check the number of events and dump information in test result files
       const createEvents = events.filter((e) => e.type === EVENT_TYPE_CREATE);
-      // Check some events count
       const createEventsByTypes = R.groupBy((e) => e.data.data.type, createEvents);
       dumpEventByTypeToFile('create', createEventsByTypes);
 
+      const updateEvents = events.filter((e) => e.type === EVENT_TYPE_UPDATE);
+      const updateEventsByTypes = R.groupBy((e) => e.data.data.type, updateEvents);
+      dumpEventByTypeToFile('update', updateEventsByTypes);
+
+      const deleteEvents = events.filter((e) => e.type === EVENT_TYPE_DELETE);
+      const deleteEventsByTypes = R.groupBy((e) => e.data.data.type, deleteEvents);
+      dumpEventByTypeToFile('delete', deleteEventsByTypes);
+
+      // 01 - CHECK CREATE EVENTS.
       const allExpectedCounterKeys = Object.keys(testCreatedCounter);
       for (let i = 0; i < allExpectedCounterKeys.length; i += 1) {
         const key = allExpectedCounterKeys[i];
@@ -47,10 +55,8 @@ describe('Raw streams tests', () => {
         expect(origin).toBeDefined();
         checkStreamGenericContent(type, insideData);
       }
+
       // 02 - CHECK UPDATE EVENTS.
-      const updateEvents = events.filter((e) => e.type === EVENT_TYPE_UPDATE);
-      const updateEventsByTypes = R.groupBy((e) => e.data.data.type, updateEvents);
-      dumpEventByTypeToFile('update', updateEventsByTypes);
       const allUpdatedCounterKeys = Object.keys(testUpdatedCounter);
       for (let i = 0; i < allUpdatedCounterKeys.length; i += 1) {
         const key = allUpdatedCounterKeys[i];
@@ -70,10 +76,8 @@ describe('Raw streams tests', () => {
         expect(patch).toBeDefined();
         expect(reverse_patch).toBeDefined();
       }
+
       // 03 - CHECK DELETE EVENTS
-      const deleteEvents = events.filter((e) => e.type === EVENT_TYPE_DELETE);
-      const deleteEventsByTypes = R.groupBy((e) => e.data.data.type, deleteEvents);
-      dumpEventByTypeToFile('delete', deleteEventsByTypes);
       const allDeletedCounterKeys = Object.keys(testDeletedCounter);
       for (let i = 0; i < allDeletedCounterKeys.length; i += 1) {
         const key = allDeletedCounterKeys[i];

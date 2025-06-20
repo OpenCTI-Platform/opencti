@@ -21,7 +21,6 @@ testCreatedCounter['course-of-action'] = 3;
 testCreatedCounter.credential = 1;
 testCreatedCounter['data-component'] = 5;
 testCreatedCounter['data-source'] = 1;
-testCreatedCounter['domain-name'] = 5;
 testCreatedCounter['email-addr'] = 1;
 testCreatedCounter['external-reference'] = 17;
 testCreatedCounter.feedback = 1;
