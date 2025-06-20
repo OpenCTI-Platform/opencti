@@ -30,7 +30,7 @@ import { createEntity } from '../database/middleware';
 import { createRuleTask } from './backgroundTask';
 import { notify } from '../database/redis';
 import { getEntitiesListFromCache } from '../database/cache';
-import { isModuleActivated } from './settings';
+import { isModuleActivated } from '../database/cluster-module';
 import { publishUserAction } from '../listener/UserActionListener';
 
 export const RULES_DECLARATION: Array<RuleRuntime> = [

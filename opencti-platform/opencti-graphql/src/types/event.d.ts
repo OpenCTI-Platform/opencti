@@ -80,3 +80,15 @@ export interface SseEvent<T extends BaseEvent> {
 }
 
 type DataEvent = UpdateEvent | DataEvent | MergeEvent;
+
+export interface ActivityStreamEvent {
+  version: string
+  type: 'authentication' | 'read' | 'mutation' | 'file' | 'command'
+  event_access: 'extended' | 'administration'
+  prevent_indexing: boolean
+  event_scope: string
+  message: string
+  status: 'error' | 'success'
+  origin: Partial<UserOrigin>
+  data: Partial<{ id: string, object_marking_refs_ids?: string[], granted_refs_ids?: string[], marking_definitions?: string[] }>
+}
