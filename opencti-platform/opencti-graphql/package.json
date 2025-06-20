@@ -190,7 +190,7 @@
     "@types/express": "5.0.1",
     "@types/graphql-upload": "17.0.0",
     "@types/luxon": "3.6.2",
-    "@types/mime-types": "2.1.4",
+    "@types/mime-types": "3.0.1",
     "@types/nconf": "0.10.7",
     "@types/node-forge": "1.3.11",
     "@types/ramda": "0.30.2",
