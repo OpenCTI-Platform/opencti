@@ -472,7 +472,8 @@ const ContainerHeader = (props) => {
     const fileParams = { currentFileId: fileName, contentSelected: false };
     const urlParams = new URLSearchParams(fileParams).toString();
     const entityLink = `${resolveLink(container.entity_type)}/${container.id}`;
-    navigate(`${entityLink}/content?${urlParams}`);
+    const targetTab = redirectToContent ? 'content' : 'files';
+    navigate(`${entityLink}/${targetTab}?${urlParams}`);
   };
 
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
