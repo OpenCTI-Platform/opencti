@@ -17348,12 +17348,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"moment-timezone@npm:0.5.48":
-  version: 0.5.48
-  resolution: "moment-timezone@npm:0.5.48"
+"moment-timezone@npm:0.6.0":
+  version: 0.6.0
+  resolution: "moment-timezone@npm:0.6.0"
   dependencies:
     moment: "npm:^2.29.4"
-  checksum: 10/8e0b7a05577623552293b28eeee4e60634b8be87fdb74084fa6d5ccc516771eb42d88f29c5a5e50a94c494048d14cdef94f94526a9dfd5e1b0050ff29d0a6c0a
+  checksum: 10/324df65c9ed622c75d4e39dc5daf01dfcd8b4cb4eb63dec3270ddbfed3f5357e4d4b22a39bf3b4fe1fe2d78b21307abddfb13e7aa6a19b69b7f33bb712c8ad55
   languageName: node
   linkType: hard
 
@@ -18016,7 +18016,7 @@ __metadata:
     marked: "npm:15.0.12"
     mdi-material-ui: "npm:7.9.4"
     moment: "npm:2.30.1"
-    moment-timezone: "npm:0.5.48"
+    moment-timezone: "npm:0.6.0"
     monocart-reporter: "npm:2.9.21"
     pdfmake: "npm:0.2.18"
     prop-types: "npm:15.8.1"
