@@ -6967,9 +6967,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rjsf/core@npm:5.24.12":
-  version: 5.24.12
-  resolution: "@rjsf/core@npm:5.24.12"
+"@rjsf/core@npm:5.24.10":
+  version: 5.24.10
+  resolution: "@rjsf/core@npm:5.24.10"
   dependencies:
     lodash: "npm:^4.17.21"
     lodash-es: "npm:^4.17.21"
@@ -6979,13 +6979,13 @@ __metadata:
   peerDependencies:
     "@rjsf/utils": ^5.24.x
     react: ^16.14.0 || >=17
-  checksum: 10/39033e91e3c8212c43a22489d569807fd62c060eef4aeefe53d473687bdf7fa3b1c385c40c85ce08050776cb5b051d3f98d60be9aee4b4387983f2ff69c5efae
+  checksum: 10/32b6ca1567f447de6ad4ace21d92c6a128ed43e3e833534225382a4de344ecf0004487f370a47d9fd8357438fa74c63aee026bc93678273a6ceaefd65b3d68e8
   languageName: node
   linkType: hard
 
-"@rjsf/mui@npm:5.24.12":
-  version: 5.24.12
-  resolution: "@rjsf/mui@npm:5.24.12"
+"@rjsf/mui@npm:5.24.10":
+  version: 5.24.10
+  resolution: "@rjsf/mui@npm:5.24.10"
   peerDependencies:
     "@emotion/react": ^11.7.0
     "@emotion/styled": ^11.6.0
@@ -6994,13 +6994,13 @@ __metadata:
     "@rjsf/core": ^5.24.x
     "@rjsf/utils": ^5.24.x
     react: ">=17"
-  checksum: 10/69161afd297ba48b38df7f003ae4798fe312a4f2c6703bfa09387d1747f642fd07d816fa59875d3edeaa211c5617177c02c7deb7c0a105f192d15595213e6cb6
+  checksum: 10/bd80931bccb0b0cc78d748775e9ab22855783e0ff013001c3af815f079a9201a466c7a360fec3385a5177a17db7072386dbdc5dbf20c74fe8e54b61129daa471
   languageName: node
   linkType: hard
 
-"@rjsf/utils@npm:5.24.12":
-  version: 5.24.12
-  resolution: "@rjsf/utils@npm:5.24.12"
+"@rjsf/utils@npm:5.24.10":
+  version: 5.24.10
+  resolution: "@rjsf/utils@npm:5.24.10"
   dependencies:
     json-schema-merge-allof: "npm:^0.8.1"
     jsonpointer: "npm:^5.0.1"
@@ -7009,13 +7009,13 @@ __metadata:
     react-is: "npm:^18.2.0"
   peerDependencies:
     react: ^16.14.0 || >=17
-  checksum: 10/8fdc966f91744cb7591f6874c563d13cb7f2e3b95bfda08446d3e7f1a6e9d41292091301d3935cb8eb9c7e4d13f75805899d71b91308ef9ffc4b1f01e165fdad
+  checksum: 10/dc0a9d2e9f2ad1772eb7246fd31c80d6ca4ac8992449eab1e09bf6ccb67742d3e7ee56992bb078cff9e83674b3bb761b1cd15f49cb96102681a3b20feaf19f02
   languageName: node
   linkType: hard
 
-"@rjsf/validator-ajv8@npm:5.24.12":
-  version: 5.24.12
-  resolution: "@rjsf/validator-ajv8@npm:5.24.12"
+"@rjsf/validator-ajv8@npm:5.24.3":
+  version: 5.24.3
+  resolution: "@rjsf/validator-ajv8@npm:5.24.3"
   dependencies:
     ajv: "npm:^8.12.0"
     ajv-formats: "npm:^2.1.1"
@@ -7023,7 +7023,7 @@ __metadata:
     lodash-es: "npm:^4.17.21"
   peerDependencies:
     "@rjsf/utils": ^5.24.x
-  checksum: 10/37e754e4cf0eaf4ccb1affbc7537f83aa8157746a2fd67a828a00df684b8cf5afdcd3bc6812304a6a4d4ed1617ec97be64c6a83d9aad3ffc69c8f4b0850b18a8
+  checksum: 10/cabfc41c3b9afc4a87ed57ce17c522edb465e60a4f129c1cc4d876f54cda89de4d88e9b5d69a25e153a73fe50a90dacc3d62264f3ad6281da9b0c074b30e0cc3
   languageName: node
   linkType: hard
 
@@ -17881,10 +17881,10 @@ __metadata:
     "@mui/utils": "npm:6.4.9"
     "@mui/x-date-pickers": "npm:7.29.4"
     "@playwright/test": "npm:1.51.1"
-    "@rjsf/core": "npm:5.24.12"
-    "@rjsf/mui": "npm:5.24.12"
-    "@rjsf/utils": "npm:5.24.12"
-    "@rjsf/validator-ajv8": "npm:5.24.12"
+    "@rjsf/core": "npm:5.24.10"
+    "@rjsf/mui": "npm:5.24.10"
+    "@rjsf/utils": "npm:5.24.10"
+    "@rjsf/validator-ajv8": "npm:5.24.3"
     "@rollup/plugin-graphql": "npm:2.0.5"
     "@testing-library/dom": "npm:10.4.0"
     "@testing-library/jest-dom": "npm:6.6.3"
