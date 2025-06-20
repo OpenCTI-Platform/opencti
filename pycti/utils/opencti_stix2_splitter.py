@@ -69,7 +69,7 @@ class OpenCTIStix2Splitter:
         for key in list(item.keys()):
             value = item[key]
             # Recursive enlist for every refs
-            if key.endswith("_refs"):
+            if key.endswith("_refs") and item[key] is not None:
                 to_keep = []
                 for element_ref in item[key]:
                     # We need to check if this ref is not already a reference
