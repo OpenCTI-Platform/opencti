@@ -35,6 +35,7 @@ describe('Raw streams tests', () => {
       const allExpectedCounterKeys = Object.keys(testCreatedCounter);
       for (let i = 0; i < allExpectedCounterKeys.length; i += 1) {
         const key = allExpectedCounterKeys[i];
+        expect(createEventsByTypes[key], `Created ${key} expected but missing from events`).toBeTruthy();
         expect(
           createEventsByTypes[key].length,
           `Created ${key} count should be ${testCreatedCounter[key]} but got ${createEventsByTypes[key].length}`
