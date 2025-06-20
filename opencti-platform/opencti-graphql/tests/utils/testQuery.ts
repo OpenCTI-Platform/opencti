@@ -16,6 +16,7 @@ import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYP
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../src/modules/organization/organization-types';
 import type { ConfidenceLevel } from '../../src/generated/graphql';
 import { findById } from '../../src/domain/user';
+import { computeLoaders } from '../../src/http/httpAuthenticatedContext';
 // endregion
 
 export const SYNC_RAW_START_REMOTE_URI = conf.get('app:sync_raw_start_remote_uri');
@@ -747,7 +748,9 @@ const serverFromUser = new ApolloServer<AuthContext>({
 });
 
 export const queryAsAdmin = async <T = Record<string, any>>(request: any, draftContext?: any) => {
-  const { body } = await serverFromUser.executeOperation<T>(request, { contextValue: executionContext('test', ADMIN_USER, draftContext ?? undefined) });
+  const execContext = executionContext('test', ADMIN_USER, draftContext ?? undefined);
+  const context = { ...execContext, ...computeLoaders(execContext, ADMIN_USER) };
+  const { body } = await serverFromUser.executeOperation<T>(request, { contextValue: context });
   if (body.kind === 'single') {
     return body.singleResult;
   }

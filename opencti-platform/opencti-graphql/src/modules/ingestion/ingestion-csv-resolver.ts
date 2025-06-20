@@ -1,5 +1,3 @@
-import { batchLoader } from '../../database/middleware';
-import { batchCreator } from '../../domain/user';
 import type { Resolvers } from '../../generated/graphql';
 import {
   addIngestionCsv,
@@ -18,8 +16,6 @@ import {
   userAlreadyExists
 } from './ingestion-csv-domain';
 
-const creatorLoader = batchLoader(batchCreator);
-
 const ingestionCsvResolvers: Resolvers = {
   Query: {
     ingestionCsv: (_, { id }, context) => findById(context, context.user, id),
@@ -29,8 +25,8 @@ const ingestionCsvResolvers: Resolvers = {
     userAlreadyExists: (_, { name }, context) => userAlreadyExists(context, name)
   },
   IngestionCsv: {
-    user: (ingestionCsv, _, context) => creatorLoader.load(ingestionCsv.user_id, context, context.user),
-    csvMapper: (ingestionCsv, _, context) => csvFeedGetCsvMapper(context, context.user, ingestionCsv),
+    user: (ingestionCsv, _, context) => context.creatorBatchLoader.load(ingestionCsv.user_id),
+    csvMapper: (ingestionCsv, _, context) => csvFeedGetCsvMapper(context, ingestionCsv),
     toConfigurationExport: (ingestionCsv, _, context) => csvFeedMapperExport(context, context.user, ingestionCsv),
     duplicateCsvMapper: (ingestionCsv, _, context) => csvFeedGetNewDuplicatedCsvMapper(context, context.user, ingestionCsv),
   },

@@ -1,17 +1,14 @@
+import * as R from 'ramda';
 import { sendStixBundle, stixDelete, stixObjectMerge } from '../domain/stix';
-import { batchLoader, stixLoadByIdStringify } from '../database/middleware';
+import { stixLoadByIdStringify } from '../database/middleware';
 import { connectorsForEnrichment } from '../database/repository';
-import { batchCreators } from '../domain/user';
-import { batchInternalRels } from '../domain/stixCoreObject';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { INPUT_GRANTED_REFS } from '../schema/general';
 import { isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, REDACTED_USER } from '../utils/access';
 import { ENABLED_DEMO_MODE } from '../config/conf';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 
-const creatorsLoader = batchLoader(batchCreators);
-const relBatchLoader = batchLoader(batchInternalRels);
-const internalLoadThroughDenormalized = (context, user, element, inputName, args = {}) => {
+const internalLoadThroughDenormalized = (context, user, element, inputName) => {
   if (inputName === INPUT_GRANTED_REFS) {
     if (!isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT)) {
       return []; // Granted_refs visibility is only for manager
@@ -27,21 +24,30 @@ const internalLoadThroughDenormalized = (context, user, element, inputName, args
   }
   // If not, reload through denormalized relationships
   const ref = schemaRelationsRefDefinition.getRelationRef(element.entity_type, inputName);
-  return relBatchLoader.load({ element, definition: ref }, context, user, args);
+  return context.relsBatchLoader.load({ element, definition: ref });
 };
 
 export const loadThroughDenormalized = async (context, user, element, inputName, args = {}) => {
-  const data = await internalLoadThroughDenormalized(context, user, element, inputName, args);
+  const data = await internalLoadThroughDenormalized(context, user, element, inputName);
   if (ENABLED_DEMO_MODE) {
     if (Array.isArray(data)) {
-      return data.map((d) => {
+      const redactedData = data.map((d) => {
         if (d.entity_type === ENTITY_TYPE_USER) {
           return { ...d, name: REDACTED_USER.name, user_email: REDACTED_USER.user_email };
         }
         return d;
       });
+      // Return sorted elements if needed
+      if (args.sortBy) {
+        return R.sortWith([R.ascend(R.prop(args.sortBy))])(redactedData);
+      }
+      return redactedData;
     }
     return data ? { ...data, name: REDACTED_USER.name, user_email: REDACTED_USER.user_email } : data;
+  }
+  // Return sorted elements if needed
+  if (args.sortBy) {
+    return R.sortWith([R.ascend(R.prop(args.sortBy))])(data);
   }
   return data;
 };
@@ -66,7 +72,7 @@ const stixResolvers = {
       /* v8 ignore next */
       return 'Unknown';
     },
-    creators: (stix, _, context) => creatorsLoader.load(stix.creator_id, context, context.user),
+    creators: (stix, _, context) => context.creatorsBatchLoader.load(stix.creator_id),
   },
 };
 

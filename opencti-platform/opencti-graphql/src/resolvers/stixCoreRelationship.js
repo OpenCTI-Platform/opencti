@@ -19,15 +19,12 @@ import {
 } from '../domain/stixCoreRelationship';
 import { fetchEditContext } from '../database/redis';
 import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
-import { batchLoader, stixLoadByIdStringify, timeSeriesRelations } from '../database/middleware';
+import { stixLoadByIdStringify, timeSeriesRelations } from '../database/middleware';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, INPUT_CREATED_BY, INPUT_GRANTED_REFS, INPUT_KILLCHAIN, INPUT_LABELS } from '../schema/general';
-import { elBatchIds } from '../database/engine';
 import { findById as findStatusById, getTypeStatuses } from '../domain/status';
-import { batchCreators } from '../domain/user';
 import { stixCoreRelationshipOptions } from '../schema/stixCoreRelationship';
 import { addOrganizationRestriction, removeOrganizationRestriction } from '../domain/stix';
 import {
-  batchMarkingDefinitions,
   casesPaginated,
   containersPaginated,
   externalReferencesPaginated,
@@ -41,10 +38,6 @@ import { numberOfContainersForObject } from '../domain/container';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { loadThroughDenormalized } from './stix';
 import { getDraftContextIfElementInDraft } from '../database/draft-utils';
-
-const loadByIdLoader = batchLoader(elBatchIds);
-const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);
-const creatorsLoader = batchLoader(batchCreators);
 
 const stixCoreRelationshipResolvers = {
   Query: {
@@ -66,20 +59,20 @@ const stixCoreRelationshipResolvers = {
     from: (rel, _, context) => {
       // If relation is in a draft, we want to force the context to also be in the same draft
       const contextToUse = getDraftContextIfElementInDraft(context, rel);
-      return (rel.from ? rel.from : loadByIdLoader.load({ id: rel.fromId, type: rel.fromType }, contextToUse, context.user));
+      return (rel.from ? rel.from : contextToUse.idsBatchLoader.load({ id: rel.fromId, type: rel.fromType }));
     },
     to: (rel, _, context) => {
       // If relation is in a draft, we want to force the context to also be in the same draft
       const contextToUse = getDraftContextIfElementInDraft(context, rel);
-      return (rel.to ? rel.to : loadByIdLoader.load({ id: rel.toId, type: rel.toType }, contextToUse, context.user));
+      return (rel.to ? rel.to : contextToUse.idsBatchLoader.load({ id: rel.toId, type: rel.toType }));
     },
     // region batch loaded through rel de-normalization. Cant be ordered of filtered
     createdBy: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_CREATED_BY),
     objectOrganization: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_GRANTED_REFS, { sortBy: 'name' }),
     objectLabel: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_LABELS, { sortBy: 'value' }),
     killChainPhases: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_KILLCHAIN, { sortBy: 'phase_name' }),
-    creators: (rel, _, context) => creatorsLoader.load(rel.creator_id, context, context.user),
-    objectMarking: (rel, _, context) => markingDefinitionsLoader.load(rel, context, context.user),
+    creators: (rel, _, context) => context.creatorsBatchLoader.load(rel.creator_id),
+    objectMarking: (rel, _, context) => context.markingsBatchLoader.load(rel),
     // endregion
     // region inner listing - cant be batch loaded
     externalReferences: (rel, args, context) => externalReferencesPaginated(context, context.user, rel.id, args),
@@ -93,7 +86,7 @@ const stixCoreRelationshipResolvers = {
     editContext: (rel) => fetchEditContext(rel.id),
     toStix: (rel, _, context) => stixLoadByIdStringify(context, context.user, rel.id),
     status: (entity, _, context) => (entity.x_opencti_workflow_id ? findStatusById(context, context.user, entity.x_opencti_workflow_id) : null),
-    workflowEnabled: async (entity, _, context) => {
+    workflowEnabled: async (__, _, context) => {
       const statusesEdges = await getTypeStatuses(context, context.user, ABSTRACT_STIX_CORE_RELATIONSHIP);
       return statusesEdges.edges.length > 0;
     },

@@ -164,6 +164,9 @@ import {
   booleanMapping,
   dateMapping,
   iAliasedIds,
+  id as idAttribute,
+  baseType,
+  entityType as entityTypeAttribute,
   internalId,
   longStringFormats,
   numericMapping,
@@ -173,6 +176,7 @@ import {
   textMapping,
   xOpenctiStixIds
 } from '../schema/attribute-definition';
+import { connections as connectionsAttribute } from '../modules/attributes/basicRelationship-registrationAttributes';
 import { schemaTypesDefinition } from '../schema/schema-types';
 import { INTERNAL_RELATIONSHIPS, isInternalRelationship } from '../schema/internalRelationship';
 import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
@@ -326,7 +330,7 @@ export const searchEngineInit = async () => {
       apiKey: conf.get('elasticsearch:api_key') || null,
     },
     maxRetries: conf.get('elasticsearch:max_retries') || 3,
-    requestTimeout: conf.get('elasticsearch:request_timeout') || 30000,
+    requestTimeout: conf.get('elasticsearch:request_timeout') || 3600000,
     sniffOnStart: booleanConf('elasticsearch:sniff_on_start', false),
     ssl: { // For Opensearch 2+ and Elastic 7
       ca,
@@ -1462,7 +1466,7 @@ export const elRebuildRelation = (concept) => {
   }
   return concept;
 };
-const elDataConverter = (esHit, withoutRels = false) => {
+const elDataConverter = (esHit) => {
   const elementData = esHit._source;
   const data = {
     _index: esHit._index,
@@ -1470,6 +1474,7 @@ const elDataConverter = (esHit, withoutRels = false) => {
     id: elementData.internal_id,
     sort: esHit.sort,
     ...elRebuildRelation(elementData),
+    ...(isNotEmptyField(esHit.fields) ? esHit.fields : {})
   };
   const entries = Object.entries(data);
   const ruleInferences = [];
@@ -1486,13 +1491,9 @@ const elDataConverter = (esHit, withoutRels = false) => {
       data[key] = val;
     } else if (key.startsWith(REL_INDEX_PREFIX)) {
       // Rebuild rel to stix attributes
-      if (withoutRels) {
-        delete data[key];
-      } else {
-        const rel = key.substring(REL_INDEX_PREFIX.length);
-        const [relType] = rel.split('.');
-        data[relType] = isSingleRelationsRef(data.entity_type, relType) ? R.head(val) : [...(data[relType] ?? []), ...val];
-      }
+      const rel = key.substring(REL_INDEX_PREFIX.length);
+      const [relType] = rel.split('.');
+      data[relType] = isSingleRelationsRef(data.entity_type, relType) ? R.head(val) : [...(data[relType] ?? []), ...val];
     } else {
       data[key] = val;
     }
@@ -1535,13 +1536,12 @@ export const elConvertHitsToMap = async (elements, opts) => {
   return convertedHitsMap;
 };
 
-export const elConvertHits = async (data, opts = {}) => {
-  const { withoutRels = false } = opts;
+export const elConvertHits = async (data) => {
   const convertedHits = [];
   let startProcessingTime = new Date().getTime();
   for (let n = 0; n < data.length; n += 1) {
     const hit = data[n];
-    const element = elDataConverter(hit, withoutRels);
+    const element = elDataConverter(hit);
     convertedHits.push(element);
     // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
     if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
@@ -1628,11 +1628,51 @@ export const computeQueryIndices = (indices, typeOrTypes, withInferences = true)
   return indices;
 };
 
+// Default fetch used by loadThroughDenormalized
+// This rel_ must be low volume
+// DO NOT ADD Anything here if you are not sure about that you doing
+const REL_DEFAULT_FETCH = [
+  // SECURITY
+  'rel_object-marking*.keyword',
+  'rel_granted*.keyword',
+  // DEFAULT (LOW VOLUME)
+  'rel_created-by*.keyword',
+  'rel_object-label*.keyword',
+  'rel_object-participant*.keyword',
+  'rel_object-assignee*.keyword',
+  'rel_kill-chain-phase*.keyword',
+  'rel_born-in*.keyword',
+  'rel_of-ethnicity*.keyword',
+  'rel_sample*.keyword',
+];
+
+const REL_COUNT_SCRIPT_FIELD = {
+  script: {
+    lang: 'painless',
+    source: `
+          int totalElements = 0;
+          for (String fieldName : params['_source'].keySet()) {
+            if (fieldName.startsWith('rel_')) {
+              def fieldValue = params['_source'].get(fieldName);
+              if (fieldValue != null) {
+                if (fieldValue instanceof List) {
+                  totalElements += ((List) fieldValue).size();
+                } else {
+                  totalElements++;
+                }
+              }
+            }
+          }
+          return totalElements;
+        `
+  }
+};
+
 // elFindByIds is not defined to use ordering or sorting (ordering is forced by creation date)
 // It's a way to load a bunch of ids and use in list or map
 export const elFindByIds = async (context, user, ids, opts = {}) => {
-  const { indices, baseData = false, baseFields = BASE_FIELDS } = opts;
-  const { withoutRels = false, toMap = false, mapWithAllIds = false, type = null } = opts;
+  const { indices, baseData = false, baseFields = [] } = opts;
+  const { withoutRels = true, toMap = false, mapWithAllIds = false, type = null } = opts;
   const { orderBy = null, orderMode = 'asc' } = opts;
   const idsArray = Array.isArray(ids) ? ids : [ids];
   const types = (Array.isArray(type) || isEmptyField(type)) ? type : [type];
@@ -1681,6 +1721,10 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     // Handle draft
     const draftMust = buildDraftFilter(context, user, opts);
     const body = {
+      sort: [{ [orderBy]: orderMode }],
+      script_fields: {
+        script_field_denormalization_count: REL_COUNT_SCRIPT_FIELD
+      },
       query: {
         bool: {
           // Put everything under filter to prevent score computation
@@ -1703,13 +1747,19 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
       if (searchAfter) {
         body.search_after = searchAfter;
       }
+      const _source = { excludes: [] };
+      if (withoutRels) _source.excludes.push('rel_*');
+      if (baseData) _source.includes = [...BASE_FIELDS, ...baseFields];
       const query = {
         index: computedIndices,
         size: ES_MAX_PAGINATION,
         track_total_hits: false,
-        _source: baseData ? baseFields : true,
-        body,
+        _source,
+        body
       };
+      if (withoutRels) { // Force denorm rel security
+        query.docvalue_fields = REL_DEFAULT_FETCH;
+      }
       logApp.debug('[SEARCH] elFindByIds', { query });
       const searchType = `${ids} (${types ? types.join(', ') : 'Any'})`;
       const data = await elRawSearch(context, user, searchType, query).catch((err) => {
@@ -1720,7 +1770,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
         logApp.warn('Search query returned more elements than expected', { ids: workingIds });
       }
       if (elements.length > 0) {
-        const convertedHits = await elConvertHits(elements, { withoutRels });
+        const convertedHits = await elConvertHits(elements);
         hits.push(...convertedHits);
         if (elements.length < ES_MAX_PAGINATION) {
           hasNextPage = false;
@@ -1740,7 +1790,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
   return hits;
 };
 export const elLoadById = async (context, user, id, opts = {}) => {
-  const hits = await elFindByIds(context, user, id, opts);
+  const hits = await elFindByIds(context, user, id, { ...opts, withoutRels: false });
   //* v8 ignore if */
   if (hits.length > 1) {
     throw DatabaseError('Id loading expect only one response', { id, hits: hits.length });
@@ -1998,8 +2048,8 @@ export const elGenerateFieldTextSearchShould = (search, arrayKeys, args = {}) =>
   return shouldSearch;
 };
 
-const BASE_FIELDS = ['_index', 'internal_id', 'standard_id', 'sort', 'base_type', 'entity_type',
-  'connections', 'first_seen', 'last_seen', 'start_time', 'stop_time'];
+const BASE_FIELDS = ['_index', idAttribute.name, internalId.name, standardId.name, 'sort', baseType.name, entityTypeAttribute.name,
+  connectionsAttribute.name, 'first_seen', 'last_seen', 'start_time', 'stop_time', authorizedMembers.name];
 
 const RANGE_OPERATORS = ['gt', 'gte', 'lt', 'lte'];
 
@@ -3040,6 +3090,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
 const elQueryBodyBuilder = async (context, user, options) => {
   // eslint-disable-next-line no-use-before-define
   const { ids = [], after, orderBy = null, orderMode = 'asc', noSize = false, noSort = false, intervalInclude = false } = options;
+  const { relCount = false } = options;
   const first = options.first ?? ES_DEFAULT_PAGINATION;
   const { types = null, search = null } = options;
   const filters = await checkAndConvertFilters(context, user, options.filters, user.id, elFindByIds, { noFiltersChecking: options.noFiltersChecking });
@@ -3136,6 +3187,11 @@ const elQueryBodyBuilder = async (context, user, options) => {
       },
     },
   };
+  if (relCount) {
+    body.script_fields = {
+      script_field_denormalization_count: REL_COUNT_SCRIPT_FIELD
+    };
+  }
   if (!noSize) {
     body.size = first;
   }
@@ -3482,20 +3538,26 @@ export const elAggregationsList = async (context, user, indexName, aggregations,
 
 export const elPaginate = async (context, user, indexName, options = {}) => {
   // eslint-disable-next-line no-use-before-define
-  const { baseData = false, baseFields = BASE_FIELDS, bypassSizeLimit = false } = options;
+  const { baseData = false, baseFields = [], bypassSizeLimit = false } = options;
   const first = options.first ?? ES_DEFAULT_PAGINATION;
-  const { types = null, connectionFormat = true } = options;
-  const body = await elQueryBodyBuilder(context, user, options);
+  const { withoutRels = true, types = null, connectionFormat = true } = options;
+  const body = await elQueryBodyBuilder(context, user, { ...options, relCount: true });
   if (body.size > ES_MAX_PAGINATION && !bypassSizeLimit) {
     logApp.info('[SEARCH] Pagination limited to max result config', { size: body.size, max: ES_MAX_PAGINATION });
     body.size = ES_MAX_PAGINATION;
   }
+  const _source = { excludes: [] };
+  if (withoutRels) _source.excludes.push('rel_*');
+  if (baseData) _source.includes = [...BASE_FIELDS, ...baseFields];
   const query = {
     index: getIndicesToQuery(context, user, indexName),
     track_total_hits: true,
-    _source: baseData ? baseFields : true,
+    _source,
     body,
   };
+  if (withoutRels) { // Force denorm rel security
+    query.docvalue_fields = REL_DEFAULT_FETCH;
+  }
   logApp.debug('[SEARCH] paginate', { query });
   return elRawSearch(context, user, types !== null ? types : 'Any', query)
     .then((data) => {

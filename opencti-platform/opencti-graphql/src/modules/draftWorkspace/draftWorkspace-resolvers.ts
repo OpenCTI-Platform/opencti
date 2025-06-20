@@ -1,4 +1,3 @@
-import { batchLoader } from '../../database/middleware';
 import type { Resolvers } from '../../generated/graphql';
 import {
   findById,
@@ -12,10 +11,7 @@ import {
   listDraftSightingRelations,
   getProcessingCount
 } from './draftWorkspace-domain';
-import { batchCreators } from '../../domain/user';
 import { findById as findWorkById, worksForDraft } from '../../domain/work';
-
-const creatorsLoader = batchLoader(batchCreators);
 
 const draftWorkspaceResolvers: Resolvers = {
   Query: {
@@ -26,7 +22,7 @@ const draftWorkspaceResolvers: Resolvers = {
     draftWorkspaceSightingRelationships: (_, args, context) => listDraftSightingRelations(context, context.user, args),
   },
   DraftWorkspace: {
-    creators: (draft, _, context) => creatorsLoader.load(draft.creator_id, context, context.user),
+    creators: (draft, _, context) => context.creatorsBatchLoader.load(draft.creator_id),
     objectsCount: (draft, _, context) => getObjectsCount(context, context.user, draft),
     processingCount: (draft, _, context) => getProcessingCount(context, context.user, draft),
     works: (draft, args, context) => worksForDraft(context, context.user, draft.id, args),

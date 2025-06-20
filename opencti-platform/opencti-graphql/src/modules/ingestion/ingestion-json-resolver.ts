@@ -13,8 +13,6 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import { batchLoader } from '../../database/middleware';
-import { batchCreator } from '../../domain/user';
 import type { Resolvers } from '../../generated/graphql';
 import {
   addIngestionJson,
@@ -29,15 +27,13 @@ import {
 } from './ingestion-json-domain';
 import { connectorIdFromIngestId } from '../../domain/connector';
 
-const creatorLoader = batchLoader(batchCreator);
-
 const ingestionJsonResolvers: Resolvers = {
   Query: {
     ingestionJson: (_, { id }, context) => findById(context, context.user, id),
     ingestionJsons: (_, args, context) => findAllPaginated(context, context.user, args),
   },
   IngestionJson: {
-    user: (ingestionJson, _, context) => creatorLoader.load(ingestionJson.user_id, context, context.user),
+    user: (ingestionJson, _, context) => context.creatorBatchLoader.load(ingestionJson.user_id),
     connector_id: (ingestionJson) => connectorIdFromIngestId(ingestionJson.id),
     jsonMapper: (ingestionJson, _, context) => findJsonMapperForIngestionById(context, context.user, ingestionJson.json_mapper_id),
   },

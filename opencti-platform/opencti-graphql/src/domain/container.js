@@ -195,7 +195,8 @@ export const relatedContainers = async (context, user, containerId, args) => {
 export const containersObjectsOfObject = async (context, user, { id, types, filters = null, search = null }) => {
   const element = await internalLoadById(context, user, id);
   const queryFilters = addFilter(filters, buildRefRelationKey(RELATION_OBJECT), element.internal_id);
-  const containers = await listAllThings(context, user, [ENTITY_TYPE_CONTAINER], { filters: queryFilters, maxSize: MAX_RELATED_CONTAINER_RESOLUTION, search });
+  const args = { filters: queryFilters, maxSize: MAX_RELATED_CONTAINER_RESOLUTION, search, withoutRels: false };
+  const containers = await listAllThings(context, user, [ENTITY_TYPE_CONTAINER], args);
   let objectIds = [];
   let hasMoreThanMaxObject = false;
   let loadedReportsCount = 0;

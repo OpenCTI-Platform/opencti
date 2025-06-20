@@ -33,7 +33,6 @@ import {
   ENTITY_TYPE_CONTAINER,
   INPUT_EXTERNAL_REFS,
   INPUT_MARKINGS,
-  REL_INDEX_PREFIX
 } from '../schema/general';
 import { RELATION_CREATED_BY, RELATION_EXTERNAL_REFERENCE, RELATION_OBJECT, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import {
@@ -201,7 +200,7 @@ export const findById = async (context, user, stixCoreObjectId) => {
   return storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
 };
 
-export const batchInternalRels = async (context, user, elements, opts = {}) => {
+export const batchInternalRels = async (context, user, elements) => {
   const relIds = new Set();
   const relTypes = new Set();
   for (let index = 0; index < elements.length; index += 1) {
@@ -232,12 +231,7 @@ export const batchInternalRels = async (context, user, elements, opts = {}) => {
         // If access is not possible, return a restricted entity
         return buildRestrictedEntity(resolve);
       }));
-      const filteredResults = relElements.filter((e) => e);
-      // Return sorted elements if needed
-      if (opts.sortBy) {
-        return R.sortWith([R.ascend(R.prop(opts.sortBy))])(filteredResults);
-      }
-      return filteredResults;
+      return relElements.filter((e) => e);
     }
     if (relId) {
       const resolve = resolvedElements[relId];
@@ -433,10 +427,7 @@ export const stixCoreObjectsMultiNumber = (context, user, args) => {
 };
 
 export const stixCoreObjectsConnectedNumber = (stixCoreObject) => {
-  return Object.entries(stixCoreObject)
-    .filter(([key]) => key.startsWith(REL_INDEX_PREFIX))
-    .map(([, value]) => value.length)
-    .reduce((a, b) => a + b, 0);
+  return stixCoreObject.script_field_denormalization_count[0];
 };
 
 export const stixCoreObjectsDistribution = async (context, user, args) => {

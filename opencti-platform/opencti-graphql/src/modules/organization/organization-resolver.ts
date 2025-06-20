@@ -1,5 +1,3 @@
-import { elBatchIds } from '../../database/engine';
-import { batchLoader } from '../../database/middleware';
 import {
   addOrganization,
   buildAdministratedOrganizations,
@@ -26,8 +24,6 @@ import type { Resolvers } from '../../generated/graphql';
 import type { BasicStoreEntityOrganization } from './organization-types';
 import { ENTITY_TYPE_WORKSPACE } from '../workspace/workspace-types';
 
-const loadByIdLoader = batchLoader(elBatchIds);
-
 const organizationResolvers: Resolvers = {
   Query: {
     organization: (_, { id }, context) => findById(context, context.user, id),
@@ -38,7 +34,7 @@ const organizationResolvers: Resolvers = {
     members: (organization, args, context) => organizationMembersPaginated<any>(context, context.user, organization.id, args),
     subOrganizations: (organization, args, context) => childOrganizationsPaginated<BasicStoreEntityOrganization>(context, context.user, organization.id, args),
     parentOrganizations: (organization, args, context) => parentOrganizationsPaginated<BasicStoreEntityOrganization>(context, context.user, organization.id, args),
-    default_dashboard: (current, _, context) => loadByIdLoader.load({ id: current.default_dashboard, type: ENTITY_TYPE_WORKSPACE }, context, context.user),
+    default_dashboard: (current, _, context) => context.idsBatchLoader.load({ id: current.default_dashboard, type: ENTITY_TYPE_WORKSPACE }),
     grantable_groups: (organization, _, context) => findGrantableGroups(context, context.user, organization),
   },
   User: {

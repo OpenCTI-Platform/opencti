@@ -15,29 +15,15 @@ import {
 } from '../domain/stixSightingRelationship';
 import { fetchEditContext } from '../database/redis';
 import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
-import { batchLoader, distributionRelations, stixLoadByIdStringify, timeSeriesRelations } from '../database/middleware';
+import { distributionRelations, stixLoadByIdStringify, timeSeriesRelations } from '../database/middleware';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
-import { elBatchIds } from '../database/engine';
 import { findById as findStatusById, getTypeStatuses } from '../domain/status';
 import { addOrganizationRestriction, removeOrganizationRestriction } from '../domain/stix';
-import { batchCreators } from '../domain/user';
 import { numberOfContainersForObject } from '../domain/container';
-import {
-  batchMarkingDefinitions,
-  casesPaginated,
-  containersPaginated,
-  externalReferencesPaginated,
-  notesPaginated,
-  opinionsPaginated,
-  reportsPaginated,
-} from '../domain/stixCoreObject';
+import { casesPaginated, containersPaginated, externalReferencesPaginated, notesPaginated, opinionsPaginated, reportsPaginated } from '../domain/stixCoreObject';
 import { loadThroughDenormalized } from './stix';
 import { INPUT_CREATED_BY, INPUT_GRANTED_REFS, INPUT_LABELS } from '../schema/general';
 import { getDraftContextIfElementInDraft } from '../database/draft-utils';
-
-const loadByIdLoader = batchLoader(elBatchIds);
-const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);
-const creatorsLoader = batchLoader(batchCreators);
 
 const stixSightingRelationshipResolvers = {
   Query: {
@@ -55,16 +41,16 @@ const stixSightingRelationshipResolvers = {
     from: (rel, _, context) => {
       // If relation is in a draft, we want to force the context to also be in the same draft
       const contextToUse = getDraftContextIfElementInDraft(context, rel);
-      return (rel.from ? rel.from : loadByIdLoader.load({ id: rel.fromId, type: rel.fromType }, contextToUse, context.user));
+      return (rel.from ? rel.from : contextToUse.idsBatchLoader.load({ id: rel.fromId, type: rel.fromType }));
     },
     to: (rel, _, context) => {
       // If relation is in a draft, we want to force the context to also be in the same draft
       const contextToUse = getDraftContextIfElementInDraft(context, rel);
-      return (rel.to ? rel.to : loadByIdLoader.load({ id: rel.toId, type: rel.toType }, contextToUse, context.user));
+      return (rel.to ? rel.to : contextToUse.idsBatchLoader.load({ id: rel.toId, type: rel.toType }));
     },
     // region batch fully loaded through rel de-normalization. Cant be ordered of filtered
-    creators: (rel, _, context) => creatorsLoader.load(rel.creator_id, context, context.user),
-    objectMarking: (stixCoreObject, _, context) => markingDefinitionsLoader.load(stixCoreObject, context, context.user),
+    creators: (rel, _, context) => context.creatorsBatchLoader.load(rel.creator_id),
+    objectMarking: (stixCoreObject, _, context) => context.markingsBatchLoader.load(stixCoreObject),
     createdBy: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_CREATED_BY),
     objectLabel: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_LABELS, { sortBy: 'value' }),
     objectOrganization: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_GRANTED_REFS, { sortBy: 'name' }),
