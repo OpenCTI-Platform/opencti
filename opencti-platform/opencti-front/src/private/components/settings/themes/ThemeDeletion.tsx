@@ -19,6 +19,7 @@ const deleteThemeMutation = graphql`
 interface ThemeDeletionProps {
   id: string;
   disabled: boolean;
+  handleClose: () => void;
   handleRefetch: () => Disposable;
   paginationOptions: ThemesLinesSearchQuery$variables;
 }
@@ -26,6 +27,7 @@ interface ThemeDeletionProps {
 const ThemeDeletion: FunctionComponent<ThemeDeletionProps> = ({
   id,
   disabled,
+  handleClose,
   handleRefetch,
   paginationOptions,
 }) => {
@@ -39,7 +41,6 @@ const ThemeDeletion: FunctionComponent<ThemeDeletionProps> = ({
     undefined,
     { successMessage: deleteSuccessMessage },
   );
-  const handleClose = () => {};
   const deletion = useDeletion({ handleClose });
   const { setDeleting, handleOpenDelete, deleting } = deletion;
 
