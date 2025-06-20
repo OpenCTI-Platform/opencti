@@ -216,4 +216,32 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
     expect(ingestionDefaultGroups[0].auto_integration_assignation).toStrictEqual(['global']);
   });
 
+  it('should a CSV Feed with auto user creation be refused when user already exists', async () => {
+    // Create feed
+    const ingestionCsvInput: IngestionCsvAddInput = {
+      authentication_type: IngestionAuthType.None,
+      name: 'Feed not created because auto user already exists',
+      uri: 'http://fakefeed.invalid',
+      user_id: '[F] Feed not created because auto user already exists',
+      automatic_user: true
+    };
+    // First call
+    const firstIngestionCreated = await addIngestionCsv(currentTestContext, ingestionUser, ingestionCsvInput);
+    ingestionCreatedIds.push(firstIngestionCreated.id);
+    // Second call with exact same parameters
+    await expect(async () => {
+      await addIngestionCsv(currentTestContext, ingestionUser, ingestionCsvInput);
+    }).rejects.toThrowError('This user already exists. Change the feed\'s name to change the automatically created user\'s name');
+
+    // Delete just created user
+    const createdUser = await findUserById(currentTestContext, SYSTEM_USER, firstIngestionCreated.user_id);
+    await adminQuery({
+      query: DELETE_USER_QUERY,
+      variables: { id: createdUser.id },
+    });
+    // Verify no longer found
+    const queryResult = await adminQuery({ query: READ_USER_QUERY, variables: { id: createdUser.id } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.user).toBeNull();
+  });
 });
