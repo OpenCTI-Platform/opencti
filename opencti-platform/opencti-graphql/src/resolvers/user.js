@@ -2,7 +2,6 @@ import * as R from 'ramda';
 import { BUS_TOPICS, ENABLED_DEMO_MODE, logApp } from '../config/conf';
 import { AuthenticationFailure } from '../config/errors';
 import passport, { PROVIDERS } from '../config/providers';
-import { batchLoader } from '../database/middleware';
 import { internalLoadById } from '../database/middleware-loader';
 import { fetchEditContext } from '../database/redis';
 import { applicationSession, findSessions, findUserSessions, killSession, killUserSessions } from '../database/session';
@@ -12,9 +11,6 @@ import {
   addUser,
   assignOrganizationToUser,
   sessionAuthenticateUser,
-  batchCreator,
-  batchRolesForUsers,
-  batchUserEffectiveConfidenceLevel,
   bookmarks,
   buildCompleteUser,
   deleteBookmark,
@@ -54,7 +50,8 @@ import {
   userOrganizationsPaginated,
   userOrganizationsPaginatedWithoutInferences,
   userRenewToken,
-  userWithOrigin
+  userWithOrigin,
+  userRoles
 } from '../domain/user';
 import { subscribeToInstanceEvents, subscribeToUserEvents } from '../graphql/subscriptionWrapper';
 import { publishUserAction } from '../listener/UserActionListener';
@@ -63,10 +60,6 @@ import { findById as findWorskpaceById } from '../modules/workspace/workspace-do
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { executionContext, REDACTED_USER } from '../utils/access';
 import { getNotifiers } from '../modules/notifier/notifier-domain';
-
-const rolesUsersLoader = batchLoader(batchRolesForUsers);
-const usersConfidenceLoader = batchLoader(batchUserEffectiveConfidenceLevel);
-const creatorLoader = batchLoader(batchCreator);
 
 const userResolvers = {
   Query: {
@@ -86,13 +79,13 @@ const userResolvers = {
     bookmarks: (_, args, context) => bookmarks(context, context.user, args),
   },
   User: {
-    roles: (current, args, context) => rolesUsersLoader.load(current.id, context, context.user, args),
+    roles: (current, args, context) => userRoles(context, context.user, current.id, args),
     groups: (current, args, context) => userGroupsPaginated(context, context.user, current.id, args),
     objectOrganization: (current, args, context) => userOrganizationsPaginated(context, context.user, current.id, args),
     objectAssignedOrganization: (current, args, context) => userOrganizationsPaginatedWithoutInferences(context, context.user, current.id, args),
     editContext: (current) => fetchEditContext(current.id),
     sessions: (current) => findUserSessions(current.id),
-    effective_confidence_level: (current, args, context) => usersConfidenceLoader.load(current, context, context.user),
+    effective_confidence_level: (current, _, context) => context.userEffectiveConfidenceBatchLoader.load(current),
     personal_notifiers: (current, _, context) => getNotifiers(context, context.user, current.personal_notifiers),
   },
   Member: {
@@ -124,7 +117,7 @@ const userResolvers = {
     personal_notifiers: (current, _, context) => getNotifiers(context, context.user, current.personal_notifiers),
   },
   UserSession: {
-    user: (session, _, context) => creatorLoader.load(session.user_id, context, context.user),
+    user: (session, _, context) => context.creatorBatchLoader.load(session.user_id),
   },
   Role: {
     editContext: (role) => fetchEditContext(role.id),

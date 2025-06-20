@@ -18,10 +18,6 @@ import {
   publicStixRelationshipsNumber,
 } from './publicDashboard-domain';
 import { findById as findWorkspaceById } from '../workspace/workspace-domain';
-import { batchLoader } from '../../database/middleware';
-import { batchCreator } from '../../domain/user';
-
-const creatorLoader = batchLoader(batchCreator);
 
 const publicDashboardResolvers: Resolvers = {
   Query: {
@@ -40,7 +36,7 @@ const publicDashboardResolvers: Resolvers = {
   },
   PublicDashboard: {
     allowed_markings: (publicDashboard, _, context) => getAllowedMarkings(context, context.user, publicDashboard),
-    owner: (publicDashboard, _, context) => creatorLoader.load(publicDashboard.user_id, context, context.user),
+    owner: (publicDashboard, _, context) => context.creatorBatchLoader.load(publicDashboard.user_id),
     dashboard: (publicDashboard, _, context) => findWorkspaceById(context, context.user, publicDashboard.dashboard_id)
   },
   Mutation: {

@@ -1,6 +1,4 @@
 import { BUS_TOPICS } from '../config/conf';
-import { elBatchIds } from '../database/engine';
-import { batchLoader } from '../database/middleware';
 import { fetchEditContext } from '../database/redis';
 import { addGroup } from '../domain/grant';
 import {
@@ -24,8 +22,6 @@ import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_GROUP } from '../schema/internalObject';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 
-const loadByIdLoader = batchLoader(elBatchIds);
-
 const groupResolvers = {
   Query: {
     group: (_, { id }, context) => findById(context, context.user, id),
@@ -38,7 +34,7 @@ const groupResolvers = {
     max_shareable_marking: (group, _, context) => groupMaxShareableMarkings(context, group),
     roles: (group, args, context) => rolesPaginated(context, context.user, group.id, args),
     members: (group, args, context) => membersPaginated(context, context.user, group.id, args),
-    default_dashboard: (current, _, context) => loadByIdLoader.load({ id: current.default_dashboard, type: ENTITY_TYPE_WORKSPACE }, context, context.user),
+    default_dashboard: (current, _, context) => context.idsBatchLoader.load({ id: current.default_dashboard, type: ENTITY_TYPE_WORKSPACE }),
     editContext: (group) => fetchEditContext(group.id),
   },
   Mutation: {
