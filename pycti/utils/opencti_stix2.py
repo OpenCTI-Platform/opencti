@@ -420,7 +420,10 @@ class OpenCTIStix2:
             stix_object["kill_chain_phases"] = self.opencti.get_attribute_in_extension(
                 "kill_chain_phases", stix_object
             )
-        if "kill_chain_phases" in stix_object:
+        if (
+            "kill_chain_phases" in stix_object
+            and stix_object["kill_chain_phases"] is not None
+        ):
             for kill_chain_phase in stix_object["kill_chain_phases"]:
                 if (
                     kill_chain_phase["kill_chain_name"] + kill_chain_phase["phase_name"]
@@ -463,7 +466,10 @@ class OpenCTIStix2:
                         "type": kill_chain_phase["entity_type"],
                     }
                 kill_chain_phases_ids.append(kill_chain_phase["id"])
-        elif "x_opencti_kill_chain_phases" in stix_object:
+        elif (
+            "x_opencti_kill_chain_phases" in stix_object
+            and stix_object["x_opencti_kill_chain_phases"] is not None
+        ):
             for kill_chain_phase in stix_object["x_opencti_kill_chain_phases"]:
                 if (
                     kill_chain_phase["kill_chain_name"] + kill_chain_phase["phase_name"]
@@ -525,7 +531,10 @@ class OpenCTIStix2:
                     "external_references", stix_object
                 )
             )
-        if "external_references" in stix_object:
+        if (
+            "external_references" in stix_object
+            and stix_object["external_references"] is not None
+        ):
             for external_reference in stix_object["external_references"]:
                 try:
                     url = (
@@ -706,7 +715,10 @@ class OpenCTIStix2:
                     self.opencti.app_logger.warning(
                         "Cannot generate external reference"
                     )
-        elif "x_opencti_external_references" in stix_object:
+        elif (
+            "x_opencti_external_references" in stix_object
+            and stix_object["x_opencti_external_references"] is not None
+        ):
             for external_reference in stix_object["x_opencti_external_references"]:
                 url = external_reference["url"] if "url" in external_reference else None
                 source_name = (
@@ -775,7 +787,10 @@ class OpenCTIStix2:
             granted_refs_ids = self.opencti.get_attribute_in_extension(
                 "granted_refs", stix_object
             )
-        elif "x_opencti_granted_refs" in stix_object:
+        elif (
+            "x_opencti_granted_refs" in stix_object
+            and stix_object["x_opencti_granted_refs"] is not None
+        ):
             granted_refs_ids = stix_object["x_opencti_granted_refs"]
         # Sample refs
         sample_refs_ids = (
