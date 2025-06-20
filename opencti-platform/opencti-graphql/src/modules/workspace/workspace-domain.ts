@@ -110,7 +110,7 @@ export const objects = async (
   args: WorkspaceObjectsArgs,
 ) => {
   if (isEmptyField(investigated_entities_ids)) {
-    return buildPagination(0, null, [], 0);
+    return buildPagination(1, null, [], 0);
   }
   const filters = addFilter(
     args.filters,
