@@ -74,7 +74,7 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
     theme_logo_login: Yup.string().nullable(),
   });
 
-  const handleSubmit = (values: ThemeType, { setSubmitting }: FormikHelpers<ThemeType>) => {
+  const handleSubmit = (values: ThemeType, { setSubmitting, resetForm }: FormikHelpers<ThemeType>) => {
     const { id, name, ...valuesToSerialize } = values;
     const manifest = serializeThemeManifest(valuesToSerialize);
     commit({
@@ -93,6 +93,10 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
       },
       onCompleted: () => {
         setSubmitting(false);
+      },
+      onError: () => {
+        setSubmitting(false);
+        resetForm();
       },
     });
   };
@@ -129,6 +133,7 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
               helperText={(
                 <ThemeDetectDuplicate
                   themeName={values.name}
+                  themeId={theme.id}
                 />
               )}
               fullWidth

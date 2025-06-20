@@ -8431,7 +8431,7 @@ type Query {
   publicStixCoreObjects(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): StixCoreObjectConnection
   publicStixRelationships(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): StixRelationshipConnection
   theme(id: String!): Theme
-  themes(first: Int, after: ID, search: String, toStix: Boolean): ThemeConnection
+  themes(first: Int, after: ID, filters: FilterGroup, search: String, toStix: Boolean): ThemeConnection
   obasStixCoreObjectSimulationsResult(id: ID!): StixObjectSimulationsResult
   obasScenarioElementsDistribution(id: ID!, type: ScenarioType, filters: FilterGroup): [Distribution]
   deleteOperation(id: String!): DeleteOperation

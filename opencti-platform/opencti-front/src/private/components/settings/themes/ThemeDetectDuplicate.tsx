@@ -6,11 +6,12 @@ import { ThemeDetectDuplicateQuery$data } from './__generated__/ThemeDetectDupli
 
 const themesQuery = graphql`
   query ThemeDetectDuplicateQuery(
-    $search: String
+    $filters: FilterGroup
   ) {
-    themes(search: $search) {
+    themes(filters: $filters) {
       edges {
         node {
+          id
           name
         }
       }
@@ -20,22 +21,35 @@ const themesQuery = graphql`
 
 interface ThemeDetectDuplicateProps {
   themeName: string;
+  themeId?: string;
 }
 
 const ThemeDetectDuplicate: FunctionComponent<ThemeDetectDuplicateProps> = ({
   themeName,
+  themeId,
 }) => {
   const { t_i18n } = useFormatter();
   const [potentialDuplicates, setPotentialDuplicates] = useState<string[]>([]);
 
   useEffect(() => {
     if (themeName.length >= 2) {
-      fetchQuery(themesQuery, { search: themeName })
+      fetchQuery(themesQuery, {
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'name',
+            values: [themeName],
+            operator: 'search',
+          }],
+          filterGroups: [],
+        },
+      })
         .toPromise()
         .then((data) => {
           const themes = (data as ThemeDetectDuplicateQuery$data).themes?.edges ?? [];
           const themeNames = themes
             .filter((theme) => !!theme)
+            .filter((theme) => theme.node.id !== themeId)
             .map((theme) => theme?.node.name);
           setPotentialDuplicates(themeNames);
         });

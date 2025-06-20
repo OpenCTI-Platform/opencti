@@ -29,6 +29,7 @@ type Query {
   themes(
     first: Int
     after: ID
+    filters: FilterGroup
     search: String
     toStix: Boolean
   ): ThemeConnection @public

@@ -40,6 +40,7 @@ export const findById = (
 const checkExistingTheme = async (
   context: AuthContext,
   name: string,
+  edit_id?: string,
 ) => {
   const existingTheme = await elLoadBy(
     context,
@@ -51,12 +52,16 @@ const checkExistingTheme = async (
     ENTITY_TYPE_THEME
   );
   if (existingTheme) {
-    throw FunctionalError(
-      'Theme already exists',
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error TypeScript erroneously infers type as string
-      { theme_id: existingTheme.internal_id }
-    );
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error TypeScript erroneously infers type as string
+    if (edit_id !== existingTheme.internal_id) {
+      throw FunctionalError(
+        'Theme already exists',
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error TypeScript erroneously infers type as string
+        { theme_id: existingTheme.internal_id }
+      );
+    }
   }
 };
 
@@ -146,7 +151,7 @@ export const editTheme = async (
   // Check if new name conflicts with an existing theme's name
   const updatedName = input.find(({ key }) => key === 'name')?.value?.[0];
   if (updatedName && typeof updatedName === 'string') {
-    await checkExistingTheme(context, updatedName);
+    await checkExistingTheme(context, updatedName, id);
   }
 
   const { element } = await updateAttribute(
