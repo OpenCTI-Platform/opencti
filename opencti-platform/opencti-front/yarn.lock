@@ -9475,14 +9475,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"babel-plugin-relay@npm:19.0.0":
-  version: 19.0.0
-  resolution: "babel-plugin-relay@npm:19.0.0"
+"babel-plugin-relay@npm:20.0.0":
+  version: 20.0.0
+  resolution: "babel-plugin-relay@npm:20.0.0"
   dependencies:
     babel-plugin-macros: "npm:^2.0.0"
     cosmiconfig: "npm:^5.0.5"
     graphql: "npm:15.3.0"
-  checksum: 10/0c9fc362dd378d40ad72d7b3361ad9cebd198d7613e6f991a386973fdd0f3620f695a61de00d05b69eb81d2e9cba613397d679c51ea6a730a83854940d24f4d5
+  checksum: 10/d7740d2b7a39b95a16912ff9cef1e1d614caf828bff8b35f312cc9c6aafc3fea56243db4eaabbf10216f6f51438f07a51df674be84d889d08c3e76bfef472178
   languageName: node
   linkType: hard
 
@@ -17911,7 +17911,7 @@ __metadata:
     analytics: "npm:0.8.16"
     apexcharts: "npm:4.4.0"
     axios: "npm:1.10.0"
-    babel-plugin-relay: "npm:19.0.0"
+    babel-plugin-relay: "npm:20.0.0"
     buffer: "npm:6.0.3"
     chokidar: "npm:4.0.3"
     ckeditor5: "npm:43.3.1"
