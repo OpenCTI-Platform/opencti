@@ -128,7 +128,7 @@
     "@types/react-syntax-highlighter": "15.5.13",
     "@types/react-test-renderer": "19.1.0",
     "@types/react-transition-group": "4",
-    "@types/relay-runtime": "19.0.0",
+    "@types/relay-runtime": "19.0.2",
     "@types/relay-test-utils": "19.0.0",
     "@vitejs/plugin-react": "4.4.1",
     "babel-plugin-relay": "19.0.0",
@@ -198,7 +198,7 @@
     "loader-utils": "3.3.1",
     "scss-tokenizer": "0.4.3",
     "@types/react": "19.0.0",
-    "@types/relay-runtime": "19.0.0",
+    "@types/relay-runtime": "19.0.2",
     "react": "19.0.0"
   },
   "workspaces": [
