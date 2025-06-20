@@ -1694,12 +1694,10 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
       if (searchAfter) {
         body.search_after = searchAfter;
       }
-      const query = {
-        index: computedIndices,
-        size: ES_MAX_PAGINATION,
-        _source: baseData ? baseFields : true,
-        body,
-      };
+      const _source = { excludes: ['i_rule_*'] };
+      if (withoutRels) _source.excludes.push('rel_*');
+      if (baseData) _source.includes = baseFields;
+      const query = { index: computedIndices, size: ES_MAX_PAGINATION, _source, body };
       logApp.debug('[SEARCH] elInternalLoadById', { query });
       const searchType = `${ids} (${types ? types.join(', ') : 'Any'})`;
       const data = await elRawSearch(context, user, searchType, query).catch((err) => {

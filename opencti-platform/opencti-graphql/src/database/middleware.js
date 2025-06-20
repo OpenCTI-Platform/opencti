@@ -823,7 +823,7 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
     }
     // TODO Improve type restriction from targeted ref inferred types
     // This information must be added in the model
-    const simpleResolutionsPromise = internalFindByIds(context, user, fetchingIds.map((i) => i.id));
+    const simpleResolutionsPromise = internalFindByIds(context, user, fetchingIds.map((i) => i.id), { withoutRels: true });
     let embeddedFromPromise = Promise.resolve();
     if (embeddedFromResolution) {
       fetchingIds.push({ id: embeddedFromResolution, destKey: 'from', multiple: false });
