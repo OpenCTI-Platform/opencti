@@ -8,6 +8,7 @@ SUPPORTED_INTERNAL_OBJECTS = [
     "capability",
     "role",
     "settings",
+    "notification",
     "work",
     "trash",
     "draftworkspace",
