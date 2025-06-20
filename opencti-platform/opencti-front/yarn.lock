@@ -17393,9 +17393,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"monocart-reporter@npm:2.9.19":
-  version: 2.9.19
-  resolution: "monocart-reporter@npm:2.9.19"
+"monocart-reporter@npm:2.9.21":
+  version: 2.9.21
+  resolution: "monocart-reporter@npm:2.9.21"
   dependencies:
     console-grid: "npm:^2.2.3"
     eight-colors: "npm:^1.3.1"
@@ -17407,7 +17407,7 @@ __metadata:
     nodemailer: "npm:^7.0.3"
   bin:
     monocart: lib/cli.js
-  checksum: 10/317d121fd2e346b46f938e5ca4ac72dcd7fb4ee18a95d1b4e9d4e7e3de780be0deefbe35d4ecdd24ae30a607846a1a63759b949a0ef9f3daf3e32019ec676219
+  checksum: 10/fda60d7f37d42c1a5c2383703f12b3e3b0515045b792caca7b43fd49b81d2e656abb0fd61cea985ef5f195aaab3a28ee173100185596b7d91909516de484d072
   languageName: node
   linkType: hard
 
@@ -18017,7 +18017,7 @@ __metadata:
     mdi-material-ui: "npm:7.9.4"
     moment: "npm:2.30.1"
     moment-timezone: "npm:0.5.48"
-    monocart-reporter: "npm:2.9.19"
+    monocart-reporter: "npm:2.9.21"
     pdfmake: "npm:0.2.18"
     prop-types: "npm:15.8.1"
     qrcode: "npm:1.5.4"
