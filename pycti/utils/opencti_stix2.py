@@ -925,6 +925,7 @@ class OpenCTIStix2:
             "playbook": self.opencti.playbook,
             "workspace": self.opencti.workspace,
             "publicdashboard": self.opencti.public_dashboard,
+            "notification": self.opencti.notification,
         }
 
     def generate_standard_id_from_stix(self, data):
@@ -2488,6 +2489,10 @@ class OpenCTIStix2:
                 )
             elif item["type"] == "indicator":
                 self.opencti.indicator.update_field(
+                    id=item_id, input=field_patch_without_files
+                )
+            elif item["type"] == "notification":
+                self.opencti.notification.update_field(
                     id=item_id, input=field_patch_without_files
                 )
             else:

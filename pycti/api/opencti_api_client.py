@@ -11,6 +11,7 @@ import requests
 from pycti import __version__
 from pycti.api.opencti_api_connector import OpenCTIApiConnector
 from pycti.api.opencti_api_draft import OpenCTIApiDraft
+from pycti.api.opencti_api_notification import OpenCTIApiNotification
 from pycti.api.opencti_api_pir import OpenCTIApiPir
 from pycti.api.opencti_api_playbook import OpenCTIApiPlaybook
 from pycti.api.opencti_api_public_dashboard import OpenCTIApiPublicDashboard
@@ -172,6 +173,7 @@ class OpenCTIApiClient:
         self.session = requests.session()
         # Define the dependencies
         self.work = OpenCTIApiWork(self)
+        self.notification = OpenCTIApiNotification(self)
         self.trash = OpenCTIApiTrash(self)
         self.draft = OpenCTIApiDraft(self)
         self.workspace = OpenCTIApiWorkspace(self)
