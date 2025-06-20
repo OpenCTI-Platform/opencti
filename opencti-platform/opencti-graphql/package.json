@@ -240,5 +240,5 @@
     "@datadog/pprof": "patch:@datadog/pprof@5.7.1#./patch/@datadog-pprof-5.4.1.patch",
     "path-to-regexp": "0.1.12"
   },
-  "packageManager": "yarn@4.9.1"
+  "packageManager": "yarn@4.9.2"
 }
