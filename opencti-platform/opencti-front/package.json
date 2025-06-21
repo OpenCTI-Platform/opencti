@@ -153,7 +153,7 @@
     "jsdom": "26.1.0",
     "monocart-reporter": "2.9.21",
     "relay-compiler": "19.0.0",
-    "relay-test-utils": "19.0.0",
+    "relay-test-utils": "20.0.0",
     "typescript": "5.8.3",
     "vite": "6.3.5",
     "vite-plugin-relay": "2.1.0",
