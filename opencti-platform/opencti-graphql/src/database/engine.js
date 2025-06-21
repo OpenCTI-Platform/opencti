@@ -326,7 +326,7 @@ export const searchEngineInit = async () => {
       apiKey: conf.get('elasticsearch:api_key') || null,
     },
     maxRetries: conf.get('elasticsearch:max_retries') || 3,
-    requestTimeout: conf.get('elasticsearch:request_timeout') || 30000,
+    requestTimeout: conf.get('elasticsearch:request_timeout') || 3600000,
     sniffOnStart: booleanConf('elasticsearch:sniff_on_start', false),
     ssl: { // For Opensearch 2+ and Elastic 7
       ca,
@@ -1694,7 +1694,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
       if (searchAfter) {
         body.search_after = searchAfter;
       }
-      const _source = { excludes: ['i_rule_*'] };
+      const _source = { excludes: [] };
       if (withoutRels) _source.excludes.push('rel_*');
       if (baseData) _source.includes = baseFields;
       const query = { index: computedIndices, size: ES_MAX_PAGINATION, _source, body };
