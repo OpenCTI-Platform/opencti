@@ -143,7 +143,7 @@
     "eslint-config-airbnb-typescript": "18.0.0",
     "eslint-config-react-app": "7.0.1",
     "eslint-plugin-custom-rules": "link:packages/eslint-plugin-custom-rules",
-    "eslint-plugin-import": "2.31.0",
+    "eslint-plugin-import": "2.32.0",
     "eslint-plugin-import-newlines": "1.4.0",
     "eslint-plugin-react": "7.37.5",
     "express": "4.21.2",
