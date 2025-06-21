@@ -1470,6 +1470,7 @@ const elDataConverter = (esHit, withoutRels = false) => {
     id: elementData.internal_id,
     sort: esHit.sort,
     ...elRebuildRelation(elementData),
+    ...(isNotEmptyField(esHit.fields) ? esHit.fields : {})
   };
   const entries = Object.entries(data);
   const ruleInferences = [];
@@ -1628,11 +1629,26 @@ export const computeQueryIndices = (indices, typeOrTypes, withInferences = true)
   return indices;
 };
 
+const REL_COUNT_SCRIPT_FIELD = {
+  script: {
+    lang: 'painless',
+    source: `
+        int count = 0;
+        for (def entry : params['_source'].entrySet()) {
+          if (entry.getKey().startsWith('rel_')) {
+            count++;
+          }
+        }
+        return count;
+        `
+  }
+};
+
 // elFindByIds is not defined to use ordering or sorting (ordering is forced by creation date)
 // It's a way to load a bunch of ids and use in list or map
 export const elFindByIds = async (context, user, ids, opts = {}) => {
   const { indices, baseData = false, baseFields = BASE_FIELDS } = opts;
-  const { withoutRels = false, toMap = false, mapWithAllIds = false, type = null } = opts;
+  const { withoutRels = true, toMap = false, mapWithAllIds = false, type = null } = opts;
   const { orderBy = 'created_at', orderMode = 'asc' } = opts;
   const idsArray = Array.isArray(ids) ? ids : [ids];
   const types = (Array.isArray(type) || isEmptyField(type)) ? type : [type];
@@ -1681,6 +1697,9 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     const draftMust = buildDraftFilter(context, user, opts);
     const body = {
       sort: [{ [orderBy]: orderMode }],
+      script_fields: {
+        rel_count: REL_COUNT_SCRIPT_FIELD
+      },
       query: {
         bool: {
           must: [...mustTerms, ...draftMust],
@@ -1728,7 +1747,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
   return hits;
 };
 export const elLoadById = async (context, user, id, opts = {}) => {
-  const hits = await elFindByIds(context, user, id, opts);
+  const hits = await elFindByIds(context, user, id, { ...opts, withoutRels: false });
   //* v8 ignore if */
   if (hits.length > 1) {
     throw DatabaseError('Id loading expect only one response', { id, hits: hits.length });
@@ -3028,6 +3047,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
 const elQueryBodyBuilder = async (context, user, options) => {
   // eslint-disable-next-line no-use-before-define
   const { ids = [], after, orderBy = null, orderMode = 'asc', noSize = false, noSort = false, intervalInclude = false } = options;
+  const { relCount = false } = options;
   const first = options.first ?? ES_DEFAULT_PAGINATION;
   const { types = null, search = null } = options;
   const filters = checkAndConvertFilters(options.filters, user.id, { noFiltersChecking: options.noFiltersChecking });
@@ -3128,6 +3148,11 @@ const elQueryBodyBuilder = async (context, user, options) => {
       },
     },
   };
+  if (relCount) {
+    body.script_fields = {
+      script_field_denormalization_count: REL_COUNT_SCRIPT_FIELD
+    };
+  }
   if (!noSize) {
     body.size = first;
   }
@@ -3476,16 +3501,19 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
   // eslint-disable-next-line no-use-before-define
   const { baseData = false, baseFields = BASE_FIELDS, bypassSizeLimit = false } = options;
   const first = options.first ?? ES_DEFAULT_PAGINATION;
-  const { types = null, connectionFormat = true } = options;
-  const body = await elQueryBodyBuilder(context, user, options);
+  const { withoutRels = true, types = null, connectionFormat = true } = options;
+  const body = await elQueryBodyBuilder(context, user, { ...options, relCount: true });
   if (body.size > ES_MAX_PAGINATION && !bypassSizeLimit) {
     logApp.info('[SEARCH] Pagination limited to max result config', { size: body.size, max: ES_MAX_PAGINATION });
     body.size = ES_MAX_PAGINATION;
   }
+  const _source = { excludes: [] };
+  if (withoutRels) _source.excludes.push('rel_*');
+  if (baseData) _source.includes = baseFields;
   const query = {
     index: getIndicesToQuery(context, user, indexName),
     track_total_hits: true,
-    _source: baseData ? baseFields : true,
+    _source,
     body,
   };
   logApp.debug('[SEARCH] paginate', { query });

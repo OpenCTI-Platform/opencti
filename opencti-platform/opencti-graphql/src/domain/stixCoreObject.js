@@ -33,7 +33,6 @@ import {
   ENTITY_TYPE_CONTAINER,
   INPUT_EXTERNAL_REFS,
   INPUT_MARKINGS,
-  REL_INDEX_PREFIX
 } from '../schema/general';
 import { RELATION_CREATED_BY, RELATION_EXTERNAL_REFERENCE, RELATION_OBJECT, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import {
@@ -433,10 +432,7 @@ export const stixCoreObjectsMultiNumber = (context, user, args) => {
 };
 
 export const stixCoreObjectsConnectedNumber = (stixCoreObject) => {
-  return Object.entries(stixCoreObject)
-    .filter(([key]) => key.startsWith(REL_INDEX_PREFIX))
-    .map(([, value]) => value.length)
-    .reduce((a, b) => a + b, 0);
+  return stixCoreObject.script_field_denormalization_count[0];
 };
 
 export const stixCoreObjectsDistribution = async (context, user, args) => {
