@@ -11971,7 +11971,7 @@ __metadata:
     showdown: "npm:2.1.0"
     source-map: "npm:0.7.4"
     tough-cookie: "npm:5.1.2"
-    trino-client: "npm:0.2.6"
+    trino-client: "npm:0.2.7"
     ts-loader: "npm:9.5.2"
     turndown: "npm:7.2.0"
     typescript: "npm:5.8.3"
@@ -14148,12 +14148,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"trino-client@npm:0.2.6":
-  version: 0.2.6
-  resolution: "trino-client@npm:0.2.6"
+"trino-client@npm:0.2.7":
+  version: 0.2.7
+  resolution: "trino-client@npm:0.2.7"
   dependencies:
-    axios: "npm:1.7.7"
-  checksum: 10/80e65b88b61ef64ebb4d3bcf2d3b8be48934a0b131eacb737272480c1575129d62fafe0201198a9da409b1f6cd64ffdcf314fc533b19357a628782d807bf08ea
+    axios: "npm:1.9.0"
+  checksum: 10/1c63cd5dc6ee4ce68005664a658f4ed4979d3ba48a794a72cb2b6d9872e132fd7e322ce1b27fc102d29704c9d660a248385fd26fc2f7372b54f87a2c9e14c227
   languageName: node
   linkType: hard
 
