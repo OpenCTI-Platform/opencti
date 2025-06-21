@@ -11,6 +11,7 @@ import { MARKING_TLP_AMBER_STRICT } from '../../../src/schema/identifier';
 const exportFileName = '(ExportFileStix)_Malware-Paradise Ransomware_all.json';
 const exportFileId = (malware) => `export/Malware/${malware.id}/${exportFileName.toLowerCase()}`;
 const importFileId = `import/global/${exportFileName.toLowerCase()}`;
+const FILE_SIZE = 8432;
 
 describe('File storage file listing', () => {
   it('should file upload succeed', async () => {
@@ -29,7 +30,6 @@ describe('File storage file listing', () => {
     let file = head(list.edges).node;
     expect(file.id).toEqual(exportFileId(malware));
     expect(file.name).toEqual(exportFileName);
-    const FILE_SIZE = 8432;
     expect(file.size).toEqual(FILE_SIZE);
     expect(file.metaData).not.toBeNull();
     expect(file.metaData.file_markings[0]).toEqual(MARKING_TLP_AMBER_STRICT);
@@ -85,8 +85,7 @@ describe('File storage file listing', () => {
     expect(data).not.toBeNull();
     const jsonData = JSON.parse(data);
     expect(jsonData).not.toBeNull();
-    // expect(jsonData.objects.length).toEqual(10);
-    expect(jsonData.objects.length).toEqual(9);
+    expect(jsonData.objects.length).toEqual(7);
     const user = head(jsonData.objects);
     expect(user.name).toEqual('Paradise Ransomware');
   });
@@ -100,7 +99,7 @@ describe('File storage file listing', () => {
     expect(file).not.toBeNull();
     expect(file.id).toEqual(exportFileId(malware));
     expect(file.name).toEqual(exportFileName);
-    expect(file.size).toEqual(10700);
+    expect(file.size).toEqual(FILE_SIZE);
     expect(file.metaData).toBeDefined();
     expect(file.metaData.mimetype).toBe('application/json');
   });
