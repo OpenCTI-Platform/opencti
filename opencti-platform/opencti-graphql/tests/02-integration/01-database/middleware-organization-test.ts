@@ -11,6 +11,7 @@ import { MARKING_TLP_RED } from '../../../src/schema/identifier';
 import { stixDomainObjectDelete } from '../../../src/domain/stixDomainObject';
 import { DEFAULT_ROLE } from '../../../src/utils/access';
 import { getFakeAuthUser, getGroupEntity, getOrganizationEntity } from '../../utils/domainQueryHelper';
+import {logApp} from "../../../src/config/conf";
 
 describe('Middleware test coverage on organization sharing verification', () => {
   let userInPlatformOrg: AuthUser;
@@ -60,6 +61,8 @@ describe('Middleware test coverage on organization sharing verification', () => 
         await addThreatActorIndividual(testContext, userInExternalOrg, inputNext);
         expect(true, 'An exception should been raised before this line').toBeFalsy();
       } catch (e) {
+        logApp.info('[TEST] debug', { cause: e });
+        console.log(e);
         const exception = e as GraphQLError;
         expect(exception.message).toBe('Restricted entity already exists');
       }
