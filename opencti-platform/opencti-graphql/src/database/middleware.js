@@ -234,6 +234,7 @@ import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rf
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
 import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
 import { generateVulnerabilitiesUpdates } from '../utils/vulnerabilities';
+import { idLabel } from '../schema/schema-labels';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -747,10 +748,6 @@ const depsKeys = (type) => ([
 
 const idVocabulary = (nameOrId, category) => {
   return isAnId(nameOrId) ? nameOrId : generateStandardId(ENTITY_TYPE_VOCABULARY, { name: nameOrId, category });
-};
-
-const idLabel = (labelOrId) => {
-  return isAnId(labelOrId) ? labelOrId : generateStandardId(ENTITY_TYPE_LABEL, { value: labelOrId });
 };
 
 /**

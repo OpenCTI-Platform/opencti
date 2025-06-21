@@ -47,6 +47,7 @@ export const isInternalId = (id) => validator.isUUID(id);
 export const isAnId = (id) => {
   return isStixId(id) || isInternalId(id);
 };
+
 export const shortHash = (element) => {
   const crypt = crypto.createHash('sha256');
   const hash = crypt.update(JSON.stringify(element)).digest('hex');
