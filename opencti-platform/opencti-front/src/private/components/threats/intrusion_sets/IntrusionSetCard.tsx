@@ -16,6 +16,7 @@ export const IntrusionSetCardFragment = graphql`
     description
     created
     modified
+    resource_level
     primary_motivation
     secondary_motivations
     draftVersion {
