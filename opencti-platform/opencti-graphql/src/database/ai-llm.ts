@@ -109,6 +109,7 @@ export const queryMistralAi = async (busId: string | null, systemMessage: string
     logApp.debug('[AI] Querying MistralAI with prompt', { questionStart: userMessage.substring(0, 100) });
     const request: ChatCompletionStreamRequest = {
       model: AI_MODEL,
+      temperature: 0,
       messages: [
         { role: 'system', content: systemMessage },
         { role: 'user', content: truncate(userMessage, AI_MAX_TOKENS, false) },

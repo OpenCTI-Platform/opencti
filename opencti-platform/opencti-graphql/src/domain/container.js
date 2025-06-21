@@ -330,6 +330,9 @@ export const aiSummary = async (context, user, args) => {
   logApp.info('Response not found in cache, querying LLM', { busId });
   const content = [];
   const containers = await listEntities(context, user, types, finalArgs);
+  if (!containers.length) {
+    throw FunctionalError('Not enough data to summarize the containers attached to the entity.');
+  }
   // eslint-disable-next-line no-restricted-syntax
   for (const container of containers) {
     const author = await listAllToEntitiesThroughRelations(context, user, container.id, RELATION_CREATED_BY, [ENTITY_TYPE_IDENTITY]);
@@ -353,8 +356,6 @@ export const aiSummary = async (context, user, args) => {
   - You will only respond with the report content. Do not include formatting hint or syntax highlight. 
   - Do not provide explanations or notes.
   
-  # Instructions
-  
   ## Summarize
   - In clear and concise language, summarize the key points and themes presented in the reports in an HTML report of approximately 500 words.
   - Create a comprehensive report in HTML format.
@@ -368,9 +369,12 @@ export const aiSummary = async (context, user, args) => {
   - Your response should not contain any generic assumptions or recommendations, it should rely only on the given content.
   
   # Reports
-  ${JSON.stringify(content)}  
+  ${JSON.stringify(content)}
+  
+  # Instructions
+    - Your response should match the provided content format which is HTML, including appropriate HTML tags such as <h2>, <ul>, and any necessary styling or structure. Ensure the content is well-formatted, semantic, and compatible with modern browsers.
+    - Do not include <html>, <head> and <body> tags.
   `;
-
   const userPromptTopics = `
   # Context
   - You are a cyber threat intelligence analyst. Your task is to assess the 5 main topics of the given reports.
