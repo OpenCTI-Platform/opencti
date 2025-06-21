@@ -62,7 +62,7 @@
     "marked": "15.0.12",
     "mdi-material-ui": "7.9.4",
     "moment": "2.30.1",
-    "moment-timezone": "0.5.48",
+    "moment-timezone": "0.6.0",
     "pdfmake": "0.2.18",
     "prop-types": "15.8.1",
     "qrcode": "1.5.4",
