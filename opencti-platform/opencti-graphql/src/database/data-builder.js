@@ -27,6 +27,10 @@ import { getEntitiesListFromCache } from './cache';
 import { isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT } from '../utils/access';
 import { cleanMarkings } from '../utils/markingDefinition-utils';
 
+const isGrantedRefsValid = (input) => {
+  return input && (!Array.isArray(input) || input.length > 0);
+};
+
 export const buildEntityData = async (context, user, input, type, opts = {}) => {
   const { fromRule } = opts;
   const internalId = input.internal_id || generateInternalId();
@@ -45,6 +49,17 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
     R.dissoc('file'),
     R.omit(schemaRelationsRefDefinition.getInputNames(input.entity_type)),
   )(input);
+  // Apply default granted refs
+  const isSegregationEntity = !STIX_ORGANIZATIONS_UNRESTRICTED.some((o) => getParentTypes(data.entity_type).includes(o))
+    || STIX_ORGANIZATIONS_RESTRICTED.some((o) => o === data.entity_type || getParentTypes(data.entity_type).includes(o));
+  if (isSegregationEntity) {
+    if (isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && isGrantedRefsValid(input[INPUT_GRANTED_REFS])) {
+      // ok!
+    } else if (!context.user_inside_platform_organization) {
+      // If user is not part of the platform organization, put its own organizations
+      input[INPUT_GRANTED_REFS] = user.organizations;
+    }
+  }
   if (inferred) {
     // Simply add the rule
     // start/stop confidence was computed by the rule directly
@@ -112,18 +127,12 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
   }
   // Create the meta relationships (ref, refs)
   const relToCreate = [];
-  const isSegregationEntity = !STIX_ORGANIZATIONS_UNRESTRICTED.some((o) => getParentTypes(data.entity_type).includes(o))
-    || STIX_ORGANIZATIONS_RESTRICTED.some((o) => o === data.entity_type || getParentTypes(data.entity_type).includes(o));
   const appendMetaRelationships = async (inputField, relType) => {
-    if (input[inputField] || relType === RELATION_GRANTED_TO) {
+    if (input[inputField]) {
       // For organizations management
       if (relType === RELATION_GRANTED_TO && isSegregationEntity) {
-        if (isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && input[inputField]
-            && (!Array.isArray(input[inputField]) || input[inputField].length > 0)) {
+        if (isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && isGrantedRefsValid(input[inputField])) {
           relToCreate.push(...buildInnerRelation(data, input[inputField], RELATION_GRANTED_TO));
-        } else if (!context.user_inside_platform_organization) {
-          // If user is not part of the platform organization, put its own organizations
-          relToCreate.push(...buildInnerRelation(data, user.organizations, RELATION_GRANTED_TO));
         }
       } else if (relType === RELATION_OBJECT_MARKING) {
         const markingsFiltered = await cleanMarkings(context, input[inputField]);
@@ -183,6 +192,13 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
   data.creator_id = [user.internal_id];
   data.created_at = today;
   data.updated_at = today;
+  // Apply default granted refs
+  if (isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && isGrantedRefsValid(input[INPUT_GRANTED_REFS])) {
+    // ok!
+  } else if (!context.user_inside_platform_organization) {
+    // If user is not part of the platform organization, put its own organizations
+    input[INPUT_GRANTED_REFS] = user.organizations;
+  }
   // region re-work data
   // stix-relationship
   if (isStixRelationshipExceptRef(relationshipType)) {
@@ -270,12 +286,8 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
   const relToCreate = [];
   if (isStixRelationshipExceptRef(relationshipType)) {
     // We need to link the data to organization sharing, only for core and sightings.
-    if (isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && input[INPUT_GRANTED_REFS]
-        && (!Array.isArray(input[INPUT_GRANTED_REFS]) || input[INPUT_GRANTED_REFS].length > 0)) {
+    if (isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && isGrantedRefsValid(input[INPUT_GRANTED_REFS])) {
       relToCreate.push(...buildInnerRelation(data, input[INPUT_GRANTED_REFS], RELATION_GRANTED_TO));
-    } else if (!context.user_inside_platform_organization) {
-      // If user is not part of the platform organization, put its own organizations
-      relToCreate.push(...buildInnerRelation(data, user.organizations, RELATION_GRANTED_TO));
     }
     const markingsFiltered = await cleanMarkings(context, input.objectMarking);
     relToCreate.push(...buildInnerRelation(data, markingsFiltered, RELATION_OBJECT_MARKING));
