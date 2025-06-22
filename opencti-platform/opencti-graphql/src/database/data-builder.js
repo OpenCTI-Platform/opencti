@@ -49,17 +49,6 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
     R.dissoc('file'),
     R.omit(schemaRelationsRefDefinition.getInputNames(input.entity_type)),
   )(input);
-  // Apply default granted refs
-  const isSegregationEntity = !STIX_ORGANIZATIONS_UNRESTRICTED.some((o) => getParentTypes(data.entity_type).includes(o))
-    || STIX_ORGANIZATIONS_RESTRICTED.some((o) => o === data.entity_type || getParentTypes(data.entity_type).includes(o));
-  if (isSegregationEntity) {
-    if (isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && isGrantedRefsValid(input[INPUT_GRANTED_REFS])) {
-      // ok!
-    } else if (!context.user_inside_platform_organization) {
-      // If user is not part of the platform organization, put its own organizations
-      input[INPUT_GRANTED_REFS] = user.organizations;
-    }
-  }
   if (inferred) {
     // Simply add the rule
     // start/stop confidence was computed by the rule directly
@@ -127,6 +116,8 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
   }
   // Create the meta relationships (ref, refs)
   const relToCreate = [];
+  const isSegregationEntity = !STIX_ORGANIZATIONS_UNRESTRICTED.some((o) => getParentTypes(data.entity_type).includes(o))
+    || STIX_ORGANIZATIONS_RESTRICTED.some((o) => o === data.entity_type || getParentTypes(data.entity_type).includes(o));
   const appendMetaRelationships = async (inputField, relType) => {
     if (input[inputField]) {
       // For organizations management
@@ -192,13 +183,6 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
   data.creator_id = [user.internal_id];
   data.created_at = today;
   data.updated_at = today;
-  // Apply default granted refs
-  if (isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && isGrantedRefsValid(input[INPUT_GRANTED_REFS])) {
-    // ok!
-  } else if (!context.user_inside_platform_organization) {
-    // If user is not part of the platform organization, put its own organizations
-    input[INPUT_GRANTED_REFS] = user.organizations;
-  }
   // region re-work data
   // stix-relationship
   if (isStixRelationshipExceptRef(relationshipType)) {
