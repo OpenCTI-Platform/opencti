@@ -9,7 +9,14 @@ import {
   INPUT_MARKINGS
 } from '../../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
-import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_OPINION, isStixDomainObject, isStixDomainObjectContainer } from '../../schema/stixDomainObject';
+import {
+  ENTITY_TYPE_CONTAINER_NOTE,
+  ENTITY_TYPE_CONTAINER_OPINION,
+  isStixDomainObject,
+  isStixDomainObjectContainer,
+  STIX_ORGANIZATIONS_RESTRICTED,
+  STIX_ORGANIZATIONS_UNRESTRICTED
+} from '../../schema/stixDomainObject';
 import { UnsupportedError } from '../../config/errors';
 import type { AttributeConfiguration, BasicStoreEntityEntitySetting } from './entitySetting-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
@@ -26,6 +33,7 @@ import type { MandatoryType } from '../../schema/attribute-definition';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../../schema/stixMetaObject';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types';
+import { getParentTypes } from '../../schema/schemaUtils';
 
 export type typeAvailableSetting = boolean | string;
 
@@ -146,7 +154,9 @@ export const getDefaultValues = (attributeConfiguration: AttributeConfiguration,
 
 export const fillDefaultValues = (context: AuthContext, user: any, input: any, entitySetting: any) => {
   const filledValues = new Map();
-  if (!context.user_inside_platform_organization) {
+  const isSegregationEntity = !STIX_ORGANIZATIONS_UNRESTRICTED.some((o) => getParentTypes(entitySetting.target_type).includes(o))
+      || STIX_ORGANIZATIONS_RESTRICTED.some((o) => o === entitySetting.target_type || getParentTypes(entitySetting.target_type).includes(o));
+  if (isSegregationEntity && !context.user_inside_platform_organization) {
     filledValues.set(INPUT_GRANTED_REFS, user.organizations);
   }
   const attributesConfiguration = getAttributesConfiguration(entitySetting);
