@@ -5,7 +5,6 @@ import Button from '@mui/material/Button';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import * as Yup from 'yup';
-import { useCookies } from 'react-cookie';
 import { FormikConfig } from 'formik/dist/types';
 import { RelayResponsePayload } from 'relay-runtime/lib/store/RelayStoreTypes';
 import { useTheme } from '@mui/styles';
@@ -39,13 +38,9 @@ interface LoginFormProps {
   setEmail: (value: string) => void;
 }
 
-const FLASH_COOKIE = 'opencti_flash';
 const LoginForm: FunctionComponent<LoginFormProps> = ({ onClickForgotPassword, email, setEmail }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const [cookies, , removeCookie] = useCookies([FLASH_COOKIE]);
-  const flashError = cookies[FLASH_COOKIE] || '';
-  removeCookie(FLASH_COOKIE);
   const [commitLoginMutation] = useApiMutation(loginMutation);
   const onSubmit: FormikConfig<LoginFormValues>['onSubmit'] = (
     values,
@@ -77,8 +72,6 @@ const LoginForm: FunctionComponent<LoginFormProps> = ({ onClickForgotPassword, e
     <>
       <Formik
         initialValues={initialValues}
-        initialTouched={{ email: !R.isEmpty(flashError) }}
-        initialErrors={{ email: !R.isEmpty(flashError) ? t_i18n(flashError) : '' }}
         validationSchema={loginValidation(t_i18n)}
         onSubmit={onSubmit}
       >
