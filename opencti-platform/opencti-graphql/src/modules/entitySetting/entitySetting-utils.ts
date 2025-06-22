@@ -155,10 +155,12 @@ export const getDefaultValues = (attributeConfiguration: AttributeConfiguration,
 
 export const fillDefaultValues = (context: AuthContext, user: any, input: any, entitySetting: any) => {
   const filledValues = new Map();
-  const isSegregationEntity = !STIX_ORGANIZATIONS_UNRESTRICTED.some((o) => getParentTypes(entitySetting.target_type).includes(o))
-      || STIX_ORGANIZATIONS_RESTRICTED.some((o) => o === entitySetting.target_type || getParentTypes(entitySetting.target_type).includes(o));
-  if (isSegregationEntity && !context.user_inside_platform_organization) {
-    filledValues.set(INPUT_GRANTED_REFS, user.organizations);
+  if (entitySetting) {
+    const isSegregationEntity = !STIX_ORGANIZATIONS_UNRESTRICTED.some((o) => getParentTypes(entitySetting.target_type).includes(o))
+        || STIX_ORGANIZATIONS_RESTRICTED.some((o) => o === entitySetting.target_type || getParentTypes(entitySetting.target_type).includes(o));
+    if (isSegregationEntity && !context.user_inside_platform_organization) {
+      filledValues.set(INPUT_GRANTED_REFS, user.organizations);
+    }
   }
   const attributesConfiguration = getAttributesConfiguration(entitySetting);
   if (attributesConfiguration) {
