@@ -83,6 +83,7 @@ import {
   EXPLORE_EXUPDATE_PUBLISH,
   INVESTIGATION_INUPDATE_INDELETE,
   KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNMERGE,
   KNOWLEDGE_KNUPDATE_KNDELETE,
   KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
   SETTINGS_SETACCESSES,
@@ -2078,6 +2079,8 @@ class DataTableToolBar extends Component {
                         </span>
                       </Tooltip>
                     )}
+                  </Security>
+                  <Security needs={[KNOWLEDGE_KNUPDATE_KNMERGE]}>
                     {enableMerge && !removeAuthMembersEnabled && !removeFromDraftEnabled && !isInDraft && (
                       <Tooltip title={t('Merge')}>
                         <span>
