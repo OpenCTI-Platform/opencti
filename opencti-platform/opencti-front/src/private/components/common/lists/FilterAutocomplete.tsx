@@ -1,13 +1,13 @@
 import React, { Dispatch, FunctionComponent, SyntheticEvent, useState } from 'react';
 import TextField from '@mui/material/TextField';
 import MUIAutocomplete from '@mui/material/Autocomplete';
+import { useTheme } from '@mui/styles';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 import useSearchEntities from '../../../../utils/filters/useSearchEntities';
 import type { Theme } from '../../../../components/Theme';
 import SearchScopeElement from './SearchScopeElement';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
-import { useTheme } from '@mui/styles';
 
 export interface FilterOption {
   id?: string;
@@ -196,14 +196,16 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
             paddingTop: 4,
             display: 'inline-block',
             color: theme.palette.primary.main,
-          }}>
+          }}
+          >
             <ItemIcon type={option.type} color={option.color}/>
           </div>
           <div style={{
             display: 'inline-block',
             flexGrow: 1,
             marginLeft: 10,
-          }}>{option.label}</div>
+          }}
+          >{option.label}</div>
         </li>
       )}
     />

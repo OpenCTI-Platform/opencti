@@ -11,10 +11,9 @@ import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
-import {
-  WorkspaceTurnToContainerDialogMutation
-} from '@components/workspaces/__generated__/WorkspaceTurnToContainerDialogMutation.graphql';
+import { WorkspaceTurnToContainerDialogMutation } from '@components/workspaces/__generated__/WorkspaceTurnToContainerDialogMutation.graphql';
 import type { FilterOption } from '@components/common/lists/FilterAutocomplete';
+import { useTheme } from '@mui/styles';
 import Transition from '../../../components/Transition';
 import { useFormatter } from '../../../components/i18n';
 import ItemIcon from '../../../components/ItemIcon';
@@ -22,8 +21,7 @@ import { resolveLink } from '../../../utils/Entity';
 import { handleError } from '../../../relay/environment';
 import useSearchEntities, { EntityValue } from '../../../utils/filters/useSearchEntities';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
-import { useTheme } from '@mui/styles';
-import { Theme } from '../../../components/Theme';
+import type { Theme } from '../../../components/Theme';
 
 interface WorkspaceTurnToContainerDialogProps {
   workspace: { id: string | null };
@@ -217,13 +215,15 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
                 display: 'inline-block',
                 paddingTop: 4,
                 marginRight: theme.spacing(1),
-              }}>
+              }}
+              >
                 <ItemIcon type={option.type} />
               </div>
               <div style={{
                 display: 'inline-block',
                 flexGrow: 1,
-              }}>{option.label}</div>
+              }}
+              >{option.label}</div>
             </li>
           )}
           disableClearable
