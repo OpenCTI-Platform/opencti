@@ -1388,6 +1388,7 @@ type PlatformProtectedSensitiveConfig {
   connector_reset: PlatformProtectedSubConfig!
   file_indexing: PlatformProtectedSubConfig!
   platform_organization: PlatformProtectedSubConfig!
+  public_organization: PlatformProtectedSubConfig!
 }
 
 type Settings implements InternalObject & BasicObject {
@@ -1451,6 +1452,7 @@ type Settings implements InternalObject & BasicObject {
   platform_trash_enabled: Boolean!
   platform_translations: String
   platform_protected_sensitive_config: PlatformProtectedSensitiveConfig!
+  public_organization: Organization
   created_at: DateTime!
   updated_at: DateTime!
   activity_listeners: [Member!]

@@ -247,7 +247,7 @@ export const canRequestAccess = async (context, user, elements) => {
   const elementsThatRequiresAccess = [];
   for (let i = 0; i < elements.length; i += 1) {
     const currentElement = elements[i];
-    if (!isOrganizationAllowed(context, currentElement, user, hasPlatformOrg)) {
+    if (!isOrganizationAllowed(context, currentElement, user, hasPlatformOrg, settings.public_organization)) {
       // Check that group has marking allowed or else request accesss RFI will be useless
       const requestAccessSettings = await loadEntity(context, user, [ENTITY_TYPE_ENTITY_SETTING], {
         filters: {

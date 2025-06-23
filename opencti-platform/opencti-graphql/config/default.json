@@ -206,6 +206,9 @@
     },
     "platform_organization": {
       "enabled": true
+    },
+    "public_organization": {
+      "enabled": true
     }
   },
   "ai": {
