@@ -1,28 +1,13 @@
 import React, { Dispatch, FunctionComponent, SyntheticEvent, useState } from 'react';
 import TextField from '@mui/material/TextField';
 import MUIAutocomplete from '@mui/material/Autocomplete';
-import makeStyles from '@mui/styles/makeStyles';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 import useSearchEntities from '../../../../utils/filters/useSearchEntities';
 import type { Theme } from '../../../../components/Theme';
 import SearchScopeElement from './SearchScopeElement';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-    color: theme.palette.primary.main,
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-}));
+import { useTheme } from '@mui/styles';
 
 export interface FilterOption {
   id?: string;
@@ -74,7 +59,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
     disabled,
   } = props;
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
+  const theme = useTheme<Theme>();
   const [searchScope, setSearchScope] = useState<Record<string, string[]>>(
     availableRelationFilterTypes || {
       targets: [
@@ -207,10 +192,18 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
       )}
       renderOption={(propsOption, option) => (
         <li {...propsOption}>
-          <div className={classes.icon}>
+          <div style={{
+            paddingTop: 4,
+            display: 'inline-block',
+            color: theme.palette.primary.main,
+          }}>
             <ItemIcon type={option.type} color={option.color}/>
           </div>
-          <div className={classes.text}>{option.label}</div>
+          <div style={{
+            display: 'inline-block',
+            flexGrow: 1,
+            marginLeft: 10,
+          }}>{option.label}</div>
         </li>
       )}
     />
