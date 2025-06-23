@@ -5,7 +5,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Locale } from 'date-fns/locale/types';
-import { de, enUS, es, fr, it, ja, ko, zhCN } from 'date-fns/locale';
+import { de, enUS, es, fr, it, ja, ko, zhCN, ru } from 'date-fns/locale';
 import locale, { DEFAULT_LANG } from '../utils/BrowserLanguage';
 import { UserContext } from '../utils/hooks/useAuth';
 import { AppIntlProvider_settings$data } from './__generated__/AppIntlProvider_settings.graphql';
@@ -17,6 +17,7 @@ import messages_it_front from '../../lang/front/it.json';
 import messages_ja_front from '../../lang/front/ja.json';
 import messages_ko_front from '../../lang/front/ko.json';
 import messages_zh_front from '../../lang/front/zh.json';
+import messages_ru_front from '../../lang/front/ru.json';
 import messages_de_back from '../../lang/back/de.json';
 import messages_en_back from '../../lang/back/en.json';
 import messages_es_back from '../../lang/back/es.json';
@@ -25,10 +26,20 @@ import messages_it_back from '../../lang/back/it.json';
 import messages_ja_back from '../../lang/back/ja.json';
 import messages_ko_back from '../../lang/back/ko.json';
 import messages_zh_back from '../../lang/back/zh.json';
+import messages_ru_back from '../../lang/back/ru.json';
 
 import { useDocumentLangModifier } from '../utils/hooks/useDocumentModifier';
 
-type PlatformLang = 'de-de' | 'en-us' | 'es-es' | 'fr-fr' | 'it-it' | 'ja-jp' | 'ko-kr' | 'zh-cn';
+type PlatformLang =
+  | 'de-de'
+  | 'en-us'
+  | 'es-es'
+  | 'fr-fr'
+  | 'it-it'
+  | 'ja-jp'
+  | 'ko-kr'
+  | 'zh-cn'
+  | 'ru-ru';
 
 const localeMap: Record<PlatformLang, Locale> = {
   'de-de': de,
@@ -39,6 +50,7 @@ const localeMap: Record<PlatformLang, Locale> = {
   'ja-jp': ja,
   'ko-kr': ko,
   'zh-cn': zhCN,
+  'ru-ru': ru,
 };
 
 const i18n: { messages: Record<PlatformLang, Record<string, string>> } = {
@@ -51,10 +63,11 @@ const i18n: { messages: Record<PlatformLang, Record<string, string>> } = {
     'ja-jp': { ...messages_ja_back, ...messages_ja_front },
     'ko-kr': { ...messages_ko_back, ...messages_ko_front },
     'zh-cn': { ...messages_zh_back, ...messages_zh_front },
+    'ru-ru': { ...messages_ru_back, ...messages_ru_front },
   },
 };
 
-export const availableLanguage: { value: PlatformLang, label: string, name: string }[] = [
+export const availableLanguage: { value: PlatformLang; label: string; name: string }[] = [
   { value: 'de-de', label: 'Deutsch', name: 'German' },
   { value: 'en-us', label: 'English', name: 'English' },
   { value: 'es-es', label: 'Español', name: 'Spanish' },
@@ -63,26 +76,25 @@ export const availableLanguage: { value: PlatformLang, label: string, name: stri
   { value: 'ja-jp', label: '日本語', name: 'Japanese' },
   { value: 'ko-kr', label: '한국어', name: 'Korean' },
   { value: 'zh-cn', label: '简化字', name: 'Chinese' },
+  { value: 'ru-ru', label: 'Русский', name: 'Russian' },
 ];
 
 // list of available languages for Ai text generation (minimal support : platform languages)
-export const aiLanguage: { value: string, label: string, name: string }[] = [
+export const aiLanguage: { value: string; label: string; name: string }[] = [
   ...availableLanguage,
   // Add new languages which are only supported for ia, not for the platform
 ];
 
 interface AppIntlProviderProps {
-  settings: AppIntlProvider_settings$data | { platform_language: string, platform_translations: string },
-  children: ReactNode,
+  settings: AppIntlProvider_settings$data | { platform_language: string; platform_translations: string };
+  children: ReactNode;
 }
 
 const AppIntlProvider: FunctionComponent<AppIntlProviderProps> = ({ settings, children }) => {
   const { me } = useContext(UserContext);
   const platformLanguage = settings.platform_language ?? null;
-  const platformLang = platformLanguage !== null && platformLanguage !== 'auto'
-    ? settings.platform_language
-    : locale;
-  const lang: PlatformLang = me?.language && me.language !== 'auto' ? me.language : platformLang;
+  const platformLang = platformLanguage !== null && platformLanguage !== 'auto' ? settings.platform_language : locale;
+  const lang: PlatformLang = me?.language && me.language !== 'auto' ? (me.language as PlatformLang) : (platformLang as PlatformLang);
   const translation = JSON.parse(settings.platform_translations ?? '{}');
   const baseMessages = i18n.messages[lang] || i18n.messages[DEFAULT_LANG as keyof typeof i18n.messages];
   const messages = { ...baseMessages, ...(translation[lang] ?? {}) };
@@ -102,10 +114,7 @@ const AppIntlProvider: FunctionComponent<AppIntlProviderProps> = ({ settings, ch
         throw err;
       }}
     >
-      <LocalizationProvider
-        dateAdapter={AdapterDateFns}
-        adapterLocale={localeMap[lang]}
-      >
+      <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={localeMap[lang]}>
         {children}
       </LocalizationProvider>
     </IntlProvider>
