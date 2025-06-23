@@ -352,7 +352,7 @@ export const extractFilterKeyValues = (filterKey: string, filterGroup: FilterGro
 };
 
 /**
- * Replace @me by the user id in filter whose values can contain user ids
+ * Replace @me by the user id in filter whose values can contain user ids, and replace eventual label values with label ids  
  */
 export const replaceEnrichValuesInFilters = (filterGroup: FilterGroup, userId: string, resolvedLabels: Record<string, string>) => {
   const filtersResult = { ...filterGroup };
