@@ -474,7 +474,7 @@ export const checkAndConvertFilters = async (
   checkFiltersValidity(inputFilterGroup, noFiltersChecking);
   // 02. If label filtered by name, try to resolve it.
   const resolvedLabels: Record<string, string> = await computeFilterLabelMap(context, user, inputFilterGroup, idsFinder);
-  // 03. replace dynamic @me value
+  // 03. replace dynamic @me value and label values
   const filterGroup = replaceEnrichValuesInFilters(inputFilterGroup, userId, resolvedLabels);
   // 04. convert relation refs
   if (!noFiltersChecking && !noFiltersConvert && isFilterGroupNotEmpty(inputFilterGroup)) {
