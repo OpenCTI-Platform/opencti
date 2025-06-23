@@ -36,7 +36,7 @@ interface ContentKnowledgeTimeLineBarProps {
   timeLineFunctionalDate: boolean;
   handleToggleTimeLineFunctionalDate: () => void;
   timeLineFilters: FilterGroup;
-  handleAddTimeLineFilter: (filterKeysSchema: Map<string, Map<string, FilterDefinition>>, key: string, id: string, op?: string, event?: SyntheticEvent) => void;
+  handleAddTimeLineFilter: (filterKeysSchema: Map<string, Map<string, FilterDefinition>>, key: string, id: string | null, op?: string, event?: SyntheticEvent) => void;
   handleRemoveTimeLineFilter: (key: string, id?: string) => void;
   handleSwitchFilterLocalMode: (filter: Filter) => void;
   handleSwitchFilterGlobalMode: () => void;
@@ -71,7 +71,7 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
       sub.unsubscribe();
     };
   });
-  const handleAddFilter = (key: string, id: string, op = 'eq', event?: SyntheticEvent) => {
+  const handleAddFilter = (key: string, id: string | null, op = 'eq', event?: SyntheticEvent) => {
     handleAddTimeLineFilter(filterKeysSchema, key, id, op, event);
   };
   return (

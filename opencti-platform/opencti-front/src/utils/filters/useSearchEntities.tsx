@@ -26,7 +26,7 @@ import { killChainPhasesSearchQuery } from '@components/settings/KillChainPhases
 import { KillChainPhasesSearchQuery$data } from '@components/settings/__generated__/KillChainPhasesSearchQuery.graphql';
 import { triggersQueriesSearchQuery } from '@components/profile/triggers/TriggersQueries';
 import { TriggersQueriesSearchQuery$data } from '@components/profile/triggers/__generated__/TriggersQueriesSearchQuery.graphql';
-import { OptionValue } from '@components/common/lists/FilterAutocomplete';
+import { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import { usersLinesSearchQuery } from '@components/settings/users/UsersLines';
 import { UsersLinesSearchQuery$data } from '@components/settings/users/__generated__/UsersLinesSearchQuery.graphql';
 import useAuth, { FilterDefinition } from '../hooks/useAuth';
@@ -247,7 +247,7 @@ const workspacesQuery = graphql`
   }
 `;
 
-export type EntityValue = OptionValue;
+export type EntityValue = FilterOptionValue;
 
 const useSearchEntities = ({
   availableEntityTypes,
@@ -291,8 +291,8 @@ const useSearchEntities = ({
 
   const searchEntities = (
     filterKey: string,
-    cacheEntities: Record< string, { label: string; value: string; type: string }[] >,
-    setCacheEntities: Dispatch< Record<string, { label: string; value: string; type: string }[]> >,
+    cacheEntities: Record< string, { label: string; value: string | null; type: string }[] >,
+    setCacheEntities: Dispatch< Record<string, { label: string; value: string | null; type: string }[]> >,
     event: BaseSyntheticEvent,
     isSubKey?: boolean,
   ) => {
@@ -352,7 +352,7 @@ const useSearchEntities = ({
           unionSetEntities(key, [
             {
               label: t_i18n('No label'),
-              value: '',
+              value: null,
               type: 'Label',
               color: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
             },
