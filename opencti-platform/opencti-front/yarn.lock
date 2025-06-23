@@ -18000,7 +18000,7 @@ __metadata:
     reactflow: "npm:11.11.4"
     recharts: "npm:2.15.4"
     relay-compiler: "npm:19.0.0"
-    relay-runtime: "npm:19.0.0"
+    relay-runtime: "npm:20.0.0"
     relay-test-utils: "npm:20.0.0"
     remark-flexible-markers: "npm:1.3.0"
     remark-gfm: "npm:4.0.1"
