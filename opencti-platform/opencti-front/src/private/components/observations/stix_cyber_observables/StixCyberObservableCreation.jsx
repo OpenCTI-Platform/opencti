@@ -281,7 +281,7 @@ const StixCyberObservableCreation = ({
   defaultMarkingDefinitions = [],
   isFromBulkRelation = false,
   onCompleted = () => {},
-  stixCyberObservableTypes,
+  stixCyberObservableTypes = undefined,
 }) => {
   const classes = useStyles();
   const theme = useTheme();
@@ -1048,6 +1048,7 @@ StixCyberObservableCreation.propTypes = {
   ),
   isFromBulkRelation: PropTypes.bool,
   onCompleted: PropTypes.func,
+  stixCyberObservableTypes: PropTypes.arrayOf(PropTypes.string),
 };
 
 export default StixCyberObservableCreation;
