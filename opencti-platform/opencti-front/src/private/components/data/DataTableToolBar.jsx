@@ -2386,6 +2386,8 @@ class DataTableToolBar extends Component {
                         </span>
                       </Tooltip>
                     )}
+                  </Security>
+                  <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                     {enableMerge && !removeAuthMembersEnabled && !removeFromDraftEnabled && !isInDraft && !isUserDatatable && (
                       <Tooltip title={t('Merge')}>
                         <span>
