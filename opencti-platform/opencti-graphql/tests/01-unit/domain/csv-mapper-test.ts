@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import type { CsvMapperConfiguration } from '../../../src/modules/internal/csvMapper/csvMapper-types';
+import type { CsvMapperParsed } from '../../../src/modules/internal/csvMapper/csvMapper-types';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
 import { transformCsvMapperConfig } from '../../../src/modules/internal/csvMapper/csvMapper-domain';
 
 describe('transformCsvMapperConfig', () => {
   it('should transform the CSV Mapper configuration successfully', async () => {
-    const configuration: CsvMapperConfiguration = {
+    const configuration: CsvMapperParsed = {
       id: 'debf1d1e-de97-4dd8-abb6-1b22e19468f6',
       name: 'Inline CSV Feed',
       has_header: false,
@@ -95,7 +95,7 @@ describe('transformCsvMapperConfig', () => {
         }
       ],
       skipLineChar: ''
-    } as unknown as CsvMapperConfiguration;
+    } as unknown as CsvMapperParsed;
 
     const context: AuthContext = {} as unknown as AuthContext; // Mock
     const user: AuthUser = {} as unknown as AuthUser; // Mock

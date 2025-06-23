@@ -27,7 +27,6 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import IngestionCsvInlineMapperForm from '@components/data/ingestionCsv/IngestionCsvInlineMapperForm';
 import IngestionCsvCreationUserHandling from '@components/data/ingestionCsv/IngestionCsvCreationUserHandling';
-import IngestionCsvInlineWrapper from '@components/data/ingestionCsv/IngestionCsvInlineWrapper';
 import { IngestionCsvCreationUsersQuery$data } from '@components/data/ingestionCsv/__generated__/IngestionCsvCreationUsersQuery.graphql';
 import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
@@ -50,6 +49,8 @@ import PasswordTextField from '../../../../components/PasswordTextField';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { fetchQuery } from '../../../../relay/environment';
+import { CsvMapperAddInput } from '../csvMapper/CsvMapperUtils';
+import IngestionCsvInlineWrapper from './IngestionCsvInlineWrapper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -68,7 +69,7 @@ const initCSVCreateForm: IngestionCsvAddInput = {
   description: '',
   uri: '',
   csv_mapper_type: false,
-  csv_mapper: '',
+  csv_mapper: undefined,
   csv_mapper_id: '',
   scheduling_period: 'PT1H',
   authentication_type: 'none',
@@ -127,7 +128,7 @@ export interface IngestionCsvAddInput {
   scheduling_period?: string | null
   uri: string
   csv_mapper_type?: boolean
-  csv_mapper?: string
+  csv_mapper?: CsvMapperAddInput
   csv_mapper_id?: string | FieldOption
   authentication_type: IngestionAuthType | string
   authentication_value?: string | null
@@ -210,7 +211,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
     authentication_type: Yup.string().required(t_i18n('This field is required')),
     authentication_value: Yup.string().nullable(),
     csv_mapper_type: Yup.string(),
-    csv_mapper: Yup.string(),
+    csv_mapper: Yup.object(),
     csv_mapper_id: Yup.object(),
     username: Yup.string().nullable(),
     password: Yup.string().nullable(),
@@ -254,7 +255,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
       scheduling_period: values.scheduling_period,
       uri: values.uri,
       csv_mapper_type: values.csv_mapper_type ? 'id' : 'inline',
-      csv_mapper: values.csv_mapper,
+      csv_mapper: JSON.stringify(values.csv_mapper) ?? undefined,
       csv_mapper_id: typeof values.csv_mapper_id === 'string' ? values.csv_mapper_id : values.csv_mapper_id?.value,
       authentication_type: values.authentication_type,
       authentication_value: authenticationValue,
@@ -289,7 +290,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
     scheduling_period: ingestionCsvData.scheduling_period ?? 'PT1H',
     // In case the csv_mapper_id is not know, that mean we are in the older model where we link to an id by default
     csv_mapper_type: ingestionCsvData.csv_mapper_type === null ? true : ingestionCsvData.csv_mapper_type === 'id',
-    csv_mapper: ingestionCsvData.csv_mapper_type === 'inline' ? JSON.stringify(ingestionCsvData.csvMapper) : undefined,
+    csv_mapper: undefined,
     csv_mapper_id: ingestionCsvData.csv_mapper_type === 'inline' ? undefined : convertMapper(ingestionCsvData, 'csvMapper'),
     user_id: convertUser(ingestionCsvData, 'user'),
     username: ingestionCsvData.authentication_type === BASIC_AUTH ? extractUsername(ingestionCsvData.authentication_value) : undefined,
@@ -339,7 +340,9 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
           </Box>
           <Box sx={{ display: currentTab === 1 ? 'block' : 'none' }}>
             <IngestionCsvInlineWrapper>
-              <IngestionCsvInlineMapperForm csvMapper={values.csv_mapper ? JSON.parse(values.csv_mapper) : undefined} setCSVMapperFieldValue={setFieldValue} />
+              <IngestionCsvInlineMapperForm csvMapper={ingestionCsvData?.csv_mapper_type === 'inline' ? (ingestionCsvData.csvMapper as CsvMapperAddInput) : undefined}
+                setCSVMapperFieldValue={setFieldValue} returnCSVFormat={!!ingestionCsvData?.csvMapper}
+              />
             </IngestionCsvInlineWrapper>
           </Box>
           <Form>
@@ -564,6 +567,7 @@ export const IngestionCsvCreationContainer: FunctionComponent<IngestionCsvCreati
   const duplicateCsvData = ingestionCsvDataRef ? {
     ...ingestionCsvDataRef,
     name: `${ingestionCsvDataRef.name} - copy`,
+    csvMapper: ingestionCsvDataRef.duplicateCsvMapper,
   } as IngestionCsvEditionFragment_ingestionCsv$data : null;
   return (
     <Drawer
