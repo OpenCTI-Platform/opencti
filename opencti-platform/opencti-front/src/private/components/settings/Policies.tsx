@@ -26,7 +26,6 @@ import DangerZoneBlock from '../common/danger_zone/DangerZoneBlock';
 import AccessesMenu from './AccessesMenu';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
 import { useFormatter } from '../../../components/i18n';
-import { Option } from '../common/form/ReferenceField';
 import SwitchField from '../../../components/fields/SwitchField';
 import TextField from '../../../components/TextField';
 import { Policies$key } from './__generated__/Policies.graphql';
@@ -243,7 +242,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                               name="public_organization"
                               disabled={disabled || !isEnterpriseEdition}
                               label={'Public organization'}
-                              onChange={(name: string, value: Option) => handleSubmitField(name, value || null)}
+                              onChange={(name: string, value: string) => handleSubmitField(name, value || null)}
                               style={{ width: '100%', marginTop: 20 }}
                               multiple={false}
                               outlined={false}
