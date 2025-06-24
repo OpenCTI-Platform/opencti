@@ -1,17 +1,13 @@
 import { afterAll, beforeAll, describe, it, expect } from 'vitest';
 import gql from 'graphql-tag';
-import {
-  addIngestionCsv,
-  deleteIngestionCsv,
-  ingestionCsvAddAutoUser
-} from '../../../src/modules/ingestion/ingestion-csv-domain';
+import { addIngestionCsv, deleteIngestionCsv, ingestionCsvAddAutoUser } from '../../../src/modules/ingestion/ingestion-csv-domain';
 import { adminQuery, PLATFORM_ORGANIZATION, USER_EDITOR } from '../../utils/testQuery';
-import { type EditInput, IngestionAuthType, type IngestionCsvAddAutoUserInput, type IngestionCsvAddInput } from '../../../src/generated/graphql';
+import { type EditInput, IngestionAuthType, type IngestionCsv, type IngestionCsvAddAutoUserInput, type IngestionCsvAddInput } from '../../../src/generated/graphql';
 import { enableCEAndUnSetOrganization, enableEEAndSetOrganization } from '../../utils/testQueryHelper';
 import { getFakeAuthUser, getOrganizationEntity } from '../../utils/domainQueryHelper';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
 import { findDefaultIngestionGroups, groupEditField } from '../../../src/domain/group';
-import type {BasicGroupEntity, BasicStoreCommon} from '../../../src/types/store';
+import type { BasicGroupEntity } from '../../../src/types/store';
 import { findById as findUserById } from '../../../src/domain/user';
 import { executionContext, SYSTEM_USER } from '../../../src/utils/access';
 
@@ -254,7 +250,7 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
 describe('Ingestion CSV domain - ingestionCsvAddAutoUser', async () => {
   let ingestionUser: AuthUser;
   let currentTestContext: AuthContext;
-  let ingestionCreated: BasicStoreCommon;
+  let ingestionCreated: IngestionCsv;
   beforeAll(async () => {
     ingestionUser = getFakeAuthUser('CsvFeedIngestionDomain');
     ingestionUser.capabilities = [{ name: 'KNOWLEDGE' }, { name: 'INGESTION_SETINGESTIONS' }];
@@ -273,8 +269,20 @@ describe('Ingestion CSV domain - ingestionCsvAddAutoUser', async () => {
   });
 
   afterAll(async () => {
-    // Delete newly create ingestionFeed
+    // Delete newly create ingestionFeed & user
     await deleteIngestionCsv(currentTestContext, ingestionUser, ingestionCreated.id);
+    const createdUser = await findUserById(currentTestContext, SYSTEM_USER, ingestionCreated.user_id);
+    expect(createdUser.name).toBe('[F] CSV Feed to test with auto user');
+    expect(createdUser.user_confidence_level?.max_confidence).toBe(32);
+    // Delete just created user
+    await adminQuery({
+      query: DELETE_USER_QUERY,
+      variables: { id: createdUser.id },
+    });
+    // Verify no longer found
+    const queryResult = await adminQuery({ query: READ_USER_QUERY, variables: { id: createdUser.id } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.user).toBeNull();
   });
 
   it('should create an automatic user and associate it to the ingestion feed', async () => {

@@ -15,6 +15,7 @@ import SwitchField from '../../../../components/fields/SwitchField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../components/Loader';
+import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 
 const ingestionCsvCreationUserHandlingDefaultGroupForIngestionUsersQuery = graphql`
     query IngestionCsvCreationUserHandlingDefaultGroupForIngestionUsersQuery {
@@ -27,6 +28,7 @@ interface IngestionCsvCreationUserHandlingComponentProps {
 
 const IngestionCsvCreationUserHandlingComponent = ({ queryRef }: IngestionCsvCreationUserHandlingComponentProps) => {
   const { t_i18n } = useFormatter();
+  const setAccess = useGranted([SETTINGS_SETACCESSES]);
   const { values, setFieldValue } = useFormikContext<IngestionCsvAddInput>();
   const [displayDefaultGroupWarning, setDisplayDefaultGroupWarning] = useState<boolean>(false);
   const data = usePreloadedQuery(ingestionCsvCreationUserHandlingDefaultGroupForIngestionUsersQuery, queryRef);
@@ -65,8 +67,8 @@ const IngestionCsvCreationUserHandlingComponent = ({ queryRef }: IngestionCsvCre
         variant="outlined"
         sx={{ padding: '0px 10px 0px 10px' }}
       >
-        {t_i18n('User cannot be created automatically for this feed since no default group has been defined. ')}
-        <Link to={'/dashboard/settings/accesses/policies'}>{t_i18n('Click here to add one')}</Link>
+        {t_i18n('User cannot be created automatically for this feed since no default group has been defined.')} {' '}
+        {setAccess ? <Link to={'/dashboard/settings/accesses/policies'}>{t_i18n('Click here to add one')}</Link> : <Box>{t_i18n('Please contact your admin')}</Box>}
       </Alert>
     </Box>}
   </Box>
