@@ -8,7 +8,7 @@ import ImportActionsPopover from '@components/common/files/ImportActionsPopover'
 import ImportFilesDialog from '@components/common/files/import_files/ImportFilesDialog';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { emptyFilterGroup, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
@@ -170,7 +170,7 @@ const ImportFilesContent = ({ inDraftOverview }: ImportFilesContentProps) => {
         operator: 'starts_with',
       },
     ],
-    filterGroups: finalFilters ? [finalFilters] : [],
+    filterGroups: finalFilters && isFilterGroupNotEmpty(finalFilters) ? [finalFilters] : [],
   };
 
   const dataColumns = {
