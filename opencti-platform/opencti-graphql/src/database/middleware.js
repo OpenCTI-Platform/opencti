@@ -348,7 +348,7 @@ const loadElementMetaDependencies = async (context, user, elements, args = {}) =
   // Parallel resolutions
   const toResolvedIds = R.uniq(refsRelations.map((rel) => rel.toId));
   const toResolvedTypes = R.uniq(refsRelations.map((rel) => rel.toType));
-  const toResolvedElements = await elFindByIds(context, user, toResolvedIds, { withoutRels: true, type: toResolvedTypes, connectionFormat: false, toMap: true });
+  const toResolvedElements = await elFindByIds(context, user, toResolvedIds, { type: toResolvedTypes, connectionFormat: false, toMap: true });
   const refEntries = Object.entries(refsPerElements);
   const loadedElementMap = new Map();
   for (let indexRef = 0; indexRef < refEntries.length; indexRef += 1) {

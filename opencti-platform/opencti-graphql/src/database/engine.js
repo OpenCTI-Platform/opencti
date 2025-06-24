@@ -54,7 +54,9 @@ import conf, { booleanConf, extendedErrors, loadCert, logApp, logMigration } fro
 import { ComplexSearchError, ConfigurationError, DatabaseError, EngineShardsError, FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import {
   isStixRefRelationship,
+  RELATION_BORN_IN,
   RELATION_CREATED_BY,
+  RELATION_ETHNICITY,
   RELATION_GRANTED_TO,
   RELATION_IN_PIR,
   RELATION_KILL_CHAIN_PHASE,
@@ -192,6 +194,7 @@ import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWork
 import { ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, isStixCyberObservable } from '../schema/stixCyberObservable';
 import { lockResources } from '../lock/master-lock';
 import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_UPDATE_LINKED } from '../modules/draftWorkspace/draftOperations';
+import { RELATION_SAMPLE } from '../modules/malwareAnalysis/malwareAnalysis-types';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -1631,19 +1634,20 @@ export const computeQueryIndices = (indices, typeOrTypes, withInferences = true)
 // Default fetch used by loadThroughDenormalized
 // This rel_ must be low volume
 // DO NOT ADD Anything here if you are not sure about that you doing
+const REL_DEFAULT_SUFFIX = '*.keyword';
 const REL_DEFAULT_FETCH = [
   // SECURITY
-  'rel_object-marking*.keyword',
-  'rel_granted*.keyword',
+  `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}${REL_DEFAULT_SUFFIX}`,
+  `${REL_INDEX_PREFIX}${RELATION_GRANTED_TO}${REL_DEFAULT_SUFFIX}`,
   // DEFAULT (LOW VOLUME)
-  'rel_created-by*.keyword',
-  'rel_object-label*.keyword',
-  'rel_object-participant*.keyword',
-  'rel_object-assignee*.keyword',
-  'rel_kill-chain-phase*.keyword',
-  'rel_born-in*.keyword',
-  'rel_of-ethnicity*.keyword',
-  'rel_sample*.keyword',
+  `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}${REL_DEFAULT_SUFFIX}`,
+  `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}${REL_DEFAULT_SUFFIX}`,
+  `${REL_INDEX_PREFIX}${RELATION_OBJECT_PARTICIPANT}${REL_DEFAULT_SUFFIX}`,
+  `${REL_INDEX_PREFIX}${RELATION_OBJECT_ASSIGNEE}${REL_DEFAULT_SUFFIX}`,
+  `${REL_INDEX_PREFIX}${RELATION_KILL_CHAIN_PHASE}${REL_DEFAULT_SUFFIX}`,
+  `${REL_INDEX_PREFIX}${RELATION_BORN_IN}${REL_DEFAULT_SUFFIX}`,
+  `${REL_INDEX_PREFIX}${RELATION_ETHNICITY}${REL_DEFAULT_SUFFIX}`,
+  `${REL_INDEX_PREFIX}${RELATION_SAMPLE}${REL_DEFAULT_SUFFIX}`,
 ];
 
 const REL_COUNT_SCRIPT_FIELD = {
@@ -1748,7 +1752,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
         body.search_after = searchAfter;
       }
       const _source = { excludes: [] };
-      if (withoutRels) _source.excludes.push('rel_*');
+      if (withoutRels) _source.excludes.push(`${REL_INDEX_PREFIX}*`);
       if (baseData) _source.includes = [...BASE_FIELDS, ...baseFields];
       const query = {
         index: computedIndices,
@@ -3547,7 +3551,7 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
     body.size = ES_MAX_PAGINATION;
   }
   const _source = { excludes: [] };
-  if (withoutRels) _source.excludes.push('rel_*');
+  if (withoutRels) _source.excludes.push(`${REL_INDEX_PREFIX}*`);
   if (baseData) _source.includes = [...BASE_FIELDS, ...baseFields];
   const query = {
     index: getIndicesToQuery(context, user, indexName),
