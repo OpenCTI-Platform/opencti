@@ -9,7 +9,7 @@ import ImportActionsPopover from '@components/common/files/ImportActionsPopover'
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { emptyFilterGroup, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
@@ -158,11 +158,11 @@ const ImportWorkbenchesContent = () => {
       },
       {
         key: 'internal_id',
-        values: ['import/workbench'],
+        values: ['import/pending'],
         operator: 'starts_with',
       },
     ],
-    filterGroups: finalFilters ? [finalFilters] : [],
+    filterGroups: finalFilters && isFilterGroupNotEmpty(finalFilters) ? [finalFilters] : [],
   };
 
   const preloadedPaginationProps = {
