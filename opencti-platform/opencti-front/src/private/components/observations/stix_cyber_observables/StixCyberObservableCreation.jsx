@@ -7,7 +7,7 @@ import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import Alert from '@mui/lab/Alert';
 import { Add, Close } from '@mui/icons-material';
-import { assoc, compose, dissoc, filter, fromPairs, includes, map, pipe, pluck, prop, propOr, sortBy, toLower, toPairs } from 'ramda';
+import { dissoc, filter, fromPairs, includes, map, pipe, pluck, propOr, toPairs } from 'ramda';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -281,6 +281,7 @@ const StixCyberObservableCreation = ({
   defaultMarkingDefinitions = [],
   isFromBulkRelation = false,
   onCompleted = () => {},
+  stixCyberObservableTypes = undefined,
 }) => {
   const classes = useStyles();
   const theme = useTheme();
@@ -460,12 +461,16 @@ const StixCyberObservableCreation = ({
         render={({ props }) => {
           if (props && props.subTypes) {
             const subTypesEdges = props.subTypes.edges;
-            const sortByLabel = sortBy(compose(toLower, prop('tlabel')));
-            const translatedOrderedList = pipe(
-              map((n) => n.node),
-              map((n) => assoc('tlabel', t_i18n(`entity_${n.label}`), n)),
-              sortByLabel,
-            )(subTypesEdges);
+            const translatedOrderedList = subTypesEdges
+              .map((edge) => edge.node)
+              .filter((node) => !stixCyberObservableTypes
+                    || stixCyberObservableTypes.includes(node.id))
+              .map((node) => ({
+                ...node,
+                tlabel: t_i18n(`entity_${node.label}`),
+              }))
+              .sort((a, b) => a.tlabel.toLowerCase().localeCompare(b.tlabel.toLowerCase()));
+
             return (
               <List>
                 {translatedOrderedList.map((subType) => (
@@ -1043,6 +1048,7 @@ StixCyberObservableCreation.propTypes = {
   ),
   isFromBulkRelation: PropTypes.bool,
   onCompleted: PropTypes.func,
+  stixCyberObservableTypes: PropTypes.arrayOf(PropTypes.string),
 };
 
 export default StixCyberObservableCreation;
