@@ -167,9 +167,10 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
 
   useEffect(() => {
     setCreateRelationshipContext({
-      stixCoreObjectTypes: ['Indicator'],
+      stixCoreObjectTypes: stixCoreObjectTypes.length
+        ? stixCoreObjectTypes
+        : ['Stix-Core-Object'],
       relationshipTypes,
-      connectionKey: 'Pagination_indicators',
       reversed: isRelationReversed,
     });
   }, []);
