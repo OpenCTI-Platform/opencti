@@ -157,7 +157,7 @@ const ImportWorkbenchesContent = () => {
         operator: 'nil',
       },
       {
-        key: 'file_id',
+        key: 'internal_id',
         values: ['import/workbench'],
         operator: 'starts_with',
       },

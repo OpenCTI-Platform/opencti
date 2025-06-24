@@ -165,7 +165,7 @@ const ImportFilesContent = ({ inDraftOverview }: ImportFilesContentProps) => {
         operator: 'nil',
       },
       {
-        key: 'file_id',
+        key: 'internal_id',
         values: ['import/global'],
         operator: 'starts_with',
       },
