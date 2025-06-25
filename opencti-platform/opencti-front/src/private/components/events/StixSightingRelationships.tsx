@@ -24,6 +24,11 @@ const stixSightingsLineFragment = graphql`
     x_opencti_negative
     attribute_count
     confidence
+    objectLabel {
+      id
+      value
+      color
+    }
     first_seen
     last_seen
     description
@@ -354,6 +359,7 @@ const StixSightingRelationships = () => {
         || `${fd(to.first_observed)} - ${fd(to.last_observed)}`
         : t_i18n('Restricted')),
     },
+    objectLabel: {},
     first_seen: {},
     last_seen: {},
     confidence: {},
