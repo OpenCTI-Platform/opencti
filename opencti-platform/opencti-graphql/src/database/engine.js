@@ -194,7 +194,7 @@ const OPENSEARCH_ENGINE = 'opensearch';
 export const ES_MAX_CONCURRENCY = conf.get('elasticsearch:max_concurrency');
 export const ES_DEFAULT_WILDCARD_PREFIX = booleanConf('elasticsearch:search_wildcard_prefix', false);
 export const ES_DEFAULT_FUZZY = booleanConf('elasticsearch:search_fuzzy', false);
-export const ES_INIT_FORCE_INDEX_CREATION = conf.get('elasticsearch:internal_init_force_index_creation') || [];
+export const ES_INIT_FORCE_INDEX_CREATION = conf.get('elasticsearch:internal_init_force_index_creation');
 export const ES_INIT_MAPPING_MIGRATION = conf.get('elasticsearch:internal_init_mapping_migration') || 'off'; // off / old / standard
 export const ES_IS_OLD_MAPPING = ES_INIT_MAPPING_MIGRATION === 'old';
 export const ES_IS_INIT_MIGRATION = ES_INIT_MAPPING_MIGRATION === 'standard' || ES_IS_OLD_MAPPING;
@@ -1112,8 +1112,8 @@ const sortMappingsKeys = (o) => (Object(o) !== o || Array.isArray(o) ? o
   : Object.keys(o).sort().reduce((a, k) => ({ ...a, [k]: sortMappingsKeys(o[k]) }), {}));
 export const elUpdateIndicesMappings = async () => {
   // Force index init
-  if (ES_INIT_FORCE_INDEX_CREATION.length > 0) {
-    await elCreateIndices(ES_INIT_FORCE_INDEX_CREATION);
+  if (ES_INIT_FORCE_INDEX_CREATION) {
+    await elCreateIndices([ES_INIT_FORCE_INDEX_CREATION]);
   }
   // Update core settings
   await updateCoreSettings();
