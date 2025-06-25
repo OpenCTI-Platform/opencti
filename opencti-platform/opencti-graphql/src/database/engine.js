@@ -1804,7 +1804,13 @@ export const elLoadById = async (context, user, id, opts = {}) => {
 export const elBatchIds = async (context, user, elements) => {
   const ids = elements.map((e) => e.id);
   const types = elements.map((e) => e.type);
-  const hits = await elFindByIds(context, user, ids, { type: types, includeDeletedInDraft: true });
+  const allContextOverride = elements.map((e) => e.contextOverride).filter((c) => c);
+  let contextToUse = context;
+  if (allContextOverride.length > 0) {
+    const contextOverride = allContextOverride[0];
+    contextToUse = contextOverride;
+  }
+  const hits = await elFindByIds(contextToUse, user, ids, { type: types, includeDeletedInDraft: true });
   return ids.map((id) => R.find((h) => h.internal_id === id, hits));
 };
 

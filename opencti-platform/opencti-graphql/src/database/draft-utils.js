@@ -22,8 +22,8 @@ export const isDraftFile = (fileKey, draftId, suffix = '') => {
   return fileKey.startsWith(getDraftFilePrefix(draftId) + suffix);
 };
 
-export const getDraftContextIfElementInDraft = (context, instance) => {
-  return !getDraftContext(context) && isDraftIndex(instance._index) && instance.draft_ids?.length === 1 ? { ...context, draft_context: instance.draft_ids[0] } : context;
+export const getDraftContextOverrideIfElementInDraft = (context, instance) => {
+  return !getDraftContext(context) && isDraftIndex(instance._index) && instance.draft_ids?.length === 1 ? { ...context, draft_context: instance.draft_ids[0] } : undefined;
 };
 
 export const buildDraftFilter = (context, user, opts = {}) => {
