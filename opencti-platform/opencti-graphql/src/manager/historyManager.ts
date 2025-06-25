@@ -265,7 +265,7 @@ const initHistoryManager = () => {
       lock = await lockResources([HISTORY_ENGINE_KEY], { retryCount: 0 });
       running = true;
       logApp.info('[OPENCTI-MODULE] Running history manager');
-      streamProcessor = createStreamProcessor(SYSTEM_USER, 'History manager', historyStreamHandler);
+      streamProcessor = createStreamProcessor(SYSTEM_USER, 'History manager', historyStreamHandler, { bufferTime: 5000 });
       await streamProcessor.start(lastEventId);
       while (!shutdown && streamProcessor.running()) {
         lock.signal.throwIfAborted();
