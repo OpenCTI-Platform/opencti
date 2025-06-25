@@ -941,6 +941,7 @@ class OpenCTIStix2:
             "workspace": self.opencti.workspace,
             "publicdashboard": self.opencti.public_dashboard,
             "notification": self.opencti.notification,
+            "internalfile": self.opencti.internal_file,
         }
 
     def generate_standard_id_from_stix(self, data):
@@ -2599,7 +2600,7 @@ class OpenCTIStix2:
             # Element is not knowledge we need to use the right api
             stix_helper = self.get_internal_helper().get(item["type"])
             if stix_helper and hasattr(stix_helper, "delete"):
-                stix_helper.delete(id=item["id"])
+                stix_helper.delete(id=item["id"], item=item)
             else:
                 raise ValueError(
                     "Delete operation or not found stix helper", {"type": item["type"]}
