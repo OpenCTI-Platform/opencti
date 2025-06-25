@@ -15,7 +15,7 @@ import {
   type UserAddInput
 } from '../../generated/graphql';
 import { notify } from '../../database/redis';
-import { BUS_TOPICS, isFeatureEnabled, PLATFORM_VERSION } from '../../config/conf';
+import { BUS_TOPICS, PLATFORM_VERSION } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import {
   type BasicStoreEntityCsvMapper,
@@ -45,7 +45,6 @@ import type { BasicGroupEntity, BasicStoreCommon } from '../../types/store';
 import { regenerateCsvMapperUUID } from './ingestion-converter';
 
 const MINIMAL_CSV_FEED_COMPATIBLE_VERSION = '6.6.0';
-export const CSV_FEED_FEATURE_FLAG = 'CSV_FEED';
 
 export const findById = (context: AuthContext, user: AuthUser, ingestionId: string) => {
   return storeLoadById<BasicStoreEntityIngestionCsv>(context, user, ingestionId, ENTITY_TYPE_INGESTION_CSV);
@@ -129,7 +128,7 @@ export const addIngestionCsv = async (context: AuthContext, user: AuthUser, inpu
 
   let onTheFlyCreatedUser;
   let finalInput;
-  if (isFeatureEnabled('CSV_FEED') && input.automatic_user) {
+  if (input.automatic_user) {
     onTheFlyCreatedUser = await createOnTheFlyUser(context, user, { userName: input.user_id, confidenceLevel: input.confidence_level });
     finalInput = {
       ...((({ automatic_user: _, confidence_level: __, ...inputWithoutAutomaticFields }) => inputWithoutAutomaticFields)(input)),
@@ -162,7 +161,7 @@ export const addIngestionCsv = async (context: AuthContext, user: AuthUser, inpu
       type: 'CSV',
       name: element.name,
       is_running: element.ingestion_running ?? false,
-      connector_user_id: isFeatureEnabled('CSV_FEED') && input.automatic_user ? onTheFlyCreatedUser.id : finalInput.user_id
+      connector_user_id: input.automatic_user ? onTheFlyCreatedUser.id : finalInput.user_id
     });
     await publishUserAction({
       user,
@@ -324,9 +323,6 @@ export const testCsvIngestionMapping = async (context: AuthContext, user: AuthUs
 };
 
 export const csvFeedAddInputFromImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
-  if (!isFeatureEnabled(CSV_FEED_FEATURE_FLAG)) {
-    throw new Error(`${CSV_FEED_FEATURE_FLAG} feature is disabled`);
-  }
   const parsedData = await extractContentFrom(file);
 
   // check platform version compatibility
