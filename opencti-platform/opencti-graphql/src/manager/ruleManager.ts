@@ -26,7 +26,7 @@ import type { StixRelation, StixSighting } from '../types/stix-2-1-sro';
 import type { BaseEvent, DataEvent, DeleteEvent, MergeEvent, SseEvent, StreamDataEvent, UpdateEvent } from '../types/event';
 import { getActivatedRules, getRule } from '../domain/rules';
 import { executionContext, RULE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
-import { isModuleActivated } from '../domain/settings';
+import { isModuleActivated } from '../database/cluster-module';
 import { elList } from '../database/engine';
 import { isStixObject } from '../schema/stixCoreObject';
 

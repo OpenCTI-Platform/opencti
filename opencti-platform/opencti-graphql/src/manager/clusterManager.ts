@@ -14,20 +14,12 @@ import { registerClusterInstance } from '../database/redis';
 import { getEntityFromCache } from '../database/cache';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
+import type { ClusterConfig } from '../types/clusterConfig';
 import type { BasicStoreSettings } from '../types/settings';
 import playbookManager from './playbookManager';
 import { getAllManagersStatuses } from './managerModule';
 
 const SCHEDULE_TIME = 30000;
-
-export type ClusterConfig = {
-  platform_id: string;
-  managers: {
-    id: string,
-    enable: boolean,
-    running: boolean
-  }[]
-};
 
 const initClusterManager = () => {
   let scheduler: SetIntervalAsyncTimer<[]>;

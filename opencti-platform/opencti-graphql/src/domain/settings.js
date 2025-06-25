@@ -1,9 +1,8 @@
 import { getHeapStatistics } from 'node:v8';
 import nconf from 'nconf';
-import * as R from 'ramda';
 import { createEntity, listAllThings, loadEntity, patchAttribute, updateAttribute } from '../database/middleware';
 import conf, { ACCOUNT_STATUSES, booleanConf, BUS_TOPICS, ENABLED_DEMO_MODE, ENABLED_FEATURE_FLAGS, getBaseUrl, PLATFORM_VERSION, PLAYGROUND_ENABLED } from '../config/conf';
-import { delEditContext, getClusterInstances, getRedisVersion, notify, setEditContext } from '../database/redis';
+import { delEditContext, getRedisVersion, notify, setEditContext } from '../database/redis';
 import { isRuntimeSortEnable, searchEngineVersion } from '../database/engine';
 import { getRabbitMQVersion } from '../database/rabbitmq';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
@@ -15,32 +14,13 @@ import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache'
 import { now, utcDate } from '../utils/format';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { UnsupportedError } from '../config/errors';
+import { getClusterInformation } from '../database/cluster-module';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { getEnterpriseEditionInfo, getEnterpriseEditionInfoFromPem, LICENSE_OPTION_TRIAL } from '../modules/settings/licensing';
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
-};
-
-export const getClusterInformation = async () => {
-  const clusterConfig = await getClusterInstances();
-  const info = { instances_number: clusterConfig.length };
-  const allManagers = clusterConfig.map((i) => i.managers).flat();
-  const groupManagersById = R.groupBy((manager) => manager.id, allManagers);
-  const modules = Object.entries(groupManagersById).map(([id, managers]) => ({
-    id,
-    enable: managers.reduce((acc, m) => acc || m.enable, false),
-    running: managers.reduce((acc, m) => acc || m.running, false),
-    warning: managers.reduce((acc, m) => acc || m.warning, false),
-  }));
-  return { info, modules };
-};
-
-export const isModuleActivated = async (moduleId) => {
-  const clusterInfo = await getClusterInformation();
-  const module = clusterInfo.modules.find((m) => m.id === moduleId);
-  return module ? module.enable : false;
 };
 
 export const getApplicationInfo = () => ({
