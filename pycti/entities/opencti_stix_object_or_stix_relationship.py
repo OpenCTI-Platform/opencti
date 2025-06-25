@@ -294,7 +294,7 @@ class StixObjectOrStixRelationship:
                 name
                 description
                 x_opencti_aliases
-                x_opencti_cvss_vector
+                x_opencti_cvss_vector_string
                 x_opencti_cvss_base_score
                 x_opencti_cvss_base_severity
                 x_opencti_cvss_attack_vector
@@ -309,7 +309,7 @@ class StixObjectOrStixRelationship:
                 x_opencti_cvss_remediation_level
                 x_opencti_cvss_report_confidence
                 x_opencti_cvss_temporal_score
-                x_opencti_cvss_v2_vector
+                x_opencti_cvss_v2_vector_string
                 x_opencti_cvss_v2_base_score
                 x_opencti_cvss_v2_access_vector
                 x_opencti_cvss_v2_access_complexity
@@ -321,7 +321,7 @@ class StixObjectOrStixRelationship:
                 x_opencti_cvss_v2_remediation_level
                 x_opencti_cvss_v2_report_confidence
                 x_opencti_cvss_v2_temporal_score
-                x_opencti_cvss_v4_vector
+                x_opencti_cvss_v4_vector_string
                 x_opencti_cvss_v4_base_score
                 x_opencti_cvss_v4_base_severity
                 x_opencti_cvss_v4_attack_vector
