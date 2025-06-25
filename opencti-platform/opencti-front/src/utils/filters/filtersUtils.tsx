@@ -777,7 +777,7 @@ export const useAvailableFilterKeysForEntityTypes = (entityTypes: string[]) => {
   return generateUniqueItemsArray(filterKeysMap.keys() ?? []);
 };
 
-const notCleanableFilterKeys = ['entity_type', 'authorized_members.id', 'user_id'];
+const notCleanableFilterKeys = ['entity_type', 'authorized_members.id', 'user_id', 'internal_id', 'entity_id'];
 
 export const useRemoveIdAndIncorrectKeysFromFilterGroupObject = (filters?: FilterGroup | null, entityTypes = ['Stix-Core-Object']): FilterGroup | undefined => {
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(entityTypes).concat(notCleanableFilterKeys);

@@ -108,6 +108,7 @@ type DataTableInternalToolbarProps = Pick<DataTableProps,
 | 'removeAuthMembersEnabled'
 | 'removeFromDraftEnabled'
 | 'markAsReadEnabled'
+| 'entityTypes'
 > & {
   taskScope?: string
   globalSearch?: string;
@@ -121,6 +122,7 @@ const DataTableInternalToolbar = ({
   removeAuthMembersEnabled,
   removeFromDraftEnabled,
   markAsReadEnabled,
+  entityTypes,
 }: DataTableInternalToolbarProps) => {
   const theme = useTheme<Theme>();
 
@@ -152,6 +154,7 @@ const DataTableInternalToolbar = ({
         selectAll={selectAll}
         search={searchTerm ?? globalSearch}
         filters={toolbarFilters}
+        types={entityTypes}
         handleClearSelectedElements={handleClearSelectedElements}
         taskScope={taskScope}
         handleCopy={handleCopy}
@@ -258,6 +261,7 @@ const DataTable = (props: OCTIDataTableProps) => {
       )}
         dataTableToolBarComponent={(
           <DataTableInternalToolbar
+            entityTypes={entityTypes}
             handleCopy={handleCopy}
             taskScope={taskScope}
             toolbarFilters={toolbarFilters}
