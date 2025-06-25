@@ -38,7 +38,7 @@ import { generateCreateMessage, generateDeleteMessage, generateMergeMessage, gen
 import { INPUT_OBJECTS } from '../schema/general';
 import { enrichWithRemoteCredentials } from '../config/credentials';
 import { getDraftContext } from '../utils/draftContext';
-import type { ExclusionListCacheItem } from '../types/exclusionList';
+import type { ExclusionListCacheItem } from './exclusionListCache';
 import { refreshLocalCacheForEntity } from './cache';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
