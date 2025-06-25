@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Field, Form, Formik, FormikHelpers } from 'formik';
+import { Field, Form, Formik, FormikErrors, FormikHelpers, FormikState } from 'formik';
 import { graphql } from 'relay-runtime';
 import * as Yup from 'yup';
 import { TextField } from 'formik-mui';
@@ -101,28 +101,65 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
     });
   };
 
+  const handleOnChange = (
+    values: ThemeType,
+    setSubmitting: (isSubmitting: boolean) => void,
+    setErrors: (errors: FormikErrors<ThemeType>) => void,
+    resetForm: (nextState?: Partial<FormikState<ThemeType>> | undefined) => void,
+  ) => {
+    themeValidator.validate(values)
+      .then(() => {
+        const { id, name, ...valuesToSerialize } = values;
+        const manifest = serializeThemeManifest(valuesToSerialize);
+        commit({
+          variables: {
+            id,
+            input: [
+              {
+                key: 'name',
+                value: name,
+              },
+              {
+                key: 'manifest',
+                value: manifest,
+              },
+            ],
+          },
+          onCompleted: () => {
+            setSubmitting(false);
+          },
+          onError: () => {
+            setSubmitting(false);
+            resetForm();
+          },
+        });
+      })
+      .catch((error: Yup.ValidationError) => {
+        const { errors, path } = error;
+        if (path) {
+          setErrors({
+            [path]: errors[0],
+          });
+        }
+        setSubmitting(false);
+      });
+  };
+
   return (
-    <Formik
-      onSubmit={handleSubmit}
-      validationSchema={themeValidator}
-      validateOnChange={true}
-      validateOnBlur={true}
-      enabledReinitalize={true}
-      initialValues={theme}
+    <Drawer
+      title={t_i18n('Update a theme')}
+      open={open}
+      onClose={handleClose}
     >
-      {({ submitForm, resetForm, isValid, values }) => (
-        <Drawer
-          title={t_i18n('Update a theme')}
-          open={open}
-          onClose={() => {
-            if (isValid) {
-              submitForm();
-            } else {
-              resetForm();
-            }
-            handleClose();
-          }}
-        >
+      <Formik
+        initialValues={theme}
+        onSubmit={handleSubmit}
+        validationSchema={themeValidator}
+        validateOnChange
+        validateOnBlur
+        enableReinitialize
+      >
+        {({ values, setSubmitting, setErrors, resetForm, errors }) => (
           <Form>
             <Field
               component={TextField}
@@ -130,15 +167,20 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
               name="name"
               label={t_i18n('Name')}
               style={{ marginTop: 0 }}
-              helperText={(
-                <ThemeDetectDuplicate
-                  themeName={values.name}
-                  themeId={theme.id}
-                />
+              error={!!errors.name}
+              helperText={(errors.name
+                ? errors.name
+                : (
+                  <ThemeDetectDuplicate
+                    themeName={values.name}
+                    themeId={theme.id}
+                  />
+                )
               )}
               fullWidth
               disabled={theme.system_default}
               required
+              onBlur={() => handleOnChange(values, setSubmitting, setErrors, resetForm)}
             />
             <Field
               component={ColorPickerField}
@@ -152,6 +194,7 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
               style={{ marginTop: 20 }}
               variant="standard"
               required
+              onBlur={() => handleOnChange(values, setSubmitting, setErrors, resetForm)}
             />
             <Field
               component={ColorPickerField}
@@ -165,6 +208,7 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
               style={{ marginTop: 20 }}
               variant="standard"
               required
+              onBlur={() => handleOnChange(values, setSubmitting, setErrors, resetForm)}
             />
             <Field
               component={ColorPickerField}
@@ -178,6 +222,7 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
               style={{ marginTop: 20 }}
               variant="standard"
               required
+              onBlur={() => handleOnChange(values, setSubmitting, setErrors, resetForm)}
             />
             <Field
               component={ColorPickerField}
@@ -191,6 +236,7 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
               style={{ marginTop: 20 }}
               variant="standard"
               required
+              onBlur={() => handleOnChange(values, setSubmitting, setErrors, resetForm)}
             />
             <Field
               component={ColorPickerField}
@@ -204,6 +250,7 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
               style={{ marginTop: 20 }}
               variant="standard"
               required
+              onBlur={() => handleOnChange(values, setSubmitting, setErrors, resetForm)}
             />
             <Field
               component={ColorPickerField}
@@ -217,6 +264,7 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
               style={{ marginTop: 20 }}
               variant="standard"
               required
+              onBlur={() => handleOnChange(values, setSubmitting, setErrors, resetForm)}
             />
             <Field
               component={ColorPickerField}
@@ -230,6 +278,7 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
               fullWidth
               variant="standard"
               required
+              onBlur={() => handleOnChange(values, setSubmitting, setErrors, resetForm)}
             />
             <Field
               component={TextField}
@@ -242,6 +291,7 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
               }}
               fullWidth
               style={{ marginTop: 20 }}
+              onBlur={() => handleOnChange(values, setSubmitting, setErrors, resetForm)}
             />
             <Field
               component={TextField}
@@ -254,6 +304,7 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
               }}
               fullWidth
               style={{ marginTop: 20 }}
+              onBlur={() => handleOnChange(values, setSubmitting, setErrors, resetForm)}
             />
             <Field
               component={TextField}
@@ -266,11 +317,12 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
               }}
               fullWidth
               style={{ marginTop: 20 }}
+              onBlur={() => handleOnChange(values, setSubmitting, setErrors, resetForm)}
             />
           </Form>
-        </Drawer>
-      )}
-    </Formik>
+        )}
+      </Formik>
+    </Drawer>
   );
 };
 
