@@ -15,14 +15,25 @@ import { mergeDeepRightAll, now, utcDate } from '../utils/format';
 import { convertStoreToStix } from './stix-2-1-converter';
 import type { BasicStoreCommon, StoreObject, StoreRelation } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
-import type { BaseEvent, CreateEventOpts, DataEvent, DeleteEvent, EventOpts, MergeEvent, SseEvent, StreamDataEvent, UpdateEvent, UpdateEventOpts } from '../types/event';
+import type {
+  ActivityStreamEvent,
+  BaseEvent,
+  CreateEventOpts,
+  DataEvent,
+  DeleteEvent,
+  EventOpts,
+  MergeEvent,
+  SseEvent,
+  StreamDataEvent,
+  UpdateEvent,
+  UpdateEventOpts
+} from '../types/event';
 import type { StixCoreObject } from '../types/stix-2-1-common';
 import type { EditContext } from '../generated/graphql';
 import { telemetry } from '../config/tracing';
 import { filterEmpty } from '../types/type-utils';
-import type { ClusterConfig } from '../manager/clusterManager';
-import type { ActivityStreamEvent } from '../manager/activityListener';
-import type { ExecutionEnvelop } from '../manager/playbookManager';
+import type { ClusterConfig } from '../types/clusterConfig';
+import type { ExecutionEnvelop } from '../types/playbookExecution';
 import { generateCreateMessage, generateDeleteMessage, generateMergeMessage, generateRestoreMessage } from './generate-message';
 import { INPUT_OBJECTS } from '../schema/general';
 import { enrichWithRemoteCredentials } from '../config/credentials';
