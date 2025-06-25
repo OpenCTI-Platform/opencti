@@ -311,9 +311,10 @@ const containerOperationCallback = async (context, user, task, containers, opera
           relations.forEach((relation) => {
             elementIds.add(relation.fromId);
             elementIds.add(relation.toId);
+            elementIds.add(relation.id);
           });
         };
-        const args = { fromOrToId: elementIds, baseData: true, callback };
+        const args = { fromOrToId: Array.from(elementIds), baseData: true, callback };
         await listAllRelations(context, user, ABSTRACT_STIX_CORE_RELATIONSHIP, args);
       }
     }
