@@ -8,7 +8,10 @@ import Paper from '@mui/material/Paper';
 import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
 import { useTheme } from '@mui/material/styles';
-import { StixCoreObjectHistoryLinesQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectHistoryLinesQuery.graphql';
+import {
+  StixCoreObjectHistoryLinesQuery,
+  StixCoreObjectHistoryLinesQuery$variables,
+} from '@components/common/stix_core_objects/__generated__/StixCoreObjectHistoryLinesQuery.graphql';
 import StixCoreObjectHistoryLines, { stixCoreObjectHistoryLinesQuery } from './StixCoreObjectHistoryLines';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -21,24 +24,26 @@ const StixCoreObjectLatestHistory = ({ stixCoreObjectId }: StixCoreObjectLatestH
   const { t_i18n } = useFormatter();
   const theme = useTheme();
 
+  const paginationOptions: StixCoreObjectHistoryLinesQuery$variables = {
+    filters: {
+      mode: 'and',
+      filterGroups: [],
+      filters: [
+        { key: ['context_data.id'], values: [stixCoreObjectId] },
+        {
+          key: ['event_type'],
+          values: ['mutation', 'create', 'update', 'delete', 'merge'],
+        },
+      ],
+    },
+    first: 7,
+    orderBy: 'timestamp',
+    orderMode: 'desc',
+  };
+
   const queryRef = useQueryLoading<StixCoreObjectHistoryLinesQuery>(
     stixCoreObjectHistoryLinesQuery,
-    {
-      filters: {
-        mode: 'and',
-        filterGroups: [],
-        filters: [
-          { key: ['context_data.id'], values: [stixCoreObjectId] },
-          {
-            key: ['event_type'],
-            values: ['mutation', 'create', 'update', 'delete', 'merge'],
-          },
-        ],
-      },
-      first: 7,
-      orderBy: 'timestamp',
-      orderMode: 'desc',
-    },
+    paginationOptions,
   );
 
   return (
@@ -94,6 +99,7 @@ const StixCoreObjectLatestHistory = ({ stixCoreObjectId }: StixCoreObjectLatestH
           <StixCoreObjectHistoryLines
             queryRef={queryRef}
             isRelationLog={false}
+            paginationOptions={paginationOptions}
           />
         </React.Suspense>
       }

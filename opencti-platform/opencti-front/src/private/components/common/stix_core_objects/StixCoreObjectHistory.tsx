@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import { useTheme } from '@mui/material/styles';
-import { StixCoreObjectHistoryLinesQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectHistoryLinesQuery.graphql';
+import {
+  StixCoreObjectHistoryLinesQuery,
+  StixCoreObjectHistoryLinesQuery$variables,
+} from '@components/common/stix_core_objects/__generated__/StixCoreObjectHistoryLinesQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectHistoryLines, { stixCoreObjectHistoryLinesQuery } from './StixCoreObjectHistoryLines';
 import SearchInput from '../../../../components/SearchInput';
@@ -25,73 +28,77 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
 
   const handleSearchRelations = (value: string) => setRelationsSearchTerm(value);
 
+  const objectsPaginationOptions: StixCoreObjectHistoryLinesQuery$variables = {
+    filters: {
+      mode: 'and',
+      filterGroups: [],
+      filters: [
+        { key: ['context_data.id'], values: [stixCoreObjectId] },
+        {
+          key: ['event_type'],
+          values: ['mutation', 'create', 'update', 'delete', 'merge'],
+        },
+      ],
+    },
+    first: 20,
+    orderBy: 'timestamp',
+    orderMode: 'desc',
+    search: entitySearchTerm,
+  };
+
   const objectsQueryRef = useQueryLoading<StixCoreObjectHistoryLinesQuery>(
     stixCoreObjectHistoryLinesQuery,
-    {
-      filters: {
-        mode: 'and',
-        filterGroups: [],
+    objectsPaginationOptions,
+  );
+
+  const relationsPaginationOptions: StixCoreObjectHistoryLinesQuery$variables = {
+    filters: {
+      mode: 'and',
+      filters: [
+        {
+          key: ['event_type'],
+          values: ['create', 'delete', 'mutation'], // retro-compatibility
+        },
+      ],
+      filterGroups: [{
+        mode: 'or',
         filters: [
-          { key: ['context_data.id'], values: [stixCoreObjectId] },
           {
-            key: ['event_type'],
-            values: ['mutation', 'create', 'update', 'delete', 'merge'],
+            key: ['event_scope'],
+            values: ['create', 'delete'],
+          },
+          {
+            key: ['event_scope'],
+            values: [], // if event_scope is null, event_type is not
+            operator: 'nil',
           },
         ],
+        filterGroups: [],
       },
-      first: 20,
-      orderBy: 'timestamp',
-      orderMode: 'desc',
-      search: entitySearchTerm,
+      {
+        mode: 'or',
+        filters: [
+          {
+            key: ['context_data.from_id'],
+            values: [stixCoreObjectId],
+          },
+          {
+            key: ['context_data.to_id'],
+            values: [stixCoreObjectId],
+          },
+        ],
+        filterGroups: [],
+      }],
     },
-  );
+    first: 20,
+    orderBy: 'timestamp',
+    orderMode: 'desc',
+    search: relationsSearchTerm,
+  };
 
   const relationsQueryRef = useQueryLoading<StixCoreObjectHistoryLinesQuery>(
     stixCoreObjectHistoryLinesQuery,
-    {
-      filters: {
-        mode: 'and',
-        filters: [
-          {
-            key: ['event_type'],
-            values: ['create', 'delete', 'mutation'], // retro-compatibility
-          },
-        ],
-        filterGroups: [{
-          mode: 'or',
-          filters: [
-            {
-              key: ['event_scope'],
-              values: ['create', 'delete'],
-            },
-            {
-              key: ['event_scope'],
-              values: [], // if event_scope is null, event_type is not
-              operator: 'nil',
-            },
-          ],
-          filterGroups: [],
-        },
-        {
-          mode: 'or',
-          filters: [
-            {
-              key: ['context_data.from_id'],
-              values: [stixCoreObjectId],
-            },
-            {
-              key: ['context_data.to_id'],
-              values: [stixCoreObjectId],
-            },
-          ],
-          filterGroups: [],
-        }],
-      },
-      first: 20,
-      orderBy: 'timestamp',
-      orderMode: 'desc',
-      search: relationsSearchTerm,
-    },
+    relationsPaginationOptions,
   );
 
   return (
@@ -130,6 +137,7 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
               <StixCoreObjectHistoryLines
                 queryRef={objectsQueryRef}
                 isRelationLog={false}
+                paginationOptions={objectsPaginationOptions}
               />
             </React.Suspense>
             }
@@ -158,6 +166,7 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
                 <StixCoreObjectHistoryLines
                   queryRef={relationsQueryRef}
                   isRelationLog={true}
+                  paginationOptions={relationsPaginationOptions}
                 />
               </React.Suspense>
             }

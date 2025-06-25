@@ -1,10 +1,15 @@
-import React, { FunctionComponent } from 'react';
-import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
+import React, { FunctionComponent, useEffect } from 'react';
+import { graphql, PreloadedQuery, usePreloadedQuery, useRefetchableFragment } from 'react-relay';
 import Paper from '@mui/material/Paper';
-import { StixCoreObjectHistoryLinesQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectHistoryLinesQuery.graphql';
+import {
+  StixCoreObjectHistoryLinesQuery,
+  StixCoreObjectHistoryLinesQuery$variables,
+} from '@components/common/stix_core_objects/__generated__/StixCoreObjectHistoryLinesQuery.graphql';
 import { StixCoreObjectHistoryLines_data$key } from '@components/common/stix_core_objects/__generated__/StixCoreObjectHistoryLines_data.graphql';
+import { interval } from 'rxjs';
 import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectHistoryLine from './StixCoreObjectHistoryLine';
+import { FIVE_SECONDS } from '../../../../utils/Time';
 
 export const stixCoreObjectHistoryLinesQuery = graphql`
   query StixCoreObjectHistoryLinesQuery(
@@ -19,7 +24,8 @@ export const stixCoreObjectHistoryLinesQuery = graphql`
 `;
 
 const StixCoreObjectHistoryLinesFragment = graphql`
-  fragment StixCoreObjectHistoryLines_data on Query {
+  fragment StixCoreObjectHistoryLines_data on Query
+  @refetchable(queryName: "StixCoreObjectHistoryLinesRefetchQuery") {
     logs(
       first: $first
       orderBy: $orderBy
@@ -40,15 +46,33 @@ const StixCoreObjectHistoryLinesFragment = graphql`
 interface StixCoreObjectHistoryLinesProps {
   queryRef: PreloadedQuery<StixCoreObjectHistoryLinesQuery>,
   isRelationLog: boolean,
+  paginationOptions: StixCoreObjectHistoryLinesQuery$variables,
 }
+
+const interval$ = interval(FIVE_SECONDS);
 
 const StixCoreObjectHistoryLines: FunctionComponent<StixCoreObjectHistoryLinesProps> = ({
   queryRef,
   isRelationLog,
+  paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
   const queryData = usePreloadedQuery(stixCoreObjectHistoryLinesQuery, queryRef);
-  const data = useFragment<StixCoreObjectHistoryLines_data$key>(StixCoreObjectHistoryLinesFragment, queryData);
+  const [data, refetch] = useRefetchableFragment<StixCoreObjectHistoryLinesQuery, StixCoreObjectHistoryLines_data$key>(
+    StixCoreObjectHistoryLinesFragment,
+    queryData,
+  );
+
+  useEffect(() => {
+    // Refresh the history every interval
+    const subscription = interval$.subscribe(() => {
+      refetch(paginationOptions, { fetchPolicy: 'store-and-network' });
+    });
+    return function cleanup() {
+      subscription.unsubscribe();
+    };
+  }, [refetch]);
+
   const logs = data?.logs?.edges ?? [];
   return (
     <Paper
