@@ -24,7 +24,6 @@ import Transition from '../../../../components/Transition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
-import useHelper from '../../../../utils/hooks/useHelper';
 import stopEvent from '../../../../utils/domEvent';
 import { fetchQuery } from '../../../../relay/environment';
 import { IngestionCsvPopoverExportQuery$data } from './__generated__/IngestionCsvPopoverExportQuery.graphql';
@@ -65,7 +64,6 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
   setStateHash,
 }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
   const [displayStart, setDisplayStart] = useState(false);
   const [starting, setStarting] = useState(false);
@@ -244,11 +242,9 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
           <MenuItem onClick={handleOpenDelete}>
             {t_i18n('Delete')}
           </MenuItem>
-          {isFeatureEnable('CSV_FEED')
-            && <MenuItem onClick={handleExport}>
-              {t_i18n('Export')}
-            </MenuItem>
-          }
+          <MenuItem onClick={handleExport}>
+            {t_i18n('Export')}
+          </MenuItem>
 
         </Menu>
         {queryRef && (

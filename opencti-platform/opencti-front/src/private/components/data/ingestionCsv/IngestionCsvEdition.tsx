@@ -44,7 +44,6 @@ import PasswordTextField from '../../../../components/PasswordTextField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { RootMe_data$data } from '../../../__generated__/RootMe_data.graphql';
 import IngestionCsvInlineWrapper from './IngestionCsvInlineWrapper';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -226,7 +225,6 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
   enableReferences = false,
 }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const ingestionCsvData = useFragment(ingestionCsvEditionFragment, ingestionCsv);
@@ -457,9 +455,12 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                 containerStyle={fieldSpacingContainerStyle}
                 showConfidence
               />
-              {isFeatureEnable('CSV_FEED') && ingestionCsvData.user?.name === 'SYSTEM'
-&& <IngestionCsvEditionUserHandling key={values.name} feedName={values.name} onAutoUserCreated={() => { setFieldValue('user_id', `[F] ${values.name}`); } } ingestionCsvDataId={ingestionCsvData.id}/>
-
+              {ingestionCsvData.user?.name === 'SYSTEM'
+                && <IngestionCsvEditionUserHandling key={values.name}
+                  feedName={values.name}
+                  onAutoUserCreated={() => setFieldValue('user_id', `[F] ${values.name}`)}
+                  ingestionCsvDataId={ingestionCsvData.id}
+                   />
               }
               <Box sx={{
                 marginTop: 2,
