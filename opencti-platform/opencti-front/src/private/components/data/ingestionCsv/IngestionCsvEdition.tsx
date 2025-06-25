@@ -24,6 +24,7 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import IngestionCsvInlineMapperForm from '@components/data/ingestionCsv/IngestionCsvInlineMapperForm';
 import { CsvMapperAddInput } from '@components/data/csvMapper/CsvMapperUtils';
+import IngestionCsvEditionUserHandling from '@components/data/ingestionCsv/IngestionCsvEditionUserHandling';
 import { convertMapper, convertUser } from '../../../../utils/edition';
 import { useFormatter } from '../../../../components/i18n';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
@@ -43,6 +44,7 @@ import PasswordTextField from '../../../../components/PasswordTextField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { RootMe_data$data } from '../../../__generated__/RootMe_data.graphql';
 import IngestionCsvInlineWrapper from './IngestionCsvInlineWrapper';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -224,6 +226,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
   enableReferences = false,
 }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const ingestionCsvData = useFragment(ingestionCsvEditionFragment, ingestionCsv);
@@ -449,11 +452,15 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
               />
               <CreatorField
                 name="user_id"
-                label={t_i18n('User responsible for data creation (empty = System)')}
+                label={t_i18n('User responsible for data creation')}
                 onChange={handleSubmitField}
                 containerStyle={fieldSpacingContainerStyle}
                 showConfidence
               />
+              {isFeatureEnable('CSV_FEED') && ingestionCsvData.user?.name === 'SYSTEM'
+&& <IngestionCsvEditionUserHandling key={values.name} feedName={values.name} onAutoUserCreated={() => { setFieldValue('user_id', `[F] ${values.name}`); } } ingestionCsvDataId={ingestionCsvData.id}/>
+
+              }
               <Box sx={{
                 marginTop: 2,
               }}

@@ -1,8 +1,8 @@
 import { afterAll, beforeAll, describe, it, expect } from 'vitest';
 import gql from 'graphql-tag';
-import { addIngestionCsv, deleteIngestionCsv } from '../../../src/modules/ingestion/ingestion-csv-domain';
+import { addIngestionCsv, deleteIngestionCsv, ingestionCsvAddAutoUser } from '../../../src/modules/ingestion/ingestion-csv-domain';
 import { adminQuery, PLATFORM_ORGANIZATION, USER_EDITOR } from '../../utils/testQuery';
-import { type EditInput, IngestionAuthType, type IngestionCsvAddInput } from '../../../src/generated/graphql';
+import { type EditInput, IngestionAuthType, type IngestionCsv, type IngestionCsvAddAutoUserInput, type IngestionCsvAddInput } from '../../../src/generated/graphql';
 import { enableCEAndUnSetOrganization, enableEEAndSetOrganization } from '../../utils/testQueryHelper';
 import { getFakeAuthUser, getOrganizationEntity } from '../../utils/domainQueryHelper';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
@@ -128,16 +128,17 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
     expect(queryResult.data.user).toBeNull();
   });
 
-  it('should create a CSV Feed with System user works fine', async () => {
+  it('should create a CSV Feed with System user refused', async () => {
     const ingestionCsvInput: IngestionCsvAddInput = {
       authentication_type: IngestionAuthType.None,
       name: 'CSV Feed to test with system user',
       uri: 'http://fakefeed.invalid',
       user_id: ''
     };
-    const ingestionCreated = await addIngestionCsv(currentTestContext, ingestionUser, ingestionCsvInput);
-    expect(ingestionCreated.name).toBe('CSV Feed to test with system user');
-    ingestionCreatedIds.push(ingestionCreated.id);
+
+    await expect(async () => {
+      await addIngestionCsv(currentTestContext, ingestionUser, ingestionCsvInput);
+    }).rejects.toThrowError('You have not choosen a user responsible for data creation');
   });
 
   it('should create a CSV Feed with existing user, confidence should be ignored', async () => {
@@ -216,4 +217,92 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
     expect(ingestionDefaultGroups[0].auto_integration_assignation).toStrictEqual(['global']);
   });
 
+  it('should a CSV Feed with auto user creation be refused when user already exists', async () => {
+    // Create feed
+    const ingestionCsvInput: IngestionCsvAddInput = {
+      authentication_type: IngestionAuthType.None,
+      name: 'Feed not created because auto user already exists',
+      uri: 'http://fakefeed.invalid',
+      user_id: '[F] Feed not created because auto user already exists',
+      automatic_user: true
+    };
+    // First call
+    const firstIngestionCreated = await addIngestionCsv(currentTestContext, ingestionUser, ingestionCsvInput);
+    ingestionCreatedIds.push(firstIngestionCreated.id);
+    // Second call with exact same parameters
+    await expect(async () => {
+      await addIngestionCsv(currentTestContext, ingestionUser, ingestionCsvInput);
+    }).rejects.toThrowError('This user already exists. Change the feed\'s name to change the automatically created user\'s name');
+
+    // Delete just created user
+    const createdUser = await findUserById(currentTestContext, SYSTEM_USER, firstIngestionCreated.user_id);
+    await adminQuery({
+      query: DELETE_USER_QUERY,
+      variables: { id: createdUser.id },
+    });
+    // Verify no longer found
+    const queryResult = await adminQuery({ query: READ_USER_QUERY, variables: { id: createdUser.id } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.user).toBeNull();
+  });
+});
+
+describe('Ingestion CSV domain - ingestionCsvAddAutoUser', async () => {
+  let ingestionUser: AuthUser;
+  let currentTestContext: AuthContext;
+  let ingestionCreated: IngestionCsv;
+  beforeAll(async () => {
+    ingestionUser = getFakeAuthUser('CsvFeedIngestionDomain');
+    ingestionUser.capabilities = [{ name: 'KNOWLEDGE' }, { name: 'INGESTION_SETINGESTIONS' }];
+    currentTestContext = executionContext('testContext', ingestionUser);
+
+    // Add new ingestionFeed
+    const ingestionCsvInput: IngestionCsvAddInput = {
+      authentication_type: IngestionAuthType.None,
+      name: 'CSV Feed to test with auto user',
+      uri: 'http://fakefeed.invalid',
+      user_id: '[F] CSV Feed to test with auto user',
+      automatic_user: true,
+      confidence_level: '32'
+    };
+    ingestionCreated = await addIngestionCsv(currentTestContext, ingestionUser, ingestionCsvInput);
+  });
+
+  afterAll(async () => {
+    // Delete newly create ingestionFeed & user
+    await deleteIngestionCsv(currentTestContext, ingestionUser, ingestionCreated.id);
+    const createdUser = await findUserById(currentTestContext, SYSTEM_USER, ingestionCreated.user_id);
+    expect(createdUser.name).toBe('[F] CSV Feed to test with auto user');
+    expect(createdUser.user_confidence_level?.max_confidence).toBe(32);
+    // Delete just created user
+    await adminQuery({
+      query: DELETE_USER_QUERY,
+      variables: { id: createdUser.id },
+    });
+    // Verify no longer found
+    const queryResult = await adminQuery({ query: READ_USER_QUERY, variables: { id: createdUser.id } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.user).toBeNull();
+  });
+
+  it('should create an automatic user and associate it to the ingestion feed', async () => {
+    const ingestionCsvAddAutoUserInput: IngestionCsvAddAutoUserInput = {
+      user_name: '[F] shoud create automatic user',
+      confidence_level: '63'
+    };
+    const ingestionModified = await ingestionCsvAddAutoUser(currentTestContext, ingestionUser, ingestionCreated.id, ingestionCsvAddAutoUserInput);
+
+    const createdUser = await findUserById(currentTestContext, SYSTEM_USER, ingestionModified.user_id);
+    expect(createdUser.name).toBe('[F] shoud create automatic user');
+    expect(createdUser.user_confidence_level?.max_confidence).toBe(63);
+    // Delete just created user
+    await adminQuery({
+      query: DELETE_USER_QUERY,
+      variables: { id: createdUser.id },
+    });
+    // Verify no longer found
+    const queryResult = await adminQuery({ query: READ_USER_QUERY, variables: { id: createdUser.id } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.user).toBeNull();
+  });
 });
