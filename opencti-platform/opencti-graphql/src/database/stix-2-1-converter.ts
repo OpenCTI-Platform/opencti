@@ -443,7 +443,7 @@ const convertVulnerabilityToStix = (instance: StoreEntity, type: string): SDO.St
       [STIX_EXT_OCTI]: cleanObject({
         ...vulnerability.extensions[STIX_EXT_OCTI],
         // CVSS3
-        cvss_vector: instance.x_opencti_cvss_vector,
+        cvss_vector: instance.x_opencti_cvss_vector_string,
         cvss_base_score: instance.x_opencti_cvss_base_score,
         cvss_base_severity: instance.x_opencti_cvss_base_severity,
         cvss_attack_vector: instance.x_opencti_cvss_attack_vector,
@@ -459,7 +459,7 @@ const convertVulnerabilityToStix = (instance: StoreEntity, type: string): SDO.St
         cvss_report_confidence: instance.x_opencti_cvss_report_confidence,
         cvss_temporal_score: instance.x_opencti_cvss_temporal_score,
         // CVSS2
-        cvss_v2_vector: instance.x_opencti_cvss_v2_vector,
+        cvss_v2_vector: instance.x_opencti_cvss_v2_vector_string,
         cvss_v2_base_score: instance.x_opencti_cvss_v2_base_score,
         cvss_v2_access_vector: instance.x_opencti_cvss_v2_access_vector,
         cvss_v2_access_complexity: instance.x_opencti_cvss_v2_access_complexity,
@@ -472,7 +472,7 @@ const convertVulnerabilityToStix = (instance: StoreEntity, type: string): SDO.St
         cvss_v2_report_confidence: instance.x_opencti_cvss_v2_report_confidence,
         cvss_v2_temporal_score: instance.x_opencti_cvss_v2_temporal_score,
         // CVSS4
-        cvss_v4_vector: instance.x_opencti_cvss_v4_vector,
+        cvss_v4_vector: instance.x_opencti_cvss_v4_vector_string,
         cvss_v4_base_score: instance.x_opencti_cvss_v4_base_score,
         cvss_v4_base_severity: instance.x_opencti_cvss_v4_base_severity,
         cvss_v4_attack_vector: instance.x_opencti_cvss_v4_attack_vector,

@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { addFilter, checkFiltersValidity, convertRelationRefsFilterKeys, extractFilterGroupValues, replaceFilterKey, replaceMeValuesInFilters } from '../../../src/utils/filtering/filtering-utils';
+import {
+  addFilter,
+  checkFiltersValidity,
+  convertRelationRefsFilterKeys,
+  extractFilterGroupValues,
+  replaceFilterKey,
+  replaceEnrichValuesInFilters
+} from '../../../src/utils/filtering/filtering-utils';
 import type { FilterGroup } from '../../../src/generated/graphql';
 import { ME_FILTER_VALUE } from '../../../src/utils/filtering/filtering-constants';
 
@@ -331,7 +338,7 @@ describe('Filtering utils', () => {
         },
       ],
     } as FilterGroup;
-    const finalFilter = replaceMeValuesInFilters(filterGroup, user_id);
+    const finalFilter = replaceEnrichValuesInFilters(filterGroup, user_id, {});
     expect(finalFilter).toEqual(expectedFilter);
   });
 });

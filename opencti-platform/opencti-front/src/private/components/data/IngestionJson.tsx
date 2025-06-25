@@ -24,7 +24,6 @@ import {
 } from '@components/data/ingestionJson/__generated__/IngestionJsonLinesPaginationQuery.graphql';
 import { IngestionJsonLineDummy } from '@components/data/ingestionJson/IngestionJsonLine';
 import { IngestionJsonCreationContainer } from '@components/data/ingestionJson/IngestionJsonCreation';
-import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
 import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -35,7 +34,6 @@ import { INGESTION_SETINGESTIONS } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 
 const LOCAL_STORAGE_KEY = 'ingestionJsons';
 
@@ -51,7 +49,6 @@ const useStyles = makeStyles(() => ({
 const IngestionJson = () => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const isEnterpriseEdition = useEnterpriseEdition();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Json Feeds | Ingestion | Data'));
   const { platformModuleHelpers } = useAuth();
@@ -164,12 +161,7 @@ const IngestionJson = () => {
     <div className={classes.container}>
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('JSON Feeds'), current: true }]} />
       <IngestionMenu/>
-      {!isEnterpriseEdition ? (
-        <EnterpriseEdition feature="JSON Feed" />
-      ) : (
-        <>
-          {renderLines()}
-        </>)}
+      <>{renderLines()}</>
     </div>
   );
 };

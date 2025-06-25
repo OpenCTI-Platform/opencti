@@ -28,6 +28,7 @@ import { getDraftContext } from '../utils/draftContext';
 import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from './backgroundTask-common';
 import { objectOrganization, RELATION_GRANTED_TO } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
+import { elFindByIds } from '../database/engine';
 
 export const stixDelete = async (context, user, id, opts = {}) => {
   const element = await internalLoadById(context, user, id);
@@ -234,15 +235,16 @@ export const askEntityExport = async (context, user, format, entity, type, conte
   return worksForExport;
 };
 
-export const exportTransformFilters = (filteringArgs, orderOptions, userId) => {
+export const exportTransformFilters = async (context, user, filteringArgs, orderOptions, userId) => {
   const orderingInversed = invertObj(orderOptions);
   const { filters } = filteringArgs;
+  const convertedFilters = await checkAndConvertFilters(context, user, filters, userId, elFindByIds);
   return {
     ...filteringArgs,
     orderBy: filteringArgs.orderBy in orderingInversed
       ? orderingInversed[filteringArgs.orderBy]
       : filteringArgs.orderBy,
-    filters: checkAndConvertFilters(filters, userId),
+    filters: convertedFilters,
   };
 };
 

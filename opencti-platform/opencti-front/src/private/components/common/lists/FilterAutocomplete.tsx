@@ -1,31 +1,24 @@
 import React, { Dispatch, FunctionComponent, SyntheticEvent, useState } from 'react';
 import TextField from '@mui/material/TextField';
 import MUIAutocomplete from '@mui/material/Autocomplete';
-import makeStyles from '@mui/styles/makeStyles';
+import { useTheme } from '@mui/styles';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 import useSearchEntities from '../../../../utils/filters/useSearchEntities';
 import type { Theme } from '../../../../components/Theme';
 import SearchScopeElement from './SearchScopeElement';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
-import { FieldOption } from '../../../../utils/field';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-    color: theme.palette.primary.main,
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-}));
+export interface FilterOption {
+  id?: string;
+  value: string | null;
+  label: string;
+  color?: string;
+  type?: string;
+  standard_id?: string;
+}
 
-export interface OptionValue extends FieldOption {
+export interface FilterOptionValue extends FilterOption {
   type: string;
   parentTypes?: string[];
   group?: string;
@@ -66,7 +59,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
     disabled,
   } = props;
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
+  const theme = useTheme<Theme>();
   const [searchScope, setSearchScope] = useState<Record<string, string[]>>(
     availableRelationFilterTypes || {
       targets: [
@@ -94,7 +87,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
     availableEntityTypes,
     availableRelationshipTypes,
   }) as [
-    Record<string, OptionValue[]>,
+    Record<string, FilterOptionValue[]>,
     (
       filterKey: string,
       cacheEntities: Record<
@@ -105,7 +98,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
       Record<string, { label: string; value: string; type: string }[]>
       >,
       event: SyntheticEvent,
-    ) => Record<string, OptionValue[]>,
+    ) => Record<string, FilterOptionValue[]>,
   ]; // change when useSearchEntities will be in TS
   const isStixObjectTypes = [
     'fromId',
@@ -115,7 +108,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
     'indicates',
     'contextEntityId',
   ].includes(filterKey);
-  const handleChange = (event: SyntheticEvent, value: OptionValue | null) => {
+  const handleChange = (event: SyntheticEvent, value: FilterOptionValue | null) => {
     if (value) {
       if (
         (event as unknown as MouseEvent).altKey
@@ -145,7 +138,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
       availableRelationFilterTypes={availableRelationFilterTypes}
     />
   );
-  let options: OptionValue[] = [];
+  let options: FilterOptionValue[] = [];
   if (isStixObjectTypes) {
     if (searchScope[filterKey] && searchScope[filterKey].length > 0) {
       options = (entities[filterKey] || [])
@@ -199,10 +192,20 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
       )}
       renderOption={(propsOption, option) => (
         <li {...propsOption}>
-          <div className={classes.icon}>
+          <div style={{
+            paddingTop: 4,
+            display: 'inline-block',
+            color: theme.palette.primary.main,
+          }}
+          >
             <ItemIcon type={option.type} color={option.color}/>
           </div>
-          <div className={classes.text}>{option.label}</div>
+          <div style={{
+            display: 'inline-block',
+            flexGrow: 1,
+            marginLeft: 10,
+          }}
+          >{option.label}</div>
         </li>
       )}
     />

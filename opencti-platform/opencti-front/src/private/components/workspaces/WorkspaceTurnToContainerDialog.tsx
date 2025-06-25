@@ -9,33 +9,19 @@ import { AddOutlined } from '@mui/icons-material';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
-import makeStyles from '@mui/styles/makeStyles';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { WorkspaceTurnToContainerDialogMutation } from '@components/workspaces/__generated__/WorkspaceTurnToContainerDialogMutation.graphql';
+import type { FilterOption } from '@components/common/lists/FilterAutocomplete';
+import { useTheme } from '@mui/styles';
 import Transition from '../../../components/Transition';
 import { useFormatter } from '../../../components/i18n';
 import ItemIcon from '../../../components/ItemIcon';
 import { resolveLink } from '../../../utils/Entity';
 import { handleError } from '../../../relay/environment';
-import type { Theme } from '../../../components/Theme';
 import useSearchEntities, { EntityValue } from '../../../utils/filters/useSearchEntities';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
-import { FieldOption } from '../../../utils/field';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  icon: {
-    display: 'inline-block',
-    paddingTop: 4,
-    marginRight: theme.spacing(1),
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-  },
-}));
+import type { Theme } from '../../../components/Theme';
 
 interface WorkspaceTurnToContainerDialogProps {
   workspace: { id: string | null };
@@ -48,7 +34,7 @@ interface ActionInputs {
   fieldType?: string;
   field?: string;
   inputValue?: string;
-  value?: FieldOption;
+  value?: FilterOption;
 }
 
 interface StixContainer {
@@ -72,8 +58,8 @@ const investigationToContainerMutation = graphql`
 `;
 
 const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainerDialogProps> = ({ workspace, open, handleClose }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
   const [containerCreation, setContainerCreation] = useState(false);
   const [actionsInputs, setActionsInputs] = useState<ActionInputs | null>(null);
   const [targetContainerId, setTargetContainerId] = useState('');
@@ -225,10 +211,19 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
           onChange={(event, value) => handleChangeActionInputValues(event, value as EntityValue[])}
           renderOption={(props, option) => (
             <li {...props}>
-              <div className={classes.icon}>
+              <div style={{
+                display: 'inline-block',
+                paddingTop: 4,
+                marginRight: theme.spacing(1),
+              }}
+              >
                 <ItemIcon type={option.type} />
               </div>
-              <div className={classes.text}>{option.label}</div>
+              <div style={{
+                display: 'inline-block',
+                flexGrow: 1,
+              }}
+              >{option.label}</div>
             </li>
           )}
           disableClearable

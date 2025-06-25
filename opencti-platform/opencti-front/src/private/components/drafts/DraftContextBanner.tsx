@@ -28,10 +28,13 @@ const interval$ = interval(TEN_SECONDS * 3);
 
 const draftContextBannerFragment = graphql`
   fragment DraftContextBanner_data on DraftWorkspace {
-      id
-      name
-      draft_status
-      processingCount
+    id
+    name
+    draft_status
+    processingCount
+    objectsCount {
+      totalCount
+    }
   }
 `;
 
@@ -85,7 +88,7 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
     return (<ErrorNotFound />);
   }
 
-  const { name, processingCount } = useFragment<DraftContextBanner_data$key>(draftContextBannerFragment, draftWorkspace);
+  const { name, processingCount, objectsCount } = useFragment<DraftContextBanner_data$key>(draftContextBannerFragment, draftWorkspace);
   const currentlyProcessing = processingCount > 0;
 
   const handleExitDraft = () => {
@@ -157,6 +160,7 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
             color="primary"
             style={{ width: '100%' }}
             onClick={() => setDisplayApprove(true)}
+            disabled={objectsCount.totalCount < 1}
           >
             {t_i18n('Approve draft')}
           </Button>

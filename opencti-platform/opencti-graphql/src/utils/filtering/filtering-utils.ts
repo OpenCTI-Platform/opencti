@@ -13,6 +13,7 @@ import {
   filterKeysWithMeValue,
   INSTANCE_DYNAMIC_REGARDING_OF,
   INSTANCE_REGARDING_OF,
+  LABEL_FILTER,
   ME_FILTER_VALUE,
   MEMBERS_GROUP_FILTER,
   MEMBERS_ORGANIZATION_FILTER,
@@ -30,7 +31,10 @@ import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationshi
 import { STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
 import { UnsupportedError } from '../../config/errors';
 import { isNotEmptyField } from '../../database/utils';
-import { isValidDate } from '../../schema/schemaUtils';
+import { isInternalId, isValidDate } from '../../schema/schemaUtils';
+import type { AuthContext, AuthUser } from '../../types/user';
+import type { BasicStoreObject } from '../../types/store';
+import { idLabel } from '../../schema/schema-labels';
 
 export const emptyFilterGroup: FilterGroup = {
   mode: FilterMode.And,
@@ -330,10 +334,27 @@ const getConvertedRelationsNames = (relationNames: string[]) => {
   return convertedRelationsNames;
 };
 
+export const extractFilterKeyValues = (filterKey: string, filterGroup: FilterGroup) => {
+  const values: string[] = [];
+  const filtersResult = { ...filterGroup };
+  filtersResult.filters.forEach((filter) => {
+    const { key } = filter;
+    const arrayKeys = Array.isArray(key) ? key : [key];
+    if (arrayKeys.includes(filterKey)) {
+      values.push(...filter.values);
+    }
+  });
+  filtersResult.filterGroups.forEach((fg) => {
+    const vals = extractFilterKeyValues(filterKey, fg);
+    values.push(...vals);
+  });
+  return values;
+};
+
 /**
- * Replace @me by the user id in filter whose values can contain user ids
+ * Replace @me by the user id in filter whose values can contain user ids, and replace eventual label values with label ids
  */
-export const replaceMeValuesInFilters = (filterGroup: FilterGroup, userId: string) => {
+export const replaceEnrichValuesInFilters = (filterGroup: FilterGroup, userId: string, resolvedLabels: Record<string, string>) => {
   const filtersResult = { ...filterGroup };
   filtersResult.filters.forEach((filter) => {
     const { key } = filter;
@@ -345,8 +366,21 @@ export const replaceMeValuesInFilters = (filterGroup: FilterGroup, userId: strin
         filter.values = filter.values.map((v) => (v === ME_FILTER_VALUE ? userId : v));
       }
     }
+    if (arrayKeys.includes(LABEL_FILTER)) {
+      const labelValues = [];
+      for (let i = 0; i < filter.values.length; i += 1) {
+        const labelValue = filter.values[i];
+        if (resolvedLabels[labelValue]) {
+          labelValues.push(resolvedLabels[labelValue]);
+        } else {
+          labelValues.push(labelValue);
+        }
+      }
+      // eslint-disable-next-line no-param-reassign
+      filter.values = labelValues;
+    }
   });
-  filtersResult.filterGroups.forEach((fg) => replaceMeValuesInFilters(fg, userId));
+  filtersResult.filterGroups.forEach((fg) => replaceEnrichValuesInFilters(fg, userId, resolvedLabels));
   return filtersResult;
 };
 
@@ -393,14 +427,43 @@ export const checkFiltersValidity = (filterGroup: FilterGroup, noFiltersChecking
   checkFilterGroupValuesSyntax(filterGroup);
 };
 
+const BASE_FORCE_LABEL = '{{byName}}=';
+const computeFilterLabelMap = async (
+  context: AuthContext,
+  user: AuthUser,
+  inputFilterGroup: FilterGroup,
+  idsFinder: (context: AuthContext, user: AuthUser, ids: string[], opts: any) => Promise<Record<string, BasicStoreObject>>
+) => {
+  const resolvedLabels: Record<string, string> = {};
+  const labelFilterValues = extractFilterKeyValues(LABEL_FILTER, inputFilterGroup);
+  const isLabelsByText = labelFilterValues.filter((val) => !isInternalId(val)).length > 0;
+  const isForceLabel = (label: string) => label.startsWith(BASE_FORCE_LABEL);
+  const prepareLabel = (label:string) => {
+    return label.startsWith(BASE_FORCE_LABEL) ? label.substring(BASE_FORCE_LABEL.length) : label;
+  };
+  const generateId = (val: string) => idLabel(prepareLabel(val), isForceLabel(val));
+  if (isLabelsByText) {
+    const labelByIds = labelFilterValues.map((val) => generateId(val));
+    const mapLabels = await idsFinder(context, user, labelByIds, { toMap: true, mapWithAllIds: true });
+    for (let index = 0; index < labelFilterValues.length; index += 1) {
+      const labelFilterValue = labelFilterValues[index];
+      resolvedLabels[labelFilterValue] = mapLabels[generateId(labelFilterValue)]?.internal_id;
+    }
+  }
+  return resolvedLabels;
+};
+
 /**
  * Go through all keys in a filter group to:
  * - check that the key is available with respect to the schema, throws an Error if not
  * - convert relation refs key if any
  */
-export const checkAndConvertFilters = (
+export const checkAndConvertFilters = async (
+  context: AuthContext,
+  user: AuthUser,
   inputFilterGroup: FilterGroup | null | undefined,
   userId: string,
+  idsFinder: (context: AuthContext, user: AuthUser, ids: string[], opts: any) => Promise<Record<string, BasicStoreObject>>,
   opts: { noFiltersChecking?: boolean, noFiltersConvert?: boolean } = {}
 ) => {
   if (!inputFilterGroup) {
@@ -409,13 +472,14 @@ export const checkAndConvertFilters = (
   // 01. check filters validity
   const { noFiltersChecking = false, noFiltersConvert = false } = opts;
   checkFiltersValidity(inputFilterGroup, noFiltersChecking);
-  // 02. replace dynamic @me value
-  const filterGroup = replaceMeValuesInFilters(inputFilterGroup, userId);
-  // 03. convert relation refs
+  // 02. If label filtered by name, try to resolve it.
+  const resolvedLabels: Record<string, string> = await computeFilterLabelMap(context, user, inputFilterGroup, idsFinder);
+  // 03. replace dynamic @me value and label values
+  const filterGroup = replaceEnrichValuesInFilters(inputFilterGroup, userId, resolvedLabels);
+  // 04. convert relation refs
   if (!noFiltersChecking && !noFiltersConvert && isFilterGroupNotEmpty(inputFilterGroup)) {
     return convertRelationRefsFilterKeys(filterGroup);
   }
-
   // nothing to convert
   return filterGroup;
 };

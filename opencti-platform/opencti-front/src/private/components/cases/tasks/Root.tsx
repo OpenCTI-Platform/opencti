@@ -49,6 +49,7 @@ const TaskQuery = graphql`
       standard_id
       name
       x_opencti_graph_data
+      entity_type
       ...Tasks_tasks
       ...FileImportViewer_entity
       ...FileExportViewer_entity

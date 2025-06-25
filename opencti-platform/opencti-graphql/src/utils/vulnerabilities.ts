@@ -86,7 +86,7 @@ const cvssMappings: Record<CvssVersion, CvssConfig> = {
       RC: { 'Not Defined': 'ND', Unconfirmed: 'UC', Uncorroborated: 'UR', Confirmed: 'C' },
     },
     ordered: ['AV', 'AC', 'AU', 'C', 'I', 'A', 'E', 'RL', 'RC'],
-    baseVectorKey: 'x_opencti_cvss_v2_vector',
+    baseVectorKey: 'x_opencti_cvss_v2_vector_string',
     baseScoreKey: 'x_opencti_cvss_v2_base_score',
     temporalScoreKey: 'x_opencti_cvss_v2_temporal_score',
     severityKey: '',
@@ -159,7 +159,7 @@ const cvssMappings: Record<CvssVersion, CvssConfig> = {
     },
     ordered: ['AV', 'AC', 'PR', 'UI', 'S', 'C', 'I', 'A', 'E', 'RL', 'RC'],
     prefix: 'CVSS:3.1/',
-    baseVectorKey: 'x_opencti_cvss_vector',
+    baseVectorKey: 'x_opencti_cvss_vector_string',
     baseScoreKey: 'x_opencti_cvss_base_score',
     temporalScoreKey: 'x_opencti_cvss_temporal_score',
     severityKey: 'x_opencti_cvss_base_severity',
@@ -242,7 +242,7 @@ const cvssMappings: Record<CvssVersion, CvssConfig> = {
       'E'
     ],
     prefix: 'CVSS:4.0/',
-    baseVectorKey: 'x_opencti_cvss_v4_vector',
+    baseVectorKey: 'x_opencti_cvss_v4_vector_string',
     baseScoreKey: 'x_opencti_cvss_v4_base_score',
     severityKey: 'x_opencti_cvss_v4_base_severity',
   },
@@ -518,8 +518,8 @@ export const updateCvssVector = (
 
 export const generateVulnerabilitiesUpdates = (initial: Vulnerability, updates: CvssFieldUpdate[]) => {
   const newUpdates = [];
-  if (updates.some((e) => e.key === 'x_opencti_cvss_v2_vector')) {
-    const vectorUpdate = updates.filter((e) => e.key === 'x_opencti_cvss_v2_vector').at(0);
+  if (updates.some((e) => e.key === 'x_opencti_cvss_v2_vector_string')) {
+    const vectorUpdate = updates.filter((e) => e.key === 'x_opencti_cvss_v2_vector_string').at(0);
     const vector = vectorUpdate?.value?.at(0) as string;
     if (!isValidCvssVector('cvss2', vector)) {
       throw FunctionalError('This is not a valid CVSS2 vector');
@@ -528,11 +528,11 @@ export const generateVulnerabilitiesUpdates = (initial: Vulnerability, updates: 
   } else if (updates.some((e) => e.key.startsWith('x_opencti_cvss_v2_'))) {
     const updatedVectorParts = updates.filter((e) => e.key.startsWith('x_opencti_cvss_v2_') && !e.key.includes('base') && !e.key.includes('temporal'));
     if (updatedVectorParts.length > 0) {
-      newUpdates.push(...updateCvssVector('cvss2', initial.x_opencti_cvss_v2_vector, updatedVectorParts, initial.x_opencti_cvss_v2_base_score) as CvssFieldUpdate[]);
+      newUpdates.push(...updateCvssVector('cvss2', initial.x_opencti_cvss_v2_vector_string, updatedVectorParts, initial.x_opencti_cvss_v2_base_score) as CvssFieldUpdate[]);
     }
   }
-  if (updates.some((e) => e.key === 'x_opencti_cvss_vector')) {
-    const vectorUpdate = updates.filter((e) => e.key === 'x_opencti_cvss_vector').at(0);
+  if (updates.some((e) => e.key === 'x_opencti_cvss_vector_string')) {
+    const vectorUpdate = updates.filter((e) => e.key === 'x_opencti_cvss_vector_string').at(0);
     const vector = vectorUpdate?.value?.at(0) as string;
     if (!isValidCvssVector('cvss3', vector)) {
       throw FunctionalError('This is not a valid CVSS3 vector');
@@ -546,11 +546,11 @@ export const generateVulnerabilitiesUpdates = (initial: Vulnerability, updates: 
     }
     const updatedVectorParts = updates.filter((e) => e.key.startsWith('x_opencti_cvss_') && !e.key.includes('base') && !e.key.includes('temporal') && !e.key.startsWith('x_opencti_cvss_v'));
     if (updatedVectorParts.length > 0) {
-      newUpdates.push(...updateCvssVector('cvss3', initial.x_opencti_cvss_vector, updatedVectorParts, baseScore) as CvssFieldUpdate[]);
+      newUpdates.push(...updateCvssVector('cvss3', initial.x_opencti_cvss_vector_string, updatedVectorParts, baseScore) as CvssFieldUpdate[]);
     }
   }
-  if (updates.some((e) => e.key === 'x_opencti_cvss_v4_vector')) {
-    const vectorUpdate = updates.filter((e) => e.key === 'x_opencti_cvss_v4_vector').at(0);
+  if (updates.some((e) => e.key === 'x_opencti_cvss_v4_vector_string')) {
+    const vectorUpdate = updates.filter((e) => e.key === 'x_opencti_cvss_v4_vector_string').at(0);
     const vector = vectorUpdate?.value?.at(0) as string;
     if (!isValidCvssVector('cvss4', vector)) {
       throw FunctionalError('This is not a valid CVSS4 vector');
@@ -564,7 +564,7 @@ export const generateVulnerabilitiesUpdates = (initial: Vulnerability, updates: 
     }
     const updatedVectorParts = updates.filter((e) => e.key.startsWith('x_opencti_cvss_v4_') && !e.key.includes('base'));
     if (updatedVectorParts.length > 0) {
-      newUpdates.push(...updateCvssVector('cvss4', initial.x_opencti_cvss_v4_vector, updatedVectorParts, baseScore) as CvssFieldUpdate[]);
+      newUpdates.push(...updateCvssVector('cvss4', initial.x_opencti_cvss_v4_vector_string, updatedVectorParts, baseScore) as CvssFieldUpdate[]);
     }
   }
   return newUpdates;

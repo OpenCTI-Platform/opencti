@@ -11,20 +11,14 @@ import CsvMapperRepresentationForm, { RepresentationFormEntityOption } from '@co
 import { CsvMapperFormData } from '@components/data/csvMapper/CsvMapper';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { CsvMapperProvider } from '@components/data/csvMapper/CsvMapperContext';
-import {
-  CsvMapperRepresentationAttributesForm_allSchemaAttributes$key,
-} from '@components/data/csvMapper/representations/attributes/__generated__/CsvMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
-import { useFragment } from 'react-relay';
-import { CsvMapperAddInput, csvMapperToFormData, formDataToCsvMapper } from '@components/data/csvMapper/CsvMapperUtils';
 import Box from '@mui/material/Box';
+import { csvFeedCsvMapperToFormData } from '@components/data/ingestionCsv/IngestionCSVFeedUtils';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { representationInitialization } from '../csvMapper/representations/RepresentationUtils';
-import { useComputeDefaultValues } from '../../../../utils/hooks/useDefaultValues';
-import { useCsvMappersData } from '../csvMapper/csvMappers.data';
-import { CsvMapperRepresentationAttributesFormFragment } from '../csvMapper/representations/attributes/CsvMapperRepresentationAttributesForm';
+import { CsvMapperAddInput, formDataToCsvMapper } from '../csvMapper/CsvMapperUtils';
 
 const csvMapperValidation = (t_i18n: (s: string) => string) => Yup.object().shape({
   has_header: Yup.boolean().required(t_i18n('This field is required')),
@@ -32,35 +26,26 @@ const csvMapperValidation = (t_i18n: (s: string) => string) => Yup.object().shap
   skipLineChar: Yup.string().max(1),
 });
 
-const defaultCsvMapperValue: CsvMapperAddInput = {
+const defaultCsvMapperValue: CsvMapperFormData = {
   id: '',
-  errors: null,
   name: '',
   has_header: false,
   separator: ',',
-  skipLineChar: '',
-  representations: [],
+  skip_line_char: '',
+  entity_representations: [],
+  relationship_representations: [],
 };
 
 interface CsvMapperFormProps {
   csvMapper?: CsvMapperAddInput;
-  setCSVMapperFieldValue: (field: string, value: string) => void
+  setCSVMapperFieldValue: (field: string, value: CsvMapperAddInput) => void
+  returnCSVFormat?: boolean;
 }
 
-const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper = defaultCsvMapperValue, setCSVMapperFieldValue }) => {
-  const { t_i18n } = useFormatter();
-  const computeDefaultValues = useComputeDefaultValues();
-  const { schemaAttributes } = useCsvMappersData();
-  const data = useFragment<CsvMapperRepresentationAttributesForm_allSchemaAttributes$key>(
-    CsvMapperRepresentationAttributesFormFragment,
-    schemaAttributes,
-  ) || { csvMapperSchemaAttributes: [] };
+const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, setCSVMapperFieldValue, returnCSVFormat }) => {
+  const [csvMapperFormData] = useState(csvMapper ? csvFeedCsvMapperToFormData(csvMapper) : defaultCsvMapperValue);
 
-  const completedCsvMapper = csvMapperToFormData(
-    csvMapper,
-    data.csvMapperSchemaAttributes,
-    computeDefaultValues,
-  );
+  const { t_i18n } = useFormatter();
   // extracting available entities and relationships types from schema
   const { schema } = useAuth();
   const [availableEntityTypes, setAvailableEntityTypes] = useState<
@@ -132,10 +117,10 @@ const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ c
   };
 
   // -- ERRORS --
-  // on edit mode, csvMapper.errors might be set; on create mode backend validation is not done yet so error is null
+  // on edit mode, csvMapperFormData.errors might be set; on create mode backend validation is not done yet so error is null
   const [hasError, setHasError] = useState<boolean>(
-    !!completedCsvMapper.errors?.length
-    || (completedCsvMapper.entity_representations.length === 0 && completedCsvMapper.relationship_representations.length === 0),
+    !!csvMapperFormData.errors?.length
+    || (csvMapperFormData.entity_representations.length === 0 && csvMapperFormData.relationship_representations.length === 0),
   );
   let errors: Map<string, string> = new Map();
   const handleRepresentationErrors = (key: string, value: boolean) => {
@@ -143,21 +128,27 @@ const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ c
     setHasError(Object.values(errors).filter((v) => v).length > 0);
   };
 
+  useEffect(() => {
+    if (returnCSVFormat) {
+      setCSVMapperFieldValue('csv_mapper', formDataToCsvMapper(csvMapperFormData) as unknown as CsvMapperAddInput);
+    }
+  }, []);
+
   const handleOnSubmit = (values: CsvMapperFormData) => {
-    setCSVMapperFieldValue('csv_mapper', JSON.stringify(formDataToCsvMapper(values)));
+    setCSVMapperFieldValue('csv_mapper', formDataToCsvMapper(values) as unknown as CsvMapperAddInput);
   };
   return (
     <CsvMapperProvider>
       <Formik<CsvMapperFormData>
         enableReinitialize
-        initialValues={completedCsvMapper}
+        initialValues={csvMapperFormData}
         validationSchema={csvMapperValidation(t_i18n)}
         onSubmit={handleOnSubmit}
       >
         {({ setFieldValue, values, dirty }) => {
           useEffect(() => {
             if (dirty && !hasError) {
-              setCSVMapperFieldValue('csv_mapper', JSON.stringify(formDataToCsvMapper(values)));
+              setCSVMapperFieldValue('csv_mapper', formDataToCsvMapper(values) as unknown as CsvMapperAddInput);
             }
           }, [values, dirty, hasError]);
           return (

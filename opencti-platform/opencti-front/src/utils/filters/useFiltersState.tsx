@@ -33,7 +33,7 @@ const useFiltersState = (initFilters: FilterGroup | null = emptyFilterGroup, def
         latestAddFilterId: filter.id,
       }));
     },
-    handleAddRepresentationFilter: (id: string, value: string) => {
+    handleAddRepresentationFilter: (id: string, value: string | null) => {
       if (value === null) { // handle clicking on 'no label' in entities list
         const findCorrespondingFilter = filtersState.filters?.filters.find((f) => id === f.id);
         if (findCorrespondingFilter && ['objectLabel'].includes(findCorrespondingFilter.key)) {
@@ -88,7 +88,7 @@ const useFiltersState = (initFilters: FilterGroup | null = emptyFilterGroup, def
         latestAddFilterId: undefined,
       }));
     },
-    handleRemoveRepresentationFilter: (id: string, value: string | Filter | undefined) => {
+    handleRemoveRepresentationFilter: (id: string, value: string | Filter | undefined | null) => {
       setFiltersState((prevState) => ({
         ...prevState,
         filters: handleRemoveRepresentationFilterUtil({ filters: prevState.filters, id, value }),

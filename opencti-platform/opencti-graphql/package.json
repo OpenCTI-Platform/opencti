@@ -1,6 +1,6 @@
 {
   "name": "opencti-graphql",
-  "version": "6.6.18",
+  "version": "6.7.0",
   "main": "src/back.js",
   "scripts": {
     "check-ts": "tsc --noEmit",
@@ -51,7 +51,7 @@
     "@datadog/pprof": "5.7.1",
     "@elastic/elasticsearch": "8.18.2",
     "@escape.tech/graphql-armor": "3.1.2",
-    "@graphql-tools/import": "7.0.18",
+    "@graphql-tools/import": "7.0.19",
     "@graphql-tools/merge": "9.0.24",
     "@graphql-tools/schema": "10.0.23",
     "@graphql-tools/utils": "10.8.6",
@@ -89,7 +89,7 @@
     "archiver": "7.0.1",
     "archiver-zip-encrypted": "2.0.0",
     "async-lock": "1.4.1",
-    "axios": "1.9.0",
+    "axios": "1.10.0",
     "axios-cookiejar-support": "5.0.5",
     "bcryptjs": "2.4.3",
     "bluebird": "3.7.2",
@@ -105,7 +105,7 @@
     "ejs": "3.1.10",
     "eventsource": "2.0.2",
     "express": "4.21.2",
-    "express-rate-limit": "7.5.0",
+    "express-rate-limit": "7.5.1",
     "express-session": "1.18.1",
     "fast-json-patch": "3.1.1",
     "file-type": "21.0.0",
@@ -128,10 +128,10 @@
     "iterall": "1.3.0",
     "js-deep-equals": "2.1.1",
     "json-to-plain-text": "1.1.4",
-    "jsonpath-plus": "10.2.0",
+    "jsonpath-plus": "10.3.0",
     "jwt-decode": "4.0.0",
     "lru-cache": "11.1.0",
-    "luxon": "3.5.0",
+    "luxon": "3.6.1",
     "migrate": "2.1.0",
     "mime-types": "3.0.1",
     "moment": "2.30.1",
@@ -161,7 +161,7 @@
     "showdown": "2.1.0",
     "source-map": "0.7.4",
     "tough-cookie": "5.1.2",
-    "trino-client": "0.2.6",
+    "trino-client": "0.2.7",
     "turndown": "7.2.0",
     "unzipper": "0.12.3",
     "uuid": "11.1.0",
@@ -169,7 +169,7 @@
     "validator": "13.15.0",
     "winston": "3.17.0",
     "winston-daily-rotate-file": "5.0.0",
-    "ws": "8.18.1",
+    "ws": "8.18.2",
     "xml2js": "0.6.2",
     "zod": "3.24.2"
   },
@@ -190,7 +190,7 @@
     "@types/express": "5.0.1",
     "@types/graphql-upload": "17.0.0",
     "@types/luxon": "3.6.2",
-    "@types/mime-types": "2.1.4",
+    "@types/mime-types": "3.0.1",
     "@types/nconf": "0.10.7",
     "@types/node-forge": "1.3.11",
     "@types/ramda": "0.30.2",
@@ -208,7 +208,7 @@
     "eslint-config-airbnb": "19.0.4",
     "eslint-config-airbnb-base": "15.0.0",
     "eslint-config-airbnb-typescript": "18.0.0",
-    "eslint-plugin-import": "2.31.0",
+    "eslint-plugin-import": "2.32.0",
     "eslint-plugin-import-newlines": "1.4.0",
     "eslint-plugin-jsx-a11y": "6.10.2",
     "eslint-plugin-react": "7.37.5",
@@ -220,7 +220,7 @@
     "vitest": "2.0.5"
   },
   "resolutions": {
-    "axios": "1.9.0",
+    "axios": "1.10.0",
     "chokidar": "4.0.3",
     "cross-spawn": "7.0.6",
     "body-parser": "1.20.3",
@@ -240,5 +240,5 @@
     "@datadog/pprof": "patch:@datadog/pprof@5.7.1#./patch/@datadog-pprof-5.4.1.patch",
     "path-to-regexp": "0.1.12"
   },
-  "packageManager": "yarn@4.9.1"
+  "packageManager": "yarn@4.9.2"
 }

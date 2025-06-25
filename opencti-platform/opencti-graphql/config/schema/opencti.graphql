@@ -7306,7 +7306,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   description: String
   x_opencti_aliases: [String]
   # CVSS 3
-  x_opencti_cvss_vector: String
+  x_opencti_cvss_vector_string: String
   x_opencti_cvss_base_score: Float
   x_opencti_cvss_base_severity: String
   x_opencti_cvss_attack_vector: String
@@ -7322,7 +7322,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   x_opencti_cvss_report_confidence: String
   x_opencti_cvss_temporal_score: Float
   # CVSS2
-  x_opencti_cvss_v2_vector: String
+  x_opencti_cvss_v2_vector_string: String
   x_opencti_cvss_v2_base_score: Float
   x_opencti_cvss_v2_access_vector: String
   x_opencti_cvss_v2_access_complexity: String
@@ -7335,7 +7335,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   x_opencti_cvss_v2_report_confidence: String
   x_opencti_cvss_v2_temporal_score: Float
   # CVSS 4
-  x_opencti_cvss_v4_vector: String
+  x_opencti_cvss_v4_vector_string: String
   x_opencti_cvss_v4_base_score: Float
   x_opencti_cvss_v4_base_severity: String
   x_opencti_cvss_v4_attack_vector: String
@@ -7391,7 +7391,7 @@ input VulnerabilityAddInput {
   description: String
   x_opencti_aliases: [String]
   # CVSS 3
-  x_opencti_cvss_vector: String
+  x_opencti_cvss_vector_string: String
   x_opencti_cvss_base_score: Float
   x_opencti_cvss_base_severity: String
   x_opencti_cvss_attack_vector: String
@@ -7407,7 +7407,7 @@ input VulnerabilityAddInput {
   x_opencti_cvss_report_confidence: String
   x_opencti_cvss_temporal_score: Float
   # CVSS2
-  x_opencti_cvss_v2_vector: String
+  x_opencti_cvss_v2_vector_string: String
   x_opencti_cvss_v2_base_score: Float
   x_opencti_cvss_v2_access_vector: String
   x_opencti_cvss_v2_access_complexity: String
@@ -7420,7 +7420,7 @@ input VulnerabilityAddInput {
   x_opencti_cvss_v2_report_confidence: String
   x_opencti_cvss_v2_temporal_score: Float
   # CVSS 4
-  x_opencti_cvss_v4_vector: String
+  x_opencti_cvss_v4_vector_string: String
   x_opencti_cvss_v4_base_score: Float
   x_opencti_cvss_v4_base_severity: String
   x_opencti_cvss_v4_attack_vector: String
