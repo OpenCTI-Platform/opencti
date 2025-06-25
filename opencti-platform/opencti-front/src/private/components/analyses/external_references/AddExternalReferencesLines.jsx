@@ -17,10 +17,6 @@ import { isNotEmptyField } from '../../../../utils/utils';
 import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
-  avatar: {
-    width: 24,
-    height: 24,
-  },
   icon: {
     color: theme.palette.primary.main,
   },
