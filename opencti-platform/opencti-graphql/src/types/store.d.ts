@@ -338,7 +338,7 @@ interface BasicStoreEntity extends BasicStoreCommon {
   x_opencti_reliability: string;
   x_opencti_organization_type: string;
   // CVSS3
-  x_opencti_cvss_vector: string;
+  x_opencti_cvss_vector_string: string;
   x_opencti_cvss_base_severity: string;
   x_opencti_cvss_attack_vector: string;
   x_opencti_cvss_attack_complexity: string;
@@ -352,7 +352,7 @@ interface BasicStoreEntity extends BasicStoreCommon {
   x_opencti_cvss_remediation_level: string;
   x_opencti_cvss_report_confidence: string;
   // CVSS2
-  x_opencti_cvss_v2_vector: string;
+  x_opencti_cvss_v2_vector_string: string;
   x_opencti_cvss_v2_access_vector: string;
   x_opencti_cvss_v2_access_complexity: string;
   x_opencti_cvss_v2_authentication: string;
@@ -363,7 +363,7 @@ interface BasicStoreEntity extends BasicStoreCommon {
   x_opencti_cvss_v2_remediation_level: string;
   x_opencti_cvss_v2_report_confidence: string;
   // CVSS4
-  x_opencti_cvss_v4_vector: string;
+  x_opencti_cvss_v4_vector_string: string;
   x_opencti_cvss_v4_base_severity: string;
   x_opencti_cvss_v4_attack_vector: string;
   x_opencti_cvss_v4_attack_complexity: string;

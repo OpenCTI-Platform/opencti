@@ -31471,7 +31471,7 @@ export type Vulnerability = BasicObject & StixCoreObject & StixDomainObject & St
   x_opencti_cvss_v2_remediation_level?: Maybe<Scalars['String']['output']>;
   x_opencti_cvss_v2_report_confidence?: Maybe<Scalars['String']['output']>;
   x_opencti_cvss_v2_temporal_score?: Maybe<Scalars['Float']['output']>;
-  x_opencti_cvss_v2_vector?: Maybe<Scalars['String']['output']>;
+  x_opencti_cvss_v2_vector_string?: Maybe<Scalars['String']['output']>;
   x_opencti_cvss_v4_attack_complexity?: Maybe<Scalars['String']['output']>;
   x_opencti_cvss_v4_attack_requirements?: Maybe<Scalars['String']['output']>;
   x_opencti_cvss_v4_attack_vector?: Maybe<Scalars['String']['output']>;
@@ -31486,8 +31486,8 @@ export type Vulnerability = BasicObject & StixCoreObject & StixDomainObject & St
   x_opencti_cvss_v4_integrity_impact_v?: Maybe<Scalars['String']['output']>;
   x_opencti_cvss_v4_privileges_required?: Maybe<Scalars['String']['output']>;
   x_opencti_cvss_v4_user_interaction?: Maybe<Scalars['String']['output']>;
-  x_opencti_cvss_v4_vector?: Maybe<Scalars['String']['output']>;
-  x_opencti_cvss_vector?: Maybe<Scalars['String']['output']>;
+  x_opencti_cvss_v4_vector_string?: Maybe<Scalars['String']['output']>;
+  x_opencti_cvss_vector_string?: Maybe<Scalars['String']['output']>;
   x_opencti_cwe?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   x_opencti_epss_percentile?: Maybe<Scalars['Float']['output']>;
   x_opencti_epss_score?: Maybe<Scalars['Float']['output']>;
@@ -31690,7 +31690,7 @@ export type VulnerabilityAddInput = {
   x_opencti_cvss_v2_remediation_level?: InputMaybe<Scalars['String']['input']>;
   x_opencti_cvss_v2_report_confidence?: InputMaybe<Scalars['String']['input']>;
   x_opencti_cvss_v2_temporal_score?: InputMaybe<Scalars['Float']['input']>;
-  x_opencti_cvss_v2_vector?: InputMaybe<Scalars['String']['input']>;
+  x_opencti_cvss_v2_vector_string?: InputMaybe<Scalars['String']['input']>;
   x_opencti_cvss_v4_attack_complexity?: InputMaybe<Scalars['String']['input']>;
   x_opencti_cvss_v4_attack_requirements?: InputMaybe<Scalars['String']['input']>;
   x_opencti_cvss_v4_attack_vector?: InputMaybe<Scalars['String']['input']>;
@@ -31705,8 +31705,8 @@ export type VulnerabilityAddInput = {
   x_opencti_cvss_v4_integrity_impact_v?: InputMaybe<Scalars['String']['input']>;
   x_opencti_cvss_v4_privileges_required?: InputMaybe<Scalars['String']['input']>;
   x_opencti_cvss_v4_user_interaction?: InputMaybe<Scalars['String']['input']>;
-  x_opencti_cvss_v4_vector?: InputMaybe<Scalars['String']['input']>;
-  x_opencti_cvss_vector?: InputMaybe<Scalars['String']['input']>;
+  x_opencti_cvss_v4_vector_string?: InputMaybe<Scalars['String']['input']>;
+  x_opencti_cvss_vector_string?: InputMaybe<Scalars['String']['input']>;
   x_opencti_cwe?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_epss_percentile?: InputMaybe<Scalars['Float']['input']>;
   x_opencti_epss_score?: InputMaybe<Scalars['Float']['input']>;
@@ -44297,7 +44297,7 @@ export type VulnerabilityResolvers<ContextType = any, ParentType extends Resolve
   x_opencti_cvss_v2_remediation_level?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_cvss_v2_report_confidence?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_cvss_v2_temporal_score?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
-  x_opencti_cvss_v2_vector?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_cvss_v2_vector_string?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_cvss_v4_attack_complexity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_cvss_v4_attack_requirements?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_cvss_v4_attack_vector?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -44312,8 +44312,8 @@ export type VulnerabilityResolvers<ContextType = any, ParentType extends Resolve
   x_opencti_cvss_v4_integrity_impact_v?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_cvss_v4_privileges_required?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_cvss_v4_user_interaction?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  x_opencti_cvss_v4_vector?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  x_opencti_cvss_vector?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_cvss_v4_vector_string?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_cvss_vector_string?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_cwe?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   x_opencti_epss_percentile?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   x_opencti_epss_score?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
