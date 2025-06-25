@@ -95,6 +95,8 @@ const AddExternalReferences = ({
             query={addExternalReferencesLinesQuery}
             variables={{
               search,
+              orderBy: 'created_at',
+              orderMode: 'desc',
               count: 20,
             }}
             render={({ props }) => {

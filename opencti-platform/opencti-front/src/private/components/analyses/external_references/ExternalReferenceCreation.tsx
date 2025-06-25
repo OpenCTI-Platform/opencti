@@ -162,10 +162,17 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
       handleCloseContextual();
       return;
     }
+    console.log('in submit contextual');
     commit({
       variables: {
         input: finalValues,
       },
+      updater: (store: RecordSourceSelectorProxy) => insertNode(
+        store,
+        'Pagination_externalReferences',
+        paginationOptions,
+        'externalReferenceAdd',
+      ),
       onError: (error: Error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
@@ -178,7 +185,6 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
           handleCloseContextual();
         }
       },
-      updater: undefined,
       optimisticUpdater: undefined,
       optimisticResponse: undefined,
     });
