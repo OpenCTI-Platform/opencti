@@ -19,8 +19,9 @@ import { useFormatter } from '../../../../components/i18n';
 import { FilterGroup, handleFilterHelpers } from '../../../../utils/filters/filtersHelpers-types';
 import { getDefaultAiLanguage } from '../../../../utils/ai/Common';
 import { fetchQuery } from '../../../../relay/environment';
-import { copyToClipboard, cleanHtmlTags } from '../../../../utils/utils';
+import { cleanHtmlTags, copyToClipboard } from '../../../../utils/utils';
 import { daysAgo, monthsAgo } from '../../../../utils/Time';
+import { RelayError } from '../../../../relay/relayTypes';
 
 const subscription = graphql`
     subscription AISummaryContainersSubscription($id: ID!) {
@@ -53,7 +54,7 @@ const aISummaryContainersQuery = graphql`
     ) {
       result
       topics
-        updated_at
+      updated_at
     }
   }
 `;
@@ -177,6 +178,7 @@ const AISummaryContainers = ({ busId, isContainer, filters, loading, setLoading 
   const [relative, setRelative] = useState('none');
   const [content, setContent] = useState('');
   const [result, setResult] = useState<AISummaryContainersContainersAskAiSummaryQuery$data | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined);
   const [language, setLanguage] = useState(defaultLanguageName);
 
   // Subscription
@@ -212,10 +214,15 @@ const AISummaryContainers = ({ busId, isContainer, filters, loading, setLoading 
     fetchQuery(aISummaryContainersQuery, queryParams).toPromise().then((data) => {
       const resultData = data as AISummaryContainersContainersAskAiSummaryQuery$data;
       if (resultData && resultData.containersAskAiSummary) {
+        setErrorMessage(undefined);
         setResult(resultData);
         setContent(resultData.containersAskAiSummary.result ?? '');
         setLoading(false);
       }
+    }).catch((error: RelayError) => {
+      const { errors } = error.res;
+      setErrorMessage(errors.at(0)?.message);
+      setLoading(false);
     });
   }, []);
 
@@ -267,19 +274,25 @@ const AISummaryContainers = ({ busId, isContainer, filters, loading, setLoading 
   };
 
   return (
-    <AISummaryContainersComponent
-      first={first}
-      changeFirst={changeFirst}
-      relative={relative}
-      changeRelative={changeRelative}
-      language={language}
-      setLanguage={setLanguage}
-      refetch={refetch}
-      content={content}
-      result={result}
-      loading={loading}
-      isContainer={isContainer}
-    />
+    <>
+      {errorMessage ? (
+        <Alert severity="warning" variant="outlined" style={{ marginBlock: 20 }}>{errorMessage}</Alert>
+      ) : (
+        <AISummaryContainersComponent
+          first={first}
+          changeFirst={changeFirst}
+          relative={relative}
+          changeRelative={changeRelative}
+          language={language}
+          setLanguage={setLanguage}
+          refetch={refetch}
+          content={content}
+          result={result}
+          loading={loading}
+          isContainer={isContainer}
+        />
+      )}
+    </>
   );
 };
 

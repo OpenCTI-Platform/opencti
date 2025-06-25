@@ -1,13 +1,13 @@
-import { OptionValue } from '@components/common/lists/FilterAutocomplete';
+import { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import { isStixObjectTypes, ME_FILTER_VALUE } from './filtersUtils';
 
 // eslint-disable-next-line import/prefer-default-export
 export const getOptionsFromEntities = (
-  entities: Record<string, OptionValue[]>,
+  entities: Record<string, FilterOptionValue[]>,
   searchScope: Record<string, string[]>,
   filterKey: string,
-): OptionValue[] => {
-  let filteredOptions: OptionValue[] = [];
+): FilterOptionValue[] => {
+  let filteredOptions: FilterOptionValue[] = [];
   if (isStixObjectTypes.includes(filterKey)) {
     if (searchScope[filterKey] && searchScope[filterKey].length > 0) {
       filteredOptions = (entities[filterKey] || [])

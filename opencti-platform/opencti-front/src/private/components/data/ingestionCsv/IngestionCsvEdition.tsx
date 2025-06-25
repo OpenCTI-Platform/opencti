@@ -1,5 +1,5 @@
 import { graphql, useFragment } from 'react-relay';
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useState, useMemo } from 'react';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import { ExternalReferencesValues } from '@components/common/form/ExternalReferencesField';
@@ -9,7 +9,10 @@ import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
 import CreatorField from '@components/common/form/CreatorField';
 import CommitMessage from '@components/common/form/CommitMessage';
-import { IngestionCsvEditionFragment_ingestionCsv$key } from '@components/data/ingestionCsv/__generated__/IngestionCsvEditionFragment_ingestionCsv.graphql';
+import {
+  IngestionCsvEditionFragment_ingestionCsv$data,
+  IngestionCsvEditionFragment_ingestionCsv$key,
+} from '@components/data/ingestionCsv/__generated__/IngestionCsvEditionFragment_ingestionCsv.graphql';
 import CsvMapperField, { CsvMapperFieldOption, csvMapperQuery } from '@components/common/form/CsvMapperField';
 import Button from '@mui/material/Button';
 import IngestionCsvFeedTestDialog from '@components/data/ingestionCsv/IngestionCsvFeedTestDialog';
@@ -20,6 +23,8 @@ import IngestionSchedulingField from '@components/data/IngestionSchedulingField'
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import IngestionCsvInlineMapperForm from '@components/data/ingestionCsv/IngestionCsvInlineMapperForm';
+import { CsvMapperAddInput } from '@components/data/csvMapper/CsvMapperUtils';
+import IngestionCsvEditionUserHandling from '@components/data/ingestionCsv/IngestionCsvEditionUserHandling';
 import { convertMapper, convertUser } from '../../../../utils/edition';
 import { useFormatter } from '../../../../components/i18n';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
@@ -37,7 +42,9 @@ import { USER_CHOICE_MARKING_CONFIG } from '../../../../utils/csvMapperUtils';
 import { BASIC_AUTH, BEARER_AUTH, CERT_AUTH, extractCA, extractCert, extractKey, extractPassword, extractUsername } from '../../../../utils/ingestionAuthentificationUtils';
 import PasswordTextField from '../../../../components/PasswordTextField';
 import SwitchField from '../../../../components/fields/SwitchField';
+import { RootMe_data$data } from '../../../__generated__/RootMe_data.graphql';
 import IngestionCsvInlineWrapper from './IngestionCsvInlineWrapper';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -50,6 +57,35 @@ const useStyles = makeStyles<Theme>((theme) => ({
     marginLeft: theme.spacing(2),
   },
 }));
+
+export const initIngestionValue = (ingestionCsvData: IngestionCsvEditionFragment_ingestionCsv$data, me : RootMe_data$data) => {
+  return {
+    name: ingestionCsvData.name,
+    description: ingestionCsvData.description,
+    scheduling_period: ingestionCsvData.scheduling_period ?? 'auto',
+    uri: ingestionCsvData.uri,
+    authentication_type: ingestionCsvData.authentication_type,
+    authentication_value: ingestionCsvData.authentication_type === BEARER_AUTH ? ingestionCsvData.authentication_value : undefined,
+    username: ingestionCsvData.authentication_type === BASIC_AUTH ? extractUsername(ingestionCsvData.authentication_value) : undefined,
+    password: ingestionCsvData.authentication_type === BASIC_AUTH ? extractPassword(ingestionCsvData.authentication_value) : undefined,
+    cert: ingestionCsvData.authentication_type === CERT_AUTH ? extractCert(ingestionCsvData.authentication_value) : undefined,
+    key: ingestionCsvData.authentication_type === CERT_AUTH ? extractKey(ingestionCsvData.authentication_value) : undefined,
+    ca: ingestionCsvData.authentication_type === CERT_AUTH ? extractCA(ingestionCsvData.authentication_value) : undefined,
+    ingestion_running: ingestionCsvData.ingestion_running,
+    // In case the csv_mapper_id is not know, that mean we are in the older model where we link to an id by default
+    csv_mapper_type: ingestionCsvData.csv_mapper_type === null ? true : ingestionCsvData.csv_mapper_type === 'id',
+    csv_mapper: ingestionCsvData.csv_mapper_type === 'inline' ? ingestionCsvData.csvMapper as CsvMapperAddInput : undefined,
+    csv_mapper_id: ingestionCsvData.csv_mapper_type === 'inline' ? null : convertMapper(ingestionCsvData, 'csvMapper'),
+    user_id: convertUser(ingestionCsvData, 'user'),
+    references: undefined,
+    markings: me.allowed_marking?.filter(
+      (marking) => ingestionCsvData.markings?.includes(marking.id),
+    ).map((marking) => ({
+      label: marking.definition ?? '',
+      value: marking.id,
+    })) ?? [],
+  };
+};
 
 export const ingestionCsvEditionPatch = graphql`
   mutation IngestionCsvEditionPatchMutation($id: ID!, $input: [EditInput!]!) {
@@ -112,6 +148,42 @@ export const ingestionCsvEditionFragment = graphql`
       name
     }
     markings
+    duplicateCsvMapper {
+      id
+      name
+      has_header
+      separator
+      skipLineChar
+      representations {
+        id
+        type
+        target {
+          entity_type
+          column_based {
+            column_reference
+            operator
+            value
+          }
+        }
+        attributes {
+          key
+          column {
+            column_name
+            configuration {
+              separator
+              pattern_date
+            }
+          }
+          default_values {
+            id
+            name
+          }
+          based_on {
+            representations
+          }
+        }
+      }
+    }
   }
 `;
 
@@ -134,7 +206,7 @@ interface IngestionCsvEditionForm {
   csv_mapper_id: string | FieldOption | null,
   user_id: string | FieldOption,
   markings: FieldOption[],
-  csv_mapper?: string,
+  csv_mapper?: CsvMapperAddInput,
   csv_mapper_type: boolean
 }
 
@@ -154,6 +226,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
   enableReferences = false,
 }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const ingestionCsvData = useFragment(ingestionCsvEditionFragment, ingestionCsv);
@@ -187,7 +260,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
     cert: Yup.string().nullable(),
     key: Yup.string().nullable(),
     ca: Yup.string().nullable(),
-    csv_mapper: Yup.string().nullable(),
+    csv_mapper: Yup.object().nullable(),
     csv_mapper_id: Yup.mixed().required(t_i18n('This field is required')),
     csv_mapper_type: Yup.string(),
     markings: Yup.array().required(),
@@ -219,13 +292,15 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
 
   const handleSubmitField = (
     name: string,
-    value: FieldOption | FieldOption[] | CsvMapperFieldOption | string | string[] | number | number[] | null,
+    value: FieldOption | FieldOption[] | CsvMapperFieldOption | string | string[] | number | number[] | null | CsvMapperAddInput,
+    formValues?: IngestionCsvEditionForm,
   ) => {
     let finalValue = value as string;
     let finalName = name;
-
+    const additionalValue: Record<'key' | 'value', string>[] = [];
     // region authentication -- If you change something here, please have a look at IngestionTaxiiEdition
     const backendAuthValue = ingestionCsvData.authentication_value;
+    const isExistingCsvMappers = value === 'true';
     // re-compose username:password
     if (name === 'username') {
       finalName = 'authentication_value';
@@ -255,7 +330,23 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
     // end region authentication
 
     if (name === 'csv_mapper_type') {
-      finalValue = value === 'true' ? 'id' : 'inline';
+      const usingExistingMapper = isExistingCsvMappers;
+
+      finalValue = usingExistingMapper ? 'id' : 'inline';
+
+      // Don't proceed if using an existing CSV mapper but no mapper ID is defined
+      const missingMapperId = usingExistingMapper && !formValues?.csv_mapper_id;
+      // Don't proceed if creating an inline CSV mapper but no mapper data is provided
+      const missingInlineMapper = !usingExistingMapper && !formValues?.csv_mapper;
+
+      // Avoid sending request if required mapper data is missing
+      if (missingMapperId || missingInlineMapper) {
+        return;
+      }
+    }
+    if (name === 'csv_mapper') {
+      finalValue = JSON.stringify(value);
+      additionalValue.push({ value: 'inline', key: 'csv_mapper_type' });
     }
     if (name === 'csv_mapper_id' || name === 'user_id') {
       finalValue = (value as FieldOption).value;
@@ -263,6 +354,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
     if (name === 'csv_mapper_id') {
       const hasUserChoiceCsvMapperRepresentations = resolveHasUserChoiceCsvMapper(value as CsvMapperFieldOption);
       setHasUserChoiceCsvMapper(hasUserChoiceCsvMapperRepresentations);
+      additionalValue.push({ key: 'csv_mapper_type', value: 'id' });
     }
     if (name === 'user_id') {
       onCreatorSelection(value as FieldOption).then();
@@ -273,41 +365,15 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
         commitUpdate({
           variables: {
             id: ingestionCsvData.id,
-            input: [{ key: finalName, value: finalValue || '' }],
+            input: [{ key: finalName, value: finalValue || '' }, ...additionalValue],
           },
         });
       })
       .catch(() => false);
   };
-  const initialValues = {
-    name: ingestionCsvData.name,
-    description: ingestionCsvData.description,
-    scheduling_period: ingestionCsvData.scheduling_period ?? 'auto',
-    uri: ingestionCsvData.uri,
-    authentication_type: ingestionCsvData.authentication_type,
-    authentication_value: ingestionCsvData.authentication_type === BEARER_AUTH ? ingestionCsvData.authentication_value : undefined,
-    username: ingestionCsvData.authentication_type === BASIC_AUTH ? extractUsername(ingestionCsvData.authentication_value) : undefined,
-    password: ingestionCsvData.authentication_type === BASIC_AUTH ? extractPassword(ingestionCsvData.authentication_value) : undefined,
-    cert: ingestionCsvData.authentication_type === CERT_AUTH ? extractCert(ingestionCsvData.authentication_value) : undefined,
-    key: ingestionCsvData.authentication_type === CERT_AUTH ? extractKey(ingestionCsvData.authentication_value) : undefined,
-    ca: ingestionCsvData.authentication_type === CERT_AUTH ? extractCA(ingestionCsvData.authentication_value) : undefined,
-    ingestion_running: ingestionCsvData.ingestion_running,
-    // In case the csv_mapper_id is not know, that mean we are in the older model where we link to an id by default
-    csv_mapper_type: ingestionCsvData.csv_mapper_type === null ? true : ingestionCsvData.csv_mapper_type === 'id',
-    csv_mapper: ingestionCsvData.csv_mapper_type === 'inline' ? JSON.stringify(ingestionCsvData.csvMapper) : undefined,
-    csv_mapper_id: ingestionCsvData.csv_mapper_type === 'inline' ? null : convertMapper(ingestionCsvData, 'csvMapper'),
-    user_id: convertUser(ingestionCsvData, 'user'),
-    references: undefined,
-    markings: me.allowed_marking?.filter(
-      (marking) => ingestionCsvData.markings?.includes(marking.id),
-    ).map((marking) => ({
-      label: marking.definition ?? '',
-      value: marking.id,
-    })) ?? [],
-  };
 
+  const initialValues = useMemo(() => initIngestionValue(ingestionCsvData, me), [ingestionCsvData.id]);
   const queryRef = useQueryLoading<CsvMapperFieldSearchQuery>(csvMapperQuery);
-
   const defaultMarkingOptions = (me.default_marking?.flatMap(({ values }) => (values ?? [{ id: '', definition: '' }])?.map(({ id, definition }) => ({ label: definition, value: id }))) ?? []) as FieldOption[];
   const updateCsvMapper = async (
     setFieldValue: (field: string, option: FieldOption, shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionCsvEditionForm>>,
@@ -351,9 +417,10 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
           </Box>
           <Box sx={{ display: currentTab === 1 ? 'block' : 'none' }}>
             <IngestionCsvInlineWrapper>
-              <IngestionCsvInlineMapperForm csvMapper={values.csv_mapper ? JSON.parse(values.csv_mapper) : undefined} setCSVMapperFieldValue={handleSubmitField} />
+              <IngestionCsvInlineMapperForm csvMapper={values.csv_mapper as CsvMapperAddInput} setCSVMapperFieldValue={handleSubmitField} />
             </IngestionCsvInlineWrapper>
           </Box>
+
           <Form>
             <Box sx={{ display: currentTab === 0 ? 'block' : 'none' }}>
               <Field
@@ -385,11 +452,15 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
               />
               <CreatorField
                 name="user_id"
-                label={t_i18n('User responsible for data creation (empty = System)')}
+                label={t_i18n('User responsible for data creation')}
                 onChange={handleSubmitField}
                 containerStyle={fieldSpacingContainerStyle}
                 showConfidence
               />
+              {isFeatureEnable('CSV_FEED') && ingestionCsvData.user?.name === 'SYSTEM'
+&& <IngestionCsvEditionUserHandling key={values.name} feedName={values.name} onAutoUserCreated={() => { setFieldValue('user_id', `[F] ${values.name}`); } } ingestionCsvDataId={ingestionCsvData.id}/>
+
+              }
               <Box sx={{
                 marginTop: 2,
               }}
@@ -399,7 +470,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                   type="checkbox"
                   name="csv_mapper_type"
                   label={t_i18n('Existing csv mappers')}
-                  onChange={handleSubmitField}
+                  onChange={(name: string, value: string) => handleSubmitField(name, value, values)}
                 />
               </Box>
               {

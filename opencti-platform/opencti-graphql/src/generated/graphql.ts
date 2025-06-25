@@ -11324,6 +11324,7 @@ export type IngestionCsv = BasicObject & InternalObject & {
   current_state_date?: Maybe<Scalars['DateTime']['output']>;
   current_state_hash?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Scalars['String']['output']>;
+  duplicateCsvMapper: CsvMapper;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   ingestion_running?: Maybe<Scalars['Boolean']['output']>;
@@ -11338,6 +11339,11 @@ export type IngestionCsv = BasicObject & InternalObject & {
   uri: Scalars['String']['output'];
   user?: Maybe<Creator>;
   user_id: Scalars['String']['output'];
+};
+
+export type IngestionCsvAddAutoUserInput = {
+  confidence_level: Scalars['String']['input'];
+  user_name: Scalars['String']['input'];
 };
 
 export type IngestionCsvAddInput = {
@@ -14256,6 +14262,7 @@ export type Mutation = {
   infrastructureAdd?: Maybe<Infrastructure>;
   infrastructureEdit?: Maybe<InfrastructureEditMutations>;
   ingestionCsvAdd?: Maybe<IngestionCsv>;
+  ingestionCsvAddAutoUser?: Maybe<IngestionCsv>;
   ingestionCsvDelete?: Maybe<Scalars['ID']['output']>;
   ingestionCsvFieldPatch?: Maybe<IngestionCsv>;
   ingestionCsvResetState?: Maybe<IngestionCsv>;
@@ -15381,6 +15388,12 @@ export type MutationInfrastructureEditArgs = {
 
 export type MutationIngestionCsvAddArgs = {
   input: IngestionCsvAddInput;
+};
+
+
+export type MutationIngestionCsvAddAutoUserArgs = {
+  id: Scalars['ID']['input'];
+  input: IngestionCsvAddAutoUserInput;
 };
 
 
@@ -33137,6 +33150,7 @@ export type ResolversTypes = ResolversObject<{
   InfrastructuresOrdering: InfrastructuresOrdering;
   IngestionAuthType: IngestionAuthType;
   IngestionCsv: ResolverTypeWrapper<BasicStoreEntityIngestionCsv>;
+  IngestionCsvAddAutoUserInput: IngestionCsvAddAutoUserInput;
   IngestionCsvAddInput: IngestionCsvAddInput;
   IngestionCsvConnection: ResolverTypeWrapper<Omit<IngestionCsvConnection, 'edges'> & { edges: Array<ResolversTypes['IngestionCsvEdge']> }>;
   IngestionCsvEdge: ResolverTypeWrapper<Omit<IngestionCsvEdge, 'node'> & { node: ResolversTypes['IngestionCsv'] }>;
@@ -34050,6 +34064,7 @@ export type ResolversParentTypes = ResolversObject<{
   InfrastructureEdge: Omit<InfrastructureEdge, 'node'> & { node: ResolversParentTypes['Infrastructure'] };
   InfrastructureEditMutations: Omit<InfrastructureEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Infrastructure']>, contextPatch?: Maybe<ResolversParentTypes['Infrastructure']>, fieldPatch?: Maybe<ResolversParentTypes['Infrastructure']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Infrastructure']> };
   IngestionCsv: BasicStoreEntityIngestionCsv;
+  IngestionCsvAddAutoUserInput: IngestionCsvAddAutoUserInput;
   IngestionCsvAddInput: IngestionCsvAddInput;
   IngestionCsvConnection: Omit<IngestionCsvConnection, 'edges'> & { edges: Array<ResolversParentTypes['IngestionCsvEdge']> };
   IngestionCsvEdge: Omit<IngestionCsvEdge, 'node'> & { node: ResolversParentTypes['IngestionCsv'] };
@@ -38348,6 +38363,7 @@ export type IngestionCsvResolvers<ContextType = any, ParentType extends Resolver
   current_state_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   current_state_hash?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  duplicateCsvMapper?: Resolver<ResolversTypes['CsvMapper'], ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   ingestion_running?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -39699,6 +39715,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   infrastructureAdd?: Resolver<Maybe<ResolversTypes['Infrastructure']>, ParentType, ContextType, RequireFields<MutationInfrastructureAddArgs, 'input'>>;
   infrastructureEdit?: Resolver<Maybe<ResolversTypes['InfrastructureEditMutations']>, ParentType, ContextType, RequireFields<MutationInfrastructureEditArgs, 'id'>>;
   ingestionCsvAdd?: Resolver<Maybe<ResolversTypes['IngestionCsv']>, ParentType, ContextType, RequireFields<MutationIngestionCsvAddArgs, 'input'>>;
+  ingestionCsvAddAutoUser?: Resolver<Maybe<ResolversTypes['IngestionCsv']>, ParentType, ContextType, RequireFields<MutationIngestionCsvAddAutoUserArgs, 'id' | 'input'>>;
   ingestionCsvDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationIngestionCsvDeleteArgs, 'id'>>;
   ingestionCsvFieldPatch?: Resolver<Maybe<ResolversTypes['IngestionCsv']>, ParentType, ContextType, RequireFields<MutationIngestionCsvFieldPatchArgs, 'id' | 'input'>>;
   ingestionCsvResetState?: Resolver<Maybe<ResolversTypes['IngestionCsv']>, ParentType, ContextType, RequireFields<MutationIngestionCsvResetStateArgs, 'id'>>;

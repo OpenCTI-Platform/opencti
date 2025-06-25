@@ -35,7 +35,7 @@ const EntitySelectWithTypes: FunctionComponent<EntitySelectWithTypesProps> = ({
   });
 
   const options = getOptionsFromEntities(entities, searchScope, 'id')
-    .filter((option) => !entitiesToExclude.includes(option.value));
+    .filter((option) => option.value === null || !entitiesToExclude.includes(option.value));
 
   return (
     <Autocomplete

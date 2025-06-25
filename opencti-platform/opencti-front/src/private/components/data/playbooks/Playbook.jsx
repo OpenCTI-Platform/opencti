@@ -14,8 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import React from 'react';
-import { graphql, createFragmentContainer } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
+import { createFragmentContainer, graphql } from 'react-relay';
 import 'reactflow/dist/style.css';
 import ReactFlow, { ReactFlowProvider } from 'reactflow';
 import { ErrorBoundary } from '../../Error';
@@ -23,30 +22,18 @@ import PlaybookHeader from './PlaybookHeader';
 import useLayout from './hooks/useLayout';
 import nodeTypes from './types/nodes';
 import edgeTypes from './types/edges';
-import { addPlaceholders, computeNodes, computeEdges } from './utils/playbook';
+import { addPlaceholders, computeEdges, computeNodes } from './utils/playbook';
 import useManipulateComponents from './hooks/useManipulateComponents';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-    overflow: 'hidden',
-  },
-}));
 
 const defaultViewport = { x: 0, y: 0, zoom: 1.5 };
 const proOptions = { account: 'paid-pro', hideAttribution: true };
 const fitViewOptions = { padding: 0.8 };
 
 const PlaybookComponent = ({ playbook, playbookComponents }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const definition = JSON.parse(playbook.playbook_definition);
-  const width = window.innerWidth - 80;
-  const height = window.innerHeight - 160;
   const Flow = () => {
     const {
       setAction,
@@ -105,7 +92,7 @@ const PlaybookComponent = ({ playbook, playbookComponents }) => {
       />
       <PlaybookHeader playbook={playbook} />
       <ErrorBoundary>
-        <div className={classes.container} style={{ width, height }}>
+        <div style={{ width: '100%', height: '100%', margin: 0, overflow: 'hidden' }}>
           <ReactFlowProvider>
             <Flow />
           </ReactFlowProvider>

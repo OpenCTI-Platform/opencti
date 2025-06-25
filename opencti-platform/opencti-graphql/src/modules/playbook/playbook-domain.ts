@@ -40,6 +40,7 @@ import { registerConnectorQueues, unregisterConnector } from '../../database/rab
 import { getEntitiesListFromCache } from '../../database/cache';
 import { SYSTEM_USER } from '../../utils/access';
 import { findFiltersFromKey, checkAndConvertFilters } from '../../utils/filtering/filtering-utils';
+import { elFindByIds } from '../../database/engine';
 
 export const findById: DomainFindById<BasicStoreEntityPlaybook> = (context: AuthContext, user: AuthUser, playbookId: string) => {
   return storeLoadById(context, user, playbookId, ENTITY_TYPE_PLAYBOOK);
@@ -116,7 +117,7 @@ export const getPlaybookDefinition = async (context: AuthContext, playbook: Basi
   return playbook.playbook_definition;
 };
 
-const checkPlaybookFiltersAndBuildConfigWithCorrectFilters = (input: PlaybookAddNodeInput, userId: string) => {
+const checkPlaybookFiltersAndBuildConfigWithCorrectFilters = async (context: AuthContext, user: AuthUser, input: PlaybookAddNodeInput, userId: string) => {
   if (!input.configuration) {
     return '{}';
   }
@@ -125,7 +126,8 @@ const checkPlaybookFiltersAndBuildConfigWithCorrectFilters = (input: PlaybookAdd
   if (config.filters) {
     const filterGroup = JSON.parse(config.filters) as FilterGroup;
     if (input.component_id === PLAYBOOK_INTERNAL_DATA_CRON.id) {
-      stringifiedFilters = JSON.stringify(checkAndConvertFilters(filterGroup, userId, { noFiltersConvert: true }));
+      const convertedFilters = await checkAndConvertFilters(context, user, filterGroup, userId, elFindByIds, { noFiltersConvert: true });
+      stringifiedFilters = JSON.stringify(convertedFilters);
     } else { // our stix matching is currently limited, we need to validate the input filters
       validateFilterGroupForStixMatch(filterGroup);
       stringifiedFilters = config.filters;
@@ -135,7 +137,7 @@ const checkPlaybookFiltersAndBuildConfigWithCorrectFilters = (input: PlaybookAdd
 };
 
 export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: string, input: PlaybookAddNodeInput) => {
-  const configuration = checkPlaybookFiltersAndBuildConfigWithCorrectFilters(input, user.id);
+  const configuration = await checkPlaybookFiltersAndBuildConfigWithCorrectFilters(context, user, input, user.id);
 
   const playbook = await findById(context, user, id);
   const definition = JSON.parse(playbook.playbook_definition ?? '{}') as ComponentDefinition;
@@ -212,7 +214,7 @@ export const playbookUpdatePositions = async (context: AuthContext, user: AuthUs
 };
 
 export const playbookReplaceNode = async (context: AuthContext, user: AuthUser, id: string, nodeId: string, input: PlaybookAddNodeInput) => {
-  const configuration = checkPlaybookFiltersAndBuildConfigWithCorrectFilters(input, user.id);
+  const configuration = await checkPlaybookFiltersAndBuildConfigWithCorrectFilters(context, user, input, user.id);
 
   const playbook = await findById(context, user, id);
   const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;

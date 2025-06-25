@@ -1,3 +1,4 @@
+import { v4 as uuid } from 'uuid';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import { buildStixObject } from '../../database/stix-2-1-converter';
 import type {
@@ -13,6 +14,7 @@ import type {
   StoreEntityIngestionTaxiiCollection
 } from './ingestion-types';
 import { cleanObject } from '../../database/stix-converter-utils';
+import type { CsvMapperRepresentationResolved, CsvMapperResolved } from '../internal/csvMapper/csvMapper-types';
 
 export const convertIngestionRssToStix = (instance: StoreEntityIngestionRss): StixIngestionRss => {
   const stixObject = buildStixObject(instance);
@@ -100,5 +102,42 @@ export const convertIngestionJsonToStix = (instance: StoreEntityIngestionJson): 
         extension_type: 'new-sdo',
       })
     }
+  };
+};
+
+export const regenerateCsvMapperUUID = (csvMapper: CsvMapperResolved): CsvMapperResolved => {
+  const uuidMap: Record<string, string> = {};
+  csvMapper.representations.forEach((representation) => {
+    const oldId = representation.id;
+    uuidMap[oldId] = uuid();
+  });
+  return {
+    ...csvMapper,
+    id: uuid(),
+    representations: csvMapper.representations.map((representation) => {
+      let attributes = {};
+      if (representation.attributes) {
+        attributes = representation.attributes.map((attribute) => {
+          if (attribute?.based_on?.representations) {
+            return {
+              ...attribute,
+              based_on: {
+                ...attribute.based_on,
+                representations: attribute.based_on.representations.map(
+                  (oldId) => uuidMap[oldId] || oldId
+                )
+              }
+            };
+          }
+          return attribute;
+        });
+      }
+
+      return {
+        ...representation,
+        id: uuidMap[representation.id],
+        attributes
+      } as CsvMapperRepresentationResolved;
+    })
   };
 };

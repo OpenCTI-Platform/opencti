@@ -82,7 +82,7 @@ const localStorageToPaginationOptions = (
 
 export type HandleAddFilter = (
   k: string,
-  id: string,
+  id: string | null,
   op?: string,
   event?: SyntheticEvent
 ) => void;
@@ -408,7 +408,7 @@ export const usePaginationLocalStorage = <U>(
     },
     handleAddFilter: (
       k: string,
-      id: string,
+      id: string | null,
       defaultOp = 'eq',
       event?: SyntheticEvent,
     ) => {
@@ -583,7 +583,7 @@ export const usePaginationLocalStorage = <U>(
     },
     handleSwitchFilter: (
       k: string,
-      id: string,
+      id: string | null,
       op = 'eq',
       event?: SyntheticEvent,
     ) => {

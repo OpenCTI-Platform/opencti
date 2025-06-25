@@ -8,7 +8,7 @@ import { Autocomplete, MenuItem, Select } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
 import SearchScopeElement from '@components/common/lists/SearchScopeElement';
 import Chip from '@mui/material/Chip';
-import { OptionValue } from '@components/common/lists/FilterAutocomplete';
+import { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import { addDays, subDays } from 'date-fns';
 import { useTheme } from '@mui/material/styles';
 import {
@@ -108,7 +108,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     values: string[];
     operator?: string;
   }[]>(filter ? [filter] : []);
-  const [cacheEntities, setCacheEntities] = useState<Record<string, OptionValue[]>>({});
+  const [cacheEntities, setCacheEntities] = useState<Record<string, FilterOptionValue[]>>({});
   const [searchScope, setSearchScope] = useState<Record<string, string[]>>(
     availableRelationFilterTypes || {
       targets: [
@@ -132,15 +132,15 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     setInputValues,
     searchContext: { ...searchContext, entityTypes: [...(searchContext?.entityTypes ?? []), ...(entityTypes ?? [])] },
     searchScope,
-  }) as [Record<string, OptionValue[]>, (
+  }) as [Record<string, FilterOptionValue[]>, (
     filterKey: string,
-    cacheEntities: Record<string, OptionValue[]>,
-    setCacheEntities: Dispatch<Record<string, OptionValue[]>>,
+    cacheEntities: Record<string, FilterOptionValue[]>,
+    setCacheEntities: Dispatch<Record<string, FilterOptionValue[]>>,
     event: SyntheticEvent,
     isSubKey?: boolean,
-  ) => Record<string, OptionValue[]>,
+  ) => Record<string, FilterOptionValue[]>,
   ];
-  const handleChange = (checked: boolean, value: string, childKey?: string) => {
+  const handleChange = (checked: boolean, value: string | null, childKey?: string) => {
     if (childKey) {
       const childFilters = filter?.values.filter((val) => val.key === childKey) as Filter[];
       const childFilter = childFilters && childFilters.length > 0 ? childFilters[0] : undefined;
@@ -250,11 +250,11 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       : getEntitiesOptions;
 
     const entitiesOptions = getOptions.filter((option) => !optionsValues.includes(option.value));
-    const selectedOptions: OptionValue[] = getSelectedOptions(getOptions, optionsValues, filtersRepresentativesMap, t_i18n);
+    const selectedOptions: FilterOptionValue[] = getSelectedOptions(getOptions, optionsValues, filtersRepresentativesMap, t_i18n);
 
     const options = [...selectedOptions, ...entitiesOptions];
 
-    const groupByEntities = (option: OptionValue, label?: string) => {
+    const groupByEntities = (option: FilterOptionValue, label?: string) => {
       return t_i18n(option?.group ? option?.group : label);
     };
     return (

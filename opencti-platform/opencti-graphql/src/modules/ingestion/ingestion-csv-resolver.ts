@@ -5,11 +5,13 @@ import {
   addIngestionCsv,
   csvFeedAddInputFromImport,
   csvFeedGetCsvMapper,
+  csvFeedGetNewDuplicatedCsvMapper,
   csvFeedMapperExport,
   defaultIngestionGroupsCount,
   deleteIngestionCsv,
   findAllPaginated,
   findById,
+  ingestionCsvAddAutoUser,
   ingestionCsvEditField,
   ingestionCsvResetState,
   testCsvIngestionMapping,
@@ -28,8 +30,9 @@ const ingestionCsvResolvers: Resolvers = {
   },
   IngestionCsv: {
     user: (ingestionCsv, _, context) => creatorLoader.load(ingestionCsv.user_id, context, context.user),
-    csvMapper: (ingestionCsv, _, context) => csvFeedGetCsvMapper(context, ingestionCsv),
+    csvMapper: (ingestionCsv, _, context) => csvFeedGetCsvMapper(context, context.user, ingestionCsv),
     toConfigurationExport: (ingestionCsv, _, context) => csvFeedMapperExport(context, context.user, ingestionCsv),
+    duplicateCsvMapper: (ingestionCsv, _, context) => csvFeedGetNewDuplicatedCsvMapper(context, context.user, ingestionCsv),
   },
   Mutation: {
     ingestionCsvTester: (_, { input }, context) => {
@@ -46,6 +49,9 @@ const ingestionCsvResolvers: Resolvers = {
     },
     ingestionCsvFieldPatch: (_, { id, input }, context) => {
       return ingestionCsvEditField(context, context.user, id, input);
+    },
+    ingestionCsvAddAutoUser: (_, { id, input }, context) => {
+      return ingestionCsvAddAutoUser(context, context.user, id, input);
     },
   },
 };

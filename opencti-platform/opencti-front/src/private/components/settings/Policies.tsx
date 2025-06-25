@@ -277,46 +277,8 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                       )}
                     />
                   </Grid>
-                  <Grid item xs={6}>
-                    <Typography variant="h4" gutterBottom={true}>
-                      {t_i18n('Authentication strategies')}
-                    </Typography>
-                    <Paper style={{
-                      marginTop: 10,
-                    }} classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined"
-                    >
-                      <List style={{ marginTop: -20 }}>
-                        {authProviders.map((provider) => (
-                          <ListItem key={provider.strategy} divider={true}>
-                            <ListItemIcon>
-                              <VpnKeyOutlined color="primary" />
-                            </ListItemIcon>
-                            <ListItemText
-                              primary={provider.name}
-                              secondary={provider.strategy}
-                            />
-                            <ItemBoolean
-                              variant="inList"
-                              label={t_i18n('Enabled')}
-                              status={true}
-                            />
-                          </ListItem>
-                        ))}
-                      </List>
-                      <Field
-                        component={SwitchField}
-                        type="checkbox"
-                        name="otp_mandatory"
-                        label={t_i18n('Enforce two-factor authentication')}
-                        containerstyle={{ marginTop: 20 }}
-                        onChange={(name: string, value: string) => handleSubmitField(name, value)
-                        }
-                        tooltip={t_i18n(
-                          'When enforcing 2FA authentication, all users will be asked to enable 2FA to be able to login in the platform.',
-                        )}
-                      />
-                    </Paper>
-                  </Grid>
+                  {isFeatureEnable('CSV_FEED') && <GroupSetDefaultGroupForIngestionUsers/>}
+
                   <Grid item xs={6}>
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n('Local password policies')}
@@ -427,7 +389,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                         component={TextField}
                         type="number"
                         variant="standard"
-                        sx={{ marginTop: 20 }}
+                        style={{ marginTop: 20 }}
                         name="password_policy_min_uppercase"
                         label={t_i18n(
                           'Number of uppercase chars must be greater or equals to',
@@ -442,7 +404,46 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                       />
                     </Paper>
                   </Grid>
-                  {isFeatureEnable('CSV_FEED') && <GroupSetDefaultGroupForIngestionUsers/>}
+                  <Grid item xs={6}>
+                    <Typography variant="h4" gutterBottom={true}>
+                      {t_i18n('Authentication strategies')}
+                    </Typography>
+                    <Paper style={{
+                      marginTop: 10,
+                    }} classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined"
+                    >
+                      <List style={{ marginTop: -20 }}>
+                        {authProviders.map((provider) => (
+                          <ListItem key={provider.strategy} divider={true}>
+                            <ListItemIcon>
+                              <VpnKeyOutlined color="primary" />
+                            </ListItemIcon>
+                            <ListItemText
+                              primary={provider.name}
+                              secondary={provider.strategy}
+                            />
+                            <ItemBoolean
+                              variant="inList"
+                              label={t_i18n('Enabled')}
+                              status={true}
+                            />
+                          </ListItem>
+                        ))}
+                      </List>
+                      <Field
+                        component={SwitchField}
+                        type="checkbox"
+                        name="otp_mandatory"
+                        label={t_i18n('Enforce two-factor authentication')}
+                        containerstyle={{ marginTop: 20 }}
+                        onChange={(name: string, value: string) => handleSubmitField(name, value)
+                        }
+                        tooltip={t_i18n(
+                          'When enforcing 2FA authentication, all users will be asked to enable 2FA to be able to login in the platform.',
+                        )}
+                      />
+                    </Paper>
+                  </Grid>
                   <Grid item xs={6}>
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n('Login messages')}

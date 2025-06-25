@@ -1,6 +1,7 @@
 import React from 'react';
 import { EdgeLabelRenderer, EdgeProps, getBezierPath, useReactFlow } from 'reactflow';
 import { makeStyles } from '@mui/styles';
+import { useFormatter } from 'src/components/i18n';
 import type { Theme } from '../../../../../../components/Theme';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -28,6 +29,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 function EdgeLabel({ transform, label }: { transform: string; label: string }) {
+  const { t_i18n } = useFormatter();
   return (
     <div
       style={{
@@ -40,7 +42,7 @@ function EdgeLabel({ transform, label }: { transform: string; label: string }) {
       }}
       className="nodrag nopan"
     >
-      {label}
+      {t_i18n(label)}
     </div>
   );
 }

@@ -22,6 +22,7 @@ type IngestionCsv implements InternalObject & BasicObject {
     last_execution_date: DateTime
     markings: [String!]
     toConfigurationExport: String!
+    duplicateCsvMapper: CsvMapper!
 }
 
 enum IngestionCsvOrdering {
@@ -99,10 +100,16 @@ input IngestionCsvAddInput {
     markings: [String!]
 }
 
+input IngestionCsvAddAutoUserInput {
+    user_name: String!
+    confidence_level: String!
+}
+
 type Mutation {
     ingestionCsvTester(input: IngestionCsvAddInput!): CsvMapperTestResult @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
     ingestionCsvAdd(input: IngestionCsvAddInput!): IngestionCsv @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
     ingestionCsvResetState(id: ID!): IngestionCsv @auth(for: [INGESTION_SETINGESTIONS])
     ingestionCsvDelete(id: ID!): ID @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
     ingestionCsvFieldPatch(id: ID!, input: [EditInput!]!): IngestionCsv @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
+    ingestionCsvAddAutoUser(id: ID!, input: IngestionCsvAddAutoUserInput!): IngestionCsv @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
 }

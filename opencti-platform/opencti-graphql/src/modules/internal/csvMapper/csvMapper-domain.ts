@@ -1,7 +1,14 @@
 import type { FileHandle } from 'fs/promises';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { internalFindByIdsMapped, listAllEntities, listEntitiesPaginated, storeLoadById } from '../../../database/middleware-loader';
-import { type BasicStoreEntityCsvMapper, type CsvMapperConfiguration, type CsvMapperRepresentation, ENTITY_TYPE_CSV_MAPPER, type StoreEntityCsvMapper } from './csvMapper-types';
+import {
+  type BasicStoreEntityCsvMapper,
+  type CsvMapperParsed,
+  type CsvMapperRepresentation,
+  type CsvMapperResolved,
+  ENTITY_TYPE_CSV_MAPPER,
+  type StoreEntityCsvMapper
+} from './csvMapper-types';
 import { type CsvMapperAddInput, type EditInput, FilterMode, type QueryCsvMappersArgs } from '../../../generated/graphql';
 import { createInternalObject, deleteInternalObject, editInternalObject } from '../../../domain/internalObject';
 import { type CsvBundlerTestOpts, getCsvTestObjects, removeHeaderFromFullFile } from '../../../parser/csv-bundler';
@@ -122,7 +129,7 @@ export const csvMapperExport = async (context: AuthContext, user: AuthUser, csvM
 
 const MINIMAL_COMPATIBLE_VERSION = '6.6.0';
 
-export const transformCsvMapperConfig = async (configuration: CsvMapperConfiguration, context: AuthContext, user: AuthUser) => {
+export const transformCsvMapperConfig = async (configuration: CsvMapperParsed, context: AuthContext, user: AuthUser): Promise<CsvMapperResolved> => {
   const { representations } = configuration;
   await convertRepresentationsIds(context, user, representations, 'stix');
   const csvMapper = {
