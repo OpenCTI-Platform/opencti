@@ -162,7 +162,6 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
       handleCloseContextual();
       return;
     }
-    console.log('in submit contextual');
     commit({
       variables: {
         input: finalValues,

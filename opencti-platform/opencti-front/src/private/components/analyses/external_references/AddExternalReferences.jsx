@@ -49,7 +49,12 @@ const AddExternalReferences = ({
     setSearch(keyword);
   };
 
-  const paginationOptions = { search };
+  const paginationOptions = {
+    search,
+    orderBy: 'created_at',
+    orderMode: 'desc',
+    count: 20,
+  };
   return (
     <>
       <IconButton
@@ -93,12 +98,7 @@ const AddExternalReferences = ({
         <div className={classes.container}>
           <QueryRenderer
             query={addExternalReferencesLinesQuery}
-            variables={{
-              search,
-              orderBy: 'created_at',
-              orderMode: 'desc',
-              count: 20,
-            }}
+            variables={paginationOptions}
             render={({ props }) => {
               if (props) {
                 return (
