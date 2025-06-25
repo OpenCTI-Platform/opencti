@@ -18108,7 +18108,7 @@ __metadata:
     pdfmake: "npm:0.2.18"
     prop-types: "npm:15.8.1"
     qrcode: "npm:1.5.4"
-    ramda: "npm:0.30.1"
+    ramda: "npm:0.31.3"
     react: "npm:19.0.0"
     react-apexcharts: "npm:1.7.0"
     react-color: "npm:2.19.3"
@@ -18834,10 +18834,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ramda@npm:0.30.1":
-  version: 0.30.1
-  resolution: "ramda@npm:0.30.1"
-  checksum: 10/f3e1a7bc11f3a113edb3bb4764c2c22088c5896594934c01cf1980184d00f1d5a7af82761a3389419e2d51542ad2121ff44e718f40792d167e2846bba79a4c6d
+"ramda@npm:0.31.3":
+  version: 0.31.3
+  resolution: "ramda@npm:0.31.3"
+  checksum: 10/53b32bc60098cffda3ee84f633ea3e2e41946d98364196b14355d4a8b8a830101ac28e27fba83d496ad6b5637fab98bbc9aa85acdc7610cc0b74b5d0fe21a0df
   languageName: node
   linkType: hard
 
