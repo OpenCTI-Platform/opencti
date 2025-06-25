@@ -11,6 +11,7 @@ import requests
 from pycti import __version__
 from pycti.api.opencti_api_connector import OpenCTIApiConnector
 from pycti.api.opencti_api_draft import OpenCTIApiDraft
+from pycti.api.opencti_api_internal_file import OpenCTIApiInternalFile
 from pycti.api.opencti_api_notification import OpenCTIApiNotification
 from pycti.api.opencti_api_pir import OpenCTIApiPir
 from pycti.api.opencti_api_playbook import OpenCTIApiPlaybook
@@ -182,6 +183,7 @@ class OpenCTIApiClient:
         self.connector = OpenCTIApiConnector(self)
         self.stix2 = OpenCTIStix2(self)
         self.pir = OpenCTIApiPir(self)
+        self.internal_file = OpenCTIApiInternalFile(self)
 
         # Define the entities
         self.vocabulary = Vocabulary(self)

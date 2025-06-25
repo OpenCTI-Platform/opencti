@@ -48,7 +48,7 @@ class OpenCTIApiPlaybook:
                 },
             )
         else:
-            self.opencti.app_logger.error(
+            self.api.app_logger.error(
                 "[stix_playbook] Cant delete playbook, missing parameters: id"
             )
             return None
