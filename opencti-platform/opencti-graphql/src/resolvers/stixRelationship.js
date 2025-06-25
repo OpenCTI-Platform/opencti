@@ -14,7 +14,7 @@ import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { STIX_REF_RELATIONSHIP_TYPES } from '../schema/stixRefRelationship';
 import { stixLoadByIdStringify, timeSeriesRelations } from '../database/middleware';
 import { loadThroughDenormalized } from './stix';
-import { getDraftContextIfElementInDraft } from '../database/draft-utils';
+import { getDraftContextOverrideIfElementInDraft } from '../database/draft-utils';
 
 const stixRelationshipResolvers = {
   Query: {
@@ -30,13 +30,15 @@ const stixRelationshipResolvers = {
   StixRelationship: {
     from: (rel, _, context) => {
       // If relation is in a draft, we want to force the context to also be in the same draft
-      const contextToUse = getDraftContextIfElementInDraft(context, rel);
-      return (rel.from ? rel.from : contextToUse.idsBatchLoader.load({ id: rel.fromId, type: rel.fromType }));
+      const contextOverride = getDraftContextOverrideIfElementInDraft(context, rel);
+      const idLoadArgs = { id: rel.fromId, type: rel.fromType, contextOverride };
+      return (rel.from ? rel.from : context.idsBatchLoader.load(idLoadArgs));
     },
     to: (rel, _, context) => {
       // If relation is in a draft, we want to force the context to also be in the same draft
-      const contextToUse = getDraftContextIfElementInDraft(context, rel);
-      return (rel.to ? rel.to : contextToUse.idsBatchLoader.load({ id: rel.toId, type: rel.toType }));
+      const contextOverride = getDraftContextOverrideIfElementInDraft(context, rel);
+      const idLoadArgs = { id: rel.toId, type: rel.toType, contextOverride };
+      return (rel.to ? rel.to : context.idsBatchLoader.load(idLoadArgs));
     },
     creators: (rel, _, context) => context.creatorsBatchLoader.load(rel.creator_id),
     createdBy: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_CREATED_BY),

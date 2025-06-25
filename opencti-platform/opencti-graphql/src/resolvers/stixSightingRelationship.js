@@ -23,7 +23,7 @@ import { numberOfContainersForObject } from '../domain/container';
 import { casesPaginated, containersPaginated, externalReferencesPaginated, notesPaginated, opinionsPaginated, reportsPaginated } from '../domain/stixCoreObject';
 import { loadThroughDenormalized } from './stix';
 import { INPUT_CREATED_BY, INPUT_GRANTED_REFS, INPUT_LABELS } from '../schema/general';
-import { getDraftContextIfElementInDraft } from '../database/draft-utils';
+import { getDraftContextOverrideIfElementInDraft } from '../database/draft-utils';
 
 const stixSightingRelationshipResolvers = {
   Query: {
@@ -40,13 +40,15 @@ const stixSightingRelationshipResolvers = {
   StixSightingRelationship: {
     from: (rel, _, context) => {
       // If relation is in a draft, we want to force the context to also be in the same draft
-      const contextToUse = getDraftContextIfElementInDraft(context, rel);
-      return (rel.from ? rel.from : contextToUse.idsBatchLoader.load({ id: rel.fromId, type: rel.fromType }));
+      const contextOverride = getDraftContextOverrideIfElementInDraft(context, rel);
+      const idLoadArgs = { id: rel.fromId, type: rel.fromType, contextOverride };
+      return (rel.from ? rel.from : context.idsBatchLoader.load(idLoadArgs));
     },
     to: (rel, _, context) => {
       // If relation is in a draft, we want to force the context to also be in the same draft
-      const contextToUse = getDraftContextIfElementInDraft(context, rel);
-      return (rel.to ? rel.to : contextToUse.idsBatchLoader.load({ id: rel.toId, type: rel.toType }));
+      const contextOverride = getDraftContextOverrideIfElementInDraft(context, rel);
+      const idLoadArgs = { id: rel.toId, type: rel.toType, contextOverride };
+      return (rel.to ? rel.to : context.idsBatchLoader.load(idLoadArgs));
     },
     // region batch fully loaded through rel de-normalization. Cant be ordered of filtered
     creators: (rel, _, context) => context.creatorsBatchLoader.load(rel.creator_id),
