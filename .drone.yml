@@ -432,6 +432,7 @@ services:
       SUBSCRIPTION_SCHEDULER__ENABLED: false
       PUBLISHER_MANAGER__ENABLED: false
     commands:
+      - sleep 10
       - apk add build-base git libffi-dev cargo
       - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/e2e-start-platform/
       - cd "$DRONE_WORKSPACE/client-python"
