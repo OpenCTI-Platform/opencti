@@ -158,16 +158,19 @@ EntityStixCoreRelationshipsEntitiesViewProps
       stixCoreObjectTypes,
       relationshipTypes,
       connectionKey: 'Pagination_stixCoreObjects',
+      handleReverseRelation,
     });
   }, []);
   useEffect(() => {
     setCreateRelationshipContext({
       reversed: reversedRelation,
+      handleReverseRelation,
     });
   }, [reversedRelation]);
   useEffect(() => {
     setCreateRelationshipContext({
       paginationOptions,
+      handleReverseRelation,
     });
   }, [localStorage]);
 

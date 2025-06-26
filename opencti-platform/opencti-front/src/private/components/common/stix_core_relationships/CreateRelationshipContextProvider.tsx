@@ -5,6 +5,7 @@ interface CreateRelationshipContextStateType {
   stixCoreObjectTypes?: string[];
   connectionKey?: string;
   reversed?: boolean;
+  handleReverseRelation?: () => void;
   paginationOptions?: unknown;
   onCreate?: () => void;
 }
@@ -34,6 +35,7 @@ const CreateRelationshipContextProvider = ({ children }: { children: ReactNode }
   ]);
   const [connectionKey, setConnectionKey] = useState<string>('Pagination_stixCoreObjects');
   const [reversed, setReversed] = useState<boolean>(false);
+  const [handleReverseRelation, setHandleReverseRelation] = useState<() => void>();
   const [paginationOptions, setPaginationOptions] = useState<unknown>();
   const [onCreate, setOnCreate] = useState<() => void>();
   const state = {
@@ -41,6 +43,7 @@ const CreateRelationshipContextProvider = ({ children }: { children: ReactNode }
     stixCoreObjectTypes,
     connectionKey,
     reversed,
+    handleReverseRelation,
     paginationOptions,
     onCreate,
   };
@@ -49,13 +52,15 @@ const CreateRelationshipContextProvider = ({ children }: { children: ReactNode }
     stixCoreObjectTypes: updatedStixCoreObjectTypes,
     connectionKey: updatedConnectionKey,
     reversed: updatedReversed,
+    handleReverseRelation: updatedHandleReverseRelation,
     paginationOptions: updatedPaginationOptions,
     onCreate: updatedOnCreate,
   }: CreateRelationshipContextStateType) => {
     if (updatedRelationshipTypes) setRelationshipTypes(updatedRelationshipTypes);
     if (updatedStixCoreObjectTypes) setStixCoreObjectTypes(updatedStixCoreObjectTypes);
     if (updatedConnectionKey) setConnectionKey(updatedConnectionKey);
-    if (updatedReversed) setReversed(updatedReversed);
+    if (updatedReversed !== undefined) setReversed(updatedReversed);
+    setHandleReverseRelation(() => updatedHandleReverseRelation);
     if (updatedPaginationOptions) setPaginationOptions(updatedPaginationOptions);
     if (updatedOnCreate) setOnCreate(() => updatedOnCreate); // Dispatching inner function to let context consumer call the onCreate function
   };
