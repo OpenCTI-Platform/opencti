@@ -69,8 +69,11 @@ class ExportButtons extends Component {
     }
     setTimeout(() => {
       const container = document.getElementById(domElementId);
-      const buttons = document.getElementById('export-buttons');
-      buttons.setAttribute('style', 'display: none');
+      const exportButtons = document.getElementById('export-buttons');
+      const viewButtons = document.getElementById('container-view-buttons');
+      exportButtons.setAttribute('style', 'display: none');
+      viewButtons.setAttribute('style', 'display: none');
+
       const { offsetWidth, offsetHeight } = container;
       if (theme === currentTheme.palette.mode && this.adjust) {
         container.setAttribute('style', 'width:3840px; height:2160px');
@@ -93,7 +96,7 @@ class ExportButtons extends Component {
         ).then(() => {})
           .catch(() => MESSAGING$.notifyError(t('Dashboard cannot be exported to image')))
           .finally(() => {
-            buttons.setAttribute('style', 'display: block');
+            exportButtons.setAttribute('style', 'display: block');
             commitLocalUpdate((store) => {
               const me = store.getRoot().getLinkedRecord('me');
               me.setValue(false, 'exporting');
