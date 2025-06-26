@@ -78,7 +78,6 @@ import { buildContextDataForFile, completeContextDataForEntity, publishUserActio
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { addFilter, findFiltersFromKey } from '../utils/filtering/filtering-utils';
 import { INSTANCE_REGARDING_OF } from '../utils/filtering/filtering-constants';
-import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { BYPASS, isBypassUser, isUserCanAccessStoreElement, isUserHasCapabilities, SYSTEM_USER, validateUserAccessOperation } from '../utils/access';
 import { uploadToStorage } from '../database/file-storage-helper';
@@ -109,6 +108,8 @@ import { FILES_UPDATE_KEY, getDraftChanges, isDraftFile } from '../database/draf
 import { askJobImport } from './connector';
 import { authorizedMembers } from '../schema/attribute-definition';
 import { cleanHtmlTags } from '../utils/ai/cleanHtmlTags';
+
+import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 
 const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
 const aiResponseCache = {};

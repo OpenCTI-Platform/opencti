@@ -22,7 +22,6 @@ import {
   STIX_CYBER_OBSERVABLES
 } from '../../../src/schema/stixCyberObservable';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../../../src/modules/case/case-types';
-import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../../src/modules/grouping/grouping-types';
 import {
   ALIAS_FILTER,
   CONNECTED_TO_INSTANCE_FILTER,
@@ -38,6 +37,8 @@ import stixCoreObjectFilterKeys from '../../data/filter-keys-schema/stix-core-ob
 import stixCoreRelationshipFilterKeys from '../../data/filter-keys-schema/stix-core-relationship';
 import { ENTITY_TYPE_INDICATOR } from '../../../src/modules/indicator/indicator-types';
 import indicatorFilterKeys from '../../data/filter-keys-schema/indicatorFilterKeys';
+
+import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../../src/modules/grouping/grouping-types';
 
 describe('Filter keys schema generation testing', async () => {
   const filterKeysSchemaArray = await generateFilterKeysSchema();

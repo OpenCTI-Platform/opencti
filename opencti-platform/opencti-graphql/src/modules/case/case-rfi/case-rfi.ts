@@ -5,7 +5,7 @@ import { registerDefinition } from '../../../schema/module';
 import { createdBy, objectAssignee, objectMarking, objectParticipant } from '../../../schema/stixRefRelationship';
 import type { StixCaseRfi, StoreEntityCaseRfi } from './case-rfi-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from './case-rfi-types';
-import convertCaseRfiToStix from './case-rfi-converter';
+import { convertCaseRfiToStix_2_1 } from './case-rfi-converter';
 import { authorizedMembers, authorizedMembersActivationDate } from '../../../schema/attribute-definition';
 
 const CASE_RFI_DEFINITION: ModuleDefinition<StoreEntityCaseRfi, StixCaseRfi> = {
@@ -51,7 +51,7 @@ const CASE_RFI_DEFINITION: ModuleDefinition<StoreEntityCaseRfi, StixCaseRfi> = {
   representative: (stix: StixCaseRfi) => {
     return stix.name;
   },
-  converter_2_1: convertCaseRfiToStix
+  converter_2_1: convertCaseRfiToStix_2_1
 };
 
 registerDefinition(CASE_RFI_DEFINITION);

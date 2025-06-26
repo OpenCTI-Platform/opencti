@@ -2,7 +2,7 @@ import { ENTITY_TYPE_CONTAINER } from '../../schema/general';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { createdBy, objectAssignee, objectOrganization, objectParticipant } from '../../schema/stixRefRelationship';
-import convertCaseTaskToStix from './task-converter';
+import { convertCaseTaskToStix_2_1 } from './task-converter';
 import type { StixTask, StoreEntityTask } from './task-types';
 import { ENTITY_TYPE_CONTAINER_TASK } from './task-types';
 
@@ -46,6 +46,6 @@ const CASE_TASK_DEFINITION: ModuleDefinition<StoreEntityTask, StixTask> = {
   representative: (stix: StixTask) => {
     return stix.name;
   },
-  converter_2_1: convertCaseTaskToStix
+  converter_2_1: convertCaseTaskToStix_2_1
 };
 registerDefinition(CASE_TASK_DEFINITION);
