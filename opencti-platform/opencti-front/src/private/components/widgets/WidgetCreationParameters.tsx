@@ -189,7 +189,7 @@ const WidgetCreationParameters = () => {
         label={t_i18n('Title')}
         required={context === 'fintelTemplate'}
         fullWidth={true}
-        value={parameters.title}
+        value={parameters?.title}
         disabled={dataSelection[0]?.instance_id === SELF_ID}
         onChange={(event) => handleChangeParameter('title', event.target.value)}
       />
@@ -796,7 +796,7 @@ const WidgetCreationParameters = () => {
             control={
               <Switch
                 onChange={() => handleToggleParameter('uniqueUsers')}
-                checked={parameters.uniqueUsers ?? undefined}
+                checked={parameters?.uniqueUsers ?? undefined}
               />
             }
             label={t_i18n('Unique Users')}
@@ -809,7 +809,7 @@ const WidgetCreationParameters = () => {
             </Box>
             <Select
               id="unique-interval-select"
-              value={parameters.intervalUniqueUsers || 'months'}
+              value={parameters?.intervalUniqueUsers || 'months'}
               onChange={(e) => handleChangeParameter('intervalUniqueUsers', e.target.value)}
               label={t_i18n('Unique Interval')}
             >

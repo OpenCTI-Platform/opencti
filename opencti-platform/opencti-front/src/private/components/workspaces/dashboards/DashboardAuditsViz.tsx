@@ -44,9 +44,9 @@ const DashboardAuditsViz = ({
     : config.endDate;
 
   let mainEntityTypes = ['Stix-Core-Object'];
-  if (widget.perspective === 'relationships') {
+  if (widget?.perspective === 'relationships') {
     mainEntityTypes = ['stix-core-relationship', 'stix-sighting-relationship'];
-  } else if (widget.perspective === 'audits') {
+  } else if (widget?.perspective === 'audits') {
     mainEntityTypes = ['History'];
   }
   const dataSelection = widget.dataSelection.map((data) => ({
