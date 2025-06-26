@@ -17,7 +17,6 @@ import { MESSAGING$ } from '../../../../../relay/environment';
 import { UserContext } from '../../../../../utils/hooks/useAuth';
 import { hexToRGB } from '../../../../../utils/Colors';
 import type { Theme } from '../../../../../components/Theme';
-import { containerTypes } from '../../../../../utils/hooks/useAttributes';
 
 export type AttackPatternsOfPhase = NonNullable<NonNullable<AttackPatternsMatrixColumns_data$data['attackPatternsMatrix']>['attackPatternsOfPhases']>[number];
 export type AttackPattern = NonNullable<AttackPatternsOfPhase['attackPatterns']>[number];
@@ -225,7 +224,7 @@ const AttackPatternsMatrixColumns = ({
 
   const matrixWidth = useMemo(() => {
     const baseOffset = LAYOUT_SIZE.BASE_WIDTH + (navOpen ? LAYOUT_SIZE.NAV_WIDTH : 0);
-    const rightOffset = !containerTypes.includes(entityType) ? LAYOUT_SIZE.MARGIN_RIGHT_WIDTH : 0;
+    const rightOffset = entityType ? LAYOUT_SIZE.MARGIN_RIGHT_WIDTH : 0;
     return baseOffset + rightOffset;
   }, [entityType, navOpen]);
 

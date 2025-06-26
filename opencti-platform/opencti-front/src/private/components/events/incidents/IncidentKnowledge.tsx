@@ -137,7 +137,6 @@ const IncidentKnowledge = ({
               defaultStartTime={incident.first_seen}
               defaultStopTime={incident.last_seen}
               disableExport={undefined}
-              entityType={incident.entity_type}
             />
           )}
         />

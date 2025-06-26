@@ -47,7 +47,6 @@ import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import { fetchQuery } from '../../../../relay/environment';
-import { containerTypes } from '../../../../utils/hooks/useAttributes';
 
 export const stixDomainObjectAttackPatternsKillChainQuery = graphql`
   query StixDomainObjectAttackPatternsKillChainQuery(
@@ -101,7 +100,7 @@ interface StixDomainObjectAttackPatternsKillChainProps {
   defaultStopTime?: string;
   storageKey: string;
   killChainDataQueryRef: PreloadedQuery<AttackPatternsMatrixQuery>;
-  entityType: string;
+  entityType?: string;
 }
 
 const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjectAttackPatternsKillChainProps> = ({
@@ -125,6 +124,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   entityType,
 }) => {
   const { t_i18n } = useFormatter();
+  const isSecurityPlatform = entityType === 'SecurityPlatform';
   const [targetEntities, setTargetEntities] = useState<TargetEntity[]>([]);
   const [selectedKillChain, setSelectedKillChain] = useState('mitre-attack');
   const [selectedSecurityPlatforms, setSelectedSecurityPlatforms] = useState<EntityOption[]>([]);
@@ -133,9 +133,6 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   const [queryRef, loadQuery] = useQueryLoader<StixDomainObjectAttackPatternsKillChainQuery>(
     stixDomainObjectAttackPatternsKillChainQuery,
   );
-
-  const isSecurityPlatform = entityType === 'SecurityPlatform';
-  const displayButtons = !containerTypes.includes(entityType);
 
   const refetch = React.useCallback(() => {
     loadQuery(paginationOptions, { fetchPolicy: 'store-and-network' });
@@ -419,7 +416,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
               )}
             </>
           )}
-          {displayButtons && (<div style={{ float: 'right', margin: 0 }}>
+          {!entityType && (<div style={{ float: 'right', margin: 0 }}>
             <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
               {[...viewButtons]}
               {typeof handleToggleExports === 'function' && (
@@ -528,7 +525,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             <StixCoreRelationshipCreationFromEntity
               entityId={stixDomainObjectId}
               isRelationReversed={false}
-              paddingRight={displayButtons ? 220 : 0}
+              paddingRight={entityType ? 0 : 220}
               onCreate={refetch}
               targetStixDomainObjectTypes={['Attack-Pattern']}
               paginationOptions={paginationOptions}
