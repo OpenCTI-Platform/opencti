@@ -941,6 +941,110 @@
       "x_opencti_id": "91bced0e-63dc-4ea6-ab6d-7137706b1d89",
       "x_opencti_type": "External-References",
       "type": "external-references"
+    },
+    {
+      "id": "x-opencti-case-incident--07e60198-2184-560b-9ab0-06b483947114",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2024-07-30T13:15:37.447Z",
+      "modified": "2024-07-30T13:15:37.447Z",
+      "response_types": [
+        "Ransomware"
+      ],
+      "name": "Incident Response Name",
+      "x_opencti_id": "91bced0e-63do-4ea6-ab6d-7137706b1d86",
+      "x_opencti_type": "Case-Incident",
+      "type": "x-opencti-case-incident"
+    },
+    {
+      "id": "x-opencti-case-rfi--f5d95240-de55-5ef7-8616-4184bbb84ac1",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2024-07-30T13:15:37.447Z",
+      "modified": "2024-07-30T13:15:37.447Z",
+      "name": "Request For Information Name",
+      "severity": "03 - high",
+      "priority": "P1",
+      "information_types": [
+        "Reports Sharing"
+      ],
+      "x_opencti_workflow_id": "53b0f7b0-7bcd-418c-9ba7-7b99bddb1dc3",
+      "x_opencti_id": "5a4aca53-96d0-4382-8108-c85009af8f44",
+      "x_opencti_type": "Case-Rfi",
+      "type": "x-opencti-case-rfi"
+    },
+    {
+      "id": "x-opencti-case-rft--970eab7e-a87b-5367-8f39-1806e2abd919",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2024-07-30T13:15:37.447Z",
+      "modified": "2024-07-30T13:15:37.447Z",
+      "name": "Request for takedown Name",
+      "x_opencti_id": "1433a1d0-8bb1-4b2f-ae6f-8f92f037a51e",
+      "x_opencti_type": "Case-Rft",
+      "type": "x-opencti-case-rft"
+    },
+    {
+      "id": "x-opencti-task--ecdfc459-9b51-59ec-9882-d4a426a29e19",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2024-07-30T13:15:37.447Z",
+      "modified": "2024-07-30T13:15:37.447Z",
+      "name": "Task Name",
+      "x_opencti_id": "f160d791-5996-4f86-a5b3-9e068df362da",
+      "x_opencti_type": "Task",
+      "type": "x-opencti-task"
+    },
+    {
+      "id": "x-opencti-feedback--f1d4c2f5-6b51-5b0b-92f0-e69ecf06c674",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "rating": 5,
+      "created": "2024-07-30T13:15:37.447Z",
+      "modified": "2024-07-30T13:15:37.447Z",
+      "name": "Feedback Name",
+      "labels": [
+        "false-positive"
+      ],
+      "x_opencti_id": "ce8429b6-cbf9-44f3-bf1e-773323219843",
+      "x_opencti_type": "Feedback",
+      "type": "x-opencti-feedback"
+    },
+    {
+      "id": "incident--e6fc2d85-c07e-55cc-b0ae-2af54369913e",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2024-07-22T11:32:09.208Z",
+      "modified": "2024-07-22T11:34:44.813Z",
+      "name": "Incident Name",
+      "incident_type": "compromise",
+      "labels": ["background-task"],
+      "x_opencti_id": "057e0f4e-34cf-45c5-bef4-cf03cf5ae4ec",
+      "x_opencti_type": "Incident",
+      "type": "incident"
+    },
+    {
+      "id": "observed-data--a8fdb0de-a5ac-51f7-a376-3545ebc23da3",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2025-06-25T20:39:33.142Z",
+      "modified": "2025-06-25T20:39:33.237Z",
+      "first_observed": "2025-06-24T04:00:00.000Z",
+      "last_observed": "2025-06-25T04:00:00.000Z",
+      "number_observed": 1,
+      "x_opencti_id": "9ca7ddcf-ae70-467e-ae7c-24ac0d48dc17",
+      "x_opencti_type": "Observed-Data",
+      "type": "observed-data",
+      "object_refs": [
+        "incident--e6fc2d85-c07e-55cc-b0ae-2af54369913e"
+      ]
     }
   ]
 }
