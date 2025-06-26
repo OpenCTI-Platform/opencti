@@ -275,7 +275,7 @@ class IncidentKnowledgeComponent extends Component {
                 stixDomainObjectId={caseData.id}
                 defaultStartTime={caseData.first_seen}
                 defaultStopTime={caseData.last_seen}
-                entityType={caseDate.entity_type}
+                entityType={caseData.entity_type}
               />
             }
           />
@@ -303,6 +303,7 @@ const IncidentKnowledge = createFragmentContainer(IncidentKnowledgeComponent, {
   caseData: graphql`
     fragment IncidentKnowledge_case on CaseIncident {
       id
+      entity_type
       editContext {
         name
         focusOn

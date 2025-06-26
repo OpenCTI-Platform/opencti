@@ -304,6 +304,7 @@ const CaseRfiKnowledge = createFragmentContainer(CaseRfiKnowledgeComponent, {
   caseData: graphql`
     fragment CaseRfiKnowledge_case on CaseRfi {
       id
+      entity_type
       editContext {
         name
         focusOn

@@ -276,7 +276,7 @@ class CaseRftKnowledgeComponent extends Component {
             element={(
               <StixDomainObjectAttackPatterns
                 stixDomainObjectId={caseData.id}
-                entityType={caseDate.entity_type}
+                entityType={caseData.entity_type}
               />
             )}
           />
@@ -304,6 +304,7 @@ const CaseRftKnowledge = createFragmentContainer(CaseRftKnowledgeComponent, {
   caseData: graphql`
     fragment CaseRftKnowledge_case on CaseRft {
       id
+      entity_type
       editContext {
         name
         focusOn
