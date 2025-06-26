@@ -294,7 +294,7 @@ const standardOperationCallback = async (context, user, task, actionType, operat
   };
 };
 
-export const objectsFromElements = async (context, user, containers, elements, withNeighbours, operationType) => {
+export const buildContainersElementsBundle = async (context, user, containers, elements, withNeighbours, operationType) => {
   const elementIds = new Set();
   const elementStandardIds = new Set();
   for (let index = 0; index < elements.length; index += 1) {
@@ -330,9 +330,9 @@ export const objectsFromElements = async (context, user, containers, elements, w
       id: container.standard_id,
       type: convertTypeToStixType(container.entity_type),
       object_refs: Array.from(elementStandardIds), // object refs for split ordering
-      ...baseOperationBuilder('KNOWLEDGE_CHANGE', containerOperations, container),
       extensions: {
         [STIX_EXT_OCTI]: {
+          ...baseOperationBuilder('KNOWLEDGE_CHANGE', containerOperations, container),
           id: container.internal_id,
           type: container.entity_type
         }
@@ -346,7 +346,7 @@ const containerOperationCallback = async (context, user, task, containers, opera
   const withNeighbours = operations[0].context.options?.includeNeighbours;
   const operationType = operations[0].type;
   return async (elements) => {
-    const objects = await objectsFromElements(context, user, containers, elements, withNeighbours, operationType);
+    const objects = await buildContainersElementsBundle(context, user, containers, elements, withNeighbours, operationType);
     // Send actions to queue
     await sendResultToQueue(context, user, task, objects);
     // Update task
@@ -436,9 +436,9 @@ const promoteOperationCallback = async (context, user, task, container) => {
         id: container.standard_id,
         type: convertTypeToStixType(container.entity_type),
         object_refs: objectRefs, // object refs for split ordering
-        ...baseOperationBuilder('KNOWLEDGE_CHANGE', containerOperations, container),
         extensions: {
           [STIX_EXT_OCTI]: {
+            ...baseOperationBuilder('KNOWLEDGE_CHANGE', containerOperations, container),
             id: container.internal_id,
             type: container.entity_type
           }

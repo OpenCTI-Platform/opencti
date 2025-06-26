@@ -1,19 +1,19 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { objectsFromElements } from '../../../src/manager/taskManager';
+import { buildContainersElementsBundle } from '../../../src/manager/taskManager';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import type { StoreProxyRelation } from '../../../src/types/store';
-import type { BasicStoreEntityManagerConfiguration } from '../../../src/modules/managerConfiguration/managerConfiguration-types';
+import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 
-const containers = [{ _id: '3b753144-0565-448b-b65a-abb333a01979',
+const containers = [{
+  _id: '3b753144-0565-448b-b65a-abb333a01979',
   _index: 'opencti_stix_domain_objects-000001',
   base_type: 'ENTITY',
   entity_type: 'Grouping',
   id: '3b753144-0565-448b-b65a-abb333a01979',
   internal_id:
     '3b753144-0565-448b-b65a-abb333a01979',
-  sort: [1750854201251],
-  standard_id: 'grouping--33a015b6-acb1-563b-8fb7-426bfd9e9a15' }];
-const elements = [{
+  standard_id: 'grouping--33a015b6-acb1-563b-8fb7-426bfd9e9a15'
+}];
+const element = {
   _id: '41107f85-f2dc-4422-b615-c12e8ea67aec',
   _index: 'opencti_stix_domain_objects-000001',
   base_type: 'ENTITY',
@@ -24,41 +24,45 @@ const elements = [{
   last_seen: '5138-11-16T09:46:40.000Z',
   sort: [1749547966450],
   standard_id: 'threat-actor--b84197db-ff53-5167-a6c7-c7cd0fff0277'
+};
+const expectedIncludedWithNeighborsFieldPatch = [{
+  key: 'objects',
+  operation: 'add',
+  value: [element.id, `${element.id}toId`, `${element.id}rel`]
 }];
-const expectedObjects = [{
-  extensions: {
-    'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba': {
-      id: '3b753144-0565-448b-b65a-abb333a01979',
-      type: 'Grouping'
-    }
-  },
-  id: 'grouping--33a015b6-acb1-563b-8fb7-426bfd9e9a15',
-  object_refs: ['threat-actor--b84197db-ff53-5167-a6c7-c7cd0fff0277'],
-  opencti_field_patch: [{
-    key: 'objects',
-    operation: 'add',
-    value: ['41107f85-f2dc-4422-b615-c12e8ea67aec', 'ab63a7fd-5660-44b9-afd9-45aef583684d', '4f4109aa-eb21-4050-94cd-20f38f8b501a'] }],
-  opencti_operation: 'patch',
-  type: 'grouping' }];
-
-// const allRelations = [];
+const expectedWithoutNeighborsFieldPatch = [{
+  key: 'objects',
+  operation: 'add',
+  value: [element.id]
+}];
 
 describe('TaskMananger objectsFromElements tests', () => {
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  vi.mock('../../../src/manager/taskManager', () => {
+  vi.mock('../../../src/database/middleware-loader', () => {
     return {
-      objectsFromElements: vi.fn().mockImplementation(() => {
-        const listAllRelations = [];
-        return listAllRelations;
+      listAllRelations: vi.fn().mockImplementation((_c, _u, _t, args) => {
+        const { callback, fromOrToId } = args;
+        const mockRelations = fromOrToId ? fromOrToId.map((id: string) => {
+          return { fromId: id, toId: `${id}toId`, id: `${id}rel` };
+        }) : [];
+        if (callback) {
+          callback(mockRelations);
+        }
+        return mockRelations;
       }),
     };
   });
 
-  it('objectsFromElements should return object', async () => {
-    const objects = await objectsFromElements(testContext, ADMIN_USER, containers, elements, true, 'ADD');
-    expect(objects).toEqual(expectedObjects);
+  it('buildContainersElementsBundle should return object', async () => {
+    const objects = await buildContainersElementsBundle(testContext, ADMIN_USER, containers, [element], true, 'ADD');
+    expect(objects[0].extensions[STIX_EXT_OCTI].opencti_operation).toEqual('patch');
+    expect(objects[0].extensions[STIX_EXT_OCTI].opencti_field_patch).toEqual(expectedIncludedWithNeighborsFieldPatch);
+
+    const objectsWithout = await buildContainersElementsBundle(testContext, ADMIN_USER, containers, [element], false, 'ADD');
+    expect(objectsWithout[0].extensions[STIX_EXT_OCTI].opencti_operation).toEqual('patch');
+    expect(objectsWithout[0].extensions[STIX_EXT_OCTI].opencti_field_patch).toEqual(expectedWithoutNeighborsFieldPatch);
   });
 });
