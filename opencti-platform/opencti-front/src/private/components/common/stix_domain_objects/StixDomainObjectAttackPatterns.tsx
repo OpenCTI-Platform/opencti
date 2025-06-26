@@ -14,14 +14,13 @@ import {
   useRemoveIdAndIncorrectKeysFromFilterGroupObject,
 } from '../../../../utils/filters/filtersUtils';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { containerTypes } from '../../../../utils/hooks/useAttributes';
 
 interface StixDomainObjectAttackPatternsProps {
   stixDomainObjectId: string,
   defaultStartTime?: string,
   defaultStopTime?: string,
   disableExport: boolean,
-  entityType: string,
+  entityType?: string,
 }
 
 const StixDomainObjectAttackPatterns: FunctionComponent<StixDomainObjectAttackPatternsProps> = ({
@@ -89,7 +88,7 @@ const StixDomainObjectAttackPatterns: FunctionComponent<StixDomainObjectAttackPa
             stixDomainObjectId={stixDomainObjectId}
             filters={filters}
             searchTerm={searchTerm}
-            view={containerTypes.includes(entityType) ? 'matrix' : view}
+            view={entityType ? 'matrix' : view}
             defaultStartTime={defaultStartTime}
             defaultStopTime={defaultStopTime}
             disableExport={disableExport}

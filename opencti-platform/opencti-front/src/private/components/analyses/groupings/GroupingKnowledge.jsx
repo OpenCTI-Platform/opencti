@@ -125,6 +125,8 @@ class GroupingKnowledgeComponent extends Component {
             element={
               <StixDomainObjectAttackPatterns
                 stixDomainObjectId={grouping.id}
+                defaultStartTime={grouping.first_seen}
+                defaultStopTime={grouping.last_seen}
                 entityType={grouping.entity_type}
               />
             }
@@ -156,7 +158,6 @@ const GroupingKnowledge = createFragmentContainer(GroupingKnowledgeComponent, {
   grouping: graphql`
     fragment GroupingKnowledge_grouping on Grouping {
       id
-      entity_type
       editContext {
         name
         focusOn

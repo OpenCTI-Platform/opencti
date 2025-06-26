@@ -276,7 +276,9 @@ class CaseRfiKnowledgeComponent extends Component {
             element={
               <StixDomainObjectAttackPatterns
                 stixDomainObjectId={caseData.id}
-                entityType={caseDate.entity_type}
+                defaultStartTime={caseData.first_seen}
+                defaultStopTime={caseData.last_seen}
+                entityType={caseData.entity_type}
               />
             }
           />
@@ -304,7 +306,6 @@ const CaseRfiKnowledge = createFragmentContainer(CaseRfiKnowledgeComponent, {
   caseData: graphql`
     fragment CaseRfiKnowledge_case on CaseRfi {
       id
-      entity_type
       editContext {
         name
         focusOn

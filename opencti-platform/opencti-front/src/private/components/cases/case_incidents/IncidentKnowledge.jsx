@@ -303,7 +303,6 @@ const IncidentKnowledge = createFragmentContainer(IncidentKnowledgeComponent, {
   caseData: graphql`
     fragment IncidentKnowledge_case on CaseIncident {
       id
-      entity_type
       editContext {
         name
         focusOn

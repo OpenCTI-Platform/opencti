@@ -16,7 +16,7 @@ export interface AttackPatternsMatrixProps {
   selectedKillChain?: string;
   attackPatternIdsToOverlap?: string[];
   isModeOnlyActive: boolean;
-  entityType: string;
+  entityType?: string;
 }
 
 export const attackPatternsMatrixQuery = graphql`
