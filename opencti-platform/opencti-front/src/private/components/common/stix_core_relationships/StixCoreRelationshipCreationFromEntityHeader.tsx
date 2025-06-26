@@ -36,7 +36,6 @@ StixCoreRelationshipCreationFromEntityHeaderProps
 > = ({
   entityId,
   targetEntities: initialTargetEntities = [],
-  handleReverseRelation = undefined,
   defaultStartTime = (new Date()).toISOString(),
   defaultStopTime = (new Date()).toISOString(),
 }) => {
@@ -148,7 +147,6 @@ StixCoreRelationshipCreationFromEntityHeaderProps
             <StixCoreRelationshipCreationFormStage
               targetEntities={targetEntities}
               queryRef={queryRef}
-              handleReverseRelation={handleReverseRelation}
               handleResetSelection={handleResetSelection}
               handleClose={handleClose}
               defaultStartTime={defaultStartTime}
