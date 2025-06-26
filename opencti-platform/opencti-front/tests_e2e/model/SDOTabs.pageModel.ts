@@ -22,6 +22,10 @@ export default class SDOTabs {
     return this.page.getByRole('tab', { name: 'Content' }).click();
   }
 
+  goToSightingsTab() {
+    return this.page.getByRole('tab', { name: 'Sightings' }).click();
+  }
+
   goToAnalysesTab() {
     return this.page.getByRole('tab', { name: 'Analyses' }).click();
   }

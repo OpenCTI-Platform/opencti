@@ -129,7 +129,7 @@ const IndicatorEntities = ({ indicatorId, relationshipType, defaultStartTime, de
   };
 
   return (
-    <>
+    <div data-testid="indicator-knowledge">
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <StixCoreRelationshipCreationFromEntity
@@ -152,7 +152,7 @@ const IndicatorEntities = ({ indicatorId, relationshipType, defaultStartTime, de
           defaultStopTime={defaultStopTime}
         />
       </Security>
-    </>
+    </div>
   );
 };
 
