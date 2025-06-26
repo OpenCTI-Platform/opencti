@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useContext, useEffect, useState } from 'react';
 import { graphql, PreloadedQuery, useQueryLoader } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import { FileDownloadOutlined, ViewColumnOutlined, VisibilityOutlined } from '@mui/icons-material';
@@ -47,6 +47,7 @@ import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import { fetchQuery } from '../../../../relay/environment';
+import { CreateRelationshipContext } from '../stix_core_relationships/CreateRelationshipContextProvider';
 
 export const stixDomainObjectAttackPatternsKillChainQuery = graphql`
   query StixDomainObjectAttackPatternsKillChainQuery(
@@ -125,6 +126,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
 }) => {
   const { t_i18n } = useFormatter();
   const isSecurityPlatform = entityType === 'SecurityPlatform';
+  const { setState: setCreateRelationshipContext } = useContext(CreateRelationshipContext);
   const [targetEntities, setTargetEntities] = useState<TargetEntity[]>([]);
   const [selectedKillChain, setSelectedKillChain] = useState('mitre-attack');
   const [selectedSecurityPlatforms, setSelectedSecurityPlatforms] = useState<EntityOption[]>([]);
@@ -137,6 +139,12 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   const refetch = React.useCallback(() => {
     loadQuery(paginationOptions, { fetchPolicy: 'store-and-network' });
   }, [queryRef]);
+
+  useEffect(() => {
+    setCreateRelationshipContext({
+      onCreate: refetch,
+    });
+  }, []);
 
   const handleAdd = (entity: TargetEntity) => {
     setTargetEntities([entity]);
