@@ -22,7 +22,6 @@ import { ENTITY_TYPE_CONTAINER_TASK } from '../modules/task/task-types';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../modules/case/case-incident/case-incident-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../modules/case/case-rft/case-rft-types';
-import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { convertObjectReferences } from './stix-2-1-converter';
 
 export const convertTypeToStix2Type = (type: string): string => {
@@ -138,7 +137,7 @@ export const convertMalwareToStix = (instance: StoreEntity, type: string): SDO.S
   };
 };
 
-const convertReportToStix = (instance: StoreEntity, type: string): SDO.StixReport => {
+export const convertReportToStix = (instance: StoreEntity, type: string): SDO.StixReport => {
   assertType(ENTITY_TYPE_CONTAINER_REPORT, type);
   const report = buildStixDomain(instance);
   return {
