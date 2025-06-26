@@ -1,7 +1,7 @@
-import React, { FunctionComponent, useContext } from 'react';
+import React, { FunctionComponent, useContext, useEffect, useState } from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { CircularProgress } from '@mui/material';
-import { ConnectionHandler, RecordSourceSelectorProxy } from 'relay-runtime';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik';
 import {
   StixCoreRelationshipCreationFromEntityForm,
@@ -13,7 +13,7 @@ import {
 import { StixCoreRelationshipCreationFromEntityQuery } from './__generated__/StixCoreRelationshipCreationFromEntityQuery.graphql';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
-import { isNodeInConnection } from '../../../../utils/store';
+import { insertNode } from '../../../../utils/store';
 import { formatDate } from '../../../../utils/Time';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import { resolveRelationsTypes } from '../../../../utils/Relation';
@@ -23,7 +23,6 @@ import { CreateRelationshipContext } from './CreateRelationshipContextProvider';
 interface StixCoreRelationshipCreationFormStageProps {
   targetEntities: TargetEntity[];
   queryRef: PreloadedQuery<StixCoreRelationshipCreationFromEntityQuery, Record<string, unknown>>;
-  handleReverseRelation?: () => void;
   handleResetSelection: () => void;
   handleClose: () => void;
   defaultStartTime: string;
@@ -35,7 +34,6 @@ interface StixCoreRelationshipCreationFormStageProps {
 const StixCoreRelationshipCreationFormStage: FunctionComponent<StixCoreRelationshipCreationFormStageProps> = ({
   targetEntities,
   queryRef,
-  handleReverseRelation,
   handleResetSelection,
   handleClose,
   defaultStartTime,
@@ -50,7 +48,8 @@ const StixCoreRelationshipCreationFormStage: FunctionComponent<StixCoreRelations
 
   const { state: {
     relationshipTypes: allowedRelationshipTypes,
-    reversed: isRelationReversed,
+    reversed,
+    handleReverseRelation,
     paginationOptions,
     connectionKey,
     onCreate,
@@ -73,18 +72,23 @@ const StixCoreRelationshipCreationFormStage: FunctionComponent<StixCoreRelations
   }
 
   const sourceEntity: TargetEntity = stixCoreObject;
-  let fromEntities = [sourceEntity];
-  let toEntities = targetEntities;
-  if (isRelationReversed) {
-    fromEntities = targetEntities;
-    toEntities = [sourceEntity];
-  }
+  const [fromEntities, setFromEntities] = useState<TargetEntity[]>([sourceEntity]);
+  const [toEntities, setToEntities] = useState<TargetEntity[]>(targetEntities);
+  useEffect(() => {
+    if (reversed) {
+      setFromEntities(targetEntities);
+      setToEntities([sourceEntity]);
+    } else {
+      setFromEntities([sourceEntity]);
+      setToEntities(targetEntities);
+    }
+  }, [reversed]);
 
   const onSubmit: FormikConfig<StixCoreRelationshipCreationFromEntityForm>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
     setSubmitting(true);
     for (const targetEntity of targetEntities) {
-      const fromEntityId = isRelationReversed ? targetEntity.id : entityId;
-      const toEntityId = isRelationReversed ? entityId : targetEntity.id;
+      const fromEntityId = reversed ? targetEntity.id : entityId;
+      const toEntityId = reversed ? entityId : targetEntity.id;
       const finalValues = {
         ...values,
         confidence: parseInt(values.confidence, 10),
@@ -99,41 +103,21 @@ const StixCoreRelationshipCreationFormStage: FunctionComponent<StixCoreRelations
       };
       try {
         commitMutation({
-          mutation: isRelationReversed
+          mutation: reversed
             ? stixCoreRelationshipCreationFromEntityToMutation
             : stixCoreRelationshipCreationFromEntityFromMutation,
           variables: { input: finalValues },
           updater: (store: RecordSourceSelectorProxy) => {
-            if (typeof onCreate !== 'function') {
-              const userProxy = store.get(store.getRoot().getDataID());
-              const payload = store.getRootField('stixCoreRelationshipAdd');
-
-              const createdNode = connectionKey && payload !== null
-                ? payload.getLinkedRecord(isRelationReversed ? 'from' : 'to')
-                : payload;
-              const connKey = connectionKey || 'Pagination_stixCoreRelationships';
-              let conn;
-              // When using connectionKey we use less props of PaginationOptions (ex: count),
-              // we need to filter them to prevent getConnection to fail
-              const { count: _, ...options } = paginationOptions as Record<string, unknown>;
-
-              if (userProxy) {
-                conn = ConnectionHandler.getConnection(
-                  userProxy,
-                  connKey,
-                  options,
-                );
-              }
-
-              if (conn && payload !== null
-                && !isNodeInConnection(payload, conn)
-                && !isNodeInConnection(payload.getLinkedRecord(isRelationReversed ? 'from' : 'to'), conn)) {
-                const newEdge = payload.setLinkedRecord(createdNode, 'node');
-                ConnectionHandler.insertEdgeBefore(conn, newEdge);
-
-                helpers.handleSetNumberOfElements({});
-              }
-            }
+            insertNode(
+              store,
+              connectionKey || 'Pagination_stixCoreRelationships',
+              paginationOptions,
+              'stixCoreRelationshipAdd',
+              null,
+              null,
+              null,
+              reversed ? 'from' : 'to',
+            );
           },
           optimisticUpdater: undefined,
           setSubmitting: undefined,
