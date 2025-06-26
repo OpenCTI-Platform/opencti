@@ -5,6 +5,7 @@ import type * as SMO from '../types/stix-2-0-smo';
 import { INPUT_CREATED_BY, INPUT_EXTERNAL_REFS, INPUT_GRANTED_REFS, INPUT_KILLCHAIN, INPUT_LABELS, INPUT_MARKINGS } from '../schema/general';
 import { INPUT_OPERATING_SYSTEM, INPUT_SAMPLE } from '../schema/stixRefRelationship';
 import {
+  ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_DATA_COMPONENT,
   ENTITY_TYPE_DATA_SOURCE,
   ENTITY_TYPE_MALWARE,
@@ -21,6 +22,8 @@ import { ENTITY_TYPE_CONTAINER_TASK } from '../modules/task/task-types';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../modules/case/case-incident/case-incident-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../modules/case/case-rft/case-rft-types';
+import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
+import { convertObjectReferences } from './stix-2-1-converter';
 
 export const convertTypeToStix2Type = (type: string): string => {
   if (isStixDomainObjectIdentity(type)) {
@@ -132,5 +135,22 @@ export const convertMalwareToStix = (instance: StoreEntity, type: string): SDO.S
     capabilities: instance.capabilities,
     operating_system_refs: (instance[INPUT_OPERATING_SYSTEM] ?? []).map((m) => m.standard_id),
     sample_refs: (instance[INPUT_SAMPLE] ?? []).map((m) => m.standard_id),
+  };
+};
+
+const convertReportToStix = (instance: StoreEntity, type: string): SDO.StixReport => {
+  assertType(ENTITY_TYPE_CONTAINER_REPORT, type);
+  const report = buildStixDomain(instance);
+  return {
+    ...report,
+    name: instance.name,
+    description: instance.description,
+    report_types: instance.report_types,
+    published: convertToStixDate(instance.published),
+    object_refs: convertObjectReferences(instance),
+    content: instance.content,
+    content_mapping: instance.content_mapping,
+    object_refs_inferred: convertObjectReferences(instance, true), // TODO change
+    reliability: instance.x_opencti_reliability,
   };
 };
