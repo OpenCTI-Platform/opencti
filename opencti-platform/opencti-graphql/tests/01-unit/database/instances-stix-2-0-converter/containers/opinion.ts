@@ -1,3 +1,5 @@
+import type { StoreEntity } from '../../../../../src/types/store';
+
 export const OPINION_INSTANCE = {
   _index: 'opencti_stix_domain_objects-000001',
   _id: '2a2d3e3e-a767-4184-aca1-a11e1d557d05',
@@ -410,7 +412,7 @@ export const OPINION_INSTANCE = {
       }
     }
   ]
-};
+} as unknown as StoreEntity;
 
 export const EXPECTED_OPINION = {
 

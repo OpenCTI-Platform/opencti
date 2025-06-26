@@ -1,3 +1,5 @@
+import type { StoreEntity } from '../../../../../src/types/store';
+
 export const RFT_INSTANCE = {
   _index: 'opencti_stix_domain_objects-000001',
   _id: 'ae110ba9-34a7-44ef-86b9-7b52def4b4aa',
@@ -736,7 +738,7 @@ export const RFT_INSTANCE = {
       }
     }
   ]
-};
+} as unknown as StoreEntity;
 
 export const EXPECTED_RFT = {
   id: 'x-opencti-case-rft--8456f0c2-0308-578b-b90c-1dd6e0440763',
