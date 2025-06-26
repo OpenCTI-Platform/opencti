@@ -1,3 +1,5 @@
+import type { StoreEntity } from '../../../../../src/types/store';
+
 export const GROUPING_INSTANCE = {
   _index: 'opencti_stix_domain_objects-000001',
   _id: '2076a71c-a480-424f-8058-cb5c798e4360',
@@ -471,7 +473,7 @@ export const GROUPING_INSTANCE = {
       }
     }
   ]
-};
+} as unknown as StoreEntity;
 
 export const EXPECTED_GROUPING = {
   id: 'grouping--3f78a876-9216-5111-92d8-6871301f6e9e',

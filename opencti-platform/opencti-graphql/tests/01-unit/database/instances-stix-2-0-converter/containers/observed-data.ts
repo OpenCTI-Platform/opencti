@@ -1,3 +1,5 @@
+import type { StoreEntity } from '../../../../../src/types/store';
+
 export const OBSERVED_DATA_INSTANCE = {
   _index: 'opencti_stix_domain_objects-000001',
   _id: '9653626d-54c7-433b-beca-ee1dee226125',
@@ -448,7 +450,7 @@ export const OBSERVED_DATA_INSTANCE = {
       }
     }
   ]
-};
+} as unknown as StoreEntity;
 
 export const EXPECTED_OBSERVED_DATA = {
   id: 'observed-data--a9ed3299-df09-5bc6-bd5f-0831d75114ae',

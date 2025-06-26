@@ -1,3 +1,5 @@
+import type { StoreEntity } from '../../../../../src/types/store';
+
 export const RFI_INSTANCE = {
   _index: 'opencti_stix_domain_objects-000001',
   _id: '4ebd03f2-d922-4449-915e-2facb67e781c',
@@ -771,7 +773,7 @@ export const RFI_INSTANCE = {
       }
     }
   ]
-};
+} as unknown as StoreEntity;
 
 export const EXPECTED_RFI = {
   id: 'x-opencti-case-rfi--cc1229b2-8ba7-50fd-b822-055b45e3aa4f',
