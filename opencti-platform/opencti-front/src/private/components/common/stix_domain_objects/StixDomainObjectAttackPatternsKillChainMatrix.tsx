@@ -10,7 +10,7 @@ interface StixDomainObjectAttackPatternsKillChainMatrixProps {
   data: StixDomainObjectAttackPatternsKillChainContainer_data$data;
   handleAdd: (entity: TargetEntity) => void;
   selectedKillChain: string;
-  entityType?: string;
+  entityType: string;
   attackPatternIdsToOverlap?: string[];
   isModeOnlyActive: boolean;
 }
