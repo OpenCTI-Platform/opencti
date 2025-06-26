@@ -171,12 +171,20 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
         ? stixCoreObjectTypes
         : ['Stix-Core-Object'],
       relationshipTypes,
-      reversed: isRelationReversed,
+      handleReverseRelation,
+      connectionKey: 'Pagination_stixCoreRelationships',
     });
   }, []);
   useEffect(() => {
     setCreateRelationshipContext({
+      reversed: reversedRelation,
+      handleReverseRelation,
+    });
+  }, [reversedRelation]);
+  useEffect(() => {
+    setCreateRelationshipContext({
       paginationOptions,
+      handleReverseRelation,
     });
   }, [localStorage]);
 
