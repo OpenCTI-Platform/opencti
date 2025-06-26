@@ -1,3 +1,5 @@
+import type { StoreEntity } from '../../../../../src/types/store';
+
 export const NOTE_INSTANCE = {
   _index: 'opencti_stix_domain_objects-000001',
   _id: 'b9aca079-0a66-4efd-a481-71b1ce745a3a',
@@ -393,7 +395,7 @@ export const NOTE_INSTANCE = {
       }
     }
   ]
-};
+} as unknown as StoreEntity;
 
 export const EXPECTED_NOTE = {
   id: 'note--2a80c942-1c85-5bb7-91d4-e92ed2b86fd8',

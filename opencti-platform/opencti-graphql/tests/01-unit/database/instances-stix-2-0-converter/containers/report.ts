@@ -1,3 +1,5 @@
+import type { StoreEntity } from '../../../../../src/types/store';
+
 export const REPORT_INSTANCE = {
   _index: 'opencti_stix_domain_objects-000001',
   _id: '0c38a734-3150-468f-bf38-8dc1f937a1b3',
@@ -613,7 +615,7 @@ export const REPORT_INSTANCE = {
       }
     }
   ]
-};
+} as unknown as StoreEntity;
 
 export const EXPECTED_REPORT = {
   id: 'report--87de3e34-b9a2-551d-a42f-d25a13d4ad0f',
