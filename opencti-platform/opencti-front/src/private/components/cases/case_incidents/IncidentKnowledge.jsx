@@ -275,7 +275,7 @@ class IncidentKnowledgeComponent extends Component {
                 stixDomainObjectId={caseData.id}
                 defaultStartTime={caseData.first_seen}
                 defaultStopTime={caseData.last_seen}
-                entityType={'Case-Incident'}
+                entityType={caseDate.entity_type}
               />
             }
           />

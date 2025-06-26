@@ -143,7 +143,7 @@ const IntrusionSetKnowledgeComponent = ({
               stixDomainObjectId={intrusionSet.id}
               defaultStartTime={intrusionSet.first_seen}
               defaultStopTime={intrusionSet.last_seen}
-              entityType={'Intrusion-Set'}
+              entityType={intrusionSet.entity_type}
             />
           }
         />

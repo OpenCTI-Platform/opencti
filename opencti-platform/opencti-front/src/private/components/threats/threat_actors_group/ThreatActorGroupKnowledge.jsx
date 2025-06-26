@@ -158,7 +158,7 @@ const ThreatActorGroupKnowledgeComponent = ({
               stixDomainObjectId={threatActorGroup.id}
               defaultStartTime={threatActorGroup.first_seen}
               defaultStopTime={threatActorGroup.last_seen}
-              entityType={'Threat-Actor-Group'}
+              entityType={threatActorGroup.entity_type}
             />
             }
         />

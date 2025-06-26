@@ -143,7 +143,7 @@ const CampaignKnowledgeComponent = ({
               stixDomainObjectId={campaign.id}
               defaultStartTime={campaign.first_seen}
               defaultStopTime={campaign.last_seen}
-              entityType={'Campaign'}
+              entityType={campaign.entity_type}
             />
             }
         />

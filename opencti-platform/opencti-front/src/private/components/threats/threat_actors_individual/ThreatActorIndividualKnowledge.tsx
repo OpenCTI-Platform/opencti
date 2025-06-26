@@ -172,7 +172,7 @@ const ThreatActorIndividualKnowledgeComponent = ({
             stixDomainObjectId={threatActorIndividual.id}
             defaultStartTime={threatActorIndividual.first_seen}
             defaultStopTime={threatActorIndividual.last_seen}
-            entityType={'Threat-Actor-Individual'}
+            entityType={threatActorIndividual.entity_type}
           />
         }
       />
