@@ -272,8 +272,6 @@ class ReportKnowledgeComponent extends Component {
             element={(
               <StixDomainObjectAttackPatterns
                 stixDomainObjectId={report.id}
-                defaultStartTime={report.first_seen}
-                defaultStopTime={report.last_seen}
                 entityType={report.entity_type}
               />
             )}
@@ -302,6 +300,7 @@ const ReportKnowledge = createFragmentContainer(ReportKnowledgeComponent, {
   report: graphql`
     fragment ReportKnowledge_report on Report {
       id
+      entity_type
       editContext {
         name
         focusOn
