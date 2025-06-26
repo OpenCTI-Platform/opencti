@@ -125,9 +125,7 @@ class GroupingKnowledgeComponent extends Component {
             element={
               <StixDomainObjectAttackPatterns
                 stixDomainObjectId={grouping.id}
-                defaultStartTime={grouping.first_seen}
-                defaultStopTime={grouping.last_seen}
-                entityType={grouping.entity_type}
+                entityType={'Grouping'}
               />
             }
           />

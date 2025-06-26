@@ -276,9 +276,7 @@ class CaseRftKnowledgeComponent extends Component {
             element={(
               <StixDomainObjectAttackPatterns
                 stixDomainObjectId={caseData.id}
-                defaultStartTime={caseData.first_seen}
-                defaultStopTime={caseData.last_seen}
-                entityType={caseData.entity_type}
+                entityType={'Case-Rft'}
               />
             )}
           />
