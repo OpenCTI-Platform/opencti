@@ -97,6 +97,7 @@ class ExportButtons extends Component {
           .catch(() => MESSAGING$.notifyError(t('Dashboard cannot be exported to image')))
           .finally(() => {
             exportButtons.setAttribute('style', 'display: block');
+            viewButtons.setAttribute('style', 'display: block, marginLeft: theme.spacing(2)');
             commitLocalUpdate((store) => {
               const me = store.getRoot().getLinkedRecord('me');
               me.setValue(false, 'exporting');
