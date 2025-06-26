@@ -1,3 +1,5 @@
+import type { StoreEntity } from '../../../../../src/types/store';
+
 export const FEEDBACK_INSTANCE = {
   _index: 'opencti_stix_domain_objects-000001',
   _id: '5a194bd5-1fe1-4618-bfa0-48b15eb590b4',
@@ -318,7 +320,7 @@ export const FEEDBACK_INSTANCE = {
       }
     }
   ]
-};
+} as unknown as StoreEntity;
 
 export const EXPECTED_FEEDBACK = {
   id: 'x-opencti-feedback--ce07ddc6-2377-576b-ace5-a4de6996e789',
