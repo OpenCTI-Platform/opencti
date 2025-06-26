@@ -8,12 +8,18 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { wauDataQuery } from './MetricsWeekly';
 import { useFormatter } from '../../../../components/i18n';
-import { auditsDistributionParameters } from './__generated__/AuditsWeeklyQuery.graphql';
 
 /**
  * This file exports a Chart widget showing unique user activity over a given
  * number of weeks. Defaults to a 6-week rolling range, monday start-of-week.
  */
+
+type auditsDistributionParameters = {
+  field: string,
+  startDate: string,
+  endDate: string,
+  filters: FilterGroup | null | undefined,
+};
 
 const getWeekRangesVariables = (weekStartDay = 'Monday', numWeeks = 6) => {
   const today = new Date();

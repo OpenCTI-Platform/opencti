@@ -8,12 +8,18 @@ import { mauDataQuery } from './MetricsMonthly';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import { useFormatter } from '../../../../components/i18n';
-import { auditsDistributionParameters } from './__generated__/AuditsMonthlyQuery.graphql';
 
 /**
  * This file exports a Chart widget showing unique user activity over a given
  * number of months. Defaults to a 6-month rolling range.
  */
+
+type auditsDistributionParameters = {
+  field: string,
+  startDate: string,
+  endDate: string,
+  filters: FilterGroup | null | undefined,
+};
 
 interface MetricsMonthlyChartComponentProps {
   queryRef: PreloadedQuery<MetricsMonthlyQuery>,
