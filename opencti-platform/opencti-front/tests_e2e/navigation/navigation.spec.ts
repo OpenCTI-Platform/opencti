@@ -34,7 +34,11 @@ import ObservedDataDetailsPage from '../model/observedDataDetails.pageModel';
 import EntitiesTabPageModel from '../model/EntitiesTab.pageModel';
 import ObservablesTabPageModel from '../model/ObservablesTab.pageModel';
 import ArtifactPage from '../model/Artifact.pageModel';
-import StixCoreObjectContentTabPage from "../model/StixCoreObjectContentTab.pageModel";
+import StixCoreObjectContentTabPage from '../model/StixCoreObjectContentTab.pageModel';
+import IndicatorPage from '../model/indicator.pageModel';
+import IndicatorDetailsPageModel from '../model/indicatorDetails.pageModel';
+import InfrastructurePage from '../model/infrastructure.pageModel';
+import InfrastructureDetailsPageModel from '../model/infrastructureDetails.pageModel';
 
 /**
  * Goal: validate that everything is opening without errors in Analyses > Note.
@@ -577,6 +581,86 @@ const navigateArtifact = async (page: Page) => {
   await artifactPage.getItemFromList(artifactInitData).click();
 };
 
+const navigateIndicators = async (page: Page) => {
+  const indicatorsInitData = '';
+  const indicatorPage = new IndicatorPage(page);
+  await indicatorPage.navigateFromMenu();
+  await expect(indicatorPage.getPage()).toBeVisible();
+  await expect(page.getByText(indicatorsInitData)).toBeVisible();
+  await indicatorPage.getItemFromList(indicatorsInitData).click();
+
+  const indicatorDetailsPage = new IndicatorDetailsPageModel(page);
+  await expect(indicatorDetailsPage.getPage()).toBeVisible();
+
+  // -- Knowledge
+  await indicatorDetailsPage.tabs.goToKnowledgeTab();
+  await expect(page.getByTestId('indicator-knowledge')).toBeVisible();
+
+  // -- Content
+  await indicatorDetailsPage.tabs.goToContentTab();
+  const contentTab = new StixCoreObjectContentTabPage(page);
+  await expect(contentTab.getPage()).toBeVisible();
+
+  // -- Analyses
+  await indicatorDetailsPage.tabs.goToAnalysesTab();
+  await expect(page.getByPlaceholder('Search these results...')).toBeVisible();
+  await page.getByLabel('Lines view').click();
+  await page.getByLabel('Graph view').click();
+  await page.getByLabel('List settings').click();
+  await page.getByLabel('Open export panel').click();
+
+  // -- Sightings
+  await indicatorDetailsPage.tabs.goToSightingsTab();
+  await expect(page.getByTestId('sightings-overview')).toBeVisible();
+
+  // -- Data
+  await indicatorDetailsPage.tabs.goToDataTab();
+  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+
+  // -- History
+  await indicatorDetailsPage.tabs.goToHistoryTab();
+  const historyTab = new StixCoreObjectHistoryTab(page);
+  await expect(historyTab.getPage()).toBeVisible();
+};
+
+const navigateInfrastructure = async (page: Page) => {
+  const infrastructureInitData = '';
+  const infrastructurePage = new InfrastructurePage(page);
+  await infrastructurePage.navigateFromMenu();
+  await expect(infrastructurePage.getPage()).toBeVisible();
+  await expect(page.getByText(infrastructureInitData)).toBeVisible();
+  await infrastructurePage.getItemFromList(infrastructureInitData).click();
+
+  const infrastructureDetailsPage = new InfrastructureDetailsPageModel(page);
+  await expect(infrastructureDetailsPage.getPage()).toBeVisible();
+
+  // -- Knowledge
+  await infrastructureDetailsPage.tabs.goToKnowledgeTab();
+  await expect(page.getByTestId('infrastructure-knowledge')).toBeVisible();
+
+  // -- Content
+  await infrastructureDetailsPage.tabs.goToContentTab();
+  const contentTab = new StixCoreObjectContentTabPage(page);
+  await expect(contentTab.getPage()).toBeVisible();
+
+  // -- Analyses
+  await infrastructureDetailsPage.tabs.goToAnalysesTab();
+  await expect(page.getByPlaceholder('Search these results...')).toBeVisible();
+  await page.getByLabel('Lines view').click();
+  await page.getByLabel('Graph view').click();
+  await page.getByLabel('List settings').click();
+  await page.getByLabel('Open export panel').click();
+
+  // -- Data
+  await infrastructureDetailsPage.tabs.goToDataTab();
+  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+
+  // -- History
+  await infrastructureDetailsPage.tabs.goToHistoryTab();
+  const historyTab = new StixCoreObjectHistoryTab(page);
+  await expect(historyTab.getPage()).toBeVisible();
+};
+
 const navigateAllMenu = async (page: Page) => {
   const leftBarPage = new LeftBarPage(page);
 
@@ -734,5 +818,8 @@ test('Check navigation on all pages', { tag: ['@navigation'] }, async ({ page })
   await navigateRft(page);
   await navigateTasks(page);
   await navigateFeedbacks(page);
-  // await navigateObservables(page);
+  await navigateObservables(page);
+  await navigateArtifact(page);
+  await navigateIndicators(page);
+  await navigateInfrastructure(page);
 });

@@ -166,8 +166,9 @@ const Infrastructures = () => {
 
   return (
     <ExportContextProvider>
-      <Breadcrumbs elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Infrastructures'), current: true }]} />
-      {queryRef && (
+      <div data-testid="infrastructures-page">
+        <Breadcrumbs elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Infrastructures'), current: true }]} />
+        {queryRef && (
         <DataTable
           dataColumns={dataColumns}
           resolvePath={(data: InfrastructuresLines_data$data) => data.infrastructures?.edges?.map((n) => n?.node)}
@@ -183,7 +184,8 @@ const Infrastructures = () => {
             </Security>
           )}
         />
-      )}
+        )}
+      </div>
     </ExportContextProvider>
   );
 };

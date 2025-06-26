@@ -1,12 +1,12 @@
 import { Page } from '@playwright/test';
 import SDOTabs from './SDOTabs.pageModel';
 
-export default class IndicatorDetailsPageModel {
+export default class InfrastructureDetailsPageModel {
   tabs = new SDOTabs(this.page);
   constructor(private page: Page) {}
 
   getPage() {
-    return this.page.getByTestId('indicator-overview');
+    return this.page.getByTestId('infrastructure-overview');
   }
 
   getTitle(name: string) {
