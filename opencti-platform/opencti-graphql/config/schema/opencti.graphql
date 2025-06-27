@@ -1311,6 +1311,7 @@ type PlatformProtectedSensitiveConfig {
   connector_reset: PlatformProtectedSubConfig!
   file_indexing: PlatformProtectedSubConfig!
   platform_organization: PlatformProtectedSubConfig!
+  public_organization: PlatformProtectedSubConfig!
 }
 type Settings implements InternalObject & BasicObject {
   id: ID!
@@ -1374,6 +1375,7 @@ type Settings implements InternalObject & BasicObject {
   platform_trash_enabled: Boolean!
   platform_translations: String
   platform_protected_sensitive_config: PlatformProtectedSensitiveConfig! @auth
+  public_organization: Organization
   created_at: DateTime! @auth
   updated_at: DateTime! @auth
   activity_listeners: [Member!] @auth(for: [SETTINGS_SECURITYACTIVITY])

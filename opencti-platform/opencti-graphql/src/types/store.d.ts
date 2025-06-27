@@ -330,6 +330,7 @@ interface BasicStoreEntity extends BasicStoreCommon {
   external_id: string;
   lastEventId: string;
   platform_organization: string;
+  public_organization: string;
   source: string;
   severity: string;
   incident_type: string;

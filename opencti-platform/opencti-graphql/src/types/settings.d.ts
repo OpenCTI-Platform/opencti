@@ -12,6 +12,7 @@ export interface BasicStoreSettingsMessage {
 export interface BasicStoreSettings extends BasicStoreEntity {
   platform_email: string
   platform_organization: string
+  public_organization: string
   platform_theme_dark_background: string
   platform_title?: string
   enterprise_license?: string
