@@ -1110,8 +1110,8 @@ const elCreateIndexTemplate = async (index, mappingProperties) => {
 const sortMappingsKeys = (o) => (Object(o) !== o || Array.isArray(o) ? o
   : Object.keys(o).sort().reduce((a, k) => ({ ...a, [k]: sortMappingsKeys(o[k]) }), {}));
 export const elUpdateIndicesMappings = async () => {
-  // Update core settings
-  await updateCoreSettings();
+  // Force index init (in case one is missing/has been deleted)
+  await elCreateIndices();
   // Reset the templates
   const mappingProperties = engineMappingGenerator();
   const templates = await elPlatformTemplates();
