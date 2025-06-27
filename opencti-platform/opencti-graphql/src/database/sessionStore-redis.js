@@ -22,6 +22,7 @@ class RedisStore extends Store {
   }
 
   get(sid, cb = noop) {
+    logApp.info('Get session', { sid });
     const key = this.prefix + sid;
     const { cache } = this;
     const sessionFetcher = (done) => {
@@ -35,9 +36,12 @@ class RedisStore extends Store {
         return done(null, data);
       });
     };
+    logApp.info('Before aquire lock with key', { sid });
     this.locker.acquire(key, sessionFetcher, (error, result) => {
+      logApp.info('In aquire lock with key', { sid });
       return cb(error, result);
     });
+    logApp.info('After aquire lock with key', { sid });
   }
 
   set(sid, sess, cb = noop) {

@@ -71,7 +71,6 @@ const createHttpServer = async () => {
     context: async (ctx) => {
       const req = ctx.extra.request;
       const webSocket = ctx.extra.socket;
-      logApp.info('Before resolving session', { req });
       // This will be run every time the client sends a subscription request
       const wsSession = await new Promise((resolve) => {
         // use same session parser as normal gql queries
@@ -83,7 +82,6 @@ const createHttpServer = async () => {
           return false;
         });
       });
-      logApp.info('Session resolved', { wsSession });
       // We have a good session. attach to context
       if (wsSession?.user) {
         const context = executionContext('api');
@@ -97,7 +95,6 @@ const createHttpServer = async () => {
         const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
         const logged = platformUsers.get(wsSession?.user.id);
         context.user = { ...wsSession?.user, ...logged, origin };
-        logApp.info('Returning context after resolved session', { req });
         return context;
       }
       throw ForbiddenAccess('User must be authenticated');
@@ -138,6 +135,7 @@ const createHttpServer = async () => {
       app,
       path: `${basePath}/graphql`,
       context: async ({ req, res }) => {
+        logApp.info('Resolving request', { req });
         const executeContext = await createAuthenticatedContext(req, res, 'api');
         // When context is in draft, we need to check draft status: if draft is not in an open status, it means that it is no longer possible to execute requests in this draft
         if (executeContext.draft_context) {

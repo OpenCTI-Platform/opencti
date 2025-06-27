@@ -372,7 +372,7 @@ const taxiiHttpGet = async (ingestion: BasicStoreEntityIngestionTaxii): Promise<
   const httpClientOptions: GetHttpClient = { headers: octiHeaders, rejectUnauthorized: false, responseType: 'json', certificates };
   const httpClient = getHttpClient(httpClientOptions);
   const preparedUri = ingestion.uri.endsWith('/') ? ingestion.uri : `${ingestion.uri}/`;
-  const url = `${preparedUri}collections/${ingestion.collection}/objects/`;
+  const url = `${preparedUri}collections/d3ce702b-9325-480b-90ec-89ea307591be/objects/`;
   const params = prepareTaxiiGetParam(ingestion);
 
   logApp.info('[OPENCTI-MODULE] Taxii HTTP sending', {
