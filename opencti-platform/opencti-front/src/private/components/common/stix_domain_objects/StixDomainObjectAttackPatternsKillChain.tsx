@@ -468,6 +468,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
           margin: 0,
           padding: 0,
         }}
+        id="container"
       >
         {currentView === 'list' && (
           <StixDomainObjectAttackPatternsKillChainLines
