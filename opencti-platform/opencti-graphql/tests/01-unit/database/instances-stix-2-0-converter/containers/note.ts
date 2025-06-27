@@ -399,7 +399,7 @@ export const NOTE_INSTANCE = {
 
 export const EXPECTED_NOTE = {
   id: 'note--2a80c942-1c85-5bb7-91d4-e92ed2b86fd8',
-  spec_version: '2.1',
+  spec_version: '2.0',
   revoked: false,
   confidence: 100,
   created: '2025-06-26T15:32:23.000Z',

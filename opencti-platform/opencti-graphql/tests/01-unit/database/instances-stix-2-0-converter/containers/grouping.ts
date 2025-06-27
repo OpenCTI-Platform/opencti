@@ -477,7 +477,7 @@ export const GROUPING_INSTANCE = {
 
 export const EXPECTED_GROUPING = {
   id: 'grouping--3f78a876-9216-5111-92d8-6871301f6e9e',
-  spec_version: '2.1',
+  spec_version: '2.0',
   revoked: false,
   confidence: 100,
   created: '2025-06-26T14:59:43.780Z',

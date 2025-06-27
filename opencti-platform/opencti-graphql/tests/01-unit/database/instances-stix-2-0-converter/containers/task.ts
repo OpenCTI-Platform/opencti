@@ -499,7 +499,7 @@ const TASK_INSTANCE = {
 
 const EXPECTED_TASK = {
   id: 'x-opencti-task--8788511e-974c-571d-9a47-381299785038',
-  spec_version: '2.1',
+  spec_version: '2.0',
   revoked: false,
   confidence: 100,
   created: '2025-06-26T17:55:28.987Z',

@@ -454,7 +454,7 @@ export const OBSERVED_DATA_INSTANCE = {
 
 export const EXPECTED_OBSERVED_DATA = {
   id: 'observed-data--a9ed3299-df09-5bc6-bd5f-0831d75114ae',
-  spec_version: '2.1',
+  spec_version: '2.0',
   revoked: false,
   confidence: 97,
   created: '2025-06-26T15:23:30.704Z',
