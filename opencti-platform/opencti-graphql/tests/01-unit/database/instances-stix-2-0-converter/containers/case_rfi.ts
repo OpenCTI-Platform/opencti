@@ -777,7 +777,7 @@ export const RFI_INSTANCE = {
 
 export const EXPECTED_RFI = {
   id: 'x-opencti-case-rfi--cc1229b2-8ba7-50fd-b822-055b45e3aa4f',
-  spec_version: '2.1',
+  spec_version: '2.0',
   revoked: false,
   confidence: 100,
   created: '2025-06-26T17:50:38.000Z',

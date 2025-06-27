@@ -619,7 +619,7 @@ export const REPORT_INSTANCE = {
 
 export const EXPECTED_REPORT = {
   id: 'report--87de3e34-b9a2-551d-a42f-d25a13d4ad0f',
-  spec_version: '2.1',
+  spec_version: '2.0',
   revoked: false,
   x_opencti_reliability: 'A - Completely reliable',
   confidence: 100,

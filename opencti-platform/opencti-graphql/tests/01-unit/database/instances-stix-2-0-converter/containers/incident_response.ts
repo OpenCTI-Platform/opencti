@@ -461,7 +461,7 @@ export const INCIDENT_RESPONSE_INSTANCE = {
 
 export const EXPECTED_IR = {
   id: 'x-opencti-case-incident--34e86b32-f0d5-5173-bbad-4e7e545a0990',
-  spec_version: '2.1',
+  spec_version: '2.0',
   revoked: false,
   confidence: 100,
   created: '2025-06-26T16:06:02.000Z',
