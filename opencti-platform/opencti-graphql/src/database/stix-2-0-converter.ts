@@ -2,7 +2,7 @@ import type { StoreEntity, StoreFileWithRefs, StoreObject, StoreRelation } from 
 import type * as S from '../types/stix-2-0-common';
 import type * as SDO from '../types/stix-2-0-sdo';
 import type * as SMO from '../types/stix-2-0-smo';
-import { INPUT_CREATED_BY, INPUT_EXTERNAL_REFS, INPUT_GRANTED_REFS, INPUT_KILLCHAIN, INPUT_LABELS, INPUT_MARKINGS } from '../schema/general';
+import { INPUT_CREATED_BY, INPUT_EXTERNAL_REFS, INPUT_GRANTED_REFS, INPUT_KILLCHAIN, INPUT_LABELS, INPUT_MARKINGS, INPUT_OBJECTS } from '../schema/general';
 import { INPUT_OPERATING_SYSTEM, INPUT_SAMPLE } from '../schema/stixRefRelationship';
 import {
   ENTITY_TYPE_CONTAINER_REPORT,
@@ -22,7 +22,7 @@ import { ENTITY_TYPE_CONTAINER_TASK } from '../modules/task/task-types';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../modules/case/case-incident/case-incident-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../modules/case/case-rft/case-rft-types';
-import { convertObjectReferences } from './stix-2-1-converter';
+import { isInferredIndex } from './utils';
 
 export const convertTypeToStix2Type = (type: string): string => {
   if (isStixDomainObjectIdentity(type)) {
@@ -79,6 +79,16 @@ const buildExternalReferences = (instance: StoreObject): Array<SMO.StixInternalE
     };
     return cleanObject(data);
   });
+};
+
+export const convertObjectReferences = (instance: StoreEntity, isInferred = false) => {
+  const objectRefs = instance[INPUT_OBJECTS] ?? [];
+  return objectRefs.filter((r) => {
+    // If related relation not available, it's just a creation, so inferred false
+    if (!r.i_relation) return !isInferred;
+    // If related relation is available, select accordingly
+    return isInferredIndex(r.i_relation._index) === isInferred;
+  }).map((m) => m.standard_id);
 };
 
 // Builders
@@ -147,9 +157,6 @@ export const convertReportToStix = (instance: StoreEntity, type: string): SDO.St
     report_types: instance.report_types,
     published: convertToStixDate(instance.published),
     object_refs: convertObjectReferences(instance),
-    content: instance.content,
-    content_mapping: instance.content_mapping,
-    object_refs_inferred: convertObjectReferences(instance, true), // TODO change
-    reliability: instance.x_opencti_reliability,
+    x_opencti_reliability: instance.x_opencti_reliability,
   };
 };
