@@ -187,7 +187,7 @@ const createApp = async (app) => {
   archiver.registerFormat('zip-encrypted', archiverZipEncrypted);
 
   // -- File download
-  app.get(`${basePath}/storage/get/:file(*)`, async (req, res) => {
+  app.get(`${basePath}/storage/get/:file*`, async (req, res) => {
     try {
       const context = await createAuthenticatedContext(req, res, 'storage_get');
       if (!context.user) {
@@ -209,7 +209,7 @@ const createApp = async (app) => {
   });
 
   // -- File view
-  app.get(`${basePath}/storage/view/:file(*)`, async (req, res) => {
+  app.get(`${basePath}/storage/view/:file*`, async (req, res) => {
     try {
       const context = await createAuthenticatedContext(req, res, 'storage_view');
       if (!context.user) {
@@ -238,7 +238,7 @@ const createApp = async (app) => {
   });
 
   // -- Pdf view
-  app.get(`${basePath}/storage/html/:file(*)`, async (req, res) => {
+  app.get(`${basePath}/storage/html/:file*`, async (req, res) => {
     try {
       const context = await createAuthenticatedContext(req, res, 'storage_html');
       if (!context.user) {
@@ -267,7 +267,7 @@ const createApp = async (app) => {
   });
 
   // -- Encrypted view
-  app.get(`${basePath}/storage/encrypted/:file(*)`, async (req, res) => {
+  app.get(`${basePath}/storage/encrypted/:file*`, async (req, res) => {
     try {
       const context = await createAuthenticatedContext(req, res, 'storage_encrypted');
       if (!context.user) {
