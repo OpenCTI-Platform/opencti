@@ -4,8 +4,7 @@ type: docker
 name: opencti-tests
 
 node:
-  labels:
-    runner-type: kubernetes
+  runner-type: kubernetes
 
 steps:
   - name: Runner information
