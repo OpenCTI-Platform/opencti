@@ -123,7 +123,7 @@ const PirKnowledgeEntities = ({ pirId, localStorage, initialValues }: PirKnowled
         values: [
           { key: 'id', values: [pirId], operator: 'eq', mode: 'or' },
           { key: 'relationship_type', values: ['in-pir'], operator: 'eq', mode: 'or' },
-        ] as unknown as string[], // Workaround for typescript waiting for better solution
+        ],
       },
     ],
     filterGroups: filters && isFilterGroupNotEmpty(filters)
