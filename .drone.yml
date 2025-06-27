@@ -4,7 +4,7 @@ type: docker
 name: opencti-tests
 
 node:
-  runner-type: kubernetes
+  env: kubernetes
 
 steps:
   - name: Runner information
