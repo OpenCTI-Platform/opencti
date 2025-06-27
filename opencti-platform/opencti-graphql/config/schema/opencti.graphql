@@ -339,6 +339,13 @@ input AuditsTimeSeriesParameters {
   filters: FilterGroup
   search: String
 }
+input auditsDistributionParameters {
+  field: String!
+  startDate: DateTime
+  endDate: DateTime
+  filters: FilterGroup
+  search: String
+}
 input StixCoreObjectsTimeSeriesParameters {
   field: String!
   types: [String]
@@ -12956,6 +12963,14 @@ type Query {
     filters: FilterGroup
     search: String
   ): [TimeSeries] @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
+  auditsMultiTimeSeries(
+    operation: StatsOperation!
+    startDate: DateTime!
+    endDate: DateTime
+    interval: String!
+    onlyInferred: Boolean
+    timeSeriesParameters: [AuditsTimeSeriesParameters]
+  ): [MultiTimeSeries] @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
   auditsDistribution(
     field: String!
     startDate: DateTime
@@ -12968,14 +12983,19 @@ type Query {
     filters: FilterGroup
     search: String
   ): [Distribution] @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
-  auditsMultiTimeSeries(
+  auditsMultiDistribution(
+    # field: String!
+    # startDate: DateTime
+    # endDate: DateTime
+    dateAttribute: String
     operation: StatsOperation!
-    startDate: DateTime!
-    endDate: DateTime
-    interval: String!
-    onlyInferred: Boolean
-    timeSeriesParameters: [AuditsTimeSeriesParameters]
-  ): [MultiTimeSeries] @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
+    limit: Int
+    order: String
+    types: [String]
+    # filters: FilterGroup
+    # search: String
+    distributionParameters: [auditsDistributionParameters]
+  ): [MultiDistribution] @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
   subType(id: String!): SubType @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
   subTypes(
     first: Int
