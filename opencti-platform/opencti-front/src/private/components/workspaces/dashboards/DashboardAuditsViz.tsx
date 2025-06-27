@@ -49,7 +49,7 @@ const DashboardAuditsViz = ({
   } else if (widget?.perspective === 'audits') {
     mainEntityTypes = ['History'];
   }
-  const dataSelection = widget.dataSelection.map((data) => ({
+  const dataSelection = widget?.dataSelection.map((data) => ({
     ...data,
     filters: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.filters, mainEntityTypes),
     dynamicFrom: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.dynamicFrom, ['Stix-Core-Object']),
@@ -60,13 +60,13 @@ const DashboardAuditsViz = ({
   const isWeekly = widget?.parameters?.intervalUniqueUsers === 'weeks';
   const isMonthly = widget?.parameters?.intervalUniqueUsers === 'months';
 
-  switch (widget.type) {
+  switch (widget?.type) {
     case 'number':
       if (isUniqueUser && isWeekly) {
         return (
           <MetricsWeekly
             variant="inLine"
-            parameters={widget.parameters as object}
+            parameters={widget?.parameters as object}
           />
         );
       }
@@ -74,7 +74,7 @@ const DashboardAuditsViz = ({
         return (
           <MetricsMonthly
             variant="inLine"
-            parameters={widget.parameters as object}
+            parameters={widget?.parameters as object}
           />
         );
       }
@@ -84,7 +84,7 @@ const DashboardAuditsViz = ({
           endDate={endDate}
           startDate={startDate}
           dataSelection={dataSelection}
-          parameters={widget.parameters as object} // because calling js component in ts
+          parameters={widget?.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
         />
       );
@@ -95,7 +95,7 @@ const DashboardAuditsViz = ({
           endDate={endDate}
           startDate={startDate}
           dataSelection={dataSelection}
-          parameters={widget.parameters as object} // because calling js component in ts
+          parameters={widget?.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
         />
       );
@@ -106,7 +106,7 @@ const DashboardAuditsViz = ({
           endDate={endDate}
           startDate={startDate}
           dataSelection={dataSelection}
-          parameters={widget.parameters as object} // because calling js component in ts
+          parameters={widget?.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
         />
       );
@@ -119,7 +119,7 @@ const DashboardAuditsViz = ({
           isReadOnly={isReadonly}
           withExportPopover={true}
           dataSelection={dataSelection}
-          parameters={widget.parameters as object} // because calling js component in ts
+          parameters={widget?.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
         />
       );
@@ -128,7 +128,7 @@ const DashboardAuditsViz = ({
         return (
           <MetricsWeeklyChart
             variant="inLine"
-            parameters={widget.parameters as object}
+            parameters={widget?.parameters as object}
           />
         );
       }
@@ -136,7 +136,7 @@ const DashboardAuditsViz = ({
         return (
           <MetricsMonthlyChart
             variant="inLine"
-            parameters={widget.parameters as object}
+            parameters={widget?.parameters as object}
           />
         );
       }
@@ -148,7 +148,7 @@ const DashboardAuditsViz = ({
           isReadOnly={isReadonly}
           withExportPopover={true}
           dataSelection={dataSelection}
-          parameters={widget.parameters as object} // because calling js component in ts
+          parameters={widget?.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
         />
       );
@@ -161,7 +161,7 @@ const DashboardAuditsViz = ({
           isReadOnly={isReadonly}
           withExportPopover={true}
           dataSelection={dataSelection}
-          parameters={widget.parameters as object} // because calling js component in ts
+          parameters={widget?.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
         />
       );
@@ -174,7 +174,7 @@ const DashboardAuditsViz = ({
           isReadOnly={isReadonly}
           withExportPopover={true}
           dataSelection={dataSelection}
-          parameters={widget.parameters as object} // because calling js component in ts
+          parameters={widget?.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
         />
       );
@@ -187,7 +187,7 @@ const DashboardAuditsViz = ({
           isReadOnly={isReadonly}
           withExportPopover={true}
           dataSelection={dataSelection}
-          parameters={widget.parameters as object} // because calling js component in ts
+          parameters={widget?.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
         />
       );
@@ -200,7 +200,7 @@ const DashboardAuditsViz = ({
           isReadOnly={isReadonly}
           withExportPopover={true}
           dataSelection={dataSelection}
-          parameters={widget.parameters as object} // because calling js component in ts
+          parameters={widget?.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
         />
       );
@@ -213,7 +213,7 @@ const DashboardAuditsViz = ({
           isReadOnly={isReadonly}
           withExportPopover={true}
           dataSelection={dataSelection}
-          parameters={widget.parameters as object} // because calling js component in ts
+          parameters={widget?.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
         />
       );
@@ -225,7 +225,7 @@ const DashboardAuditsViz = ({
           startDate={startDate}
           withExportPopover={true}
           dataSelection={dataSelection}
-          parameters={widget.parameters as object} // because calling js component in ts
+          parameters={widget?.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
         />
       );
@@ -238,7 +238,7 @@ const DashboardAuditsViz = ({
           isReadOnly={isReadonly}
           withExportPopover={true}
           dataSelection={dataSelection}
-          parameters={widget.parameters as object} // because calling js component in ts
+          parameters={widget?.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
         />
       );
@@ -249,7 +249,7 @@ const DashboardAuditsViz = ({
           endDate={endDate}
           startDate={startDate}
           dataSelection={dataSelection}
-          parameters={widget.parameters as object} // because calling js component in ts
+          parameters={widget?.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
         />
       );
