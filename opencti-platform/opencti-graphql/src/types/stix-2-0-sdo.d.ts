@@ -1,6 +1,5 @@
 import type { StixDomainObject } from './stix-2-0-common';
 import type { StixId, StixDate, StixKillChainPhase } from './stix-2-1-common';
-import type { StixContainer } from './stix-2-1-sdo';
 
 export interface StixMalware extends StixDomainObject {
   name: string; // optional
@@ -18,9 +17,15 @@ export interface StixMalware extends StixDomainObject {
   sample_refs: Array<StixId>; // optional
 }
 
+// Container specific Properties
+export interface StixContainer extends StixDomainObject {
+  object_refs: Array<StixId>;
+}
+
 export interface StixReport extends StixContainer {
   name: string
   description: string
   report_types: Array<string>
   published: StixDate
+  x_opencti_reliability: string;
 }

@@ -324,7 +324,7 @@ export const FEEDBACK_INSTANCE = {
 
 export const EXPECTED_FEEDBACK = {
   id: 'x-opencti-feedback--ce07ddc6-2377-576b-ace5-a4de6996e789',
-  spec_version: '2.1',
+  spec_version: '2.0',
   revoked: false,
   confidence: 93,
   created: '2025-06-26T15:58:16.208Z',
