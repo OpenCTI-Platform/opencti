@@ -71,6 +71,7 @@ const createHttpServer = async () => {
     context: async (ctx) => {
       const req = ctx.extra.request;
       const webSocket = ctx.extra.socket;
+      logApp.info('Before resolving session', { req });
       // This will be run every time the client sends a subscription request
       const wsSession = await new Promise((resolve) => {
         // use same session parser as normal gql queries
@@ -82,6 +83,7 @@ const createHttpServer = async () => {
           return false;
         });
       });
+      logApp.info('Session resolved', { wsSession });
       // We have a good session. attach to context
       if (wsSession?.user) {
         const context = executionContext('api');
@@ -95,6 +97,7 @@ const createHttpServer = async () => {
         const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
         const logged = platformUsers.get(wsSession?.user.id);
         context.user = { ...wsSession?.user, ...logged, origin };
+        logApp.info('Returning context after resolved session', { req });
         return context;
       }
       throw ForbiddenAccess('User must be authenticated');
