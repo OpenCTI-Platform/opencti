@@ -171,6 +171,7 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
               )}
               onViewAs={handleChangeViewAs}
               viewAs={viewAs}
+              redirectToContent={true}
             />
             <Box
               sx={{

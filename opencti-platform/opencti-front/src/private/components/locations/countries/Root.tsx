@@ -141,6 +141,7 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
               )}
               enableQuickSubscription={true}
               isOpenctiAlias={true}
+              redirectToContent={true}
             />
             <Box
               sx={{
