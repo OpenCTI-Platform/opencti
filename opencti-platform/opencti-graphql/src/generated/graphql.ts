@@ -4235,6 +4235,7 @@ export type ContextData = {
   from_id?: Maybe<Scalars['String']['output']>;
   message: Scalars['String']['output'];
   to_id?: Maybe<Scalars['String']['output']>;
+  workspace_type?: Maybe<Scalars['String']['output']>;
 };
 
 export type ContractConfigInput = {
@@ -12789,7 +12790,7 @@ export type Log = {
 
 export type LogConnection = {
   __typename?: 'LogConnection';
-  edges?: Maybe<Array<Maybe<LogEdge>>>;
+  edges: Array<LogEdge>;
   pageInfo: PageInfo;
 };
 
@@ -33231,7 +33232,7 @@ export type ResolversTypes = ResolversObject<{
   LocationEditMutations: ResolverTypeWrapper<Omit<LocationEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Location']>, contextPatch?: Maybe<ResolversTypes['Location']>, fieldPatch?: Maybe<ResolversTypes['Location']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Location']> }>;
   LocationsOrdering: LocationsOrdering;
   Log: ResolverTypeWrapper<Omit<Log, 'context_data'> & { context_data?: Maybe<ResolversTypes['ContextData']> }>;
-  LogConnection: ResolverTypeWrapper<Omit<LogConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['LogEdge']>>> }>;
+  LogConnection: ResolverTypeWrapper<Omit<LogConnection, 'edges'> & { edges: Array<ResolversTypes['LogEdge']> }>;
   LogEdge: ResolverTypeWrapper<Omit<LogEdge, 'node'> & { node: ResolversTypes['Log'] }>;
   LogsConnectorStatusInput: LogsConnectorStatusInput;
   LogsOrdering: LogsOrdering;
@@ -34132,7 +34133,7 @@ export type ResolversParentTypes = ResolversObject<{
   LocationEdge: Omit<LocationEdge, 'node'> & { node: ResolversParentTypes['Location'] };
   LocationEditMutations: Omit<LocationEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Location']>, contextPatch?: Maybe<ResolversParentTypes['Location']>, fieldPatch?: Maybe<ResolversParentTypes['Location']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Location']> };
   Log: Omit<Log, 'context_data'> & { context_data?: Maybe<ResolversParentTypes['ContextData']> };
-  LogConnection: Omit<LogConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['LogEdge']>>> };
+  LogConnection: Omit<LogConnection, 'edges'> & { edges: Array<ResolversParentTypes['LogEdge']> };
   LogEdge: Omit<LogEdge, 'node'> & { node: ResolversParentTypes['Log'] };
   LogsConnectorStatusInput: LogsConnectorStatusInput;
   LogsWorkerConfig: LogsWorkerConfig;
@@ -36012,6 +36013,7 @@ export type ContextDataResolvers<ContextType = any, ParentType extends Resolvers
   from_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   to_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  workspace_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -39029,7 +39031,7 @@ export type LogResolvers<ContextType = any, ParentType extends ResolversParentTy
 }>;
 
 export type LogConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['LogConnection'] = ResolversParentTypes['LogConnection']> = ResolversObject<{
-  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['LogEdge']>>>, ParentType, ContextType>;
+  edges?: Resolver<Array<ResolversTypes['LogEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
