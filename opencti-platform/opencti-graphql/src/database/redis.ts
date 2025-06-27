@@ -123,13 +123,13 @@ const sentinelOptions = async (clusterNodes: Partial<SentinelAddress>[]): Promis
     enableTLSForSentinelMode: conf.get('redis:sentinel_tls') ?? false,
     failoverDetector: conf.get('redis:sentinel_failover_detector') ?? false,
     updateSentinels: conf.get('redis:sentinel_update_sentinels') ?? true,
-    maxRetriesPerRequest: conf.get('redis:sentinel_max_retries'),
     sentinelReconnectStrategy: (retryAttempts: number) => {
-      if (retryAttempts < conf.get('redis:sentinel_max_reconnects')) {
-        return 10000;
+      const sentinelMaxReconnect = conf.get('redis:sentinel_max_reconnects');
+      if (!!sentinelMaxReconnect && retryAttempts >= sentinelMaxReconnect) {
+        logApp.error('Shutting down: redis sentinel was not able to reconnect');
+        process.exit(1);
       }
-      process.exit(1);
-      return null;
+      return 60000;
     },
   };
 };
