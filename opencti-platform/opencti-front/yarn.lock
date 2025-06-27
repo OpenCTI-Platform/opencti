@@ -4191,21 +4191,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@jsonforms/core@npm:3.5.1":
-  version: 3.5.1
-  resolution: "@jsonforms/core@npm:3.5.1"
+"@jsonforms/core@npm:3.6.0":
+  version: 3.6.0
+  resolution: "@jsonforms/core@npm:3.6.0"
   dependencies:
     "@types/json-schema": "npm:^7.0.3"
     ajv: "npm:^8.6.1"
     ajv-formats: "npm:^2.1.0"
     lodash: "npm:^4.17.21"
-  checksum: 10/f8ef9f86e07d20d1d3feec5bc96fff85a743b8ae98558c57ca8991945d58167c1f04ea701919f39d1b2453bdd340c7b469d71927ded3a079eadd947af4695686
+  checksum: 10/73bd20485029f0482ae6af780e5f7b2a9ddccd27bab5e3fc2288d0583b065f1a7725b97a15ca825e6049facd1c850388846fa675e9c5d49b20c8f550873f0181
   languageName: node
   linkType: hard
 
-"@jsonforms/material-renderers@npm:3.5.1":
-  version: 3.5.1
-  resolution: "@jsonforms/material-renderers@npm:3.5.1"
+"@jsonforms/material-renderers@npm:3.6.0":
+  version: 3.6.0
+  resolution: "@jsonforms/material-renderers@npm:3.6.0"
   dependencies:
     "@date-io/dayjs": "npm:^3.0.0"
     dayjs: "npm:1.10.7"
@@ -4213,25 +4213,25 @@ __metadata:
   peerDependencies:
     "@emotion/react": ^11.4.1
     "@emotion/styled": ^11.3.0
-    "@jsonforms/core": 3.5.1
-    "@jsonforms/react": 3.5.1
+    "@jsonforms/core": 3.6.0
+    "@jsonforms/react": 3.6.0
     "@mui/icons-material": ^5.11.16 || ^6.0.0
     "@mui/material": ^5.13.0 || ^6.0.0
     "@mui/x-date-pickers": ^6.0.0 || ^7.0.0
     react: ^16.12.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10/c35f632bf1746dcbeae0391e05b4240d3b4257547dbc7426c2760472c2a5c1d36e1516a0465e8a04952de19cee1371615c88d308baea932f6475258c5570dd38
+  checksum: 10/8f422738be879190cf8877a2e6703f3430950b4d758985d9d702fd32c107c982010187485bc4aa6edb37a74d1a08e45d3d50c16132ecefc0cef1e49b99e24d26
   languageName: node
   linkType: hard
 
-"@jsonforms/react@npm:3.5.1":
-  version: 3.5.1
-  resolution: "@jsonforms/react@npm:3.5.1"
+"@jsonforms/react@npm:3.6.0":
+  version: 3.6.0
+  resolution: "@jsonforms/react@npm:3.6.0"
   dependencies:
     lodash: "npm:^4.17.21"
   peerDependencies:
-    "@jsonforms/core": 3.5.1
+    "@jsonforms/core": 3.6.0
     react: ^16.12.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10/064f0cdb5310fa40224147e6e82f73adf93e0d2546ef79dfe06fd5f20d1b6e0329251dee7a8e507e0bddf35b2cf2f7fe023df28bede8e646b6b917284db2fce1
+  checksum: 10/74a57ec14decce173523625c2da1559cb8ca3e857074454b544341221299e146dbc33a21f25f4d85ae557ed2e116e43bb5847e43ab3a2e6d0740cc722af0a998
   languageName: node
   linkType: hard
 
@@ -7027,10 +7027,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rolldown/pluginutils@npm:1.0.0-beta.11":
-  version: 1.0.0-beta.11
-  resolution: "@rolldown/pluginutils@npm:1.0.0-beta.11"
-  checksum: 10/6e0d9193e748cda0185d325973edf7516a2b94183345aa6ef59aeaf07ec6c0a044094257da56fe3d4b51646cc1dd824f5216e2a0aac15678206a1c06704e98e9
+"@rolldown/pluginutils@npm:1.0.0-beta.19":
+  version: 1.0.0-beta.19
+  resolution: "@rolldown/pluginutils@npm:1.0.0-beta.19"
+  checksum: 10/3b09ebf03e0f30b48770bcd7075c3092c6be09f60e6cb320142a37ae651cfc03974186b24cd7df5bd8110561c1da9d3e8bb4ecff0f2459ca4370da3d62c6806e
   languageName: node
   linkType: hard
 
@@ -8168,12 +8168,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-dom@npm:19.0.0":
-  version: 19.0.0
-  resolution: "@types/react-dom@npm:19.0.0"
-  dependencies:
-    "@types/react": "npm:*"
-  checksum: 10/86945c4d4c4cd82e993acdd380c3d9d8e8ca297228aa72c0fa6af4620abb145e7b12235c9165d569f1b25b5f72d1dbe4b4e3f2419432248de9838b22e94295a2
+"@types/react-dom@npm:19.1.6":
+  version: 19.1.6
+  resolution: "@types/react-dom@npm:19.1.6"
+  peerDependencies:
+    "@types/react": ^19.0.0
+  checksum: 10/b5b20b7f0797f34c5a11915b74dcf8b3b7a9da9fea90279975ce6f150ca5d31bb069dbb0838638a5e9e168098aa4bb4a6f61d078efa1bbb55d7f0bdfe47bb142
   languageName: node
   linkType: hard
 
@@ -8273,12 +8273,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:19.0.0":
-  version: 19.0.0
-  resolution: "@types/react@npm:19.0.0"
+"@types/react@npm:19.1.8":
+  version: 19.1.8
+  resolution: "@types/react@npm:19.1.8"
   dependencies:
     csstype: "npm:^3.0.2"
-  checksum: 10/5596d9a2c9c982d5e86add54f5d9b115153c4d47073dd3f8f8369a5e5b7f3088d614a935f85a2cf26eb6631d7ebebc7b913c5d22bf880847370070f2e60e63e6
+  checksum: 10/a3e6fe0f60f22828ef887f30993aa147b71532d7b1219dd00d246277eb7a9ca01ec533096237fa21ca1bccb3653373b4e8e59e5ae59f9c793058384bbc1f4d5c
   languageName: node
   linkType: hard
 
@@ -8518,19 +8518,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitejs/plugin-react@npm:4.5.2":
-  version: 4.5.2
-  resolution: "@vitejs/plugin-react@npm:4.5.2"
+"@vitejs/plugin-react@npm:4.6.0":
+  version: 4.6.0
+  resolution: "@vitejs/plugin-react@npm:4.6.0"
   dependencies:
     "@babel/core": "npm:^7.27.4"
     "@babel/plugin-transform-react-jsx-self": "npm:^7.27.1"
     "@babel/plugin-transform-react-jsx-source": "npm:^7.27.1"
-    "@rolldown/pluginutils": "npm:1.0.0-beta.11"
+    "@rolldown/pluginutils": "npm:1.0.0-beta.19"
     "@types/babel__core": "npm:^7.20.5"
     react-refresh: "npm:^0.17.0"
   peerDependencies:
     vite: ^4.2.0 || ^5.0.0 || ^6.0.0 || ^7.0.0-beta.0
-  checksum: 10/a92fde5e50d73f7948609b19b04fe18f700b13ab0ba542a0d488fce5202f5e917655adbbbb99b73682b9fa27a00444c9302dd0f7b67d27001499d0f65f850211
+  checksum: 10/f05479b74070bcaa7aedfc0aefcfb40f732ccd0126b30885113719ff0c471b7a09626546c0a6b9404ce66245689b11cb3103c42e59c211ea518713d73c028b02
   languageName: node
   linkType: hard
 
@@ -18022,9 +18022,9 @@ __metadata:
     "@fontsource/ibm-plex-sans": "npm:5.2.6"
     "@graphiql/toolkit": "npm:0.11.1"
     "@hello-pangea/dnd": "npm:18.0.1"
-    "@jsonforms/core": "npm:3.5.1"
-    "@jsonforms/material-renderers": "npm:3.5.1"
-    "@jsonforms/react": "npm:3.5.1"
+    "@jsonforms/core": "npm:3.6.0"
+    "@jsonforms/material-renderers": "npm:3.6.0"
+    "@jsonforms/react": "npm:3.6.0"
     "@mui/icons-material": "npm:6.4.12"
     "@mui/lab": "npm:5.0.0-alpha.176"
     "@mui/material": "npm:6.4.12"
@@ -18046,9 +18046,9 @@ __metadata:
     "@types/node": "npm:22.15.32"
     "@types/qrcode": "npm:1.5.5"
     "@types/ramda": "npm:0.30.2"
-    "@types/react": "npm:19.0.0"
+    "@types/react": "npm:19.1.8"
     "@types/react-csv": "npm:1.1.10"
-    "@types/react-dom": "npm:19.0.0"
+    "@types/react-dom": "npm:19.1.6"
     "@types/react-grid-layout": "npm:1.3.5"
     "@types/react-jsonschema-form": "npm:1"
     "@types/react-relay": "npm:18.2.1"
@@ -18058,7 +18058,7 @@ __metadata:
     "@types/react-transition-group": "npm:4"
     "@types/relay-runtime": "npm:19.0.2"
     "@types/relay-test-utils": "npm:19.0.0"
-    "@vitejs/plugin-react": "npm:4.5.2"
+    "@vitejs/plugin-react": "npm:4.6.0"
     analytics: "npm:0.8.16"
     apexcharts: "npm:4.4.0"
     axios: "npm:1.10.0"
@@ -18121,13 +18121,13 @@ __metadata:
     prop-types: "npm:15.8.1"
     qrcode: "npm:1.5.4"
     ramda: "npm:0.31.3"
-    react: "npm:19.0.0"
+    react: "npm:19.1.0"
     react-apexcharts: "npm:1.7.0"
     react-color: "npm:2.19.3"
     react-compound-slider: "npm:3.4.0"
     react-cookie: "npm:7.2.2"
     react-csv: "npm:2.2.2"
-    react-dom: "npm:19.0.0"
+    react-dom: "npm:19.1.0"
     react-draggable: "npm:4.4.6"
     react-force-graph-2d: "npm:1.27.1"
     react-force-graph-3d: "npm:1.24.4"
@@ -18966,14 +18966,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-dom@npm:19.0.0":
-  version: 19.0.0
-  resolution: "react-dom@npm:19.0.0"
+"react-dom@npm:19.1.0":
+  version: 19.1.0
+  resolution: "react-dom@npm:19.1.0"
   dependencies:
-    scheduler: "npm:^0.25.0"
+    scheduler: "npm:^0.26.0"
   peerDependencies:
-    react: ^19.0.0
-  checksum: 10/aa64a2f1991042f516260e8b0eca0ae777b6c8f1aa2b5ae096e80bbb6ac9b005aef2bca697969841d34f7e1819556263476bdfea36c35092e8d9aefde3de2d9a
+    react: ^19.1.0
+  checksum: 10/c5b58605862c7b0bb044416b01c73647bb8e89717fb5d7a2c279b11815fb7b49b619fe685c404e59f55eb52c66831236cc565c25ee1c2d042739f4a2cc538aa2
   languageName: node
   linkType: hard
 
@@ -19580,10 +19580,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react@npm:19.0.0":
-  version: 19.0.0
-  resolution: "react@npm:19.0.0"
-  checksum: 10/2490969c503f644703c88990d20e4011fa6119ddeca451e9de48f6d7ab058d670d2852a5fcd3aa3cd90a923ab2815d532637bd4a814add402ae5c0d4f129ee71
+"react@npm:19.1.0":
+  version: 19.1.0
+  resolution: "react@npm:19.1.0"
+  checksum: 10/d0180689826fd9de87e839c365f6f361c561daea397d61d724687cae88f432a307d1c0f53a0ee95ddbe3352c10dac41d7ff1ad85530fb24951b27a39e5398db4
   languageName: node
   linkType: hard
 
@@ -20390,10 +20390,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"scheduler@npm:^0.25.0":
-  version: 0.25.0
-  resolution: "scheduler@npm:0.25.0"
-  checksum: 10/e661e38503ab29a153429a99203fefa764f28b35c079719eb5efdd2c1c1086522f6653d8ffce388209682c23891a6d1d32fa6badf53c35fb5b9cd0c55ace42de
+"scheduler@npm:^0.26.0":
+  version: 0.26.0
+  resolution: "scheduler@npm:0.26.0"
+  checksum: 10/1ecf2e5d7de1a7a132796834afe14a2d589ba7e437615bd8c06f3e0786a3ac3434655e67aac8755d9b14e05754c177e49c064261de2673aaa3c926bc98caa002
   languageName: node
   linkType: hard
 
