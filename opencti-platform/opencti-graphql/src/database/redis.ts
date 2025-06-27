@@ -10,13 +10,13 @@ import type { SentinelConnectionOptions } from 'ioredis/built/connectors/Sentine
 import conf, { booleanConf, configureCA, DEV_MODE, getStoppingState, loadCert, logApp, REDIS_PREFIX } from '../config/conf';
 import { isStixExportableData } from '../schema/stixCoreObject';
 import { DatabaseError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
-import { mergeDeepRightAll, now, utcDate } from '';
+import { mergeDeepRightAll, now, utcDate } from '../utils/format';
 import type { EditContext } from '../generated/graphql';
 import { telemetry } from '../config/tracing';
 import { filterEmpty } from '../types/type-utils';
 import { INPUT_OBJECTS } from '../schema/general';
 import { enrichWithRemoteCredentials } from '../config/credentials';
-import { getDraftContext } from ../utils/draftContext';
+import { getDraftContext } from '../utils/draftContext';
 import { asyncListTransformation, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, isNotEmptyField, waitInSec } from './utils';
 import { convertStoreToStix } from './stix-2-1-converter';
 import type { BasicStoreCommon, StoreObject, StoreRelation } from '../types/store';
@@ -129,6 +129,7 @@ const sentinelOptions = async (clusterNodes: Partial<SentinelAddress>[]): Promis
         return 10000;
       }
       process.exit(1);
+      return null;
     },
   };
 };
