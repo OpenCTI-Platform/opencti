@@ -371,6 +371,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
   };
 
   const initialValues = useMemo(() => initIngestionValue(ingestionCsvData, me), [ingestionCsvData.id]);
+  const [tempStateInlineCsv, setTempStateInlineCsv] = useState(initialValues.csv_mapper);
   const queryRef = useQueryLoading<CsvMapperFieldSearchQuery>(csvMapperQuery);
   const defaultMarkingOptions = (me.default_marking?.flatMap(({ values }) => (values ?? [{ id: '', definition: '' }])?.map(({ id, definition }) => ({ label: definition, value: id }))) ?? []) as FieldOption[];
   const updateCsvMapper = async (
@@ -415,7 +416,14 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
           </Box>
           <Box sx={{ display: currentTab === 1 ? 'block' : 'none' }}>
             <IngestionCsvInlineWrapper>
-              <IngestionCsvInlineMapperForm csvMapper={values.csv_mapper as CsvMapperAddInput} setCSVMapperFieldValue={handleSubmitField} />
+              <IngestionCsvInlineMapperForm
+                csvMapper={values.csv_mapper as CsvMapperAddInput}
+                setCSVMapperFieldValue={(name, value) => {
+                  handleSubmitField(name, value);
+                  setTempStateInlineCsv(value);
+                }}
+                returnCSVFormat={(_, value) => setTempStateInlineCsv(value)}
+              />
             </IngestionCsvInlineWrapper>
           </Box>
 
@@ -627,6 +635,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
               onClose={() => setOpen(false)}
               values={{
                 ...values,
+                csv_mapper: tempStateInlineCsv,
                 csv_mapper_type: values.csv_mapper_type ? 'id' : 'inline',
               }}
             />
