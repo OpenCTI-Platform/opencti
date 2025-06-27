@@ -742,7 +742,7 @@ export const RFT_INSTANCE = {
 
 export const EXPECTED_RFT = {
   id: 'x-opencti-case-rft--8456f0c2-0308-578b-b90c-1dd6e0440763',
-  spec_version: '2.1',
+  spec_version: '2.0',
   revoked: false,
   confidence: 100,
   created: '2025-06-26T17:54:43.000Z',
