@@ -11,6 +11,7 @@ import PirOverview from './PirOverview';
 import ErrorNotFound from '../../../components/ErrorNotFound';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import Loader from '../../../components/Loader';
+import PirAnalyses from '@components/pir/PirAnalyses';
 
 const pirQuery = graphql`
   query PirQuery($id: ID!) {
@@ -77,7 +78,7 @@ const PirComponent = ({
         />
         <Route
           path="/analyses"
-          element={<p>analyses</p>}
+          element={<PirAnalyses pirId={pir.id} />}
         />
       </Routes>
     </>
