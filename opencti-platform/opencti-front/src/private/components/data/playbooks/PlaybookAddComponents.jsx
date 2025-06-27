@@ -587,7 +587,7 @@ const PlaybookAddComponentsContent = ({
                 component={TextField}
                 variant="standard"
                 name="name"
-                value={t_i18n(values.name)}
+                value={values.name ? t_i18n(values.name) : ''}
                 label={t_i18n('Name')}
                 fullWidth={true}
               />
