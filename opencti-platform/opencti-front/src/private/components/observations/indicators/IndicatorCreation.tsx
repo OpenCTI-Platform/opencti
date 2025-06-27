@@ -96,7 +96,7 @@ interface IndicatorAddInput {
   objectLabel: FieldOption[]
   externalReferences: { value: string }[]
   x_opencti_detection: boolean
-  x_opencti_score: number
+  x_opencti_score: number | undefined;
   file: File | undefined
 }
 
@@ -224,7 +224,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
       externalReferences: [],
       x_opencti_detection: false,
       createObservables: false,
-      x_opencti_score: 50,
+      x_opencti_score: undefined,
       file: undefined,
     },
   );
