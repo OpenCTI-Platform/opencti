@@ -2637,6 +2637,28 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#export-a-csv-feed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Export a CSV feed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#import-a-csv-feed-ingester" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Import a CSV feed ingester
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -5621,6 +5643,28 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#export-a-csv-feed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Export a CSV feed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#import-a-csv-feed-ingester" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Import a CSV feed ingester
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -5769,12 +5813,17 @@
 <li>Establish a dedicated Organization for the source: Create an organization named after the data source for clear identification. Assign the newly created organization to the "Default author" field in feed import configuration if available.</li>
 </ol>
 <p>By adhering to these best practices, you ensure independence in managing rights for each import source through dedicated user and organization structures. In addition, you enable clear traceability to the entity's creator, facilitating source evaluation, dashboard creation, data filtering and other administrative tasks.</p>
+<p>Under Settings &gt; Policies, you can now define a default group for the ingestion user, allowing you to create a specific user when setting up the CSV Feed.</p>
+<p><a class="glightbox" href="../../assets/settings_default_group.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Select default group in settings" src="../../assets/settings_default_group.png" /></a></p>
 <h2 id="configuration">Configuration</h2>
-<p>Here's a step-by-step guide to configure CSV ingesters:</p>
+<p>Here's a step-by-step guide to configure Csv Feeds:</p>
 <ol>
 <li>CSV URL: Provide the URL of the CSV file exposed from which items will be imported.</li>
-<li>CSV Mappers: Choose the CSV mapper to be used to import the data.</li>
-<li>Authentication type (if necessary): Enter the authentication type.</li>
+<li>Configure Your CSV Mapper
+    1. Create a CSV mapper on the fly by clicking "Inline CSV Mapper."
+    2. Select the CSV mapper you want to use for data import.</li>
+<li>Authentication Type (if required): Specify the authentication method to be used.</li>
+<li>Scheduling Interval: Choose how often the feed should run. By default, this is set to 1 hour.</li>
 </ol>
 <div class="admonition note">
 <p class="admonition-title">CSV mapper</p>
@@ -5782,31 +5831,43 @@
 </div>
 <p>Additional configuration options:</p>
 <ul>
-<li>User responsible for data creation: Define the user responsible for creating data received from this CSV feed. Best practice is to dedicate one user per source for organizational clarity. Please <a href="../import-automated.md#best-practices-section">see the section "Best practices" below</a> for more information.</li>
-<li>Import from date: Specify the date of the oldest data to retrieve. Leave the field empty to import everything.</li>
+<li>User responsible for data creation: Define the user responsible for creating data received from this CSV feed. Best practice is to dedicate one user per source for organizational clarity by clicking on "Create automatic user". The name is not editable (unless you change the feed's name) but you must define a confidence level (between 0 and 100) to set this confidence to the user that will be automatically created. <em>Important</em> : before clicking on "Create automatic user" you must define a default group for ingestion users, in the Settings part.</li>
+<li>Description</li>
 </ul>
-<p><a class="glightbox" href="../../assets/csv-feeds-creation-prior-test.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feeds creation: prior CSV mapper test" src="../../assets/csv-feeds-creation-prior-test.png" /></a></p>
-<p>in CSV Mappers, if you created a representative for Marking definition, you could have chosen between 2 options:</p>
+<p><a class="glightbox" href="../../assets/csv-feeds-creation.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="csv-feeds-creation.png" src="../../assets/csv-feeds-creation.png" /></a></p>
+<p>In CSV Mappers, if you created a representative for Marking definition, you could have chosen between 2 options:</p>
 <ul>
-<li>let the user choose  marking definitions</li>
-<li>Use default marking definitions of the user</li>
+<li>Use default marking definitions of the user by default on creation</li>
+<li>Let the user choose marking definitions</li>
 </ul>
-<p>This configuration applies when using a CSV Mapper for a CSV Ingester. If you select a CSV Mapper containing the option "Use default marking definitions of the user", the default marking definitions of the user you chose to be responsible for the data creation will be applied to all data imported. If you select a CSV Mapper containing the option "let the user choose  marking definitions", you will be presented with the list of all the marking definitions of the user you chose to be responsible for the data creation (and not yours!)</p>
+<p><a class="glightbox" href="../../assets/csv-feeds-create-after-test.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feeds creation: CSV mapper test" src="../../assets/csv-feeds-create-after-test.png" /></a>
+<a class="glightbox" href="../../assets/csv-feeds-create-inline-mappers.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feeds creation: CSV mapper test Inline CSV Mapper" src="../../assets/csv-feeds-create-inline-mappers.png" /></a></p>
 <p>To finalize the creation, click on "Verify" to run a check on the submitted URL with the selected CSV mapper. A valid URL-CSV mapper combination results in the identification of up to 50 entities.</p>
-<p><a class="glightbox" href="../../assets/csv-feeds-creation-after-test.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feeds creation: CSV mapper test" src="../../assets/csv-feeds-creation-after-test.png" /></a></p>
 <p><a class="glightbox" href="../../assets/csv-feeds-creation-list.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feeds creation: list" src="../../assets/csv-feeds-creation-list.png" /></a></p>
 <p>To start your new ingester, click on "Start", in the burger menu.</p>
-<p><a class="glightbox" href="../../assets/csv-feeds-creation-start.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feeds creation: start" src="../../assets/csv-feeds-creation-start.png" /></a></p>
-<p>CSV feed ingestion is made possible thanks to the connector "ImportCSV". So you can track the progress in "Data &gt; Ingestion &gt; Connectors". On a regular basis, the ingestion is updated when new data is added to the CSV feed.</p>
+<p><a class="glightbox" href="../../assets/csv-feeds-creation-start.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feeds creation: start" src="../../assets/csv-feeds-creation-start.png" /></a>
+CSV feed ingestion is made possible thanks to the connector "ImportCSV". So you can track the progress in "Data &gt; Ingestion &gt; Connectors". On a regular basis, the ingestion is updated when new data is added to the CSV feed.</p>
 <p><a class="glightbox" href="../../assets/csv-feeds-connectors.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feeds creation: connectors" src="../../assets/csv-feeds-connectors.png" /></a></p>
 <p><a class="glightbox" href="../../assets/csv-feeds-importCSV-connector-tracking.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feeds creation: tracking" src="../../assets/csv-feeds-importCSV-connector-tracking.png" /></a></p>
 <h2 id="duplicate-a-csv-feed-ingester">Duplicate a CSV feed ingester</h2>
 <p>If you need to modify your previous configuration which is already activated, we recommend to duplicate the CSV feed using the duplicate option in the burger button.</p>
 <p><a class="glightbox" href="../../assets/csv-feeds-burger-button.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feeds duplicate: duplicate" src="../../assets/csv-feeds-burger-button.png" /></a></p>
 <p>As you see, when you duplicate the CSV feed, the fields are pre-filled but you can change any of them. We advice you to keep the name with '-copy' to signify the origin of the duplicate feed.</p>
-<p><a class="glightbox" href="../../assets/csv-feeds-duplicate.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feeds duplication form: duplicate" src="../../assets/csv-feeds-duplicate.png" /></a></p>
-<p>As you see previously, you need to verify your CSV configuration before validating your form. Finally, you need to click on start to launch your new ingester.</p>
+<p><a class="glightbox" href="../../assets/csv-feeds-duplicate.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feeds duplication form: duplicate" src="../../assets/csv-feeds-duplicate.png" /></a>
+As you see previously, you need to verify your CSV configuration before validating your form. Finally, you need to click on start to launch your new ingester.</p>
 <p><a class="glightbox" href="../../assets/feeds-start-duplicate.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feeds duplication form: duplicate" src="../../assets/feeds-start-duplicate.png" /></a></p>
+<h2 id="export-a-csv-feed">Export a CSV feed</h2>
+<p>You can export your existing CSV feed from the platform, making it easy to share your configuration with others.</p>
+<p>To export your ingester, click on "Export", in the burger menu.
+<a class="glightbox" href="../../assets/csv-feeds-export.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feed export" src="../../assets/csv-feeds-export.png" /></a></p>
+<p>Note: When exporting a CSV feed linked to a CSV Mapper ID, the configuration will be inlined directly within the file. This means that when you import it again, it will appear under the "Inline CSV Mapper" tabs.</p>
+<h2 id="import-a-csv-feed-ingester">Import a CSV feed ingester</h2>
+<p>If you have a JSON CSV feed file you can import it by clicking on the icon next to "Import from hub"
+<a class="glightbox" href="../../assets/csv-feeds-import-icon.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feed import button" src="../../assets/csv-feeds-import-icon.png" /></a></p>
+<p>When you click, you can select the desired file. After that, a drawer will open with the form pre-filled with the relevant information.
+If necessary, configure the authentication type. By default, a user is already provided.</p>
+<p><a class="glightbox" href="../../assets/csv-feeds-import.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feed import drawer" src="../../assets/csv-feeds-import.png" /></a></p>
+<p>As you see previously, you need to verify your CSV configuration before validating your form. Finally, you need to click on start to launch your new ingester.</p>
 
 
 
@@ -5829,7 +5890,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 11, 2025 13:39:57"><span class="timeago" datetime="2025-06-11T13:39:57+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 11, 2025 13:39:57">2025-06-11</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 26, 2025 11:11:04"><span class="timeago" datetime="2025-06-26T11:11:04+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 26, 2025 11:11:04">2025-06-26</span>
   </span>
 
     
@@ -5857,14 +5918,19 @@
     
     <nav>
       
-        <a href="https://github.com/richard-julien" class="md-author" title="@richard-julien">
+        <a href="https://github.com/jpkha" class="md-author" title="@jpkha">
           
-          <img src="https://avatars.githubusercontent.com/u/285555?v=4&size=72" alt="richard-julien">
+          <img src="https://avatars.githubusercontent.com/u/18297909?v=4&size=72" alt="jpkha">
         </a>
       
         <a href="https://github.com/web-flow" class="md-author" title="@web-flow">
           
           <img src="https://avatars.githubusercontent.com/u/19864447?v=4&size=72" alt="web-flow">
+        </a>
+      
+        <a href="https://github.com/richard-julien" class="md-author" title="@richard-julien">
+          
+          <img src="https://avatars.githubusercontent.com/u/285555?v=4&size=72" alt="richard-julien">
         </a>
       
       
