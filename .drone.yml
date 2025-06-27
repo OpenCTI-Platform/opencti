@@ -1,10 +1,6 @@
 ---
 kind: pipeline
-type: docker
 name: opencti-tests
-
-node:
-  env: kubernetes
 
 steps:
   - name: Runner information
