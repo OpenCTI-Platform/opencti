@@ -4,8 +4,12 @@ type PirCriterion {
 }
 
 # Used in StixRefRelationship
+type PirDependency {
+    element_id: ID!
+    author_id: ID
+}
 type PirExplanation {
-    dependency_ids: [ID!]!
+    dependencies: [PirDependency!]!
     criterion: PirCriterion!
 }
 
@@ -65,8 +69,12 @@ input PirCriterionInput {
 }
 
 # Used in StixRefRelationshipAddInput
+input PirDependencyInput {
+    element_id: ID!
+    author_id: ID
+}
 input PirExplanationInput {
-    dependency_ids: [ID!]!
+    dependencies: [PirDependencyInput!]!
     criterion: PirCriterionInput!
 }
 
@@ -83,6 +91,7 @@ input PirFlagElementInput {
     relationshipId: ID!
     sourceId: ID!
     matchingCriteria: [PirCriterionInput!]!
+    relationshipAuthorId: ID
 }
 
 input PirUnflagElementInput {

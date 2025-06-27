@@ -28,6 +28,7 @@ import ItemOperations from '../ItemOperations';
 import ItemDueDate from '../ItemDueDate';
 import { APP_BASE_PATH } from '../../relay/environment';
 import FieldOrEmpty from '../FieldOrEmpty';
+import ItemHistory from '../ItemHistory';
 
 const chipStyle = {
   fontSize: '12px',
@@ -465,6 +466,15 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       const displayDraftChip = !!from?.draftVersion;
       return defaultRender(value, displayDraftChip);
     },
+  },
+  fromType: {
+    id: 'fromType',
+    label: 'From type',
+    percentWidth: 10,
+    isSortable: false,
+    render: (node) => (
+      <ItemEntityType inList showIcon entityType={node.from?.entity_type} isRestricted={!node.from} />
+    ),
   },
   from_created_at: {
     id: 'from_created_at',
@@ -1153,6 +1163,15 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       return defaultRender(value, displayDraftChip);
     },
   },
+  toType: {
+    id: 'toType',
+    label: 'To type',
+    percentWidth: 10,
+    isSortable: false,
+    render: (node) => (
+      <ItemEntityType inList showIcon entityType={node.to?.entity_type} isRestricted={!node.to} />
+    ),
+  },
   to_entity_type: {
     id: 'to_entity_type',
     label: 'Target type',
@@ -1405,6 +1424,22 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: true,
     render: ({ x_opencti_score }) => <ItemScore score={x_opencti_score} />,
+  },
+  timestamp: {
+    id: 'timestamp',
+    label: 'Timestamp',
+    percentWidth: 50,
+    isSortable: true,
+    render: ({ timestamp }, { nsdt }) => defaultRender(nsdt(timestamp)),
+  },
+  event_scope: {
+    id: 'event_scope',
+    label: 'Activity',
+    percentWidth: 50,
+    isSortable: false,
+    render: ({ user, context_data }) => (
+      <ItemHistory username={user.name} message={context_data.message} />
+    ),
   },
 };
 
