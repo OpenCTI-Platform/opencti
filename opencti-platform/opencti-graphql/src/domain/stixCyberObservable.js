@@ -196,7 +196,7 @@ export const addStixCyberObservable = async (context, user, input) => {
     throw FunctionalError(`Expecting variable ${graphQLType} in the input, got nothing.`);
   }
   checkScore(x_opencti_score);
-  const lowerCaseTypes = ['Domain-Name', 'Email-Addr'];
+  const lowerCaseTypes = ['Domain-Name', 'Email-Addr', 'Hostname'];
   if (lowerCaseTypes.includes(type) && input[graphQLType].value) {
     // eslint-disable-next-line no-param-reassign
     input[graphQLType].value = input[graphQLType].value.toLowerCase();
