@@ -2,11 +2,15 @@
 kind: pipeline
 name: opencti-tests
 
+node:
+  env: kubernetes
+
 steps:
   - name: Runner information
     image: alpine:3.19
     commands:
     - echo DRONE_STAGE_MACHINE ${DRONE_STAGE_MACHINE}
+    - echo "G 1"
 
   - name: dependencies-checkout
     image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
@@ -190,19 +194,19 @@ steps:
       - frontend-tests
       - frontend-e2e-tests
 
-  - name: slack
-    image: plugins/slack
-    settings:
-      webhook:
-        from_secret: slack_webhook
-      username: drone
-      channel: notifications
-    when:
-      status: [success, failure]
-    depends_on:
-      - api-tests
-      - frontend-tests
-      - frontend-e2e-tests
+#  - name: slack
+#    image: plugins/slack
+#    settings:
+#      webhook:
+#        from_secret: slack_webhook
+#      username: drone
+#      channel: notifications
+#    when:
+#      status: [success, failure]
+#    depends_on:
+#      - api-tests
+#      - frontend-tests
+#      - frontend-e2e-tests
 
 services:
   - name: redis
@@ -248,7 +252,7 @@ services:
       EXPIRATION_SCHEDULER__ENABLED: false
       SUBSCRIPTION_SCHEDULER__ENABLED: false
     commands:
-      - sleep 10
+      - sleep 20
       - ls -lart
       - apk add build-base git libffi-dev cargo
       - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/raw-start-platform/
@@ -286,7 +290,7 @@ services:
       EXPIRATION_SCHEDULER__ENABLED: false
       SUBSCRIPTION_SCHEDULER__ENABLED: false
     commands:
-      - sleep 10
+      - sleep 20
       - apk add build-base git libffi-dev cargo
       - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/live-start-platform/
       - cd "$DRONE_WORKSPACE/client-python"
@@ -323,7 +327,7 @@ services:
       EXPIRATION_SCHEDULER__ENABLED: false
       SUBSCRIPTION_SCHEDULER__ENABLED: false
     commands:
-      - sleep 10
+      - sleep 20
       - apk add build-base git libffi-dev cargo
       - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/direct-start-platform/
       - cd "$DRONE_WORKSPACE/client-python"
@@ -341,7 +345,7 @@ services:
       OPENCTI_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
       WORKER_LOG_LEVEL: info
     commands:
-      - sleep 10
+      - sleep 20
       - apk add build-base git libffi-dev cargo
       - cp -a opencti-worker /tmp/direct-start-worker
       - cd "$DRONE_WORKSPACE/client-python"
@@ -361,7 +365,7 @@ services:
       OPENCTI_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
       WORKER_LOG_LEVEL: info
     commands:
-      - sleep 10
+      - sleep 20
       - cp -a opencti-worker /tmp/opencti-test-worker
       - apk add build-base git libffi-dev cargo
       - cd "$DRONE_WORKSPACE/client-python"
@@ -399,7 +403,7 @@ services:
       EXPIRATION_SCHEDULER__ENABLED: false
       SUBSCRIPTION_SCHEDULER__ENABLED: false
     commands:
-      - sleep 10
+      - sleep 20
       - apk add build-base git libffi-dev cargo
       - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/restore-start-platform/
       - cd "$DRONE_WORKSPACE/client-python"
@@ -437,7 +441,7 @@ services:
       SUBSCRIPTION_SCHEDULER__ENABLED: false
       PUBLISHER_MANAGER__ENABLED: false
     commands:
-      - sleep 10
+      - sleep 20
       - apk add build-base git libffi-dev cargo
       - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/e2e-start-platform/
       - cd "$DRONE_WORKSPACE/client-python"
@@ -458,7 +462,7 @@ services:
       OPENCTI_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
       WORKER_LOG_LEVEL: info
     commands:
-      - sleep 10
+      - sleep 20
       - cp -a opencti-worker /tmp/opencti-e2e-worker
       - apk add build-base git libffi-dev cargo
       - cd "$DRONE_WORKSPACE/client-python"
@@ -495,3 +499,6 @@ volumes:
   - name: cache-node-frontend-e2e
     host:
       path: /tmp/cache-node-frontend-e2e
+
+image_pull_secrets:
+  - dockerconfigjson
