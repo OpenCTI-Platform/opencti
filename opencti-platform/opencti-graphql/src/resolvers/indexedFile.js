@@ -22,7 +22,7 @@ const indexedFileResolvers = {
     indexedFilesCount: (_, args, context) => countIndexedFiles(context, context.user, args),
   },
   IndexedFile: {
-    entity: (file, _, context) => context.domainsBatchLoader.load(file.entity_id),
+    entity: (file, _, context) => context.batch.domainsBatchLoader.load(file.entity_id),
   },
   Mutation: {
     resetFileIndexing: (_, __, context) => resetFileIndexing(context, context.user),

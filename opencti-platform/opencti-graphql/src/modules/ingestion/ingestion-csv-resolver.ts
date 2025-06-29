@@ -25,7 +25,7 @@ const ingestionCsvResolvers: Resolvers = {
     userAlreadyExists: (_, { name }, context) => userAlreadyExists(context, name)
   },
   IngestionCsv: {
-    user: (ingestionCsv, _, context) => context.creatorBatchLoader.load(ingestionCsv.user_id),
+    user: (ingestionCsv, _, context) => context.batch.creatorBatchLoader.load(ingestionCsv.user_id),
     csvMapper: (ingestionCsv, _, context) => csvFeedGetCsvMapper(context, context.user, ingestionCsv),
     toConfigurationExport: (ingestionCsv, _, context) => csvFeedMapperExport(context, context.user, ingestionCsv),
     duplicateCsvMapper: (ingestionCsv, _, context) => csvFeedGetNewDuplicatedCsvMapper(context, context.user, ingestionCsv),

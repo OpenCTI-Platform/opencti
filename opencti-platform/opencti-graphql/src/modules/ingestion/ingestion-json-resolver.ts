@@ -33,7 +33,7 @@ const ingestionJsonResolvers: Resolvers = {
     ingestionJsons: (_, args, context) => findAllPaginated(context, context.user, args),
   },
   IngestionJson: {
-    user: (ingestionJson, _, context) => context.creatorBatchLoader.load(ingestionJson.user_id),
+    user: (ingestionJson, _, context) => context.batch.creatorBatchLoader.load(ingestionJson.user_id),
     connector_id: (ingestionJson) => connectorIdFromIngestId(ingestionJson.id),
     jsonMapper: (ingestionJson, _, context) => findJsonMapperForIngestionById(context, context.user, ingestionJson.json_mapper_id),
   },

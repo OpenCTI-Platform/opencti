@@ -34,7 +34,7 @@ const organizationResolvers: Resolvers = {
     members: (organization, args, context) => organizationMembersPaginated<any>(context, context.user, organization.id, args),
     subOrganizations: (organization, args, context) => childOrganizationsPaginated<BasicStoreEntityOrganization>(context, context.user, organization.id, args),
     parentOrganizations: (organization, args, context) => parentOrganizationsPaginated<BasicStoreEntityOrganization>(context, context.user, organization.id, args),
-    default_dashboard: (current, _, context) => context.idsBatchLoader.load({ id: current.default_dashboard, type: ENTITY_TYPE_WORKSPACE }),
+    default_dashboard: (current, _, context) => context.batch.idsBatchLoader.load({ id: current.default_dashboard, type: ENTITY_TYPE_WORKSPACE }),
     grantable_groups: (organization, _, context) => findGrantableGroups(context, context.user, organization),
   },
   User: {

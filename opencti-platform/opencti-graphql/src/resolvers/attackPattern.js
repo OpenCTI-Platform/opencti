@@ -31,7 +31,7 @@ const attackPatternResolvers = {
     parentAttackPatterns: (attackPattern, args, context) => parentAttackPatternsPaginated(context, context.user, attackPattern.id, args),
     subAttackPatterns: (attackPattern, args, context) => childAttackPatternsPaginated(context, context.user, attackPattern.id, args),
     dataComponents: (attackPattern, args, context) => dataComponentsPaginated(context, context.user, attackPattern.id, args),
-    isSubAttackPattern: (attackPattern, _, context) => context.isSubAttachPatternBatchLoader.load(attackPattern.id),
+    isSubAttackPattern: (attackPattern, _, context) => context.batch.isSubAttachPatternBatchLoader.load(attackPattern.id),
   },
   Mutation: {
     attackPatternEdit: (_, { id }, context) => ({

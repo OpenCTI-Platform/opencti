@@ -45,6 +45,7 @@ export const createAuthenticatedContext = async (req, res, contextName) => {
   executeContext.eventId = req.headers['opencti-event-id']; // Api call is due to listening event
   executeContext.previousStandard = req.headers['previous-standard']; // Previous standard id
   executeContext.synchronizedUpsert = req.headers['synchronized-upsert'] === 'true'; // If full sync needs to be done
+  // region handle user
   try {
     const user = await authenticateUserFromRequest(executeContext, req);
     if (user) {
@@ -62,6 +63,9 @@ export const createAuthenticatedContext = async (req, res, contextName) => {
   } catch (error) {
     logApp.error('Fail to authenticate the user in graphql context hook', { cause: error });
   }
+  // endregion
   // Return with batch loaders
-  return { ...executeContext, ...computeLoaders(executeContext, executeContext.user) };
+  executeContext.changeDraftContext = (draftId) => { executeContext.draft_context = draftId; };
+  executeContext.batch = computeLoaders(executeContext, executeContext.user);
+  return executeContext;
 };

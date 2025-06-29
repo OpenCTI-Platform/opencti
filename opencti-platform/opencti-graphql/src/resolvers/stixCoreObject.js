@@ -110,7 +110,7 @@ const stixCoreObjectResolvers = {
     createdBy: (stixCoreObject, _, context) => loadThroughDenormalized(context, context.user, stixCoreObject, INPUT_CREATED_BY),
     objectOrganization: (stixCoreObject, _, context) => loadThroughDenormalized(context, context.user, stixCoreObject, INPUT_GRANTED_REFS, { sortBy: 'name' }),
     objectLabel: (stixCoreObject, _, context) => loadThroughDenormalized(context, context.user, stixCoreObject, INPUT_LABELS, { sortBy: 'value' }),
-    objectMarking: (stixCoreObject, _, context) => context.markingsBatchLoader.load(stixCoreObject),
+    objectMarking: (stixCoreObject, _, context) => context.batch.markingsBatchLoader.load(stixCoreObject),
     // endregion
     // region inner listing - cant be batch loaded
     stixCoreRelationships: (stixCoreObject, args, context) => stixCoreRelationships(context, context.user, stixCoreObject.id, args),

@@ -7,8 +7,8 @@ const deleteOperationResolvers: Resolvers = {
     deleteOperations: (_, args, context) => findAll(context, context.user, args),
   },
   DeleteOperation: {
-    objectMarking: (deleteOperation, _, context) => context.markingsBatchLoader.load(deleteOperation),
-    deletedBy: (deleteOperation, _, context) => context.creatorBatchLoader.load(deleteOperation.creator_id?.[0]),
+    objectMarking: (deleteOperation, _, context) => context.batch.markingsBatchLoader.load(deleteOperation),
+    deletedBy: (deleteOperation, _, context) => context.batch.creatorBatchLoader.load(deleteOperation.creator_id?.[0]),
   },
   Mutation: {
     deleteOperationRestore: (_, { id }, context) => restoreDelete(context, context.user, id),

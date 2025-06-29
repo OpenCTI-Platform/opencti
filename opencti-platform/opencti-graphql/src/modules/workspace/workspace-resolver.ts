@@ -33,7 +33,7 @@ const workspaceResolvers: Resolvers = {
   Workspace: {
     authorizedMembers: (workspace, _, context) => getAuthorizedMembers(context, context.user, workspace),
     currentUserAccessRight: (workspace, _, context) => getCurrentUserAccessRight(context, context.user, workspace),
-    owner: (workspace, _, context) => context.creatorBatchLoader.load(getOwnerId(workspace)),
+    owner: (workspace, _, context) => context.batch.creatorBatchLoader.load(getOwnerId(workspace)),
     objects: (workspace, args, context) => objects(context, context.user, workspace, args),
     editContext: (workspace) => fetchEditContext(workspace.id),
     toStixReportBundle: (workspace, _, context) => toStixReportBundle(context, context.user, workspace),

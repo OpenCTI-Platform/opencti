@@ -37,7 +37,6 @@ import {
 import { numberOfContainersForObject } from '../domain/container';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { loadThroughDenormalized } from './stix';
-import { getDraftContextOverrideIfElementInDraft } from '../database/draft-utils';
 
 const stixCoreRelationshipResolvers = {
   Query: {
@@ -58,23 +57,21 @@ const stixCoreRelationshipResolvers = {
     // region batch loaded through rel de-normalization. Cant be ordered of filtered
     from: (rel, _, context) => {
       // If relation is in a draft, we want to force the context to also be in the same draft
-      const contextOverride = getDraftContextOverrideIfElementInDraft(context, rel);
-      const idLoadArgs = { id: rel.fromId, type: rel.fromType, contextOverride };
-      return (rel.from ? rel.from : context.idsBatchLoader.load(idLoadArgs));
+      const idLoadArgs = { id: rel.fromId, type: rel.fromType };
+      return (rel.from ? rel.from : context.batch.idsBatchLoader.load(idLoadArgs));
     },
     to: (rel, _, context) => {
       // If relation is in a draft, we want to force the context to also be in the same draft
-      const contextOverride = getDraftContextOverrideIfElementInDraft(context, rel);
-      const idLoadArgs = { id: rel.toId, type: rel.toType, contextOverride };
-      return (rel.to ? rel.to : context.idsBatchLoader.load(idLoadArgs));
+      const idLoadArgs = { id: rel.toId, type: rel.toType };
+      return (rel.to ? rel.to : context.batch.idsBatchLoader.load(idLoadArgs));
     },
     // region batch loaded through rel de-normalization. Cant be ordered of filtered
     createdBy: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_CREATED_BY),
     objectOrganization: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_GRANTED_REFS, { sortBy: 'name' }),
     objectLabel: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_LABELS, { sortBy: 'value' }),
     killChainPhases: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_KILLCHAIN, { sortBy: 'phase_name' }),
-    creators: (rel, _, context) => context.creatorsBatchLoader.load(rel.creator_id),
-    objectMarking: (rel, _, context) => context.markingsBatchLoader.load(rel),
+    creators: (rel, _, context) => context.batch.creatorsBatchLoader.load(rel.creator_id),
+    objectMarking: (rel, _, context) => context.batch.markingsBatchLoader.load(rel),
     // endregion
     // region inner listing - cant be batch loaded
     externalReferences: (rel, args, context) => externalReferencesPaginated(context, context.user, rel.id, args),

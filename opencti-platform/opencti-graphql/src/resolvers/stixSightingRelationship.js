@@ -23,7 +23,6 @@ import { numberOfContainersForObject } from '../domain/container';
 import { casesPaginated, containersPaginated, externalReferencesPaginated, notesPaginated, opinionsPaginated, reportsPaginated } from '../domain/stixCoreObject';
 import { loadThroughDenormalized } from './stix';
 import { INPUT_CREATED_BY, INPUT_GRANTED_REFS, INPUT_LABELS } from '../schema/general';
-import { getDraftContextOverrideIfElementInDraft } from '../database/draft-utils';
 
 const stixSightingRelationshipResolvers = {
   Query: {
@@ -40,19 +39,17 @@ const stixSightingRelationshipResolvers = {
   StixSightingRelationship: {
     from: (rel, _, context) => {
       // If relation is in a draft, we want to force the context to also be in the same draft
-      const contextOverride = getDraftContextOverrideIfElementInDraft(context, rel);
-      const idLoadArgs = { id: rel.fromId, type: rel.fromType, contextOverride };
-      return (rel.from ? rel.from : context.idsBatchLoader.load(idLoadArgs));
+      const idLoadArgs = { id: rel.fromId, type: rel.fromType };
+      return (rel.from ? rel.from : context.batch.idsBatchLoader.load(idLoadArgs));
     },
     to: (rel, _, context) => {
       // If relation is in a draft, we want to force the context to also be in the same draft
-      const contextOverride = getDraftContextOverrideIfElementInDraft(context, rel);
-      const idLoadArgs = { id: rel.toId, type: rel.toType, contextOverride };
-      return (rel.to ? rel.to : context.idsBatchLoader.load(idLoadArgs));
+      const idLoadArgs = { id: rel.toId, type: rel.toType };
+      return (rel.to ? rel.to : context.batch.idsBatchLoader.load(idLoadArgs));
     },
     // region batch fully loaded through rel de-normalization. Cant be ordered of filtered
-    creators: (rel, _, context) => context.creatorsBatchLoader.load(rel.creator_id),
-    objectMarking: (stixCoreObject, _, context) => context.markingsBatchLoader.load(stixCoreObject),
+    creators: (rel, _, context) => context.batch.creatorsBatchLoader.load(rel.creator_id),
+    objectMarking: (stixCoreObject, _, context) => context.batch.markingsBatchLoader.load(stixCoreObject),
     createdBy: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_CREATED_BY),
     objectLabel: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_LABELS, { sortBy: 'value' }),
     objectOrganization: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_GRANTED_REFS, { sortBy: 'name' }),

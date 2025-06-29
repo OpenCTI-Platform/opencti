@@ -2,7 +2,7 @@ import { files } from '../schema/attribute-definition';
 import { isInternalObject } from '../schema/internalObject';
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { getDraftContext } from '../utils/draftContext';
-import { isDraftIndex, READ_INDEX_DRAFT_OBJECTS, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE } from './utils';
+import { READ_INDEX_DRAFT_OBJECTS, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE } from './utils';
 import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_UPDATE } from '../modules/draftWorkspace/draftOperations';
 import { EditOperation } from '../generated/graphql';
 
@@ -20,10 +20,6 @@ export const getDraftContextFilesPrefix = (context) => {
 
 export const isDraftFile = (fileKey, draftId, suffix = '') => {
   return fileKey.startsWith(getDraftFilePrefix(draftId) + suffix);
-};
-
-export const getDraftContextOverrideIfElementInDraft = (context, instance) => {
-  return !getDraftContext(context) && isDraftIndex(instance._index) && instance.draft_ids?.length === 1 ? { ...context, draft_context: instance.draft_ids[0] } : undefined;
 };
 
 export const buildDraftFilter = (context, user, opts = {}) => {

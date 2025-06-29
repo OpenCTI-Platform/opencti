@@ -14,7 +14,7 @@ const logResolvers = {
     logsWorkerConfig: () => logsWorkerConfig(),
   },
   Log: {
-    user: (log, _, context) => context.creatorBatchLoader.load(log.applicant_id || log.user_id),
+    user: (log, _, context) => context.batch.creatorBatchLoader.load(log.applicant_id || log.user_id),
     context_data: (log, _) => (log.context_data?.id ? { ...log.context_data, entity_id: log.context_data.id } : log.context_data),
     raw_data: (log, _, __) => JSON.stringify(log, null, 2),
     context_uri: (log, _, __) => (log.context_data.id && log.entity_type === 'History' ? `/dashboard/id/${log.context_data.id}` : undefined),
