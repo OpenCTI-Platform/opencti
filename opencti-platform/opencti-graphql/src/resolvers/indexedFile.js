@@ -14,10 +14,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import { countIndexedFiles, indexedFilesMetrics, resetFileIndexing, searchIndexedFiles } from '../domain/indexedFile';
-import { batchLoader } from '../database/middleware';
-import { batchStixDomainObjects } from '../domain/stixDomainObject';
-
-const domainLoader = batchLoader(batchStixDomainObjects);
 
 const indexedFileResolvers = {
   Query: {
@@ -26,7 +22,7 @@ const indexedFileResolvers = {
     indexedFilesCount: (_, args, context) => countIndexedFiles(context, context.user, args),
   },
   IndexedFile: {
-    entity: (file, _, context) => domainLoader.load(file.entity_id, context, context.user),
+    entity: (file, _, context) => context.batch.domainsBatchLoader.load(file.entity_id),
   },
   Mutation: {
     resetFileIndexing: (_, __, context) => resetFileIndexing(context, context.user),

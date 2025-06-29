@@ -21,13 +21,9 @@ import { fetchEditContext } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ENTITY_TYPE_WORKSPACE } from './workspace-types';
 import type { Resolvers } from '../../generated/graphql';
-import { batchLoader } from '../../database/middleware';
-import { batchCreator } from '../../domain/user';
 import { getAuthorizedMembers } from '../../utils/authorizedMembers';
 import { toStixReportBundle } from './investigation-domain';
 import { subscribeToInstanceEvents } from '../../graphql/subscriptionWrapper';
-
-const creatorLoader = batchLoader(batchCreator);
 
 const workspaceResolvers: Resolvers = {
   Query: {
@@ -37,7 +33,7 @@ const workspaceResolvers: Resolvers = {
   Workspace: {
     authorizedMembers: (workspace, _, context) => getAuthorizedMembers(context, context.user, workspace),
     currentUserAccessRight: (workspace, _, context) => getCurrentUserAccessRight(context, context.user, workspace),
-    owner: (workspace, _, context) => creatorLoader.load(getOwnerId(workspace), context, context.user),
+    owner: (workspace, _, context) => context.batch.creatorBatchLoader.load(getOwnerId(workspace)),
     objects: (workspace, args, context) => objects(context, context.user, workspace, args),
     editContext: (workspace) => fetchEditContext(workspace.id),
     toStixReportBundle: (workspace, _, context) => toStixReportBundle(context, context.user, workspace),

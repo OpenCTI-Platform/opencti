@@ -15,14 +15,9 @@ import { fetchEditContext } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import { ABSTRACT_STIX_REF_RELATIONSHIP } from '../schema/general';
 import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
-import { batchLoader, distributionRelations } from '../database/middleware';
-import { elBatchIds } from '../database/engine';
-import { batchCreators } from '../domain/user';
+import { distributionRelations } from '../database/middleware';
 import { schemaRelationsRefTypesMapping } from '../database/stix-ref';
 import { containersPaginated, notesPaginated, opinionsPaginated, reportsPaginated } from '../domain/stixCoreObject';
-
-const loadByIdLoader = batchLoader(elBatchIds);
-const creatorsLoader = batchLoader(batchCreators);
 
 const stixRefRelationshipResolvers = {
   Query: {
@@ -35,14 +30,14 @@ const stixRefRelationshipResolvers = {
     schemaRelationsRefTypesMapping: () => schemaRelationsRefTypesMapping(),
   },
   StixRefRelationship: {
-    from: (rel, _, context) => (rel.from ? rel.from : loadByIdLoader.load({ id: rel.fromId, type: rel.fromType }, context, context.user)),
-    to: (rel, _, context) => (rel.to ? rel.to : loadByIdLoader.load({ id: rel.toId, type: rel.toType }, context, context.user)),
+    from: (rel, _, context) => (rel.from ? rel.from : context.batch.idsBatchLoader.load({ id: rel.fromId, type: rel.fromType })),
+    to: (rel, _, context) => (rel.to ? rel.to : context.batch.idsBatchLoader.load({ id: rel.toId, type: rel.toType })),
     // region inner listing - cant be batch loaded
     containers: (rel, args, context) => containersPaginated(context, context.user, rel.id, args),
     reports: (rel, args, context) => reportsPaginated(context, context.user, rel.id, args),
     notes: (rel, args, context) => notesPaginated(context, context.user, rel.id, args),
     opinions: (rel, args, context) => opinionsPaginated(context, context.user, rel.id, args),
-    creators: (rel, _, context) => creatorsLoader.load(rel.creator_id, context, context.user),
+    creators: (rel, _, context) => context.batch.creatorsBatchLoader.load(rel.creator_id),
     // endregion
     // Utils
     editContext: (rel) => fetchEditContext(rel.id),
