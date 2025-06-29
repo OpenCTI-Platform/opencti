@@ -24,7 +24,7 @@ const internalLoadThroughDenormalized = (context, user, element, inputName) => {
   }
   // If not, reload through denormalized relationships
   const ref = schemaRelationsRefDefinition.getRelationRef(element.entity_type, inputName);
-  return context.relsBatchLoader.load({ element, definition: ref });
+  return context.batch.relsBatchLoader.load({ element, definition: ref });
 };
 
 export const loadThroughDenormalized = async (context, user, element, inputName, args = {}) => {
@@ -72,7 +72,7 @@ const stixResolvers = {
       /* v8 ignore next */
       return 'Unknown';
     },
-    creators: (stix, _, context) => context.creatorsBatchLoader.load(stix.creator_id),
+    creators: (stix, _, context) => context.batch.creatorsBatchLoader.load(stix.creator_id),
   },
 };
 

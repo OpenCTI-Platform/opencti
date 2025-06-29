@@ -7,8 +7,8 @@ const pirResolvers: Resolvers = {
     pirs: (_, args, context) => findAll(context, context.user, args),
   },
   Pir: {
-    creators: (pir, _, context) => context.creatorsBatchLoader.load(pir.creator_id),
-    objectMarking: (pir, _, context) => context.markingsBatchLoader.load(pir),
+    creators: (pir, _, context) => context.batch.creatorsBatchLoader.load(pir.creator_id),
+    objectMarking: (pir, _, context) => context.batch.markingsBatchLoader.load(pir),
   },
   Mutation: {
     pirAdd: (_, { input }, context) => pirAdd(context, context.user, input),

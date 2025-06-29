@@ -21,9 +21,9 @@ const taskResolvers = {
       /* v8 ignore next */
       return 'Unknown';
     },
-    initiator: (task, _, context) => context.creatorBatchLoader.load(task.initiator_id),
+    initiator: (task, _, context) => context.batch.creatorBatchLoader.load(task.initiator_id),
     work: (task, _, context) => {
-      return task.work_id ? context.idsBatchLoader.load({ id: task.work_id, type: ENTITY_TYPE_WORK }) : undefined;
+      return task.work_id ? context.batch.idsBatchLoader.load({ id: task.work_id, type: ENTITY_TYPE_WORK }) : undefined;
     },
   },
 };

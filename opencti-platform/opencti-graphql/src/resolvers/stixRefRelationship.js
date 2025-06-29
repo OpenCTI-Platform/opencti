@@ -30,14 +30,14 @@ const stixRefRelationshipResolvers = {
     schemaRelationsRefTypesMapping: () => schemaRelationsRefTypesMapping(),
   },
   StixRefRelationship: {
-    from: (rel, _, context) => (rel.from ? rel.from : context.idsBatchLoader.load({ id: rel.fromId, type: rel.fromType })),
-    to: (rel, _, context) => (rel.to ? rel.to : context.idsBatchLoader.load({ id: rel.toId, type: rel.toType })),
+    from: (rel, _, context) => (rel.from ? rel.from : context.batch.idsBatchLoader.load({ id: rel.fromId, type: rel.fromType })),
+    to: (rel, _, context) => (rel.to ? rel.to : context.batch.idsBatchLoader.load({ id: rel.toId, type: rel.toType })),
     // region inner listing - cant be batch loaded
     containers: (rel, args, context) => containersPaginated(context, context.user, rel.id, args),
     reports: (rel, args, context) => reportsPaginated(context, context.user, rel.id, args),
     notes: (rel, args, context) => notesPaginated(context, context.user, rel.id, args),
     opinions: (rel, args, context) => opinionsPaginated(context, context.user, rel.id, args),
-    creators: (rel, _, context) => context.creatorsBatchLoader.load(rel.creator_id),
+    creators: (rel, _, context) => context.batch.creatorsBatchLoader.load(rel.creator_id),
     // endregion
     // Utils
     editContext: (rel) => fetchEditContext(rel.id),

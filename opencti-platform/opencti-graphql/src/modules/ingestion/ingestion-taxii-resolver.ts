@@ -7,7 +7,7 @@ const ingestionTaxiiResolvers: Resolvers = {
     ingestionTaxiis: (_, args, context) => findAllPaginated(context, context.user, args),
   },
   IngestionTaxii: {
-    user: (ingestionTaxii, _, context) => context.creatorBatchLoader.load(ingestionTaxii.user_id),
+    user: (ingestionTaxii, _, context) => context.batch.creatorBatchLoader.load(ingestionTaxii.user_id),
   },
   Mutation: {
     ingestionTaxiiAdd: (_, { input }, context) => {

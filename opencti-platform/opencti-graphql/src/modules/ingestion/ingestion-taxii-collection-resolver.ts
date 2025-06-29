@@ -8,7 +8,7 @@ const ingestionTaxiiCollectionResolvers: Resolvers = {
     ingestionTaxiiCollections: (_, args, context) => findAllPaginated(context, context.user, args),
   },
   IngestionTaxiiCollection: {
-    user: (ingestionTaxiiCollection, _, context) => context.creatorBatchLoader.load(ingestionTaxiiCollection.user_id),
+    user: (ingestionTaxiiCollection, _, context) => context.batch.creatorBatchLoader.load(ingestionTaxiiCollection.user_id),
     authorized_members: (ingestionTaxiiCollection, _, context) => getAuthorizedMembers(context, context.user, ingestionTaxiiCollection),
   },
   Mutation: {

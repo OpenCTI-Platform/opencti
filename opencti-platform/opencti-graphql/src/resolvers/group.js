@@ -34,7 +34,7 @@ const groupResolvers = {
     max_shareable_marking: (group, _, context) => groupMaxShareableMarkings(context, group),
     roles: (group, args, context) => rolesPaginated(context, context.user, group.id, args),
     members: (group, args, context) => membersPaginated(context, context.user, group.id, args),
-    default_dashboard: (current, _, context) => context.idsBatchLoader.load({ id: current.default_dashboard, type: ENTITY_TYPE_WORKSPACE }),
+    default_dashboard: (current, _, context) => context.batch.idsBatchLoader.load({ id: current.default_dashboard, type: ENTITY_TYPE_WORKSPACE }),
     editContext: (group) => fetchEditContext(group.id),
   },
   Mutation: {

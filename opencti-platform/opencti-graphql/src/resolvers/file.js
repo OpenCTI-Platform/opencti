@@ -19,13 +19,13 @@ const fileResolvers = {
     guessMimeType: (_, { fileId }) => guessMimeType(fileId),
   },
   File: {
-    objectMarking: (rel, _, context) => context.fileMarkingsBatchLoader.load(rel),
-    works: (file, _, context) => context.fileWorksBatchLoader.load(file.id),
+    objectMarking: (rel, _, context) => context.batch.fileMarkingsBatchLoader.load(rel),
+    works: (file, _, context) => context.batch.fileWorksBatchLoader.load(file.id),
     draftVersion: (file) => buildDraftVersion(file),
   },
   FileMetadata: {
-    entity: (metadata, _, context) => context.domainsBatchLoader.load(metadata.entity_id),
-    creator: (metadata, _, context) => context.creatorBatchLoader.load(metadata.creator_id),
+    entity: (metadata, _, context) => context.batch.domainsBatchLoader.load(metadata.entity_id),
+    creator: (metadata, _, context) => context.batch.creatorBatchLoader.load(metadata.creator_id),
   },
   Mutation: {
     uploadImport: (_, args, context) => uploadImport(context, context.user, args),

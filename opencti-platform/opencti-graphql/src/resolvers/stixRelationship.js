@@ -14,7 +14,6 @@ import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { STIX_REF_RELATIONSHIP_TYPES } from '../schema/stixRefRelationship';
 import { stixLoadByIdStringify, timeSeriesRelations } from '../database/middleware';
 import { loadThroughDenormalized } from './stix';
-import { getDraftContextOverrideIfElementInDraft } from '../database/draft-utils';
 
 const stixRelationshipResolvers = {
   Query: {
@@ -30,20 +29,18 @@ const stixRelationshipResolvers = {
   StixRelationship: {
     from: (rel, _, context) => {
       // If relation is in a draft, we want to force the context to also be in the same draft
-      const contextOverride = getDraftContextOverrideIfElementInDraft(context, rel);
-      const idLoadArgs = { id: rel.fromId, type: rel.fromType, contextOverride };
-      return (rel.from ? rel.from : context.idsBatchLoader.load(idLoadArgs));
+      const idLoadArgs = { id: rel.fromId, type: rel.fromType };
+      return (rel.from ? rel.from : context.batch.idsBatchLoader.load(idLoadArgs));
     },
     to: (rel, _, context) => {
       // If relation is in a draft, we want to force the context to also be in the same draft
-      const contextOverride = getDraftContextOverrideIfElementInDraft(context, rel);
-      const idLoadArgs = { id: rel.toId, type: rel.toType, contextOverride };
-      return (rel.to ? rel.to : context.idsBatchLoader.load(idLoadArgs));
+      const idLoadArgs = { id: rel.toId, type: rel.toType };
+      return (rel.to ? rel.to : context.batch.idsBatchLoader.load(idLoadArgs));
     },
-    creators: (rel, _, context) => context.creatorsBatchLoader.load(rel.creator_id),
+    creators: (rel, _, context) => context.batch.creatorsBatchLoader.load(rel.creator_id),
     createdBy: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_CREATED_BY),
     toStix: (rel, _, context) => stixLoadByIdStringify(context, context.user, rel.id),
-    objectMarking: (rel, _, context) => context.markingsBatchLoader.load(rel, context, context.user),
+    objectMarking: (rel, _, context) => context.batch.markingsBatchLoader.load(rel, context, context.user),
     // eslint-disable-next-line
     __resolveType(obj) {
       if (STIX_REF_RELATIONSHIP_TYPES.some((type) => obj.parent_types.includes(type))) {

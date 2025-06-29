@@ -85,7 +85,7 @@ const userResolvers = {
     objectAssignedOrganization: (current, args, context) => userOrganizationsPaginatedWithoutInferences(context, context.user, current.id, args),
     editContext: (current) => fetchEditContext(current.id),
     sessions: (current) => findUserSessions(current.id),
-    effective_confidence_level: (current, _, context) => context.userEffectiveConfidenceBatchLoader.load(current),
+    effective_confidence_level: (current, _, context) => context.batch.userEffectiveConfidenceBatchLoader.load(current),
     personal_notifiers: (current, _, context) => getNotifiers(context, context.user, current.personal_notifiers),
   },
   Member: {
@@ -117,7 +117,7 @@ const userResolvers = {
     personal_notifiers: (current, _, context) => getNotifiers(context, context.user, current.personal_notifiers),
   },
   UserSession: {
-    user: (session, _, context) => context.creatorBatchLoader.load(session.user_id),
+    user: (session, _, context) => context.batch.creatorBatchLoader.load(session.user_id),
   },
   Role: {
     editContext: (role) => fetchEditContext(role.id),

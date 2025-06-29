@@ -108,11 +108,11 @@ const connectorResolvers = {
   },
   Work: {
     connector: (work, _, context) => connectorForWork(context, context.user, work.id),
-    user: (work, _, context) => context.creatorBatchLoader.load(work.user_id),
+    user: (work, _, context) => context.batch.creatorBatchLoader.load(work.user_id),
     tracking: (work) => computeWorkStatus(work),
   },
   Synchronizer: {
-    user: (sync, _, context) => context.creatorBatchLoader.load(sync.user_id),
+    user: (sync, _, context) => context.batch.creatorBatchLoader.load(sync.user_id),
     queue_messages: async (sync, _, context) => getConnectorQueueSize(context, context.user, sync.id)
   },
   Mutation: {
