@@ -11617,10 +11617,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nodemailer@npm:6.10.1":
-  version: 6.10.1
-  resolution: "nodemailer@npm:6.10.1"
-  checksum: 10/d9911701641e06143a2deb0bd5deb518310972316c6e6eabc594af24353b0d67867f26cb8d72b0cfa385abef945149ac51ae40a40d2199e1088aef5829e58a3d
+"nodemailer@npm:7.0.4":
+  version: 7.0.4
+  resolution: "nodemailer@npm:7.0.4"
+  checksum: 10/b8074c83920fedacf776c1bfd655c65c1d85684d7201522798b6aa08a519c132c3ab8dd96659db5855302d0fdf0fb271d3b587dc4a0956a38929c8377f43165d
   languageName: node
   linkType: hard
 
@@ -12084,7 +12084,7 @@ __metadata:
     node-calls-python: "npm:1.9.1"
     node-fetch: "npm:3.3.2"
     node-forge: "npm:1.3.1"
-    nodemailer: "npm:6.10.1"
+    nodemailer: "npm:7.0.4"
     openai: "npm:4.96.2"
     openid-client: "npm:5.6.5"
     opentelemetry-node-metrics: "npm:3.0.0"
