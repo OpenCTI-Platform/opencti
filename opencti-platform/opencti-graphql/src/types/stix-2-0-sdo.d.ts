@@ -29,3 +29,9 @@ export interface StixReport extends StixContainer {
   published: StixDate
   x_opencti_reliability: string;
 }
+
+export interface StixObservedData extends StixContainer {
+  first_observed: StixDate
+  last_observed: StixDate
+  number_observed: number
+}
