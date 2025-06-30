@@ -31,9 +31,9 @@ steps:
 
   - name: api-tests
     image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
-    volumes:
-    - name: cache-node-backend
-      path: /drone/src/opencti-platform/opencti-graphql/node_modules
+#    volumes:
+#    - name: cache-node-backend
+#      path: /drone/src/opencti-platform/opencti-graphql/node_modules
     environment:
       APP__BASE_URL: http://api-tests:4010/
       APP__ADMIN__PASSWORD: admin
@@ -87,9 +87,9 @@ steps:
 
   - name: frontend-tests
     image: node:22-alpine
-    volumes:
-    - name: cache-node-frontend
-      path: /drone/src/opencti-platform/opencti-front/node_modules
+#    volumes:
+#    - name: cache-node-frontend
+#      path: /drone/src/opencti-platform/opencti-front/node_modules
     commands:
       - apk add git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre
       - npm install -g node-gyp
@@ -102,9 +102,9 @@ steps:
 
   - name: frontend-e2e-tests
     image: node:22.16.0
-    volumes:
-    - name: cache-node-frontend-e2e
-      path: /drone/src/opencti-platform/opencti-front/node_modules
+#    volumes:
+#    - name: cache-node-frontend-e2e
+#      path: /drone/src/opencti-platform/opencti-front/node_modules
     environment:
       BACK_END_URL: http://opencti-e2e-start:4500
       E2E_TEST: true
@@ -228,9 +228,9 @@ services:
 
   - name: opencti-raw-start
     image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
-    volumes:
-    - name: cache-node-raw-start-backend
-      path: /tmp/raw-start-platform/opencti-graphql/node_modules
+#    volumes:
+#    - name: cache-node-raw-start-backend
+#      path: /tmp/raw-start-platform/opencti-graphql/node_modules
     environment:
       APP__PORT: 4100
       APP__ADMIN__PASSWORD: admin
@@ -255,20 +255,21 @@ services:
       - sleep 20
       - ls -lart
       - apk add build-base git libffi-dev cargo
-      - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/raw-start-platform/
+#      - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/raw-start-platform/
       - cd "$DRONE_WORKSPACE/client-python"
       - pip install -r requirements.txt
       - pip install -e .[dev,doc]
-      - cd /tmp/raw-start-platform/opencti-graphql
+#      - cd /tmp/raw-start-platform/opencti-graphql
+      - cd $DRONE_WORKSPACE/platform-reference/opencti-graphql
       - yarn install
       - yarn install:python
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
 
   - name: opencti-live-start
     image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
-    volumes:
-    - name: cache-node-live-start-backend
-      path: /tmp/live-start-platform/opencti-graphql/node_modules
+#    volumes:
+#    - name: cache-node-live-start-backend
+#      path: /tmp/live-start-platform/opencti-graphql/node_modules
     environment:
       APP__PORT: 4200
       APP__ADMIN__PASSWORD: admin
@@ -292,20 +293,21 @@ services:
     commands:
       - sleep 20
       - apk add build-base git libffi-dev cargo
-      - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/live-start-platform/
+#      - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/live-start-platform/
       - cd "$DRONE_WORKSPACE/client-python"
       - pip install -r requirements.txt
       - pip install -e .[dev,doc]
-      - cd /tmp/live-start-platform/opencti-graphql
+#      - cd /tmp/live-start-platform/opencti-graphql
+      - cd $DRONE_WORKSPACE/platform-reference/opencti-graphql
       - yarn install
       - yarn install:python
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
 
   - name: opencti-direct-start
     image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
-    volumes:
-    - name: cache-node-direct-start-backend
-      path: //tmp/direct-start-platform/opencti-graphql/node_modules
+#    volumes:
+#    - name: cache-node-direct-start-backend
+#      path: //tmp/direct-start-platform/opencti-graphql/node_modules
     environment:
       APP__PORT: 4300
       APP__ADMIN__PASSWORD: admin
@@ -329,11 +331,12 @@ services:
     commands:
       - sleep 20
       - apk add build-base git libffi-dev cargo
-      - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/direct-start-platform/
+#      - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/direct-start-platform/
       - cd "$DRONE_WORKSPACE/client-python"
       - pip install -r requirements.txt
       - pip install -e .[dev,doc]
-      - cd /tmp/direct-start-platform/opencti-graphql
+#      - cd /tmp/direct-start-platform/opencti-graphql
+      - cd $DRONE_WORKSPACE/platform-reference/opencti-graphql
       - yarn install
       - yarn install:python
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
@@ -379,9 +382,9 @@ services:
 
   - name: opencti-restore-start
     image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
-    volumes:
-    - name: cache-node-restore-start-backend
-      path: /tmp/restore-start-platform/node_modules
+#    volumes:
+#    - name: cache-node-restore-start-backend
+#      path: /tmp/restore-start-platform/node_modules
     environment:
       APP__PORT: 4400
       APP__ADMIN__PASSWORD: admin
@@ -405,20 +408,21 @@ services:
     commands:
       - sleep 20
       - apk add build-base git libffi-dev cargo
-      - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/restore-start-platform/
+#      - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/restore-start-platform/
       - cd "$DRONE_WORKSPACE/client-python"
       - pip install -r requirements.txt
       - pip install -e .[dev,doc]
-      - cd /tmp/restore-start-platform/opencti-graphql
+#      - cd /tmp/restore-start-platform/opencti-graphql
+      - cd $DRONE_WORKSPACE/platform-reference/opencti-graphql
       - yarn install
       - yarn install:python
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
 
   - name: opencti-e2e-start
     image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
-    volumes:
-    - name: cache-node-e2e-start-backend
-      path: /tmp/e2e-start-platform/node_modules
+#    volumes:
+#    - name: cache-node-e2e-start-backend
+#      path: /tmp/e2e-start-platform/node_modules
     environment:
       APP__PORT: 4500
       APP__ENABLED_DEV_FEATURES: '["*"]'
@@ -443,11 +447,12 @@ services:
     commands:
       - sleep 20
       - apk add build-base git libffi-dev cargo
-      - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/e2e-start-platform/
+#      - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/e2e-start-platform/
       - cd "$DRONE_WORKSPACE/client-python"
       - pip install -r requirements.txt
       - pip install -e .[dev,doc]
-      - cd /tmp/e2e-start-platform/opencti-graphql
+      - cd $DRONE_WORKSPACE/platform-reference/opencti-graphql
+#      - cd /tmp/e2e-start-platform/opencti-graphql
       - yarn install
       - yarn install:python
       - BRANCH=$(echo $DRONE_COMMIT_BRANCH | cut -d "/" -f 2)
@@ -474,31 +479,31 @@ services:
       - pip install -r src/requirements.txt
       - python3 src/worker.py
 
-volumes:
-  - name: cache-node-backend
-    host:
-      path: /tmp/cache-node-backend
-  - name: cache-node-raw-start-backend
-    host:
-      path: /tmp/cache-node-raw-start-backend
-  - name: cache-node-live-start-backend
-    host:
-      path: /tmp/cache-node-live-start-backend
-  - name: cache-node-direct-start-backend
-    host:
-      path: /tmp/cache-node-direct-start-backend
-  - name: cache-node-restore-start-backend
-    host:
-      path: /tmp/cache-node-restore-start-backend
-  - name: cache-node-e2e-start-backend
-    host:
-      path: /tmp/cache-node-e2e-start-backend
-  - name: cache-node-frontend
-    host:
-      path: /tmp/cache-node-frontend
-  - name: cache-node-frontend-e2e
-    host:
-      path: /tmp/cache-node-frontend-e2e
+#volumes:
+#  - name: cache-node-backend
+#    host:
+#      path: /tmp/cache-node-backend
+#  - name: cache-node-raw-start-backend
+#    host:
+#      path: /tmp/cache-node-raw-start-backend
+#  - name: cache-node-live-start-backend
+#    host:
+#      path: /tmp/cache-node-live-start-backend
+#  - name: cache-node-direct-start-backend
+#    host:
+#      path: /tmp/cache-node-direct-start-backend
+#  - name: cache-node-restore-start-backend
+#    host:
+#      path: /tmp/cache-node-restore-start-backend
+#  - name: cache-node-e2e-start-backend
+#    host:
+#      path: /tmp/cache-node-e2e-start-backend
+#  - name: cache-node-frontend
+#    host:
+#      path: /tmp/cache-node-frontend
+#  - name: cache-node-frontend-e2e
+#    host:
+#      path: /tmp/cache-node-frontend-e2e
 
 image_pull_secrets:
   - dockerconfigjson
