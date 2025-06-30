@@ -261,7 +261,7 @@ services:
       - pip install -r requirements.txt
       - pip install -e .[dev,doc]
       - cd /tmp/raw-start-platform/opencti-graphql
-      - cd $DRONE_WORKSPACE/platform-reference/opencti-graphql
+#      - cd $DRONE_WORKSPACE/platform-reference/opencti-graphql
       - yarn install
       - yarn install:python
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
@@ -300,7 +300,7 @@ services:
       - pip install -r requirements.txt
       - pip install -e .[dev,doc]
       - cd /tmp/live-start-platform/opencti-graphql
-      - cd $DRONE_WORKSPACE/platform-reference/opencti-graphql
+#      - cd $DRONE_WORKSPACE/platform-reference/opencti-graphql
       - yarn install
       - yarn install:python
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
@@ -339,7 +339,7 @@ services:
       - pip install -r requirements.txt
       - pip install -e .[dev,doc]
       - cd /tmp/direct-start-platform/opencti-graphql
-      - cd $DRONE_WORKSPACE/platform-reference/opencti-graphql
+#      - cd $DRONE_WORKSPACE/platform-reference/opencti-graphql
       - yarn install
       - yarn install:python
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
@@ -417,7 +417,7 @@ services:
       - pip install -r requirements.txt
       - pip install -e .[dev,doc]
       - cd /tmp/restore-start-platform/opencti-graphql
-      - cd $DRONE_WORKSPACE/platform-reference/opencti-graphql
+#      - cd $DRONE_WORKSPACE/platform-reference/opencti-graphql
       - yarn install
       - yarn install:python
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
@@ -456,7 +456,7 @@ services:
       - cd "$DRONE_WORKSPACE/client-python"
       - pip install -r requirements.txt
       - pip install -e .[dev,doc]
-      - cd $DRONE_WORKSPACE/platform-reference/opencti-graphql
+#      - cd $DRONE_WORKSPACE/platform-reference/opencti-graphql
       - cd /tmp/e2e-start-platform/opencti-graphql
       - yarn install
       - yarn install:python
