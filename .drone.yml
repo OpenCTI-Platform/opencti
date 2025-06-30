@@ -255,11 +255,11 @@ services:
       - sleep 20
       - ls -lart
       - apk add build-base git libffi-dev cargo
-#      - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/raw-start-platform/
+      - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/raw-start-platform/
       - cd "$DRONE_WORKSPACE/client-python"
       - pip install -r requirements.txt
       - pip install -e .[dev,doc]
-#      - cd /tmp/raw-start-platform/opencti-graphql
+      - cd /tmp/raw-start-platform/opencti-graphql
       - cd $DRONE_WORKSPACE/platform-reference/opencti-graphql
       - yarn install
       - yarn install:python
@@ -293,11 +293,11 @@ services:
     commands:
       - sleep 20
       - apk add build-base git libffi-dev cargo
-#      - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/live-start-platform/
+      - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/live-start-platform/
       - cd "$DRONE_WORKSPACE/client-python"
       - pip install -r requirements.txt
       - pip install -e .[dev,doc]
-#      - cd /tmp/live-start-platform/opencti-graphql
+      - cd /tmp/live-start-platform/opencti-graphql
       - cd $DRONE_WORKSPACE/platform-reference/opencti-graphql
       - yarn install
       - yarn install:python
@@ -331,11 +331,11 @@ services:
     commands:
       - sleep 20
       - apk add build-base git libffi-dev cargo
-#      - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/direct-start-platform/
+      - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/direct-start-platform/
       - cd "$DRONE_WORKSPACE/client-python"
       - pip install -r requirements.txt
       - pip install -e .[dev,doc]
-#      - cd /tmp/direct-start-platform/opencti-graphql
+      - cd /tmp/direct-start-platform/opencti-graphql
       - cd $DRONE_WORKSPACE/platform-reference/opencti-graphql
       - yarn install
       - yarn install:python
@@ -408,11 +408,11 @@ services:
     commands:
       - sleep 20
       - apk add build-base git libffi-dev cargo
-#      - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/restore-start-platform/
+      - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/restore-start-platform/
       - cd "$DRONE_WORKSPACE/client-python"
       - pip install -r requirements.txt
       - pip install -e .[dev,doc]
-#      - cd /tmp/restore-start-platform/opencti-graphql
+      - cd /tmp/restore-start-platform/opencti-graphql
       - cd $DRONE_WORKSPACE/platform-reference/opencti-graphql
       - yarn install
       - yarn install:python
@@ -447,12 +447,12 @@ services:
     commands:
       - sleep 20
       - apk add build-base git libffi-dev cargo
-#      - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/e2e-start-platform/
+      - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/e2e-start-platform/
       - cd "$DRONE_WORKSPACE/client-python"
       - pip install -r requirements.txt
       - pip install -e .[dev,doc]
       - cd $DRONE_WORKSPACE/platform-reference/opencti-graphql
-#      - cd /tmp/e2e-start-platform/opencti-graphql
+      - cd /tmp/e2e-start-platform/opencti-graphql
       - yarn install
       - yarn install:python
       - BRANCH=$(echo $DRONE_COMMIT_BRANCH | cut -d "/" -f 2)
