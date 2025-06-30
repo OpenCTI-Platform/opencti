@@ -304,7 +304,7 @@ export const testCsvIngestionMapping = async (context: AuthContext, user: AuthUs
     authentication_type: input.authentication_type,
     authentication_value: input.authentication_value
   } as BasicStoreEntityIngestionCsv;
-  const { csvLines } = await fetchCsvFromUrl(parsedMapper, ingestion, { limit: 50 });
+  const { csvLines } = await fetchCsvFromUrl(parsedMapper, ingestion, { limit: 10 });
   if (parsedMapper.has_header) {
     removeHeaderFromFullFile(csvLines, parsedMapper.skipLineChar);
   }
