@@ -1725,7 +1725,6 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     // Handle draft
     const draftMust = buildDraftFilter(context, user, opts);
     const body = {
-      sort: [{ [orderBy]: orderMode }],
       script_fields: {
         script_field_denormalization_count: REL_COUNT_SCRIPT_FIELD
       },
