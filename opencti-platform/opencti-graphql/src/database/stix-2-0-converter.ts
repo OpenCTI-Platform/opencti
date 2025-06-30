@@ -5,6 +5,7 @@ import type * as SMO from '../types/stix-2-0-smo';
 import { INPUT_CREATED_BY, INPUT_EXTERNAL_REFS, INPUT_GRANTED_REFS, INPUT_KILLCHAIN, INPUT_LABELS, INPUT_MARKINGS, INPUT_OBJECTS } from '../schema/general';
 import { INPUT_OPERATING_SYSTEM, INPUT_SAMPLE } from '../schema/stixRefRelationship';
 import {
+  ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_DATA_COMPONENT,
   ENTITY_TYPE_DATA_SOURCE,
@@ -23,6 +24,7 @@ import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../modules/case/case-incide
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../modules/case/case-rft/case-rft-types';
 import { isInferredIndex } from './utils';
+import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 
 export const convertTypeToStix2Type = (type: string): string => {
   if (isStixDomainObjectIdentity(type)) {
@@ -81,7 +83,7 @@ const buildExternalReferences = (instance: StoreObject): Array<SMO.StixInternalE
   });
 };
 
-export const convertObjectReferences = (instance: StoreEntity, isInferred = false) => {
+export const convertObjectReferences = (instance: StoreEntity, isInferred = false) => { // TODO mutualize with STIX 2.1 exporter
   const objectRefs = instance[INPUT_OBJECTS] ?? [];
   return objectRefs.filter((r) => {
     // If related relation not available, it's just a creation, so inferred false
@@ -158,5 +160,17 @@ export const convertReportToStix = (instance: StoreEntity, type: string): SDO.St
     published: convertToStixDate(instance.published),
     object_refs: convertObjectReferences(instance),
     x_opencti_reliability: instance.x_opencti_reliability,
+  };
+};
+
+export const convertObservedDataToStix = (instance: StoreEntity, type: string): SDO.StixObservedData => {
+  assertType(ENTITY_TYPE_CONTAINER_OBSERVED_DATA, type);
+  const observedData = buildStixDomain(instance);
+  return {
+    ...observedData,
+    first_observed: convertToStixDate(instance.first_observed),
+    last_observed: convertToStixDate(instance.last_observed),
+    number_observed: instance.number_observed,
+    object_refs: convertObjectReferences(instance),
   };
 };
