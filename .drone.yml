@@ -3,6 +3,11 @@ kind: pipeline
 name: opencti-tests
 
 steps:
+  - name: Runner information
+    image: alpine:3.19
+    commands:
+    - echo DRONE_STAGE_MACHINE ${DRONE_STAGE_MACHINE}
+
   - name: dependencies-checkout
     image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
     environment:
@@ -432,6 +437,7 @@ services:
       SUBSCRIPTION_SCHEDULER__ENABLED: false
       PUBLISHER_MANAGER__ENABLED: false
     commands:
+      - sleep 10
       - apk add build-base git libffi-dev cargo
       - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/e2e-start-platform/
       - cd "$DRONE_WORKSPACE/client-python"

@@ -7,7 +7,6 @@ import { IngestionCsvLinesPaginationQuery, IngestionCsvLinesPaginationQuery$vari
 import { IngestionCsvLineDummy } from '@components/data/ingestionCsv/IngestionCsvLine';
 import { IngestionCsvCreationContainer } from '@components/data/ingestionCsv/IngestionCsvCreation';
 import IngestionCsvImport from '@components/data/ingestionCsv/IngestionCsvImport';
-import { IngestionCsvCreationContainerDeprecated } from '@components/data/ingestionCsv/IngestionCsvCreationDeprecated';
 import { useFormatter } from '../../../components/i18n';
 import useAuth, { UserContext } from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -18,7 +17,6 @@ import { INGESTION_SETINGESTIONS } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import useHelper from '../../../utils/hooks/useHelper';
 import { isNotEmptyField } from '../../../utils/utils';
 import GradientButton from '../../../components/GradientButton';
 
@@ -42,7 +40,6 @@ const IngestionCsv = () => {
 
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  const { isFeatureEnable } = useHelper();
   setTitle(t_i18n('CSV Feeds | Ingestion | Data'));
   const { platformModuleHelpers } = useAuth();
   const {
@@ -108,11 +105,10 @@ const IngestionCsv = () => {
         createButton={
           <Security needs={[INGESTION_SETINGESTIONS]}>
             <>
-              {isFeatureEnable('CSV_FEED')
-                && <IngestionCsvImport
-                  paginationOptions={paginationOptions}
-                   />}
-              {isFeatureEnable('CSV_FEED') && isNotEmptyField(importFromHubUrl) && (
+              <IngestionCsvImport
+                paginationOptions={paginationOptions}
+              />
+              {isNotEmptyField(importFromHubUrl) && (
                 <GradientButton
                   size="small"
                   sx={{ marginLeft: 1 }}
@@ -123,26 +119,15 @@ const IngestionCsv = () => {
                   {t_i18n('Import from Hub')}
                 </GradientButton>
               )}
-              {isFeatureEnable('CSV_FEED')
-                ? <IngestionCsvCreationContainer
-                    paginationOptions={paginationOptions}
-                    drawerSettings={
+              <IngestionCsvCreationContainer
+                paginationOptions={paginationOptions}
+                drawerSettings={
                 {
                   title: t_i18n('Create a CSV Feed'),
                   button: t_i18n('Create'),
                 }
                 }
-                  /> : <IngestionCsvCreationContainerDeprecated
-                    paginationOptions={paginationOptions}
-                    drawerSettings={
-                    {
-                      title: t_i18n('Create a CSV Feed'),
-                      button: t_i18n('Create'),
-                    }
-                  }
-                       />
-              }
-
+              />
             </>
           </Security>
         }

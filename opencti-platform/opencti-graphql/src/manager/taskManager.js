@@ -294,53 +294,59 @@ const standardOperationCallback = async (context, user, task, actionType, operat
   };
 };
 
+export const buildContainersElementsBundle = async (context, user, containers, elements, withNeighbours, operationType) => {
+  const elementIds = new Set();
+  const elementStandardIds = new Set();
+  for (let index = 0; index < elements.length; index += 1) {
+    const element = elements[index];
+    elementIds.add(element.internal_id);
+    elementStandardIds.add(element.standard_id);
+    if (withNeighbours) {
+      if (element.fromId) elementIds.add(element.fromId);
+      if (element.toId) elementIds.add(element.toId);
+      const callback = (relations) => {
+        relations.forEach((relation) => {
+          elementIds.add(relation.fromId);
+          elementIds.add(relation.toId);
+          elementIds.add(relation.id);
+        });
+      };
+      const args = { fromOrToId: Array.from(elementIds), baseData: true, callback };
+      await listAllRelations(context, user, ABSTRACT_STIX_CORE_RELATIONSHIP, args);
+    }
+  }
+  // Build limited stix object to limit memory footprint
+  const containerOperations = [{
+    type: operationType,
+    context: {
+      field: INPUT_OBJECTS,
+      values: Array.from(elementIds)
+    }
+  }];
+  const objects = [];
+  for (let i = 0; i < containers.length; i += 1) {
+    const container = containers[i];
+    objects.push({
+      id: container.standard_id,
+      type: convertTypeToStixType(container.entity_type),
+      object_refs: Array.from(elementStandardIds), // object refs for split ordering
+      extensions: {
+        [STIX_EXT_OCTI]: {
+          ...baseOperationBuilder('KNOWLEDGE_CHANGE', containerOperations, container),
+          id: container.internal_id,
+          type: container.entity_type
+        }
+      }
+    });
+  }
+  return objects;
+};
+
 const containerOperationCallback = async (context, user, task, containers, operations) => {
   const withNeighbours = operations[0].context.options?.includeNeighbours;
   const operationType = operations[0].type;
   return async (elements) => {
-    const elementIds = new Set();
-    const elementStandardIds = new Set();
-    for (let index = 0; index < elements.length; index += 1) {
-      const element = elements[index];
-      elementIds.add(element.internal_id);
-      elementStandardIds.add(element.standard_id);
-      if (withNeighbours) {
-        if (element.fromId) elementIds.add(element.fromId);
-        if (element.toId) elementIds.add(element.toId);
-        const callback = (relations) => {
-          relations.forEach((relation) => {
-            elementIds.add(relation.fromId);
-            elementIds.add(relation.toId);
-          });
-        };
-        const args = { fromOrToId: elementIds, baseData: true, callback };
-        await listAllRelations(context, user, ABSTRACT_STIX_CORE_RELATIONSHIP, args);
-      }
-    }
-    // Build limited stix object to limit memory footprint
-    const containerOperations = [{
-      type: operationType,
-      context: {
-        field: INPUT_OBJECTS,
-        values: Array.from(elementIds)
-      }
-    }];
-    const objects = [];
-    for (let i = 0; i < containers.length; i += 1) {
-      const container = containers[i];
-      objects.push({
-        id: container.standard_id,
-        type: convertTypeToStixType(container.entity_type),
-        object_refs: Array.from(elementStandardIds), // object refs for split ordering
-        ...baseOperationBuilder('KNOWLEDGE_CHANGE', containerOperations, container),
-        extensions: {
-          [STIX_EXT_OCTI]: {
-            id: container.internal_id,
-            type: container.entity_type
-          }
-        }
-      });
-    }
+    const objects = await buildContainersElementsBundle(context, user, containers, elements, withNeighbours, operationType);
     // Send actions to queue
     await sendResultToQueue(context, user, task, objects);
     // Update task
@@ -430,9 +436,9 @@ const promoteOperationCallback = async (context, user, task, container) => {
         id: container.standard_id,
         type: convertTypeToStixType(container.entity_type),
         object_refs: objectRefs, // object refs for split ordering
-        ...baseOperationBuilder('KNOWLEDGE_CHANGE', containerOperations, container),
         extensions: {
           [STIX_EXT_OCTI]: {
+            ...baseOperationBuilder('KNOWLEDGE_CHANGE', containerOperations, container),
             id: container.internal_id,
             type: container.entity_type
           }

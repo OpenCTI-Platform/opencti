@@ -30,7 +30,7 @@ interface StixDomainObjectAttackPatternsKillChainProps {
   openExports?: boolean;
   availableFilterKeys: string[];
   storageKey: string;
-  entityType?: string;
+  entityType: string;
 }
 
 export const stixDomainObjectAttackPatternsKillChainContainerLineFragment = graphql`

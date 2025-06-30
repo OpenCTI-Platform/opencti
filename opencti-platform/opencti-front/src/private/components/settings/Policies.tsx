@@ -38,7 +38,6 @@ import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import ItemBoolean from '../../../components/ItemBoolean';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
-import useHelper from '../../../utils/hooks/useHelper';
 import Transition from '../../../components/Transition';
 import type { Theme } from '../../../components/Theme';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
@@ -128,7 +127,6 @@ interface PoliciesComponentProps {
 const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
   queryRef,
 }) => {
-  const { isFeatureEnable } = useHelper();
   const isEnterpriseEdition = useEnterpriseEdition();
   const [openPlatformOrganizationChanges, setOpenPlatformOrganizationChanges] = useState<boolean>(false);
 
@@ -277,7 +275,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                       )}
                     />
                   </Grid>
-                  {isFeatureEnable('CSV_FEED') && <GroupSetDefaultGroupForIngestionUsers/>}
+                  <GroupSetDefaultGroupForIngestionUsers/>
 
                   <Grid item xs={6}>
                     <Typography variant="h4" gutterBottom={true}>

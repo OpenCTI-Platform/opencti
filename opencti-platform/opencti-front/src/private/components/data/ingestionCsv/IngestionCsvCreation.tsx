@@ -31,7 +31,6 @@ import { IngestionCsvCreationUsersQuery$data } from '@components/data/ingestionC
 import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import CreatorField from '../../common/form/CreatorField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { insertNode } from '../../../../utils/store';
 import SelectField from '../../../../components/fields/SelectField';
@@ -44,7 +43,6 @@ import { USER_CHOICE_MARKING_CONFIG } from '../../../../utils/csvMapperUtils';
 import { convertMapper, convertUser } from '../../../../utils/edition';
 import { BASIC_AUTH, CERT_AUTH, extractCA, extractCert, extractKey, extractPassword, extractUsername } from '../../../../utils/ingestionAuthentificationUtils';
 import useAuth from '../../../../utils/hooks/useAuth';
-import useHelper from '../../../../utils/hooks/useHelper';
 import PasswordTextField from '../../../../components/PasswordTextField';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import SwitchField from '../../../../components/fields/SwitchField';
@@ -165,7 +163,6 @@ const CreateIngestionCsvControlledDial = (props: DrawerControlledDialProps) => (
 
 const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ paginationOptions, handleClose, ingestionCsvData, drawerSettings }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
   const classes = useStyles();
   const isGranted = useGranted([SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]);
   const { me } = useAuth();
@@ -173,15 +170,12 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
   const [open, setOpen] = useState(false);
   const [isCreateDisabled, setIsCreateDisabled] = useState(true);
   const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = useState(false);
-  const [creatorId, setCreatorId] = useState('');
+  const [creatorId] = useState('');
   const [currentTab, setCurrentTab] = useState(0);
   const handleChangeTab = (value: number) => {
     setCurrentTab(value);
   };
 
-  const onCreatorSelection = async (option: FieldOption) => {
-    setCreatorId(option.value);
-  };
   const updateObjectMarkingField = async (
     setFieldValue: (field: string, value: FieldOption[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionCsvAddInput>>,
     values: IngestionCsvAddInput,
@@ -229,7 +223,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
     { setSubmitting, resetForm, setFieldError },
   ) => {
     // Check if user does not already exist.
-    if (isFeatureEnable('CSV_FEED') && values.automatic_user !== false) {
+    if (values.automatic_user !== false) {
       const existingUsers = await fetchQuery(ingestionCsvCreationUsersQuery, {
         name: (values.user_id as FieldOption).value,
       })
@@ -265,8 +259,8 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
       authentication_type: values.authentication_type,
       authentication_value: authenticationValue,
       user_id: typeof values.user_id === 'string' ? values.user_id : values.user_id?.value,
-      ...(isFeatureEnable('CSV_FEED') && { automatic_user: values.automatic_user ?? true }),
-      ...(isFeatureEnable('CSV_FEED') && (values.automatic_user !== false) && { confidence_level: values.confidence_level }),
+      automatic_user: values.automatic_user ?? true,
+      ...((values.automatic_user !== false) && { confidence_level: values.confidence_level }),
       markings: markings ?? [],
     };
     commit({
@@ -376,15 +370,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
               />
-              {isFeatureEnable('CSV_FEED')
-                ? <IngestionCsvCreationUserHandling/>
-                : <CreatorField
-                    name="user_id"
-                    label={t_i18n('User responsible for data creation')}
-                    containerStyle={fieldSpacingContainerStyle}
-                    onChange={(_, option) => onCreatorSelection(option)}
-                    showConfidence
-                  />}
+              <IngestionCsvCreationUserHandling/>
               <Box sx={{
                 marginTop: 2,
               }}

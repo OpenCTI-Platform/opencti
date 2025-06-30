@@ -132,7 +132,7 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
                   style={{ width: dataColumns.entity_type.width }}
                 >
                   <ItemEntityType
-                    entityType={node.from.entity_type}
+                    entityType={node.from?.entity_type}
                     isRestricted={!node.from}
                     size='large'
                     showIcon
@@ -147,7 +147,7 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
                   }}
                 >
                   {!restricted ? getMainRepresentative(node.from) : t('Restricted')}
-                  {node.from.draftVersion && (<DraftChip/>)}
+                  {node.from?.draftVersion && (<DraftChip/>)}
                 </div>
                 <div
                   className={classes.bodyItem}

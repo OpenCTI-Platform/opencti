@@ -196,7 +196,7 @@ export const addStixCyberObservable = async (context, user, input) => {
     throw FunctionalError(`Expecting variable ${graphQLType} in the input, got nothing.`);
   }
   checkScore(x_opencti_score);
-  const lowerCaseTypes = ['Domain-Name', 'Email-Addr'];
+  const lowerCaseTypes = ['Domain-Name', 'Email-Addr', 'Hostname'];
   if (lowerCaseTypes.includes(type) && input[graphQLType].value) {
     // eslint-disable-next-line no-param-reassign
     input[graphQLType].value = input[graphQLType].value.toLowerCase();
@@ -382,15 +382,24 @@ const extractInfectedZipFile = async (file) => {
   return { createReadStream: () => Readable.from(extracted), filename: newFile.path, mimetype: mimetype.mime };
 };
 
+const ignore_extract_types = [
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+];
 export const artifactImport = async (context, user, args) => {
   const { file, x_opencti_description: description, createdBy, objectMarking, objectLabel } = args;
   let resolvedFile = await file;
   // Checking infected ZIP files
-  try {
-    resolvedFile = await extractInfectedZipFile(resolvedFile);
-  } catch {
-    // do nothing
+
+  if (!ignore_extract_types.includes(resolvedFile.mimetype)) {
+    try {
+      resolvedFile = await extractInfectedZipFile(resolvedFile);
+    } catch {
+      // do nothing
+    }
   }
+
   const { createReadStream, filename, mimetype } = resolvedFile;
   const targetId = uuidv4();
   const filePath = `import/${ENTITY_HASHED_OBSERVABLE_ARTIFACT}/${targetId}`;

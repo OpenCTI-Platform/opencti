@@ -3,11 +3,9 @@ import React, { FunctionComponent } from 'react';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import IngestionCsvEdition from '@components/data/ingestionCsv/IngestionCsvEdition';
 import { IngestionCsvEditionContainerQuery } from '@components/data/ingestionCsv/__generated__/IngestionCsvEditionContainerQuery.graphql';
-import IngestionCsvEditionDeprecated from '@components/data/ingestionCsv/IngestionCsvEditionDeprecated';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 export const ingestionCsvEditionContainerQuery = graphql`
   query IngestionCsvEditionContainerQuery($id: String!) {
@@ -29,7 +27,6 @@ const IngestionCsvEditionContainer: FunctionComponent<IngestionCsvEditionContain
   handleClose,
 }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
 
   const { ingestionCsv } = usePreloadedQuery(ingestionCsvEditionContainerQuery, queryRef);
 
@@ -43,19 +40,12 @@ const IngestionCsvEditionContainer: FunctionComponent<IngestionCsvEditionContain
       onClose={handleClose}
       open={open}
     >
-      {({ onClose }) => {
-        return isFeatureEnable('CSV_FEED')
-          ? <IngestionCsvEdition
-              ingestionCsv={ingestionCsv}
-              enableReferences={useIsEnforceReference('IngestionCsv')}
-              handleClose={onClose}
-            />
-          : <IngestionCsvEditionDeprecated
-              ingestionCsv={ingestionCsv}
-              enableReferences={useIsEnforceReference('IngestionCsv')}
-              handleClose={onClose}
-            />;
-      }}
+      {({ onClose }) => <IngestionCsvEdition
+        ingestionCsv={ingestionCsv}
+        enableReferences={useIsEnforceReference('IngestionCsv')}
+        handleClose={onClose}
+                        />
+      }
     </Drawer>
   );
 };

@@ -585,8 +585,8 @@ const ContainerHeader = (props) => {
           </div>
         )}
         {modes && (
-          <div style={{ marginLeft: theme.spacing(2) }}>
-            <ToggleButtonGroup size="small" exclusive={true}>
+          <div id="container-view-buttons">
+            <ToggleButtonGroup size="small" exclusive={true} style={{ marginLeft: theme.spacing(2) }}>
               {modes.includes('graph') && (
                 <Tooltip title={t_i18n('Graph view')}>
                   <ToggleButton
