@@ -1,7 +1,7 @@
 import React, { CSSProperties } from 'react';
 import Grid from '@mui/material/Grid2';
-import StixCoreObjectsDonut from '@components/common/stix_core_objects/StixCoreObjectsDonut';
 import { PirOverviewHistoryPirFragment$key } from '@components/pir/__generated__/PirOverviewHistoryPirFragment.graphql';
+import StixRelationshipsDonut from '@components/common/stix_relationships/StixRelationshipsDonut';
 import PirOverviewDetails from './PirOverviewDetails';
 import PirOverviewHistory from './PirOverviewHistory';
 import Paper from '../../../components/Paper';
@@ -32,7 +32,8 @@ const PirOverview = ({
 
   const topSourcesDataSelection = [
     {
-      attribute: 'pir_dependencies.author_id',
+      attribute: 'created-by.internal_id',
+      isTo: false,
       filters: {
         mode: 'and',
         filters: [
@@ -67,13 +68,14 @@ const PirOverview = ({
       </Grid>
       <Grid size={{ xs: 6 }} sx={verticalGridStyle}>
         <Paper title={t_i18n('PIR Visualization')}>
-          <StixCoreObjectsDonut
+          <StixRelationshipsDonut
             dataSelection={topSourcesDataSelection}
             parameters={{ title: t_i18n('Top sources') }}
-            variant="inEntity"
+            variant="inLine"
             height={250}
-            startDate={undefined}
-            endDate={undefined}
+            startDate={null}
+            endDate={null}
+            isReadOnly
           />
         </Paper>
       </Grid>

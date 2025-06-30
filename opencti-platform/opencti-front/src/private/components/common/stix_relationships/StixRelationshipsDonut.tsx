@@ -1,5 +1,6 @@
 import React from 'react';
 import { graphql } from 'react-relay';
+import { StixRelationshipsDonutDistributionQuery$data } from '@components/common/stix_relationships/__generated__/StixRelationshipsDonutDistributionQuery.graphql';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
@@ -7,6 +8,7 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetDonut from '../../../../components/dashboard/WidgetDonut';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import type { WidgetDataSelection, WidgetParameters } from '../../../../utils/widget/widget';
 
 export const stixRelationshipsDonutsDistributionQuery = graphql`
   query StixRelationshipsDonutDistributionQuery(
@@ -101,6 +103,19 @@ export const stixRelationshipsDonutsDistributionQuery = graphql`
   }
 `;
 
+interface StixRelationshipsDonutProps {
+  title?: string,
+  variant: string,
+  height?: number,
+  field?: string,
+  startDate: string | null,
+  endDate: string | null,
+  dataSelection: WidgetDataSelection[],
+  parameters?: WidgetParameters,
+  withExportPopover?: boolean,
+  isReadOnly?: boolean,
+}
+
 const StixRelationshipsDonut = ({
   title,
   variant,
@@ -112,34 +127,34 @@ const StixRelationshipsDonut = ({
   parameters = {},
   withExportPopover = false,
   isReadOnly = false,
-}) => {
+}: StixRelationshipsDonutProps) => {
   const { t_i18n } = useFormatter();
   const renderContent = () => {
-    let selection = {};
+    let selection;
     let filtersAndOptions;
     if (dataSelection) {
       // eslint-disable-next-line prefer-destructuring
       selection = dataSelection[0];
       filtersAndOptions = buildFiltersAndOptionsForWidgets(selection.filters);
     }
-    const finalField = selection.attribute || field || 'entity_type';
+    const finalField = selection?.attribute || field || 'entity_type';
     const variables = {
       field: finalField,
       operation: 'count',
       startDate,
       endDate,
-      dateAttribute: selection.date_attribute ?? 'created_at',
-      limit: selection.number ?? 10,
+      dateAttribute: selection?.date_attribute ?? 'created_at',
+      limit: selection?.number ?? 10,
       filters: filtersAndOptions?.filters,
-      isTo: selection.isTo,
-      dynamicFrom: selection.dynamicFrom,
-      dynamicTo: selection.dynamicTo,
+      isTo: selection?.isTo,
+      dynamicFrom: selection?.dynamicFrom,
+      dynamicTo: selection?.dynamicTo,
     };
     return (
       <QueryRenderer
         query={stixRelationshipsDonutsDistributionQuery}
         variables={variables}
-        render={({ props }) => {
+        render={({ props }: { props: StixRelationshipsDonutDistributionQuery$data }) => {
           if (
             props
             && props.stixRelationshipsDistribution
@@ -147,7 +162,7 @@ const StixRelationshipsDonut = ({
           ) {
             return (
               <WidgetDonut
-                data={props.stixRelationshipsDistribution}
+                data={props.stixRelationshipsDistribution as any[]}
                 groupBy={finalField}
                 withExport={withExportPopover}
                 readonly={isReadOnly}
