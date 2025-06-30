@@ -421,7 +421,6 @@ export const OPINION_INSTANCE = {
 } as unknown as StoreEntity;
 
 export const EXPECTED_OPINION = {
-
   id: 'opinion--0fe325be-7171-5696-a922-c9d15685c495',
   spec_version: '2.0',
   revoked: false,
@@ -446,6 +445,10 @@ export const EXPECTED_OPINION = {
   created_by_ref: 'identity--cfb1de38-c40a-5f51-81f3-35036a4e3b91',
   object_refs: [
     'note--2a80c942-1c85-5bb7-91d4-e92ed2b86fd8'
-  ]
-
+  ],
+  x_opencti_granted_refs: [
+    'identity--8cb00c79-ab20-5ed4-b37d-337241b96a29',
+  ],
+  x_opencti_files: [],
+  object_marking_refs: [],
 };
