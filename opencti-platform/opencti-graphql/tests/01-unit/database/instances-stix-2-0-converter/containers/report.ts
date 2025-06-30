@@ -650,7 +650,19 @@ export const EXPECTED_REPORT = {
     'marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34'
   ],
   object_refs: [
-    'credential--4a194ac7-4aef-57d5-9a64-1312da4e604a',
-    'threat-actor--fd6b0e6f-96e0-568d-ba24-8a140d0428cd'
-  ]
+    'threat-actor--fd6b0e6f-96e0-568d-ba24-8a140d0428cd',
+    'credential--4a194ac7-4aef-57d5-9a64-1312da4e604a'
+  ],
+  x_opencti_files: [
+    {
+      mime_type: 'application/json',
+      name: 'ipv4_example.json',
+      object_marking_refs: [
+        'marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34',
+      ],
+      uri: '/storage/get/import/Report/0c38a734-3150-468f-bf38-8dc1f937a1b3/ipv4_example.json',
+      version: '2025-06-26T14:33:39.655Z',
+    },
+  ],
+  x_opencti_granted_refs: [],
 };
