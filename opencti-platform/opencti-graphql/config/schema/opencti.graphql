@@ -12518,7 +12518,7 @@ enum StixRelationshipsOrdering {
 }
 type StixRelationshipConnection {
   pageInfo: PageInfo!
-  edges: [StixRelationshipEdge]
+  edges: [StixRelationshipEdge!]!
 }
 type StixRelationshipEdge {
   cursor: String!
@@ -12828,7 +12828,7 @@ enum StixRefRelationshipsOrdering {
 }
 type StixRefRelationshipConnection {
   pageInfo: PageInfo!
-  edges: [StixRefRelationshipEdge]
+  edges: [StixRefRelationshipEdge!]!
 }
 type StixRefRelationshipEdge {
   cursor: String!

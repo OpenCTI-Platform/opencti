@@ -27438,7 +27438,7 @@ export type StixRefRelationshipAddInput = {
 
 export type StixRefRelationshipConnection = {
   __typename?: 'StixRefRelationshipConnection';
-  edges?: Maybe<Array<Maybe<StixRefRelationshipEdge>>>;
+  edges: Array<StixRefRelationshipEdge>;
   pageInfo: PageInfo;
 };
 
@@ -27519,7 +27519,7 @@ export type StixRelationship = {
 
 export type StixRelationshipConnection = {
   __typename?: 'StixRelationshipConnection';
-  edges?: Maybe<Array<Maybe<StixRelationshipEdge>>>;
+  edges: Array<StixRelationshipEdge>;
   pageInfo: PageInfo;
 };
 
@@ -33571,13 +33571,13 @@ export type ResolversTypes = ResolversObject<{
   StixRef: ResolverTypeWrapper<Scalars['StixRef']['output']>;
   StixRefRelationship: ResolverTypeWrapper<Omit<StixRefRelationship, 'cases' | 'containers' | 'createdBy' | 'editContext' | 'from' | 'groupings' | 'notes' | 'objectMarking' | 'opinions' | 'reports' | 'to' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, from?: Maybe<ResolversTypes['StixObjectOrStixRelationshipOrCreator']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, to?: Maybe<ResolversTypes['StixObjectOrStixRelationshipOrCreator']>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   StixRefRelationshipAddInput: StixRefRelationshipAddInput;
-  StixRefRelationshipConnection: ResolverTypeWrapper<Omit<StixRefRelationshipConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['StixRefRelationshipEdge']>>> }>;
+  StixRefRelationshipConnection: ResolverTypeWrapper<Omit<StixRefRelationshipConnection, 'edges'> & { edges: Array<ResolversTypes['StixRefRelationshipEdge']> }>;
   StixRefRelationshipEdge: ResolverTypeWrapper<Omit<StixRefRelationshipEdge, 'node'> & { node: ResolversTypes['StixRefRelationship'] }>;
   StixRefRelationshipEditMutations: ResolverTypeWrapper<Omit<StixRefRelationshipEditMutations, 'contextPatch' | 'fieldPatch'> & { contextPatch?: Maybe<ResolversTypes['StixRefRelationship']>, fieldPatch?: Maybe<ResolversTypes['StixRefRelationship']> }>;
   StixRefRelationshipsAddInput: StixRefRelationshipsAddInput;
   StixRefRelationshipsOrdering: StixRefRelationshipsOrdering;
   StixRelationship: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['StixRelationship']>;
-  StixRelationshipConnection: ResolverTypeWrapper<Omit<StixRelationshipConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['StixRelationshipEdge']>>> }>;
+  StixRelationshipConnection: ResolverTypeWrapper<Omit<StixRelationshipConnection, 'edges'> & { edges: Array<ResolversTypes['StixRelationshipEdge']> }>;
   StixRelationshipEdge: ResolverTypeWrapper<Omit<StixRelationshipEdge, 'node'> & { node: ResolversTypes['StixRelationship'] }>;
   StixRelationshipEditMutations: ResolverTypeWrapper<StixRelationshipEditMutations>;
   StixRelationshipRefSchema: ResolverTypeWrapper<StixRelationshipRefSchema>;
@@ -34430,12 +34430,12 @@ export type ResolversParentTypes = ResolversObject<{
   StixRef: Scalars['StixRef']['output'];
   StixRefRelationship: Omit<StixRefRelationship, 'cases' | 'containers' | 'createdBy' | 'editContext' | 'from' | 'groupings' | 'notes' | 'objectMarking' | 'opinions' | 'reports' | 'to' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, from?: Maybe<ResolversParentTypes['StixObjectOrStixRelationshipOrCreator']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, to?: Maybe<ResolversParentTypes['StixObjectOrStixRelationshipOrCreator']>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   StixRefRelationshipAddInput: StixRefRelationshipAddInput;
-  StixRefRelationshipConnection: Omit<StixRefRelationshipConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['StixRefRelationshipEdge']>>> };
+  StixRefRelationshipConnection: Omit<StixRefRelationshipConnection, 'edges'> & { edges: Array<ResolversParentTypes['StixRefRelationshipEdge']> };
   StixRefRelationshipEdge: Omit<StixRefRelationshipEdge, 'node'> & { node: ResolversParentTypes['StixRefRelationship'] };
   StixRefRelationshipEditMutations: Omit<StixRefRelationshipEditMutations, 'contextPatch' | 'fieldPatch'> & { contextPatch?: Maybe<ResolversParentTypes['StixRefRelationship']>, fieldPatch?: Maybe<ResolversParentTypes['StixRefRelationship']> };
   StixRefRelationshipsAddInput: StixRefRelationshipsAddInput;
   StixRelationship: ResolversInterfaceTypes<ResolversParentTypes>['StixRelationship'];
-  StixRelationshipConnection: Omit<StixRelationshipConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['StixRelationshipEdge']>>> };
+  StixRelationshipConnection: Omit<StixRelationshipConnection, 'edges'> & { edges: Array<ResolversParentTypes['StixRelationshipEdge']> };
   StixRelationshipEdge: Omit<StixRelationshipEdge, 'node'> & { node: ResolversParentTypes['StixRelationship'] };
   StixRelationshipEditMutations: StixRelationshipEditMutations;
   StixRelationshipRefSchema: StixRelationshipRefSchema;
@@ -42928,7 +42928,7 @@ export type StixRefRelationshipResolvers<ContextType = any, ParentType extends R
 }>;
 
 export type StixRefRelationshipConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixRefRelationshipConnection'] = ResolversParentTypes['StixRefRelationshipConnection']> = ResolversObject<{
-  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixRefRelationshipEdge']>>>, ParentType, ContextType>;
+  edges?: Resolver<Array<ResolversTypes['StixRefRelationshipEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -42975,7 +42975,7 @@ export type StixRelationshipResolvers<ContextType = any, ParentType extends Reso
 }>;
 
 export type StixRelationshipConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixRelationshipConnection'] = ResolversParentTypes['StixRelationshipConnection']> = ResolversObject<{
-  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixRelationshipEdge']>>>, ParentType, ContextType>;
+  edges?: Resolver<Array<ResolversTypes['StixRelationshipEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;

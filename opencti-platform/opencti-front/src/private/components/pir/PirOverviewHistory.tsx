@@ -109,8 +109,6 @@ const PirOverviewHistory = ({ dataHistory, dataPir }: PirOverviewHistoryProps) =
   const { logs } = useFragment(pirHistoryFragment, dataHistory);
   const history = (logs?.edges ?? []).flatMap((e) => e?.node ?? []);
 
-  console.log(history);
-
   const getIconConfig = ({ event_scope, context_data }: typeof history[0]) => {
     if (event_scope === 'create') return HISTORY_ICON_CONFIG.create;
     if (event_scope === 'merge') return HISTORY_ICON_CONFIG.merge;

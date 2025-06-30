@@ -7729,7 +7729,7 @@ enum StixRelationshipsOrdering {
 
 type StixRelationshipConnection {
   pageInfo: PageInfo!
-  edges: [StixRelationshipEdge]
+  edges: [StixRelationshipEdge!]!
 }
 
 type StixRelationshipEdge {
@@ -8013,7 +8013,7 @@ enum StixRefRelationshipsOrdering {
 
 type StixRefRelationshipConnection {
   pageInfo: PageInfo!
-  edges: [StixRefRelationshipEdge]
+  edges: [StixRefRelationshipEdge!]!
 }
 
 type StixRefRelationshipEdge {

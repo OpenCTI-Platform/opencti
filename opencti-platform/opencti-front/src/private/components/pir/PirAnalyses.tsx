@@ -1,12 +1,10 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { PirAnalysesContainersListQuery, PirAnalysesContainersListQuery$variables } from '@components/pir/__generated__/PirAnalysesContainersListQuery.graphql';
 import { PirAnalyses_ContainersFragment$data } from '@components/pir/__generated__/PirAnalyses_ContainersFragment.graphql';
-import { PirAnalysesEntitiesSourcesFlaggedListQuery } from '@components/pir/__generated__/PirAnalysesEntitiesSourcesFlaggedListQuery.graphql';
+import { PirAnalysesRelationshipsSourcesFlaggedListQuery } from '@components/pir/__generated__/PirAnalysesRelationshipsSourcesFlaggedListQuery.graphql';
 import React from 'react';
-import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, isFilterGroupNotEmpty, sanitizeFilterGroupKeysForBackend, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-
-import { PaginationOptions } from '../../../components/list_lines';
 import { FilterGroup } from '../../../utils/filters/filtersHelpers-types';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import useAuth from '../../../utils/hooks/useAuth';
@@ -14,22 +12,29 @@ import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import DataTable from '../../../components/dataGrid/DataTable';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 
-const pirAnalysesEntitiesSourcesFlaggedListQuery = graphql`
-  query PirAnalysesEntitiesSourcesFlaggedListQuery(
+const pirAnalysesRelationshipsSourcesFlaggedListQuery = graphql`
+  query PirAnalysesRelationshipsSourcesFlaggedListQuery(
     $count: Int!
-    $orderBy: StixCoreObjectsOrdering
+    $orderBy: StixRefRelationshipsOrdering
     $orderMode: OrderingMode
-    $filters: FilterGroup
+    $relationship_type: [String]
+    $toId: StixRef
   ) {
-    stixCoreObjects(
+    stixRefRelationships(
       first: $count
       orderBy: $orderBy
       orderMode: $orderMode
-      filters: $filters
+      relationship_type: $relationship_type
+      toId: $toId
     ) {
       edges {
         node {
           id
+          from {
+            ... on StixCoreObject {
+              id
+            }
+          }
         }
       }
       pageInfo {
@@ -116,7 +121,7 @@ const pirAnalysesContainersListQuery = graphql`
 
 interface PirAnalysesContentProps {
   pirId: string,
-  flaggedEntitiesQueryRef: PreloadedQuery<PirAnalysesEntitiesSourcesFlaggedListQuery>,
+  flaggedEntitiesQueryRef: PreloadedQuery<PirAnalysesRelationshipsSourcesFlaggedListQuery>,
 }
 
 const PirAnalysesContent = ({
@@ -124,11 +129,13 @@ const PirAnalysesContent = ({
   flaggedEntitiesQueryRef,
 }: PirAnalysesContentProps) => {
   // fetch 100 top flagged entities ids
-  const { stixCoreObjects } = usePreloadedQuery<PirAnalysesEntitiesSourcesFlaggedListQuery>(
-    pirAnalysesEntitiesSourcesFlaggedListQuery,
+  const { stixRefRelationships } = usePreloadedQuery<PirAnalysesRelationshipsSourcesFlaggedListQuery>(
+    pirAnalysesRelationshipsSourcesFlaggedListQuery,
     flaggedEntitiesQueryRef,
   );
-  const flaggedIds = stixCoreObjects?.edges.map((n) => n.node.id) ?? [];
+  const flaggedIds = (stixRefRelationships?.edges
+    .map((n) => n.node.from?.id)
+    .filter((n) => !!n) ?? []) as string[];
 
   // query to fetch containers containing those ids
   const LOCAL_STORAGE_KEY = `PirAnalysesContainersList-${pirId}`;
@@ -140,7 +147,7 @@ const PirAnalysesContent = ({
     openExports: false,
   };
 
-  const localStorage = usePaginationLocalStorage<PaginationOptions>(
+  const localStorage = usePaginationLocalStorage<PirAnalysesContainersListQuery$variables>(
     LOCAL_STORAGE_KEY,
     initialValues,
   );
@@ -154,7 +161,7 @@ const PirAnalysesContent = ({
       { key: 'objects',
         operator: 'eq',
         mode: 'and',
-        values: [flaggedIds],
+        values: flaggedIds,
       },
     ],
     filterGroups: filters && isFilterGroupNotEmpty(filters)
@@ -163,7 +170,8 @@ const PirAnalysesContent = ({
   };
   const queryPaginationOptions: PirAnalysesContainersListQuery$variables = {
     ...paginationOptions,
-    filters: contextFilters,
+    count: 100,
+    filters: sanitizeFilterGroupKeysForBackend(contextFilters),
   };
 
   const queryRef = useQueryLoading<PirAnalysesContainersListQuery>(
@@ -223,29 +231,15 @@ interface PirAnalysesProps {
 const PirAnalyses = ({
   pirId,
 }: PirAnalysesProps) => {
-  const filters: FilterGroup = {
-    mode: 'and',
-    filters: [
-      { key: 'regardingOf',
-        operator: 'eq',
-        mode: 'and',
-        values: [
-          { key: 'id', values: [pirId], operator: 'eq', mode: 'or' },
-          { key: 'relationship_type', values: ['in-pir'], operator: 'eq', mode: 'or' },
-        ],
-      },
-    ],
-    filterGroups: [],
-  };
-
   // query to fetch the 100 last flagged entities
-  const flaggedEntitiesQueryRef = useQueryLoading<PirAnalysesEntitiesSourcesFlaggedListQuery>(
-    pirAnalysesEntitiesSourcesFlaggedListQuery,
+  const flaggedEntitiesQueryRef = useQueryLoading<PirAnalysesRelationshipsSourcesFlaggedListQuery>(
+    pirAnalysesRelationshipsSourcesFlaggedListQuery,
     {
       count: 100,
-      orderBy: 'created_at',
+      orderBy: 'modified',
       orderMode: 'desc',
-      filters,
+      relationship_type: ['in-pir'],
+      toId: pirId,
     },
   );
 
