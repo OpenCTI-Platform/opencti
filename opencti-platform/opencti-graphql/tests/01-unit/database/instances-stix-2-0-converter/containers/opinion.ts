@@ -208,10 +208,10 @@ export const OPINION_INSTANCE = {
       ],
       x_opencti_stix_ids: [],
       created_at: '2025-06-26T15:32:54.228Z',
-      updated_at: '2025-06-26T15:36:24.276Z',
+      updated_at: '2025-06-30T16:18:03.687Z',
       revoked: false,
       lang: 'en',
-      modified: '2025-06-26T15:36:24.276Z',
+      modified: '2025-06-30T16:18:03.687Z',
       base_type: 'ENTITY',
       parent_types: [
         'Basic-Object',
@@ -255,6 +255,12 @@ export const OPINION_INSTANCE = {
           user_id: '6a4b11e1-90ca-4e42-ba42-db7bc7f7d505',
           confidence: 100,
           name: 'opinions_metrics'
+        },
+        {
+          updated_at: '2025-06-30T16:18:03.565Z',
+          user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
+          confidence: 100,
+          name: 'createdBy'
         }
       ],
       opinions_metrics: {
@@ -415,5 +421,31 @@ export const OPINION_INSTANCE = {
 } as unknown as StoreEntity;
 
 export const EXPECTED_OPINION = {
+
+  id: 'opinion--0fe325be-7171-5696-a922-c9d15685c495',
+  spec_version: '2.0',
+  revoked: false,
+  confidence: 75,
+  created: '2025-06-26T15:36:22.864Z',
+  modified: '2025-06-26T15:37:27.254Z',
+  explanation: 'my opinion',
+  opinion: 'agree',
+  labels: [
+    'opinion'
+  ],
+  external_references: [
+    {
+      source_name: 'mitre-attack',
+      url: 'https://attack.mitre.org/groups/G0096',
+      external_id: 'G0096'
+    }
+  ],
+  x_opencti_id: '2a2d3e3e-a767-4184-aca1-a11e1d557d05',
+  x_opencti_type: 'Opinion',
+  type: 'opinion',
+  created_by_ref: 'identity--cfb1de38-c40a-5f51-81f3-35036a4e3b91',
+  object_refs: [
+    'note--2a80c942-1c85-5bb7-91d4-e92ed2b86fd8'
+  ]
 
 };
