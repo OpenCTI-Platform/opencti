@@ -66,7 +66,7 @@ const RootDashboard = () => {
                     path="/"
                     element={
                       <Dashboard
-                        workspace={props.workspace}
+                        data={props.workspace}
                         settings={props.settings}
                       />
                         }

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import * as R from 'ramda';
-import { createFragmentContainer, graphql } from 'react-relay';
+import { graphql, useFragment } from 'react-relay';
 import RGL, { WidthProvider } from 'react-grid-layout';
 import Paper from '@mui/material/Paper';
 import { v4 as uuid } from 'uuid';
@@ -19,8 +19,6 @@ import { fromB64, toB64 } from '../../../../utils/String';
 import { ErrorBoundary } from '../../Error';
 import { deserializeDashboardManifestForFrontend, serializeDashboardManifestForBackend } from '../../../../utils/filters/filtersUtils';
 
-const COL_WIDTH = 30;
-
 const dashboardLayoutMutation = graphql`
   mutation DashboardLayoutMutation($id: ID!, $input: [EditInput!]!) {
     workspaceFieldPatch(id: $id, input: $input) {
@@ -29,13 +27,39 @@ const dashboardLayoutMutation = graphql`
   }
 `;
 
-const DashboardComponent = ({ workspace, noToolbar }) => {
+const dashboardFragment = graphql`
+  fragment Dashboard_workspace on Workspace {
+    id
+    type
+    name
+    description
+    manifest
+    tags
+    owner {
+      id
+      name
+      entity_type
+    }
+    currentUserAccessRight
+    ...WorkspaceManageAccessDialog_authorizedMembers
+    ...WorkspaceEditionContainer_workspace
+  }
+`;
+
+const DashboardComponent = ({ data, noToolbar }) => {
+  const workspace = useFragment(dashboardFragment, data);
   const ReactGridLayout = useMemo(() => WidthProvider(RGL), []);
   const theme = useTheme();
 
   const [deleting, setDeleting] = useState(false);
   const [idToResize, setIdToResize] = useState();
   const handleResize = (updatedWidget) => setIdToResize(updatedWidget);
+
+  const userHasEditAccess = workspace.currentUserAccessRight === 'admin'
+    || workspace.currentUserAccessRight === 'edit';
+  const userHasUpdateCapa = useGranted([EXPLORE_EXUPDATE]);
+  const userCanEdit = userHasEditAccess && userHasUpdateCapa;
+  const isWrite = userCanEdit && !noToolbar;
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -46,27 +70,53 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
     };
   }, []);
 
+  // Map of widget layouts, refreshed when workspace is updated (thanks to useMemo below).
+  // We use a local map of layouts to avoid a lot of computation when only changing position
+  // or dimension of widgets.
+  const [widgetsLayouts, setWidgetsLayouts] = useState({});
+
+  // Deserialized manifest, refreshed when workspace is updated.
   const manifest = useMemo(() => {
     return workspace.manifest && workspace.manifest.length > 0
       ? deserializeDashboardManifestForFrontend(fromB64(workspace.manifest))
       : { widgets: {}, config: {} };
   }, [workspace]);
 
-  const widgets = useMemo(() => {
-    return Object.values(manifest.widgets).map((widget) => widget);
+  // Array of all widgets, refreshed when workspace is updated.
+  const widgetsArray = useMemo(() => {
+    const widgets = Object.values(manifest.widgets).map((widget) => widget);
+    // Sync our local layouts.
+    setWidgetsLayouts(
+      widgets.reduce((res, widget) => {
+        res[widget.id] = widget.layout;
+        return res;
+      }, {}),
+    );
+    return widgets;
   }, [manifest]);
 
-  const userHasEditAccess = workspace.currentUserAccessRight === 'admin'
-    || workspace.currentUserAccessRight === 'edit';
-  const userHasUpdateCapa = useGranted([EXPLORE_EXUPDATE]);
-  const userCanEdit = userHasEditAccess && userHasUpdateCapa;
-  const isWrite = userCanEdit && !noToolbar;
+  const saveManifest = (newManifest, opts = { layouts: widgetsLayouts, noRefresh: false }) => {
+    const { layouts, noRefresh } = opts;
+    // Need to sync manifest with local layouts before sending for update.
+    // A desync occurs when resizing or moving a widget because in those cases
+    // we skip a complete reload to avoid performance issue.
+    const syncWidgets = Object.values(newManifest.widgets).reduce((res, widget) => {
+      const localLayout = layouts[widget.id];
+      res[widget.id] = {
+        ...widget,
+        layout: localLayout || widget.layout,
+      };
+      return res;
+    }, {});
+    const manifestToSave = {
+      ...newManifest,
+      widgets: syncWidgets,
+    };
 
-  const saveManifest = (newManifest, noRefresh = false) => {
-    const strManifest = serializeDashboardManifestForBackend(newManifest);
+    const strManifest = serializeDashboardManifestForBackend(manifestToSave);
     const newManifestEncoded = toB64(strManifest);
     // Sometimes (in case of layout adjustment) we do not want to re-fetch
-    // all the manifest because widgets data is still the same and it's costly
+    // all the manifest because widgets data is still the same, and it's costly
     // in performance.
     const mutation = noRefresh ? dashboardLayoutMutation : workspaceMutationFieldPatch;
     if (workspace.manifest !== newManifestEncoded) {
@@ -78,6 +128,9 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
             key: 'manifest',
             value: newManifestEncoded,
           },
+        },
+        onCompleted: () => {
+          setDeleting(false);
         },
       });
     }
@@ -104,39 +157,30 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
     saveManifest(newManifest);
   };
 
-  const getMaxY = () => {
-    return Object.values(manifest.widgets).reduce(
-      (max, n) => (n.layout.y > max ? n.layout.y : max),
-      0,
-    );
+  const getNextRow = () => {
+    return Object.values(widgetsArray).reduce((max, { layout }) => {
+      const widgetEndRow = layout.y + layout.h;
+      return widgetEndRow > max ? widgetEndRow : max;
+    }, 0);
   };
 
-  const getMaxX = () => {
-    const y = getMaxY();
-    const maxX = Object.values(manifest.widgets)
-      .filter((n) => n.layout.y === y)
-      .reduce((max, n) => (n.layout.x > max ? n.layout.x : max), 0);
-    return maxX + 4;
-  };
-
-  const handleAddWidget = (widgetManifest) => {
-    let maxX = getMaxX();
-    let maxY = getMaxY();
-    if (maxX >= COL_WIDTH - 4) {
-      maxX = 0;
-      maxY += 2;
-    }
-    const newManifest = {
+  const handleAddWidget = (widgetConfig) => {
+    saveManifest({
       ...manifest,
       widgets: {
         ...manifest.widgets,
-        [widgetManifest.id]: {
-          ...widgetManifest,
-          layout: { i: widgetManifest.id, x: maxX, y: maxY, w: 4, h: 2 },
+        [widgetConfig.id]: {
+          ...widgetConfig,
+          layout: {
+            i: widgetConfig.id,
+            x: 0,
+            y: getNextRow(),
+            w: 4,
+            h: 2,
+          },
         },
       },
-    };
-    saveManifest(newManifest);
+    });
   };
 
   const handleUpdateWidget = (widgetManifest) => {
@@ -149,36 +193,32 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
 
   const handleDeleteWidget = (widgetId) => {
     setDeleting(true);
-    const newManifest = R.assoc(
-      'widgets',
-      R.dissoc(widgetId, manifest.widgets),
-      manifest,
-    );
-    saveManifest(newManifest);
+    const newWidgets = { ...manifest.widgets };
+    delete newWidgets[widgetId];
+    saveManifest({
+      ...manifest,
+      widgets: newWidgets,
+    });
   };
 
-  const handleDuplicateWidget = (widgetManifest) => {
-    const newId = uuid();
-    const newManifest = R.assoc(
-      'widgets',
-      R.assoc(newId, R.assoc('id', newId, widgetManifest), manifest.widgets),
-      manifest,
-    );
-    saveManifest(newManifest);
+  const handleDuplicateWidget = (widgetToDuplicate) => {
+    handleAddWidget({
+      ...widgetToDuplicate,
+      id: uuid(),
+    });
   };
 
   const onLayoutChange = (layouts) => {
     if (!deleting) {
-      const layoutsObject = R.indexBy(R.prop('i'), layouts);
-      const newManifest = R.assoc(
-        'widgets',
-        R.map(
-          (n) => R.assoc('layout', layoutsObject[n.id], n),
-          manifest.widgets,
-        ),
-        manifest,
-      );
-      saveManifest(newManifest, true);
+      const newLayouts = layouts.reduce((res, layout) => {
+        res[layout.i] = layout;
+        return res;
+      }, {});
+      setWidgetsLayouts(newLayouts);
+      // Triggering a manifest save with the same manifest.
+      // As this function makes a sync between manifest and local layouts
+      // it will make the update of layouts modification.
+      saveManifest(manifest, { layouts: newLayouts, noRefresh: true });
     }
   };
 
@@ -227,11 +267,12 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
         onResizeStart={userCanEdit ? (_, { i }) => handleResize(i) : undefined}
         onResizeStop={userCanEdit ? handleResize : undefined}
       >
-        {widgets.map((widget) => {
+        {widgetsArray.map((widget) => {
+          if (!widgetsLayouts[widget.id]) return null;
           return (
             <Paper
               key={widget.id}
-              data-grid={widget.layout}
+              data-grid={widgetsLayouts[widget.id]}
               style={paperStyle}
               variant="outlined"
             >
@@ -283,23 +324,4 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
   );
 };
 
-export default createFragmentContainer(DashboardComponent, {
-  workspace: graphql`
-    fragment Dashboard_workspace on Workspace {
-      id
-      type
-      name
-      description
-      manifest
-      tags
-      owner {
-        id
-        name
-        entity_type
-      }
-      currentUserAccessRight
-      ...WorkspaceManageAccessDialog_authorizedMembers
-      ...WorkspaceEditionContainer_workspace
-    }
-  `,
-});
+export default DashboardComponent;
