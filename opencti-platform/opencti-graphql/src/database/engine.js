@@ -1633,7 +1633,7 @@ export const computeQueryIndices = (indices, typeOrTypes, withInferences = true)
 export const elFindByIds = async (context, user, ids, opts = {}) => {
   const { indices, baseData = false, baseFields = BASE_FIELDS } = opts;
   const { withoutRels = false, toMap = false, mapWithAllIds = false, type = null } = opts;
-  const { orderBy = 'created_at', orderMode = 'asc' } = opts;
+  const { orderBy = null, orderMode = 'asc' } = opts;
   const idsArray = Array.isArray(ids) ? ids : [ids];
   const types = (Array.isArray(type) || isEmptyField(type)) ? type : [type];
   const processIds = R.filter((id) => isNotEmptyField(id), idsArray);
@@ -1662,6 +1662,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     };
     mustTerms.push(should);
     if (types && types.length > 0) {
+      // No cache management is possible, just put the type in the filtering
       const shouldType = {
         bool: {
           should: [
@@ -1680,14 +1681,22 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     // Handle draft
     const draftMust = buildDraftFilter(context, user, opts);
     const body = {
-      sort: [{ [orderBy]: orderMode }],
       query: {
         bool: {
-          must: [...mustTerms, ...draftMust],
-          must_not: markingRestrictions.must_not,
-        },
+          // Put everything under filter to prevent score computation
+          // Search without score when no sort is applied is faster
+          filter: [{
+            bool: {
+              must: [...mustTerms, ...draftMust],
+              must_not: markingRestrictions.must_not,
+            },
+          }]
+        }
       },
     };
+    if (isNotEmptyField(orderBy)) {
+      body.sort = [{ [orderBy]: orderMode }];
+    }
     let searchAfter;
     let hasNextPage = true;
     while (hasNextPage) {
@@ -1697,10 +1706,11 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
       const query = {
         index: computedIndices,
         size: ES_MAX_PAGINATION,
+        track_total_hits: false,
         _source: baseData ? baseFields : true,
         body,
       };
-      logApp.debug('[SEARCH] elInternalLoadById', { query });
+      logApp.debug('[SEARCH] elFindByIds', { query });
       const searchType = `${ids} (${types ? types.join(', ') : 'Any'})`;
       const data = await elRawSearch(context, user, searchType, query).catch((err) => {
         throw DatabaseError('Find direct ids fail', { cause: err, query });
@@ -3077,13 +3087,13 @@ const elQueryBodyBuilder = async (context, user, options) => {
   let scoreSearchOrder = orderMode;
   if (search !== null && search.length > 0) {
     const shouldSearch = elGenerateFullTextSearchShould(search, options);
-    const bool = {
+    const searchBool = {
       bool: {
         should: shouldSearch,
         minimum_should_match: 1,
       },
     };
-    mustFilters.push(bool);
+    mustFilters.push(searchBool);
     // When using a search, force a score ordering if nothing specified
     if (orderCriterion.length === 0) {
       orderCriterion.unshift('_score');
@@ -3102,10 +3112,6 @@ const elQueryBodyBuilder = async (context, user, options) => {
         ordering = R.append(sortingForCriteria, ordering);
       }
     }
-    // Add standard_id if not specify to ensure ordering uniqueness
-    if (!orderCriterion.includes('standard_id')) {
-      ordering.push({ 'standard_id.keyword': 'asc' });
-    }
     // Build runtime mappings
     const runtime = RUNTIME_ATTRIBUTES[orderBy];
     if (isNotEmptyField(runtime)) {
@@ -3116,9 +3122,9 @@ const elQueryBodyBuilder = async (context, user, options) => {
         script: { source, params },
       };
     }
-  } else { // If not ordering criteria, order by standard_id
-    ordering.push({ 'standard_id.keyword': 'asc' });
   }
+  // Add _doc as default order
+  ordering.push({ _doc: 'asc' });
   // Handle draft
   const draftMust = buildDraftFilter(context, user, options);
   // Build query
@@ -3449,7 +3455,7 @@ export const elAggregationsList = async (context, user, indexName, aggregations,
   }
   const query = {
     index: getIndicesToQuery(context, user, indexName),
-    track_total_hits: true,
+    track_total_hits: false,
     _source: false,
     body,
   };

@@ -158,7 +158,7 @@ const initActivityManager = () => {
       lock = await lockResources([ACTIVITY_ENGINE_KEY], { retryCount: 0 });
       running = true;
       logApp.info('[OPENCTI-MODULE] Running activity manager');
-      const streamOpts = { streamName: ACTIVITY_STREAM_NAME };
+      const streamOpts = { streamName: ACTIVITY_STREAM_NAME, bufferTime: 5000 };
       streamProcessor = createStreamProcessor(SYSTEM_USER, 'Activity manager', activityStreamHandler, streamOpts);
       await streamProcessor.start(lastEventId);
       while (!shutdown && streamProcessor.running()) {

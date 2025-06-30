@@ -8,7 +8,7 @@ import type { ChainableCommander } from 'ioredis/built/utils/RedisCommander';
 import type { ClusterOptions } from 'ioredis/built/cluster/ClusterOptions';
 import type { SentinelConnectionOptions } from 'ioredis/built/connectors/SentinelConnector';
 import conf, { booleanConf, configureCA, DEV_MODE, getStoppingState, loadCert, logApp, REDIS_PREFIX } from '../config/conf';
-import { asyncListTransformation, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, isNotEmptyField, waitInSec } from './utils';
+import { asyncListTransformation, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, isNotEmptyField, wait, waitInSec } from './utils';
 import { isStixExportableData } from '../schema/stixCoreObject';
 import { DatabaseError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { mergeDeepRightAll, now, utcDate } from '../utils/format';
@@ -29,6 +29,7 @@ import { enrichWithRemoteCredentials } from '../config/credentials';
 import { getDraftContext } from '../utils/draftContext';
 import type { ExclusionListCacheItem } from './exclusionListCache';
 import { refreshLocalCacheForEntity } from './cache';
+import { asyncMap } from '../utils/data-processing';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => loadCert(path));
@@ -675,12 +676,11 @@ export const fetchStreamInfo = async () => {
 };
 
 const processStreamResult = async (results: Array<any>, callback: any, withInternal: boolean | undefined) => {
-  const streamData = R.map((r) => mapStreamToJS(r), results);
-  const filteredEvents = streamData.filter((s) => {
-    return withInternal ? true : (s.data.scope ?? 'external') === 'external';
-  });
-  const lastEventId = filteredEvents.length > 0 ? R.last(filteredEvents)?.id : `${new Date().valueOf()}-0`;
-  await callback(filteredEvents, lastEventId);
+  const transform = (r: any) => mapStreamToJS(r);
+  const filter = (s: any) => (withInternal ? true : (s.data.scope ?? 'external') === 'external');
+  const events = await asyncMap(results, transform, filter);
+  const lastEventId = events.length > 0 ? R.last(events)?.id : `${new Date().valueOf()}-0`;
+  await callback(events, lastEventId);
   return lastEventId;
 };
 
@@ -696,13 +696,14 @@ export interface StreamProcessor {
 
 interface StreamOption {
   withInternal?: boolean;
+  bufferTime?: number;
   autoReconnect?: boolean;
   streamName?: string;
   streamBatchTime?: number
 }
 
 export const createStreamProcessor = <T extends BaseEvent> (
-  user: AuthUser,
+  _user: AuthUser,
   provider: string,
   callback: (events: Array<SseEvent<T>>, lastEventId: string) => void,
   opts: StreamOption = {}
@@ -740,10 +741,11 @@ export const createStreamProcessor = <T extends BaseEvent> (
       } else {
         await processStreamResult([], callback, opts.withInternal);
       }
+      await wait(opts.bufferTime ?? 50);
     } catch (err) {
       logApp.error('Redis stream consume fail', { cause: err, provider });
       if (opts.autoReconnect) {
-        await waitInSec(2);
+        await waitInSec(5);
       } else {
         return false;
       }

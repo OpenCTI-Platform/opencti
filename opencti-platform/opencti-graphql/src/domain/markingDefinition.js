@@ -136,7 +136,7 @@ export const markingDefinitionDeleteAndUpdateGroups = async (context, user, mark
   const element = await deleteElementById(context, user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION, opts);
   // users of group impacted must be refreshed
   await notifyMembersOfNewMarking(context, user, element);
-  return markingDefinitionId;
+  return notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].DELETE_TOPIC, element, user).then(() => markingDefinitionId);
 };
 
 export const markingDefinitionEditField = async (context, user, markingDefinitionId, input, opts = {}) => {
