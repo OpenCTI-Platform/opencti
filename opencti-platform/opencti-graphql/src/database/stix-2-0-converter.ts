@@ -5,7 +5,9 @@ import type * as SMO from '../types/stix-2-0-smo';
 import { INPUT_CREATED_BY, INPUT_EXTERNAL_REFS, INPUT_GRANTED_REFS, INPUT_KILLCHAIN, INPUT_LABELS, INPUT_MARKINGS, INPUT_OBJECTS } from '../schema/general';
 import { INPUT_OPERATING_SYSTEM, INPUT_SAMPLE } from '../schema/stixRefRelationship';
 import {
+  ENTITY_TYPE_CONTAINER_NOTE,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
+  ENTITY_TYPE_CONTAINER_OPINION,
   ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_DATA_COMPONENT,
   ENTITY_TYPE_DATA_SOURCE,
@@ -163,6 +165,19 @@ export const convertReportToStix = (instance: StoreEntity, type: string): SDO.St
   };
 };
 
+export const convertNoteToStix = (instance: StoreEntity, type: string): SDO.StixNote => {
+  assertType(ENTITY_TYPE_CONTAINER_NOTE, type);
+  const note = buildStixDomain(instance);
+  return {
+    ...note,
+    abstract: instance.attribute_abstract,
+    content: instance.content,
+    object_refs: convertObjectReferences(instance),
+    note_types: instance.note_types,
+    likelihood: instance.likelihood,
+  };
+};
+
 export const convertObservedDataToStix = (instance: StoreEntity, type: string): SDO.StixObservedData => {
   assertType(ENTITY_TYPE_CONTAINER_OBSERVED_DATA, type);
   const observedData = buildStixDomain(instance);
@@ -171,6 +186,17 @@ export const convertObservedDataToStix = (instance: StoreEntity, type: string): 
     first_observed: convertToStixDate(instance.first_observed),
     last_observed: convertToStixDate(instance.last_observed),
     number_observed: instance.number_observed,
+    object_refs: convertObjectReferences(instance),
+  };
+};
+
+export const convertOpinionToStix = (instance: StoreEntity, type: string): SDO.StixOpinion => {
+  assertType(ENTITY_TYPE_CONTAINER_OPINION, type);
+  const opinion = buildStixDomain(instance);
+  return {
+    ...opinion,
+    explanation: instance.explanation,
+    opinion: instance.opinion,
     object_refs: convertObjectReferences(instance),
   };
 };

@@ -403,7 +403,7 @@ export const EXPECTED_NOTE = {
   revoked: false,
   confidence: 100,
   created: '2025-06-26T15:32:23.000Z',
-  modified: '2025-06-26T15:36:24.276Z',
+  modified: '2025-06-26T15:33:21.426Z',
   content: 'with description:',
   note_types: [
     'analysis'
@@ -429,5 +429,17 @@ export const EXPECTED_NOTE = {
   object_refs: [
     'domain-name--c9d852bc-ec1b-57c8-b013-32f0f402f7a8'
   ],
-  abstract: 'this is a new note'
+  abstract: 'this is a new note',
+  x_opencti_files: [
+    {
+      mime_type: 'application/json',
+      name: 'ipv4_example.json',
+      object_marking_refs: [
+        'marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34',
+      ],
+      uri: '/storage/get/import/Note/b9aca079-0a66-4efd-a481-71b1ce745a3a/ipv4_example.json',
+      version: '2025-06-26T15:32:54.229Z',
+    },
+  ],
+  x_opencti_granted_refs: [],
 };
