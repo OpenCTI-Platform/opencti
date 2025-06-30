@@ -58,6 +58,7 @@ export const workbenchLineFragment = graphql`
     works {
       id
     }
+    ...FileWork_file
   }
 `;
 
