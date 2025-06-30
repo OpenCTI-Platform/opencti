@@ -8,16 +8,10 @@ import type { ChainableCommander } from 'ioredis/built/utils/RedisCommander';
 import type { ClusterOptions } from 'ioredis/built/cluster/ClusterOptions';
 import type { SentinelConnectionOptions } from 'ioredis/built/connectors/SentinelConnector';
 import conf, { booleanConf, configureCA, DEV_MODE, getStoppingState, loadCert, logApp, REDIS_PREFIX } from '../config/conf';
+import { asyncListTransformation, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, isNotEmptyField, waitInSec } from './utils';
 import { isStixExportableData } from '../schema/stixCoreObject';
 import { DatabaseError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { mergeDeepRightAll, now, utcDate } from '../utils/format';
-import type { EditContext } from '../generated/graphql';
-import { telemetry } from '../config/tracing';
-import { filterEmpty } from '../types/type-utils';
-import { INPUT_OBJECTS } from '../schema/general';
-import { enrichWithRemoteCredentials } from '../config/credentials';
-import { getDraftContext } from '../utils/draftContext';
-import { asyncListTransformation, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, isNotEmptyField, waitInSec } from './utils';
 import { convertStoreToStix } from './stix-2-1-converter';
 import type { BasicStoreCommon, StoreObject, StoreRelation } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -35,9 +29,15 @@ import type {
   UpdateEventOpts
 } from '../types/event';
 import type { StixCoreObject } from '../types/stix-2-1-common';
+import type { EditContext } from '../generated/graphql';
+import { telemetry } from '../config/tracing';
+import { filterEmpty } from '../types/type-utils';
 import type { ClusterConfig } from '../types/clusterConfig';
 import type { ExecutionEnvelop } from '../types/playbookExecution';
 import { generateCreateMessage, generateDeleteMessage, generateMergeMessage, generateRestoreMessage } from './generate-message';
+import { INPUT_OBJECTS } from '../schema/general';
+import { enrichWithRemoteCredentials } from '../config/credentials';
+import { getDraftContext } from '../utils/draftContext';
 import type { ExclusionListCacheItem } from './exclusionListCache';
 import { refreshLocalCacheForEntity } from './cache';
 
