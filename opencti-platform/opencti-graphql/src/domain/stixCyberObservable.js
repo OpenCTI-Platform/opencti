@@ -45,7 +45,6 @@ import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { uploadToStorage } from '../database/file-storage-helper';
 import { isNumericAttribute } from '../schema/schema-attributes';
-import { lowerCaseObservablesTypes } from '../schema/identifier';
 
 export const findById = (context, user, stixCyberObservableId) => {
   return storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
@@ -197,7 +196,8 @@ export const addStixCyberObservable = async (context, user, input) => {
     throw FunctionalError(`Expecting variable ${graphQLType} in the input, got nothing.`);
   }
   checkScore(x_opencti_score);
-  if (lowerCaseObservablesTypes.includes(type) && input[graphQLType].value) {
+  const lowerCaseTypes = ['Domain-Name', 'Email-Addr'];
+  if (lowerCaseTypes.includes(type) && input[graphQLType].value) {
     // eslint-disable-next-line no-param-reassign
     input[graphQLType].value = input[graphQLType].value.toLowerCase();
   }
