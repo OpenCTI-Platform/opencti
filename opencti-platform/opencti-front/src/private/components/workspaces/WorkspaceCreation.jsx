@@ -3,7 +3,7 @@ import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
-import { FileUploadOutlined } from '@mui/icons-material';
+import { FileDownloadOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/styles';
@@ -123,7 +123,7 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
         data-testid='ImportDashboard'
         title={t_i18n('Import dashboard')}
       >
-        <FileUploadOutlined fontSize="small" color={'primary'}/>
+        <FileDownloadOutlined fontSize="small" color={'primary'} />
       </ToggleButton>
       {isNotEmptyField(importFromHubUrl) && (
         <GradientButton
