@@ -31,9 +31,13 @@ class RedisStore extends Store {
         return done(null, cachedSession);
       }
       return getSession(key).then((data) => {
+        logApp.info('In then get session', { data });
         if (!data) return done();
         cache.set(`get-${key}`, data);
         return done(null, data);
+      }).catch((error) => {
+        logApp.info('In catch get session', { error });
+        return done(error, null);
       });
     };
     logApp.info('Before aquire lock with key', { sid });
