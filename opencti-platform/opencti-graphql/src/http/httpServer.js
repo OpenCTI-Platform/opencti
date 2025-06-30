@@ -135,7 +135,6 @@ const createHttpServer = async () => {
       app,
       path: `${basePath}/graphql`,
       context: async ({ req, res }) => {
-        logApp.info('Resolving request', { req });
         const executeContext = await createAuthenticatedContext(req, res, 'api');
         // When context is in draft, we need to check draft status: if draft is not in an open status, it means that it is no longer possible to execute requests in this draft
         if (executeContext.draft_context) {

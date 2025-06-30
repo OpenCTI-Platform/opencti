@@ -22,7 +22,6 @@ class RedisStore extends Store {
   }
 
   get(sid, cb = noop) {
-    logApp.info('Get session', { sid });
     const key = this.prefix + sid;
     const { cache } = this;
     const sessionFetcher = (done) => {
