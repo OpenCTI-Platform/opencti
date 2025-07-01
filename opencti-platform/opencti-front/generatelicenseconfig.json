@@ -1,5 +1,0 @@
-{
-  "inputs": ['./package.json', '../opencti-graphql/package.json'],
-  "output": "../third-party-licenses.txt",
-  "overwrite": true
-}

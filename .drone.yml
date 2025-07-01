@@ -40,11 +40,12 @@ steps:
       - name: cache-node-frontend-e2e
         path: /drone/src/opencti-platform/opencti-front/node_modules
     commands:
-      - cd opencti-platform/opencti-front
+      - cd scripts
+      - ./generate-licenses
+      - cd ../opencti-platform/opencti-front
       - yarn install
-      - yarn generate-licenses
       - yarn verify-licenses
-      - test -f ../third-party-licenses.txt
+      - test -f ../../licenses/third-party-licenses.txt
 
   - name: api-tests
     image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
