@@ -10,6 +10,7 @@ import Divider from '@mui/material/Divider';
 import makeStyles from '@mui/styles/makeStyles';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
+import StixCyberObservableNestedEntities from './StixCyberObservableNestedEntities';
 import { useFormatter } from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { APP_BASE_PATH } from '../../../../relay/environment';
@@ -198,7 +199,14 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
             );
           })}
         </Grid>
-        <Divider />
+        <Divider/>
+        {stixCyberObservable.entity_type === 'Network-Traffic' && (
+        <StixCyberObservableNestedEntities
+          entityId={stixCyberObservable.id}
+          entityType={stixCyberObservable.entity_type}
+          variant="inLine"
+        />
+        )}
         <StixCyberObservableIndicators
           stixCyberObservable={stixCyberObservable}
         />
