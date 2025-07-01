@@ -16,7 +16,7 @@ import {
   isStixDomainObjectLocation,
   isStixDomainObjectThreatActor
 } from '../schema/stixDomainObject';
-import { assertType, cleanObject, convertToStixDate } from './stix-converter-utils';
+import { assertType, cleanObject, convertToStixDate, buildStixId } from './stix-converter-utils';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../schema/stixCyberObservable';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
@@ -97,7 +97,7 @@ export const convertObjectReferences = (instance: StoreEntity, isInferred = fals
 // Builders
 const buildStixObject = (instance: StoreObject): S.StixObject => {
   return {
-    id: instance.standard_id,
+    id: buildStixId(instance.entity_type, instance.standard_id),
     x_opencti_id: instance.id,
     spec_version: '2.0',
     x_opencti_type: instance.entity_type,

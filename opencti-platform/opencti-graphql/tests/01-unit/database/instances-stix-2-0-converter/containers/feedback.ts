@@ -1,4 +1,5 @@
 import type { StoreEntity } from '../../../../../src/types/store';
+import type { StoreEntityStix2Feedback } from '../../../../../src/modules/case/feedback/feedback-types';
 
 export const FEEDBACK_INSTANCE = {
   _index: 'opencti_stix_domain_objects-000001',
@@ -20,10 +21,10 @@ export const FEEDBACK_INSTANCE = {
   ],
   x_opencti_stix_ids: [],
   created_at: '2025-06-26T15:58:16.638Z',
-  updated_at: '2025-06-26T16:00:05.465Z',
+  updated_at: '2025-06-26T16:04:50.126Z',
   revoked: false,
   lang: 'en',
-  modified: '2025-06-26T16:00:05.465Z',
+  modified: '2025-06-26T16:04:50.126Z',
   base_type: 'ENTITY',
   parent_types: [
     'Basic-Object',
@@ -56,7 +57,7 @@ export const FEEDBACK_INSTANCE = {
       name: 'confidence'
     },
     {
-      updated_at: '2025-06-26T16:00:05.465Z',
+      updated_at: '2025-06-26T16:04:50.126Z',
       user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       confidence: 93,
       name: 'rating'
@@ -320,7 +321,7 @@ export const FEEDBACK_INSTANCE = {
       }
     }
   ]
-} as unknown as StoreEntity;
+} as unknown as StoreEntityStix2Feedback;
 
 export const EXPECTED_FEEDBACK = {
   id: 'x-opencti-feedback--ce07ddc6-2377-576b-ace5-a4de6996e789',
@@ -331,7 +332,7 @@ export const EXPECTED_FEEDBACK = {
   modified: '2025-06-26T16:04:50.126Z',
   name: 'Feedback from admin@opencti.io',
   description: 'Feedback STIX 2.0',
-  rating: 4,
+  rating: 3,
   labels: [
     'ryuk'
   ],
@@ -348,5 +349,16 @@ export const EXPECTED_FEEDBACK = {
   created_by_ref: 'identity--cfb1de38-c40a-5f51-81f3-35036a4e3b91',
   object_refs: [
     'credential--4a194ac7-4aef-57d5-9a64-1312da4e604a'
-  ]
+  ],
+  x_opencti_files: [
+    {
+      mime_type: 'application/json',
+      name: 'file_example (2).json',
+      object_marking_refs: [],
+      uri: '/storage/get/import/Feedback/5a194bd5-1fe1-4618-bfa0-48b15eb590b4/file_example (2).json',
+      version: '2025-06-26T15:58:16.639Z',
+    },
+  ],
+  object_marking_refs: [],
+  x_opencti_granted_refs: [],
 };
