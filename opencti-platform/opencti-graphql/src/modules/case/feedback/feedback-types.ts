@@ -1,6 +1,7 @@
 import type { BasicStoreEntity, StoreEntity } from '../../../types/store';
 import type { StixDomainObject, StixOpenctiExtensionSDO } from '../../../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../../../types/stix-2-1-extensions';
+import type { StixContainer } from '../../../types/stix-2-0-sdo';
 
 export const ENTITY_TYPE_CONTAINER_FEEDBACK = 'Feedback';
 
@@ -32,4 +33,18 @@ export interface StixFeedback extends StixDomainObject {
   extensions: {
     [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
   }
+}
+
+// STIX 2.0
+export interface StoreEntityStix2Feedback extends StoreEntity {
+  name: string,
+  description: string,
+  rating: number,
+  object_refs: Array<string>,
+}
+
+export interface Stix2Feedback extends StixContainer {
+  name: string,
+  description: string,
+  rating: number,
 }
