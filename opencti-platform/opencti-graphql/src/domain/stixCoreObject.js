@@ -426,8 +426,10 @@ export const stixCoreObjectsMultiNumber = (context, user, args) => {
   }));
 };
 
-export const stixCoreObjectsConnectedNumber = (stixCoreObject) => {
-  return stixCoreObject.script_field_denormalization_count[0];
+export const stixCoreObjectsConnectedNumber = async (context, user, stixCoreObject) => {
+  const idsBatchLoaderArgs = { id: stixCoreObject.internal_id, type: stixCoreObject.entity_type };
+  const reloadedObjectWithCount = await context.batch.idsBatchLoaderWithCount.load(idsBatchLoaderArgs);
+  return reloadedObjectWithCount.script_field_denormalization_count[0];
 };
 
 export const stixCoreObjectsDistribution = async (context, user, args) => {

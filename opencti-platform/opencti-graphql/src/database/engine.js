@@ -1677,6 +1677,7 @@ const REL_COUNT_SCRIPT_FIELD = {
 export const elFindByIds = async (context, user, ids, opts = {}) => {
   const { indices, baseData = false, baseFields = [] } = opts;
   const { withoutRels = true, toMap = false, mapWithAllIds = false, type = null } = opts;
+  const { relCount = false } = opts;
   const { orderBy = null, orderMode = 'asc' } = opts;
   const idsArray = Array.isArray(ids) ? ids : [ids];
   const types = (Array.isArray(type) || isEmptyField(type)) ? type : [type];
@@ -1725,9 +1726,6 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     // Handle draft
     const draftMust = buildDraftFilter(context, user, opts);
     const body = {
-      script_fields: {
-        script_field_denormalization_count: REL_COUNT_SCRIPT_FIELD
-      },
       query: {
         bool: {
           // Put everything under filter to prevent score computation
@@ -1741,6 +1739,11 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
         }
       },
     };
+    if (relCount) {
+      body.script_fields = {
+        script_field_denormalization_count: REL_COUNT_SCRIPT_FIELD
+      };
+    }
     if (isNotEmptyField(orderBy)) {
       body.sort = [{ [orderBy]: orderMode }];
     }
@@ -1804,6 +1807,12 @@ export const elBatchIds = async (context, user, elements) => {
   const ids = elements.map((e) => e.id);
   const types = elements.map((e) => e.type);
   const hits = await elFindByIds(context, user, ids, { type: types, includeDeletedInDraft: true });
+  return ids.map((id) => R.find((h) => h.internal_id === id, hits));
+};
+export const elBatchIdsWithRelCount = async (context, user, elements) => {
+  const ids = elements.map((e) => e.id);
+  const types = elements.map((e) => e.type);
+  const hits = await elFindByIds(context, user, ids, { type: types, includeDeletedInDraft: true, relCount: true });
   return ids.map((id) => R.find((h) => h.internal_id === id, hits));
 };
 
@@ -3544,7 +3553,7 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
   const { baseData = false, baseFields = [], bypassSizeLimit = false } = options;
   const first = options.first ?? ES_DEFAULT_PAGINATION;
   const { withoutRels = true, types = null, connectionFormat = true } = options;
-  const body = await elQueryBodyBuilder(context, user, { ...options, relCount: true });
+  const body = await elQueryBodyBuilder(context, user, { ...options });
   if (body.size > ES_MAX_PAGINATION && !bypassSizeLimit) {
     logApp.info('[SEARCH] Pagination limited to max result config', { size: body.size, max: ES_MAX_PAGINATION });
     body.size = ES_MAX_PAGINATION;
