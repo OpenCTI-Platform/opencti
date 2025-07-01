@@ -41,7 +41,8 @@ steps:
         path: /drone/src/opencti-platform/opencti-front/node_modules
     commands:
       - pwd
-      - cd scripts
+      - ls
+      - cd ../scripts
       - ./generate-licenses
       - cd ../opencti-platform/opencti-front
       - yarn install
