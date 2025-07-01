@@ -1,7 +1,5 @@
 import type { StixDomainObject } from './stix-2-0-common';
 import type { StixId, StixDate, StixKillChainPhase } from './stix-2-1-common';
-import { STIX_EXT_OCTI } from './stix-2-1-extensions';
-import type { StixNoteExtension, StixOpinionExtension } from './stix-2-1-sdo';
 
 export interface StixMalware extends StixDomainObject {
   name: string; // optional
@@ -48,10 +46,4 @@ export interface StixObservedData extends StixContainer {
 export interface StixOpinion extends StixContainer {
   explanation: string // optional
   opinion: 'strongly-disagree' | 'disagree' | 'neutral' | 'agree' | 'strongly-agree'
-}
-
-export interface StixGrouping extends StixContainer {
-  name: string;
-  description: string;
-  context: string;
 }

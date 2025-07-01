@@ -3,7 +3,7 @@ import { ENTITY_TYPE_CONTAINER_CASE } from '../case-types';
 import { NAME_FIELD, normalizeName } from '../../../schema/identifier';
 import type { ModuleDefinition } from '../../../schema/module';
 import { registerDefinition } from '../../../schema/module';
-import convertFeedbackToStix from './feedback-converter';
+import { convertFeedbackToStix_2_1 } from './feedback-converter';
 import { createdBy, objectAssignee, objectMarking, objectOrganization } from '../../../schema/stixRefRelationship';
 import { authorizedMembers, authorizedMembersActivationDate } from '../../../schema/attribute-definition';
 
@@ -47,7 +47,7 @@ const FEEDBACK_DEFINITION: ModuleDefinition<StoreEntityFeedback, StixFeedback> =
   representative: (stix: StixFeedback) => {
     return stix.name;
   },
-  converter_2_1: convertFeedbackToStix
+  converter_2_1: convertFeedbackToStix_2_1
 };
 
 registerDefinition(FEEDBACK_DEFINITION);
