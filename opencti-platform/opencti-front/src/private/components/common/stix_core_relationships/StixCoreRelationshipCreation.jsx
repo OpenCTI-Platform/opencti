@@ -269,14 +269,15 @@ class StixCoreRelationshipCreation extends Component {
   }
 
   async onSubmit(values, { resetForm }) {
+    const { fromObjects, toObjects } = this.props;
     this.setState({ displayProgress: true });
     this.handleClose();
     resetForm();
     let latestResponse;
     let current = 1;
-    const total = this.props.fromObjects.length * this.props.toObjects.length;
-    for (const fromObject of this.props.fromObjects) {
-      for (const toObject of this.props.toObjects) {
+    const total = fromObjects.length * toObjects.length;
+    for (const fromObject of fromObjects) {
+      for (const toObject of toObjects) {
         const finalValues = R.pipe(
           R.assoc('confidence', parseInt(values.confidence, 10)),
           R.assoc('fromId', fromObject.id),
