@@ -19,6 +19,9 @@ import { EXPECTED_REPORT, REPORT_INSTANCE } from './instances-stix-2-0-converter
 import { EXPECTED_OBSERVED_DATA, OBSERVED_DATA_INSTANCE } from './instances-stix-2-0-converter/containers/observed-data';
 import { EXPECTED_NOTE, NOTE_INSTANCE } from './instances-stix-2-0-converter/containers/note';
 import { EXPECTED_OPINION, OPINION_INSTANCE } from './instances-stix-2-0-converter/containers/opinion';
+import { convertGroupingToStix_2_0 } from '../../../src/modules/grouping/grouping-converter';
+import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../../src/modules/grouping/grouping-types';
+import { EXPECTED_GROUPING, GROUPING_INSTANCE } from './instances-stix-2-0-converter/containers/grouping';
 
 describe('Stix 2.0 opencti converter', () => {
   it('should convert Malware', async () => {
@@ -40,6 +43,10 @@ describe('Stix 2.0 opencti converter', () => {
   it('should convert Opinion', async () => {
     const result = convertOpinionToStix(OPINION_INSTANCE, ENTITY_TYPE_CONTAINER_OPINION);
     expect(result).toEqual(EXPECTED_OPINION);
+  });
+  it('should convert Grouping', async () => {
+    const result = convertGroupingToStix_2_0(GROUPING_INSTANCE, ENTITY_TYPE_CONTAINER_GROUPING);
+    expect(result).toEqual(EXPECTED_GROUPING);
   });
 });
 
