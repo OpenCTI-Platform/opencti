@@ -28,10 +28,11 @@ import { RootIncidentSubscription } from '../../events/incidents/__generated__/R
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import useGranted, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import CaseIncidentEdition from './CaseIncidentEdition';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
+import CaseIncidentDeletion from './CaseIncidentDeletion';
 
 const subscription = graphql`
   subscription RootIncidentCaseSubscription($id: ID!) {
@@ -116,6 +117,11 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
         EditComponent={(
           <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={currentAccessRight.canEdit}>
             <CaseIncidentEdition caseId={caseData.id} />
+          </Security>
+        )}
+        DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+          <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+            <CaseIncidentDeletion id={caseData.id} isOpen={isOpen} handleClose={onClose} />
           </Security>
         )}
         enableQuickSubscription={true}

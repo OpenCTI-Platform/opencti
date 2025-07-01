@@ -21,7 +21,6 @@ import { NoteEditionOverview_note$data } from './__generated__/NoteEditionOvervi
 import SliderField from '../../../../components/fields/SliderField';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-import NoteDeletion from './NoteDeletion';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 
 export const noteMutationFieldPatch = graphql`
@@ -283,7 +282,6 @@ const NoteEditionOverviewComponent: FunctionComponent<NoteEditionOverviewProps> 
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          <NoteDeletion id={note.id} />
         </Form>
       )}
     </Formik>

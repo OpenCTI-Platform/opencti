@@ -1,9 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
-import Button from '@mui/material/Button';
 import { useNavigate } from 'react-router-dom';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import { useFormatter } from '../../../../components/i18n';
 import { deleteNodeFromId } from '../../../../utils/store';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -20,14 +17,16 @@ export const externalReferenceDeletionDeleteMutation = graphql`
 
 interface ExternalReferenceDeletionProps {
   id: string;
+  isOpen: boolean
+  handleClose: () => void;
   objectId?: string;
-  handleRemove: (() => void) | undefined;
+  handleRemove?: (() => void) | undefined;
   isExternalReferenceAttachment?: boolean;
 }
 
 const ExternalReferenceDeletion: FunctionComponent<
 ExternalReferenceDeletionProps
-> = ({ id, objectId, handleRemove, isExternalReferenceAttachment }) => {
+> = ({ id, objectId, isOpen, handleClose, handleRemove, isExternalReferenceAttachment }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const deleteSuccessMessage = t_i18n('', {
@@ -40,7 +39,7 @@ ExternalReferenceDeletionProps
     { successMessage: deleteSuccessMessage },
   );
   const deletion = useDeletion({});
-  const { setDeleting, handleOpenDelete, handleCloseDelete, deleting } = deletion;
+  const { setDeleting, handleCloseDelete } = deletion;
   const submitDelete = () => {
     setDeleting(true);
     commit({
@@ -69,27 +68,16 @@ ExternalReferenceDeletionProps
     });
   };
   return (
-    <>
-      <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-        <Button
-          color="error"
-          variant="contained"
-          onClick={handleOpenDelete}
-          disabled={deleting}
-          sx={{ marginTop: 2 }}
-        >
-          {t_i18n('Delete')}
-        </Button>
-      </Security>
-      <DeleteDialog
-        deletion={deletion}
-        submitDelete={submitDelete}
-        message={t_i18n('Do you want to delete this external reference?')}
-        warning={isExternalReferenceAttachment
-          ? { message: t_i18n('This external reference is linked to a file. If you delete it, the file will be deleted as well.') }
-          : undefined}
-      />
-    </>
+    <DeleteDialog
+      deletion={deletion}
+      submitDelete={submitDelete}
+      isOpen={isOpen}
+      onClose={handleClose}
+      message={t_i18n('Do you want to delete this external reference?')}
+      warning={isExternalReferenceAttachment
+        ? { message: t_i18n('This external reference is linked to a file. If you delete it, the file will be deleted as well.') }
+        : undefined}
+    />
   );
 };
 
