@@ -42,7 +42,7 @@ steps:
     commands:
       - pwd
       - ls
-      - cd ../scripts
+      - cd ./scripts
       - ./generate-licenses
       - cd ../opencti-platform/opencti-front
       - yarn install
