@@ -118,6 +118,7 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
             noAliases={true}
             enableEnricher={true}
             enableEnrollPlaybook={true}
+            redirectToContent={true}
           />
           <Box
             sx={{

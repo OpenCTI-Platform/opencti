@@ -150,6 +150,7 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
               )}
               enableEnricher={true}
               enableQuickSubscription={true}
+              redirectToContent={true}
             />
             <Box
               sx={{
