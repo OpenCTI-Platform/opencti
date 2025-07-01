@@ -19,6 +19,12 @@ import { resolveRelationsTypes } from '../../../../utils/Relation';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import ProgressBar from '../../../../components/ProgressBar';
 import { useFormatter } from '../../../../components/i18n';
+import { GraphLink, GraphNode } from '../../../../components/graph/graph.types';
+import { ObjectToParse } from '../../../../components/graph/utils/useGraphParser';
+import {
+  StixCoreRelationshipCreationQuery$data
+} from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationQuery.graphql';
+import { FormikConfig } from 'formik/dist/types';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -252,6 +258,20 @@ const commitWithPromise = (values) => new Promise((resolve, reject) => {
   });
 });
 
+interface StixCoreRelationshipCreationProps {
+  onClose: () => void,
+  onReverseRelation: () => void,
+  fromObjects: (GraphNode | GraphLink)[],
+  toObjects: (GraphNode | GraphLink)[],
+  handleResult: (rel: ObjectToParse) => void,
+  confidence?: number | null,
+  startTime: string,
+  stopTime: string,
+  defaultCreatedBy: string | { label: string, type: string, value: string },
+  defaultMarkingDefinitions: any[],
+  open: boolean,
+}
+
 const StixCoreRelationshipCreation = ({
   onClose,
   onReverseRelation,
@@ -264,13 +284,13 @@ const StixCoreRelationshipCreation = ({
   defaultCreatedBy,
   defaultMarkingDefinitions,
   open,
-}) => {
+}: StixCoreRelationshipCreationProps) => {
   const classes = useStyles();
   const { t_i18n, fsd } = useFormatter();
   const theme = useTheme();
 
   const [step, setStep] = useState(0);
-  const [existingRelations, setExistingRelations] = useState([]);
+  const [existingRelations, setExistingRelations] = useState<StixCoreRelationshipCreationQuery$data['stixCoreRelationships']['edges']>([]);
   const [displayProgress, setDisplayProgress] = useState(false);
   const [progress, setProgress] = useState(0);
   const prevProps = useRef({ open, fromObjects, toObjects });
@@ -297,12 +317,15 @@ const StixCoreRelationshipCreation = ({
         })
           .toPromise()
           .then((data) => {
-            const newStep = data.stixCoreRelationships.edges
-            && data.stixCoreRelationships.edges.length > 0
-              ? 1
-              : 2;
-            setStep(newStep);
-            setExistingRelations(data.stixCoreRelationships.edges);
+            const { stixCoreRelationships } = data as StixCoreRelationshipCreationQuery$data;
+            if (stixCoreRelationships) {
+              const newStep = stixCoreRelationships.edges
+              && stixCoreRelationships.edges.length > 0
+                ? 1
+                : 2;
+              setStep(newStep);
+              setExistingRelations(stixCoreRelationships.edges ?? []);
+            }
           });
       } else {
         setStep(2);
@@ -322,7 +345,7 @@ const StixCoreRelationshipCreation = ({
     setDisplayProgress(false);
   };
 
-  const onSubmit = async (values, { resetForm }) => {
+  const onSubmit: FormikConfig<StixCoreRelationshipCreationMutation>['onSubmit'] = async (values, { resetForm }) => {
     setDisplayProgress(true);
     handleClose();
     resetForm();
@@ -404,6 +427,7 @@ const StixCoreRelationshipCreation = ({
                 defaultStopTime={stopTime}
                 defaultCreatedBy={defaultCreatedBy}
                 defaultMarkingDefinitions={defaultMarkingDefinitions}
+                handleResetSelection={undefined}
               />
             </>
           );
