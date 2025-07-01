@@ -80,7 +80,6 @@ describe('Observables with hashes: management of other stix ids', () => {
   const file3StandardIdBySha1 = generateStandardId('StixFile', { hashes: [{ algorithm: 'SHA-1', hash: FILE3.sha1 }] });
   const file3StandardIdByMd5 = generateStandardId('StixFile', { hashes: [{ algorithm: 'MD5', hash: FILE3.sha1 }] });
 
-  let file4Id: string;
   const file4StandardIdByName = generateStandardId('StixFile', { name: FILE4.name, });
   const file4StandardIdBySha1 = generateStandardId('StixFile', { hashes: [{ algorithm: 'SHA-1', hash: FILE4.sha1 }] });
   const file4StandardIdByMd5 = generateStandardId('StixFile', { hashes: [{ algorithm: 'MD5', hash: FILE4.sha1 }] });
@@ -242,7 +241,6 @@ describe('Observables with hashes: management of other stix ids', () => {
       variables: { input: file4WithMd5Input },
     });
     const file4WithMd5 = file4WithMd5Result?.data?.stixCyberObservableAdd;
-    file4Id = file4WithMd5.id;
     expect(file4WithMd5.standard_id).toEqual(file4StandardIdByMd5);
     expect(file4WithMd5.x_opencti_stix_ids).toEqual([]);
     // UPDATE StixFile4 with MD5 and SHA1 (standard_id based on MD5) (other_stix_ids has standard_SHA1).
