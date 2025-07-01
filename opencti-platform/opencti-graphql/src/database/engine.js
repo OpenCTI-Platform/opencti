@@ -1812,7 +1812,8 @@ export const elBatchIds = async (context, user, elements) => {
 export const elBatchIdsWithRelCount = async (context, user, elements) => {
   const ids = elements.map((e) => e.id);
   const types = elements.map((e) => e.type);
-  const hits = await elFindByIds(context, user, ids, { type: types, includeDeletedInDraft: true, relCount: true });
+  const opts = { type: types, includeDeletedInDraft: true, relCount: true, baseData: true };
+  const hits = await elFindByIds(context, user, ids, opts);
   return ids.map((id) => R.find((h) => h.internal_id === id, hits));
 };
 
