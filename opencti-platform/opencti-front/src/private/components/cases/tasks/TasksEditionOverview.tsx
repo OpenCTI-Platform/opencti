@@ -21,7 +21,6 @@ import { TasksEditionOverview_task$key } from './__generated__/TasksEditionOverv
 import { buildDate, formatDate } from '../../../../utils/Time';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
-import TaskDeletion from './TaskDeletion';
 
 export const tasksMutationFieldPatch = graphql`
   mutation TasksEditionOverviewFieldPatchMutation(
@@ -308,7 +307,6 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          <TaskDeletion id={taskData.id} />
         </Form>
       )}
     </Formik>

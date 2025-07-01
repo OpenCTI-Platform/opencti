@@ -37,7 +37,13 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
-import useGranted, { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE_KNENRICHMENT,
+  KNOWLEDGE_KNGETEXPORT_KNASKEXPORT,
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
+} from '../../../../utils/hooks/useGranted';
 import CommitMessage from '../form/CommitMessage';
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
 import { truncate } from '../../../../utils/String';
@@ -238,6 +244,7 @@ const StixDomainObjectHeader = (props) => {
     stixDomainObject,
     isOpenctiAlias,
     EditComponent,
+    DeleteComponent,
     viewAs,
     onViewAs,
     disableSharing,
@@ -257,6 +264,7 @@ const StixDomainObjectHeader = (props) => {
   const [aliasToDelete, setAliasToDelete] = useState(null);
   const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]);
   const isKnowledgeEnricher = useGranted([KNOWLEDGE_KNENRICHMENT]);
+  const isKnowledgeDeleter = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]);
 
   const [isEnrollPlaybookOpen, setEnrollPlaybookOpen] = useState(false);
   const [isSharingOpen, setIsSharingOpen] = useState(false);
@@ -271,6 +279,11 @@ const StixDomainObjectHeader = (props) => {
     const targetTab = redirectToContent ? 'content' : 'files';
     navigate(`${entityLink}/${targetTab}?${urlParams}`);
   };
+  const [openDelete, setOpenDelete] = useState(false);
+
+  const handleOpenDelete = () => setOpenDelete(true);
+
+  const handleCloseDelete = () => setOpenDelete(false);
 
   const handleCloseEnrollPlaybook = () => setEnrollPlaybookOpen(false);
 
@@ -400,9 +413,9 @@ const StixDomainObjectHeader = (props) => {
   const displayEnrollPlaybookButton = enableEnrollPlaybook && initialNumberOfButtons < 3;
   if (displayEnrollPlaybookButton) initialNumberOfButtons += 1;
   const displaySharingButton = disableSharing !== true && initialNumberOfButtons < 3;
-
   const displayPopoverMenu = (disableSharing !== true && !displaySharingButton)
-    || (enableEnrollPlaybook && !displayEnrollPlaybookButton) || (enableEnricher && isKnowledgeEnricher);
+    || (enableEnrollPlaybook && !displayEnrollPlaybookButton) || isKnowledgeDeleter;
+    || (enableEnricher && isKnowledgeEnricher);
 
   return (
     <React.Suspense fallback={<span />}>
@@ -651,11 +664,21 @@ const StixDomainObjectHeader = (props) => {
                         needs={[KNOWLEDGE_KNENRICHMENT]}
                       />
                     )}
+                    {isKnowledgeDeleter && (
+                      <MenuItem onClick={() => {
+                        handleOpenDelete();
+                        closeMenu();
+                      }}
+                      >
+                        {t_i18n('Delete')}
+                      </MenuItem>
+                    )}
                   </Box>
                 )}
               </PopoverMenu>
             ) : null}
             {EditComponent}
+            <DeleteComponent isOpen={openDelete} onClose={handleCloseDelete} />
           </div>
         </div>
       </div>
