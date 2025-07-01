@@ -331,20 +331,18 @@ const StixCoreRelationshipCreation = ({
     const total = fromObjects.length * toObjects.length;
     for (const fromObject of fromObjects) {
       for (const toObject of toObjects) {
-        const finalValues = R.pipe(
-          R.assoc('confidence', parseInt(values.confidence, 10)),
-          R.assoc('fromId', fromObject.id),
-          R.assoc('toId', toObject.id),
-          R.assoc('start_time', formatDate(values.start_time)),
-          R.assoc('stop_time', formatDate(values.stop_time)),
-          R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
-          R.assoc('createdBy', values.createdBy?.value),
-          R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
-          R.assoc(
-            'externalReferences',
-            R.pluck('value', values.externalReferences),
-          ),
-        )(values);
+        const finalValues = {
+          ...values,
+          confidence: parseInt(values.confidence, 10),
+          fromId: fromObject.id,
+          toId: toObject.id,
+          start_time: formatDate(values.start_time),
+          stop_time: formatDate(values.stop_time),
+          killChainPhases: values.killChainPhases.map((k) => k.value),
+          createdBy: values.createdBy?.value,
+          objectMarking: values.objectMarking.map((k) => k.value),
+          externalReferences: values.externalReferences.map((k) => k.value),
+        };
         // eslint-disable-next-line no-await-in-loop
         latestResponse = await commitWithPromise(finalValues);
         const lastObject = current === total;
