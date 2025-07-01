@@ -290,7 +290,6 @@ const ThemeDark = (
     h6: {
       fontWeight: 400,
       fontSize: 18,
-      // color: primary || THEME_DARK_DEFAULT_PRIMARY,
       color: text_color,
       fontFamily: '"Geologica", sans-serif',
     },
@@ -388,7 +387,6 @@ const ThemeDark = (
             WebkitFontSmoothing: 'auto',
           },
           a: {
-            // color: primary || THEME_DARK_DEFAULT_PRIMARY,
             color: text_color,
           },
           'input:-webkit-autofill': {
@@ -464,7 +462,6 @@ const ThemeDark = (
             },
           },
           '.mde-preview .mde-preview-content a': {
-            // color: `${primary || THEME_DARK_DEFAULT_PRIMARY} !important`,
             color: `${text_color} !important`,
           },
           '.react-grid-placeholder': {

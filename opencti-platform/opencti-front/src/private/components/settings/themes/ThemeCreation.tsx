@@ -1,6 +1,5 @@
 import React, { FunctionComponent } from 'react';
 import { Field, Form, Formik, FormikHelpers } from 'formik';
-import { TextField } from 'formik-mui';
 import * as Yup from 'yup';
 import { Disposable, graphql, RecordSourceSelectorProxy } from 'relay-runtime';
 import { Button } from '@mui/material';
@@ -17,6 +16,7 @@ import { serializeThemeManifest } from './ThemeType';
 import { useDynamicSchemaCreationValidation, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import ThemeDetectDuplicate from './ThemeDetectDuplicate';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import TextField from '../../../../components/TextField';
 
 export const createThemeMutation = graphql`
   mutation ThemeCreationCreateMutation($input: ThemeAddInput!) {
@@ -161,7 +161,6 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
               variant="standard"
               name="name"
               label={t_i18n('Name')}
-              style={{ marginTop: 0 }}
               helperText={(
                 <ThemeDetectDuplicate
                   themeName={values.name}
