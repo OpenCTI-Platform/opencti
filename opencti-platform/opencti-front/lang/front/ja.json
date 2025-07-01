@@ -2608,6 +2608,7 @@
   "Please contact your administrator.": "管理者に連絡してください。",
   "Please select an entity on the left form to preview the template": "テンプレートをプレビューするには、左のフォームでエンティティを選択してください。",
   "Please, note that the test will be run on the 50 first lines": "50行目までのテストを実行することに注意してください",
+  "Please, note that the test will be run on the 10 first lines": "10行目までのテストを実行することに注意してください",
   "Please, verify the validity of the selected CSV mapper for the given URL.": "指定された URL に対して選択した CSV マッパーが有効であることを確認してください。",
   "Please, verify the validity of the selected JSON mapper for the given URL.": "指定されたURLに対して選択されたJSONマッパーの有効性を確認してください。",
   "Policies": "ポリシー",

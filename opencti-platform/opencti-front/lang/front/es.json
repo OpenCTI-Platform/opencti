@@ -2608,6 +2608,7 @@
   "Please contact your administrator.": "Comuníquese con su administrador.",
   "Please select an entity on the left form to preview the template": "Seleccione una entidad en el formulario de la izquierda para previsualizar la plantilla",
   "Please, note that the test will be run on the 50 first lines": "Por favor, ten en cuenta que la prueba se ejecutará en las primeras 50 líneas",
+  "Please, note that the test will be run on the 10 first lines": "Por favor, ten en cuenta que la prueba se ejecutará en las primeras 10 líneas",
   "Please, verify the validity of the selected CSV mapper for the given URL.": "Por favor, verifique la validez del asignador CSV seleccionado para la URL proporcionada.",
   "Please, verify the validity of the selected JSON mapper for the given URL.": "Por favor, verifique la validez del mapeador JSON seleccionado para la URL dada.",
   "Policies": "Políticas",
