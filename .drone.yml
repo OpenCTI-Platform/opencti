@@ -42,7 +42,7 @@ steps:
     commands:
       - cd ./scripts
       - ls
-      - ./generate-licenses
+      - ./generate-licenses.sh
       - cd ../opencti-platform/opencti-front
       - yarn install
       - yarn verify-licenses
