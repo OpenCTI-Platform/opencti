@@ -33,6 +33,8 @@ import { DigestPeriod, TriggerEventType, TriggerType } from '../generated/graphq
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import type { Representative } from '../types/store';
 import type { BasicStoreSettings } from '../types/settings';
+import { type BasicStoreEntityNotifier, ENTITY_TYPE_NOTIFIER } from '../modules/notifier/notifier-types';
+import { NOTIFIER_CONNECTOR_WEBHOOK } from '../modules/notifier/notifier-statics';
 
 const NOTIFICATION_LIVE_KEY = conf.get('notification_manager:lock_live_key');
 const NOTIFICATION_DIGEST_KEY = conf.get('notification_manager:lock_digest_key');
@@ -427,8 +429,7 @@ const generateNotificationMessageForFilteredSideEvents = async (
     }
     const listenedInstancesInPatchIds = filterUpdateInstanceIdsFromUpdatePatch(listenedInstanceIdsMap, updatePatch);
     if (listenedInstancesInPatchIds.length > 0) { // 2.a.--> It's the patch that contains instance(s) of the trigger filters
-      const message = await generateNotificationMessageForInstanceWithRefsUpdate(context, user, data, listenedInstancesInPatchIds);
-      return message;
+      return generateNotificationMessageForInstanceWithRefsUpdate(context, user, data, listenedInstancesInPatchIds);
     }
     // the modification may be a modification of rights (the instance is newly/no-more visible) -> we go in case 3.
   }
@@ -443,8 +444,7 @@ const generateNotificationMessageForFilteredSideEvents = async (
     // We need to filter these instances to keep those that are part of the event refs or of the relationship from/to
     const listenedInstancesInRefsEventIds = filterInstancesByRefEventIds(listenedInstanceIdsMap, dataRefs);
     if (listenedInstancesInRefsEventIds.length > 0) {
-      const message = await generateNotificationMessageForInstanceWithRefs(context, user, data, listenedInstancesInRefsEventIds);
-      return message;
+      return generateNotificationMessageForInstanceWithRefs(context, user, data, listenedInstancesInRefsEventIds);
     }
   }
   return undefined; // filtered event (ex: update of an instance containing a listened ref) : no notification
@@ -540,6 +540,24 @@ export const buildTargetEvents = async (
           }
         }
       }
+    }
+  }
+  if (targets.length) {
+    // Remove webhook duplicates: Ensure that 1 notification results in only 1 webhook call, regardless of the number of users in the group.
+    const allNotifiers = await getEntitiesListFromCache<BasicStoreEntityNotifier>(context, SYSTEM_USER, ENTITY_TYPE_NOTIFIER);
+    const webhookNotifiers = allNotifiers.filter((notifier) => notifier.notifier_connector_id === NOTIFIER_CONNECTOR_WEBHOOK)
+      .map((notifier) => notifier.id);
+    const targetedWebhooks = new Set();
+
+    for (let i = 0; i < targets.length; i += 1) {
+      const target = targets[i];
+      target.user.notifiers = target.user.notifiers.filter((notifiersId) => {
+        if (webhookNotifiers.includes(notifiersId)) {
+          if (targetedWebhooks.has(notifiersId)) return false;
+          targetedWebhooks.add(notifiersId);
+        }
+        return true;
+      });
     }
   }
   return targets;
