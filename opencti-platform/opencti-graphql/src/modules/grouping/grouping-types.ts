@@ -2,6 +2,7 @@ import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { StixContainer } from '../../types/stix-2-1-sdo';
 import type { StixOpenctiExtension } from '../../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
+import type { StixContainer as Stix2Container } from '../../types/stix-2-0-sdo';
 
 export const ENTITY_TYPE_CONTAINER_GROUPING = 'Grouping';
 
@@ -44,4 +45,11 @@ export interface StixGrouping extends StixContainer {
 export interface GroupingNumberResult {
   count: number;
   total: number;
+}
+
+// STIX 2.0
+export interface Stix2Grouping extends Stix2Container {
+  name: string;
+  description: string;
+  context: string;
 }

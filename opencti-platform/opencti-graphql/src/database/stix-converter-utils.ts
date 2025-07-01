@@ -4,6 +4,11 @@ import type * as S2 from '../types/stix-2-0-common';
 import { FROM_START, FROM_START_STR, UNTIL_END, UNTIL_END_STR } from '../utils/format';
 import { objects } from '../schema/stixRefRelationship';
 import { isEmptyField } from './utils';
+import { ENTITY_TYPE_CONTAINER_TASK } from '../modules/task/task-types';
+import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedback-types';
+import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../modules/case/case-incident/case-incident-types';
+import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
+import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../modules/case/case-rft/case-rft-types';
 
 export const assertType = (type: string, instanceType: string) => {
   if (instanceType !== type) {
@@ -38,4 +43,16 @@ export const cleanObject = <T>(data: T): T => {
     }
   }
   return obj;
+};
+
+export const buildStixId = (instanceType: string, standard_id: string): S2.StixId | S2.CustomId => {
+  const customContainers = [
+    ENTITY_TYPE_CONTAINER_TASK,
+    ENTITY_TYPE_CONTAINER_FEEDBACK,
+    ENTITY_TYPE_CONTAINER_CASE_INCIDENT,
+    ENTITY_TYPE_CONTAINER_CASE_RFI,
+    ENTITY_TYPE_CONTAINER_CASE_RFT
+  ];
+  const isCustomContainer = customContainers.includes(instanceType);
+  return isCustomContainer ? `x-opencti-${standard_id}` : standard_id as S2.StixId;
 };
