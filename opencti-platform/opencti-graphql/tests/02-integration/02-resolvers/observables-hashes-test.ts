@@ -75,6 +75,16 @@ describe('Observables with hashes: management of other stix ids', () => {
   const file2StandardIdBySha1 = generateStandardId('StixFile', { hashes: [{ algorithm: 'SHA-1', hash: FILE2.sha1 }] });
   const file2StandardIdByMd5 = generateStandardId('StixFile', { hashes: [{ algorithm: 'MD5', hash: FILE2.sha1 }] });
 
+  let file3Id: string;
+  const file3StandardIdByName = generateStandardId('StixFile', { name: FILE3.name, });
+  const file3StandardIdBySha1 = generateStandardId('StixFile', { hashes: [{ algorithm: 'SHA-1', hash: FILE3.sha1 }] });
+  const file3StandardIdByMd5 = generateStandardId('StixFile', { hashes: [{ algorithm: 'MD5', hash: FILE3.sha1 }] });
+
+  let file4Id: string;
+  const file4StandardIdByName = generateStandardId('StixFile', { name: FILE4.name, });
+  const file4StandardIdBySha1 = generateStandardId('StixFile', { hashes: [{ algorithm: 'SHA-1', hash: FILE4.sha1 }] });
+  const file4StandardIdByMd5 = generateStandardId('StixFile', { hashes: [{ algorithm: 'MD5', hash: FILE4.sha1 }] });
+
   it('should replace standard_id and add old one in other_stix_ids if prior data arrives', async () => {
     // Scenario 1 (upsert)
     // -------------------
@@ -184,8 +194,8 @@ describe('Observables with hashes: management of other stix ids', () => {
       variables: { input: file3WithMD5Input },
     });
     const file3WithMd5 = file3WithMD5Result.data?.stixCyberObservableAdd;
-    const file3WithMd5StandardId = generateStandardId('StixFile', file3WithMD5Input);
-    expect(file3WithMd5.standard_id).toEqual(file3WithMd5StandardId);
+    file3Id = file3WithMd5.id;
+    expect(file3WithMd5.standard_id).toEqual(file3StandardIdByMd5);
     expect(file3WithMd5.x_opencti_stix_ids).toEqual([]);
     // UPSERT StixFile3 with MD5 and SHA1 (standard_id based on MD5) (other_stix_ids has standard_SHA1).
     const fileWithMd5Sha1Input: StixFileAddInput = {
@@ -199,10 +209,9 @@ describe('Observables with hashes: management of other stix ids', () => {
       variables: { input: fileWithMd5Sha1Input }
     });
     const file3WithMd5Sha1 = file3WithMd5Sha1Result.data?.stixCyberObservableAdd;
-    const file3WithMd5Sha1StandardId = generateStandardId('StixFile', fileWithMd5Sha1Input);
-    expect(file3WithMd5Sha1.id).equal(file3WithMd5);
-    expect(file3WithMd5.standard_id).toEqual(file3WithMd5Sha1StandardId);
-    expect(file3WithMd5Sha1.x_opencti_stix_ids).toEqual([file3WithMd5.standard_id]);
+    expect(file3WithMd5Sha1.id).equal(file3Id);
+    expect(file3WithMd5.standard_id).toEqual(file3StandardIdByMd5);
+    expect(file3WithMd5Sha1.x_opencti_stix_ids).toEqual([file3StandardIdBySha1]);
     // UPSERT StixFile3 with MD5, SHA1 and name (standard_id based on MD5) (other_stix_ids has standard_SHA1, standard_name).
     const file3WithMd5Sha1NameInput: StixFileAddInput = {
       name: FILE3.name,
@@ -216,10 +225,9 @@ describe('Observables with hashes: management of other stix ids', () => {
       variables: { input: file3WithMd5Sha1NameInput },
     });
     const file3WithMd5Sha1Name = file3Md5Sha1NameResult?.data?.stixCyberObservableAdd;
-    const file3WithMd5Sha1NameStandardId = generateStandardId('StixFile', file3WithMd5Sha1NameInput);
-    expect(file3WithMd5Sha1Name.id).toEqual(file3WithMd5.id);
-    expect(file3WithMd5Sha1Name.standard_id).toEqual(file3WithMd5Sha1NameStandardId);
-    expect(file3WithMd5Sha1Name.x_opencti_stix_ids).toEqual([file3WithMd5Sha1.standardId, file3WithMd5Sha1Name.standardId]);
+    expect(file3WithMd5Sha1Name.id).toEqual(file3Id);
+    expect(file3WithMd5Sha1Name.standard_id).toEqual(file3StandardIdByMd5);
+    expect(file3WithMd5Sha1Name.x_opencti_stix_ids).toEqual([file3StandardIdBySha1, file3StandardIdByName]);
 
     // Scenario 2 (update)
     // -------------------
@@ -234,8 +242,8 @@ describe('Observables with hashes: management of other stix ids', () => {
       variables: { input: file4WithMd5Input },
     });
     const file4WithMd5 = file4WithMd5Result?.data?.stixCyberObservableAdd;
-    const file4WithMd5StandardId = generateStandardId('StixFile', file4WithMd5Input);
-    expect(file4WithMd5.standard_id).toEqual(file4WithMd5StandardId);
+    file4Id = file4WithMd5.id;
+    expect(file4WithMd5.standard_id).toEqual(file4StandardIdByMd5);
     expect(file4WithMd5.x_opencti_stix_ids).toEqual([]);
     // UPDATE StixFile4 with MD5 and SHA1 (standard_id based on MD5) (other_stix_ids has standard_SHA1).
     const file4WithMd5Sha1Input: EditInput[] = [{
@@ -251,14 +259,8 @@ describe('Observables with hashes: management of other stix ids', () => {
       }
     });
     const file4WithMd5Sha1 = file4WithMd5Sha1Result?.data?.stixCyberObservableEdit;
-    const file4WithMd5Sha1StandardId = generateStandardId('StixFile', {
-      hashes: [
-        { algorithm: 'MD5', hash: FILE4.md5 },
-        { algorithm: 'SHA-1', hash: FILE4.sha1 }
-      ]
-    });
-    expect(file4WithMd5Sha1.standard_id).toEqual(file4WithMd5Sha1StandardId);
-    expect(file4WithMd5Sha1.x_opencti_stix_ids).toEqual([file4WithMd5Sha1.standard_id]);
+    expect(file4WithMd5Sha1.standard_id).toEqual(file4StandardIdByMd5);
+    expect(file4WithMd5Sha1.x_opencti_stix_ids).toEqual([file4StandardIdBySha1]);
     // UPDATE StixFile4 with MD5, SHA1 and name (standard_id based on MD5) (other_stix_ids has standard_SHA1, standard_name).
     const file4WithMd5Sha1NameInput: StixFileAddInput = {
       name: FILE4.name,
@@ -275,8 +277,8 @@ describe('Observables with hashes: management of other stix ids', () => {
       }
     });
     const file4WithMd5Sha1Name = file4WithMd5Sha1NameResult.data?.stixCyberObservableEdit;
-    expect(file3WithMd5Sha1Name.standardId).toEqual(file4WithMd5Sha1StandardId);
-    expect(file3WithMd5Sha1Name.x_opencti_stix_ids).toEqual([file4WithMd5Sha1.standard_id, file4WithMd5Sha1Name.standard_id]);
+    expect(file4WithMd5Sha1Name.standardId).toEqual(file4StandardIdByMd5);
+    expect(file4WithMd5Sha1Name.x_opencti_stix_ids).toEqual([file4StandardIdBySha1, file4StandardIdByName]);
   });
 
   it('should merge observables and other_stix_ids', () => {
@@ -323,8 +325,67 @@ describe('Observables with hashes: management of other stix ids', () => {
     // Scenario 2 (standard_id changes)
     // --------------------------------
     // UPDATE StixFile3 to remove name (standard_id based on MD5) (other_stix_ids has standard_SHA1).
+    const file3RemoveNameInput: EditInput[] = [{
+      key: 'name',
+      value: [null],
+    }];
+    const file3RemoveNameResult = await queryAsAdmin({
+      query: EDIT_STIX_FILE_QUERY,
+      variables: {
+        id: file3Id,
+        input: file3RemoveNameInput,
+      },
+    });
+    const file3RemoveName = file3RemoveNameResult?.data?.stixCyberObservableEdit;
+    expect(file3RemoveName.standard_id).toEqual(file3StandardIdByMd5);
+    expect(file3RemoveName.x_opencti_stix_ids).toEqual([file3StandardIdBySha1]);
     // UPDATE StixFile3 to remove MD5 (standard_id based on SHA1) (other_stix_ids empty).
+    const file3RemoveMd5Input: EditInput[] = [{
+      key: 'hashes',
+      object_path: '/hashes/MD5',
+      value: [null],
+    }];
+    const file3RemoveMd5Result = await queryAsAdmin({
+      query: EDIT_STIX_FILE_QUERY,
+      variables: {
+        id: file3Id,
+        input: file3RemoveMd5Input,
+      },
+    });
+    const file3RemoveMd5 = file3RemoveMd5Result?.data?.stixCyberObservableEdit;
+    expect(file3RemoveMd5.standard_id).toEqual(file3StandardIdBySha1);
+    expect(file3RemoveMd5.x_opencti_stix_ids).toEqual([]);
     // UPDATE StixFile2 to remove MD5 (standard_id based on SHA1) (other_stix_ids has standard_name).
+    const file2RemoveMd5Input: EditInput[] = [{
+      key: 'hashes',
+      object_path: '/hashes/MD5',
+      value: [null],
+    }];
+    const file2RemoveMd5Result = await queryAsAdmin({
+      query: EDIT_STIX_FILE_QUERY,
+      variables: {
+        id: file2Id,
+        input: file2RemoveMd5Input,
+      },
+    });
+    const file2RemoveMd5 = file2RemoveMd5Result?.data?.stixCyberObservableEdit;
+    expect(file2RemoveMd5.standard_id).toEqual(file2StandardIdBySha1);
+    expect(file2RemoveMd5.x_opencti_stix_ids).toEqual([file2StandardIdByName]);
     // UPDATE StixFile2 to remove SHA1 (standard_id based on name) (other_stix_ids empty).
+    const file2RemoveSha1Input: EditInput[] = [{
+      key: 'hashes',
+      object_path: '/hashes/SHA-1',
+      value: [null],
+    }];
+    const file2RemoveSha1Result = await queryAsAdmin({
+      query: EDIT_STIX_FILE_QUERY,
+      variables: {
+        id: file2Id,
+        input: file2RemoveSha1Input,
+      },
+    });
+    const file2RemoveSha1 = file2RemoveSha1Result?.data?.stixCyberObservableEdit;
+    expect(file2RemoveSha1.standard_id).toEqual(file2StandardIdByName);
+    expect(file2RemoveSha1.x_opencti_stix_ids).toEqual([]);
   });
 });
