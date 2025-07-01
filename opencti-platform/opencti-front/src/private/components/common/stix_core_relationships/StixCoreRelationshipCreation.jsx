@@ -1,17 +1,15 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import React, { useEffect, useRef, useState } from 'react';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
-import withTheme from '@mui/styles/withTheme';
-import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import CircularProgress from '@mui/material/CircularProgress';
 import { ArrowRightAlt, Close } from '@mui/icons-material';
+import { useTheme } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
 import { formatDate } from '../../../../utils/Time';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -20,8 +18,9 @@ import StixCoreRelationshipCreationForm from './StixCoreRelationshipCreationForm
 import { resolveRelationsTypes } from '../../../../utils/Relation';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import ProgressBar from '../../../../components/ProgressBar';
+import { useFormatter } from '../../../../components/i18n';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -103,7 +102,7 @@ const styles = (theme) => ({
     padding: 0,
     color: theme.palette.text.primary,
   },
-});
+}));
 
 export const stixCoreRelationshipCreationQuery = graphql`
   query StixCoreRelationshipCreationQuery(
@@ -253,25 +252,79 @@ const commitWithPromise = (values) => new Promise((resolve, reject) => {
   });
 });
 
-class StixCoreRelationshipCreation extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      step: 0,
-      existingRelations: [],
-      displayProgress: false,
-      progress: 0,
-    };
-  }
+const StixCoreRelationshipCreation = ({
+  onClose,
+  onReverseRelation,
+  fromObjects,
+  toObjects,
+  handleResult,
+  confidence,
+  startTime,
+  stopTime,
+  defaultCreatedBy,
+  defaultMarkingDefinitions,
+  open,
+}) => {
+  const classes = useStyles();
+  const { t_i18n, fsd } = useFormatter();
+  const theme = useTheme();
 
-  handleCloseProgressBar() {
-    this.setState({ displayProgress: false });
-  }
+  const [step, setStep] = useState(0);
+  const [existingRelations, setExistingRelations] = useState([]);
+  const [displayProgress, setDisplayProgress] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const prevProps = useRef({ open, fromObjects, toObjects });
 
-  async onSubmit(values, { resetForm }) {
-    const { fromObjects, toObjects } = this.props;
-    this.setState({ displayProgress: true });
-    this.handleClose();
+  useEffect(() => {
+    const prev = prevProps.current;
+    const openChanged = prev.open !== open;
+    const fromChanged = prev.fromObjects?.[0] !== fromObjects?.[0];
+    const toChanged = prev.toObjects?.[0] !== toObjects?.[0];
+
+    const shouldFetch = open === true
+      && fromObjects !== null
+      && toObjects !== null
+      && (openChanged || fromChanged || toChanged);
+
+    if (shouldFetch) {
+      if (
+        fromObjects.length === 1
+        && toObjects.length === 1
+      ) {
+        fetchQuery(stixCoreRelationshipCreationQuery, {
+          fromId: fromObjects[0].id,
+          toId: toObjects[0].id,
+        })
+          .toPromise()
+          .then((data) => {
+            const newStep = data.stixCoreRelationships.edges
+            && data.stixCoreRelationships.edges.length > 0
+              ? 1
+              : 2;
+            setStep(newStep);
+            setExistingRelations(data.stixCoreRelationships.edges);
+          });
+      } else {
+        setStep(2);
+        setExistingRelations([]);
+      }
+    }
+    prevProps.current = { open, fromObjects, toObjects };
+  }, [open, fromObjects, toObjects]);
+
+  const handleClose = () => {
+    setExistingRelations([]);
+    setStep(0);
+    onClose();
+  };
+
+  const handleCloseProgressBar = () => {
+    setDisplayProgress(false);
+  };
+
+  const onSubmit = async (values, { resetForm }) => {
+    setDisplayProgress(true);
+    handleClose();
     resetForm();
     let latestResponse;
     let current = 1;
@@ -295,78 +348,31 @@ class StixCoreRelationshipCreation extends Component {
         // eslint-disable-next-line no-await-in-loop
         latestResponse = await commitWithPromise(finalValues);
         const lastObject = current === total;
-        this.props.handleResult(latestResponse, !lastObject);
+        handleResult(latestResponse, !lastObject);
         current += 1;
-        this.setState({ progress: Math.round((current * 100) / total) });
+        setProgress(Math.round((current * 100) / total));
       }
     }
-    this.setState({ progress: 0, displayProgress: false });
-  }
+    setDisplayProgress(false);
+    setProgress(0);
+  };
 
-  componentDidUpdate(prevProps) {
-    if (
-      this.props.open === true
-      && this.props.fromObjects !== null
-      && this.props.toObjects !== null
-      && (prevProps.open !== this.props.open
-        || prevProps.fromObjects[0] !== this.props.fromObjects[0]
-        || prevProps.toObjects[0] !== this.props.toObjects[0])
-    ) {
-      if (
-        this.props.fromObjects.length === 1
-        && this.props.toObjects.length === 1
-      ) {
-        fetchQuery(stixCoreRelationshipCreationQuery, {
-          fromId: this.props.fromObjects[0].id,
-          toId: this.props.toObjects[0].id,
-        })
-          .toPromise()
-          .then((data) => {
-            this.setState({
-              step:
-                data.stixCoreRelationships.edges
-                && data.stixCoreRelationships.edges.length > 0
-                  ? 1
-                  : 2,
-              existingRelations: data.stixCoreRelationships.edges,
-            });
-          });
-      } else {
-        this.setState({ step: 2, existingRelations: [] });
-      }
-    }
-  }
+  const handleSelectRelation = (relation) => {
+    handleResult(relation);
+    handleClose();
+  };
 
-  handleSelectRelation(relation) {
-    this.props.handleResult(relation);
-    this.handleClose();
-  }
+  const handleChangeStep = () => {
+    setStep(2);
+  };
 
-  handleChangeStep() {
-    this.setState({ step: 2 });
-  }
+  const handleReverseRelation = () => {
+    setExistingRelations([]);
+    setStep(2);
+    onReverseRelation();
+  };
 
-  handleReverseRelation() {
-    this.setState({ existingRelations: [], step: 0 }, () => this.props.handleReverseRelation());
-  }
-
-  handleClose() {
-    this.setState({ existingRelations: [], step: 0 });
-    this.props.handleClose();
-  }
-
-  renderForm() {
-    const {
-      t,
-      classes,
-      fromObjects,
-      toObjects,
-      confidence,
-      startTime,
-      stopTime,
-      defaultCreatedBy,
-      defaultMarkingDefinitions,
-    } = this.props;
+  const renderForm = () => {
     return (
       <UserContext.Consumer>
         {({ schema }) => {
@@ -381,20 +387,20 @@ class StixCoreRelationshipCreation extends Component {
                 <IconButton
                   aria-label="Close"
                   className={classes.closeButton}
-                  onClick={this.handleClose.bind(this)}
+                  onClick={handleClose}
                   size="large"
                 >
                   <Close fontSize="small" color="primary" />
                 </IconButton>
-                <Typography variant="h6">{t('Create a relationship')}</Typography>
+                <Typography variant="h6">{t_i18n('Create a relationship')}</Typography>
               </div>
               <StixCoreRelationshipCreationForm
                 fromEntities={fromObjects}
                 toEntities={toObjects}
                 relationshipTypes={relationshipTypes}
-                handleReverseRelation={this.handleReverseRelation.bind(this)}
-                onSubmit={this.onSubmit.bind(this)}
-                handleClose={this.handleClose.bind(this)}
+                handleReverseRelation={handleReverseRelation}
+                onSubmit={onSubmit}
+                handleClose={handleClose}
                 defaultConfidence={confidence}
                 defaultStartTime={startTime}
                 defaultStopTime={stopTime}
@@ -406,30 +412,28 @@ class StixCoreRelationshipCreation extends Component {
         }}
       </UserContext.Consumer>
     );
-  }
+  };
 
-  renderSelectRelation() {
-    const { fsd, t, classes, fromObjects, toObjects, theme } = this.props;
-    const { existingRelations } = this.state;
+  const renderSelectRelation = () => {
     return (
       <div>
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
-            onClick={this.handleClose.bind(this)}
+            onClick={handleClose}
             size="large"
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="h6">{t('Select a relationship')}</Typography>
+          <Typography variant="h6">{t_i18n('Select a relationship')}</Typography>
         </div>
         <div className={classes.container}>
           {existingRelations.map((relation) => (
             <div
               key={relation.node.id}
               className={classes.relation}
-              onClick={this.handleSelectRelation.bind(this, relation.node)}
+              onClick={() => handleSelectRelation(relation.node)}
             >
               <div
                 className={classes.item}
@@ -456,14 +460,14 @@ class StixCoreRelationshipCreation extends Component {
                   </div>
                   <div className={classes.type}>
                     {fromObjects[0].relationship_type
-                      ? t('Relationship')
-                      : t(`entity_${fromObjects[0].entity_type}`)}
+                      ? t_i18n('Relationship')
+                      : t_i18n(`entity_${fromObjects[0].entity_type}`)}
                   </div>
                 </div>
                 <div className={classes.content}>
                   <span className={classes.name}>
                     {fromObjects.length > 1 ? (
-                      <em>{t('Multiple entities selected')}</em>
+                      <em>{t_i18n('Multiple entities selected')}</em>
                     ) : (
                       truncate(fromObjects[0].name, 20)
                     )}
@@ -487,11 +491,11 @@ class StixCoreRelationshipCreation extends Component {
                       display: 'inline-block',
                     }}
                   >
-                    {t(`relationship_${relation.node.relationship_type}`)}
+                    {t_i18n(`relationship_${relation.node.relationship_type}`)}
                     <br />
-                    {t('Start time')} {fsd(relation.node.start_time)}
+                    {t_i18n('Start time')} {fsd(relation.node.start_time)}
                     <br />
-                    {t('Stop time')} {fsd(relation.node.stop_time)}
+                    {t_i18n('Stop time')} {fsd(relation.node.stop_time)}
                   </div>
                 </Tooltip>
               </div>
@@ -520,8 +524,8 @@ class StixCoreRelationshipCreation extends Component {
                   </div>
                   <div className={classes.type}>
                     {toObjects[0].relationship_type
-                      ? t('Relationship')
-                      : t(`entity_${toObjects[0].entity_type}`)}
+                      ? t_i18n('Relationship')
+                      : t_i18n(`entity_${toObjects[0].entity_type}`)}
                   </div>
                 </div>
                 <div className={classes.content}>
@@ -535,7 +539,7 @@ class StixCoreRelationshipCreation extends Component {
           ))}
           <div
             className={classes.relationCreation}
-            onClick={this.handleChangeStep.bind(this)}
+            onClick={handleChangeStep}
           >
             <div
               className={classes.item}
@@ -559,13 +563,13 @@ class StixCoreRelationshipCreation extends Component {
                   />
                 </div>
                 <div className={classes.type}>
-                  {t(`entity_${fromObjects[0].entity_type}`)}
+                  {t_i18n(`entity_${fromObjects[0].entity_type}`)}
                 </div>
               </div>
               <div className={classes.content}>
                 <span className={classes.name}>
                   {fromObjects.length > 1 ? (
-                    <em>{t('Multiple entities selected')}</em>
+                    <em>{t_i18n('Multiple entities selected')}</em>
                   ) : (
                     truncate(fromObjects[0].name)
                   )}
@@ -584,7 +588,7 @@ class StixCoreRelationshipCreation extends Component {
                   display: 'inline-block',
                 }}
               >
-                {t('Create a relationship')}
+                {t_i18n('Create a relationship')}
               </div>
             </div>
             <div
@@ -609,13 +613,13 @@ class StixCoreRelationshipCreation extends Component {
                   />
                 </div>
                 <div className={classes.type}>
-                  {t(`entity_${toObjects[0].entity_type}`)}
+                  {t_i18n(`entity_${toObjects[0].entity_type}`)}
                 </div>
               </div>
               <div className={classes.content}>
                 <span className={classes.name}>
                   {toObjects.length > 1 ? (
-                    <em>{t('Multiple entities selected')}</em>
+                    <em>{t_i18n('Multiple entities selected')}</em>
                   ) : (
                     truncate(toObjects[0].name, 20)
                   )}
@@ -627,10 +631,10 @@ class StixCoreRelationshipCreation extends Component {
         </div>
       </div>
     );
-  }
+  };
 
   // eslint-disable-next-line
-  renderLoader() {
+  const renderLoader = () => {
     return (
       <div style={{ display: 'table', height: '100%', width: '100%' }}>
         <span
@@ -644,62 +648,36 @@ class StixCoreRelationshipCreation extends Component {
         </span>
       </div>
     );
-  }
+  };
 
-  render() {
-    const { open, fromObject, toObjects, classes, t } = this.props;
-    const { step, displayProgress, progress } = this.state;
-    return (
-      <>
-        <Drawer
-          open={open}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
-        >
-          {step === 0
+  return (
+    <>
+      <Drawer
+        open={open}
+        anchor="right"
+        elevation={1}
+        sx={{ zIndex: 1202 }}
+        classes={{ paper: classes.drawerPaper }}
+        onClose={handleClose}
+      >
+        {step === 0
         || step === undefined
-        || fromObject === null
+        || fromObjects === null
         || toObjects === null
-            ? this.renderLoader()
-            : ''}
-          {step === 1 ? this.renderSelectRelation() : ''}
-          {step === 2 ? this.renderForm() : ''}
-        </Drawer>
-        <ProgressBar
-          title={t('Create multiple relationships')}
-          open={displayProgress}
-          value={progress}
-          onClose={this.handleCloseProgressBar.bind(this)}
-          variant='determinate'
-        />
-      </>
-    );
-  }
-}
-
-StixCoreRelationshipCreation.propTypes = {
-  open: PropTypes.bool,
-  fromObjects: PropTypes.array,
-  toObjects: PropTypes.array,
-  handleResult: PropTypes.func,
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
-  fsd: PropTypes.func,
-  startTime: PropTypes.string,
-  stopTime: PropTypes.string,
-  confidence: PropTypes.number,
-  defaultCreatedBy: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
-  defaultMarkingDefinitions: PropTypes.array,
-  handleClose: PropTypes.func,
-  handleReverseRelation: PropTypes.func,
+          ? renderLoader()
+          : ''}
+        {step === 1 ? renderSelectRelation() : ''}
+        {step === 2 ? renderForm() : ''}
+      </Drawer>
+      <ProgressBar
+        title={t_i18n('Create multiple relationships')}
+        open={displayProgress}
+        value={progress}
+        onClose={handleCloseProgressBar}
+        variant='determinate'
+      />
+    </>
+  );
 };
 
-export default R.compose(
-  inject18n,
-  withTheme,
-  withStyles(styles),
-)(StixCoreRelationshipCreation);
+export default StixCoreRelationshipCreation;
