@@ -46,6 +46,6 @@ describe('Observables with hashes: management of other stix ids', () => {
     // UPDATE StixFile3 to remove name (standard_id based on MD5) (other_stix_ids has standard_SHA1).
     // UPDATE StixFile3 to remove MD5 (standard_id based on SHA1) (other_stix_ids empty).
     // UPDATE StixFile2 to remove MD5 (standard_id based on SHA1) (other_stix_ids has standard_name).
-    // UPDATE StixFile2 to remove SHA1 (standard_id based on SHA1) (other_stix_ids empty).
+    // UPDATE StixFile2 to remove SHA1 (standard_id based on name) (other_stix_ids empty).
   });
 });
