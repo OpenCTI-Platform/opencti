@@ -533,6 +533,7 @@ class StixSightingRelationship:
         external_references = kwargs.get("externalReferences", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
+        granted_refs = kwargs.get("objectOrganization", None)
         update = kwargs.get("update", False)
 
         self.opencti.app_logger.info(
@@ -569,6 +570,7 @@ class StixSightingRelationship:
                     "externalReferences": external_references,
                     "x_opencti_stix_ids": x_opencti_stix_ids,
                     "x_opencti_workflow_id": x_opencti_workflow_id,
+                    "objectOrganization": granted_refs,
                     "update": update,
                 }
             },
