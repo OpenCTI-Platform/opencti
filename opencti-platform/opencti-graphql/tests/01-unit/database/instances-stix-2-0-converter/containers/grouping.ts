@@ -20,11 +20,11 @@ export const GROUPING_INSTANCE = {
   ],
   x_opencti_stix_ids: [],
   created_at: '2025-06-26T14:59:43.780Z',
-  updated_at: '2025-06-26T15:00:34.701Z',
+  updated_at: '2025-06-26T15:14:12.529Z',
   revoked: false,
   lang: 'en',
   created: '2025-06-26T14:59:43.780Z',
-  modified: '2025-06-26T15:00:34.701Z',
+  modified: '2025-06-26T15:14:12.529Z',
   base_type: 'ENTITY',
   parent_types: [
     'Basic-Object',
@@ -483,7 +483,7 @@ export const EXPECTED_GROUPING = {
   created: '2025-06-26T14:59:43.780Z',
   modified: '2025-06-26T15:14:12.529Z',
   name: 'grouping STIX 2.0',
-  description: 'description:',
+  description: 'description',
   context: 'malware-analysis',
   labels: [
     'ryuk'
@@ -503,7 +503,19 @@ export const EXPECTED_GROUPING = {
     'marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34'
   ],
   object_refs: [
-    'credential--4a194ac7-4aef-57d5-9a64-1312da4e604a',
-    'malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714'
-  ]
+    'malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714',
+    'credential--4a194ac7-4aef-57d5-9a64-1312da4e604a'
+  ],
+  x_opencti_files: [
+    {
+      mime_type: 'application/json',
+      name: 'file_example (2).json',
+      object_marking_refs: [
+        'marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34',
+      ],
+      uri: '/storage/get/import/Grouping/2076a71c-a480-424f-8058-cb5c798e4360/file_example (2).json',
+      version: '2025-06-26T14:59:43.780Z',
+    },
+  ],
+  x_opencti_granted_refs: [],
 };

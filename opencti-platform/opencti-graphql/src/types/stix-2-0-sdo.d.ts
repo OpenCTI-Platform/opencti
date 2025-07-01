@@ -49,3 +49,9 @@ export interface StixOpinion extends StixContainer {
   explanation: string // optional
   opinion: 'strongly-disagree' | 'disagree' | 'neutral' | 'agree' | 'strongly-agree'
 }
+
+export interface StixGrouping extends StixContainer {
+  name: string;
+  description: string;
+  context: string;
+}

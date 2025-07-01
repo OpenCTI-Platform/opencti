@@ -26,7 +26,6 @@ import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../modules/case/case-incide
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../modules/case/case-rft/case-rft-types';
 import { isInferredIndex } from './utils';
-import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 
 export const convertTypeToStix2Type = (type: string): string => {
   if (isStixDomainObjectIdentity(type)) {
@@ -116,7 +115,7 @@ const buildStixObject = (instance: StoreObject): S.StixObject => {
 };
 
 // General
-const buildStixDomain = (instance: StoreEntity | StoreRelation): S.StixDomainObject => {
+export const buildStixDomain = (instance: StoreEntity | StoreRelation): S.StixDomainObject => {
   return {
     ...buildStixObject(instance),
     created: convertToStixDate(instance.created),
