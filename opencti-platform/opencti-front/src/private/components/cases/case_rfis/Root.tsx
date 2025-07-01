@@ -27,11 +27,12 @@ import CaseRfiKnowledge from './CaseRfiKnowledge';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import useGranted, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import CaseRfiEdition from './CaseRfiEdition';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import StixCoreObjectSimulationResultContainer from '../../common/stix_core_objects/StixCoreObjectSimulationResultContainer';
+import CaseRfiDeletion from './CaseRfiDeletion';
 
 const subscription = graphql`
   subscription RootCaseRfiCaseSubscription($id: ID!) {
@@ -116,6 +117,11 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
         EditComponent={(
           <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={currentAccessRight.canEdit}>
             <CaseRfiEdition caseId={caseData.id} />
+          </Security>
+        )}
+        DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+          <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+            <CaseRfiDeletion id={caseData.id} isOpen={isOpen} handleClose={onClose} />
           </Security>
         )}
         enableQuickSubscription={true}

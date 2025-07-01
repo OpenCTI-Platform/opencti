@@ -9,6 +9,7 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { useTheme } from '@mui/styles';
 import { Box } from '@mui/material';
+import MenuItem from '@mui/material/MenuItem';
 import StixCoreObjectMenuItemUnderEE from '../stix_core_objects/StixCoreObjectMenuItemUnderEE';
 import StixCoreObjectSharingList from '../stix_core_objects/StixCoreObjectSharingList';
 import StixCoreObjectBackgroundTasks from '../stix_core_objects/StixCoreObjectActiveBackgroundTasks';
@@ -26,9 +27,10 @@ import { useFormatter } from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
-import {
+import useGranted, {
   KNOWLEDGE_KNENRICHMENT,
   KNOWLEDGE_KNGETEXPORT_KNASKEXPORT,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
   KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS,
   KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
 } from '../../../../utils/hooks/useGranted';
@@ -433,6 +435,7 @@ const ContainerHeader = (props) => {
   const {
     container,
     EditComponent,
+    DeleteComponent,
     link,
     modes,
     currentMode,
@@ -454,9 +457,17 @@ const ContainerHeader = (props) => {
   const [openEnrollPlaybook, setOpenEnrollPlaybook] = useState(false);
   const [openSharing, setOpenSharing] = useState(false);
   const [openAccessRestriction, setOpenAccessRestriction] = useState(false);
+  const [openDelete, setOpenDelete] = useState(false);
+  const canDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]);
 
   const handleCloseEnrollPlaybook = () => {
     setOpenEnrollPlaybook(false);
+  };
+
+  const handleOpenDelete = () => setOpenDelete(true);
+
+  const handleCloseDelete = () => {
+    setOpenDelete(false);
   };
 
   const handleCloseSharing = () => {
@@ -538,7 +549,7 @@ const ContainerHeader = (props) => {
 
   const displayPopoverMenu = (displaySharing && !displaySharingButton)
     || (displayAuthorizedMembers && !displayAuthorizedMembersButton)
-    || (displayEnrollPlaybook && !displayEnrollPlaybookButton);
+    || (displayEnrollPlaybook && !displayEnrollPlaybookButton) || canDelete;
 
   return (
     <div style={containerStyle}>
@@ -761,12 +772,21 @@ const ContainerHeader = (props) => {
                         needs={[KNOWLEDGE_KNENRICHMENT]}
                       />
                     )}
+                    {canDelete && (
+                      <MenuItem onClick={() => {
+                        handleOpenDelete();
+                        closeMenu();
+                      }}
+                      >
+                        {t_i18n('Delete')}
+                      </MenuItem>
+                    )}
                   </Box>
                 )}
               </PopoverMenu>
             )}
-
             {EditComponent}
+            <DeleteComponent isOpen={openDelete} onClose={handleCloseDelete} />
           </div>
         </div>
       </React.Suspense>
