@@ -2,13 +2,14 @@ import React, { FunctionComponent } from 'react';
 import { Field, Form, Formik, FormikErrors, FormikHelpers, FormikState } from 'formik';
 import { graphql } from 'relay-runtime';
 import * as Yup from 'yup';
-import { TextField } from 'formik-mui';
 import Drawer from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import ColorPickerField from '../../../../components/ColorPickerField';
 import ThemeType, { serializeThemeManifest } from './ThemeType';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import ThemeDetectDuplicate from './ThemeDetectDuplicate';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import TextField from '../../../../components/TextField';
 
 const editThemeMutation = graphql`
   mutation ThemeEditionMutation(
@@ -156,7 +157,7 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
         onSubmit={handleSubmit}
         validationSchema={themeValidator}
         validateOnChange
-        validateOnBlur
+        validateonSubmit
         enableReinitialize
       >
         {({ values, setSubmitting, setErrors, resetForm, errors }) => (
@@ -166,7 +167,6 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
               variant="standard"
               name="name"
               label={t_i18n('Name')}
-              style={{ marginTop: 0 }}
               error={!!errors.name}
               helperText={(errors.name
                 ? errors.name
@@ -180,144 +180,104 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
               fullWidth
               disabled={theme.system_default}
               required
-              onBlur={() => handleOnChange(values, setSubmitting, setErrors, resetForm)}
+              onSubmit={() => handleOnChange(values, setSubmitting, setErrors, resetForm)}
             />
             <Field
               component={ColorPickerField}
               name="theme_background"
               label={t_i18n('Background color')}
-              placeholder={t_i18n('Default')}
-              InputLabelProps={{
-                shrink: true,
-              }}
               fullWidth
-              style={{ marginTop: 20 }}
+              style={fieldSpacingContainerStyle}
               variant="standard"
               required
-              onBlur={() => handleOnChange(values, setSubmitting, setErrors, resetForm)}
+              onSubmit={() => handleOnChange(values, setSubmitting, setErrors, resetForm)}
             />
             <Field
               component={ColorPickerField}
               name="theme_paper"
               label={t_i18n('Paper color')}
-              placeholder={t_i18n('Default')}
-              InputLabelProps={{
-                shrink: true,
-              }}
               fullWidth
-              style={{ marginTop: 20 }}
+              style={fieldSpacingContainerStyle}
               variant="standard"
               required
-              onBlur={() => handleOnChange(values, setSubmitting, setErrors, resetForm)}
+              onSubmit={() => handleOnChange(values, setSubmitting, setErrors, resetForm)}
             />
             <Field
               component={ColorPickerField}
               name="theme_nav"
               label={t_i18n('Navigation color')}
-              placeholder={t_i18n('Default')}
-              InputLabelProps={{
-                shrink: true,
-              }}
               fullWidth
-              style={{ marginTop: 20 }}
+              style={fieldSpacingContainerStyle}
               variant="standard"
               required
-              onBlur={() => handleOnChange(values, setSubmitting, setErrors, resetForm)}
+              onSubmit={() => handleOnChange(values, setSubmitting, setErrors, resetForm)}
             />
             <Field
               component={ColorPickerField}
               name="theme_primary"
               label={t_i18n('Primary color')}
-              placeholder={t_i18n('Default')}
-              InputLabelProps={{
-                shrink: true,
-              }}
               fullWidth
-              style={{ marginTop: 20 }}
+              style={fieldSpacingContainerStyle}
               variant="standard"
               required
-              onBlur={() => handleOnChange(values, setSubmitting, setErrors, resetForm)}
+              onSubmit={() => handleOnChange(values, setSubmitting, setErrors, resetForm)}
             />
             <Field
               component={ColorPickerField}
               name="theme_secondary"
               label={t_i18n('Secondary color')}
-              placeholder={t_i18n('Default')}
-              InputLabelProps={{
-                shrink: true,
-              }}
               fullWidth
-              style={{ marginTop: 20 }}
+              style={fieldSpacingContainerStyle}
               variant="standard"
               required
-              onBlur={() => handleOnChange(values, setSubmitting, setErrors, resetForm)}
+              onSubmit={() => handleOnChange(values, setSubmitting, setErrors, resetForm)}
             />
             <Field
               component={ColorPickerField}
               name="theme_accent"
               label={t_i18n('Accent color')}
-              placeholder={t_i18n('Default')}
-              InputLabelProps={{
-                shrink: true,
-              }}
               fullWidth
-              style={{ marginTop: 20 }}
+              style={fieldSpacingContainerStyle}
               variant="standard"
               required
-              onBlur={() => handleOnChange(values, setSubmitting, setErrors, resetForm)}
+              onSubmit={() => handleOnChange(values, setSubmitting, setErrors, resetForm)}
             />
             <Field
               component={ColorPickerField}
               name="theme_text_color"
               label={t_i18n('Text color')}
-              placeholder={t_i18n('Default')}
-              InputLabelProps={{
-                shrink: true,
-              }}
-              style={{ marginTop: 20 }}
+              style={fieldSpacingContainerStyle}
               fullWidth
               variant="standard"
               required
-              onBlur={() => handleOnChange(values, setSubmitting, setErrors, resetForm)}
+              onSubmit={() => handleOnChange(values, setSubmitting, setErrors, resetForm)}
             />
             <Field
               component={TextField}
               variant="standard"
               name="theme_logo"
               label={t_i18n('Logo URL')}
-              placeholder={t_i18n('Default')}
-              InputLabelProps={{
-                shrink: true,
-              }}
               fullWidth
-              style={{ marginTop: 20 }}
-              onBlur={() => handleOnChange(values, setSubmitting, setErrors, resetForm)}
+              style={fieldSpacingContainerStyle}
+              onSubmit={() => handleOnChange(values, setSubmitting, setErrors, resetForm)}
             />
             <Field
               component={TextField}
               variant="standard"
               name="theme_logo_collapsed"
               label={t_i18n('Logo URL (collapsed)')}
-              placeholder={t_i18n('Default')}
-              InputLabelProps={{
-                shrink: true,
-              }}
               fullWidth
-              style={{ marginTop: 20 }}
-              onBlur={() => handleOnChange(values, setSubmitting, setErrors, resetForm)}
+              style={fieldSpacingContainerStyle}
+              onSubmit={() => handleOnChange(values, setSubmitting, setErrors, resetForm)}
             />
             <Field
               component={TextField}
               variant="standard"
               name="theme_logo_login"
               label={t_i18n('Logo URL (login)')}
-              placeholder={t_i18n('Default')}
-              InputLabelProps={{
-                shrink: true,
-              }}
               fullWidth
-              style={{ marginTop: 20 }}
-              onBlur={() => handleOnChange(values, setSubmitting, setErrors, resetForm)}
+              style={fieldSpacingContainerStyle}
+              onSubmit={() => handleOnChange(values, setSubmitting, setErrors, resetForm)}
             />
           </Form>
         )}
