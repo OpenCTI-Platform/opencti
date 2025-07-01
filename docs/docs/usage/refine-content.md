@@ -13,7 +13,7 @@ There are several possibilities for Enterprise Edition customers to use OpenCTI 
 
 - Use the Filigran AI Service leveraging our custom AI model using the token given by the support team.
 - Use OpenAI, MistralAI or AzureAI cloud endpoints using your own tokens.
-- Deploy or use local AI endpoints (Filigran can provide you with the custom model).
+- Deploy or use local AI endpoints.
 
 [Please read the configuration documentation](../deployment/configuration.md)
 
