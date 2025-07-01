@@ -40,9 +40,8 @@ steps:
       - name: cache-node-frontend-e2e
         path: /drone/src/opencti-platform/opencti-front/node_modules
     commands:
-      - cd ./scripts
-      - ls
-      - ./generate-licenses.sh
+      - chmod 777 scripts/*
+      - ./scripts/generate-licenses.sh
       - cd ../opencti-platform/opencti-front
       - yarn install
       - yarn verify-licenses
