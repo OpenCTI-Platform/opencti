@@ -11,7 +11,7 @@ import Tab from '@mui/material/Tab';
 import StixCoreObjectSimulationResultContainer from '@components/common/stix_core_objects/StixCoreObjectSimulationResultContainer';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import Security from 'src/utils/Security';
-import { KNOWLEDGE_KNUPDATE } from 'src/utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from 'src/utils/hooks/useGranted';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import Incident from './Incident';
 import IncidentKnowledge from './IncidentKnowledge';
@@ -29,6 +29,7 @@ import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab } from '../../../../utils/utils';
 import IncidentEdition from './IncidentEdition';
+import IncidentDeletion from './IncidentDeletion';
 
 const subscription = graphql`
   subscription RootIncidentSubscription($id: ID!) {
@@ -142,6 +143,11 @@ const RootIncidentComponent = ({ queryRef }) => {
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <IncidentEdition incidentId={incident.id} />
+                </Security>
+              )}
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+                <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                  <IncidentDeletion id={incident.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
               )}
               enableQuickSubscription={true}
