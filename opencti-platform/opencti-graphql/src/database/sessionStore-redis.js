@@ -33,6 +33,8 @@ class RedisStore extends Store {
         if (!data) return done();
         cache.set(`get-${key}`, data);
         return done(null, data);
+      }).catch((error) => {
+        return done(error, null);
       });
     };
     this.locker.acquire(key, sessionFetcher, (error, result) => {

@@ -525,7 +525,7 @@ const WorkspaceDashboardComponent = ({ queryRef, timeField }) => {
   if (data.workspace) {
     return (
       <DashboardView
-        workspace={data.workspace}
+        data={data.workspace}
         noToolbar={true}
         timeField={timeField}
       />

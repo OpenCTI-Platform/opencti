@@ -660,13 +660,20 @@ export const usePaginationLocalStorage = <U>(
       }
     },
     handleChangeView: (value: string) => {
-      const newValue = {
-        ...viewStorage,
-        filters: initialValue.filters ?? emptyFilterGroup,
-        searchTerm: initialValue.searchTerm ?? '',
-        savedFilters: undefined,
-        view: value,
-      };
+      const oldValue = viewStorage.view;
+      const noReset = (oldValue === 'lines' && value === 'cards') || (oldValue === 'cards' && value === 'lines');
+      const newValue = noReset
+        ? {
+          ...viewStorage,
+          view: value,
+        }
+        : {
+          ...viewStorage,
+          filters: initialValue.filters ?? emptyFilterGroup,
+          searchTerm: initialValue.searchTerm ?? '',
+          savedFilters: undefined,
+          view: value,
+        };
       setValue(newValue);
       dispatch(`${key}_paginationStorage`, newValue);
     },

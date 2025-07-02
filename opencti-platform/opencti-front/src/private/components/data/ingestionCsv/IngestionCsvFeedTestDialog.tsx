@@ -109,7 +109,7 @@ const IngestionCsvFeedTestDialog: FunctionComponent<ingestionCsvFeedTestDialogPr
               variant="outlined"
               style={{ padding: '0px 10px 0px 10px' }}
             >
-              {t_i18n('Please, note that the test will be run on the 50 first lines')}
+              {t_i18n('Please, note that the test will be run on the 10 first lines')}
             </Alert>
           </div>
         </Box>

@@ -140,6 +140,7 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
                   <EventEdition eventId={event.id} />
                 </Security>
               )}
+              redirectToContent={true}
             />
             <Box
               sx={{
