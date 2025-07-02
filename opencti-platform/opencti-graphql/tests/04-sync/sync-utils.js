@@ -5,7 +5,7 @@ import { READ_DATA_INDICES } from '../../src/database/utils';
 import { storeLoadByIdWithRefs } from '../../src/database/middleware';
 import { convertStoreToStix } from '../../src/database/stix-2-1-converter';
 import { checkInstanceDiff } from '../utils/testStream';
-import { logAudit } from '../../src/config/conf';
+import { logApp } from '../../src/config/conf';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../../src/modules/deleteOperation/deleteOperation-types';
 
 const STAT_QUERY = `query stats {
@@ -128,7 +128,7 @@ export const checkPostSyncContent = async (remoteUri, objectMap, relMap, initSti
   };
   const diffElements = await checkInstanceDiff(initStixReport, stixReport, idLoader);
   if (diffElements.length > 0) {
-    logAudit.info(JSON.stringify(diffElements));
+    logApp.info(JSON.stringify(diffElements));
   }
   expect(diffElements.length).toBe(0);
 };

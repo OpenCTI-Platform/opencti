@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { LRUCache } from 'lru-cache';
 import { type ActionHandler, type ActionListener, registerUserActionListener, type UserAction, type UserReadAction } from '../listener/UserActionListener';
-import conf, { logAudit } from '../config/conf';
+import conf, { auditLogTypes, logAudit } from '../config/conf';
 import type { BasicStoreSettings } from '../types/settings';
 import { EVENT_ACTIVITY_VERSION, storeActivityEvent } from '../database/redis';
 import { getEntityFromCache } from '../database/cache';
@@ -97,7 +97,7 @@ const initActivityManager = () => {
       data: event.data
     };
     // In admin case put that to logs/console
-    if (action.event_access === 'administration') {
+    if (auditLogTypes.includes(action.event_access)) {
       logAudit._log(level, action.user, message, meta);
     }
     // In all case, store in history
