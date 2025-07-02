@@ -13,11 +13,11 @@ import { EXPECTED_OBSERVED_DATA, OBSERVED_DATA_INSTANCE } from './instances-stix
 import { EXPECTED_NOTE, NOTE_INSTANCE } from './instances-stix-2-0-converter/containers/note';
 import { EXPECTED_OPINION, OPINION_INSTANCE } from './instances-stix-2-0-converter/containers/opinion';
 import { convertGroupingToStix_2_0 } from '../../../src/modules/grouping/grouping-converter';
-import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../../src/modules/grouping/grouping-types';
 import { EXPECTED_GROUPING, GROUPING_INSTANCE } from './instances-stix-2-0-converter/containers/grouping';
 import { EXPECTED_FEEDBACK, FEEDBACK_INSTANCE } from './instances-stix-2-0-converter/containers/feedback';
 import { convertFeedbackToStix_2_0 } from '../../../src/modules/case/feedback/feedback-converter';
-import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../../../src/modules/case/feedback/feedback-types';
+import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../../../src/modules/case/feedback/types/store';
+import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../../src/modules/grouping/types/store';
 
 describe('Stix 2.0 opencti converter', () => {
   it('should convert Malware', async () => {

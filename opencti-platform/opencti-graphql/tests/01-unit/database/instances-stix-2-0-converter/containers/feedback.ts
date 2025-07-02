@@ -1,5 +1,6 @@
 import type { StoreEntity } from '../../../../../src/types/store';
-import type { StoreEntityStix2Feedback } from '../../../../../src/modules/case/feedback/feedback-types';
+
+import type { StoreEntityStix2Feedback } from '../../../../../src/modules/case/feedback/types/store';
 
 export const FEEDBACK_INSTANCE = {
   _index: 'opencti_stix_domain_objects-000001',
