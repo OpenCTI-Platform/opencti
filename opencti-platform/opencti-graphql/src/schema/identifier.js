@@ -332,6 +332,23 @@ export const idGenFromData = (type, data) => {
   return `${convertTypeToStixType(type)}--${uuid}`;
 };
 
+// TODO add unit tests + refacto with function below
+export const allFieldsContributingToStandardId = (instance) => {
+  const instanceType = instance.entity_type;
+  const isRelation = instance.base_type === BASE_TYPE_RELATION;
+  if (isRelation) return false;
+  const contrib = resolveContribution(instanceType);
+  const properties = contrib.definition[instanceType];
+  if (!properties) {
+    throw DatabaseError(`Unknown definition for type ${instanceType}`);
+  }
+  // Handle specific case of dedicated generation function
+  if (!Array.isArray(properties)) {
+    return [];
+  }
+  return R.map((t) => t.src, R.flatten(properties));
+};
+
 export const fieldsContributingToStandardId = (instance, keys) => {
   const instanceType = instance.entity_type;
   const isRelation = instance.base_type === BASE_TYPE_RELATION;
@@ -510,6 +527,35 @@ export const generateAliasesId = (rawAliases, instance) => {
 export const generateAliasesIdsForInstance = (instance) => {
   const aliases = [...(instance.aliases || []), ...(instance.x_opencti_aliases || [])];
   return generateAliasesId(aliases, instance);
+};
+
+// TODO unit tests
+export const generateHashedObservableStandardIds = (instance) => {
+  const { entity_type } = instance;
+  const ids = [];
+  if (isStixCyberObservableHashedObservable(entity_type)) {
+    const contributingFields = allFieldsContributingToStandardId(instance);
+    contributingFields.forEach((field) => {
+      if (instance[field]) {
+        if (field === 'hashes') {
+          const hashIds = Object.entries(instance[field])
+            .flatMap(([hashKey, hashValue]) => {
+              if (!hashValue) return [];
+              return generateStandardId(entity_type, {
+                hashes: { [hashKey]: hashValue }
+              });
+            });
+          ids.push(...hashIds);
+        } else {
+          const fieldId = generateStandardId(entity_type, {
+            [field]: instance[field]
+          });
+          ids.push(fieldId);
+        }
+      }
+    });
+  }
+  return ids;
 };
 
 const getHashIds = (type, hashes) => {
