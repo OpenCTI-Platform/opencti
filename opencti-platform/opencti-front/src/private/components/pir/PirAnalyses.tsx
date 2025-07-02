@@ -22,6 +22,15 @@ const pirAnalysesContainerFragment = graphql`
       color
       value
     }
+    objectMarking {
+      id
+      definition
+      definition_type
+    }
+    createdBy {
+      id
+      name
+    }
     creators {
       id
       name
