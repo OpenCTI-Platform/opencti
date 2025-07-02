@@ -19667,6 +19667,16 @@ export type Pir = BasicObject & InternalObject & {
   updated_at: Scalars['DateTime']['output'];
 };
 
+
+export type PirPirContainersArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<ContainersOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type PirAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
@@ -40855,7 +40865,7 @@ export type PirResolvers<ContextType = any, ParentType extends ResolversParentTy
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
-  pirContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType>;
+  pirContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<PirPirContainersArgs>>;
   pir_criteria?: Resolver<Array<ResolversTypes['PirCriterion']>, ParentType, ContextType>;
   pir_filters?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   pir_rescan_days?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
