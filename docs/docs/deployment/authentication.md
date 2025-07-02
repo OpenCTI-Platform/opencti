@@ -233,13 +233,13 @@ By default, the claims are mapped based on the content of the JWT `access_token`
 
 ```yaml
 - PROVIDERS__OPENID__CONFIG__GROUPS_MANAGEMENT__TOKEN_REFERENCE=id_token
-- PROVIDERS__OPENID__CONFIG__ORGANISATIONS_MANAGEMENT__TOKEN_REFERENCE=id_token
+- PROVIDERS__OPENID__CONFIG__ORGANIZATIONS_MANAGEMENT__TOKEN_REFERENCE=id_token
 ```
 
 Alternatively, you can request OpenCTI to use claims from the `userinfo` endpoint instead of a JWT.
 ```yaml
 - PROVIDERS__OPENID__CONFIG__GROUPS_MANAGEMENT__READ_USERINFO=true
-- PROVIDERS__OPENID__CONFIG__ORGANISATIONS_MANAGEMENT__READ_USERINFO=true
+- PROVIDERS__OPENID__CONFIG__ORGANIZATIONS_MANAGEMENT__READ_USERINFO=true
 ```
 
 ### Auth0 (button)
