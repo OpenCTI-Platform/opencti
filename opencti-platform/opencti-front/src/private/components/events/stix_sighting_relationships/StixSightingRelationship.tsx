@@ -110,7 +110,7 @@ StixSightingRelationshipProps
                           size='small'
                           aria-label={t_i18n('Update')}
                           onClick={handleOpenEdit}
-                          style={{ marginLeft: theme.spacing(1) }}
+                          style={{ marginLeft: theme.spacing(0.5) }}
                         >
                           {t_i18n('Update')}
                         </Button>
