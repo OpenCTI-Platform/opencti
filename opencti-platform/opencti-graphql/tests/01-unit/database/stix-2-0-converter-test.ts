@@ -18,6 +18,9 @@ import { EXPECTED_FEEDBACK, FEEDBACK_INSTANCE } from './instances-stix-2-0-conve
 import { convertFeedbackToStix_2_0 } from '../../../src/modules/case/feedback/feedback-converter';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../../../src/modules/case/feedback/types/store';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../../src/modules/grouping/types/store';
+import { ENTITY_TYPE_CONTAINER_TASK } from '../../../src/modules/task/task-types';
+import { convertTaskToStix_2_0 } from '../../../src/modules/task/task-converter';
+import { EXPECTED_TASK, TASK_INSTANCE } from './instances-stix-2-0-converter/containers/task';
 
 describe('Stix 2.0 opencti converter', () => {
   it('should convert Malware', async () => {
@@ -47,5 +50,9 @@ describe('Stix 2.0 opencti converter', () => {
   it('should convert Feedback', async () => {
     const result = convertFeedbackToStix_2_0(FEEDBACK_INSTANCE, ENTITY_TYPE_CONTAINER_FEEDBACK);
     expect(result).toEqual(EXPECTED_FEEDBACK);
+  });
+  it('should convert Task', async () => {
+    const result = convertTaskToStix_2_0(TASK_INSTANCE, ENTITY_TYPE_CONTAINER_TASK);
+    expect(result).toEqual(EXPECTED_TASK);
   });
 });
