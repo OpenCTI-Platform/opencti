@@ -85,14 +85,14 @@ const JsonTaxiiMiddleware = express.json({
 
 const initTaxiiApi = (app) => {
   // Discovery api
-  app.get(`${basePath}/taxii2`, async (req, res) => {
+  app.get(`${basePath}/taxii2/`, async (req, res) => {
     try {
       await extractContextFromRequest(req, res);
       const discovery = {
         title: 'OpenCTI TAXII Server',
         description: 'This TAXII Server exposes OpenCTI data through taxii protocol',
-        default: `${getBaseUrl(req)}/taxii2/root`,
-        api_roots: [`${getBaseUrl(req)}/taxii2/root`],
+        default: `${getBaseUrl(req)}/taxii2/root/`,
+        api_roots: [`${getBaseUrl(req)}/taxii2/root/`],
       };
       sendJsonResponse(res, discovery);
     } catch (e) {
@@ -101,7 +101,7 @@ const initTaxiiApi = (app) => {
     }
   });
   // Root api
-  app.get(`${basePath}/taxii2/root`, async (req, res) => {
+  app.get(`${basePath}/taxii2/root/`, async (req, res) => {
     try {
       await extractContextFromRequest(req, res);
       const rootContent = {
@@ -117,7 +117,7 @@ const initTaxiiApi = (app) => {
     }
   });
   // Collection api
-  app.get(`${basePath}/taxii2/root/collections`, async (req, res) => {
+  app.get(`${basePath}/taxii2/root/collections/`, async (req, res) => {
     try {
       const context = await extractContextFromRequest(req, res);
       const collections = await restAllCollections(context, context.user);
@@ -127,7 +127,7 @@ const initTaxiiApi = (app) => {
       res.status(errorDetail.http_status).send(errorDetail);
     }
   });
-  app.get(`${basePath}/taxii2/root/collections/:id`, async (req, res) => {
+  app.get(`${basePath}/taxii2/root/collections/:id/`, async (req, res) => {
     const { id } = req.params;
     try {
       const { collection } = await extractUserAndCollection(req, res, id);
@@ -140,7 +140,7 @@ const initTaxiiApi = (app) => {
       res.status(errorDetail.http_status).send(errorDetail);
     }
   });
-  app.get(`${basePath}/taxii2/root/collections/:id/manifest`, async (req, res) => {
+  app.get(`${basePath}/taxii2/root/collections/:id/manifest/`, async (req, res) => {
     const { id } = req.params;
     try {
       const { context, user, collection } = await extractUserAndCollection(req, res, id);
@@ -158,7 +158,7 @@ const initTaxiiApi = (app) => {
       res.status(errorDetail.http_status).send(errorDetail);
     }
   });
-  app.get(`${basePath}/taxii2/root/collections/:id/objects`, async (req, res) => {
+  app.get(`${basePath}/taxii2/root/collections/:id/objects/`, async (req, res) => {
     const { id } = req.params;
     try {
       const { context, user, collection } = await extractUserAndCollection(req, res, id);
@@ -176,7 +176,7 @@ const initTaxiiApi = (app) => {
       res.status(errorDetail.http_status).send(errorDetail);
     }
   });
-  app.get(`${basePath}/taxii2/root/collections/:id/objects/:object_id`, async (req, res) => {
+  app.get(`${basePath}/taxii2/root/collections/:id/objects/:object_id/`, async (req, res) => {
     const { id, object_id } = req.params;
     try {
       const { context, user, collection } = await extractUserAndCollection(req, res, id);
@@ -195,7 +195,7 @@ const initTaxiiApi = (app) => {
       res.status(errorDetail.http_status).send(errorDetail);
     }
   });
-  app.get(`${basePath}/taxii2/root/collections/:id/objects/:object_id/versions`, async (req, res) => {
+  app.get(`${basePath}/taxii2/root/collections/:id/objects/:object_id/versions/`, async (req, res) => {
     const { id, object_id } = req.params;
     try {
       const { context, user, collection } = await extractUserAndCollection(req, res, id);
@@ -215,7 +215,7 @@ const initTaxiiApi = (app) => {
       res.status(errorDetail.http_status).send(errorDetail);
     }
   });
-  app.post(`${basePath}/taxii2/root/collections/:id/objects`, JsonTaxiiMiddleware, async (req, res) => {
+  app.post(`${basePath}/taxii2/root/collections/:id/objects/`, JsonTaxiiMiddleware, async (req, res) => {
     const { id } = req.params;
     const { objects = [] } = req.body;
     try {
@@ -251,7 +251,7 @@ const initTaxiiApi = (app) => {
     }
   });
   // Status api
-  app.get(`${basePath}/taxii2/root/status/:status_id`, async (req, res) => {
+  app.get(`${basePath}/taxii2/root/status/:status_id/`, async (req, res) => {
     const { status_id } = req.params;
     try {
       const context = await extractContextFromRequest(req, res);
@@ -279,7 +279,7 @@ const initTaxiiApi = (app) => {
     }
   });
   // Unsupported api (delete)
-  app.delete(`${basePath}/taxii2/root/collections/:id/objects/:object_id`, async (_req, res) => {
+  app.delete(`${basePath}/taxii2/root/collections/:id/objects/:object_id/`, async (_req, res) => {
     const e = UnsupportedError('Unsupported operation');
     const errorDetail = errorConverter(e);
     res.status(errorDetail.http_status).send(errorDetail);
