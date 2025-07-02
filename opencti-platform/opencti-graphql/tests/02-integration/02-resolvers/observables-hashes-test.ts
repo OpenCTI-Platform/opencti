@@ -68,8 +68,14 @@ const FILE3 = {
 
 const FILE4 = {
   name: 'file4',
-  md5: '025ad219ece1125a8f5a0e74e32676cb',
+  md5: '33e28153f08dcd28a4c4292ad4c866af',
   sha1: '1b641bf4f6b84efcd42920ff1a88ff2f97fb9d08',
+};
+
+const FILE5 = {
+  name: 'file5',
+  md5: '025ad219ece1125a8f5a0e74e32676cb',
+  sha1: 'c1750bee9c1f7b5dd6f025b645ab6eba5df94175',
 };
 
 describe('Observables with hashes: management of other stix ids', () => {
@@ -93,6 +99,10 @@ describe('Observables with hashes: management of other stix ids', () => {
   const file4StandardIdBySha1 = generateStandardId('StixFile', { hashes: { 'SHA-1': FILE4.sha1 } });
   const file4StandardIdByMd5 = generateStandardId('StixFile', { hashes: { MD5: FILE4.md5 } });
 
+  let file5Id: string;
+  const file5StandardIdByName = generateStandardId('StixFile', { name: FILE5.name, });
+  const file5StandardIdByMd5 = generateStandardId('StixFile', { hashes: { MD5: FILE5.md5 } });
+
   afterAll(async () => {
     await queryAsAdmin({
       query: DELETE_STIX_FILE_QUERY,
@@ -109,6 +119,10 @@ describe('Observables with hashes: management of other stix ids', () => {
     await queryAsAdmin({
       query: DELETE_STIX_FILE_QUERY,
       variables: { id: file4Id, },
+    });
+    await queryAsAdmin({
+      query: DELETE_STIX_FILE_QUERY,
+      variables: { id: file5Id, },
     });
   });
 
@@ -301,10 +315,48 @@ describe('Observables with hashes: management of other stix ids', () => {
     expect(file4WithMd5Sha1Name.x_opencti_stix_ids).toEqual([file4StandardIdBySha1, file4StandardIdByName]);
   });
 
-  it.skip('should merge observables and other_stix_ids', () => {
-    // Create StixFile5 with only name (standard_id based on name) (other_stix_ids empty).
+  it('should merge observables and other_stix_ids', async () => {
+    // Create StixFile5 with name (standard_id based on name) (other_stix_ids empty).
+    const file5WithNameInput: StixFileAddInput = {
+      name: FILE5.name,
+    };
+    const file5WithNameResult = await queryAsAdmin({
+      query: CREATE_STIX_FILE_QUERY,
+      variables: { input: file5WithNameInput },
+    });
+    const file5WithName = file5WithNameResult?.data?.stixCyberObservableAdd;
+    expect(file5WithName.standard_id).toEqual(file5StandardIdByName);
+    expect(file5WithName.x_opencti_stix_ids).toEqual([]);
     // Create StixFile6 with MD5 (standard_id based on MD5) (other_stix_ids empty).
+    const file5WithMd5Input: StixFileAddInput = {
+      hashes: [
+        { algorithm: 'MD5', hash: FILE5.md5 }
+      ]
+    };
+    const file5WithMd5Result = await queryAsAdmin({
+      query: CREATE_STIX_FILE_QUERY,
+      variables: { input: file5WithMd5Input },
+    });
+    const file5WithMd5 = file5WithMd5Result?.data?.stixCyberObservableAdd;
+    file5Id = file5WithMd5.id;
+    expect(file5WithMd5.id).not.toEqual(file5WithName.id);
+    expect(file5WithMd5.standard_id).toEqual(file5StandardIdByMd5);
+    expect(file5WithMd5.x_opencti_stix_ids).toEqual([]);
     // Create StixFile7 with MD5 and name => Merge (standard_id based on MD5) (other_stix_ids has standard_name).
+    const file5WithNameMd5Input: StixFileAddInput = {
+      name: FILE5.name,
+      hashes: [
+        { algorithm: 'MD5', hash: FILE5.md5 }
+      ]
+    };
+    const file5WithNameMd5Result = await queryAsAdmin({
+      query: CREATE_STIX_FILE_QUERY,
+      variables: { input: file5WithNameMd5Input },
+    });
+    const file5WithNameMd5 = file5WithNameMd5Result?.data?.stixCyberObservableAdd;
+    expect(file5WithNameMd5.id).toEqual(file5Id);
+    expect(file5WithNameMd5.standard_id).toEqual(file5StandardIdByMd5);
+    expect(file5WithNameMd5.x_opencti_stix_ids).toEqual([file5StandardIdByName]);
   });
 
   it('should clean standard from other_stix_ids if correlated data is removed', async () => {
