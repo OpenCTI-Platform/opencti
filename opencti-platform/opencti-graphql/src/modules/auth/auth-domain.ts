@@ -78,7 +78,7 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
       subject: 'Your OpenCTI account - Password recovery code',
       html: ejs.render(OCTI_EMAIL_TEMPLATE, { settings, body }),
     };
-    await sendMail(sendMailArgs);
+    await sendMail(sendMailArgs, { identifier: id, category: 'password-reset' });
     // Audit log for sending the OTP
     await publishUserAction({
       user: SYSTEM_USER,
@@ -188,7 +188,7 @@ export const changePassword = async (context: AuthContext, input: ChangePassword
       subject: 'Your OpenCTI account - Password updated',
       html: ejs.render(OCTI_EMAIL_TEMPLATE, { settings, body }),
     };
-    await sendMail(sendMailArgs);
+    await sendMail(sendMailArgs, { identifier: userId, category: 'password-change' });
     return true;
   } catch (error) {
     throw UnsupportedError('Password change failed, please try again.');

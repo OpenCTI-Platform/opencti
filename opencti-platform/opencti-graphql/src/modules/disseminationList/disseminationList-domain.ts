@@ -54,11 +54,13 @@ export const findAll = async (context: AuthContext, user: AuthUser, args: QueryD
  * Actual sending of email, used by the background task.
  * @param context
  * @param user
+ * @param disseminationListId
  * @param opts
  */
 export const sendDisseminationEmail = async (
   context: AuthContext,
   user: AuthUser,
+  disseminationListId: string,
   opts: {
     useOctiTemplate: boolean,
     object: string,
@@ -111,7 +113,7 @@ export const sendDisseminationEmail = async (
     html: generatedEmailBody,
     attachments: attachmentListForSendMail,
   };
-  await sendMail(sendMailArgs);
+  await sendMail(sendMailArgs, { identifier: disseminationListId, category: 'dissemination' });
   await addDisseminationCount();
   return sentFiles;
 };
@@ -143,7 +145,7 @@ export const sendToDisseminationList = async (context: AuthContext, user: AuthUs
     attachFileIds: email_attachment_ids,
     htmlToBodyFileId: html_to_body_file_id
   };
-  const sentFiles = await sendDisseminationEmail(context, user, opts);
+  const sentFiles = await sendDisseminationEmail(context, user, id, opts);
   // activity logs
   const enrichInput = { ...input, files: sentFiles, dissemination: disseminationList.name };
   const baseData = {
