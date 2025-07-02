@@ -1,5 +1,3 @@
-import type { StoreEntity } from '../../../../../src/types/store';
-
 import type { StoreEntityStix2Feedback } from '../../../../../src/modules/case/feedback/types/store';
 
 export const FEEDBACK_INSTANCE = {

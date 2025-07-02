@@ -1,4 +1,6 @@
-const TASK_INSTANCE = {
+import type { StoreEntityTask } from '../../../../../src/modules/task/task-types';
+
+export const TASK_INSTANCE = {
   _index: 'opencti_stix_domain_objects-000001',
   _id: 'd4e02a21-0dda-4295-be80-3c81503b69c8',
   id: 'd4e02a21-0dda-4295-be80-3c81503b69c8',
@@ -17,10 +19,10 @@ const TASK_INSTANCE = {
   ],
   x_opencti_stix_ids: [],
   created_at: '2025-06-26T17:55:29.409Z',
-  updated_at: '2025-06-26T18:04:32.618Z',
+  updated_at: '2025-07-02T15:47:23.099Z',
   revoked: false,
   lang: 'en',
-  modified: '2025-06-26T18:04:32.618Z',
+  modified: '2025-07-02T15:46:34.373Z',
   base_type: 'ENTITY',
   parent_types: [
     'Basic-Object',
@@ -71,9 +73,24 @@ const TASK_INSTANCE = {
       user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       confidence: 100,
       name: 'standard_id'
+    },
+    {
+      updated_at: '2025-07-02T15:46:34.278Z',
+      user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
+      confidence: 100,
+      name: 'objectLabel'
     }
   ],
   due_date: '2025-06-27T22:00:00.000Z',
+  x_opencti_files: [
+    {
+      file_markings: [],
+      mime_type: 'application/json',
+      name: 'ipv4_example.json',
+      id: 'import/Task/d4e02a21-0dda-4295-be80-3c81503b69c8/ipv4_example.json',
+      version: '2025-07-02T15:47:23.032Z'
+    }
+  ],
   'object-assignee': [
     '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
   ],
@@ -94,7 +111,7 @@ const TASK_INSTANCE = {
       lastname: 'OpenCTI',
       description: 'Principal admin account',
       api_token: 'd434ce02-e58e-4cac-8b4c-42bf16748e84',
-      password: '$2a$10$Xl2OL3QrDVbbvyUF2bedW.gEBvVBxIgIBXGDWeOuq9tygRELvoOh6',
+      password: '$2a$10$akF3LCkuTuU4C3o1DKmFeOEXWhdUL0WyBO9740MNbD9I8osQbFzEq',
       user_confidence_level: {
         max_confidence: 100,
         overrides: []
@@ -112,7 +129,7 @@ const TASK_INSTANCE = {
         '6a4b11e1-90ca-4e42-ba42-db7bc7f7d505'
       ],
       created_at: '2025-06-10T09:12:48.092Z',
-      updated_at: '2025-06-26T14:28:09.367Z',
+      updated_at: '2025-07-02T15:50:29.209Z',
       base_type: 'ENTITY',
       parent_types: [
         'Basic-Object',
@@ -126,7 +143,7 @@ const TASK_INSTANCE = {
           name: 'language'
         },
         {
-          updated_at: '2025-06-26T14:28:09.377Z',
+          updated_at: '2025-07-02T15:50:29.218Z',
           user_id: '6a4b11e1-90ca-4e42-ba42-db7bc7f7d505',
           confidence: 100,
           name: 'password'
@@ -290,6 +307,64 @@ const TASK_INSTANCE = {
       }
     }
   ],
+  'object-label': [
+    'd6d10328-9d53-4da8-af37-fb859cbbc693'
+  ],
+  objectLabel: [
+    {
+      _index: 'opencti_stix_meta_objects-000001',
+      _id: 'd6d10328-9d53-4da8-af37-fb859cbbc693',
+      id: 'd6d10328-9d53-4da8-af37-fb859cbbc693',
+      sort: [
+        1749547953634
+      ],
+      x_opencti_stix_ids: [],
+      value: 'ryuk',
+      color: '#1da735',
+      confidence: 100,
+      entity_type: 'Label',
+      internal_id: 'd6d10328-9d53-4da8-af37-fb859cbbc693',
+      standard_id: 'label--66b4d95f-ba1a-54b3-b5a3-74c7fb93142b',
+      creator_id: [
+        '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
+      ],
+      created_at: '2025-06-10T09:32:33.634Z',
+      updated_at: '2025-06-10T09:32:33.634Z',
+      created: '2025-06-10T09:32:33.634Z',
+      modified: '2025-06-10T09:32:33.634Z',
+      base_type: 'ENTITY',
+      parent_types: [
+        'Basic-Object',
+        'Stix-Object',
+        'Stix-Meta-Object'
+      ],
+      i_relation: {
+        _index: 'opencti_stix_meta_relationships-000001',
+        _id: 'b4d809b1-844d-4239-9e9e-0f55066ac3e9',
+        id: 'b4d809b1-844d-4239-9e9e-0f55066ac3e9',
+        sort: [
+          'relationship-meta--969bd487-81c2-4b0b-a5cf-fa1a09736ff2'
+        ],
+        base_type: 'RELATION',
+        internal_id: 'b4d809b1-844d-4239-9e9e-0f55066ac3e9',
+        standard_id: 'relationship-meta--969bd487-81c2-4b0b-a5cf-fa1a09736ff2',
+        entity_type: 'object-label',
+        from: null,
+        fromId: 'd4e02a21-0dda-4295-be80-3c81503b69c8',
+        fromRole: 'object-label_from',
+        fromName: 'task STIX 2.0',
+        fromType: 'Task',
+        source_ref: 'task--temporary',
+        to: null,
+        toId: 'd6d10328-9d53-4da8-af37-fb859cbbc693',
+        toRole: 'object-label_to',
+        toName: 'ryuk',
+        toType: 'Label',
+        target_ref: 'label--temporary',
+        relationship_type: 'object-label'
+      }
+    }
+  ],
   'object-participant': [
     '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
   ],
@@ -310,7 +385,7 @@ const TASK_INSTANCE = {
       lastname: 'OpenCTI',
       description: 'Principal admin account',
       api_token: 'd434ce02-e58e-4cac-8b4c-42bf16748e84',
-      password: '$2a$10$Xl2OL3QrDVbbvyUF2bedW.gEBvVBxIgIBXGDWeOuq9tygRELvoOh6',
+      password: '$2a$10$akF3LCkuTuU4C3o1DKmFeOEXWhdUL0WyBO9740MNbD9I8osQbFzEq',
       user_confidence_level: {
         max_confidence: 100,
         overrides: []
@@ -328,7 +403,7 @@ const TASK_INSTANCE = {
         '6a4b11e1-90ca-4e42-ba42-db7bc7f7d505'
       ],
       created_at: '2025-06-10T09:12:48.092Z',
-      updated_at: '2025-06-26T14:28:09.367Z',
+      updated_at: '2025-07-02T15:50:29.209Z',
       base_type: 'ENTITY',
       parent_types: [
         'Basic-Object',
@@ -342,7 +417,7 @@ const TASK_INSTANCE = {
           name: 'language'
         },
         {
-          updated_at: '2025-06-26T14:28:09.377Z',
+          updated_at: '2025-07-02T15:50:29.218Z',
           user_id: '6a4b11e1-90ca-4e42-ba42-db7bc7f7d505',
           confidence: 100,
           name: 'password'
@@ -495,18 +570,21 @@ const TASK_INSTANCE = {
       }
     }
   ]
-};
+} as unknown as StoreEntityTask;
 
-const EXPECTED_TASK = {
+export const EXPECTED_TASK = {
   id: 'x-opencti-task--8788511e-974c-571d-9a47-381299785038',
   spec_version: '2.0',
   revoked: false,
   confidence: 100,
   created: '2025-06-26T17:55:28.987Z',
-  modified: '2025-06-26T18:04:32.618Z',
+  modified: '2025-07-02T15:46:34.373Z',
   name: 'task STIX 2.0',
   description: 'Description',
   due_date: '2025-06-27T22:00:00.000Z',
+  labels: [
+    'ryuk'
+  ],
   x_opencti_id: 'd4e02a21-0dda-4295-be80-3c81503b69c8',
   x_opencti_type: 'Task',
   type: 'x-opencti-task',
@@ -515,5 +593,17 @@ const EXPECTED_TASK = {
   ],
   object_refs: [
     'case-rft--8456f0c2-0308-578b-b90c-1dd6e0440763'
-  ]
+  ],
+  created_by_ref: undefined,
+  x_opencti_files: [{
+    mime_type: 'application/json',
+    name: 'ipv4_example.json',
+    object_marking_refs: [],
+    uri: '/storage/get/import/Task/d4e02a21-0dda-4295-be80-3c81503b69c8/ipv4_example.json',
+    version: '2025-07-02T15:47:23.032Z',
+  }],
+  external_references: [],
+  x_opencti_granted_refs: [
+    'identity--8cb00c79-ab20-5ed4-b37d-337241b96a29',
+  ],
 };
