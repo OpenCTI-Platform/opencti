@@ -41,7 +41,7 @@ export const stixSightingRelationshipEditionDeleteMutation = graphql`
   }
 `;
 
-const StixSightingRelationshipEdition = ({ stixSightingRelationshipId, open, handleClose, handleDelete, inferred, noStoreUpdate, inGraph }) => {
+const StixSightingRelationshipEdition = ({ stixSightingRelationshipId, open, handleClose, inferred, noStoreUpdate, inGraph }) => {
   const classes = useStyles();
   const queryRef = useQueryLoading(stixSightingRelationshipEditionOverviewQuery, { id: stixSightingRelationshipId });
 
@@ -59,7 +59,6 @@ const StixSightingRelationshipEdition = ({ stixSightingRelationshipId, open, han
             <StixSightingRelationshipEditionOverview
               queryRef={queryRef}
               handleClose={handleClose}
-              handleDelete={typeof handleDelete === 'function' ? handleDelete : null}
               inferred={inferred}
               noStoreUpdate={noStoreUpdate}
             />
@@ -85,7 +84,6 @@ const StixSightingRelationshipEdition = ({ stixSightingRelationshipId, open, han
             <StixSightingRelationshipEditionOverview
               queryRef={queryRef}
               handleClose={handleClose}
-              handleDelete={typeof handleDelete === 'function' ? handleDelete : null}
               inferred={inferred}
               noStoreUpdate={noStoreUpdate}
             />
