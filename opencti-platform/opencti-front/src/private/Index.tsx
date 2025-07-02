@@ -155,6 +155,12 @@ const Index = ({ settings }: IndexProps) => {
       },
     },
   };
+  const chartFlowConfigVars = {
+    vars: {
+      OPENCTI_URL: 'https://testing.octi.staging.filigran.io',
+      OPENCTI_TOKEN: '45fcae96-5006-45ac-b89b-3aaa576b765c',
+    },
+  };
   return (
     <>
       <SystemBanners settings={settings} />
@@ -173,8 +179,9 @@ const Index = ({ settings }: IndexProps) => {
         <TopBar />
         <LeftBar />
         <BubbleChat
-          chatflowid="46a94d00-5058-4550-bf5f-39f908919836"
-          apiHost="https://platform.filigran.ai"
+          chatflowid="4712edae-8b13-439e-922e-c941ec2f296a"
+          apiHost="https://platform.corporate.staging.filigran.ai"
+          chatflowConfig={chartFlowConfigVars}
           theme={chatBoxTheme}
         />
         <Message />
