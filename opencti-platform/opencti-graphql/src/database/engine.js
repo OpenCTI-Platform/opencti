@@ -2236,7 +2236,7 @@ const buildLocalMustFilter = async (validFilter) => {
       valuesFiltering.push({ range: { [headKey]: { gte: values[0], lte: values[1] } } });
     } else {
       // case where we would like to build a terms query
-      const isTermsQuery = (operator === 'eq' || operator === 'not_eq') && values.length > 0
+      const isTermsQuery = (operator === 'eq' || operator === 'not_eq') && values.length > 0 && !values.includes('EXISTS')
         && arrayKeys.every((k) => !k.includes('*') && (k.endsWith(ID_INTERNAL) || k.endsWith(ID_INFERRED)));
       if (isTermsQuery) {
         const targets = operator === 'eq' ? valuesFiltering : noValuesFiltering;
@@ -2848,6 +2848,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
           const computedIndices = computeQueryIndices([], [ABSTRACT_STIX_OBJECT]);
           const relatedEntities = await elPaginate(context, user, computedIndices, {
             connectionFormat: false,
+            first: ES_MAX_PAGINATION,
             bypassSizeLimit: true, // ensure that max runtime prevent on ES_MAX_PAGINATION
             baseData: true,
             filters: addFilter(dynamicFilter[0], TYPE_FILTER, [ABSTRACT_STIX_CORE_OBJECT]),
@@ -2864,13 +2865,15 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
           throw UnsupportedError('regardingOf only support types equality restriction');
         }
         const types = type?.values;
-        const keys = isEmptyField(types) ? buildRefRelationKey('*', '*')
-          : types.flatMap((t) => [buildRefRelationKey(t, ID_INTERNAL), buildRefRelationKey(t, ID_INFERRED)]);
         if (isEmptyField(ids)) {
+          const keys = isEmptyField(types) ? buildRefRelationKey('*', '*')
+            : types.map((t) => buildRefRelationKey(t, '*'));
           keys.forEach((relKey) => {
             regardingFilters.push({ key: [relKey], operator, values: ['EXISTS'] });
           });
         } else {
+          const keys = isEmptyField(types) ? buildRefRelationKey('*', '*')
+            : types.flatMap((t) => [buildRefRelationKey(t, ID_INTERNAL), buildRefRelationKey(t, ID_INFERRED)]);
           regardingFilters.push({ key: keys, operator, values: ids });
         }
         finalFilterGroups.push({
