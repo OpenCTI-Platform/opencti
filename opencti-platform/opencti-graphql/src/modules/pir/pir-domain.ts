@@ -1,21 +1,22 @@
 import { now } from 'moment';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { type EntityOptions, internalLoadById, listEntitiesPaginated, listRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
+import { type EntityOptions, internalLoadById, listEntities, listEntitiesPaginated, listRelations, listRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityPir, ENTITY_TYPE_PIR, type PirExplanation } from './pir-types';
-import { type EditInput, EditOperation, type PirAddInput, type PirFlagElementInput, type PirUnflagElementInput } from '../../generated/graphql';
+import { type EditInput, EditOperation, OrderingMode, type PirAddInput, type PirFlagElementInput, type PirUnflagElementInput } from '../../generated/graphql';
 import { createEntity, deleteRelationsByFromAndTo, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS, logApp } from '../../config/conf';
 import { deleteInternalObject } from '../../domain/internalObject';
 import { registerConnectorForPir, unregisterConnectorForIngestion } from '../../domain/connector';
-import type { BasicStoreCommon } from '../../types/store';
+import type { BasicStoreCommon, BasicStoreObject } from '../../types/store';
 import { RELATION_IN_PIR } from '../../schema/stixRefRelationship';
 import { createPirRel, serializePir, updatePirExplanations } from './pir-utils';
 import { FunctionalError } from '../../config/errors';
-import { ABSTRACT_STIX_REF_RELATIONSHIP } from '../../schema/general';
+import { ABSTRACT_STIX_REF_RELATIONSHIP, ENTITY_TYPE_CONTAINER } from '../../schema/general';
 import { elRawUpdateByQuery } from '../../database/engine';
 import { READ_INDEX_HISTORY } from '../../database/utils';
+import { addFilter } from '../../utils/filtering/filtering-utils';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityPir>(context, user, id, ENTITY_TYPE_PIR);
@@ -23,6 +24,25 @@ export const findById = (context: AuthContext, user: AuthUser, id: string) => {
 
 export const findAll = (context: AuthContext, user: AuthUser, opts?: EntityOptions<BasicStoreEntityPir>) => {
   return listEntitiesPaginated<BasicStoreEntityPir>(context, user, [ENTITY_TYPE_PIR], opts);
+};
+
+export const findPirContainers = async (context: AuthContext, user: AuthUser, pirId: string, opts?: EntityOptions<BasicStoreObject>) => {
+  const pirMetaRelsOpts = {
+    count: 100,
+    orderBy: 'modified',
+    orderMode: OrderingMode.Desc,
+    relationship_type: ['in-pir'],
+    toId: pirId,
+  };
+  const stixRefRelationships = await listRelations(context, user, [RELATION_IN_PIR], pirMetaRelsOpts); // TODO PIR listRelations is not of correct type
+  const flaggedIds = (stixRefRelationships.edges
+    .map((n) => n.node.fromId)
+    .filter((n) => !!n) ?? []) as string[];
+  if (flaggedIds.length === 0) {
+    flaggedIds.push('<invalid id>'); // To force empty result in the query result
+  }
+  const filters = addFilter(opts?.filters, 'objects', flaggedIds);
+  return listEntities(context, user, [ENTITY_TYPE_CONTAINER], { filters });
 };
 
 export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAddInput) => {

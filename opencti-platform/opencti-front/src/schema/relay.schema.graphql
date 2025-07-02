@@ -3010,7 +3010,7 @@ enum ContainersOrdering {
 
 type ContainerConnection {
   pageInfo: PageInfo!
-  edges: [ContainerEdge]
+  edges: [ContainerEdge!]!
 }
 
 type ContainerEdge {
@@ -13368,6 +13368,7 @@ type Pir implements InternalObject & BasicObject {
   pir_criteria: [PirCriterion!]!
   pir_filters: String!
   lastEventId: String!
+  pirContainers: ContainerConnection
 }
 
 enum PirOrdering {

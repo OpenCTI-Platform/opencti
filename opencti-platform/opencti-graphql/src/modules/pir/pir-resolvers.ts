@@ -1,5 +1,5 @@
 import type { Resolvers } from '../../generated/graphql';
-import { pirFlagElement, deletePir, findAll, findById, pirAdd, pirUnflagElement, updatePir } from './pir-domain';
+import { pirFlagElement, deletePir, findAll, findById, pirAdd, pirUnflagElement, updatePir, findPirContainers } from './pir-domain';
 
 const pirResolvers: Resolvers = {
   Query: {
@@ -9,6 +9,7 @@ const pirResolvers: Resolvers = {
   Pir: {
     creators: (pir, _, context) => context.batch.creatorsBatchLoader.load(pir.creator_id),
     objectMarking: (pir, _, context) => context.batch.markingsBatchLoader.load(pir),
+    pirContainers: (pir, args, context) => findPirContainers(context, context.user, pir.id, args),
   },
   Mutation: {
     pirAdd: (_, { input }, context) => pirAdd(context, context.user, input),

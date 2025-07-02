@@ -3266,7 +3266,7 @@ enum ContainersOrdering {
 }
 type ContainerConnection {
   pageInfo: PageInfo!
-  edges: [ContainerEdge]
+  edges: [ContainerEdge!]!
 }
 type ContainerEdge {
   cursor: String!

@@ -29,6 +29,7 @@ type Pir implements InternalObject & BasicObject {
     pir_criteria: [PirCriterion!]!
     pir_filters: String!
     lastEventId: String!
+    pirContainers: ContainerConnection
 }
 
 # Ordering

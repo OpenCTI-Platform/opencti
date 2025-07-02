@@ -160,7 +160,7 @@ const PirAnalysesContent = ({
     filters: [
       { key: 'objects',
         operator: 'eq',
-        mode: 'and',
+        mode: 'or',
         values: flaggedIds,
       },
     ],

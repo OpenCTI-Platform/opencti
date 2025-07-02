@@ -4151,7 +4151,7 @@ export type ContainerStixCoreRelationshipsDistributionArgs = {
 
 export type ContainerConnection = {
   __typename?: 'ContainerConnection';
-  edges?: Maybe<Array<Maybe<ContainerEdge>>>;
+  edges: Array<ContainerEdge>;
   pageInfo: PageInfo;
 };
 
@@ -19659,6 +19659,7 @@ export type Pir = BasicObject & InternalObject & {
   name: Scalars['String']['output'];
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   parent_types: Array<Scalars['String']['output']>;
+  pirContainers?: Maybe<ContainerConnection>;
   pir_criteria: Array<PirCriterion>;
   pir_filters: Scalars['String']['output'];
   pir_rescan_days: Scalars['Int']['output'];
@@ -32914,7 +32915,7 @@ export type ResolversTypes = ResolversObject<{
   ConstraintNumber: ResolverTypeWrapper<Scalars['ConstraintNumber']['output']>;
   ConstraintString: ResolverTypeWrapper<Scalars['ConstraintString']['output']>;
   Container: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['Container']>;
-  ContainerConnection: ResolverTypeWrapper<Omit<ContainerConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['ContainerEdge']>>> }>;
+  ContainerConnection: ResolverTypeWrapper<Omit<ContainerConnection, 'edges'> & { edges: Array<ResolversTypes['ContainerEdge']> }>;
   ContainerEdge: ResolverTypeWrapper<Omit<ContainerEdge, 'node'> & { node: ResolversTypes['Container'] }>;
   ContainerEditMutations: ResolverTypeWrapper<Omit<ContainerEditMutations, 'contextClean' | 'contextPatch' | 'editAuthorizedMembers' | 'fieldPatch' | 'investigationAdd' | 'knowledgeAddFromInvestigation' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Container']>, contextPatch?: Maybe<ResolversTypes['Container']>, editAuthorizedMembers?: Maybe<ResolversTypes['Container']>, fieldPatch?: Maybe<ResolversTypes['Container']>, investigationAdd?: Maybe<ResolversTypes['Workspace']>, knowledgeAddFromInvestigation?: Maybe<ResolversTypes['Container']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Container']> }>;
   ContainersOrdering: ContainersOrdering;
@@ -33869,7 +33870,7 @@ export type ResolversParentTypes = ResolversObject<{
   ConstraintNumber: Scalars['ConstraintNumber']['output'];
   ConstraintString: Scalars['ConstraintString']['output'];
   Container: ResolversInterfaceTypes<ResolversParentTypes>['Container'];
-  ContainerConnection: Omit<ContainerConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['ContainerEdge']>>> };
+  ContainerConnection: Omit<ContainerConnection, 'edges'> & { edges: Array<ResolversParentTypes['ContainerEdge']> };
   ContainerEdge: Omit<ContainerEdge, 'node'> & { node: ResolversParentTypes['Container'] };
   ContainerEditMutations: Omit<ContainerEditMutations, 'contextClean' | 'contextPatch' | 'editAuthorizedMembers' | 'fieldPatch' | 'investigationAdd' | 'knowledgeAddFromInvestigation' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Container']>, contextPatch?: Maybe<ResolversParentTypes['Container']>, editAuthorizedMembers?: Maybe<ResolversParentTypes['Container']>, fieldPatch?: Maybe<ResolversParentTypes['Container']>, investigationAdd?: Maybe<ResolversParentTypes['Workspace']>, knowledgeAddFromInvestigation?: Maybe<ResolversParentTypes['Container']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Container']> };
   ContextData: Omit<ContextData, 'external_references'> & { external_references?: Maybe<Array<ResolversParentTypes['ExternalReference']>> };
@@ -35998,7 +35999,7 @@ export type ContainerResolvers<ContextType = any, ParentType extends ResolversPa
 }>;
 
 export type ContainerConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ContainerConnection'] = ResolversParentTypes['ContainerConnection']> = ResolversObject<{
-  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['ContainerEdge']>>>, ParentType, ContextType>;
+  edges?: Resolver<Array<ResolversTypes['ContainerEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -40854,6 +40855,7 @@ export type PirResolvers<ContextType = any, ParentType extends ResolversParentTy
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  pirContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType>;
   pir_criteria?: Resolver<Array<ResolversTypes['PirCriterion']>, ParentType, ContextType>;
   pir_filters?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   pir_rescan_days?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
