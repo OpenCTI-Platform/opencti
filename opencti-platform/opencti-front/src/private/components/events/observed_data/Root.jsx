@@ -19,7 +19,8 @@ import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import ObservedDataEdition from './ObservedDataEdition';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import ObservedDataDeletion from './ObservedDataDeletion';
 
 const subscription = graphql`
   subscription RootObservedDataSubscription($id: ID!) {
@@ -123,6 +124,11 @@ class RootObservedData extends Component {
                     EditComponent={(
                       <Security needs={[KNOWLEDGE_KNUPDATE]}>
                         <ObservedDataEdition observedDataId={observedData.id} />
+                      </Security>
+                    )}
+                    DeleteComponent={({ isOpen, onClose }) => (
+                      <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                        <ObservedDataDeletion id={observedData.id} isOpen={isOpen} handleClose={onClose} />
                       </Security>
                     )}
                     redirectToContent = {false}
