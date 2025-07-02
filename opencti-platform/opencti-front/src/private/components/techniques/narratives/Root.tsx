@@ -23,8 +23,9 @@ import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import NarrativeEdition from './NarrativeEdition';
+import NarrativeDeletion from './NarrativeDeletion';
 
 const subscription = graphql`
   subscription RootNarrativeSubscription($id: ID!) {
@@ -134,6 +135,11 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <NarrativeEdition narrativeId={narrative.id} />
+                </Security>
+              )}
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+                <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                  <NarrativeDeletion id={narrative.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
               )}
             />

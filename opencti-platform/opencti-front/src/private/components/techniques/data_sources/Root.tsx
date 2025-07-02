@@ -24,8 +24,9 @@ import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import DataSourceEdition from './DataSourceEdition';
+import DataSourceDeletion from './DataSourceDeletion';
 
 const subscription = graphql`
   subscription RootDataSourcesSubscription($id: ID!) {
@@ -104,6 +105,11 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
             EditComponent={(
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <DataSourceEdition dataSourceId={dataSource.id} />
+              </Security>
+            )}
+            DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                <DataSourceDeletion id={dataSource.id} isOpen={isOpen} handleClose={onClose} />
               </Security>
             )}
             redirectToContent={true}

@@ -25,7 +25,8 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
 import DataComponentEdition from './DataComponentEdition';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import DataComponentDeletion from './DataComponentDeletion';
 
 const subscription = graphql`
   subscription RootDataComponentSubscription($id: ID!) {
@@ -110,6 +111,11 @@ const RootDataComponent = () => {
                     EditComponent={(
                       <Security needs={[KNOWLEDGE_KNUPDATE]}>
                         <DataComponentEdition dataComponentId={dataComponent.id} />
+                      </Security>
+                    )}
+                    DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+                      <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                        <DataComponentDeletion id={dataComponent.id} isOpen={isOpen} handleClose={onClose} />
                       </Security>
                     )}
                     noAliases={true}

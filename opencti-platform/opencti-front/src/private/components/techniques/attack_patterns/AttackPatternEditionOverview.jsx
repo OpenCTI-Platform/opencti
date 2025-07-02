@@ -4,7 +4,6 @@ import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import { useTheme } from '@mui/styles';
-import { Stack } from '@mui/material';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -21,7 +20,6 @@ import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeCon
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-import AttackPatternDeletion from './AttackPatternDeletion';
 
 const attackPatternMutationFieldPatch = graphql`
   mutation AttackPatternEditionOverviewFieldPatchMutation(
@@ -303,21 +301,16 @@ const AttackPatternEditionOverviewComponent = (props) => {
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
-            <AttackPatternDeletion
-              id={attackPattern.id}
-            />
-            {enableReferences && (
-            <CommitMessage
-              submitForm={submitForm}
-              disabled={isSubmitting || !isValid || !dirty}
-              setFieldValue={setFieldValue}
-              open={false}
-              values={values.references}
-              id={attackPattern.id}
-            />
-            )}
-          </Stack>
+          {enableReferences && (
+          <CommitMessage
+            submitForm={submitForm}
+            disabled={isSubmitting || !isValid || !dirty}
+            setFieldValue={setFieldValue}
+            open={false}
+            values={values.references}
+            id={attackPattern.id}
+          />
+          )}
         </Form>
       )}
     </Formik>
