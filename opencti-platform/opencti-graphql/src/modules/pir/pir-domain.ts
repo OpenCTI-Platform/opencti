@@ -2,7 +2,15 @@ import { now } from 'moment';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type EntityOptions, internalLoadById, listEntities, listEntitiesPaginated, listRelations, listRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityPir, ENTITY_TYPE_PIR, type PirExplanation } from './pir-types';
-import { type EditInput, EditOperation, OrderingMode, type PirAddInput, type PirFlagElementInput, type PirUnflagElementInput } from '../../generated/graphql';
+import {
+  type EditInput,
+  EditOperation,
+  type FilterGroup,
+  OrderingMode,
+  type PirAddInput,
+  type PirFlagElementInput,
+  type PirUnflagElementInput
+} from '../../generated/graphql';
 import { createEntity, deleteRelationsByFromAndTo, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
@@ -16,7 +24,8 @@ import { FunctionalError } from '../../config/errors';
 import { ABSTRACT_STIX_REF_RELATIONSHIP, ENTITY_TYPE_CONTAINER } from '../../schema/general';
 import { elRawUpdateByQuery } from '../../database/engine';
 import { READ_INDEX_HISTORY } from '../../database/utils';
-import { addFilter } from '../../utils/filtering/filtering-utils';
+import { addFilter, extractFilterKeyValues } from '../../utils/filtering/filtering-utils';
+import { RELATION_TO_FILTER } from '../../utils/filtering/filtering-constants';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityPir>(context, user, id, ENTITY_TYPE_PIR);
@@ -38,11 +47,15 @@ export const findPirContainers = async (context: AuthContext, user: AuthUser, pi
   const flaggedIds = (stixRefRelationships.edges
     .map((n) => n.node.fromId)
     .filter((n) => !!n) ?? []) as string[];
-  if (flaggedIds.length === 0) {
-    flaggedIds.push('<invalid id>'); // To force empty result in the query result
+  const pir = await findById(context, user, pirId);
+  const pirFilters: FilterGroup[] = pir.pir_criteria.map((c) => JSON.parse(c.filters));
+  const pirToIdFilterIds = pirFilters.flatMap((f) => extractFilterKeyValues(RELATION_TO_FILTER, f));
+  const idsOfInterest = [...flaggedIds, ...pirToIdFilterIds];
+  if (idsOfInterest.length === 0) {
+    idsOfInterest.push('<invalid id>'); // To force empty result in the query result
   }
-  const filters = addFilter(opts?.filters, 'objects', flaggedIds);
-  return listEntities(context, user, [ENTITY_TYPE_CONTAINER], { filters });
+  const filters = addFilter(opts?.filters, 'objects', idsOfInterest);
+  return listEntities(context, user, [ENTITY_TYPE_CONTAINER], { filters }); // TODO PIR specify new type (ConnectorConnection)
 };
 
 export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAddInput) => {
