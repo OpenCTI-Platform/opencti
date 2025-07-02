@@ -25,8 +25,9 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import { RootCampaignQuery } from './__generated__/RootCampaignQuery.graphql';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import CampaignEdition from './CampaignEdition';
+import CampaignDeletion from './CampaignDeletion';
 
 const subscription = graphql`
   subscription RootCampaignSubscription($id: ID!) {
@@ -140,6 +141,11 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <CampaignEdition campaignId={campaign.id} />
+                </Security>
+              )}
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+                <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                  <CampaignDeletion id={campaign.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
               )}
               enableEnricher={true}
