@@ -5,7 +5,7 @@ import { FROM_START, FROM_START_STR, UNTIL_END, UNTIL_END_STR } from '../utils/f
 import { objects } from '../schema/stixRefRelationship';
 import { isEmptyField } from './utils';
 import { ENTITY_TYPE_CONTAINER_TASK } from '../modules/task/task-types';
-import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedback-types';
+import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/types/store';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../modules/case/case-incident/case-incident-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../modules/case/case-rft/case-rft-types';
