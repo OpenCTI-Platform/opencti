@@ -25,8 +25,9 @@ import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import IndicatorEdition from './IndicatorEdition';
+import IndicatorDeletion from './IndicatorDeletion';
 
 const subscription = graphql`
   subscription RootIndicatorSubscription($id: ID!) {
@@ -113,6 +114,11 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
             EditComponent={(
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <IndicatorEdition indicatorId={indicator.id} />
+              </Security>
+            )}
+            DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                <IndicatorDeletion id={indicator.id} isOpen={isOpen} handleClose={onClose} />
               </Security>
             )}
             noAliases={true}
