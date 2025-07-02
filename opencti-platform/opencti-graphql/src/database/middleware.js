@@ -1842,17 +1842,19 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
     if (isStixCyberObservable(instance.entity_type)) {
       // Standard id is generated from data depending on multiple ways and multiple attributes
       if (isStixCyberObservableHashedObservable(instanceType) && preparedElements.length > 0) {
-        const stixIdsToAdd = generateHashedObservableStandardIds(updatedInstance)
-          .filter((id) => id !== standardId);
-        // If update already contains a change of the other stix ids
-        // we need to impact directly the impacted and updated related input
+        const instanceStandardIds = generateHashedObservableStandardIds(instance);
+        const updatedInstanceStandardIds = generateHashedObservableStandardIds(updatedInstance);
+        const instanceOtherStixIds = (instance[IDS_STIX] ?? []).filter((id) => !instanceStandardIds.includes(id));
+        const newStixIds = [...instanceOtherStixIds, ...updatedInstanceStandardIds].filter((id) => id !== standardId);
+
         const stixInput = R.find((e) => e.key === IDS_STIX, preparedElements);
         if (stixInput) {
-          stixInput.value = R.uniq([...stixInput.value, ...stixIdsToAdd]);
+          // If update already contains a change of the other stix ids
+          // we need to impact directly the impacted and updated related input
+          stixInput.value = R.uniq([...stixInput.value, ...newStixIds]);
         } else {
           // If no stix ids modification, add the standard id in the list and patch the element
-          const ids = R.uniq([...(instance[IDS_STIX] ?? []), ...stixIdsToAdd]);
-          preparedElements.push({ key: IDS_STIX, value: ids });
+          preparedElements.push({ key: IDS_STIX, value: R.uniq(newStixIds) });
         }
       } else if (isStandardIdUpgraded(instance, updatedInstance)) {
         // If update already contains a change of the other stix ids
