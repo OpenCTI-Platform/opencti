@@ -466,9 +466,7 @@ const ContainerHeader = (props) => {
 
   const handleOpenDelete = () => setOpenDelete(true);
 
-  const handleCloseDelete = () => {
-    setOpenDelete(false);
-  };
+  const handleCloseDelete = () => setOpenDelete(false);
 
   const handleCloseSharing = () => {
     setOpenSharing(false);

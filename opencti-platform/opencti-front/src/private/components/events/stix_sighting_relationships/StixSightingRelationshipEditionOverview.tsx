@@ -52,16 +52,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   title: {
     float: 'left',
   },
-  button: {
-    float: 'left',
-    backgroundColor: theme.palette.error.main,
-    borderColor: theme.palette.error.main,
-    color: theme.palette.common.white,
-    '&:hover': {
-      backgroundColor: theme.palette.error.dark,
-      borderColor: theme.palette.error.dark,
-    },
-  },
 }));
 
 const StixSightingRelationshipEditionOverviewFragment = graphql`
