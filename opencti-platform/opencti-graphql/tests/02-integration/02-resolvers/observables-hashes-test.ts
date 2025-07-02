@@ -339,7 +339,7 @@ describe('Observables with hashes: management of other stix ids', () => {
     });
     const file5WithMd5 = file5WithMd5Result?.data?.stixCyberObservableAdd;
     file5Id = file5WithMd5?.id;
-    expect(file5WithMd5?.id).not.toEqual(file5WithName.id);
+    expect(file5WithMd5?.id).not.toEqual(file5WithName?.id);
     expect(file5WithMd5?.standard_id).toEqual(file5StandardIdByMd5);
     expect(file5WithMd5?.x_opencti_stix_ids).toEqual([]);
     // Create StixFile7 with MD5 and name => Merge (standard_id based on MD5) (other_stix_ids has standard_name).
