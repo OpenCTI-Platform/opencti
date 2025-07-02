@@ -2236,7 +2236,7 @@ const buildLocalMustFilter = async (validFilter) => {
       valuesFiltering.push({ range: { [headKey]: { gte: values[0], lte: values[1] } } });
     } else {
       // case where we would like to build a terms query
-      const isTermsQuery = (operator === 'eq' || operator === 'not_eq') && values.length > 0
+      const isTermsQuery = (operator === 'eq' || operator === 'not_eq') && values.length > 0 && !values.includes('EXISTS')
         && arrayKeys.every((k) => !k.includes('*') && (k.endsWith(ID_INTERNAL) || k.endsWith(ID_INFERRED)));
       if (isTermsQuery) {
         const targets = operator === 'eq' ? valuesFiltering : noValuesFiltering;
@@ -2848,6 +2848,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
           const computedIndices = computeQueryIndices([], [ABSTRACT_STIX_OBJECT]);
           const relatedEntities = await elPaginate(context, user, computedIndices, {
             connectionFormat: false,
+            first: ES_MAX_PAGINATION,
             bypassSizeLimit: true, // ensure that max runtime prevent on ES_MAX_PAGINATION
             baseData: true,
             filters: addFilter(dynamicFilter[0], TYPE_FILTER, [ABSTRACT_STIX_CORE_OBJECT]),
