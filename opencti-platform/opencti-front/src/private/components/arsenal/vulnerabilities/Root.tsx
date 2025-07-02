@@ -23,8 +23,9 @@ import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import { RootVulnerabilityQuery } from './__generated__/RootVulnerabilityQuery.graphql';
 import { RootVulnerabilitySubscription } from './__generated__/RootVulnerabilitySubscription.graphql';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import VulnerabilityEdition from './VulnerabilityEdition';
+import VulnerabilityDeletion from './VulnerabilityDeletion';
 
 const subscription = graphql`
   subscription RootVulnerabilitySubscription($id: ID!) {
@@ -140,6 +141,11 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <VulnerabilityEdition vulnerabilityId={vulnerabilityId} />
+                </Security>
+              )}
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+                <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                  <VulnerabilityDeletion id={vulnerability.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
               )}
               enableEnricher={true}

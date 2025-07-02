@@ -23,8 +23,9 @@ import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import { RootChannelSubscription } from './__generated__/RootChannelSubscription.graphql';
 import { RootChannelQuery } from './__generated__/RootChannelQuery.graphql';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import {KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE} from '../../../../utils/hooks/useGranted';
 import ChannelEdition from './ChannelEdition';
+import ChannelDeletion from './ChannelDeletion';
 
 const subscription = graphql`
   subscription RootChannelSubscription($id: ID!) {
@@ -140,6 +141,11 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <ChannelEdition channelId={channel.id} />
+                </Security>
+              )}
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+                <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                  <ChannelDeletion id={channel.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
               )}
               enableEnricher={true}
