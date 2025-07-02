@@ -332,24 +332,7 @@ export const idGenFromData = (type, data) => {
   return `${convertTypeToStixType(type)}--${uuid}`;
 };
 
-// TODO add unit tests + refacto with function below
 export const allFieldsContributingToStandardId = (instance) => {
-  const instanceType = instance.entity_type;
-  const isRelation = instance.base_type === BASE_TYPE_RELATION;
-  if (isRelation) return false;
-  const contrib = resolveContribution(instanceType);
-  const properties = contrib.definition[instanceType];
-  if (!properties) {
-    throw DatabaseError(`Unknown definition for type ${instanceType}`);
-  }
-  // Handle specific case of dedicated generation function
-  if (!Array.isArray(properties)) {
-    return [];
-  }
-  return R.map((t) => t.src, R.flatten(properties));
-};
-
-export const fieldsContributingToStandardId = (instance, keys) => {
   const instanceType = instance.entity_type;
   const isRelation = instance.base_type === BASE_TYPE_RELATION;
   if (isRelation) return false;
@@ -364,11 +347,16 @@ export const fieldsContributingToStandardId = (instance, keys) => {
   }
   // Handle specific case of all
   if (properties.length === 0) {
-    return keys;
+    return null;
   }
+  return R.map((t) => t.src, R.flatten(properties));
+};
+
+export const fieldsContributingToStandardId = (instance, keys) => {
+  const allFields = allFieldsContributingToStandardId(instance);
+  if (allFields === null) return keys;
   const targetKeys = R.map((k) => (k.includes('.') ? R.head(k.split('.')) : k), keys);
-  const propertiesToKeep = R.map((t) => t.src, R.flatten(properties));
-  return R.filter((p) => R.includes(p, targetKeys), propertiesToKeep);
+  return R.filter((p) => R.includes(p, targetKeys), allFields);
 };
 export const isFieldContributingToStandardId = (instance, keys) => {
   const keysIncluded = fieldsContributingToStandardId(instance, keys);

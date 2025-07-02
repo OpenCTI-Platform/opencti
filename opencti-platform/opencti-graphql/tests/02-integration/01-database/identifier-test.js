@@ -2,8 +2,11 @@
 import { expect, it, describe } from 'vitest';
 import { elLoadById, } from '../../../src/database/engine';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { generateStandardId, isStandardIdDowngraded, isStandardIdSameWay, isStandardIdUpgraded } from '../../../src/schema/identifier';
-import { ENTITY_USER_ACCOUNT } from '../../../src/schema/stixCyberObservable';
+import { allFieldsContributingToStandardId, generateStandardId, isStandardIdDowngraded, isStandardIdSameWay, isStandardIdUpgraded } from '../../../src/schema/identifier';
+import { ENTITY_DIRECTORY, ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_USER_ACCOUNT } from '../../../src/schema/stixCyberObservable';
+import { ENTITY_TYPE_SETTINGS } from '../../../src/schema/internalObject';
+import { ENTITY_TYPE_CONTAINER_NOTE } from '../../../src/schema/stixDomainObject';
+import { BASE_TYPE_RELATION } from '../../../src/schema/general';
 
 describe('Identifier generation test', () => {
   it('should way change detected correctly', async () => {
@@ -144,5 +147,26 @@ describe('Identifier generation test', () => {
     };
     isUpgraded = isStandardIdUpgraded(file, changeFile);
     expect(isUpgraded).toBeFalsy();
+  });
+});
+
+describe('Function allFieldsContributingToStandardId', () => {
+  it('should return an empty array if properties is not an object', () => {
+    const fields = allFieldsContributingToStandardId({ entity_type: ENTITY_TYPE_SETTINGS });
+    expect(fields).toEqual([]);
+  });
+
+  it('should return false if its a relation', () => {
+    const fields = allFieldsContributingToStandardId({ base_type: BASE_TYPE_RELATION });
+    expect(fields).toEqual(false);
+  });
+
+  it('should return the list of fields contributing', () => {
+    let fields = allFieldsContributingToStandardId({ entity_type: ENTITY_DIRECTORY });
+    expect(fields).toEqual(['path']);
+    fields = allFieldsContributingToStandardId({ entity_type: ENTITY_HASHED_OBSERVABLE_STIX_FILE });
+    expect(fields).toEqual(['hashes', 'name']);
+    fields = allFieldsContributingToStandardId({ entity_type: ENTITY_TYPE_CONTAINER_NOTE });
+    expect(fields).toEqual(['content', 'created']);
   });
 });
