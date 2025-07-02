@@ -281,7 +281,7 @@ interface StixCoreRelationshipCreationProps {
   startTime: string,
   stopTime: string,
   defaultCreatedBy: string | { label: string, type: string, value: string },
-  defaultMarkingDefinitions: any[],
+  defaultMarkingDefinitions: FieldOption[],
   open: boolean,
 }
 
