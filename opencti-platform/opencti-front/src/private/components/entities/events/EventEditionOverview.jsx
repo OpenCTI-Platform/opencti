@@ -154,26 +154,19 @@ const EventEditionOverviewComponent = (props) => {
     }
   };
 
-  const initialValues = R.pipe(
-    R.assoc('start_time', buildDate(event.start_time)),
-    R.assoc('stop_time', buildDate(event.stop_time)),
-    R.assoc('createdBy', convertCreatedBy(event)),
-    R.assoc('objectMarking', convertMarkings(event)),
-    R.assoc('x_opencti_workflow_id', convertStatus(t_i18n, event)),
-    R.assoc('references', []),
-    R.pick([
-      'name',
-      'references',
-      'event_types',
-      'description',
-      'start_time',
-      'stop_time',
-      'confidence',
-      'createdBy',
-      'objectMarking',
-      'x_opencti_workflow_id',
-    ]),
-  )(event);
+  const initialValues = {
+    name: event.name,
+    references: event.references || [],
+    event_types: event.event_types || [],
+    description: event.description || '',
+    start_time: buildDate(event.start_time),
+    stop_time: buildDate(event.stop_time),
+    confidence: event.confidence,
+    createdBy: convertCreatedBy(event),
+    objectMarking: convertMarkings(event),
+    x_opencti_workflow_id: convertStatus(t_i18n, event),
+  };
+
   return (
     <Formik
       enableReinitialize={true}
