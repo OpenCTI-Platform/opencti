@@ -42,26 +42,26 @@ const EDIT_STIX_FILE_QUERY = gql`
 
 const FILE1 = {
   name: 'file1',
-  md5: '721a9b52bfceacc503c056e3b9b93cfa',
-  sha1: 'cb99b709a1978bd205ab9dfd4c5aaa1fc91c7523',
+  md5: '826e8142e6baabe8af779f5f490cf5f5',
+  sha1: '60b27f004e454aca81b0480209cce5081ec52390',
 };
 
 const FILE2 = {
   name: 'file2',
   md5: '1c1c96fd2cf8330db0bfa936ce82f3b9',
-  sha1: '5ed25af7b1ed23fb00122e13d7f74c4d8262acd8',
+  sha1: 'cb99b709a1978bd205ab9dfd4c5aaa1fc91c7523',
 };
 
 const FILE3 = {
   name: 'file3',
   md5: '2548729e9c3c60cc3789dfb2408e475d',
-  sha1: 'cb99b709a1978bd205ab9dfd4c5aaa1fc91c7523',
+  sha1: 'd5b0a58bc47161b1b8a831084b366f757c4f0b11',
 };
 
 const FILE4 = {
   name: 'file4',
   md5: '025ad219ece1125a8f5a0e74e32676cb',
-  sha1: 'a441d6d72884e442ef02692864eee99b4ad933f5',
+  sha1: '1b641bf4f6b84efcd42920ff1a88ff2f97fb9d08',
 };
 
 describe('Observables with hashes: management of other stix ids', () => {
@@ -85,9 +85,7 @@ describe('Observables with hashes: management of other stix ids', () => {
   const file4StandardIdBySha1 = generateStandardId('StixFile', { hashes: { 'SHA-1': FILE4.sha1 } });
   const file4StandardIdByMd5 = generateStandardId('StixFile', { hashes: { MD5: FILE4.md5 } });
 
-  it.skip('should replace standard_id and add old one in other_stix_ids if prior data arrives', async () => {
-    // Scenario 1 (upsert)
-    // -------------------
+  it('should replace standard_id and add old one in other_stix_ids if prior data arrives by Upsert', async () => {
     // Create StixFile1 with only name (standard_id based on name) (other_stix_ids empty).
     const file1WithNameInput: StixFileAddInput = {
       name: FILE1.name,
@@ -131,9 +129,9 @@ describe('Observables with hashes: management of other stix ids', () => {
     expect(file1WithNameSha1Md5.id).toEqual(file1Id);
     expect(file1WithNameSha1Md5.standard_id).toEqual(file1StandardIdByMd5);
     expect(file1WithNameSha1Md5.x_opencti_stix_ids).toEqual([file1StandardIdByName, file1StandardIdBySha1]);
+  });
 
-    // Scenario 2 (update)
-    // -------------------
+  it('should replace standard_id and add old one in other_stix_ids if prior data arrives by Update', async () => {
     // Create StixFile2 with only name (standard_id based on name) (other_stix_ids empty).
     const file2WithNameInput: StixFileAddInput = {
       name: FILE2.name,
@@ -159,7 +157,7 @@ describe('Observables with hashes: management of other stix ids', () => {
         input: file2WithNameSha1Input,
       },
     });
-    const file2WithNameSha1 = file2WithNameSha1Result?.data?.stixCyberObservableEdit;
+    const file2WithNameSha1 = file2WithNameSha1Result?.data?.stixCyberObservableEdit?.fieldPatch;
     expect(file2WithNameSha1.standard_id).toEqual(file2StandardIdBySha1);
     expect(file2WithNameSha1.x_opencti_stix_ids).toEqual([file2StandardIdByName]);
     // UPDATE StixFile2 with name, SHA1 and MD5 (standard_id based on MD5) (other_stix_ids has standard_name, standard_SHA1).
@@ -175,7 +173,7 @@ describe('Observables with hashes: management of other stix ids', () => {
         input: file2WithNameSha1Md5Input,
       },
     });
-    const file2WithNameSha1Md5 = file2WithNameSha1Md5Result?.data?.stixCyberObservableEdit;
+    const file2WithNameSha1Md5 = file2WithNameSha1Md5Result?.data?.stixCyberObservableEdit?.fieldPatch;
     expect(file2WithNameSha1Md5.standard_id).toEqual(file2StandardIdByMd5);
     expect(file2WithNameSha1Md5.x_opencti_stix_ids).toEqual([file2StandardIdByName, file2StandardIdBySha1]);
   });
@@ -272,7 +270,6 @@ describe('Observables with hashes: management of other stix ids', () => {
       }
     });
     const file4WithMd5Sha1Name = file4WithMd5Sha1NameResult.data?.stixCyberObservableEdit.fieldPatch;
-    console.log(file4WithMd5Sha1NameResult);
     expect(file4WithMd5Sha1Name.standard_id).toEqual(file4StandardIdByMd5);
     expect(file4WithMd5Sha1Name.x_opencti_stix_ids).toEqual([file4StandardIdBySha1, file4StandardIdByName]);
   });

@@ -1843,7 +1843,7 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
       // Standard id is generated from data depending on multiple ways and multiple attributes
       if (isStixCyberObservableHashedObservable(instanceType) && preparedElements.length > 0) {
         const stixIdsToAdd = generateHashedObservableStandardIds(updatedInstance)
-          .filter((id) => id !== updatedInstance.standard_id);
+          .filter((id) => id !== standardId);
         // If update already contains a change of the other stix ids
         // we need to impact directly the impacted and updated related input
         const stixInput = R.find((e) => e.key === IDS_STIX, preparedElements);

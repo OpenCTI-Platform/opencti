@@ -594,6 +594,7 @@ export const getInputIds = (type, input, fromRule) => {
   }
   ids.push(...generateAliasesIdsForInstance(input));
   ids.push(...getHashIds(type, input.hashes));
+  ids.push(...generateHashedObservableStandardIds(input));
   // Inference can only be created once, locking the combination
   if (fromRule && isBasicRelationship(type)) {
     ids.push(`${input.from.internal_id}-${type}-${input.to.internal_id}`);
