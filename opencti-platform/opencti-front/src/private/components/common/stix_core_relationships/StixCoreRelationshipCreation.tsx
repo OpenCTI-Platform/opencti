@@ -9,7 +9,10 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { ArrowRightAlt, Close } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
-import { commitMutation, fetchQuery } from '../../../../relay/environment';
+import { StixCoreRelationshipCreationQuery$data } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationQuery.graphql';
+import { FormikConfig } from 'formik/dist/types';
+import { StixCoreRelationshipCreationMutation } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationMutation.graphql';
+import { fetchQuery } from '../../../../relay/environment';
 import { itemColor } from '../../../../utils/Colors';
 import { formatDate } from '../../../../utils/Time';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -21,12 +24,11 @@ import ProgressBar from '../../../../components/ProgressBar';
 import { useFormatter } from '../../../../components/i18n';
 import { GraphLink, GraphNode } from '../../../../components/graph/graph.types';
 import { ObjectToParse } from '../../../../components/graph/utils/useGraphParser';
-import {
-  StixCoreRelationshipCreationQuery$data
-} from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationQuery.graphql';
-import { FormikConfig } from 'formik/dist/types';
+import { FieldOption } from '../../../../utils/field';
+import type { Theme } from '../../../../components/Theme';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -63,7 +65,7 @@ const useStyles = makeStyles((theme) => ({
   type: {
     width: '100%',
     textAlign: 'center',
-    color: theme.palette.text.primary,
+    color: theme.palette.text?.primary,
     fontSize: 11,
   },
   content: {
@@ -71,7 +73,7 @@ const useStyles = makeStyles((theme) => ({
     height: 40,
     maxHeight: 40,
     lineHeight: '40px',
-    color: theme.palette.text.primary,
+    color: theme.palette.text?.primary,
     textAlign: 'center',
   },
   name: {
@@ -106,7 +108,7 @@ const useStyles = makeStyles((theme) => ({
     width: 200,
     textAlign: 'center',
     padding: 0,
-    color: theme.palette.text.primary,
+    color: theme.palette.text?.primary,
   },
 }));
 
@@ -243,20 +245,31 @@ export const stixCoreRelationshipCreationMutation = graphql`
   }
 `;
 
-const commitWithPromise = (values) => new Promise((resolve, reject) => {
-  commitMutation({
-    mutation: stixCoreRelationshipCreationMutation,
-    variables: {
-      input: values,
-    },
-    onError: (error) => {
-      reject(error);
-    },
-    onCompleted: (response) => {
-      resolve(response.stixCoreRelationshipAdd);
-    },
-  });
-});
+interface StixCoreRelationshipCreationFormInput {
+  confidence: string,
+  fromId: string,
+  toId: string,
+  relationship_type: string,
+  start_time?: string,
+  stop_time?: string,
+  killChainPhases: FieldOption[],
+  createdBy?: FieldOption,
+  objectMarking: FieldOption[],
+  externalReferences: FieldOption[],
+}
+
+interface StixCoreRelationshipCreationAddInput {
+  confidence: number,
+  fromId: string,
+  toId: string,
+  relationship_type: string,
+  start_time: string | null,
+  stop_time: string | null,
+  killChainPhases: (string | null | undefined)[],
+  createdBy?: string | null,
+  objectMarking: (string | null | undefined)[],
+  externalReferences: (string | null | undefined)[],
+}
 
 interface StixCoreRelationshipCreationProps {
   onClose: () => void,
@@ -287,13 +300,15 @@ const StixCoreRelationshipCreation = ({
 }: StixCoreRelationshipCreationProps) => {
   const classes = useStyles();
   const { t_i18n, fsd } = useFormatter();
-  const theme = useTheme();
+  const theme = useTheme<Theme>();
 
   const [step, setStep] = useState(0);
-  const [existingRelations, setExistingRelations] = useState<StixCoreRelationshipCreationQuery$data['stixCoreRelationships']['edges']>([]);
+  const [existingRelations, setExistingRelations] = useState<NonNullable<StixCoreRelationshipCreationQuery$data['stixCoreRelationships']>['edges']>([]);
   const [displayProgress, setDisplayProgress] = useState(false);
   const [progress, setProgress] = useState(0);
   const prevProps = useRef({ open, fromObjects, toObjects });
+
+  const [commitAddRelation] = useApiMutation<StixCoreRelationshipCreationMutation>(stixCoreRelationshipCreationMutation);
 
   useEffect(() => {
     const prev = prevProps.current;
@@ -335,6 +350,20 @@ const StixCoreRelationshipCreation = ({
     prevProps.current = { open, fromObjects, toObjects };
   }, [open, fromObjects, toObjects]);
 
+  const handleCommitAddRelation = (values: StixCoreRelationshipCreationAddInput) => new Promise((resolve, reject) => {
+    commitAddRelation({
+      variables: {
+        input: values,
+      },
+      onError: (error) => {
+        reject(error);
+      },
+      onCompleted: (response) => {
+        resolve(response.stixCoreRelationshipAdd);
+      },
+    });
+  });
+
   const handleClose = () => {
     setExistingRelations([]);
     setStep(0);
@@ -345,7 +374,7 @@ const StixCoreRelationshipCreation = ({
     setDisplayProgress(false);
   };
 
-  const onSubmit: FormikConfig<StixCoreRelationshipCreationMutation>['onSubmit'] = async (values, { resetForm }) => {
+  const onSubmit: FormikConfig<StixCoreRelationshipCreationFormInput>['onSubmit'] = async (values, { resetForm }) => {
     setDisplayProgress(true);
     handleClose();
     resetForm();
@@ -367,9 +396,8 @@ const StixCoreRelationshipCreation = ({
           externalReferences: values.externalReferences.map((k) => k.value),
         };
         // eslint-disable-next-line no-await-in-loop
-        latestResponse = await commitWithPromise(finalValues);
-        const lastObject = current === total;
-        handleResult(latestResponse, !lastObject);
+        latestResponse = await handleCommitAddRelation(finalValues);
+        handleResult(latestResponse as ObjectToParse);
         current += 1;
         setProgress(Math.round((current * 100) / total));
       }
@@ -378,7 +406,7 @@ const StixCoreRelationshipCreation = ({
     setProgress(0);
   };
 
-  const handleSelectRelation = (relation) => {
+  const handleSelectRelation = (relation: ObjectToParse) => {
     handleResult(relation);
     handleClose();
   };
@@ -400,7 +428,7 @@ const StixCoreRelationshipCreation = ({
           const relationshipTypes = R.uniq(resolveRelationsTypes(
             fromObjects[0].entity_type,
             toObjects[0].entity_type,
-            schema.schemaRelationsTypesMapping,
+            schema?.schemaRelationsTypesMapping ?? new Map(),
           ));
           return (
             <>
@@ -455,7 +483,7 @@ const StixCoreRelationshipCreation = ({
             <div
               key={relation.node.id}
               className={classes.relation}
-              onClick={() => handleSelectRelation(relation.node)}
+              onClick={() => handleSelectRelation(relation.node as unknown as ObjectToParse)}
             >
               <div
                 className={classes.item}
@@ -508,7 +536,7 @@ const StixCoreRelationshipCreation = ({
                     style={{
                       padding: '5px 8px 5px 8px',
                       backgroundColor: theme.palette.background.accent,
-                      color: theme.palette.text.primary,
+                      color: theme.palette.text?.primary,
                       fontSize: 12,
                       display: 'inline-block',
                     }}
@@ -605,7 +633,7 @@ const StixCoreRelationshipCreation = ({
                 style={{
                   padding: '5px 8px 5px 8px',
                   backgroundColor: theme.palette.background.accent,
-                  color: theme.palette.text.primary,
+                  color: theme.palette.text?.primary,
                   fontSize: 12,
                   display: 'inline-block',
                 }}
