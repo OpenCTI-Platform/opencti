@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { type EditInput, type StixFileAddInput } from '../../../src/generated/graphql';
 import { queryAsAdmin } from '../../utils/testQuery';
@@ -36,6 +36,14 @@ const EDIT_STIX_FILE_QUERY = gql`
           }
         }
       }
+    }
+  }
+`;
+
+const DELETE_STIX_FILE_QUERY = gql`
+  mutation DeleteStixFile($id: ID!) {
+    stixCyberObservableEdit(id: $id) {
+      delete
     }
   }
 `;
@@ -84,6 +92,25 @@ describe('Observables with hashes: management of other stix ids', () => {
   const file4StandardIdByName = generateStandardId('StixFile', { name: FILE4.name, });
   const file4StandardIdBySha1 = generateStandardId('StixFile', { hashes: { 'SHA-1': FILE4.sha1 } });
   const file4StandardIdByMd5 = generateStandardId('StixFile', { hashes: { MD5: FILE4.md5 } });
+
+  afterAll(async () => {
+    await queryAsAdmin({
+      query: DELETE_STIX_FILE_QUERY,
+      variables: { id: file1Id, },
+    });
+    await queryAsAdmin({
+      query: DELETE_STIX_FILE_QUERY,
+      variables: { id: file2Id, },
+    });
+    await queryAsAdmin({
+      query: DELETE_STIX_FILE_QUERY,
+      variables: { id: file3Id, },
+    });
+    await queryAsAdmin({
+      query: DELETE_STIX_FILE_QUERY,
+      variables: { id: file4Id, },
+    });
+  });
 
   it('should replace standard_id and add old one in other_stix_ids if prior data arrives by Upsert', async () => {
     // Create StixFile1 with only name (standard_id based on name) (other_stix_ids empty).
