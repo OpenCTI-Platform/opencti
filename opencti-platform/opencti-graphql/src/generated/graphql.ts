@@ -5,6 +5,7 @@ import type { GraphqlCatalog } from '../modules/catalog/catalog-types';
 import type { BasicStoreEntityLanguage } from '../modules/language/language-types';
 import type { BasicStoreEntityEvent } from '../modules/event/event-types';
 import type { BasicStoreEntityNarrative } from '../modules/narrative/narrative-types';
+import type { BasicStoreEntityGrouping } from '../modules/grouping/grouping-types';
 import type { BasicStoreEntityDataSource } from '../modules/dataSource/dataSource-types';
 import type { BasicStoreEntityDataComponent } from '../modules/dataComponent/dataComponent-types';
 import type { BasicStoreEntityVocabulary } from '../modules/vocabulary/vocabulary-types';
@@ -15,7 +16,7 @@ import type { BasicStoreEntityCaseTemplate } from '../modules/case/case-template
 import type { BasicStoreEntityCaseIncident } from '../modules/case/case-incident/case-incident-types';
 import type { BasicStoreEntityCaseRfi } from '../modules/case/case-rfi/case-rfi-types';
 import type { BasicStoreEntityCaseRft } from '../modules/case/case-rft/case-rft-types';
-import type { BasicStoreEntityFeedback } from '../modules/case/feedback/types/store';
+import type { BasicStoreEntityFeedback } from '../modules/case/feedback/feedback-types';
 import type { BasicStoreEntityNotification, BasicStoreEntityTrigger } from '../modules/notification/notification-types';
 import type { BasicStoreEntityEntitySetting } from '../modules/entitySetting/entitySetting-types';
 import type { BasicStoreEntityWorkspace } from '../modules/workspace/workspace-types';
@@ -40,7 +41,6 @@ import type { BasicStoreEntitySavedFilter } from '../modules/savedFilter/savedFi
 import type { BasicStoreEntityFintelDesign } from '../modules/fintelDesign/fintelDesign-types';
 import type { BasicStoreEntityPir } from '../modules/pir/pir-types';
 import type { BasicStoreEntitySecurityPlatform } from '../modules/securityPlatform/securityPlatform-types';
-import type {BasicStoreEntityGrouping} from "../modules/grouping/types/store";
 export type Maybe<T> = T | null | undefined;
 export type InputMaybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
