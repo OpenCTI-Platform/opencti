@@ -106,7 +106,7 @@ export const internalProcessNotification = async (
       const generatedTitle = ejs.render(title, templateData);
       const generatedEmail = ejs.render(template, { ...templateData, url_suffix: urlSuffix });
       const mail = { from: `${settings.platform_title} <${settings.platform_email}>`, to: user.user_email, subject: generatedTitle, html: generatedEmail };
-      await sendMail(mail, { identifier: user.user_id, category: 'notification' }).catch((err) => {
+      await sendMail(mail, { identifier: trigger_id, category: 'notification' }).catch((err) => {
         logApp.error('[OPENCTI-MODULE] Publisher manager send email error', { cause: err, manager: 'PUBLISHER_MANAGER' });
         return { error: err };
       });
@@ -132,7 +132,7 @@ export const internalProcessNotification = async (
       const generatedTitle = ejs.render(title, finalTemplateData);
       const generatedEmail = ejs.render(SIMPLIFIED_EMAIL_TEMPLATE, finalTemplateData);
       const mail = { from: settings.platform_email, to: user.user_email, subject: generatedTitle, html: generatedEmail };
-      await sendMail(mail, { identifier: user.user_id, category: 'notification' }).catch((err) => {
+      await sendMail(mail, { identifier: trigger_id, category: 'notification' }).catch((err) => {
         logApp.error('[OPENCTI-MODULE] Publisher manager send email error', { cause: err, manager: 'PUBLISHER_MANAGER' });
         return { error: err };
       });
