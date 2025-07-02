@@ -156,6 +156,7 @@ import { FROM_START_STR, mergeDeepRightAll, now, prepareDate, UNTIL_END_STR, utc
 import { checkObservableSyntax } from '../utils/syntax';
 import { elUpdateRemovedFiles } from './file-search';
 import {
+  CONTAINER_SHARING_USER,
   controlUserRestrictDeleteAgainstElement,
   executionContext,
   INTERNAL_USERS,
@@ -960,7 +961,7 @@ const createContainerSharingTask = (context, type, element, relations = []) => {
   if (targetGrantIds.length > 0) {
     const sharingDescription = `${type} organizations of ${element.name} to contained objects`;
     const input = { ids: targetGrantIds, scope: 'KNOWLEDGE', actions: [{ type, context: { values: elementGrants } }], description: sharingDescription };
-    taskPromise = createListTask(context, context.user, input);
+    taskPromise = createListTask(context, CONTAINER_SHARING_USER, input);
   }
   return taskPromise;
 };
