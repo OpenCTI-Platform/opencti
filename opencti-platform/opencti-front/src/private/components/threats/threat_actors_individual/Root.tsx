@@ -25,8 +25,9 @@ import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import ThreatActorIndividualEdition from './ThreatActorIndividualEdition';
+import ThreatActorIndividualDeletion from './ThreatActorIndividualDeletion';
 
 const subscription = graphql`
   subscription RootThreatActorIndividualSubscription($id: ID!) {
@@ -160,6 +161,11 @@ const RootThreatActorIndividualComponent = ({
                   <ThreatActorIndividualEdition
                     threatActorIndividualId={threatActorIndividual.id}
                   />
+                </Security>
+              )}
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+                <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                  <ThreatActorIndividualDeletion id={threatActorIndividual.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
               )}
               enableEnricher={true}

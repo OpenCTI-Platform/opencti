@@ -4,7 +4,6 @@ import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import { useTheme } from '@mui/styles';
-import { Stack } from '@mui/material';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -23,7 +22,6 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field
 import { ThreatActorIndividualEditionOverview_ThreatActorIndividual$key } from './__generated__/ThreatActorIndividualEditionOverview_ThreatActorIndividual.graphql';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-import ThreatActorIndividualDeletion from './ThreatActorIndividualDeletion';
 import type { Theme } from '../../../../components/Theme';
 
 const ThreatActorIndividualMutationFieldPatch = graphql`
@@ -347,21 +345,16 @@ ThreatActorIndividualEditionOverviewProps
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
-            <ThreatActorIndividualDeletion
+          {enableReferences && (
+            <CommitMessage
+              submitForm={submitForm}
+              disabled={isSubmitting || !isValid || !dirty}
+              setFieldValue={setFieldValue}
+              open={false}
+              values={values.references}
               id={threatActorIndividual.id}
             />
-            {enableReferences && (
-              <CommitMessage
-                submitForm={submitForm}
-                disabled={isSubmitting || !isValid || !dirty}
-                setFieldValue={setFieldValue}
-                open={false}
-                values={values.references}
-                id={threatActorIndividual.id}
-              />
-            )}
-          </Stack>
+          )}
         </Form>
       )}
     </Formik>
