@@ -509,14 +509,18 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           providerLoginHandler({ email, name }, done);
         });
         auth0Strategy.logout_remote = options.logout_remote;
+
         auth0Strategy.logout = (_, callback) => {
-          logApp.info('[AUTH0] Remote logout');
           const params = {
             client_id: mappedConfig.clientID,
             returnTo: mappedConfig.baseURL
           };
           const URLParams = new URLSearchParams(params).toString();
-          const endpointUri = `https://${authDomain}/v2/logout?${URLParams}`;
+          let endpointUri = `https://${authDomain}/v2/logout?${URLParams}`;
+          if (mappedConfig.logout_uri) {
+            endpointUri = `${mappedConfig.logout_uri}?${URLParams}`;
+          }
+          logApp.info(`[AUTH0] Remote logout on ${endpointUri}`);
           callback(null, endpointUri);
         };
         passport.use(providerRef, auth0Strategy);
