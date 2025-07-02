@@ -3,9 +3,11 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import Breadcrumbs from 'src/components/Breadcrumbs';
 import { useFormatter } from 'src/components/i18n';
-import { Button, styled } from '@mui/material';
+import { Box, Button, styled } from '@mui/material';
 import Security from 'src/utils/Security';
-import { KNOWLEDGE_KNUPDATE } from 'src/utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from 'src/utils/hooks/useGranted';
+import MenuItem from '@mui/material/MenuItem';
+import { useTheme } from '@mui/material/styles';
 import StixSightingRelationshipEdition, { stixSightingRelationshipEditionDeleteMutation } from './StixSightingRelationshipEdition';
 import { commitMutation, defaultCommitMutation, QueryRenderer } from '../../../../relay/environment';
 import { StixSightingRelationshipQuery$data } from './__generated__/StixSightingRelationshipQuery.graphql';
@@ -13,6 +15,8 @@ import Loader from '../../../../components/Loader';
 import StixSightingRelationshipOverview from './StixSightingRelationshipOverview';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
+import PopoverMenu from '../../../../components/PopoverMenu';
+import type { Theme } from '../../../../components/Theme';
 
 const stixSightingRelationshipQuery = graphql`
   query StixSightingRelationshipQuery($id: String!) {
@@ -32,13 +36,20 @@ StixSightingRelationshipProps
 > = ({ entityId, paddingRight }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
+  const canDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]);
+  const theme = useTheme<Theme>();
   const [editOpen, setEditOpen] = useState<boolean>(false);
+  const [openDelete, setOpenDelete] = useState(false);
   const { sightingId } = useParams() as { sightingId: string };
 
   const handleOpenEdit = () => setEditOpen(true);
   const handleCloseEdit = () => setEditOpen(false);
+
+  const handleOpenDelete = () => setOpenDelete(true);
+  const handleCloseDelete = () => setOpenDelete(false);
+
   const deletion = useDeletion({});
-  const { setDeleting, handleOpenDelete } = deletion;
+  const { setDeleting } = deletion;
   const submitDelete = () => {
     setDeleting(true);
     commitMutation({
@@ -75,18 +86,38 @@ StixSightingRelationshipProps
                   { label: t_i18n('Sighting'), current: true },
                 ]}
                 />
-                {(
-                  <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                    <Button
-                      variant='contained'
-                      size='small'
-                      aria-label={t_i18n('Update')}
-                      onClick={handleOpenEdit}
-                    >
-                      {t_i18n('Update')}
-                    </Button>
-                  </Security>
-                )}
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <div style={{ display: 'flex' }}>
+                    {canDelete && (
+                      <PopoverMenu>
+                        {({ closeMenu }) => (
+                          <Box>
+                            <MenuItem onClick={() => {
+                              handleOpenDelete();
+                              closeMenu();
+                            }}
+                            >
+                              {t_i18n('Delete')}
+                            </MenuItem>
+                          </Box>
+                        )}
+                      </PopoverMenu>
+                    )}
+                    {(
+                      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                        <Button
+                          variant='contained'
+                          size='small'
+                          aria-label={t_i18n('Update')}
+                          onClick={handleOpenEdit}
+                          style={{ marginLeft: theme.spacing(1) }}
+                        >
+                          {t_i18n('Update')}
+                        </Button>
+                      </Security>
+                    )}
+                  </div>
+                </div>
               </SightingHeader>
               <StixSightingRelationshipOverview
                 entityId={entityId}
@@ -101,19 +132,20 @@ StixSightingRelationshipProps
                   // inferred={result.props.stixSightingRelationship.x_opencti_inferences !== null}
                   inferred={false}
                   handleClose={handleCloseEdit}
-                  handleDelete={handleOpenDelete}
                   noStoreUpdate={undefined}
                   inGraph={undefined}
                 />
               </Security>
               <DeleteDialog
                 deletion={deletion}
+                isOpen={openDelete}
+                onClose={handleCloseDelete}
                 submitDelete={submitDelete}
                 message={t_i18n('Do you want to delete this sighting?')}
               />
             </>);
           }
-          return <Loader />;
+          return <Loader/>;
         }}
       />
     </div>

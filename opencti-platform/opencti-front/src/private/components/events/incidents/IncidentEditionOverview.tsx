@@ -4,7 +4,6 @@ import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import { useTheme } from '@mui/styles';
-import { Stack } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -26,7 +25,6 @@ import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import type { Theme } from '../../../../components/Theme';
-import IncidentDeletion from './IncidentDeletion';
 
 const incidentMutationFieldPatch = graphql`
   mutation IncidentEditionOverviewFieldPatchMutation(
@@ -385,11 +383,7 @@ IncidentEditionOverviewProps
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
-            <IncidentDeletion
-              id={incident.id}
-            />
-            {enableReferences && (
+          {enableReferences && (
             <CommitMessage
               submitForm={submitForm}
               disabled={isSubmitting || !isValid || !dirty}
@@ -398,8 +392,7 @@ IncidentEditionOverviewProps
               setFieldValue={setFieldValue}
               id={incident.id}
             />
-            )}
-          </Stack>
+          )}
         </Form>
       )}
     </Formik>
