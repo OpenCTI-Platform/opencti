@@ -44,9 +44,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     left: 5,
     color: 'inherit',
   },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
   item: {
     position: 'absolute',
     width: 180,
@@ -478,7 +475,7 @@ const StixCoreRelationshipCreation = ({
           </IconButton>
           <Typography variant="h6">{t_i18n('Select a relationship')}</Typography>
         </div>
-        <div className={classes.container}>
+        <div style={{ padding: '10px 20px 20px 20px' }}>
           {existingRelations.map((relation) => (
             <div
               key={relation.node.id}
@@ -683,7 +680,6 @@ const StixCoreRelationshipCreation = ({
     );
   };
 
-  // eslint-disable-next-line
   const renderLoader = () => {
     return (
       <div style={{ display: 'table', height: '100%', width: '100%' }}>
