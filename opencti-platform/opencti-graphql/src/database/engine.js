@@ -2864,13 +2864,15 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
           throw UnsupportedError('regardingOf only support types equality restriction');
         }
         const types = type?.values;
-        const keys = isEmptyField(types) ? buildRefRelationKey('*', '*')
-          : types.flatMap((t) => [buildRefRelationKey(t, ID_INTERNAL), buildRefRelationKey(t, ID_INFERRED)]);
         if (isEmptyField(ids)) {
+          const keys = isEmptyField(types) ? buildRefRelationKey('*', '*')
+            : types.map((t) => buildRefRelationKey(t, '*'));
           keys.forEach((relKey) => {
             regardingFilters.push({ key: [relKey], operator, values: ['EXISTS'] });
           });
         } else {
+          const keys = isEmptyField(types) ? buildRefRelationKey('*', '*')
+            : types.flatMap((t) => [buildRefRelationKey(t, ID_INTERNAL), buildRefRelationKey(t, ID_INFERRED)]);
           regardingFilters.push({ key: keys, operator, values: ids });
         }
         finalFilterGroups.push({
