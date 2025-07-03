@@ -14,6 +14,7 @@ import { NotificationsLine_node$data } from '@components/profile/__generated__/N
 import { NotificationsLinesPaginationQuery, NotificationsLinesPaginationQuery$variables } from '@components/profile/__generated__/NotificationsLinesPaginationQuery.graphql';
 import { NotificationsLines_data$data } from '@components/profile/__generated__/NotificationsLines_data.graphql';
 import DigestNotificationDrawer from '@components/profile/notifications/DigestNotificationDrawer';
+import { useNavigate } from 'react-router-dom';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import useAuth from '../../../utils/hooks/useAuth';
@@ -129,7 +130,7 @@ const notificationLineNotificationDeleteMutation = graphql`
 const Notifications: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-
+  const navigate = useNavigate();
   const [commitMarkRead] = useApiMutation(
     notificationLineNotificationMarkReadMutation,
   );
@@ -146,6 +147,13 @@ const Notifications: FunctionComponent = () => {
     const isDigest = events.length > 1;
     if (isDigest) {
       setNotificationDigestToOpen(data);
+    }
+
+    const firstEvent = events.at(0);
+    const firstOperation = isDigest ? 'multiple' : (firstEvent?.operation ?? 'none');
+    const isLinkAvailable = events.length === 1 && isNotEmptyField(firstEvent?.instance_id) && firstOperation !== 'delete';
+    if (isLinkAvailable && firstEvent.instance_id) {
+      navigate(`/dashboard/id/${firstEvent.instance_id}`);
     }
   };
 
@@ -422,16 +430,6 @@ const Notifications: FunctionComponent = () => {
         availableEntityTypes={['Notification']}
         actions={renderActions}
         markAsReadEnabled={true}
-        useComputeLink={({ notification_content, notification_type }: NotificationsLine_node$data) => {
-          const events = notification_content.map((n) => n.events).flat();
-          const firstEvent = events.at(0);
-          const isDigest = notification_type === 'digest';
-          const firstOperation = isDigest ? 'multiple' : (firstEvent?.operation ?? 'none');
-          const isLinkAvailable = events.length === 1 && isNotEmptyField(firstEvent?.instance_id) && firstOperation !== 'delete';
-          if (!isLinkAvailable) return undefined;
-          return `/dashboard/id/${firstEvent.instance_id}`;
-        }}
-
       />
       )}
       {notificationToDelete && (
