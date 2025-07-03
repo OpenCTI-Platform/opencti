@@ -1851,6 +1851,7 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
         if (stixInput) {
           // If update already contains a change of the other stix ids
           // we need to impact directly the impacted and updated related input
+          stixInput.operation = UPDATE_OPERATION_REPLACE;
           stixInput.value = R.uniq([...stixInput.value, ...newStixIds]);
         } else {
           // If no stix ids modification, add the standard id in the list and patch the element
