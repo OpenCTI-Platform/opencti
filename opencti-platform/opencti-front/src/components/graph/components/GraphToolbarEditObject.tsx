@@ -111,7 +111,6 @@ const GraphToolbarEditObject = ({
             noStoreUpdate
             open={category === 'sighting'}
             inferred={false}
-            handleDelete={null}
             stixSightingRelationshipId={objectToEdit.id}
             handleClose={closeEditionForm}
           />
