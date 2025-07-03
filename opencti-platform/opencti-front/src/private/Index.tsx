@@ -18,6 +18,7 @@ import type { Theme } from '../components/Theme';
 import { RootSettings$data } from './__generated__/RootSettings.graphql';
 import Loader from '../components/Loader';
 import useDraftContext from '../utils/hooks/useDraftContext';
+import useEnterpriseEdition from '../utils/hooks/useEnterpriseEdition';
 
 const Dashboard = lazy(() => import('./components/Dashboard'));
 const StixObjectOrStixRelationship = lazy(() => import('./components/StixObjectOrStixRelationship'));
@@ -47,6 +48,7 @@ interface IndexProps {
 
 const Index = ({ settings }: IndexProps) => {
   const theme = useTheme<Theme>();
+  const isEnterpriseEdition = useEnterpriseEdition();
   const { isTrashEnable, isFeatureEnable } = useHelper();
   const {
     bannerSettings: { bannerHeight },
@@ -109,8 +111,9 @@ const Index = ({ settings }: IndexProps) => {
       title: 'Ariane Docs Assistant',
       titleAvatarSrc:
           'https://filigran.io/app/uploads/2025/05/embleme_filigran_blanc.png',
-      welcomeMessage:
-          "Hi there 👋 You're speaking with an AI Agent. I'm here to answer your questions, so what brings you here today?",
+      welcomeMessage: isEnterpriseEdition
+        ? 'Please, activate Entreprise Edition to get access to ChatBot.'
+        : "Hi there 👋 You're speaking with an AI Agent. I'm here to answer your questions, so what brings you here today?",
       errorMessage: 'Sorry, an error has occurred, please try again later.',
       backgroundColor: '#ffffff',
       height: 700,
