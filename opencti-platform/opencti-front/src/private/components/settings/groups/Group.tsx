@@ -10,12 +10,15 @@ import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { InformationOutline } from 'mdi-material-ui';
 import * as R from 'ramda';
-import React from 'react';
+import React, { useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router-dom';
 import GroupConfidenceLevel from '@components/settings/groups/GroupConfidenceLevel';
 import { uniq } from 'ramda';
-import { ListItemButton } from '@mui/material';
+import { Box, ListItemButton, styled } from '@mui/material';
+import GroupDeletionDialog from '@components/settings/groups/GroupDeletionDialog';
+import MenuItem from '@mui/material/MenuItem';
+import { useTheme } from '@mui/styles';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
@@ -31,6 +34,8 @@ import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { checkIsMarkingAllowed } from '../../../../utils/markings/markingsFiltering';
 import type { Theme } from '../../../../components/Theme';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
+import PopoverMenu from '../../../../components/PopoverMenu';
+import useGranted, { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -120,9 +125,16 @@ const groupFragment = graphql`
 const Group = ({ groupData }: { groupData: Group_group$key }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const canDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]);
+  const theme = useTheme<Theme>();
+
+  const [openDelete, setOpenDelete] = useState(false);
 
   const group = useFragment<Group_group$key>(groupFragment, groupData);
   const { isAllowed, isSensitive } = useSensitiveModifications('groups', group.standard_id);
+
+  const handleOpenDelete = () => setOpenDelete(true);
+  const handleCloseDelete = () => setOpenDelete(false);
 
   const markingsSort = R.sortWith([
     R.ascend(R.propOr('TLP', 'definition_type')),
@@ -144,21 +156,58 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
   const canAccessDashboard = (
     group.default_dashboard?.authorizedMembers || []
   ).some(({ id }) => ['ALL', group.id].includes(id));
+
+  const GroupHeader = styled('div')({
+    display: 'flex',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+  });
+
   return (
     <div className={classes.container}>
       <AccessesMenu />
-      <Typography
-        variant="h1"
-        gutterBottom={true}
-        classes={{ root: classes.title }}
-      >
-        {group.name}
-      </Typography>
-      <GroupEdition
-        groupId={group.id}
-        disabled={!isAllowed && isSensitive}
-      />
-      <div className="clearfix" />
+      <GroupHeader>
+        <div>
+          <Typography
+            variant="h1"
+            gutterBottom={true}
+            classes={{ root: classes.title }}
+          >
+            {group.name}
+          </Typography>
+          <div className="clearfix"/>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div style={{ display: 'flex' }}>
+            <div style={{ marginRight: theme.spacing(0.5) }}>
+              {canDelete && (
+                <PopoverMenu>
+                  {({ closeMenu }) => (
+                    <Box>
+                      <MenuItem onClick={() => {
+                        handleOpenDelete();
+                        closeMenu();
+                      }}
+                      >
+                        {t_i18n('Delete')}
+                      </MenuItem>
+                    </Box>
+                  )}
+                </PopoverMenu>
+              )}
+            </div>
+            <GroupDeletionDialog
+              groupId={group.id}
+              isOpen={openDelete}
+              handleClose={handleCloseDelete}
+            />
+            <GroupEdition
+              groupId={group.id}
+              disabled={!isAllowed && isSensitive}
+            />
+          </div>
+        </div>
+      </GroupHeader>
       <Grid
         container={true}
         spacing={3}
@@ -180,7 +229,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                 />
               </Grid>
               <Grid item xs={12}>
-                <GroupHiddenTypesChipList groupData={group} />
+                <GroupHiddenTypesChipList groupData={group}/>
               </Grid>
               <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>

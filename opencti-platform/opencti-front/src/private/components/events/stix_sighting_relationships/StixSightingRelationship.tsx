@@ -59,7 +59,6 @@ StixSightingRelationshipProps
         id: sightingId,
       },
       onCompleted: () => {
-        handleCloseEdit();
         navigate('/dashboard/events/sightings');
       },
     });

@@ -16,15 +16,18 @@ const userDeletionMutation = graphql`
 
 interface UserDeletionDialogProps {
   userId: string,
+  isOpen: boolean
+  handleClose: () => void
 }
 
 const UserDeletionDialog: FunctionComponent<UserDeletionDialogProps> = ({
   userId,
+  isOpen,
+  handleClose,
 }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [deleting, setDeleting] = useState<boolean>(false);
-  const [displayDelete, setDisplayDelete] = useState<boolean>(false);
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
     values: { entity_type: t_i18n('User') },
@@ -35,8 +38,6 @@ const UserDeletionDialog: FunctionComponent<UserDeletionDialogProps> = ({
     { successMessage: deleteSuccessMessage },
   );
 
-  const handleOpenDelete = () => setDisplayDelete(true);
-  const handleCloseDelete = () => setDisplayDelete(false);
   const submitDelete = () => {
     setDeleting(true);
     commit({
@@ -49,48 +50,37 @@ const UserDeletionDialog: FunctionComponent<UserDeletionDialogProps> = ({
   };
 
   return (
-    <>
-      <Button
-        onClick={handleOpenDelete}
-        variant='contained'
-        color='error'
-        disabled={deleting}
-        sx={{ marginTop: 2 }}
-      >
-        {t_i18n('Delete')}
-      </Button>
-      <Dialog
-        open={displayDelete}
-        PaperProps={{ elevation: 1 }}
-        keepMounted={true}
-        TransitionComponent={Transition}
-        onClose={handleCloseDelete}
-      >
-        <DialogTitle>{t_i18n('Do you want to delete this user?')}</DialogTitle>
-        <DialogContent dividers>
-          <ul>
-            <li>{t_i18n('All notifications, triggers and digests associated with the user will be deleted.')}</li>
-            <li>{t_i18n('All investigations and dashboard where the user is the only admin, will be deleted.')}</li>
-          </ul>
-          {t_i18n('If you want to keep the associated information, we recommend deactivating the user instead.')}
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={handleCloseDelete}
-            disabled={deleting}
-          >
-            {t_i18n('Cancel')}
-          </Button>
-          <Button
-            color="secondary"
-            onClick={submitDelete}
-            disabled={deleting}
-          >
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </>
+    <Dialog
+      open={isOpen}
+      PaperProps={{ elevation: 1 }}
+      keepMounted={true}
+      TransitionComponent={Transition}
+      onClose={handleClose}
+    >
+      <DialogTitle>{t_i18n('Do you want to delete this user?')}</DialogTitle>
+      <DialogContent dividers>
+        <ul>
+          <li>{t_i18n('All notifications, triggers and digests associated with the user will be deleted.')}</li>
+          <li>{t_i18n('All investigations and dashboard where the user is the only admin, will be deleted.')}</li>
+        </ul>
+        {t_i18n('If you want to keep the associated information, we recommend deactivating the user instead.')}
+      </DialogContent>
+      <DialogActions>
+        <Button
+          onClick={handleClose}
+          disabled={deleting}
+        >
+          {t_i18n('Cancel')}
+        </Button>
+        <Button
+          color="secondary"
+          onClick={submitDelete}
+          disabled={deleting}
+        >
+          {t_i18n('Delete')}
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 };
 
