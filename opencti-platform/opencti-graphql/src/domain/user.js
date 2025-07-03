@@ -258,6 +258,19 @@ export const userOrganizationsPaginated = async (context, user, userId, opts) =>
   return listEntitiesThroughRelationsPaginated(context, user, userId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION, false, opts);
 };
 
+export const userRoles = async (context, _user, userId, opts) => {
+  const { orderBy, orderMode } = opts;
+  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const userLoaded = platformUsers.get(userId);
+  if (orderBy) {
+    if (orderMode === 'desc') {
+      return R.sortWith([R.descend(R.prop(orderBy))])(userLoaded.roles);
+    }
+    return R.sortWith([R.ascend(R.prop(orderBy))])(userLoaded.roles);
+  }
+  return userLoaded.roles;
+};
+
 export const userGroupsPaginated = async (context, user, userId, opts) => {
   return listEntitiesThroughRelationsPaginated(context, user, userId, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP, false, opts);
 };

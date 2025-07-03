@@ -1,10 +1,6 @@
 import { addIngestion, findAllPaginated, findById, ingestionDelete, ingestionEditField } from './ingestion-taxii-collection-domain';
 import type { Resolvers } from '../../generated/graphql';
-import { batchCreator } from '../../domain/user';
-import { batchLoader } from '../../database/middleware';
 import { getAuthorizedMembers } from '../../utils/authorizedMembers';
-
-const creatorLoader = batchLoader(batchCreator);
 
 const ingestionTaxiiCollectionResolvers: Resolvers = {
   Query: {
@@ -12,7 +8,7 @@ const ingestionTaxiiCollectionResolvers: Resolvers = {
     ingestionTaxiiCollections: (_, args, context) => findAllPaginated(context, context.user, args),
   },
   IngestionTaxiiCollection: {
-    user: (ingestionTaxiiCollection, _, context) => creatorLoader.load(ingestionTaxiiCollection.user_id, context, context.user),
+    user: (ingestionTaxiiCollection, _, context) => context.batch.creatorBatchLoader.load(ingestionTaxiiCollection.user_id),
     authorized_members: (ingestionTaxiiCollection, _, context) => getAuthorizedMembers(context, context.user, ingestionTaxiiCollection),
   },
   Mutation: {
