@@ -1846,21 +1846,20 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
         const updatedInstanceStandardIds = generateHashedObservableStandardIds(updatedInstance);
         const instanceStixIds = (instance[IDS_STIX] ?? []);
         const instanceOtherStixIds = instanceStixIds.filter((id) => !instanceStandardIds.includes(id));
-        const newStixIds = [...instanceOtherStixIds, ...updatedInstanceStandardIds];
+        const newStixIds = [...instanceOtherStixIds, ...updatedInstanceStandardIds].filter((id) => id !== standardId);
         const stixIdsHaveNotChanged = instanceStixIds.length === newStixIds.length
           && newStixIds.every((id) => instanceStixIds.includes(id));
 
         if (!stixIdsHaveNotChanged) {
-          const finalStixIds = newStixIds.filter((id) => id !== standardId);
           const stixInput = R.find((e) => e.key === IDS_STIX, preparedElements);
           if (stixInput) {
             // If update already contains a change of the other stix ids
             // we need to impact directly the impacted and updated related input
             stixInput.operation = UPDATE_OPERATION_REPLACE;
-            stixInput.value = R.uniq([...stixInput.value, ...finalStixIds]);
+            stixInput.value = R.uniq([...stixInput.value, ...newStixIds]);
           } else {
             // If no stix ids modification, add the standard id in the list and patch the element
-            preparedElements.push({ key: IDS_STIX, value: R.uniq(finalStixIds) });
+            preparedElements.push({ key: IDS_STIX, value: R.uniq(newStixIds) });
           }
         }
       } else if (isStandardIdUpgraded(instance, updatedInstance)) {
