@@ -152,8 +152,7 @@ const Notifications: FunctionComponent = () => {
     const firstEvent = events.at(0);
     const firstOperation = isDigest ? 'multiple' : (firstEvent?.operation ?? 'none');
     const isLinkAvailable = events.length === 1 && isNotEmptyField(firstEvent?.instance_id) && firstOperation !== 'delete';
-    if (!isLinkAvailable) return undefined;
-    if (firstEvent.instance_id) {
+    if (isLinkAvailable && firstEvent.instance_id) {
       navigate(`/dashboard/id/${firstEvent.instance_id}`);
     }
   };
