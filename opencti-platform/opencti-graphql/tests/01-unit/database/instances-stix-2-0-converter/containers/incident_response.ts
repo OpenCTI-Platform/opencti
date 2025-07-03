@@ -1,4 +1,4 @@
-import type { StoreEntity } from '../../../../../src/types/store';
+import type { StoreEntityCaseIncident2 } from '../../../../../src/modules/case/case-incident/case-incident-types';
 
 export const INCIDENT_RESPONSE_INSTANCE = {
   _index: 'opencti_stix_domain_objects-000001',
@@ -457,15 +457,15 @@ export const INCIDENT_RESPONSE_INSTANCE = {
       }
     }
   ]
-} as unknown as StoreEntity;
+} as unknown as StoreEntityCaseIncident2;
 
 export const EXPECTED_IR = {
-  id: 'x-opencti-case-incident--34e86b32-f0d5-5173-bbad-4e7e545a0990',
+  id: 'x-opencti-case-incident--0ed8c294-d99f-5155-a54b-7cc3044174c3',
   spec_version: '2.0',
   revoked: false,
   confidence: 100,
   created: '2025-06-26T16:06:02.000Z',
-  modified: '2025-06-26T16:08:55.683Z',
+  modified: '2025-06-26T16:06:52.288Z',
   name: 'IR STIX 2.0',
   description: 'description',
   severity: 'medium',
@@ -489,5 +489,17 @@ export const EXPECTED_IR = {
   created_by_ref: 'identity--cfb1de38-c40a-5f51-81f3-35036a4e3b91',
   object_marking_refs: [
     'marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34'
-  ]
+  ],
+  x_opencti_files: [
+    {
+      mime_type: 'application/json',
+      name: 'ipv4_example.json',
+      object_marking_refs: [
+        'marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34',
+      ],
+      uri: '/storage/get/import/Case-Incident/4c849ab0-81f2-457c-b837-bea76f4d4d15/ipv4_example.json',
+      version: '2025-06-26T16:06:52.222Z',
+    },
+  ],
+  x_opencti_granted_refs: [],
 };
