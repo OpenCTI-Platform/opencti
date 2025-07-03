@@ -26,6 +26,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import DialogTitle from '@mui/material/DialogTitle';
 import ToggleButton from '@mui/material/ToggleButton';
+import { useNavigate } from 'react-router-dom';
 import { commitMutation } from '../../../../relay/environment';
 import { playbookMutationFieldPatch } from './PlaybookEditionForm';
 import { deleteNode } from '../../../../utils/store';
@@ -34,6 +35,7 @@ import Transition from '../../../../components/Transition';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import stopEvent from '../../../../utils/domEvent';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const playbookPopoverDeletionMutation = graphql`
   mutation PlaybookPopoverDeletionMutation($id: ID!) {
@@ -44,6 +46,7 @@ const playbookPopoverDeletionMutation = graphql`
 const PlaybookPopover = (props) => {
   const { playbookId, running, paginationOptions } = props;
   const { t_i18n } = useFormatter();
+  const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
   const [displayStart, setDisplayStart] = useState(false);
   const [starting, setStarting] = useState(false);
@@ -71,6 +74,11 @@ const PlaybookPopover = (props) => {
     handleClose(event);
   };
 
+  const deleteSuccessMessage = t_i18n('', {
+    id: '... successfully deleted',
+    values: { entity_type: t_i18n('entity_Playbook') },
+  });
+
   const deletion = useDeletion({ handleClose: () => setAnchorEl(null) });
   const { setDeleting, handleOpenDelete } = deletion;
 
@@ -79,11 +87,16 @@ const PlaybookPopover = (props) => {
     stopEvent(event);
   };
 
+  const [commit] = useApiMutation(
+    playbookPopoverDeletionMutation,
+    undefined,
+    { successMessage: deleteSuccessMessage },
+  );
+
   const submitDelete = (event) => {
     setDeleting(true);
     stopEvent(event);
-    commitMutation({
-      mutation: playbookPopoverDeletionMutation,
+    commit({
       variables: {
         id: playbookId,
       },
@@ -99,6 +112,7 @@ const PlaybookPopover = (props) => {
       },
       onCompleted: () => {
         setDeleting(false);
+        navigate('/dashboard/data/processing/automation');
       },
     });
   };
@@ -160,7 +174,7 @@ const PlaybookPopover = (props) => {
         ) : (
           <MenuItem onClick={handleOpenStart}>{t_i18n('Start')}</MenuItem>
         )}
-        {paginationOptions && <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>}
+        <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
       <DeleteDialog
         deletion={deletion}

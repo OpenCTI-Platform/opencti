@@ -25,8 +25,9 @@ import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import SectorEdition from './SectorEdition';
+import SectorDeletion from './SectorDeletion';
 
 const subscription = graphql`
   subscription RootSectorSubscription($id: ID!) {
@@ -142,6 +143,11 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <SectorEdition sectorId={sector.id} />
+                </Security>
+              )}
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+                <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                  <SectorDeletion id={sector.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
               )}
               redirectToContent={true}

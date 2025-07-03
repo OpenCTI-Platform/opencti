@@ -27,7 +27,8 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import IndividualEdition from './IndividualEdition';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import IndividualDeletion from './IndividualDeletion';
 
 const subscription = graphql`
   subscription RootIndividualsSubscription($id: ID!) {
@@ -173,6 +174,11 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
               EditComponent={!individual.isUser && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <IndividualEdition individualId={individual.id} />
+                </Security>
+              )}
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+                <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                  <IndividualDeletion id={individual.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
               )}
               onViewAs={handleChangeViewAs}

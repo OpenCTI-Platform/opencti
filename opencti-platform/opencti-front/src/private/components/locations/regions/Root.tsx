@@ -30,7 +30,8 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import RegionEdition from './RegionEdition';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import RegionDeletion from './RegionDeletion';
 
 const subscription = graphql`
   subscription RootRegionsSubscription($id: ID!) {
@@ -139,6 +140,11 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <RegionEdition regionId={region.id} />
+                </Security>
+              )}
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+                <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                  <RegionDeletion id={region.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
               )}
               enableQuickSubscription={true}
