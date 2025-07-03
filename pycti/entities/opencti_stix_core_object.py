@@ -1922,7 +1922,7 @@ class StixCoreObject:
             query,
             {
                 "id": element_id,
-                "connectorId": connector_ids,
+                "connectorIds": connector_ids,
             },
         )
 
