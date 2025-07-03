@@ -87,6 +87,9 @@ const rootSettingsFragment = graphql`
     platform_ai_enabled
     platform_ai_type
     platform_ai_has_token
+    platform_url
+    platform_ai_flow_id
+    platform_api_host
     platform_trash_enabled
     platform_protected_sensitive_config {
       enabled
@@ -135,6 +138,7 @@ const meUserFragment = graphql`
     language
     theme
     user_email
+    api_token
     individual_id
     no_creators
     restrict_delete
