@@ -16,15 +16,18 @@ const groupDeletionMutation = graphql`
 
 interface GroupDeletionDialogProps {
   groupId: string,
+  isOpen: boolean
+  handleClose: () => void
 }
 
 const GroupDeletionDialog: FunctionComponent<GroupDeletionDialogProps> = ({
   groupId,
+  isOpen,
+  handleClose,
 }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [deleting, setDeleting] = useState<boolean>(false);
-  const [displayDelete, setDisplayDelete] = useState<boolean>(false);
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
     values: { entity_type: t_i18n('Group') },
@@ -35,53 +38,39 @@ const GroupDeletionDialog: FunctionComponent<GroupDeletionDialogProps> = ({
     { successMessage: deleteSuccessMessage },
   );
 
-  const handleOpenDelete = () => setDisplayDelete(true);
-  const handleCloseDelete = () => setDisplayDelete(false);
   const submitDelete = () => {
     setDeleting(true);
     commitDeleteMutation({
       variables: { id: groupId },
       onCompleted: () => {
         setDeleting(false);
-        handleCloseDelete();
         navigate('/dashboard/settings/accesses/groups');
       },
     });
   };
 
   return (
-    <div>
-      <Button
-        onClick={handleOpenDelete}
-        variant='contained'
-        color='error'
-        disabled={deleting}
-        sx={{ marginTop: 2 }}
-      >
-        {t_i18n('Delete')}
-      </Button>
-      <Dialog
-        open={displayDelete}
-        PaperProps={{ elevation: 1 }}
-        keepMounted={true}
-        TransitionComponent={Transition}
-        onClose={handleCloseDelete}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to delete this group?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDelete} disabled={deleting}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </div>
+    <Dialog
+      open={isOpen}
+      PaperProps={{ elevation: 1 }}
+      keepMounted={true}
+      TransitionComponent={Transition}
+      onClose={handleClose}
+    >
+      <DialogContent>
+        <DialogContentText>
+          {t_i18n('Do you want to delete this group?')}
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleClose} disabled={deleting}>
+          {t_i18n('Cancel')}
+        </Button>
+        <Button color="secondary" onClick={submitDelete} disabled={deleting}>
+          {t_i18n('Delete')}
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 };
 
