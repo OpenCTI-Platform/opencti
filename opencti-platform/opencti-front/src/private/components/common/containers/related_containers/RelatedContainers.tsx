@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { NorthEastOutlined, LoupeOutlined } from '@mui/icons-material';
 import { VectorLink } from 'mdi-material-ui';
@@ -13,6 +13,7 @@ import {
   RelatedContainersFragment_container_connection$key,
 } from '@components/common/containers/related_containers/__generated__/RelatedContainersFragment_container_connection.graphql';
 import { useTheme } from '@mui/styles';
+import Loader from 'src/components/Loader';
 import type { Theme } from '../../../../../components/Theme';
 import { resolveLink } from '../../../../../utils/Entity';
 import { useFormatter } from '../../../../../components/i18n';
@@ -227,12 +228,16 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
           </Tooltip>
         }
       >
-        {selectedContainer && (
-          <RelatedContainersDetails
-            containerId={containerId}
-            relatedContainer={selectedContainer}
-          />
-        )}
+        <>
+          {selectedContainer && (
+            <Suspense fallback={<Loader />}>
+              <RelatedContainersDetails
+                containerId={containerId}
+                relatedContainer={selectedContainer}
+              />
+            </Suspense>
+          )}
+        </>
       </Drawer>
     </div>
   );
