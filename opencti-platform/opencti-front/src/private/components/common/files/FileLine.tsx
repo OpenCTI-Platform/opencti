@@ -248,6 +248,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   }/${encodedFilePath}`;
   const isWarning = isArtifact
     || encodedFilePath.endsWith('.exe')
+    || encodedFilePath.endsWith('.pif')
     || encodedFilePath.endsWith('.dll');
   const fileExtension = file?.name.substring(file?.name.lastIndexOf('.')) ?? '';
   const fileNameWithoutExtension = file?.name.substring(0, file?.name.lastIndexOf('.')) ?? '';
