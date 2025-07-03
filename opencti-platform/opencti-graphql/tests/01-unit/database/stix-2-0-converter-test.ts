@@ -21,6 +21,9 @@ import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../../src/modules/grouping/ty
 import { ENTITY_TYPE_CONTAINER_TASK } from '../../../src/modules/task/task-types';
 import { convertTaskToStix_2_0 } from '../../../src/modules/task/task-converter';
 import { EXPECTED_TASK, TASK_INSTANCE } from './instances-stix-2-0-converter/containers/task';
+import { EXPECTED_IR, INCIDENT_RESPONSE_INSTANCE } from './instances-stix-2-0-converter/containers/incident_response';
+import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../src/modules/case/case-incident/case-incident-types';
+import { convertCaseIncidentToStix_2_0 } from '../../../src/modules/case/case-incident/case-incident-converter';
 
 describe('Stix 2.0 opencti converter', () => {
   it('should convert Malware', async () => {
@@ -54,5 +57,9 @@ describe('Stix 2.0 opencti converter', () => {
   it('should convert Task', async () => {
     const result = convertTaskToStix_2_0(TASK_INSTANCE, ENTITY_TYPE_CONTAINER_TASK);
     expect(result).toEqual(EXPECTED_TASK);
+  });
+  it('should convert Incident Response', async () => {
+    const result = convertCaseIncidentToStix_2_0(INCIDENT_RESPONSE_INSTANCE, ENTITY_TYPE_CONTAINER_CASE_INCIDENT);
+    expect(result).toEqual(EXPECTED_IR);
   });
 });
