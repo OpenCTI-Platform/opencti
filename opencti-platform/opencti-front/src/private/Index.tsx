@@ -112,8 +112,8 @@ const Index = ({ settings }: IndexProps) => {
       titleAvatarSrc:
           'https://filigran.io/app/uploads/2025/05/embleme_filigran_blanc.png',
       welcomeMessage: isEnterpriseEdition
-        ? 'Please, activate Entreprise Edition to get access to ChatBot.'
-        : "Hi there 👋 You're speaking with an AI Agent. I'm here to answer your questions, so what brings you here today?",
+        ? "Hi there 👋 You're speaking with an AI Agent. I'm here to answer your questions, so what brings you here today?"
+        : 'Please, activate Entreprise Edition to get access to ChatBot.',
       errorMessage: 'Sorry, an error has occurred, please try again later.',
       backgroundColor: '#ffffff',
       height: 700,
