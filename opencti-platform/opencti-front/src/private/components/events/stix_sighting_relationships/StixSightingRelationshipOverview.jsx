@@ -25,7 +25,6 @@ import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemConfidence from '../../../../components/ItemConfidence';
-import { stixSightingRelationshipEditionDeleteMutation } from './StixSightingRelationshipEdition';
 import { commitMutation } from '../../../../relay/environment';
 import { stixSightingRelationshipEditionFocus } from './StixSightingRelationshipEditionOverview';
 import ItemAuthor from '../../../../components/ItemAuthor';
@@ -150,6 +149,14 @@ const styles = (theme) => ({
   },
 });
 
+const stixSightingRelationshipOverviewDeleteMutation = graphql`
+  mutation StixSightingRelationshipOverviewDeleteMutation($id: ID!) {
+    stixSightingRelationshipEdit(id: $id) {
+      delete
+    }
+  }
+`;
+
 class StixSightingRelationshipContainer extends Component {
   constructor(props) {
     super(props);
@@ -184,7 +191,7 @@ class StixSightingRelationshipContainer extends Component {
     this.setState({ deleting: true });
     const { location, stixSightingRelationship } = this.props;
     commitMutation({
-      mutation: stixSightingRelationshipEditionDeleteMutation,
+      mutation: stixSightingRelationshipOverviewDeleteMutation,
       variables: {
         id: stixSightingRelationship.id,
       },
