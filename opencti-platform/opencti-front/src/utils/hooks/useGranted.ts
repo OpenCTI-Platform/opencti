@@ -42,6 +42,7 @@ export const SETTINGS_SETLABELS = 'SETTINGS_SETLABELS';
 export const SETTINGS_SECURITYACTIVITY = 'SETTINGS_SECURITYACTIVITY';
 export const SETTINGS_FILEINDEXING = 'SETTINGS_FILEINDEXING';
 export const SETTINGS_SUPPORT = 'SETTINGS_SUPPORT';
+export const SETTINGS_METRICS = 'SETTINGS_METRICS';
 
 export const isOnlyOrganizationAdmin = () => {
   const { me: user } = useAuth();
