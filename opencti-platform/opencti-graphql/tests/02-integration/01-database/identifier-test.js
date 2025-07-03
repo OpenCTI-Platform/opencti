@@ -2,7 +2,14 @@
 import { expect, it, describe } from 'vitest';
 import { elLoadById, } from '../../../src/database/engine';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { allFieldsContributingToStandardId, generateStandardId, isStandardIdDowngraded, isStandardIdSameWay, isStandardIdUpgraded } from '../../../src/schema/identifier';
+import {
+  allFieldsContributingToStandardId,
+  generateHashedObservableStandardIds,
+  generateStandardId,
+  isStandardIdDowngraded,
+  isStandardIdSameWay,
+  isStandardIdUpgraded
+} from '../../../src/schema/identifier';
 import { ENTITY_DIRECTORY, ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_USER_ACCOUNT } from '../../../src/schema/stixCyberObservable';
 import { ENTITY_TYPE_SETTINGS } from '../../../src/schema/internalObject';
 import { ENTITY_TYPE_CONTAINER_NOTE } from '../../../src/schema/stixDomainObject';
@@ -168,5 +175,48 @@ describe('Function allFieldsContributingToStandardId', () => {
     expect(fields).toEqual(['hashes', 'name']);
     fields = allFieldsContributingToStandardId({ entity_type: ENTITY_TYPE_CONTAINER_NOTE });
     expect(fields).toEqual(['content', 'created']);
+  });
+  describe('Function generateHashedObservableStandardIds', () => {
+    it('should generate HashedObservable standardIds work', () => {
+      const instanceUrl = {
+        _index: 'opencti_stix_cyber_observables-000001',
+        _id: '9c839484-4302-4c17-b972-dad97fdb3eef',
+        id: '9c839484-4302-4c17-b972-dad97fdb3eef',
+        sort: [1751527593131],
+        x_opencti_score: 50,
+        x_opencti_description: '',
+        value: 'https://cybermap.kaspersky.com/',
+        confidence: 100,
+        entity_type: 'Url',
+        internal_id: '9c839484-4302-4c17-b972-dad97fdb3eef',
+        standard_id: 'url--5e9f7011-48db-5fcf-a301-c7ac27b2a082',
+        creator_id: ['88ec0c6a-13ce-5e39-b486-354fe4a7084f'],
+        x_opencti_stix_ids: [],
+        created_at: '2025-07-03T07:26:33.131Z',
+        updated_at: '2025-07-03T07:30:55.752Z',
+        base_type: 'ENTITY',
+        parent_types: [
+          'Basic-Object',
+          'Stix-Object',
+          'Stix-Core-Object',
+          'Stix-Cyber-Observable'
+        ],
+        i_attributes: [
+          {
+            updated_at: '2025-07-03T07:30:55.752Z',
+            user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
+            confidence: 100,
+            name: 'x_opencti_description'
+          }
+        ]
+      };
+
+      const instanceType = instanceUrl.entity_type;
+      const urlValue = instanceUrl.value;
+      const standardIdsUrl = generateHashedObservableStandardIds(instanceUrl);
+      expect(instanceType).toEqual('Url');
+      expect(urlValue).toEqual('https://cybermap.kaspersky.com/');
+      expect(standardIdsUrl).toEqual([]);
+    });
   });
 });
