@@ -7,6 +7,7 @@ interface EntitySelectFieldProps extends FieldProps<EntityOption | null> {
   types: string[]
   onChange?: (val: EntityOption | EntityOption[] | null) => void
   multiple?: boolean
+  style?: React.CSSProperties;
 }
 
 const EntitySelectField = ({
@@ -16,6 +17,7 @@ const EntitySelectField = ({
   types,
   onChange,
   multiple = false,
+  style,
 }: EntitySelectFieldProps) => {
   return (
     <EntitySelect
@@ -27,6 +29,7 @@ const EntitySelectField = ({
         setFieldValue(name, v);
         onChange?.(v);
       }}
+      style={style}
     />
   );
 };

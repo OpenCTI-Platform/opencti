@@ -18,6 +18,7 @@ import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
 import { GlobeModel, HexagonOutline } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
+import StixNestedRefRelationshipCreationFromNetworkTraffic from './StixNestedRefRelationshipCreationFromNetworkTraffic';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
@@ -278,7 +279,7 @@ const stixNestedRefRelationshipResolveTypes = graphql`
   }
 `;
 
-const stixNestedRefRelationshipCreationFromEntityMutation = graphql`
+export const stixNestedRefRelationshipCreationFromEntityMutation = graphql`
   mutation StixNestedRefRelationshipCreationFromEntityMutation(
     $input: StixRefRelationshipAddInput!
   ) {
@@ -932,7 +933,18 @@ const StixNestedRefRelationshipCreationFromEntity = ({
         onClose={handleClose}
       >
         <>
-          {step === 0 ? renderSelectEntity() : null}
+          {step === 0 && (
+            <>
+              {entityType === 'Network-Traffic' ? (
+                <StixNestedRefRelationshipCreationFromNetworkTraffic
+                  entityId={entityId}
+                  typeFilter={actualTypeFilter}
+                  handleClose={handleClose}
+                  commit={commit}
+                />
+              ) : renderSelectEntity()}
+            </>
+          )}
           {step === 1
             ? <QueryRenderer
                 query={stixNestedRefRelationshipResolveTypes}
