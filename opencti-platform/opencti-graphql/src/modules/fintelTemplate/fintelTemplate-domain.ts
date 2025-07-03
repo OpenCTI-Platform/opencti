@@ -25,6 +25,7 @@ import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import pjson from '../../../package.json';
 import { convertWidgetsIds } from '../workspace/workspace-utils';
 import { SELF_ID, widgetAttackPatterns, widgetContainerObservables, widgetIndicators } from '../../utils/fintelTemplate/__fintelTemplateWidgets';
+import { fintelTemplateVariableNameChecker } from '../../utils/syntax';
 
 // to customize a template we need : EE, FF enabled
 // but also to have the SETTINGS_SETCUSTOMIZATION capability !!
@@ -49,10 +50,9 @@ export const findById = async (context: AuthContext, user: AuthUser, id: string)
 // check validity of variable_name of fintel template widgets
 export const checkFintelTemplateWidgetsValidity = (fintelTemplateWidgets: FintelTemplateWidget[]) => {
   const invalidVariableNames: string[] = [];
-  const regex = /^[A-Za-z0-9_-]+$/;
   (fintelTemplateWidgets ?? [])
     .forEach(({ variable_name, widget }) => {
-      if (!regex.test(variable_name)) {
+      if (!fintelTemplateVariableNameChecker.test(variable_name)) {
         invalidVariableNames.push(variable_name);
       }
       if (widget.type === 'attribute') {
@@ -61,7 +61,7 @@ export const checkFintelTemplateWidgetsValidity = (fintelTemplateWidgets: Fintel
             .forEach((c) => {
               if (!c.variableName) {
                 throw FunctionalError('Attributes should all have a variable name', { variableNameOfTheWidget: variable_name });
-              } else if (!regex.test(c.variableName)) {
+              } else if (!fintelTemplateVariableNameChecker.test(c.variableName)) {
                 invalidVariableNames.push(c.variableName);
               }
             });
