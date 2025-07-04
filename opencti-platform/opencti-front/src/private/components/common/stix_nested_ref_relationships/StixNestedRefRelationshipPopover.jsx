@@ -18,6 +18,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import StixNestedRefRelationshipEdition from './StixNestedRefRelationshipEdition';
+import stopEvent from '../../../../utils/domEvent';
 
 const styles = (theme) => ({
   container: {
@@ -61,34 +62,38 @@ class StixNestedRefRelationshipPopover extends Component {
   }
 
   handleOpen(event) {
+    stopEvent(event);
     this.setState({ anchorEl: event.currentTarget });
-    event.stopPropagation();
   }
 
-  handleClose() {
+  handleClose(event) {
     this.setState({ anchorEl: null });
+    stopEvent(event);
   }
 
-  handleOpenUpdate() {
+  handleOpenUpdate(event) {
     this.setState({ displayUpdate: true });
-    this.handleClose();
+    this.handleClose(event);
   }
 
-  handleCloseUpdate() {
+  handleCloseUpdate(event) {
     this.setState({ displayUpdate: false });
+    stopEvent(event);
   }
 
-  handleOpenDelete() {
+  handleOpenDelete(event) {
     this.setState({ displayDelete: true });
-    this.handleClose();
+    this.handleClose(event);
   }
 
-  handleCloseDelete() {
+  handleCloseDelete(event) {
     this.setState({ displayDelete: false });
+    stopEvent(event);
   }
 
-  submitDelete() {
+  submitDelete(event) {
     this.setState({ deleting: true });
+    stopEvent(event);
     commitMutation({
       mutation: stixNestedRefRelationshipPopoverDeletionMutation,
       variables: {
@@ -109,7 +114,7 @@ class StixNestedRefRelationshipPopover extends Component {
       },
       onCompleted: () => {
         this.setState({ deleting: false });
-        this.handleCloseDelete();
+        this.handleCloseDelete(event);
       },
     });
   }
