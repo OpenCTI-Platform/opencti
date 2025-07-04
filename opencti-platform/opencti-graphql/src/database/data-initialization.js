@@ -14,9 +14,12 @@ import { GROUP_DEFAULT, groupAddRelation } from '../domain/group';
 import { TAXIIAPI } from '../domain/user';
 import { KNOWLEDGE_COLLABORATION, KNOWLEDGE_DELETE, KNOWLEDGE_FRONTEND_EXPORT, KNOWLEDGE_MANAGE_AUTH_MEMBERS, KNOWLEDGE_UPDATE } from '../schema/general';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
-import { updateAttribute } from './middleware';
+import { loadEntity, updateAttribute } from './middleware';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
-import { logApp } from '../config/conf';
+import conf, { logApp } from '../config/conf';
+import { INDEX_INTERNAL_OBJECTS, isNotEmptyField } from './utils';
+import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
+import { elRawDelete, elRawGet, elRawIndex } from './engine';
 
 // region Platform capabilities definition
 const KNOWLEDGE_CAPABILITY = 'KNOWLEDGE';
@@ -362,7 +365,13 @@ const createBasicRolesAndCapabilities = async (context) => {
 export const initializeData = async (context, withMarkings = true) => {
   logApp.info('[INIT] Initialization of settings and basic elements');
   // Create default elements
+  const platformId = conf.get('platform_id') || undefined;
+  if (isNotEmptyField(platformId)) {
+    logApp.info(`[INIT] Platform identifier forced to [${platformId}]`);
+  }
+
   await addSettings(context, SYSTEM_USER, {
+    internal_id: platformId,
     platform_title: 'OpenCTI - Cyber Threat Intelligence Platform',
     platform_email: 'admin@opencti.io',
     platform_theme: 'dark',
@@ -380,4 +389,34 @@ export const initializeData = async (context, withMarkings = true) => {
   }
   logApp.info('[INIT] Platform default initialized');
   return true;
+};
+
+export const patchPlatformId = async (context) => {
+  const platformId = conf.get('platform_id') || undefined;
+  if (isNotEmptyField((platformId))) {
+    const platformSettings = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
+    if (platformSettings.id !== platformId) {
+      logApp.info(`[INIT] Switching platform identifier from [${platformSettings.id}] to [${platformId}]`);
+      // to change the id in elastic, we have no choice but to create a patched copy and delete the old document
+      const response = await elRawGet({
+        index: INDEX_INTERNAL_OBJECTS,
+        id: platformSettings.id
+      });
+      await elRawIndex({
+        index: INDEX_INTERNAL_OBJECTS,
+        id: platformId,
+        body: {
+          ...response._source,
+          internal_id: platformId,
+          id: platformId
+        },
+        refresh: true
+      });
+      await elRawDelete({
+        index: INDEX_INTERNAL_OBJECTS,
+        id: platformSettings.id,
+        refresh: true
+      });
+    }
+  }
 };
