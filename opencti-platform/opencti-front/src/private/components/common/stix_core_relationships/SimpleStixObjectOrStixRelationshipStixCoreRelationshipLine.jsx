@@ -22,7 +22,6 @@ import StixCoreRelationshipPopover from './StixCoreRelationshipPopover';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import ItemIcon from '../../../../components/ItemIcon';
-import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemEntityType from '../../../../components/ItemEntityType';
 
@@ -132,7 +131,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineComponent extend
                   className={classes.bodyItem}
                   style={{ width: dataColumns.name.width }}
                 >
-                  {element.restricted ? element.name : getMainRepresentative(element)}
+                  {element.name}
                   {element.draftVersion && (<DraftChip/>)}
                 </div>
                 <div
