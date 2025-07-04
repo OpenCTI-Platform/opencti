@@ -30,19 +30,13 @@ export const FONTS = {
     normal: `${url}${APP_BASE_PATH}/static/ext/NotoSansKR-Regular.ttf`,
     bold: `${url}${APP_BASE_PATH}/static/ext/NotoSansKR-Bold.ttf`,
   },
-  NotoSansSc: {
-    normal: `${url}${APP_BASE_PATH}/static/ext/NotoSansSC-Regular.ttf`,
-    bold: `${url}${APP_BASE_PATH}/static/ext/NotoSansSC-Bold.ttf`,
-  },
 };
 
 const isJapanese = (htmlData: string) => /[\u3000-\u303F\u3040-\u309F\u30A0-\u30FF\uFF00-\uFFEF\u4E00-\u9FAF\u3400-\u4DBF]/.test(htmlData);
 const isKorean = (htmlData: string) => /[\u1100-\u11FF\u3130-\u318F\uAC00-\uD7AF]/.test(htmlData);
-const isChinese = (htmlData: string) => /[\u4E00-\u9FFF]/.test(htmlData);
 
 export const detectLanguage = (htmlData: string) => {
   if (isJapanese(htmlData)) return 'NotoSansJp';
   if (isKorean(htmlData)) return 'NotoSansKr';
-  if (isChinese(htmlData)) return 'NotoSansCn';
   return 'Roboto';
 };
