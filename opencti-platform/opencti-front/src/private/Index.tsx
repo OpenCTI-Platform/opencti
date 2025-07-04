@@ -163,6 +163,7 @@ const Index = ({ settings }: IndexProps) => {
     vars: {
       OPENCTI_URL: settings.platform_url,
       OPENCTI_TOKEN: me.api_token,
+      OPENCTI_CERTIFICATE: settings.platform_opencti_certificate,
     },
   };
   return (
@@ -183,8 +184,8 @@ const Index = ({ settings }: IndexProps) => {
         <TopBar />
         <LeftBar />
         <BubbleChat
-          chatflowid={settings.platform_ai_flow_id ?? ''}
-          apiHost={settings.platform_api_host ?? ''}
+          chatflowid={isEnterpriseEdition ? (settings.platform_ai_flow_id ?? '') : ''}
+          apiHost={isEnterpriseEdition ? (settings.platform_api_host ?? '') : ''}
           chatflowConfig={chartFlowConfigVars}
           theme={chatBoxTheme}
         />

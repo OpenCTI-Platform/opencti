@@ -25265,6 +25265,7 @@ export type Settings = BasicObject & InternalObject & {
   platform_modules?: Maybe<Array<Module>>;
   platform_openbas_disable_display?: Maybe<Scalars['Boolean']['output']>;
   platform_openbas_url?: Maybe<Scalars['String']['output']>;
+  platform_opencti_certificate?: Maybe<Scalars['String']['output']>;
   platform_openerm_url?: Maybe<Scalars['String']['output']>;
   platform_openmtd_url?: Maybe<Scalars['String']['output']>;
   platform_organization?: Maybe<Organization>;
@@ -42209,6 +42210,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_modules?: Resolver<Maybe<Array<ResolversTypes['Module']>>, ParentType, ContextType>;
   platform_openbas_disable_display?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   platform_openbas_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  platform_opencti_certificate?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_openerm_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_openmtd_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;

@@ -132,6 +132,7 @@ export const getSettings = async (context) => {
     ],
     platform_ai_flow_id: '4712edae-8b13-439e-922e-c941ec2f296a',
     platform_api_host: 'https://platform.corporate.staging.filigran.ai',
+    platform_opencti_certificate: 'TODO',
   };
 };
 
