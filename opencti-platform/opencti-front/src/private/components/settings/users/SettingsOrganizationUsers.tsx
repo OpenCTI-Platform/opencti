@@ -3,19 +3,26 @@ import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import makeStyles from '@mui/styles/makeStyles';
-import { HorizontalRule, Security } from '@mui/icons-material';
+import { HorizontalRule, PersonOutlined, Security } from '@mui/icons-material';
 import SettingsOrganizationUserCreation from '@components/settings/users/SettingsOrganizationUserCreation';
 import { SettingsOrganization_organization$data } from '@components/settings/organizations/__generated__/SettingsOrganization_organization.graphql';
+import { graphql } from 'react-relay';
+import {
+  SettingsOrganizationUsersPaginationQuery,
+  SettingsOrganizationUsersPaginationQuery$variables,
+} from '@components/settings/users/__generated__/SettingsOrganizationUsersPaginationQuery.graphql';
+import { SettingsOrganizationUsersLine_node$data } from '@components/settings/users/__generated__/SettingsOrganizationUsersLine_node.graphql';
+import { Link } from 'react-router-dom';
+import { ListItemButton } from '@mui/material';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import SearchInput from '../../../../components/SearchInput';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { SettingsOrganizationUsersLinesQuery, SettingsOrganizationUsersLinesQuery$variables } from './__generated__/SettingsOrganizationUsersLinesQuery.graphql';
-import SettingsOrganizationUsersLines, { settingsOrganizationUsersLinesQuery } from './SettingsOrganizationUsersLines';
-import { UserLineDummy } from './UserLine';
-import ListLines from '../../../../components/list_lines/ListLines';
-import { DataColumns } from '../../../../components/list_lines';
+import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
+import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
+import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
+import DataTable from '../../../../components/dataGrid/DataTable';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -27,55 +34,156 @@ const useStyles = makeStyles<Theme>(() => ({
   },
 }));
 
+export const settingsOrganizationUsersQuery = graphql`
+  query SettingsOrganizationUsersPaginationQuery(
+    $id: String!
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $orderBy: UsersOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    ...SettingsOrganizationUsersLines_data
+    @arguments(
+      id: $id
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
+  }
+`;
+
+const settingsOrganizationUsersFragment = graphql`
+  fragment SettingsOrganizationUsersLines_data on Query
+  @argumentDefinitions(
+    id: { type: "String!" }
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: { type: "UsersOrdering", defaultValue: name }
+    orderMode: { type: "OrderingMode", defaultValue: asc }
+    filters: { type: "FilterGroup" }
+  )
+  @refetchable(queryName: "SettingsOrganizationUsersLinesRefetchQuery") {
+    organization(id: $id) {
+      id
+      name
+      members(
+        search: $search
+        first: $count
+        after: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      ) @connection(key: "Pagination_organization_members") {
+        edges {
+          node {
+            id
+            ...SettingsOrganizationUsersLine_node
+          }
+        }
+        pageInfo {
+          endCursor
+          hasNextPage
+          globalCount
+        }
+      }
+    }
+  }
+`;
+
+const settingsOrganizationUsersLineFragment = graphql`
+  fragment SettingsOrganizationUsersLine_node on User {
+    id
+    name
+    user_email
+    firstname
+    external
+    lastname
+    otp_activated
+    created_at
+    administrated_organizations {
+      id
+      name
+      authorized_authorities
+    }
+  }
+`;
+
 interface MembersListContainerProps {
   organization: SettingsOrganization_organization$data;
 }
 
-const SettingsOrganizationUsers: FunctionComponent<
-MembersListContainerProps
-> = ({ organization }) => {
+const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = ({ organization }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const LOCAL_STORAGE_KEY = `organization-${organization.id}-users`;
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<SettingsOrganizationUsersLinesQuery$variables>(LOCAL_STORAGE_KEY, { sortBy: 'name', orderAsc: true }, true);
-  const { searchTerm, sortBy, orderAsc } = viewStorage;
-  const queryRef = useQueryLoading<SettingsOrganizationUsersLinesQuery>(
-    settingsOrganizationUsersLinesQuery,
+
+  const initialValues = {
+    searchTerm: '',
+    sortBy: 'name',
+    orderAsc: true,
+    openExports: false,
+    filters: emptyFilterGroup,
+  };
+
+  const {
+    viewStorage,
+    helpers,
+    paginationOptions,
+  } = usePaginationLocalStorage<SettingsOrganizationUsersPaginationQuery$variables>(
+    LOCAL_STORAGE_KEY,
+    initialValues,
+  );
+
+  const { filters } = viewStorage;
+  const contextFilters = useBuildEntityTypeBasedFilterContext('Organization', filters);
+
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    id: organization.id,
+  } as unknown as SettingsOrganizationUsersPaginationQuery$variables;
+
+  const queryRef = useQueryLoading<SettingsOrganizationUsersPaginationQuery>(
+    settingsOrganizationUsersQuery,
     { ...paginationOptions, id: organization.id },
   );
-  const dataColumns: DataColumns = {
+
+  const dataColumns: DataTableProps['dataColumns'] = {
     name: {
-      label: 'Name',
-      width: '20%',
-      isSortable: true,
-      render: (user) => user.name,
+      percentWidth: 25,
     },
     user_email: {
-      label: 'Email',
-      width: '25%',
-      isSortable: true,
-      render: (user) => user.user_email,
+      percentWidth: 30,
     },
     firstname: {
+      id: 'firstname',
       label: 'Firstname',
-      width: '12.5%',
+      percentWidth: 10,
       isSortable: true,
       render: (user) => user.firstname,
     },
     lastname: {
+      id: 'lastname',
       label: 'Lastname',
-      width: '12.5%',
+      percentWidth: 10,
       isSortable: true,
       render: (user) => user.lastname,
     },
     effective_confidence_level: {
+      id: 'effective_confidence_level',
       label: 'Max Confidence',
-      width: '10%',
+      percentWidth: 10,
       isSortable: false,
     },
     otp: {
+      id: 'otp',
       label: '2FA',
-      width: '5%',
+      percentWidth: 5,
       isSortable: false,
       render: (user) => (
         <>
@@ -88,12 +196,17 @@ MembersListContainerProps
       ),
     },
     created_at: {
-      label: 'Platform creation date',
-      width: '10%',
-      isSortable: true,
-      render: (user, { fd }) => fd(user.created_at),
+      percentWidth: 10,
     },
   };
+
+  const preloadedPaginationProps = {
+    linesQuery: settingsOrganizationUsersQuery,
+    linesFragment: settingsOrganizationUsersFragment,
+    queryRef,
+    nodePath: ['organization', 'members', 'pageInfo', 'globalCount'],
+    setNumberOfElements: helpers.handleSetNumberOfElements,
+  } as UsePreloadedPaginationFragment<SettingsOrganizationUsersPaginationQuery>;
 
   return (
     <Grid item xs={12} style={{ marginTop: 0 }}>
@@ -101,7 +214,7 @@ MembersListContainerProps
         {t_i18n('Users')}
       </Typography>
       <SettingsOrganizationUserCreation
-        paginationOptions={paginationOptions}
+        paginationOptions={queryPaginationOptions}
         organization={organization}
         variant="standard"
       />
@@ -109,44 +222,25 @@ MembersListContainerProps
         <SearchInput
           variant="thin"
           onSubmit={helpers.handleSearch}
-          keyword={searchTerm}
+          // keyword={searchTerm}
         />
       </div>
       <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
-        <ListLines
-          handleSort={helpers.handleSort}
-          handleSearch={helpers.handleSearch}
-          handleAddFilter={helpers.handleAddFilter}
-          handleRemoveFilter={helpers.handleRemoveFilter}
-          handleToggleExports={helpers.handleToggleExports}
-          handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-          handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-          sortBy={sortBy}
-          orderAsc={orderAsc}
+        {queryRef && (
+        <DataTable
           dataColumns={dataColumns}
-          inline={true}
-          secondaryAction={true}
-        >
-          {queryRef && (
-            <React.Suspense
-              fallback={
-                <>
-                  {Array(20)
-                    .fill(0)
-                    .map((_, idx) => (
-                      <UserLineDummy key={idx} dataColumns={dataColumns} />
-                    ))}
-                </>
-              }
-            >
-              <SettingsOrganizationUsersLines
-                dataColumns={dataColumns}
-                queryRef={queryRef}
-                paginationOptions={paginationOptions}
-              />
-            </React.Suspense>
-          )}
-        </ListLines>
+          resolvePath={(data) => data.organization?.members?.edges?.map(({ node }: { node: SettingsOrganizationUsersLine_node$data }) => node)}
+          storageKey={LOCAL_STORAGE_KEY}
+          initialValues={initialValues}
+          toolbarFilters={contextFilters}
+          lineFragment={settingsOrganizationUsersLineFragment}
+          disableLineSelection
+          disableNavigation
+          preloadedPaginationProps={preloadedPaginationProps}
+          actions={(user) => <ListItemButton component={Link} to={`/dashboard/settings/accesses/users/${user.id}`}/>}
+          icon={() => <PersonOutlined color="primary" />}
+        />
+        )}
       </Paper>
     </Grid>
   );
