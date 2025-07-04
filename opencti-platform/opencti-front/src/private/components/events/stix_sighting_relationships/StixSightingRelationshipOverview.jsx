@@ -39,6 +39,7 @@ import StixCoreObjectOrStixRelationshipLastContainers from '../../common/contain
 import StixSightingRelationshipLabelsView from './StixSightingRelationshipLabelsView';
 import Transition from '../../../../components/Transition';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import { stixSightingRelationshipEditionDeleteMutation } from './StixSightingRelationshipEdition';
 
 const styles = (theme) => ({
   container: {
@@ -149,14 +150,6 @@ const styles = (theme) => ({
   },
 });
 
-const stixSightingRelationshipOverviewDeleteMutation = graphql`
-  mutation StixSightingRelationshipOverviewDeleteMutation($id: ID!) {
-    stixSightingRelationshipEdit(id: $id) {
-      delete
-    }
-  }
-`;
-
 class StixSightingRelationshipContainer extends Component {
   constructor(props) {
     super(props);
@@ -191,7 +184,7 @@ class StixSightingRelationshipContainer extends Component {
     this.setState({ deleting: true });
     const { location, stixSightingRelationship } = this.props;
     commitMutation({
-      mutation: stixSightingRelationshipOverviewDeleteMutation,
+      mutation: stixSightingRelationshipEditionDeleteMutation,
       variables: {
         id: stixSightingRelationship.id,
       },
