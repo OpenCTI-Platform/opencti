@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import conf, { booleanConf, logApp } from '../config/conf';
+import { meterManager } from '../config/tracing';
 
 const USE_SSL = booleanConf('smtp:use_ssl', false);
 const REJECT_UNAUTHORIZED = booleanConf('smtp:reject_unauthorized', false);
@@ -37,9 +38,10 @@ export const smtpIsAlive = async () => {
   return true;
 };
 
-export const sendMail = async (args) => {
+export const sendMail = async (args, meterMetadata) => {
   if (SMTP_ENABLE) {
     const { from, to, bcc, subject, html, attachments } = args;
     await transporter.sendMail({ from, to, bcc, subject, html, attachments });
+    meterManager.emailSent(meterMetadata);
   }
 };
