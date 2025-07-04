@@ -127,6 +127,7 @@ Here is an example of SAML configuration using environment variables:
 - PROVIDERS__SAML__CONFIG__ISSUER=mydomain
 - PROVIDERS__SAML__CONFIG__ENTRY_POINT=https://auth.mydomain.com/auth/realms/mydomain/protocol/saml
 - PROVIDERS__SAML__CONFIG__SAML_CALLBACK_URL=http://opencti.mydomain.com/auth/saml/callback
+- PROVIDERS__SAML__CONFIG__AUDIENCE=http://opencti.mydomain.com/auth/saml/callback
 - PROVIDERS__SAML__CONFIG__CERT=MIICmzCCAYMCBgF3Rt3X1zANBgkqhkiG9w0BAQsFADARMQ8w
 - PROVIDERS__SAML__CONFIG__LOGOUT_REMOTE=false
 - PROVIDERS__SAML__CONFIG__WANT_AUTHN_RESPONSE_SIGNED=true

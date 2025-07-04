@@ -21,6 +21,7 @@ ElasticSearch and OpenSearch both support rollover on indices. OpenCTI has been 
     - `cluster:monitor/health`
     - `cluster:monitor/main`
     - `cluster:monitor/state`
+    - `cluster:monitor/task/get`
     - `indices:admin/index_template/put`
     - `indices:data/read/scroll/clear`
     - `indices:data/read/scroll`
@@ -36,20 +37,21 @@ ElasticSearch and OpenSearch both support rollover on indices. OpenCTI has been 
 
 By default, a rollover policy is applied on all indices used by OpenCTI.
 
-* `opencti_deleted_objects`
-* `opencti_files`
-* `opencti_history`
-* `opencti_inferred_entities`
-* `opencti_inferred_relationships`
-* `opencti_internal_objects`
-* `opencti_internal_relationships`
-* `opencti_stix_core_relationships`
-* `opencti_stix_cyber_observable_relationships`
-* `opencti_stix_cyber_observables`
-* `opencti_stix_domain_objects`
-* `opencti_stix_meta_objects`
-* `opencti_stix_meta_relationships`
-* `opencti_stix_sighting_relationships`
+- `opencti_deleted_objects`
+- `opencti_draft_objects`
+- `opencti_files`
+- `opencti_history`
+- `opencti_inferred_entities`
+- `opencti_inferred_relationships`
+- `opencti_internal_objects`
+- `opencti_internal_relationships`
+- `opencti_stix_core_relationships`
+- `opencti_stix_cyber_observable_relationships`
+- `opencti_stix_cyber_observables`
+- `opencti_stix_domain_objects`
+- `opencti_stix_meta_objects`
+- `opencti_stix_meta_relationships`
+- `opencti_stix_sighting_relationships`
 
 For your information, the indices which can grow rapidly are:
 
