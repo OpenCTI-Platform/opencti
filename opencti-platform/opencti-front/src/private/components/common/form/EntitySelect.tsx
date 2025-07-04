@@ -44,6 +44,7 @@ interface EntitySelectComponentProps extends EntitySelectBaseProps {
   multiple: boolean;
   value: EntityOption | EntityOption[] | null;
   onChange?: (val: EntityOption | EntityOption[] | null) => void;
+  style?: React.CSSProperties;
 }
 
 const EntitySelectComponent = ({
@@ -55,6 +56,7 @@ const EntitySelectComponent = ({
   onChange,
   onInputChange,
   queryRef,
+  style,
 }: EntitySelectComponentProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
@@ -72,6 +74,7 @@ const EntitySelectComponent = ({
       value={value}
       options={options}
       multiple={multiple}
+      style={style}
       disableCloseOnSelect={multiple}
       noOptionsText={t_i18n('No available options')}
       isOptionEqualToValue={(option, val) => option.value === val.value}
@@ -133,9 +136,10 @@ const EntitySelectComponent = ({
 
 type EntitySelectProps = Omit<EntitySelectComponentProps, 'onInputChange' | 'queryRef'> & {
   types: string[]
+  style?: React.CSSProperties
 };
 
-const EntitySelect = ({ types, ...otherProps }: EntitySelectProps) => {
+const EntitySelect = ({ types, style, ...otherProps }: EntitySelectProps) => {
   const [search, setSearch] = useState('');
 
   const variables = useMemo(() => ({
@@ -166,6 +170,7 @@ const EntitySelect = ({ types, ...otherProps }: EntitySelectProps) => {
           {...otherProps}
           onInputChange={setSearch}
           queryRef={queryRef}
+          style={style}
         />
       )}
     </Suspense>
