@@ -242,6 +242,56 @@ Alternatively, you can request OpenCTI to use claims from the `userinfo` endpoin
 - PROVIDERS__OPENID__CONFIG__GROUPS_MANAGEMENT__READ_USERINFO=true
 - PROVIDERS__OPENID__CONFIG__ORGANIZATIONS_MANAGEMENT__READ_USERINFO=true
 ```
+#### Custom/Self-Signed CA Certificates
+
+When using an OpenID Connect provider secured with a certificate issued by a **custom Certificate Authority (CA)** or a **self-signed certificate**, OpenCTI (running on Node.js) might not inherently trust this certificate. This can lead to connection errors like `unable to get local issuer certificate`.
+
+To resolve this, you need to instruct OpenCTI to **trust your custom CA certificate**. This is achieved by providing the CA's root certificate to the Node.js environment via the `NODE_EXTRA_CA_CERTS` environment variable.
+
+**Steps to integrate your Custom CA Certificate:**
+
+1.  **Obtain your CA's Root Certificate:**
+
+      * Export the public root certificate of the Certificate Authority that issued your OpenID provider's certificate. This file is typically in `.pem`, `.crt`, or `.cer` format. Ensure it contains the **full certificate chain** if applicable.
+      * Place this certificate file (e.g., `ca.crt`) in a dedicated directory on your OpenCTI host machine, for example, `/cert_volume/ca.crt`.
+
+2.  **Mount the Certificate into the Docker Container:**
+
+      * Edit your `docker-compose.yml` file. Under the `opencti` service, add a `volumes` entry to mount your host certificate directory into the container.
+      * Also, add an `environment` variable `NODE_EXTRA_CA_CERTS` pointing to the full path of your certificate ***inside*** the container.
+
+    <!-- end list -->
+
+    ```yaml
+    services:
+      opencti:
+        # ... other configurations
+        volumes:
+          - ./cert_volume:/cert_volume
+        environment:
+          - NODE_EXTRA_CA_CERTS=/cert_volume/ca.crt # Point to your CA cert inside the container
+          # ... other environment variables
+        # ...
+    ```
+
+      * **Note:** If you have multiple custom CA certificates, you can concatenate them into a single `.pem` file and point `NODE_EXTRA_CA_CERTS` to this combined file.
+
+3.  **Restart OpenCTI:**
+
+      * After modifying `docker-compose.yml`, restart your OpenCTI containers to apply the changes:
+
+    <!-- end list -->
+
+    ```bash
+    docker-compose down
+    docker-compose up -d
+    ```
+
+After these steps, OpenCTI should successfully establish a secure connection with your OpenID Connect provider using your custom certificate.
+
+**Security Warning:**
+**Do not disable certificate validation** (e.g., by setting `rejectUnauthorized` to `false` if such an option existed for OIDC) in production environments. This is a **significant security risk** and makes your connection vulnerable to Man-in-the-Middle attacks. Always prefer trusting the CA certificate as described above.
+
 
 ### Auth0 (button)
 
