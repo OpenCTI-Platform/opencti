@@ -33,10 +33,12 @@ import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { generateIndicatorFromObservable } from '../domain/stixCyberObservable';
 import {
+  ACTION_TYPE_ADD_GROUPS,
+  ACTION_TYPE_ADD_ORGANIZATIONS,
   ACTION_TYPE_COMPLETE_DELETE,
   ACTION_TYPE_DELETE,
   ACTION_TYPE_REMOVE_AUTH_MEMBERS,
-  ACTION_TYPE_REMOVE_FROM_DRAFT,
+  ACTION_TYPE_REMOVE_FROM_DRAFT, ACTION_TYPE_REMOVE_GROUPS, ACTION_TYPE_REMOVE_ORGANIZATIONS,
   ACTION_TYPE_RESTORE,
   ACTION_TYPE_SHARE,
   ACTION_TYPE_SHARE_MULTIPLE,
@@ -225,6 +227,24 @@ const baseOperationBuilder = (actionType, operations, element) => {
   // Access management
   if (actionType === ACTION_TYPE_REMOVE_AUTH_MEMBERS) {
     baseOperationObject.opencti_operation = 'clear_access_restriction';
+  }
+  // User orga management
+  if (actionType === ACTION_TYPE_ADD_ORGANIZATIONS) {
+    baseOperationObject.opencti_operation = 'add_organizations';
+    baseOperationObject.organization_ids = operations[0].context.values;
+  }
+  if (actionType === ACTION_TYPE_REMOVE_ORGANIZATIONS) {
+    baseOperationObject.opencti_operation = 'remove_organizations';
+    baseOperationObject.organization_ids = operations[0].context.values;
+  }
+  // User group management
+  if (actionType === ACTION_TYPE_ADD_GROUPS) {
+    baseOperationObject.opencti_operation = 'add_groups';
+    baseOperationObject.group_ids = operations[0].context.values;
+  }
+  if (actionType === ACTION_TYPE_REMOVE_GROUPS) {
+    baseOperationObject.opencti_operation = 'remove_groups';
+    baseOperationObject.group_ids = operations[0].context.values;
   }
   return baseOperationObject;
 };
