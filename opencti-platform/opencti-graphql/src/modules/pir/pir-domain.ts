@@ -2,15 +2,7 @@ import { now } from 'moment';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type EntityOptions, internalLoadById, listEntities, listEntitiesPaginated, listRelations, listRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityPir, ENTITY_TYPE_PIR, type PirExplanation } from './pir-types';
-import {
-  type EditInput,
-  EditOperation,
-  type FilterGroup,
-  OrderingMode,
-  type PirAddInput,
-  type PirFlagElementInput,
-  type PirUnflagElementInput
-} from '../../generated/graphql';
+import { type EditInput, EditOperation, type FilterGroup, OrderingMode, type PirAddInput, type PirFlagElementInput, type PirUnflagElementInput } from '../../generated/graphql';
 import { createEntity, deleteRelationsByFromAndTo, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
