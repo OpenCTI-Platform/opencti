@@ -78,6 +78,7 @@ const rootSettingsFragment = graphql`
       license_platform
       license_platform_match
       license_type
+      enterprise_license
     }
     ...AppThemeProvider_settings
     ...AppIntlProvider_settings
@@ -90,7 +91,6 @@ const rootSettingsFragment = graphql`
     platform_url
     platform_ai_flow_id
     platform_api_host
-    enterprise_license
     platform_trash_enabled
     platform_protected_sensitive_config {
       enabled
