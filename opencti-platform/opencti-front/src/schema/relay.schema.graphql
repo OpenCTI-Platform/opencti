@@ -1438,6 +1438,7 @@ type Settings implements InternalObject & BasicObject {
   platform_ai_has_token: Boolean!
   platform_ai_flow_id: String
   platform_api_host: String
+  enterprise_license: String
   platform_login_message: String
   platform_consent_message: String
   platform_consent_confirm_text: String

@@ -163,9 +163,10 @@ const Index = ({ settings }: IndexProps) => {
     vars: {
       OPENCTI_URL: settings.platform_url,
       OPENCTI_TOKEN: me.api_token,
-      // OPENCTI_CERTIFICATE:
+      OPENCTI_CERTIFICATE: settings.enterprise_license,
     },
   };
+  console.log('chartFlowConfigVars', chartFlowConfigVars);
   return (
     <>
       <SystemBanners settings={settings} />
