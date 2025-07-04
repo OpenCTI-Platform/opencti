@@ -159,6 +159,38 @@ describe('PIR resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
     expect(queryResult.data?.pirs.edges.length).toEqual(1);
   });
+  it('should update a pir', async () => {
+    const UPDATE_QUERY = gql`
+      mutation PirUpdate($id: ID!, $input: [EditInput!]!) {
+        pirFieldPatch(id: $id, input: $input) {
+          id
+          standard_id
+          name
+        }
+      }
+    `;
+    const queryResult = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: pirInternalId, input: [{ key: 'name', value: ['myPirNewName'] }] },
+    });
+    expect(queryResult.data?.pirFieldPatch.name).toEqual('myPirNewName');
+  });
+  it('should not update some pir fields', async () => {
+    const UPDATE_QUERY = gql`
+      mutation PirUpdate($id: ID!, $input: [EditInput!]!) {
+        pirFieldPatch(id: $id, input: $input) {
+          id
+          standard_id
+          name
+        }
+      }
+    `;
+    const queryResult = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: pirInternalId, input: [{ key: 'pir_filters', value: [undefined] }] },
+    });
+    expect(queryResult.errors?.[0].message).toEqual('Error while updating the PIR, invalid or forbidden key.');
+  });
   it('should flag an element and create a pir meta rel', async () => {
     // fetch an element standard id
     const malware = await storeLoadById<BasicStoreEntity>(testContext, SYSTEM_USER, 'malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88', ENTITY_TYPE_MALWARE);
