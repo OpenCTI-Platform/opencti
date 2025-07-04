@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useEffect } from 'react';
+import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useRefetchableFragment } from 'react-relay';
 import Paper from '@mui/material/Paper';
 import {
@@ -6,10 +6,10 @@ import {
   StixCoreObjectHistoryLinesQuery$variables,
 } from '@components/common/stix_core_objects/__generated__/StixCoreObjectHistoryLinesQuery.graphql';
 import { StixCoreObjectHistoryLines_data$key } from '@components/common/stix_core_objects/__generated__/StixCoreObjectHistoryLines_data.graphql';
-import { interval } from 'rxjs';
 import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectHistoryLine from './StixCoreObjectHistoryLine';
 import { FIVE_SECONDS } from '../../../../utils/Time';
+import useInterval from '../../../../utils/hooks/useInterval';
 
 export const stixCoreObjectHistoryLinesQuery = graphql`
   query StixCoreObjectHistoryLinesQuery(
@@ -49,8 +49,6 @@ interface StixCoreObjectHistoryLinesProps {
   paginationOptions: StixCoreObjectHistoryLinesQuery$variables,
 }
 
-const interval$ = interval(FIVE_SECONDS);
-
 const StixCoreObjectHistoryLines: FunctionComponent<StixCoreObjectHistoryLinesProps> = ({
   queryRef,
   isRelationLog,
@@ -63,15 +61,10 @@ const StixCoreObjectHistoryLines: FunctionComponent<StixCoreObjectHistoryLinesPr
     queryData,
   );
 
-  useEffect(() => {
+  useInterval(() => {
     // Refresh the history every interval
-    const subscription = interval$.subscribe(() => {
-      refetch(paginationOptions, { fetchPolicy: 'store-and-network' });
-    });
-    return function cleanup() {
-      subscription.unsubscribe();
-    };
-  }, [refetch]);
+    refetch(paginationOptions, { fetchPolicy: 'store-and-network' });
+  }, FIVE_SECONDS);
 
   const logs = data?.logs?.edges ?? [];
   return (
