@@ -142,6 +142,7 @@ export const ipv6Checker = /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA
 export const macAddrChecker = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
 export const ipv4Checker = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}(?:\/([0-9]|[1-2][0-9]|3[0-2]))?$/;
 export const cpeChecker = /^cpe:\/\/[a-zA-Z0-9_./:-]+|^cpe:\/[a-zA-Z0-9_./:-]+$/;
+export const fintelTemplateVariableNameChecker = /^[A-Za-z0-9_-]+$/;
 
 export const checkObservableSyntax = (observableType, observableData) => {
   switch (observableType) {

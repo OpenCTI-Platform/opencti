@@ -5,6 +5,7 @@ import { useTheme } from '@mui/styles';
 import { graphql, useFragment } from 'react-relay';
 import { useFintelTemplateContext } from '@components/settings/sub_types/fintel_templates/FintelTemplateContext';
 import { useParams } from 'react-router-dom';
+import { fintelTemplateVariableNameChecker } from '@components/widgets/useWidgetConfigValidateForm';
 import useFintelTemplateEdit from './useFintelTemplateEdit';
 import { FintelTemplateWidgetsSidebar_template$key } from './__generated__/FintelTemplateWidgetsSidebar_template.graphql';
 import FintelTemplateWidgetsList, { FintelTemplateWidget } from './FintelTemplateWidgetsList';
@@ -154,7 +155,7 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
     } if (variableName.includes(' ')) {
       MESSAGING$.notifyError(t_i18n('The variable name should not contain spaces'));
       return false;
-    } if (!variableName.match(/^[A-Za-z0-9_-]+$/)) {
+    } if (!variableName.match(fintelTemplateVariableNameChecker)) {
       MESSAGING$.notifyError(t_i18n('The variable name should not contain special characters'));
       return false;
     }
