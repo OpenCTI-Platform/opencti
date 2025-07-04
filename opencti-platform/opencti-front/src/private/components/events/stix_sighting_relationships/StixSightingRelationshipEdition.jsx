@@ -1,6 +1,7 @@
 import React from 'react';
 import Drawer from '@mui/material/Drawer';
 import makeStyles from '@mui/styles/makeStyles';
+import { graphql } from 'react-relay';
 import StixSightingRelationshipEditionOverview, { stixSightingRelationshipEditionOverviewQuery } from './StixSightingRelationshipEditionOverview';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -31,6 +32,14 @@ const useStyles = makeStyles((theme) => ({
     padding: 0,
   },
 }));
+
+export const stixSightingRelationshipEditionDeleteMutation = graphql`
+  mutation StixSightingRelationshipEditionDeleteMutation($id: ID!) {
+    stixSightingRelationshipEdit(id: $id) {
+      delete
+    }
+  }
+`;
 
 const StixSightingRelationshipEdition = ({ stixSightingRelationshipId, open, handleClose, inferred, noStoreUpdate, inGraph }) => {
   const classes = useStyles();
