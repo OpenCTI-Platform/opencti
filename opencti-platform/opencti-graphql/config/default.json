@@ -221,6 +221,10 @@
     "ai_azure_instance": "",
     "ai_azure_deployment": ""
   },
+  "ai_agent": {
+    "endpoint": "https://platform.corporate.staging.filigran.ai",
+    "token": "4712edae-8b13-439e-922e-c941ec2f296a"
+  },
   "xtm": {
     "openbas_url": "",
     "openbas_token": "",

@@ -163,7 +163,7 @@ const Index = ({ settings }: IndexProps) => {
     vars: {
       OPENCTI_URL: settings.platform_url,
       OPENCTI_TOKEN: me.api_token,
-      OPENCTI_CERTIFICATE: settings.platform_opencti_certificate,
+      // OPENCTI_CERTIFICATE:
     },
   };
   return (

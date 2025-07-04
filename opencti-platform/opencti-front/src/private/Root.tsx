@@ -90,7 +90,6 @@ const rootSettingsFragment = graphql`
     platform_url
     platform_ai_flow_id
     platform_api_host
-    platform_opencti_certificate
     platform_trash_enabled
     platform_protected_sensitive_config {
       enabled
