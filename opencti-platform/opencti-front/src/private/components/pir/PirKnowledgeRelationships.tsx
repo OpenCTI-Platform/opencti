@@ -1,9 +1,5 @@
 import { graphql } from 'react-relay';
-import React from 'react';
-import ToggleButton from '@mui/material/ToggleButton';
-import Tooltip from '@mui/material/Tooltip';
-import { LibraryBooksOutlined } from '@mui/icons-material';
-import { RelationManyToMany } from 'mdi-material-ui';
+import React, { ReactNode } from 'react';
 import {
   PirKnowledgeRelationshipsSourcesFlaggedListQuery,
   PirKnowledgeRelationshipsSourcesFlaggedListQuery$variables,
@@ -18,7 +14,6 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 import { computeLink } from '../../../utils/Entity';
 import FilterIconButton from '../../../components/FilterIconButton';
-import { useFormatter } from '../../../components/i18n';
 import { PaginationOptions } from '../../../components/list_lines';
 import { LocalStorage } from '../../../utils/hooks/useLocalStorageModel';
 import ItemEntityType from '../../../components/ItemEntityType';
@@ -128,10 +123,10 @@ interface PirKnowledgeRelationshipsProps {
   pirId: string;
   localStorage: PaginationLocalStorage<PaginationOptions>;
   initialValues: LocalStorage;
+  additionalHeaderButtons: ReactNode[];
 }
 
-const PirKnowledgeRelationships = ({ pirId, localStorage, initialValues }: PirKnowledgeRelationshipsProps) => {
-  const { t_i18n } = useFormatter();
+const PirKnowledgeRelationships = ({ pirId, localStorage, initialValues, additionalHeaderButtons }: PirKnowledgeRelationshipsProps) => {
   const {
     viewStorage,
     helpers,
@@ -237,18 +232,7 @@ const PirKnowledgeRelationships = ({ pirId, localStorage, initialValues }: PirKn
             // @ts-ignore
             return computeLink(e.from);
           }}
-          additionalHeaderButtons={[
-            (<ToggleButton key="entities" value="entities" aria-label="entities">
-              <Tooltip title={t_i18n('Entities view')}>
-                <LibraryBooksOutlined fontSize="small" color="primary" />
-              </Tooltip>
-            </ToggleButton>),
-            (<ToggleButton key="relationships" value="relationships" aria-label="relationships">
-              <Tooltip title={t_i18n('Relationships view')}>
-                <RelationManyToMany color="secondary" fontSize="small" />
-              </Tooltip>
-            </ToggleButton>),
-          ]}
+          additionalHeaderButtons={additionalHeaderButtons}
         />
       )}
     </>
