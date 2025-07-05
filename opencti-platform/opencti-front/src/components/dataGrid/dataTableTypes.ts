@@ -66,7 +66,7 @@ export interface DataTableContextProps {
   resetColumns: () => void
   disableNavigation: DataTableProps['disableNavigation']
   disableToolBar: DataTableProps['disableToolBar']
-  disableSelectAll: DataTableProps['disableSelectAll']
+  removeSelectAll: DataTableProps['removeSelectAll']
   disableLineSelection: DataTableProps['disableLineSelection']
   selectOnLineClick: DataTableProps['selectOnLineClick']
   onLineClick: DataTableProps['onLineClick']
@@ -140,7 +140,7 @@ export interface DataTableProps {
   disableNavigation?: boolean
   disableLineSelection?: boolean
   disableToolBar?: boolean
-  disableSelectAll?: boolean
+  removeSelectAll?: boolean
   removeAuthMembersEnabled?: boolean
   removeFromDraftEnabled?: boolean
   markAsReadEnabled?: boolean

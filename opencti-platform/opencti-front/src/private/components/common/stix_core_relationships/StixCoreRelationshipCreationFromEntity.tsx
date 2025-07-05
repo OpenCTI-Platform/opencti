@@ -798,7 +798,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
                   <div style={{ height: '100%' }} ref={setTableRootRef}>
                     <DataTable
                       disableToolBar
-                      disableSelectAll
+                      removeSelectAll
                       disableNavigation
                       selectOnLineClick
                       variant={DataTableVariant.inline}
