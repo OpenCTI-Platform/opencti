@@ -62,7 +62,7 @@ describe('Raw streams tests', () => {
         const key = allUpdatedCounterKeys[i];
         expect(
           updateEventsByTypes[key].length,
-          `Updated ${key} count should be ${testUpdatedCounter[key]} but got ${updateEventsByTypes[key].length}`
+          `Updated ${key} count should be ${testUpdatedCounter[key]} but got ${updateEventsByTypes[key].length} ${JSON.stringify(updateEventsByTypes[key])}`
         ).toBe(testUpdatedCounter[key]);
       }
       expect(updateEvents.length).toBe(doTotal(testUpdatedCounter));
