@@ -85,9 +85,15 @@ export function refang(input) {
       }//${
         parsed.hostname
       }${
-        (safePath.startsWith('/') ? safePath : `/${safePath}`)
+        parsed.port ? `:${parsed.port}` : ''
       }${
-        safeQuery ? `?${safeQuery}` : ''
+        parsed.username || parsed.password ? `@${parsed.username || ''}${parsed.password ? `:${parsed.password}` : ''}` : ''
+      }${
+        safePath.startsWith('/') ? '' : '/'
+      }${
+        safePath.endsWith('/') ? safePath.slice(0, -1) : safePath
+      }${
+        safeQuery && safeQuery.length > 0 ? `?${safeQuery}` : ''
       }`;
     } catch (e) {
       // On URL parse error, return the original input (not null)
