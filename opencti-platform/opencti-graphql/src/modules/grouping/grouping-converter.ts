@@ -1,10 +1,14 @@
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import { buildStixDomain, convertObjectReferences } from '../../database/stix-2-1-converter';
-import type { StixGrouping, StoreEntityGrouping } from './grouping-types';
+import { buildStixDomain as buildStixDomain2 } from '../../database/stix-2-0-converter';
 import { INPUT_OBJECTS } from '../../schema/general';
-import { cleanObject } from '../../database/stix-converter-utils';
+import { assertType, cleanObject } from '../../database/stix-converter-utils';
+import type { StoreEntity } from '../../types/store';
+import { ENTITY_TYPE_CONTAINER_GROUPING, type StoreEntityGrouping } from './types/store';
+import type { StixGrouping } from './types/stix-2-1';
+import type { StixGrouping as Stix2Grouping } from './types/stix-2-0';
 
-const convertGroupingToStix = (instance: StoreEntityGrouping): StixGrouping => {
+export const convertGroupingToStix_2_1 = (instance: StoreEntityGrouping): StixGrouping => {
   const grouping = buildStixDomain(instance);
   return {
     ...grouping,
@@ -24,4 +28,14 @@ const convertGroupingToStix = (instance: StoreEntityGrouping): StixGrouping => {
   };
 };
 
-export default convertGroupingToStix;
+export const convertGroupingToStix_2_0 = (instance: StoreEntity, type: string): Stix2Grouping => {
+  assertType(ENTITY_TYPE_CONTAINER_GROUPING, type);
+  const grouping = buildStixDomain2(instance);
+  return {
+    ...grouping,
+    name: instance.name,
+    description: instance.description,
+    context: instance.context,
+    object_refs: (instance[INPUT_OBJECTS] ?? []).map((m) => m.standard_id),
+  };
+};

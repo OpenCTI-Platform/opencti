@@ -21,7 +21,8 @@ import {
   stixDomainObjectEditField
 } from '../../domain/stixDomainObject';
 import { distributionEntities } from '../../database/middleware';
-import { ENTITY_TYPE_CONTAINER_GROUPING } from './grouping-types';
+
+import { ENTITY_TYPE_CONTAINER_GROUPING } from './types/store';
 
 const groupingResolvers: Resolvers = {
   Query: {
