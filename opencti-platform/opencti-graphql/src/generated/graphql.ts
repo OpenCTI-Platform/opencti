@@ -19750,6 +19750,7 @@ export enum PlatformCriticalAlertType {
 
 export type PlatformEe = {
   __typename?: 'PlatformEE';
+  enterprise_license?: Maybe<Scalars['String']['output']>;
   license_by_configuration: Scalars['Boolean']['output'];
   license_creator: Scalars['String']['output'];
   license_customer: Scalars['String']['output'];
@@ -25242,9 +25243,11 @@ export type Settings = BasicObject & InternalObject & {
   password_policy_min_uppercase?: Maybe<Scalars['Int']['output']>;
   password_policy_min_words?: Maybe<Scalars['Int']['output']>;
   platform_ai_enabled: Scalars['Boolean']['output'];
+  platform_ai_flow_id?: Maybe<Scalars['String']['output']>;
   platform_ai_has_token: Scalars['Boolean']['output'];
   platform_ai_model?: Maybe<Scalars['String']['output']>;
   platform_ai_type?: Maybe<Scalars['String']['output']>;
+  platform_api_host?: Maybe<Scalars['String']['output']>;
   platform_banner_level?: Maybe<Scalars['String']['output']>;
   platform_banner_text?: Maybe<Scalars['String']['output']>;
   platform_cluster: Cluster;
@@ -40881,6 +40884,7 @@ export type PlatformCriticalAlertDetailsResolvers<ContextType = any, ParentType 
 }>;
 
 export type PlatformEeResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlatformEE'] = ResolversParentTypes['PlatformEE']> = ResolversObject<{
+  enterprise_license?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   license_by_configuration?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   license_creator?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   license_customer?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -42185,9 +42189,11 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   password_policy_min_uppercase?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   password_policy_min_words?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   platform_ai_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  platform_ai_flow_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_ai_has_token?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   platform_ai_model?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_ai_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  platform_api_host?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_banner_level?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_banner_text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_cluster?: Resolver<ResolversTypes['Cluster'], ParentType, ContextType>;
