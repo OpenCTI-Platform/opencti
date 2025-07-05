@@ -15,7 +15,7 @@ export const exportImage = (
   currentWidth,
   currentHeight,
   name,
-  backgroundColor = null,
+  backgroundColor,
   pixelRatio = 1,
   adjust = null,
 ) => {
@@ -23,12 +23,10 @@ export const exportImage = (
   return new Promise((resolve, reject) => {
     htmlToImage
       .toBlob(container, {
-        useCORS: true,
-        allowTaint: true,
         skipFonts: true,
         pixelRatio,
         backgroundColor,
-        style: { margin: 0 },
+        style: { margin: '0' },
         filter: (domNode) => {
           if (domNode.className) {
             for (const ignoredClass of ignoredClasses) {
@@ -62,7 +60,7 @@ export const exportImage = (
 export const exportPdf = (
   domElementId,
   name,
-  backgroundColor = null,
+  backgroundColor,
   pixelRatio = 1,
   adjust = null,
 ) => {
@@ -73,11 +71,10 @@ export const exportPdf = (
   return new Promise((resolve, reject) => {
     htmlToImage
       .toPng(container, {
-        useCORS: true,
-        allowTaint: true,
+        skipFonts: true,
         pixelRatio,
         backgroundColor,
-        style: { margin: 0 },
+        style: { margin: '0' },
         imagePlaceholder: '', // ignore image fetch failure, and display empty area
         filter: (domNode) => {
           if (domNode.className) {
