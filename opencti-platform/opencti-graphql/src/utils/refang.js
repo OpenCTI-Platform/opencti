@@ -80,7 +80,7 @@ export function refang(input) {
       const safeQuery = encodeURIComponent(decodedQuery).replace(/%3D/g, '=').replace(/%26/g, '&');
 
       // Rebuild URL
-      output = `${
+      const rebuilturl = `${
         parsed.protocol
       }//${
         parsed.hostname
@@ -95,6 +95,9 @@ export function refang(input) {
       }${
         safeQuery && safeQuery.length > 0 ? `?${safeQuery}` : ''
       }`;
+
+      // Replace original URL in output with rebuilt URL
+      output = output.replace(urlMatch[0], rebuilturl);
     } catch (e) {
       // On URL parse error, return the original input (not null)
       return input.trim();
