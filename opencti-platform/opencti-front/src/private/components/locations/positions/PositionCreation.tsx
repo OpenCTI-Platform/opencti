@@ -97,17 +97,45 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
     confidence: Yup.number().nullable(),
     latitude: Yup.number()
       .typeError(t_i18n('This field must be a number'))
-      .nullable(),
+      .nullable()
+      .min(-90, t_i18n('Latitude must be between -90 and 90 degrees'))
+      .max(90, t_i18n('Latitude must be between -90 and 90 degrees')),
     longitude: Yup.number()
       .typeError(t_i18n('This field must be a number'))
-      .nullable(),
+      .nullable()
+      .min(-180, t_i18n('Longitude must be between -180 and 180 degrees'))
+      .max(180, t_i18n('Longitude must be between -180 and 180 degrees')),
     street_address: Yup.string()
       .nullable()
       .max(1000, t_i18n('The value is too long')),
     postal_code: Yup.string().nullable().max(1000, t_i18n('The value is too long')),
   }, mandatoryAttributes);
 
-  const positionValidator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
+  const positionValidator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape).test(
+    'coordinates-required-together',
+    t_i18n('Both latitude and longitude must be provided together'),
+    function validateCoordinates(values) {
+      const { latitude, longitude } = values;
+      const hasLatitude = latitude !== null && latitude !== undefined && latitude !== '';
+      const hasLongitude = longitude !== null && longitude !== undefined && longitude !== '';
+
+      if (hasLatitude && !hasLongitude) {
+        return this.createError({
+          path: 'longitude',
+          message: t_i18n('Longitude is required when latitude is provided'),
+        });
+      }
+
+      if (hasLongitude && !hasLatitude) {
+        return this.createError({
+          path: 'latitude',
+          message: t_i18n('Latitude is required when longitude is provided'),
+        });
+      }
+
+      return true;
+    },
+  );
 
   const [commit] = useApiMutation<PositionCreationMutation>(
     positionMutation,
