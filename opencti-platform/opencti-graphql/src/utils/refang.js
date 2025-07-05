@@ -16,9 +16,7 @@ export function refang(input) {
   if (!input || typeof input !== 'string') return input;
 
   // Trim first
-  input = input.trim();
-
-  let output = input;
+  let output = input.trim();
 
   // Normalize Unicode (NFKC)
   if (typeof output.normalize === 'function') {
@@ -28,10 +26,13 @@ export function refang(input) {
   // Refang common obfuscations (all patterns from both functions)
   output = output
     // Replace [.] and (.) and [dot] or (dot) with .
+    // eslint-disable-next-line no-useless-escape
     .replace(/\[(\.|dot)\]|\((\.|dot)\)/gi, '.')
     // Replace [at] or (at) with @
+    // eslint-disable-next-line no-useless-escape
     .replace(/\[at\]|\(at\)/gi, '@')
     // Replace [dash] or (dash) with -
+    // eslint-disable-next-line no-useless-escape
     .replace(/\[dash\]|\(dash\)/gi, '-')
     // Replace hxxp/hxp/hxxps/hxps (with optional brackets/colons) -> http/https
     .replace(/(\s*)h([x]{1,2})p([s]?)[\[\]:]*\/\//gi, (m, pre, xx, s) => `${pre}http${s}://`)
@@ -73,12 +74,18 @@ export function refang(input) {
       const safeQuery = encodeURIComponent(decodedQuery).replace(/%3D/g, '=').replace(/%26/g, '&');
 
       // Rebuild URL
-      output = parsed.protocol + '//' + parsed.hostname +
-        (safePath.startsWith('/') ? safePath : '/' + safePath) +
-        (safeQuery ? '?' + safeQuery : '');
+      output = `${
+                    parsed.protocol
+                  }//${
+                    parsed.hostname
+                  }${
+                    (safePath.startsWith('/') ? safePath : '/' + safePath)
+                  }${
+                    safeQuery ? '?' + safeQuery : ''
+                  }`;
     } catch (e) {
       // On URL parse error, return the original input (not null)
-      return input;
+      return input.trim();
     }
   }
 
