@@ -3870,6 +3870,7 @@ export const computeDeleteElementsImpacts = async (cleanupRelations, toBeRemoved
 
 export const elReindexElements = async (context, user, ids, sourceIndex, destIndex, opts = {}) => {
   const { dbId, sourceUpdate = {} } = opts;
+  // TODO remove this script since clean up is done in migration ?
   const sourceCleanupScript = "ctx._source.remove('fromType'); ctx._source.remove('toType'); "
     + "ctx._source.remove('spec_version'); ctx._source.remove('representative'); ctx._source.remove('objectOrganization'); "
     + "ctx._source.remove('rel_has-reference'); ctx._source.remove('rel_has-reference.internal_id'); "
@@ -3880,7 +3881,8 @@ export const elReindexElements = async (context, user, ids, sourceIndex, destInd
     + "ctx._source.remove('i_start_time_month'); ctx._source.remove('i_stop_time_month'); "
     + "ctx._source.remove('i_start_time_day'); ctx._source.remove('i_stop_time_day'); "
     + "ctx._source.remove('i_created_at_year'); ctx._source.remove('i_created_at_month'); ctx._source.remove('i_created_at_day'); "
-    + "ctx._source.remove('rel_can-share'); ctx._source.remove('rel_can-share.internal_id');";
+    + "ctx._source.remove('rel_can-share'); ctx._source.remove('rel_can-share.internal_id'); "
+    + "ctx._source.remove('authorized_members');"; // after renaming authorized_members to restricted_members
   const idReplaceScript = 'if (params.replaceId) { ctx._id = params.newId }';
   const sourceUpdateScript = 'for (change in params.changes.entrySet()) { ctx._source[change.getKey()] = change.getValue() }';
   const source = `${sourceCleanupScript} ${idReplaceScript} ${sourceUpdateScript}`;
