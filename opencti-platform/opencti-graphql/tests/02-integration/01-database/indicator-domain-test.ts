@@ -23,6 +23,7 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
   todayMorning.setUTCHours(0, 0, 0, 0);
   const inPast90Days = new Date(todayMorning.getTime() - NO_DECAY_DEFAULT_VALID_PERIOD);
   const tomorrow = new Date(todayMorning.getTime() + dayToMs(1));
+  const fiveDaysAgo = new Date(todayMorning.getTime() - dayToMs(5));
 
   const createIndicator = async (input: IndicatorAddInput, withDecay: boolean): Promise<BasicStoreEntityIndicator> => {
     if (withDecay) {
@@ -82,6 +83,20 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
     await expect(() => indicatorEditField(testContext, ADMIN_USER, indicatorWithDecay.id, input2)).rejects.toThrowError('The valid until date must be greater than the valid from date');
     await expect(() => indicatorEditField(testContext, ADMIN_USER, indicatorWithoutDecay.id, input))
       .rejects.toThrowError('The valid until date must be greater than the valid from date');
+  });
+
+  it('Creating an indicator with no valid_from should take creation date', async () => {
+    const indicatorInput: IndicatorAddInput = {
+      name: 'Indicator domain test - no valid from, but created is present',
+      pattern: '[domain-name:value = \'createddate.com\']',
+      pattern_type: STIX_PATTERN_TYPE,
+      x_opencti_score: 83,
+      valid_until: tomorrow,
+      created: fiveDaysAgo
+    };
+    const indicatorWithoutValidFrom = await createIndicator(indicatorInput, true);
+    const indicatorCreated = await findById(testContext, ADMIN_USER, indicatorWithoutValidFrom.id);
+    expect(indicatorCreated.valid_from).toBe(fiveDaysAgo.toISOString());
   });
 
   it('On update, input score should be between 0 and 100', async () => {
