@@ -35,19 +35,25 @@ export function refang(input) {
     // eslint-disable-next-line no-useless-escape
     .replace(/\[dash\]|\(dash\)/gi, '-')
     // Replace hxxp/hxp/hxxps/hxps (with optional brackets/colons) -> http/https
+    // eslint-disable-next-line no-useless-escape
     .replace(/(\s*)h([x]{1,2})p([s]?)[\[\]:]*\/\//gi, (m, pre, xx, s) => `${pre}http${s}://`)
     // Replace fxp/sfxp/fxps (with optional brackets/colons) -> ftp/ftps
+    // eslint-disable-next-line no-useless-escape
     .replace(/(\s*)(s?)fxp(s?)[\[\]:]*\/\//gi, (m, pre, s1, s2) => `${pre}${s1}ftp${s2}://`)
     // Replace (protocol)[://] or similar -> protocol://
+    // eslint-disable-next-line no-useless-escape
     .replace(/(\s*)\(([-.+a-zA-Z0-9]{1,12})\)[\[\]:]*\/\//gi, (m, pre, proto) => `${pre}${proto}://`)
     // Replace [://] or similar with ://
+    // eslint-disable-next-line no-useless-escape
     .replace(/\[:\/]{3,}/g, '://')
     // Remove any stray brackets around single characters
+    // eslint-disable-next-line no-useless-escape
     .replace(/\[([a-zA-Z0-9])\]/g, '$1')
     // Remove literal ellipsis character
     .replace(/\u2026/g, '');
 
   // Remove common placeholder endings (e.g., trailing [.] or ...)
+  // eslint-disable-next-line no-useless-escape
   output = output.replace(/(\[\.\]|\.{2,}|…)+$/g, '');
 
   // Extract valid URL if present and sanitize
@@ -75,14 +81,14 @@ export function refang(input) {
 
       // Rebuild URL
       output = `${
-                    parsed.protocol
-                  }//${
-                    parsed.hostname
-                  }${
-                    (safePath.startsWith('/') ? safePath : '/' + safePath)
-                  }${
-                    safeQuery ? '?' + safeQuery : ''
-                  }`;
+        parsed.protocol
+      }//${
+        parsed.hostname
+      }${
+        (safePath.startsWith('/') ? safePath : `/${safePath}`)
+      }${
+        safeQuery ? `?${safeQuery}` : ''
+      }`;
     } catch (e) {
       // On URL parse error, return the original input (not null)
       return input.trim();
