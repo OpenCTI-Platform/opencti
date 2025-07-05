@@ -33,7 +33,7 @@ import { createAuthenticatedContext } from './httpAuthenticatedContext';
 
 const setCookieError = (res, message) => {
   res.cookie('opencti_flash', message || 'Unknown error', {
-    maxAge: 5000,
+    maxAge: 10000,
     httpOnly: false,
     secure: booleanConf('app:https_cert:cookie_secure', false),
     sameSite: 'strict',
