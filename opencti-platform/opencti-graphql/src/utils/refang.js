@@ -49,6 +49,9 @@ export function refang(input) {
     // Remove any stray brackets around single characters
     // eslint-disable-next-line no-useless-escape
     .replace(/\[([a-zA-Z0-9])\]/g, '$1')
+    // [:/] should map to /
+    // eslint-disable-next-line no-useless-escape
+    .replace(/\[:\/\]/g, '/')
     // Remove literal ellipsis character
     .replace(/\u2026/g, '');
 
@@ -57,51 +60,56 @@ export function refang(input) {
   output = output.replace(/(\[\.\]|\.{2,}|…)+$/g, '');
 
   // Extract valid URL if present and sanitize
-  const urlMatch = output.match(/https?:\/\/[^\s'"<>]+/i);
-  if (urlMatch) {
-    try {
-      let extractedUrl = urlMatch[0];
-      // Clean trailing punctuation early
-      extractedUrl = extractedUrl.replace(/[.,;!?…]+$/, '');
+  const urlRegex = /https?:\/\/[^\s'"<>[\](){},;!?…]+/gi;
+  const urlMatchesArr = output.match(urlRegex);
 
-      const parsed = new URL(extractedUrl);
-      if (!parsed.protocol || !parsed.hostname) return null;
+  if (urlMatchesArr && urlMatchesArr.length > 0) {
+    urlMatchesArr.forEach((matchedUrl) => {
+      try {
+        let extractedUrl = matchedUrl;
+        // Clean trailing punctuation early
+        extractedUrl = extractedUrl.replace(/[.,;!?…]+$/, '');
 
-      // Decode and normalize
-      let decodedPath = decodeURIComponent(parsed.pathname || '');
-      let decodedQuery = decodeURIComponent(parsed.search ? parsed.search.slice(1) : '');
+        const parsed = new URL(extractedUrl);
+        if (!parsed.protocol || !parsed.hostname) return;
 
-      // Remove dangerous or non-printable chars from path/query
-      decodedPath = decodedPath.replace(/[^\x20-\x7E/]/g, '');
-      decodedQuery = decodedQuery.replace(/[^\x20-\x7E\-=&]/g, '');
+        // Decode and normalize
+        let decodedPath = decodeURIComponent(parsed.pathname || '');
+        let decodedQuery = decodeURIComponent(parsed.search ? parsed.search.slice(1) : '');
 
-      // Encode path/query safely
-      const safePath = encodeURI(decodedPath);
-      const safeQuery = encodeURIComponent(decodedQuery).replace(/%3D/g, '=').replace(/%26/g, '&');
+        // Remove dangerous or non-printable chars from path/query
+        // eslint-disable-next-line no-control-regex
+        decodedPath = decodedPath.replace(/[\u0000-\u001F\u007F]/g, '');
+        decodedQuery = decodedQuery.replace(/[^\x20-\x7E\-=&]/g, '');
 
-      // Rebuild URL
-      const rebuilturl = `${
-        parsed.protocol
-      }//${
-        parsed.hostname
-      }${
-        parsed.port ? `:${parsed.port}` : ''
-      }${
-        parsed.username || parsed.password ? `@${parsed.username || ''}${parsed.password ? `:${parsed.password}` : ''}` : ''
-      }${
-        safePath.startsWith('/') ? '' : '/'
-      }${
-        safePath.endsWith('/') ? safePath.slice(0, -1) : safePath
-      }${
-        safeQuery && safeQuery.length > 0 ? `?${safeQuery}` : ''
-      }`;
+        // Encode path/query safely
+        const safePath = encodeURI(decodedPath);
+        const safeQuery = encodeURIComponent(decodedQuery).replace(/%3D/g, '=').replace(/%26/g, '&');
 
-      // Replace original URL in output with rebuilt URL
-      output = output.replace(urlMatch[0], rebuilturl);
-    } catch (e) {
-      // On URL parse error, return the original input (not null)
-      return input.trim();
-    }
+        // Rebuild URL
+        const rebuilturl = `${
+          parsed.protocol
+        }//${
+          parsed.username ? `${parsed.username}${parsed.password ? `:${parsed.password}` : ''}@` : ''
+        }${
+          parsed.hostname
+        }${
+          parsed.port ? `:${parsed.port}` : ''
+        }${
+          safePath.startsWith('/') ? '' : '/'
+        }${
+          safePath.endsWith('/') ? safePath.slice(0, -1) : safePath
+        }${
+          safeQuery && safeQuery.length > 0 ? `?${safeQuery}` : ''
+        }`;
+
+        // Replace original URL in output with rebuilt URL
+        output = output.replace(matchedUrl, rebuilturl);
+      } catch (e) {
+        // Skip malformed match, continue processing the rest
+        // Do NOT reset output or lose prior replacements
+      }
+    });
   }
 
   return output;
