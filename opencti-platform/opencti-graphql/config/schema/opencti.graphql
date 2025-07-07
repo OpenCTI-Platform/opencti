@@ -3264,7 +3264,7 @@ enum ContainersOrdering {
 }
 type ContainerConnection {
   pageInfo: PageInfo!
-  edges: [ContainerEdge]
+  edges: [ContainerEdge!]!
 }
 type ContainerEdge {
   cursor: String!
@@ -12516,7 +12516,7 @@ enum StixRelationshipsOrdering {
 }
 type StixRelationshipConnection {
   pageInfo: PageInfo!
-  edges: [StixRelationshipEdge]
+  edges: [StixRelationshipEdge!]!
 }
 type StixRelationshipEdge {
   cursor: String!
@@ -12826,7 +12826,7 @@ enum StixRefRelationshipsOrdering {
 }
 type StixRefRelationshipConnection {
   pageInfo: PageInfo!
-  edges: [StixRefRelationshipEdge]
+  edges: [StixRefRelationshipEdge!]!
 }
 type StixRefRelationshipEdge {
   cursor: String!

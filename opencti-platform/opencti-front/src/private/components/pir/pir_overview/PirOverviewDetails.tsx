@@ -2,11 +2,11 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Grid2 as Grid, Typography } from '@mui/material';
 import { PirOverviewDetailsFragment$key } from './__generated__/PirOverviewDetailsFragment.graphql';
-import ExpandableMarkdown from '../../../components/ExpandableMarkdown';
-import { useFormatter } from '../../../components/i18n';
-import ItemCreators from '../../../components/ItemCreators';
-import FilterIconButton from '../../../components/FilterIconButton';
-import { parse } from '../../../utils/Time';
+import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
+import { useFormatter } from '../../../../components/i18n';
+import ItemCreators from '../../../../components/ItemCreators';
+import FilterIconButton from '../../../../components/FilterIconButton';
+import { parse } from '../../../../utils/Time';
 
 const detailsFragment = graphql`
   fragment PirOverviewDetailsFragment on Pir {

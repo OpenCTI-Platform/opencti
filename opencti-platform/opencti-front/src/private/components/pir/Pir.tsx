@@ -5,21 +5,26 @@ import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
 import { PirQuery } from './__generated__/PirQuery.graphql';
 import PirHeader from './PirHeader';
 import PirTabs from './PirTabs';
-import PirKnowledge from './PirKnowledge';
+import PirKnowledge from './pir_knowledge/PirKnowledge';
 import { PirHistoryQuery } from './__generated__/PirHistoryQuery.graphql';
-import PirOverview from './PirOverview';
+import PirOverview from './pir_overview/PirOverview';
 import ErrorNotFound from '../../../components/ErrorNotFound';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import Loader from '../../../components/Loader';
+import PirAnalyses from './PirAnalyses';
 
 const pirQuery = graphql`
   query PirQuery($id: ID!) {
     pir(id: $id) {
-      id
       ...PirHeaderFragment
       ...PirKnowledgeFragment
       ...PirEditionFragment
       ...PirOverviewDetailsFragment
+      ...PirOverviewHistoryPirFragment
+      ...PirOverviewCountsFragment
+      ...PirOverviewTopSourcesFragment
+      ...PirTabsFragment
+      ...PirAnalysesFragment
     }
   }
 `;
@@ -53,11 +58,16 @@ const PirComponent = ({
   return (
     <>
       <PirHeader data={pir} editionData={pir} />
-      <PirTabs pirId={pir.id} />
+      <PirTabs data={pir} />
       <Routes>
         <Route
           path="/"
-          element={<PirOverview dataHistory={history} dataDetails={pir} />}
+          element={(
+            <PirOverview
+              dataHistory={history}
+              dataPir={pir}
+            />
+          )}
         />
         <Route
           path="/knowledge"
@@ -69,7 +79,7 @@ const PirComponent = ({
         />
         <Route
           path="/analyses"
-          element={<p>analyses</p>}
+          element={<PirAnalyses data={pir} />}
         />
       </Routes>
     </>
