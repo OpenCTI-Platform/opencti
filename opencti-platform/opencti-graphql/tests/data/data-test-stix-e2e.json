@@ -904,6 +904,21 @@
       "type": "incident"
     },
     {
+      "id": "malware-analysis--51e7716c-3b41-524d-951d-2ceab2d1c8df",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2024-07-03T07:57:32.628Z",
+      "modified": "2024-07-03T07:57:32.628Z",
+      "product": "e2e",
+      "result_name": "Test Malware Analysis e2e",
+      "result": "malicious",
+      "labels": ["e2e"],
+      "x_opencti_id": "d628a562-8e41-4d9a-8d8a-ac056b520724",
+      "x_opencti_type": "Malware-Analysis",
+      "type": "malware-analysis"
+    },
+    {
       "id": "grouping--1d2cb936-0259-52f6-ac06-dcb8f5536732",
       "spec_version": "2.1",
       "revoked": false,
@@ -912,22 +927,25 @@
       "modified": "2024-07-30T13:15:37.447Z",
       "name": "Navigation test grouping entity",
       "context": "unspecified",
+      "labels": ["e2e"],
       "x_opencti_id": "91bced0e-63dc-4ea6-ab6d-7137706b1d87",
       "x_opencti_type": "Grouping",
       "type": "grouping"
     },
     {
-      "id": "notes--1d2cb936-0259-52f6-ac06-dcb8f5536733",
+      "id": "note--e2f7c396-c798-5933-bcb0-b933f3c51baa",
       "spec_version": "2.1",
       "revoked": false,
       "confidence": 100,
-      "created": "2024-07-30T13:15:37.447Z",
-      "modified": "2024-07-30T13:15:37.447Z",
-      "name": "Navigation test note entity",
-      "context": "unspecified",
-      "x_opencti_id": "91bced0e-63dc-4ea6-ab6d-7137706b1d88",
-      "x_opencti_type": "Notes",
-      "type": "notes"
+      "created": "2025-06-23T18:34:04.352Z",
+      "modified": "2025-06-23T18:34:04.519Z",
+      "content": "This is my test note.",
+      "likelihood": 50,
+      "labels": ["e2e"],
+      "x_opencti_workflow_id": "b37573ee-391c-4ba0-8c17-654ec4ca4972",
+      "x_opencti_id": "59a281e4-4943-4081-a328-6121ef48858f",
+      "x_opencti_type": "Note",
+      "type": "note"
     },
     {
       "id": "external-references--1d2cb936-0259-52f6-ac06-dcb8f5536734",
@@ -938,6 +956,7 @@
       "modified": "2024-07-30T13:15:37.447Z",
       "name": "Navigation External Ref Test",
       "context": "unspecified",
+      "labels": ["e2e"],
       "x_opencti_id": "91bced0e-63dc-4ea6-ab6d-7137706b1d89",
       "x_opencti_type": "External-References",
       "type": "external-references"
@@ -949,6 +968,7 @@
       "confidence": 100,
       "created": "2024-07-30T13:15:37.447Z",
       "modified": "2024-07-30T13:15:37.447Z",
+      "labels": ["e2e"],
       "response_types": [
         "Ransomware"
       ],
@@ -962,6 +982,7 @@
       "spec_version": "2.1",
       "revoked": false,
       "confidence": 100,
+      "labels": ["e2e"],
       "created": "2024-07-30T13:15:37.447Z",
       "modified": "2024-07-30T13:15:37.447Z",
       "name": "Request For Information Name",
@@ -983,6 +1004,7 @@
       "created": "2024-07-30T13:15:37.447Z",
       "modified": "2024-07-30T13:15:37.447Z",
       "name": "Request for takedown Name",
+      "labels": ["e2e"],
       "x_opencti_id": "1433a1d0-8bb1-4b2f-ae6f-8f92f037a51e",
       "x_opencti_type": "Case-Rft",
       "type": "x-opencti-case-rft"
@@ -995,6 +1017,7 @@
       "created": "2024-07-30T13:15:37.447Z",
       "modified": "2024-07-30T13:15:37.447Z",
       "name": "Task Name",
+      "labels": ["e2e"],
       "x_opencti_id": "f160d791-5996-4f86-a5b3-9e068df362da",
       "x_opencti_type": "Task",
       "type": "x-opencti-task"
@@ -1009,7 +1032,8 @@
       "modified": "2024-07-30T13:15:37.447Z",
       "name": "Feedback Name",
       "labels": [
-        "false-positive"
+        "false-positive",
+        "e2e"
       ],
       "x_opencti_id": "ce8429b6-cbf9-44f3-bf1e-773323219843",
       "x_opencti_type": "Feedback",
@@ -1024,7 +1048,7 @@
       "modified": "2024-07-22T11:34:44.813Z",
       "name": "Incident Name",
       "incident_type": "compromise",
-      "labels": ["background-task"],
+      "labels": ["e2e"],
       "x_opencti_id": "057e0f4e-34cf-45c5-bef4-cf03cf5ae4ec",
       "x_opencti_type": "Incident",
       "type": "incident"
@@ -1039,12 +1063,84 @@
       "first_observed": "2025-06-24T04:00:00.000Z",
       "last_observed": "2025-06-25T04:00:00.000Z",
       "number_observed": 1,
+      "labels": ["e2e"],
       "x_opencti_id": "9ca7ddcf-ae70-467e-ae7c-24ac0d48dc17",
       "x_opencti_type": "Observed-Data",
       "type": "observed-data",
       "object_refs": [
         "incident--e6fc2d85-c07e-55cc-b0ae-2af54369913e"
       ]
+    },
+    {
+      "id": "artifact--35b0f4ef-eb2c-552f-b58a-da426bee38cc",
+      "spec_version": "2.1",
+      "x_opencti_description": "Uploaded for e2e",
+      "mime_type": "application/vnd.microsoft.portable-executable",
+      "labels": ["e2e"],
+      "hashes": {
+        "MD5": "79f7781f3ec7af1466be4a0e5c853d14",
+        "SHA-1": "64aab1d1a1bfa2a49c132cf6986b1e6defcd66f0",
+        "SHA-256": "f6fb126672f3561c2b8681a1259da83726f4f990c3e66c87d5e3d3a22b87a144",
+        "SHA-512": "33b839180c40b0e80f722dcfdbe8dfc55d9ed2781ffa7b964b58324bb1e8daccbfa8ab76c3c5c73c8427458939996939a7353bdc56bdd090d15dab02ac6fdc38"
+      },
+      "external_references": [
+        {
+          "source_name": "MalwareBazaar Recent Additions",
+          "description": "MalwareBazaar Recent Additions",
+          "url": "https://bazaar.abuse.ch/sample/f6fb126672f3561c2b8681a1259da83726f4f990c3e66c87d5e3d3a22b87a144/"
+        }
+      ],
+      "x_opencti_id": "f953e65d-6462-4348-a34b-ddb8d4036186",
+      "x_opencti_type": "Artifact",
+      "type": "artifact"
+    },
+    {
+      "id": "indicator--45ef93ad-1596-53a1-a3bd-7b078bbb6ce0",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 50,
+      "labels": ["e2e"],
+      "created": "2025-07-04T11:11:01.195Z",
+      "modified": "2025-07-04T11:11:18.411Z",
+      "pattern_type": "stix",
+      "pattern_version": "2.1",
+      "pattern": "[hostname:value = 'www.sheepster.ru']",
+      "name": "www.sheepster.ru",
+      "valid_from": "2025-07-04T10:34:22.000Z",
+      "valid_until": "2026-04-05T07:53:53.835Z",
+      "x_opencti_score": 50,
+      "x_opencti_detection": false,
+      "x_opencti_main_observable_type": "Hostname",
+      "x_opencti_observable_values": [
+        {
+          "type": "Hostname",
+          "value": "www.sheepster.ru",
+          "hashes": null
+        }
+      ],
+      "x_opencti_id": "ccd2838f-9957-4b2e-9fe3-8248cf0c6cc9",
+      "x_opencti_type": "Indicator",
+      "type": "indicator",
+      "created_by_ref": "identity--e52b2fa3-2af0-5e53-ad38-17d54b3d61cb",
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ]
+    },
+    {
+      "id": "infrastructure--41b8c3be-db27-55bd-b708-2a877644220b",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "labels": ["e2e"],
+      "created": "2025-04-15T12:07:57.395Z",
+      "modified": "2025-04-15T12:07:57.395Z",
+      "name": "mynewinfratest",
+      "infrastructure_types": [
+        "newinfratype"
+      ],
+      "x_opencti_id": "92112010-122c-4274-966f-420d1a0e9da9",
+      "x_opencti_type": "Infrastructure",
+      "type": "infrastructure"
     }
   ]
 }

@@ -2,6 +2,8 @@ import { Page } from '@playwright/test';
 import StixCoreObjectDataTab from 'tests_e2e/model/StixCoreObjectDataTab.pageModel';
 import FeedbackDetailsPage from 'tests_e2e/model/feedbackDetails.pageModel';
 import ObservedDataPage from 'tests_e2e/model/observedData.pageModel';
+import CaseRftPage from 'tests_e2e/model/caseRft.pageModel';
+import CaseRftDetailsPage from 'tests_e2e/model/caseRftDetails.pageModel';
 import { expect, test } from '../fixtures/baseFixtures';
 import LeftBarPage from '../model/menu/leftBar.pageModel';
 import ReportPage from '../model/report.pageModel';
@@ -29,10 +31,7 @@ import FeedbackPage from '../model/feedback.pageModel';
 import EventsIncidentPage from '../model/EventsIncident.pageModel';
 import EventsIncidentDetailsPage from '../model/EventsIncidentDetails.pageModel';
 import SightingsPage from '../model/sightings.pageModel';
-import SightingsOverviewPage from '../model/sightingsOverview.pageModel';
 import ObservedDataDetailsPage from '../model/observedDataDetails.pageModel';
-import EntitiesTabPageModel from '../model/EntitiesTab.pageModel';
-import ObservablesTabPageModel from '../model/ObservablesTab.pageModel';
 import ArtifactPage from '../model/Artifact.pageModel';
 import StixCoreObjectContentTabPage from '../model/StixCoreObjectContentTab.pageModel';
 import IndicatorPage from '../model/indicator.pageModel';
@@ -45,7 +44,7 @@ import InfrastructureDetailsPageModel from '../model/infrastructureDetails.pageM
  * @param page
  */
 const navigateNotes = async (page: Page) => {
-  const notesNameFromInitData = 'Navigation test note entity';
+  const notesNameFromInitData = 'This is my test note.';
 
   const notePage = new NotesPage(page);
   await notePage.navigateFromMenu();
@@ -72,7 +71,7 @@ const navigateNotes = async (page: Page) => {
  * @param page
  */
 const navigateExternalReferences = async (page: Page) => {
-  const externalReferencesFromInitData = 'Navigation External Ref Test';
+  const externalReferencesFromInitData = 'Kaspersky Sofacy';
 
   const externalReferencePage = new ExternalReferencePage(page);
   await externalReferencePage.navigateFromMenu();
@@ -339,14 +338,14 @@ const navigateRfi = async (page: Page) => {
 
 const navigateRft = async (page: Page) => {
   const rftNameFromInitData = 'Request for takedown Name';
-  const caseRftPage = new CaseRfiPage(page);
+  const caseRftPage = new CaseRftPage(page);
   await caseRftPage.navigateFromMenu();
 
   await expect(caseRftPage.getPage()).toBeVisible();
   await expect(caseRftPage.getItemFromList(rftNameFromInitData)).toBeVisible();
   await caseRftPage.getItemFromList(rftNameFromInitData).click();
 
-  const caseRftDetailsPage = new CaseRfiDetailsPage(page);
+  const caseRftDetailsPage = new CaseRftDetailsPage(page);
   await expect(caseRftDetailsPage.getPage()).toBeVisible();
 
   // -- Knowledge
@@ -462,7 +461,7 @@ const navigateEventsIncident = async (page: Page) => {
 
   // - Knowledge
   await eventsIncidentDetailsPage.tabs.goToKnowledgeTab();
-  await expect(page.getByTestId('incident-response-knowledge')).toBeVisible();
+  await expect(page.getByTestId('incident-knowledge')).toBeVisible();
 
   // -- Content
   await eventsIncidentDetailsPage.tabs.goToContentTab();
@@ -472,10 +471,6 @@ const navigateEventsIncident = async (page: Page) => {
   // -- Analyses
   await eventsIncidentDetailsPage.tabs.goToAnalysesTab();
   await expect(page.getByPlaceholder('Search these results...')).toBeVisible();
-  await page.getByLabel('Lines view').click();
-  await page.getByLabel('Graph view').click();
-  await page.getByLabel('List settings').click();
-  await page.getByLabel('Open export panel').click();
 
   // -- Data
   await eventsIncidentDetailsPage.tabs.goToDataTab();
@@ -493,7 +488,7 @@ const navigateEventsIncident = async (page: Page) => {
  */
 
 const navigateSightings = async (page: Page) => {
-  const sightingsNameFromInitData = 'Sightings Name';
+  const sightingsNameFromInitData = 'www.one-clap.jp';
   const sightingPage = new SightingsPage(page);
   await sightingPage.navigateFromMenu();
 
@@ -501,7 +496,7 @@ const navigateSightings = async (page: Page) => {
   await expect(sightingPage.getItemFromList(sightingsNameFromInitData)).toBeVisible();
   await sightingPage.getItemFromList(sightingsNameFromInitData).click();
 
-  await expect(page.getByTestId('sightings-overview')).toBeVisible();
+  await expect(page.getByTestId('sighting-overview')).toBeVisible();
 };
 
 /**
@@ -510,7 +505,7 @@ const navigateSightings = async (page: Page) => {
  */
 
 const navigateObservedData = async (page: Page) => {
-  const observedDataFromInitData = 'Observed Data Name';
+  const observedDataFromInitData = 'Incident Name';
   const observedDataPage = new ObservedDataPage(page);
   await observedDataPage.navigateFromMenu();
 
@@ -544,7 +539,7 @@ const navigateObservedData = async (page: Page) => {
  * @param page
  */
 const navigateObservables = async (page: Page) => {
-  const observableInitData = '1.2.3.4';
+  const observableInitData = '5.6.7.8';
 
   const observablePage = new ObservablesPage(page);
   await observablePage.navigateFromMenu();
@@ -556,6 +551,7 @@ const navigateObservables = async (page: Page) => {
   await expect(observableDetailsPage.getPage()).toBeVisible();
   await observableDetailsPage.getEnrichButton().click();
   await expect(page.getByText('Enrichment connectors')).toBeVisible();
+  await observableDetailsPage.closeEnrichment();
 
   // - Knowledge
   await observableDetailsPage.tabs.goToKnowledgeTab();
@@ -573,16 +569,16 @@ const navigateObservables = async (page: Page) => {
  */
 
 const navigateArtifact = async (page: Page) => {
-  const artifactInitData = 'a84c0993164fe1ed44130c31da764c20';
+  const artifactInitData = '33b839180c40b0e80f722dcfdbe8dfc55d9ed2781ffa7b964b58324bb1e8daccbfa8ab76c3c5c73c8427458939996939a7353bdc56bdd090d15dab02ac6fdc38';
   const artifactPage = new ArtifactPage(page);
   await artifactPage.navigateFromMenu();
-  await expect(artifactPage.getPage()).toBeVisible();
+  await expect(artifactPage.getPage(artifactInitData)).toBeVisible();
   await expect(page.getByText(artifactInitData)).toBeVisible();
   await artifactPage.getItemFromList(artifactInitData).click();
 };
 
 const navigateIndicators = async (page: Page) => {
-  const indicatorsInitData = '';
+  const indicatorsInitData = 'www.sheepster.ru';
   const indicatorPage = new IndicatorPage(page);
   await indicatorPage.navigateFromMenu();
   await expect(indicatorPage.getPage()).toBeVisible();
@@ -604,10 +600,6 @@ const navigateIndicators = async (page: Page) => {
   // -- Analyses
   await indicatorDetailsPage.tabs.goToAnalysesTab();
   await expect(page.getByPlaceholder('Search these results...')).toBeVisible();
-  await page.getByLabel('Lines view').click();
-  await page.getByLabel('Graph view').click();
-  await page.getByLabel('List settings').click();
-  await page.getByLabel('Open export panel').click();
 
   // -- Sightings
   await indicatorDetailsPage.tabs.goToSightingsTab();
@@ -624,7 +616,7 @@ const navigateIndicators = async (page: Page) => {
 };
 
 const navigateInfrastructure = async (page: Page) => {
-  const infrastructureInitData = '';
+  const infrastructureInitData = 'mynewinfratest';
   const infrastructurePage = new InfrastructurePage(page);
   await infrastructurePage.navigateFromMenu();
   await expect(infrastructurePage.getPage()).toBeVisible();
@@ -646,10 +638,6 @@ const navigateInfrastructure = async (page: Page) => {
   // -- Analyses
   await infrastructureDetailsPage.tabs.goToAnalysesTab();
   await expect(page.getByPlaceholder('Search these results...')).toBeVisible();
-  await page.getByLabel('Lines view').click();
-  await page.getByLabel('Graph view').click();
-  await page.getByLabel('List settings').click();
-  await page.getByLabel('Open export panel').click();
 
   // -- Data
   await infrastructureDetailsPage.tabs.goToDataTab();
@@ -808,9 +796,9 @@ test('Check navigation on all pages', { tag: ['@navigation'] }, async ({ page })
   // so they should be all independent and start from the left menu.
 
   // await navigateAllMenu(page);
-  // await navigateReports(page);
-  // await navigateGroupings(page);
-  // await navigateMalwareAnalyses(page);
+  await navigateReports(page);
+  await navigateGroupings(page);
+  await navigateMalwareAnalyses(page);
   await navigateNotes(page);
   await navigateExternalReferences(page);
   await navigateIncidentResponse(page);
@@ -818,6 +806,9 @@ test('Check navigation on all pages', { tag: ['@navigation'] }, async ({ page })
   await navigateRft(page);
   await navigateTasks(page);
   await navigateFeedbacks(page);
+  await navigateEventsIncident(page);
+  await navigateSightings(page);
+  await navigateObservedData(page);
   await navigateObservables(page);
   await navigateArtifact(page);
   await navigateIndicators(page);
