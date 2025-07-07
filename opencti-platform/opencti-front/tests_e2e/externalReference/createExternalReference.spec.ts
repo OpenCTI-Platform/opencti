@@ -15,7 +15,6 @@ test('Create a new external reference', async ({ page }) => {
   // add a new external reference
   await externalReferencePage.addNew();
   await externalReferenceForm.sourceNameField.fill('Test external reference source name field e2e');
-  await externalReferenceForm.urlField.fill('https://github.com/OpenCTI-Platform/client-python');
   await externalReferenceForm.associatedFileField.uploadContentFile(path.join(__dirname, 'assets/report.test.pdf'));
   await externalReferenceForm.getCreateButton().click();
   // open it
