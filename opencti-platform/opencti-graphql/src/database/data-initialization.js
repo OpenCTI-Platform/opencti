@@ -1,3 +1,4 @@
+import validator from 'validator';
 import { addSettings } from '../domain/settings';
 import { BYPASS, ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from '../utils/access';
 import { findByType as findEntitySettingsByType, initCreateEntitySettings } from '../modules/entitySetting/entitySetting-domain';
@@ -20,6 +21,7 @@ import conf, { logApp } from '../config/conf';
 import { INDEX_INTERNAL_OBJECTS, isNotEmptyField } from './utils';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { elRawDelete, elRawGet, elRawIndex } from './engine';
+import { ConfigurationError } from '../config/errors';
 
 // region Platform capabilities definition
 const KNOWLEDGE_CAPABILITY = 'KNOWLEDGE';
@@ -394,6 +396,10 @@ export const initializeData = async (context, withMarkings = true) => {
 export const patchPlatformId = async (context) => {
   const platformId = conf.get('platform_id') || undefined;
   if (isNotEmptyField((platformId))) {
+    if (!validator.isUUID(platformId)) {
+      throw ConfigurationError('Cannot switch platform identifier: platform_id is not a valid UUID', { platform_id: platformId });
+    }
+
     const platformSettings = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
     if (platformSettings.id !== platformId) {
       logApp.info(`[INIT] Switching platform identifier from [${platformSettings.id}] to [${platformId}]`);
