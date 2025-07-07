@@ -1396,7 +1396,8 @@ export enum BackgroundTaskScope {
   Playbook = 'PLAYBOOK',
   PublicDashboard = 'PUBLIC_DASHBOARD',
   Settings = 'SETTINGS',
-  User = 'USER'
+  User = 'USER',
+  UserNotification = 'USER_NOTIFICATION'
 }
 
 export enum BackgroundTaskType {

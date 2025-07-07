@@ -423,7 +423,7 @@ const Notifications: FunctionComponent = () => {
             </Badge>
           );
         }}
-        taskScope={'USER'}
+        taskScope={'USER_NOTIFICATION'}
         lineFragment={notificationsLineFragment}
         toolbarFilters={contextFilters}
         exportContext={{ entity_type: 'Notification' }}

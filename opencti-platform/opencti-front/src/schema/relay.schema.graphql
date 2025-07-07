@@ -1065,6 +1065,7 @@ type BackgroundTaskError {
 enum BackgroundTaskScope {
   KNOWLEDGE
   USER
+  USER_NOTIFICATION
   SETTINGS
   IMPORT
   DASHBOARD
