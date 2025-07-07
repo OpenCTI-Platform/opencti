@@ -43,16 +43,22 @@ const PirKnowledge = ({ data }: PirKnowledgeProps) => {
   const { viewStorage } = localStorage;
 
   const viewButtons = [
-    (<ToggleButton key="entities" value="entities" aria-label="entities">
-      <Tooltip title={t_i18n('Entities view')}>
-        <LibraryBooksOutlined fontSize="small" color="secondary" />
-      </Tooltip>
-    </ToggleButton>),
-    (<ToggleButton key="relationships" value="relationships" aria-label="relationships">
+    <ToggleButton key="relationships" value="relationships" aria-label="relationships">
       <Tooltip title={t_i18n('Relationships view')}>
-        <RelationManyToMany color="primary" fontSize="small" />
+        <RelationManyToMany
+          fontSize="small"
+          color={viewStorage.view === 'relationships' ? 'secondary' : 'primary'}
+        />
       </Tooltip>
-    </ToggleButton>),
+    </ToggleButton>,
+    <ToggleButton key="entities" value="entities" aria-label="entities">
+      <Tooltip title={t_i18n('Entities view')}>
+        <LibraryBooksOutlined
+          fontSize="small"
+          color={viewStorage.view === 'entities' ? 'secondary' : 'primary'}
+        />
+      </Tooltip>
+    </ToggleButton>,
   ];
 
   return (
