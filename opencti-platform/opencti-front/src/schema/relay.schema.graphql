@@ -1711,6 +1711,7 @@ type User implements BasicObject & InternalObject {
   otp_activated: Boolean
   otp_qr: String
   otp_mandatory: Boolean
+  service_account: Boolean
   lastname: String
   theme: String
   language: String
@@ -1814,6 +1815,7 @@ input UserAddInput {
   groups: [ID!]
   user_confidence_level: ConfidenceLevelInput
   prevent_default_groups: Boolean
+  service_account: Boolean
 }
 
 input ConfidenceLevelInput {

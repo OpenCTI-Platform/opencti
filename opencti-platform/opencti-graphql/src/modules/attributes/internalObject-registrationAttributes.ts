@@ -31,6 +31,7 @@ import { EVENT_ACCESS_VALUES, EVENT_SCOPE_VALUES, EVENT_STATUS_VALUES, EVENT_TYP
 import { RETENTION_SCOPE_VALUES, RETENTION_UNIT_VALUES } from '../../manager/retentionManager';
 import { ENTITY_TYPE_PIR } from '../pir/pir-types';
 import { COMPOSER_FF } from '../catalog/catalog-types';
+import { isFeatureEnabled } from '../../config/conf';
 
 const HistoryDefinition: AttributeDefinition[] = [
   { name: 'event_type', label: 'Event type', type: 'string', format: 'enum', values: EVENT_TYPE_VALUES, editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true },
@@ -352,6 +353,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
           ] },
       ]
     },
+    { name: 'user_service_account', label: 'User service account', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag: 'SERVICE_ACCOUNT' },
   ],
   [ENTITY_TYPE_ROLE]: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },

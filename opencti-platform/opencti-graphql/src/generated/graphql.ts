@@ -30664,6 +30664,7 @@ export type User = BasicObject & InternalObject & {
   personal_notifiers?: Maybe<Array<Notifier>>;
   restrict_delete?: Maybe<Scalars['Boolean']['output']>;
   roles: Array<Role>;
+  service_account?: Maybe<Scalars['Boolean']['output']>;
   sessions?: Maybe<Array<Maybe<SessionDetail>>>;
   standard_id: Scalars['String']['output'];
   submenu_auto_collapse?: Maybe<Scalars['Boolean']['output']>;
@@ -30938,6 +30939,7 @@ export type UserAddInput = {
   objectOrganization?: InputMaybe<Array<Scalars['ID']['input']>>;
   password: Scalars['String']['input'];
   prevent_default_groups?: InputMaybe<Scalars['Boolean']['input']>;
+  service_account?: InputMaybe<Scalars['Boolean']['input']>;
   submenu_auto_collapse?: InputMaybe<Scalars['Boolean']['input']>;
   submenu_show_icons?: InputMaybe<Scalars['Boolean']['input']>;
   theme?: InputMaybe<Scalars['String']['input']>;
@@ -44009,6 +44011,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   personal_notifiers?: Resolver<Maybe<Array<ResolversTypes['Notifier']>>, ParentType, ContextType>;
   restrict_delete?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   roles?: Resolver<Array<ResolversTypes['Role']>, ParentType, ContextType, Partial<UserRolesArgs>>;
+  service_account?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   sessions?: Resolver<Maybe<Array<Maybe<ResolversTypes['SessionDetail']>>>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   submenu_auto_collapse?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;

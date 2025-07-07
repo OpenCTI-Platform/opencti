@@ -1,9 +1,9 @@
 import bcrypt from 'bcryptjs';
 import { authenticator } from 'otplib';
 import * as R from 'ramda';
-import { uniq } from 'ramda';
+import { o, uniq } from 'ramda';
 import { v4 as uuid } from 'uuid';
-import { ACCOUNT_STATUS_ACTIVE, ACCOUNT_STATUS_EXPIRED, ACCOUNT_STATUSES, BUS_TOPICS, DEFAULT_ACCOUNT_STATUS, ENABLED_DEMO_MODE, logApp } from '../config/conf';
+import { ACCOUNT_STATUS_ACTIVE, ACCOUNT_STATUS_EXPIRED, ACCOUNT_STATUSES, BUS_TOPICS, DEFAULT_ACCOUNT_STATUS, ENABLED_DEMO_MODE, isFeatureEnabled, logApp } from '../config/conf';
 import { AuthenticationFailure, DatabaseError, DraftLockedError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { elLoadBy, elRawDeleteByQuery } from '../database/engine';
@@ -102,7 +102,7 @@ const ME_USER_MODIFIABLE_ATTRIBUTES = [
   'draft_context',
 ];
 const AVAILABLE_LANGUAGES = ['auto', 'es-es', 'fr-fr', 'ja-jp', 'zh-cn', 'en-us', 'de-de', 'ko-kr'];
-
+const serviceAccountFeatureFlag = isFeatureEnabled('SERVICE_ACCOUNT');
 const computeImpactedUsers = async (context, user, roleId) => {
   // Get all groups that have this role
   const groupsRoles = await listAllRelations(context, user, RELATION_HAS_ROLE, { toId: roleId, fromTypes: [ENTITY_TYPE_GROUP] });
@@ -545,6 +545,7 @@ export const checkPasswordFromPolicy = async (context, password) => {
 export const addUser = async (context, user, newUser) => {
   const userEmail = newUser.user_email.toLowerCase();
   const existingUser = await elLoadBy(context, SYSTEM_USER, 'user_email', userEmail, ENTITY_TYPE_USER);
+  const userServiceAccount = newUser.service_account && serviceAccountFeatureFlag;
   if (existingUser) {
     throw FunctionalError('User already exists', { user_id: existingUser.internal_id });
   }
@@ -563,14 +564,16 @@ export const addUser = async (context, user, newUser) => {
   // Create the user
   let userPassword = newUser.password;
   // If user is external and password is not specified, associate a random password
-  if (newUser.external === true && isEmptyField(userPassword)) {
+  if ((newUser.external === true && isEmptyField(userPassword)) || userServiceAccount) {
     userPassword = uuid();
   } else { // If local user, check the password policy
     await checkPasswordFromPolicy(context, userPassword);
   }
-
-  const userToCreate = R.pipe(
-    R.assoc('user_email', userEmail),
+  let userToCreate = {};
+  const { platform_organization } = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const email = userServiceAccount ? `automatic+${uuid()}@opencti.invalid` : userEmail;
+  userToCreate = R.pipe(
+    R.assoc('user_email', email),
     R.assoc('api_token', newUser.api_token ? newUser.api_token : uuid()),
     R.assoc('password', bcrypt.hashSync(userPassword)),
     R.assoc('theme', newUser.theme ? newUser.theme : 'default'),
@@ -585,9 +588,20 @@ export const addUser = async (context, user, newUser) => {
     R.dissoc('groups'),
     R.dissoc('prevent_default_groups')
   )(newUser);
+
+  if (serviceAccountFeatureFlag) {
+    userToCreate = {
+      user_service_account: newUser.service_account,
+      organization: platform_organization,
+    };
+  }
+
   const { element, isCreation } = await createEntity(context, user, userToCreate, ENTITY_TYPE_USER, { complete: true });
   // Link to organizations
   const userOrganizations = newUser.objectOrganization ?? [];
+  if (userServiceAccount && platform_organization && !userOrganizations.some((org) => (org.id === platform_organization.id))) {
+    userOrganizations.push(platform_organization.id);
+  }
   const relationOrganizations = userOrganizations.map((organizationId) => ({
     fromId: element.id,
     toId: organizationId,
