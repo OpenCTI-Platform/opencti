@@ -1,21 +1,21 @@
 import { graphql } from 'react-relay';
 import React, { ReactNode } from 'react';
-import { PirKnowledgeEntities_SourcesFlaggedFragment$data } from '@components/pir/__generated__/PirKnowledgeEntities_SourcesFlaggedFragment.graphql';
+import { PirKnowledgeEntities_SourcesFlaggedFragment$data } from './__generated__/PirKnowledgeEntities_SourcesFlaggedFragment.graphql';
 import {
   PirKnowledgeEntitiesSourcesFlaggedListQuery,
   PirKnowledgeEntitiesSourcesFlaggedListQuery$variables,
-} from '@components/pir/__generated__/PirKnowledgeEntitiesSourcesFlaggedListQuery.graphql';
-import { PirKnowledgeEntities_SourceFlaggedFragment$data } from '@components/pir/__generated__/PirKnowledgeEntities_SourceFlaggedFragment.graphql';
-import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../utils/filters/filtersUtils';
-import { PaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
-import DataTable from '../../../components/dataGrid/DataTable';
-import { computeLink } from '../../../utils/Entity';
-import { PaginationOptions } from '../../../components/list_lines';
-import { FilterGroup } from '../../../utils/filters/filtersHelpers-types';
-import useAuth from '../../../utils/hooks/useAuth';
-import { LocalStorage } from '../../../utils/hooks/useLocalStorageModel';
+} from './__generated__/PirKnowledgeEntitiesSourcesFlaggedListQuery.graphql';
+import { PirKnowledgeEntities_SourceFlaggedFragment$data } from './__generated__/PirKnowledgeEntities_SourceFlaggedFragment.graphql';
+import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import { PaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
+import DataTable from '../../../../components/dataGrid/DataTable';
+import { computeLink } from '../../../../utils/Entity';
+import { PaginationOptions } from '../../../../components/list_lines';
+import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
+import useAuth from '../../../../utils/hooks/useAuth';
+import { LocalStorage } from '../../../../utils/hooks/useLocalStorageModel';
 
 const sourceFlaggedFragment = graphql`
   fragment PirKnowledgeEntities_SourceFlaggedFragment on StixCoreObject {
