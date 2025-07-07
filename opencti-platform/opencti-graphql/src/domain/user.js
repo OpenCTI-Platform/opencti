@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import { authenticator } from 'otplib';
 import * as R from 'ramda';
-import { o, uniq } from 'ramda';
+import { uniq } from 'ramda';
 import { v4 as uuid } from 'uuid';
 import { ACCOUNT_STATUS_ACTIVE, ACCOUNT_STATUS_EXPIRED, ACCOUNT_STATUSES, BUS_TOPICS, DEFAULT_ACCOUNT_STATUS, ENABLED_DEMO_MODE, isFeatureEnabled, logApp } from '../config/conf';
 import { AuthenticationFailure, DatabaseError, DraftLockedError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
