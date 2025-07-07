@@ -467,8 +467,8 @@ export const loadElementsWithDependencies = async (context, user, elements, opts
         // Auto deletion of the invalid relation
         await elDeleteElements(context, SYSTEM_USER, [element]);
       } else {
-        const from = R.mergeRight(element, { ...rawFrom, ...depsElementsMap.get(element.fromId) });
-        const to = R.mergeRight(element, { ...rawTo, ...depsElementsMap.get(element.toId) });
+        const from = { ...rawFrom, ...depsElementsMap.get(element.fromId) };
+        const to = { ...rawTo, ...depsElementsMap.get(element.toId) };
         // Check relations marking access.
         const canAccessFrom = await isUserCanAccessStoreElement(context, user, from);
         const canAccessTo = await isUserCanAccessStoreElement(context, user, to);
