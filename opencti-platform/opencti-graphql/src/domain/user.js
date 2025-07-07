@@ -543,12 +543,20 @@ export const checkPasswordFromPolicy = async (context, password) => {
 };
 
 export const addUser = async (context, user, newUser) => {
-  const userEmail = newUser.user_email.toLowerCase();
-  const existingUser = await elLoadBy(context, SYSTEM_USER, 'user_email', userEmail, ENTITY_TYPE_USER);
-  const userServiceAccount = newUser.service_account && serviceAccountFeatureFlag;
-  if (existingUser) {
-    throw FunctionalError('User already exists', { user_id: existingUser.internal_id });
+  let userEmail;
+  const userServiceAccount = newUser.user_service_account && serviceAccountFeatureFlag;
+  if (newUser.user_email) {
+    userEmail = newUser.user_email.toLowerCase();
+    const existingUser = await elLoadBy(context, SYSTEM_USER, 'user_email', userEmail, ENTITY_TYPE_USER);
+    if (existingUser) {
+      throw FunctionalError('User already exists', { user_id: existingUser.internal_id });
+    }
+  } else if (userServiceAccount) {
+    userEmail = `automatic+${uuid()}@opencti.invalid`;
+  } else {
+    throw FunctionalError('User cannot be created without email');
   }
+
   if (isUserHasCapability(user, VIRTUAL_ORGANIZATION_ADMIN) && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
     // user is Organization Admin
     // Check organization
@@ -571,9 +579,8 @@ export const addUser = async (context, user, newUser) => {
   }
   let userToCreate = {};
   const { platform_organization } = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const email = userServiceAccount ? `automatic+${uuid()}@opencti.invalid` : userEmail;
   userToCreate = R.pipe(
-    R.assoc('user_email', email),
+    R.assoc('user_email', userEmail),
     R.assoc('api_token', newUser.api_token ? newUser.api_token : uuid()),
     R.assoc('password', bcrypt.hashSync(userPassword)),
     R.assoc('theme', newUser.theme ? newUser.theme : 'default'),
@@ -591,8 +598,8 @@ export const addUser = async (context, user, newUser) => {
 
   if (serviceAccountFeatureFlag) {
     userToCreate = {
+      ...userToCreate,
       user_service_account: newUser.service_account,
-      organization: platform_organization,
     };
   }
 

@@ -30662,7 +30662,6 @@ export type User = BasicObject & InternalObject & {
   personal_notifiers?: Maybe<Array<Notifier>>;
   restrict_delete?: Maybe<Scalars['Boolean']['output']>;
   roles: Array<Role>;
-  service_account?: Maybe<Scalars['Boolean']['output']>;
   sessions?: Maybe<Array<Maybe<SessionDetail>>>;
   standard_id: Scalars['String']['output'];
   submenu_auto_collapse?: Maybe<Scalars['Boolean']['output']>;
@@ -30672,6 +30671,7 @@ export type User = BasicObject & InternalObject & {
   updated_at: Scalars['DateTime']['output'];
   user_confidence_level?: Maybe<ConfidenceLevel>;
   user_email: Scalars['String']['output'];
+  user_service_account?: Maybe<Scalars['Boolean']['output']>;
 };
 
 
@@ -30933,17 +30933,17 @@ export type UserAddInput = {
   language?: InputMaybe<Scalars['String']['input']>;
   lastname?: InputMaybe<Scalars['String']['input']>;
   monochrome_labels?: InputMaybe<Scalars['Boolean']['input']>;
-  name: Scalars['String']['input'];
+  name?: InputMaybe<Scalars['String']['input']>;
   objectOrganization?: InputMaybe<Array<Scalars['ID']['input']>>;
-  password: Scalars['String']['input'];
+  password?: InputMaybe<Scalars['String']['input']>;
   prevent_default_groups?: InputMaybe<Scalars['Boolean']['input']>;
-  service_account?: InputMaybe<Scalars['Boolean']['input']>;
   submenu_auto_collapse?: InputMaybe<Scalars['Boolean']['input']>;
   submenu_show_icons?: InputMaybe<Scalars['Boolean']['input']>;
   theme?: InputMaybe<Scalars['String']['input']>;
   unit_system?: InputMaybe<Scalars['String']['input']>;
   user_confidence_level?: InputMaybe<ConfidenceLevelInput>;
-  user_email: Scalars['String']['input'];
+  user_email?: InputMaybe<Scalars['String']['input']>;
+  user_service_account?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export type UserAgent = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
@@ -44008,7 +44008,6 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   personal_notifiers?: Resolver<Maybe<Array<ResolversTypes['Notifier']>>, ParentType, ContextType>;
   restrict_delete?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   roles?: Resolver<Array<ResolversTypes['Role']>, ParentType, ContextType, Partial<UserRolesArgs>>;
-  service_account?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   sessions?: Resolver<Maybe<Array<Maybe<ResolversTypes['SessionDetail']>>>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   submenu_auto_collapse?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -44018,6 +44017,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   user_confidence_level?: Resolver<Maybe<ResolversTypes['ConfidenceLevel']>, ParentType, ContextType>;
   user_email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  user_service_account?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
