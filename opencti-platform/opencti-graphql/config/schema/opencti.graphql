@@ -1622,7 +1622,7 @@ type User implements BasicObject & InternalObject {
   otp_activated: Boolean
   otp_qr: String
   otp_mandatory: Boolean
-  service_account: Boolean
+  user_service_account: Boolean
   lastname: String
   theme: String
   language: String
@@ -1723,9 +1723,9 @@ type UserSession {
   sessions: [SessionDetail]
 }
 input UserAddInput {
-  user_email: String! @constraint(minLength: 5, format: "email")
-  name: String! @constraint(minLength: 2, format: "not-blank")
-  password: String!
+  user_email: String @constraint(minLength: 5, format: "email")
+  name: String @constraint(minLength: 2, format: "not-blank")
+  password: String
   firstname: String
   lastname: String
   description: String
@@ -1741,7 +1741,7 @@ input UserAddInput {
   groups: [ID!]
   user_confidence_level: ConfidenceLevelInput
   prevent_default_groups: Boolean
-  service_account: Boolean
+  user_service_account: Boolean
 }
 
 input ConfidenceLevelInput {
