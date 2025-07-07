@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Tab, Tabs } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useFormatter } from '../../../components/i18n';
 
 interface PirTabsProps {
@@ -8,8 +8,14 @@ interface PirTabsProps {
 }
 
 const PirTabs = ({ pirId }: PirTabsProps) => {
+  const { pathname } = useLocation();
   const { t_i18n } = useFormatter();
-  const [index, setIndex] = useState(0);
+  const [index, setIndex] = useState(() => {
+    if (pathname.endsWith('knowledge')) return 1;
+    if (pathname.endsWith('ttps')) return 2;
+    if (pathname.endsWith('analyses')) return 3;
+    return 0;
+  });
 
   return (
     <Box sx={{
