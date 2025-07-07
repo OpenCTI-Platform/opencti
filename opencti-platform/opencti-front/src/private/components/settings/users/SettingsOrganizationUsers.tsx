@@ -234,7 +234,6 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
           initialValues={initialValues}
           toolbarFilters={contextFilters}
           lineFragment={settingsOrganizationUsersLineFragment}
-          disableLineSelection
           disableNavigation
           preloadedPaginationProps={preloadedPaginationProps}
           actions={(user) => <ListItemButton component={Link} to={`/dashboard/settings/accesses/users/${user.id}`}/>}
