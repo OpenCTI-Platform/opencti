@@ -6,12 +6,12 @@ import {
 } from '@components/pir/__generated__/PirKnowledgeRelationshipsSourcesFlaggedListQuery.graphql';
 import { PirKnowledgeRelationships_SourcesFlaggedFragment$data } from '@components/pir/__generated__/PirKnowledgeRelationships_SourcesFlaggedFragment.graphql';
 import { PirKnowledgeRelationships_SourceFlaggedFragment$data } from '@components/pir/__generated__/PirKnowledgeRelationships_SourceFlaggedFragment.graphql';
+import PirRadialScore from '@components/pir/PirRadialScore';
 import { useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import { PaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import DataTable from '../../../components/dataGrid/DataTable';
-import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 import { computeLink } from '../../../utils/Entity';
 import FilterIconButton from '../../../components/FilterIconButton';
 import { PaginationOptions } from '../../../components/list_lines';
@@ -161,15 +161,15 @@ const PirKnowledgeRelationships = ({ pirId, localStorage, initialValues, additio
     pirScore: {
       id: 'pir_score',
       label: 'Score',
-      percentWidth: 5,
+      percentWidth: 7,
       isSortable: true,
-      render: ({ pir_score }) => defaultRender(`${pir_score}%`),
+      render: ({ pir_score }) => <PirRadialScore value={pir_score} />,
     },
     fromType: {
       percentWidth: 10,
     },
     fromName: {
-      percentWidth: 25,
+      percentWidth: 23,
     },
     toType: {
       percentWidth: 7,
