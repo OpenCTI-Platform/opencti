@@ -21,8 +21,8 @@ const PirTabs = ({ data }: PirTabsProps) => {
   const { t_i18n } = useFormatter();
   const [index, setIndex] = useState(() => {
     if (pathname.endsWith('knowledge')) return 1;
-    if (pathname.endsWith('ttps')) return 2;
-    if (pathname.endsWith('analyses')) return 3;
+    if (pathname.endsWith('analyses')) return 2;
+    if (pathname.endsWith('ttps')) return 3;
     return 0;
   });
 
@@ -49,13 +49,14 @@ const PirTabs = ({ data }: PirTabsProps) => {
         />
         <Tab
           component={Link}
-          label={t_i18n('TTPs')}
-          to={`/dashboard/pirs/${id}/ttps`}
-        />
-        <Tab
-          component={Link}
           label={t_i18n('Analyses')}
           to={`/dashboard/pirs/${id}/analyses`}
+        />
+        <Tab
+          disabled
+          component={Link}
+          label={t_i18n('TTPs')}
+          to={`/dashboard/pirs/${id}/ttps`}
         />
       </Tabs>
     </Box>

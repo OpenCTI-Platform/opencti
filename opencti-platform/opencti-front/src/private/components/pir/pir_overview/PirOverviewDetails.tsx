@@ -1,12 +1,15 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Grid2 as Grid, Typography } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { PirOverviewDetailsFragment$key } from './__generated__/PirOverviewDetailsFragment.graphql';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import ItemCreators from '../../../../components/ItemCreators';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { parse } from '../../../../utils/Time';
+import PirFiltersDisplay from '../PirFiltersDisplay';
+import type { Theme } from '../../../../components/Theme';
 
 const detailsFragment = graphql`
   fragment PirOverviewDetailsFragment on Pir {
@@ -30,6 +33,7 @@ interface PirOverviewDetailsProps {
 }
 
 const PirOverviewDetails = ({ data }: PirOverviewDetailsProps) => {
+  const theme = useTheme<Theme>();
   const { t_i18n, fldt } = useFormatter();
   const pir = useFragment(detailsFragment, data);
 
@@ -102,14 +106,14 @@ const PirOverviewDetails = ({ data }: PirOverviewDetailsProps) => {
           <Typography variant="h3" gutterBottom>
             {t_i18n('Criteria')}
           </Typography>
-          {pir.pir_criteria.map((c) => (
-            <FilterIconButton
-              key={c.filters}
-              filters={JSON.parse(c.filters)}
-              entityTypes={['Stix-Core-Object']}
-              styleNumber={2}
-            />
-          ))}
+          <div style={{ display: 'flex', gap: theme.spacing(1) }}>
+            {pir.pir_criteria.map((c, i) => (
+              <PirFiltersDisplay
+                key={i}
+                filterGroup={JSON.parse(c.filters)}
+              />
+            ))}
+          </div>
         </div>
       </Grid>
     </Grid>

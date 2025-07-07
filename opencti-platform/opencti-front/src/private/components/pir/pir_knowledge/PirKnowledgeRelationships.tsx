@@ -1,6 +1,8 @@
 import { graphql } from 'react-relay';
 import React, { ReactNode } from 'react';
-import PirRadialScore from '@components/pir/pir_knowledge/PirRadialScore';
+import { useTheme } from '@mui/material/styles';
+import PirRadialScore from './PirRadialScore';
+import PirFiltersDisplay from '../PirFiltersDisplay';
 import {
   PirKnowledgeRelationshipsSourcesFlaggedListQuery,
   PirKnowledgeRelationshipsSourcesFlaggedListQuery$variables,
@@ -13,11 +15,11 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { computeLink } from '../../../../utils/Entity';
-import FilterIconButton from '../../../../components/FilterIconButton';
 import { PaginationOptions } from '../../../../components/list_lines';
 import { LocalStorage } from '../../../../utils/hooks/useLocalStorageModel';
 import ItemEntityType from '../../../../components/ItemEntityType';
 import useAuth from '../../../../utils/hooks/useAuth';
+import type { Theme } from '../../../../components/Theme';
 
 const sourceFlaggedFragment = graphql`
   fragment PirKnowledgeRelationships_SourceFlaggedFragment on StixRefRelationship {
@@ -127,6 +129,8 @@ interface PirKnowledgeRelationshipsProps {
 }
 
 const PirKnowledgeRelationships = ({ pirId, localStorage, initialValues, additionalHeaderButtons }: PirKnowledgeRelationshipsProps) => {
+  const theme = useTheme<Theme>();
+
   const {
     viewStorage,
     helpers,
@@ -187,13 +191,12 @@ const PirKnowledgeRelationships = ({ pirId, localStorage, initialValues, additio
       label: 'Explanations',
       percentWidth: 28,
       render: ({ pir_explanations }) => (
-        <div style={{ display: 'flex' }}>
-          {pir_explanations.map((e: { criterion: { filters: string } }) => (
-            <FilterIconButton
-              key={e.criterion.filters}
-              filters={JSON.parse(e.criterion.filters)}
-              entityTypes={['Stix-Core-Object']}
-              styleNumber={3}
+        <div style={{ display: 'flex', gap: theme.spacing(1) }}>
+          {pir_explanations.map((e: { criterion: { filters: string } }, i: number) => (
+            <PirFiltersDisplay
+              key={i}
+              filterGroup={JSON.parse(e.criterion.filters)}
+              size='small'
             />
           ))}
         </div>
