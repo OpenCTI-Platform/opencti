@@ -273,18 +273,16 @@ export const canRequestAccess = async (context, user, elements) => {
 // end region request access
 
 // region Loader common
-export const batchLoader = (loader) => {
+export const batchLoader = (loader, context, user) => {
   const dataLoader = new DataLoader(
-    (objects) => {
-      const { context, user, args } = R.head(objects);
-      const elements = objects.map((i) => i.element);
-      return loader(context, user, elements, args);
+    (elements) => {
+      return loader(context, user, elements);
     },
     { maxBatchSize: MAX_BATCH_SIZE, cache: false }
   );
   return {
-    load: (element, context, user, args = {}) => {
-      return dataLoader.load({ element, context, user, args });
+    load: (element) => {
+      return dataLoader.load(element);
     },
   };
 };
@@ -349,7 +347,7 @@ const loadElementMetaDependencies = async (context, user, elements, args = {}) =
   // Parallel resolutions
   const toResolvedIds = R.uniq(refsRelations.map((rel) => rel.toId));
   const toResolvedTypes = R.uniq(refsRelations.map((rel) => rel.toType));
-  const toResolvedElements = await elFindByIds(context, user, toResolvedIds, { withoutRels: true, type: toResolvedTypes, connectionFormat: false, toMap: true });
+  const toResolvedElements = await elFindByIds(context, user, toResolvedIds, { type: toResolvedTypes, connectionFormat: false, toMap: true });
   const refEntries = Object.entries(refsPerElements);
   const loadedElementMap = new Map();
   for (let indexRef = 0; indexRef < refEntries.length; indexRef += 1) {
@@ -489,7 +487,7 @@ export const loadElementsWithDependencies = async (context, user, elements, opts
   return loadedElements;
 };
 const loadByIdsWithDependencies = async (context, user, ids, opts = {}) => {
-  const elements = await elFindByIds(context, user, ids, { ...opts, withoutRels: true, connectionFormat: false });
+  const elements = await elFindByIds(context, user, ids, { ...opts, connectionFormat: false });
   if (elements.length > 0) {
     return loadElementsWithDependencies(context, user, elements, opts);
   }
@@ -498,9 +496,9 @@ const loadByIdsWithDependencies = async (context, user, ids, opts = {}) => {
 const loadByFiltersWithDependencies = async (context, user, types, args = {}) => {
   const { indices = READ_DATA_INDICES } = args;
   const paginateArgs = buildEntityFilters(types, args);
-  const elements = await elList(context, user, indices, { ...paginateArgs, withoutRels: true, connectionFormat: false });
+  const elements = await elList(context, user, indices, { ...paginateArgs, connectionFormat: false });
   if (elements.length > 0) {
-    return loadElementsWithDependencies(context, user, elements, { ...args, onlyMarking: false, withoutRels: true });
+    return loadElementsWithDependencies(context, user, elements, { ...args, onlyMarking: false });
   }
   return [];
 };
@@ -508,7 +506,7 @@ const loadByFiltersWithDependencies = async (context, user, types, args = {}) =>
 export const storeLoadByIdsWithRefs = async (context, user, ids, opts = {}) => {
   // When loading with explicit references, data must be loaded without internal rels
   // As rels are here for search and sort there is some data that conflict after references explication resolutions
-  return loadByIdsWithDependencies(context, user, ids, { ...opts, onlyMarking: false, withoutRels: true });
+  return loadByIdsWithDependencies(context, user, ids, { ...opts, onlyMarking: false });
 };
 export const storeLoadByIdWithRefs = async (context, user, id, opts = {}) => {
   const elements = await storeLoadByIdsWithRefs(context, user, [id], opts);

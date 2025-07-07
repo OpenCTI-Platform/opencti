@@ -6,7 +6,6 @@ import {
   askElementAnalysisForConnector,
   askElementEnrichmentForConnector,
   askElementEnrichmentForConnectors,
-  batchMarkingDefinitions,
   casesPaginated,
   containersPaginated,
   externalReferencesPaginated,
@@ -48,7 +47,7 @@ import {
   stixCoreRelationships
 } from '../domain/stixCoreObject';
 import { fetchEditContext } from '../database/redis';
-import { batchLoader, distributionRelations, stixLoadByIdStringify } from '../database/middleware';
+import { distributionRelations, stixLoadByIdStringify } from '../database/middleware';
 import { worksForSource } from '../domain/work';
 import { BUS_TOPICS } from '../config/conf';
 import { ABSTRACT_STIX_CORE_OBJECT, INPUT_CREATED_BY, INPUT_GRANTED_REFS, INPUT_LABELS } from '../schema/general';
@@ -60,8 +59,6 @@ import { numberOfContainersForObject } from '../domain/container';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { getSpecVersionOrDefault } from '../domain/stixRelationship';
 import { loadThroughDenormalized } from './stix';
-
-const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);
 
 const stixCoreObjectResolvers = {
   Query: {
@@ -113,7 +110,7 @@ const stixCoreObjectResolvers = {
     createdBy: (stixCoreObject, _, context) => loadThroughDenormalized(context, context.user, stixCoreObject, INPUT_CREATED_BY),
     objectOrganization: (stixCoreObject, _, context) => loadThroughDenormalized(context, context.user, stixCoreObject, INPUT_GRANTED_REFS, { sortBy: 'name' }),
     objectLabel: (stixCoreObject, _, context) => loadThroughDenormalized(context, context.user, stixCoreObject, INPUT_LABELS, { sortBy: 'value' }),
-    objectMarking: (stixCoreObject, _, context) => markingDefinitionsLoader.load(stixCoreObject, context, context.user),
+    objectMarking: (stixCoreObject, _, context) => context.batch.markingsBatchLoader.load(stixCoreObject),
     // endregion
     // region inner listing - cant be batch loaded
     stixCoreRelationships: (stixCoreObject, args, context) => stixCoreRelationships(context, context.user, stixCoreObject.id, args),
@@ -145,7 +142,7 @@ const stixCoreObjectResolvers = {
     stixCoreObjectsDistribution: (stixCoreObject, args, context) => stixCoreObjectsDistributionByEntity(context, context.user, { ...args, objectId: stixCoreObject.id }),
     stixCoreRelationshipsDistribution: (stixCoreObject, args, context) => distributionRelations(context, context.user, { ...args, fromOrToId: stixCoreObject.id }),
     containersNumber: (stixCoreObject, args, context) => numberOfContainersForObject(context, context.user, { ...args, objectId: stixCoreObject.id }),
-    numberOfConnectedElement: (stixCoreObject) => stixCoreObjectsConnectedNumber(stixCoreObject),
+    numberOfConnectedElement: (stixCoreObject, _, context) => stixCoreObjectsConnectedNumber(context, context.user, stixCoreObject),
     // Retro compatibility
     spec_version: getSpecVersionOrDefault
   },
