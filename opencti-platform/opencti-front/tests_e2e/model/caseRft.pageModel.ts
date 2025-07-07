@@ -13,7 +13,7 @@ export default class CaseRftPage {
   }
 
   getPage() {
-    return this.page.getByTestId('rft-page');
+    return this.page.getByTestId('rfts-page');
   }
 
   async navigateFromMenu() {
