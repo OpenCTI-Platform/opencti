@@ -71,7 +71,7 @@ StixSightingRelationshipProps
   });
 
   return (
-    <div data-testid="sightings-overview">
+    <div data-testid="sighting-overview">
       <QueryRenderer
         query={stixSightingRelationshipQuery}
         variables={{ id: sightingId }}

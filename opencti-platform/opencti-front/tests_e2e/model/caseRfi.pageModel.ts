@@ -13,7 +13,7 @@ export default class CaseRfiPage {
   }
 
   getPage() {
-    return this.page.getByTestId('rfi-page');
+    return this.page.getByTestId('rfis-page');
   }
 
   async navigateFromMenu() {

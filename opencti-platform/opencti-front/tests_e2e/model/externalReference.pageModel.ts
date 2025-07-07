@@ -19,6 +19,10 @@ export default class ExternalReferencePage {
     await leftBarPage.clickOnMenu('Analyses', 'External references');
   }
 
+  getItemFromListWithUrl(name: string) {
+    return this.page.getByRole('link', { name }).click();
+  }
+
   getPage() {
     return this.page.getByTestId('external-reference-page');
   }
