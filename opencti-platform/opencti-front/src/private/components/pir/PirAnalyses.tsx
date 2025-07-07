@@ -1,4 +1,4 @@
-import { graphql } from 'react-relay';
+import { graphql, useFragment } from 'react-relay';
 import { PirAnalysesContainersListQuery, PirAnalysesContainersListQuery$variables } from '@components/pir/__generated__/PirAnalysesContainersListQuery.graphql';
 import { PirAnalyses_ContainersFragment$data } from '@components/pir/__generated__/PirAnalyses_ContainersFragment.graphql';
 import React from 'react';
@@ -8,6 +8,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import useAuth from '../../../utils/hooks/useAuth';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import DataTable from '../../../components/dataGrid/DataTable';
+import { PirAnalysesFragment$key } from './__generated__/PirAnalysesFragment.graphql';
 
 const pirAnalysesContainerFragment = graphql`
   fragment PirAnalyses_ContainerFragment on Container {
@@ -98,14 +99,22 @@ const pirAnalysesContainersListQuery = graphql`
   }
 `;
 
+const analysesFragment = graphql`
+  fragment PirAnalysesFragment on Pir {
+    id
+  }
+`;
+
 interface PirAnalysesProps {
-  pirId: string,
+  data: PirAnalysesFragment$key,
 }
 
 const PirAnalyses = ({
-  pirId,
+  data,
 }: PirAnalysesProps) => {
-  const LOCAL_STORAGE_KEY = `PirAnalysesContainersList-${pirId}`;
+  const { id } = useFragment(analysesFragment, data);
+
+  const LOCAL_STORAGE_KEY = `PirAnalysesContainersList-${id}`;
   const initialValues = {
     filters: emptyFilterGroup,
     searchTerm: '',
@@ -124,7 +133,7 @@ const PirAnalyses = ({
 
   const queryPaginationOptions: PirAnalysesContainersListQuery$variables = {
     ...paginationOptions,
-    id: pirId,
+    id,
     count: 100,
     filters: filters ? sanitizeFilterGroupKeysForBackend(filters) : undefined,
   };

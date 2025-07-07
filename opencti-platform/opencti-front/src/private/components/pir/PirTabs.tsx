@@ -1,13 +1,22 @@
 import React, { useState } from 'react';
 import { Box, Tab, Tabs } from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
+import { graphql, useFragment } from 'react-relay';
 import { useFormatter } from '../../../components/i18n';
+import { PirTabsFragment$key } from './__generated__/PirTabsFragment.graphql';
+
+const tabsFragment = graphql`
+  fragment PirTabsFragment on Pir {
+    id
+  }
+`;
 
 interface PirTabsProps {
-  pirId: string
+  data: PirTabsFragment$key
 }
 
-const PirTabs = ({ pirId }: PirTabsProps) => {
+const PirTabs = ({ data }: PirTabsProps) => {
+  const { id } = useFragment(tabsFragment, data);
   const { pathname } = useLocation();
   const { t_i18n } = useFormatter();
   const [index, setIndex] = useState(() => {
@@ -31,22 +40,22 @@ const PirTabs = ({ pirId }: PirTabsProps) => {
         <Tab
           component={Link}
           label={t_i18n('Overview')}
-          to={`/dashboard/pirs/${pirId}`}
+          to={`/dashboard/pirs/${id}`}
         />
         <Tab
           component={Link}
           label={t_i18n('Knowledge')}
-          to={`/dashboard/pirs/${pirId}/knowledge`}
+          to={`/dashboard/pirs/${id}/knowledge`}
         />
         <Tab
           component={Link}
           label={t_i18n('TTPs')}
-          to={`/dashboard/pirs/${pirId}/ttps`}
+          to={`/dashboard/pirs/${id}/ttps`}
         />
         <Tab
           component={Link}
           label={t_i18n('Analyses')}
-          to={`/dashboard/pirs/${pirId}/analyses`}
+          to={`/dashboard/pirs/${id}/analyses`}
         />
       </Tabs>
     </Box>

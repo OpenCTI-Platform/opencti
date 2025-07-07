@@ -1,16 +1,16 @@
 import { graphql, useFragment } from 'react-relay';
 import React from 'react';
-import PirKnowledgeEntities from '@components/pir/PirKnowledgeEntities';
-import PirKnowledgeRelationships from '@components/pir/PirKnowledgeRelationships';
+import PirKnowledgeEntities from '@components/pir/pir_knowledge/PirKnowledgeEntities';
+import PirKnowledgeRelationships from '@components/pir/pir_knowledge/PirKnowledgeRelationships';
 import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
 import { LibraryBooksOutlined } from '@mui/icons-material';
 import { RelationManyToMany } from 'mdi-material-ui';
 import { PirKnowledgeFragment$key } from './__generated__/PirKnowledgeFragment.graphql';
-import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
-import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import { PaginationOptions } from '../../../components/list_lines';
-import { useFormatter } from '../../../components/i18n';
+import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import { PaginationOptions } from '../../../../components/list_lines';
+import { useFormatter } from '../../../../components/i18n';
 
 const knowledgeFragment = graphql`
   fragment PirKnowledgeFragment on Pir {

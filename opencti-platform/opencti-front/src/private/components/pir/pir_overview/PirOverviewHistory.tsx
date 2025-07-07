@@ -7,14 +7,14 @@ import { AddOutlined, DeleteOutlined, EditOutlined, HelpOutlined } from '@mui/ic
 import { LinkVariantPlus, LinkVariantRemove, Merge } from 'mdi-material-ui';
 import { graphql, useFragment } from 'react-relay';
 import { useTheme } from '@mui/material/styles';
-import { PirOverviewHistoryPirFragment$key } from '@components/pir/__generated__/PirOverviewHistoryPirFragment.graphql';
+import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import { isNotEmptyField } from '../../../../utils/utils';
+import type { Theme } from '../../../../components/Theme';
+import { useFormatter } from '../../../../components/i18n';
+import { displayEntityTypeForTranslation } from '../../../../utils/String';
+import ItemIcon from '../../../../components/ItemIcon';
+import { PirOverviewHistoryPirFragment$key } from './__generated__/PirOverviewHistoryPirFragment.graphql';
 import { PirOverviewHistoryFragment$key } from './__generated__/PirOverviewHistoryFragment.graphql';
-import MarkdownDisplay from '../../../components/MarkdownDisplay';
-import { isNotEmptyField } from '../../../utils/utils';
-import type { Theme } from '../../../components/Theme';
-import { useFormatter } from '../../../components/i18n';
-import { displayEntityTypeForTranslation } from '../../../utils/String';
-import ItemIcon from '../../../components/ItemIcon';
 
 const pirFragment = graphql`
   fragment PirOverviewHistoryPirFragment on Pir {

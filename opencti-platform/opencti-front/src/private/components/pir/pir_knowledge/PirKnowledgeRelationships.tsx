@@ -1,23 +1,23 @@
 import { graphql } from 'react-relay';
 import React, { ReactNode } from 'react';
+import PirRadialScore from '@components/pir/pir_knowledge/PirRadialScore';
 import {
   PirKnowledgeRelationshipsSourcesFlaggedListQuery,
   PirKnowledgeRelationshipsSourcesFlaggedListQuery$variables,
-} from '@components/pir/__generated__/PirKnowledgeRelationshipsSourcesFlaggedListQuery.graphql';
-import { PirKnowledgeRelationships_SourcesFlaggedFragment$data } from '@components/pir/__generated__/PirKnowledgeRelationships_SourcesFlaggedFragment.graphql';
-import { PirKnowledgeRelationships_SourceFlaggedFragment$data } from '@components/pir/__generated__/PirKnowledgeRelationships_SourceFlaggedFragment.graphql';
-import PirRadialScore from '@components/pir/PirRadialScore';
-import { useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
-import { PaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
-import DataTable from '../../../components/dataGrid/DataTable';
-import { computeLink } from '../../../utils/Entity';
-import FilterIconButton from '../../../components/FilterIconButton';
-import { PaginationOptions } from '../../../components/list_lines';
-import { LocalStorage } from '../../../utils/hooks/useLocalStorageModel';
-import ItemEntityType from '../../../components/ItemEntityType';
-import useAuth from '../../../utils/hooks/useAuth';
+} from './__generated__/PirKnowledgeRelationshipsSourcesFlaggedListQuery.graphql';
+import { PirKnowledgeRelationships_SourcesFlaggedFragment$data } from './__generated__/PirKnowledgeRelationships_SourcesFlaggedFragment.graphql';
+import { PirKnowledgeRelationships_SourceFlaggedFragment$data } from './__generated__/PirKnowledgeRelationships_SourceFlaggedFragment.graphql';
+import { useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
+import { PaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
+import DataTable from '../../../../components/dataGrid/DataTable';
+import { computeLink } from '../../../../utils/Entity';
+import FilterIconButton from '../../../../components/FilterIconButton';
+import { PaginationOptions } from '../../../../components/list_lines';
+import { LocalStorage } from '../../../../utils/hooks/useLocalStorageModel';
+import ItemEntityType from '../../../../components/ItemEntityType';
+import useAuth from '../../../../utils/hooks/useAuth';
 
 const sourceFlaggedFragment = graphql`
   fragment PirKnowledgeRelationships_SourceFlaggedFragment on StixRefRelationship {
