@@ -758,7 +758,7 @@ const WidgetCreationParameters = () => {
       </>
 
       <div style={{ display: 'flex', width: '100%', marginTop: 20 }}>
-        {getCurrentAvailableParameters(type).includes('stacked') && (
+        {!uniqueUsers && getCurrentAvailableParameters(type).includes('stacked') && (
           <FormControlLabel
             control={
               <Switch

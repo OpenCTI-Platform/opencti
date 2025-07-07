@@ -1,7 +1,7 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React, { FunctionComponent } from 'react';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { FilterGroup, MetricsMonthlyQuery, MetricsMonthlyQuery$variables } from './__generated__/MetricsMonthlyQuery.graphql';
+import { FilterGroup as RelayFilterGroup, Filter as RelayFilter, MetricsMonthlyQuery, MetricsMonthlyQuery$variables } from './__generated__/MetricsMonthlyQuery.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetDifference from '../../../../components/dashboard/WidgetDifference';
@@ -32,9 +32,27 @@ interface MetricsMonthlyComponentProps {
 
 interface MetricsMonthlyProps {
   variant: string,
+  endDate: string | null,
+  startDate: string | null,
   parameters: {
     title?: string;
   }
+  dataSelection?: {
+    filters?: unknown;
+  }[];
+}
+
+function convertToRelayFilterGroup(input?: any): RelayFilterGroup | undefined {
+  if (!input) return undefined;
+  return {
+    mode: input.mode,
+    filters: input.filters.map((f: { key: any; values: any; }) => ({
+      ...f,
+      key: Array.isArray(f.key) ? f.key : [f.key],
+      values: f.values,
+    })) as readonly RelayFilter[],
+    filterGroups: input.filterGroups ?? [],
+  };
 }
 
 const MetricsMonthlyComponent: FunctionComponent<MetricsMonthlyComponentProps> = ({
@@ -69,42 +87,41 @@ const MetricsMonthlyComponent: FunctionComponent<MetricsMonthlyComponentProps> =
 const MetricsMonthly: React.FC<MetricsMonthlyProps> = ({
   parameters,
   variant,
+  endDate,
+  startDate,
+  dataSelection,
 }) => {
   const { t_i18n } = useFormatter();
   const height = 300;
+  const filters = convertToRelayFilterGroup(dataSelection?.[0]?.filters);
 
   // Last period consists of two months ago to one month ago
   // Current period consists of one month ago to now
   const now = new Date();
   now.setHours(23, 59, 59, 999);
-  const lastPeriodStartDate = new Date(now);
-  const lastPeriodEndDate = new Date(now);
-  lastPeriodStartDate.setMonth(now.getMonth() - 2);
-  lastPeriodEndDate.setMonth(now.getMonth() - 1);
 
-  const filters: FilterGroup = {
-    mode: 'and',
-    filters: [
-      {
-        key: ['event_scope'],
-        values: ['search', 'analyze', 'enrich', 'import', 'export', 'read', 'create', 'delete', 'download', 'disseminate', 'update'],
-      },
-    ],
-    filterGroups: [],
-  };
+  const start = startDate ? new Date(startDate) : new Date(now);
+  start.setMonth(now.getMonth() - 2);
+
+  const mid = startDate && endDate
+    ? new Date(startDate)
+    : new Date(now);
+  mid.setMonth(now.getMonth() - 1);
+
+  const end = endDate ? new Date(endDate) : now;
 
   // Get the user logins for last month and this current month
   const distributionParameters: MetricsMonthlyQuery$variables['distributionParameters'] = [
     {
       field: 'user_id',
-      startDate: lastPeriodStartDate.toISOString(),
-      endDate: lastPeriodEndDate.toISOString(),
+      startDate: start.toISOString(),
+      endDate: mid.toISOString(),
       filters,
     },
     {
       field: 'user_id',
-      startDate: lastPeriodEndDate.toISOString(),
-      endDate: now.toISOString(),
+      startDate: mid.toISOString(),
+      endDate: end.toISOString(),
       filters,
     },
   ];

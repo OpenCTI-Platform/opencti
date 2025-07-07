@@ -66,6 +66,9 @@ const DashboardAuditsViz = ({
         return (
           <MetricsWeekly
             variant="inLine"
+            endDate={endDate}
+            startDate={startDate}
+            dataSelection={dataSelection}
             parameters={widget?.parameters as object}
           />
         );
@@ -74,6 +77,9 @@ const DashboardAuditsViz = ({
         return (
           <MetricsMonthly
             variant="inLine"
+            endDate={endDate}
+            startDate={startDate}
+            dataSelection={dataSelection}
             parameters={widget?.parameters as object}
           />
         );
@@ -111,6 +117,28 @@ const DashboardAuditsViz = ({
         />
       );
     case 'vertical-bar':
+      if (isUniqueUser && isWeekly) {
+        return (
+          <MetricsWeeklyChart
+            variant="inLine"
+            endDate={endDate}
+            startDate={startDate}
+            dataSelection={dataSelection}
+            parameters={widget?.parameters as object}
+          />
+        );
+      }
+      if (isUniqueUser && isMonthly) {
+        return (
+          <MetricsMonthlyChart
+            variant="inLine"
+            endDate={endDate}
+            startDate={startDate}
+            dataSelection={dataSelection}
+            parameters={widget?.parameters as object}
+          />
+        );
+      }
       return (
         <AuditsMultiVerticalBars
           variant="inLine"
@@ -124,22 +152,6 @@ const DashboardAuditsViz = ({
         />
       );
     case 'line':
-      if (isUniqueUser && isWeekly) {
-        return (
-          <MetricsWeeklyChart
-            variant="inLine"
-            parameters={widget?.parameters as object}
-          />
-        );
-      }
-      if (isUniqueUser && isMonthly) {
-        return (
-          <MetricsMonthlyChart
-            variant="inLine"
-            parameters={widget?.parameters as object}
-          />
-        );
-      }
       return (
         <AuditsMultiLineChart
           variant="inLine"

@@ -1,8 +1,8 @@
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React, { FunctionComponent } from 'react';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
-import WidgetMultiLines from '../../../../components/dashboard/WidgetMultiLines';
-import { FilterGroup, MetricsMonthlyQuery } from './__generated__/MetricsMonthlyQuery.graphql';
+import WidgetVerticalBars from '../../../../components/dashboard/WidgetVerticalBars';
+import { FilterGroup as RelayFilterGroup, Filter as RelayFilter, MetricsMonthlyQuery } from './__generated__/MetricsMonthlyQuery.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { mauDataQuery } from './MetricsMonthly';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -18,7 +18,7 @@ type auditsDistributionParameters = {
   field: string,
   startDate: string,
   endDate: string,
-  filters: FilterGroup | null | undefined,
+  filters: RelayFilterGroup | null | undefined,
 };
 
 interface MetricsMonthlyChartComponentProps {
@@ -28,9 +28,27 @@ interface MetricsMonthlyChartComponentProps {
 
 interface MetricsMonthlyChartProps {
   variant: string,
+  endDate: string | null,
+  startDate: string | null,
   parameters: {
     title?: string;
   }
+  dataSelection?: {
+    filters?: unknown;
+  }[];
+}
+
+function convertToRelayFilterGroup(input?: any): RelayFilterGroup | undefined {
+  if (!input) return undefined;
+  return {
+    mode: input.mode,
+    filters: input.filters.map((f: { key: any; values: any; }) => ({
+      ...f,
+      key: Array.isArray(f.key) ? f.key : [f.key],
+      values: f.values,
+    })) as readonly RelayFilter[],
+    filterGroups: input.filterGroups ?? [],
+  };
 }
 
 const MetricsMonthlyChartComponent: FunctionComponent<
@@ -54,7 +72,7 @@ MetricsMonthlyChartComponentProps
     }));
 
     return (
-      <WidgetMultiLines
+      <WidgetVerticalBars
         series={[{
           name: t_i18n('Monthly activity count'),
           data: widgetData,
@@ -71,40 +89,60 @@ MetricsMonthlyChartComponentProps
 const MetricsMonthlyChart: React.FC<MetricsMonthlyChartProps> = ({
   parameters,
   variant,
+  endDate,
+  startDate,
+  dataSelection,
 }) => {
   const { t_i18n } = useFormatter();
   const now = new Date();
   const months = 6;
   now.setHours(23, 59, 59, 999);
+
   const distributionParameters: auditsDistributionParameters[] = [];
+  const filters = convertToRelayFilterGroup(dataSelection?.[0]?.filters);
 
-  // Create rolling date ranges for specified number of months
-  for (let i = months; i > 0; i -= 1) {
-    // Since setMonth modifies in place, create new Dates from `now`
-    const startDate = new Date(now);
-    const endDate = new Date(now);
+  if (startDate && endDate) {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    start.setHours(0, 0, 0, 0);
+    end.setHours(23, 59, 59, 999);
 
-    // Date range is `i` months ago to `i+1` months ago
-    startDate.setMonth(now.getMonth() - i);
-    endDate.setMonth(now.getMonth() - i + 1);
+    const current = new Date(start);
+    while (current <= end) {
+      const rangeStart = new Date(current);
+      const rangeEnd = new Date(current);
 
-    const filters: FilterGroup = {
-      mode: 'and',
-      filters: [
-        {
-          key: ['event_scope'],
-          values: ['search', 'analyze', 'enrich', 'import', 'export', 'read', 'create', 'delete', 'download', 'disseminate', 'update'],
-        },
-      ],
-      filterGroups: [],
-    };
+      rangeEnd.setMonth(rangeEnd.getMonth() + 1);
+      rangeEnd.setDate(0);
+      rangeEnd.setHours(23, 59, 59, 999);
 
-    distributionParameters.push({
-      field: 'user_id',
-      startDate: startDate.toISOString(),
-      endDate: endDate.toISOString(),
-      filters,
-    });
+      distributionParameters.push({
+        field: 'user_id',
+        startDate: rangeStart.toISOString(),
+        endDate: rangeEnd.toISOString(),
+        filters,
+      });
+
+      current.setMonth(current.getMonth() + 1);
+    }
+  } else {
+    // Create rolling date ranges for specified number of months
+    for (let i = months; i > 0; i -= 1) {
+      // Since setMonth modifies in place, create new Dates from `now`
+      const start = new Date(now);
+      const end = new Date(now);
+
+      // Date range is `i` months ago to `i+1` months ago
+      start.setMonth(now.getMonth() - i);
+      end.setMonth(now.getMonth() - i + 1);
+
+      distributionParameters.push({
+        field: 'user_id',
+        startDate: start.toISOString(),
+        endDate: end.toISOString(),
+        filters,
+      });
+    }
   }
 
   const queryRef = useQueryLoading<MetricsMonthlyQuery>(

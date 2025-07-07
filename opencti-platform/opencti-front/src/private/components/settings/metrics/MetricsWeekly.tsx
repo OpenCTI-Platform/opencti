@@ -6,7 +6,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import WidgetDifference from '../../../../components/dashboard/WidgetDifference';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { FilterGroup, MetricsWeeklyQuery } from './__generated__/MetricsWeeklyQuery.graphql';
+import { FilterGroup as RelayFilterGroup, Filter as RelayFilter, MetricsWeeklyQuery } from './__generated__/MetricsWeeklyQuery.graphql';
 import { metricsGraphqlQueryUser } from './metrics.d';
 
 export const wauDataQuery = graphql`
@@ -32,9 +32,27 @@ interface MetricsWeeklyComponentProps {
 
 interface MetricsWeeklyProps {
   variant: string,
+  endDate: string | null,
+  startDate: string | null,
   parameters: {
     title?: string;
   }
+  dataSelection?: {
+    filters?: unknown;
+  }[];
+}
+
+function convertToRelayFilterGroup(input?: any): RelayFilterGroup | undefined {
+  if (!input) return undefined;
+  return {
+    mode: input.mode,
+    filters: input.filters.map((f: { key: any; values: any; }) => ({
+      ...f,
+      key: Array.isArray(f.key) ? f.key : [f.key],
+      values: f.values,
+    })) as readonly RelayFilter[],
+    filterGroups: input.filterGroups ?? [],
+  };
 }
 
 const MetricsWeeklyComponent: FunctionComponent<MetricsWeeklyComponentProps> = ({
@@ -67,9 +85,16 @@ const MetricsWeeklyComponent: FunctionComponent<MetricsWeeklyComponentProps> = (
 const MetricsWeekly: React.FC<MetricsWeeklyProps> = ({
   parameters,
   variant,
+  endDate,
+  startDate,
+  dataSelection,
 }) => {
   const { t_i18n } = useFormatter();
   const height = 300;
+  const filters = convertToRelayFilterGroup(dataSelection?.[0]?.filters);
+
+  let start = startDate ? new Date(startDate) : null;
+  let end = endDate ? new Date(endDate) : null;
 
   // Current period consists of most recent Monday to now
   // Last period is two Mondays ago to the most recent Monday
@@ -78,40 +103,36 @@ const MetricsWeekly: React.FC<MetricsWeeklyProps> = ({
   today.setHours(0, 0, 0, 0);
 
   const dayOfWeek = today.getDay();
-  const diffToWeekStart = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+  const diffToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
 
-  const startOfWeek = new Date(today);
-  startOfWeek.setDate(today.getDate() - diffToWeekStart);
+  const thisMonday = new Date(today);
+  thisMonday.setDate(today.getDate() - diffToMonday);
 
   const now = new Date();
   now.setHours(23, 59, 59, 999);
-  const lastPeriodEndDate = new Date(startOfWeek);
-  const lastPeriodStartDate = new Date(startOfWeek);
-  lastPeriodStartDate.setDate(lastPeriodStartDate.getDate() - 7);
 
-  const filters: FilterGroup = {
-    mode: 'and',
-    filters: [
-      {
-        key: ['event_scope'],
-        values: ['search', 'analyze', 'enrich', 'import', 'export', 'read', 'create', 'delete', 'download', 'disseminate', 'update'],
-      },
-    ],
-    filterGroups: [],
-  };
+  if (!start || !end) {
+    const lastMonday = new Date(thisMonday);
+    lastMonday.setDate(thisMonday.getDate() - 7);
+    start = lastMonday;
+    end = now;
+  }
+
+  const mid = new Date(start);
+  mid.setDate(mid.getDate() + 7);
 
   // Get the user logins for last month and this current month
   const distributionParameters = [
     {
       field: 'user_id',
-      startDate: lastPeriodStartDate.toISOString(),
-      endDate: lastPeriodEndDate.toISOString(),
+      startDate: start.toISOString(),
+      endDate: mid.toISOString(),
       filters,
     },
     {
       field: 'user_id',
-      startDate: lastPeriodEndDate.toISOString(),
-      endDate: now.toISOString(),
+      startDate: mid.toISOString(),
+      endDate: end.toISOString(),
       filters,
     },
   ];
