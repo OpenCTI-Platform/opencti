@@ -4,8 +4,8 @@ import LeftBarPage from './menu/leftBar.pageModel';
 export default class ArtifactPage {
   constructor(private page: Page) {}
 
-  getPage() {
-    return this.page.getByTestId('Artifact-page');
+  getPage(name: string) {
+    return this.page.getByTestId(name);
   }
 
   async navigateFromMenu() {
