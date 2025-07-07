@@ -238,6 +238,7 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
           preloadedPaginationProps={preloadedPaginationProps}
           actions={(user) => <ListItemButton component={Link} to={`/dashboard/settings/accesses/users/${user.id}`}/>}
           icon={() => <PersonOutlined color="primary" />}
+          taskScope={'USER'}
         />
         )}
       </Paper>
