@@ -11,7 +11,7 @@ import PirOverview from './PirOverview';
 import ErrorNotFound from '../../../components/ErrorNotFound';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import Loader from '../../../components/Loader';
-import PirAnalyses from '@components/pir/PirAnalyses';
+import PirAnalyses from './PirAnalyses';
 
 const pirQuery = graphql`
   query PirQuery($id: ID!) {

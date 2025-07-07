@@ -100,7 +100,6 @@ const pirAnalysesContainersListQuery = graphql`
 
 interface PirAnalysesProps {
   pirId: string,
-  flaggedIds: string[],
 }
 
 const PirAnalyses = ({
