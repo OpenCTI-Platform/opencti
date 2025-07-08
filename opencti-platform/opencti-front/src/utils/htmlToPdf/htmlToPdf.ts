@@ -8,7 +8,7 @@ import { APP_BASE_PATH, fileUri } from '../../relay/environment';
 import { capitalizeWords } from '../String';
 import logoWhite from '../../static/images/logo_text_white.png';
 import { getBase64ImageFromURL, isImageFromUrlSvg } from '../Image';
-import FONTS from './utils/pdfFonts';
+import { FONTS, detectLanguage } from './utils/pdfFonts';
 import determineOrientation from './utils/pdfOrientation';
 import setImagesWidth from './utils/pdfImageWidth';
 import setTableFullWidth, { defaultTableLayout } from './utils/pdfTableWidth';
@@ -103,6 +103,8 @@ export const htmlToPdfReport = async (
   htmlData = setTableFullWidth(htmlData);
   htmlData = addPageBreaks(htmlData);
 
+  const selectedFont = detectLanguage(htmlData);
+
   // Transform html string into a JS object that lib pdfmake can understand.
   const pdfMakeObject = htmlToPdfmake(htmlData, {
     removeExtraBlanks: true,
@@ -111,8 +113,8 @@ export const htmlToPdfReport = async (
     defaultStyles: {
       h2: { margin: [0, 20, 0, 10], color: DARK, fontSize: 28 },
       h3: { margin: [0, 20, 0, 10], color: DARK, fontSize: 24 },
-      th: { bold: true, fillColor: '', font: 'Roboto' },
-      td: { font: 'Roboto' },
+      th: { bold: true, fillColor: '', font: selectedFont },
+      td: { font: selectedFont },
     },
   }) as unknown as TDocumentDefinitions; // Because wrong type when using imagesByReference: true.
 
@@ -132,7 +134,7 @@ export const htmlToPdfReport = async (
       fontGeo: { font: 'Geologica' },
     },
     defaultStyle: {
-      font: 'IbmPlexSans',
+      font: selectedFont,
       fontSize: 12,
     },
     ...pdfMakeObject,
@@ -153,7 +155,7 @@ export const htmlToPdfReport = async (
       },
       {
         text: reportName,
-        style: ['colorWhite', 'fontGeo', 'textXl'],
+        style: ['colorWhite', selectedFont, 'textXl'],
         marginTop: 200,
       },
       {
