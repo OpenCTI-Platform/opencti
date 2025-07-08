@@ -551,7 +551,7 @@ export const addUser = async (context, user, newUser) => {
     if (existingUser) {
       throw FunctionalError('User already exists', { user_id: existingUser.internal_id });
     }
-  } else if (newUser.user_email && userServiceAccount) {
+  } else if (userServiceAccount) {
     userEmail = newUser.user_email ? newUser.user_email : `automatic+${uuid()}@opencti.invalid`;
   } else {
     throw FunctionalError('User cannot be created without email');

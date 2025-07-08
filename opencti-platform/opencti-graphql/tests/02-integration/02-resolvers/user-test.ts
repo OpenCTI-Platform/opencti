@@ -1246,7 +1246,7 @@ describe.only('Service account User coverage', async () => {
   it('should service account user with no org created', async () => {
     // Create the user
     const USER_TO_CREATE: UserAddInput = {
-      name: 'Service account',
+      name: 'Service account no org',
       user_service_account: true,
       groups: [],
       objectOrganization: [],
@@ -1260,7 +1260,7 @@ describe.only('Service account User coverage', async () => {
 
     expect(user.data.userAdd).not.toBeNull();
     userInternalId = user.data.userAdd.id;
-    expect(user.data.userAdd.name).toEqual('Service account');
+    expect(user.data.userAdd.name).toEqual('Service account no org');
     expect(user.data.userAdd.user_email).toBeDefined();
     expect(user.data.userAdd.user_email.startsWith('automatic+')).toBeTruthy();
     expect(user.data.userAdd.user_service_account).toEqual(true);
@@ -1272,7 +1272,7 @@ describe.only('Service account User coverage', async () => {
     // Create the user
     const USER_TO_CREATE: UserAddInput = {
       user_email: 'custom_mail@opencti.com',
-      name: 'Service account with orga',
+      name: 'Service account with org',
       user_service_account: true,
       groups: [],
       objectOrganization: [testOrganizationId],
@@ -1286,7 +1286,7 @@ describe.only('Service account User coverage', async () => {
 
     expect(user.data.userAdd).not.toBeNull();
     userInternalId = user.data.userAdd.id;
-    expect(user.data.userAdd.name).toEqual('Service account with orga');
+    expect(user.data.userAdd.name).toEqual('Service account with org');
     expect(user.data.userAdd.user_email).toBeDefined();
     expect(user.data.userAdd.user_email).toEqual('custom_mail@opencti.com');
     expect(user.data.userAdd.user_service_account).toEqual(true);
