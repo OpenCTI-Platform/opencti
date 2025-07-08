@@ -369,7 +369,7 @@ export const initializeData = async (context, withMarkings = true) => {
   // Create default elements
   const platformId = conf.get('platform_id') || undefined;
   if (isNotEmptyField(platformId)) {
-    logApp.info(`[INIT] Platform identifier forced to [${platformId}]`);
+    logApp.warn(`[INIT] Platform identifier forced to [${platformId}]`);
   }
 
   await addSettings(context, SYSTEM_USER, {
@@ -393,8 +393,7 @@ export const initializeData = async (context, withMarkings = true) => {
   return true;
 };
 
-export const patchPlatformId = async (context) => {
-  const platformId = conf.get('platform_id') || undefined;
+export const setPlatformId = async (context, platformId) => {
   if (isNotEmptyField((platformId))) {
     if (!validator.isUUID(platformId)) {
       throw ConfigurationError('Cannot switch platform identifier: platform_id is not a valid UUID', { platform_id: platformId });
@@ -425,4 +424,9 @@ export const patchPlatformId = async (context) => {
       });
     }
   }
+};
+
+export const patchPlatformId = async (context) => {
+  const platformId = conf.get('platform_id') || undefined;
+  await setPlatformId(context, platformId);
 };
