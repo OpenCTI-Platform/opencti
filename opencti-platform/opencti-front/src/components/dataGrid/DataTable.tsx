@@ -186,6 +186,7 @@ type OCTIDataTableProps = Pick<DataTableProps,
 | 'disableToolBar'
 | 'disableSelectAll'
 | 'selectOnLineClick'
+| 'hideHeaders'
 | 'createButton'
 | 'entityTypes'> & {
   lineFragment: GraphQLTaggedNode
