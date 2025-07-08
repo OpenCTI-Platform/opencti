@@ -15,6 +15,8 @@ import { executionContext, RULE_MANAGER_USER } from '../../utils/access';
 import type { AuthContext } from '../../types/user';
 import type { StixIndicator } from '../../modules/indicator/indicator-types';
 import { ENTITY_TYPE_INDICATOR } from '../../modules/indicator/indicator-types';
+import type { CreateInferredEntityCallbackFunction, CreateInferredRelationCallbackFunction, RuleRuntime } from '../../types/rules';
+import { idGenFromData } from '../../schema/identifier';
 
 // 'If **indicator A** has `revoked` **false** and **indicator A** is `sighted` in ' +
 // '**identity B**, then create **Incident C** `related-to` **indicator A** and ' +
@@ -33,7 +35,12 @@ const ruleSightingIncidentBuilder = () => {
       stixSightingId,
     ];
   };
-  const handleIndicatorUpsert = async (context: AuthContext, indicator: StixIndicator): Promise<void> => {
+  const handleIndicatorUpsert = async (
+    context: AuthContext,
+    indicator: StixIndicator,
+    createInferredEntityCallback: CreateInferredEntityCallbackFunction,
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction
+  ): Promise<void> => {
     const { extensions } = indicator;
     const indicatorId = extensions[STIX_EXT_OCTI].id;
     const { name, pattern, revoked, object_marking_refs, confidence } = indicator;
@@ -52,42 +59,55 @@ const ruleSightingIncidentBuilder = () => {
         const ruleBaseContent = { confidence, objectMarking: object_marking_refs };
         const ruleContentData = { ...ruleBaseContent, first_seen, last_seen };
         const ruleContent = createRuleContent(id, dependencies, explanation, ruleContentData);
-        const inferredEntity = await createInferredEntity(context, input, ruleContent, ENTITY_TYPE_INCIDENT);
+        const inferredEntityStandardId = idGenFromData(ENTITY_TYPE_INCIDENT, ruleContent.content.dependencies.sort());
+        await createInferredEntityCallback(context, input, ruleContent, ENTITY_TYPE_INCIDENT);
         const ruleRelContent = createRuleContent(id, dependencies, explanation, ruleBaseContent);
         // Create **Incident C** `related-to` **indicator A**
-        const created = inferredEntity.element as StoreObject;
-        const incidentToIndicator = { fromId: created.internal_id, toId: indicatorId, relationship_type: RELATION_RELATED_TO };
-        await createInferredRelation(context, incidentToIndicator, ruleRelContent);
+        const incidentToIndicator = { fromId: inferredEntityStandardId, toId: indicatorId, relationship_type: RELATION_RELATED_TO };
+        await createInferredRelationCallback(context, incidentToIndicator, ruleRelContent);
         // Create **Incident C** `targets` **identity B**
-        const incidentToIdentity = { fromId: created.internal_id, toId: identityId, relationship_type: RELATION_TARGETS };
-        await createInferredRelation(context, incidentToIdentity, ruleRelContent);
+        const incidentToIdentity = { fromId: inferredEntityStandardId, toId: identityId, relationship_type: RELATION_TARGETS };
+        await createInferredRelationCallback(context, incidentToIdentity, ruleRelContent);
       }
     }
   };
-  const handleIndicatorRelationUpsert = async (context: AuthContext, sightingRelation: StixSighting) => {
+  const handleIndicatorRelationUpsert = async (
+    context: AuthContext,
+    sightingRelation: StixSighting,
+    createInferredEntityCallback: CreateInferredEntityCallbackFunction,
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction
+  ) => {
     const indicatorId = sightingRelation.extensions[STIX_EXT_OCTI].sighting_of_ref;
     const sightingIndicator = await stixLoadById(context, RULE_MANAGER_USER, indicatorId);
-    return handleIndicatorUpsert(context, sightingIndicator as StixIndicator);
+    return handleIndicatorUpsert(context, sightingIndicator as StixIndicator, createInferredEntityCallback, createInferredRelationCallback);
   };
-  const applyUpsert = async (data: StixIndicator | StixSighting): Promise<void> => {
+  const applyUpsert = async (
+    data: StixIndicator | StixSighting,
+    createInferredEntityCallback: CreateInferredEntityCallbackFunction,
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction
+  ): Promise<void> => {
     const context = executionContext(def.name, RULE_MANAGER_USER);
     const entityType = generateInternalType(data);
     if (entityType === ENTITY_TYPE_INDICATOR) {
-      await handleIndicatorUpsert(context, data as StixIndicator);
+      await handleIndicatorUpsert(context, data as StixIndicator, createInferredEntityCallback, createInferredRelationCallback);
     }
     if (entityType === STIX_SIGHTING_RELATIONSHIP) {
-      await handleIndicatorRelationUpsert(context, data as StixSighting);
+      await handleIndicatorRelationUpsert(context, data as StixSighting, createInferredEntityCallback, createInferredRelationCallback);
     }
   };
   // Contract
   const clean = async (element: StoreObject, deletedDependencies: Array<string>): Promise<void> => {
     await deleteInferredRuleElement(def.id, element, deletedDependencies);
   };
-  const insert = async (element: StixIndicator | StixSighting): Promise<void> => {
-    return applyUpsert(element);
+  const insert: RuleRuntime['insert'] = async (
+    element,
+    createInferredEntityCallback,
+    createInferredRelationCallback
+  ) => {
+    return applyUpsert(element, createInferredEntityCallback, createInferredRelationCallback);
   };
   const update = async (element: StixIndicator | StixSighting): Promise<void> => {
-    return applyUpsert(element);
+    return applyUpsert(element, createInferredEntity, createInferredRelation);
   };
   return { ...def, insert, update, clean };
 };

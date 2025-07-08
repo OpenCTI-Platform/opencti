@@ -12,7 +12,7 @@ import { createRuleContent } from '../rules-utils';
 import { createInferredRelation, deleteInferredRuleElement } from '../../database/middleware';
 import { fullRelationsList, type RelationOptions } from '../../database/middleware-loader';
 import { RELATION_BASED_ON } from '../../schema/stixCoreRelationship';
-import type { RuleRuntime } from '../../types/rules';
+import type { CreateInferredRelationCallbackFunction, RuleRuntime } from '../../types/rules';
 import { ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION } from '../../schema/general';
 import { executionContext, RULE_MANAGER_USER } from '../../utils/access';
 import type { AuthContext } from '../../types/user';
@@ -26,7 +26,11 @@ import { ENTITY_TYPE_INDICATOR } from '../../modules/indicator/indicator-types';
 
 const sightingObservableRuleBuilder = (): RuleRuntime => {
   // Execution
-  const applyFromStixRelation = async (context: AuthContext, data: StixRelation): Promise<void> => {
+  const applyFromStixRelation = async (
+    context: AuthContext,
+    data: StixRelation,
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction
+  ): Promise<void> => {
     // **indicator C** `based on` **observable A**
     const createdId = data.extensions[STIX_EXT_OCTI].id;
     const fromIndicator = data.extensions[STIX_EXT_OCTI].source_ref;
@@ -56,7 +60,7 @@ const sightingObservableRuleBuilder = (): RuleRuntime => {
           last_seen: range.end,
           objectMarking: elementMarkings,
         });
-        await createInferredRelation(context, input, ruleContent);
+        await createInferredRelationCallback(context, input, ruleContent);
       }
     };
     const listFromArgs: RelationOptions<BasicStoreRelation> = {
@@ -66,7 +70,11 @@ const sightingObservableRuleBuilder = (): RuleRuntime => {
     };
     await fullRelationsList(context, RULE_MANAGER_USER, STIX_SIGHTING_RELATIONSHIP, listFromArgs);
   };
-  const applyFromStixSighting = async (context: AuthContext, data: StixSighting): Promise<void> => {
+  const applyFromStixSighting = async (
+    context: AuthContext,
+    data: StixSighting,
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction
+  ): Promise<void> => {
     // **observable A** is `sighted` in **identity/location B**
     const createdId = data.extensions[STIX_EXT_OCTI].id;
     const fromObservable = data.extensions[STIX_EXT_OCTI].sighting_of_ref;
@@ -97,7 +105,7 @@ const sightingObservableRuleBuilder = (): RuleRuntime => {
           last_seen: range.end,
           objectMarking: elementMarkings,
         });
-        await createInferredRelation(context, input, ruleContent);
+        await createInferredRelationCallback(context, input, ruleContent);
       }
     };
     const listFromArgs: RelationOptions<BasicStoreRelation> = {
@@ -107,24 +115,31 @@ const sightingObservableRuleBuilder = (): RuleRuntime => {
     };
     await fullRelationsList(context, RULE_MANAGER_USER, RELATION_BASED_ON, listFromArgs);
   };
-  const applyUpsert = async (data: StixRelation | StixSighting): Promise<void> => {
+  const applyUpsert = async (
+    data: StixRelation | StixSighting,
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction
+  ): Promise<void> => {
     const context = executionContext(def.name, RULE_MANAGER_USER);
     if (data.extensions[STIX_EXT_OCTI].type === STIX_SIGHTING_RELATIONSHIP) {
       const sighting: StixSighting = data as StixSighting;
-      return applyFromStixSighting(context, sighting);
+      return applyFromStixSighting(context, sighting, createInferredRelationCallback);
     }
     const rel: StixRelation = data as StixRelation;
-    return applyFromStixRelation(context, rel);
+    return applyFromStixRelation(context, rel, createInferredRelationCallback);
   };
   // Contract
   const clean = async (element: StoreObject, deletedDependencies: Array<string>): Promise<void> => {
     await deleteInferredRuleElement(def.id, element, deletedDependencies);
   };
-  const insert = async (element: StixRelation): Promise<void> => {
-    return applyUpsert(element);
+  const insert: RuleRuntime['insert'] = async (
+    element,
+    _createInferredEntityCallback,
+    createInferredRelationCallback
+  ) => {
+    return applyUpsert(element, createInferredRelationCallback);
   };
   const update = async (element: StixRelation): Promise<void> => {
-    return applyUpsert(element);
+    return applyUpsert(element, createInferredRelation);
   };
   return { ...def, insert, update, clean };
 };

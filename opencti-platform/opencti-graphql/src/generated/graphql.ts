@@ -15152,6 +15152,8 @@ export type Mutation = {
   indicatorRelationDelete?: Maybe<Indicator>;
   individualAdd?: Maybe<Individual>;
   individualEdit?: Maybe<IndividualEditMutations>;
+  inferredEntityAdd?: Maybe<Scalars['ID']['output']>;
+  inferredRelationAdd?: Maybe<Scalars['ID']['output']>;
   infrastructureAdd?: Maybe<Infrastructure>;
   infrastructureEdit?: Maybe<InfrastructureEditMutations>;
   ingestionCsvAdd?: Maybe<IngestionCsv>;
@@ -16363,6 +16365,16 @@ export type MutationIndividualAddArgs = {
 
 export type MutationIndividualEditArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationInferredEntityAddArgs = {
+  jsonInput: Scalars['String']['input'];
+};
+
+
+export type MutationInferredRelationAddArgs = {
+  jsonInput: Scalars['String']['input'];
 };
 
 
@@ -43175,6 +43187,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   indicatorRelationDelete?: Resolver<Maybe<ResolversTypes['Indicator']>, ParentType, ContextType, RequireFields<MutationIndicatorRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   individualAdd?: Resolver<Maybe<ResolversTypes['Individual']>, ParentType, ContextType, RequireFields<MutationIndividualAddArgs, 'input'>>;
   individualEdit?: Resolver<Maybe<ResolversTypes['IndividualEditMutations']>, ParentType, ContextType, RequireFields<MutationIndividualEditArgs, 'id'>>;
+  inferredEntityAdd?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationInferredEntityAddArgs, 'jsonInput'>>;
+  inferredRelationAdd?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationInferredRelationAddArgs, 'jsonInput'>>;
   infrastructureAdd?: Resolver<Maybe<ResolversTypes['Infrastructure']>, ParentType, ContextType, RequireFields<MutationInfrastructureAddArgs, 'input'>>;
   infrastructureEdit?: Resolver<Maybe<ResolversTypes['InfrastructureEditMutations']>, ParentType, ContextType, RequireFields<MutationInfrastructureEditArgs, 'id'>>;
   ingestionCsvAdd?: Resolver<Maybe<ResolversTypes['IngestionCsv']>, ParentType, ContextType, RequireFields<MutationIngestionCsvAddArgs, 'input'>>;
