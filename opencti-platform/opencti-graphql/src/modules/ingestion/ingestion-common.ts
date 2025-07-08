@@ -12,3 +12,48 @@ export const verifyIngestionAuthenticationContent = (authenticationType: string,
     }
   }
 };
+
+export const removeAuthenticationCredentials = (authentication_type: IngestionAuthType, authentication_value: string) => {
+  if (authentication_type === IngestionAuthType.Bearer) {
+    return 'undefined';
+  }
+  if (authentication_type === IngestionAuthType.Basic) {
+    return [authentication_value.split(':')[0], 'undefined'].join(':');
+  }
+  if (authentication_type === IngestionAuthType.Certificate) {
+    return [authentication_value.split(':')[0], 'undefined', authentication_value.split(':')[2]].join(':');
+  }
+  return authentication_value;
+};
+
+export const replaceAuthenticationCredentials = (currentValue: string, newValue: string | undefined, authType: IngestionAuthType) => {
+  if (!newValue) {
+    return currentValue;
+  }
+  if (authType === IngestionAuthType.Bearer) {
+    // For bearer, the entire value is just the token
+    return newValue !== 'undefined' ? newValue : currentValue;
+  }
+
+  const currentParts = currentValue.split(':');
+  const newParts = newValue.split(':');
+
+  if (authType === IngestionAuthType.Basic) {
+    // Basic auth format: username:password
+    return [
+      newParts[0],
+      newParts[1] && newParts[1] !== 'undefined' ? newParts[1] : currentParts[1],
+    ].join(':');
+  }
+
+  if (authType === IngestionAuthType.Certificate) {
+    // Certificate format: cert:key:ca
+    return [
+      newParts[0],
+      newParts[1] && newParts[1] !== 'undefined' ? newParts[1] : currentParts[1],
+      newParts[2],
+    ].join(':');
+  }
+
+  return currentValue;
+};

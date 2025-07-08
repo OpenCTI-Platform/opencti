@@ -1,5 +1,5 @@
 import { graphql, useFragment } from 'react-relay';
-import React, { FunctionComponent, useState, useMemo } from 'react';
+import React, { FunctionComponent, useMemo, useState } from 'react';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import { ExternalReferencesValues } from '@components/common/form/ExternalReferencesField';
@@ -39,7 +39,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useAuth from '../../../../utils/hooks/useAuth';
 import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
 import { USER_CHOICE_MARKING_CONFIG } from '../../../../utils/csvMapperUtils';
-import { BASIC_AUTH, BEARER_AUTH, CERT_AUTH, extractCA, extractCert, extractKey, extractPassword, extractUsername } from '../../../../utils/ingestionAuthentificationUtils';
+import { BASIC_AUTH, BEARER_AUTH, CERT_AUTH } from '../../../../utils/ingestionAuthentificationUtils';
 import PasswordTextField from '../../../../components/PasswordTextField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { RootMe_data$data } from '../../../__generated__/RootMe_data.graphql';
@@ -64,12 +64,12 @@ export const initIngestionValue = (ingestionCsvData: IngestionCsvEditionFragment
     scheduling_period: ingestionCsvData.scheduling_period ?? 'auto',
     uri: ingestionCsvData.uri,
     authentication_type: ingestionCsvData.authentication_type,
-    authentication_value: ingestionCsvData.authentication_type === BEARER_AUTH ? ingestionCsvData.authentication_value : undefined,
-    username: ingestionCsvData.authentication_type === BASIC_AUTH ? extractUsername(ingestionCsvData.authentication_value) : undefined,
-    password: ingestionCsvData.authentication_type === BASIC_AUTH ? extractPassword(ingestionCsvData.authentication_value) : undefined,
-    cert: ingestionCsvData.authentication_type === CERT_AUTH ? extractCert(ingestionCsvData.authentication_value) : undefined,
-    key: ingestionCsvData.authentication_type === CERT_AUTH ? extractKey(ingestionCsvData.authentication_value) : undefined,
-    ca: ingestionCsvData.authentication_type === CERT_AUTH ? extractCA(ingestionCsvData.authentication_value) : undefined,
+    authentication_value: undefined,
+    username: ingestionCsvData.authentication_type === BASIC_AUTH ? '' : undefined,
+    password: ingestionCsvData.authentication_type === BASIC_AUTH ? '' : undefined,
+    cert: ingestionCsvData.authentication_type === CERT_AUTH ? '' : undefined,
+    key: ingestionCsvData.authentication_type === CERT_AUTH ? '' : undefined,
+    ca: ingestionCsvData.authentication_type === CERT_AUTH ? '' : undefined,
     ingestion_running: ingestionCsvData.ingestion_running,
     // In case the csv_mapper_id is not know, that mean we are in the older model where we link to an id by default
     csv_mapper_type: ingestionCsvData.csv_mapper_type === null ? true : ingestionCsvData.csv_mapper_type === 'id',
@@ -102,7 +102,6 @@ export const ingestionCsvEditionFragment = graphql`
     scheduling_period
     uri
     authentication_type
-    authentication_value
     ingestion_running
     csv_mapper_type
     csvMapper {
@@ -200,7 +199,11 @@ interface IngestionCsvEditionForm {
   scheduling_period?: string | null,
   uri: string,
   authentication_type: string,
-  authentication_value?: string | null,
+  username?: string,
+  password?: string,
+  cert?: string,
+  key?: string,
+  ca?: string,
   ingestion_running?: boolean | null,
   csv_mapper_id: string | FieldOption | null,
   user_id: string | FieldOption,
@@ -208,6 +211,17 @@ interface IngestionCsvEditionForm {
   csv_mapper?: CsvMapperAddInput,
   csv_mapper_type: boolean
 }
+
+type fieldValues =
+  FieldOption
+  | FieldOption[]
+  | CsvMapperFieldOption
+  | string
+  | string[]
+  | number
+  | number[]
+  | null
+  | CsvMapperAddInput;
 
 const resolveHasUserChoiceCsvMapper = (option: CsvMapperFieldOption) => {
   return option?.representations?.some(
@@ -290,42 +304,33 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
 
   const handleSubmitField = (
     name: string,
-    value: FieldOption | FieldOption[] | CsvMapperFieldOption | string | string[] | number | number[] | null | CsvMapperAddInput,
+    value: fieldValues,
     formValues?: IngestionCsvEditionForm,
   ) => {
     let finalValue = value as string;
     let finalName = name;
     const additionalValue: Record<'key' | 'value', string>[] = [];
-    // region authentication -- If you change something here, please have a look at IngestionTaxiiEdition
-    const backendAuthValue = ingestionCsvData.authentication_value;
     const isExistingCsvMappers = value === 'true';
+    // Handle authentication fields -- If you change something here, please have a look at IngestionTaxiiEdition
     // re-compose username:password
     if (name === 'username') {
       finalName = 'authentication_value';
-      finalValue = `${value}:${extractPassword(backendAuthValue)}`;
-    }
-
-    if (name === 'password') {
+      finalValue = `${value}:${formValues?.password || ''}`;
+    } else if (name === 'password') {
       finalName = 'authentication_value';
-      finalValue = `${extractUsername(backendAuthValue)}:${value}`;
+      finalValue = `${formValues?.username || ''}:${value}`;
     }
-
     // re-compose cert:key:ca
     if (name === 'cert') {
       finalName = 'authentication_value';
-      finalValue = `${value}:${extractKey(backendAuthValue)}:${extractCA(backendAuthValue)}`;
-    }
-
-    if (name === 'key') {
+      finalValue = `${value}:${formValues?.key || ''}:${formValues?.ca || ''}`;
+    } else if (name === 'key') {
       finalName = 'authentication_value';
-      finalValue = `${extractCert(backendAuthValue)}:${value}:${extractCA(backendAuthValue)}`;
-    }
-
-    if (name === 'ca') {
+      finalValue = `${formValues?.cert || ''}:${value}:${formValues?.ca || ''}`;
+    } else if (name === 'ca') {
       finalName = 'authentication_value';
-      finalValue = `${extractCert(backendAuthValue)}:${extractKey(backendAuthValue)}:${value}`;
+      finalValue = `${formValues?.cert || ''}:${formValues?.key || ''}:${value}`;
     }
-    // end region authentication
 
     if (name === 'csv_mapper_type') {
       const usingExistingMapper = isExistingCsvMappers;
@@ -547,22 +552,22 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                 </MenuItem>
               </Field>
               {values.authentication_type === BASIC_AUTH && (
-              <>
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="username"
-                  label={t_i18n('Username')}
-                  onSubmit={handleSubmitField}
-                  fullWidth={true}
-                  style={fieldSpacingContainerStyle}
-                />
-                <PasswordTextField
-                  name="password"
-                  label={t_i18n('Password')}
-                  onSubmit={handleSubmitField}
-                />
-              </>
+                <>
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="username"
+                    label={t_i18n('Username')}
+                    onSubmit={(name: string, value: fieldValues) => handleSubmitField(name, value, values)}
+                    fullWidth={true}
+                    style={fieldSpacingContainerStyle}
+                  />
+                  <PasswordTextField
+                    name="password"
+                    label={t_i18n('Password')}
+                    onSubmit={(name: string, value: fieldValues) => handleSubmitField(name, value, values)}
+                  />
+                </>
               )}
               {values.authentication_type === BEARER_AUTH && (
               <PasswordTextField
@@ -572,31 +577,31 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
               />
               )}
               {values.authentication_type === CERT_AUTH && (
-              <>
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="cert"
-                  label={t_i18n('Certificate (base64)')}
-                  onSubmit={handleSubmitField}
-                  fullWidth={true}
-                  style={fieldSpacingContainerStyle}
-                />
-                <PasswordTextField
-                  name="key"
-                  label={t_i18n('Key (base64)')}
-                  onSubmit={handleSubmitField}
-                />
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="ca"
-                  label={t_i18n('CA certificate (base64)')}
-                  onSubmit={handleSubmitField}
-                  fullWidth={true}
-                  style={fieldSpacingContainerStyle}
-                />
-              </>
+                <>
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="cert"
+                    label={t_i18n('Certificate (base64)')}
+                    onSubmit={(name: string, value: fieldValues) => handleSubmitField(name, value, values)}
+                    fullWidth={true}
+                    style={fieldSpacingContainerStyle}
+                  />
+                  <PasswordTextField
+                    name="key"
+                    label={t_i18n('Key (base64)')}
+                    onSubmit={(name: string, value: fieldValues) => handleSubmitField(name, value, values)}
+                  />
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="ca"
+                    label={t_i18n('CA certificate (base64)')}
+                    onSubmit={(name: string, value: fieldValues) => handleSubmitField(name, value, values)}
+                    fullWidth={true}
+                    style={fieldSpacingContainerStyle}
+                  />
+                </>
               )}
               {enableReferences && (
               <CommitMessage
