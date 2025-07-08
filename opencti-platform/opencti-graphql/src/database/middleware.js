@@ -277,13 +277,14 @@ export const canRequestAccess = async (context, user, elements) => {
 export const batchLoader = (loader, context, user) => {
   const dataLoader = new DataLoader(
     (elements) => {
-      return loader(context, user, elements);
+      const elementsToLoad = elements.map((e) => e.elementToLoad);
+      return loader(context, user, elementsToLoad);
     },
     { maxBatchSize: MAX_BATCH_SIZE, cache: false }
   );
   return {
     load: (element) => {
-      return dataLoader.load(element);
+      return dataLoader.load({ elementToLoad: element });
     },
   };
 };
