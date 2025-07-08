@@ -199,7 +199,7 @@ describe('Service account User coverage', async () => {
   });
 });
 
-describe('Service account platform coverage', async () => {
+describe('Service account with platform organization coverage', async () => {
   const authUser = getFakeAuthUser('Platform administrator');
   let platformOrganization: BasicStoreEntityOrganization;
   it('should platform organization and EE activated', async () => {
@@ -210,7 +210,7 @@ describe('Service account platform coverage', async () => {
   it('should have both orga if userAdd service account have one org ≠ platform org', async () => {
     const userOrganization = await getOrganizationEntity(TEST_ORGANIZATION);
     const USER: UserAddInput = {
-      user_email: 'bothorga@opencti',
+      user_email: 'bothorga4@opencti',
       name: 'Service account',
       user_service_account: true,
       groups: [],
@@ -218,6 +218,7 @@ describe('Service account platform coverage', async () => {
     };
     const userAddResult = await addUser(testContext, authUser, USER);
     const userCreated = await findById(testContext, authUser, userAddResult.id);
+
     expect(userCreated.objectOrganization).toStrictEqual([platformOrganization.id, userOrganization.id]);
     await deleteElementById(testContext, authUser, userAddResult.id, ENTITY_TYPE_USER);
   });

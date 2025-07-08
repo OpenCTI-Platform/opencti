@@ -1205,9 +1205,13 @@ describe('User is impersonated', async () => {
   });
 });
 
-describe('Service account User coverage', async () => {
+describe.only('Service account User coverage', async () => {
   let userInternalId: string;
+  let userInternalIdNoOrg: string;
+  let userInternalIdWithOrg: string;
   let organizationId: string;
+  let testOrganizationId: string;
+  const userToDeleteIds: string[] = [];
   it('should service account user created', async () => {
     // Create the user
     const USER_TO_CREATE: UserAddInput = {
@@ -1222,6 +1226,7 @@ describe('Service account User coverage', async () => {
     });
     expect(user.data.userAdd).not.toBeNull();
     userInternalId = user.data.userAdd.id;
+    userToDeleteIds.push(userInternalId);
 
     expect(user.data.userAdd.name).toEqual('Service account');
     expect(user.data.userAdd.user_email).toBeDefined();
@@ -1238,7 +1243,7 @@ describe('Service account User coverage', async () => {
     // Get organization id
     organizationId = await getOrganizationIdByName(PLATFORM_ORGANIZATION.name);
   });
-  it('should service account user created with EE', async () => {
+  it('should service account user with no org created', async () => {
     // Create the user
     const USER_TO_CREATE: UserAddInput = {
       name: 'Service account',
@@ -1250,6 +1255,9 @@ describe('Service account User coverage', async () => {
       query: CREATE_QUERY,
       variables: { input: USER_TO_CREATE },
     });
+    userInternalIdNoOrg = user.data.userAdd.id;
+    userToDeleteIds.push(userInternalIdNoOrg);
+
     expect(user.data.userAdd).not.toBeNull();
     userInternalId = user.data.userAdd.id;
     expect(user.data.userAdd.name).toEqual('Service account');
@@ -1258,14 +1266,53 @@ describe('Service account User coverage', async () => {
     expect(user.data.userAdd.user_service_account).toEqual(true);
     expect(user.data.userAdd.objectOrganization.edges[0].node.id).toEqual(organizationId);
   });
-  it('should service account user deleted', async () => {
-    await adminQueryWithSuccess({
-      query: DELETE_QUERY,
-      variables: { id: userInternalId },
+  it('should service account user with org one org ≠ platform org  created', async () => {
+    // Get organization id
+    testOrganizationId = await getOrganizationIdByName(TEST_ORGANIZATION.name);
+    // Create the user
+    const USER_TO_CREATE: UserAddInput = {
+      user_email: 'custom_mail@opencti.com',
+      name: 'Service account with orga',
+      user_service_account: true,
+      groups: [],
+      objectOrganization: [testOrganizationId],
+    };
+    const user = await adminQueryWithSuccess({
+      query: CREATE_QUERY,
+      variables: { input: USER_TO_CREATE },
     });
-    // Verify is no longer found
-    const queryResult = await adminQueryWithSuccess({ query: READ_QUERY, variables: { id: userInternalId } });
-    expect(queryResult.data.user).toBeNull();
+    userInternalIdWithOrg = user.data.userAdd.id;
+    userToDeleteIds.push(userInternalIdWithOrg);
+
+    expect(user.data.userAdd).not.toBeNull();
+    userInternalId = user.data.userAdd.id;
+    expect(user.data.userAdd.name).toEqual('Service account with orga');
+    expect(user.data.userAdd.user_email).toBeDefined();
+    expect(user.data.userAdd.user_email).toEqual('custom_mail@opencti.com');
+    expect(user.data.userAdd.user_service_account).toEqual(true);
+    expect(user.data.userAdd.objectOrganization.edges).toStrictEqual([
+      { node: {
+        id: organizationId,
+        name: PLATFORM_ORGANIZATION.name
+      } },
+      { node: {
+        id: testOrganizationId,
+        name: TEST_ORGANIZATION.name
+      } }
+    ]);
+  });
+  it('should service account user deleted', async () => {
+    // Delete the users
+    for (let i = 0; i < userToDeleteIds.length; i += 1) {
+      const userId = userToDeleteIds[i];
+      await adminQueryWithSuccess({
+        query: DELETE_QUERY,
+        variables: { id: userId },
+      });
+      // Verify is no longer found
+      const queryResult = await adminQueryWithSuccess({ query: READ_QUERY, variables: { id: userId } });
+      expect(queryResult.data.user).toBeNull();
+    }
   });
   it('should platform organization and EE deactivated', async () => {
     await enableCEAndUnSetOrganization();
