@@ -15,7 +15,7 @@
     "@hello-pangea/dnd": "18.0.1",
     "@jsonforms/core": "3.5.1",
     "@jsonforms/material-renderers": "3.5.1",
-    "@jsonforms/react": "3.5.1",
+    "@jsonforms/react": "3.6.0",
     "@mui/icons-material": "6.4.12",
     "@mui/lab": "5.0.0-alpha.176",
     "@mui/material": "6.4.12",
