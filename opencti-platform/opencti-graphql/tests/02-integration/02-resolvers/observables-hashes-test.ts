@@ -109,6 +109,7 @@ describe('Observables with hashes: management of other stix ids', () => {
 
   let file5Id: string;
   const file5StandardIdByName = generateStandardId('StixFile', { name: FILE5.name, });
+  const file5StandardIdBySha1 = generateStandardId('StixFile', { hashes: { 'SHA-1': FILE5.sha1 } });
   const file5StandardIdByMd5 = generateStandardId('StixFile', { hashes: { MD5: FILE5.md5 } });
 
   afterAll(async () => {
@@ -351,14 +352,17 @@ describe('Observables with hashes: management of other stix ids', () => {
     // Create StixFile5 with name (standard_id based on name) (x_opencti_stix_ids empty).
     const file5WithNameInput: StixFileAddInput = {
       name: FILE5.name,
+      hashes: [
+        { algorithm: 'SHA-1', hash: FILE5.sha1 }
+      ]
     };
     const file5WithNameResult = await queryAsAdmin({
       query: CREATE_STIX_FILE_QUERY,
       variables: { input: file5WithNameInput },
     });
     const file5WithName = file5WithNameResult?.data?.stixCyberObservableAdd;
-    expect(file5WithName?.standard_id).toEqual(file5StandardIdByName);
-    expect(file5WithName?.x_opencti_stix_ids).toEqual([]);
+    expect(file5WithName?.standard_id).toEqual(file5StandardIdBySha1);
+    expect(file5WithName?.x_opencti_stix_ids).toEqual([file5StandardIdByName]);
     // Create StixFile6 with MD5 (standard_id based on MD5) (x_opencti_stix_ids empty).
     const file5WithMd5Input: StixFileAddInput = {
       hashes: [
@@ -375,24 +379,24 @@ describe('Observables with hashes: management of other stix ids', () => {
     expect(file5WithMd5?.standard_id).toEqual(file5StandardIdByMd5);
     expect(file5WithMd5?.x_opencti_stix_ids).toEqual([]);
     // Create StixFile7 with MD5 and name => Merge (standard_id based on MD5) (x_opencti_stix_ids has standard_name).
-    const file5WithNameMd5Input: StixFileAddInput = {
-      name: FILE5.name,
+    const file5WithSha1Md5Input: StixFileAddInput = {
       hashes: [
+        { algorithm: 'SHA-1', hash: FILE5.sha1 },
         { algorithm: 'MD5', hash: FILE5.md5 }
       ]
     };
-    const file5WithNameMd5Result = await queryAsAdmin({
+    const file5WithSha1Md5Result = await queryAsAdmin({
       query: CREATE_STIX_FILE_QUERY,
-      variables: { input: file5WithNameMd5Input },
+      variables: { input: file5WithSha1Md5Input },
     });
-    const file5WithNameMd5 = file5WithNameMd5Result?.data?.stixCyberObservableAdd;
-    expect(file5WithNameMd5?.id).toEqual(file5Id);
-    expect(file5WithNameMd5?.standard_id).toEqual(file5StandardIdByMd5);
-    expect(file5WithNameMd5?.x_opencti_stix_ids).toEqual([file5StandardIdByName]);
+    const file5WithSha1Md5 = file5WithSha1Md5Result?.data?.stixCyberObservableAdd;
+    expect(file5WithSha1Md5?.id).toEqual(file5Id);
+    expect(file5WithSha1Md5?.standard_id).toEqual(file5StandardIdByMd5);
+    expect(file5WithSha1Md5?.x_opencti_stix_ids).toEqual([file5StandardIdByName, file5StandardIdBySha1]);
     // Verify there is only one file in elastic
     const file5 = await queryAsAdmin({
       query: FIND_BY_ID_QUERY,
-      variables: { id: file5StandardIdByMd5 },
+      variables: { id: file5StandardIdBySha1 },
     });
     expect(file5?.data?.stixCyberObservable.standard_id).toEqual(file5StandardIdByMd5);
   });

@@ -517,7 +517,6 @@ export const generateAliasesIdsForInstance = (instance) => {
   return generateAliasesId(aliases, instance);
 };
 
-// TODO unit tests
 export const generateHashedObservableStandardIds = (instance) => {
   const { entity_type } = instance;
   const ids = [];

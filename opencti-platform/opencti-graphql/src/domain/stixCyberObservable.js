@@ -226,8 +226,10 @@ export const addStixCyberObservable = async (context, user, input) => {
   if (isStixCyberObservableHashedObservable(type) && observableInput.hashes) {
     observableInput.hashes = inputHashesToStix(observableInput.hashes);
     const standardId = generateStandardId(type, observableInput);
-    const otherStandardIds = generateHashedObservableStandardIds(observableInput)
-      .filter((id) => id !== standardId);
+    const otherStandardIds = generateHashedObservableStandardIds({
+      entity_type: type,
+      ...observableInput
+    }).filter((id) => id !== standardId);
     observableInput.x_opencti_stix_ids = uniq([
       ...(observableInput.x_opencti_stix_ids ?? []),
       ...otherStandardIds
