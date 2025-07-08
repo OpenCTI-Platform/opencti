@@ -222,10 +222,4 @@ describe('Service account with platform organization coverage', async () => {
     expect(userCreated.objectOrganization).toStrictEqual([platformOrganization.id, userOrganization.id]);
     await deleteElementById(testContext, authUser, userAddResult.id, ENTITY_TYPE_USER);
   });
-  // it('userAdd service account with one org == platform org', async () => {
-  //
-  // });
-  // it('userAdd service account with no org', async () => {
-  //
-  // });
 });

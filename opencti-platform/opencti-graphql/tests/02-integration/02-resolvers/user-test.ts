@@ -1211,6 +1211,7 @@ describe.only('Service account User coverage', async () => {
   let userInternalIdWithOrg: string;
   let organizationId: string;
   let testOrganizationId: string;
+  let userInternalIdWithPlatformOrg: string;
   const userToDeleteIds: string[] = [];
   it('should service account user created', async () => {
     // Create the user
@@ -1259,7 +1260,6 @@ describe.only('Service account User coverage', async () => {
     userToDeleteIds.push(userInternalIdNoOrg);
 
     expect(user.data.userAdd).not.toBeNull();
-    userInternalId = user.data.userAdd.id;
     expect(user.data.userAdd.name).toEqual('Service account no org');
     expect(user.data.userAdd.user_email).toBeDefined();
     expect(user.data.userAdd.user_email.startsWith('automatic+')).toBeTruthy();
@@ -1285,7 +1285,6 @@ describe.only('Service account User coverage', async () => {
     userToDeleteIds.push(userInternalIdWithOrg);
 
     expect(user.data.userAdd).not.toBeNull();
-    userInternalId = user.data.userAdd.id;
     expect(user.data.userAdd.name).toEqual('Service account with org');
     expect(user.data.userAdd.user_email).toBeDefined();
     expect(user.data.userAdd.user_email).toEqual('custom_mail@opencti.com');
@@ -1300,6 +1299,28 @@ describe.only('Service account User coverage', async () => {
         name: TEST_ORGANIZATION.name
       } }
     ]);
+  });
+  it('should service account user with org one org = platform org  created', async () => {
+    // Create the user
+    const USER_TO_CREATE: UserAddInput = {
+      name: 'Service account platform org',
+      user_service_account: true,
+      groups: [],
+      objectOrganization: [organizationId],
+    };
+    const user = await adminQueryWithSuccess({
+      query: CREATE_QUERY,
+      variables: { input: USER_TO_CREATE },
+    });
+    userInternalIdWithPlatformOrg = user.data.userAdd.id;
+    userToDeleteIds.push(userInternalIdWithPlatformOrg);
+
+    expect(user.data.userAdd).not.toBeNull();
+    expect(user.data.userAdd.name).toEqual('Service account platform org');
+    expect(user.data.userAdd.user_email).toBeDefined();
+    expect(user.data.userAdd.user_email.startsWith('automatic+')).toBeTruthy();
+    expect(user.data.userAdd.user_service_account).toEqual(true);
+    expect(user.data.userAdd.objectOrganization.edges[0].node.id).toEqual(organizationId);
   });
   it('should service account user deleted', async () => {
     // Delete the users
