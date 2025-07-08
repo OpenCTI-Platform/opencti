@@ -1,6 +1,8 @@
 import { useWidgetConfigContext } from './WidgetConfigContext';
 import { getCurrentAvailableParameters } from '../../../utils/widget/widgetUtils';
 
+export const fintelTemplateVariableNameChecker = /^[A-Za-z0-9_-]+$/;
+
 const useWidgetConfigValidateForm = () => {
   const { context, config, step, fintelWidgets } = useWidgetConfigContext();
   const { type, parameters, dataSelection } = config.widget;
@@ -48,7 +50,7 @@ const useWidgetConfigValidateForm = () => {
   // Check variable name is valid in case of fintel
   const isVariableNameValid = (
     !config.fintelVariableName
-    || /^[A-Za-z0-9]+$/.test(config.fintelVariableName)
+    || fintelTemplateVariableNameChecker.test(config.fintelVariableName)
   );
 
   // Check title is filled in case of fintel

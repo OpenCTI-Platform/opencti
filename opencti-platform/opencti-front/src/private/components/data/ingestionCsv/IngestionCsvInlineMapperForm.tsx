@@ -39,12 +39,11 @@ const defaultCsvMapperValue: CsvMapperFormData = {
 interface CsvMapperFormProps {
   csvMapper?: CsvMapperAddInput;
   setCSVMapperFieldValue: (field: string, value: CsvMapperAddInput) => void
-  returnCSVFormat?: boolean;
+  returnCSVFormat?: (field: string, value: CsvMapperAddInput) => void;
 }
 
 const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, setCSVMapperFieldValue, returnCSVFormat }) => {
-  const [csvMapperFormData] = useState(csvMapper ? csvFeedCsvMapperToFormData(csvMapper) : defaultCsvMapperValue);
-
+  const csvMapperFormData = csvMapper ? csvFeedCsvMapperToFormData(csvMapper) : defaultCsvMapperValue;
   const { t_i18n } = useFormatter();
   // extracting available entities and relationships types from schema
   const { schema } = useAuth();
@@ -130,7 +129,7 @@ const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ c
 
   useEffect(() => {
     if (returnCSVFormat) {
-      setCSVMapperFieldValue('csv_mapper', formDataToCsvMapper(csvMapperFormData) as unknown as CsvMapperAddInput);
+      returnCSVFormat('csv_mapper', formDataToCsvMapper(csvMapperFormData) as unknown as CsvMapperAddInput);
     }
   }, []);
 

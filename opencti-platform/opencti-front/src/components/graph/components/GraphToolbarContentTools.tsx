@@ -175,8 +175,8 @@ const GraphToolbarContentTools = ({
             startTime={minutesBefore(1, now())}
             stopTime={now()}
             handleResult={addRelation}
-            handleReverseRelation={() => setRelationReversed((r) => !r)}
-            handleClose={() => {
+            onReverseRelation={() => setRelationReversed((r) => !r)}
+            onClose={() => {
               setRelationReversed(false);
               setIsAddRelationOpen(false);
             }}

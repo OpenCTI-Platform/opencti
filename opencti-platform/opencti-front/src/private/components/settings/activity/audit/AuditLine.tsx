@@ -11,7 +11,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import Drawer from '@components/common/drawer/Drawer';
 import { ListItemButton } from '@mui/material';
 import { DataColumns } from '../../../../../components/list_lines';
-import { AuditLine_node$key } from './__generated__/AuditLine_node.graphql';
+import { AuditLine_node$data, AuditLine_node$key } from './__generated__/AuditLine_node.graphql';
 import type { Theme } from '../../../../../components/Theme';
 import { useFormatter } from '../../../../../components/i18n';
 import ItemIcon from '../../../../../components/ItemIcon';
@@ -87,7 +87,7 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
   const theme = useTheme<Theme>();
   const [selectedLog, setSelectedLog] = useState<string | null>(null);
   const data = useFragment(AuditLineFragment, node);
-  const message = useGenerateAuditMessage(data);
+  const message = useGenerateAuditMessage<AuditLine_node$data>(data);
   const color = data.event_status === 'error' ? theme.palette.error.main : undefined;
   return (
     <>

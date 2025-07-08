@@ -72,7 +72,7 @@ export const draftsLinesFragment = graphql`
         search: { type: "String" }
         count: { type: "Int", defaultValue: 25 }
         cursor: { type: "ID" }
-        orderBy: { type: "DraftWorkspacesOrdering", defaultValue: name }
+        orderBy: { type: "DraftWorkspacesOrdering", defaultValue: created_at }
         orderMode: { type: "OrderingMode", defaultValue: asc }
         filters: { type: "FilterGroup" }
     )

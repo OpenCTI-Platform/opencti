@@ -11,7 +11,7 @@ import { useTheme } from '@mui/styles';
 import * as Yup from 'yup';
 import { Field, FieldArray, Form, Formik } from 'formik';
 import { InformationOutline } from 'mdi-material-ui';
-import useWidgetConfigValidateForm from '@components/widgets/useWidgetConfigValidateForm';
+import useWidgetConfigValidateForm, { fintelTemplateVariableNameChecker } from '@components/widgets/useWidgetConfigValidateForm';
 import { useWidgetConfigContext } from '@components/widgets/WidgetConfigContext';
 import FormHelperText from '@mui/material/FormHelperText';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
@@ -150,7 +150,7 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
       Yup.object().shape({
         variableName: Yup.string()
           .test('no-space', 'This field cannot contain spaces', (v) => !v?.includes(' '))
-          .matches(/^[A-Za-z0-9_-]+$/, t_i18n('The variable name should not contain special characters'))
+          .matches(fintelTemplateVariableNameChecker, t_i18n('The variable name should not contain special characters'))
           .required(t_i18n('This field is required')),
       }),
     ),

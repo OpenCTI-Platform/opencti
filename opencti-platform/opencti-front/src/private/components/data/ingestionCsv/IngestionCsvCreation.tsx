@@ -339,8 +339,10 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
           </Box>
           <Box sx={{ display: currentTab === 1 ? 'block' : 'none' }}>
             <IngestionCsvInlineWrapper>
-              <IngestionCsvInlineMapperForm csvMapper={ingestionCsvData?.csv_mapper_type === 'inline' ? (ingestionCsvData.csvMapper as CsvMapperAddInput) : undefined}
-                setCSVMapperFieldValue={setFieldValue} returnCSVFormat={!!ingestionCsvData?.csvMapper}
+              <IngestionCsvInlineMapperForm
+                csvMapper={ingestionCsvData?.csv_mapper_type === 'inline' ? (ingestionCsvData.csvMapper as CsvMapperAddInput) : undefined}
+                setCSVMapperFieldValue={setFieldValue}
+                returnCSVFormat={ingestionCsvData?.csvMapper ? setFieldValue : undefined}
               />
             </IngestionCsvInlineWrapper>
           </Box>

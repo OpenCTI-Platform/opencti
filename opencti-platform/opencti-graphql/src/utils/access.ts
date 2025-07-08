@@ -44,6 +44,7 @@ export const SETTINGS_SETACCESSES = 'SETTINGS_SETACCESSES';
 export const SETTINGS_SECURITYACTIVITY = 'SETTINGS_SECURITYACTIVITY';
 export const SETTINGS_SETLABELS = 'SETTINGS_SETLABELS';
 
+export const CONTAINER_SHARING_USER_UUID = 'cc3aef5c-6f05-434b-8bdf-8d370046f017';
 export const ROLE_DEFAULT = 'Default';
 export const ROLE_ADMINISTRATOR = 'Administrator';
 const RETENTION_MANAGER_USER_UUID = '82ed2c6c-eb27-498e-b904-4f2abc04e05f';
@@ -93,6 +94,37 @@ export const SYSTEM_USER: AuthUser = {
   name: 'SYSTEM',
   user_email: 'SYSTEM',
   origin: { user_id: OPENCTI_SYSTEM_UUID, socket: 'internal' },
+  roles: [ADMINISTRATOR_ROLE],
+  groups: [],
+  capabilities: [{ name: BYPASS }],
+  organizations: [],
+  allowed_marking: [],
+  default_marking: [],
+  max_shareable_marking: [],
+  api_token: '',
+  account_lock_after_date: undefined,
+  account_status: ACCOUNT_STATUS_ACTIVE,
+  administrated_organizations: [],
+  effective_confidence_level: {
+    max_confidence: 100,
+    overrides: [],
+  },
+  user_confidence_level: {
+    max_confidence: 100,
+    overrides: [],
+  },
+  no_creators: false,
+  restrict_delete: false,
+};
+
+export const CONTAINER_SHARING_USER: AuthUser = {
+  entity_type: 'User',
+  id: CONTAINER_SHARING_USER_UUID,
+  internal_id: CONTAINER_SHARING_USER_UUID,
+  individual_id: undefined,
+  name: 'CONTAINER SHARING',
+  user_email: 'CONTAINER SHARING',
+  origin: { user_id: CONTAINER_SHARING_USER_UUID, socket: 'internal' },
   roles: [ADMINISTRATOR_ROLE],
   groups: [],
   capabilities: [{ name: BYPASS }],
@@ -435,6 +467,7 @@ export const executionContext = (source: string, auth?: AuthUser, draftContext?:
 
 export const INTERNAL_USERS = {
   [SYSTEM_USER.id]: SYSTEM_USER,
+  [CONTAINER_SHARING_USER.id]: CONTAINER_SHARING_USER,
   [RETENTION_MANAGER_USER.id]: RETENTION_MANAGER_USER,
   [RULE_MANAGER_USER.id]: RULE_MANAGER_USER,
   [AUTOMATION_MANAGER_USER.id]: AUTOMATION_MANAGER_USER,
@@ -446,6 +479,7 @@ export const INTERNAL_USERS = {
 
 export const INTERNAL_USERS_WITHOUT_REDACTED = {
   [SYSTEM_USER.id]: SYSTEM_USER,
+  [CONTAINER_SHARING_USER.id]: CONTAINER_SHARING_USER,
   [RETENTION_MANAGER_USER.id]: RETENTION_MANAGER_USER,
   [RULE_MANAGER_USER.id]: RULE_MANAGER_USER,
   [AUTOMATION_MANAGER_USER.id]: AUTOMATION_MANAGER_USER,

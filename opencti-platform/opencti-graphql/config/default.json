@@ -51,7 +51,8 @@
       "logs_files": true,
       "logs_console": true,
       "logs_max_files": 7,
-      "logs_directory": "./logs"
+      "logs_directory": "./logs",
+      "logs_in_transports": ["administration"]
     },
     "event_loop_logs": {
       "enabled": false,

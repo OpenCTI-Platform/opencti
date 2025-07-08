@@ -18,6 +18,8 @@ class MeterManager {
 
   private requests: Counter | null = null;
 
+  private sentEmails: Counter | null = null;
+
   private errors: Counter | null = null;
 
   private latencyHistogram: Histogram | null = null;
@@ -32,6 +34,10 @@ class MeterManager {
 
   request(attributes: any) {
     this.requests?.add(1, attributes);
+  }
+
+  emailSent(attributes: any) {
+    this.sentEmails?.add(1, attributes);
   }
 
   error(attributes: any) {
@@ -53,6 +59,10 @@ class MeterManager {
   registerMetrics() {
     const meter = this.meterProvider.getMeter('opencti-api');
     // - Basic counters
+    this.sentEmails = meter.createCounter('opencti_sent_email', {
+      valueType: ValueType.INT,
+      description: 'Counts total number of email sent'
+    });
     this.requests = meter.createCounter('opencti_api_requests', {
       valueType: ValueType.INT,
       description: 'Counts total number of requests'
