@@ -839,12 +839,12 @@ describe('User has no settings capability and is organization admin query behavi
   const organizationsIds: string[] = [];
 
   const ORGA_ADMIN_ADD_QUERY = gql`
-        mutation OrganizationAdminAdd($id: ID!, $memberId: String!) {
-            organizationAdminAdd(id: $id, memberId: $memberId) {
-                id
-                standard_id
-            }
-        }
+      mutation OrganizationAdminAdd($id: ID!, $memberId: String!) {
+          organizationAdminAdd(id: $id, memberId: $memberId) {
+              id
+              standard_id
+          }
+      }
     `;
 
   const ORGANIZATION_ADD_QUERY = gql`
@@ -884,15 +884,15 @@ describe('User has no settings capability and is organization admin query behavi
         `;
 
     const UPDATE_QUERY = gql`
-            mutation OrganizationEdit($id: ID!, $input: [EditInput]!) {
-                organizationFieldPatch(id: $id, input: $input) {
-                    id
-                    name
-                    grantable_groups {
-                        id
-                    }
-                }
-            }
+      mutation OrganizationEdit($id: ID!, $input: [EditInput]!) {
+        organizationFieldPatch(id: $id, input: $input) {
+          id
+          name
+          grantable_groups {
+              id
+          }
+        }
+      }
         `;
     // Delete admin to ORGANIZATION
     await adminQuery({
@@ -950,15 +950,15 @@ describe('User has no settings capability and is organization admin query behavi
 
     // Need to add granted_groups to TEST_ORGANIZATION because of line 533 in domain/user.js
     const UPDATE_QUERY = gql`
-            mutation OrganizationEdit($id: ID!, $input: [EditInput]!) {
-                organizationFieldPatch(id: $id, input: $input) {
-                    id
-                    name
-                    grantable_groups {
-                        id
-                    }
-                }
-            }
+      mutation OrganizationEdit($id: ID!, $input: [EditInput]!) {
+        organizationFieldPatch(id: $id, input: $input) {
+          id
+          name
+          grantable_groups {
+              id
+          }
+        }
+      }
         `;
     const queryResult = await adminQuery({
       query: UPDATE_QUERY,
@@ -979,13 +979,13 @@ describe('User has no settings capability and is organization admin query behavi
   });
   it('should update user from its own organization', async () => {
     const UPDATE_QUERY = gql`
-            mutation UserEdit($id: ID!, $input: [EditInput]!) {
-                userEdit(id: $id) {
-                    fieldPatch(input: $input) {
-                        account_status
-                    }
-                }
-            }
+      mutation UserEdit($id: ID!, $input: [EditInput]!) {
+        userEdit(id: $id) {
+          fieldPatch(input: $input) {
+              account_status
+          }
+        }
+      }
         `;
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
       query: UPDATE_QUERY,
@@ -1006,15 +1006,15 @@ describe('User has no settings capability and is organization admin query behavi
   it('should administrate more than 1 organization', async () => {
     // Need to add granted_groups to PLATFORM_ORGANIZATION because of line 533 in domain/user.js
     const UPDATE_QUERY = gql`
-            mutation OrganizationEdit($id: ID!, $input: [EditInput]!) {
-                organizationFieldPatch(id: $id, input: $input) {
-                    id
-                    name
-                    grantable_groups {
-                        id
-                    }
-                }
-            }
+      mutation OrganizationEdit($id: ID!, $input: [EditInput]!) {
+        organizationFieldPatch(id: $id, input: $input) {
+          id
+          name
+          grantable_groups {
+            id
+          }
+        }
+      }
         `;
     const grantableGroupQueryResult = await adminQuery({
       query: UPDATE_QUERY,
@@ -1252,7 +1252,6 @@ describe('Service account User coverage', async () => {
     });
     expect(user.data.userAdd).not.toBeNull();
     userInternalId = user.data.userAdd.id;
-    console.log('user.data.userAdd', user.data.userAdd);
     expect(user.data.userAdd.name).toEqual('Service account');
     expect(user.data.userAdd.user_email).toBeDefined();
     expect(user.data.userAdd.user_email.startsWith('automatic+')).toBeTruthy();
@@ -1268,7 +1267,7 @@ describe('Service account User coverage', async () => {
     const queryResult = await adminQueryWithSuccess({ query: READ_QUERY, variables: { id: userInternalId } });
     expect(queryResult.data.user).toBeNull();
   });
-  it('should plateform organization and EE deactivated', async () => {
+  it('should platform organization and EE deactivated', async () => {
     await enableCEAndUnSetOrganization();
   });
 });
