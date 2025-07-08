@@ -3,7 +3,7 @@ import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import makeStyles from '@mui/styles/makeStyles';
-import { HorizontalRule, PersonOutlined, Security } from '@mui/icons-material';
+import { AccountCircleOutlined, AdminPanelSettingsOutlined, ChevronRightOutlined, HorizontalRule, PersonOutlined, Security } from '@mui/icons-material';
 import SettingsOrganizationUserCreation from '@components/settings/users/SettingsOrganizationUserCreation';
 import { SettingsOrganization_organization$data } from '@components/settings/organizations/__generated__/SettingsOrganization_organization.graphql';
 import { graphql } from 'react-relay';
@@ -17,7 +17,6 @@ import { ListItemButton } from '@mui/material';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import SearchInput from '../../../../components/SearchInput';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
@@ -161,18 +160,10 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
       percentWidth: 30,
     },
     firstname: {
-      id: 'firstname',
-      label: 'Firstname',
       percentWidth: 10,
-      isSortable: true,
-      render: (user) => user.firstname,
     },
     lastname: {
-      id: 'lastname',
-      label: 'Lastname',
       percentWidth: 10,
-      isSortable: true,
-      render: (user) => user.lastname,
     },
     effective_confidence_level: {
       id: 'effective_confidence_level',
@@ -181,19 +172,7 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
       isSortable: false,
     },
     otp: {
-      id: 'otp',
-      label: '2FA',
       percentWidth: 5,
-      isSortable: false,
-      render: (user) => (
-        <>
-          {user.otp_activated ? (
-            <Security fontSize="small" color="secondary" />
-          ) : (
-            <HorizontalRule fontSize="small" color="primary" />
-          )}
-        </>
-      ),
     },
     created_at: {
       percentWidth: 10,
@@ -218,13 +197,6 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
         organization={organization}
         variant="standard"
       />
-      <div style={{ float: 'right', marginTop: -12 }}>
-        <SearchInput
-          variant="thin"
-          onSubmit={helpers.handleSearch}
-          // keyword={searchTerm}
-        />
-      </div>
       <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
         {queryRef && (
         <DataTable
@@ -233,11 +205,34 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           toolbarFilters={contextFilters}
-          lineFragment={settingsOrganizationUsersLineFragment}
           disableNavigation
+          lineFragment={settingsOrganizationUsersLineFragment}
           preloadedPaginationProps={preloadedPaginationProps}
-          actions={(user) => <ListItemButton component={Link} to={`/dashboard/settings/accesses/users/${user.id}`}/>}
-          icon={() => <PersonOutlined color="primary" />}
+          actions={(user) => (
+            <ListItemButton
+              component={Link}
+              to={`/dashboard/settings/accesses/users/${user.id}`}
+              sx={{
+                borderRadius: '50%',
+                justifyContent: 'center',
+              }}
+            >
+              <ChevronRightOutlined />
+            </ListItemButton>
+          )}
+          icon={(user) => {
+            const external = user.external === true;
+            const memberIsOrganizationAdmin = (user.administrated_organizations ?? [])
+              .map((org: { id: string }) => org.id)
+              .includes(organization.id);
+            if (external) {
+              return <AccountCircleOutlined color="primary" />;
+            }
+            if (memberIsOrganizationAdmin) {
+              return <AdminPanelSettingsOutlined color="success" />;
+            }
+            return <PersonOutlined color="primary" />;
+          }}
           taskScope={'USER'}
         />
         )}
