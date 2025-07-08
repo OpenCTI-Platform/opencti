@@ -545,13 +545,13 @@ export const checkPasswordFromPolicy = async (context, password) => {
 export const addUser = async (context, user, newUser) => {
   let userEmail;
   const userServiceAccount = newUser.user_service_account && serviceAccountFeatureFlag;
-  if (newUser.user_email) {
+  if (newUser.user_email && !userServiceAccount) {
     userEmail = newUser.user_email.toLowerCase();
     const existingUser = await elLoadBy(context, SYSTEM_USER, 'user_email', userEmail, ENTITY_TYPE_USER);
     if (existingUser) {
       throw FunctionalError('User already exists', { user_id: existingUser.internal_id });
     }
-  } else if (userServiceAccount) {
+  } else if (newUser.user_email && userServiceAccount) {
     userEmail = newUser.user_email ? newUser.user_email : `automatic+${uuid()}@opencti.invalid`;
   } else {
     throw FunctionalError('User cannot be created without email');
