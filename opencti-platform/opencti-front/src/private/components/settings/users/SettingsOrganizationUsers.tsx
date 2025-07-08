@@ -2,8 +2,7 @@ import React, { FunctionComponent } from 'react';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
-import makeStyles from '@mui/styles/makeStyles';
-import { AccountCircleOutlined, AdminPanelSettingsOutlined, ChevronRightOutlined, PersonOutlined } from '@mui/icons-material';
+import { AccountCircleOutlined, AdminPanelSettingsOutlined, PersonOutlined } from '@mui/icons-material';
 import SettingsOrganizationUserCreation from '@components/settings/users/SettingsOrganizationUserCreation';
 import { SettingsOrganization_organization$data } from '@components/settings/organizations/__generated__/SettingsOrganization_organization.graphql';
 import { graphql } from 'react-relay';
@@ -12,9 +11,6 @@ import {
   SettingsOrganizationUsersPaginationQuery$variables,
 } from '@components/settings/users/__generated__/SettingsOrganizationUsersPaginationQuery.graphql';
 import { SettingsOrganizationUsersLine_node$data } from '@components/settings/users/__generated__/SettingsOrganizationUsersLine_node.graphql';
-import { Link } from 'react-router-dom';
-import { ListItemButton } from '@mui/material';
-import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
@@ -22,16 +18,6 @@ import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../..
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../../components/dataGrid/DataTable';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>(() => ({
-  paper: {
-    margin: '28px 0 0 0',
-    padding: '15px',
-    borderRadius: 4,
-  },
-}));
 
 export const settingsOrganizationUsersQuery = graphql`
   query SettingsOrganizationUsersPaginationQuery(
@@ -104,7 +90,11 @@ const settingsOrganizationUsersLineFragment = graphql`
     external
     lastname
     otp_activated
+    entity_type
     created_at
+    effective_confidence_level {
+      max_confidence
+    }
     administrated_organizations {
       id
       name
@@ -118,7 +108,6 @@ interface MembersListContainerProps {
 }
 
 const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = ({ organization }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const LOCAL_STORAGE_KEY = `organization-${organization.id}-users`;
 
@@ -166,10 +155,7 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
       percentWidth: 10,
     },
     effective_confidence_level: {
-      id: 'effective_confidence_level',
-      label: 'Max Confidence',
       percentWidth: 10,
-      isSortable: false,
     },
     otp: {
       percentWidth: 5,
@@ -197,7 +183,14 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
         organization={organization}
         variant="standard"
       />
-      <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+      <Paper
+        className={'paper-for-grid'}
+        variant="outlined"
+        sx={{
+          marginTop: '28px',
+          padding: '15px',
+        }}
+      >
         {queryRef && (
         <DataTable
           dataColumns={dataColumns}
@@ -205,21 +198,8 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           toolbarFilters={contextFilters}
-          disableNavigation
           lineFragment={settingsOrganizationUsersLineFragment}
           preloadedPaginationProps={preloadedPaginationProps}
-          actions={(user) => (
-            <ListItemButton
-              component={Link}
-              to={`/dashboard/settings/accesses/users/${user.id}`}
-              sx={{
-                borderRadius: '50%',
-                justifyContent: 'center',
-              }}
-            >
-              <ChevronRightOutlined />
-            </ListItemButton>
-          )}
           icon={(user) => {
             const external = user.external === true;
             const memberIsOrganizationAdmin = (user.administrated_organizations ?? [])
