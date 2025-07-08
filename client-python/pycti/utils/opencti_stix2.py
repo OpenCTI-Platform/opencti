@@ -2807,6 +2807,20 @@ class OpenCTIStix2:
             self.opencti.pir.pir_unflag_element(id=id, input=input)
         elif operation == "rule_apply":
             self.rule_apply(item=item)
+        elif operation == "inferred_entity":
+            opencti_inferred_input = self.opencti.get_attribute_in_extension(
+                "opencti_inferred_input", item
+            )
+            if opencti_inferred_input is None:
+                opencti_inferred_input = item["opencti_inferred_input"]
+            self.opencti.inferred.create_inferred_entity(input=opencti_inferred_input)
+        elif operation == "inferred_rel":
+            opencti_inferred_input = self.opencti.get_attribute_in_extension(
+                "opencti_inferred_input", item
+            )
+            if opencti_inferred_input is None:
+                opencti_inferred_input = item["opencti_inferred_input"]
+            self.opencti.inferred.create_inferred_rel(input=opencti_inferred_input)
         elif operation == "rule_clear":
             self.rule_clear(item=item)
         elif operation == "rules_rescan":
