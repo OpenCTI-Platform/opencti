@@ -64,6 +64,7 @@ import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { getEntityFromCache } from '../database/cache';
 import { objects as getContainerObjects } from '../domain/container';
+import { ruleApply } from "./ruleManager";
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -497,6 +498,28 @@ const sharingOperationCallback = async (context, user, task, actionType, operati
   };
 };
 
+const ruleApplyCallback = async (context, user, task, ruleId) => {
+  return async (elements) => {
+    for (let index = 0; index < elements.length; index += 1) {
+      const element = elements[index];
+      // in case of rule apply we need to fake the apply of the rule and get the resulting inferred creations
+      const createdInferred = await ruleApply(context, user, element.internal_id, ruleId);
+      const inferredObjectsBundle = [];
+      for (let createdInferredIndex = 0; createdInferredIndex < createdInferred?.length; createdInferredIndex += 1) {
+        // Add all created inferred objects in bundle
+        const createdInferredObjectBundle = buildBundleElement(element, actionType, operations);
+        inferredObjectsBundle.push(createdInferredObjectBundle);
+      }
+      // Send inferred to queue
+      if (inferredObjectsBundle.length > 0) {
+        await sendResultToQueue(context, user, task, inferredObjectsBundle);
+      }
+    }
+    // Update task
+    await updateTask(context, task.id, { task_processed_number: task.task_processed_number + elements.length });
+  };
+};
+
 const computeOperationCallback = async (context, user, task, actionType, operations) => {
   // Handle specific case of adding elements in container
   if (actionType === 'KNOWLEDGE_CONTAINER') {
@@ -513,6 +536,11 @@ const computeOperationCallback = async (context, user, task, actionType, operati
   // Handle specific sharing operation, as container must share inner object
   if (isShareAction(actionType) || isUnshareAction(actionType)) {
     return sharingOperationCallback(context, user, task, actionType, operations);
+  }
+  // Handle specific case of rule apply: we must resolve all inferred objects that result from the rule apply
+  if (actionType === ACTION_TYPE_RULE_APPLY) {
+    const { rule } = task;
+    return ruleApplyCallback(context, user, task, rule);
   }
   // If not, return standard callback
   return standardOperationCallback(context, user, task, actionType, operations);
