@@ -3239,7 +3239,7 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
       // If creation is not by a reference
       // We can in best effort try to merge a common stix_id
       const existingByStandard = R.find((e) => e.standard_id === standardId, filteredEntities);
-      if (existingByStandard) {
+      if (existingByStandard && !isStixCyberObservableHashedObservable(type)) {
         // Sometimes multiple entities can match
         // Looking for aliasA, aliasB, find in different entities for example
         // In this case, we try to find if one match the standard id

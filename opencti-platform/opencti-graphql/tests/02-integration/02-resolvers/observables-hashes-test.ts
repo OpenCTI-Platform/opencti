@@ -48,6 +48,14 @@ const DELETE_STIX_FILE_QUERY = gql`
   }
 `;
 
+const FIND_BY_ID_QUERY = gql`
+  query FindStixFile($id: String!) {
+    stixCyberObservable(id: $id) {
+      standard_id
+    }
+  }
+`;
+
 const FILE1 = {
   name: 'file1',
   md5: '826e8142e6baabe8af779f5f490cf5f5',
@@ -170,6 +178,12 @@ describe('Observables with hashes: management of other stix ids', () => {
     expect(file1WithNameSha1Md5?.id).toEqual(file1Id);
     expect(file1WithNameSha1Md5?.standard_id).toEqual(file1StandardIdByMd5);
     expect(file1WithNameSha1Md5?.x_opencti_stix_ids).toEqual([file1StandardIdBySha1, file1StandardIdByName]);
+    // Verify there is only one file in elastic
+    const file1 = await queryAsAdmin({
+      query: FIND_BY_ID_QUERY,
+      variables: { id: file1StandardIdBySha1 },
+    });
+    expect(file1?.data?.stixCyberObservable.standard_id).toEqual(file1StandardIdByMd5);
   });
 
   it('should replace standard_id and add old one in x_opencti_stix_ids if prior data arrives by Update', async () => {
@@ -217,6 +231,12 @@ describe('Observables with hashes: management of other stix ids', () => {
     const file2WithNameSha1Md5 = file2WithNameSha1Md5Result?.data?.stixCyberObservableEdit?.fieldPatch;
     expect(file2WithNameSha1Md5?.standard_id).toEqual(file2StandardIdByMd5);
     expect(file2WithNameSha1Md5?.x_opencti_stix_ids).toEqual([file2StandardIdBySha1, file2StandardIdByName]);
+    // Verify there is only one file in elastic
+    const file2 = await queryAsAdmin({
+      query: FIND_BY_ID_QUERY,
+      variables: { id: file2StandardIdBySha1 },
+    });
+    expect(file2?.data?.stixCyberObservable.standard_id).toEqual(file2StandardIdByMd5);
   });
 
   it('should not replace standard_id if less prior data arrives but still add its standard_id in x_opencti_stix_ids by Upsert', async () => {
@@ -265,6 +285,12 @@ describe('Observables with hashes: management of other stix ids', () => {
     expect(file3WithMd5Sha1Name?.id).toEqual(file3Id);
     expect(file3WithMd5Sha1Name?.standard_id).toEqual(file3StandardIdByMd5);
     expect(file3WithMd5Sha1Name?.x_opencti_stix_ids).toEqual([file3StandardIdBySha1, file3StandardIdByName]);
+    // Verify there is only one file in elastic
+    const file3 = await queryAsAdmin({
+      query: FIND_BY_ID_QUERY,
+      variables: { id: file3StandardIdBySha1 },
+    });
+    expect(file3?.data?.stixCyberObservable.standard_id).toEqual(file3StandardIdByMd5);
   });
 
   it('should not replace standard_id if less prior data arrives but still add its standard_id in x_opencti_stix_ids by Update', async () => {
@@ -313,6 +339,12 @@ describe('Observables with hashes: management of other stix ids', () => {
     const file4WithMd5Sha1Name = file4WithMd5Sha1NameResult.data?.stixCyberObservableEdit?.fieldPatch;
     expect(file4WithMd5Sha1Name?.standard_id).toEqual(file4StandardIdByMd5);
     expect(file4WithMd5Sha1Name?.x_opencti_stix_ids).toEqual([file4StandardIdBySha1, file4StandardIdByName]);
+    // Verify there is only one file in elastic
+    const file4 = await queryAsAdmin({
+      query: FIND_BY_ID_QUERY,
+      variables: { id: file4StandardIdBySha1 },
+    });
+    expect(file4?.data?.stixCyberObservable.standard_id).toEqual(file4StandardIdByMd5);
   });
 
   it.skip('should merge observables and x_opencti_stix_ids', async () => {
@@ -357,6 +389,12 @@ describe('Observables with hashes: management of other stix ids', () => {
     expect(file5WithNameMd5?.id).toEqual(file5Id);
     expect(file5WithNameMd5?.standard_id).toEqual(file5StandardIdByMd5);
     expect(file5WithNameMd5?.x_opencti_stix_ids).toEqual([file5StandardIdByName]);
+    // Verify there is only one file in elastic
+    const file5 = await queryAsAdmin({
+      query: FIND_BY_ID_QUERY,
+      variables: { id: file5StandardIdByMd5 },
+    });
+    expect(file5?.data?.stixCyberObservable.standard_id).toEqual(file5StandardIdByMd5);
   });
 
   it('should clean standard from x_opencti_stix_ids if correlated data is removed', async () => {
@@ -393,6 +431,12 @@ describe('Observables with hashes: management of other stix ids', () => {
     const file1RemoveSha1 = file1RemoveSha1Result?.data?.stixCyberObservableEdit?.fieldPatch;
     expect(file1RemoveSha1?.standard_id).toEqual(file1StandardIdByMd5);
     expect(file1RemoveSha1?.x_opencti_stix_ids).toEqual([]);
+    // Verify there is only one file in elastic
+    const file1 = await queryAsAdmin({
+      query: FIND_BY_ID_QUERY,
+      variables: { id: file1StandardIdByMd5 },
+    });
+    expect(file1?.data?.stixCyberObservable.standard_id).toEqual(file1StandardIdByMd5);
 
     // Scenario 2 (standard_id changes)
     // --------------------------------
@@ -459,5 +503,11 @@ describe('Observables with hashes: management of other stix ids', () => {
     const file2RemoveSha1 = file2RemoveSha1Result?.data?.stixCyberObservableEdit?.fieldPatch;
     expect(file2RemoveSha1?.standard_id).toEqual(file2StandardIdByName);
     expect(file2RemoveSha1?.x_opencti_stix_ids).toEqual([]);
+    // Verify there is only one file in elastic
+    const file2 = await queryAsAdmin({
+      query: FIND_BY_ID_QUERY,
+      variables: { id: file2StandardIdByName },
+    });
+    expect(file2?.data?.stixCyberObservable.standard_id).toEqual(file2StandardIdByName);
   });
 });
