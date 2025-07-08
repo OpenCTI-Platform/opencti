@@ -1,5 +1,5 @@
 import React from 'react';
-import { createPaginationContainer, graphql, RelayPaginationProp } from 'react-relay';
+import { graphql, RelayPaginationProp } from 'react-relay';
 import { UsersLinesPaginationQuery$variables } from '@components/settings/users/__generated__/UsersLinesPaginationQuery.graphql';
 import { UsersLines_data$data } from '@components/settings/users/__generated__/UsersLines_data.graphql';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';

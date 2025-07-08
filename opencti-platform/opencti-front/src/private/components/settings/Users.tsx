@@ -86,6 +86,7 @@ const usersLineFragment = graphql`
       firstname
       external
       lastname
+      entity_type
       effective_confidence_level {
         max_confidence
       }
@@ -231,6 +232,7 @@ const Users = () => {
               }
               return <PersonOutlined color="primary" />;
             }}
+            taskScope={'USER'}
           />
           )}
         </>
