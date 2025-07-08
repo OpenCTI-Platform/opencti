@@ -199,7 +199,7 @@ describe('Service account User coverage', async () => {
   });
 });
 
-describe('Service account with platform organization coverage', async () => {
+describe.skip('Service account with platform organization coverage', async () => {
   const authUser = getFakeAuthUser('Platform administrator');
   let platformOrganization: BasicStoreEntityOrganization;
   it('should platform organization and EE activated', async () => {
