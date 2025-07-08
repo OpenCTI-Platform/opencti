@@ -599,7 +599,7 @@ export const addUser = async (context, user, newUser) => {
   if (serviceAccountFeatureFlag) {
     userToCreate = {
       ...userToCreate,
-      user_service_account: newUser.service_account,
+      user_service_account: newUser.user_service_account,
     };
   }
 
