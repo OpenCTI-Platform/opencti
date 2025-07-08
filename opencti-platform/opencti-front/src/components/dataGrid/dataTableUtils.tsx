@@ -6,6 +6,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { Link } from 'react-router-dom';
 import { useTheme } from '@mui/styles';
 import { DraftChip } from '@components/common/draft/DraftChip';
+import { HorizontalRule, Security } from '@mui/icons-material';
 import ItemCvssScore from '../ItemCvssScore';
 import type { DataTableColumn } from './dataTableTypes';
 import { DataTableProps, DataTableVariant } from './dataTableTypes';
@@ -441,6 +442,13 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       );
     },
   },
+  firstname: {
+    id: 'firstname',
+    label: 'Firstname',
+    percentWidth: 10,
+    isSortable: true,
+    render: ({ firstname }) => defaultRender(firstname),
+  },
   first_observed: {
     id: 'first_observed',
     label: 'First obs.',
@@ -686,6 +694,13 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: ({ kill_chain_name }) => defaultRender(kill_chain_name),
   },
+  lastname: {
+    id: 'lastname',
+    label: 'Lastname',
+    percentWidth: 10,
+    isSortable: true,
+    render: ({ lastname }) => defaultRender(lastname),
+  },
   last_observed: {
     id: 'last_observed',
     label: 'Last obs.',
@@ -889,6 +904,21 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: true,
     render: ({ order }, { n }) => defaultRender(n(order)),
+  },
+  otp: {
+    id: 'otp',
+    label: '2FA',
+    percentWidth: 5,
+    isSortable: false,
+    render: (user) => (
+      <>
+        {user.otp_activated ? (
+          <Security fontSize="small" color="secondary" />
+        ) : (
+          <HorizontalRule fontSize="small" color="primary" />
+        )}
+      </>
+    ),
   },
   owner: {
     id: 'owner',
