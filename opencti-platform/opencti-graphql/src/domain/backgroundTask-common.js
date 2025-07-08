@@ -327,6 +327,7 @@ const authorizedAuthoritiesForTask = (scope) => {
     case 'KNOWLEDGE':
       return [KNOWLEDGE_KNUPDATE];
     case 'USER':
+    case 'USER_NOTIFICATION':
       return [SETTINGS_SET_ACCESSES];
     case 'IMPORT':
       return [KNOWLEDGE_KNASKIMPORT];
