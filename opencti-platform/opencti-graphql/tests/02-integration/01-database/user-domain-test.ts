@@ -1,14 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { ADMIN_USER, AMBER_STRICT_GROUP } from '../../utils/testQuery';
+import { ADMIN_USER, AMBER_STRICT_GROUP, testContext } from '../../utils/testQuery';
 import { generateStandardId } from '../../../src/schema/identifier';
 import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
 import { addNotification, addTrigger, myNotificationsFind, triggerGet } from '../../../src/modules/notification/notification-domain';
-import type { MemberAccessInput, TriggerLiveAddInput, WorkspaceAddInput } from '../../../src/generated/graphql';
+import type { MemberAccessInput, TriggerLiveAddInput, UserAddInput, WorkspaceAddInput } from '../../../src/generated/graphql';
 import { TriggerEventType, TriggerType } from '../../../src/generated/graphql';
 import { addUser, assignGroupToUser, findById as findUserById, isUserTheLastAdmin, userDelete } from '../../../src/domain/user';
 import { addWorkspace, findById as findWorkspaceById, workspaceEditAuthorizedMembers } from '../../../src/modules/workspace/workspace-domain';
 import type { NotificationAddInput } from '../../../src/modules/notification/notification-types';
+import { getFakeAuthUser } from '../../utils/domainQueryHelper';
+import { deleteElementById } from '../../../src/database/middleware';
 
 /**
  * Create a new user in elastic for this test purpose using domain APIs only.
@@ -150,5 +152,47 @@ describe('Testing user delete on cascade [issue/3720]', () => {
     const isLastAdminResult = isUserTheLastAdmin(ADMIN_USER.id, undefined);
     expect(true, 'No exception should be raised here').toBe(true);
     expect(isLastAdminResult, 'An entity without authorized_member data should not block deletion.').toBe(false);
+  });
+});
+describe('Service account User coverage', async () => {
+  const authUser = getFakeAuthUser('Platform administrator');
+  it('should get email if userAdd service account with email setup', async () => {
+    const USER: UserAddInput = {
+      user_email: 'trucmuche@opencti',
+      name: 'Service account',
+      user_service_account: true,
+      groups: [],
+      objectOrganization: [],
+    };
+    const userAddResult = await addUser(testContext, authUser, USER);
+
+    expect(userAddResult.user_email).toBe('trucmuche@opencti');
+    expect(userAddResult.objectOrganization).toStrictEqual([]);
+    await deleteElementById(testContext, authUser, userAddResult.id, ENTITY_TYPE_USER);
+  });
+  it('should ThrowError if userAdd not service account, without email', async () => {
+    const USER: UserAddInput = {
+      name: 'No service account without email',
+      user_service_account: false,
+      groups: [],
+      objectOrganization: [],
+    };
+
+    await expect(async () => {
+      await addUser(testContext, authUser, USER);
+    }).rejects.toThrowError('User cannot be created without email');
+  });
+  it('should ThrowError if userAdd not service account, without password', async () => {
+    const USER: UserAddInput = {
+      user_email: 'missingpassword@opencti',
+      name: 'No service account without password',
+      user_service_account: false,
+      groups: [],
+      objectOrganization: [],
+    };
+
+    await expect(async () => {
+      await addUser(testContext, authUser, USER);
+    }).rejects.toThrowError('Invalid password: required');
   });
 });
