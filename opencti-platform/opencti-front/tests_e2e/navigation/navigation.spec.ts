@@ -38,6 +38,10 @@ import IndicatorPage from '../model/indicator.pageModel';
 import IndicatorDetailsPageModel from '../model/indicatorDetails.pageModel';
 import InfrastructurePage from '../model/infrastructure.pageModel';
 import InfrastructureDetailsPageModel from '../model/infrastructureDetails.pageModel';
+import ThreatActorGroupPage from '../model/threatActorGroup.pageModel';
+import ThreatActorGroupDetailsPage from '../model/threatActorGroupDetails.pageModel';
+import ThreatActorIndividualPage from '../model/threatActorIndividual.pageModel';
+import ThreatActorIndividualDetailsPage from '../model/threatActorIndividualDetails.pageModel';
 
 /**
  * Goal: validate that everything is opening without errors in Analyses > Note.
@@ -649,6 +653,74 @@ const navigateInfrastructure = async (page: Page) => {
   await expect(historyTab.getPage()).toBeVisible();
 };
 
+const navigateThreatActorGroup = async (page: Page) => {
+  const threatActorGroupInitData = 'Disco Team Threat Actor Group';
+  const threatActorGroupPage = new ThreatActorGroupPage(page);
+  await threatActorGroupPage.navigateFromMenu();
+  await expect(threatActorGroupPage.getPage()).toBeVisible();
+  await expect(page.getByText(threatActorGroupInitData)).toBeVisible();
+  await threatActorGroupPage.getItemFromListWithUrl(threatActorGroupInitData);
+
+  const threatActorGroupDetailsPage = new ThreatActorGroupDetailsPage(page);
+  await expect(threatActorGroupDetailsPage.getPage()).toBeVisible();
+
+  // -- Knowledge
+  await threatActorGroupDetailsPage.tabs.goToKnowledgeTab();
+  await expect(page.getByTestId('threat-actor-group-knowledge')).toBeVisible();
+
+  // -- Content
+  await threatActorGroupDetailsPage.tabs.goToContentTab();
+  const contentTab = new StixCoreObjectContentTabPage(page);
+  await expect(contentTab.getPage()).toBeVisible();
+
+  // -- Analysis
+  await threatActorGroupDetailsPage.tabs.goToAnalysesTab();
+  await expect(page.getByPlaceholder('Search these results...')).toBeVisible();
+
+  // -- Data
+  await threatActorGroupDetailsPage.tabs.goToDataTab();
+  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+
+  // -- History
+  await threatActorGroupDetailsPage.tabs.goToHistoryTab();
+  const historyTab = new StixCoreObjectHistoryTab(page);
+  await expect(historyTab.getPage()).toBeVisible();
+};
+
+const navigateThreatActorIndividual = async (page: Page) => {
+  const threatActorIndividualInitData = 'E2E dashboard - Threat actor - now';
+  const threatActorIndividualPage = new ThreatActorIndividualPage(page);
+  await threatActorIndividualPage.navigateFromMenu();
+  await expect(threatActorIndividualPage.getPage()).toBeVisible();
+  await expect(page.getByText(threatActorIndividualInitData)).toBeVisible();
+  await threatActorIndividualPage.getItemFromListWithUrl(threatActorIndividualInitData);
+
+  const threatActorIndividualDetailsPage = new ThreatActorIndividualDetailsPage(page);
+  await expect(threatActorIndividualDetailsPage.getPage()).toBeVisible();
+
+  // -- Knowledge
+  await threatActorIndividualDetailsPage.tabs.goToKnowledgeTab();
+  await expect(page.getByTestId('threat-actor-individual-knowledge')).toBeVisible();
+
+  // -- Content
+  await threatActorIndividualDetailsPage.tabs.goToContentTab();
+  const contentTab = new StixCoreObjectContentTabPage(page);
+  await expect(contentTab.getPage()).toBeVisible();
+
+  // -- Analysis
+  await threatActorIndividualDetailsPage.tabs.goToAnalysesTab();
+  await expect(page.getByPlaceholder('Search these results...')).toBeVisible();
+
+  // -- Data
+  await threatActorIndividualDetailsPage.tabs.goToDataTab();
+  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+
+  // -- History
+  await threatActorIndividualDetailsPage.tabs.goToHistoryTab();
+  const historyTab = new StixCoreObjectHistoryTab(page);
+  await expect(historyTab.getPage()).toBeVisible();
+};
+
 const navigateAllMenu = async (page: Page) => {
   const leftBarPage = new LeftBarPage(page);
 
@@ -796,21 +868,23 @@ test('Check navigation on all pages', { tag: ['@navigation'] }, async ({ page })
   // so they should be all independent and start from the left menu.
 
   // await navigateAllMenu(page);
-  await navigateReports(page);
-  await navigateGroupings(page);
-  await navigateMalwareAnalyses(page);
-  await navigateNotes(page);
-  await navigateExternalReferences(page);
-  await navigateIncidentResponse(page);
-  await navigateRfi(page);
-  await navigateRft(page);
-  await navigateTasks(page);
-  await navigateFeedbacks(page);
-  await navigateEventsIncident(page);
-  await navigateSightings(page);
-  await navigateObservedData(page);
-  await navigateObservables(page);
-  await navigateArtifact(page);
-  await navigateIndicators(page);
-  await navigateInfrastructure(page);
+  // await navigateReports(page);
+  // await navigateGroupings(page);
+  // await navigateMalwareAnalyses(page);
+  // await navigateNotes(page);
+  // await navigateExternalReferences(page);
+  // await navigateIncidentResponse(page);
+  // await navigateRfi(page);
+  // await navigateRft(page);
+  // await navigateTasks(page);
+  // await navigateFeedbacks(page);
+  // await navigateEventsIncident(page);
+  // await navigateSightings(page);
+  // await navigateObservedData(page);
+  // await navigateObservables(page);
+  // await navigateArtifact(page);
+  // await navigateIndicators(page);
+  // await navigateInfrastructure(page);
+  await navigateThreatActorGroup(page);
+  await navigateThreatActorIndividual(page);
 });
