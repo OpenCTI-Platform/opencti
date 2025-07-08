@@ -14,7 +14,17 @@ import { convertUser } from '../../../../utils/edition';
 import SelectField from '../../../../components/fields/SelectField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import Drawer from '../../common/drawer/Drawer';
-import { BASIC_AUTH, BEARER_AUTH, CERT_AUTH, extractCA, extractCert, extractKey, extractPassword, extractUsername } from '../../../../utils/ingestionAuthentificationUtils';
+import {
+  BASIC_AUTH,
+  BEARER_AUTH,
+  CERT_AUTH,
+  extractCA,
+  extractCert,
+  extractKey,
+  extractPassword,
+  extractToken,
+  extractUsername,
+} from '../../../../utils/ingestionAuthentificationUtils';
 import SwitchField from '../../../../components/fields/SwitchField';
 import PasswordTextField from '../../../../components/PasswordTextField';
 
@@ -67,6 +77,12 @@ const IngestionTaxiiEditionContainer = ({
 
         // region authentication  -- If you change something here, please have a look at IngestionCsvEdition
         const backendAuthValue = ingestionTaxii.authentication_value;
+
+        if (name === 'token') {
+          finalName = 'authentication_value';
+          finalValue = extractToken(backendAuthValue);
+        }
+
         // re-compose username:password
         if (name === 'username') {
           finalName = 'authentication_value';
@@ -105,56 +121,49 @@ const IngestionTaxiiEditionContainer = ({
       })
       .catch(() => false);
   };
-  const initialValues = R.pipe(
-    R.assoc('user_id', convertUser(ingestionTaxii, 'user')),
-    R.assoc(
-      'username',
-      ingestionTaxii.authentication_type === BASIC_AUTH
-        ? ingestionTaxii.authentication_value.split(':')[0]
-        : '',
-    ),
-    R.assoc(
-      'password',
-      ingestionTaxii.authentication_type === BASIC_AUTH
-        ? ingestionTaxii.authentication_value.split(':')[1]
-        : '',
-    ),
-    R.assoc(
-      'cert',
-      ingestionTaxii.authentication_type === CERT_AUTH
-        ? ingestionTaxii.authentication_value.split(':')[0]
-        : '',
-    ),
-    R.assoc(
-      'key',
-      ingestionTaxii.authentication_type === CERT_AUTH
-        ? ingestionTaxii.authentication_value.split(':')[1]
-        : '',
-    ),
-    R.assoc(
-      'ca',
-      ingestionTaxii.authentication_type === CERT_AUTH
-        ? ingestionTaxii.authentication_value.split(':')[2]
-        : '',
-    ),
-    R.pick([
-      'name',
-      'description',
-      'uri',
-      'version',
-      'collection',
-      'authentication_type',
-      'authentication_value',
-      'username',
-      'password',
-      'cert',
-      'key',
-      'ca',
-      'user_id',
-      'added_after_start',
-      'confidence_to_score',
-    ]),
-  )(ingestionTaxii);
+
+  const initialValues = {
+    ...{
+      name: ingestionTaxii.name,
+      description: ingestionTaxii.description,
+      uri: ingestionTaxii.uri,
+      version: ingestionTaxii.version,
+      collection: ingestionTaxii.collection,
+      authentication_type: ingestionTaxii.authentication_type,
+      authentication_value: ingestionTaxii.authentication_value,
+      user_id: convertUser(ingestionTaxii, 'user'),
+      added_after_start: ingestionTaxii.added_after_start,
+      confidence_to_score: ingestionTaxii.confidence_to_score,
+    },
+    ...(ingestionTaxii.authentication_type === BEARER_AUTH
+      ? {
+        token: extractToken(ingestionTaxii.authentication_value),
+      }
+      : {
+        username: '',
+        password: '',
+      }),
+    ...(ingestionTaxii.authentication_type === BASIC_AUTH
+      ? {
+        username: extractUsername(ingestionTaxii.authentication_value),
+        password: extractPassword(ingestionTaxii.authentication_value),
+      }
+      : {
+        username: '',
+        password: '',
+      }),
+    ...(ingestionTaxii.authentication_type === CERT_AUTH
+      ? {
+        cert: extractCert(ingestionTaxii.authentication_value),
+        key: extractKey(ingestionTaxii.authentication_value),
+        ca: extractCA(ingestionTaxii.authentication_value),
+      }
+      : {
+        cert: '',
+        key: '',
+        ca: '',
+      }),
+  };
 
   return (
     <Drawer
@@ -167,157 +176,171 @@ const IngestionTaxiiEditionContainer = ({
         initialValues={initialValues}
         validationSchema={ingestionTaxiiValidation(t)}
       >
-        {({ values }) => (
-          <Form>
-            <Field
-              component={TextField}
-              variant="standard"
-              name="name"
-              label={t('Name')}
-              fullWidth={true}
-              onSubmit={handleSubmitField}
-            />
-            <Field
-              component={TextField}
-              variant="standard"
-              name="description"
-              label={t('Description')}
-              fullWidth={true}
-              style={fieldSpacingContainerStyle}
-              onSubmit={handleSubmitField}
-            />
-            <Field
-              component={TextField}
-              variant="standard"
-              name="uri"
-              label={t('TAXII server URL')}
-              fullWidth={true}
-              onSubmit={handleSubmitField}
-              style={fieldSpacingContainerStyle}
-            />
-            <Field
-              component={SelectField}
-              variant="standard"
-              name="version"
-              label={t('TAXII version')}
-              onSubmit={handleSubmitField}
-              fullWidth={true}
-              containerstyle={{
-                width: '100%',
-                marginTop: 20,
-              }}
-            >
-              <MenuItem value="v21">{t('TAXII 2.1')}</MenuItem>
-            </Field>
-            <Field
-              component={TextField}
-              variant="standard"
-              name="collection"
-              label={t('TAXII Collection')}
-              onSubmit={handleSubmitField}
-              fullWidth={true}
-              style={fieldSpacingContainerStyle}
-            />
-            <Field
-              component={SelectField}
-              variant="standard"
-              name="authentication_type"
-              label={t('Authentication type')}
-              onSubmit={handleSubmitField}
-              fullWidth={true}
-              containerstyle={{
-                width: '100%',
-                marginTop: 20,
-              }}
-            >
-              <MenuItem value="none">{t('None')}</MenuItem>
-              <MenuItem value="basic">{t('Basic user / password')}</MenuItem>
-              <MenuItem value="bearer">{t('Bearer token')}</MenuItem>
-              <MenuItem value="certificate">
-                {t('Client certificate')}
-              </MenuItem>
-            </Field>
-            {values.authentication_type === BASIC_AUTH && (
-              <>
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="username"
-                  label={t('Username')}
-                  onSubmit={handleSubmitField}
-                  fullWidth={true}
-                  style={fieldSpacingContainerStyle}
-                />
-                <PasswordTextField
-                  name="password"
-                  label={t('Password')}
-                  onSubmit={handleSubmitField}
-                />
-              </>
-            )}
-            {values.authentication_type === BEARER_AUTH && (
-              <PasswordTextField
-                name="authentication_value"
-                label={t('Token')}
+        {({ values, dirty }) => {
+          const getCredentialsProps = (value) => ({
+            onSubmit: (name, submitValue) => {
+              if (dirty) {
+                handleSubmitField(name, submitValue);
+              }
+            },
+            placeholder: value === undefined ? '••••' : undefined,
+            InputLabelProps: {
+              shrink: value === undefined ? true : undefined,
+            },
+          });
+
+          return (
+            <Form>
+              <Field
+                component={TextField}
+                variant="standard"
+                name="name"
+                label={t('Name')}
+                fullWidth={true}
                 onSubmit={handleSubmitField}
               />
-            )}
-            {values.authentication_type === CERT_AUTH && (
-              <>
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="cert"
-                  label={t('Certificate (base64)')}
-                  onSubmit={handleSubmitField}
-                  fullWidth={true}
-                  style={fieldSpacingContainerStyle}
-                />
+              <Field
+                component={TextField}
+                variant="standard"
+                name="description"
+                label={t('Description')}
+                fullWidth={true}
+                style={fieldSpacingContainerStyle}
+                onSubmit={handleSubmitField}
+              />
+              <Field
+                component={TextField}
+                variant="standard"
+                name="uri"
+                label={t('TAXII server URL')}
+                fullWidth={true}
+                onSubmit={handleSubmitField}
+                style={fieldSpacingContainerStyle}
+              />
+              <Field
+                component={SelectField}
+                variant="standard"
+                name="version"
+                label={t('TAXII version')}
+                onSubmit={handleSubmitField}
+                fullWidth={true}
+                containerstyle={{
+                  width: '100%',
+                  marginTop: 20,
+                }}
+              >
+                <MenuItem value="v21">{t('TAXII 2.1')}</MenuItem>
+              </Field>
+              <Field
+                component={TextField}
+                variant="standard"
+                name="collection"
+                label={t('TAXII Collection')}
+                onSubmit={handleSubmitField}
+                fullWidth={true}
+                style={fieldSpacingContainerStyle}
+              />
+              <Field
+                component={SelectField}
+                variant="standard"
+                name="authentication_type"
+                label={t('Authentication type')}
+                onSubmit={handleSubmitField}
+                fullWidth={true}
+                containerstyle={{
+                  width: '100%',
+                  marginTop: 20,
+                }}
+              >
+                <MenuItem value="none">{t('None')}</MenuItem>
+                <MenuItem value="basic">{t('Basic user / password')}</MenuItem>
+                <MenuItem value="bearer">{t('Bearer token')}</MenuItem>
+                <MenuItem value="certificate">
+                  {t('Client certificate')}
+                </MenuItem>
+              </Field>
+              {values.authentication_type === BASIC_AUTH && (
+                <>
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="username"
+                    label={t('Username')}
+                    onSubmit={handleSubmitField}
+                    fullWidth={true}
+                    style={fieldSpacingContainerStyle}
+                  />
+                  <PasswordTextField
+                    name="password"
+                    label={t('Password')}
+                    {...getCredentialsProps(values.password)}
+                  />
+                </>
+              )}
+              {values.authentication_type === BEARER_AUTH && (
                 <PasswordTextField
-                  name="key"
-                  label={t('Key (base64)')}
-                  onSubmit={handleSubmitField}
+                  name="token"
+                  label={t('Token')}
+                  {...getCredentialsProps(values.token)}
                 />
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="ca"
-                  label={t('CA certificate (base64)')}
-                  onSubmit={handleSubmitField}
-                  fullWidth={true}
-                  style={fieldSpacingContainerStyle}
-                />
-              </>
-            )}
-            <CreatorField
-              name="user_id"
-              label={t('User responsible for data creation (empty = System)')}
-              onChange={handleSubmitField}
-              containerStyle={fieldSpacingContainerStyle}
-              showConfidence
-            />
-            <Field
-              component={DateTimePickerField}
-              name="added_after_start"
-              onSubmit={handleSubmitField}
-              textFieldProps={{
-                label: t(
-                  'Import from date (empty = all TAXII collection possible items)',
-                ),
-                fullWidth: true,
-                style: { marginTop: 20 },
-              }}
-            />
-            <Field
-              component={SwitchField}
-              onChange={handleSubmitField}
-              type="checkbox"
-              name="confidence_to_score"
-              label={t('Copy confidence level to OpenCTI scores for indicators')}
-              containerstyle={fieldSpacingContainerStyle}
-            />
-          </Form>
-        )}
+              )}
+              {values.authentication_type === CERT_AUTH && (
+                <>
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="cert"
+                    label={t('Certificate (base64)')}
+                    onSubmit={(name, value) => handleSubmitField(name, value, values)}
+                    fullWidth={true}
+                    style={fieldSpacingContainerStyle}
+                  />
+                  <PasswordTextField
+                    name="key"
+                    label={t('Key (base64)')}
+                    {...getCredentialsProps(values.key)}
+                  />
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="ca"
+                    label={t('CA certificate (base64)')}
+                    onSubmit={(name, value) => handleSubmitField(name, value, values)}
+                    fullWidth={true}
+                    style={fieldSpacingContainerStyle}
+                  />
+                </>
+              )}
+              <CreatorField
+                name="user_id"
+                label={t('User responsible for data creation (empty = System)')}
+                onChange={handleSubmitField}
+                containerStyle={fieldSpacingContainerStyle}
+                showConfidence
+              />
+              <Field
+                component={DateTimePickerField}
+                name="added_after_start"
+                onSubmit={handleSubmitField}
+                textFieldProps={{
+                  label: t(
+                    'Import from date (empty = all TAXII collection possible items)',
+                  ),
+                  fullWidth: true,
+                  style: { marginTop: 20 },
+                }}
+              />
+              <Field
+                component={SwitchField}
+                onChange={handleSubmitField}
+                type="checkbox"
+                name="confidence_to_score"
+                label={t('Copy confidence level to OpenCTI scores for indicators')}
+                containerstyle={fieldSpacingContainerStyle}
+              />
+            </Form>
+          );
+        }}
       </Formik>
     </Drawer>
   );
