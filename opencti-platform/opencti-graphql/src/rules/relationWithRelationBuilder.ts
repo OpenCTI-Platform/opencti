@@ -4,7 +4,13 @@ import { buildPeriodFromDates, computeRangeIntersection } from '../utils/format'
 import { createRuleContent } from './rules-utils';
 import { computeAverage } from '../database/utils';
 import { listAllRelations } from '../database/middleware-loader';
-import type { RelationTypes, RuleDefinition, RuleRuntime } from '../types/rules';
+import type {
+  createInferredEntityOverrideFunction,
+  createInferredRelationOverrideFunction,
+  RelationTypes,
+  RuleDefinition,
+  RuleRuntime
+} from '../types/rules';
 import type { StixRelation } from '../types/stix-2-1-sro';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { BasicStoreRelation, StoreObject } from '../types/store';
@@ -16,7 +22,10 @@ const buildRelationWithRelationRule = (ruleDefinition: RuleDefinition, relationT
   const { leftType, rightType, creationType } = relationTypes;
   const resolveTypes = { [leftType]: rightType, [rightType]: leftType };
   // Execution
-  const applyUpsert = async (data: StixRelation): Promise<void> => {
+  const applyUpsert = async (
+    data: StixRelation,
+    createInferredRelationOverride?: createInferredRelationOverrideFunction | undefined
+  ): Promise<void> => {
     const context = executionContext(ruleDefinition.name, RULE_MANAGER_USER);
     const { extensions } = data;
     const createdId = extensions[STIX_EXT_OCTI].id;
@@ -51,7 +60,11 @@ const buildRelationWithRelationRule = (ruleDefinition: RuleDefinition, relationT
           stop_time: range.end,
           objectMarking: elementMarkings,
         });
-        await createInferredRelation(context, input, ruleContent);
+        if (createInferredRelationOverride) {
+          createInferredRelationOverride(context, input, ruleContent);
+        } else {
+          await createInferredRelation(context, input, ruleContent);
+        }
       }
     };
     const listFromArgs = { fromId: sourceRef, callback: listFromCallback };
@@ -61,8 +74,12 @@ const buildRelationWithRelationRule = (ruleDefinition: RuleDefinition, relationT
   const clean = async (element: StoreObject, deletedDependencies: Array<string>): Promise<void> => {
     await deleteInferredRuleElement(id, element, deletedDependencies);
   };
-  const insert = async (element: StixRelation): Promise<void> => {
-    return applyUpsert(element);
+  const insert = async (
+    element: StixRelation,
+    _createInferredEntityOverride?: createInferredEntityOverrideFunction | undefined,
+    createInferredRelationOverride?: createInferredRelationOverrideFunction | undefined
+  ): Promise<void> => {
+    return applyUpsert(element, createInferredRelationOverride);
   };
   const update = async (element: StixRelation): Promise<void> => {
     return applyUpsert(element);
