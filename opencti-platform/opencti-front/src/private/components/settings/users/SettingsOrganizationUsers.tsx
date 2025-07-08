@@ -3,7 +3,7 @@ import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import makeStyles from '@mui/styles/makeStyles';
-import { AccountCircleOutlined, AdminPanelSettingsOutlined, ChevronRightOutlined, HorizontalRule, PersonOutlined, Security } from '@mui/icons-material';
+import { AccountCircleOutlined, AdminPanelSettingsOutlined, ChevronRightOutlined, PersonOutlined } from '@mui/icons-material';
 import SettingsOrganizationUserCreation from '@components/settings/users/SettingsOrganizationUserCreation';
 import { SettingsOrganization_organization$data } from '@components/settings/organizations/__generated__/SettingsOrganization_organization.graphql';
 import { graphql } from 'react-relay';
