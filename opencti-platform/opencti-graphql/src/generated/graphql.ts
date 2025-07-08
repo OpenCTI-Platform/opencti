@@ -19750,6 +19750,7 @@ export enum PlatformCriticalAlertType {
 
 export type PlatformEe = {
   __typename?: 'PlatformEE';
+  enterprise_license?: Maybe<Scalars['String']['output']>;
   license_by_configuration: Scalars['Boolean']['output'];
   license_creator: Scalars['String']['output'];
   license_customer: Scalars['String']['output'];
@@ -25230,6 +25231,7 @@ export type Settings = BasicObject & InternalObject & {
   created_at: Scalars['DateTime']['output'];
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
+  filigran_agentic_ai_url?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   messages_administration?: Maybe<Array<SettingsMessage>>;
   otp_mandatory?: Maybe<Scalars['Boolean']['output']>;
@@ -40881,6 +40883,7 @@ export type PlatformCriticalAlertDetailsResolvers<ContextType = any, ParentType 
 }>;
 
 export type PlatformEeResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlatformEE'] = ResolversParentTypes['PlatformEE']> = ResolversObject<{
+  enterprise_license?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   license_by_configuration?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   license_creator?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   license_customer?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -42173,6 +42176,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  filigran_agentic_ai_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   messages_administration?: Resolver<Maybe<Array<ResolversTypes['SettingsMessage']>>, ParentType, ContextType>;
   otp_mandatory?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
