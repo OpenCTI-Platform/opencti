@@ -153,13 +153,13 @@ const Users = () => {
   if (isSetAccess && defaultGroupsQueryRef) {
     userCreateButton = (
       <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <UserCreation paginationOptions={paginationOptions} defaultGroupsQueryRef={defaultGroupsQueryRef} />
+        <UserCreation paginationOptions={queryPaginationOptions} defaultGroupsQueryRef={defaultGroupsQueryRef} />
       </React.Suspense>
     );
   } else if (!isSetAccess && isAdminOrganization && isEnterpriseEdition) {
     userCreateButton = (
       <SettingsOrganizationUserCreation
-        paginationOptions={paginationOptions}
+        paginationOptions={queryPaginationOptions}
         variant="controlledDial"
       />
     );
