@@ -176,51 +176,43 @@ describe('Function allFieldsContributingToStandardId', () => {
     fields = allFieldsContributingToStandardId({ entity_type: ENTITY_TYPE_CONTAINER_NOTE });
     expect(fields).toEqual(['content', 'created']);
   });
-  describe('Function generateHashedObservableStandardIds', () => {
-    it.skip('should generate HashedObservable standardIds work', () => { // TODO fix
-      const instanceHashes = {
-        hashes: null,
-        name: 'file1',
-        entity_type: 'StixFile',
-        internal_id: '8532d0d9-99ed-4642-8ca0-831fb853da25',
-        standard_id: 'file--cd03138e-eb70-5409-b5df-2f53bee7a1e1',
-        x_opencti_stix_ids: [],
-      };
-      const instanceUrl = {
-        value: 'https://cybermap.kaspersky.com/',
-        entity_type: 'Url',
-        internal_id: '9c839484-4302-4c17-b972-dad97fdb3eef',
-        standard_id: 'url--5e9f7011-48db-5fcf-a301-c7ac27b2a082',
-      };
+});
 
-      const instanceType = instanceUrl.entity_type;
-      const urlValue = instanceUrl.value;
-      const standardIdsUrl = generateHashedObservableStandardIds(instanceUrl);
-      expect(instanceType).toEqual('Url');
-      expect(urlValue).toEqual('https://cybermap.kaspersky.com/');
-      expect(standardIdsUrl).toEqual([]);
+describe('Function generateHashedObservableStandardIds', () => {
+  const hashes = {
+    MD5: '025ad219ece1125a8f5a0e74e32676cb',
+    'SHA-1': 'c1750bee9c1f7b5dd6f025b645ab6eba5df94175'
+  };
 
-      instanceHashes.hashes = { MD5: '025ad219ece1125a8f5a0e74e32676cb' };
-      const hashOneStandardIds = generateHashedObservableStandardIds(instanceHashes);
-      // console.log('HASHES1', generateStandardId(instanceHashes.entity_type, instanceHashes));
-      expect(hashOneStandardIds).toEqual(
-        [
-          'file--cd03138e-eb70-5409-b5df-2f53bee7a1e1',
-          'file--2b62228c-214d-5b20-a67e-e398fdaf8fe1'
-        ]
-      );
-      instanceHashes.hashes = { ...instanceHashes.hashes,
-        'SHA-1': 'c1750bee9c1f7b5dd6f025b645ab6eba5df94175' };
+  it('should return empty array if no entity_type', () => {
+    const ids = generateHashedObservableStandardIds({ hashes });
+    expect(ids).toEqual([]);
+  });
 
-      const hashesStandardIds = generateHashedObservableStandardIds(instanceHashes);
-      // console.log('HASHES2', generateStandardId(instanceHashes.entity_type, instanceHashes));
-      expect(hashesStandardIds).toEqual(
-        [
-          'file--cd03138e-eb70-5409-b5df-2f53bee7a1e1',
-          'file--0c28767c-5f72-5036-8cc5-21c055c2b9e9',
-          'file--2b62228c-214d-5b20-a67e-e398fdaf8fe1'
-        ]
-      );
+  it('should return empty array if not hash observable', () => {
+    const ids = generateHashedObservableStandardIds({
+      hashes,
+      entity_type: ENTITY_TYPE_SETTINGS
     });
+    expect(ids).toEqual([]);
+  });
+
+  it('should return empty array if no hashes', () => {
+    const ids = generateHashedObservableStandardIds({
+      hashes: {},
+      entity_type: ENTITY_HASHED_OBSERVABLE_STIX_FILE
+    });
+    expect(ids).toEqual([]);
+  });
+
+  it('should return the list of ids of hashes', () => {
+    const ids = generateHashedObservableStandardIds({
+      hashes,
+      entity_type: ENTITY_HASHED_OBSERVABLE_STIX_FILE
+    });
+    expect(ids).toEqual([
+      'file--cd03138e-eb70-5409-b5df-2f53bee7a1e1',
+      'file--0c28767c-5f72-5036-8cc5-21c055c2b9e9',
+    ]);
   });
 });
