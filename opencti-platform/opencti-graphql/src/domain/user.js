@@ -552,7 +552,7 @@ export const addUser = async (context, user, newUser) => {
       throw FunctionalError('User already exists', { user_id: existingUser.internal_id });
     }
   } else if (userServiceAccount) {
-    userEmail = `automatic+${uuid()}@opencti.invalid`;
+    userEmail = newUser.user_email ? newUser.user_email : `automatic+${uuid()}@opencti.invalid`;
   } else {
     throw FunctionalError('User cannot be created without email');
   }
@@ -606,7 +606,7 @@ export const addUser = async (context, user, newUser) => {
   const { element, isCreation } = await createEntity(context, user, userToCreate, ENTITY_TYPE_USER, { complete: true });
   // Link to organizations
   const userOrganizations = newUser.objectOrganization ?? [];
-  if (userServiceAccount && platform_organization && !userOrganizations.some((org) => (org.id === platform_organization.id))) {
+  if (userServiceAccount && platform_organization && !userOrganizations.some((org) => (org === platform_organization))) {
     userOrganizations.push(platform_organization);
   }
   const relationOrganizations = userOrganizations.map((organizationId) => ({
