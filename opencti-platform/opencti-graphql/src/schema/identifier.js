@@ -521,26 +521,16 @@ export const generateHashedObservableStandardIds = (instance) => {
   const { entity_type } = instance;
   const ids = [];
   if (isStixCyberObservableHashedObservable(entity_type)) {
-    const contributingFields = allFieldsContributingToStandardId(instance);
-    contributingFields.forEach((field) => {
-      if (instance[field]) {
-        if (field === 'hashes') {
-          const hashIds = Object.entries(instance[field])
-            .flatMap(([hashKey, hashValue]) => {
-              if (!hashValue) return [];
-              return generateStandardId(entity_type, {
-                hashes: { [hashKey]: hashValue }
-              });
-            });
-          ids.push(...hashIds);
-        } else {
-          const fieldId = generateStandardId(entity_type, {
-            [field]: instance[field]
+    if (instance.hashes) {
+      const hashIds = Object.entries(instance.hashes)
+        .flatMap(([hashKey, hashValue]) => {
+          if (!hashValue) return [];
+          return generateStandardId(entity_type, {
+            hashes: { [hashKey]: hashValue }
           });
-          ids.push(fieldId);
-        }
-      }
-    });
+        });
+      ids.push(...hashIds);
+    }
   }
   return ids;
 };
