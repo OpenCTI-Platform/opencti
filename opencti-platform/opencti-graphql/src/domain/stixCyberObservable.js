@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { Readable } from 'stream';
 import nconf from 'nconf';
-import { dissoc } from 'ramda';
+import { dissoc, uniq } from 'ramda';
 import unzipper from 'unzipper';
 import { streamToBuffer } from '@jorgeferrero/stream-to-buffer';
 import { fileTypeFromBuffer } from 'file-type';
@@ -45,7 +45,7 @@ import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { uploadToStorage } from '../database/file-storage-helper';
 import { isNumericAttribute } from '../schema/schema-attributes';
-import { lowerCaseObservablesTypes } from '../schema/identifier';
+import { generateHashedObservableStandardIds, generateStandardId, lowerCaseObservablesTypes } from '../schema/identifier';
 
 export const findById = (context, user, stixCyberObservableId) => {
   return storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
@@ -225,6 +225,13 @@ export const addStixCyberObservable = async (context, user, input) => {
   // Convert hashes to dictionary if needed.
   if (isStixCyberObservableHashedObservable(type) && observableInput.hashes) {
     observableInput.hashes = inputHashesToStix(observableInput.hashes);
+    const standardId = generateStandardId(type, observableInput);
+    const otherStandardIds = generateHashedObservableStandardIds(observableInput)
+      .filter((id) => id !== standardId);
+    observableInput.x_opencti_stix_ids = uniq([
+      ...(observableInput.x_opencti_stix_ids ?? []),
+      ...otherStandardIds
+    ]);
   }
   // Check the consistency of the observable.
   const observableSyntaxResult = checkObservableSyntax(type, observableInput);
