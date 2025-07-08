@@ -94,6 +94,10 @@ export const getProtectedSensitiveConfig = async (context, user) => {
     platform_organization: {
       enabled: booleanConf('protected_sensitive_config:platform_organization:enabled', false),
       protected_ids: [],
+    },
+    public_organization: {
+      enabled: booleanConf('protected_sensitive_config:public_organization:enabled', false),
+      protected_ids: [],
     }
   };
 };
@@ -152,6 +156,7 @@ export const settingsEditContext = async (context, user, settingsId, input) => {
 
 const ACCESS_SETTINGS_RESTRICTED_KEYS = [
   'platform_organization',
+  'public_organization',
   'otp_mandatory',
   'password_policy_min_length',
   'password_policy_max_length',

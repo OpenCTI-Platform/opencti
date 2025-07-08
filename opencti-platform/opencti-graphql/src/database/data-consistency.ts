@@ -45,6 +45,10 @@ export const verifyCanDeleteOrganization = async (context: AuthContext, user: Au
     if (throwErrors) throw FunctionalError('Cannot delete the platform organization.');
     return false;
   }
+  if (organization.id === settings.public_organization) {
+    if (throwErrors) throw FunctionalError('Cannot delete the public organization.');
+    return false;
+  }
   if (organization.authorized_authorities && organization.authorized_authorities.length > 0) {
     if (isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
       if (throwErrors) throw FunctionalError('Cannot delete an organization that has an administrator.');
