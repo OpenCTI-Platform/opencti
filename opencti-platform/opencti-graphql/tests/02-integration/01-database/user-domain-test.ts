@@ -1,16 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { ADMIN_USER, AMBER_STRICT_GROUP, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, AMBER_STRICT_GROUP, PLATFORM_ORGANIZATION, TEST_ORGANIZATION, testContext } from '../../utils/testQuery';
 import { generateStandardId } from '../../../src/schema/identifier';
 import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
 import { addNotification, addTrigger, myNotificationsFind, triggerGet } from '../../../src/modules/notification/notification-domain';
 import type { MemberAccessInput, TriggerLiveAddInput, UserAddInput, WorkspaceAddInput } from '../../../src/generated/graphql';
 import { TriggerEventType, TriggerType } from '../../../src/generated/graphql';
-import { addUser, assignGroupToUser, findById as findUserById, isUserTheLastAdmin, userDelete } from '../../../src/domain/user';
+import { addUser, assignGroupToUser, findById, findById as findUserById, isUserTheLastAdmin, userDelete } from '../../../src/domain/user';
 import { addWorkspace, findById as findWorkspaceById, workspaceEditAuthorizedMembers } from '../../../src/modules/workspace/workspace-domain';
 import type { NotificationAddInput } from '../../../src/modules/notification/notification-types';
-import { getFakeAuthUser } from '../../utils/domainQueryHelper';
+import { getFakeAuthUser, getOrganizationEntity } from '../../utils/domainQueryHelper';
 import { deleteElementById } from '../../../src/database/middleware';
+import { enableEEAndSetOrganization } from '../../utils/testQueryHelper';
+import { type BasicStoreEntityOrganization } from '../../../src/modules/organization/organization-types';
 
 /**
  * Create a new user in elastic for this test purpose using domain APIs only.
@@ -195,4 +197,34 @@ describe('Service account User coverage', async () => {
       await addUser(testContext, authUser, USER);
     }).rejects.toThrowError('Invalid password: required');
   });
+});
+
+describe('Service account platform coverage', async () => {
+  const authUser = getFakeAuthUser('Platform administrator');
+  let platformOrganization: BasicStoreEntityOrganization;
+  it('should platform organization and EE activated', async () => {
+    await enableEEAndSetOrganization(PLATFORM_ORGANIZATION);
+    // Get organization id
+    platformOrganization = await getOrganizationEntity(PLATFORM_ORGANIZATION);
+  });
+  it('should have both orga if userAdd service account have one org ≠ platform org', async () => {
+    const userOrganization = await getOrganizationEntity(TEST_ORGANIZATION);
+    const USER: UserAddInput = {
+      user_email: 'bothorga@opencti',
+      name: 'Service account',
+      user_service_account: true,
+      groups: [],
+      objectOrganization: [userOrganization.id],
+    };
+    const userAddResult = await addUser(testContext, authUser, USER);
+    const userCreated = await findById(testContext, authUser, userAddResult.id);
+    expect(userCreated.objectOrganization).toStrictEqual([platformOrganization.id, userOrganization.id]);
+    await deleteElementById(testContext, authUser, userAddResult.id, ENTITY_TYPE_USER);
+  });
+  // it('userAdd service account with one org == platform org', async () => {
+  //
+  // });
+  // it('userAdd service account with no org', async () => {
+  //
+  // });
 });
