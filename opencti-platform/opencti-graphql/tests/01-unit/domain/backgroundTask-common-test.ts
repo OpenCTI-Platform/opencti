@@ -124,8 +124,8 @@ describe('Background task validity check (checkActionValidity)', () => {
     });
   });
 
-  describe('Scope USER', () => {
-    const scope = BackgroundTaskScope.User;
+  describe('Scope USER_NOTIFICATION', () => {
+    const scope = BackgroundTaskScope.UserNotification;
 
     it('should throw an error if task QUERY and filter is not Notifications', async () => {
       const user = userUpdate;
