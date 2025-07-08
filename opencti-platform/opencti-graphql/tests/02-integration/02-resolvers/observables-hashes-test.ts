@@ -347,7 +347,7 @@ describe('Observables with hashes: management of other stix ids', () => {
     expect(file4?.data?.stixCyberObservable.standard_id).toEqual(file4StandardIdByMd5);
   });
 
-  it.skip('should merge observables and x_opencti_stix_ids', async () => {
+  it('should merge observables and x_opencti_stix_ids', async () => {
     // Create StixFile5 with name (standard_id based on name) (x_opencti_stix_ids empty).
     const file5WithNameInput: StixFileAddInput = {
       name: FILE5.name,
