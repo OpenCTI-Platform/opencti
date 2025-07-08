@@ -152,6 +152,14 @@ const CREATE_QUERY = gql`
           max_confidence
         }
       }
+      objectOrganization {
+        edges {
+          node {
+            id
+            name
+          }
+        }
+      }
       groups {
         edges {
           node {
@@ -1199,6 +1207,7 @@ describe('User is impersonated', async () => {
 
 describe('Service account User coverage', async () => {
   let userInternalId: string;
+  let organizationId: string;
   it('should service account user created', async () => {
     // Create the user
     const USER_TO_CREATE: UserAddInput = {
@@ -1216,11 +1225,39 @@ describe('Service account User coverage', async () => {
 
     expect(user.data.userAdd.name).toEqual('Service account');
     expect(user.data.userAdd.user_email).toBeDefined();
-    // expect(user.data.userAdd.user_email.startWith('automatic+')).toBeTruthy();
+    expect(user.data.userAdd.user_email.startsWith('automatic+')).toBeTruthy();
     expect(user.data.userAdd.user_service_account).toEqual(true);
   });
-  it.todo('should service account user read', () => {
-    expect('value to test').toMatch('expactation');
+  it('should service account user read', async () => {
+    const queryResult = await queryAsAdminWithSuccess({ query: READ_QUERY, variables: { id: userInternalId } });
+    expect(queryResult.data?.user).not.toBeNull();
+    expect(queryResult.data?.user.id).toEqual(userInternalId);
+  });
+  it('should platform organization and EE activated', async () => {
+    await enableEEAndSetOrganization(PLATFORM_ORGANIZATION);
+    // Get organization id
+    organizationId = await getOrganizationIdByName(PLATFORM_ORGANIZATION.name);
+  });
+  it('should service account user created with EE', async () => {
+    // Create the user
+    const USER_TO_CREATE: UserAddInput = {
+      name: 'Service account',
+      user_service_account: true,
+      groups: [],
+      objectOrganization: [],
+    };
+    const user = await adminQueryWithSuccess({
+      query: CREATE_QUERY,
+      variables: { input: USER_TO_CREATE },
+    });
+    expect(user.data.userAdd).not.toBeNull();
+    userInternalId = user.data.userAdd.id;
+    console.log('user.data.userAdd', user.data.userAdd);
+    expect(user.data.userAdd.name).toEqual('Service account');
+    expect(user.data.userAdd.user_email).toBeDefined();
+    expect(user.data.userAdd.user_email.startsWith('automatic+')).toBeTruthy();
+    expect(user.data.userAdd.user_service_account).toEqual(true);
+    expect(user.data.userAdd.objectOrganization.edges[0].node.id).toEqual(organizationId);
   });
   it('should service account user deleted', async () => {
     await adminQueryWithSuccess({
@@ -1230,5 +1267,8 @@ describe('Service account User coverage', async () => {
     // Verify is no longer found
     const queryResult = await adminQueryWithSuccess({ query: READ_QUERY, variables: { id: userInternalId } });
     expect(queryResult.data.user).toBeNull();
+  });
+  it('should plateform organization and EE deactivated', async () => {
+    await enableCEAndUnSetOrganization();
   });
 });

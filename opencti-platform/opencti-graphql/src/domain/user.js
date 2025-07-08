@@ -607,7 +607,7 @@ export const addUser = async (context, user, newUser) => {
   // Link to organizations
   const userOrganizations = newUser.objectOrganization ?? [];
   if (userServiceAccount && platform_organization && !userOrganizations.some((org) => (org.id === platform_organization.id))) {
-    userOrganizations.push(platform_organization.id);
+    userOrganizations.push(platform_organization);
   }
   const relationOrganizations = userOrganizations.map((organizationId) => ({
     fromId: element.id,
