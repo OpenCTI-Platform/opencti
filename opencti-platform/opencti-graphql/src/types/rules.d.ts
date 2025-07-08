@@ -2,6 +2,7 @@ import type { StixEntities } from './general';
 import type { StixRelation } from './stix-2-1-sro';
 import type { StoreObject } from './store';
 import type { UpdateEvent } from './event';
+import type { AuthContext } from './user';
 
 interface RuleFilters {
   types: Array<string>;
@@ -52,9 +53,16 @@ interface RuleDefinition {
   scopes: Array<RuleScope>;
 }
 
+type createInferredRelationCallbackFunction = (context: AuthContext, input: any, ruleContent: any, opts?: any | undefined) => Promise<void>;
+type createInferredEntityCallbackFunction = (context: AuthContext, input: any, ruleContent: any, type: string) => Promise<void>;
+
 interface RuleRuntime extends RuleDefinition {
   activated?: boolean;
-  insert: (element: StixEntities | StixRelation) => Promise<void>;
+  insert: (
+    element: StixEntities | StixRelation,
+    createInferredEntityCallback?: createInferredEntityCallbackFunction | undefined,
+    createInferredRelationCallback?: createInferredRelationCallbackFunction | undefined
+  ) => Promise<void>;
   update: (element: StixEntities | StixRelation, event: UpdateEvent) => Promise<void>;
   clean: (element: StoreObject, deletedDependencies: Array<string>) => Promise<void>;
 }

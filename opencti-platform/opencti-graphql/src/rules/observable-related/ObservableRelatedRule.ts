@@ -11,10 +11,14 @@ import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { BasicStoreRelation, StoreObject } from '../../types/store';
 import { RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { executionContext, RULE_MANAGER_USER } from '../../utils/access';
+import type { createInferredEntityCallbackFunction, createInferredRelationCallbackFunction } from '../../types/rules';
 
 const ruleRelatedObservableBuilder = () => {
   // Execution
-  const applyUpsert = async (data: StixRelation): Promise<void> => {
+  const applyUpsert = async (
+    data: StixRelation,
+    createInferredRelationCallback?: createInferredRelationCallbackFunction | undefined
+  ): Promise<void> => {
     const context = executionContext(def.name, RULE_MANAGER_USER);
     const { extensions } = data;
     const createdId = extensions[STIX_EXT_OCTI].id;
@@ -46,7 +50,11 @@ const ruleRelatedObservableBuilder = () => {
           objectMarking: elementMarkings,
         });
         const input = { fromId: targetRef, toId, relationship_type: RELATION_RELATED_TO };
-        await createInferredRelation(context, input, ruleContent);
+        if (createInferredRelationCallback) {
+          await createInferredRelationCallback(context, input, ruleContent);
+        } else {
+          await createInferredRelation(context, input, ruleContent);
+        }
         // -----------------------------------------------------------------------------------------------------------
         // Create relation TO = FROM
         // Create the inferred relation
@@ -57,7 +65,11 @@ const ruleRelatedObservableBuilder = () => {
           objectMarking: elementMarkings,
         });
         const reverseInput = { fromId: toId, toId: targetRef, relationship_type: RELATION_RELATED_TO };
-        await createInferredRelation(context, reverseInput, reverseRuleContent);
+        if (createInferredRelationCallback) {
+          await createInferredRelationCallback(context, reverseInput, reverseRuleContent);
+        } else {
+          await createInferredRelation(context, reverseInput, reverseRuleContent);
+        }
       }
     };
     const listFromArgs = { fromId: sourceRef, callback: listFromCallback };
@@ -67,8 +79,12 @@ const ruleRelatedObservableBuilder = () => {
   const clean = async (element: StoreObject, deletedDependencies: Array<string>): Promise<void> => {
     await deleteInferredRuleElement(def.id, element, deletedDependencies);
   };
-  const insert = async (element: StixRelation): Promise<void> => {
-    return applyUpsert(element);
+  const insert = async (
+    element: StixRelation,
+    _createInferredEntityCallback?: createInferredEntityCallbackFunction | undefined,
+    createInferredRelationCallback?: createInferredRelationCallbackFunction | undefined
+  ): Promise<void> => {
+    return applyUpsert(element, createInferredRelationCallback);
   };
   const update = async (element: StixRelation): Promise<void> => {
     return applyUpsert(element);
