@@ -333,6 +333,13 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       />
     ),
   },
+  effective_confidence_level: {
+    id: 'effective_confidence_level',
+    label: 'Max Confidence',
+    percentWidth: 10,
+    isSortable: false,
+    render: ({ effective_confidence_level }) => defaultRender(effective_confidence_level.max_confidence),
+  },
   entity_type: {
     id: 'entity_type',
     label: 'Type',
