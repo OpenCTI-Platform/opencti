@@ -319,7 +319,7 @@ const StixCyberObservableNestedEntitiesTable: React.FC<StixCyberObservableNested
       },
     },
     ...(!isInLine && {
-      createdBy: {
+      creators: {
         label: 'Creator',
         percentWidth: 12,
         isSortable: false,
