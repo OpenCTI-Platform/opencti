@@ -226,7 +226,7 @@ const ThemeDark = (
       paper: paper || THEME_DARK_DEFAULT_PAPER,
       nav: nav || THEME_DARK_DEFAULT_NAV,
       accent: accent || THEME_DARK_DEFAULT_ACCENT,
-      shadow: 'rgba(255, 255, 255, 0)',
+      shadow: 'rgba(200, 200, 200, 0.15)',
     },
     entities: ThemeDarkEntities,
     relationships: ThemeDarkRelationships,
