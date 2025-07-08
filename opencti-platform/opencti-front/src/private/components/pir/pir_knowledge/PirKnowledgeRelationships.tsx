@@ -1,5 +1,5 @@
 import { graphql } from 'react-relay';
-import React, { ReactNode } from 'react';
+import React from 'react';
 import { useTheme } from '@mui/material/styles';
 import PirRadialScore from './PirRadialScore';
 import PirFiltersDisplay from '../PirFiltersDisplay';
@@ -17,8 +17,6 @@ import DataTable from '../../../../components/dataGrid/DataTable';
 import { computeLink } from '../../../../utils/Entity';
 import { PaginationOptions } from '../../../../components/list_lines';
 import { LocalStorage } from '../../../../utils/hooks/useLocalStorageModel';
-import ItemEntityType from '../../../../components/ItemEntityType';
-import useAuth from '../../../../utils/hooks/useAuth';
 import type { Theme } from '../../../../components/Theme';
 
 const sourceFlaggedFragment = graphql`
@@ -31,6 +29,7 @@ const sourceFlaggedFragment = graphql`
       }
     }
     created_at
+    updated_at
     to {
       ...on Pir {
         name
@@ -125,10 +124,13 @@ interface PirKnowledgeRelationshipsProps {
   pirId: string;
   localStorage: PaginationLocalStorage<PaginationOptions>;
   initialValues: LocalStorage;
-  additionalHeaderButtons: ReactNode[];
 }
 
-const PirKnowledgeRelationships = ({ pirId, localStorage, initialValues, additionalHeaderButtons }: PirKnowledgeRelationshipsProps) => {
+const PirKnowledgeRelationships = ({
+  pirId,
+  localStorage,
+  initialValues,
+}: PirKnowledgeRelationshipsProps) => {
   const theme = useTheme<Theme>();
 
   const {
@@ -156,40 +158,44 @@ const PirKnowledgeRelationships = ({ pirId, localStorage, initialValues, additio
     queryPaginationOptions,
   );
 
-  const {
-    platformModuleHelpers: { isRuntimeFieldEnable },
-  } = useAuth();
-  const isRuntimeSort = isRuntimeFieldEnable() ?? false;
-
   const dataColumns: DataTableProps['dataColumns'] = {
     pirScore: {
       id: 'pir_score',
       label: 'Score',
-      percentWidth: 7,
+      percentWidth: 6,
       isSortable: true,
       render: ({ pir_score }) => <PirRadialScore value={pir_score} />,
     },
     fromType: {
+      label: 'Type',
       percentWidth: 10,
     },
     fromName: {
-      percentWidth: 23,
+      label: 'Name',
+      percentWidth: 25,
     },
-    toType: {
-      percentWidth: 7,
-      render: () => (
-        <ItemEntityType inList showIcon entityType={'Pir'} />
-      ),
+    created_at: {
+      label: 'First match',
+      percentWidth: 8,
     },
-    toName: {
-      percentWidth: 7,
+    updated_at: {
+      label: 'Last match',
+      percentWidth: 9,
     },
-    created_at: { percentWidth: 10 },
-    objectMarking: { isSortable: isRuntimeSort },
+    from_objectLabel: {
+      id: 'from_objectLabel',
+      label: 'Labels',
+      percentWidth: 9,
+    },
+    from_objectMarking: {
+      label: 'Marking',
+      percentWidth: 9,
+      isSortable: false,
+    },
     pirCriteria: {
       id: 'explanations',
       label: 'Explanations',
-      percentWidth: 28,
+      percentWidth: 24,
       render: ({ pir_explanations }) => (
         <div style={{ display: 'flex', gap: theme.spacing(1) }}>
           {pir_explanations.map((e: { criterion: { filters: string } }, i: number) => (
@@ -235,7 +241,6 @@ const PirKnowledgeRelationships = ({ pirId, localStorage, initialValues, additio
             // @ts-ignore
             return computeLink(e.from);
           }}
-          additionalHeaderButtons={additionalHeaderButtons}
         />
       )}
     </>
