@@ -1373,6 +1373,7 @@ type PlatformEE {
   license_platform_match: Boolean!
   license_creator: String!
   license_global: Boolean!
+  enterprise_license: String
 }
 
 enum PlatformCriticalAlertType {
@@ -1467,6 +1468,7 @@ type Settings implements InternalObject & BasicObject {
   platform_trash_enabled: Boolean!
   platform_translations: String
   platform_protected_sensitive_config: PlatformProtectedSensitiveConfig!
+  filigran_agentic_ai_url: String
   created_at: DateTime!
   updated_at: DateTime!
   activity_listeners: [Member!]
