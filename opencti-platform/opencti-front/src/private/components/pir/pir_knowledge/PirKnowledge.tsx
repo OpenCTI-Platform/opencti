@@ -1,16 +1,10 @@
 import { graphql, useFragment } from 'react-relay';
 import React from 'react';
-import PirKnowledgeEntities from '@components/pir/pir_knowledge/PirKnowledgeEntities';
 import PirKnowledgeRelationships from '@components/pir/pir_knowledge/PirKnowledgeRelationships';
-import ToggleButton from '@mui/material/ToggleButton';
-import Tooltip from '@mui/material/Tooltip';
-import { LibraryBooksOutlined } from '@mui/icons-material';
-import { RelationManyToMany } from 'mdi-material-ui';
 import { PirKnowledgeFragment$key } from './__generated__/PirKnowledgeFragment.graphql';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { PaginationOptions } from '../../../../components/list_lines';
-import { useFormatter } from '../../../../components/i18n';
 
 const knowledgeFragment = graphql`
   fragment PirKnowledgeFragment on Pir {
@@ -23,15 +17,14 @@ interface PirKnowledgeProps {
 }
 
 const PirKnowledge = ({ data }: PirKnowledgeProps) => {
-  const { t_i18n } = useFormatter();
   const pir = useFragment(knowledgeFragment, data);
   const LOCAL_STORAGE_KEY = `PirSourcesFlaggedList-${pir.id}`;
 
   const initialValues = {
     filters: emptyFilterGroup,
     searchTerm: '',
-    sortBy: 'created',
-    orderAsc: true,
+    sortBy: 'pir_score',
+    orderAsc: false,
     openExports: false,
     view: 'relationships',
   };
@@ -40,43 +33,33 @@ const PirKnowledge = ({ data }: PirKnowledgeProps) => {
     LOCAL_STORAGE_KEY,
     initialValues,
   );
-  const { viewStorage } = localStorage;
 
-  const viewButtons = [
-    <ToggleButton key="relationships" value="relationships" aria-label="relationships">
-      <Tooltip title={t_i18n('Relationships view')}>
-        <RelationManyToMany
-          fontSize="small"
-          color={viewStorage.view === 'relationships' ? 'secondary' : 'primary'}
-        />
-      </Tooltip>
-    </ToggleButton>,
-    <ToggleButton key="entities" value="entities" aria-label="entities">
-      <Tooltip title={t_i18n('Entities view')}>
-        <LibraryBooksOutlined
-          fontSize="small"
-          color={viewStorage.view === 'entities' ? 'secondary' : 'primary'}
-        />
-      </Tooltip>
-    </ToggleButton>,
-  ];
+  // const viewButtons = [
+  //   <ToggleButton key="relationships" value="relationships" aria-label="relationships">
+  //     <Tooltip title={t_i18n('Relationships view')}>
+  //       <RelationManyToMany
+  //         fontSize="small"
+  //         color={viewStorage.view === 'relationships' ? 'secondary' : 'primary'}
+  //       />
+  //     </Tooltip>
+  //   </ToggleButton>,
+  //   <ToggleButton key="entities" value="entities" aria-label="entities">
+  //     <Tooltip title={t_i18n('Entities view')}>
+  //       <LibraryBooksOutlined
+  //         fontSize="small"
+  //         color={viewStorage.view === 'entities' ? 'secondary' : 'primary'}
+  //       />
+  //     </Tooltip>
+  //   </ToggleButton>,
+  // ];
 
   return (
     <div>
-      {viewStorage.view === 'entities'
-        ? <PirKnowledgeEntities
-            pirId={pir.id}
-            localStorage={localStorage}
-            initialValues={initialValues}
-            additionalHeaderButtons={viewButtons}
-          />
-        : <PirKnowledgeRelationships
-            pirId={pir.id}
-            localStorage={localStorage}
-            initialValues={initialValues}
-            additionalHeaderButtons={viewButtons}
-          />
-      }
+      <PirKnowledgeRelationships
+        pirId={pir.id}
+        localStorage={localStorage}
+        initialValues={initialValues}
+      />
     </div>
   );
 };
