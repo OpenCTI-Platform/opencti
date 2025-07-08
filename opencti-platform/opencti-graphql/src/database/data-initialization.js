@@ -402,7 +402,7 @@ export const patchPlatformId = async (context) => {
 
     const platformSettings = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
     if (platformSettings.id !== platformId) {
-      logApp.info(`[INIT] Switching platform identifier from [${platformSettings.id}] to [${platformId}]`);
+      logApp.warn(`[INIT] Switching platform identifier from [${platformSettings.id}] to [${platformId}]`);
       // to change the id in elastic, we have no choice but to create a patched copy and delete the old document
       const response = await elRawGet({
         index: INDEX_INTERNAL_OBJECTS,
