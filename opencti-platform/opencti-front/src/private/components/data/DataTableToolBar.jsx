@@ -1216,7 +1216,7 @@ class DataTableToolBar extends Component {
       actionsInputs[i],
     );
     this.setState({ actionsInputs });
-    fetchQuery(usersLinesSearchQuery, {
+    fetchQuery(toolBarUsersLinesSearchQuery, {
       search: newValue && newValue.length > 0 ? newValue : '',
       first: 100,
     })
