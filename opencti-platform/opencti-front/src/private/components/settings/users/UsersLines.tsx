@@ -1,6 +1,6 @@
 import { graphql } from 'react-relay';
 
-const usersLinesSearchQuery = graphql`
+export const usersLinesSearchQuery = graphql`
   query UsersLinesSearchQuery(
       $first: Int, $search: String,
       $orderBy: UsersOrdering
@@ -18,5 +18,3 @@ const usersLinesSearchQuery = graphql`
     }
   }
 `;
-
-export default usersLinesSearchQuery;
