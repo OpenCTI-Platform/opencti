@@ -247,8 +247,7 @@ const sendResultToQueue = async (context, user, task, objects, opts = {}) => {
     no_split: opts.forceNoSplit ?? false
   });
 };
-
-const buildBundleElement = (element, actionType, operations) => {
+const buildBaseBundleElement = (element) => {
   const baseObject = {
     id: element.standard_id,
     type: convertTypeToStixType(element.entity_type),
@@ -256,7 +255,6 @@ const buildBundleElement = (element, actionType, operations) => {
       [STIX_EXT_OCTI]: {
         id: element.internal_id,
         type: element.entity_type,
-        ...baseOperationBuilder(actionType, operations, element),
       }
     }
   };
@@ -269,6 +267,14 @@ const buildBundleElement = (element, actionType, operations) => {
     baseObject.target_ref = element.toId;
   }
   return baseObject;
+};
+const buildBundleElement = (element, actionType, operations) => {
+  const bundleObject = buildBaseBundleElement(element);
+  bundleObject.extensions[STIX_EXT_OCTI] = {
+    ...bundleObject.extensions[STIX_EXT_OCTI],
+    ...baseOperationBuilder(actionType, operations, element)
+  };
+  return bundleObject;
 };
 
 const standardOperationCallback = async (context, user, task, actionType, operations) => {
@@ -516,34 +522,22 @@ const ruleApplyCallback = async (context, user, task, ruleId) => {
       // Add all created inferred relation in bundle
       for (let inferredRelationIndex = 0; inferredRelationIndex < inferredRelations.length; inferredRelationIndex += 1) {
         const inferredRelation = inferredRelations[inferredRelationIndex];
-        const inferredRelationObject = {
-          id: element.id,
-          type: convertTypeToStixType(element.entity_type),
-          extensions: {
-            [STIX_EXT_OCTI]: {
-              id: element.internal_id,
-              type: element.entity_type,
-              opencti_operation: 'inferred_rel',
-              opencti_inferred_input: JSON.stringify(inferredRelation)
-            }
-          }
+        const inferredRelationObject = buildBaseBundleElement(element);
+        inferredRelationObject.extensions[STIX_EXT_OCTI] = {
+          ...inferredRelationObject.extensions[STIX_EXT_OCTI],
+          opencti_operation: 'inferred_rel',
+          opencti_inferred_input: JSON.stringify(inferredRelation)
         };
         inferredObjectsBundle.push(inferredRelationObject);
       }
       // Add all created inferred entities in bundle
       for (let inferredEntitiesIndex = 0; inferredEntitiesIndex < inferredEntities.length; inferredEntitiesIndex += 1) {
         const inferredEntity = inferredEntities[inferredEntitiesIndex];
-        const inferredEntityObject = {
-          id: element.id,
-          type: convertTypeToStixType(element.entity_type),
-          extensions: {
-            [STIX_EXT_OCTI]: {
-              id: element.internal_id,
-              type: element.entity_type,
-              opencti_operation: 'inferred_entity',
-              opencti_inferred_input: JSON.stringify(inferredEntity)
-            }
-          }
+        const inferredEntityObject = buildBaseBundleElement(element);
+        inferredEntityObject.extensions[STIX_EXT_OCTI] = {
+          ...inferredEntityObject.extensions[STIX_EXT_OCTI],
+          opencti_operation: 'inferred_entity',
+          opencti_inferred_input: JSON.stringify(inferredEntity)
         };
         inferredObjectsBundle.push(inferredEntityObject);
       }
