@@ -17,6 +17,14 @@ describe('Data initialization test', () => {
     await setPlatformId(testContext, '74cc0eba-b0c6-4822-8db6-6ddbdf49498f');
     const platformSettings = await loadEntity(testContext, ADMIN_USER, [ENTITY_TYPE_SETTINGS]);
     expect(platformSettings?.id).toEqual('74cc0eba-b0c6-4822-8db6-6ddbdf49498f');
+    // restore initial id
+    await setPlatformId(testContext, '7992a4b1-128c-4656-bf97-2018b6f1f395');
+  });
+
+  it('should not be able to set a platform_id that is not a valid uuid', async () => {
+    await expect(async () => {
+      await setPlatformId(testContext, 'wrong-id');
+    }).rejects.toThrowError('Cannot switch platform identifier: platform_id is not a valid UUID');
   });
 
   it('should create all capabilities', async () => {
