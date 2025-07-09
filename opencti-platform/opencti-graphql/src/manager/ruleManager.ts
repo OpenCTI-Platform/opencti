@@ -353,32 +353,36 @@ const initRuleManager = () => {
 };
 const ruleEngine = initRuleManager();
 
-export const executeRuleApply = async (context: AuthContext, user: AuthUser, rule: RuleRuntime, id: string) => {
+export const executeRuleApply = async (
+  context: AuthContext,
+  user: AuthUser,
+  rule: RuleRuntime,
+  id: string,
+  createInferredEntityOverride?: createInferredEntityOverrideFunction | undefined,
+  createInferredRelationOverride?: createInferredRelationOverrideFunction | undefined
+) => {
   // Execute rules over one element, act as element creation
   const instance = await storeLoadByIdWithRefs(context, user, id);
   if (!instance) {
     throw FunctionalError('Cant find element to scan', { id });
   }
   const event = buildCreateEvent(user, instance, '-');
-  const inferredRelations: { input: any, ruleContent: any, opts: any }[] = [];
-  const inferredEntities: { input: any, ruleContent: any, type: string }[] = [];
-  const createInferredRelationOverride = (_context: AuthContext, input: any, ruleContent: any, opts: any) => {
-    inferredRelations.push({ input, ruleContent, opts });
-  };
-  const createInferredEntityOverride = (_context: AuthContext, input: any, ruleContent: any, type: string) => {
-    inferredEntities.push({ input, ruleContent, type });
-  };
   await rulesApplyHandler(context, user, [event], [rule], createInferredRelationOverride, createInferredEntityOverride);
-
-  return { inferredRelations, inferredEntities };
 };
 
-export const ruleApply = async (context: AuthContext, user: AuthUser, elementId: string, ruleId: string) => {
+export const ruleApply = async (
+  context: AuthContext,
+  user: AuthUser,
+  elementId: string,
+  ruleId: string,
+  createInferredEntityOverride?: createInferredEntityOverrideFunction | undefined,
+  createInferredRelationOverride?: createInferredRelationOverrideFunction | undefined
+) => {
   const rule = await getRule(context, user, ruleId) as RuleRuntime;
   if (!rule) {
     throw FunctionalError('Cant find rule to scan', { id: ruleId });
   }
-  return executeRuleApply(context, user, rule, elementId);
+  return executeRuleApply(context, user, rule, elementId, createInferredEntityOverride, createInferredRelationOverride);
 };
 
 export const ruleClear = async (context: AuthContext, user: AuthUser, elementId: string, ruleId: string) => {
