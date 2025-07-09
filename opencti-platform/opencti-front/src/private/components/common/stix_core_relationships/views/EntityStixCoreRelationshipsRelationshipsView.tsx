@@ -172,6 +172,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
         : ['Stix-Core-Object'],
       relationshipTypes,
       handleReverseRelation,
+      connectionKey: 'Pagination_stixCoreRelationships',
     });
   }, []);
   useEffect(() => {

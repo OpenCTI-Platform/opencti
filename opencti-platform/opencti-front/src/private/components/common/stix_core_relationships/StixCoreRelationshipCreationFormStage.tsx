@@ -131,7 +131,8 @@ const StixCoreRelationshipCreationFormStage: FunctionComponent<StixCoreRelations
 
               if (conn && payload !== null
                 && !isNodeInConnection(payload, conn)
-                && !isNodeInConnection(payload.getLinkedRecord(reversed ? 'from' : 'to'), conn)) {
+                && !isNodeInConnection(payload.getLinkedRecord(reversed ? 'from' : 'to'), conn)
+              ) {
                 const newEdge = payload.setLinkedRecord(createdNode, 'node');
                 ConnectionHandler.insertEdgeBefore(conn, newEdge);
 
