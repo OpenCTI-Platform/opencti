@@ -107,6 +107,13 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
     delete finalValues.confirmation;
     delete finalValues.user_confidence_level_enabled;
 
+    if (serviceAccountFeatureFlag && finalValues.user_service_account) {
+      delete finalValues.password;
+      if (delete finalValues.user_email === '') {
+        delete finalValues.user_email;
+      }
+    }
+
     commitMutation({
       mutation: userMutation,
       variables: {
@@ -123,6 +130,7 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
   let initialValues;
   if (serviceAccountFeatureFlag) {
     initialValues = {
+      user_service_account: false,
       name: '',
       user_email: '',
       firstname: '',
@@ -139,7 +147,6 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
     };
   } else {
     initialValues = {
-      user_service_account: false,
       name: '',
       user_email: '',
       firstname: '',
@@ -175,7 +182,7 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
           >
             {({ submitForm, handleReset, isSubmitting }) => (
               <Form>
-                {!serviceAccountFeatureFlag && (
+                {serviceAccountFeatureFlag && (
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                   <Field
                     component={SwitchField}
