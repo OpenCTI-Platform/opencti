@@ -12,11 +12,7 @@ import { createRuleContent } from '../rules-utils';
 import { createInferredRelation, deleteInferredRuleElement } from '../../database/middleware';
 import { listAllRelations, type RelationOptions } from '../../database/middleware-loader';
 import { RELATION_BASED_ON } from '../../schema/stixCoreRelationship';
-import type {
-  createInferredEntityOverrideFunction,
-  createInferredRelationOverrideFunction,
-  RuleRuntime
-} from '../../types/rules';
+import type { createInferredEntityOverrideFunction, createInferredRelationOverrideFunction, RuleRuntime } from '../../types/rules';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION } from '../../schema/general';
 import type { AuthContext } from '../../types/user';
 import { executionContext, RULE_MANAGER_USER } from '../../utils/access';

@@ -4,13 +4,7 @@ import { buildPeriodFromDates, computeRangeIntersection } from '../utils/format'
 import { createRuleContent } from './rules-utils';
 import { computeAverage } from '../database/utils';
 import { listAllRelations } from '../database/middleware-loader';
-import type {
-  createInferredEntityOverrideFunction,
-  createInferredRelationOverrideFunction,
-  RelationTypes,
-  RuleDefinition,
-  RuleRuntime
-} from '../types/rules';
+import type { createInferredEntityOverrideFunction, createInferredRelationOverrideFunction, RelationTypes, RuleDefinition, RuleRuntime } from '../types/rules';
 import type { StixRelation } from '../types/stix-2-1-sro';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { BasicStoreRelation, StoreObject } from '../types/store';

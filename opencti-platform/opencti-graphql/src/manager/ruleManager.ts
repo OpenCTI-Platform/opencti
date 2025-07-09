@@ -15,13 +15,7 @@ import { getParentTypes } from '../schema/schemaUtils';
 import { isBasicRelationship, isStixRelationship } from '../schema/stixRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { internalLoadById, listAllRelations } from '../database/middleware-loader';
-import type {
-  createInferredEntityOverrideFunction,
-  createInferredRelationOverrideFunction,
-  RuleDefinition,
-  RuleRuntime,
-  RuleScope
-} from '../types/rules';
+import type { createInferredEntityOverrideFunction, createInferredRelationOverrideFunction, RuleDefinition, RuleRuntime, RuleScope } from '../types/rules';
 import type { BasicManagerEntity, BasicStoreBase, BasicStoreCommon, BasicStoreEntity, BasicStoreRelation, StoreObject } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { RuleManager } from '../generated/graphql';

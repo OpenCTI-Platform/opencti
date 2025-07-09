@@ -5,13 +5,7 @@ import { createInferredRelation, deleteInferredRuleElement, generateUpdateMessag
 import { RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { createRuleContent } from './rules-utils';
 import { convertStixToInternalTypes, generateInternalType } from '../schema/schemaUtils';
-import type {
-  createInferredEntityOverrideFunction,
-  createInferredRelationOverrideFunction,
-  RelationTypes,
-  RuleDefinition,
-  RuleRuntime
-} from '../types/rules';
+import type { createInferredEntityOverrideFunction, createInferredRelationOverrideFunction, RelationTypes, RuleDefinition, RuleRuntime } from '../types/rules';
 import type { StixId, StixObject } from '../types/stix-2-1-common';
 import type { StixReport } from '../types/stix-2-1-sdo';
 import type { StixRelation } from '../types/stix-2-1-sro';
