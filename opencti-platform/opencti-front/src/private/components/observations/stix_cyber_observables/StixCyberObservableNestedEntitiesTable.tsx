@@ -49,9 +49,10 @@ const stixCyberObservableNestedEntitiesLineFragment = graphql`
     relationship_type
     start_time
     stop_time
-    creators {
-      id
-      name
+    createdBy {
+      ... on Identity {
+        name
+      }
     }
     from {
       ... on BasicObject {
