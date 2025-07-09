@@ -14891,6 +14891,6 @@ type Mutation {
   stixSightingRelationshipEdit(id: ID!): StixSightingRelationshipEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
 
   ######## INTERNAL INFERRED CREATION
-  inferredRelationAdd(input: String!, ruleContent: String!, opts: String): ID @auth(for: [BYPASS])
-  inferredEntityAdd(input: String!, ruleContent: String!, type: String!): ID @auth(for: [BYPASS])
+  inferredRelationAdd(jsonInput: String!): ID @auth(for: [BYPASS])
+  inferredEntityAdd(jsonInput: String!): ID @auth(for: [BYPASS])
 }
