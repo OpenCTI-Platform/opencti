@@ -1,7 +1,7 @@
 import ejs from 'ejs';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import conf, { booleanConf, getBaseUrl, logApp } from '../config/conf';
-import { TYPE_LOCK_ERROR } from '../config/errors';
+import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { createStreamProcessor, NOTIFICATION_STREAM_NAME, type StreamProcessor } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
@@ -38,7 +38,6 @@ import {
 import { type GetHttpClient, getHttpClient } from '../utils/http-client';
 import { extractRepresentative } from '../database/entity-representative';
 import { extractStixRepresentativeForUser } from '../database/stix-representative';
-import { findById } from '../domain/user';
 import { EVENT_TYPE_UPDATE } from '../database/utils';
 
 const DOC_URI = 'https://docs.opencti.io';
@@ -52,7 +51,8 @@ export async function processNotificationData(
   notificationMap: Map<string, BasicStoreEntityTrigger>,
   user: NotificationUser,
   data: NotificationData[],
-  generatedContentInput: Record<string, NotificationContentEvent[]>
+  generatedContentInput: Record<string, NotificationContentEvent[]>,
+  usersMap: Map<string, AuthUser>,
 ) {
   const generatedContent = { ...generatedContentInput };
 
@@ -66,7 +66,10 @@ export async function processNotificationData(
         instance_id: instance.id
       };
 
-      const notificationUser = await findById(context, SYSTEM_USER, user.user_id);
+      const notificationUser = usersMap.get(user.user_id);
+      if (!notificationUser) {
+        throw FunctionalError(`Notification user not found ${user.user_id}`);
+      }
       const notificationName = 'extensions' in instance
         ? await extractStixRepresentativeForUser(context, notificationUser, instance, true)
         : extractRepresentative(instance)?.main;
@@ -239,7 +242,8 @@ export const internalProcessNotification = async (
   notificationUser: NotificationUser,
   notifier: BasicStoreEntityNotifier | NotifierTestInput,
   notificationData: NotificationData[],
-  triggerList: BasicStoreEntityTrigger[]
+  triggerList: BasicStoreEntityTrigger[],
+  usersMap: Map<string, AuthUser>,
   // eslint-disable-next-line consistent-return
 ): Promise<{ error: string } | void> => {
   try {
@@ -251,7 +255,7 @@ export const internalProcessNotification = async (
 
     const contentEventMapping: Record<string, NotificationContentEvent[]> = {};
 
-    await processNotificationData(authContext, notificationEntities, notificationUser, notificationData, contentEventMapping);
+    await processNotificationData(authContext, notificationEntities, notificationUser, notificationData, contentEventMapping, usersMap);
 
     const content = Object.entries(contentEventMapping).map(([title, events]) => ({ title, events }));
 
@@ -284,7 +288,8 @@ export const processNotificationEvent = async (
   notificationMap: Map<string, BasicStoreEntityTrigger>,
   notificationId: string,
   user: NotificationUser,
-  notificationData: NotificationData[]
+  notificationData: NotificationData[],
+  usersMap: Map<string, AuthUser>,
 ): Promise<void> => {
   const storeSettings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
 
@@ -305,7 +310,7 @@ export const processNotificationEvent = async (
     const notifier = notifierMap.get(userNotifierId) ?? {} as BasicStoreEntityNotifier;
 
     // There is no await in purpose; the goal is to send notification and continue without waiting result.
-    internalProcessNotification(context, storeSettings, notificationMap, user, notifier, notificationData, [notificationTrigger])
+    internalProcessNotification(context, storeSettings, notificationMap, user, notifier, notificationData, [notificationTrigger], usersMap)
       .catch((reason) => logApp.error('[OPENCTI-MODULE] Publisher manager unknown error.', { cause: reason }));
   }
 };
@@ -346,7 +351,7 @@ export const processLiveNotificationEvent = async (
     const { user, type, message } = target;
     const notificationMessage = createFullNotificationMessage(message, usersMap, streamMessage, origin, type);
     const notificationData = [{ notification_id, instance, type, message: notificationMessage }];
-    await processNotificationEvent(context, notificationMap, notification_id, user, notificationData);
+    await processNotificationEvent(context, notificationMap, notification_id, user, notificationData, usersMap);
   }
 };
 
@@ -356,7 +361,7 @@ const processDigestNotificationEvent = async (context: AuthContext, notification
   const dataWithFullMessage = data.map((d) => {
     return { ...d, message: createFullNotificationMessage(d.message, usersMap, d.streamMessage, d.origin, d.type) };
   });
-  await processNotificationEvent(context, notificationMap, event.notification_id, user, dataWithFullMessage);
+  await processNotificationEvent(context, notificationMap, event.notification_id, user, dataWithFullMessage, usersMap);
 };
 
 const liveNotificationBufferPerEntity: Record<string, { timestamp: number, events: SseEvent<KnowledgeNotificationEvent>[] }> = {};
@@ -416,7 +421,8 @@ const processBufferedEvents = async (
             currentUser,
             allNotifiersMap.get(notifier) ?? {} as BasicStoreEntityNotifier,
             dataToSend,
-            triggersInDataToSend as BasicStoreEntityTrigger[]
+            triggersInDataToSend as BasicStoreEntityTrigger[],
+            usersFromCache,
           ).catch((reason) => logApp.error('[OPENCTI-MODULE] Publisher manager unknown error.', { cause: reason }));
         }
       }
