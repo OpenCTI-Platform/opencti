@@ -1,10 +1,10 @@
 import React, { FunctionComponent, ReactNode } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Checkbox from '@mui/material/Checkbox';
-import { UsersLinesSearchQuery } from '@components/settings/users/__generated__/UsersLinesSearchQuery.graphql';
 import { GroupEditionContainer_group$data } from '@components/settings/groups/__generated__/GroupEditionContainer_group.graphql';
 import { GroupUsersLinesQuery$variables } from '@components/settings/users/__generated__/GroupUsersLinesQuery.graphql';
-import { usersLinesSearchQuery } from '../users/UsersLines';
+import { toolBarUsersLinesSearchQuery } from '@components/data/DataTableToolBar';
+import { DataTableToolBarUsersLinesSearchQuery } from '@components/data/__generated__/DataTableToolBarUsersLinesSearchQuery.graphql';
 import { deleteNodeFromId, insertNode } from '../../../../utils/store';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import DataTableWithoutFragment from '../../../../components/dataGrid/DataTableWithoutFragment';
@@ -45,7 +45,7 @@ const userMutationRelationDelete = graphql`
 
 interface GroupEditionUsersProps {
   group: GroupEditionContainer_group$data,
-  queryRef: PreloadedQuery<UsersLinesSearchQuery>,
+  queryRef: PreloadedQuery<DataTableToolBarUsersLinesSearchQuery>,
   paginationOptionsForUpdater: GroupUsersLinesQuery$variables,
   children: ReactNode,
   storageKey: string,
@@ -54,7 +54,7 @@ interface GroupEditionUsersProps {
 const GroupEditionUsers: FunctionComponent<GroupEditionUsersProps> = ({ group, queryRef, paginationOptionsForUpdater, children, storageKey }) => {
   const groupId = group.id;
   const groupUsers = group.members?.edges?.map((n) => ({ id: n.node.id })) ?? [];
-  const usersData = usePreloadedQuery<UsersLinesSearchQuery>(usersLinesSearchQuery, queryRef);
+  const usersData = usePreloadedQuery<DataTableToolBarUsersLinesSearchQuery>(toolBarUsersLinesSearchQuery, queryRef);
   const users = usersData.users?.edges.map((n) => n.node) ?? [];
 
   const [commitAddUser] = useApiMutation(userMutationRelationAdd);

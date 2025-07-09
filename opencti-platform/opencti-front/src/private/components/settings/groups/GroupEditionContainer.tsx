@@ -4,10 +4,14 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
-import { usersLinesSearchQuery } from '@components/settings/users/UsersLines';
-import { UsersLinesSearchQuery, UsersLinesSearchQuery$variables } from '@components/settings/users/__generated__/UsersLinesSearchQuery.graphql';
+
 import { GroupUsersLinesQuery$variables } from '@components/settings/users/__generated__/GroupUsersLinesQuery.graphql';
 import { initialStaticPaginationForGroupUsers } from '@components/settings/users/GroupUsers';
+import { toolBarUsersLinesSearchQuery } from '@components/data/DataTableToolBar';
+import {
+  DataTableToolBarUsersLinesSearchQuery,
+  DataTableToolBarUsersLinesSearchQuery$variables,
+} from '@components/data/__generated__/DataTableToolBarUsersLinesSearchQuery.graphql';
 import GroupEditionConfidence from './GroupEditionConfidence';
 import GroupEditionOverview from './GroupEditionOverview';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -110,10 +114,10 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
     true,
   );
   const LOCAL_STORAGE_KEY = `group-${group.id}-users`;
-  const paginationLocalStorage: PaginationLocalStorage<UsersLinesSearchQuery$variables> = useDataTablePaginationLocalStorage(LOCAL_STORAGE_KEY, {});
+  const paginationLocalStorage: PaginationLocalStorage<DataTableToolBarUsersLinesSearchQuery$variables> = useDataTablePaginationLocalStorage(LOCAL_STORAGE_KEY, {});
   const { orderMode, orderBy } = paginationLocalStorage.paginationOptions;
-  const userQueryRef = useQueryLoading<UsersLinesSearchQuery>(
-    usersLinesSearchQuery,
+  const userQueryRef = useQueryLoading<DataTableToolBarUsersLinesSearchQuery>(
+    toolBarUsersLinesSearchQuery,
     { search: searchTerm, orderBy, orderMode },
   );
 
