@@ -66,7 +66,6 @@ import Checkbox from '@mui/material/Checkbox';
 import { objectParticipantFieldMembersSearchQuery } from '../common/form/ObjectParticipantField';
 import { objectAssigneeFieldMembersSearchQuery } from '../common/form/ObjectAssigneeField';
 import { vocabularyQuery } from '../common/form/OpenVocabField';
-import { usersLinesSearchQuery } from '../settings/users/UsersLines';
 import PromoteDrawer from './drawers/PromoteDrawer';
 import TasksFilterValueContainer from '../../../components/TasksFilterValueContainer';
 import inject18n from '../../../components/i18n';
@@ -324,6 +323,25 @@ const toolBarOrganizationsQuery = graphql`
       }
     }
   }
+`;
+
+export const toolBarUsersLinesSearchQuery = graphql`
+    query  DataTableToolBarUsersLinesSearchQuery(
+        $first: Int, $search: String,
+        $orderBy: UsersOrdering
+        $orderMode: OrderingMode
+    ) {
+        users(first: $first, search: $search, orderBy: $orderBy, orderMode: $orderMode) {
+            edges {
+                node {
+                    id
+                    entity_type
+                    name
+                    user_email
+                }
+            }
+        }
+    }
 `;
 
 class DataTableToolBar extends Component {
