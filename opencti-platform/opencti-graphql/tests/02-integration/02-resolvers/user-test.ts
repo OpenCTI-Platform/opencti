@@ -58,6 +58,7 @@ const LIST_QUERY = gql`
           id
           name
           description
+          user_email
         }
       }
     }
@@ -309,8 +310,18 @@ describe('User resolver standard behavior', () => {
     expect(res.data?.token).toBeDefined();
   });
   it('should list users', async () => {
-    const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data?.users.edges.length).toEqual(TESTING_USERS.length + 3);
+    const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 100 } });
+    const userList = queryResult.data?.users.edges;
+
+    // Verify that some users are in the list
+    // Users in testQuery
+    expect(userList.filter((userNode: any) => userNode.node.user_email === 'participate@opencti.io').length).toBe(1);
+    expect(userList.filter((userNode: any) => userNode.node.user_email === 'editor@opencti.io').length).toBe(1);
+    expect(userList.filter((userNode: any) => userNode.node.user_email === 'security@opencti.io').length).toBe(1);
+
+    // Users from this describe block
+    expect(userList.filter((userNode: any) => userNode.node.user_email === 'user_confidence@mail.com').length).toBe(1);
+    expect(userList.filter((userNode: any) => userNode.node.user_email === 'user@mail.com').length).toBe(1);
   });
   it('should update user', async () => {
     const UPDATE_QUERY = gql`
