@@ -23,7 +23,7 @@ export default class UserFormPage {
   }
 
   getPasswordInput() {
-    return this.page.getByLabel('Password');
+    return this.page.getByRole('textbox', { name: 'Password' });
   }
 
   async fillPasswordInput(password: string) {
