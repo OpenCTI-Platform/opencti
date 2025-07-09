@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { createInferredEntity, createInferredRelation, deleteInferredRuleElement, stixLoadById } from '../../database/middleware';
+import { createInferredRelation, deleteInferredRuleElement, stixLoadById } from '../../database/middleware';
 import def from './SightingIncidentDefinition';
 import { ENTITY_TYPE_INCIDENT } from '../../schema/stixDomainObject';
 import { createRuleContent } from '../rules-utils';
@@ -15,8 +15,8 @@ import { executionContext, RULE_MANAGER_USER } from '../../utils/access';
 import type { AuthContext } from '../../types/user';
 import type { StixIndicator } from '../../modules/indicator/indicator-types';
 import { ENTITY_TYPE_INDICATOR } from '../../modules/indicator/indicator-types';
-import type {createInferredEntityOverrideFunction, createInferredRelationOverrideFunction} from "../../types/rules";
-import {idGenFromData} from "../../schema/identifier";
+import type { createInferredEntityOverrideFunction, createInferredRelationOverrideFunction } from '../../types/rules';
+import { idGenFromData } from '../../schema/identifier';
 
 // 'If **indicator A** has `revoked` **false** and **indicator A** is `sighted` in ' +
 // '**identity B**, then create **Incident C** `related-to` **indicator A** and ' +
