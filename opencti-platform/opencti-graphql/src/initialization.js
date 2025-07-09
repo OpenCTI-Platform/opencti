@@ -18,7 +18,7 @@ import { smtpIsAlive } from './database/smtp';
 import { initCreateEntitySettings } from './modules/entitySetting/entitySetting-domain';
 import { initDecayRules } from './modules/decayRule/decayRule-domain';
 import { initManagerConfigurations } from './modules/managerConfiguration/managerConfiguration-domain';
-import { initializeData } from './database/data-initialization';
+import { initializeData, patchPlatformId } from './database/data-initialization';
 import { initExclusionListCache } from './database/exclusionListCache';
 import { initFintelTemplates } from './modules/fintelTemplate/fintelTemplate-domain';
 import { lockResources } from './lock/master-lock';
@@ -118,6 +118,7 @@ const platformInit = async (withMarkings = true) => {
         // noinspection ExceptionCaughtLocallyJS
         throw ConfigurationError('Internal option internal_init_mapping_migration is only available for new platform init');
       }
+      await patchPlatformId(context);
       await refreshMappingsAndIndices();
       await initializeInternalQueues();
       await enforceQueuesConsistency(context, SYSTEM_USER);

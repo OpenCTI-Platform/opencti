@@ -1,10 +1,32 @@
 import { describe, expect, it } from 'vitest';
 import { listAllEntities } from '../../../src/database/middleware-loader';
-import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE } from '../../../src/schema/internalObject';
+import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS } from '../../../src/schema/internalObject';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import type { BasicStoreEntity } from '../../../src/types/store';
+import { loadEntity } from '../../../src/database/middleware';
+import { setPlatformId } from '../../../src/database/data-initialization';
 
 describe('Data initialization test', () => {
+  it('should have a specific platform_id from config file', async () => {
+    const platformSettings = await loadEntity(testContext, ADMIN_USER, [ENTITY_TYPE_SETTINGS]);
+    // as configured in test.json
+    expect(platformSettings?.id).toEqual('7992a4b1-128c-4656-bf97-2018b6f1f395');
+  });
+
+  it('should be able to set another platform_id', async () => {
+    await setPlatformId(testContext, '74cc0eba-b0c6-4822-8db6-6ddbdf49498f');
+    const platformSettings = await loadEntity(testContext, ADMIN_USER, [ENTITY_TYPE_SETTINGS]);
+    expect(platformSettings?.id).toEqual('74cc0eba-b0c6-4822-8db6-6ddbdf49498f');
+    // restore initial id
+    await setPlatformId(testContext, '7992a4b1-128c-4656-bf97-2018b6f1f395');
+  });
+
+  it('should not be able to set a platform_id that is not a valid uuid', async () => {
+    await expect(async () => {
+      await setPlatformId(testContext, 'wrong-id');
+    }).rejects.toThrowError('Cannot switch platform identifier: platform_id is not a valid UUID');
+  });
+
   it('should create all capabilities', async () => {
     const capabilities = await listAllEntities<BasicStoreEntity>(testContext, ADMIN_USER, [ENTITY_TYPE_CAPABILITY]);
     expect(capabilities.length).toEqual(41);
