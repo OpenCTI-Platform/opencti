@@ -51,10 +51,9 @@ export async function processNotificationData(
   notificationMap: Map<string, BasicStoreEntityTrigger>,
   user: NotificationUser,
   data: NotificationData[],
-  generatedContentInput: Record<string, NotificationContentEvent[]>,
   usersMap: Map<string, AuthUser>,
 ) {
-  const generatedContent = { ...generatedContentInput };
+  const generatedContent: Record<string, NotificationContentEvent[]> = {};
 
   for (let i = 0; i < data.length; i += 1) {
     const { notification_id, instance, type, message } = data[i];
@@ -253,9 +252,7 @@ export const internalProcessNotification = async (
 
     const { notifier_connector_id: notifierConnectorId, notifier_configuration: notifierConfigurationString } = notifier;
 
-    const contentEventMapping: Record<string, NotificationContentEvent[]> = {};
-
-    await processNotificationData(authContext, notificationEntities, notificationUser, notificationData, contentEventMapping, usersMap);
+    const contentEventMapping = await processNotificationData(authContext, notificationEntities, notificationUser, notificationData, usersMap);
 
     const content = Object.entries(contentEventMapping).map(([title, events]) => ({ title, events }));
 
