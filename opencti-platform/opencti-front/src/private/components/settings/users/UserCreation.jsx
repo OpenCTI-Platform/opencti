@@ -38,15 +38,28 @@ const userValidation = (t) => Yup.object().shape({
   user_service_account: Yup.boolean().required(),
   name: Yup.string().required(t('This field is required')),
   user_email: Yup.string()
-    .required(t('This field is required'))
-    .email(t('The value must be an email address')),
+    .email(t('The value must be an email address'))
+    .when('user_service_account', {
+      is: true,
+      then: (schema) => schema.nullable(),
+      otherwise: (schema) => schema.required(t('This field is required')).nullable(),
+    }),
   firstname: Yup.string().nullable(),
   lastname: Yup.string().nullable(),
   description: Yup.string().nullable(),
-  password: Yup.string().required(t('This field is required')),
+  password: Yup.string()
+    .when('user_service_account', {
+      is: true,
+      then: (schema) => schema.nullable(),
+      otherwise: (schema) => schema.required(t('This field is required')).nullable(),
+    }),
   confirmation: Yup.string()
     .oneOf([Yup.ref('password'), null], t('The values do not match'))
-    .required(t('This field is required')),
+    .when('user_service_account', {
+      is: true,
+      then: (schema) => schema.nullable(),
+      otherwise: (schema) => schema.required(t('This field is required')).nullable(),
+    }),
   user_confidence_level_enabled: Yup.boolean(),
   user_confidence_level: Yup.number()
     .min(0, t('The value must be greater than or equal to 0'))
