@@ -1205,7 +1205,7 @@ describe('User is impersonated', async () => {
   });
 });
 
-describe.only('Service account User coverage', async () => {
+describe('Service account User coverage', async () => {
   let userInternalId: string;
   let userInternalIdNoOrg: string;
   let userInternalIdWithOrg: string;
