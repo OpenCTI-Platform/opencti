@@ -1,4 +1,4 @@
-import React, { CSSProperties } from 'react';
+import React from 'react';
 import Grid from '@mui/material/Grid2';
 import PirOverviewCounts from './PirOverviewCounts';
 import PirOverviewTopSources from './PirOverviewTopSources';
@@ -20,20 +20,17 @@ const PirOverview = ({
 }: PirOverviewProps) => {
   const { t_i18n } = useFormatter();
 
-  const verticalGridStyle: CSSProperties = {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 2,
-  };
-
   return (
     <Grid container spacing={3}>
-      <Grid size={{ xs: 6 }} sx={verticalGridStyle}>
+      <Grid size={{ xs: 6 }} container direction='column' spacing={3}>
         <Paper title={t_i18n('PIR Details')}>
           <PirOverviewDetails data={dataPir} />
         </Paper>
+        <Paper title={t_i18n('PIR Visualization')}>
+          <PirOverviewTopSources data={dataPir} />
+        </Paper>
       </Grid>
-      <Grid size={{ xs: 6 }} sx={verticalGridStyle}>
+      <Grid size={{ xs: 6 }} container direction='column' spacing={3}>
         <PirOverviewCounts data={dataPir} />
         <Paper title={t_i18n('News feed')}>
           <PirOverviewHistory
@@ -41,9 +38,6 @@ const PirOverview = ({
             dataPir={dataPir}
           />
         </Paper>
-      </Grid>
-      <Grid size={{ xs: 6 }} sx={verticalGridStyle}>
-        <PirOverviewTopSources data={dataPir} />
       </Grid>
     </Grid>
   );

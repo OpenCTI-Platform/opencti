@@ -10,7 +10,7 @@ import Paper from '../../../../components/Paper';
 import { useFormatter } from '../../../../components/i18n';
 import { dayAgo } from '../../../../utils/Time';
 import NumberDifference from '../../../../components/NumberDifference';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 
 const countsFragment = graphql`
   fragment PirOverviewCountsFragment on Pir {
