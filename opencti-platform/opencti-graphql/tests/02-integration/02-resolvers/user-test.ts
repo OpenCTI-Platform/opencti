@@ -621,6 +621,8 @@ describe('User resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userInternalId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data?.user).not.toBeNull();
+    expect(queryResult.data?.user.roles.filter((role: any) => role.name === 'Role in group').length).toBe(1);
+    expect(queryResult.data?.user.roles.filter((role: any) => role.name === 'Default').length).toBe(1);
     expect(queryResult.data?.user.roles.length).toEqual(2); // the 2 roles are: 'Role in group' and 'Default'
   });
   it('should add capability in role', async () => {
@@ -1246,7 +1248,34 @@ describe('Service account User coverage', async () => {
     expect(user.data.userAdd.user_service_account).toEqual(true);
   });
   it('should service account user read', async () => {
-    const queryResult = await queryAsAdminWithSuccess({ query: READ_QUERY, variables: { id: userInternalId } });
+    const QUERY_SERVICE_ACCOUNT_USER = gql`
+      query user($id: String!) {
+        user(id: $id) {
+          id
+          standard_id
+          name
+          user_email
+          description
+          groups {
+            edges {
+              node {
+                id
+                name
+              }
+            }
+          }
+          capabilities {
+            id
+            standard_id
+            name
+            description
+          }
+          api_token
+        }
+      }
+    `;
+
+    const queryResult = await queryAsAdminWithSuccess({ query: QUERY_SERVICE_ACCOUNT_USER, variables: { id: userInternalId } });
     expect(queryResult.data?.user).not.toBeNull();
     expect(queryResult.data?.user.id).toEqual(userInternalId);
   });
