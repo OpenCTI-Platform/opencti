@@ -47,7 +47,7 @@ import { ENTITY_TYPE_MALWARE_ANALYSIS } from '../modules/malwareAnalysis/malware
 import { isBasicRelationship, isStixRelationship, isStixRelationshipExceptRef } from '../schema/stixRelationship';
 import { ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
-import {RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO} from '../schema/internalRelationship';
+import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
 
 export type FilterDefinition = {
   filterKey: string
