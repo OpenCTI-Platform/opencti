@@ -13,9 +13,8 @@ import { getFakeAuthUser, getGroupEntity, getOrganizationEntity } from '../../ut
 import { deleteElementById } from '../../../src/database/middleware';
 import { enableCEAndUnSetOrganization, enableEEAndSetOrganization } from '../../utils/testQueryHelper';
 import { type BasicStoreEntityOrganization } from '../../../src/modules/organization/organization-types';
-import { executionContext, SETTINGS_SET_ACCESSES } from '../../../src/utils/access';
-import { deleteIngestionCsv } from '../../../src/modules/ingestion/ingestion-csv-domain';
-import type { BasicStoreCommon, BasicStoreEntity } from '../../../src/types/store';
+import { SETTINGS_SET_ACCESSES } from '../../../src/utils/access';
+import type { BasicStoreCommon } from '../../../src/types/store';
 import type { Group } from '../../../src/types/group';
 
 /**
