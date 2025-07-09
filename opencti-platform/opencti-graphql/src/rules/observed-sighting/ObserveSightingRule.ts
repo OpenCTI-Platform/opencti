@@ -8,11 +8,7 @@ import { createRuleContent } from '../rules-utils';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../schema/general';
 import { generateInternalType } from '../../schema/schemaUtils';
-import type {
-  createInferredEntityOverrideFunction,
-  createInferredRelationOverrideFunction,
-  RuleRuntime
-} from '../../types/rules';
+import type { createInferredEntityOverrideFunction, createInferredRelationOverrideFunction, RuleRuntime } from '../../types/rules';
 import type { StixDomainObject, StixObject } from '../../types/stix-2-1-common';
 import type { StixObservedData } from '../../types/stix-2-1-sdo';
 import type { StixRelation } from '../../types/stix-2-1-sro';
