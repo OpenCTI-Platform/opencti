@@ -8,6 +8,7 @@ import Alert from '@mui/material/Alert';
 import MenuItem from '@mui/material/MenuItem';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
+import useHelper from '../../../../utils/hooks/useHelper';
 import GroupField, { groupsQuery } from '../../common/form/GroupField';
 import UserConfidenceLevelField from './edition/UserConfidenceLevelField';
 import Drawer from '../../common/drawer/Drawer';
@@ -25,6 +26,9 @@ import { insertNode } from '../../../../utils/store';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import SwitchField from '../../../../components/fields/SwitchField';
+
+const { isFeatureEnable } = useHelper();
+const serviceAccountFeatureFlag = isFeatureEnable('SERVICE_ACCOUNT');
 
 const userMutation = graphql`
   mutation UserCreationMutation($input: UserAddInput!) {
@@ -117,6 +121,41 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
       },
     });
   };
+  let initialValues;
+  if (serviceAccountFeatureFlag) {
+    initialValues = {
+      name: '',
+      user_email: '',
+      firstname: '',
+      lastname: '',
+      description: '',
+      password: '',
+      confirmation: '',
+      objectOrganization: [],
+      groups: [],
+      account_status: 'Active',
+      account_lock_after_date: null,
+      user_confidence_level: null,
+      prevent_default_groups: false,
+    };
+  } else {
+    initialValues = {
+      user_service_account: false,
+      name: '',
+      user_email: '',
+      firstname: '',
+      lastname: '',
+      description: '',
+      password: '',
+      confirmation: '',
+      objectOrganization: [],
+      groups: [],
+      account_status: 'Active',
+      account_lock_after_date: null,
+      user_confidence_level: null,
+      prevent_default_groups: false,
+    };
+  }
 
   return (
     <Drawer
@@ -130,28 +169,14 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
           </Alert>
           <br />
           <Formik
-            initialValues={{
-              user_service_account: false,
-              name: '',
-              user_email: '',
-              firstname: '',
-              lastname: '',
-              description: '',
-              password: '',
-              confirmation: '',
-              objectOrganization: [],
-              groups: [],
-              account_status: 'Active',
-              account_lock_after_date: null,
-              user_confidence_level: null,
-              prevent_default_groups: false,
-            }}
+            initialValues={ initialValues }
             validationSchema={userValidation(t_i18n)}
             onSubmit={onSubmit}
             onReset={onClose}
           >
             {({ submitForm, handleReset, isSubmitting }) => (
               <Form>
+                {!serviceAccountFeatureFlag && (
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                   <Field
                     component={SwitchField}
@@ -168,7 +193,7 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                       style={{ cursor: 'default' }}
                     />
                   </Tooltip>
-                </div>
+                </div>)}
                 <Field
                   component={TextField}
                   name="name"
