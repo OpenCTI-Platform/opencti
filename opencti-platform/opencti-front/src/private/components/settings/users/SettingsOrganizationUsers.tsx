@@ -120,7 +120,6 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
   };
 
   const {
-    viewStorage,
     helpers,
     paginationOptions,
   } = usePaginationLocalStorage<SettingsOrganizationUsersPaginationQuery$variables>(
