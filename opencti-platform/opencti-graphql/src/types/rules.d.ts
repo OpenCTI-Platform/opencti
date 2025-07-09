@@ -2,7 +2,7 @@ import type { StixEntities } from './general';
 import type { StixRelation } from './stix-2-1-sro';
 import type { StoreObject } from './store';
 import type { UpdateEvent } from './event';
-import type {AuthContext} from "./user";
+import type { AuthContext } from './user';
 
 interface RuleFilters {
   types: Array<string>;
