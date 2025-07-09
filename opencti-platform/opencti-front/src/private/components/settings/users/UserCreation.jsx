@@ -35,7 +35,7 @@ const userMutation = graphql`
 `;
 
 const userValidation = (t) => Yup.object().shape({
-  // user_service_account: Yup.boolean(),
+  user_service_account: Yup.boolean().required(),
   name: Yup.string().required(t('This field is required')),
   user_email: Yup.string()
     .required(t('This field is required'))
@@ -139,21 +139,23 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
           >
             {({ submitForm, handleReset, isSubmitting }) => (
               <Form>
-                <Field
-                  component={SwitchField}
-                  type="checkbox"
-                  name="user_service_account"
-                  label={t_i18n('This user is a service account')}
-                />
-                <Tooltip
-                  title={t_i18n('Service accounts will not have any password & a randomized email adress will be provided, if not provided.Service account will not be able to receive notifications.Service account will also automatically pertains to the main platform org.')}
-                >
-                  <InformationOutline
-                    fontSize="small"
-                    color="primary"
-                    style={{ cursor: 'default' }}
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <Field
+                    component={SwitchField}
+                    type="checkbox"
+                    name="user_service_account"
+                    label={t_i18n('This user is a service account')}
                   />
-                </Tooltip>
+                  <Tooltip
+                    title={t_i18n('Service accounts will not have any password & a randomized email adress will be provided, if not provided.Service account will not be able to receive notifications.Service account will also automatically pertains to the main platform org.')}
+                  >
+                    <InformationOutline
+                      fontSize="small"
+                      color="primary"
+                      style={{ cursor: 'default' }}
+                    />
+                  </Tooltip>
+                </div>
                 <Field
                   component={TextField}
                   name="name"
