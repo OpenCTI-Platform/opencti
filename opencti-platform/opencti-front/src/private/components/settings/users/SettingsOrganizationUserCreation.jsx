@@ -45,6 +45,7 @@ const userMutation = graphql`
   mutation SettingsOrganizationUserCreationMutation($input: UserAddInput!) {
     userAdd(input: $input) {
       id
+      entity_type
       name
       user_email
       firstname
