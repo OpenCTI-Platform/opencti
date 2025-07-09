@@ -11,7 +11,7 @@ import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { BasicStoreRelation, StoreObject } from '../../types/store';
 import { RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { executionContext, RULE_MANAGER_USER } from '../../utils/access';
-import type {createInferredEntityOverrideFunction, createInferredRelationOverrideFunction} from "../../types/rules";
+import type { createInferredEntityOverrideFunction, createInferredRelationOverrideFunction } from '../../types/rules';
 
 const ruleRelatedObservableBuilder = () => {
   // Execution

@@ -11,7 +11,7 @@ import type { BasicStoreObject, BasicStoreRelation, StoreObject } from '../../ty
 import { RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { executionContext, RULE_MANAGER_USER } from '../../utils/access';
 import { internalLoadById } from '../../database/middleware-loader';
-import type {createInferredEntityOverrideFunction, createInferredRelationOverrideFunction} from "../../types/rules";
+import type { createInferredEntityOverrideFunction, createInferredRelationOverrideFunction } from '../../types/rules';
 
 const ruleLocalizationOfTargetsBuilder = () => {
   // Execution

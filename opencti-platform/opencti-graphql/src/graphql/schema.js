@@ -74,7 +74,7 @@ import stixMetaObjectResolvers from '../resolvers/stixMetaObject';
 import filterKeysSchemaResolver from '../resolvers/filterKeysSchema';
 import basicObjectResolvers from '../resolvers/basicObject';
 import { FunctionalError } from '../config/errors';
-import inferredObjectResolvers from "../resolvers/inferredObject";
+import inferredObjectResolvers from '../resolvers/inferredObject';
 
 const schemaTypeDefs = [globalTypeDefs];
 
