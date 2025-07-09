@@ -15,7 +15,7 @@ const pirResolvers: Resolvers = {
   Pir: {
     creators: (pir, _, context) => creatorsLoader.load(pir.creator_id, context, context.user),
     objectMarking: (pir, _, context) => markingDefinitionsLoader.load(pir, context, context.user),
-    pirContainers: (pir, args, context) => findPirContainers(context, context.user, pir.id, args),
+    pirContainers: (pir, args, context) => findPirContainers(context, context.user, pir, args),
   },
   Mutation: {
     pirAdd: (_, { input }, context) => pirAdd(context, context.user, input),

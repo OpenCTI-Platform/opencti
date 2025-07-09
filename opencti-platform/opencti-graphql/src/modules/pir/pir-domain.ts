@@ -1,6 +1,6 @@
 import { now } from 'moment';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { type EntityOptions, internalLoadById, listEntities, listEntitiesPaginated, listRelations, listRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
+import { type EntityOptions, internalLoadById, listEntitiesPaginated, listRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityPir, ENTITY_TYPE_PIR, type PirExplanation } from './pir-types';
 import { type EditInput, EditOperation, type FilterGroup, OrderingMode, type PirAddInput, type PirFlagElementInput, type PirUnflagElementInput } from '../../generated/graphql';
 import { createEntity, deleteRelationsByFromAndTo, updateAttribute } from '../../database/middleware';
@@ -9,7 +9,7 @@ import { notify } from '../../database/redis';
 import { BUS_TOPICS, logApp } from '../../config/conf';
 import { deleteInternalObject } from '../../domain/internalObject';
 import { registerConnectorForPir, unregisterConnectorForIngestion } from '../../domain/connector';
-import type { BasicStoreCommon, BasicStoreObject } from '../../types/store';
+import type { BasicStoreCommon, BasicStoreEntity, BasicStoreObject, StoreEntityConnection } from '../../types/store';
 import { RELATION_IN_PIR } from '../../schema/stixRefRelationship';
 import { createPirRel, serializePir, updatePirExplanations } from './pir-utils';
 import { FunctionalError } from '../../config/errors';
@@ -27,27 +27,32 @@ export const findAll = (context: AuthContext, user: AuthUser, opts?: EntityOptio
   return listEntitiesPaginated<BasicStoreEntityPir>(context, user, [ENTITY_TYPE_PIR], opts);
 };
 
-export const findPirContainers = async (context: AuthContext, user: AuthUser, pirId: string, opts?: EntityOptions<BasicStoreObject>) => {
-  const pirMetaRelsOpts = {
-    count: 100,
-    orderBy: 'modified',
-    orderMode: OrderingMode.Desc,
-    relationship_type: ['in-pir'],
-    toId: pirId,
-  };
-  const stixRefRelationships = await listRelations(context, user, [RELATION_IN_PIR], pirMetaRelsOpts); // TODO PIR listRelations is not of correct type
-  const flaggedIds = (stixRefRelationships.edges
-    .map((n) => n.node.fromId)
-    .filter((n) => !!n) ?? []) as string[];
-  const pir = await findById(context, user, pirId);
+export const findPirContainers = async (
+  context: AuthContext,
+  user: AuthUser,
+  pir: BasicStoreEntityPir,
+  opts?: EntityOptions<BasicStoreObject>
+): Promise<StoreEntityConnection<BasicStoreEntity>> => {
+  const { edges: relations } = await listRelationsPaginated(
+    context,
+    user,
+    [RELATION_IN_PIR],
+    {
+      first: 100,
+      orderBy: 'modified',
+      orderMode: OrderingMode.Desc,
+      toId: pir.id,
+    }
+  );
+  const flaggedIds = relations.flatMap((rel) => rel.node.fromId);
   const pirFilters: FilterGroup[] = pir.pir_criteria.map((c) => JSON.parse(c.filters));
   const pirToIdFilterIds = pirFilters.flatMap((f) => extractFilterKeyValues(RELATION_TO_FILTER, f));
   const idsOfInterest = [...flaggedIds, ...pirToIdFilterIds];
   if (idsOfInterest.length === 0) {
     idsOfInterest.push('<invalid id>'); // To force empty result in the query result
   }
-  const filters = addFilter(opts?.filters, 'objects', idsOfInterest);
-  return listEntities(context, user, [ENTITY_TYPE_CONTAINER], { filters }); // TODO PIR specify new type (ConnectorConnection)
+  const filters = addFilter(opts?.filters, 'objects', idsOfInterest, 'contains');
+  return listEntitiesPaginated(context, user, [ENTITY_TYPE_CONTAINER], { ...opts, filters });
 };
 
 export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAddInput) => {
@@ -118,15 +123,15 @@ export const updatePir = async (context: AuthContext, user: AuthUser, pirId: str
 };
 
 /**
-   * Called when an event of create new relationship matches a Pir criteria.
-   * If the source of the relationship is already flagged update its dependencies,
-   * otherwise create a new meta relationship between the source and the PIR.
-   *
-   * @param context To be able to call engine.
-   * @param user User making the request.
-   * @param pirId The ID of the PIR matched by the relationship.
-   * @param input The data needed to create the dependency.
-   */
+ * Called when an event of create new relationship matches a Pir criteria.
+ * If the source of the relationship is already flagged update its dependencies,
+ * otherwise create a new meta relationship between the source and the PIR.
+ *
+ * @param context To be able to call engine.
+ * @param user User making the request.
+ * @param pirId The ID of the PIR matched by the relationship.
+ * @param input The data needed to create the dependency.
+ */
 export const pirFlagElement = async (
   context: AuthContext,
   user: AuthUser,

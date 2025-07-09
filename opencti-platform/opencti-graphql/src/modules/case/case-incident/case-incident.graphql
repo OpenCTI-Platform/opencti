@@ -109,6 +109,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
     search: String
     types: [String]
     all: Boolean
+    pirId: String
   ): StixObjectOrStixRelationshipRefConnection
   relatedContainers(
     first: Int

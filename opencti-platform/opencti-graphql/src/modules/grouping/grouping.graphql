@@ -109,6 +109,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
         search: String
         types: [String]
         all: Boolean
+        pirId: String
     ): StixObjectOrStixRelationshipRefConnection
     relatedContainers(
         first: Int
