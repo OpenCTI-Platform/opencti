@@ -14,7 +14,6 @@ import { deleteElementById } from '../../../src/database/middleware';
 import { enableCEAndUnSetOrganization, enableEEAndSetOrganization } from '../../utils/testQueryHelper';
 import { type BasicStoreEntityOrganization } from '../../../src/modules/organization/organization-types';
 import { SETTINGS_SET_ACCESSES } from '../../../src/utils/access';
-import type { BasicStoreCommon } from '../../../src/types/store';
 import type { Group } from '../../../src/types/group';
 
 /**
@@ -176,7 +175,7 @@ describe('Service account User coverage', async () => {
     const userCreated: AuthUser = await findById(testContext, authUser, userAddResult.id);
 
     expect(userCreated.user_email).toBe('trucmuche@opencti');
-    expect(userCreated.organizations).toBeUndefined();
+    expect(userCreated.organizations).toStrictEqual([]);
     await deleteElementById(testContext, authUser, userAddResult.id, ENTITY_TYPE_USER);
   });
 
@@ -189,6 +188,7 @@ describe('Service account User coverage', async () => {
       user_service_account: true,
       groups: [testGroup.id],
       objectOrganization: [testOrganization.id],
+      prevent_default_groups: true
     };
     const userAddResult = await addUser(testContext, authUser, userAddInput);
     const userCreated: AuthUser = await findById(testContext, authUser, userAddResult.id);
@@ -254,10 +254,9 @@ describe('Service account with platform organization coverage', async () => {
     };
     const userAddResult = await addUser(testContext, authUser, userAddInput);
     const userCreated: AuthUser = await findById(testContext, authUser, userAddResult.id);
-    const userOrganizations: BasicStoreCommon[] = userCreated.organizations;
 
-    expect(userOrganizations.filter((org) => org.id === anotherOrgThanPlatformOne.id).length, 'Service account user should be created with organization in input').toBe(1);
-    expect(userOrganizations.filter((org) => org.id === platformOrganization.id).length, 'Service account user should be added to platform organization').toBe(1);
+    expect(userCreated.organizations.filter((org) => org.id === anotherOrgThanPlatformOne.id).length, 'Service account user should be created with organization in input').toBe(1);
+    expect(userCreated.organizations.filter((org) => org.id === platformOrganization.id).length, 'Service account user should be added to platform organization').toBe(1);
     await deleteElementById(testContext, authUser, userAddResult.id, ENTITY_TYPE_USER);
   });
 
@@ -271,10 +270,9 @@ describe('Service account with platform organization coverage', async () => {
     };
     const userAddResult = await addUser(testContext, authUser, userAddInput);
     const userCreated: AuthUser = await findById(testContext, authUser, userAddResult.id);
-    const userOrganizations: BasicStoreCommon[] = userCreated.organizations;
 
-    expect(userOrganizations.filter((org) => org.id === platformOrganization.id).length, 'Service account user should be added to platform organization').toBe(1);
-    expect(userOrganizations.length, 'Platform organization should be the only one').toBe(1);
+    expect(userCreated.organizations.filter((org) => org.id === platformOrganization.id).length, 'Service account user should be added to platform organization').toBe(1);
+    expect(userCreated.organizations.length, 'Platform organization should be the only one').toBe(1);
     await deleteElementById(testContext, authUser, userAddResult.id, ENTITY_TYPE_USER);
   });
 
@@ -287,9 +285,8 @@ describe('Service account with platform organization coverage', async () => {
     };
     const userAddResult = await addUser(testContext, authUser, userAddInput);
     const userCreated: AuthUser = await findById(testContext, authUser, userAddResult.id);
-    const userOrganizations: BasicStoreCommon[] = userCreated.organizations;
 
-    expect(userOrganizations.length, 'This user should be in no organization').toBe(0);
+    expect(userCreated.organizations, 'This user should be in no organization').toStrictEqual([]);
     await deleteElementById(testContext, authUser, userAddResult.id, ENTITY_TYPE_USER);
   });
 
@@ -303,10 +300,9 @@ describe('Service account with platform organization coverage', async () => {
     };
     const userAddResult = await addUser(testContext, authUser, userAddInput);
     const userCreated: AuthUser = await findById(testContext, authUser, userAddResult.id);
-    const userOrganizations: BasicStoreCommon[] = userCreated.organizations;
 
-    expect(userOrganizations.filter((org) => org.id === anotherOrgThanPlatformOne.id).length, 'Standard user should be created with organization in input').toBe(1);
-    expect(userOrganizations.length, 'User organization should be the only one').toBe(1);
+    expect(userCreated.organizations.filter((org) => org.id === anotherOrgThanPlatformOne.id).length, 'Standard user should be created with organization in input').toBe(1);
+    expect(userCreated.organizations.length, 'User organization should be the only one').toBe(1);
 
     await deleteElementById(testContext, authUser, userAddResult.id, ENTITY_TYPE_USER);
   });
