@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { ADMIN_USER, AMBER_STRICT_GROUP, PLATFORM_ORGANIZATION, TEST_ORGANIZATION, testContext } from '../../utils/testQuery';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { ADMIN_USER, AMBER_STRICT_GROUP, GREEN_GROUP, PLATFORM_ORGANIZATION, TEST_ORGANIZATION, testContext } from '../../utils/testQuery';
 import { generateStandardId } from '../../../src/schema/identifier';
 import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
@@ -9,10 +9,14 @@ import { TriggerEventType, TriggerType } from '../../../src/generated/graphql';
 import { addUser, assignGroupToUser, findById, findById as findUserById, isUserTheLastAdmin, userDelete } from '../../../src/domain/user';
 import { addWorkspace, findById as findWorkspaceById, workspaceEditAuthorizedMembers } from '../../../src/modules/workspace/workspace-domain';
 import type { NotificationAddInput } from '../../../src/modules/notification/notification-types';
-import { getFakeAuthUser, getOrganizationEntity } from '../../utils/domainQueryHelper';
+import { getFakeAuthUser, getGroupEntity, getOrganizationEntity } from '../../utils/domainQueryHelper';
 import { deleteElementById } from '../../../src/database/middleware';
-import { enableEEAndSetOrganization } from '../../utils/testQueryHelper';
+import { enableCEAndUnSetOrganization, enableEEAndSetOrganization } from '../../utils/testQueryHelper';
 import { type BasicStoreEntityOrganization } from '../../../src/modules/organization/organization-types';
+import { executionContext, SETTINGS_SET_ACCESSES } from '../../../src/utils/access';
+import { deleteIngestionCsv } from '../../../src/modules/ingestion/ingestion-csv-domain';
+import type { BasicStoreCommon, BasicStoreEntity } from '../../../src/types/store';
+import type { Group } from '../../../src/types/group';
 
 /**
  * Create a new user in elastic for this test purpose using domain APIs only.
@@ -156,8 +160,11 @@ describe('Testing user delete on cascade [issue/3720]', () => {
     expect(isLastAdminResult, 'An entity without authorized_member data should not block deletion.').toBe(false);
   });
 });
+
 describe('Service account User coverage', async () => {
   const authUser = getFakeAuthUser('Platform administrator');
+  authUser.capabilities = [{ name: SETTINGS_SET_ACCESSES }];
+
   it('should get email if userAdd service account with email setup', async () => {
     const USER: UserAddInput = {
       user_email: 'trucmuche@opencti',
@@ -167,11 +174,35 @@ describe('Service account User coverage', async () => {
       objectOrganization: [],
     };
     const userAddResult = await addUser(testContext, authUser, USER);
+    const userCreated: AuthUser = await findById(testContext, authUser, userAddResult.id);
 
-    expect(userAddResult.user_email).toBe('trucmuche@opencti');
-    expect(userAddResult.objectOrganization).toStrictEqual([]);
+    expect(userCreated.user_email).toBe('trucmuche@opencti');
+    expect(userCreated.organizations).toBeUndefined();
     await deleteElementById(testContext, authUser, userAddResult.id, ENTITY_TYPE_USER);
   });
+
+  it('should service account user be allowed to be created with a group and one org', async () => {
+    const testOrganization: BasicStoreEntityOrganization = await getOrganizationEntity(TEST_ORGANIZATION);
+    const testGroup: Group = await getGroupEntity(GREEN_GROUP);
+
+    const userAddInput: UserAddInput = {
+      name: 'Service account with group',
+      user_service_account: true,
+      groups: [testGroup.id],
+      objectOrganization: [testOrganization.id],
+    };
+    const userAddResult = await addUser(testContext, authUser, userAddInput);
+    const userCreated: AuthUser = await findById(testContext, authUser, userAddResult.id);
+
+    expect(userCreated.user_email.endsWith('opencti.invalid'), 'Service account email should be generated').toBeTruthy();
+    expect(userCreated.organizations.filter((org) => org.id === testOrganization.id).length, 'Service account user should be created with input org').toBe(1);
+    expect(userCreated.organizations.length, 'Input organization should be the only one').toBe(1);
+    expect(userCreated.groups.filter((org) => org.id === testGroup.id).length, 'Service account user should be created with input group').toBe(1);
+    expect(userCreated.groups.length, 'Input group should be the only one').toBe(1);
+
+    await deleteElementById(testContext, authUser, userAddResult.id, ENTITY_TYPE_USER);
+  });
+
   it('should ThrowError if userAdd not service account, without email', async () => {
     const USER: UserAddInput = {
       name: 'No service account without email',
@@ -199,27 +230,85 @@ describe('Service account User coverage', async () => {
   });
 });
 
-describe.skip('Service account with platform organization coverage', async () => {
+describe('Service account with platform organization coverage', async () => {
   const authUser = getFakeAuthUser('Platform administrator');
-  let platformOrganization: BasicStoreEntityOrganization;
-  it('should platform organization and EE activated', async () => {
+  authUser.capabilities = [{ name: SETTINGS_SET_ACCESSES }];
+
+  const anotherOrgThanPlatformOne: BasicStoreEntityOrganization = await getOrganizationEntity(TEST_ORGANIZATION);
+  const platformOrganization = await getOrganizationEntity(PLATFORM_ORGANIZATION);
+
+  beforeAll(async () => {
     await enableEEAndSetOrganization(PLATFORM_ORGANIZATION);
-    // Get organization id
-    platformOrganization = await getOrganizationEntity(PLATFORM_ORGANIZATION);
   });
+
+  afterAll(async () => {
+    await enableCEAndUnSetOrganization();
+  });
+
   it('should have both orga if userAdd service account have one org ≠ platform org', async () => {
-    const userOrganization = await getOrganizationEntity(TEST_ORGANIZATION);
-    const USER: UserAddInput = {
+    const userAddInput: UserAddInput = {
       user_email: 'bothorga4@opencti',
       name: 'Service account',
       user_service_account: true,
       groups: [],
-      objectOrganization: [userOrganization.id],
+      objectOrganization: [anotherOrgThanPlatformOne.id],
     };
-    const userAddResult = await addUser(testContext, authUser, USER);
-    const userCreated = await findById(testContext, authUser, userAddResult.id);
+    const userAddResult = await addUser(testContext, authUser, userAddInput);
+    const userCreated: AuthUser = await findById(testContext, authUser, userAddResult.id);
+    const userOrganizations: BasicStoreCommon[] = userCreated.organizations;
 
-    expect(userCreated.objectOrganization).toStrictEqual([platformOrganization.id, userOrganization.id]);
+    expect(userOrganizations.filter((org) => org.id === anotherOrgThanPlatformOne.id).length, 'Service account user should be created with organization in input').toBe(1);
+    expect(userOrganizations.filter((org) => org.id === platformOrganization.id).length, 'Service account user should be added to platform organization').toBe(1);
+    await deleteElementById(testContext, authUser, userAddResult.id, ENTITY_TYPE_USER);
+  });
+
+  it('service account user should be added to platform organization even in no organization in input', async () => {
+    const userAddInput: UserAddInput = {
+      user_email: 'no.org@opencti.fr',
+      name: 'Service account with org in input',
+      user_service_account: true,
+      groups: [],
+      objectOrganization: [],
+    };
+    const userAddResult = await addUser(testContext, authUser, userAddInput);
+    const userCreated: AuthUser = await findById(testContext, authUser, userAddResult.id);
+    const userOrganizations: BasicStoreCommon[] = userCreated.organizations;
+
+    expect(userOrganizations.filter((org) => org.id === platformOrganization.id).length, 'Service account user should be added to platform organization').toBe(1);
+    expect(userOrganizations.length, 'Platform organization should be the only one').toBe(1);
+    await deleteElementById(testContext, authUser, userAddResult.id, ENTITY_TYPE_USER);
+  });
+
+  it('Standard user should not be added to platform organization', async () => {
+    const userAddInput: UserAddInput = {
+      user_email: 'user.standard@opencti.fr',
+      name: 'Standard user without org',
+      user_service_account: false,
+      password: 'youWillNeverGuess',
+    };
+    const userAddResult = await addUser(testContext, authUser, userAddInput);
+    const userCreated: AuthUser = await findById(testContext, authUser, userAddResult.id);
+    const userOrganizations: BasicStoreCommon[] = userCreated.organizations;
+
+    expect(userOrganizations.length, 'This user should be in no organization').toBe(0);
+    await deleteElementById(testContext, authUser, userAddResult.id, ENTITY_TYPE_USER);
+  });
+
+  it('Standard user with one org should keep it', async () => {
+    const userAddInput: UserAddInput = {
+      user_email: 'user.standard@opencti.fr',
+      name: 'Standard user without org',
+      user_service_account: false,
+      password: 'youWillNeverGuess',
+      objectOrganization: [anotherOrgThanPlatformOne.id],
+    };
+    const userAddResult = await addUser(testContext, authUser, userAddInput);
+    const userCreated: AuthUser = await findById(testContext, authUser, userAddResult.id);
+    const userOrganizations: BasicStoreCommon[] = userCreated.organizations;
+
+    expect(userOrganizations.filter((org) => org.id === anotherOrgThanPlatformOne.id).length, 'Standard user should be created with organization in input').toBe(1);
+    expect(userOrganizations.length, 'User organization should be the only one').toBe(1);
+
     await deleteElementById(testContext, authUser, userAddResult.id, ENTITY_TYPE_USER);
   });
 });
