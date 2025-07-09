@@ -339,7 +339,7 @@ test('Dashboard restriction access', async ({ page }) => {
   await page.goto('/dashboard/workspaces/dashboards');
   await leftBar.open();
 
-  const dashboardName = 'Dashboard - restriction';
+  const dashboardName = `Dashboard - restriction ${new Date().getTime()}`;
   // await dashboardPage.getCreateMenuButton().hover();
   await dashboardPage.getAddNewDashboardButton().click();
   await dashboardForm.nameField.fill(dashboardName);
