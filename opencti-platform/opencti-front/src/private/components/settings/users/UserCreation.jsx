@@ -27,9 +27,6 @@ import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGra
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import SwitchField from '../../../../components/fields/SwitchField';
 
-const { isFeatureEnable } = useHelper();
-const serviceAccountFeatureFlag = isFeatureEnable('SERVICE_ACCOUNT');
-
 const userMutation = graphql`
   mutation UserCreationMutation($input: UserAddInput!) {
     userAdd(input: $input) {
@@ -85,6 +82,8 @@ const CreateUserControlledDial = (props) => (
 
 const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
   const { settings } = useAuth();
+  const { isFeatureEnable } = useHelper();
+  const serviceAccountFeatureFlag = isFeatureEnable('SERVICE_ACCOUNT');
   const theme = useTheme();
   const { t_i18n } = useFormatter();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
