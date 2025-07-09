@@ -111,19 +111,19 @@ const IngestionTaxiiEditionContainer = ({
     ),
     R.assoc(
       'cert',
-      ingestionTaxii.authentication_type === CERT_AUTH
+      ingestionTaxii.authentication_type === CERT_AUTH && ingestionTaxii.authentication_value
         ? ingestionTaxii.authentication_value.split(':')[0]
         : '',
     ),
     R.assoc(
       'key',
-      ingestionTaxii.authentication_type === CERT_AUTH
+      ingestionTaxii.authentication_type === CERT_AUTH && ingestionTaxii.authentication_value
         ? ingestionTaxii.authentication_value.split(':')[1]
         : '',
     ),
     R.assoc(
       'ca',
-      ingestionTaxii.authentication_type === CERT_AUTH
+      ingestionTaxii.authentication_type === CERT_AUTH && ingestionTaxii.authentication_value
         ? ingestionTaxii.authentication_value.split(':')[2]
         : '',
     ),
