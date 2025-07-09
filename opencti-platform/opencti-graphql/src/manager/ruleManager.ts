@@ -360,13 +360,17 @@ export const executeRuleApply = async (context: AuthContext, user: AuthUser, rul
     throw FunctionalError('Cant find element to scan', { id });
   }
   const event = buildCreateEvent(user, instance, '-');
-  const createInferredRelationOverride = (context: AuthContext, input: any, ruleContent: any, opts: any) => {
-
+  const inferredRelations: { input: any, ruleContent: any, opts: any }[] = [];
+  const inferredEntities: { input: any, ruleContent: any, type: string }[] = [];
+  const createInferredRelationOverride = (_context: AuthContext, input: any, ruleContent: any, opts: any) => {
+    inferredRelations.push({ input, ruleContent, opts });
   };
-  const createInferredEntityOverride = (context: AuthContext, input: any, ruleContent: any, type: string) => {
-
+  const createInferredEntityOverride = (_context: AuthContext, input: any, ruleContent: any, type: string) => {
+    inferredEntities.push({ input, ruleContent, type });
   };
   await rulesApplyHandler(context, user, [event], [rule], createInferredRelationOverride, createInferredEntityOverride);
+
+  return { inferredRelations, inferredEntities };
 };
 
 export const ruleApply = async (context: AuthContext, user: AuthUser, elementId: string, ruleId: string) => {

@@ -64,7 +64,7 @@ import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { getEntityFromCache } from '../database/cache';
 import { objects as getContainerObjects } from '../domain/container';
-import { ruleApply } from "./ruleManager";
+import { ruleApply } from './ruleManager';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -501,14 +501,43 @@ const sharingOperationCallback = async (context, user, task, actionType, operati
 const ruleApplyCallback = async (context, user, task, ruleId) => {
   return async (elements) => {
     for (let index = 0; index < elements.length; index += 1) {
+      const inferredObjectsBundle = [];
       const element = elements[index];
       // in case of rule apply we need to fake the apply of the rule and get the resulting inferred creations
-      const createdInferred = await ruleApply(context, user, element.internal_id, ruleId);
-      const inferredObjectsBundle = [];
-      for (let createdInferredIndex = 0; createdInferredIndex < createdInferred?.length; createdInferredIndex += 1) {
-        // Add all created inferred objects in bundle
-        const createdInferredObjectBundle = buildBundleElement(element, actionType, operations);
-        inferredObjectsBundle.push(createdInferredObjectBundle);
+      const { inferredRelations, inferredEntities } = await ruleApply(context, user, element.internal_id, ruleId);
+      // Add all created inferred relation in bundle
+      for (let inferredRelationIndex = 0; inferredRelationIndex < inferredRelations.length; inferredRelationIndex += 1) {
+        const inferredRelation = inferredRelations[inferredRelationIndex];
+        const inferredRelationObject = {
+          id: element.id,
+          type: convertTypeToStixType(element.entity_type),
+          extensions: {
+            [STIX_EXT_OCTI]: {
+              id: element.internal_id,
+              type: element.entity_type,
+              opencti_operation: 'inferred_rel',
+              opencti_inferred_input: JSON.stringify(inferredRelation)
+            }
+          }
+        };
+        inferredObjectsBundle.push(inferredRelationObject);
+      }
+      // Add all created inferred entities in bundle
+      for (let inferredEntitiesIndex = 0; inferredEntitiesIndex < inferredEntities.length; inferredEntitiesIndex += 1) {
+        const inferredEntity = inferredEntities[inferredEntitiesIndex];
+        const inferredEntityObject = {
+          id: element.id,
+          type: convertTypeToStixType(element.entity_type),
+          extensions: {
+            [STIX_EXT_OCTI]: {
+              id: element.internal_id,
+              type: element.entity_type,
+              opencti_operation: 'inferred_entity',
+              opencti_inferred_input: JSON.stringify(inferredEntity)
+            }
+          }
+        };
+        inferredObjectsBundle.push(inferredEntityObject);
       }
       // Send inferred to queue
       if (inferredObjectsBundle.length > 0) {
