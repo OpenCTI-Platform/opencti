@@ -20,6 +20,7 @@ import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../..
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
+import useAuth from '../../../utils/hooks/useAuth';
 
 export const usersQuery = graphql`
   query UsersLinesPaginationQuery(
@@ -104,6 +105,8 @@ const Users = () => {
   setTitle(t_i18n('Users | Security | Settings'));
   const isSetAccess = useGranted([SETTINGS_SETACCESSES]);
   const isAdminOrganization = useGranted([VIRTUAL_ORGANIZATION_ADMIN]);
+  const { me } = useAuth();
+  const organization = me.administrated_organizations?.[0] ?? null;
 
   const initialValues = {
     searchTerm: '',
@@ -160,6 +163,7 @@ const Users = () => {
     userCreateButton = (
       <SettingsOrganizationUserCreation
         paginationOptions={queryPaginationOptions}
+        organization={organization}
         variant="controlledDial"
       />
     );
