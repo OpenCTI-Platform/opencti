@@ -51,6 +51,9 @@ const userMutation = graphql`
       external
       lastname
       otp_activated
+        effective_confidence_level {
+          max_confidence
+        }
       created_at
     }
   }

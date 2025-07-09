@@ -14,7 +14,7 @@ import { SettingsOrganizationUsersLine_node$data } from '@components/settings/us
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../../components/dataGrid/DataTable';
@@ -128,8 +128,32 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
     initialValues,
   );
 
-  const { filters } = viewStorage;
-  const contextFilters = useBuildEntityTypeBasedFilterContext('Organization', filters);
+  const organizationId = organization.id;
+  const contextFilters = {
+    filterGroups: [
+      {
+        filterGroups: [],
+        filters: [
+          {
+            key: 'participate-to',
+            mode: 'or',
+            operator: 'eq',
+            values: [organizationId],
+          },
+        ],
+        mode: 'and',
+      },
+    ],
+    filters: [
+      {
+        key: 'entity_type',
+        mode: 'or',
+        operator: 'eq',
+        values: ['User'],
+      },
+    ],
+    mode: 'and',
+  };
 
   const queryPaginationOptions = {
     ...paginationOptions,
