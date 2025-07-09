@@ -9,7 +9,7 @@ import { isEmptyField } from '../../database/utils';
 import type { EditInput, NotifierAddInput, NotifierConnector, NotifierTestInput, QueryNotifiersArgs } from '../../generated/graphql';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { internalProcessNotification } from '../../manager/publisherManager';
-import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../../schema/internalObject';
 import type { BasicStoreSettings } from '../../types/settings';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { MEMBER_ACCESS_RIGHT_VIEW, SYSTEM_USER } from '../../utils/access';
@@ -179,16 +179,26 @@ export const testNotifier = async (context: AuthContext, user: AuthUser, notifie
   } catch (error: any) {
     return error.data ? error.data.reason : error.message;
   }
+  const usersFromCache = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const notificationMap = new Map([
     ['default_notification_id', { name: 'test' } as BasicStoreEntityTrigger],
     ['default_notification_id_2', { name: 'test 2' } as BasicStoreEntityTrigger],
     ['default_activity_id', { name: 'test 2' } as BasicStoreEntityTrigger],
   ]);
-  const result = await internalProcessNotification(context, settings, notificationMap, {
-    user_id: user.id,
-    user_email: user.user_email,
-    notifiers: [],
-  }, notifier, MOCK_NOTIFICATIONS[notifier.notifier_test_id], [{ created: (new Date()).toISOString() }] as unknown as BasicStoreEntityTrigger[]);
+  const result = await internalProcessNotification(
+    context,
+    settings,
+    notificationMap,
+    {
+      user_id: user.id,
+      user_email: user.user_email,
+      notifiers: [],
+    },
+    notifier,
+    MOCK_NOTIFICATIONS[notifier.notifier_test_id],
+    [{ created: (new Date()).toISOString() }] as unknown as BasicStoreEntityTrigger[],
+    usersFromCache,
+  );
   return result?.error;
 };
