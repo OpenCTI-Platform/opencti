@@ -51,7 +51,7 @@ export interface ParsedPir {
 
 interface PirDependency {
   element_id: string,
-  author_id: string,
+  author_id?: string | null,
 }
 
 export interface PirExplanation {

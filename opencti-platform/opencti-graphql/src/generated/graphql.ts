@@ -2133,6 +2133,7 @@ export type CaseObjectsArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<StixObjectOrStixRelationshipsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
+  pirId?: InputMaybe<Scalars['String']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
@@ -2389,6 +2390,7 @@ export type CaseIncidentObjectsArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<StixObjectOrStixRelationshipsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
+  pirId?: InputMaybe<Scalars['String']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
@@ -2696,6 +2698,7 @@ export type CaseRfiObjectsArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<StixObjectOrStixRelationshipsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
+  pirId?: InputMaybe<Scalars['String']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
@@ -3000,6 +3003,7 @@ export type CaseRftObjectsArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<StixObjectOrStixRelationshipsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
+  pirId?: InputMaybe<Scalars['String']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
@@ -4055,6 +4059,7 @@ export type ContainerObjectsArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<StixObjectOrStixRelationshipsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
+  pirId?: InputMaybe<Scalars['String']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
@@ -8193,6 +8198,7 @@ export type FeedbackObjectsArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<StixObjectOrStixRelationshipsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
+  pirId?: InputMaybe<Scalars['String']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
@@ -8832,6 +8838,7 @@ export type GroupingObjectsArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<StixObjectOrStixRelationshipsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
+  pirId?: InputMaybe<Scalars['String']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
@@ -17691,6 +17698,7 @@ export type NoteObjectsArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<StixObjectOrStixRelationshipsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
+  pirId?: InputMaybe<Scalars['String']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
@@ -18173,6 +18181,7 @@ export type ObservedDataObjectsArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<StixObjectOrStixRelationshipsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
+  pirId?: InputMaybe<Scalars['String']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
@@ -18504,6 +18513,7 @@ export type OpinionObjectsArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<StixObjectOrStixRelationshipsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
+  pirId?: InputMaybe<Scalars['String']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
@@ -24196,6 +24206,7 @@ export type ReportObjectsArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<StixObjectOrStixRelationshipsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
+  pirId?: InputMaybe<Scalars['String']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
@@ -28586,6 +28597,7 @@ export type TaskObjectsArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<StixObjectOrStixRelationshipsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
+  pirId?: InputMaybe<Scalars['String']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };

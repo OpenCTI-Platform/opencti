@@ -109,6 +109,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     search: String
     types: [String]
     all: Boolean
+    pirId: String
   ): StixObjectOrStixRelationshipRefConnection
   relatedContainers(
     first: Int
