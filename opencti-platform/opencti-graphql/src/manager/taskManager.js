@@ -627,14 +627,13 @@ const taskHandlerGenerator = (context) => {
       // No need for transformation
       return action.type;
     }, task.actions);
-    const nbTypeOfActions = Object.keys(actionsGroup).length;
-    const [actionType, operations] = Object.entries(actionsGroup)[0];
-    if (nbTypeOfActions === 1) {
-      throwErrorInDraftContext(context, user, actionType);
+    const typeOfActions = Object.keys(actionsGroup);
+    for (let typeOfActionIndex = 0; typeOfActionIndex < typeOfActions.length; typeOfActionIndex += 1) {
+      const typeOfAction = typeOfActions[typeOfActionIndex];
+      throwErrorInDraftContext(context, user, typeOfAction);
+      const operations = actionsGroup[typeOfAction];
       logApp.info('[TASK-MANAGER] Executing job through distributed workers');
-      await workerTaskHandler(fullContext, user, task, actionType, operations);
-    } else {
-      throw UnsupportedError('Multiple types of action inside the same background task', { actions: Object.keys(actionsGroup) });
+      await workerTaskHandler(fullContext, user, task, typeOfAction, operations);
     }
   };
 };
