@@ -61,9 +61,14 @@ const PirOverviewDetails = ({ data }: PirOverviewDetailsProps) => {
 
         <div>
           <Typography variant="h3" gutterBottom>
-            {t_i18n('Creators')}
+            {t_i18n('Filters')}
           </Typography>
-          <ItemCreators creators={pir.creators ?? []}/>
+          <FilterIconButton
+            key={pir.pir_filters}
+            filters={JSON.parse(pir.pir_filters)}
+            entityTypes={['Stix-Core-Object']}
+            styleNumber={1}
+          />
         </div>
       </Grid>
 
@@ -73,7 +78,7 @@ const PirOverviewDetails = ({ data }: PirOverviewDetailsProps) => {
       >
         <div>
           <Typography variant="h3" gutterBottom>
-            {t_i18n('PIR Rescan period (days)')}
+            {t_i18n('Rescan period (days)')}
           </Typography>
           {pir.pir_rescan_days}
         </div>
@@ -87,14 +92,9 @@ const PirOverviewDetails = ({ data }: PirOverviewDetailsProps) => {
 
         <div>
           <Typography variant="h3" gutterBottom>
-            {t_i18n('Filters')}
+            {t_i18n('Creators')}
           </Typography>
-          <FilterIconButton
-            key={pir.pir_filters}
-            filters={JSON.parse(pir.pir_filters)}
-            entityTypes={['Stix-Core-Object']}
-            styleNumber={1}
-          />
+          <ItemCreators creators={pir.creators ?? []}/>
         </div>
       </Grid>
 
