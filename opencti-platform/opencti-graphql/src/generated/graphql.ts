@@ -30935,7 +30935,7 @@ export type UserAddInput = {
   language?: InputMaybe<Scalars['String']['input']>;
   lastname?: InputMaybe<Scalars['String']['input']>;
   monochrome_labels?: InputMaybe<Scalars['Boolean']['input']>;
-  name?: InputMaybe<Scalars['String']['input']>;
+  name: Scalars['String']['input'];
   objectOrganization?: InputMaybe<Array<Scalars['ID']['input']>>;
   password?: InputMaybe<Scalars['String']['input']>;
   prevent_default_groups?: InputMaybe<Scalars['Boolean']['input']>;
