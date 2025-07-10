@@ -116,7 +116,7 @@ const AskArianeButton = () => {
   const vars = {
     OPENCTI_URL: platform_url,
     OPENCTI_TOKEN: api_token,
-    OPENCTI_CERTIFICATE: toBase64(platform_enterprise_edition.enterprise_license),
+    OPENCTI_CERTIFICATE: toBase64(platform_enterprise_edition.license_raw_pem),
   };
 
   const chatbot = (

@@ -19826,7 +19826,6 @@ export enum PlatformCriticalAlertType {
 
 export type PlatformEe = {
   __typename?: 'PlatformEE';
-  enterprise_license?: Maybe<Scalars['String']['output']>;
   license_by_configuration: Scalars['Boolean']['output'];
   license_creator: Scalars['String']['output'];
   license_customer: Scalars['String']['output'];
@@ -19837,6 +19836,7 @@ export type PlatformEe = {
   license_global: Scalars['Boolean']['output'];
   license_platform: Scalars['String']['output'];
   license_platform_match: Scalars['Boolean']['output'];
+  license_raw_pem?: Maybe<Scalars['String']['output']>;
   license_start_date: Scalars['DateTime']['output'];
   license_type: Scalars['String']['output'];
   license_valid_cert: Scalars['Boolean']['output'];
@@ -41059,7 +41059,6 @@ export type PlatformCriticalAlertDetailsResolvers<ContextType = any, ParentType 
 }>;
 
 export type PlatformEeResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlatformEE'] = ResolversParentTypes['PlatformEE']> = ResolversObject<{
-  enterprise_license?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   license_by_configuration?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   license_creator?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   license_customer?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -41070,6 +41069,7 @@ export type PlatformEeResolvers<ContextType = any, ParentType extends ResolversP
   license_global?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   license_platform?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   license_platform_match?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  license_raw_pem?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   license_start_date?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   license_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   license_valid_cert?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
