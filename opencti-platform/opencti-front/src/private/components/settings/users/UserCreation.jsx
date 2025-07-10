@@ -36,7 +36,7 @@ const userMutation = graphql`
 `;
 
 const userValidation = (t) => Yup.object().shape({
-  user_service_account: Yup.boolean().required(),
+  user_service_account: Yup.boolean(),
   name: Yup.string().required(t('This field is required')),
   user_email: Yup.string()
     .email(t('The value must be an email address'))
