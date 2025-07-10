@@ -579,6 +579,9 @@ const ruleApplyCallback = async (context, user, task, ruleId) => {
       // Send inferred to queue
       if (inferredObjectsBundle.length > 0) {
         await sendResultToQueue(context, user, task, inferredObjectsBundle);
+      } else if (task.task_processed_number === 0) {
+        // If not objects are created, we want to mark the work as processed
+        await updateProcessedTime(context, user, task.work_id, 'No inferred to create');
       }
     }
     // Update task
