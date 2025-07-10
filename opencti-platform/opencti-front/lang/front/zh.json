@@ -3091,7 +3091,7 @@
   "Series attribute": "系列属性",
   "Server capacity": "服务器容量",
   "Server ingestion is paused until the size of messages is reduced under max capacity": "服务器摄取暂停，直到信息大小减少到最大容量以下",
-  "Service accounts will not have any password & a randomized email adress will be provided, if not provided.Service account will not be able to receive notifications.Service account will also automatically pertains to the main platform org.": "服务账户没有任何密码和amp；如果没有提供，将提供一个随机的电子邮件地址。服务账户将无法接收通知。",
+  "Service accounts do not have any password and a randomized email address will be generated, if not provided on creation. Service account do not receive notifications. Service account pertains automatically to the main platform organization.": "服务账户没有密码，如果创建时未提供，则会生成一个随机电子邮件地址。服务账户不会收到通知。服务账户自动与主平台组织相关。",
   "Session timeout in": "会话超时时间为",
   "Sessions": "会话",
   "Sessions | Security | Settings": "会话 | 安全性 | 设置",

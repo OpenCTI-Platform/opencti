@@ -3091,7 +3091,7 @@
   "Series attribute": "Series attribute",
   "Server capacity": "Server capacity",
   "Server ingestion is paused until the size of messages is reduced under max capacity": "Server ingestion is paused until the size of messages is reduced under max capacity",
-  "Service accounts will not have any password & a randomized email adress will be provided, if not provided.Service account will not be able to receive notifications.Service account will also automatically pertains to the main platform org.": "Service accounts will not have any password & a randomized email adress will be provided, if not provided.Service account will not be able to receive notifications.Service account will also automatically pertains to the main platform org.",
+  "Service accounts do not have any password and a randomized email address will be generated, if not provided on creation. Service account do not receive notifications. Service account pertains automatically to the main platform organization.": "Service accounts do not have any password and a randomized email address will be generated, if not provided on creation. Service account do not receive notifications. Service account pertains automatically to the main platform organization.",
   "Session timeout in": "Session timeout in",
   "Sessions": "Sessions",
   "Sessions | Security | Settings": "Sessions | Security | Settings",

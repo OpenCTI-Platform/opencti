@@ -3091,7 +3091,7 @@
   "Series attribute": "Attributo della serie",
   "Server capacity": "Capacità del server",
   "Server ingestion is paused until the size of messages is reduced under max capacity": "L'ingestione del server è in pausa fino a quando la dimensione dei messaggi non viene ridotta sotto la capacità massima",
-  "Service accounts will not have any password & a randomized email adress will be provided, if not provided.Service account will not be able to receive notifications.Service account will also automatically pertains to the main platform org.": "Gli account di servizio non avranno alcuna password & verrà fornito un indirizzo e-mail randomizzato, se non fornito.L'account di servizio non sarà in grado di ricevere notifiche.L'account di servizio sarà anche automaticamente pertinente all'org principale della piattaforma.",
+  "Service accounts do not have any password and a randomized email address will be generated, if not provided on creation. Service account do not receive notifications. Service account pertains automatically to the main platform organization.": "Gli account di servizio non hanno una password e viene generato un indirizzo e-mail casuale, se non viene fornito al momento della creazione. Gli account di servizio non ricevono notifiche. L'account di servizio è automaticamente collegato all'organizzazione principale della piattaforma.",
   "Session timeout in": "Sessione scaduta in",
   "Sessions": "Sessioni",
   "Sessions | Security | Settings": "Sessioni | Sicurezza | Impostazioni",
