@@ -210,7 +210,7 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                   component={TextField}
                   variant="standard"
                   name="user_email"
-                  label={t_i18n('Email-address')}
+                  label={t_i18n('Email address')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
                   data-testid='user-creation-email-address-input'
