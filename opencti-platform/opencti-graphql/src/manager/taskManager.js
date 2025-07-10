@@ -247,9 +247,9 @@ const sendResultToQueue = async (context, user, task, objects, opts = {}) => {
     no_split: opts.forceNoSplit ?? false
   });
 };
-const buildBaseBundleElement = (element) => {
+const buildBaseBundleElement = (element, standard_id) => {
   const baseObject = {
-    id: element.standard_id,
+    id: standard_id ?? element.standard_id,
     type: convertTypeToStixType(element.entity_type),
     extensions: {
       [STIX_EXT_OCTI]: {
@@ -522,7 +522,7 @@ const ruleApplyCallback = async (context, user, task, ruleId) => {
       // Add all created inferred relation in bundle
       for (let inferredRelationIndex = 0; inferredRelationIndex < inferredRelations.length; inferredRelationIndex += 1) {
         const inferredRelation = inferredRelations[inferredRelationIndex];
-        const inferredRelationObject = buildBaseBundleElement(element);
+        const inferredRelationObject = buildBaseBundleElement(element, `${element.standard_id}_r_${inferredRelationIndex}`);
         inferredRelationObject.extensions[STIX_EXT_OCTI] = {
           ...inferredRelationObject.extensions[STIX_EXT_OCTI],
           opencti_operation: 'inferred_rel',
@@ -533,7 +533,7 @@ const ruleApplyCallback = async (context, user, task, ruleId) => {
       // Add all created inferred entities in bundle
       for (let inferredEntitiesIndex = 0; inferredEntitiesIndex < inferredEntities.length; inferredEntitiesIndex += 1) {
         const inferredEntity = inferredEntities[inferredEntitiesIndex];
-        const inferredEntityObject = buildBaseBundleElement(element);
+        const inferredEntityObject = buildBaseBundleElement(element, `${element.standard_id}_e_${inferredEntitiesIndex}`);
         inferredEntityObject.extensions[STIX_EXT_OCTI] = {
           ...inferredEntityObject.extensions[STIX_EXT_OCTI],
           opencti_operation: 'inferred_entity',
