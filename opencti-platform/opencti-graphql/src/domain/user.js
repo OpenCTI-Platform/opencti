@@ -647,7 +647,7 @@ export const addUser = async (context, user, newUser) => {
     let actionEmail;
     actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : newUser.user_email;
     if (userServiceAccount) {
-      actionEmail = newUser.user_email ? newUser.user_email : `automatic+${uuid()}@opencti.invalid`;
+      actionEmail = actionEmail || `automatic+${uuid()}@opencti.invalid`;
     }
     await publishUserAction({
       user,
