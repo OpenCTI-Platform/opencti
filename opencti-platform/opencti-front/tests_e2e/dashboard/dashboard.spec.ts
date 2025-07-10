@@ -220,7 +220,7 @@ test('Dashboard CRUD', async ({ page }) => {
   await dashboardDetailsPage.getEditButton().click();
   await dashboardDetailsPage.getDeleteButton().click();
   await dashboardDetailsPage.getConfirmButton().click();
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(1000); // After delete need to wait a bit
   // ---------
   // endregion
 
