@@ -2,8 +2,18 @@
 import { expect, it, describe } from 'vitest';
 import { elLoadById, } from '../../../src/database/engine';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { generateStandardId, isStandardIdDowngraded, isStandardIdSameWay, isStandardIdUpgraded } from '../../../src/schema/identifier';
-import { ENTITY_USER_ACCOUNT } from '../../../src/schema/stixCyberObservable';
+import {
+  allFieldsContributingToStandardId,
+  generateHashedObservableStandardIds,
+  generateStandardId,
+  isStandardIdDowngraded,
+  isStandardIdSameWay,
+  isStandardIdUpgraded
+} from '../../../src/schema/identifier';
+import { ENTITY_DIRECTORY, ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_USER_ACCOUNT } from '../../../src/schema/stixCyberObservable';
+import { ENTITY_TYPE_SETTINGS } from '../../../src/schema/internalObject';
+import { ENTITY_TYPE_CONTAINER_NOTE } from '../../../src/schema/stixDomainObject';
+import { BASE_TYPE_RELATION } from '../../../src/schema/general';
 
 describe('Identifier generation test', () => {
   it('should way change detected correctly', async () => {
@@ -144,5 +154,65 @@ describe('Identifier generation test', () => {
     };
     isUpgraded = isStandardIdUpgraded(file, changeFile);
     expect(isUpgraded).toBeFalsy();
+  });
+});
+
+describe('Function allFieldsContributingToStandardId', () => {
+  it('should return an empty array if properties is not an object', () => {
+    const fields = allFieldsContributingToStandardId({ entity_type: ENTITY_TYPE_SETTINGS });
+    expect(fields).toEqual([]);
+  });
+
+  it('should return false if its a relation', () => {
+    const fields = allFieldsContributingToStandardId({ base_type: BASE_TYPE_RELATION });
+    expect(fields).toEqual(false);
+  });
+
+  it('should return the list of fields contributing', () => {
+    let fields = allFieldsContributingToStandardId({ entity_type: ENTITY_DIRECTORY });
+    expect(fields).toEqual(['path']);
+    fields = allFieldsContributingToStandardId({ entity_type: ENTITY_HASHED_OBSERVABLE_STIX_FILE });
+    expect(fields).toEqual(['hashes', 'name']);
+    fields = allFieldsContributingToStandardId({ entity_type: ENTITY_TYPE_CONTAINER_NOTE });
+    expect(fields).toEqual(['content', 'created']);
+  });
+});
+
+describe('Function generateHashedObservableStandardIds', () => {
+  const hashes = {
+    MD5: '025ad219ece1125a8f5a0e74e32676cb',
+    'SHA-1': 'c1750bee9c1f7b5dd6f025b645ab6eba5df94175'
+  };
+
+  it('should return empty array if no entity_type', () => {
+    const ids = generateHashedObservableStandardIds({ hashes });
+    expect(ids).toEqual([]);
+  });
+
+  it('should return empty array if not hash observable', () => {
+    const ids = generateHashedObservableStandardIds({
+      hashes,
+      entity_type: ENTITY_TYPE_SETTINGS
+    });
+    expect(ids).toEqual([]);
+  });
+
+  it('should return empty array if no hashes', () => {
+    const ids = generateHashedObservableStandardIds({
+      hashes: {},
+      entity_type: ENTITY_HASHED_OBSERVABLE_STIX_FILE
+    });
+    expect(ids).toEqual([]);
+  });
+
+  it('should return the list of ids of hashes', () => {
+    const ids = generateHashedObservableStandardIds({
+      hashes,
+      entity_type: ENTITY_HASHED_OBSERVABLE_STIX_FILE
+    });
+    expect(ids).toEqual([
+      'file--cd03138e-eb70-5409-b5df-2f53bee7a1e1',
+      'file--0c28767c-5f72-5036-8cc5-21c055c2b9e9',
+    ]);
   });
 });
