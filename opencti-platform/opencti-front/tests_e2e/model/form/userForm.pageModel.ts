@@ -14,7 +14,7 @@ export default class UserFormPage {
   }
 
   getEmailInput() {
-    return this.page.getByLabel('Email address');
+    return this.page.getByLabel('Email-address');
   }
 
   async fillEmailInput(email: string) {
