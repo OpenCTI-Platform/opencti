@@ -361,7 +361,7 @@ export const executeRuleApply = async (
     throw FunctionalError('Cant find element to scan', { id });
   }
   const event = buildCreateEvent(user, instance, '-');
-  await rulesApplyHandler(context, user, [event], [rule], createInferredRelationOverride, createInferredEntityOverride);
+  await rulesApplyHandler(context, user, [event], [rule], createInferredEntityOverride, createInferredRelationOverride);
 };
 
 export const ruleApply = async (
