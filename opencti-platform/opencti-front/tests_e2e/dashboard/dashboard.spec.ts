@@ -9,6 +9,7 @@ import LoginFormPageModel from '../model/form/loginForm.pageModel';
 import LeftBarPage from '../model/menu/leftBar.pageModel';
 import AccessRestrictionPageModel from '../model/AccessRestriction.pageModel';
 import MalwareDetailsPage from '../model/malwareDetails.pageModel';
+import { awaitUntilCondition } from '../utils';
 
 // Because of login/logout stuff in access restriction test below, running
 // both in parallel make conflicts.
@@ -129,6 +130,10 @@ test('Dashboard CRUD', async ({ page }) => {
   await dashboardDetailsPage.getActionsPopover().click();
   await dashboardDetailsPage.getActionButton('Duplicate').click();
   await dashboardDetailsPage.getDuplicateButton().click();
+  // Close the info message about duplication
+  await awaitUntilCondition(() => page.getByRole('button', { name: 'Close' }).isVisible());
+  page.getByRole('button', { name: 'Close' }).click();
+  await awaitUntilCondition(() => page.getByRole('button', { name: 'Close' }).isHidden());
 
   await leftBarPage.clickOnMenu('Dashboards', 'Custom dashboards');
   await expect(dashboardPage.getItemFromList(duplicateDashboardName)).toBeVisible();
@@ -138,8 +143,6 @@ test('Dashboard CRUD', async ({ page }) => {
   // ---------
   // endregion
 
-  await page.waitForTimeout(1000);
-
   // region Delete a dashboard
   // -------------------------
 
@@ -147,6 +150,8 @@ test('Dashboard CRUD', async ({ page }) => {
   await dashboardDetailsPage.getDeleteButton().click();
   await expect(dashboardDetailsPage.getConfirmButton()).toBeVisible();
   await dashboardDetailsPage.getConfirmButton().click();
+  await page.waitForTimeout(1000); // After delete need to wait a bit
+  await leftBarPage.clickOnMenu('Dashboards', 'Custom dashboards');
   await expect(dashboardPage.getPageTitle()).toBeVisible();
   await expect(dashboardPage.getItemFromList(duplicateDashboardName)).toBeHidden();
 
@@ -177,6 +182,7 @@ test('Dashboard CRUD', async ({ page }) => {
   await dashboardDetailsPage.getEditButton().click();
   await dashboardDetailsPage.getDeleteButton().click();
   await dashboardDetailsPage.getConfirmButton().click();
+  await page.waitForTimeout(1000);// After delete need to wait a bit
 
   // Import dashboard with exhaustive list of widgets
   await leftBarPage.clickOnMenu('Dashboards', 'Custom dashboards');
@@ -214,7 +220,7 @@ test('Dashboard CRUD', async ({ page }) => {
   await dashboardDetailsPage.getEditButton().click();
   await dashboardDetailsPage.getDeleteButton().click();
   await dashboardDetailsPage.getConfirmButton().click();
-
+  await page.waitForTimeout(1000);
   // ---------
   // endregion
 
@@ -232,6 +238,7 @@ test('Dashboard CRUD', async ({ page }) => {
   await widgetsPage.getActionsWidgetsPopover().click();
   await widgetsPage.getActionButton('Delete').click();
   await widgetsPage.getConfirmButton().click();
+  await page.waitForTimeout(1000);// After delete need to wait a bit
 
   await widgetsPage.createTimelineOfMalwaresWidget();
   await widgetsPage.getItemFromWidgetTimeline(malwareName).click();
@@ -295,6 +302,7 @@ test('Dashboard CRUD', async ({ page }) => {
   await dashboardDetailsPage.getEditButton().click();
   await dashboardDetailsPage.getDeleteButton().click();
   await dashboardDetailsPage.getConfirmButton().click();
+  await page.waitForTimeout(1000);// After delete need to wait a bit
 });
 
 /**
@@ -394,12 +402,21 @@ test('Dashboard restriction access', async ({ page }) => {
   await dashboardDetailsPage.getActionsPopover().click();
   await dashboardDetailsPage.getActionButton('Duplicate').click();
   await dashboardDetailsPage.getDuplicateButton().click();
+  // Close the info message about duplication
+  await awaitUntilCondition(() => page.getByRole('button', { name: 'Close' }).isVisible());
+  page.getByRole('button', { name: 'Close' }).click();
+  await awaitUntilCondition(() => page.getByRole('button', { name: 'Close' }).isHidden());
   await leftBar.clickOnMenu('Dashboards', 'Custom dashboards');
   await expect(dashboardPage.getItemFromList(`${dashboardName} - copy`)).toBeVisible();
   await dashboardPage.getItemFromList(`${dashboardName} - copy`).click();
   await dashboardDetailsPage.getEditButton().click();
   await dashboardDetailsPage.getDeleteButton().click();
   await dashboardDetailsPage.getConfirmButton().click();
+  await page.waitForTimeout(1000);// After delete need to wait a bit
+
+  // Close the info message about duplication
+  await awaitUntilCondition(() => page.getByRole('button', { name: 'Close' }).isVisible());
+  page.getByRole('button', { name: 'Close' }).click();
 
   // Try to export
   await dashboardPage.getItemFromList(dashboardName).click();
@@ -441,6 +458,7 @@ test('Dashboard restriction access', async ({ page }) => {
   await dashboardDetailsPage.getEditButton().click();
   await dashboardDetailsPage.getDeleteButton().click();
   await dashboardDetailsPage.getConfirmButton().click();
+  await page.waitForTimeout(1000);// After delete need to wait a bit
   await expect(dashboardPage.getItemFromList(dashboardName)).toBeHidden();
 
   // ---------
