@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useContext, useEffect, useState } from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { CircularProgress } from '@mui/material';
-import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { ConnectionHandler, RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik';
 import {
   StixCoreRelationshipCreationFromEntityForm,
@@ -11,14 +11,14 @@ import {
   TargetEntity,
 } from './StixCoreRelationshipCreationFromEntity';
 import { StixCoreRelationshipCreationFromEntityQuery } from './__generated__/StixCoreRelationshipCreationFromEntityQuery.graphql';
-import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
-import { insertNode } from '../../../../utils/store';
+import { insertNode, isNodeInConnection } from '../../../../utils/store';
 import { formatDate } from '../../../../utils/Time';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import { resolveRelationsTypes } from '../../../../utils/Relation';
 import StixCoreRelationshipCreationForm from './StixCoreRelationshipCreationForm';
 import { CreateRelationshipContext } from './CreateRelationshipContextProvider';
+import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 
 interface StixCoreRelationshipCreationFormStageProps {
   targetEntities: TargetEntity[];
@@ -108,16 +108,45 @@ const StixCoreRelationshipCreationFormStage: FunctionComponent<StixCoreRelations
             : stixCoreRelationshipCreationFromEntityFromMutation,
           variables: { input: finalValues },
           updater: (store: RecordSourceSelectorProxy) => {
-            insertNode(
-              store,
-              connectionKey || 'Pagination_stixCoreRelationships',
-              paginationOptions,
-              'stixCoreRelationshipAdd',
-              null,
-              null,
-              null,
-              reversed ? 'from' : 'to',
-            );
+            if (connectionKey === 'Pagination_stixCoreRelationships') {
+              // Handles 'Relationships View'
+              insertNode(
+                store,
+                connectionKey,
+                paginationOptions,
+                'stixCoreRelationshipAdd',
+              );
+            } else if (typeof onCreate !== 'function') {
+              // Handle 'Entities View'
+              // TODO: Why is this the only way that properly updates ListLines?
+              const userProxy = store.get(store.getRoot().getDataID());
+              const payload = store.getRootField('stixCoreRelationshipAdd');
+
+              const createdNode = connectionKey && payload !== null
+                ? payload.getLinkedRecord(reversed ? 'from' : 'to')
+                : payload;
+              const connKey = connectionKey || 'Pagination_stixCoreRelationships';
+              let conn;
+              const { count: _, ...options } = paginationOptions as Record<string, unknown>;
+
+              if (userProxy) {
+                conn = ConnectionHandler.getConnection(
+                  userProxy,
+                  connKey,
+                  options,
+                );
+              }
+
+              if (conn && payload !== null
+                && !isNodeInConnection(payload, conn)
+                && !isNodeInConnection(payload.getLinkedRecord(reversed ? 'from' : 'to'), conn)
+              ) {
+                const newEdge = payload.setLinkedRecord(createdNode, 'node');
+                ConnectionHandler.insertEdgeBefore(conn, newEdge);
+
+                helpers.handleSetNumberOfElements({});
+              }
+            }
           },
           optimisticUpdater: undefined,
           setSubmitting: undefined,
