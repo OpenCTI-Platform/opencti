@@ -6,7 +6,6 @@ import DashboardFormPage from '../model/form/dashboardForm.pageModel';
 import DashboardWidgetsPageModel from '../model/DashboardWidgets.pageModel';
 import LeftBarPage from '../model/menu/leftBar.pageModel';
 import MalwareDetailsPage from '../model/malwareDetails.pageModel';
-import { awaitUntilCondition } from '../utils';
 
 // Because of login/logout stuff in access restriction test below, running
 // both in parallel make conflicts.
