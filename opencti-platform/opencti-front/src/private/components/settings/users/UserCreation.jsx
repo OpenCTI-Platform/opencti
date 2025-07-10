@@ -191,7 +191,7 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                     label={t_i18n('This user is a service account')}
                   />
                   <Tooltip
-                    title={t_i18n('Service accounts will not have any password & a randomized email adress will be provided, if not provided.Service account will not be able to receive notifications.Service account will also automatically pertains to the main platform org.')}
+                    title={t_i18n('Service accounts do not have any password and a randomized email address will be generated, if not provided on creation. Service account do not receive notifications. Service account pertains automatically to the main platform organization.')}
                   >
                     <InformationOutline
                       fontSize="small"
