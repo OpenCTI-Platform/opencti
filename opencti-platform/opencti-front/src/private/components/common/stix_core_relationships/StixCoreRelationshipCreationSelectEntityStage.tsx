@@ -162,7 +162,7 @@ StixCoreRelationshipCreationSelectEntityStageProps
           {({ platformModuleHelpers }) => (
             <DataTable
               disableToolBar
-              disableSelectAll
+              removeSelectAll
               disableNavigation
               selectOnLineClick
               variant={DataTableVariant.inline}
