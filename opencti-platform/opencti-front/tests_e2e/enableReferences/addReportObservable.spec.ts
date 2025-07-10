@@ -20,13 +20,11 @@ import LoginFormPageModel from '../model/form/loginForm.pageModel';
 import SearchPageModel from '../model/search.pageModel';
 
 const noBypassUserAuthFile = 'tests_e2e/.setup/.auth/no-bypass-ref-user.json';
-const nowTime = `${new Date().getTime()}`;
-
-const noBypassUserLogin = `${nowTime}+noBypassReferences@user.test`;
+const noBypassUserLogin = 'noBypassReferences@user.test';
 const noBypassUserPassword = 'qwerty123';
-const noBypassUserName = `NoBypassReferencesUser ${nowTime}`;
-const noBypassRoleName = `NoBypassReferencesRole ${nowTime}`;
-const noBypassGroupName = `NoBypassReferencesTestGroup ${nowTime}`;
+const noBypassUserName = 'NoBypassReferencesUser';
+const noBypassRoleName = 'NoBypassReferencesRole';
+const noBypassGroupName = 'NoBypassReferencesTestGroup';
 
 test.describe('Create user with no references bypass capabilities', () => {
   test('Create basic user role', async ({ page }) => {
@@ -119,12 +117,10 @@ test('Add and remove observable from Observables tab of a Report as Admin user',
   await page.goto('/dashboard/analyses/reports');
   await leftBarPage.open();
 
-  const reportName = `Test add observable e2e ${nowTime}`;
-
   await reportPage.openNewReportForm();
-  await reportForm.nameField.fill(reportName);
+  await reportForm.nameField.fill('Test add observable e2e');
   await reportPage.getCreateReportButton().click();
-  await reportPage.getItemFromList(reportName).click();
+  await reportPage.getItemFromList('Test add observable e2e').click();
   await expect(reportDetailsPage.getPage()).toBeVisible();
   await reportDetailsPage.tabs.goToObservablesTab();
   await expect(containerObservablesPage.getPage()).toBeVisible();
@@ -143,7 +139,7 @@ test('Add and remove observable from Observables tab of a Report as Admin user',
   await page.locator('span').filter({ hasText: 'Enforce references' }).click();
 
   await leftBarPage.clickOnMenu('Analyses', 'Reports');
-  await reportPage.getItemFromList(reportName).click();
+  await reportPage.getItemFromList('Test add observable e2e').click();
   await reportDetailsPage.tabs.goToObservablesTab();
   await expect(containerObservablesPage.getPage()).toBeVisible();
   await containerObservablesPage.getAddObservableListButton().click();
@@ -170,13 +166,12 @@ test.describe('Add and remove observable from Observables tab of a Report as noB
     const leftBarPage = new LeftBarPage(page);
 
     // Create a report and check that adding an observable is possible
-    const reportName = `Test add observable e2e 2 ${nowTime}`;
     await reportPage.goto();
     await page.getByTestId('ChevronRightIcon').click();
     await reportPage.openNewReportForm();
-    await reportForm.nameField.fill(reportName);
+    await reportForm.nameField.fill('Test add observable e2e 2');
     await reportPage.getCreateReportButton().click();
-    await reportPage.getItemFromList(reportName).click();
+    await reportPage.getItemFromList('Test add observable e2e 2').click();
     await expect(reportDetailsPage.getPage()).toBeVisible();
     await reportDetailsPage.tabs.goToObservablesTab();
     await expect(containerObservablesPage.getPage()).toBeVisible();
@@ -195,7 +190,7 @@ test.describe('Add and remove observable from Observables tab of a Report as noB
     await page.locator('span').filter({ hasText: 'Enforce references' }).click();
 
     await leftBarPage.clickOnMenu('Analyses', 'Reports');
-    await reportPage.getItemFromList(reportName).click();
+    await reportPage.getItemFromList('Test add observable e2e 2').click();
     await reportDetailsPage.tabs.goToObservablesTab();
     await expect(containerObservablesPage.getPage()).toBeVisible();
     await containerObservablesPage.getAddObservableListButton().click();
