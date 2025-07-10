@@ -24,8 +24,8 @@ import * as R from 'ramda';
 import * as Yup from 'yup';
 import { useTheme } from '@mui/styles';
 import { useNavigate } from 'react-router-dom';
+import StixCoreObjectSharedOrganisations from '../stix_core_objects/StixCoreObjectSharedOrganisations';
 import StixCoreObjectMenuItemUnderEE from '../stix_core_objects/StixCoreObjectMenuItemUnderEE';
-import StixCoreObjectSharingList from '../stix_core_objects/StixCoreObjectSharingList';
 import { DraftChip } from '../draft/DraftChip';
 import StixCoreObjectEnrollPlaybook from '../stix_core_objects/StixCoreObjectEnrollPlaybook';
 import StixCoreObjectFileExportButton from '../stix_core_objects/StixCoreObjectFileExportButton';
@@ -589,11 +589,11 @@ const StixDomainObjectHeader = (props) => {
         </div>
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <div style={{ display: 'flex' }}>
+            {disableSharing !== true && (
+            <StixCoreObjectSharedOrganisations data={stixDomainObject}/>
+            )}
             {enableQuickSubscription && (
               <StixCoreObjectSubscribers triggerData={triggerData} />
-            )}
-            {disableSharing !== true && (
-              <StixCoreObjectSharingList data={stixDomainObject} />
             )}
             {disableSharing !== true && (
               <StixCoreObjectSharing
