@@ -29,7 +29,7 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
     onAddFilter,
     onSort,
     disableToolBar,
-    disableSelectAll,
+    removeSelectAll,
     startsWithAction,
     startsWithIcon,
     startColumnWidth,
@@ -61,7 +61,7 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
 
   const hasSelectedElements = numberOfSelectedElements > 0 || selectAll;
   const checkboxStyle: CSSProperties = {
-    background: hasSelectedElements
+    background: hasSelectedElements && !removeSelectAll
       ? theme.palette.background.accent
       : 'transparent',
     minWidth: startColumnWidth,
@@ -73,7 +73,7 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
     <div ref={containerRef} style={{ display: 'flex', height: 42 }}>
       {(startsWithAction || startsWithIcon) && (
         <div data-testid="dataTableCheckAll" style={checkboxStyle}>
-          {startsWithAction && (
+          {(startsWithAction && !removeSelectAll) && (
             <Checkbox
               checked={selectAll}
               sx={{
@@ -85,7 +85,7 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
                 },
               }}
               onChange={handleToggleSelectAll}
-              disabled={!handleToggleSelectAll || disableSelectAll}
+              disabled={!handleToggleSelectAll}
             />
           )}
           {startsWithIcon && (

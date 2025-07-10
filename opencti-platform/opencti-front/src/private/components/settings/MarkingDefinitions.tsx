@@ -196,7 +196,7 @@ const MarkingDefinitions = () => {
           searchContextFinal={{ entityTypes: ['Marking-Definition'] }}
           disableNavigation
           disableToolBar
-          disableSelectAll
+          removeSelectAll
           disableLineSelection
           createButton={<MarkingDefinitionCreation paginationOptions={queryPaginationOptions}/>}
         />

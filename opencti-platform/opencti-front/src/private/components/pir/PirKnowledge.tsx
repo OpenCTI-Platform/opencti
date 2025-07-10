@@ -199,7 +199,7 @@ const PirKnowledge = ({ data }: PirKnowledgeProps) => {
     <>
       {queryRef && (
         <DataTable
-          disableSelectAll
+          removeSelectAll
           disableLineSelection
           dataColumns={dataColumns}
           resolvePath={(d: PirKnowledge_SourcesFlaggedFragment$data) => {

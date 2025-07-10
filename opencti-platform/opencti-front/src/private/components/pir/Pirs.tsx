@@ -182,7 +182,7 @@ const Pirs = () => {
       <Breadcrumbs elements={[{ label: t_i18n('PIR'), current: true }]} />
       {queryRef && (
         <DataTable
-          disableSelectAll
+          removeSelectAll
           disableLineSelection
           dataColumns={dataColumns}
           resolvePath={(data: Pirs_PirsFragment$data) => data.pirs?.edges?.map((e) => e?.node)}
