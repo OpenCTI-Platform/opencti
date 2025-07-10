@@ -225,7 +225,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
     const upsertRelation = data as StixRelation;
     const { relationship_type: relationType } = upsertRelation;
     if (relationType === relationTypes.creationType) {
-      return handlePartOfRelationCreation(context, upsertRelation);
+      return handlePartOfRelationCreation(context, upsertRelation, createInferredRelationOverride);
     }
   };
   const applyUpdate = async (data: StixObject, event: UpdateEvent): Promise<void> => {
