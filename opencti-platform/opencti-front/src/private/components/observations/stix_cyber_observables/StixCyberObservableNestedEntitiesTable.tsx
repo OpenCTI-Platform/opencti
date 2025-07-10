@@ -354,6 +354,7 @@ const StixCyberObservableNestedEntitiesTable: React.FC<StixCyberObservableNested
           variant={DataTableVariant.inline}
           hideFilters
           hideSearch
+          hideHeaders={isInLine}
           disableLineSelection
           icon={(data: StixCyberObservableNestedEntitiesTable_node$data) => <ItemIcon type={data.to?.entity_type}/>}
           actions={(data: StixCyberObservableNestedEntitiesTable_node$data) => {
