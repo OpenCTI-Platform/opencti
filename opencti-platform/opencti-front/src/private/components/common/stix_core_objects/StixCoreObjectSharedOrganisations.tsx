@@ -45,7 +45,7 @@ const StixCoreObjectSharedOrganisations = ({
         onClick={() => (hasSetAccess ? setOpenSharedOrganizations(true) : null)}
         disableRipple={!hasSetAccess}
       >
-        {objectOrganization.length} {t_i18n('organizations')}
+        {objectOrganization.length} {t_i18n('Organizations')}
       </Button>
       {(hasSetAccess && openSharedOrganizations) && (
         <StixCoreObjectSharedOrganisationsDrawer
