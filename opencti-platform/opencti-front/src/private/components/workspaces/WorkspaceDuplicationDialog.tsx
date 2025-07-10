@@ -24,7 +24,7 @@ interface WorkspaceDuplicationDialogProps {
   workspace: Dashboard_workspace$data | InvestigationGraph_fragment$data;
   displayDuplicate: boolean;
   duplicating: boolean;
-  handleCloseDuplicate: (event: UIEvent) => void;
+  handleCloseDuplicate: () => void;
   setDuplicating: (value: boolean) => void;
   updater?: (
     store: RecordSourceSelectorProxy<WorkspaceDuplicationDialogDuplicatedWorkspaceCreationMutation$data>,
@@ -86,7 +86,7 @@ WorkspaceDuplicationDialogProps
         handleError(error);
       },
       onCompleted: (data) => {
-        handleCloseDuplicate(e);
+        handleCloseDuplicate();
         const isDashboardView = !paginationOptions;
         if (isDashboardView) {
           MESSAGING$.notifySuccess(
@@ -113,7 +113,12 @@ WorkspaceDuplicationDialogProps
   return (
     <Dialog
       open={displayDuplicate}
-      slotProps={{ paper: { elevation: 1 } }}
+      slotProps={{
+        paper: {
+          elevation: 1,
+          onClick: (e: React.MouseEvent) => stopEvent(e),
+        },
+      }}
       slots={{ transition: Transition }}
       onClose={handleCloseDuplicate}
       fullWidth={true}
@@ -139,7 +144,7 @@ WorkspaceDuplicationDialogProps
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleCloseDuplicate}>{t_i18n('Cancel')}</Button>
+        <Button onClick={() => handleCloseDuplicate()}>{t_i18n('Cancel')}</Button>
         <Button
           color="secondary"
           onClick={(e) => handleSubmitDuplicate(e, newName)}
