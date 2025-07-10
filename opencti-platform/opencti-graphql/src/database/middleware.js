@@ -3195,6 +3195,16 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
     if (isStixCyberObservableHashedObservable(type)) {
       existingByHashedPromise = listEntitiesByHashes(context, user, type, input.hashes);
       resolvedInput.update = true;
+      if (resolvedInput.hashes) {
+        const otherStandardIds = generateHashedObservableStandardIds({
+          entity_type: type,
+          ...resolvedInput
+        }).filter((id) => id !== standardId);
+        resolvedInput.x_opencti_stix_ids = R.uniq([
+          ...(resolvedInput.x_opencti_stix_ids ?? []),
+          ...otherStandardIds
+        ]);
+      }
     }
     // Resolve the existing entity
     const [existingByIds, existingByHashed] = await Promise.all([existingByIdsPromise, existingByHashedPromise]);
