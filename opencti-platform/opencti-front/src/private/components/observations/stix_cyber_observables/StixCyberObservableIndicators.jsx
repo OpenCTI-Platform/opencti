@@ -131,7 +131,7 @@ const StixCyberObservableIndicatorsComponent = ({ stixCyberObservable }) => {
   };
 
   return (
-    <div style={{ marginTop: 5 }}>
+    <div>
       <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
         {t_i18n('Indicators composed with this observable')}
       </Typography>
