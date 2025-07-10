@@ -127,10 +127,6 @@ test('Dashboard CRUD', async ({ page }) => {
   await dashboardDetailsPage.getActionsPopover().click();
   await dashboardDetailsPage.getActionButton('Duplicate').click();
   await dashboardDetailsPage.getDuplicateButton().click();
-  // Close the info message about duplication
-  await awaitUntilCondition(() => page.getByRole('button', { name: 'Close' }).isVisible());
-  page.getByRole('button', { name: 'Close' }).click();
-  await awaitUntilCondition(() => page.getByRole('button', { name: 'Close' }).isHidden());
 
   await leftBarPage.clickOnMenu('Dashboards', 'Custom dashboards');
   await expect(dashboardPage.getItemFromList(duplicateDashboardName)).toBeVisible();
