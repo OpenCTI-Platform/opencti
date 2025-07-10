@@ -1,15 +1,14 @@
 import ejs from 'ejs';
-import * as R from 'ramda';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import conf, { booleanConf, getBaseUrl, logApp } from '../config/conf';
-import { TYPE_LOCK_ERROR } from '../config/errors';
+import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { createStreamProcessor, NOTIFICATION_STREAM_NAME, type StreamProcessor } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
 import { sendMail, smtpIsAlive } from '../database/smtp';
 import type { NotifierTestInput } from '../generated/graphql';
 import { addNotification } from '../modules/notification/notification-domain';
-import type { BasicStoreEntityTrigger, NotificationContentEvent } from '../modules/notification/notification-types';
+import type { BasicStoreEntityTrigger, NotificationContentEvent, NotificationAddInput } from '../modules/notification/notification-types';
 import {
   NOTIFIER_CONNECTOR_EMAIL,
   type NOTIFIER_CONNECTOR_EMAIL_INTERFACE,
@@ -39,7 +38,6 @@ import {
 import { type GetHttpClient, getHttpClient } from '../utils/http-client';
 import { extractRepresentative } from '../database/entity-representative';
 import { extractStixRepresentativeForUser } from '../database/stix-representative';
-import { findById } from '../domain/user';
 import { EVENT_TYPE_UPDATE } from '../database/utils';
 
 const DOC_URI = 'https://docs.opencti.io';
@@ -48,135 +46,269 @@ const PUBLISHER_ENABLE_BUFFERING = conf.get('publisher_manager:enable_buffering'
 const PUBLISHER_BUFFERING_SECONDS = conf.get('publisher_manager:buffering_seconds');
 const STREAM_SCHEDULE_TIME = 10000;
 
-export const internalProcessNotification = async (
+export async function processNotificationData(
   context: AuthContext,
-  settings: BasicStoreSettings,
   notificationMap: Map<string, BasicStoreEntityTrigger>,
   user: NotificationUser,
-  notifier: BasicStoreEntityNotifier | NotifierTestInput,
   data: NotificationData[],
+  usersMap: Map<string, AuthUser>,
+) {
+  const generatedContent: Record<string, NotificationContentEvent[]> = {};
+
+  for (let i = 0; i < data.length; i += 1) {
+    const { notification_id, instance, type, message } = data[i];
+    const eventNotification = notificationMap.get(notification_id);
+    if (eventNotification) {
+      const event: NotificationContentEvent = {
+        operation: type,
+        message,
+        instance_id: instance.id
+      };
+
+      const notificationUser = usersMap.get(user.user_id);
+      if (!notificationUser) {
+        throw FunctionalError(`Notification user not found ${user.user_id}`);
+      }
+      const notificationName = 'extensions' in instance
+        ? await extractStixRepresentativeForUser(context, notificationUser, instance, true)
+        : extractRepresentative(instance)?.main;
+
+      if (notificationName) {
+        if (!generatedContent[notificationName]) {
+          generatedContent[notificationName] = [];
+        }
+        generatedContent[notificationName].push(event);
+      }
+    }
+  }
+
+  return generatedContent;
+}
+
+export function assembleTemplateData(
+  content: Array<{ title: string; events: NotificationContentEvent[] }>,
   triggers: BasicStoreEntityTrigger[],
+  settings: BasicStoreSettings,
+  user: NotificationUser,
+  data: NotificationData[]
+) {
+  const platformBackgroundColor = (settings.platform_theme_dark_background ?? '#0a1929').substring(1);
+  return {
+    content,
+    notification_content: content,
+    notification: triggers[0],
+    settings,
+    user,
+    data,
+    doc_uri: DOC_URI,
+    platform_uri: getBaseUrl(),
+    background_color: platformBackgroundColor
+  };
+}
+
+export async function handleUINotification(
+  context: AuthContext,
+  notificationName: string,
+  triggerIds: Array<string | undefined>,
+  notificationType: string,
+  user: NotificationUser,
+  content: Array<{ title: string; events: NotificationContentEvent[] }>
+) {
+  const notificationPayload = {
+    name: notificationName,
+    trigger_id: triggerIds,
+    notification_type: notificationType,
+    user_id: user.user_id,
+    notification_content: content,
+    created: now(),
+    created_at: now(),
+    updated_at: now(),
+    is_read: false
+  } as NotificationAddInput;
+
+  try {
+    await addNotification(context, SYSTEM_USER, notificationPayload);
+  } catch (error) {
+    logApp.error('[OPENCTI-MODULE] Publisher manager add notification error', { cause: error, manager: 'PUBLISHER_MANAGER' });
+    throw error;
+  }
+}
+
+export async function handleEmailNotification(
+  settings: BasicStoreSettings,
+  user: NotificationUser,
+  configurationString: string | undefined,
+  templateData: object,
+  triggerIds: string[],
+) {
+  const { title, template, url_suffix: urlSuffix } = JSON.parse(configurationString ?? '{}') as NOTIFIER_CONNECTOR_EMAIL_INTERFACE;
+  const renderedTitle = ejs.render(title, templateData);
+  const renderedEmail = ejs.render(template, { ...templateData, url_suffix: urlSuffix });
+
+  const emailPayload = {
+    from: `${settings.platform_title} <${settings.platform_email}>`,
+    to: user.user_email,
+    subject: renderedTitle,
+    html: renderedEmail
+  };
+
+  try {
+    await sendMail(emailPayload, { identifier: triggerIds, category: 'notification' });
+  } catch (error) {
+    logApp.error('[OPENCTI-MODULE] Publisher manager send email error', { cause: error, manager: 'PUBLISHER_MANAGER' });
+    throw error;
+  }
+}
+
+export async function handleSimplifiedEmailNotification(
+  settings: BasicStoreSettings,
+  user: NotificationUser,
+  configurationString: string | undefined,
+  templateData: object,
+  triggerIds: string[],
+) {
+  const {
+    title,
+    header,
+    logo,
+    footer,
+    background_color: bgColor,
+    url_suffix: urlSuffix
+  } = JSON.parse(configurationString ?? '{}') as NOTIFIER_CONNECTOR_SIMPLIFIED_EMAIL_INTERFACE;
+
+  const finalTemplateData = { ...templateData, header, logo, footer, background_color: bgColor, url_suffix: urlSuffix };
+  const renderedTitle = ejs.render(title, finalTemplateData);
+  const renderedEmail = ejs.render(SIMPLIFIED_EMAIL_TEMPLATE, finalTemplateData);
+
+  const emailPayload = {
+    from: settings.platform_email,
+    to: user.user_email,
+    subject: renderedTitle,
+    html: renderedEmail
+  };
+
+  try {
+    await sendMail(emailPayload, { identifier: triggerIds, category: 'notification' });
+  } catch (error) {
+    logApp.error('[OPENCTI-MODULE] Publisher manager send email error', { cause: error, manager: 'PUBLISHER_MANAGER' });
+    throw error;
+  }
+}
+
+export async function handleWebhookNotification(configurationString: string | undefined, templateData: object) {
+  function escapeLineBreak(str: string):string {
+    return str
+      .replace(/\n/g, '\\n');
+  }
+
+  function escapeStringValuesForJSON(obj: any): any {
+    if (typeof obj === 'string') {
+      return escapeLineBreak(obj);
+    } if (Array.isArray(obj)) {
+      return obj.map(escapeStringValuesForJSON);
+    } if (typeof obj === 'object' && obj !== null) {
+      return Object.fromEntries(
+        Object.entries(obj).map(([key, value]) => [key, escapeStringValuesForJSON(value)])
+      );
+    }
+    return obj;
+  }
+
+  const { url, template, verb, params, headers } = JSON.parse(configurationString ?? '{}') as NOTIFIER_CONNECTOR_WEBHOOK_INTERFACE;
+  const safeTemplateData = escapeStringValuesForJSON(templateData);
+
+  const renderedWebhookTemplate = ejs.render(template, safeTemplateData);
+  const webhookPayload = JSON.parse(renderedWebhookTemplate);
+
+  const headersObject = Object.fromEntries((headers ?? []).map((header) => [header.attribute, header.value]));
+  const paramsObject = Object.fromEntries((params ?? []).map((param) => [param.attribute, param.value]));
+
+  const httpClientOptions: GetHttpClient = { responseType: 'json', headers: headersObject };
+  const httpClient = getHttpClient(httpClientOptions);
+
+  try {
+    await httpClient.call({ url, method: verb, params: paramsObject, data: webhookPayload });
+  } catch (error) {
+    logApp.error('[OPENCTI-MODULE] Publisher manager webhook error', { cause: error, manager: 'PUBLISHER_MANAGER' });
+    throw error;
+  }
+}
+
+export const internalProcessNotification = async (
+  authContext: AuthContext,
+  storeSettings: BasicStoreSettings,
+  notificationEntities: Map<string, BasicStoreEntityTrigger>,
+  notificationUser: NotificationUser,
+  notifier: BasicStoreEntityNotifier | NotifierTestInput,
+  notificationData: NotificationData[],
+  triggerList: BasicStoreEntityTrigger[],
+  usersMap: Map<string, AuthUser>,
   // eslint-disable-next-line consistent-return
 ): Promise<{ error: string } | void> => {
   try {
-    const notification_name = triggers.map((t) => t?.name).join(';');
-    const trigger_type = triggers.length > 1 ? 'buffer' : triggers[0].trigger_type;
-    const trigger_id = triggers.map((t) => t?.id).filter((t) => t);
-    const { notifier_connector_id, notifier_configuration: configuration } = notifier;
-    const generatedContent: Record<string, Array<NotificationContentEvent>> = {};
-    for (let index = 0; index < data.length; index += 1) {
-      const { notification_id, instance, type, message } = data[index];
-      const event = { operation: type, message, instance_id: instance.id };
-      const eventNotification = notificationMap.get(notification_id);
-      if (eventNotification) {
-        const notificationUser = await findById(context, SYSTEM_USER, user.user_id);
-        const notificationName = 'extensions' in instance ? await extractStixRepresentativeForUser(context, notificationUser, instance, true)
-          : extractRepresentative(instance)?.main;
-        if (generatedContent[notificationName]) {
-          generatedContent[notificationName] = [...generatedContent[notificationName], event];
-        } else {
-          generatedContent[notificationName] = [event];
-        }
-      }
-    }
-    const content = Object.entries(generatedContent).map(([k, v]) => ({ title: k, events: v }));
-    // region data generation
-    const background_color = (settings.platform_theme_dark_background ?? '#0a1929').substring(1);
-    const platformOpts = { doc_uri: DOC_URI, platform_uri: getBaseUrl(), background_color };
-    const templateData = { content, notification_content: content, notification: triggers[0], settings, user, data, ...platformOpts };
-    // endregion
-    if (notifier_connector_id === NOTIFIER_CONNECTOR_UI) {
-      const createNotification = {
-        name: notification_name,
-        trigger_id,
-        notification_type: trigger_type,
-        user_id: user.user_id,
-        notification_content: content,
-        created: now(),
-        created_at: now(),
-        updated_at: now(),
-        is_read: false
-      };
-      addNotification(context, SYSTEM_USER, createNotification).catch((err) => {
-        logApp.error('[OPENCTI-MODULE] Publisher manager add notification error', { cause: err, manager: 'PUBLISHER_MANAGER' });
-        return { error: err };
-      });
-    } else if (notifier_connector_id === NOTIFIER_CONNECTOR_EMAIL) {
-      const { title, template, url_suffix: urlSuffix } = JSON.parse(configuration ?? '{}') as NOTIFIER_CONNECTOR_EMAIL_INTERFACE;
-      const generatedTitle = ejs.render(title, templateData);
-      const generatedEmail = ejs.render(template, { ...templateData, url_suffix: urlSuffix });
-      const mail = { from: `${settings.platform_title} <${settings.platform_email}>`, to: user.user_email, subject: generatedTitle, html: generatedEmail };
-      await sendMail(mail, { identifier: trigger_id, category: 'notification' }).catch((err) => {
-        logApp.error('[OPENCTI-MODULE] Publisher manager send email error', { cause: err, manager: 'PUBLISHER_MANAGER' });
-        return { error: err };
-      });
-    } else if (notifier_connector_id === NOTIFIER_CONNECTOR_SIMPLIFIED_EMAIL) {
-      const {
-        title,
-        header,
-        logo,
-        footer,
-        background_color: bgColor,
-        url_suffix: urlSuffix,
-      } = JSON.parse(configuration ?? '{}') as NOTIFIER_CONNECTOR_SIMPLIFIED_EMAIL_INTERFACE;
+    const notificationName = triggerList.map((trigger) => trigger?.name).join(';');
+    const notificationType = triggerList.length > 1 ? 'buffer' : triggerList[0].trigger_type;
+    const triggerIds = triggerList.map((trigger) => trigger?.id).filter((id) => id);
 
-      const finalTemplateData = {
-        ...templateData,
-        header,
-        logo,
-        footer,
-        background_color: bgColor,
-        url_suffix: urlSuffix,
-      };
+    const { notifier_connector_id: notifierConnectorId, notifier_configuration: notifierConfigurationString } = notifier;
 
-      const generatedTitle = ejs.render(title, finalTemplateData);
-      const generatedEmail = ejs.render(SIMPLIFIED_EMAIL_TEMPLATE, finalTemplateData);
-      const mail = { from: settings.platform_email, to: user.user_email, subject: generatedTitle, html: generatedEmail };
-      await sendMail(mail, { identifier: trigger_id, category: 'notification' }).catch((err) => {
-        logApp.error('[OPENCTI-MODULE] Publisher manager send email error', { cause: err, manager: 'PUBLISHER_MANAGER' });
-        return { error: err };
-      });
-    } else if (notifier_connector_id === NOTIFIER_CONNECTOR_WEBHOOK) {
-      const { url, template, verb, params, headers } = JSON.parse(configuration ?? '{}') as NOTIFIER_CONNECTOR_WEBHOOK_INTERFACE;
-      const generatedWebhook = ejs.render(template, templateData);
-      const dataJson = JSON.parse(generatedWebhook);
-      const dataHeaders = R.fromPairs((headers ?? []).map((h) => [h.attribute, h.value]));
-      const dataParameters = R.fromPairs((params ?? []).map((h) => [h.attribute, h.value]));
-      const httpClientOptions: GetHttpClient = { responseType: 'json', headers: dataHeaders };
-      const httpClient = getHttpClient(httpClientOptions);
-      await httpClient.call({ url, method: verb, params: dataParameters, data: dataJson }).catch((err) => {
-        logApp.error('[OPENCTI-MODULE] Publisher manager webhook error', { cause: err, manager: 'PUBLISHER_MANAGER' });
-        return { error: err };
-      });
-    } else {
-      // Push the event to the external connector
-      // TODO
+    const contentEventMapping = await processNotificationData(authContext, notificationEntities, notificationUser, notificationData, usersMap);
+
+    const content = Object.entries(contentEventMapping).map(([title, events]) => ({ title, events }));
+
+    const assembledTemplateData = assembleTemplateData(content, triggerList, storeSettings, notificationUser, notificationData);
+
+    switch (notifierConnectorId) {
+      case NOTIFIER_CONNECTOR_UI:
+        await handleUINotification(authContext, notificationName, triggerIds, notificationType, notificationUser, content);
+        break;
+      case NOTIFIER_CONNECTOR_EMAIL:
+        await handleEmailNotification(storeSettings, notificationUser, notifierConfigurationString, assembledTemplateData, triggerIds);
+        break;
+      case NOTIFIER_CONNECTOR_SIMPLIFIED_EMAIL:
+        await handleSimplifiedEmailNotification(storeSettings, notificationUser, notifierConfigurationString, assembledTemplateData, triggerIds);
+        break;
+      case NOTIFIER_CONNECTOR_WEBHOOK:
+        await handleWebhookNotification(notifierConfigurationString, assembledTemplateData);
+        break;
+      default:
+        // TODO: Handle other notifier scenarios
+        break;
     }
-  } catch (e: unknown) {
-    return { error: (e as Error).message };
+  } catch (error) {
+    return { error: (error as Error).message };
   }
 };
 
-const processNotificationEvent = async (
+export const processNotificationEvent = async (
   context: AuthContext,
   notificationMap: Map<string, BasicStoreEntityTrigger>,
   notificationId: string,
   user: NotificationUser,
-  data: NotificationData[]
-) => {
-  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const notification = notificationMap.get(notificationId);
-  if (!notification) {
+  notificationData: NotificationData[],
+  usersMap: Map<string, AuthUser>,
+): Promise<void> => {
+  const storeSettings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+
+  const notificationTrigger = notificationMap.get(notificationId);
+  if (!notificationTrigger) {
     return;
   }
-  const userNotifiers = user.notifiers ?? []; // No notifier is possible for live trigger only targeting digest
-  const notifiers = await getEntitiesListFromCache<BasicStoreEntityNotifier>(context, SYSTEM_USER, ENTITY_TYPE_NOTIFIER);
-  const notifierMap = new Map(notifiers.map((n) => [n.internal_id, n]));
-  for (let notifierIndex = 0; notifierIndex < userNotifiers.length; notifierIndex += 1) {
-    const notifier = userNotifiers[notifierIndex];
 
-    // There is no await in purpose, the goal is to send notification and continue without waiting result.
-    internalProcessNotification(context, settings, notificationMap, user, notifierMap.get(notifier) ?? {} as BasicStoreEntityNotifier, data, [notification]).catch((reason) => logApp.error('[OPENCTI-MODULE] Publisher manager unknown error.', { cause: reason }));
+  const userNotifiers = user.notifiers ?? []; // No notifier is possible for live trigger only targeting digest
+
+  const allNotifiers = await getEntitiesListFromCache<BasicStoreEntityNotifier>(context, SYSTEM_USER, ENTITY_TYPE_NOTIFIER);
+  const notifierMap = new Map<string, BasicStoreEntityNotifier>(
+    allNotifiers.map((notifier) => [notifier.internal_id, notifier])
+  );
+
+  for (let i = 0; i < userNotifiers.length; i += 1) {
+    const userNotifierId = userNotifiers[i];
+    const notifier = notifierMap.get(userNotifierId) ?? {} as BasicStoreEntityNotifier;
+
+    // There is no await in purpose; the goal is to send notification and continue without waiting result.
+    internalProcessNotification(context, storeSettings, notificationMap, user, notifier, notificationData, [notificationTrigger], usersMap)
+      .catch((reason) => logApp.error('[OPENCTI-MODULE] Publisher manager unknown error.', { cause: reason }));
   }
 };
 
@@ -202,19 +334,21 @@ const createFullNotificationMessage = (
   return fullMessage;
 };
 
-const processLiveNotificationEvent = async (
+export const processLiveNotificationEvent = async (
   context: AuthContext,
   notificationMap: Map<string, BasicStoreEntityTrigger>,
   event: KnowledgeNotificationEvent | ActivityNotificationEvent | ActionNotificationEvent
-) => {
-  const { targets, data: instance, origin } = event;
+): Promise<void> => {
+  const { targets, data: instance, origin, notification_id } = event as KnowledgeNotificationEvent;
   const usersMap = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
   const { streamMessage } = event as KnowledgeNotificationEvent;
-  for (let index = 0; index < targets.length; index += 1) {
-    const { user, type, message } = targets[index];
+
+  for (let i = 0; i < targets.length; i += 1) {
+    const target = targets[i];
+    const { user, type, message } = target;
     const notificationMessage = createFullNotificationMessage(message, usersMap, streamMessage, origin, type);
-    const data = [{ notification_id: event.notification_id, instance, type, message: notificationMessage }];
-    await processNotificationEvent(context, notificationMap, event.notification_id, user, data);
+    const notificationData = [{ notification_id, instance, type, message: notificationMessage }];
+    await processNotificationEvent(context, notificationMap, notification_id, user, notificationData, usersMap);
   }
 };
 
@@ -224,7 +358,7 @@ const processDigestNotificationEvent = async (context: AuthContext, notification
   const dataWithFullMessage = data.map((d) => {
     return { ...d, message: createFullNotificationMessage(d.message, usersMap, d.streamMessage, d.origin, d.type) };
   });
-  await processNotificationEvent(context, notificationMap, event.notification_id, user, dataWithFullMessage);
+  await processNotificationEvent(context, notificationMap, event.notification_id, user, dataWithFullMessage, usersMap);
 };
 
 const liveNotificationBufferPerEntity: Record<string, { timestamp: number, events: SseEvent<KnowledgeNotificationEvent>[] }> = {};
@@ -284,7 +418,8 @@ const processBufferedEvents = async (
             currentUser,
             allNotifiersMap.get(notifier) ?? {} as BasicStoreEntityNotifier,
             dataToSend,
-            triggersInDataToSend as BasicStoreEntityTrigger[]
+            triggersInDataToSend as BasicStoreEntityTrigger[],
+            usersFromCache,
           ).catch((reason) => logApp.error('[OPENCTI-MODULE] Publisher manager unknown error.', { cause: reason }));
         }
       }
