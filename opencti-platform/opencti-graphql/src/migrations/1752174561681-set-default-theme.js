@@ -16,7 +16,7 @@ export const up = async (next) => {
     SYSTEM_USER,
     ENTITY_TYPE_SETTINGS,
   );
-  const themes = await findAll(context);
+  const themes = await findAll(context, {});
 
   let themeId;
   switch (platform_theme) {
