@@ -151,7 +151,6 @@ StixCoreRelationshipCreationFromEntityHeaderProps
               handleClose={handleClose}
               defaultStartTime={defaultStartTime}
               defaultStopTime={defaultStopTime}
-              helpers={helpers}
               entityId={entityId}
             />
           )

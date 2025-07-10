@@ -11,7 +11,6 @@ import {
   TargetEntity,
 } from './StixCoreRelationshipCreationFromEntity';
 import { StixCoreRelationshipCreationFromEntityQuery } from './__generated__/StixCoreRelationshipCreationFromEntityQuery.graphql';
-import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
 import { insertNode } from '../../../../utils/store';
 import { formatDate } from '../../../../utils/Time';
@@ -27,7 +26,6 @@ interface StixCoreRelationshipCreationFormStageProps {
   handleClose: () => void;
   defaultStartTime: string;
   defaultStopTime: string;
-  helpers: UseLocalStorageHelpers;
   entityId: string;
 }
 
@@ -38,7 +36,6 @@ const StixCoreRelationshipCreationFormStage: FunctionComponent<StixCoreRelations
   handleClose,
   defaultStartTime,
   defaultStopTime,
-  helpers,
   entityId,
 }) => {
   const { stixCoreObject } = usePreloadedQuery(
@@ -113,10 +110,6 @@ const StixCoreRelationshipCreationFormStage: FunctionComponent<StixCoreRelations
               connectionKey || 'Pagination_stixCoreRelationships',
               paginationOptions,
               'stixCoreRelationshipAdd',
-              null,
-              null,
-              null,
-              reversed ? 'from' : 'to',
             );
           },
           optimisticUpdater: undefined,
