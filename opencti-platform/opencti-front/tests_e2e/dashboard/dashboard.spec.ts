@@ -402,10 +402,6 @@ test('Dashboard restriction access', async ({ page }) => {
   await dashboardDetailsPage.getActionsPopover().click();
   await dashboardDetailsPage.getActionButton('Duplicate').click();
   await dashboardDetailsPage.getDuplicateButton().click();
-  // Close the info message about duplication
-  await awaitUntilCondition(() => page.getByRole('button', { name: 'Close' }).isVisible());
-  page.getByRole('button', { name: 'Close' }).click();
-  await awaitUntilCondition(() => page.getByRole('button', { name: 'Close' }).isHidden());
   await leftBar.clickOnMenu('Dashboards', 'Custom dashboards');
   await expect(dashboardPage.getItemFromList(`${dashboardName} - copy`)).toBeVisible();
   await dashboardPage.getItemFromList(`${dashboardName} - copy`).click();
@@ -413,10 +409,6 @@ test('Dashboard restriction access', async ({ page }) => {
   await dashboardDetailsPage.getDeleteButton().click();
   await dashboardDetailsPage.getConfirmButton().click();
   await page.waitForTimeout(1000);// After delete need to wait a bit
-
-  // Close the info message about duplication
-  await awaitUntilCondition(() => page.getByRole('button', { name: 'Close' }).isVisible());
-  page.getByRole('button', { name: 'Close' }).click();
 
   // Try to export
   await dashboardPage.getItemFromList(dashboardName).click();
