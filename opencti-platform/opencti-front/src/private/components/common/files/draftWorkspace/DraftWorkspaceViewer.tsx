@@ -6,16 +6,47 @@ import { Add } from '@mui/icons-material';
 import Paper from '@mui/material/Paper';
 import Drafts from '@components/drafts/Drafts';
 import { useTheme } from '@mui/styles';
+import { graphql, loadQuery, usePreloadedQuery } from 'react-relay';
+import { DraftWorkspaceViewerQuery } from '@components/common/files/draftWorkspace/__generated__/DraftWorkspaceViewerQuery.graphql';
 import { KNOWLEDGE_KNASKIMPORT } from '../../../../../utils/hooks/useGranted';
 import Security from '../../../../../utils/Security';
 import useDraftContext from '../../../../../utils/hooks/useDraftContext';
 import { useFormatter } from '../../../../../components/i18n';
-import { Theme } from '../../../../../components/Theme';
+import { environment } from '../../../../../relay/environment';
+import {Theme} from "../../../../../components/Theme";
 
-const DraftWorkspaceViewer = ({ inEntity }: { inEntity: boolean }) => {
+const draftWorkspaceQuery = graphql`
+  query DraftWorkspaceViewerQuery {
+    draftWorkspaces {
+      edges {
+        node {
+          id
+          entity_id
+          name
+        }
+      }
+    }
+  }
+`;
+
+const queryRef = loadQuery<DraftWorkspaceViewerQuery>(
+  environment,
+  draftWorkspaceQuery,
+  {},
+);
+
+const DraftWorkspaceViewer = ({ entityId }: { entityId: string }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const draftContext = useDraftContext();
+
+  const data = usePreloadedQuery<DraftWorkspaceViewerQuery>(
+    draftWorkspaceQuery,
+    queryRef,
+  );
+
+  const draftWorkspaces = data?.draftWorkspaces?.edges
+    .map((n) => n.node.entity_id);
 
   return (
     <Grid item xs={6}>
@@ -45,18 +76,21 @@ const DraftWorkspaceViewer = ({ inEntity }: { inEntity: boolean }) => {
           }}
           className={'paper-for-grid'} variant="outlined"
         >
-          <Drafts inEntity={true} />
-          <div style={{ display: 'table', height: '100%', width: '100%' }}>
-            <span
-              style={{
-                display: 'table-cell',
-                verticalAlign: 'middle',
-                textAlign: 'center',
-              }}
-            >
-              {t_i18n('No draft for the moment')}
-            </span>
-          </div>
+          {draftWorkspaces && draftWorkspaces.includes(entityId) ? (
+            <Drafts entityId={entityId} />
+          ) : (
+            <div style={{ display: 'table', height: '100%', width: '100%' }}>
+              <span
+                style={{
+                  display: 'table-cell',
+                  verticalAlign: 'middle',
+                  textAlign: 'center',
+                }}
+              >
+                {t_i18n('No draft for the moment')}
+              </span>
+            </div>
+          )}
         </Paper>
       </div>
     </Grid>
