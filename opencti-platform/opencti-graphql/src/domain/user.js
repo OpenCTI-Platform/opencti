@@ -644,7 +644,11 @@ export const addUser = async (context, user, newUser) => {
   await Promise.all(relationGroups.map((relation) => createRelation(context, user, relation)));
   // Audit log
   if (isCreation) {
-    const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : newUser.user_email;
+    let actionEmail;
+    actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : newUser.user_email;
+    if (userServiceAccount) {
+      actionEmail = newUser.user_email ? newUser.user_email : `automatic+${uuid()}@opencti.invalid`;
+    }
     await publishUserAction({
       user,
       event_type: 'mutation',
