@@ -109,7 +109,7 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
 
     if (serviceAccountFeatureFlag && finalValues.user_service_account) {
       delete finalValues.password;
-      if (delete finalValues.user_email === '') {
+      if (finalValues.user_email === '') {
         delete finalValues.user_email;
       }
     }
