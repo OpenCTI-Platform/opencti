@@ -1043,7 +1043,7 @@ const LeftBar = () => {
           <MenuItem
             style={{
               color: theme.palette.ai.main,
-              paddingBottom: navOpen ? undefined : '11px',
+              paddingBottom: navOpen ? undefined : '10px',
               paddingLeft: navOpen ? theme.spacing(1.25) : undefined,
               paddingRight: navOpen ? theme.spacing(1.25) : undefined,
             }}
