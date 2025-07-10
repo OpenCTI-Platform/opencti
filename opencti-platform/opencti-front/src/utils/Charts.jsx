@@ -1055,3 +1055,184 @@ export const heatMapOptions = (
     },
   },
 });
+
+function generateDayWiseTimeSeries(baseval, count, yrange) {
+  let i = 0;
+  const series = [];
+  while (i < count) {
+    const y = Math.floor(Math.random() * (yrange.max - yrange.min + 1)) + yrange.min;
+    series.push([baseval, y]);
+    baseval += 86400000;
+    i++;
+  }
+  return series;
+}
+
+export const scatterChartOptions = (theme) => ({
+  series: [
+    {
+      name: 'DIAMOND',
+      data: generateDayWiseTimeSeries(
+        new Date('01 Feb 2017 GMT').getTime(),
+        10,
+        {
+          min: 5,
+          max: 60,
+        },
+      ),
+    },
+    {
+      name: 'TRIANGLE',
+      data: generateDayWiseTimeSeries(
+        new Date('11 Feb 2017 GMT').getTime(),
+        10,
+        {
+          min: 54,
+          max: 90,
+        },
+      ),
+    },
+    {
+      name: 'CROSS',
+      data: generateDayWiseTimeSeries(
+        new Date('20 Feb 2017 GMT').getTime(),
+        8,
+        {
+          min: 10,
+          max: 50,
+        },
+      ),
+    },
+    {
+      name: 'PLUS',
+      data: generateDayWiseTimeSeries(
+        new Date('28 Feb 2017 GMT').getTime(),
+        16,
+        {
+          min: 30,
+          max: 99,
+        },
+      ),
+    },
+
+    {
+      name: 'SQUARE',
+      data: generateDayWiseTimeSeries(
+        new Date('20 Mar 2017 GMT').getTime(),
+        10,
+        {
+          min: 0,
+          max: 59,
+        },
+      ),
+    },
+    {
+      name: 'LINE',
+      data: generateDayWiseTimeSeries(
+        new Date('29 Mar 2017 GMT').getTime(),
+        10,
+        {
+          min: 0,
+          max: 90,
+        },
+      ),
+    },
+    {
+      name: 'CIRCLE',
+      data: generateDayWiseTimeSeries(
+        new Date('10 Apr 2017 GMT').getTime(),
+        10,
+        {
+          min: 5,
+          max: 35,
+        },
+      ),
+    },
+
+    {
+      name: 'STAR',
+      data: generateDayWiseTimeSeries(
+        new Date('20 Apr 2017 GMT').getTime(),
+        10,
+        {
+          min: 15,
+          max: 60,
+        },
+      ),
+    },
+    {
+      name: 'SPARKLE',
+      data: generateDayWiseTimeSeries(
+        new Date('29 Apr 2017 GMT').getTime(),
+        10,
+        {
+          min: 45,
+          max: 99,
+        },
+      ),
+    },
+  ],
+  chart: {
+    type: 'scatter',
+    background: theme.palette.background.paper,
+    toolbar: toolbarOptions,
+    foreColor: theme.palette.text.secondary,
+    width: '100%',
+    height: '100%',
+  },
+  theme: {
+    mode: theme.palette.mode,
+  },
+  dataLabels: {
+    enabled: false,
+  },
+  colors: [
+    theme.palette.primary.main,
+    ...colors(theme.palette.mode === 'dark' ? 400 : 600),
+  ],
+  states: {
+    hover: {
+      filter: {
+        type: 'lighten',
+        value: 0.05,
+      },
+    },
+  },
+  grid: {
+    borderColor:
+      theme.palette.mode === 'dark'
+        ? 'rgba(255, 255, 255, .1)'
+        : 'rgba(0, 0, 0, .1)',
+    strokeDashArray: 3,
+  },
+  legend: {
+    show: false,
+  },
+  stroke: {
+    curve: 'smooth',
+    width: 2,
+  },
+  tooltip: {
+    theme: theme.palette.mode,
+  },
+  xaxis: {
+    type: 'datetime',
+    labels: {
+      show: false,
+    },
+    axisBorder: {
+      show: false,
+    },
+    axisTicks: {
+      show: false,
+    },
+  },
+  yaxis: {
+    labels: {
+      show: false,
+    },
+    axisBorder: {
+      show: false,
+    },
+  },
+});

@@ -1,5 +1,6 @@
 import React from 'react';
 import Grid from '@mui/material/Grid2';
+import PirThreatMap from '@components/pir/pir_overview/PirThreatMap';
 import PirOverviewCounts from './PirOverviewCounts';
 import PirOverviewTopSources from './PirOverviewTopSources';
 import PirOverviewDetails from './PirOverviewDetails';
@@ -26,7 +27,10 @@ const PirOverview = ({
         <Paper title={t_i18n('PIR Details')}>
           <PirOverviewDetails data={dataPir} />
         </Paper>
-        <Paper title={t_i18n('PIR Visualization')}>
+        <Paper title={t_i18n('Threat map')}>
+          <PirThreatMap />
+        </Paper>
+        <Paper title={t_i18n('Top sources')}>
           <PirOverviewTopSources data={dataPir} />
         </Paper>
       </Grid>
