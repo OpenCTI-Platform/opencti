@@ -275,7 +275,7 @@ const StixCoreObjectFilesAndHistory = ({
           entity={entity}
           handleOpenImport={handleOpenImport}
         />
-        <DraftWorkspaceViewer inEntity={true} />
+        <DraftWorkspaceViewer entityId={entity.id} />
         <FileExternalReferencesViewer
           entity={entity}
           connectors={importConnsPerFormat}
