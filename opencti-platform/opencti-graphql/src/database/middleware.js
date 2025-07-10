@@ -1850,17 +1850,22 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
         const stixIdsHaveNotChanged = instanceStixIds.length === newStixIds.length
           && newStixIds.every((id) => instanceStixIds.includes(id));
 
-        if (!stixIdsHaveNotChanged) {
-          const stixInput = R.find((e) => e.key === IDS_STIX, preparedElements);
-          if (stixInput) {
-            // If update already contains a change of the other stix ids
-            // we need to impact directly the impacted and updated related input
-            stixInput.operation = UPDATE_OPERATION_REPLACE;
-            stixInput.value = R.uniq([...stixInput.value, ...newStixIds]);
+        const stixInput = R.find((e) => e.key === IDS_STIX, preparedElements);
+        if (stixInput) {
+          // If update already contains a change of the other stix ids
+          // we need to impact directly the impacted and updated related input
+          if (stixInput.operation === UPDATE_OPERATION_REPLACE) {
+            const stixIds = [...stixInput.value, ...updatedInstanceStandardIds].filter((id) => id !== standardId);
+            stixInput.value = R.uniq(stixIds);
+          } else if (stixInput.operation === UPDATE_OPERATION_REMOVE) {
+            stixInput.value = R.uniq(newStixIds.filter((id) => !stixInput.value.includes(id)));
           } else {
-            // If no stix ids modification, add the standard id in the list and patch the element
-            preparedElements.push({ key: IDS_STIX, value: R.uniq(newStixIds) });
+            stixInput.value = R.uniq([...stixInput.value, ...newStixIds]);
           }
+          stixInput.operation = UPDATE_OPERATION_REPLACE;
+        } else if (!stixIdsHaveNotChanged) {
+          // If no stix ids modification, add the standard id in the list and patch the element
+          preparedElements.push({ key: IDS_STIX, value: R.uniq(newStixIds) });
         }
       } else if (isStandardIdUpgraded(instance, updatedInstance)) {
         // If update already contains a change of the other stix ids
