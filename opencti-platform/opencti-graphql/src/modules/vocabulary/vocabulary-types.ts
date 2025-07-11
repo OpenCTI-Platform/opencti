@@ -27,7 +27,8 @@ import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../threatActorIndividual/th
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../securityPlatform/securityPlatform-types';
-import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/types/store';
+
+import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
 
 export const ENTITY_TYPE_VOCABULARY = 'Vocabulary';
 

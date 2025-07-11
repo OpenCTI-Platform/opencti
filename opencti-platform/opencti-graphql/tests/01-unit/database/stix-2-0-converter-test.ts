@@ -16,8 +16,6 @@ import { convertGroupingToStix_2_0 } from '../../../src/modules/grouping/groupin
 import { EXPECTED_GROUPING, GROUPING_INSTANCE } from './instances-stix-2-0-converter/containers/grouping';
 import { EXPECTED_FEEDBACK, FEEDBACK_INSTANCE } from './instances-stix-2-0-converter/containers/feedback';
 import { convertFeedbackToStix_2_0 } from '../../../src/modules/case/feedback/feedback-converter';
-import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../../../src/modules/case/feedback/types/store';
-import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../../src/modules/grouping/types/store';
 import { ENTITY_TYPE_CONTAINER_TASK } from '../../../src/modules/task/task-types';
 import { convertTaskToStix_2_0 } from '../../../src/modules/task/task-converter';
 import { EXPECTED_TASK, TASK_INSTANCE } from './instances-stix-2-0-converter/containers/task';
@@ -30,6 +28,8 @@ import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../../../src/modules/case/case-r
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../../src/modules/case/case-rfi/case-rfi-types';
 import { EXPECTED_RFI, RFI_INSTANCE } from './instances-stix-2-0-converter/containers/case_rfi';
 import { convertCaseRfiToStix_2_0 } from '../../../src/modules/case/case-rfi/case-rfi-converter';
+import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../../src/modules/grouping/grouping-types';
+import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../../../src/modules/case/feedback/feedback-types';
 
 describe('Stix 2.0 opencti converter', () => {
   it('should convert Malware', async () => {

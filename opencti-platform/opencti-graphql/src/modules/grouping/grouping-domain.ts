@@ -13,8 +13,8 @@ import { elCount } from '../../database/engine';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
 import type { DomainFindById } from '../../domain/domainTypes';
 import { addFilter } from '../../utils/filtering/filtering-utils';
-import { type BasicStoreEntityGrouping, ENTITY_TYPE_CONTAINER_GROUPING } from './types/store';
-import type { GroupingNumberResult } from './types/stix-2-1';
+
+import { type BasicStoreEntityGrouping, ENTITY_TYPE_CONTAINER_GROUPING, type GroupingNumberResult } from './grouping-types';
 
 export const findById: DomainFindById<BasicStoreEntityGrouping> = (context: AuthContext, user: AuthUser, groupingId: string) => {
   return storeLoadById<BasicStoreEntityGrouping>(context, user, groupingId, ENTITY_TYPE_CONTAINER_GROUPING);

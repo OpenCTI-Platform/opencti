@@ -22,7 +22,7 @@ import {
 } from '../../domain/stixDomainObject';
 import { distributionEntities } from '../../database/middleware';
 
-import { ENTITY_TYPE_CONTAINER_GROUPING } from './types/store';
+import { ENTITY_TYPE_CONTAINER_GROUPING } from './grouping-types';
 
 const groupingResolvers: Resolvers = {
   Query: {
