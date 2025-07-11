@@ -102,7 +102,7 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
       currentlyToggledCoreObject: null,
       addedStixCoreObjects: R.indexBy(
         R.prop('id'),
-        (props.sharedOrganisations || []).map((n) => n.node || n),
+        (props.containerStixCoreObjects || []).map((n) => n.node || n),
       ),
     };
   }
