@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { convertTypeToStix2Type } from '../../../src/database/stix-2-0-converter';
 import { buildStixId } from '../../../src/database/stix-converter-utils';
-import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../../../src/modules/case/feedback/types/store';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../../../src/modules/case/feedback/feedback-types';
 
 describe('convertTypeToStix2Type tests', () => {
   it('should return type', async () => {
