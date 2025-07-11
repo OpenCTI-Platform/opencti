@@ -8,7 +8,8 @@ export default class DashboardPage {
   }
 
   getPageTitle() {
-    return this.page.getByText('Dashboards', { exact: true });
+    // There is also a 'Dashboards' in the left menu
+    return this.page.getByTestId('navigation').getByText('Dashboards', { exact: true });
   }
 
   getImportDashboardButton() {
