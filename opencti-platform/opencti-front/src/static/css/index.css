@@ -114,6 +114,14 @@ div.markdown table {
   white-space: pre;
 }
 
+.hide-scrollbar {
+  scrollbar-width: none; /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
 input[type="file"] {
   width: 100% !important;
 }
