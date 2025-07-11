@@ -1,5 +1,10 @@
 import React, { FunctionComponent, Suspense, useState } from 'react';
-import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import { PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
+import {
+  StixCoreObjectSharingListFragment$data,
+  StixCoreObjectSharingListFragment$key,
+} from '@components/common/stix_core_objects/__generated__/StixCoreObjectSharingListFragment.graphql';
+import { objectOrganizationFragment } from '@components/common/stix_core_objects/StixCoreObjectSharingList';
 import { useFormatter } from '../../../../components/i18n';
 import ListLines from '../../../../components/list_lines/ListLines';
 import { PaginationLocalStorage, usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
@@ -12,21 +17,17 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { DataColumns } from '../../../../components/list_lines';
 import Drawer from '../drawer/Drawer';
 
-type scoEdge = {
-  types: string[],
-  node: {
-    id: string,
-  }
-};
-
 interface StixCoreObjectSharedOrganisationsLoaderProps {
   queryRef: PreloadedQuery<ContainerAddStixCoreObjectsLinesQuery>
   containerId: string
   buildColumns: () => DataColumns
   knowledgeGraph?: boolean
-  selectedElements: unknown[]
-  handleSelect: (o: { id: string }) => void
-  handleDeselect: (o: { id: string }) => void
+  selectedElements: ReadonlyArray<{
+    readonly id: string;
+    readonly name: string;
+  }>
+  handleSelect: (o: { id: string, name: string }) => void
+  handleDeselect: (o: { id: string, name: string }) => void
   helpers: PaginationLocalStorage['helpers']
   enableReferences?: boolean
 }
@@ -61,8 +62,7 @@ const StixCoreObjectSharedOrganisationsLoader = ({
 };
 
 interface StixCoreObjectSharedOrganisationsDrawerProps {
-  stixCoreObjectId: string,
-  sharedOrganisations: unknown[],
+  data: StixCoreObjectSharingListFragment$key,
   onAdd?: (node: { id: string }) => void,
   onClose?: () => void,
   onDelete?: (node: { id: string }) => void,
@@ -73,8 +73,7 @@ interface StixCoreObjectSharedOrganisationsDrawerProps {
 }
 
 const StixCoreObjectSharedOrganisationsDrawer: FunctionComponent<StixCoreObjectSharedOrganisationsDrawerProps> = ({
-  stixCoreObjectId,
-  sharedOrganisations,
+  data,
   onAdd,
   onClose,
   onDelete,
@@ -88,8 +87,12 @@ const StixCoreObjectSharedOrganisationsDrawer: FunctionComponent<StixCoreObjectS
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
 
+  const {
+    objectOrganization,
+    id,
+  } = useFragment<StixCoreObjectSharingListFragment$key>(objectOrganizationFragment, data);
   const targetStixCoreObjectTypes = ['Organization'];
-  const LOCAL_STORAGE_KEY = `container-${stixCoreObjectId}-add-${targetStixCoreObjectTypes}`;
+  const LOCAL_STORAGE_KEY = `container-${id}-add-${targetStixCoreObjectTypes}`;
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<
   ContainerAddStixCoreObjectsLinesQuery$variables
   >(
@@ -110,16 +113,16 @@ const StixCoreObjectSharedOrganisationsDrawer: FunctionComponent<StixCoreObjectS
     filters,
     numberOfElements,
   } = viewStorage;
-  const [selectedElements, setSelectedElements] = useState<scoEdge[]>(sharedOrganisations as scoEdge[]);
-  const handleSelect = (node: { id: string }) => {
+  const [selectedElements, setSelectedElements] = useState<NonNullable<StixCoreObjectSharingListFragment$data['objectOrganization']>>(objectOrganization ?? []);
+  const handleSelect = (node: { id: string, name: string }) => {
     setSelectedElements([
       ...selectedElements,
-      { node, types: ['manual'] },
+      { id: node.id, name: node.name },
     ]);
     if (typeof onAdd === 'function') onAdd(node);
   };
   const handleDeselect = (node: { id: string }) => {
-    setSelectedElements(selectedElements.filter((e) => e.node.id !== node.id));
+    setSelectedElements(selectedElements.filter((e) => e.id !== node.id));
     if (typeof onDelete === 'function') onDelete(node);
   };
   const keyword = (searchTerm ?? '').length === 0 ? selectedText : searchTerm;
@@ -158,7 +161,6 @@ const StixCoreObjectSharedOrganisationsDrawer: FunctionComponent<StixCoreObjectS
     search: keyword,
   });
   const queryRef = useQueryLoading<ContainerAddStixCoreObjectsLinesQuery>(containerAddStixCoreObjectsLinesQuery, { count: 100, ...searchPaginationOptions });
-
   return (
     <Drawer
       open={open}
@@ -191,7 +193,7 @@ const StixCoreObjectSharedOrganisationsDrawer: FunctionComponent<StixCoreObjectS
           <Suspense>
             <StixCoreObjectSharedOrganisationsLoader
               queryRef={queryRef}
-              containerId={stixCoreObjectId}
+              containerId={id}
               buildColumns={buildColumns}
               knowledgeGraph={knowledgeGraph}
               selectedElements={selectedElements}
