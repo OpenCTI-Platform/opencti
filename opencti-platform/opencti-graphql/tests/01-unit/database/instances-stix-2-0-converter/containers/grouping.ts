@@ -1,4 +1,3 @@
-import type { StoreEntity } from '../../../../../src/types/store';
 import type { StoreEntityGrouping2 } from '../../../../../src/modules/grouping/grouping-types';
 
 export const GROUPING_INSTANCE = {
