@@ -519,6 +519,17 @@ const ruleApplyCallback = async (context, user, task, ruleId) => {
         inferredEntities.push({ input, ruleContent, type });
       };
       await ruleApply(context, user, element.internal_id, ruleId, createInferredEntityOverride, createInferredRelationOverride);
+      // Add all created inferred entities in bundle first, so that inferred relations targeting inferred entities can be created
+      for (let inferredEntitiesIndex = 0; inferredEntitiesIndex < inferredEntities.length; inferredEntitiesIndex += 1) {
+        const inferredEntity = inferredEntities[inferredEntitiesIndex];
+        const inferredEntityObject = buildBaseBundleElement(element, `${element.standard_id}_e_${inferredEntitiesIndex}`);
+        inferredEntityObject.extensions[STIX_EXT_OCTI] = {
+          ...inferredEntityObject.extensions[STIX_EXT_OCTI],
+          opencti_operation: 'inferred_entity',
+          opencti_inferred_input: JSON.stringify(inferredEntity)
+        };
+        inferredObjectsBundle.push(inferredEntityObject);
+      }
       // Add all created inferred relation in bundle
       for (let inferredRelationIndex = 0; inferredRelationIndex < inferredRelations.length; inferredRelationIndex += 1) {
         const inferredRelation = inferredRelations[inferredRelationIndex];
@@ -529,17 +540,6 @@ const ruleApplyCallback = async (context, user, task, ruleId) => {
           opencti_inferred_input: JSON.stringify(inferredRelation)
         };
         inferredObjectsBundle.push(inferredRelationObject);
-      }
-      // Add all created inferred entities in bundle
-      for (let inferredEntitiesIndex = 0; inferredEntitiesIndex < inferredEntities.length; inferredEntitiesIndex += 1) {
-        const inferredEntity = inferredEntities[inferredEntitiesIndex];
-        const inferredEntityObject = buildBaseBundleElement(element, `${element.standard_id}_e_${inferredEntitiesIndex}`);
-        inferredEntityObject.extensions[STIX_EXT_OCTI] = {
-          ...inferredEntityObject.extensions[STIX_EXT_OCTI],
-          opencti_operation: 'inferred_entity',
-          opencti_inferred_input: JSON.stringify(inferredEntity)
-        };
-        inferredObjectsBundle.push(inferredEntityObject);
       }
       // Send inferred to queue
       if (inferredObjectsBundle.length > 0) {
