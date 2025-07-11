@@ -28,6 +28,7 @@ import { useFormatter } from '../i18n';
 import ItemIcon from '../ItemIcon';
 import { getOptionsFromEntities } from '../../utils/filters/SearchEntitiesUtil';
 import { FilterDefinition } from '../../utils/hooks/useAuth';
+import stopEvent from '../../utils/domEvent';
 import { FilterRepresentative } from './FiltersModel';
 import useSearchEntities from '../../utils/filters/useSearchEntities';
 import { Filter, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
@@ -258,15 +259,57 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     const groupByEntities = (option: FilterOptionValue, label?: string) => {
       return t_i18n(option?.group ? option?.group : label);
     };
+
+    // State to track the input value and highlighted option
+    const [inputValue, setInputValue] = useState('');
+    const [highlightedOption, setHighlightedOption] = useState<FilterOptionValue | null>(null);
+
     return (
       <Autocomplete
         multiple
         key={fKey}
+        value={selectedOptions} // Ajouter cette ligne
         getOptionLabel={(option) => option.label ?? ''}
         noOptionsText={t_i18n('No available options')}
         options={options}
+        inputValue={inputValue}
         groupBy={(option) => groupByEntities(option, fLabel)}
-        onInputChange={(event) => searchEntities(fKey, cacheEntities, setCacheEntities, event, !!subKey)}
+        onInputChange={(event, newInputValue, reason) => {
+          // Update input value state
+          setInputValue(newInputValue);
+          // Keep the existing search functionality
+          if (reason !== 'reset') {
+            searchEntities(fKey, cacheEntities, setCacheEntities, event, !!subKey);
+          }
+        }}
+        // Track which option is currently highlighted
+        onHighlightChange={(event, option) => {
+          setHighlightedOption(option);
+        }}
+        // Handle Enter key press
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' && event.ctrlKey === false && event.shiftKey === false) {
+            stopEvent(event);
+
+            if (inputValue.trim() === '') {
+              handleClose();
+              return;
+            }
+
+            // If there's a highlighted option, select/deselect it
+            if (highlightedOption) {
+              const actualFilterValues = subKey
+                ? filterValues.filter((fVal) => fVal && fVal.key === subKey).at(0)?.values ?? []
+                : filterValues;
+              const isChecked = actualFilterValues.includes(highlightedOption.value);
+              const isDisabledOption = disabled && isChecked && actualFilterValues.length === 1;
+
+              if (!isDisabledOption) {
+                handleChange(!isChecked, highlightedOption.value, subKey);
+              }
+            }
+          }
+        }}
         renderInput={(paramsInput) => (
           <TextField
             {...paramsInput}
