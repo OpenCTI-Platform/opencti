@@ -2,9 +2,13 @@ import type { StoreEntity, StoreFileWithRefs, StoreObject, StoreRelation } from 
 import type * as S from '../types/stix-2-0-common';
 import type * as SDO from '../types/stix-2-0-sdo';
 import type * as SMO from '../types/stix-2-0-smo';
-import { INPUT_CREATED_BY, INPUT_EXTERNAL_REFS, INPUT_GRANTED_REFS, INPUT_KILLCHAIN, INPUT_LABELS, INPUT_MARKINGS } from '../schema/general';
+import { INPUT_CREATED_BY, INPUT_EXTERNAL_REFS, INPUT_GRANTED_REFS, INPUT_KILLCHAIN, INPUT_LABELS, INPUT_MARKINGS, INPUT_OBJECTS } from '../schema/general';
 import { INPUT_OPERATING_SYSTEM, INPUT_SAMPLE } from '../schema/stixRefRelationship';
 import {
+  ENTITY_TYPE_CONTAINER_NOTE,
+  ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
+  ENTITY_TYPE_CONTAINER_OPINION,
+  ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_DATA_COMPONENT,
   ENTITY_TYPE_DATA_SOURCE,
   ENTITY_TYPE_MALWARE,
@@ -12,15 +16,16 @@ import {
   isStixDomainObjectLocation,
   isStixDomainObjectThreatActor
 } from '../schema/stixDomainObject';
-import { assertType, cleanObject, convertToStixDate } from './stix-converter-utils';
+import { assertType, cleanObject, convertToStixDate, buildStixId } from './stix-converter-utils';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../schema/stixCyberObservable';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedback-types';
 import { ENTITY_TYPE_CONTAINER_TASK } from '../modules/task/task-types';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../modules/case/case-incident/case-incident-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../modules/case/case-rft/case-rft-types';
+import { isInferredIndex } from './utils';
+import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedback-types';
 
 export const convertTypeToStix2Type = (type: string): string => {
   if (isStixDomainObjectIdentity(type)) {
@@ -79,10 +84,20 @@ const buildExternalReferences = (instance: StoreObject): Array<SMO.StixInternalE
   });
 };
 
+export const convertObjectReferences = (instance: StoreEntity, isInferred = false) => { // TODO mutualize with STIX 2.1 exporter
+  const objectRefs = instance[INPUT_OBJECTS] ?? [];
+  return objectRefs.filter((r) => {
+    // If related relation not available, it's just a creation, so inferred false
+    if (!r.i_relation) return !isInferred;
+    // If related relation is available, select accordingly
+    return isInferredIndex(r.i_relation._index) === isInferred;
+  }).map((m) => m.standard_id);
+};
+
 // Builders
 const buildStixObject = (instance: StoreObject): S.StixObject => {
   return {
-    id: instance.standard_id,
+    id: buildStixId(instance.entity_type, instance.standard_id),
     x_opencti_id: instance.id,
     spec_version: '2.0',
     x_opencti_type: instance.entity_type,
@@ -100,7 +115,7 @@ const buildStixObject = (instance: StoreObject): S.StixObject => {
 };
 
 // General
-const buildStixDomain = (instance: StoreEntity | StoreRelation): S.StixDomainObject => {
+export const buildStixDomain = (instance: StoreEntity | StoreRelation): S.StixDomainObject => {
   return {
     ...buildStixObject(instance),
     created: convertToStixDate(instance.created),
@@ -132,5 +147,55 @@ export const convertMalwareToStix = (instance: StoreEntity, type: string): SDO.S
     capabilities: instance.capabilities,
     operating_system_refs: (instance[INPUT_OPERATING_SYSTEM] ?? []).map((m) => m.standard_id),
     sample_refs: (instance[INPUT_SAMPLE] ?? []).map((m) => m.standard_id),
+  };
+};
+
+export const convertReportToStix = (instance: StoreEntity, type: string): SDO.StixReport => {
+  assertType(ENTITY_TYPE_CONTAINER_REPORT, type);
+  const report = buildStixDomain(instance);
+  return {
+    ...report,
+    name: instance.name,
+    description: instance.description,
+    report_types: instance.report_types,
+    published: convertToStixDate(instance.published),
+    object_refs: convertObjectReferences(instance),
+    x_opencti_reliability: instance.x_opencti_reliability,
+  };
+};
+
+export const convertNoteToStix = (instance: StoreEntity, type: string): SDO.StixNote => {
+  assertType(ENTITY_TYPE_CONTAINER_NOTE, type);
+  const note = buildStixDomain(instance);
+  return {
+    ...note,
+    abstract: instance.attribute_abstract,
+    content: instance.content,
+    object_refs: convertObjectReferences(instance),
+    note_types: instance.note_types,
+    likelihood: instance.likelihood,
+  };
+};
+
+export const convertObservedDataToStix = (instance: StoreEntity, type: string): SDO.StixObservedData => {
+  assertType(ENTITY_TYPE_CONTAINER_OBSERVED_DATA, type);
+  const observedData = buildStixDomain(instance);
+  return {
+    ...observedData,
+    first_observed: convertToStixDate(instance.first_observed),
+    last_observed: convertToStixDate(instance.last_observed),
+    number_observed: instance.number_observed,
+    object_refs: convertObjectReferences(instance),
+  };
+};
+
+export const convertOpinionToStix = (instance: StoreEntity, type: string): SDO.StixOpinion => {
+  assertType(ENTITY_TYPE_CONTAINER_OPINION, type);
+  const opinion = buildStixDomain(instance);
+  return {
+    ...opinion,
+    explanation: instance.explanation,
+    opinion: instance.opinion,
+    object_refs: convertObjectReferences(instance),
   };
 };
