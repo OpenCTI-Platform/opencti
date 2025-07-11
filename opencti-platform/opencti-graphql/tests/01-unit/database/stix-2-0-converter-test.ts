@@ -24,6 +24,12 @@ import { EXPECTED_TASK, TASK_INSTANCE } from './instances-stix-2-0-converter/con
 import { EXPECTED_IR, INCIDENT_RESPONSE_INSTANCE } from './instances-stix-2-0-converter/containers/incident_response';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../src/modules/case/case-incident/case-incident-types';
 import { convertCaseIncidentToStix_2_0 } from '../../../src/modules/case/case-incident/case-incident-converter';
+import { convertCaseRftToStix_2_0 } from '../../../src/modules/case/case-rft/case-rft-converter';
+import { EXPECTED_RFT, RFT_INSTANCE } from './instances-stix-2-0-converter/containers/case_rft';
+import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../../../src/modules/case/case-rft/case-rft-types';
+import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../../src/modules/case/case-rfi/case-rfi-types';
+import { EXPECTED_RFI, RFI_INSTANCE } from './instances-stix-2-0-converter/containers/case_rfi';
+import { convertCaseRfiToStix_2_0 } from '../../../src/modules/case/case-rfi/case-rfi-converter';
 
 describe('Stix 2.0 opencti converter', () => {
   it('should convert Malware', async () => {
@@ -61,5 +67,13 @@ describe('Stix 2.0 opencti converter', () => {
   it('should convert Incident Response', async () => {
     const result = convertCaseIncidentToStix_2_0(INCIDENT_RESPONSE_INSTANCE, ENTITY_TYPE_CONTAINER_CASE_INCIDENT);
     expect(result).toEqual(EXPECTED_IR);
+  });
+  it('should convert Case RFI', async () => {
+    const result = convertCaseRfiToStix_2_0(RFI_INSTANCE, ENTITY_TYPE_CONTAINER_CASE_RFI);
+    expect(result).toEqual(EXPECTED_RFI);
+  });
+  it('should convert Case RFT', async () => {
+    const result = convertCaseRftToStix_2_0(RFT_INSTANCE, ENTITY_TYPE_CONTAINER_CASE_RFT);
+    expect(result).toEqual(EXPECTED_RFT);
   });
 });
