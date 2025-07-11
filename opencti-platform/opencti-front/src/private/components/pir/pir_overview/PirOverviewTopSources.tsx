@@ -2,6 +2,8 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import StixRelationshipsDonut from '@components/common/stix_relationships/StixRelationshipsDonut';
 import { PirOverviewTopSourcesFragment$key } from './__generated__/PirOverviewTopSourcesFragment.graphql';
+import Paper from '../../../../components/Paper';
+import { useFormatter } from '../../../../components/i18n';
 
 const topSourcesFragment = graphql`
   fragment PirOverviewTopSourcesFragment on Pir {
@@ -14,6 +16,7 @@ interface PirOverviewTopSourcesProps {
 }
 
 const PirOverviewTopSources = ({ data }: PirOverviewTopSourcesProps) => {
+  const { t_i18n } = useFormatter();
   const { id } = useFragment(topSourcesFragment, data);
 
   const topSourcesDataSelection = [
@@ -38,15 +41,17 @@ const PirOverviewTopSources = ({ data }: PirOverviewTopSourcesProps) => {
   ];
 
   return (
-    <StixRelationshipsDonut
-      dataSelection={topSourcesDataSelection}
-      variant="inLine"
-      height={250}
-      startDate={null}
-      endDate={null}
-      withoutTitle
-      isReadOnly
-    />
+    <Paper title={t_i18n('Top sources')}>
+      <StixRelationshipsDonut
+        dataSelection={topSourcesDataSelection}
+        variant="inLine"
+        height={250}
+        startDate={null}
+        endDate={null}
+        withoutTitle
+        isReadOnly
+      />
+    </Paper>
   );
 };
 

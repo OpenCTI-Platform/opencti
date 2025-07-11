@@ -1,7 +1,8 @@
 import * as C from '@mui/material/colors';
 import { resolveLink } from './Entity';
 import { truncate } from './String';
-import { isColorCloseToWhite } from './Colors';
+import { isColorCloseToWhite, itemColor } from './Colors';
+import { monthsAgo, now } from './Time';
 
 export const colors = (temp) => [
   C.red[temp],
@@ -54,6 +55,29 @@ const simpleLabelTooltip = (theme) => ({ seriesIndex, w }) => (`
     ${w.config.labels[seriesIndex]}
   </div>
 `);
+
+/**
+ * A custom tooltip for ApexChart.
+ * This tooltip display complex data for scatter chart.
+ *
+ * @param {Theme} theme
+ */
+const multipleDataTooltip = (theme) => ({ seriesIndex, dataPointIndex, w }) => {
+  const containerColors = `background:${theme.palette.background.nav}; color:${theme.palette.text.primary};`;
+  const containerLayout = 'padding: 2px 6px; font-size: 12px; display:flex; flex-direction:column;';
+  const { group } = w.config.series[seriesIndex].data[dataPointIndex].meta;
+  const rows = group.map((data) => `
+    <div style="display:flex; align-items:center; gap:4px">
+      <div style="width:10px; height:10px; background:${itemColor(data.type)}; border-radius:10px;"></div>
+      <span>${data.name}: ${data.score}</span>
+    </div>
+  `).join('');
+  return (`
+    <div style="${containerColors}${containerLayout}">
+      ${rows}
+    </div>
+  `);
+};
 
 /**
  * @param {Theme} theme
@@ -1056,135 +1080,35 @@ export const heatMapOptions = (
   },
 });
 
-function generateDayWiseTimeSeries(baseval, count, yrange) {
-  let i = 0;
-  const series = [];
-  while (i < count) {
-    const y = Math.floor(Math.random() * (yrange.max - yrange.min + 1)) + yrange.min;
-    series.push([baseval, y]);
-    baseval += 86400000;
-    i++;
-  }
-  return series;
-}
-
 export const scatterChartOptions = (theme) => ({
-  series: [
-    {
-      name: 'DIAMOND',
-      data: generateDayWiseTimeSeries(
-        new Date('01 Feb 2017 GMT').getTime(),
-        10,
-        {
-          min: 5,
-          max: 60,
-        },
-      ),
-    },
-    {
-      name: 'TRIANGLE',
-      data: generateDayWiseTimeSeries(
-        new Date('11 Feb 2017 GMT').getTime(),
-        10,
-        {
-          min: 54,
-          max: 90,
-        },
-      ),
-    },
-    {
-      name: 'CROSS',
-      data: generateDayWiseTimeSeries(
-        new Date('20 Feb 2017 GMT').getTime(),
-        8,
-        {
-          min: 10,
-          max: 50,
-        },
-      ),
-    },
-    {
-      name: 'PLUS',
-      data: generateDayWiseTimeSeries(
-        new Date('28 Feb 2017 GMT').getTime(),
-        16,
-        {
-          min: 30,
-          max: 99,
-        },
-      ),
-    },
-
-    {
-      name: 'SQUARE',
-      data: generateDayWiseTimeSeries(
-        new Date('20 Mar 2017 GMT').getTime(),
-        10,
-        {
-          min: 0,
-          max: 59,
-        },
-      ),
-    },
-    {
-      name: 'LINE',
-      data: generateDayWiseTimeSeries(
-        new Date('29 Mar 2017 GMT').getTime(),
-        10,
-        {
-          min: 0,
-          max: 90,
-        },
-      ),
-    },
-    {
-      name: 'CIRCLE',
-      data: generateDayWiseTimeSeries(
-        new Date('10 Apr 2017 GMT').getTime(),
-        10,
-        {
-          min: 5,
-          max: 35,
-        },
-      ),
-    },
-
-    {
-      name: 'STAR',
-      data: generateDayWiseTimeSeries(
-        new Date('20 Apr 2017 GMT').getTime(),
-        10,
-        {
-          min: 15,
-          max: 60,
-        },
-      ),
-    },
-    {
-      name: 'SPARKLE',
-      data: generateDayWiseTimeSeries(
-        new Date('29 Apr 2017 GMT').getTime(),
-        10,
-        {
-          min: 45,
-          max: 99,
-        },
-      ),
-    },
-  ],
   chart: {
     type: 'scatter',
-    background: theme.palette.background.paper,
+    background: theme.palette.background.accent,
     toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
     width: '100%',
     height: '100%',
+    zoom: {
+      enabled: false,
+    },
   },
   theme: {
     mode: theme.palette.mode,
   },
   dataLabels: {
-    enabled: false,
+    enabled: true,
+    offsetY: 1,
+    background: {
+      enabled: false,
+    },
+    style: {
+      colors: ['#000000'],
+    },
+    formatter(_, opts) {
+      const series = opts.w.config.series[opts.seriesIndex];
+      const data = series.data[opts.dataPointIndex].meta;
+      return data.size > 1 ? data.size : '';
+    },
   },
   colors: [
     theme.palette.primary.main,
@@ -1199,24 +1123,19 @@ export const scatterChartOptions = (theme) => ({
     },
   },
   grid: {
-    borderColor:
-      theme.palette.mode === 'dark'
-        ? 'rgba(255, 255, 255, .1)'
-        : 'rgba(0, 0, 0, .1)',
-    strokeDashArray: 3,
+    show: false,
   },
   legend: {
     show: false,
   },
-  stroke: {
-    curve: 'smooth',
-    width: 2,
-  },
   tooltip: {
     theme: theme.palette.mode,
+    custom: multipleDataTooltip(theme),
   },
   xaxis: {
     type: 'datetime',
+    min: new Date(monthsAgo(2)).getTime(),
+    max: new Date(now()).getTime(),
     labels: {
       show: false,
     },
@@ -1228,11 +1147,12 @@ export const scatterChartOptions = (theme) => ({
     },
   },
   yaxis: {
-    labels: {
-      show: false,
-    },
-    axisBorder: {
-      show: false,
-    },
+    show: false,
+    min: 0,
+    max: 100,
+  },
+  markers: {
+    size: 10,
+    strokeWidth: 0,
   },
 });
