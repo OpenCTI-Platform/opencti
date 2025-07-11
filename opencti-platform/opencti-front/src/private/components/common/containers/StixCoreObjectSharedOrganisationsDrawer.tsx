@@ -68,8 +68,8 @@ interface StixCoreObjectSharedOrganisationsDrawerProps {
   onDelete?: (node: { id: string }) => void,
   open: boolean,
   selectedText?: string,
-  enableReferences?: boolean | undefined,
-  knowledgeGraph?: boolean | undefined,
+  enableReferences?: boolean,
+  knowledgeGraph?: boolean,
 }
 
 const StixCoreObjectSharedOrganisationsDrawer: FunctionComponent<StixCoreObjectSharedOrganisationsDrawerProps> = ({
