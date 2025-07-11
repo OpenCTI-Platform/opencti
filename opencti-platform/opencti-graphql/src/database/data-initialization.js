@@ -70,6 +70,7 @@ export const SETTINGS_CAPABILITIES = {
   description: 'Access to admin functionalities',
   attribute_order: 3000,
   dependencies: [
+    { name: 'SETMANAGEXTMHUB', description: 'Manage XTM Hub', attribute_order: 3050 },
     { name: 'SETPARAMETERS', description: 'Manage parameters', attribute_order: 3100 },
     { name: 'SETACCESSES', description: 'Manage credentials', attribute_order: 3200 },
     { name: 'SETMARKINGS', description: 'Manage marking definitions', attribute_order: 3300 },

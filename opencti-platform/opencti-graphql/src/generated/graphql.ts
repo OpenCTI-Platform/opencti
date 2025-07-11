@@ -1963,6 +1963,7 @@ export enum Capabilities {
   SettingsSetcustomization = 'SETTINGS_SETCUSTOMIZATION',
   SettingsSetdissemination = 'SETTINGS_SETDISSEMINATION',
   SettingsSetlabels = 'SETTINGS_SETLABELS',
+  SettingsSetmanagextmhub = 'SETTINGS_SETMANAGEXTMHUB',
   SettingsSetmarkings = 'SETTINGS_SETMARKINGS',
   SettingsSetparameters = 'SETTINGS_SETPARAMETERS',
   SettingsSupport = 'SETTINGS_SUPPORT',
