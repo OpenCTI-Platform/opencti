@@ -1,4 +1,4 @@
-import type { StoreEntity } from '../../../../../src/types/store';
+import type { StoreEntityCaseRfi2 } from '../../../../../src/modules/case/case-rfi/case-rfi-types';
 
 export const RFI_INSTANCE = {
   _index: 'opencti_stix_domain_objects-000001',
@@ -8,7 +8,7 @@ export const RFI_INSTANCE = {
     1750960290746
   ],
   name: 'RFI STIX 2.0',
-  description: 'descriprtion',
+  description: 'description',
   content: '<p>some content:&nbsp;</p><div style="-webkit-text-stroke-width:0px;align-items:center;background-color:rgb(7, 13, 25);box-sizing:inherit;color:rgb(255, 255, 255);display:flex;font-family:&quot;IBM Plex Sans&quot;, sans-serif;font-size:14.4px;font-style:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-weight:400;gap:8px;letter-spacing:normal;orphans:2;scrollbar-width:thin;text-align:start;text-decoration-color:initial;text-decoration-style:initial;text-decoration-thickness:initial;text-indent:0px;text-transform:none;white-space:normal;widows:2;word-spacing:0px;"><h1 style="margin-left:0px;">Paradise Ransomware</h1><div style="align-items:center;box-sizing:inherit;display:flex;scrollbar-width:thin;">&nbsp;</div></div><div style="-webkit-text-stroke-width:0px;align-items:center;background-color:rgb(7, 13, 25);box-sizing:inherit;color:rgb(255, 255, 255);display:flex;font-family:&quot;IBM Plex Sans&quot;, sans-serif;font-size:14.4px;font-style:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-weight:400;letter-spacing:normal;orphans:2;scrollbar-width:thin;text-align:start;text-decoration-color:initial;text-decoration-style:initial;text-decoration-thickness:initial;text-indent:0px;text-transform:none;white-space:normal;widows:2;word-spacing:0px;"><div style="box-sizing:inherit;display:flex;scrollbar-width:thin;"><br>&nbsp;</div></div>',
   severity: 'medium',
   priority: 'P2',
@@ -773,7 +773,7 @@ export const RFI_INSTANCE = {
       }
     }
   ]
-} as unknown as StoreEntity;
+} as unknown as StoreEntityCaseRfi2;
 
 export const EXPECTED_RFI = {
   id: 'x-opencti-case-rfi--cc1229b2-8ba7-50fd-b822-055b45e3aa4f',
@@ -781,7 +781,7 @@ export const EXPECTED_RFI = {
   revoked: false,
   confidence: 100,
   created: '2025-06-26T17:50:38.000Z',
-  modified: '2025-06-26T17:54:32.101Z',
+  modified: '2025-06-26T17:52:57.246Z',
   name: 'RFI STIX 2.0',
   description: 'description',
   information_types: [
@@ -808,9 +808,21 @@ export const EXPECTED_RFI = {
     'marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34'
   ],
   object_refs: [
+    'campaign--e388a843-1590-5af1-b5a5-50231c97cfba',
     'credential--4a194ac7-4aef-57d5-9a64-1312da4e604a',
     'incident--8658860d-df08-5f41-bf41-106095e48085',
     'malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714',
-    'campaign--e388a843-1590-5af1-b5a5-50231c97cfba'
-  ]
+  ],
+  x_opencti_files: [
+    {
+      mime_type: 'application/json',
+      name: 'ipv4_example.json',
+      object_marking_refs: [
+        'marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34',
+      ],
+      uri: '/storage/get/import/Case-Rfi/4ebd03f2-d922-4449-915e-2facb67e781c/ipv4_example.json',
+      version: '2025-06-26T17:51:30.748Z',
+    },
+  ],
+  x_opencti_granted_refs: [],
 };

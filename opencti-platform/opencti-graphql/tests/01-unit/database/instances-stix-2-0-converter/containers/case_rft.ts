@@ -1,4 +1,5 @@
 import type { StoreEntity } from '../../../../../src/types/store';
+import type { StoreEntityCaseRft2 } from '../../../../../src/modules/case/case-rft/case-rft-types';
 
 export const RFT_INSTANCE = {
   _index: 'opencti_stix_domain_objects-000001',
@@ -738,7 +739,7 @@ export const RFT_INSTANCE = {
       }
     }
   ]
-} as unknown as StoreEntity;
+} as unknown as StoreEntityCaseRft2;
 
 export const EXPECTED_RFT = {
   id: 'x-opencti-case-rft--8456f0c2-0308-578b-b90c-1dd6e0440763',
@@ -773,7 +774,19 @@ export const EXPECTED_RFT = {
   ],
   object_refs: [
     'credential--4a194ac7-4aef-57d5-9a64-1312da4e604a',
+    'threat-actor--fd6b0e6f-96e0-568d-ba24-8a140d0428cd',
     'incident--8658860d-df08-5f41-bf41-106095e48085',
-    'threat-actor--fd6b0e6f-96e0-568d-ba24-8a140d0428cd'
-  ]
+  ],
+  x_opencti_files: [
+    {
+      mime_type: 'application/json',
+      name: 'ipv4_example.json',
+      object_marking_refs: [
+        'marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34',
+      ],
+      uri: '/storage/get/import/Case-Rft/ae110ba9-34a7-44ef-86b9-7b52def4b4aa/ipv4_example.json',
+      version: '2025-06-26T17:55:28.870Z',
+    },
+  ],
+  x_opencti_granted_refs: [],
 };
