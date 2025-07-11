@@ -8,6 +8,6 @@ export const createInternalInferredRelation = async (context: AuthContext, _user
 };
 export const createInternalInferredEntity = async (context: AuthContext, _user: AuthUser, jsonInput: string) => {
   const { input, ruleContent, type } = JSON.parse(jsonInput);
-  const createdInferredRelation = await createInferredEntity(context, input, ruleContent, type);
-  return createdInferredRelation.id;
+  const createdInferredEntity = await createInferredEntity(context, input, ruleContent, type);
+  return createdInferredEntity.id;
 };
