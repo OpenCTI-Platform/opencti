@@ -987,6 +987,7 @@ const LeftBar = () => {
           SETTINGS_SECURITYACTIVITY,
           SETTINGS_FILEINDEXING,
           SETTINGS_SUPPORT,
+          SETTINGS_SETMANAGEXTMHUB,
         ]}
         >
           <Divider />
