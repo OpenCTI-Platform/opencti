@@ -131,7 +131,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineComponent extend
                   className={classes.bodyItem}
                   style={{ width: dataColumns.name.width }}
                 >
-                  {element.name}
+                  {element.representative.main}
                   {element.draftVersion && (<DraftChip/>)}
                 </div>
                 <div
