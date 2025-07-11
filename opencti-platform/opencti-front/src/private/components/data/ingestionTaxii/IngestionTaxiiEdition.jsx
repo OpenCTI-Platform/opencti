@@ -14,7 +14,7 @@ import { convertUser } from '../../../../utils/edition';
 import SelectField from '../../../../components/fields/SelectField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import Drawer from '../../common/drawer/Drawer';
-import { BASIC_AUTH, BEARER_AUTH, CERT_AUTH, extractCA, extractCert, extractKey, extractPassword, extractUsername } from '../../../../utils/ingestionAuthentificationUtils';
+import { BASIC_AUTH, BEARER_AUTH, CERT_AUTH } from '../../../../utils/ingestionAuthentificationUtils';
 import SwitchField from '../../../../components/fields/SwitchField';
 import PasswordTextField from '../../../../components/PasswordTextField';
 
@@ -36,7 +36,6 @@ const ingestionTaxiiValidation = (t) => Yup.object().shape({
   version: Yup.string().required(t('This field is required')),
   collection: Yup.string().required(t('This field is required')),
   authentication_type: Yup.string().required(t('This field is required')),
-  authentication_value: Yup.string().nullable(),
   username: Yup.string().nullable(),
   password: Yup.string().nullable(),
   cert: Yup.string().nullable(),
@@ -55,7 +54,7 @@ const IngestionTaxiiEditionContainer = ({
   handleClose,
   ingestionTaxii,
 }) => {
-  const handleSubmitField = (name, value) => {
+  const handleSubmitField = (name, value, currentValues) => {
     ingestionTaxiiValidation(t)
       .validateAt(name, { [name]: value })
       .then(() => {
@@ -64,36 +63,26 @@ const IngestionTaxiiEditionContainer = ({
         if (name === 'user_id') {
           finalValue = value?.value;
         }
-
-        // region authentication  -- If you change something here, please have a look at IngestionCsvEdition
-        const backendAuthValue = ingestionTaxii.authentication_value;
+        // Handle authentication fields -- If you change something here, please have a look at IngestionCsvEdition
         // re-compose username:password
         if (name === 'username') {
           finalName = 'authentication_value';
-          finalValue = `${value}:${extractPassword(backendAuthValue)}`;
-        }
-
-        if (name === 'password') {
+          finalValue = `${value}:${currentValues.password || ''}`;
+        } else if (name === 'password') {
           finalName = 'authentication_value';
-          finalValue = `${extractUsername(backendAuthValue)}:${value}`;
+          finalValue = `${currentValues.username || ''}:${value}`;
         }
-
         // re-compose cert:key:ca
         if (name === 'cert') {
           finalName = 'authentication_value';
-          finalValue = `${value}:${extractKey(backendAuthValue)}:${extractCA(backendAuthValue)}`;
-        }
-
-        if (name === 'key') {
+          finalValue = `${value}:${currentValues.key || ''}:${currentValues.ca || ''}`;
+        } else if (name === 'key') {
           finalName = 'authentication_value';
-          finalValue = `${extractCert(backendAuthValue)}:${value}:${extractCA(backendAuthValue)}`;
-        }
-
-        if (name === 'ca') {
+          finalValue = `${currentValues.cert || ''}:${value}:${currentValues.ca || ''}`;
+        } else if (name === 'ca') {
           finalName = 'authentication_value';
-          finalValue = `${extractCert(backendAuthValue)}:${extractKey(backendAuthValue)}:${value}`;
+          finalValue = `${currentValues.cert || ''}:${currentValues.key || ''}:${value}`;
         }
-        // end region authentication
 
         commitMutation({
           mutation: ingestionTaxiiMutationFieldPatch,
@@ -105,35 +94,36 @@ const IngestionTaxiiEditionContainer = ({
       })
       .catch(() => false);
   };
+
   const initialValues = R.pipe(
     R.assoc('user_id', convertUser(ingestionTaxii, 'user')),
     R.assoc(
       'username',
-      ingestionTaxii.authentication_type === BASIC_AUTH
+      ingestionTaxii.authentication_type === BASIC_AUTH && ingestionTaxii.authentication_value
         ? ingestionTaxii.authentication_value.split(':')[0]
         : '',
     ),
     R.assoc(
       'password',
-      ingestionTaxii.authentication_type === BASIC_AUTH
+      ingestionTaxii.authentication_type === BASIC_AUTH && ingestionTaxii.authentication_value
         ? ingestionTaxii.authentication_value.split(':')[1]
         : '',
     ),
     R.assoc(
       'cert',
-      ingestionTaxii.authentication_type === CERT_AUTH
+      ingestionTaxii.authentication_type === CERT_AUTH && ingestionTaxii.authentication_value
         ? ingestionTaxii.authentication_value.split(':')[0]
         : '',
     ),
     R.assoc(
       'key',
-      ingestionTaxii.authentication_type === CERT_AUTH
+      ingestionTaxii.authentication_type === CERT_AUTH && ingestionTaxii.authentication_value
         ? ingestionTaxii.authentication_value.split(':')[1]
         : '',
     ),
     R.assoc(
       'ca',
-      ingestionTaxii.authentication_type === CERT_AUTH
+      ingestionTaxii.authentication_type === CERT_AUTH && ingestionTaxii.authentication_value
         ? ingestionTaxii.authentication_value.split(':')[2]
         : '',
     ),
@@ -244,14 +234,15 @@ const IngestionTaxiiEditionContainer = ({
                   variant="standard"
                   name="username"
                   label={t('Username')}
-                  onSubmit={handleSubmitField}
                   fullWidth={true}
                   style={fieldSpacingContainerStyle}
+                  onSubmit={(name, value) => handleSubmitField(name, value, values)}
                 />
+
                 <PasswordTextField
                   name="password"
                   label={t('Password')}
-                  onSubmit={handleSubmitField}
+                  onSubmit={(name, value) => handleSubmitField(name, value, values)}
                 />
               </>
             )}
@@ -269,21 +260,23 @@ const IngestionTaxiiEditionContainer = ({
                   variant="standard"
                   name="cert"
                   label={t('Certificate (base64)')}
-                  onSubmit={handleSubmitField}
+                  onSubmit={(name, value) => handleSubmitField(name, value, values)}
                   fullWidth={true}
                   style={fieldSpacingContainerStyle}
                 />
+
                 <PasswordTextField
                   name="key"
                   label={t('Key (base64)')}
-                  onSubmit={handleSubmitField}
+                  onSubmit={(name, value) => handleSubmitField(name, value, values)}
                 />
+
                 <Field
                   component={TextField}
                   variant="standard"
                   name="ca"
                   label={t('CA certificate (base64)')}
-                  onSubmit={handleSubmitField}
+                  onSubmit={(name, value) => handleSubmitField(name, value, values)}
                   fullWidth={true}
                   style={fieldSpacingContainerStyle}
                 />
@@ -345,7 +338,6 @@ const IngestionTaxiiEditionFragment = createFragmentContainer(
         ingestion_running
         added_after_start
         authentication_type
-        authentication_value
         user {
           id
           entity_type
