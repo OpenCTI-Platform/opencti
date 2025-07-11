@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { createInferredRelation, deleteInferredRuleElement, stixLoadById } from '../../database/middleware';
+import { createInferredEntity, createInferredRelation, deleteInferredRuleElement, stixLoadById } from '../../database/middleware';
 import def from './SightingIncidentDefinition';
 import { ENTITY_TYPE_INCIDENT } from '../../schema/stixDomainObject';
 import { createRuleContent } from '../rules-utils';
@@ -63,7 +63,7 @@ const ruleSightingIncidentBuilder = () => {
         if (createInferredEntityOverride) {
           createInferredEntityOverride(context, input, ruleContent, ENTITY_TYPE_INCIDENT);
         } else {
-          await createInferredRelation(context, input, ruleContent, ENTITY_TYPE_INCIDENT);
+          await createInferredEntity(context, input, ruleContent, ENTITY_TYPE_INCIDENT);
         }
         const ruleRelContent = createRuleContent(id, dependencies, explanation, ruleBaseContent);
         // Create **Incident C** `related-to` **indicator A**
