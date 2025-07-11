@@ -177,6 +177,7 @@ type OCTIDataTableProps = Pick<DataTableProps,
 | 'additionalFilters'
 | 'variant'
 | 'actions'
+| 'hideHeaders'
 | 'icon'
 | 'rootRef'
 | 'onLineClick'

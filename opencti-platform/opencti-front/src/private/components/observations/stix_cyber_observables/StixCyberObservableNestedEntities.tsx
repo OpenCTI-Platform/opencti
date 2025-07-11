@@ -37,21 +37,7 @@ const StixCyberObservableNestedEntities: React.FC<StixCyberObservableNestedEntit
   };
 
   return (
-    <div
-      style={
-        isInLine
-          ? {
-            height: 'auto',
-            marginTop: 13,
-            paddingBlock: 10,
-          }
-          : {
-            height: '100%',
-            marginTop: 0,
-            paddingBlock: 0,
-          }
-      }
-    >
+    <div style={{ height: isInLine ? 'auto' : '100%' }}>
       <Typography
         variant={isInLine ? 'h3' : 'h4'}
         gutterBottom={true}

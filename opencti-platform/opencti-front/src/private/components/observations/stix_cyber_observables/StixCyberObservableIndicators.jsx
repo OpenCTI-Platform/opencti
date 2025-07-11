@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Link } from 'react-router-dom';
 import List from '@mui/material/List';
@@ -131,7 +131,7 @@ const StixCyberObservableIndicatorsComponent = ({ stixCyberObservable }) => {
   };
 
   return (
-    <div style={{ marginTop: 20 }}>
+    <div>
       <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
         {t_i18n('Indicators composed with this observable')}
       </Typography>

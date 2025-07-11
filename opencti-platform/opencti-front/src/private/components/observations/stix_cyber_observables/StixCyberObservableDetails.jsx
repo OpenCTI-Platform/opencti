@@ -10,6 +10,7 @@ import Divider from '@mui/material/Divider';
 import makeStyles from '@mui/styles/makeStyles';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
+import Box from '@mui/material/Box';
 import StixCyberObservableNestedEntities from './StixCyberObservableNestedEntities';
 import { useFormatter } from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
@@ -200,21 +201,23 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
           })}
         </Grid>
         <Divider/>
-        {stixCyberObservable.entity_type === 'Network-Traffic' && (
-        <StixCyberObservableNestedEntities
-          entityId={stixCyberObservable.id}
-          entityType={stixCyberObservable.entity_type}
-          variant="inLine"
-        />
-        )}
-        <StixCyberObservableIndicators
-          stixCyberObservable={stixCyberObservable}
-        />
-        {isObservableAnalysable && (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 2.5 }}>
+          {stixCyberObservable.entity_type === 'Network-Traffic' && (
+          <StixCyberObservableNestedEntities
+            entityId={stixCyberObservable.id}
+            entityType={stixCyberObservable.entity_type}
+            variant="inLine"
+          />
+          )}
+          <StixCyberObservableIndicators
+            stixCyberObservable={stixCyberObservable}
+          />
+          {isObservableAnalysable && (
           <StixCyberObservableMalwareAnalyses
             observableId={stixCyberObservable.id}
           />
-        )}
+          )}
+        </Box>
       </Paper>
     </div>
   );
