@@ -1,14 +1,22 @@
 import React from 'react';
 import Grid from '@mui/material/Grid2';
-import PirThreatMap from '@components/pir/pir_overview/PirThreatMap';
+import { graphql, useFragment } from 'react-relay';
+import PirThreatMap, { pirThreatMapQuery } from './PirThreatMap';
 import PirOverviewCounts from './PirOverviewCounts';
 import PirOverviewTopSources from './PirOverviewTopSources';
 import PirOverviewDetails from './PirOverviewDetails';
 import PirOverviewHistory from './PirOverviewHistory';
-import Paper from '../../../../components/Paper';
-import { useFormatter } from '../../../../components/i18n';
-import { PirOverviewHistoryFragment$key } from './__generated__/PirOverviewHistoryFragment.graphql';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { PirQuery$data } from '../__generated__/PirQuery.graphql';
+import { PirOverviewHistoryFragment$key } from './__generated__/PirOverviewHistoryFragment.graphql';
+import { PirThreatMapQuery } from './__generated__/PirThreatMapQuery.graphql';
+import { PirOverviewFragment$key } from './__generated__/PirOverviewFragment.graphql';
+
+const overviewFragment = graphql`
+  fragment PirOverviewFragment on Pir {
+    id
+  }
+`;
 
 interface PirOverviewProps {
   dataHistory: PirOverviewHistoryFragment$key
@@ -19,29 +27,36 @@ const PirOverview = ({
   dataHistory,
   dataPir,
 }: PirOverviewProps) => {
-  const { t_i18n } = useFormatter();
+  const { id } = useFragment<PirOverviewFragment$key>(overviewFragment, dataPir);
+  const threatMapQueryRef = useQueryLoading<PirThreatMapQuery>(
+    pirThreatMapQuery,
+    {
+      pirId: id,
+      filters: {
+        mode: 'and',
+        filterGroups: [],
+        filters: [{
+          key: ['updated_at'],
+          operator: 'within',
+          values: ['now-2M', 'now'],
+        }],
+      },
+    },
+  );
 
   return (
     <Grid container spacing={3}>
       <Grid size={{ xs: 6 }} container direction='column' spacing={3}>
-        <Paper title={t_i18n('PIR Details')}>
-          <PirOverviewDetails data={dataPir} />
-        </Paper>
-        <Paper title={t_i18n('Threat map')}>
-          <PirThreatMap />
-        </Paper>
-        <Paper title={t_i18n('Top sources')}>
-          <PirOverviewTopSources data={dataPir} />
-        </Paper>
+        <PirOverviewDetails data={dataPir} />
+        {threatMapQueryRef && <PirThreatMap queryRef={threatMapQueryRef} />}
+        <PirOverviewTopSources data={dataPir} />
       </Grid>
       <Grid size={{ xs: 6 }} container direction='column' spacing={3}>
         <PirOverviewCounts data={dataPir} />
-        <Paper title={t_i18n('News feed')}>
-          <PirOverviewHistory
-            dataHistory={dataHistory}
-            dataPir={dataPir}
-          />
-        </Paper>
+        <PirOverviewHistory
+          dataHistory={dataHistory}
+          dataPir={dataPir}
+        />
       </Grid>
     </Grid>
   );

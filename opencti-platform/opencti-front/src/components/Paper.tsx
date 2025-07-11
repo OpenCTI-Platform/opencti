@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { PaperProps as MuiPaperProps, Typography, Paper as MuiPaper } from '@mui/material';
 
-interface PaperProps extends MuiPaperProps {
-  title?: string
+interface PaperProps extends Omit<MuiPaperProps, 'title'> {
+  title?: ReactNode
 }
 
 const Paper = ({ title, children, ...muiProps }: PaperProps) => {

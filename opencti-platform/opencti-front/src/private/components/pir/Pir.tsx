@@ -16,15 +16,16 @@ import PirAnalyses from './pir_analyses/PirAnalyses';
 const pirQuery = graphql`
   query PirQuery($id: ID!) {
     pir(id: $id) {
+      ...PirAnalysesFragment
+      ...PirEditionFragment
       ...PirHeaderFragment
       ...PirKnowledgeFragment
-      ...PirEditionFragment
+      ...PirOverviewFragment
+      ...PirOverviewCountsFragment
       ...PirOverviewDetailsFragment
       ...PirOverviewHistoryPirFragment
-      ...PirOverviewCountsFragment
       ...PirOverviewTopSourcesFragment
       ...PirTabsFragment
-      ...PirAnalysesFragment
     }
   }
 `;

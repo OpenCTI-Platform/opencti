@@ -15,6 +15,7 @@ import { displayEntityTypeForTranslation } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import { PirOverviewHistoryPirFragment$key } from './__generated__/PirOverviewHistoryPirFragment.graphql';
 import { PirOverviewHistoryFragment$key } from './__generated__/PirOverviewHistoryFragment.graphql';
+import Paper from '../../../../components/Paper';
 
 const pirFragment = graphql`
   fragment PirOverviewHistoryPirFragment on Pir {
@@ -157,66 +158,68 @@ const PirOverviewHistory = ({ dataHistory, dataPir }: PirOverviewHistoryProps) =
   };
 
   return (
-    <div style={{ display: 'flex', gap: theme.spacing(3), flexDirection: 'column' }}>
-      {history.length === 0 && (
+    <Paper title={t_i18n('News feed')}>
+      <div style={{ display: 'flex', gap: theme.spacing(3), flexDirection: 'column' }}>
+        {history.length === 0 && (
         <Typography variant='body2'>
           {t_i18n('No recent history for this PIR')}
         </Typography>
-      )}
+        )}
 
-      {history.map((historyItem) => {
-        const { id, context_data, timestamp } = historyItem;
-        const { color, icon } = getIconConfig(historyItem);
-        const historyMessage = getHistoryMessage(historyItem);
+        {history.map((historyItem) => {
+          const { id, context_data, timestamp } = historyItem;
+          const { color, icon } = getIconConfig(historyItem);
+          const historyMessage = getHistoryMessage(historyItem);
 
-        const content = (
-          <MarkdownDisplay
-            commonmark
-            remarkGfmPlugin
-            content={historyMessage}
-          />
-        );
+          const content = (
+            <MarkdownDisplay
+              commonmark
+              remarkGfmPlugin
+              content={historyMessage}
+            />
+          );
 
-        return (
-          <div key={id} style={{ display: 'flex', gap: theme.spacing(2), alignItems: 'flex-start' }}>
-            <Tooltip title={t_i18n(displayEntityTypeForTranslation(context_data?.entity_type ?? ''))}>
+          return (
+            <div key={id} style={{ display: 'flex', gap: theme.spacing(2), alignItems: 'flex-start' }}>
+              <Tooltip title={t_i18n(displayEntityTypeForTranslation(context_data?.entity_type ?? ''))}>
+                <div>
+                  <ItemIcon size="large" type={context_data?.entity_type} />
+                </div>
+              </Tooltip>
               <div>
-                <ItemIcon size="large" type={context_data?.entity_type} />
-              </div>
-            </Tooltip>
-            <div>
-              <Typography
-                sx={{ marginTop: 0.5, marginBottom: 0 }}
-                variant="h3"
-              >
-                {context_data?.entity_name}
-              </Typography>
-              <Typography
-                color={theme.palette.text?.secondary}
-                sx={{ marginBottom: 1 }}
-                variant="body2"
-              >
-                {nsdt(timestamp)}
-              </Typography>
-              <div style={{ display: 'flex', gap: theme.spacing(2) }}>
-                <Avatar
-                  sx={{
-                    width: 24,
-                    height: 24,
-                    backgroundColor: 'transparent',
-                    border: `1px solid ${color}`,
-                    color: theme.palette.text?.primary,
-                  }}
+                <Typography
+                  sx={{ marginTop: 0.5, marginBottom: 0 }}
+                  variant="h3"
                 >
-                  <div>{icon}</div>
-                </Avatar>
-                <Tooltip title={content}>{content}</Tooltip>
+                  {context_data?.entity_name}
+                </Typography>
+                <Typography
+                  color={theme.palette.text?.secondary}
+                  sx={{ marginBottom: 1 }}
+                  variant="body2"
+                >
+                  {nsdt(timestamp)}
+                </Typography>
+                <div style={{ display: 'flex', gap: theme.spacing(2) }}>
+                  <Avatar
+                    sx={{
+                      width: 24,
+                      height: 24,
+                      backgroundColor: 'transparent',
+                      border: `1px solid ${color}`,
+                      color: theme.palette.text?.primary,
+                    }}
+                  >
+                    <div>{icon}</div>
+                  </Avatar>
+                  <Tooltip title={content}>{content}</Tooltip>
+                </div>
               </div>
             </div>
-          </div>
-        );
-      })}
-    </div>
+          );
+        })}
+      </div>
+    </Paper>
   );
 };
 
