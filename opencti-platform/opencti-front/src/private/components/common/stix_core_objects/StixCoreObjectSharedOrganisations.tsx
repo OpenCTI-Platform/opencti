@@ -20,10 +20,9 @@ const StixCoreObjectSharedOrganisations = ({
 
   const {
     objectOrganization,
-    id,
   } = useFragment<StixCoreObjectSharingListFragment$key>(objectOrganizationFragment, data);
 
-  if (!objectOrganization) {
+  if (objectOrganization?.length === 0) {
     return (<div/>);
   }
   return (
@@ -45,12 +44,11 @@ const StixCoreObjectSharedOrganisations = ({
         onClick={() => (hasSetAccess ? setOpenSharedOrganizations(true) : null)}
         disableRipple={!hasSetAccess}
       >
-        {objectOrganization.length} {t_i18n('Organizations')}
+        {objectOrganization?.length} {t_i18n('Organizations')}
       </Button>
       {(hasSetAccess && openSharedOrganizations) && (
         <StixCoreObjectSharedOrganisationsDrawer
-          stixCoreObjectId={id}
-          sharedOrganisations={[...objectOrganization]}
+          data={data}
           open={openSharedOrganizations}
           onClose={() => setOpenSharedOrganizations(false)}
         />
