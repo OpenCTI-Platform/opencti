@@ -1004,6 +1004,7 @@ type BackgroundTaskError {
 enum BackgroundTaskScope {
   KNOWLEDGE
   USER
+  USER_NOTIFICATION
   SETTINGS
   IMPORT
   DASHBOARD
@@ -1028,6 +1029,10 @@ enum BackgroundTaskActionType {
   UNSHARE_MULTIPLE
   REMOVE_AUTH_MEMBERS
   REMOVE_FROM_DRAFT
+  ADD_ORGANIZATIONS
+  REMOVE_ORGANIZATIONS
+  ADD_GROUPS
+  REMOVE_GROUPS
 }
 enum BackgroundTaskContextType {
   ATTRIBUTE

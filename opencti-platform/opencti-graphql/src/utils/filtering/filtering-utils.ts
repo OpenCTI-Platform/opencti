@@ -35,6 +35,7 @@ import { isInternalId, isValidDate } from '../../schema/schemaUtils';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreObject } from '../../types/store';
 import { idLabel } from '../../schema/schema-labels';
+import { INTERNAL_RELATIONSHIPS } from '../../schema/internalRelationship';
 
 export const emptyFilterGroup: FilterGroup = {
   mode: FilterMode.And,
@@ -312,6 +313,7 @@ export const convertRelationRefsFilterKeys = (filterGroup: FilterGroup): FilterG
       const convertedFilterKeys = filterKeys
         .map((key) => specialFilterKeysConvertor.get(key) ?? key) //  convert special keys
         .map((key) => (STIX_CORE_RELATIONSHIPS.includes(key) ? buildRefRelationKey(key, '*') : key)) // convert relation keys -> rel_X or keep key
+        .map((key) => (INTERNAL_RELATIONSHIPS.includes(key) ? buildRefRelationKey(key, '*') : key)) // convert internal relation keys -> rel_X or keep key
         .map((key) => [key, schemaRelationsRefDefinition.getDatabaseName(key) ?? '']) // fetch eventual ref database names
         .map(([key, name]) => (name ? buildRefRelationKey(name, '*') : key)); // convert databaseName if exists or keep initial key if not
       newFiltersContent.push({ ...f, key: convertedFilterKeys });
@@ -397,11 +399,14 @@ const checkFilterKeys = (filterGroup: FilterGroup) => {
     const availableRefRelations = schemaRelationsRefDefinition.getAllInputNames();
     const availableConvertedRefRelations = getConvertedRelationsNames(schemaRelationsRefDefinition.getAllDatabaseName());
     const availableConvertedStixCoreRelationships = getConvertedRelationsNames(STIX_CORE_RELATIONSHIPS);
+    const availableConvertedInternalRelations = getConvertedRelationsNames(INTERNAL_RELATIONSHIPS);
     const availableKeys = availableAttributes
       .concat(availableRefRelations)
       .concat(availableConvertedRefRelations)
       .concat(STIX_CORE_RELATIONSHIPS)
       .concat(availableConvertedStixCoreRelationships)
+      .concat(INTERNAL_RELATIONSHIPS)
+      .concat(availableConvertedInternalRelations)
       .concat(specialFilterKeys);
     keys.forEach((k) => {
       if (availableKeys.includes(k) || k.startsWith(RULE_PREFIX)) {
