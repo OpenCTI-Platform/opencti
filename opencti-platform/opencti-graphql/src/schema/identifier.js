@@ -332,7 +332,7 @@ export const idGenFromData = (type, data) => {
   return `${convertTypeToStixType(type)}--${uuid}`;
 };
 
-export const fieldsContributingToStandardId = (instance, keys) => {
+export const allFieldsContributingToStandardId = (instance) => {
   const instanceType = instance.entity_type;
   const isRelation = instance.base_type === BASE_TYPE_RELATION;
   if (isRelation) return false;
@@ -347,11 +347,16 @@ export const fieldsContributingToStandardId = (instance, keys) => {
   }
   // Handle specific case of all
   if (properties.length === 0) {
-    return keys;
+    return null;
   }
+  return R.map((t) => t.src, R.flatten(properties));
+};
+
+export const fieldsContributingToStandardId = (instance, keys) => {
+  const allFields = allFieldsContributingToStandardId(instance);
+  if (allFields === null) return keys;
   const targetKeys = R.map((k) => (k.includes('.') ? R.head(k.split('.')) : k), keys);
-  const propertiesToKeep = R.map((t) => t.src, R.flatten(properties));
-  return R.filter((p) => R.includes(p, targetKeys), propertiesToKeep);
+  return R.filter((p) => R.includes(p, targetKeys), allFields);
 };
 export const isFieldContributingToStandardId = (instance, keys) => {
   const keysIncluded = fieldsContributingToStandardId(instance, keys);
@@ -512,6 +517,24 @@ export const generateAliasesIdsForInstance = (instance) => {
   return generateAliasesId(aliases, instance);
 };
 
+export const generateHashedObservableStandardIds = (instance) => {
+  const { entity_type } = instance;
+  const ids = [];
+  if (isStixCyberObservableHashedObservable(entity_type)) {
+    if (instance.hashes) {
+      const hashIds = Object.entries(instance.hashes)
+        .flatMap(([hashKey, hashValue]) => {
+          if (!hashValue) return [];
+          return generateStandardId(entity_type, {
+            hashes: { [hashKey]: hashValue }
+          });
+        });
+      ids.push(...hashIds);
+    }
+  }
+  return ids;
+};
+
 const getHashIds = (type, hashes) => {
   const ids = [];
   if (isStixCyberObservableHashedObservable(type) && isNotEmptyField(hashes)) {
@@ -548,6 +571,7 @@ export const getInputIds = (type, input, fromRule) => {
   }
   ids.push(...generateAliasesIdsForInstance(input));
   ids.push(...getHashIds(type, input.hashes));
+  ids.push(...generateHashedObservableStandardIds(input));
   // Inference can only be created once, locking the combination
   if (fromRule && isBasicRelationship(type)) {
     ids.push(`${input.from.internal_id}-${type}-${input.to.internal_id}`);

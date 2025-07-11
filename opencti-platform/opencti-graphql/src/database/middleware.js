@@ -69,6 +69,7 @@ import {
   FIRST_OBSERVED,
   FIRST_SEEN,
   generateAliasesId,
+  generateHashedObservableStandardIds,
   generateStandardId,
   getInputIds,
   getInstanceIds,
@@ -466,8 +467,8 @@ export const loadElementsWithDependencies = async (context, user, elements, opts
         // Auto deletion of the invalid relation
         await elDeleteElements(context, SYSTEM_USER, [element]);
       } else {
-        const from = R.mergeRight(element, { ...rawFrom, ...depsElementsMap.get(element.fromId) });
-        const to = R.mergeRight(element, { ...rawTo, ...depsElementsMap.get(element.toId) });
+        const from = { ...rawFrom, ...depsElementsMap.get(element.fromId) };
+        const to = { ...rawTo, ...depsElementsMap.get(element.toId) };
         // Check relations marking access.
         const canAccessFrom = await isUserCanAccessStoreElement(context, user, from);
         const canAccessTo = await isUserCanAccessStoreElement(context, user, to);
@@ -1839,7 +1840,33 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
     // For stix element, looking for keeping old stix ids
     if (isStixCyberObservable(instance.entity_type)) {
       // Standard id is generated from data depending on multiple ways and multiple attributes
-      if (isStandardIdUpgraded(instance, updatedInstance)) {
+      if (isStixCyberObservableHashedObservable(instanceType) && preparedElements.length > 0) {
+        const instanceStandardIds = generateHashedObservableStandardIds(instance);
+        const updatedInstanceStandardIds = generateHashedObservableStandardIds(updatedInstance);
+        const instanceStixIds = (instance[IDS_STIX] ?? []);
+        const instanceOtherStixIds = instanceStixIds.filter((id) => !instanceStandardIds.includes(id));
+        const newStixIds = [...instanceOtherStixIds, ...updatedInstanceStandardIds].filter((id) => id !== standardId);
+        const stixIdsHaveNotChanged = instanceStixIds.length === newStixIds.length
+          && newStixIds.every((id) => instanceStixIds.includes(id));
+
+        const stixInput = R.find((e) => e.key === IDS_STIX, preparedElements);
+        if (stixInput) {
+          // If update already contains a change of the other stix ids
+          // we need to impact directly the impacted and updated related input
+          if (stixInput.operation === UPDATE_OPERATION_REPLACE) {
+            const stixIds = [...stixInput.value, ...updatedInstanceStandardIds].filter((id) => id !== standardId);
+            stixInput.value = R.uniq(stixIds);
+          } else if (stixInput.operation === UPDATE_OPERATION_REMOVE) {
+            stixInput.value = R.uniq(newStixIds.filter((id) => !stixInput.value.includes(id)));
+          } else {
+            stixInput.value = R.uniq([...stixInput.value, ...newStixIds]);
+          }
+          stixInput.operation = UPDATE_OPERATION_REPLACE;
+        } else if (!stixIdsHaveNotChanged) {
+          // If no stix ids modification, add the standard id in the list and patch the element
+          preparedElements.push({ key: IDS_STIX, value: R.uniq(newStixIds) });
+        }
+      } else if (isStandardIdUpgraded(instance, updatedInstance)) {
         // If update already contains a change of the other stix ids
         // we need to impact directly the impacted and updated related input
         const stixInput = R.find((e) => e.key === IDS_STIX, preparedElements);
@@ -3167,6 +3194,16 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
     if (isStixCyberObservableHashedObservable(type)) {
       existingByHashedPromise = listEntitiesByHashes(context, user, type, input.hashes);
       resolvedInput.update = true;
+      if (resolvedInput.hashes) {
+        const otherStandardIds = generateHashedObservableStandardIds({
+          entity_type: type,
+          ...resolvedInput
+        }).filter((id) => id !== standardId);
+        resolvedInput.x_opencti_stix_ids = R.uniq([
+          ...(resolvedInput.x_opencti_stix_ids ?? []),
+          ...otherStandardIds
+        ]);
+      }
     }
     // Resolve the existing entity
     const [existingByIds, existingByHashed] = await Promise.all([existingByIdsPromise, existingByHashedPromise]);
@@ -3216,7 +3253,7 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
       // If creation is not by a reference
       // We can in best effort try to merge a common stix_id
       const existingByStandard = R.find((e) => e.standard_id === standardId, filteredEntities);
-      if (existingByStandard) {
+      if (existingByStandard && !isStixCyberObservableHashedObservable(type)) {
         // Sometimes multiple entities can match
         // Looking for aliasA, aliasB, find in different entities for example
         // In this case, we try to find if one match the standard id

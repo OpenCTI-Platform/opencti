@@ -95,6 +95,7 @@ import useGranted, {
   SETTINGS_SETACCESSES,
   SETTINGS_SETCUSTOMIZATION,
   SETTINGS_SETLABELS,
+  SETTINGS_SETMANAGEXTMHUB,
   SETTINGS_SETMARKINGS,
   SETTINGS_SETPARAMETERS,
   SETTINGS_SUPPORT,
@@ -227,6 +228,7 @@ const LeftBar = () => {
   const isGrantedToSharing = useGranted([TAXIIAPI]);
   const isGrantedToManage = useGranted([BYPASS]);
   const isGrantedToParameters = useGranted([SETTINGS_SETPARAMETERS]);
+  const isGrantedToManageXTMHub = useGranted([SETTINGS_SETMANAGEXTMHUB]);
   const isGrantedToTaxonomies = useGranted([SETTINGS_SETLABELS]);
   const isGrantedToFileIndexing = useGranted([SETTINGS_FILEINDEXING]);
   const isGrantedToSupport = useGranted([SETTINGS_SUPPORT]);
@@ -985,6 +987,7 @@ const LeftBar = () => {
           SETTINGS_SECURITYACTIVITY,
           SETTINGS_FILEINDEXING,
           SETTINGS_SUPPORT,
+          SETTINGS_SETMANAGEXTMHUB,
         ]}
         >
           <Divider />
@@ -1013,6 +1016,12 @@ const LeftBar = () => {
               {generateSubMenu(
                 'settings',
                 [
+                  ...isFeatureEnable('OCTI_ENROLLMENT') ? [{
+                    granted: isGrantedToManageXTMHub,
+                    link: '/dashboard/settings/xtm-hub',
+                    label: 'XTM Hub',
+                    exact: true,
+                  }] : [],
                   { granted: isGrantedToParameters, link: '/dashboard/settings', label: 'Parameters', exact: true },
                   { granted: isGrantedToSecurity || isOrganizationAdmin, link: '/dashboard/settings/accesses', label: 'Security' },
                   { granted: isGrantedToCustomization, link: '/dashboard/settings/customization', label: 'Customization' },

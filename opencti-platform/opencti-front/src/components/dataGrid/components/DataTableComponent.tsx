@@ -38,7 +38,7 @@ type DataTableComponentProps = Pick<DataTableProps,
 | 'rootRef'
 | 'createButton'
 | 'disableToolBar'
-| 'disableSelectAll'
+| 'removeSelectAll'
 | 'useComputeLink'
 | 'selectOnLineClick'
 | 'onLineClick'
@@ -68,7 +68,7 @@ const DataTableComponent = ({
   disableNavigation,
   disableLineSelection,
   disableToolBar,
-  disableSelectAll,
+  removeSelectAll,
   selectOnLineClick,
   onLineClick,
 }: DataTableComponentProps) => {
@@ -214,7 +214,7 @@ const DataTableComponent = ({
         createButton,
         disableNavigation,
         disableToolBar,
-        disableSelectAll,
+        removeSelectAll,
         selectOnLineClick,
         onLineClick,
         disableLineSelection,

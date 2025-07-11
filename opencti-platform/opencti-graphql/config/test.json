@@ -42,6 +42,7 @@
       "token": "d434ce02-e58e-4cac-8b4c-42bf16748e84"
     }
   },
+  "platform_id": "7992a4b1-128c-4656-bf97-2018b6f1f395",
   "http_proxy": "http://proxy.opencti.io:2000",
   "https_proxy": "https://proxy.opencti.io:2100",
   "no_proxy": "127.0.0.1,127.0.0.0/8,internal.opencti.io,rabbitmq",

@@ -188,7 +188,7 @@ const RelatedContainersDetailsTable: React.FC<RelatedContainersDetailsTableProps
         variant={DataTableVariant.inline}
         disableNavigation
         disableToolBar
-        disableSelectAll
+        removeSelectAll
         disableLineSelection
         onLineClick={ (row) => navigate(`${resolveLink(row.entity_type)}/${row.id}`) }
       />

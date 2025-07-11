@@ -1963,6 +1963,7 @@ export enum Capabilities {
   SettingsSetcustomization = 'SETTINGS_SETCUSTOMIZATION',
   SettingsSetdissemination = 'SETTINGS_SETDISSEMINATION',
   SettingsSetlabels = 'SETTINGS_SETLABELS',
+  SettingsSetmanagextmhub = 'SETTINGS_SETMANAGEXTMHUB',
   SettingsSetmarkings = 'SETTINGS_SETMARKINGS',
   SettingsSetparameters = 'SETTINGS_SETPARAMETERS',
   SettingsSupport = 'SETTINGS_SUPPORT',
@@ -28437,6 +28438,7 @@ export type Task = BasicObject & Container & StixCoreObject & StixDomainObject &
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  content_mapping?: Maybe<Scalars['String']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -43311,6 +43313,7 @@ export type TaskResolvers<ContextType = any, ParentType extends ResolversParentT
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<TaskConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<TaskContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  content_mapping?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;

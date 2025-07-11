@@ -1,7 +1,7 @@
 // Admin user initialization
 import { v4 as uuidv4 } from 'uuid';
 import semver from 'semver';
-import { ENABLED_FEATURE_FLAGS, logApp, PLATFORM_VERSION } from './config/conf';
+import { ENABLED_FEATURE_FLAGS, isFeatureEnabled, logApp, PLATFORM_VERSION } from './config/conf';
 import { elUpdateIndicesMappings, ES_INIT_MAPPING_MIGRATION, ES_IS_INIT_MIGRATION, initializeSchema, searchEngineInit } from './database/engine';
 import { initializeAdminUser } from './config/providers';
 import { initializeBucket, storageInit } from './database/file-storage';
@@ -9,7 +9,7 @@ import { enforceQueuesConsistency, initializeInternalQueues, rabbitMQIsAlive } f
 import { initDefaultNotifiers } from './modules/notifier/notifier-domain';
 import { checkPythonAvailability } from './python/pythonBridge';
 import { redisInit } from './database/redis';
-import { ENTITY_TYPE_MIGRATION_STATUS } from './schema/internalObject';
+import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_MIGRATION_STATUS } from './schema/internalObject';
 import { applyMigration, lastAvailableMigrationTime } from './database/migration';
 import { createEntity, loadEntity } from './database/middleware';
 import { ConfigurationError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from './config/errors';
@@ -18,10 +18,11 @@ import { smtpIsAlive } from './database/smtp';
 import { initCreateEntitySettings } from './modules/entitySetting/entitySetting-domain';
 import { initDecayRules } from './modules/decayRule/decayRule-domain';
 import { initManagerConfigurations } from './modules/managerConfiguration/managerConfiguration-domain';
-import { initializeData } from './database/data-initialization';
+import { initializeData, patchPlatformId } from './database/data-initialization';
 import { initExclusionListCache } from './database/exclusionListCache';
 import { initFintelTemplates } from './modules/fintelTemplate/fintelTemplate-domain';
 import { lockResources } from './lock/master-lock';
+import { addCapability } from './domain/grant';
 
 // region Platform constants
 const PLATFORM_LOCK_ID = 'platform_init_lock';
@@ -118,6 +119,7 @@ const platformInit = async (withMarkings = true) => {
         // noinspection ExceptionCaughtLocallyJS
         throw ConfigurationError('Internal option internal_init_mapping_migration is only available for new platform init');
       }
+      await patchPlatformId(context);
       await refreshMappingsAndIndices();
       await initializeInternalQueues();
       await enforceQueuesConsistency(context, SYSTEM_USER);
@@ -127,6 +129,22 @@ const platformInit = async (withMarkings = true) => {
       await initCreateEntitySettings(context, SYSTEM_USER);
       await initManagerConfigurations(context, SYSTEM_USER);
       await initDecayRules(context, SYSTEM_USER);
+      if (isFeatureEnabled('OCTI_ENROLLMENT')) {
+        const isCapabilityExist = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_CAPABILITY], {
+          filters: {
+            mode: 'and',
+            filters: [{ key: 'name', values: ['SETTINGS_SETMANAGEXTMHUB'] }],
+            filterGroups: [],
+          }
+        });
+        if (!isCapabilityExist) {
+          await addCapability(context, SYSTEM_USER, {
+            name: 'SETTINGS_SETMANAGEXTMHUB',
+            description: 'Manage XTM Hub',
+            attribute_order: 3050
+          });
+        }
+      }
     }
     await initExclusionListCache();
   } catch (e) {

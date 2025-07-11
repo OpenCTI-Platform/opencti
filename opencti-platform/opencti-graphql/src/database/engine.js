@@ -420,6 +420,10 @@ export const elRawSearch = (context, user, types, query) => {
     [SEMATTRS_DB_STATEMENT]: JSON.stringify(query),
   }, elRawSearchFn);
 };
+
+export const elRawGet = (args) => engine.get(args).then((r) => oebp(r));
+export const elRawIndex = (args) => engine.index(args).then((r) => oebp(r));
+export const elRawDelete = (args) => engine.delete(args).then((r) => oebp(r));
 export const elRawDeleteByQuery = (query) => engine.deleteByQuery(query).then((r) => oebp(r));
 export const elRawBulk = (args) => engine.bulk(args).then((r) => oebp(r));
 export const elRawUpdateByQuery = (query) => engine.updateByQuery(query).then((r) => oebp(r));

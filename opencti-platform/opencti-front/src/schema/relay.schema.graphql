@@ -68,6 +68,7 @@ enum Capabilities {
   MODULES
   MODULES_MODMANAGE
   SETTINGS
+  SETTINGS_SETMANAGEXTMHUB
   SETTINGS_SETPARAMETERS
   SETTINGS_SETACCESSES
   SETTINGS_SETMARKINGS
@@ -10556,6 +10557,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   name: String!
   description: String
   due_date: DateTime
+  content_mapping: String
 }
 
 enum TasksOrdering {

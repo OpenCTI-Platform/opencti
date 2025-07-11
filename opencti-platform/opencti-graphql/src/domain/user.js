@@ -1232,6 +1232,7 @@ export const otpUserLogin = async (req, user, { code }) => {
     throw AuthenticationFailure();
   }
   req.session.user.otp_validated = isValidated;
+  req.session.save();
   return isValidated;
 };
 
