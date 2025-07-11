@@ -130,6 +130,8 @@ export const getSettings = async (context) => {
       { id: 'RUNTIME_SORTING', enable: isRuntimeSortEnable() },
       ...(ENABLED_FEATURE_FLAGS.map((feature) => ({ id: feature, enable: true })))
     ],
+    platform_ai_flow_id: nconf.get('ai_agent:token'),
+    platform_api_host: nconf.get('ai_agent:endpoint'),
   };
 };
 
