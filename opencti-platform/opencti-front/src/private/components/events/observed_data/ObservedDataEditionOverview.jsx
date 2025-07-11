@@ -3,7 +3,6 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
-import { Stack } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -20,7 +19,6 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-import ObservedDataDeletion from './ObservedDataDeletion';
 
 export const observedDataMutationFieldPatch = graphql`
   mutation ObservedDataEditionOverviewFieldPatchMutation(
@@ -310,21 +308,16 @@ const ObservedDataEditionOverviewComponent = (props) => {
               setFieldValue={setFieldValue}
               onChange={editor.changeMarking}
             />
-            <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
-              <ObservedDataDeletion
+            {enableReferences && (
+              <CommitMessage
+                submitForm={submitForm}
+                disabled={isSubmitting || !isValid || !dirty}
+                setFieldValue={setFieldValue}
+                open={false}
+                values={values.references}
                 id={observedData.id}
               />
-              {enableReferences && (
-                <CommitMessage
-                  submitForm={submitForm}
-                  disabled={isSubmitting || !isValid || !dirty}
-                  setFieldValue={setFieldValue}
-                  open={false}
-                  values={values.references}
-                  id={observedData.id}
-                />
-              )}
-            </Stack>
+            )}
           </Form>
         </div>
       )}

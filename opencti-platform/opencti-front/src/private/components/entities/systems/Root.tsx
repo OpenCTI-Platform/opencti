@@ -26,8 +26,9 @@ import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import SystemEdition from './SystemEdition';
+import SystemDeletion from './SystemDeletion';
 
 const subscription = graphql`
   subscription RootSystemsSubscription($id: ID!) {
@@ -167,6 +168,11 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <SystemEdition systemId={system.id} />
+                </Security>
+              )}
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+                <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                  <SystemDeletion id={system.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
               )}
               onViewAs={handleChangeViewAs}

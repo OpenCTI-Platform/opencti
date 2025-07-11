@@ -24,6 +24,9 @@ import FileManager from '../../common/files/FileManager';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import StixCyberObservableDeletion from './StixCyberObservableDeletion';
 
 const subscription = graphql`
   subscription RootStixCyberObservableSubscription($id: ID!) {
@@ -106,7 +109,14 @@ const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObserv
             { label: stixCyberObservable.observable_value, current: true },
           ]}
           />
-          <StixCyberObservableHeader stixCyberObservable={stixCyberObservable} />
+          <StixCyberObservableHeader
+            stixCyberObservable={stixCyberObservable}
+            DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                <StixCyberObservableDeletion id={stixCyberObservable.id} isOpen={isOpen} handleClose={onClose} />
+              </Security>
+            )}
+          />
           <Box
             sx={{
               borderBottom: 1,

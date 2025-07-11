@@ -28,7 +28,8 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import CityEdition from './CityEdition';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import CityDeletion from './CityDeletion';
 
 const subscription = graphql`
   subscription RootCitiesSubscription($id: ID!) {
@@ -134,6 +135,11 @@ const RootCityComponent = ({ queryRef, cityId }) => {
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <CityEdition cityId={city.id} />
+                </Security>
+              )}
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+                <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                  <CityDeletion id={city.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
               )}
               enableQuickSubscription={true}

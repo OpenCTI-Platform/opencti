@@ -28,7 +28,8 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import AdministrativeAreaEdition from './AdministrativeAreaEdition';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import AdministrativeAreaDeletion from './AdministrativeAreaDeletion';
 
 const subscription = graphql`
   subscription RootAdministrativeAreasSubscription($id: ID!) {
@@ -138,6 +139,11 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
                   <AdministrativeAreaEdition
                     administrativeAreaId={administrativeArea.id}
                   />
+                </Security>
+              )}
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+                <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                  <AdministrativeAreaDeletion id={administrativeArea.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
               )}
               enableQuickSubscription={true}

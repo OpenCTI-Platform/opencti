@@ -1,5 +1,4 @@
 import React from 'react';
-import Button from '@mui/material/Button';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
@@ -14,7 +13,7 @@ const DecayRuleDeletionDeleteMutation = graphql`
   }
 `;
 
-const DecayRuleDeletion = ({ id }: { id: string }) => {
+const DecayRuleDeletion = ({ id, isOpen, handleClose }: { id: string, isOpen: boolean, handleClose: () => void }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const deleteSuccessMessage = t_i18n('', {
@@ -26,9 +25,8 @@ const DecayRuleDeletion = ({ id }: { id: string }) => {
     undefined,
     { successMessage: deleteSuccessMessage },
   );
-  const handleClose = () => {};
   const deletion = useDeletion({ handleClose });
-  const { setDeleting, handleOpenDelete, deleting } = deletion;
+  const { setDeleting } = deletion;
   const submitDelete = () => {
     setDeleting(true);
     commit({
@@ -47,22 +45,13 @@ const DecayRuleDeletion = ({ id }: { id: string }) => {
     });
   };
   return (
-    <>
-      <Button
-        color="error"
-        variant="contained"
-        onClick={handleOpenDelete}
-        disabled={deleting}
-        sx={{ marginTop: 2 }}
-      >
-        {t_i18n('Delete')}
-      </Button>
-      <DeleteDialog
-        deletion={deletion}
-        submitDelete={submitDelete}
-        message={t_i18n('Do you want to delete this decay rule?')}
-      />
-    </>
+    <DeleteDialog
+      deletion={deletion}
+      submitDelete={submitDelete}
+      isOpen={isOpen}
+      onClose={handleClose}
+      message={t_i18n('Do you want to delete this decay rule?')}
+    />
   );
 };
 

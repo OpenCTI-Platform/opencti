@@ -4,7 +4,6 @@ import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import { Stack } from '@mui/material';
-import ReportDeletion from './ReportDeletion';
 import { buildDate, parse } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -351,9 +350,6 @@ const ReportEditionOverviewComponent = (props) => {
             required={mandatoryAttributes.includes('objectMarking')}
           />
           <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
-            <ReportDeletion
-              reportId={report.id}
-            />
             {enableReferences && (
             <CommitMessage
               submitForm={submitForm}
