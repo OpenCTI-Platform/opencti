@@ -18,11 +18,6 @@ export function refang(input) {
   // Trim first
   let output = input.trim();
 
-  // Normalize Unicode (NFKC)
-  if (typeof output.normalize === 'function') {
-    output = output.normalize('NFKC');
-  }
-
   // Refang common obfuscations (all patterns from both functions)
   output = output
     // Replace [.] and (.) and [dot] or (dot) with .
@@ -53,11 +48,10 @@ export function refang(input) {
     // eslint-disable-next-line no-useless-escape
     .replace(/\[:\/\]/g, '/')
     // Remove literal ellipsis character
-    .replace(/\u2026/g, '');
-
-  // Remove common placeholder endings (e.g., trailing [.] or ...)
-  // eslint-disable-next-line no-useless-escape
-  output = output.replace(/(\[\.\]|\.{2,}|…)+$/g, '');
+    .replace(/\u2026/g, '')
+    // Remove common placeholder endings (e.g., trailing [.] or ...)
+    // eslint-disable-next-line no-useless-escape
+    .replace(/(\[\.\]|\.{2,}|…)+$/g, '');
 
   // Extract valid URL if present and sanitize
   const urlRegex = /https?:\/\/[^\s'"<>[\](){},;!?…]+/gi;
