@@ -38,7 +38,8 @@ import { entityLocationType, identityClass, xOpenctiType } from '../schema/attri
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { validateMarking } from '../utils/access';
-import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/types/store';
+
+import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 
 export const findAll = async (context, user, args) => {
   let types = [];

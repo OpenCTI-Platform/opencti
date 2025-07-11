@@ -3,10 +3,7 @@ import { buildStixDomain, convertObjectReferences } from '../../database/stix-2-
 import { buildStixDomain as buildStixDomain2 } from '../../database/stix-2-0-converter';
 import { INPUT_OBJECTS } from '../../schema/general';
 import { assertType, cleanObject } from '../../database/stix-converter-utils';
-import type { StoreEntity } from '../../types/store';
-import { ENTITY_TYPE_CONTAINER_GROUPING, type StoreEntityGrouping } from './types/store';
-import type { StixGrouping } from './types/stix-2-1';
-import type { StixGrouping as Stix2Grouping } from './types/stix-2-0';
+import { type Stix2Grouping, ENTITY_TYPE_CONTAINER_GROUPING, type StixGrouping, type StoreEntityGrouping, type StoreEntityGrouping2 } from './grouping-types';
 
 export const convertGroupingToStix_2_1 = (instance: StoreEntityGrouping): StixGrouping => {
   const grouping = buildStixDomain(instance);
@@ -28,7 +25,7 @@ export const convertGroupingToStix_2_1 = (instance: StoreEntityGrouping): StixGr
   };
 };
 
-export const convertGroupingToStix_2_0 = (instance: StoreEntity, type: string): Stix2Grouping => {
+export const convertGroupingToStix_2_0 = (instance: StoreEntityGrouping2, type: string): Stix2Grouping => {
   assertType(ENTITY_TYPE_CONTAINER_GROUPING, type);
   const grouping = buildStixDomain2(instance);
   return {

@@ -470,6 +470,7 @@ export const EXPECTED_IR = {
   description: 'description',
   severity: 'medium',
   priority: 'P2',
+  object_refs: [],
   response_types: [
     'data-leak'
   ],

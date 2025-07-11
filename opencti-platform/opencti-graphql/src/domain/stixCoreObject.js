@@ -108,7 +108,8 @@ import { FILES_UPDATE_KEY, getDraftChanges, isDraftFile } from '../database/draf
 import { askJobImport } from './connector';
 import { authorizedMembers } from '../schema/attribute-definition';
 import { cleanHtmlTags } from '../utils/ai/cleanHtmlTags';
-import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/types/store';
+
+import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 
 const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
 const aiResponseCache = {};
