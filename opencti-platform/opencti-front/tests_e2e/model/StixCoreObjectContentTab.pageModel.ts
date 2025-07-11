@@ -1,6 +1,6 @@
 import { Page } from '@playwright/test';
 
-export default class StixDomainObjectContentTabPage {
+export default class StixCoreObjectContentTabPage {
   constructor(private page: Page) {}
 
   getPage() {

@@ -193,10 +193,10 @@ const ThreatActorsIndividual = () => {
   };
 
   return (
-    <>
+    <div data-testid="threat-actors-individual-page">
       <Breadcrumbs elements={[{ label: t_i18n('Threats') }, { label: t_i18n('Threat actors (individual)'), current: true }]} />
       {viewStorage.view !== 'lines' ? renderCards() : renderList()}
-    </>
+    </div>
   );
 };
 

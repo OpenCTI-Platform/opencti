@@ -37,7 +37,7 @@ const ThreatActorGroupKnowledgeComponent = ({
   const { schema } = useAuth();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(threatActorGroup.entity_type, schema);
   return (
-    <>
+    <div data-testid="threat-actor-group-knowledge">
       <Routes>
         <Route
           path="/relations/:relationId"
@@ -311,7 +311,7 @@ const ThreatActorGroupKnowledgeComponent = ({
             }
         />
       </Routes>
-    </>
+    </div>
   );
 };
 
