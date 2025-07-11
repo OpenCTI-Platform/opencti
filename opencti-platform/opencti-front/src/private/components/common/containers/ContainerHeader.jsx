@@ -10,6 +10,8 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { useTheme } from '@mui/styles';
 import { Box } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
+import StixCoreObjectSharedOrganisations from '../stix_core_objects/StixCoreObjectSharedOrganisations';
+import StixCoreObjectSharedOrganisationsDrawer from './StixCoreObjectSharedOrganisationsDrawer';
 import StixCoreObjectMenuItemUnderEE from '../stix_core_objects/StixCoreObjectMenuItemUnderEE';
 import StixCoreObjectSharingList from '../stix_core_objects/StixCoreObjectSharingList';
 import StixCoreObjectBackgroundTasks from '../stix_core_objects/StixCoreObjectActiveBackgroundTasks';
@@ -26,7 +28,6 @@ import Security from '../../../../utils/Security';
 import { useFormatter } from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
-import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
 import useGranted, {
   KNOWLEDGE_KNENRICHMENT,
   KNOWLEDGE_KNGETEXPORT_KNASKEXPORT,
@@ -674,15 +675,8 @@ const ContainerHeader = (props) => {
             )}
             {displaySharing && (
               <>
+                <StixCoreObjectSharedOrganisations data={container}/>
                 <StixCoreObjectSharingList data={container} inContainer={true} />
-                <StixCoreObjectSharing
-                  elementId={container.id}
-                  open={openSharing}
-                  variant="header"
-                  disabled={isSharingDisabled}
-                  handleClose={displaySharingButton ? undefined : handleCloseSharing}
-                  inContainer={true}
-                />
               </>
             )}
             {displayAuthorizedMembers && (
@@ -783,6 +777,13 @@ const ContainerHeader = (props) => {
                     </Box>
                   )}
                 </PopoverMenu>
+                {openSharing && (
+                  <StixCoreObjectSharedOrganisationsDrawer
+                    data={container}
+                    open={openSharing}
+                    handleClose={displaySharingButton ? undefined : handleCloseSharing}
+                  />
+                )}
                 {EditComponent}
                 <DeleteComponent isOpen={openDelete} onClose={handleCloseDelete} />
               </>
