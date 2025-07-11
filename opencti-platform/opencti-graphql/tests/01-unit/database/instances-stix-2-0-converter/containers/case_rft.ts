@@ -1,4 +1,3 @@
-import type { StoreEntity } from '../../../../../src/types/store';
 import type { StoreEntityCaseRft2 } from '../../../../../src/modules/case/case-rft/case-rft-types';
 
 export const RFT_INSTANCE = {
