@@ -101,7 +101,7 @@ const ME_USER_MODIFIABLE_ATTRIBUTES = [
   'password',
   'draft_context',
 ];
-const AVAILABLE_LANGUAGES = ['auto', 'es-es', 'fr-fr', 'ja-jp', 'zh-cn', 'en-us', 'de-de', 'ko-kr'];
+const AVAILABLE_LANGUAGES = ['auto', 'es-es', 'fr-fr', 'ja-jp', 'zh-cn', 'en-us', 'de-de', 'ko-kr', 'ru-ru'];
 
 const computeImpactedUsers = async (context, user, roleId) => {
   // Get all groups that have this role
