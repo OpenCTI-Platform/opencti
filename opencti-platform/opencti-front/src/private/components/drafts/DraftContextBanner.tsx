@@ -21,7 +21,6 @@ import { truncate } from '../../../utils/String';
 import { MESSAGING$ } from '../../../relay/environment';
 import Transition from '../../../components/Transition';
 import { TEN_SECONDS } from '../../../utils/Time';
-import Loader, { LoaderVariant } from '../../../components/Loader';
 import ErrorNotFound from '../../../components/ErrorNotFound';
 
 const interval$ = interval(TEN_SECONDS * 3);
@@ -219,7 +218,7 @@ const DraftContextBanner = () => {
   return (
     <>
       {queryRef && (
-        <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+        <Suspense>
           <DraftContextBannerComponent queryRef={queryRef} refetch={refetch} />
         </Suspense>
       )}
