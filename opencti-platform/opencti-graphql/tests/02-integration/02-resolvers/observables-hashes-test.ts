@@ -666,8 +666,4 @@ describe('Observables with hashes: management of other stix ids', () => {
     const data = result.data?.stixCyberObservableEdit?.fieldPatch;
     expect(data.x_opencti_stix_ids).toEqual(file4StixIds);
   });
-
-  it('should update correctly with ADD operation (without hashes changes)', async () => {});
-  it('should update correctly with REPLACE operation (without hashes changes)', async () => {});
-  it('should update correctly with REMOVE operation (without hashes changes)', () => {});
 });
