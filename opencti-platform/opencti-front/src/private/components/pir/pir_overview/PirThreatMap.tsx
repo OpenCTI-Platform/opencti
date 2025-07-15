@@ -1,4 +1,4 @@
-import React, { CSSProperties } from 'react';
+import React, { CSSProperties, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { InfoOutlined } from '@mui/icons-material';
@@ -12,6 +12,8 @@ import { PirThreatMapFragment$key } from './__generated__/PirThreatMapFragment.g
 import { getNodes } from '../../../../utils/connection';
 import { itemColor } from '../../../../utils/Colors';
 import { minutesBetweenDates } from '../../../../utils/Time';
+import PirThreatMapLegend from './PirThreatMapLegend';
+import { uniqueArray } from '../../../../utils/utils';
 
 const pirThreatMapFragment = graphql`
   fragment PirThreatMapFragment on Query {
@@ -60,6 +62,9 @@ const PirThreatMap = ({ queryRef }: PirThreatMapProps) => {
   const { stixRefRelationships } = useFragment<PirThreatMapFragment$key>(pirThreatMapFragment, query);
   const data = getNodes(stixRefRelationships);
 
+  const entityTypes = uniqueArray(data.flatMap((d) => (d.from?.entity_type ? d.from.entity_type : [])));
+  const [filteredEntityTypes, setFilteredEntityTypes] = useState(entityTypes);
+
   const groupedData: { date: string, score: number, name: string, type: string }[][] = [];
   data.forEach((d) => {
     const item = {
@@ -68,20 +73,22 @@ const PirThreatMap = ({ queryRef }: PirThreatMapProps) => {
       name: d.from?.representative?.main ?? '',
       type: d.from?.entity_type ?? '',
     };
-    if (Object.keys(groupedData).length === 0) {
-      groupedData.push([item]);
-    } else {
-      let filled = false;
-      for (const group of groupedData) {
-        const diffDate = Math.abs(minutesBetweenDates(group[0].date, item.date));
-        const diffScore = Math.abs(group[0].score - item.score);
-        if (diffDate < 1440 && diffScore < 5) {
-          group.push(item);
-          filled = true;
-          break;
+    if (filteredEntityTypes.includes(item.type)) {
+      if (Object.keys(groupedData).length === 0) {
+        groupedData.push([item]);
+      } else {
+        let filled = false;
+        for (const group of groupedData) {
+          const diffDate = Math.abs(minutesBetweenDates(group[0].date, item.date));
+          const diffScore = Math.abs(group[0].score - item.score);
+          if (diffDate < 1440 && diffScore < 5) {
+            group.push(item);
+            filled = true;
+            break;
+          }
         }
+        if (!filled) groupedData.push([item]);
       }
-      if (!filled) groupedData.push([item]);
     }
   });
 
@@ -153,10 +160,14 @@ const PirThreatMap = ({ queryRef }: PirThreatMapProps) => {
           <span>Most recent</span>
         </div>
         <div style={yLegendStyle}>
-          <span>Less relevant</span>
-          <span>Most relevant</span>
+          <span>0 - Less relevant</span>
+          <span>Most relevant - 100</span>
         </div>
       </div>
+      <PirThreatMapLegend
+        entityTypes={entityTypes}
+        onFilter={setFilteredEntityTypes}
+      />
     </Paper>
   );
 };

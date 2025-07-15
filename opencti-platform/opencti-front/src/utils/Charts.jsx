@@ -69,7 +69,7 @@ const multipleDataTooltip = (theme) => ({ seriesIndex, dataPointIndex, w }) => {
   const rows = group.map((data) => `
     <div style="display:flex; align-items:center; gap:4px">
       <div style="width:10px; height:10px; background:${itemColor(data.type)}; border-radius:10px;"></div>
-      <span>${data.name}: ${data.score}</span>
+      <span>${data.name}: ${data.score}%</span>
     </div>
   `).join('');
   return (`
