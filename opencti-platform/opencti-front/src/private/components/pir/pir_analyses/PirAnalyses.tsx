@@ -12,7 +12,7 @@ import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { PirAnalysesFragment$key } from './__generated__/PirAnalysesFragment.graphql';
 import { useFormatter } from '../../../../components/i18n';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 
 const pirAnalysesContainerFragment = graphql`
   fragment PirAnalyses_ContainerFragment on Container
@@ -236,7 +236,7 @@ const PirAnalyses = ({ data }: PirAnalysesProps) => {
 
   return queryRef && (
     <DataTable
-      disableSelectAll
+      removeSelectAll
       disableLineSelection
       dataColumns={dataColumns}
       storageKey={LOCAL_STORAGE_KEY}
