@@ -219,7 +219,7 @@ const DraftContextBanner = () => {
   return (
     <>
       {queryRef && (
-        <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+        <Suspense>
           <DraftContextBannerComponent queryRef={queryRef} refetch={refetch} />
         </Suspense>
       )}
