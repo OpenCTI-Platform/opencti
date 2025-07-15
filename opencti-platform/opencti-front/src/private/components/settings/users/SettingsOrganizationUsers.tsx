@@ -216,6 +216,7 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
       >
         {queryRef && (
         <DataTable
+          isUserDatatable
           dataColumns={dataColumns}
           resolvePath={(data) => data.organization?.members?.edges?.map(({ node }: { node: SettingsOrganizationUsersLine_node$data }) => node)}
           storageKey={LOCAL_STORAGE_KEY}

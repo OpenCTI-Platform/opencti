@@ -221,6 +221,7 @@ const Users = () => {
         <>
           {queryRef && (
           <DataTable
+            isUserDatatable
             dataColumns={dataColumns}
             resolvePath={(data) => data.users?.edges?.map(({ node }: { node: UsersLine_node$data }) => node)}
             storageKey={LOCAL_STORAGE_KEY}

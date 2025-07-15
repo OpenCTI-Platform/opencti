@@ -112,6 +112,7 @@ type DataTableInternalToolbarProps = Pick<DataTableProps,
 > & {
   taskScope?: string
   globalSearch?: string;
+  isUserDatatable?: boolean;
 };
 
 const DataTableInternalToolbar = ({
@@ -123,6 +124,7 @@ const DataTableInternalToolbar = ({
   removeFromDraftEnabled,
   markAsReadEnabled,
   entityTypes,
+  isUserDatatable,
 }: DataTableInternalToolbarProps) => {
   const theme = useTheme<Theme>();
 
@@ -148,6 +150,7 @@ const DataTableInternalToolbar = ({
     >
 
       <DataTableToolBar
+        isUserDatatable={isUserDatatable}
         selectedElements={selectedElements}
         deSelectedElements={deSelectedElements}
         numberOfSelectedElements={numberOfSelectedElements}
@@ -219,6 +222,7 @@ const DataTable = (props: OCTIDataTableProps) => {
     removeAuthMembersEnabled,
     removeFromDraftEnabled,
     markAsReadEnabled,
+    isUserDatatable,
   } = props;
 
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
@@ -261,6 +265,7 @@ const DataTable = (props: OCTIDataTableProps) => {
       )}
         dataTableToolBarComponent={(
           <DataTableInternalToolbar
+            isUserDatatable={isUserDatatable}
             entityTypes={entityTypes}
             handleCopy={handleCopy}
             taskScope={taskScope}
