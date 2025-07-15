@@ -3,6 +3,7 @@ import { authenticator } from 'otplib';
 import * as R from 'ramda';
 import { uniq } from 'ramda';
 import { v4 as uuid } from 'uuid';
+import ejs from 'ejs';
 import { ACCOUNT_STATUS_ACTIVE, ACCOUNT_STATUS_EXPIRED, ACCOUNT_STATUSES, BUS_TOPICS, DEFAULT_ACCOUNT_STATUS, ENABLED_DEMO_MODE, logApp } from '../config/conf';
 import { AuthenticationFailure, DatabaseError, DraftLockedError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
@@ -75,6 +76,7 @@ import { cleanMarkings } from '../utils/markingDefinition-utils';
 import { UnitSystem } from '../generated/graphql';
 import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
+import { sendMail } from '../database/smtp';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -545,6 +547,42 @@ export const checkPasswordFromPolicy = async (context, password) => {
   if (errors.length > 0) {
     throw FunctionalError(`Invalid password: ${errors.join(', ')}`);
   }
+};
+
+export const sendEmailToUser = async (context, user, opts) => {
+  const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
+
+  const targetUser = await internalLoadById(context, user, opts.target_user_id);
+  if (!targetUser) {
+    throw UnsupportedError('Target user not found', { id: opts.target_user_id });
+  }
+  const emailTemplate = await internalLoadById(context, user, opts.email_template_id);
+  // if (!emailTemplate || emailTemplate.entity_type !== ENTITY_TYPE_EMAIL_TEMPLATE) {
+  //   throw UnsupportedError('Invalid email template', { id: opts.email_template_id });
+  // }
+  const templateBody = emailTemplate?.body || `
+    <p>Hello <%= user.user_email %>,</p>
+    <p>This is a default test email sent from the system.</p>
+    <p>Regards,<br/><%= settings.platform_title %></p>
+  `;
+
+  const emailHtml = ejs.render(templateBody, {
+    settings,
+    user: targetUser,
+  });
+
+  const sendMailArgs = {
+    from: `${settings.platform_title} <${settings.platform_email}>`,
+    to: targetUser.user_email,
+    subject: opts.email_object,
+    html: emailHtml,
+  };
+
+  await sendMail(sendMailArgs, {
+    identifier: `user-${targetUser.id}`,
+    category: 'user-notification',
+  });
+  return true;
 };
 
 export const addUser = async (context, user, newUser) => {

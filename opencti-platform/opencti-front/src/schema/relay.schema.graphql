@@ -1833,6 +1833,12 @@ input UserAddInput {
   prevent_default_groups: Boolean
 }
 
+input SendUserMailInput {
+  target_user_id: ID!
+  email_template_id: ID!
+  email_object: String!
+}
+
 input ConfidenceLevelInput {
   max_confidence: Int
   overrides: [ConfidenceLevelOverrideInput!]!
@@ -9014,6 +9020,7 @@ type Mutation {
   meEdit(input: [EditInput]!, password: String): MeUser
   bookmarkAdd(id: ID!, type: String!): StixDomainObject
   bookmarkDelete(id: ID!): ID
+  sendUserMail(input: SendUserMailInput!): Boolean
   logout: ID
   roleAdd(input: RoleAddInput!): Role
   sessionKill(id: ID!): ID

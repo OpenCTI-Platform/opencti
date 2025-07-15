@@ -1760,6 +1760,12 @@ input UserAddInput {
   prevent_default_groups: Boolean
 }
 
+input SendUserMailInput {
+  target_user_id: ID!
+  email_template_id: ID!
+  email_object: String!
+}
+
 input ConfidenceLevelInput {
   max_confidence: Int
   overrides: [ConfidenceLevelOverrideInput!]!
@@ -14718,6 +14724,7 @@ type Mutation {
   meEdit(input: [EditInput]!, password: String): MeUser @auth
   bookmarkAdd(id: ID!, type: String!): StixDomainObject @auth(for: [KNOWLEDGE])
   bookmarkDelete(id: ID!): ID @auth(for: [KNOWLEDGE])
+  sendUserMail(input: SendUserMailInput!): Boolean @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   logout: ID @auth
   roleAdd(input: RoleAddInput!): Role @auth(for: [SETTINGS_SETACCESSES])
   sessionKill(id: ID!): ID @auth(for: [SETTINGS_SETACCESSES])

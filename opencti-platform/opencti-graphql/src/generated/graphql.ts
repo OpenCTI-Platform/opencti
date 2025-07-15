@@ -14425,6 +14425,7 @@ export type Mutation = {
   securityPlatformFieldPatch?: Maybe<SecurityPlatform>;
   securityPlatformRelationAdd?: Maybe<StixRefRelationship>;
   securityPlatformRelationDelete?: Maybe<SecurityPlatform>;
+  sendUserMail?: Maybe<Scalars['Boolean']['output']>;
   sessionKill?: Maybe<Scalars['ID']['output']>;
   settingsEdit?: Maybe<SettingsEditMutations>;
   statusTemplateAdd: StatusTemplate;
@@ -16247,6 +16248,11 @@ export type MutationSecurityPlatformRelationDeleteArgs = {
   id: Scalars['ID']['input'];
   relationship_type: Scalars['String']['input'];
   toId: Scalars['StixRef']['input'];
+};
+
+
+export type MutationSendUserMailArgs = {
+  input: SendUserMailInput;
 };
 
 
@@ -25227,6 +25233,12 @@ export enum Selection {
   Random = 'random'
 }
 
+export type SendUserMailInput = {
+  email_object: Scalars['String']['input'];
+  email_template_id: Scalars['ID']['input'];
+  target_user_id: Scalars['ID']['input'];
+};
+
 export type SessionDetail = {
   __typename?: 'SessionDetail';
   created?: Maybe<Scalars['DateTime']['output']>;
@@ -33505,6 +33517,7 @@ export type ResolversTypes = ResolversObject<{
   SecurityPlatformEdge: ResolverTypeWrapper<Omit<SecurityPlatformEdge, 'node'> & { node: ResolversTypes['SecurityPlatform'] }>;
   SecurityPlatformOrdering: SecurityPlatformOrdering;
   Selection: Selection;
+  SendUserMailInput: SendUserMailInput;
   SessionDetail: ResolverTypeWrapper<SessionDetail>;
   Settings: ResolverTypeWrapper<Omit<Settings, 'activity_listeners' | 'editContext' | 'messages_administration' | 'platform_critical_alerts' | 'platform_messages' | 'platform_organization'> & { activity_listeners?: Maybe<Array<ResolversTypes['Member']>>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, messages_administration?: Maybe<Array<ResolversTypes['SettingsMessage']>>, platform_critical_alerts: Array<ResolversTypes['PlatformCriticalAlert']>, platform_messages?: Maybe<Array<ResolversTypes['SettingsMessage']>>, platform_organization?: Maybe<ResolversTypes['Organization']> }>;
   SettingsEditMutations: ResolverTypeWrapper<Omit<SettingsEditMutations, 'contextClean' | 'contextPatch' | 'deleteMessage' | 'editMessage' | 'fieldPatch'> & { contextClean?: Maybe<ResolversTypes['Settings']>, contextPatch?: Maybe<ResolversTypes['Settings']>, deleteMessage?: Maybe<ResolversTypes['Settings']>, editMessage?: Maybe<ResolversTypes['Settings']>, fieldPatch?: Maybe<ResolversTypes['Settings']> }>;
@@ -34375,6 +34388,7 @@ export type ResolversParentTypes = ResolversObject<{
   SecurityPlatformAddInput: SecurityPlatformAddInput;
   SecurityPlatformConnection: Omit<SecurityPlatformConnection, 'edges'> & { edges: Array<ResolversParentTypes['SecurityPlatformEdge']> };
   SecurityPlatformEdge: Omit<SecurityPlatformEdge, 'node'> & { node: ResolversParentTypes['SecurityPlatform'] };
+  SendUserMailInput: SendUserMailInput;
   SessionDetail: SessionDetail;
   Settings: Omit<Settings, 'activity_listeners' | 'editContext' | 'messages_administration' | 'platform_critical_alerts' | 'platform_messages' | 'platform_organization'> & { activity_listeners?: Maybe<Array<ResolversParentTypes['Member']>>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, messages_administration?: Maybe<Array<ResolversParentTypes['SettingsMessage']>>, platform_critical_alerts: Array<ResolversParentTypes['PlatformCriticalAlert']>, platform_messages?: Maybe<Array<ResolversParentTypes['SettingsMessage']>>, platform_organization?: Maybe<ResolversParentTypes['Organization']> };
   SettingsEditMutations: Omit<SettingsEditMutations, 'contextClean' | 'contextPatch' | 'deleteMessage' | 'editMessage' | 'fieldPatch'> & { contextClean?: Maybe<ResolversParentTypes['Settings']>, contextPatch?: Maybe<ResolversParentTypes['Settings']>, deleteMessage?: Maybe<ResolversParentTypes['Settings']>, editMessage?: Maybe<ResolversParentTypes['Settings']>, fieldPatch?: Maybe<ResolversParentTypes['Settings']> };
@@ -39900,6 +39914,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   securityPlatformFieldPatch?: Resolver<Maybe<ResolversTypes['SecurityPlatform']>, ParentType, ContextType, RequireFields<MutationSecurityPlatformFieldPatchArgs, 'id' | 'input'>>;
   securityPlatformRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationSecurityPlatformRelationAddArgs, 'id' | 'input'>>;
   securityPlatformRelationDelete?: Resolver<Maybe<ResolversTypes['SecurityPlatform']>, ParentType, ContextType, RequireFields<MutationSecurityPlatformRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
+  sendUserMail?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSendUserMailArgs, 'input'>>;
   sessionKill?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationSessionKillArgs, 'id'>>;
   settingsEdit?: Resolver<Maybe<ResolversTypes['SettingsEditMutations']>, ParentType, ContextType, RequireFields<MutationSettingsEditArgs, 'id'>>;
   statusTemplateAdd?: Resolver<ResolversTypes['StatusTemplate'], ParentType, ContextType, RequireFields<MutationStatusTemplateAddArgs, 'input'>>;
