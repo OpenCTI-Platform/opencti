@@ -12,7 +12,6 @@ import { Box } from '@mui/material';
 import StixCoreObjectSharedOrganisations from '../stix_core_objects/StixCoreObjectSharedOrganisations';
 import StixCoreObjectSharedOrganisationsDrawer from './StixCoreObjectSharedOrganisationsDrawer';
 import StixCoreObjectMenuItemUnderEE from '../stix_core_objects/StixCoreObjectMenuItemUnderEE';
-import StixCoreObjectSharingList from '../stix_core_objects/StixCoreObjectSharingList';
 import StixCoreObjectBackgroundTasks from '../stix_core_objects/StixCoreObjectActiveBackgroundTasks';
 import StixCoreObjectEnrollPlaybook from '../stix_core_objects/StixCoreObjectEnrollPlaybook';
 import StixCoreObjectFileExportButton from '../stix_core_objects/StixCoreObjectFileExportButton';
@@ -665,10 +664,7 @@ const ContainerHeader = (props) => {
               <StixCoreObjectSubscribers triggerData={triggerData} />
             )}
             {displaySharing && (
-              <>
-                <StixCoreObjectSharedOrganisations data={container}/>
-                <StixCoreObjectSharingList data={container} inContainer={true} />
-              </>
+            <StixCoreObjectSharedOrganisations data={container}/>
             )}
             {displayAuthorizedMembers && (
               <FormAuthorizedMembersDialog
