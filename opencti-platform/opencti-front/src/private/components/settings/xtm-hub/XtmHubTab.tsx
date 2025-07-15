@@ -8,22 +8,31 @@ import EnrollmentInstructions from './EnrollmentInstructions';
 import EnrollmentLoader from './EnrollmentLoader';
 import ConfirmationDialog from './ConfirmationDialog';
 import { UserContext } from '../../../../utils/hooks/useAuth';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 const XtmHubTab: React.FC = () => {
   const { t_i18n } = useFormatter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const { settings } = useContext(UserContext);
+  const isEnterpriseEdition = useEnterpriseEdition();
   const enrollmentHubUrl = settings?.platform_xtmhub_url ?? 'https://hub.filigran.io/app';
+
+  const OCTIInformations = {
+    platform_url: window.location.origin,
+    platform_title: 'Open CTI Instance',
+    platform_id: settings?.id ?? '',
+    platform_contract: isEnterpriseEdition ? 'EE' : 'CE',
+  };
+  const queryParamsOCTIInformations = new URLSearchParams(OCTIInformations).toString();
 
   // TODO Did in purpose, will use in next chunk and we will remove the unused-vars.
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleTabMessage = useCallback((event: MessageEvent) => {
     // Handle messages from the enrollment tab-
   }, []);
-
   const { isTabOpen, openTab, closeTab, focusTab } = useExternalTab({
-    url: `${enrollmentHubUrl}/app`,
+    url: `${enrollmentHubUrl}/redirect/enroll-octi?${queryParamsOCTIInformations}`,
     tabName: 'xtmhub-enrollment',
     onMessage: handleTabMessage,
     setIsDialogOpen,
