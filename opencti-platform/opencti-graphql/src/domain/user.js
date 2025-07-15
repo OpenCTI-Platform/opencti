@@ -441,7 +441,7 @@ export const assignOrganizationToUser = async (context, user, userId, organizati
     event_scope: 'update',
     event_access: 'administration',
     message: `adds ${created.toType} \`${extractEntityRepresentativeName(created.to)}\` to user \`${actionEmail}\``,
-    context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input }
+    context_data: { id: targetUser.id, entity_type: ENTITY_TYPE_USER, input }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user);
 };
@@ -989,7 +989,7 @@ export const userAddRelation = async (context, user, userId, input) => {
     event_scope: 'update',
     event_access: 'administration',
     message: `adds ${relationData.toType} \`${extractEntityRepresentativeName(relationData.to)}\` for user \`${actionEmail}\``,
-    context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input: finalInput }
+    context_data: { id: userData.id, entity_type: ENTITY_TYPE_USER, input: finalInput }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userData, user).then(() => relationData);
 };
@@ -1052,7 +1052,7 @@ export const userDeleteOrganizationRelation = async (context, user, userId, toId
     event_scope: 'update',
     event_access: 'administration',
     message: `removes ${to.entity_type} \`${extractEntityRepresentativeName(to)}\` for user \`${actionEmail}\``,
-    context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input }
+    context_data: { id: targetUser.id, entity_type: ENTITY_TYPE_USER, input }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user);
 };
