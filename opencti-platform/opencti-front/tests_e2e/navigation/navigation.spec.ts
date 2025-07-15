@@ -42,6 +42,10 @@ import ThreatActorGroupPage from '../model/threatActorGroup.pageModel';
 import ThreatActorGroupDetailsPage from '../model/threatActorGroupDetails.pageModel';
 import ThreatActorIndividualPage from '../model/threatActorIndividual.pageModel';
 import ThreatActorIndividualDetailsPage from '../model/threatActorIndividualDetails.pageModel';
+import IntrusionSetPage from "../model/intrusionSet.pageModel";
+import IntrusionSetDetailsPage from "../model/intrusionSetDetails.pageModel";
+import CampaignPageModel from "../model/campaign.pageModel";
+import CampaignDetailsPage from "../model/campaignDetails.pageModel";
 
 /**
  * Goal: validate that everything is opening without errors in Analyses > Note.
@@ -721,6 +725,74 @@ const navigateThreatActorIndividual = async (page: Page) => {
   await expect(historyTab.getPage()).toBeVisible();
 };
 
+const navigateIntrusionSet = async (page: Page) => {
+  const intrusionSetInitData = 'E2E dashboard - Intrusion set - now';
+  const intrusionSetPage = new IntrusionSetPage(page);
+  await intrusionSetPage.navigateFromMenu();
+  await expect(intrusionSetPage.getPage()).toBeVisible();
+  await expect(page.getByText(intrusionSetInitData)).toBeVisible();
+  await intrusionSetPage.getItemFromList(intrusionSetInitData).click();
+
+  const intrusionSetDetailsPage = new IntrusionSetDetailsPage(page);
+  await expect(intrusionSetDetailsPage.getIntrusionSetDetailsPage()).toBeVisible();
+
+  // -- Knowledge
+  await intrusionSetDetailsPage.tabs.goToKnowledgeTab();
+  await expect(page.getByTestId('intrusionSet-details-page')).toBeVisible();
+
+  // -- Content
+  await intrusionSetDetailsPage.tabs.goToContentTab();
+  const contentTab = new StixCoreObjectContentTabPage(page);
+  await expect(contentTab.getPage()).toBeVisible();
+
+  // -- Analysis
+  await intrusionSetDetailsPage.tabs.goToAnalysesTab();
+  await expect(page.getByPlaceholder('Search these results...')).toBeVisible();
+
+  // -- Data
+  await intrusionSetDetailsPage.tabs.goToDataTab();
+  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+
+  // -- History
+  await intrusionSetDetailsPage.tabs.goToHistoryTab();
+  const historyTab = new StixCoreObjectHistoryTab(page);
+  await expect(historyTab.getPage()).toBeVisible();
+};
+
+const navigateCampaign = async (page: Page) => {
+  const campaignInitData = 'A new campaign';
+  const campaignPage = new CampaignPageModel(page);
+  await campaignPage.navigateFromMenu();
+  await expect(campaignPage.getPage()).toBeVisible();
+  await expect(page.getByText(campaignInitData)).toBeVisible();
+  await campaignPage.getItemFromList(campaignInitData).click();
+
+  const campaignDetailsPage = new CampaignDetailsPage(page);
+  await expect(campaignDetailsPage.getPage()).toBeVisible();
+
+  // -- Knowledge
+  await campaignDetailsPage.tabs.goToKnowledgeTab();
+  await expect(page.getByTestId('campaign-knowledge-page')).toBeVisible();
+
+// -- Content
+  await campaignDetailsPage.tabs.goToContentTab();
+  const contentTab = new StixCoreObjectContentTabPage(page);
+  await expect(contentTab.getPage()).toBeVisible();
+
+  // -- Analysis
+  await campaignDetailsPage.tabs.goToAnalysesTab();
+  await expect(page.getByPlaceholder('Search these results...')).toBeVisible();
+
+  // -- Data
+  await campaignDetailsPage.tabs.goToDataTab();
+  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+
+  // -- History
+  await campaignDetailsPage.tabs.goToHistoryTab();
+  const historyTab = new StixCoreObjectHistoryTab(page);
+  await expect(historyTab.getPage()).toBeVisible();
+};
+
 const navigateAllMenu = async (page: Page) => {
   const leftBarPage = new LeftBarPage(page);
 
@@ -884,6 +956,8 @@ test('Check navigation on all pages', { tag: ['@navigation'] }, async ({ page })
   // await navigateObservables(page);
   // await navigateArtifact(page);
   // await navigateIndicators(page);
+  // await navigateIntrusionSet(page);
+  await navigateCampaign(page);
   // await navigateInfrastructure(page);
   await navigateThreatActorGroup(page);
   await navigateThreatActorIndividual(page);
