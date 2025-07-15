@@ -85,14 +85,14 @@ export const userUserSessionsKillMutation = graphql`
 `;
 
 export const userUserRenewTokenMutation = graphql`
-    mutation UserUserRenewTokenMutation($id: ID!) {
-        userEdit(id: $id) {
-            tokenRenew {
-                id
-                api_token
-            }
-        }
+  mutation UserUserRenewTokenMutation($id: ID!) {
+    userEdit(id: $id) {
+      tokenRenew {
+        id
+        api_token
+      }
     }
+  }
 `;
 
 export const userOtpDeactivationMutation = graphql`
@@ -177,6 +177,7 @@ const UserFragment = graphql`
         entity_type
       }
     }
+#    user_service_account
     effective_confidence_level {
       max_confidence
       overrides {
@@ -327,16 +328,16 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
     });
   };
 
-  const otpUserDeactivation = () => {
-    commitUserOtpDeactivation({
-      variables: {
-        id: user.id,
-      },
-      onError: (error: Error) => {
-        handleError(error);
-      },
-    });
-  };
+  // const otpUserDeactivation = () => {
+  //   commitUserOtpDeactivation({
+  //     variables: {
+  //       id: user.id,
+  //     },
+  //     onError: (error: Error) => {
+  //       handleError(error);
+  //     },
+  //   });
+  // };
   const orderedSessions: Session[] = (user.sessions ?? [])
     .map((s) => ({
       created: s?.created ?? '',
@@ -347,6 +348,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
       (a: Session, b: Session) => timestamp(a?.created) - timestamp(b?.created),
     );
   const accountExpireDate = fldt(user.account_lock_after_date);
+  // const accountType = fldt(user.user_service_account);
   let historyTypes = ['History'];
   if (isGrantedToAudit && !isGrantedToKnowledge) {
     historyTypes = ['Activity'];
@@ -367,39 +369,57 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
           </Typography>
           <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
             <Grid container={true} spacing={3}>
-              <Grid item xs={8}>
-                <Typography
-                  variant="h3"
-                  gutterBottom={true}
-                  style={{ marginBottom: user.otp_activated ? 7 : 5 }}
-                >
-                  {t_i18n('Email address')}
+              {/*  <Grid item xs={8}> */}
+              {/*    <Typography */}
+              {/*      variant="h3" */}
+              {/*      gutterBottom={true} */}
+              {/*      style={{ marginBottom: user.otp_activated ? 7 : 5 }} */}
+              {/*    > */}
+              {/*      {t_i18n('Email address')} */}
+              {/*    </Typography> */}
+              {/*    <pre style={{ margin: 0 }}>{user.user_email}</pre> */}
+              {/*  </Grid> */}
+              {/*  <Grid item xs={4}> */}
+              {/*    <Typography */}
+              {/*      variant="h3" */}
+              {/*      gutterBottom={true} */}
+              {/*      style={{ float: 'left' }} */}
+              {/*    > */}
+              {/*      {t_i18n('2FA state')} */}
+              {/*    </Typography> */}
+              {/*    {user.otp_activated && ( */}
+              {/*      <IconButton */}
+              {/*        classes={{ root: classes.floatingButton }} */}
+              {/*        color="primary" */}
+              {/*        onClick={otpUserDeactivation} */}
+              {/*        aria-label="Delete all" */}
+              {/*        size="small" */}
+              {/*      > */}
+              {/*        <DeleteForeverOutlined fontSize="small" /> */}
+              {/*      </IconButton> */}
+              {/*    )} */}
+              {/*    <div className="clearfix" /> */}
+              {/*    <pre style={{ margin: 0 }}> */}
+              {/*      {user.otp_activated ? t_i18n('Enabled') : t_i18n('Disabled')} */}
+              {/*    </pre> */}
+              {/*  </Grid> */}
+              <Grid item xs={4}>
+                <Typography variant="h3" gutterBottom={true} style={{ marginBottom: 5 }}>
+                  {t_i18n('Account type')}
                 </Typography>
-                <pre style={{ margin: 0 }}>{user.user_email}</pre>
+                {'-'}
               </Grid>
               <Grid item xs={4}>
-                <Typography
-                  variant="h3"
-                  gutterBottom={true}
-                  style={{ float: 'left' }}
-                >
-                  {t_i18n('2FA state')}
+                <Typography variant="h3" gutterBottom={true}>
+                  {t_i18n('Account status')}
                 </Typography>
-                {user.otp_activated && (
-                  <IconButton
-                    classes={{ root: classes.floatingButton }}
-                    color="primary"
-                    onClick={otpUserDeactivation}
-                    aria-label="Delete all"
-                    size="small"
-                  >
-                    <DeleteForeverOutlined fontSize="small" />
-                  </IconButton>
-                )}
-                <div className="clearfix" />
-                <pre style={{ margin: 0 }}>
-                  {user.otp_activated ? t_i18n('Enabled') : t_i18n('Disabled')}
-                </pre>
+                {'-'}
+              </Grid>
+              <Grid item xs={4}>
+                <Typography variant="h3" gutterBottom={true}>
+                  {t_i18n('Account expiration date')}
+                </Typography>
+                {'-'}
               </Grid>
               <Grid item xs={12}>
                 <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
@@ -449,33 +469,45 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                   </IconButton>
                 </pre>
               </Grid>
+              {/*  <Grid item xs={6}> */}
+              {/*    <Typography variant="h3" gutterBottom={true}> */}
+              {/*      {t_i18n('Firstname')} */}
+              {/*    </Typography> */}
+              {/*    {user.firstname || '-'} */}
+              {/*  </Grid> */}
+              {/*  <Grid item xs={6}> */}
+              {/*    <Typography variant="h3" gutterBottom={true}> */}
+              {/*      {t_i18n('Lastname')} */}
+              {/*    </Typography> */}
+              {/*    {user.lastname || '-'} */}
+              {/*  </Grid> */}
+              {/*  <Grid item xs={6}> */}
+              {/*    <Typography variant="h3" gutterBottom={true}> */}
+              {/*      {t_i18n('Account status')} */}
+              {/*    </Typography> */}
+              {/*    <ItemAccountStatus */}
+              {/*      account_status={user.account_status} */}
+              {/*      label={t_i18n(user.account_status || 'Unknown')} */}
+              {/*      variant="outlined" */}
+              {/*    /> */}
+              {/*  </Grid> */}
+              {/*  <Grid item xs={6}> */}
+              {/*    <Typography variant="h3" gutterBottom={true}> */}
+              {/*      {t_i18n('Account expiration date')} */}
+              {/*    </Typography> */}
+              {/*    {accountExpireDate || '-'} */}
+              {/*  </Grid> */}
               <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
-                  {t_i18n('Firstname')}
+                  {t_i18n('Created by')}
                 </Typography>
-                {user.firstname || '-'}
+                {'-'}
               </Grid>
               <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
-                  {t_i18n('Lastname')}
+                  {t_i18n('Creation date')}
                 </Typography>
-                {user.lastname || '-'}
-              </Grid>
-              <Grid item xs={6}>
-                <Typography variant="h3" gutterBottom={true}>
-                  {t_i18n('Account status')}
-                </Typography>
-                <ItemAccountStatus
-                  account_status={user.account_status}
-                  label={t_i18n(user.account_status || 'Unknown')}
-                  variant="outlined"
-                />
-              </Grid>
-              <Grid item xs={6}>
-                <Typography variant="h3" gutterBottom={true}>
-                  {t_i18n('Account expiration date')}
-                </Typography>
-                {accountExpireDate || '-'}
+                {'-'}
               </Grid>
             </Grid>
           </Paper>
@@ -649,11 +681,11 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                   </List>
                 </FieldOrEmpty>
               </Grid>
-              <Grid item xs={6}>
-                <HiddenTypesChipList
-                  hiddenTypes={user.default_hidden_types ?? []}
-                />
-              </Grid>
+              {/* <Grid item xs={6}> */}
+              {/*  <HiddenTypesChipList */}
+              {/*    hiddenTypes={user.default_hidden_types ?? []} */}
+              {/*  /> */}
+              {/* </Grid> */}
               <Grid item xs={6}>
                 <Typography
                   variant="h3"
@@ -668,7 +700,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
             </Grid>
           </Paper>
         </Grid>
-        <Triggers recipientId={user.id} filterKey="authorized_members.id" />
+        {/* <Triggers recipientId={user.id} filterKey="authorized_members.id" /> */}
         <Grid item xs={6} style={{ marginTop: 10 }}>
           <Typography variant="h4" gutterBottom={true} style={{ paddingBottom: '21px' }}>
             {t_i18n('Operations')}
