@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
 import { UserLine_node$data } from '@components/settings/users/__generated__/UserLine_node.graphql';
 import { ListItemButton } from '@mui/material';
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import { useFormatter } from '../../../../components/i18n';
 import { DataColumns } from '../../../../components/list_lines';
 import type { Theme } from '../../../../components/Theme';
@@ -51,7 +52,7 @@ interface UserLineComponentProps {
 const UserLineComponent: React.FC<UserLineComponentProps> = (props) => {
   const { dataColumns, node } = props;
   const external = node.external === true;
-
+  const userServiceAccount = node.user_service_account;
   const classes = useStyles();
   const { t_i18n, fd } = useFormatter();
 
@@ -63,7 +64,10 @@ const UserLineComponent: React.FC<UserLineComponentProps> = (props) => {
       to={`/dashboard/settings/accesses/users/${node.id}`}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        {external ? <AccountCircleOutlined /> : <PersonOutlined />}
+        {/* eslint-disable-next-line no-nested-ternary */}
+        {userServiceAccount ? <ManageAccountsIcon /> : (
+          external ? <AccountCircleOutlined /> : <PersonOutlined />
+        )}
       </ListItemIcon>
       <ListItemText
         primary={
