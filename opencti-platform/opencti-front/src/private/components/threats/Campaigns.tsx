@@ -189,10 +189,10 @@ const Campaigns = () => {
   };
 
   return (
-    <>
+    <div data-testid="campaign-page">
       <Breadcrumbs elements={[{ label: t_i18n('Threats') }, { label: t_i18n('Campaigns'), current: true }]} />
       {viewStorage.view !== 'lines' ? renderCards() : renderList()}
-    </>
+    </div>
   );
 };
 
