@@ -51,6 +51,7 @@ export const TELEMETRY_GAUGE_WORKBENCH_UPLOAD = 'workbenchUploadCount';
 export const TELEMETRY_GAUGE_WORKBENCH_DRAFT_CONVERTION = 'workbenchDraftConvertionCount';
 export const TELEMETRY_GAUGE_WORKBENCH_VALIDATION = 'workbenchValidationCount';
 export const TELEMETRY_GAUGE_EMAIL_SEND = 'emailSendCount';
+export const TELEMETRY_GAUGE_ONBOARDING_EMAIL_SEND = 'onboardingEmailSendCount';
 
 export const addDisseminationCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_DISSEMINATION, 1);
@@ -78,6 +79,9 @@ export const addWorkbenchValidationCount = async () => {
 };
 export const addEmailSendCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_EMAIL_SEND, 1);
+};
+export const addOnboardingEmailSendCount = async () => {
+  await redisSetTelemetryAdd(TELEMETRY_GAUGE_ONBOARDING_EMAIL_SEND, 1);
 };
 
 // End Region user event counters
@@ -206,6 +210,8 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setWorkbenchValidationCount(workbenchValidationCountInRedis);
     const emailSendCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_EMAIL_SEND);
     manager.setEmailSendCount(emailSendCountInRedis);
+    const onboardingEmailSendCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_ONBOARDING_EMAIL_SEND);
+    manager.setOnboardingEmailSendCount(onboardingEmailSendCountInRedis);
     // end region Telemetry user events
     logApp.debug('[TELEMETRY] Fetching telemetry data successfully');
   } catch (e) {
