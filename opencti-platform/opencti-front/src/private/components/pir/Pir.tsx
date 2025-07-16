@@ -22,6 +22,7 @@ const pirQuery = graphql`
       ...PirKnowledgeFragment
       ...PirOverviewFragment
       ...PirOverviewCountsFragment
+      ...PirOverviewCountFlaggedFragment
       ...PirOverviewDetailsFragment
       ...PirOverviewHistoryPirFragment
       ...PirOverviewTopSourcesFragment

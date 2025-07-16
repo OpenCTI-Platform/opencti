@@ -23215,6 +23215,7 @@ export type QueryStixRelationshipsMultiTimeSeriesArgs = {
   interval: Scalars['String']['input'];
   onlyInferred?: InputMaybe<Scalars['Boolean']['input']>;
   operation: StatsOperation;
+  relationship_type?: InputMaybe<Array<Scalars['String']['input']>>;
   startDate: Scalars['DateTime']['input'];
   timeSeriesParameters?: InputMaybe<Array<InputMaybe<StixRelationshipsTimeSeriesParameters>>>;
 };

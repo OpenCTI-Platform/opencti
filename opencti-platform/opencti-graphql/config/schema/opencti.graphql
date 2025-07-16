@@ -13857,6 +13857,7 @@ type Query {
     interval: String!
     onlyInferred: Boolean
     timeSeriesParameters: [StixRelationshipsTimeSeriesParameters]
+    relationship_type: [String!]
   ): [MultiTimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
   stixRelationshipsDistribution(
     field: String!

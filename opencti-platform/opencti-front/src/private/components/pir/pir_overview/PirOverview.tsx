@@ -2,6 +2,7 @@ import React from 'react';
 import Grid from '@mui/material/Grid2';
 import { graphql, useFragment } from 'react-relay';
 import PirThreatMap, { pirThreatMapQuery } from './PirThreatMap';
+import PirOverviewCountFlagged from './PirOverviewCountFlagged';
 import PirOverviewCounts from './PirOverviewCounts';
 import PirOverviewTopSources from './PirOverviewTopSources';
 import PirOverviewDetails from './PirOverviewDetails';
@@ -49,6 +50,7 @@ const PirOverview = ({
       <Grid size={{ xs: 6 }} container direction='column' spacing={3}>
         {threatMapQueryRef && <PirThreatMap queryRef={threatMapQueryRef} />}
         <PirOverviewTopSources data={dataPir} />
+        <PirOverviewCountFlagged data={dataPir} />
         <PirOverviewDetails data={dataPir} />
       </Grid>
       <Grid size={{ xs: 6 }} container direction='column' spacing={3}>
