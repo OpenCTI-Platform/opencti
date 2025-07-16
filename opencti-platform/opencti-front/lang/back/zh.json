@@ -897,5 +897,10 @@
   "Workflow status": "工作流程状态",
   "Workspace graph data": "工作区图表数据",
   "Workspace type": "工作区类型",
-  "X_Aliases": "X_别名"
+  "X_Aliases": "X_别名",
+  "XTM Hub enrollment date": "XTM Hub 注册日期",
+  "XTM Hub enrollment status": "XTM Hub 注册状态",
+  "XTM Hub enrollment User ID": "XTM 中枢注册用户 ID",
+  "XTM Hub last connectivity check": "XTM 中枢最后连接检查",
+  "XTM Hub Token": "XTM 中枢令牌"
 }
