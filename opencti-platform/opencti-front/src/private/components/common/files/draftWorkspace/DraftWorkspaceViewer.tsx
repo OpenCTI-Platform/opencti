@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
@@ -6,14 +6,15 @@ import { Add } from '@mui/icons-material';
 import Paper from '@mui/material/Paper';
 import Drafts from '@components/drafts/Drafts';
 import { useTheme } from '@mui/styles';
-import { graphql, loadQuery, usePreloadedQuery } from 'react-relay';
+import { graphql, loadQuery, RelayRefetchProp, usePreloadedQuery } from 'react-relay';
 import { DraftWorkspaceViewerQuery } from '@components/common/files/draftWorkspace/__generated__/DraftWorkspaceViewerQuery.graphql';
+import DraftWorkspaceCreation from '@components/common/files/draftWorkspace/DraftWorkspaceCreation';
 import { KNOWLEDGE_KNASKIMPORT } from '../../../../../utils/hooks/useGranted';
 import Security from '../../../../../utils/Security';
 import useDraftContext from '../../../../../utils/hooks/useDraftContext';
 import { useFormatter } from '../../../../../components/i18n';
 import { environment } from '../../../../../relay/environment';
-import {Theme} from "../../../../../components/Theme";
+import type { Theme } from '../../../../../components/Theme';
 
 const draftWorkspaceQuery = graphql`
   query DraftWorkspaceViewerQuery {
@@ -35,10 +36,12 @@ const queryRef = loadQuery<DraftWorkspaceViewerQuery>(
   {},
 );
 
-const DraftWorkspaceViewer = ({ entityId }: { entityId: string }) => {
+const DraftWorkspaceViewer = ({ entityId, relay }: { entityId: string, relay: RelayRefetchProp;
+}) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const draftContext = useDraftContext();
+  const [openCreate, setOpenCreate] = useState(false);
 
   const data = usePreloadedQuery<DraftWorkspaceViewerQuery>(
     draftWorkspaceQuery,
@@ -47,6 +50,10 @@ const DraftWorkspaceViewer = ({ entityId }: { entityId: string }) => {
 
   const draftWorkspaces = data?.draftWorkspaces?.edges
     .map((n) => n.node.entity_id);
+
+  const onCreateDraftWorkspaceCompleted = () => {
+    relay.refetch({ entityId });
+  };
 
   return (
     <Grid item xs={6}>
@@ -59,7 +66,7 @@ const DraftWorkspaceViewer = ({ entityId }: { entityId: string }) => {
             <IconButton
               color="primary"
               aria-label="Add"
-              onClick={() => {}}
+              onClick={() => setOpenCreate(true)}
               style={{ marginTop: -15 }}
               size="large"
             >
@@ -67,6 +74,12 @@ const DraftWorkspaceViewer = ({ entityId }: { entityId: string }) => {
             </IconButton>
           </Security>
         )}
+        <DraftWorkspaceCreation
+          handleCloseCreate={() => setOpenCreate(false)}
+          openCreate={openCreate}
+          onCompleted={onCreateDraftWorkspaceCompleted}
+          entityId={entityId}
+        />
         <div className="clearfix" />
         <Paper
           style={{
