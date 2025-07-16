@@ -14,6 +14,7 @@ import {
   ACTION_TYPE_RULE_APPLY,
   ACTION_TYPE_RULE_CLEAR,
   ACTION_TYPE_RULE_ELEMENT_RESCAN,
+  ACTION_TYPE_SEND_EMAIL,
   buildQueryFilters,
   findAll,
   updateTask
@@ -150,7 +151,8 @@ const throwErrorInDraftContext = (context, user, actionType) => {
       || actionType === ACTION_TYPE_SHARE
       || actionType === ACTION_TYPE_UNSHARE
       || actionType === ACTION_TYPE_SHARE_MULTIPLE
-      || actionType === ACTION_TYPE_UNSHARE_MULTIPLE) {
+      || actionType === ACTION_TYPE_UNSHARE_MULTIPLE
+      || actionType === ACTION_TYPE_SEND_EMAIL) {
     throw FunctionalError('Cannot execute this task type in draft', { actionType });
   }
 };
@@ -225,6 +227,10 @@ const baseOperationBuilder = (actionType, operations, element) => {
   // Access management
   if (actionType === ACTION_TYPE_REMOVE_AUTH_MEMBERS) {
     baseOperationObject.opencti_operation = 'clear_access_restriction';
+  }
+  if (actionType === ACTION_TYPE_SEND_EMAIL) {
+    baseOperationObject.opencti_operation = 'send_email';
+    baseOperationObject.template_id = operations[0].context.values;
   }
   return baseOperationObject;
 };

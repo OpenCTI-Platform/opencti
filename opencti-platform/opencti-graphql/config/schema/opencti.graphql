@@ -1028,6 +1028,7 @@ enum BackgroundTaskActionType {
   UNSHARE_MULTIPLE
   REMOVE_AUTH_MEMBERS
   REMOVE_FROM_DRAFT
+  SEND_EMAIL
 }
 enum BackgroundTaskContextType {
   ATTRIBUTE
