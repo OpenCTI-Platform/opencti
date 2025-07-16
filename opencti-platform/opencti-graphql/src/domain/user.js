@@ -78,6 +78,7 @@ import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { sendMail } from '../database/smtp';
 import { checkEnterpriseEdition } from '../enterprise-edition/ee';
+import { addEmailSendCount } from '../manager/telemetryManager';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -584,7 +585,7 @@ export const sendEmailToUser = async (context, user, input) => {
     identifier: `user-${targetUser.id}`,
     category: 'user-notification',
   });
-
+  await addEmailSendCount();
   await publishUserAction({
     user,
     event_type: 'command',

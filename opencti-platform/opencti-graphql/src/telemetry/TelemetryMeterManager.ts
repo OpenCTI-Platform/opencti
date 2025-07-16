@@ -43,6 +43,9 @@ export class TelemetryMeterManager {
   // Number of RFI of request access type that are created
   requestAccessCreationCount = 0;
 
+  // Number of email sent
+  emailSendCount = 0;
+
   constructor(meterProvider: MeterProvider) {
     this.meterProvider = meterProvider;
   }
@@ -107,6 +110,10 @@ export class TelemetryMeterManager {
     this.requestAccessCreationCount = n;
   }
 
+  setEmailSendCount(n: number) {
+    this.emailSendCount = n;
+  }
+
   registerGauge(name: string, description: string, observer: string, opts: { unit?: string, valueType?: ValueType } = {}) {
     const meter = this.meterProvider.getMeter(TELEMETRY_SERVICE_NAME);
     const gaugeOptions = { description, unit: opts.unit ?? 'count', valueType: opts.valueType ?? ValueType.INT };
@@ -135,5 +142,6 @@ export class TelemetryMeterManager {
     this.registerGauge('workbench_validation_count', 'number of workbench validation', 'workbenchValidationCount');
     this.registerGauge('call_nlq', 'NLQ feature usage', 'nlqQueryCount');
     this.registerGauge('request_access_creation_count', 'Number of RFI of request access type that are created', 'requestAccessCreationCount');
+    this.registerGauge('email_send_count', 'Number of emails sent from the platform', 'emailSendCount');
   }
 }
