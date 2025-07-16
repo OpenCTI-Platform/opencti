@@ -3104,6 +3104,8 @@
   "Selected scale template": "Selected scale template",
   "Semicolon": "Semicolon",
   "Send": "Send",
+  "Send email": "Send email",
+  "Send email with selected email template": "Send email with selected email template",
   "Send for ingestion": "Send for ingestion",
   "Send reset code": "Send reset code",
   "Send STIX data for ingestion": "Send STIX data for ingestion",
