@@ -13,6 +13,7 @@ import DataTable from '../../../../components/dataGrid/DataTable';
 import { PirAnalysesFragment$key } from './__generated__/PirAnalysesFragment.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
+import { itemColor } from '../../../../utils/Colors';
 
 const pirAnalysesContainerFragment = graphql`
   fragment PirAnalyses_ContainerFragment on Container
@@ -199,9 +200,26 @@ const PirAnalyses = ({ data }: PirAnalysesProps) => {
               }}
               >
                 {objects.edges.slice(0, max).map((e: any, i: number) => (
-                  <span key={i}>
-                    {e.node.representative.main} ({t_i18n(e.node.entity_type)})
-                  </span>
+                  <div
+                    key={i}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: theme.spacing(1),
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 10,
+                        height: 10,
+                        borderRadius: 10,
+                        background: itemColor(e.node.entity_type),
+                      }}
+                    />
+                    <div>
+                      {e.node.representative.main} ({t_i18n(e.node.entity_type)})
+                    </div>
+                  </div>
                 ))}
                 {hasMore && <span>...</span>}
               </div>
