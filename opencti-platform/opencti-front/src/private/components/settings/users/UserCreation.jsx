@@ -127,41 +127,26 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
       },
     });
   };
-  let initialValues;
-  if (serviceAccountFeatureFlag) {
-    initialValues = {
-      user_service_account: false,
-      name: '',
-      user_email: '',
-      firstname: '',
-      lastname: '',
-      description: '',
-      password: '',
-      confirmation: '',
-      objectOrganization: [],
-      groups: [],
-      account_status: 'Active',
-      account_lock_after_date: null,
-      user_confidence_level: null,
-      prevent_default_groups: false,
-    };
-  } else {
-    initialValues = {
-      name: '',
-      user_email: '',
-      firstname: '',
-      lastname: '',
-      description: '',
-      password: '',
-      confirmation: '',
-      objectOrganization: [],
-      groups: [],
-      account_status: 'Active',
-      account_lock_after_date: null,
-      user_confidence_level: null,
-      prevent_default_groups: false,
-    };
-  }
+
+  const initialValuesBase = {
+    name: '',
+    user_email: '',
+    firstname: '',
+    lastname: '',
+    description: '',
+    password: '',
+    confirmation: '',
+    objectOrganization: [],
+    groups: [],
+    account_status: 'Active',
+    account_lock_after_date: null,
+    user_confidence_level: null,
+    prevent_default_groups: false,
+  };
+  const initialValues = {
+    ...initialValuesBase,
+    ...(serviceAccountFeatureFlag && { user_service_account: false }),
+  };
 
   return (
     <Drawer

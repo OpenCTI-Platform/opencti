@@ -577,9 +577,8 @@ export const addUser = async (context, user, newUser) => {
   } else { // If local user, check the password policy
     await checkPasswordFromPolicy(context, userPassword);
   }
-  let userToCreate = {};
   const { platform_organization } = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  userToCreate = R.pipe(
+  let userToCreate = R.pipe(
     R.assoc('user_email', userEmail),
     R.assoc('api_token', newUser.api_token ? newUser.api_token : uuid()),
     R.assoc('password', bcrypt.hashSync(userPassword)),
@@ -599,7 +598,7 @@ export const addUser = async (context, user, newUser) => {
   if (serviceAccountFeatureFlag) {
     userToCreate = {
       ...userToCreate,
-      user_service_account: newUser.user_service_account,
+      user_service_account: newUser.user_service_account || false,
     };
   }
 
