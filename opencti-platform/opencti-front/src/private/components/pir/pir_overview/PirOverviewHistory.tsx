@@ -1,6 +1,8 @@
 import Typography from '@mui/material/Typography';
 import Avatar from '@mui/material/Avatar';
+import Box from '@mui/material/Box';
 import Tooltip from '@mui/material/Tooltip';
+import { Link } from 'react-router-dom';
 import React from 'react';
 import { deepOrange, green, indigo, pink, red, teal, yellow } from '@mui/material/colors';
 import { AddOutlined, DeleteOutlined, EditOutlined, HelpOutlined } from '@mui/icons-material';
@@ -44,6 +46,7 @@ const pirHistoryFragment = graphql`
           }
           entity_type
           context_data {
+            entity_id
             entity_type
             entity_name
             message
@@ -159,7 +162,7 @@ const PirOverviewHistory = ({ dataHistory, dataPir }: PirOverviewHistoryProps) =
 
   return (
     <Paper title={t_i18n('News feed')}>
-      <div style={{ display: 'flex', gap: theme.spacing(3), flexDirection: 'column' }}>
+      <div style={{ display: 'flex', gap: theme.spacing(0.5), flexDirection: 'column' }}>
         {history.length === 0 && (
         <Typography variant='body2'>
           {t_i18n('No recent history for this PIR')}
@@ -171,6 +174,9 @@ const PirOverviewHistory = ({ dataHistory, dataPir }: PirOverviewHistoryProps) =
           const { color, icon } = getIconConfig(historyItem);
           const historyMessage = getHistoryMessage(historyItem);
 
+          const isAddInPir = /adds .+ in `In PIR`/.test(context_data?.message ?? '');
+          const redirectURI = isAddInPir ? '' : `/dashboard/id/${context_data?.entity_id}`;
+
           const content = (
             <MarkdownDisplay
               commonmark
@@ -180,42 +186,59 @@ const PirOverviewHistory = ({ dataHistory, dataPir }: PirOverviewHistoryProps) =
           );
 
           return (
-            <div key={id} style={{ display: 'flex', gap: theme.spacing(2), alignItems: 'flex-start' }}>
-              <Tooltip title={t_i18n(displayEntityTypeForTranslation(context_data?.entity_type ?? ''))}>
+            <Box
+              key={id}
+              sx={{
+                padding: 1,
+                borderRadius: 1,
+                '&:hover': { background: theme.palette.background.accent },
+              }}
+            >
+              <Link
+                to={redirectURI}
+                style={{
+                  color: 'inherit',
+                  display: 'flex',
+                  gap: theme.spacing(2),
+                  alignItems: 'flex-start',
+                }}
+              >
+                <Tooltip title={t_i18n(displayEntityTypeForTranslation(context_data?.entity_type ?? ''))}>
+                  <div>
+                    <ItemIcon size="large" type={context_data?.entity_type} />
+                  </div>
+                </Tooltip>
                 <div>
-                  <ItemIcon size="large" type={context_data?.entity_type} />
-                </div>
-              </Tooltip>
-              <div>
-                <Typography
-                  sx={{ marginTop: 0.5, marginBottom: 0 }}
-                  variant="h3"
-                >
-                  {context_data?.entity_name}
-                </Typography>
-                <Typography
-                  color={theme.palette.text?.secondary}
-                  sx={{ marginBottom: 1 }}
-                  variant="body2"
-                >
-                  {nsdt(timestamp)}
-                </Typography>
-                <div style={{ display: 'flex', gap: theme.spacing(2) }}>
-                  <Avatar
-                    sx={{
-                      width: 24,
-                      height: 24,
-                      backgroundColor: 'transparent',
-                      border: `1px solid ${color}`,
-                      color: theme.palette.text?.primary,
-                    }}
+                  <Typography
+                    sx={{ marginTop: 0.5, marginBottom: 0 }}
+                    variant="h3"
                   >
-                    <div>{icon}</div>
-                  </Avatar>
-                  <Tooltip title={content}>{content}</Tooltip>
+                    {context_data?.entity_name}
+                  </Typography>
+                  <Typography
+                    color={theme.palette.text?.secondary}
+                    sx={{ marginBottom: 1 }}
+                    variant="body2"
+                  >
+                    {nsdt(timestamp)}
+                  </Typography>
+                  <div style={{ display: 'flex', gap: theme.spacing(2) }}>
+                    <Avatar
+                      sx={{
+                        width: 24,
+                        height: 24,
+                        backgroundColor: 'transparent',
+                        border: `1px solid ${color}`,
+                        color: theme.palette.text?.primary,
+                      }}
+                    >
+                      <div>{icon}</div>
+                    </Avatar>
+                    <Tooltip title={content}>{content}</Tooltip>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </Link>
+            </Box>
           );
         })}
       </div>
