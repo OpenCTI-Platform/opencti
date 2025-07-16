@@ -37,8 +37,12 @@ const UserEmailSend = ({ userId }: UserEmailSendProps) => {
       variables: {
         input,
       },
+      onCompleted: () => {
+        setIsEmailTemplateSelectionShown(false);
+      },
       onError: (error: Error) => {
         handleError(error);
+        setIsEmailTemplateSelectionShown(false);
       },
     });
   };
