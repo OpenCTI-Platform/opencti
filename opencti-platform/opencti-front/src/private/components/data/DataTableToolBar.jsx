@@ -63,6 +63,7 @@ import Grid from '@mui/material/Grid';
 import Avatar from '@mui/material/Avatar';
 import { Switch, FormControlLabel } from '@mui/material';
 import Checkbox from '@mui/material/Checkbox';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { objectParticipantFieldMembersSearchQuery } from '../common/form/ObjectParticipantField';
 import { objectAssigneeFieldMembersSearchQuery } from '../common/form/ObjectAssigneeField';
 import { vocabularyQuery } from '../common/form/OpenVocabField';
@@ -782,7 +783,7 @@ class DataTableToolBar extends Component {
     return t('Copy to clipboard');
   }
 
-  getActionType(type, field) {
+  static getActionType(type, field) {
     if (type === 'ADD' && field === 'groups') return 'ADD_GROUPS';
     if (type === 'ADD' && field === 'organizations') return 'ADD_ORGANIZATIONS';
 
@@ -794,7 +795,7 @@ class DataTableToolBar extends Component {
 
   getUserDatatableFinalActions(actions) {
     return actions.map((action) => {
-      const currentType = this.getActionType(action.type, action.context.field);
+      const currentType = this.constructor.getActionType(action.type, action.context.field);
       return {
         type: currentType,
         context: {
@@ -1402,11 +1403,31 @@ class DataTableToolBar extends Component {
       });
   }
 
-  getUserStatusOptionList(userStatuses) {
+  static getUserStatusOptionList(userStatuses) {
     return userStatuses.map((userStatus) => ({
       label: userStatus.status,
       value: userStatus.status,
     }));
+  }
+
+  handleChangeDate(i, newValue) {
+    const { actionsInputs } = this.state;
+    actionsInputs[i] = R.assoc(
+      'inputValue',
+      newValue && newValue.length > 0 ? newValue : '',
+      actionsInputs[i],
+    );
+    this.setState({ actionsInputs });
+  }
+
+  handleAcceptDate(i, newValue) {
+    const { actionsInputs } = this.state;
+    actionsInputs[i] = R.assoc(
+      'values',
+      Array.isArray(newValue) ? newValue : [newValue],
+      actionsInputs[i] || {},
+    );
+    this.setState({ actionsInputs });
   }
 
   renderValuesOptions(i, selectedTypes, userStatuses) {
@@ -2002,7 +2023,7 @@ class DataTableToolBar extends Component {
               />
             )}
             noOptionsText={t('No available options')}
-            options={this.getUserStatusOptionList(userStatuses)}
+            options={this.constructor.getUserStatusOptionList(userStatuses)}
             onInputChange={this.searchAccountStatus.bind(this, i)}
             inputValue={actionsInputs[i]?.inputValue || ''}
             onChange={this.handleChangeActionInputValues.bind(this, i)}
@@ -2015,13 +2036,15 @@ class DataTableToolBar extends Component {
         );
       case 'account_lock_after_date':
         return (
-          <TextField
-            variant="standard"
-            disabled={disabled}
-            type="date"
-            fullWidth={true}
-            style={{ marginTop: 13 }}
-            onChange={this.handleChangeActionInputValuesReplace.bind(this, i)}
+          <DateTimePicker
+            variant="inline"
+            disableToolbar={false}
+            autoOk={true}
+            allowKeyboardControl={true}
+            onChange={this.handleChangeDate.bind(this, i)}
+            onAccept={this.handleAcceptDate.bind(this, i)}
+            views={['year', 'month', 'day', 'hours', 'minutes', 'seconds']}
+            format='yyyy-MM-dd hh:mm:ss a'
           />
         );
       default:
@@ -2765,7 +2788,7 @@ class DataTableToolBar extends Component {
                               {this.renderFieldOptions(i, selectedTypes, entityTypeFilterValues, isAdmin)}
                             </FormControl>
                           </Grid>
-                          <Grid item xs={6}>
+                          <Grid item xs={6} style={{ display: 'flex', flexDirection: 'column-reverse' }}>
                             {this.renderValuesOptions(i, selectedTypes, settings.platform_user_statuses)}
                           </Grid>
                         </Grid>
