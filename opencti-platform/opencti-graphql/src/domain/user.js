@@ -77,6 +77,7 @@ import { UnitSystem } from '../generated/graphql';
 import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { sendMail } from '../database/smtp';
+import { checkEnterpriseEdition } from '../enterprise-edition/ee';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -549,14 +550,15 @@ export const checkPasswordFromPolicy = async (context, password) => {
   }
 };
 
-export const sendEmailToUser = async (context, user, opts) => {
+export const sendEmailToUser = async (context, user, input) => {
+  await checkEnterpriseEdition(context);
   const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
 
-  const targetUser = await internalLoadById(context, user, opts.target_user_id);
+  const targetUser = await internalLoadById(context, user, input.target_user_id);
   if (!targetUser) {
-    throw UnsupportedError('Target user not found', { id: opts.target_user_id });
+    throw UnsupportedError('Target user not found', { id: input.target_user_id });
   }
-  const emailTemplate = await internalLoadById(context, user, opts.email_template_id);
+  const emailTemplate = await internalLoadById(context, user, input.email_template_id);
   // if (!emailTemplate || emailTemplate.entity_type !== ENTITY_TYPE_EMAIL_TEMPLATE) {
   //   throw UnsupportedError('Invalid email template', { id: opts.email_template_id });
   // }
@@ -574,13 +576,29 @@ export const sendEmailToUser = async (context, user, opts) => {
   const sendMailArgs = {
     from: `${settings.platform_title} <${settings.platform_email}>`,
     to: targetUser.user_email,
-    subject: opts.email_object,
+    subject: input.email_object,
     html: emailHtml,
   };
 
   await sendMail(sendMailArgs, {
     identifier: `user-${targetUser.id}`,
     category: 'user-notification',
+  });
+
+  await publishUserAction({
+    user,
+    event_type: 'command',
+    event_scope: 'send',
+    event_access: 'administration',
+    context_data: {
+      id: targetUser.id,
+      entity_type: ENTITY_TYPE_USER,
+      entity_name: targetUser.name,
+      input: {
+        ...input,
+        to: targetUser.user_email
+      }
+    }
   });
   return true;
 };
