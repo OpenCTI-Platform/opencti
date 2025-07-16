@@ -187,6 +187,17 @@ export const groupAddRelation = async (context, user, groupId, input) => {
   }
   const createdRelation = await createRelation(context, user, finalInput);
   const created = input.fromId ? createdRelation.from : createdRelation.to;
+  if (input.relationship_type === RELATION_MEMBER_OF && created.entity_type === ENTITY_TYPE_USER) {
+    await publishUserAction({
+      user,
+      event_type: 'mutation',
+      event_scope: 'update',
+      event_access: 'administration',
+      message: `adds ${group.entity_type} \`${extractEntityRepresentativeName(group)}\` for user \`${created.user_email}\``,
+      context_data: { id: created.id, entity_type: ENTITY_TYPE_USER, input: finalInput }
+    });
+    return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, created, user).then(() => createdRelation);
+  }
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -216,6 +227,17 @@ export const groupDeleteRelation = async (context, user, groupId, fromId, toId, 
     target = deleted.to;
   }
   const input = { fromId, toId, relationship_type: relationshipType };
+  if (relationshipType === RELATION_MEMBER_OF && target.entity_type === ENTITY_TYPE_USER) {
+    await publishUserAction({
+      user,
+      event_type: 'mutation',
+      event_scope: 'update',
+      event_access: 'administration',
+      message: `removes ${group.entity_type} \`${extractEntityRepresentativeName(group)}\` for user \`${target.user_email}\``,
+      context_data: { id: target.id, entity_type: ENTITY_TYPE_USER, input }
+    });
+    await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, target, user);
+  }
   await publishUserAction({
     user,
     event_type: 'mutation',
