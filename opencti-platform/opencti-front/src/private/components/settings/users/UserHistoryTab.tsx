@@ -299,7 +299,7 @@ const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({
           preloadedPaginationProps={preloadedPaginationProps}
           disableNavigation
           disableLineSelection
-          disableSelectAll
+          removeSelectAll
           icon={(data: UserHistoryLine_node$data) => renderIcon(data.event_scope, data.context_data?.message, data.context_data?.commit)}
           additionalHeaderButtons={[
             (<Tooltip title={t_i18n('View all entities created by user')} key="entities">
