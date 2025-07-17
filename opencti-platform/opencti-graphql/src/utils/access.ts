@@ -816,6 +816,9 @@ export const isUserInPlatformOrganization = (user: AuthUser, settings: BasicStor
   if (isBypassUser(user)) {
     return true;
   }
+  if (user.user_service_account) {
+    return true;
+  }
   const userOrganizationIds = (user.organizations ?? []).map((organization) => organization.internal_id);
   return settings.platform_organization ? userOrganizationIds.includes(settings.platform_organization) : true;
 };

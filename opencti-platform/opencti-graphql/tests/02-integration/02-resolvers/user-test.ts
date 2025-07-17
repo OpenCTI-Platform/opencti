@@ -1220,11 +1220,6 @@ describe('User is impersonated', async () => {
 
 describe('Service account User coverage', async () => {
   let userInternalId: string;
-  let userInternalIdNoOrg: string;
-  let userInternalIdWithOrg: string;
-  let organizationId: string;
-  let testOrganizationId: string;
-  let userInternalIdWithPlatformOrg: string;
   const userToDeleteIds: string[] = [];
   it('should service account user created', async () => {
     // Create the user
@@ -1279,89 +1274,6 @@ describe('Service account User coverage', async () => {
     expect(queryResult.data?.user).not.toBeNull();
     expect(queryResult.data?.user.id).toEqual(userInternalId);
   });
-  it('should platform organization and EE activated', async () => {
-    await enableEEAndSetOrganization(PLATFORM_ORGANIZATION);
-    // Get organization id
-    organizationId = await getOrganizationIdByName(PLATFORM_ORGANIZATION.name);
-  });
-  it('should service account user with no org created', async () => {
-    // Create the user
-    const USER_TO_CREATE: UserAddInput = {
-      name: 'Service account no org',
-      user_service_account: true,
-      groups: [],
-      objectOrganization: [],
-    };
-    const user = await adminQueryWithSuccess({
-      query: CREATE_QUERY,
-      variables: { input: USER_TO_CREATE },
-    });
-    userInternalIdNoOrg = user.data.userAdd.id;
-    userToDeleteIds.push(userInternalIdNoOrg);
-
-    expect(user.data.userAdd).not.toBeNull();
-    expect(user.data.userAdd.name).toEqual('Service account no org');
-    expect(user.data.userAdd.user_email).toBeDefined();
-    expect(user.data.userAdd.user_email.startsWith('automatic+')).toBeTruthy();
-    expect(user.data.userAdd.user_service_account).toEqual(true);
-    expect(user.data.userAdd.objectOrganization.edges[0].node.id).toEqual(organizationId);
-  });
-  it('should service account user with org one org ≠ platform org  created', async () => {
-    // Get organization id
-    testOrganizationId = await getOrganizationIdByName(TEST_ORGANIZATION.name);
-    // Create the user
-    const USER_TO_CREATE: UserAddInput = {
-      user_email: 'custom_mail@opencti.com',
-      name: 'Service account with org',
-      user_service_account: true,
-      groups: [],
-      objectOrganization: [testOrganizationId],
-    };
-    const user = await adminQueryWithSuccess({
-      query: CREATE_QUERY,
-      variables: { input: USER_TO_CREATE },
-    });
-    userInternalIdWithOrg = user.data.userAdd.id;
-    userToDeleteIds.push(userInternalIdWithOrg);
-
-    expect(user.data.userAdd).not.toBeNull();
-    expect(user.data.userAdd.name).toEqual('Service account with org');
-    expect(user.data.userAdd.user_email).toBeDefined();
-    expect(user.data.userAdd.user_email).toEqual('custom_mail@opencti.com');
-    expect(user.data.userAdd.user_service_account).toEqual(true);
-    expect(user.data.userAdd.objectOrganization.edges).toStrictEqual([
-      { node: {
-        id: organizationId,
-        name: PLATFORM_ORGANIZATION.name
-      } },
-      { node: {
-        id: testOrganizationId,
-        name: TEST_ORGANIZATION.name
-      } }
-    ]);
-  });
-  it('should service account user with org one org = platform org  created', async () => {
-    // Create the user
-    const USER_TO_CREATE: UserAddInput = {
-      name: 'Service account platform org',
-      user_service_account: true,
-      groups: [],
-      objectOrganization: [organizationId],
-    };
-    const user = await adminQueryWithSuccess({
-      query: CREATE_QUERY,
-      variables: { input: USER_TO_CREATE },
-    });
-    userInternalIdWithPlatformOrg = user.data.userAdd.id;
-    userToDeleteIds.push(userInternalIdWithPlatformOrg);
-
-    expect(user.data.userAdd).not.toBeNull();
-    expect(user.data.userAdd.name).toEqual('Service account platform org');
-    expect(user.data.userAdd.user_email).toBeDefined();
-    expect(user.data.userAdd.user_email.startsWith('automatic+')).toBeTruthy();
-    expect(user.data.userAdd.user_service_account).toEqual(true);
-    expect(user.data.userAdd.objectOrganization.edges[0].node.id).toEqual(organizationId);
-  });
   it('should service account user deleted', async () => {
     // Delete the users
     for (let i = 0; i < userToDeleteIds.length; i += 1) {
@@ -1374,8 +1286,5 @@ describe('Service account User coverage', async () => {
       const queryResult = await adminQueryWithSuccess({ query: READ_QUERY, variables: { id: userId } });
       expect(queryResult.data.user).toBeNull();
     }
-  });
-  it('should platform organization and EE deactivated', async () => {
-    await enableCEAndUnSetOrganization();
   });
 });

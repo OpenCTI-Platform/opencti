@@ -234,7 +234,6 @@ describe('Service account with platform organization coverage', async () => {
   authUser.capabilities = [{ name: SETTINGS_SET_ACCESSES }];
 
   const anotherOrgThanPlatformOne: BasicStoreEntityOrganization = await getOrganizationEntity(TEST_ORGANIZATION);
-  const platformOrganization = await getOrganizationEntity(PLATFORM_ORGANIZATION);
 
   beforeAll(async () => {
     await enableEEAndSetOrganization(PLATFORM_ORGANIZATION);
@@ -242,38 +241,6 @@ describe('Service account with platform organization coverage', async () => {
 
   afterAll(async () => {
     await enableCEAndUnSetOrganization();
-  });
-
-  it('should have both orga if userAdd service account have one org ≠ platform org', async () => {
-    const userAddInput: UserAddInput = {
-      user_email: 'bothorga4@opencti',
-      name: 'Service account',
-      user_service_account: true,
-      groups: [],
-      objectOrganization: [anotherOrgThanPlatformOne.id],
-    };
-    const userAddResult = await addUser(testContext, authUser, userAddInput);
-    const userCreated: AuthUser = await findById(testContext, authUser, userAddResult.id);
-
-    expect(userCreated.organizations.filter((org) => org.id === anotherOrgThanPlatformOne.id).length, 'Service account user should be created with organization in input').toBe(1);
-    expect(userCreated.organizations.filter((org) => org.id === platformOrganization.id).length, 'Service account user should be added to platform organization').toBe(1);
-    await deleteElementById(testContext, authUser, userAddResult.id, ENTITY_TYPE_USER);
-  });
-
-  it('service account user should be added to platform organization even in no organization in input', async () => {
-    const userAddInput: UserAddInput = {
-      user_email: 'no.org@opencti.fr',
-      name: 'Service account with org in input',
-      user_service_account: true,
-      groups: [],
-      objectOrganization: [],
-    };
-    const userAddResult = await addUser(testContext, authUser, userAddInput);
-    const userCreated: AuthUser = await findById(testContext, authUser, userAddResult.id);
-
-    expect(userCreated.organizations.filter((org) => org.id === platformOrganization.id).length, 'Service account user should be added to platform organization').toBe(1);
-    expect(userCreated.organizations.length, 'Platform organization should be the only one').toBe(1);
-    await deleteElementById(testContext, authUser, userAddResult.id, ENTITY_TYPE_USER);
   });
 
   it('Standard user should not be added to platform organization', async () => {

@@ -577,7 +577,6 @@ export const addUser = async (context, user, newUser) => {
   } else { // If local user, check the password policy
     await checkPasswordFromPolicy(context, userPassword);
   }
-  const { platform_organization } = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   let userToCreate = R.pipe(
     R.assoc('user_email', userEmail),
     R.assoc('api_token', newUser.api_token ? newUser.api_token : uuid()),
@@ -605,9 +604,6 @@ export const addUser = async (context, user, newUser) => {
   const { element, isCreation } = await createEntity(context, user, userToCreate, ENTITY_TYPE_USER, { complete: true });
   // Link to organizations
   const userOrganizations = newUser.objectOrganization ?? [];
-  if (userServiceAccount && platform_organization && !userOrganizations.some((org) => (org === platform_organization))) {
-    userOrganizations.push(platform_organization);
-  }
   const relationOrganizations = userOrganizations.map((organizationId) => ({
     fromId: element.id,
     toId: organizationId,
