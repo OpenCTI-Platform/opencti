@@ -52,7 +52,7 @@ import { BackgroundTaskScope } from '../generated/graphql';
 import { getDraftContext } from '../utils/draftContext';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { getBestBackgroundConnectorId, pushToWorkerForConnector } from '../database/rabbitmq';
-import { updateExpectationsNumber } from '../domain/work';
+import { updateExpectationsNumber, updateProcessedTime } from '../domain/work';
 import { convertStoreToStix, convertTypeToStixType } from '../database/stix-2-1-converter';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
@@ -370,6 +370,7 @@ const promoteOperationCallback = async (context, user, task, container) => {
           const observable = observables[obsIndex];
           const observableToCreate = {
             ...R.dissoc('type', observable),
+            entity_type: observable.type,
             x_opencti_description: indicator.description ? indicator.description
               : `Simple observable of indicator {${indicator.name || indicator.pattern}}`,
             x_opencti_score: indicator.x_opencti_score,
@@ -446,7 +447,13 @@ const promoteOperationCallback = async (context, user, task, container) => {
       });
     }
     // Send actions to queue
-    await sendResultToQueue(context, user, task, objects);
+    if (objects.length > 0) {
+      await sendResultToQueue(context, user, task, objects);
+    } else if (task.task_processed_number === 0) {
+      // If no objects are created, we want to mark the work as processed so that the background task doesn't remain stuck in processing state
+      await updateProcessedTime(context, user, task.work_id, 'No indicator/observable to generate');
+    }
+
     // Update task
     await updateTask(context, task.id, { task_processed_number: task.task_processed_number + elements.length });
   };
