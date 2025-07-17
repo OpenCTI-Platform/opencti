@@ -3380,7 +3380,6 @@ interface Container {
     search: String
     types: [String]
     all: Boolean
-    pirId: String
   ): StixObjectOrStixRelationshipRefConnection
   relatedContainers(
     first: Int
@@ -3541,7 +3540,6 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     search: String
     types: [String]
     all: Boolean
-    pirId: String
   ): StixObjectOrStixRelationshipRefConnection
   relatedContainers(
     first: Int
@@ -3775,7 +3773,6 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
     search: String
     types: [String]
     all: Boolean
-    pirId: String
   ): StixObjectOrStixRelationshipRefConnection
   relatedContainers(
     first: Int
@@ -3985,7 +3982,6 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     search: String
     types: [String]
     all: Boolean
-    pirId: String
   ): StixObjectOrStixRelationshipRefConnection
   relatedContainers(
     first: Int
@@ -4213,7 +4209,6 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     search: String
     types: [String]
     all: Boolean
-    pirId: String
   ): StixObjectOrStixRelationshipRefConnection
   relatedContainers(
     first: Int

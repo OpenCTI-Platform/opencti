@@ -108,7 +108,6 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
     search: String
     types: [String]
     all: Boolean
-    pirId: String
   ): StixObjectOrStixRelationshipRefConnection
   relatedContainers(
     first: Int

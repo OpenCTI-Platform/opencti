@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
-import { RELATION_CREATED_BY, RELATION_IN_PIR, RELATION_OBJECT } from '../schema/stixRefRelationship';
+import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { distributionEntities, listAllThings, timeSeriesEntities } from '../database/middleware';
 import {
   internalFindByIds,
@@ -9,7 +9,6 @@ import {
   listAllToEntitiesThroughRelations,
   listEntities,
   listEntitiesThroughRelationsPaginated,
-  listRelationsPaginated,
   storeLoadById
 } from '../database/middleware-loader';
 import {
@@ -28,7 +27,7 @@ import { elCount, elFindByIds, ES_DEFAULT_PAGINATION, MAX_RELATED_CONTAINER_OBJE
 import { findById as findInvestigationById } from '../modules/workspace/workspace-domain';
 import { stixCoreObjectAddRelations } from './stixCoreObject';
 import { editAuthorizedMembers } from '../utils/authorizedMembers';
-import { addFilter, extractFilterKeyValues } from '../utils/filtering/filtering-utils';
+import { addFilter } from '../utils/filtering/filtering-utils';
 import { FunctionalError } from '../config/errors';
 import conf, { BUS_TOPICS, logApp } from '../config/conf';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
@@ -39,9 +38,6 @@ import { queryAi } from '../database/ai-llm';
 import { notify } from '../database/redis';
 import { AI_BUS } from '../modules/ai/ai-types';
 import { cleanHtmlTags } from '../utils/ai/cleanHtmlTags';
-import { OrderingMode } from '../generated/graphql';
-import { RELATION_TO_FILTER } from '../utils/filtering/filtering-constants';
-import { findById as findPirById } from '../modules/pir/pir-domain';
 
 const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
 const aiResponseCache = {};
@@ -81,31 +77,9 @@ export const containersDistributionByEntity = async (context, user, args) => {
   return distributionEntities(context, user, [ENTITY_TYPE_CONTAINER], { ...args, filters });
 };
 
-export const objects = async (context, user, containerId, { pirId, ...args }) => {
+export const objects = async (context, user, containerId, args) => {
   const types = args.types ? args.types : ['Stix-Core-Object', 'stix-relationship'];
   const baseOpts = { ...args, indices: [...READ_ENTITIES_INDICES, ...READ_RELATIONSHIPS_INDICES] };
-  if (pirId) {
-    const pir = await findPirById(context, user, pirId);
-    const { edges: relations } = await listRelationsPaginated(
-      context,
-      user,
-      [RELATION_IN_PIR],
-      {
-        first: 100,
-        orderBy: 'modified',
-        orderMode: OrderingMode.Desc,
-        toId: pirId,
-      }
-    );
-    const flaggedIds = relations.flatMap((rel) => rel.node.fromId);
-    const pirFilters = pir.pir_criteria.map((c) => JSON.parse(c.filters));
-    const pirToIdFilterIds = pirFilters.flatMap((f) => extractFilterKeyValues(RELATION_TO_FILTER, f));
-    const idsOfInterest = [...flaggedIds, ...pirToIdFilterIds];
-    if (idsOfInterest.length === 0) {
-      idsOfInterest.push('<invalid id>'); // To force empty result in the query result
-    }
-    baseOpts.filters = addFilter(baseOpts?.filters, 'id', idsOfInterest);
-  }
   if (args.all) {
     // TODO Should be handled by the frontend to split the load
     // As we currently handle it in the back, just do a standard iteration

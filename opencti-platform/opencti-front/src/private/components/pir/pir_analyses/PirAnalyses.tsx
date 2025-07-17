@@ -4,7 +4,7 @@ import { Chip, Tooltip } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { PirAnalysesContainersListQuery, PirAnalysesContainersListQuery$variables } from './__generated__/PirAnalysesContainersListQuery.graphql';
 import { PirAnalyses_ContainersFragment$data } from './__generated__/PirAnalyses_ContainersFragment.graphql';
-import { emptyFilterGroup, sanitizeFilterGroupKeysForBackend, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, getFilterKeyValues, sanitizeFilterGroupKeysForBackend, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import useAuth from '../../../../utils/hooks/useAuth';
@@ -14,11 +14,12 @@ import { PirAnalysesFragment$key } from './__generated__/PirAnalysesFragment.gra
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import { itemColor } from '../../../../utils/Colors';
+import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 
 const pirAnalysesContainerFragment = graphql`
   fragment PirAnalyses_ContainerFragment on Container
   @argumentDefinitions(
-    pirId: { type: "String" }
+    objectsFilters: { type: "FilterGroup" }
   ) {
     id
     entity_type
@@ -48,7 +49,7 @@ const pirAnalysesContainerFragment = graphql`
       id
       name
     }
-    objects(first: 100, pirId: $pirId) {
+    objects(first: 100, filters: $objectsFilters) {
       edges {
         node {
           ...on StixCoreObject {
@@ -73,7 +74,7 @@ const pirAnalysesContainersFragment = graphql`
     orderBy: { type: "ContainersOrdering", defaultValue: created }
     orderMode: { type: "OrderingMode", defaultValue: asc }
     filters: { type: "FilterGroup" }
-    pirId: { type: "String" }
+    objectsFilters: { type: "FilterGroup" }
   )
   @refetchable(queryName: "PirAnalyses_ContainersListRefetchQuery") {
     pir(id: $id) {
@@ -89,7 +90,7 @@ const pirAnalysesContainersFragment = graphql`
           node {
             id
             ...PirAnalyses_ContainerFragment
-            @arguments(pirId: $pirId)
+            @arguments(objectsFilters: $objectsFilters)
           }
         }
         pageInfo {
@@ -111,7 +112,7 @@ const pirAnalysesContainersListQuery = graphql`
     $orderBy: ContainersOrdering
     $orderMode: OrderingMode
     $filters: FilterGroup
-    $pirId: String
+    $objectsFilters: FilterGroup
   ) {
     ...PirAnalyses_ContainersFragment
     @arguments(
@@ -122,7 +123,7 @@ const pirAnalysesContainersListQuery = graphql`
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
-      pirId: $pirId
+      objectsFilters: $objectsFilters
     )
   }
 `;
@@ -130,6 +131,9 @@ const pirAnalysesContainersListQuery = graphql`
 const analysesFragment = graphql`
   fragment PirAnalysesFragment on Pir {
     id
+    pir_criteria {
+      filters
+    }
   }
 `;
 
@@ -142,7 +146,7 @@ interface PirAnalysesProps {
 const PirAnalyses = ({ data }: PirAnalysesProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const { id } = useFragment(analysesFragment, data);
+  const { id, pir_criteria } = useFragment(analysesFragment, data);
 
   const LOCAL_STORAGE_KEY = `PirAnalysesContainersList-${id}`;
   const initialValues = {
@@ -161,12 +165,28 @@ const PirAnalyses = ({ data }: PirAnalysesProps) => {
 
   const filters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(viewStorage.filters, ['Container']);
 
+  const pirFilters: FilterGroup[] = pir_criteria.map((c) => JSON.parse(c.filters));
+  const pirToIdFilterIds = pirFilters.flatMap((f) => getFilterKeyValues('toId', f));
+
   const queryPaginationOptions: PirAnalysesContainersListQuery$variables = {
     ...paginationOptions,
     id,
     count: 100,
     filters: filters ? sanitizeFilterGroupKeysForBackend(filters) : undefined,
-    pirId: id,
+    objectsFilters: {
+      mode: 'or',
+      filterGroups: [],
+      filters: [
+        { key: ['ids'], values: pirToIdFilterIds },
+        {
+          key: ['regardingOf'],
+          values: [
+            { key: 'relationship_type', values: ['in-pir'] },
+            { key: 'id', values: [id] },
+          ],
+        },
+      ],
+    },
   };
 
   const queryRef = useQueryLoading<PirAnalysesContainersListQuery>(

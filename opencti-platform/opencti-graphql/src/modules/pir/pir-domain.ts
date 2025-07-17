@@ -44,6 +44,7 @@ export const findPirContainers = async (
       toId: pir.id,
     }
   );
+  // TODO: use dynamic filters instead?
   const flaggedIds = relations.flatMap((rel) => rel.node.fromId);
   const pirFilters: FilterGroup[] = pir.pir_criteria.map((c) => JSON.parse(c.filters));
   const pirToIdFilterIds = pirFilters.flatMap((f) => extractFilterKeyValues(RELATION_TO_FILTER, f));

@@ -1021,3 +1021,20 @@ export const isRegardingOfFilterWarning = (
   }
   return false;
 };
+
+export const getFilterKeyValues = (filterKey: string, filterGroup: FilterGroup) => {
+  const values: string[] = [];
+  const filtersResult = { ...filterGroup };
+  filtersResult.filters.forEach((filter) => {
+    const { key } = filter;
+    const arrayKeys = Array.isArray(key) ? key : [key];
+    if (arrayKeys.includes(filterKey)) {
+      values.push(...filter.values);
+    }
+  });
+  filtersResult.filterGroups.forEach((fg) => {
+    const vals = getFilterKeyValues(filterKey, fg);
+    values.push(...vals);
+  });
+  return values;
+};
