@@ -6,9 +6,8 @@ import { Add } from '@mui/icons-material';
 import Paper from '@mui/material/Paper';
 import Drafts from '@components/drafts/Drafts';
 import { useTheme } from '@mui/styles';
-import { graphql, loadQuery, RelayRefetchProp, usePreloadedQuery } from 'react-relay';
+import { graphql, loadQuery, usePreloadedQuery } from 'react-relay';
 import { DraftWorkspaceViewerQuery } from '@components/common/files/draftWorkspace/__generated__/DraftWorkspaceViewerQuery.graphql';
-import DraftWorkspaceCreation from '@components/common/files/draftWorkspace/DraftWorkspaceCreation';
 import { KNOWLEDGE_KNASKIMPORT } from '../../../../../utils/hooks/useGranted';
 import Security from '../../../../../utils/Security';
 import useDraftContext from '../../../../../utils/hooks/useDraftContext';
@@ -36,8 +35,7 @@ const queryRef = loadQuery<DraftWorkspaceViewerQuery>(
   {},
 );
 
-const DraftWorkspaceViewer = ({ entityId, relay }: { entityId: string, relay: RelayRefetchProp;
-}) => {
+const DraftWorkspaceViewer = ({ entityId }: { entityId: string }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const draftContext = useDraftContext();
@@ -50,10 +48,6 @@ const DraftWorkspaceViewer = ({ entityId, relay }: { entityId: string, relay: Re
 
   const draftWorkspaces = data?.draftWorkspaces?.edges
     .map((n) => n.node.entity_id);
-
-  const onCreateDraftWorkspaceCompleted = () => {
-    relay.refetch({ entityId });
-  };
 
   return (
     <Grid item xs={6}>
@@ -74,12 +68,6 @@ const DraftWorkspaceViewer = ({ entityId, relay }: { entityId: string, relay: Re
             </IconButton>
           </Security>
         )}
-        <DraftWorkspaceCreation
-          handleCloseCreate={() => setOpenCreate(false)}
-          openCreate={openCreate}
-          onCompleted={onCreateDraftWorkspaceCompleted}
-          entityId={entityId}
-        />
         <div className="clearfix" />
         <Paper
           style={{
@@ -90,7 +78,11 @@ const DraftWorkspaceViewer = ({ entityId, relay }: { entityId: string, relay: Re
           className={'paper-for-grid'} variant="outlined"
         >
           {draftWorkspaces && draftWorkspaces.includes(entityId) ? (
-            <Drafts entityId={entityId} />
+            <Drafts
+              entityId={entityId}
+              setOpenCreate={() => setOpenCreate(false)}
+              openCreate={openCreate}
+            />
           ) : (
             <div style={{ display: 'table', height: '100%', width: '100%' }}>
               <span
