@@ -60,7 +60,9 @@ const LIST_RELS_QUERY = gql`
             }
           }
           pir_explanations {
-            dependency_ids
+            dependencies {
+              element_id
+            }
             criterion {
               filters
               weight
@@ -91,6 +93,7 @@ const READ_QUERY = gql`
 describe('PIR resolver standard behavior', () => {
   let pirInternalId: string = '';
   let flaggedElementId: string = '';
+
   it('should pir created', async () => {
     const CREATE_QUERY = gql`
       mutation PirAdd($input: PirAddInput!) {
@@ -146,6 +149,7 @@ describe('PIR resolver standard behavior', () => {
     expect(pir.data?.pirAdd.name).toEqual('MyPir');
     pirInternalId = pir.data?.pirAdd.id;
   });
+
   it('should pir loaded by internal id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: pirInternalId } });
     expect(queryResult).not.toBeNull();
@@ -155,10 +159,12 @@ describe('PIR resolver standard behavior', () => {
     expect(queryResult.data?.pir.pir_criteria[0].weight).toEqual(2);
     expect(JSON.parse(queryResult.data?.pir.pir_criteria[0].filters).filters[0].key[0]).toEqual('toId');
   });
+
   it('should list pirs', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
     expect(queryResult.data?.pirs.edges.length).toEqual(1);
   });
+
   it('should update a pir', async () => {
     const UPDATE_QUERY = gql`
       mutation PirUpdate($id: ID!, $input: [EditInput!]!) {
@@ -175,6 +181,7 @@ describe('PIR resolver standard behavior', () => {
     });
     expect(queryResult.data?.pirFieldPatch.name).toEqual('myPirNewName');
   });
+
   it('should not update some pir fields', async () => {
     const UPDATE_QUERY = gql`
       mutation PirUpdate($id: ID!, $input: [EditInput!]!) {
@@ -191,9 +198,15 @@ describe('PIR resolver standard behavior', () => {
     });
     expect(queryResult.errors?.[0].message).toEqual('Error while updating the PIR, invalid or forbidden key.');
   });
+
   it('should flag an element and create a pir meta rel', async () => {
     // fetch an element standard id
-    const malware = await storeLoadById<BasicStoreEntity>(testContext, SYSTEM_USER, 'malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88', ENTITY_TYPE_MALWARE);
+    const malware = await storeLoadById<BasicStoreEntity>(
+      testContext,
+      SYSTEM_USER,
+      'malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88',
+      ENTITY_TYPE_MALWARE
+    );
     flaggedElementId = malware.id;
     // flag the element
     const FLAG_QUERY = gql`
@@ -227,8 +240,9 @@ describe('PIR resolver standard behavior', () => {
     expect(queryResult.data?.stixRefRelationships.edges[0].node.to.id).toEqual(pirInternalId);
     expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_score).toEqual(67);
     expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_explanations.length).toEqual(1);
-    expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_explanations[0].dependency_ids[0]).toEqual(relationshipId);
+    expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_explanations[0].dependencies[0].element_id).toEqual(relationshipId);
   });
+
   it('should update a pir meta rel by adding a new explanation', async () => {
     const FLAG_QUERY = gql`
       mutation pirFlagElement($id: ID!, $input: PirFlagElementInput!) {
@@ -262,6 +276,7 @@ describe('PIR resolver standard behavior', () => {
     expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_score).toEqual(100);
     expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_explanations.length).toEqual(2);
   });
+
   it('should update a pir meta rel by removing a dependency', async () => {
     const UNFLAG_QUERY = gql`
       mutation pirUnflagElement($id: ID!, $input: PirUnflagElementInput!) {
@@ -285,6 +300,7 @@ describe('PIR resolver standard behavior', () => {
     expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_score).toEqual(67);
     expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_explanations.length).toEqual(1);
   });
+
   it('should unflag an element', async () => {
     const UNFLAG_QUERY = gql`
       mutation pirUnflagElement($id: ID!, $input: PirUnflagElementInput!) {
@@ -304,6 +320,7 @@ describe('PIR resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data?.stixRefRelationships.edges.length).toEqual(0);
   });
+
   it('should pir deleted', async () => {
     const DELETE_QUERY = gql`
       mutation pirDelete($id: ID!) {
