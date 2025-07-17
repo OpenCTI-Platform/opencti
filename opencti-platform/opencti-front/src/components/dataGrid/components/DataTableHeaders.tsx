@@ -32,7 +32,6 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
     removeSelectAll,
     startsWithAction,
     startsWithIcon,
-    startColumnWidth,
     endsWithAction,
     useDataTablePaginationLocalStorage: {
       viewStorage: { sortBy, orderAsc },
