@@ -25305,7 +25305,8 @@ export type Settings = BasicObject & InternalObject & {
   updated_at: Scalars['DateTime']['output'];
   xtm_hub_enrollment_date?: Maybe<Scalars['DateTime']['output']>;
   xtm_hub_enrollment_status?: Maybe<XtmHubEnrollmentStatus>;
-  xtm_hub_enrollment_user_id?: Maybe<Scalars['ID']['output']>;
+  xtm_hub_enrollment_user_id?: Maybe<Scalars['String']['output']>;
+  xtm_hub_enrollment_user_name?: Maybe<Scalars['ID']['output']>;
   xtm_hub_last_connectivity_check?: Maybe<Scalars['DateTime']['output']>;
   xtm_hub_token?: Maybe<Scalars['String']['output']>;
 };
@@ -42265,7 +42266,8 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   xtm_hub_enrollment_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   xtm_hub_enrollment_status?: Resolver<Maybe<ResolversTypes['XTMHubEnrollmentStatus']>, ParentType, ContextType>;
-  xtm_hub_enrollment_user_id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  xtm_hub_enrollment_user_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  xtm_hub_enrollment_user_name?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   xtm_hub_last_connectivity_check?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   xtm_hub_token?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
