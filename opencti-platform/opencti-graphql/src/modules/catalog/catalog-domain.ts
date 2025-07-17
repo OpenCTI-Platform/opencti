@@ -12,7 +12,7 @@ import filigranCatalog from './filigran/opencti-manifest.json';
 
 const CUSTOM_CATALOGS: string[] = conf.get('app:custom_catalogs') ?? [];
 const ajv = new Ajv({ coerceTypes: true });
-addFormats(ajv, ['password']);
+addFormats(ajv, ['password', 'uri', 'duration']);
 
 const getCatalogs = () => {
   const catalogMap: Record<string, CatalogType> = {};

@@ -1,88 +1,327 @@
 {
   "id": "filigran-catalog-id",
-  "name": "Filigran catalog",
-  "description": "Filigran catalog",
+  "name": "OpenCTI Connectors contracts",
+  "description": "",
+  "version": "6.7.0",
   "contracts": [
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "https://www.filigran.io/servicenow.schema.json",
+      "title": "ServiceNow connector",
+      "description": "ServiceNow provides Security Incident Response and Security Incident Tasks module handled by this connector which collects SIR and SIT and related entities.",
+      "short_description": "Ingestion of SIR and SIT as Case Incident and Tasks.",
+      "use_cases": [
+        "Incident Response & Ticketing"
+      ],
+      "manager_supported": true,
+      "container_version": "6.7.0",
+      "container_image": "opencti/connector-servicenow",
+      "container_type": "EXTERNAL_IMPORT",
+      "verified": true,
+      "last_verified_date": "15-06-2025",
+      "playbook_supported": false,
+      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
+      "support_version": ">= 6.5.1",
+      "subscription_link": "https://www.servicenow.com/contact-us.html",
+      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/servicenow",
+      "type": "object",
+      "additionalProperties": true,
+      "default": {
+        "CONNECTOR_NAME": "ServiceNow",
+        "CONNECTOR_SCOPE": "ServiceNow",
+        "CONNECTOR_LOG_LEVEL": "error",
+        "CONNECTOR_DURATION_PERIOD": "PT24H",
+        "SERVICENOW_API_VERSION": "v2",
+        "SERVICENOW_API_LEAKY_BUCKET_RATE": 10,
+        "SERVICENOW_API_LEAKY_BUCKET_CAPACITY": 10,
+        "SERVICENOW_API_RETRY": 5,
+        "SERVICENOW_API_BACKOFF": "PT30S",
+        "SERVICENOW_IMPORT_START_DATE": "P30D",
+        "SERVICENOW_TLP_LEVEL": "red",
+        "SERVICENOW_OBSERVABLES_DEFAULT_SCORE": 50,
+        "SERVICENOW_PROMOTE_OBSERVABLES_AS_INDICATORS": true
+      },
+      "required": [
+        "CONNECTOR_ID",
+        "SERVICENOW_INSTANCE_NAME",
+        "SERVICENOW_API_KEY"
+      ],
+      "properties": {
+        "OPENCTI_URL": {
+          "type": "string",
+          "format": "uri",
+          "minLength": 1,
+          "maxLength": 2083,
+          "description": "The OpenCTI platform URL."
+        },
+        "OPENCTI_TOKEN": {
+          "type": "string",
+          "description": "The token of the user who represents the connector in the OpenCTI platform."
+        },
+        "CONNECTOR_TYPE": {
+          "description": "Should always be set to EXTERNAL_IMPORT for this connector.",
+          "type": "string"
+        },
+        "CONNECTOR_NAME": {
+          "description": "Name of the connector.",
+          "type": "string"
+        },
+        "CONNECTOR_SCOPE": {
+          "description": "The scope or type of data the connector is importing, either a MIME type or Stix Object (for information only).",
+          "type": "string"
+        },
+        "CONNECTOR_LOG_LEVEL": {
+          "description": "Determines the verbosity of the logs.",
+          "type": "string",
+          "enum": [
+            "debug",
+            "info",
+            "warn",
+            "error"
+          ]
+        },
+        "CONNECTOR_DURATION_PERIOD": {
+          "description": "Duration between two scheduled runs of the connector (ISO 8601 format).",
+          "format": "duration",
+          "type": "string"
+        },
+        "CONNECTOR_ID": {
+          "type": "string",
+          "description": "A unique UUIDv4 identifier for this connector instance."
+        },
+        "CONNECTOR_QUEUE_THRESHOLD": {
+          "description": "Connector queue max size in Mbytes. Default to 500.",
+          "type": "integer"
+        },
+        "CONNECTOR_RUN_AND_TERMINATE": {
+          "description": "Connector run-and-terminate flag.",
+          "type": "boolean"
+        },
+        "CONNECTOR_SEND_TO_QUEUE": {
+          "description": "Connector send-to-queue flag.",
+          "type": "boolean"
+        },
+        "CONNECTOR_SEND_TO_DIRECTORY": {
+          "description": "Connector send-to-directory flag.",
+          "type": "boolean"
+        },
+        "CONNECTOR_SEND_TO_DIRECTORY_PATH": {
+          "description": "Connector send-to-directory path.",
+          "type": "string"
+        },
+        "CONNECTOR_SEND_TO_DIRECTORY_RETENTION": {
+          "description": "Connector send-to-directory retention in days.",
+          "type": "integer"
+        },
+        "SERVICENOW_API_VERSION": {
+          "description": "ServiceNow API version used for REST requests.",
+          "type": "string",
+          "enum": [
+            "v1",
+            "v2"
+          ]
+        },
+        "SERVICENOW_API_LEAKY_BUCKET_RATE": {
+          "description": "Bucket refill rate (in tokens per second). Controls the rate at which API calls are allowed. For example, a rate of 10 means that 10 calls can be made per second, if the bucket is not empty.",
+          "type": "integer"
+        },
+        "SERVICENOW_API_LEAKY_BUCKET_CAPACITY": {
+          "description": "Maximum bucket capacity (in tokens). Defines the number of calls that can be made immediately in a burst. Once the bucket is empty, it refills at the rate defined by 'api_leaky_bucket_rate'.",
+          "type": "integer"
+        },
+        "SERVICENOW_API_RETRY": {
+          "description": "Maximum number of retry attempts in case of API failure.",
+          "type": "integer"
+        },
+        "SERVICENOW_API_BACKOFF": {
+          "description": "Exponential backoff duration between API retries (ISO 8601 duration format).",
+          "format": "duration",
+          "type": "string"
+        },
+        "SERVICENOW_IMPORT_START_DATE": {
+          "description": "Start date of first import (ISO date format).",
+          "format": "duration",
+          "type": "string"
+        },
+        "SERVICENOW_TLP_LEVEL": {
+          "description": "Traffic Light Protocol (TLP) level to apply on objects imported into OpenCTI.",
+          "type": "string",
+          "enum": [
+            "clear",
+            "green",
+            "amber",
+            "amber+strict",
+            "red"
+          ]
+        },
+        "SERVICENOW_OBSERVABLES_DEFAULT_SCORE": {
+          "description": "Allows you to define a default score for observables and indicators when the 'promote_observables_as_indicators' variable is set to True.",
+          "type": "integer"
+        },
+        "SERVICENOW_PROMOTE_OBSERVABLES_AS_INDICATORS": {
+          "description": "Boolean to promote observables into indicators.",
+          "type": "boolean"
+        },
+        "SERVICENOW_INSTANCE_NAME": {
+          "type": "string",
+          "description": "Corresponds to server instance name (will be used for API requests)."
+        },
+        "SERVICENOW_API_KEY": {
+          "type": "string",
+          "writeOnly": true,
+          "format": "password",
+          "description": "Secure identifier used to validate access to ServiceNow APIs."
+        },
+        "SERVICENOW_STATE_TO_EXCLUDE": {
+          "description": "List of security incident states to exclude from import.",
+          "type": "string"
+        },
+        "SERVICENOW_SEVERITY_TO_EXCLUDE": {
+          "description": "List of security incident severities to exclude from import.",
+          "type": "string"
+        },
+        "SERVICENOW_PRIORITY_TO_EXCLUDE": {
+          "description": "List of security incident priorities to exclude from import.",
+          "type": "string"
+        },
+        "SERVICENOW_COMMENT_TO_EXCLUDE": {
+          "description": "List of comment types to exclude: private, public, auto",
+          "type": "string",
+          "enum": [
+            "private",
+            "public",
+            "auto"
+          ]
+        }
+      }
+    },
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "$id": "https://www.filigran.io/ipinfo.schema.json",
       "title": "IpInfo connector",
-      "description": "IpInfo enrichment connector",
-      "container_version": "6.6.13",
+      "description": "Accurate IP address data that keeps pace with secure, specific, and forward-looking use cases",
+      "short_description": "IpInfo enrichment connector",
+      "use_cases": [
+        "Incident Response & Ticketing",
+        "Enrichment"
+      ],
+      "manager_supported": true,
       "container_image": "opencti/connector-ipinfo",
+      "container_version": "6.7.0",
       "container_type": "INTERNAL_ENRICHMENT",
+      "verified": true,
+      "last_verified_date": "15-06-2025",
+      "playbook_supported": true,
+      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
+      "support_version": ">= 6.5.1",
+      "subscription_link": "https://ipinfo.io/support",
+      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/internal-enrichment/ipinfo",
       "type": "object",
+      "additionalProperties": true,
       "default": {
-        "CONNECTOR_SCOPE": "IPv4-Addr",
+        "CONNECTOR_NAME": "IPInfo",
+        "CONNECTOR_SCOPE": "IPv4-Addr,IPv6-Addr",
+        "CONNECTOR_LOG_LEVEL": "error",
         "CONNECTOR_AUTO": true,
-        "IPINFO_MAX_TLP": "TLP:AMBER",
-        "CONNECTOR_LOG_LEVEL": "info",
-        "IPINFO_USE_ASN_NAME": false
+        "IPINFO_MAX_TLP": "amber",
+        "IPINFO_USE_ASN_NAME": true
       },
+      "required": [
+        "CONNECTOR_ID",
+        "IPINFO_TOKEN"
+      ],
       "properties": {
-        "CONNECTOR_SCOPE": {
-          "description": "Scope",
+        "OPENCTI_URL": {
+          "type": "string",
+          "format": "uri",
+          "minLength": 1,
+          "maxLength": 2083,
+          "description": "The OpenCTI platform URL."
+        },
+        "OPENCTI_TOKEN": {
+          "type": "string",
+          "description": "The token of the user who represents the connector in the OpenCTI platform."
+        },
+        "CONNECTOR_TYPE": {
+          "description": "Should always be set to INTERNAL_ENRICHMENT for this connector.",
           "type": "string"
         },
-        "CONNECTOR_AUTO": {
-          "description": "Auto trigger",
-          "type": "boolean"
+        "CONNECTOR_NAME": {
+          "description": "Name of the connector.",
+          "type": "string"
         },
-        "IPINFO_TOKEN": {
-          "description": "Token",
-          "type": "string",
-          "format": "password"
-        },
-        "IPINFO_MAX_TLP": {
-          "description": "Max TLP",
+        "CONNECTOR_SCOPE": {
+          "description": "The scope or type of data the connector is importing, either a MIME type or Stix Object (for information only).",
           "type": "string"
         },
         "CONNECTOR_LOG_LEVEL": {
-          "description": "Log level",
+          "description": "Determines the verbosity of the logs.",
           "type": "string",
-          "enum": ["debug", "info", "warn", "error"]
+          "enum": [
+            "debug",
+            "info",
+            "warn",
+            "error"
+          ]
         },
-        "IPINFO_USE_ASN_NAME": {
-          "description": "use ASN name",
+        "CONNECTOR_AUTO": {
+          "description": "Enables or disables automatic enrichment of observables for OpenCTI.",
           "type": "boolean"
-        }
-      },
-      "required": [
-        "IPINFO_TOKEN"
-      ],
-      "additionalProperties": false
-    },
-    {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$id": "https://www.filigran.io/mitre.schema.json",
-      "title": "Mitre connector",
-      "description": "A Mitre connector",
-      "container_version": "6.6.13",
-      "container_image": "opencti/connector-mitre",
-      "container_type": "EXTERNAL_IMPORT",
-      "type": "object",
-      "default": {
-        "CONNECTOR_SCOPE": "tool,report,malware,identity,campaign,intrusion-set,attack-pattern,course-of-action,x-mitre-data-source,x-mitre-data-component,x-mitre-matrix,x-mitre-tactic,x-mitre-collection",
-        "MITRE_REMOVE_STATEMENT_MARKING": true,
-        "MITRE_INTERVAL": 7
-      },
-      "properties": {
-        "CONNECTOR_SCOPE": {
-          "description": "Connector scope",
+        },
+        "CONNECTOR_ID": {
+          "type": "string",
+          "description": "A unique UUIDv4 identifier for this connector instance."
+        },
+        "CONNECTOR_LISTEN_PROTOCOL": {
+          "description": "Protocol used for listening.",
           "type": "string"
         },
-        "MITRE_REMOVE_STATEMENT_MARKING": {
-          "description": "Remove the statement marking",
+        "CONNECTOR_LISTEN_PROTOCOL_API_PORT": {
+          "description": "Port used for API listening.",
+          "type": "integer"
+        },
+        "CONNECTOR_LISTEN_PROTOCOL_API_PATH": {
+          "description": "API path for callback.",
+          "type": "string"
+        },
+        "CONNECTOR_LISTEN_PROTOCOL_API_URI": {
+          "description": "Full URI for API listening.",
+          "type": "string"
+        },
+        "CONNECTOR_LISTEN_PROTOCOL_API_SSL": {
+          "description": "Enable SSL for API listening.",
           "type": "boolean"
         },
-        "MITRE_INTERVAL": {
-          "description": "Scheduling period in days",
-          "type": "number"
+        "CONNECTOR_LISTEN_PROTOCOL_API_SSL_KEY": {
+          "description": "SSL key file path.",
+          "type": "string"
+        },
+        "CONNECTOR_LISTEN_PROTOCOL_API_SSL_CERT": {
+          "description": "SSL certificate file path.",
+          "type": "string"
+        },
+        "IPINFO_MAX_TLP": {
+          "description": "Traffic Light Protocol (TLP) level to apply on objects imported into OpenCTI.",
+          "type": "string",
+          "enum": [
+            "clear",
+            "green",
+            "amber",
+            "amber+strict",
+            "red"
+          ]
+        },
+        "IPINFO_USE_ASN_NAME": {
+          "description": "If enabled, uses the ASN name instead of the ASN number in enrichment results.",
+          "type": "boolean"
+        },
+        "IPINFO_TOKEN": {
+          "type": "string",
+          "writeOnly": true,
+          "format": "password",
+          "description": "API token used to authenticate requests to the IPInfo service."
         }
-      },
-      "required": [],
-      "additionalProperties": false
+      }
     }
   ]
 }
-
