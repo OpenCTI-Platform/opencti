@@ -29,6 +29,7 @@ const xtmHubTabSettingsFieldPatchMutation = graphql`
         xtm_hub_enrollment_date
         xtm_hub_enrollment_status
         xtm_hub_enrollment_user_id
+        xtm_hub_enrollment_user_name
         xtm_hub_last_connectivity_check
         xtm_hub_token
       }
@@ -69,7 +70,7 @@ const XtmHubTab: React.FC = () => {
           setEnrollmentStep(EnrollmentSteps.SUCCESS);
         },
         onError: () => {
-          setEnrollmentStep(EnrollmentSteps.CANCELED);
+          setEnrollmentStep(EnrollmentSteps.ERROR);
         },
 
       });

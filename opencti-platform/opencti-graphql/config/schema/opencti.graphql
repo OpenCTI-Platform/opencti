@@ -1401,11 +1401,12 @@ type Settings implements InternalObject & BasicObject {
   # Technical
   editContext: [EditUserContext!] @auth(for: [SETTINGS_SETPARAMETERS])
   # XTM Hub
-  xtm_hub_token: String @auth(for: [SETTINGS_SETMANAGEXTMHUB])
-  xtm_hub_enrollment_user_id: ID @auth(for: [SETTINGS_SETMANAGEXTMHUB])
-  xtm_hub_last_connectivity_check: DateTime @auth(for: [SETTINGS_SETMANAGEXTMHUB])
-  xtm_hub_enrollment_date: DateTime @auth(for: [SETTINGS_SETMANAGEXTMHUB])
-  xtm_hub_enrollment_status: XTMHubEnrollmentStatus @auth(for: [SETTINGS_SETMANAGEXTMHUB])
+  xtm_hub_token: String @auth
+  xtm_hub_enrollment_user_id: String @auth
+  xtm_hub_enrollment_user_name: ID @auth
+  xtm_hub_last_connectivity_check: DateTime @auth
+  xtm_hub_enrollment_date: DateTime @auth
+  xtm_hub_enrollment_status: XTMHubEnrollmentStatus @auth
 }
 
 ############## Groups

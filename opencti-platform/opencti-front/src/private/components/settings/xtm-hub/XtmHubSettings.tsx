@@ -1,5 +1,4 @@
 import { graphql, useLazyLoadQuery } from 'react-relay';
-import { CheckCircle } from '@mui/icons-material';
 import React from 'react';
 import Paper from '@mui/material/Paper';
 import { Alert, AlertTitle, Grid2, List, Typography } from '@mui/material';
@@ -17,6 +16,7 @@ export const xtmHubSettingsQuery = graphql`
       xtm_hub_enrollment_date
       xtm_hub_enrollment_status
       xtm_hub_enrollment_user_id
+      xtm_hub_enrollment_user_name
       xtm_hub_last_connectivity_check
       xtm_hub_token
     }
@@ -38,7 +38,7 @@ const XtmHubSettings = () => {
             && <Alert severity="success" sx={{ marginBottom: 2 }}>
               <AlertTitle sx={{ fontWeight: 'bold', display: 'inline-block' }}>
                 {t_i18n('Already registered in XTM Hub')}</AlertTitle>
-              {' '}- {t_i18n('Since')} {dateFormat(new Date())} {t_i18n('by')} {xtmHubSettings.xtm_hub_enrollment_user_id}
+              {' '}- {t_i18n('Since')} {dateFormat(xtmHubSettings.xtm_hub_enrollment_date)} {t_i18n('by')} {xtmHubSettings.xtm_hub_enrollment_user_name}
             </Alert>}
           <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
 
