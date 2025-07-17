@@ -3091,6 +3091,7 @@
   "Series attribute": "Series attribute",
   "Server capacity": "Server capacity",
   "Server ingestion is paused until the size of messages is reduced under max capacity": "Server ingestion is paused until the size of messages is reduced under max capacity",
+  "Service Account will automatically be part of the Platform Main Organization, but will not be listed in the list of users of this organisation": "Service Account will automatically be part of the Platform Main Organization, but will not be listed in the list of users of this organisation",
   "Service accounts do not have any password and a randomized email address will be generated, if not provided on creation. Service account do not receive notifications. Service account pertains automatically to the main platform organization.": "Service accounts do not have any password and a randomized email address will be generated, if not provided on creation. Service account do not receive notifications. Service account pertains automatically to the main platform organization.",
   "Session timeout in": "Session timeout in",
   "Sessions": "Sessions",

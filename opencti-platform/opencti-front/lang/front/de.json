@@ -3091,6 +3091,7 @@
   "Series attribute": "Serienattribut",
   "Server capacity": "Serverkapazität",
   "Server ingestion is paused until the size of messages is reduced under max capacity": "Server-Ingestion wird angehalten, bis die Größe der Nachrichten unter die maximale Kapazität gesenkt wird",
+  "Service Account will automatically be part of the Platform Main Organization, but will not be listed in the list of users of this organisation": "Das Servicekonto ist automatisch Teil der Hauptorganisation der Plattform, wird aber nicht in der Liste der Benutzer dieser Organisation aufgeführt",
   "Service accounts do not have any password and a randomized email address will be generated, if not provided on creation. Service account do not receive notifications. Service account pertains automatically to the main platform organization.": "Servicekonten haben kein Passwort und es wird eine zufällige E-Mail-Adresse generiert, wenn sie bei der Erstellung nicht angegeben wurde. Servicekonten erhalten keine Benachrichtigungen. Das Servicekonto gehört automatisch zur Hauptplattformorganisation.",
   "Session timeout in": "Sitzungszeitüberschreitung in",
   "Sessions": "Sitzungen",
