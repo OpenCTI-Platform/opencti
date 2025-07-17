@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { graphql } from 'react-relay';
 import ToggleButton from '@mui/material/ToggleButton';
 import { SendOutline } from 'mdi-material-ui';
-import Tooltip from '@mui/material/Tooltip';
 import Dialog from '@mui/material/Dialog';
 import { DialogTitle } from '@mui/material';
 import DialogContent from '@mui/material/DialogContent';
 import { Form, Formik } from 'formik';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
+import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { handleError } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
@@ -49,7 +49,7 @@ const UserEmailSend = ({ userId }: UserEmailSendProps) => {
 
   return (
     <>
-      <Tooltip title={t_i18n('Send email')}>
+      <EETooltip title={t_i18n('Send email')}>
         <ToggleButton
           onClick={() => setIsEmailTemplateSelectionShown(true)}
           value="sendEmail"
@@ -57,7 +57,7 @@ const UserEmailSend = ({ userId }: UserEmailSendProps) => {
         >
           <SendOutline fontSize="small" color="primary" />
         </ToggleButton>
-      </Tooltip>
+      </EETooltip>
       <Formik
         initialValues={{ email_template_id: { value: '', label: '' } }}
         onSubmit={submitSendEmail}
