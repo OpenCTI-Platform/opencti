@@ -133,6 +133,8 @@ const analysesFragment = graphql`
   }
 `;
 
+type PirContainerObjects = NonNullable<NonNullable<PirAnalyses_ContainersFragment$data['pir']>['pirContainers']>;
+
 interface PirAnalysesProps {
   data: PirAnalysesFragment$key,
 }
@@ -185,7 +187,7 @@ const PirAnalyses = ({ data }: PirAnalysesProps) => {
       label: 'Entities in PIR',
       percentWidth: 15,
       isSortable: true,
-      render: ({ objects }) => {
+      render: ({ objects }: { objects: PirContainerObjects }) => {
         const max = 10;
         const hasMore = objects.edges.length > max;
         const countLabel = !hasMore ? objects.edges.length : `${max}+`;

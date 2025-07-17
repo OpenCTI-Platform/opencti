@@ -34,25 +34,6 @@ const PirKnowledge = ({ data }: PirKnowledgeProps) => {
     initialValues,
   );
 
-  // const viewButtons = [
-  //   <ToggleButton key="relationships" value="relationships" aria-label="relationships">
-  //     <Tooltip title={t_i18n('Relationships view')}>
-  //       <RelationManyToMany
-  //         fontSize="small"
-  //         color={viewStorage.view === 'relationships' ? 'secondary' : 'primary'}
-  //       />
-  //     </Tooltip>
-  //   </ToggleButton>,
-  //   <ToggleButton key="entities" value="entities" aria-label="entities">
-  //     <Tooltip title={t_i18n('Entities view')}>
-  //       <LibraryBooksOutlined
-  //         fontSize="small"
-  //         color={viewStorage.view === 'entities' ? 'secondary' : 'primary'}
-  //       />
-  //     </Tooltip>
-  //   </ToggleButton>,
-  // ];
-
   return (
     <div>
       <PirKnowledgeRelationships
