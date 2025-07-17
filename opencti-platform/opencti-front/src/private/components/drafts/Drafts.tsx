@@ -11,6 +11,7 @@ import ImportMenu from '@components/data/ImportMenu';
 import { DraftContextBannerMutation } from '@components/drafts/__generated__/DraftContextBannerMutation.graphql';
 import { draftContextBannerMutation } from '@components/drafts/DraftContextBanner';
 import { useNavigate } from 'react-router-dom';
+import DraftWorkspaceDialogCreation from '@components/common/files/draftWorkspace/DraftWorkspaceDialogCreation';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import { useFormatter } from '../../../components/i18n';
 import { addFilter, emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
@@ -119,9 +120,11 @@ const computeValidationProgress = (validationWork: Drafts_node$data['validationW
 
 interface DraftProps {
   entityId?: string;
+  openCreate?: boolean;
+  setOpenCreate?: () => void;
 }
 
-const Drafts: FunctionComponent<DraftProps> = ({ entityId }) => {
+const Drafts: FunctionComponent<DraftProps> = ({ entityId, openCreate, setOpenCreate }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const draftColor = getDraftModeColor(theme);
@@ -250,6 +253,12 @@ const Drafts: FunctionComponent<DraftProps> = ({ entityId }) => {
             )}
           />
         )}
+        <DraftWorkspaceDialogCreation
+          paginationOptions={queryPaginationOptions}
+          handleCloseCreate={setOpenCreate}
+          entityId={entityId}
+          openCreate={openCreate}
+        />
       </>
     );
   };

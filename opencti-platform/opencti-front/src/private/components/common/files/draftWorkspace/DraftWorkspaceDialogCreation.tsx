@@ -10,41 +10,52 @@ import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import { DraftCreationMutation$variables } from '@components/drafts/__generated__/DraftCreationMutation.graphql';
 import { DraftWorkspaceCreationMutation } from '@components/common/files/draftWorkspace/__generated__/DraftWorkspaceCreationMutation.graphql';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { DraftsLinesPaginationQuery$variables } from '@components/drafts/__generated__/DraftsLinesPaginationQuery.graphql';
 import { useFormatter } from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../../../../relay/environment';
+import { insertNode } from '../../../../../utils/store';
 
 const draftWorkspaceCreationMutation = graphql`
   mutation DraftWorkspaceCreationMutation($input: DraftWorkspaceAddInput!) {
     draftWorkspaceAdd(input: $input) {
       id
       name
+      ...Drafts_node
     }
   }
 `;
 
 interface DraftWorkspaceCreationProps {
-  openCreate: boolean;
-  handleCloseCreate: () => void;
-  onCompleted?: () => void;
+  openCreate?: boolean;
+  handleCloseCreate?: () => void
   entityId?: string;
+  paginationOptions: DraftsLinesPaginationQuery$variables
 }
 
 interface DraftAddInput {
   name: string;
 }
 
-const DraftWorkspaceCreation: FunctionComponent<DraftWorkspaceCreationProps> = ({
+const DraftWorkspaceDialogCreation: FunctionComponent<DraftWorkspaceCreationProps> = ({
   openCreate,
   handleCloseCreate,
-  onCompleted,
   entityId,
+  paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
   const [commit] = useApiMutation<DraftWorkspaceCreationMutation>(
     draftWorkspaceCreationMutation,
     undefined,
+  );
+
+  const updater = (store: RecordSourceSelectorProxy) => insertNode(
+    store,
+    'Pagination_draftWorkspaces',
+    paginationOptions,
+    'draftWorkspaceAdd',
   );
 
   const draftValidation = () => Yup.object().shape({
@@ -60,6 +71,9 @@ const DraftWorkspaceCreation: FunctionComponent<DraftWorkspaceCreationProps> = (
       variables: {
         input,
       },
+      updater: (store) => {
+        updater(store);
+      },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
@@ -67,9 +81,6 @@ const DraftWorkspaceCreation: FunctionComponent<DraftWorkspaceCreationProps> = (
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        if (onCompleted) {
-          onCompleted();
-        }
       },
     });
   };
@@ -86,7 +97,7 @@ const DraftWorkspaceCreation: FunctionComponent<DraftWorkspaceCreationProps> = (
         <Form>
           <Dialog
             slotProps={{ paper: { elevation: 1 } }}
-            open={openCreate}
+            open={!!openCreate}
             onClose={handleCloseCreate}
             fullWidth
           >
@@ -120,4 +131,4 @@ const DraftWorkspaceCreation: FunctionComponent<DraftWorkspaceCreationProps> = (
   );
 };
 
-export default DraftWorkspaceCreation;
+export default DraftWorkspaceDialogCreation;
