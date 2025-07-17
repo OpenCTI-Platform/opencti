@@ -1102,6 +1102,7 @@ enum BackgroundTaskActionType {
   REMOVE_ORGANIZATIONS
   ADD_GROUPS
   REMOVE_GROUPS
+  SEND_EMAIL
 }
 
 enum BackgroundTaskContextType {

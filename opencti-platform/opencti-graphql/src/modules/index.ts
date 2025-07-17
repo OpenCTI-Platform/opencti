@@ -139,4 +139,5 @@ import './pir/pir-graphql';
 import './fintelDesign/fintelDesign-graphql';
 import './securityPlatform/securityPlatform-graphql';
 import './auth/auth-graphql';
+import './emailTemplate/emailTemplate-graphql';
 // endregion
