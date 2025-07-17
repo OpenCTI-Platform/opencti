@@ -1,9 +1,9 @@
 import React, { FunctionComponent } from 'react';
 import {
   AccountBalanceOutlined,
-  AttachEmailOutlined,
-  AttachmentOutlined,
+  AlternateEmailOutlined,
   CenterFocusStrongOutlined,
+  EmailOutlined,
   LocalPoliceOutlined,
   PermIdentityOutlined,
   ReceiptOutlined,
@@ -56,8 +56,8 @@ const AccessesMenu: FunctionComponent = () => {
   const disseminationEntries: MenuEntry[] = [
     {
       path: '/dashboard/settings/accesses/dissemination_list',
-      label: 'Dissemination',
-      icon: <AttachEmailOutlined fontSize="medium" />,
+      label: 'Dissemination list',
+      icon: <AlternateEmailOutlined fontSize="medium" />,
       isEE: true,
     },
   ];
@@ -65,7 +65,7 @@ const AccessesMenu: FunctionComponent = () => {
     {
       path: '/dashboard/settings/accesses/email_templates',
       label: 'Email templates',
-      icon: <AttachmentOutlined fontSize="medium" />,
+      icon: <EmailOutlined fontSize="medium" />,
       isEE: true,
     },
   ];
@@ -82,6 +82,9 @@ const AccessesMenu: FunctionComponent = () => {
   }
   if (setDissemination) {
     menuEntries.push(...disseminationEntries);
+  }
+  if (setAccess) {
+    menuEntries.push(...emailTemplateEntries);
   }
   if (!setAccess && isOrgaAdmin) {
     menuEntries.push(
