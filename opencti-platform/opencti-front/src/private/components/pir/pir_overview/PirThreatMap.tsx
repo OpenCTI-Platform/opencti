@@ -7,13 +7,13 @@ import WidgetScatter from '../../../../components/dashboard/WidgetScatter';
 import type { Theme } from '../../../../components/Theme';
 import Paper from '../../../../components/Paper';
 import { useFormatter } from '../../../../components/i18n';
-import { PirOverviewThreatMapQuery } from './__generated__/PirOverviewThreatMapQuery.graphql';
 import { PirThreatMapFragment$key } from './__generated__/PirThreatMapFragment.graphql';
 import { getNodes } from '../../../../utils/connection';
 import { itemColor } from '../../../../utils/Colors';
 import { minutesBetweenDates } from '../../../../utils/Time';
 import PirThreatMapLegend from './PirThreatMapLegend';
 import { uniqueArray } from '../../../../utils/utils';
+import { PirThreatMapQuery } from './__generated__/PirThreatMapQuery.graphql';
 
 const pirThreatMapFragment = graphql`
   fragment PirThreatMapFragment on Query {
@@ -50,7 +50,7 @@ export const pirThreatMapQuery = graphql`
 `;
 
 interface PirThreatMapProps {
-  queryRef: PreloadedQuery<PirOverviewThreatMapQuery>
+  queryRef: PreloadedQuery<PirThreatMapQuery>
 }
 
 const PirThreatMap = ({ queryRef }: PirThreatMapProps) => {

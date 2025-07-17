@@ -679,7 +679,6 @@ export const distributionHistory = async (context, user, types, args) => {
 export const distributionEntities = async (context, user, types, args) => {
   const distributionArgs = buildEntityFilters(types, args);
   const { limit = 10, order = 'desc', field } = args;
-  console.log('args', args);
   const aggregationNotSupported = field.includes('.')
     && !field.endsWith('internal_id')
     && !field.includes('opinions_metrics');
