@@ -199,28 +199,30 @@ const PirAnalyses = ({ data }: PirAnalysesProps) => {
                 padding: theme.spacing(1),
               }}
               >
-                {objects.edges.slice(0, max).map((e: any, i: number) => (
-                  <div
-                    key={i}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: theme.spacing(1),
-                    }}
-                  >
+
+                {// eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  objects.edges.slice(0, max).map((e: any, i: number) => (
                     <div
+                      key={i}
                       style={{
-                        width: 10,
-                        height: 10,
-                        borderRadius: 10,
-                        background: itemColor(e.node.entity_type),
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: theme.spacing(1),
                       }}
-                    />
-                    <div>
-                      {e.node.representative.main} ({t_i18n(e.node.entity_type)})
+                    >
+                      <div
+                        style={{
+                          width: 10,
+                          height: 10,
+                          borderRadius: 10,
+                          background: itemColor(e.node.entity_type),
+                        }}
+                      />
+                      <div>
+                        {e.node.representative.main} ({t_i18n(e.node.entity_type)})
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
                 {hasMore && <span>...</span>}
               </div>
             )}
