@@ -493,6 +493,7 @@ const convertVulnerabilityToStix = (instance: StoreEntity, type: string): SDO.St
         epss_score: instance.x_opencti_epss_score,
         epss_percentile: instance.x_opencti_epss_percentile,
         score: instance.x_opencti_score,
+        first_seen_active: instance.x_opencti_first_seen_active,
       })
     }
   };
@@ -938,14 +939,22 @@ const convertProcessToStix = (instance: StoreCyberObservable, type: string): SCO
 };
 const convertSoftwareToStix = (instance: StoreCyberObservable, type: string): SCO.StixSoftware => {
   assertType(ENTITY_SOFTWARE, type);
+  const stixCyberObject = buildStixCyberObservable(instance);
   return {
-    ...buildStixCyberObservable(instance),
+    ...stixCyberObject,
     name: instance.name,
     cpe: instance.cpe,
     swid: instance.swid,
     languages: instance.languages,
     vendor: instance.vendor,
     version: instance.version,
+    extensions: {
+      [STIX_EXT_OCTI]: stixCyberObject.extensions[STIX_EXT_OCTI],
+      [STIX_EXT_OCTI_SCO]: cleanObject({
+        ...stixCyberObject.extensions[STIX_EXT_OCTI_SCO],
+        product: instance.x_opencti_product,
+      })
+    }
   };
 };
 const convertTextToStix = (instance: StoreCyberObservable, type: string): SCO.StixText => {

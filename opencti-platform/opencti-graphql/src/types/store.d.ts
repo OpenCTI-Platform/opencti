@@ -422,6 +422,8 @@ interface BasicStoreEntity extends BasicStoreCommon {
   valid_until: Date;
   first_observed: Date;
   last_observed: Date;
+  // custom
+  x_opencti_first_seen_active: Date;
   // boolean
   revoked: boolean;
   is_family: boolean;
@@ -557,6 +559,8 @@ interface BasicStoreCyberObservable extends BasicStoreCommon {
   window_title: string;
   persona_name: string;
   persona_type: string;
+  // custom
+  x_opencti_product: string;
   // date
   attribute_date: Date;
   ctime: Date;
