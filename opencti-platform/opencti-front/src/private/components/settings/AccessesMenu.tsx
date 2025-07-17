@@ -2,6 +2,7 @@ import React, { FunctionComponent } from 'react';
 import {
   AccountBalanceOutlined,
   AttachEmailOutlined,
+  AttachmentOutlined,
   CenterFocusStrongOutlined,
   LocalPoliceOutlined,
   PermIdentityOutlined,
@@ -57,6 +58,14 @@ const AccessesMenu: FunctionComponent = () => {
       path: '/dashboard/settings/accesses/dissemination_list',
       label: 'Dissemination',
       icon: <AttachEmailOutlined fontSize="medium" />,
+      isEE: true,
+    },
+  ];
+  const emailTemplateEntries: MenuEntry[] = [
+    {
+      path: '/dashboard/settings/accesses/email_templates',
+      label: 'Email templates',
+      icon: <AttachmentOutlined fontSize="medium" />,
       isEE: true,
     },
   ];
