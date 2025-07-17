@@ -8,8 +8,6 @@ import Button from '@mui/material/Button';
 import { graphql } from 'react-relay';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
-import { DraftCreationMutation$variables } from '@components/drafts/__generated__/DraftCreationMutation.graphql';
-import { DraftWorkspaceCreationMutation } from '@components/common/files/draftWorkspace/__generated__/DraftWorkspaceCreationMutation.graphql';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { DraftsLinesPaginationQuery$variables } from '@components/drafts/__generated__/DraftsLinesPaginationQuery.graphql';
 import { useFormatter } from '../../../../../components/i18n';
@@ -17,9 +15,10 @@ import TextField from '../../../../../components/TextField';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../../../../relay/environment';
 import { insertNode } from '../../../../../utils/store';
+import { DraftWorkspaceDialogCreationMutation, DraftWorkspaceDialogCreationMutation$variables } from './__generated__/DraftWorkspaceDialogCreationMutation.graphql';
 
-const draftWorkspaceCreationMutation = graphql`
-  mutation DraftWorkspaceCreationMutation($input: DraftWorkspaceAddInput!) {
+const draftWorkspaceDialogCreationMutation = graphql`
+  mutation DraftWorkspaceDialogCreationMutation($input: DraftWorkspaceAddInput!) {
     draftWorkspaceAdd(input: $input) {
       id
       name
@@ -46,8 +45,8 @@ const DraftWorkspaceDialogCreation: FunctionComponent<DraftWorkspaceCreationProp
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
-  const [commit] = useApiMutation<DraftWorkspaceCreationMutation>(
-    draftWorkspaceCreationMutation,
+  const [commit] = useApiMutation<DraftWorkspaceDialogCreationMutation>(
+    draftWorkspaceDialogCreationMutation,
     undefined,
   );
 
@@ -63,7 +62,7 @@ const DraftWorkspaceDialogCreation: FunctionComponent<DraftWorkspaceCreationProp
   });
 
   const onSubmit: FormikConfig<DraftAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
-    const input: DraftCreationMutation$variables['input'] = {
+    const input: DraftWorkspaceDialogCreationMutation$variables['input'] = {
       name: values.name,
       entity_id: entityId,
     };
