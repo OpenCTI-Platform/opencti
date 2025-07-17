@@ -131,6 +131,7 @@ const DashboardRelationshipsViz = ({
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           title={undefined} // because calling js component in ts
+          relationshipTypes={undefined}
         />
       );
     case 'timeline':
