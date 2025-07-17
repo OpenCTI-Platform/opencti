@@ -45,7 +45,7 @@ const StixRelationshipsMultiAreaChart = ({
   withExportPopover = false,
   isReadOnly = false,
   withoutTitle = false,
-  relationshipTypes = undefined,
+  relationshipTypes,
 }) => {
   const { t_i18n } = useFormatter();
   const renderContent = () => {

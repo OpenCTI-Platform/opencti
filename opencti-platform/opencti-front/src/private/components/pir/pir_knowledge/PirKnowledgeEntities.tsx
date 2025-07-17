@@ -154,7 +154,7 @@ const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHe
     <>
       {queryRef && (
         <DataTable
-          disableSelectAll
+          removeSelectAll
           disableLineSelection
           dataColumns={dataColumns}
           resolvePath={(d: PirKnowledgeEntities_SourcesFlaggedFragment$data) => {

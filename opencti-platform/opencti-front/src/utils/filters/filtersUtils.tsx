@@ -284,7 +284,7 @@ export const buildFiltersAndOptionsForWidgets = (
   opts: { removeTypeAll?: boolean, startDate?: string, endDate?: string, dateAttribute?: string } = {},
 ) => {
   const { removeTypeAll = false, startDate = null, endDate = null, dateAttribute = 'created_at' } = opts;
-  let filters = inputFilters;
+  let filters = inputFilters ?? undefined;
   // remove 'all' in filter with key=entity_type
   if (removeTypeAll) {
     filters = removeEntityTypeAllFromFilterGroup(filters);

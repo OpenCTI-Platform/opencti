@@ -14,9 +14,10 @@ export const useGenerateAuditMessage = <T extends {
   const isHistoryUpdate = data.entity_type === 'History'
     && (data.event_type === 'update' || data.event_scope === 'update')
     && isNotEmptyField(data.context_data?.entity_name);
+  const entityType = data.context_data?.entity_type ?? '';
   return `\`${data.user?.name}\` ${data.context_data?.message} ${
     isHistoryUpdate
-      ? `for \`${data.context_data?.entity_name}\` (${t_i18n(displayEntityTypeForTranslation(data.context_data?.entity_type))})`
+      ? `for \`${data.context_data?.entity_name}\` (${t_i18n(displayEntityTypeForTranslation(entityType))})`
       : ''
   }`;
 };
