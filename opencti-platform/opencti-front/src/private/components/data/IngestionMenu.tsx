@@ -7,6 +7,10 @@ const IngestionMenu = () => {
   const isGrantedIngestion = useGranted([INGESTION]);
   const settingsEntries: MenuEntry[] = [
     {
+      path: '/dashboard/data/ingestion/catalog',
+      label: 'Catalog',
+    },
+    {
       path: '/dashboard/data/ingestion/sync',
       label: 'OpenCTI Streams',
     },
