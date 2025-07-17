@@ -601,6 +601,13 @@ export const addUser = async (context, user, newUser) => {
     };
   }
 
+  if (userServiceAccount) {
+    userToCreate = {
+      ...userToCreate,
+      password: undefined,
+    };
+  }
+
   const { element, isCreation } = await createEntity(context, user, userToCreate, ENTITY_TYPE_USER, { complete: true });
   // Link to organizations
   const userOrganizations = newUser.objectOrganization ?? [];
