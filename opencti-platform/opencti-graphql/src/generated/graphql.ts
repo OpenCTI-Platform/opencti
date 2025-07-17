@@ -1335,6 +1335,7 @@ export enum BackgroundTaskActionType {
   Replace = 'REPLACE',
   Restore = 'RESTORE',
   RuleElementRescan = 'RULE_ELEMENT_RESCAN',
+  SendEmail = 'SEND_EMAIL',
   Share = 'SHARE',
   ShareMultiple = 'SHARE_MULTIPLE',
   Unshare = 'UNSHARE',
