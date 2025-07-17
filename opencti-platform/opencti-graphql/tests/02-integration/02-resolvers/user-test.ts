@@ -34,7 +34,7 @@ import {
   queryAsUserWithSuccess
 } from '../../utils/testQueryHelper';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
-import type { Capability, Member } from '../../../src/generated/graphql';
+import type { Capability, Member, UserAddInput } from '../../../src/generated/graphql';
 
 const LIST_QUERY = gql`
   query users(
@@ -58,6 +58,7 @@ const LIST_QUERY = gql`
           id
           name
           description
+          user_email
         }
       }
     }
@@ -144,11 +145,20 @@ const CREATE_QUERY = gql`
       user_email
       firstname
       lastname
+      user_service_account
       user_confidence_level {
         max_confidence
         overrides {
           entity_type
           max_confidence
+        }
+      }
+      objectOrganization {
+        edges {
+          node {
+            id
+            name
+          }
         }
       }
       groups {
@@ -300,8 +310,18 @@ describe('User resolver standard behavior', () => {
     expect(res.data?.token).toBeDefined();
   });
   it('should list users', async () => {
-    const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data?.users.edges.length).toEqual(TESTING_USERS.length + 3);
+    const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 100 } });
+    const userList = queryResult.data?.users.edges;
+
+    // Verify that some users are in the list
+    // Users in testQuery
+    expect(userList.filter((userNode: any) => userNode.node.user_email === 'participate@opencti.io').length).toBe(1);
+    expect(userList.filter((userNode: any) => userNode.node.user_email === 'editor@opencti.io').length).toBe(1);
+    expect(userList.filter((userNode: any) => userNode.node.user_email === 'security@opencti.io').length).toBe(1);
+
+    // Users from this describe block
+    expect(userList.filter((userNode: any) => userNode.node.user_email === 'user_confidence@mail.com').length).toBe(1);
+    expect(userList.filter((userNode: any) => userNode.node.user_email === 'user@mail.com').length).toBe(1);
   });
   it('should update user', async () => {
     const UPDATE_QUERY = gql`
@@ -601,6 +621,8 @@ describe('User resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userInternalId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data?.user).not.toBeNull();
+    expect(queryResult.data?.user.roles.filter((role: any) => role.name === 'Role in group').length).toBe(1);
+    expect(queryResult.data?.user.roles.filter((role: any) => role.name === 'Default').length).toBe(1);
     expect(queryResult.data?.user.roles.length).toEqual(2); // the 2 roles are: 'Role in group' and 'Default'
   });
   it('should add capability in role', async () => {
@@ -830,12 +852,12 @@ describe('User has no settings capability and is organization admin query behavi
   const organizationsIds: string[] = [];
 
   const ORGA_ADMIN_ADD_QUERY = gql`
-        mutation OrganizationAdminAdd($id: ID!, $memberId: String!) {
-            organizationAdminAdd(id: $id, memberId: $memberId) {
-                id
-                standard_id
-            }
-        }
+      mutation OrganizationAdminAdd($id: ID!, $memberId: String!) {
+          organizationAdminAdd(id: $id, memberId: $memberId) {
+              id
+              standard_id
+          }
+      }
     `;
 
   const ORGANIZATION_ADD_QUERY = gql`
@@ -875,15 +897,15 @@ describe('User has no settings capability and is organization admin query behavi
         `;
 
     const UPDATE_QUERY = gql`
-            mutation OrganizationEdit($id: ID!, $input: [EditInput]!) {
-                organizationFieldPatch(id: $id, input: $input) {
-                    id
-                    name
-                    grantable_groups {
-                        id
-                    }
-                }
-            }
+      mutation OrganizationEdit($id: ID!, $input: [EditInput]!) {
+        organizationFieldPatch(id: $id, input: $input) {
+          id
+          name
+          grantable_groups {
+              id
+          }
+        }
+      }
         `;
     // Delete admin to ORGANIZATION
     await adminQuery({
@@ -941,15 +963,15 @@ describe('User has no settings capability and is organization admin query behavi
 
     // Need to add granted_groups to TEST_ORGANIZATION because of line 533 in domain/user.js
     const UPDATE_QUERY = gql`
-            mutation OrganizationEdit($id: ID!, $input: [EditInput]!) {
-                organizationFieldPatch(id: $id, input: $input) {
-                    id
-                    name
-                    grantable_groups {
-                        id
-                    }
-                }
-            }
+      mutation OrganizationEdit($id: ID!, $input: [EditInput]!) {
+        organizationFieldPatch(id: $id, input: $input) {
+          id
+          name
+          grantable_groups {
+              id
+          }
+        }
+      }
         `;
     const queryResult = await adminQuery({
       query: UPDATE_QUERY,
@@ -970,13 +992,13 @@ describe('User has no settings capability and is organization admin query behavi
   });
   it('should update user from its own organization', async () => {
     const UPDATE_QUERY = gql`
-            mutation UserEdit($id: ID!, $input: [EditInput]!) {
-                userEdit(id: $id) {
-                    fieldPatch(input: $input) {
-                        account_status
-                    }
-                }
-            }
+      mutation UserEdit($id: ID!, $input: [EditInput]!) {
+        userEdit(id: $id) {
+          fieldPatch(input: $input) {
+              account_status
+          }
+        }
+      }
         `;
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
       query: UPDATE_QUERY,
@@ -997,15 +1019,15 @@ describe('User has no settings capability and is organization admin query behavi
   it('should administrate more than 1 organization', async () => {
     // Need to add granted_groups to PLATFORM_ORGANIZATION because of line 533 in domain/user.js
     const UPDATE_QUERY = gql`
-            mutation OrganizationEdit($id: ID!, $input: [EditInput]!) {
-                organizationFieldPatch(id: $id, input: $input) {
-                    id
-                    name
-                    grantable_groups {
-                        id
-                    }
-                }
-            }
+      mutation OrganizationEdit($id: ID!, $input: [EditInput]!) {
+        organizationFieldPatch(id: $id, input: $input) {
+          id
+          name
+          grantable_groups {
+            id
+          }
+        }
+      }
         `;
     const grantableGroupQueryResult = await adminQuery({
       query: UPDATE_QUERY,
@@ -1193,5 +1215,76 @@ describe('User is impersonated', async () => {
 
     // revert platform orga
     await enableCEAndUnSetOrganization();
+  });
+});
+
+describe('Service account User coverage', async () => {
+  let userInternalId: string;
+  const userToDeleteIds: string[] = [];
+  it('should service account user created', async () => {
+    // Create the user
+    const USER_TO_CREATE: UserAddInput = {
+      name: 'Service account',
+      user_service_account: true,
+      groups: [],
+      objectOrganization: [],
+    };
+    const user = await adminQueryWithSuccess({
+      query: CREATE_QUERY,
+      variables: { input: USER_TO_CREATE },
+    });
+    expect(user.data.userAdd).not.toBeNull();
+    userInternalId = user.data.userAdd.id;
+    userToDeleteIds.push(userInternalId);
+
+    expect(user.data.userAdd.name).toEqual('Service account');
+    expect(user.data.userAdd.user_email).toBeDefined();
+    expect(user.data.userAdd.user_email.startsWith('automatic+')).toBeTruthy();
+    expect(user.data.userAdd.user_service_account).toEqual(true);
+  });
+  it('should service account user read', async () => {
+    const QUERY_SERVICE_ACCOUNT_USER = gql`
+      query user($id: String!) {
+        user(id: $id) {
+          id
+          standard_id
+          name
+          user_email
+          description
+          groups {
+            edges {
+              node {
+                id
+                name
+              }
+            }
+          }
+          capabilities {
+            id
+            standard_id
+            name
+            description
+          }
+          api_token
+        }
+      }
+    `;
+
+    const queryResult = await queryAsAdminWithSuccess({ query: QUERY_SERVICE_ACCOUNT_USER, variables: { id: userInternalId } });
+    expect(queryResult.data?.user).not.toBeNull();
+    expect(queryResult.data?.user.id).toEqual(userInternalId);
+  });
+  it('should service account user deleted', async () => {
+    // Delete the users
+    for (let i = 0; i < userToDeleteIds.length; i += 1) {
+      const userId = userToDeleteIds[i];
+      await adminQueryWithSuccess({
+        query: DELETE_QUERY,
+        variables: { id: userId },
+      });
+      // Verify is no longer found
+      const queryResult = await adminQueryWithSuccess({ query: READ_QUERY, variables: { id: userId } });
+      expect(queryResult.data.user).toBeNull();
+    }
   });
 });

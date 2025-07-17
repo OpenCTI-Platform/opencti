@@ -10,6 +10,7 @@ import {
   isMarkingAllowed,
   isOrganizationAllowed,
   isUserCanAccessStreamUpdateEvent,
+  isUserInPlatformOrganization,
   KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS,
   MEMBER_ACCESS_RIGHT_ADMIN,
   MEMBER_ACCESS_RIGHT_EDIT,
@@ -439,5 +440,71 @@ describe('getUserAccessRight testing', () => {
     const element = { restricted_members, authorized_authorities: [] };
     const expected = getUserAccessRight(user as AuthUser, element);
     expect(expected).toEqual(null);
+  });
+});
+
+describe('isUserInPlatformOrganization testing', () => {
+  const orgaPlatformId = '7b522ce7-j325-6hc8-a2ab-t8a934a1c612';
+  const orgaPlatform: Partial<BasicStoreEntityOrganization> = {
+    id: orgaPlatformId,
+    internal_id: orgaPlatformId,
+  };
+
+  const userId = '55ec0c6a-13ce-5e39-b486-354fe4a7084f';
+  const user: Partial<AuthUser> = {
+    id: userId,
+    internal_id: userId,
+    capabilities: [{ name: KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS }],
+    organizations: [orgaPlatform as BasicStoreEntityOrganization],
+  };
+
+  const bypassUserId = '2a522ce7-j325-4hc8-a2ab-t8a934a1c645';
+  const bypassUser: Partial<AuthUser> = {
+    id: bypassUserId,
+    capabilities: [{ name: BYPASS }],
+    organizations: [],
+  };
+
+  const serviceAccountId = '2a522ce7-j325-4hc8-a2ab-t8a934a1c645';
+  const serviceAccountUser: Partial<AuthUser> = {
+    id: serviceAccountId,
+    capabilities: [{ name: BYPASS }],
+    organizations: [],
+    user_service_account: true,
+  };
+
+  it('should return true for user service account', () => {
+    const settings: Partial<BasicStoreSettings> = {
+      platform_organization: 'Filigran'
+    };
+    const expected = isUserInPlatformOrganization(serviceAccountUser as AuthUser, settings as BasicStoreSettings);
+    expect(expected).toEqual(true);
+  });
+  it('should return true for BYPASS User', () => {
+    const settings: Partial<BasicStoreSettings> = {
+      platform_organization: 'Filigran'
+    };
+    const expected = isUserInPlatformOrganization(bypassUser as AuthUser, settings as BasicStoreSettings);
+    expect(expected).toEqual(true);
+  });
+  it('should return true if no platform Organization', () => {
+    const settings: Partial<BasicStoreSettings> = {
+    };
+    const expected = isUserInPlatformOrganization(user as AuthUser, settings as BasicStoreSettings);
+    expect(expected).toEqual(true);
+  });
+  it('should return true if User is part of platform Organization', () => {
+    const settings: Partial<BasicStoreSettings> = {
+      platform_organization: '7b522ce7-j325-6hc8-a2ab-t8a934a1c612',
+    };
+    const expected = isUserInPlatformOrganization(user as AuthUser, settings as BasicStoreSettings);
+    expect(expected).toEqual(true);
+  });
+  it('should return false if User is not part of platform Organization', () => {
+    const settings: Partial<BasicStoreSettings> = {
+      platform_organization: '9b522ce7-j325-6hc8-a2ab-t8a934a1c765'
+    };
+    const expected = isUserInPlatformOrganization(user as AuthUser, settings as BasicStoreSettings);
+    expect(expected).toEqual(false);
   });
 });

@@ -135,6 +135,7 @@ export const UserLine = createFragmentContainer(UserLineComponent, {
     fragment UserLine_node on User {
       id
       name
+      user_service_account
       user_email
       firstname
       external
