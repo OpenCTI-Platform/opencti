@@ -9,6 +9,8 @@ const pirResolvers: Resolvers = {
   Pir: {
     creators: (pir, _, context) => context.batch.creatorsBatchLoader.load(pir.creator_id),
     objectMarking: (pir, _, context) => context.batch.markingsBatchLoader.load(pir),
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     pirContainers: (pir, args, context) => findPirContainers(context, context.user, pir, args),
   },
   Mutation: {

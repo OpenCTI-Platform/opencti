@@ -32,7 +32,7 @@ export const findPirContainers = async (
   user: AuthUser,
   pir: BasicStoreEntityPir,
   opts?: EntityOptions<BasicStoreObject>
-): Promise<StoreEntityConnection<BasicStoreEntity>> => {
+) => {
   const { edges: relations } = await listRelationsPaginated(
     context,
     user,
