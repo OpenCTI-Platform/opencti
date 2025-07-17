@@ -27,6 +27,7 @@ import WorkbenchFileViewer from './workbench/WorkbenchFileViewer';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import PictureManagementViewer from './PictureManagementViewer';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
+import DraftWorkspaceViewer from "@components/common/files/draftWorkspace/DraftWorkspaceViewer";
 
 const styles = (theme) => ({
   container: {
@@ -277,15 +278,17 @@ const FileManager = ({
           isArtifact={isArtifact}
           directDownload={directDownload}
         />
-        <WorkbenchFileViewer
-          entity={entity}
-          handleOpenImport={handleOpenImport}
-        />
         <FileExportViewer
           entity={entity}
           handleOpenExport={handleOpenExport}
           isExportPossible={isExportPossible}
         />
+        <WorkbenchFileViewer
+          entity={entity}
+          handleOpenImport={handleOpenImport}
+        />
+        <DraftWorkspaceViewer entityId={entity.id} />
+
         <FileExternalReferencesViewer
           entity={entity}
           handleOpenImport={handleOpenImport}

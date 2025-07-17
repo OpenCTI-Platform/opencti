@@ -13,12 +13,7 @@ import { draftContextBannerMutation } from '@components/drafts/DraftContextBanne
 import { useNavigate } from 'react-router-dom';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import { useFormatter } from '../../../components/i18n';
-import {
-  addFilter,
-  emptyFilterGroup, isFilterGroupNotEmpty,
-  useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject,
-  useRemoveIdAndIncorrectKeysFromFilterGroupObject
-} from '../../../utils/filters/filtersUtils';
+import { addFilter, emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
@@ -31,7 +26,6 @@ import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 import { hexToRGB } from '../../../utils/Colors';
 import type { Theme } from '../../../components/Theme';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
-import {FilterGroup} from "../../../utils/filters/filtersHelpers-types";
 
 const DraftLineFragment = graphql`
     fragment Drafts_node on DraftWorkspace {
