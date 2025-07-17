@@ -1759,6 +1759,7 @@ input UserAddInput {
   groups: [ID!]
   user_confidence_level: ConfidenceLevelInput
   prevent_default_groups: Boolean
+  email_template_id: String
 }
 
 input SendUserMailInput {
