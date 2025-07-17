@@ -273,4 +273,18 @@ describe('Service account with platform organization coverage', async () => {
 
     await deleteElementById(testContext, authUser, userAddResult.id, ENTITY_TYPE_USER);
   });
+  it('Service account should not store password in DB', async () => {
+    const userAddInput: UserAddInput = {
+      user_email: 'user.nopassword@opencti.fr',
+      name: 'Service account no password',
+      user_service_account: true,
+      password: 'youWillNeverBeStored',
+    };
+    const userAddResult = await addUser(testContext, authUser, userAddInput);
+    const userCreated: any = await findById(testContext, authUser, userAddResult.id);
+
+    expect(userCreated.password).toBeUndefined();
+
+    await deleteElementById(testContext, authUser, userAddResult.id, ENTITY_TYPE_USER);
+  });
 });
