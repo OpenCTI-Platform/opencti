@@ -5533,10 +5533,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"agent-base@npm:^7.1.2, agent-base@npm:^7.1.3":
+"agent-base@npm:^7.1.2":
   version: 7.1.3
   resolution: "agent-base@npm:7.1.3"
   checksum: 10/3db6d8d4651f2aa1a9e4af35b96ab11a7607af57a24f3bc721a387eaa3b5f674e901f0a648b0caefd48f3fd117c7761b79a3b55854e2aebaa96c3f32cf76af84
+  languageName: node
+  linkType: hard
+
+"agent-base@npm:^7.1.4":
+  version: 7.1.4
+  resolution: "agent-base@npm:7.1.4"
+  checksum: 10/79bef167247789f955aaba113bae74bf64aa1e1acca4b1d6bb444bdf91d82c3e07e9451ef6a6e2e35e8f71a6f97ce33e3d855a5328eb9fad1bc3cc4cfd031ed8
   languageName: node
   linkType: hard
 
@@ -6043,15 +6050,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios-cookiejar-support@npm:5.0.5":
-  version: 5.0.5
-  resolution: "axios-cookiejar-support@npm:5.0.5"
+"axios-cookiejar-support@npm:6.0.4":
+  version: 6.0.4
+  resolution: "axios-cookiejar-support@npm:6.0.4"
   dependencies:
-    http-cookie-agent: "npm:^6.0.8"
+    http-cookie-agent: "npm:^7.0.2"
   peerDependencies:
     axios: ">=0.20.0"
     tough-cookie: ">=4.0.0"
-  checksum: 10/4d3acdef40ee54dd76941c5551de61b5cd71dc7a4be75a918a77dd52905758b84d9b43e3c56bd92a4e281f3be2e799e9ec1491fbf5178bb1aa1c5e4c15f2164e
+  checksum: 10/e1afcf8e428e7d273ee23e6df8c7591db6ab2a874d7704d3b781247fd54f264d23c6c8a25b951411074e420339f7f476dd75ed414487389fbe8728be8ef512d4
   languageName: node
   linkType: hard
 
@@ -9592,18 +9599,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"http-cookie-agent@npm:^6.0.8":
-  version: 6.0.8
-  resolution: "http-cookie-agent@npm:6.0.8"
+"http-cookie-agent@npm:^7.0.2":
+  version: 7.0.2
+  resolution: "http-cookie-agent@npm:7.0.2"
   dependencies:
-    agent-base: "npm:^7.1.3"
+    agent-base: "npm:^7.1.4"
   peerDependencies:
     tough-cookie: ^4.0.0 || ^5.0.0
-    undici: ^5.11.0 || ^6.0.0
+    undici: ^7.0.0
   peerDependenciesMeta:
     undici:
       optional: true
-  checksum: 10/16880d703707aa7609b92e62491ef8059b62effd9b19cdf2f8d49b5bdcab60c57c3e210c89d2126d0343347a4d6fe7e285b9f64b498518714c65486bac931f87
+  checksum: 10/6a317007868021f157f033b6bf170620412da7a363798089d61076492c0dc4483af08fab5e55765e0845ff5ea140f2f1ecb44cdfa68aaf063955a25363e05aac
   languageName: node
   linkType: hard
 
@@ -12019,7 +12026,7 @@ __metadata:
     archiver-zip-encrypted: "npm:2.0.0"
     async-lock: "npm:1.4.1"
     axios: "npm:1.10.0"
-    axios-cookiejar-support: "npm:5.0.5"
+    axios-cookiejar-support: "npm:6.0.4"
     bcryptjs: "npm:2.4.3"
     bluebird: "npm:3.7.2"
     body-parser: "npm:1.20.3"
