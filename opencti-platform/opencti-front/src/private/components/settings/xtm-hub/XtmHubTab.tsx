@@ -1,7 +1,8 @@
 import { graphql } from 'react-relay';
-import React, { useCallback, useContext, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogTitle, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import { ingestionTaxiiMutationFieldPatch } from '@components/data/ingestionTaxii/IngestionTaxiiEdition';
 import useExternalTab from './useExternalTab';
 import { useFormatter } from '../../../../components/i18n';
 import GradientButton from '../../../../components/GradientButton';
@@ -12,6 +13,7 @@ import { UserContext } from '../../../../utils/hooks/useAuth';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import EnrollmentSuccess from './EnrollmentSuccess';
 import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 enum EnrollmentSteps {
   INSTRUCTIONS = 'INSTRUCTIONS',
@@ -58,9 +60,8 @@ const XtmHubTab: React.FC = () => {
     const eventData = event.data;
     const { action, token } = eventData;
     if (action === 'enroll') {
-      commitMutation({
-        ...defaultCommitMutation,
-        mutation: xtmHubTabSettingsFieldPatchMutation,
+      const [commit] = useApiMutation(xtmHubTabSettingsFieldPatchMutation);
+      commit({
         variables: { id: settings?.id ?? '',
           input: [
             { key: 'xtm_hub_token', value: token },
@@ -72,7 +73,6 @@ const XtmHubTab: React.FC = () => {
         onError: () => {
           setEnrollmentStep(EnrollmentSteps.ERROR);
         },
-
       });
     } else if (action === 'cancel') {
       setEnrollmentStep(EnrollmentSteps.CANCELED);
