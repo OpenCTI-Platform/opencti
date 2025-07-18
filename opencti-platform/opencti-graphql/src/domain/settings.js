@@ -1,12 +1,22 @@
 import { getHeapStatistics } from 'node:v8';
 import nconf from 'nconf';
 import { createEntity, listAllThings, loadEntity, patchAttribute, updateAttribute } from '../database/middleware';
-import conf, { ACCOUNT_STATUSES, booleanConf, BUS_TOPICS, ENABLED_DEMO_MODE, ENABLED_FEATURE_FLAGS, getBaseUrl, PLATFORM_VERSION, PLAYGROUND_ENABLED } from '../config/conf';
+import conf, {
+  ACCOUNT_STATUSES,
+  booleanConf,
+  BUS_TOPICS,
+  ENABLED_DEMO_MODE,
+  ENABLED_FEATURE_FLAGS,
+  getBaseUrl,
+  isFeatureEnabled,
+  PLATFORM_VERSION,
+  PLAYGROUND_ENABLED
+} from '../config/conf';
 import { delEditContext, getRedisVersion, notify, setEditContext } from '../database/redis';
 import { isRuntimeSortEnable, searchEngineVersion } from '../database/engine';
 import { getRabbitMQVersion } from '../database/rabbitmq';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
-import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
+import { isUserHasCapability, SETTINGS_SET_ACCESSES, SETTINGS_SETMANAGEXTMHUB, SYSTEM_USER } from '../utils/access';
 import { storeLoadById } from '../database/middleware-loader';
 import { INTERNAL_SECURITY_PROVIDER, PROVIDERS } from '../config/providers';
 import { publishUserAction } from '../listener/UserActionListener';
@@ -18,6 +28,7 @@ import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { getEnterpriseEditionInfo, getEnterpriseEditionInfoFromPem, LICENSE_OPTION_TRIAL } from '../modules/settings/licensing';
 import { getClusterInformation } from '../database/cluster-module';
+import { completeXTMHubDataForEnrollment } from '../utils/settings.helper';
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
@@ -161,9 +172,30 @@ const ACCESS_SETTINGS_RESTRICTED_KEYS = [
   'password_policy_min_lowercase',
   'password_policy_min_uppercase',
 ];
+
+const ACCESS_SETTINGS_MANAGE_XTMHUB_KEYS = [
+  'xtm_hub_token',
+  'xtm_hub_enrollment_user_id',
+  'xtm_hub_last_connectivity_check',
+  'xtm_hub_enrollment_date',
+  'xtm_hub_enrollment_user_name',
+  'xtm_hub_enrollment_status'
+];
+
 export const settingsEditField = async (context, user, settingsId, input) => {
   const hasSetAccessCapability = isUserHasCapability(user, SETTINGS_SET_ACCESSES);
-  const data = hasSetAccessCapability ? input : input.filter((i) => !ACCESS_SETTINGS_RESTRICTED_KEYS.includes(i.key));
+  const hasSetXTMHubCapability = isUserHasCapability(user, SETTINGS_SETMANAGEXTMHUB);
+  const keysUserCannotModify = [
+    ...(hasSetAccessCapability ? [] : ACCESS_SETTINGS_RESTRICTED_KEYS),
+    ...(hasSetXTMHubCapability || !isFeatureEnabled('OCTI_ENROLLMENT') ? [] : ACCESS_SETTINGS_MANAGE_XTMHUB_KEYS),
+  ];
+
+  const dataWithRestrictKeys = keysUserCannotModify.length === 0
+    ? input
+    : input.filter((i) => !keysUserCannotModify.includes(i.key));
+
+  const data = hasSetXTMHubCapability && isFeatureEnabled('OCTI_ENROLLMENT') ? completeXTMHubDataForEnrollment(user, dataWithRestrictKeys) : dataWithRestrictKeys;
+
   const settings = await getSettings(context);
   const enterpriseLicense = data.find((inputData) => inputData.key === 'enterprise_license');
   if (enterpriseLicense && enterpriseLicense.value?.length > 0) {

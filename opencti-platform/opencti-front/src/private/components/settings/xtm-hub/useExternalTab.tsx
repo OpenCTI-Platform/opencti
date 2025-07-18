@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 
 interface UseExternalTabProps {
   url: string;
   tabName: string;
-  setIsDialogOpen: (isOpen: boolean) => void;
-  onMessage?: (event: MessageEvent) => void;
+  onMessage: (event: MessageEvent) => void;
+  onClosingTab: () => void;
 }
 
 interface UseExternalTabReturn {
@@ -14,10 +14,9 @@ interface UseExternalTabReturn {
   focusTab: () => void;
 }
 
-const useExternalTab = ({ url, tabName, onMessage, setIsDialogOpen }: UseExternalTabProps): UseExternalTabReturn => {
+const useExternalTab = ({ url, tabName, onMessage, onClosingTab }: UseExternalTabProps): UseExternalTabReturn => {
   const tabRef = useRef<WindowProxy | null>(null);
   const [isTabOpen, setIsTabOpen] = useState(false);
-
   const beforeUnloadHandler = (event: BeforeUnloadEvent) => {
     event.preventDefault();
     return null;
@@ -32,7 +31,6 @@ const useExternalTab = ({ url, tabName, onMessage, setIsDialogOpen }: UseExterna
     tabRef.current?.close();
     tabRef.current = null;
     setIsTabOpen(false);
-    setIsDialogOpen(false);
   }, []);
 
   const focusTab = useCallback(() => {
@@ -41,7 +39,11 @@ const useExternalTab = ({ url, tabName, onMessage, setIsDialogOpen }: UseExterna
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      if (event.source === tabRef.current && onMessage) {
+      if (event.source === tabRef.current) {
+        const closingTabEvent = ['cancel', 'enroll'];
+        if (closingTabEvent.includes(event.data.action)) {
+          closeTab();
+        }
         onMessage(event);
       }
     };
@@ -50,6 +52,7 @@ const useExternalTab = ({ url, tabName, onMessage, setIsDialogOpen }: UseExterna
       window.addEventListener('beforeunload', beforeUnloadHandler);
       const checkInterval = setInterval(() => {
         if (tabRef.current?.closed) {
+          onClosingTab();
           closeTab();
           clearInterval(checkInterval);
         }

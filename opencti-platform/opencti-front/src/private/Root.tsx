@@ -123,6 +123,8 @@ const rootSettingsFragment = graphql`
         protected_ids
       }
     }
+    xtm_hub_token
+    xtm_hub_enrollment_status
   }
 `;
 
