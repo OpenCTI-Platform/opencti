@@ -289,6 +289,7 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     { name: 'x_opencti_epss_score', label: 'EPSS Score', type: 'numeric', precision: 'float', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'x_opencti_epss_percentile', label: 'EPSS Percentile', type: 'numeric', precision: 'float', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'x_opencti_score', label: 'Score', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'x_opencti_first_seen_active', label: 'First seen active', type: 'date', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true, isFilterable: true },
   ],
 
   [ENTITY_TYPE_INCIDENT]: [

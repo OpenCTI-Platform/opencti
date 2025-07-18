@@ -123,6 +123,8 @@ export const INTERNAL_ATTRIBUTES = [
   'x_opencti_cvss_v4_availability_impact_s',
   'x_opencti_cvss_v4_exploit_maturity',
   'x_opencti_cwe',
+  'x_opencti_first_seen_active',
+  'x_opencti_product',
   'x_opencti_additional_names',
   // Decay internal fields on Indicator
   'decay_next_reaction_date',
