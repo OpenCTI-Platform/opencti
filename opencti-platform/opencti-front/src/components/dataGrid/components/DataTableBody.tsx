@@ -15,6 +15,7 @@ const DataTableBody = ({
   pageStart,
   pageSize,
   hideHeaders = false,
+  emptyState,
 }: DataTableBodyProps) => {
   const {
     rootRef,
@@ -154,6 +155,7 @@ const DataTableBody = ({
       </div>
 
       <div style={containerLinesStyle}>
+        {resolvedData && resolvedData.length === 0 && !!emptyState && emptyState}
         {/* If we have perf issues we should find a way to memoize this */}
         {resolvedData.map((row: { id: string }, index: number) => {
           return (
