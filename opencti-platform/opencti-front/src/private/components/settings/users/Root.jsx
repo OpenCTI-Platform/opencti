@@ -7,6 +7,7 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import makeStyles from '@mui/styles/makeStyles';
+import UserEmailSend from './UserEmailSend';
 import AccessesMenu from '../AccessesMenu';
 import Security from '../../../../utils/Security';
 import { VIRTUAL_ORGANIZATION_ADMIN, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
@@ -121,7 +122,10 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
           >
             {data.name}
           </Typography>
-          <UserEdition userEditionData={userEditionData} />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'right', gap: 4 }}>
+            <UserEmailSend userId={userId} />
+            <UserEdition userEditionData={userEditionData} />
+          </div>
           <div className="clearfix" />
           <Box
             sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 4 }}

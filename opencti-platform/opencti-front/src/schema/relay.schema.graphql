@@ -1091,6 +1091,7 @@ enum BackgroundTaskActionType {
   UNSHARE_MULTIPLE
   REMOVE_AUTH_MEMBERS
   REMOVE_FROM_DRAFT
+  SEND_EMAIL
 }
 
 enum BackgroundTaskContextType {
@@ -1814,6 +1815,12 @@ input UserAddInput {
   groups: [ID!]
   user_confidence_level: ConfidenceLevelInput
   prevent_default_groups: Boolean
+}
+
+input SendUserMailInput {
+  target_user_id: ID!
+  email_template_id: ID!
+  email_object: String!
 }
 
 input ConfidenceLevelInput {
@@ -8458,6 +8465,8 @@ type Query {
   fintelDesigns(first: Int, after: ID, orderBy: FintelDesignOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): FintelDesignConnection
   securityPlatform(id: String!): SecurityPlatform
   securityPlatforms(first: Int, after: ID, orderBy: SecurityPlatformOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): SecurityPlatformConnection
+  emailTemplate(id: ID!): EmailTemplate
+  emailTemplates(first: Int, after: ID, orderBy: EmailTemplateOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): EmailTemplateConnection
 }
 
 type Subscription {
@@ -8996,6 +9005,7 @@ type Mutation {
   meEdit(input: [EditInput]!, password: String): MeUser
   bookmarkAdd(id: ID!, type: String!): StixDomainObject
   bookmarkDelete(id: ID!): ID
+  sendUserMail(input: SendUserMailInput!): Boolean
   logout: ID
   roleAdd(input: RoleAddInput!): Role
   sessionKill(id: ID!): ID
@@ -9357,6 +9367,9 @@ type Mutation {
   verifyOtp(input: VerifyOtpInput!): VerifyOtp
   verifyMfa(input: VerifyMfaInput!): Boolean
   changePassword(input: ChangePasswordInput!): Boolean
+  emailTemplateAdd(input: EmailTemplateAddInput!): EmailTemplate
+  emailTemplateDelete(id: ID!): ID
+  emailTemplateFieldPatch(id: ID!, input: [EditInput!]!): EmailTemplate
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -13574,4 +13587,39 @@ input ChangePasswordInput {
 
 type VerifyOtp {
   mfa_activated: Boolean!
+}
+
+type EmailTemplate implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  name: String!
+  description: String
+  email_object: String!
+  sender_email: String!
+  template_body: String!
+}
+
+type EmailTemplateConnection {
+  pageInfo: PageInfo!
+  edges: [EmailTemplateEdge!]!
+}
+
+type EmailTemplateEdge {
+  cursor: String!
+  node: EmailTemplate!
+}
+
+enum EmailTemplateOrdering {
+  name
+  _score
+}
+
+input EmailTemplateAddInput {
+  name: String!
+  description: String
+  email_object: String!
+  sender_email: String!
+  template_body: String!
 }

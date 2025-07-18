@@ -54,7 +54,8 @@ import {
   userOrganizationsPaginated,
   userOrganizationsPaginatedWithoutInferences,
   userRenewToken,
-  userWithOrigin
+  userWithOrigin,
+  sendEmailToUser
 } from '../domain/user';
 import { subscribeToInstanceEvents, subscribeToUserEvents } from '../graphql/subscriptionWrapper';
 import { publishUserAction } from '../listener/UserActionListener';
@@ -246,6 +247,9 @@ const userResolvers = {
     userAdd: (_, { input }, context) => addUser(context, context.user, input),
     bookmarkAdd: (_, { id, type }, context) => addBookmark(context, context.user, id, type),
     bookmarkDelete: (_, { id }, context) => deleteBookmark(context, context.user, id),
+    sendUserMail: (_, { input }, context) => {
+      return sendEmailToUser(context, context.user, input);
+    }
   },
   Subscription: {
     me: {
