@@ -1,5 +1,5 @@
 import { useWidgetConfigContext } from './WidgetConfigContext';
-import { getCurrentAvailableParameters } from '../../../utils/widget/widgetUtils';
+import { getCurrentAvailableParameters, isDataSelectionNumber } from '../../../utils/widget/widgetUtils';
 
 export const fintelTemplateVariableNameChecker = /^[A-Za-z0-9_-]+$/;
 
@@ -36,7 +36,7 @@ const useWidgetConfigValidateForm = () => {
   const isTypeFilled = !!type && type !== '';
 
   // Check the number of results is lower than 100 for lists
-  const isDataSelectionNumberValid = config.widget.type === 'lists' ? dataSelection.every((selection) => !selection.number || selection.number <= 100) : true;
+  const isDataSelectionNumberValid = isDataSelectionNumber(type, dataSelection);
   // Check all data selections has an attribute filled if  widget type requires it
   const isDataSelectionAttributesFilled = !getCurrentAvailableParameters(type).includes('attribute')
     || (getCurrentAvailableParameters(type).includes('attribute') && isDataSelectionAttributesValid());
