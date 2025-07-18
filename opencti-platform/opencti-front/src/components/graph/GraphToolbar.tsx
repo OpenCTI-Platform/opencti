@@ -73,7 +73,8 @@ const GraphToolbar = ({
           alignItems: 'center',
           gap: theme.spacing(0.5),
           padding: `0 ${theme.spacing(1)}`,
-          overflow: 'scroll',
+          overflowX: 'scroll',
+          overflowY: 'hidden',
         }}
       >
         <GraphToolbarDisplayTools onUnfixNodes={onUnfixNodes} />
