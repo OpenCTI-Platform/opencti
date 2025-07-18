@@ -8,7 +8,7 @@ interface EnrollmentSuccessProps {
 const EnrollmentSuccess: FunctionComponent<EnrollmentSuccessProps> = ({ closeDialog }) => {
   const { t_i18n } = useFormatter();
   return <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
-    <div> {t_i18n('Success the enrollment of your OCTI is done')}</div>
+    <div> {t_i18n('Success the enrollment of your OpenCTI is done')}</div>
     <Button sx={{ marginTop: 4 }} variant="contained" onClick={closeDialog}>
       {t_i18n('Close')}
     </Button>

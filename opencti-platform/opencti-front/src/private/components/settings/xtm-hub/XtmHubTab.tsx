@@ -1,8 +1,7 @@
 import { graphql } from 'react-relay';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useState } from 'react';
 import { Dialog, DialogContent, DialogTitle, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { ingestionTaxiiMutationFieldPatch } from '@components/data/ingestionTaxii/IngestionTaxiiEdition';
 import useExternalTab from './useExternalTab';
 import { useFormatter } from '../../../../components/i18n';
 import GradientButton from '../../../../components/GradientButton';
@@ -12,7 +11,6 @@ import ConfirmationDialog from './ConfirmationDialog';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import EnrollmentSuccess from './EnrollmentSuccess';
-import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 enum EnrollmentSteps {
@@ -123,7 +121,7 @@ const XtmHubTab: React.FC = () => {
       [EnrollmentSteps.INSTRUCTIONS, () => <EnrollmentInstructions onContinue={handleWaitingHubStep} />],
       [EnrollmentSteps.WAITING_HUB, () => <EnrollmentLoader onFocusTab={focusTab} />],
       [EnrollmentSteps.SUCCESS, () => <EnrollmentSuccess closeDialog={handleCloseDialog} />],
-      [EnrollmentSteps.ERROR, () => <div> {t_i18n('Sorry, we have an issue, please retry or else try to contact Filigran')}</div>],
+      [EnrollmentSteps.ERROR, () => <div> {t_i18n('Sorry, we have an issue, please retry')}</div>],
       [EnrollmentSteps.CANCELED, () => <div> {t_i18n('You have canceled the enrollment process')}</div>],
     ]);
     const renderer = ENROLLMENT_RENDERERS.get(enrollmentStep);
