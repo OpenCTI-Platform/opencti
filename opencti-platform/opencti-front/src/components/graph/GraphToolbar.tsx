@@ -64,14 +64,18 @@ const GraphToolbar = ({
           visibility: showLinearProgress || isLoadingData ? 'visible' : 'hidden',
         }}
       />
-      <div style={{
-        height: 54,
-        flex: '0 0 auto',
-        display: 'flex',
-        alignItems: 'center',
-        gap: theme.spacing(0.5),
-        padding: `0 ${theme.spacing(1)}`,
-      }}
+      <div
+        className="hide-scrollbar"
+        style={{
+          height: 54,
+          flex: '0 0 auto',
+          display: 'flex',
+          alignItems: 'center',
+          gap: theme.spacing(0.5),
+          padding: `0 ${theme.spacing(1)}`,
+          overflowX: 'scroll',
+          overflowY: 'hidden',
+        }}
       >
         <GraphToolbarDisplayTools onUnfixNodes={onUnfixNodes} />
         <Divider sx={{ margin: 1, height: '80%' }} orientation="vertical" />
