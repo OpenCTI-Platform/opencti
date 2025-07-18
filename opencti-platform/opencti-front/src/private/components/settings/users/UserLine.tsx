@@ -67,10 +67,8 @@ const UserLineComponent: React.FC<UserLineComponentProps> = (props) => {
       to={`/dashboard/settings/accesses/users/${node.id}`}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        {/* eslint-disable-next-line no-nested-ternary */}
-        {userServiceAccount ? <ManageAccountsIcon /> : (
-          external ? <AccountCircleOutlined /> : <PersonOutlined />
-        )}
+        {userServiceAccount && (<ManageAccountsIcon />)}
+        {!userServiceAccount && (external ? <AccountCircleOutlined /> : <PersonOutlined />)}
       </ListItemIcon>
       <ListItemText
         primary={
