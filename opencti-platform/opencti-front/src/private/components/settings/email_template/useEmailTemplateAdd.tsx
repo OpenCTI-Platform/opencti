@@ -1,13 +1,19 @@
 import { graphql } from 'react-relay';
 import { useState } from 'react';
+import { useEmailTemplateAddMutation } from '@components/settings/email_template/__generated__/useEmailTemplateAddMutation.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { insertNodeFromEdge } from '../../../../utils/store';
 
 const emailTemplateAddMutation = graphql`
-    mutation useEmailTemplateAddMutation($input: FintelTemplateAddInput!) {
-        fintelTemplateAdd(input: $input) {
+    mutation useEmailTemplateAddMutation($input: EmailTemplateAddInput!) {
+        emailTemplateAdd(input: $input) {
             id
             entity_type
+            name
+            description
+            email_object
+            sender_email
+            template_body
         }
     }
 `;
@@ -23,8 +29,8 @@ const useEmailTemplateAdd = () => {
       updater: (store) => {
         insertNodeFromEdge(
           store,
-          'fintelTemplates',
-          'fintelTemplateAdd',
+          'emailTemplates',
+          'emailTemplatesAdd',
         );
       },
       onError: (error) => {
