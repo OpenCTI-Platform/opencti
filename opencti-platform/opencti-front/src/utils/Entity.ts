@@ -139,6 +139,9 @@ export const resolveLink = (type = 'unknown'): string | null => {
       return '/dashboard/observations/observables';
     case 'Pir':
       return '/dashboard/pirs';
+    case 'DisseminationList':
+    case 'EmailTemplate':
+      return '/dashboard/settings/customization/email_templates';
     default:
       return null;
   }
