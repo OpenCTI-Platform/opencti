@@ -6,7 +6,53 @@ type EmailTemplate implements InternalObject & BasicObject {
     # EmailTemplate
     name: String!
     description: String
-    object: String!
+    email_object: String!
     sender_email: String!
     template_body: String!
+}
+
+# Relay connections
+type EmailTemplateConnection {
+    pageInfo: PageInfo!
+    edges: [EmailTemplateEdge!]!
+}
+
+type EmailTemplateEdge {
+    cursor: String!
+    node: EmailTemplate!
+}
+
+# Ordering
+enum EmailTemplateOrdering {
+    name
+    _score
+}
+
+# Queries
+type Query {
+    emailTemplate(id: ID!): EmailTemplate
+    emailTemplates (
+        first: Int
+        after: ID
+        orderBy: EmailTemplateOrdering
+        orderMode: OrderingMode
+        filters: FilterGroup
+        search: String
+    ): EmailTemplateConnection
+}
+
+#Input
+input EmailTemplateAddInput {
+    name: String! @constraint(minLength: 2, format: "not-blank")
+    description: String
+    email_object: String! @constraint(minLength: 2, format: "not-blank")
+    sender_email: String!
+    template_body: String!
+}
+
+# Mutations
+type Mutation {
+    emailTemplateAdd(input: EmailTemplateAddInput!): EmailTemplate
+    emailTemplateDelete(id: ID!): ID
+    emailTemplateFieldPatch(id: ID!, input: [EditInput!]!): EmailTemplate
 }

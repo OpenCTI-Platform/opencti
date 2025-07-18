@@ -24,7 +24,7 @@ const convertEmailTemplateToStix = (instance: StoreEntityEmailTemplate): StixEma
     ...stixObject,
     name: instance.name,
     description: instance.description,
-    object: instance.object,
+    email_object: instance.email_object,
     sender_email: instance.sender_email,
     template_body: instance.template_body,
     extensions: {
