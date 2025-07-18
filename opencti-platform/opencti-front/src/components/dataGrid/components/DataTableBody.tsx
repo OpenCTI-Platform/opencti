@@ -155,7 +155,7 @@ const DataTableBody = ({
       </div>
 
       <div style={containerLinesStyle}>
-        {resolvedData && resolvedData.length === 0 && !!emptyState && emptyState}
+        {resolvedData.length === 0 && !!emptyState && emptyState}
         {/* If we have perf issues we should find a way to memoize this */}
         {resolvedData.map((row: { id: string }, index: number) => {
           return (
