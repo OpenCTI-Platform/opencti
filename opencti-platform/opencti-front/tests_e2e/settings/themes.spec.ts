@@ -38,7 +38,7 @@ test('Custom theme creation, edition, and deletion', async ({ page }) => {
   await leftBarPage.clickOnMenu('Settings', 'Parameters');
 
   // Create theme
-  await page.getByTestId("create-theme-btn").click();
+  await page.getByTestId('create-theme-btn').click();
   for (const [key, value] of Object.entries(THEME)) {
     await page.locator(`input[name="${key}"]`).fill(value);
   }
@@ -48,7 +48,7 @@ test('Custom theme creation, edition, and deletion', async ({ page }) => {
   expect(await page.getByText(THEME.name).count() > 0);
 
   // Select system default
-  await page.locator("#mui-component-select-platform_theme").click();
+  await page.locator('#mui-component-select-platform_theme').click();
   await page.getByTestId(`${THEME.name}-li`).click();
   await page.waitForTimeout(1000);
   let logoSrc = await page
@@ -71,7 +71,7 @@ test('Custom theme creation, edition, and deletion', async ({ page }) => {
   expect(logoSrc).toContain('static/images/logo');
 
   // Select Dark theme again to delete custom theme
-  await page.locator("#mui-component-select-platform_theme").click();
+  await page.locator('#mui-component-select-platform_theme').click();
   await page.getByTestId('Dark-li').click();
   await page.waitForTimeout(1000);
 
