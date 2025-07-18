@@ -202,14 +202,13 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
 const DraftContextBanner = () => {
   const draftContext = useDraftContext();
   const [queryRef, loadQuery] = useQueryLoader<DraftContextBannerQuery>(draftContextBannerQuery);
-
   if (!draftContext) {
     return null;
   }
 
   useEffect(() => {
     loadQuery({ id: draftContext.id }, { fetchPolicy: 'store-and-network' });
-  }, []);
+  }, [draftContext.name]);
 
   const refetch = React.useCallback(() => {
     loadQuery({ id: draftContext.id }, { fetchPolicy: 'store-and-network' });

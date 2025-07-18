@@ -381,7 +381,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
               component={Link}
               to={`${resolveLink(optionsContext.values.associatedEntity.type)}/${optionsContext.values.associatedEntity.value}/files`}
             >
-              {t_i18n('Navigate to entity')}
+              {t_i18n('Navigate to draft')}
             </Button>
           );
         }

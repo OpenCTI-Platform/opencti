@@ -14,6 +14,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
+import DraftWorkspaceViewer from './draftWorkspace/DraftWorkspaceViewer';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import FileExportViewer from './FileExportViewer';
 import FileImportViewer from './FileImportViewer';
@@ -277,15 +278,17 @@ const FileManager = ({
           isArtifact={isArtifact}
           directDownload={directDownload}
         />
-        <WorkbenchFileViewer
-          entity={entity}
-          handleOpenImport={handleOpenImport}
-        />
         <FileExportViewer
           entity={entity}
           handleOpenExport={handleOpenExport}
           isExportPossible={isExportPossible}
         />
+        <WorkbenchFileViewer
+          entity={entity}
+          handleOpenImport={handleOpenImport}
+        />
+        <DraftWorkspaceViewer entityId={entity.id} />
+
         <FileExternalReferencesViewer
           entity={entity}
           handleOpenImport={handleOpenImport}
