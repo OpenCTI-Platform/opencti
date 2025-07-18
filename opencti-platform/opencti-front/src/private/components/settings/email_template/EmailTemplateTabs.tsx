@@ -3,14 +3,15 @@ import React, { ReactNode, useEffect, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { useTheme } from '@mui/styles';
 import { useEmailTemplateContext } from '@components/settings/email_template/EmailTemplateContext';
+import { EmailTemplateTabs_template$key } from '@components/settings/email_template/__generated__/EmailTemplateTabs_template.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import { KNOWLEDGE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 
 const tabsFragment = graphql`
-    fragment EmailTemplateTabs_template on FintelTemplate {
-        template_content
+    fragment EmailTemplateTabs_template on EmailTemplate {
+        template_body
     }
 `;
 

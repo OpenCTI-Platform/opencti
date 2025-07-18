@@ -2,19 +2,19 @@ import React, { FunctionComponent } from 'react';
 import { FormikHelpers } from 'formik/dist/types';
 import { useTheme } from '@mui/styles';
 import { Field, Formik } from 'formik';
-import { disseminationListValidator } from '@components/settings/dissemination_lists/DisseminationListUtils';
 import Button from '@mui/material/Button';
+import * as Yup from 'yup';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
-import { parseEmailList } from '../../../../utils/email';
-import { MESSAGING$ } from '../../../../relay/environment';
 
 export interface EmailTemplateFormInputs {
   name: string;
-  emails: string;
   description: string;
+  email_object: string;
+  sender_email: string;
+  template_body: string;
 }
 
 export type EmailTemplateFormInputKeys = keyof EmailTemplateFormInputs;
@@ -36,12 +36,18 @@ const EmailTemplateForm: FunctionComponent<EmailTemplateFormProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const validation = disseminationListValidator(t_i18n);
+
+  const validation = Yup.object().shape({
+    name: Yup.string().trim().required(t_i18n('This field is required')),
+    description: Yup.string().nullable(),
+  });
 
   const initialValues: EmailTemplateFormInputs = defaultValues ?? {
     name: '',
-    emails: '',
     description: '',
+    email_object: 'no',
+    sender_email: '',
+    template_body: '',
   };
 
   const updateField = async (field: EmailTemplateFormInputKeys, value: string) => {
@@ -82,26 +88,6 @@ const EmailTemplateForm: FunctionComponent<EmailTemplateFormProps> = ({
             multiline={true}
             rows={2}
             style={{ marginTop: theme.spacing(2) }}
-          />
-          <Field
-            component={TextField}
-            name="emails"
-            label={t_i18n('Emails (1 / line)')}
-            onSubmit={onUpdate}
-            fullWidth={true}
-            multiline={true}
-            rows={20}
-            style={{ marginTop: theme.spacing(2) }}
-            required
-            onBeforePaste={(pastedText: string) => {
-              // on pasting data, we try to extract emails
-              const extractedEmails = parseEmailList(pastedText);
-              if (extractedEmails.length > 0) {
-                MESSAGING$.notifySuccess(t_i18n('', { id: '{count} email address(es) extracted from pasted text', values: { count: extractedEmails.length } }));
-                return extractedEmails.join('\n'); // alter the pasted content
-              }
-              return pastedText; // do not alter pasted content; it's probably invalid anyway
-            }}
           />
           {!isEdition && (
           <div style={{ marginTop: theme.spacing(2), textAlign: 'right' }}>

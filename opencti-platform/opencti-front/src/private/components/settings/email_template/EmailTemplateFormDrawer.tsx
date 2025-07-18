@@ -12,14 +12,12 @@ import { resolveLink } from '../../../../utils/Entity';
 interface EmailTemplateFormDrawerProps {
   isOpen: boolean
   onClose: () => void
-  entityType?: string
   template?: { id: string } & EmailTemplateFormInputs
 }
 
 const FintelTemplateFormDrawer = ({
   isOpen,
   onClose,
-  entityType,
   template,
 }: EmailTemplateFormDrawerProps) => {
   const navigate = useNavigate();
@@ -34,21 +32,23 @@ const FintelTemplateFormDrawer = ({
     values,
     { setSubmitting, resetForm },
   ) => {
-    if (!entityType) return;
-
+    console.log('onAdd');
     commitAddMutation({
       variables: {
         input: {
           name: values.name,
           description: values.description,
+          email_object: values.email_object,
+          sender_email: values.sender_email,
+          template_body: values.template_body,
         },
       },
       onCompleted: (response) => {
         setSubmitting(false);
         resetForm();
         onClose();
-        if (response.fintelTemplateAdd) {
-          const { id, entity_type } = response.fintelTemplateAdd;
+        if (response.emailTemplateAdd) {
+          const { id, entity_type } = response.emailTemplateAdd;
           MESSAGING$.notifySuccess(t_i18n('Email template created'));
           navigate(`${resolveLink(entity_type)}/${id}`);
         }
