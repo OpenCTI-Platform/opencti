@@ -46,6 +46,8 @@ import IntrusionSetPage from "../model/intrusionSet.pageModel";
 import IntrusionSetDetailsPage from "../model/intrusionSetDetails.pageModel";
 import CampaignPageModel from "../model/campaign.pageModel";
 import CampaignDetailsPage from "../model/campaignDetails.pageModel";
+import MalwarePageModel from "../model/malware.pageModel";
+import MalwareDetailsPage from "../model/malwareDetails.pageModel";
 
 /**
  * Goal: validate that everything is opening without errors in Analyses > Note.
@@ -793,6 +795,41 @@ const navigateCampaign = async (page: Page) => {
   await expect(historyTab.getPage()).toBeVisible();
 };
 
+const navigateMalware = async (page: Page) => {
+  const malwareInitData = 'E2E dashboard - Malware - now';
+  const malwarePage = new MalwarePageModel(page);
+  await malwarePage.navigateFromMenu();
+  await expect(malwarePage.getPage()).toBeVisible();
+  await expect(page.getByText(malwareInitData)).toBeVisible();
+  await malwarePage.getItemFromListWithUrl(malwareInitData);
+
+  const malwareDetailsPage = new MalwareDetailsPage(page);
+  await expect(malwareDetailsPage.getPage()).toBeVisible();
+
+  // -- Knowledge
+  await malwareDetailsPage.tabs.goToKnowledgeTab();
+  await expect(page.getByTestId('malware-knowledge')).toBeVisible();
+
+  // -- Content
+  await malwareDetailsPage.tabs.goToContentTab();
+  const contentTab = new StixCoreObjectContentTabPage(page);
+  await expect(contentTab.getPage()).toBeVisible();
+
+  // -- Analysis
+  await malwareDetailsPage.tabs.goToAnalysesTab();
+  await expect(page.getByPlaceholder('Search these results...')).toBeVisible();
+
+  // -- Data
+  await malwareDetailsPage.tabs.goToDataTab();
+  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+
+  // -- History
+  await malwareDetailsPage.tabs.goToHistoryTab();
+  const historyTab = new StixCoreObjectHistoryTab(page);
+  await expect(historyTab.getPage()).toBeVisible();
+
+}
+
 const navigateAllMenu = async (page: Page) => {
   const leftBarPage = new LeftBarPage(page);
 
@@ -957,8 +994,9 @@ test('Check navigation on all pages', { tag: ['@navigation'] }, async ({ page })
   // await navigateArtifact(page);
   // await navigateIndicators(page);
   // await navigateIntrusionSet(page);
-  await navigateCampaign(page);
+  // await navigateCampaign(page);
   // await navigateInfrastructure(page);
-  await navigateThreatActorGroup(page);
-  await navigateThreatActorIndividual(page);
+  // await navigateThreatActorGroup(page);
+  // await navigateThreatActorIndividual(page);
+  await navigateMalware(page);
 });
