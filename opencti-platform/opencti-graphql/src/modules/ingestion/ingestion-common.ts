@@ -13,7 +13,10 @@ export const verifyIngestionAuthenticationContent = (authenticationType: string,
   }
 };
 
-export const removeAuthenticationCredentials = (authentication_type: IngestionAuthType, authentication_value: string) => {
+export const removeAuthenticationCredentials = (authentication_type: IngestionAuthType, authentication_value: string | undefined | null) => {
+  if (!authentication_value) {
+    return authentication_value;
+  }
   if (authentication_type === IngestionAuthType.Bearer) {
     return 'undefined';
   }
@@ -26,9 +29,12 @@ export const removeAuthenticationCredentials = (authentication_type: IngestionAu
   return authentication_value;
 };
 
-export const replaceAuthenticationCredentials = (currentValue: string, newValue: string | undefined, authType: IngestionAuthType) => {
+export const addAuthenticationCredentials = (currentValue: string | undefined | null, newValue: string | undefined | null, authType: IngestionAuthType) => {
   if (!newValue) {
     return currentValue;
+  }
+  if (!currentValue) {
+    return newValue;
   }
   if (authType === IngestionAuthType.Bearer) {
     // For bearer, the entire value is just the token

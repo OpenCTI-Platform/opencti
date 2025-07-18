@@ -7,13 +7,13 @@ import { notify } from '../../database/redis';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type EditInput, type IngestionTaxiiAddInput } from '../../generated/graphql';
-import { removeAuthenticationCredentials, replaceAuthenticationCredentials, verifyIngestionAuthenticationContent } from './ingestion-common';
+import { addAuthenticationCredentials, removeAuthenticationCredentials, verifyIngestionAuthenticationContent } from './ingestion-common';
 import { registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
 
 export const findById = async (context: AuthContext, user: AuthUser, ingestionId: string, removeCredentials = false) => {
   const taxiiIngestion = await storeLoadById<BasicStoreEntityIngestionTaxii>(context, user, ingestionId, ENTITY_TYPE_INGESTION_TAXII);
   if (removeCredentials) {
-    taxiiIngestion.authentication_value = removeAuthenticationCredentials(taxiiIngestion.authentication_type, taxiiIngestion.authentication_value);
+    taxiiIngestion.authentication_value = removeAuthenticationCredentials(taxiiIngestion.authentication_type, taxiiIngestion.authentication_value) || '';
   }
   return taxiiIngestion;
 };
@@ -72,7 +72,7 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
   if (input.some((editInput) => editInput.key === 'authentication_value')) {
     const { authentication_value, authentication_type } = await findById(context, user, ingestionId);
     const authenticationValueField = input.find((editInput) => editInput.key === 'authentication_value');
-    const updatedAuthenticationValue = replaceAuthenticationCredentials(
+    const updatedAuthenticationValue = addAuthenticationCredentials(
       authentication_value,
       authenticationValueField?.value[0],
       authentication_type
