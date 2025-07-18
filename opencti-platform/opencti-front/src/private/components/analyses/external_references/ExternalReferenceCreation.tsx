@@ -36,19 +36,29 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-export const externalReferenceCreationMutation = graphql`
+const externalReferenceCreationMutation = graphql`
   mutation ExternalReferenceCreationMutation(
     $input: ExternalReferenceAddInput!
   ) {
     externalReferenceAdd(input: $input) {
       id
       standard_id
+      entity_type
       source_name
       description
       url
       external_id
+      url
       created
       fileId
+      draftVersion {
+          draft_id
+          draft_operation
+      }
+      creators {
+          id
+          name
+      }
     }
   }
 `;
@@ -365,6 +375,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
       </div>
     );
   };
+
   return contextual ? renderContextual() : renderClassic();
 };
 
