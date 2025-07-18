@@ -133,7 +133,9 @@ const Drafts: FunctionComponent<DraftProps> = ({ entityId, openCreate, setOpenCr
   const validatedDraftColor = theme.palette.success.main;
   const draftContext = useDraftContext();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Drafts'));
+  if (!entityId) {
+    setTitle(t_i18n('Drafts'));
+  }
   const [commitSwitchToDraft] = useApiMutation<DraftContextBannerMutation>(draftContextBannerMutation);
 
   const initialValues = {
