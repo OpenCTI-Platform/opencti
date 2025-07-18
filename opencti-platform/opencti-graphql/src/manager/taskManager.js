@@ -64,6 +64,7 @@ import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { getEntityFromCache } from '../database/cache';
 import { objects as getContainerObjects } from '../domain/container';
+import { ruleApply } from './ruleManager';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -246,16 +247,14 @@ const sendResultToQueue = async (context, user, task, objects, opts = {}) => {
     no_split: opts.forceNoSplit ?? false
   });
 };
-
-const buildBundleElement = (element, actionType, operations) => {
+const buildBaseBundleElement = (element, standard_id) => {
   const baseObject = {
-    id: element.standard_id,
+    id: standard_id ?? element.standard_id,
     type: convertTypeToStixType(element.entity_type),
     extensions: {
       [STIX_EXT_OCTI]: {
         id: element.internal_id,
         type: element.entity_type,
-        ...baseOperationBuilder(actionType, operations, element),
       }
     }
   };
@@ -268,6 +267,14 @@ const buildBundleElement = (element, actionType, operations) => {
     baseObject.target_ref = element.toId;
   }
   return baseObject;
+};
+const buildBundleElement = (element, actionType, operations) => {
+  const bundleObject = buildBaseBundleElement(element);
+  bundleObject.extensions[STIX_EXT_OCTI] = {
+    ...bundleObject.extensions[STIX_EXT_OCTI],
+    ...baseOperationBuilder(actionType, operations, element)
+  };
+  return bundleObject;
 };
 
 const standardOperationCallback = async (context, user, task, actionType, operations) => {
@@ -504,6 +511,56 @@ const sharingOperationCallback = async (context, user, task, actionType, operati
   };
 };
 
+const ruleApplyCallback = async (context, user, task, ruleId) => {
+  return async (elements) => {
+    for (let index = 0; index < elements.length; index += 1) {
+      const inferredObjectsBundle = [];
+      const element = elements[index];
+      // in case of rule apply we need to fake the apply of the rule and get the resulting inferred creations
+      const inferredRelations = [];
+      const inferredEntities = [];
+      const createInferredRelationOverride = (_context, input, ruleContent, opts) => {
+        inferredRelations.push({ input, ruleContent, opts });
+      };
+      const createInferredEntityOverride = (_context, input, ruleContent, type) => {
+        inferredEntities.push({ input, ruleContent, type });
+      };
+      await ruleApply(context, user, element.internal_id, ruleId, createInferredEntityOverride, createInferredRelationOverride);
+      // Add all created inferred entities in bundle first, so that inferred relations targeting inferred entities can be created
+      for (let inferredEntitiesIndex = 0; inferredEntitiesIndex < inferredEntities.length; inferredEntitiesIndex += 1) {
+        const inferredEntity = inferredEntities[inferredEntitiesIndex];
+        const inferredEntityObject = buildBaseBundleElement(element, `${element.standard_id}_e_${inferredEntitiesIndex}`);
+        inferredEntityObject.extensions[STIX_EXT_OCTI] = {
+          ...inferredEntityObject.extensions[STIX_EXT_OCTI],
+          opencti_operation: 'inferred_entity',
+          opencti_inferred_input: JSON.stringify(inferredEntity)
+        };
+        inferredObjectsBundle.push(inferredEntityObject);
+      }
+      // Add all created inferred relation in bundle
+      for (let inferredRelationIndex = 0; inferredRelationIndex < inferredRelations.length; inferredRelationIndex += 1) {
+        const inferredRelation = inferredRelations[inferredRelationIndex];
+        const inferredRelationObject = buildBaseBundleElement(element, `${element.standard_id}_r_${inferredRelationIndex}`);
+        inferredRelationObject.extensions[STIX_EXT_OCTI] = {
+          ...inferredRelationObject.extensions[STIX_EXT_OCTI],
+          opencti_operation: 'inferred_rel',
+          opencti_inferred_input: JSON.stringify(inferredRelation)
+        };
+        inferredObjectsBundle.push(inferredRelationObject);
+      }
+      // Send inferred to queue
+      if (inferredObjectsBundle.length > 0) {
+        await sendResultToQueue(context, user, task, inferredObjectsBundle);
+      } else if (task.task_processed_number === 0) {
+        // If not objects are created, we want to mark the work as processed
+        await updateProcessedTime(context, user, task.work_id, 'No inferred to create');
+      }
+    }
+    // Update task
+    await updateTask(context, task.id, { task_processed_number: task.task_processed_number + elements.length });
+  };
+};
+
 const computeOperationCallback = async (context, user, task, actionType, operations) => {
   // Handle specific case of adding elements in container
   if (actionType === 'KNOWLEDGE_CONTAINER') {
@@ -520,6 +577,11 @@ const computeOperationCallback = async (context, user, task, actionType, operati
   // Handle specific sharing operation, as container must share inner object
   if (isShareAction(actionType) || isUnshareAction(actionType)) {
     return sharingOperationCallback(context, user, task, actionType, operations);
+  }
+  // Handle specific case of rule apply: we must resolve all inferred objects that result from the rule apply
+  if (actionType === ACTION_TYPE_RULE_APPLY) {
+    const { rule } = task;
+    return ruleApplyCallback(context, user, task, rule);
   }
   // If not, return standard callback
   return standardOperationCallback(context, user, task, actionType, operations);
