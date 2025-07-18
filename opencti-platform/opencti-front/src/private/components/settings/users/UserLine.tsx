@@ -15,6 +15,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { DataColumns } from '../../../../components/list_lines';
 import type { Theme } from '../../../../components/Theme';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -50,9 +51,11 @@ interface UserLineComponentProps {
 }
 
 const UserLineComponent: React.FC<UserLineComponentProps> = (props) => {
+  const { isFeatureEnable } = useHelper();
+  const serviceAccountFeatureFlag = isFeatureEnable('SERVICE_ACCOUNT');
   const { dataColumns, node } = props;
   const external = node.external === true;
-  const userServiceAccount = node.user_service_account;
+  const userServiceAccount = node.user_service_account && serviceAccountFeatureFlag;
   const classes = useStyles();
   const { t_i18n, fd } = useFormatter();
 

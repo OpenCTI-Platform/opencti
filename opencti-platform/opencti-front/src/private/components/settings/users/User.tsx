@@ -352,7 +352,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
       (a: Session, b: Session) => timestamp(a?.created) - timestamp(b?.created),
     );
   const accountExpireDate = fldt(user.account_lock_after_date);
-  const accountType = user.user_service_account && serviceAccountFeatureFlag;
+  const isServiceAccount = user.user_service_account && serviceAccountFeatureFlag;
   let historyTypes = ['History'];
   if (isGrantedToAudit && !isGrantedToKnowledge) {
     historyTypes = ['Activity'];
@@ -373,7 +373,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
           </Typography>
           <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
             <Grid container={true} spacing={3}>
-              {!user.user_service_account && (
+              {!isServiceAccount && (
                 <>
                   <Grid item xs={8}>
                     <Typography
@@ -411,13 +411,13 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                   </Grid>
                 </>
               )}
-              {user.user_service_account && (
+              {isServiceAccount && (
                 <>
                   <Grid item xs={4}>
                     <Typography variant="h3" gutterBottom={true} style={{ marginBottom: 5 }}>
                       {t_i18n('Account type')}
                     </Typography>
-                    {accountType
+                    {user.user_service_account
                       ? <Chip
                           variant="outlined"
                           label={t_i18n('Service account')}
@@ -496,7 +496,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                   </IconButton>
                 </pre>
               </Grid>
-              {!user.user_service_account && (
+              {!isServiceAccount && (
                 <>
                   <Grid item xs={6}>
                     <Typography variant="h3" gutterBottom={true}>
@@ -528,7 +528,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                   </Grid>
                 </>
               )}
-              {user.user_service_account && (
+              {isServiceAccount && (
               <>
                 <Grid item xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
@@ -716,7 +716,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                   </List>
                 </FieldOrEmpty>
               </Grid>
-              {!user.user_service_account && (
+              {!isServiceAccount && (
               <Grid item xs={6}>
                 <HiddenTypesChipList
                   hiddenTypes={user.default_hidden_types ?? []}
@@ -737,7 +737,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
             </Grid>
           </Paper>
         </Grid>
-        {!user.user_service_account && (
+        {!isServiceAccount && (
         <Triggers recipientId={user.id} filterKey="authorized_members.id" />
         )}
         <Grid item xs={6} style={{ marginTop: 10 }}>
