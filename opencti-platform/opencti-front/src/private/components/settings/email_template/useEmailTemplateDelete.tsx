@@ -1,7 +1,7 @@
 import { graphql, UseMutationConfig } from 'react-relay';
 import { useState } from 'react';
-import useApiMutation from '../../../../../utils/hooks/useApiMutation';
-import { deleteNodeFromEdge } from '../../../../../utils/store';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { deleteNodeFromEdge } from '../../../../utils/store';
 
 const emailTemplateDeleteMutation = graphql`
     mutation useEmailTemplateDeleteMutation($id: ID!) {
@@ -9,9 +9,9 @@ const emailTemplateDeleteMutation = graphql`
     }
 `;
 
-const useFintelTemplateFormDelete = (entitySettingId: string) => {
+const useEmailTemplateFormDelete = (entitySettingId: string) => {
   const [mutating, setMutating] = useState(false);
-  const [commitDeleteMutation] = useApiMutation<useFintelTemplateDeleteMutation>(emailTemplateDeleteMutation);
+  const [commitDeleteMutation] = useApiMutation<useEmailTemplateDeleteMutation>(emailTemplateDeleteMutation);
 
   const mutation = (
     id:string,
