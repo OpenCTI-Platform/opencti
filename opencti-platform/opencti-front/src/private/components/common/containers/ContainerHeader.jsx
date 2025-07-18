@@ -9,8 +9,9 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { useTheme } from '@mui/styles';
 import { Box } from '@mui/material';
+import StixCoreObjectSharedOrganisations from '../stix_core_objects/StixCoreObjectSharedOrganisations';
+import StixCoreObjectSharedOrganisationsDrawer from './StixCoreObjectSharedOrganisationsDrawer';
 import StixCoreObjectMenuItemUnderEE from '../stix_core_objects/StixCoreObjectMenuItemUnderEE';
-import StixCoreObjectSharingList from '../stix_core_objects/StixCoreObjectSharingList';
 import StixCoreObjectBackgroundTasks from '../stix_core_objects/StixCoreObjectActiveBackgroundTasks';
 import StixCoreObjectEnrollPlaybook from '../stix_core_objects/StixCoreObjectEnrollPlaybook';
 import StixCoreObjectFileExportButton from '../stix_core_objects/StixCoreObjectFileExportButton';
@@ -25,7 +26,6 @@ import Security from '../../../../utils/Security';
 import { useFormatter } from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
-import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
 import {
   KNOWLEDGE_KNENRICHMENT,
   KNOWLEDGE_KNGETEXPORT_KNASKEXPORT,
@@ -664,17 +664,7 @@ const ContainerHeader = (props) => {
               <StixCoreObjectSubscribers triggerData={triggerData} />
             )}
             {displaySharing && (
-              <>
-                <StixCoreObjectSharingList data={container} inContainer={true} />
-                <StixCoreObjectSharing
-                  elementId={container.id}
-                  open={openSharing}
-                  variant="header"
-                  disabled={isSharingDisabled}
-                  handleClose={displaySharingButton ? undefined : handleCloseSharing}
-                  inContainer={true}
-                />
-              </>
+            <StixCoreObjectSharedOrganisations data={container}/>
             )}
             {displayAuthorizedMembers && (
               <FormAuthorizedMembersDialog
@@ -765,7 +755,11 @@ const ContainerHeader = (props) => {
                 )}
               </PopoverMenu>
             )}
-
+            <StixCoreObjectSharedOrganisationsDrawer
+              data={container}
+              open={openSharing}
+              handleClose={displaySharingButton ? undefined : handleCloseSharing}
+            />
             {EditComponent}
           </div>
         </div>
