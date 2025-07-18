@@ -17,17 +17,6 @@ const DraftWorkspaceViewer = ({ entityId }: { entityId: string }) => {
   const theme = useTheme<Theme>();
   const draftContext = useDraftContext();
   const [openCreate, setOpenCreate] = useState(false);
-  const dataTableEmptyState = (
-    <div style={{
-      display: 'table',
-      height: '100%',
-      width: '100%',
-      textAlign: 'center',
-    }}
-    >
-      {t_i18n('No draft for the moment')}
-    </div>
-  );
 
   return (
     <Grid item xs={6}>
@@ -61,7 +50,7 @@ const DraftWorkspaceViewer = ({ entityId }: { entityId: string }) => {
             entityId={entityId}
             setOpenCreate={() => setOpenCreate(false)}
             openCreate={openCreate}
-            emptyState={dataTableEmptyState}
+            emptyStateMessage={t_i18n('No draft for the moment')}
           />
         </Paper>
       </div>

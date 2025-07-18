@@ -43,7 +43,7 @@ type DataTableComponentProps = Pick<DataTableProps,
 | 'selectOnLineClick'
 | 'onLineClick'
 | 'data'
-| 'emptyState'
+| 'emptyStateMessage'
 | 'disableLineSelection'>;
 
 const DataTableComponent = ({
@@ -72,7 +72,7 @@ const DataTableComponent = ({
   removeSelectAll,
   selectOnLineClick,
   onLineClick,
-  emptyState,
+  emptyStateMessage,
 }: DataTableComponentProps) => {
   const columnsLocalStorage = useDataTableLocalStorage<LocalStorageColumns>(`${storageKey}_columns`, {}, true);
   const [localStorageColumns, setLocalStorageColumns] = columnsLocalStorage;
@@ -251,7 +251,7 @@ const DataTableComponent = ({
             pageStart={pageStart}
             pageSize={currentPageSize}
             hideHeaders={hideHeaders}
-            emptyState={emptyState}
+            emptyStateMessage={emptyStateMessage}
           />
         </React.Suspense>
       </div>

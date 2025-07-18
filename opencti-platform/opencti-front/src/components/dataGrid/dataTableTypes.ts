@@ -149,7 +149,7 @@ export interface DataTableProps {
   hideHeaders?: boolean
   message?: string
   isLocalStorageEnabled?: boolean
-  emptyState?: ReactNode
+  emptyStateMessage?: string
 }
 
 export interface DataTableBodyProps {
@@ -158,7 +158,7 @@ export interface DataTableBodyProps {
   settingsMessagesBannerHeight?: DataTableProps['settingsMessagesBannerHeight']
   pageSize: number
   pageStart: number
-  emptyState?: ReactNode
+  emptyStateMessage?: string
   hideHeaders: DataTableProps['hideHeaders']
 }
 
