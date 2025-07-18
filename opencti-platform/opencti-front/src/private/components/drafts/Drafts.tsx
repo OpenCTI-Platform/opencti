@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, ReactNode } from 'react';
 import { DraftsLinesPaginationQuery, DraftsLinesPaginationQuery$variables } from '@components/drafts/__generated__/DraftsLinesPaginationQuery.graphql';
 import DraftCreation from '@components/drafts/DraftCreation';
 import { graphql } from 'react-relay';
@@ -122,9 +122,10 @@ interface DraftProps {
   entityId?: string;
   openCreate?: boolean;
   setOpenCreate?: () => void;
+  emptyState?: ReactNode
 }
 
-const Drafts: FunctionComponent<DraftProps> = ({ entityId, openCreate, setOpenCreate }) => {
+const Drafts: FunctionComponent<DraftProps> = ({ entityId, openCreate, setOpenCreate, emptyState }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const draftColor = getDraftModeColor(theme);
@@ -251,6 +252,7 @@ const Drafts: FunctionComponent<DraftProps> = ({ entityId, openCreate, setOpenCr
                 paginationOptions={queryPaginationOptions}
               />
             )}
+            emptyState={emptyState}
           />
         )}
         <DraftWorkspaceDialogCreation
