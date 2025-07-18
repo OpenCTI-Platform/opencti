@@ -1,13 +1,13 @@
 import React from 'react';
 import AccessesMenu from '@components/settings/AccessesMenu';
 import { graphql } from 'react-relay';
-import {
-  DisseminationListsLinesPaginationQuery,
-  DisseminationListsLinesPaginationQuery$variables,
-} from '@components/settings/dissemination_lists/__generated__/DisseminationListsLinesPaginationQuery.graphql';
-import { DisseminationListsLine_node$data } from '@components/settings/dissemination_lists/__generated__/DisseminationListsLine_node.graphql';
-import DisseminationListCreation from '@components/settings/dissemination_lists/DisseminationListCreation';
 import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
+import EmailTemplateCreation from '@components/settings/email_template/EmailTemplateCreation';
+import {
+  EmailTemplatesLinesPaginationQuery,
+  EmailTemplatesLinesPaginationQuery$variables,
+} from '@components/settings/email_template/__generated__/EmailTemplatesLinesPaginationQuery.graphql';
+import { EmailTemplatesLine_node$data } from '@components/settings/email_template/__generated__/EmailTemplatesLine_node.graphql';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
@@ -21,14 +21,13 @@ import AlertInfo from '../../../../components/AlertInfo';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import PageContainer from '../../../../components/PageContainer';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import EmailTemplateCreation from "@components/settings/email_template/EmailTemplateCreation";
 
-export const disseminationListsQuery = graphql`
+export const emailTemplatesQuery = graphql`
     query EmailTemplatesLinesPaginationQuery(
         $search: String
         $count: Int!
         $cursor: ID
-        $orderBy: DisseminationListOrdering
+        $orderBy: EmailTemplateOrdering
         $orderMode: OrderingMode
         $filters: FilterGroup
     ) {
@@ -44,24 +43,24 @@ export const disseminationListsQuery = graphql`
     }
 `;
 
-export const disseminationListsFragment = graphql`
+export const emailTemplatesFragment = graphql`
     fragment EmailTemplatesLines_data on Query
     @argumentDefinitions(
         search: { type: "String" }
         count: { type: "Int", defaultValue: 25 }
         cursor: { type: "ID" }
-        orderBy: { type: "DisseminationListOrdering", defaultValue: name }
+        orderBy: { type: "EmailTemplateOrdering", defaultValue: name }
         orderMode: { type: "OrderingMode", defaultValue: desc }
         filters: { type: "FilterGroup" }
     ) @refetchable(queryName: "EmailTemplatesLinesRefetchQuery") {
-        disseminationLists(
+        emailTemplates(
             search: $search
             first: $count
             after: $cursor
             orderBy: $orderBy
             orderMode: $orderMode
             filters: $filters
-        ) @connection(key: "Pagination_disseminationLists") {
+        ) @connection(key: "Pagination_emailTemplates") {
             edges {
                 node {
                     ...EmailTemplatesLine_node
@@ -76,13 +75,15 @@ export const disseminationListsFragment = graphql`
     }
 `;
 
-const disseminationListsLineFragment = graphql`
-    fragment EmailTemplatesLine_node on DisseminationList {
-        id
-        entity_type
-        name
-        emails
-        description
+const emailTemplatesLineFragment = graphql`
+    fragment EmailTemplatesLine_node on EmailTemplate {
+      id
+      entity_type
+      name
+      description
+      email_object
+      sender_email
+      template_body
     }
 `;
 
@@ -106,21 +107,21 @@ const EmailTemplates = () => {
     viewStorage,
     paginationOptions,
     helpers: storageHelpers,
-  } = usePaginationLocalStorage<DisseminationListsLinesPaginationQuery$variables>(
+  } = usePaginationLocalStorage<EmailTemplatesLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     initialValues,
   );
 
   const { filters } = viewStorage;
-  const contextFilters = useBuildEntityTypeBasedFilterContext('DisseminationList', filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext('EmailTemplate', filters);
 
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,
-  } as unknown as DisseminationListsLinesPaginationQuery$variables;
+  } as unknown as EmailTemplatesLinesPaginationQuery$variables;
 
-  const queryRef = useQueryLoading<DisseminationListsLinesPaginationQuery>(
-    disseminationListsQuery,
+  const queryRef = useQueryLoading<EmailTemplatesLinesPaginationQuery>(
+    emailTemplatesQuery,
     queryPaginationOptions,
   );
 
@@ -134,18 +135,18 @@ const EmailTemplates = () => {
     description: {
       id: 'description',
       label: 'Description',
-      percentWidth: 53,
+      percentWidth: 75,
       isSortable: false,
     },
   };
 
   const preloadedPaginationProps = {
-    linesQuery: disseminationListsQuery,
-    linesFragment: disseminationListsFragment,
+    linesQuery: emailTemplatesQuery,
+    linesFragment: emailTemplatesFragment,
     queryRef,
-    nodePath: ['disseminationLists', 'pageInfo', 'globalCount'],
+    nodePath: ['emailTemplates', 'pageInfo', 'globalCount'],
     setNumberOfElements: storageHelpers.handleSetNumberOfElements,
-  } as UsePreloadedPaginationFragment<DisseminationListsLinesPaginationQuery>;
+  } as UsePreloadedPaginationFragment<EmailTemplatesLinesPaginationQuery>;
 
   return (
     <>
@@ -163,11 +164,11 @@ const EmailTemplates = () => {
             {queryRef && (
             <DataTable
               dataColumns={dataColumns}
-              resolvePath={(data) => data.disseminationLists?.edges?.map(({ node }: { node: DisseminationListsLine_node$data }) => node)}
+              resolvePath={(data) => data.emailTemplates?.edges?.map(({ node }: { node: EmailTemplatesLine_node$data }) => node)}
               storageKey={LOCAL_STORAGE_KEY}
               initialValues={initialValues}
               toolbarFilters={contextFilters}
-              lineFragment={disseminationListsLineFragment}
+              lineFragment={emailTemplatesLineFragment}
               disableLineSelection
               preloadedPaginationProps={preloadedPaginationProps}
               createButton={<EmailTemplateCreation paginationOptions={queryPaginationOptions} />}
