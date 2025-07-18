@@ -82,7 +82,7 @@ export const generateUpdatePatchMessage = (patchElements, entityType, data = {})
             } else if (key === creatorsAttribute.name) {
               if (creators?.length > 0) {
                 message = value.map((creatorId) => {
-                  const creator = creators.find((c) => c.id === creatorId);
+                  const creator = creators.find((c) => c?.id === creatorId);
                   return `${creator?.name ?? creatorId}`;
                 }).join(', ');
               } else {
