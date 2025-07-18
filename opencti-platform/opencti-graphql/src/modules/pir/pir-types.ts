@@ -49,8 +49,13 @@ export interface ParsedPir {
   pir_filters: FilterGroup
 }
 
+interface PirDependency {
+  element_id: string,
+  author_id?: string | null,
+}
+
 export interface PirExplanation {
-  dependency_ids: string[],
+  dependencies: PirDependency[],
   criterion: PirCriterion,
 }
 

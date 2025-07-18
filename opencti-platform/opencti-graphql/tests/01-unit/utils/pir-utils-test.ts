@@ -23,11 +23,11 @@ describe('Pir utilities: arePirExplanationsEqual()', () => {
   it('should return false if not the same weights', () => {
     expect(arePirExplanationsEqual(
       {
-        dependency_ids: [relationshipId1],
+        dependencies: [{ element_id: relationshipId1 }],
         criterion: { weight: 1, filters: filters1 }
       },
       {
-        dependency_ids: [relationshipId1],
+        dependencies: [{ element_id: relationshipId1 }],
         criterion: { weight: 2, filters: filters1 }
       }
     )).toEqual(false);
@@ -36,11 +36,11 @@ describe('Pir utilities: arePirExplanationsEqual()', () => {
   it('should return false if not the same filters', () => {
     expect(arePirExplanationsEqual(
       {
-        dependency_ids: [relationshipId1],
+        dependencies: [{ element_id: relationshipId1 }],
         criterion: { weight: 1, filters: filters1 }
       },
       {
-        dependency_ids: [relationshipId1],
+        dependencies: [{ element_id: relationshipId1 }],
         criterion: { weight: 1, filters: filters2 }
       }
     )).toEqual(false);
@@ -49,11 +49,11 @@ describe('Pir utilities: arePirExplanationsEqual()', () => {
   it('should return false if not the same array of dependencies', () => {
     expect(arePirExplanationsEqual(
       {
-        dependency_ids: [relationshipId1],
+        dependencies: [{ element_id: relationshipId1 }],
         criterion: { weight: 1, filters: filters1 }
       },
       {
-        dependency_ids: [relationshipId2],
+        dependencies: [{ element_id: relationshipId2 }],
         criterion: { weight: 1, filters: filters1 }
       }
     )).toEqual(false);
@@ -62,11 +62,17 @@ describe('Pir utilities: arePirExplanationsEqual()', () => {
   it('should return true if same explanation', () => {
     expect(arePirExplanationsEqual(
       {
-        dependency_ids: [relationshipId1, relationshipId2],
+        dependencies: [
+          { element_id: relationshipId1 },
+          { element_id: relationshipId2 }
+        ],
         criterion: { weight: 1, filters: filters1 }
       },
       {
-        dependency_ids: [relationshipId1, relationshipId2],
+        dependencies: [
+          { element_id: relationshipId1 },
+          { element_id: relationshipId2 }
+        ],
         criterion: { weight: 1, filters: filters1 }
       }
     )).toEqual(true);
@@ -76,11 +82,17 @@ describe('Pir utilities: arePirExplanationsEqual()', () => {
 describe('Pir utilities: diffPirExplanations()', () => {
   const baseExplanations = [
     {
-      dependency_ids: [relationshipId1, relationshipId1],
+      dependencies: [
+        { element_id: relationshipId1 },
+        { element_id: relationshipId1 }
+      ],
       criterion: { weight: 1, filters: filters1 }
     },
     {
-      dependency_ids: [relationshipId2, relationshipId2],
+      dependencies: [
+        { element_id: relationshipId2 },
+        { element_id: relationshipId2 }
+      ],
       criterion: { weight: 1, filters: filters2 }
     }
   ];
@@ -96,20 +108,32 @@ describe('Pir utilities: diffPirExplanations()', () => {
   it('should return same array if base is empty', () => {
     expect(diffPirExplanations([
       {
-        dependency_ids: [relationshipId1, relationshipId1],
+        dependencies: [
+          { element_id: relationshipId1 },
+          { element_id: relationshipId1 }
+        ],
         criterion: { weight: 1, filters: filters1 }
       },
       {
-        dependency_ids: [relationshipId2, relationshipId2],
+        dependencies: [
+          { element_id: relationshipId2 },
+          { element_id: relationshipId2 }
+        ],
         criterion: { weight: 1, filters: filters2 }
       }
     ], [])).toEqual([
       {
-        dependency_ids: [relationshipId1, relationshipId1],
+        dependencies: [
+          { element_id: relationshipId1 },
+          { element_id: relationshipId1 }
+        ],
         criterion: { weight: 1, filters: filters1 }
       },
       {
-        dependency_ids: [relationshipId2, relationshipId2],
+        dependencies: [
+          { element_id: relationshipId2 },
+          { element_id: relationshipId2 }
+        ],
         criterion: { weight: 1, filters: filters2 }
       }
     ]);
@@ -118,20 +142,32 @@ describe('Pir utilities: diffPirExplanations()', () => {
   it('should return same array if all different from base', () => {
     expect(diffPirExplanations([
       {
-        dependency_ids: [relationshipId3, relationshipId3],
+        dependencies: [
+          { element_id: relationshipId3 },
+          { element_id: relationshipId3 }
+        ],
         criterion: { weight: 1, filters: filters3 }
       },
       {
-        dependency_ids: [relationshipId4, relationshipId4],
+        dependencies: [
+          { element_id: relationshipId4 },
+          { element_id: relationshipId4 }
+        ],
         criterion: { weight: 1, filters: filters4 }
       }
     ], baseExplanations)).toEqual([
       {
-        dependency_ids: [relationshipId3, relationshipId3],
+        dependencies: [
+          { element_id: relationshipId3 },
+          { element_id: relationshipId3 }
+        ],
         criterion: { weight: 1, filters: filters3 }
       },
       {
-        dependency_ids: [relationshipId4, relationshipId4],
+        dependencies: [
+          { element_id: relationshipId4 },
+          { element_id: relationshipId4 }
+        ],
         criterion: { weight: 1, filters: filters4 }
       }
     ]);
@@ -140,16 +176,25 @@ describe('Pir utilities: diffPirExplanations()', () => {
   it('should return diff array if some are different', () => {
     expect(diffPirExplanations([
       {
-        dependency_ids: [relationshipId2, relationshipId2],
+        dependencies: [
+          { element_id: relationshipId2 },
+          { element_id: relationshipId2 }
+        ],
         criterion: { weight: 1, filters: filters2 }
       },
       {
-        dependency_ids: [relationshipId4, relationshipId4],
+        dependencies: [
+          { element_id: relationshipId4 },
+          { element_id: relationshipId4 }
+        ],
         criterion: { weight: 1, filters: filters4 }
       }
     ], baseExplanations)).toEqual([
       {
-        dependency_ids: [relationshipId4, relationshipId4],
+        dependencies: [
+          { element_id: relationshipId4 },
+          { element_id: relationshipId4 }
+        ],
         criterion: { weight: 1, filters: filters4 }
       }
     ]);

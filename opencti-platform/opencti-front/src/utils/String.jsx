@@ -238,7 +238,7 @@ export const translateDateInterval = (filterValues, t_i18n) => {
 /**
  * Convert an entity type value in a translatable string
  *
- * @param {string}
+ * @param {string|undefined} value The entity type to translate
  * @returns {string} Translation in a translatable string
  */
 export const displayEntityTypeForTranslation = (value) => {
