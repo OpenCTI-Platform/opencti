@@ -3,19 +3,81 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import IngestionMenu from '@components/data/IngestionMenu';
 import { useFormatter } from '../../../components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import PageContainer from '../../../components/PageContainer';
+import Loader, { LoaderVariant } from '../../../components/Loader';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import { IngestionCatalogQuery } from '@components/data/__generated__/IngestionCatalogQuery.graphql';
+import IngestionCatalogCard from '@components/data/IngestionCatalog/IngestionCatalogCard';
+import { useTheme } from '@mui/styles';
+import type { Theme } from '../../../components/Theme';
 
-const IngestionCatalog = () => {
+const ingestionCatalogQuery = graphql`
+  query IngestionCatalogQuery {
+    catalogs {
+      id
+      name
+      description
+      entity_type
+      contracts
+    }
+  }
+`;
+
+interface IngestionCatalogComponentProps {
+  queryRef: PreloadedQuery<IngestionCatalogQuery>;
+}
+
+const IngestionCatalogComponent = ({
+  queryRef,
+}: IngestionCatalogComponentProps) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Catalog | Ingestion | Data'));
+  const { catalogs } = usePreloadedQuery(
+    ingestionCatalogQuery,
+    queryRef
+  );
   return (
-    <div style={{
-      margin: 0,
-      padding: '0 200px 50px 0',
-    }}>
-      <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('Catalog'), current: true }]} />
+    <>
       <IngestionMenu />
-    </div>
+      <PageContainer withRightMenu withGap>
+        <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('Catalog'), current: true }]} />
+        {catalogs.map((catalog) => {
+          return (
+            <>
+              <div key={catalog.id}>{catalog.name}</div>
+              <div
+                style={{
+                  display: 'flex',
+                  gap: theme.spacing(1)
+                }}
+              >
+                {catalog.contracts.map((contract) => (
+                  <IngestionCatalogCard contract={contract} />
+                ))}
+              </div>
+            </>
+          );
+        })}
+      </PageContainer>
+    </>
+  );
+};
+
+const IngestionCatalog = () => {
+  const queryRef = useQueryLoading<IngestionCatalogQuery>(
+    ingestionCatalogQuery,
+  );
+  return queryRef ? (
+    <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+      <IngestionCatalogComponent
+        queryRef={queryRef}
+      />
+    </React.Suspense>
+  ) : (
+    <Loader variant={LoaderVariant.container} />
   );
 };
 
