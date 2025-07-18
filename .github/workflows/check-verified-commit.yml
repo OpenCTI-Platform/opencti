@@ -9,7 +9,7 @@ jobs:
       # Comment below does not work for forks.
       run: |
         echo "If you need to sign commits, Please see https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits"
-    - name: Check signed commits in PR
+    - name: Check signed commits in PR see https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits
       uses: 1Password/check-signed-commits-action@v1
       with:
         comment: |
