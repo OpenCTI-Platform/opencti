@@ -4,7 +4,7 @@ import React, { FunctionComponent, useRef } from 'react';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import * as Yup from 'yup';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import TextField from '../../../../components/TextField';
@@ -14,6 +14,7 @@ import CaseTemplateTasks from '../../common/form/CaseTemplateTasks';
 import { CaseTemplateLine_node$data } from './__generated__/CaseTemplateLine_node.graphql';
 import { CaseTemplateTasksLines_DataQuery$variables } from './__generated__/CaseTemplateTasksLines_DataQuery.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 const caseTemplateAddTask = graphql`
   mutation CaseTemplateEditionAddTaskMutation(
@@ -134,8 +135,8 @@ const CaseTemplateEdition: FunctionComponent<CaseTemplateEditionProps> = ({
   return (
     <Drawer
       title={t_i18n('Update the case template')}
-      variant={DrawerVariant.updateWithPanel}
       open={openPanel}
+      controlledDial={EditEntityControlledDial}
       onClose={handleClose}
     >
       <Formik

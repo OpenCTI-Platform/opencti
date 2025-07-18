@@ -23,7 +23,6 @@ import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory
 import { adaptFieldValue } from '../../../../utils/String';
 import { convertMarkings } from '../../../../utils/edition';
 import useAttributes from '../../../../utils/hooks/useAttributes';
-import StixCyberObservableDeletion from './StixCyberObservableDeletion';
 
 const stixCyberObservableMutationFieldPatch = graphql`
   mutation StixCyberObservableEditionOverviewFieldPatchMutation(
@@ -557,9 +556,6 @@ const StixCyberObservableEditionOverviewComponent = ({
                     }
                     setFieldValue={setFieldValue}
                     onChange={handleChangeObjectMarking}
-                  />
-                  <StixCyberObservableDeletion
-                    id={stixCyberObservable.id}
                   />
                 </Form>
               )}

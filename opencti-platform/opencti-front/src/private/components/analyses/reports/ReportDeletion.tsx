@@ -6,8 +6,6 @@ import { useTheme } from '@mui/styles';
 import DialogTitle from '@mui/material/DialogTitle';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import Transition from '../../../../components/Transition';
 import { QueryRenderer } from '../../../../relay/environment';
 import type { Theme } from '../../../../components/Theme';
@@ -31,17 +29,18 @@ const reportDeletionMutation = graphql`
 
 interface ReportDeletionProps {
   reportId: string;
-  handleClose?: () => void;
+  handleClose: () => void;
+  isOpen: boolean;
 }
 
 const ReportDeletion: FunctionComponent<ReportDeletionProps> = ({
   reportId,
   handleClose,
+  isOpen,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const navigate = useNavigate();
-  const [displayDelete, setDisplayDelete] = useState(false);
   const [purgeElements, setPurgeElements] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const deleteSuccessMessage = t_i18n('', {
@@ -54,10 +53,9 @@ const ReportDeletion: FunctionComponent<ReportDeletionProps> = ({
     { successMessage: deleteSuccessMessage },
   );
 
-  const handleOpenDelete = () => setDisplayDelete(true);
   const handleCloseDelete = () => {
     setDeleting(false);
-    setDisplayDelete(false);
+    handleClose();
   };
 
   const submitDelete = () => {
@@ -65,87 +63,76 @@ const ReportDeletion: FunctionComponent<ReportDeletionProps> = ({
     commitMutation({
       variables: { id: reportId, purgeElements },
       onCompleted: () => {
-        setDeleting(false);
-        if (typeof handleClose === 'function') handleClose();
+        handleCloseDelete();
         navigate('/dashboard/analyses/reports');
+      },
+      onError: () => {
+        handleCloseDelete();
       },
     });
   };
 
   return (
-    <>
-      <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-        <Button
-          color="error"
-          variant="contained"
-          onClick={handleOpenDelete}
-          disabled={deleting}
-          sx={{ marginTop: 2 }}
-        >
-          {t_i18n('Delete')}
-        </Button>
-      </Security>
-      <Dialog
-        open={displayDelete}
-        slots={{ transition: Transition }}
-        slotProps={{ paper: { elevation: 1 } }}
-        onClose={handleCloseDelete}
-      >
-        <DialogTitle>
-          {t_i18n('Are you sure?')}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to delete this report?')}
-          </DialogContentText>
-          <QueryRenderer
-            query={reportDeletionQuery}
-            variables={{ id: reportId }}
-            render={(result: { props: ReportDeletionQuery$data }) => {
-              const numberOfDeletions = result.props?.report?.deleteWithElementsCount ?? 0;
-              if (numberOfDeletions === 0) return <div />;
-              return (
-                <Alert
-                  severity="warning"
-                  variant="outlined"
-                  style={{ marginTop: 20 }}
-                >
-                  <AlertTitle>{t_i18n('Cascade delete')}</AlertTitle>
-                  {t_i18n('In this report, ')}&nbsp;
-                  <strong style={{ color: theme.palette.error.main }}>
-                    {numberOfDeletions}
-                  </strong>
+    <Dialog
+      open={isOpen}
+      slots={{ transition: Transition }}
+      slotProps={{ paper: { elevation: 1 } }}
+      onClose={handleCloseDelete}
+    >
+      <DialogTitle>
+        {t_i18n('Are you sure?')}
+      </DialogTitle>
+      <DialogContent>
+        <DialogContentText>
+          {t_i18n('Do you want to delete this report?')}
+        </DialogContentText>
+        <QueryRenderer
+          query={reportDeletionQuery}
+          variables={{ id: reportId }}
+          render={(result: { props: ReportDeletionQuery$data }) => {
+            const numberOfDeletions = result.props?.report?.deleteWithElementsCount ?? 0;
+            if (numberOfDeletions === 0) return <div />;
+            return (
+              <Alert
+                severity="warning"
+                variant="outlined"
+                style={{ marginTop: 20 }}
+              >
+                <AlertTitle>{t_i18n('Cascade delete')}</AlertTitle>
+                {t_i18n('In this report, ')}&nbsp;
+                <strong style={{ color: theme.palette.error.main }}>
+                  {numberOfDeletions}
+                </strong>
                   &nbsp;
-                  {t_i18n(
-                    'element(s) are not linked to any other reports and will be orphan after the deletion.',
-                  )}
-                  <FormGroup>
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          disableRipple={true}
-                          checked={purgeElements}
-                          onChange={() => setPurgeElements(!purgeElements)}
-                        />
+                {t_i18n(
+                  'element(s) are not linked to any other reports and will be orphan after the deletion.',
+                )}
+                <FormGroup>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        disableRipple={true}
+                        checked={purgeElements}
+                        onChange={() => setPurgeElements(!purgeElements)}
+                      />
                       }
-                      label={t_i18n('Also delete these elements')}
-                    />
-                  </FormGroup>
-                </Alert>
-              );
-            }}
-          ></QueryRenderer>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDelete} disabled={deleting}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-            {t_i18n('Confirm')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </>
+                    label={t_i18n('Also delete these elements')}
+                  />
+                </FormGroup>
+              </Alert>
+            );
+          }}
+        ></QueryRenderer>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleCloseDelete} disabled={deleting}>
+          {t_i18n('Cancel')}
+        </Button>
+        <Button color="secondary" onClick={submitDelete} disabled={deleting}>
+          {t_i18n('Confirm')}
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 };
 

@@ -4,7 +4,6 @@ import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import * as Yup from 'yup';
 import { GenericContext } from '@components/common/model/GenericContextModel';
-import { Stack } from '@mui/material';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
@@ -26,7 +25,6 @@ import StatusField from '../../common/form/StatusField';
 import { CaseRftEditionOverview_case$key } from './__generated__/CaseRftEditionOverview_case.graphql';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-import CaseRftDeletion from './CaseRftDeletion';
 
 export const caseRftMutationFieldPatch = graphql`
   mutation CaseRftEditionOverviewCaseFieldPatchMutation(
@@ -422,19 +420,16 @@ const CaseRftEditionOverview: FunctionComponent<CaseRftEditionOverviewProps> = (
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
-            <CaseRftDeletion id={caseData.id}/>
-            {enableReferences && (
-              <CommitMessage
-                submitForm={submitForm}
-                disabled={isSubmitting || !isValid || !dirty}
-                setFieldValue={setFieldValue}
-                open={false}
-                values={values.references}
-                id={caseData.id}
-              />
-            )}
-          </Stack>
+          {enableReferences && (
+            <CommitMessage
+              submitForm={submitForm}
+              disabled={isSubmitting || !isValid || !dirty}
+              setFieldValue={setFieldValue}
+              open={false}
+              values={values.references}
+              id={caseData.id}
+            />
+          )}
         </Form>
       )}
     </Formik>

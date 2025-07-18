@@ -1,8 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import Button from '@mui/material/Button';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
-import { Stack } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import { StixCoreObjectOrStixCoreRelationshipNoteCard_node$data } from './__generated__/StixCoreObjectOrStixCoreRelationshipNoteCard_node.graphql';
 import { deleteNode } from '../../../../utils/store';
@@ -22,6 +20,8 @@ const NoteDeletionDeleteMutation = graphql`
 interface NoteDeletionProps {
   id?: string;
   handleOpenRemoveExternal?: () => void;
+  isOpen: boolean
+  handleClose: () => void;
   note?: StixCoreObjectOrStixCoreRelationshipNoteCard_node$data;
   paginationOptions?: StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables;
 }
@@ -29,6 +29,8 @@ interface NoteDeletionProps {
 const NoteDeletion: FunctionComponent<NoteDeletionProps> = ({
   id,
   handleOpenRemoveExternal,
+  isOpen,
+  handleClose,
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
@@ -43,7 +45,7 @@ const NoteDeletion: FunctionComponent<NoteDeletionProps> = ({
     { successMessage: deleteSuccessMessage },
   );
   const deletion = useDeletion({});
-  const { setDeleting, handleOpenDelete, handleCloseDelete, deleting } = deletion;
+  const { setDeleting, handleCloseDelete } = deletion;
   const submitDelete = () => {
     setDeleting(true);
     commit({
@@ -66,22 +68,13 @@ const NoteDeletion: FunctionComponent<NoteDeletionProps> = ({
     });
   };
   return (
-    <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
-      <Button
-        color="error"
-        variant="contained"
-        onClick={handleOpenDelete}
-        disabled={deleting}
-        sx={{ marginTop: 2 }}
-      >
-        {t_i18n('Delete')}
-      </Button>
-      <DeleteDialog
-        deletion={deletion}
-        submitDelete={submitDelete}
-        message={t_i18n('Do you want to delete this note?')}
-      />
-    </Stack>
+    <DeleteDialog
+      deletion={deletion}
+      submitDelete={submitDelete}
+      isOpen={isOpen}
+      onClose={handleClose}
+      message={t_i18n('Do you want to delete this note?')}
+    />
   );
 };
 
