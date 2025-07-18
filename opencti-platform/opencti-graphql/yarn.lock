@@ -12118,7 +12118,7 @@ __metadata:
     winston-daily-rotate-file: "npm:5.0.0"
     ws: "npm:8.18.2"
     xml2js: "npm:0.6.2"
-    zod: "npm:3.24.2"
+    zod: "npm:4.0.5"
   languageName: unknown
   linkType: soft
 
@@ -15544,7 +15544,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:3.24.2, zod@npm:^3.22.4, zod@npm:^3.23.8":
+"zod@npm:4.0.5":
+  version: 4.0.5
+  resolution: "zod@npm:4.0.5"
+  checksum: 10/f057f46e685e91ea280039ecda026c91facabdcbf869b3bae482ed13d34dce2efe9ee1f513fb1c8c0fde3b32e5904391f5ca015ec50b0924abf83a2b6f9dba65
+  languageName: node
+  linkType: hard
+
+"zod@npm:^3.22.4, zod@npm:^3.23.8":
   version: 3.24.2
   resolution: "zod@npm:3.24.2"
   checksum: 10/604c62a8cf8e330d78b106a557f4b44f5d14845d20b1360a423ccc09b58cb8525ccf7e4b40cf1bd4852d22393d2c67774b5817ec5a2fedab25f543b36ed15943
