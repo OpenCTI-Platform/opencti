@@ -54,6 +54,8 @@ For general suggestions or questions about the project or the documentation, you
   * worker
   * doc
 
+* All commit must be signed, if you need to configure your git environement please see [Github documentation on signed commit][https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits]
+
 ### How can you get in touch for other questions?
 
 If you need support or you wish to engage a discussion about the OpenCTI platform, feel free to join us on our [Slack channel](https://community.filigran.io). You can also send us an [email](mailto:contact@opencti.io).
