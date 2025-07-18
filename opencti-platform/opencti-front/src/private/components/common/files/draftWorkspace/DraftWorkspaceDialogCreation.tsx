@@ -100,7 +100,7 @@ const DraftWorkspaceDialogCreation: FunctionComponent<DraftWorkspaceCreationProp
             onClose={handleCloseCreate}
             fullWidth
           >
-            <DialogTitle>{t_i18n('Create a draft workspace')}</DialogTitle>
+            <DialogTitle>{t_i18n('Create a Draft')}</DialogTitle>
             <DialogContent>
               <Field
                 component={TextField}
