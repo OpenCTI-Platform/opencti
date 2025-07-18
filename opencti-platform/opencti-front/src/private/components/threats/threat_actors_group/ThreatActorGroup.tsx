@@ -76,7 +76,7 @@ const ThreatActorGroup: React.FC<ThreatActorGroupProps> = ({ threatActorGroupDat
   const overviewLayoutCustomization = useOverviewLayoutCustomization(threatActorGroup.entity_type);
 
   return (
-    <>
+    <div data-testid="threat-actor-group-details-page">
       <Grid
         container={true}
         spacing={3}
@@ -145,7 +145,7 @@ const ThreatActorGroup: React.FC<ThreatActorGroupProps> = ({ threatActorGroupDat
           })
         }
       </Grid>
-    </>
+    </div>
   );
 };
 

@@ -73,7 +73,7 @@ const Indicator: React.FC<IndicatorProps> = ({ indicatorData }) => {
     indicatorData,
   );
   return (
-    <>
+    <div data-testid="indicator-overview">
       <Grid
         container={true}
         spacing={3}
@@ -112,7 +112,7 @@ const Indicator: React.FC<IndicatorProps> = ({ indicatorData }) => {
           />
         </Grid>
       </Grid>
-    </>
+    </div>
   );
 };
 

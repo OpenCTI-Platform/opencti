@@ -193,7 +193,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
   } as UsePreloadedPaginationFragment<CaseIncidentsLinesCasesPaginationQuery>;
 
   return (
-    <>
+    <div data-testid="incident-response-page">
       <Breadcrumbs elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Incident responses'), current: true }]} />
       {queryRef && (
         <DataTable
@@ -212,7 +212,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
           )}
         />
       )}
-    </>
+    </div>
   );
 };
 

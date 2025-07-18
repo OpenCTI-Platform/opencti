@@ -196,7 +196,7 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
   } as UsePreloadedPaginationFragment<CaseRftsLinesCasesPaginationQuery>;
 
   return (
-    <>
+    <div data-testid="rfts-page">
       <Breadcrumbs elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Requests for takedown'), current: true }]} />
       {queryRef && (
         <DataTable
@@ -215,7 +215,7 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
           )}
         />
       )}
-    </>
+    </div>
   );
 };
 

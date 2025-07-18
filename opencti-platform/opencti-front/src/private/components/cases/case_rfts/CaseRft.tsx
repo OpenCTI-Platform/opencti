@@ -76,7 +76,7 @@ const CaseRft: React.FC<CaseRftProps> = ({ caseRftData, enableReferences }) => {
     queryTaskPaginationOptions,
   );
   return (
-    <>
+    <div data-testid="rft-page">
       <Grid
         container={true}
         spacing={3}
@@ -226,7 +226,7 @@ const CaseRft: React.FC<CaseRftProps> = ({ caseRftData, enableReferences }) => {
           })
         }
       </Grid>
-    </>
+    </div>
   );
 };
 
