@@ -20,11 +20,11 @@ test('Check Logo replacement', async ({ page }) => {
   await leftBarPage.clickOnMenu('Settings', 'Parameters');
 
   // Set platform theme to be Dark
-  await page.locator("#mui-component-select-platform_theme").click();
+  await page.locator('#mui-component-select-platform_theme').click();
   await page.getByTestId('Dark-li').click();
 
   let logoSrc = await page.getByRole('link', { name: 'logo' }).locator('img').getAttribute('src');
-  expect(logoSrc).toContain('static/images/logo');
+  expect(logoSrc).toContain('/static/images/logo_text_dark-VZM4NTMC.png');
 
   // Set Dark theme logo to the Google logo
   openThemeEditMenu('Dark', page);
@@ -34,7 +34,6 @@ test('Check Logo replacement', async ({ page }) => {
   await page
     .getByLabel('Close')
     .click();
-  await page.waitForTimeout(1000);
 
   const isLogoChanged = async () => {
     await page.reload();
@@ -49,11 +48,6 @@ test('Check Logo replacement', async ({ page }) => {
   logoSrc = await page.getByRole('link', { name: 'logo' }).locator('img').getAttribute('src');
   expect(logoSrc).not.toContain('static/images/logo');
 
-  // Close toast
-  await page
-    .getByLabel('Close')
-    .click();
-  
   // Reset logo
   openThemeEditMenu('Dark', page);
   await page
@@ -62,7 +56,6 @@ test('Check Logo replacement', async ({ page }) => {
   await page
     .getByLabel('Close')
     .click();
-  await page.waitForTimeout(1000);
 
   const isLogoBackToDefault = async () => {
     await page.reload();
