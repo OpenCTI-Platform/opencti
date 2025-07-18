@@ -8,10 +8,10 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import {
   type CsvMapperTestResult,
   type EditInput,
+  IngestionAuthType,
   type IngestionCsvAddAutoUserInput,
   type IngestionCsvAddInput,
   IngestionCsvMapperType,
-  IngestionAuthType,
   type UserAddInput
 } from '../../generated/graphql';
 import { notify } from '../../database/redis';
@@ -28,7 +28,7 @@ import { type CsvBundlerTestOpts, getCsvTestObjects, removeHeaderFromFullFile } 
 import { findById as findCsvMapperById, transformCsvMapperConfig } from '../internal/csvMapper/csvMapper-domain';
 import { parseCsvMapper } from '../internal/csvMapper/csvMapper-utils';
 import { type GetHttpClient, getHttpClient, OpenCTIHeaders } from '../../utils/http-client';
-import { verifyIngestionAuthenticationContent } from './ingestion-common';
+import { addAuthenticationCredentials, removeAuthenticationCredentials, verifyIngestionAuthenticationContent } from './ingestion-common';
 import { registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
 import type { StixObject } from '../../types/stix-2-1-common';
 import { extractContentFrom } from '../../utils/fileToContent';
@@ -46,8 +46,12 @@ import { regenerateCsvMapperUUID } from './ingestion-converter';
 
 const MINIMAL_CSV_FEED_COMPATIBLE_VERSION = '6.6.0';
 
-export const findById = (context: AuthContext, user: AuthUser, ingestionId: string) => {
-  return storeLoadById<BasicStoreEntityIngestionCsv>(context, user, ingestionId, ENTITY_TYPE_INGESTION_CSV);
+export const findById = async (context: AuthContext, user: AuthUser, ingestionId: string, removeCredentials = false) => {
+  const csvIngestion = await storeLoadById<BasicStoreEntityIngestionCsv>(context, user, ingestionId, ENTITY_TYPE_INGESTION_CSV);
+  if (removeCredentials) {
+    csvIngestion.authentication_value = removeAuthenticationCredentials(csvIngestion.authentication_type, csvIngestion.authentication_value);
+  }
+  return csvIngestion;
 };
 
 // findLastCSVIngestion
@@ -181,14 +185,7 @@ export const patchCsvIngestion = async (context: AuthContext, user: AuthUser, id
 };
 
 export const ingestionCsvEditField = async (context: AuthContext, user: AuthUser, ingestionId: string, input: EditInput[]) => {
-  if (input.some(((editInput) => editInput.key === 'authentication_value'))) {
-    const ingestionConfiguration = await findById(context, user, ingestionId);
-    const authenticationValueField = input.find(((editInput) => editInput.key === 'authentication_value'));
-    if (authenticationValueField && authenticationValueField.value[0]) {
-      verifyIngestionAuthenticationContent(ingestionConfiguration.authentication_type, authenticationValueField.value[0]);
-    }
-  }
-  const parsedInput = input.map((editInput) => {
+  const parsedInput = await Promise.all(input.map(async (editInput) => {
     if (editInput.key === 'csv_mapper') {
       if (!editInput.value) {
         return editInput.value;
@@ -199,10 +196,27 @@ export const ingestionCsvEditField = async (context: AuthContext, user: AuthUser
         value: [JSON.stringify({
           ...parseEditInput,
           id: parseEditInput.id ?? uuid()
-        })] };
+        })]
+      };
+    }
+    if (editInput.key === 'authentication_value') {
+      const { authentication_value, authentication_type } = await findById(context, user, ingestionId);
+      const authenticationValueField = input.find(((oldEditInput) => oldEditInput.key === 'authentication_value'));
+      const updatedAuthenticationValue = addAuthenticationCredentials(
+        authentication_value,
+        authenticationValueField?.value[0],
+        authentication_type
+      );
+      if (authenticationValueField && authenticationValueField.value[0]) {
+        verifyIngestionAuthenticationContent(authentication_type, authenticationValueField.value[0]);
+      }
+      return {
+        ...editInput,
+        value: [updatedAuthenticationValue],
+      };
     }
     return editInput;
-  });
+  }));
 
   const { element } = await updateAttribute(context, user, ingestionId, ENTITY_TYPE_INGESTION_CSV, parsedInput);
   await registerConnectorForIngestion(context, {
@@ -220,7 +234,12 @@ export const ingestionCsvEditField = async (context: AuthContext, user: AuthUser
     message: `updates \`${parsedInput.map((i) => i.key).join(', ')}\` for csv ingestion \`${element.name}\``,
     context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_CSV, input: parsedInput as unknown }
   });
-  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
+
+  const notif = await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
+  return {
+    ...notif,
+    authentication_value: removeAuthenticationCredentials(notif.authentication_type, notif.authentication_value)
+  };
 };
 
 export const ingestionCsvAddAutoUser = async (context: AuthContext, user: AuthUser, ingestionId: string, input: IngestionCsvAddAutoUserInput) => {

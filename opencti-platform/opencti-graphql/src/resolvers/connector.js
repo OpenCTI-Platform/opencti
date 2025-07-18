@@ -43,8 +43,8 @@ import {
 } from '../domain/work';
 import { now, sinceNowInMinutes } from '../utils/format';
 import {
-  computeManagerConnectorContract,
   computeManagerConnectorConfiguration,
+  computeManagerConnectorContract,
   computeManagerConnectorImage,
   computeManagerContractHash,
   connector,
@@ -77,7 +77,7 @@ const connectorResolvers = {
     connectorsForNotification: (_, __, context) => connectorsForNotification(context, context.user),
     works: (_, args, context) => findAll(context, context.user, args),
     work: (_, { id }, context) => findById(context, context.user, id),
-    synchronizer: (_, { id }, context) => findSyncById(context, context.user, id),
+    synchronizer: (_, { id }, context) => findSyncById(context, context.user, id, true),
     synchronizers: (_, args, context) => findAllSync(context, context.user, args),
     synchronizerFetch: (_, { input }, context) => fetchRemoteStreams(context, context.user, input),
     // region new managed connectors

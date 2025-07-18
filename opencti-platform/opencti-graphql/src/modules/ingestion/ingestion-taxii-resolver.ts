@@ -3,7 +3,7 @@ import type { Resolvers } from '../../generated/graphql';
 
 const ingestionTaxiiResolvers: Resolvers = {
   Query: {
-    ingestionTaxii: (_, { id }, context) => findById(context, context.user, id),
+    ingestionTaxii: (_, { id }, context) => findById(context, context.user, id, true),
     ingestionTaxiis: (_, args, context) => findAllPaginated(context, context.user, args),
   },
   IngestionTaxii: {
