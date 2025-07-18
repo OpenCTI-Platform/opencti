@@ -24,6 +24,7 @@ import {
   type EditContext,
   type EditInput,
   type EditManagedConnectorInput,
+  IngestionAuthType,
   type LogsConnectorStatusInput,
   type MutationSynchronizerTestArgs,
   type RegisterConnectorInput,
@@ -45,6 +46,7 @@ import type { Connector } from '../connector/internalConnector';
 import { addWorkbenchDraftConvertionCount, addWorkbenchValidationCount } from '../manager/telemetryManager';
 import { computeConnectorTargetContract, getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
 import { getEntitiesMapFromCache } from '../database/cache';
+import { removeAuthenticationCredentials } from '../modules/ingestion/ingestion-common';
 
 // region connectors
 export const connectorForWork = async (context: AuthContext, user: AuthUser, id: string) => {
@@ -399,8 +401,12 @@ export const patchSync = async (context: AuthContext, user: AuthUser, id: string
   const patched = await patchAttribute(context, user, id, ENTITY_TYPE_SYNC, patch);
   return patched.element;
 };
-export const findSyncById = (context: AuthContext, user: AuthUser, syncId: string) => {
-  return storeLoadById(context, user, syncId, ENTITY_TYPE_SYNC);
+export const findSyncById = async (context: AuthContext, user: AuthUser, syncId: string, removeCredentials = false) => {
+  const basicIngestion = await storeLoadById(context, user, syncId, ENTITY_TYPE_SYNC);
+  if (removeCredentials) {
+    basicIngestion.token = removeAuthenticationCredentials(IngestionAuthType.Bearer, basicIngestion.token);
+  }
+  return basicIngestion;
 };
 export const findAllSync = async (context: AuthContext, user: AuthUser, opts = {}) => {
   return listEntities(context, SYSTEM_USER, [ENTITY_TYPE_SYNC], opts);
