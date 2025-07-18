@@ -7,7 +7,7 @@ export const ENTITY_TYPE_EMAIL_TEMPLATE = 'EmailTemplate';
 export interface BasicStoreEntityEmailTemplate extends BasicStoreEntity {
   name: string;
   description: string;
-  object: string;
+  email_object: string;
   sender_email: string;
   template_body: string;
 }
@@ -15,7 +15,7 @@ export interface BasicStoreEntityEmailTemplate extends BasicStoreEntity {
 export interface StoreEntityEmailTemplate extends StoreEntity {
   name: string;
   description: string;
-  object: string;
+  email_object: string;
   sender_email: string;
   template_body: string;
 }
@@ -23,7 +23,7 @@ export interface StoreEntityEmailTemplate extends StoreEntity {
 export interface StixEmailTemplate extends StixObject {
   name: string;
   description: string;
-  object: string;
+  email_object: string;
   sender_email: string;
   template_body: string;
   extensions: {
