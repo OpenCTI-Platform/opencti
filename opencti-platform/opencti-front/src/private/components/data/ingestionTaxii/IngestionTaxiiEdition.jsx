@@ -291,7 +291,7 @@ const IngestionTaxiiEditionContainer = ({
                     variant="standard"
                     name="cert"
                     label={t('Certificate (base64)')}
-                    onSubmit={(name, value) => handleSubmitField(name, value, values)}
+                    onSubmit={(name, value) => handleSubmitField(name, value)}
                     fullWidth={true}
                     style={fieldSpacingContainerStyle}
                   />
@@ -305,7 +305,7 @@ const IngestionTaxiiEditionContainer = ({
                     variant="standard"
                     name="ca"
                     label={t('CA certificate (base64)')}
-                    onSubmit={(name, value) => handleSubmitField(name, value, values)}
+                    onSubmit={(name, value) => handleSubmitField(name, value)}
                     fullWidth={true}
                     style={fieldSpacingContainerStyle}
                   />
