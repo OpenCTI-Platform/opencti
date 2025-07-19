@@ -449,12 +449,9 @@ export const queryNLQAi = async (promptValue: ChatPromptValueInterface) => {
       model: AI_MODEL
     });
   } catch (err: any) {
-    // More granular error handling for common API errors
-    let errorType = 'UnknownError';
     const errorMessage = err?.message || err?.toString();
     const errorStatus = err?.response?.status;
     if (err instanceof AuthenticationError) {
-      errorType = 'AuthenticationError';
       logApp.error('[NLQ] Authentication error when calling the NLQ model', {
         error: err,
         enabled: AI_ENABLED,
@@ -468,7 +465,6 @@ export const queryNLQAi = async (promptValue: ChatPromptValueInterface) => {
       });
       throw badAiConfigError;
     } else if (errorStatus === 429) {
-      errorType = 'RateLimitError';
       logApp.error('[NLQ] Rate limit exceeded when calling the NLQ model', {
         error: err,
         enabled: AI_ENABLED,
@@ -480,8 +476,8 @@ export const queryNLQAi = async (promptValue: ChatPromptValueInterface) => {
         azure_deployment: AI_AZURE_DEPLOYMENT,
         promptValue
       });
+      throw UnknownError('Error when calling the NLQ model [RateLimitError]', { cause: err, promptValue, errorType: 'RateLimitError', errorMessage, errorStatus });
     } else if (errorStatus === 401 || errorStatus === 403) {
-      errorType = 'AuthzError';
       logApp.error('[NLQ] Authorization error when calling the NLQ model', {
         error: err,
         enabled: AI_ENABLED,
@@ -493,8 +489,8 @@ export const queryNLQAi = async (promptValue: ChatPromptValueInterface) => {
         azure_deployment: AI_AZURE_DEPLOYMENT,
         promptValue
       });
+      throw UnknownError('Error when calling the NLQ model [AuthzError]', { cause: err, promptValue, errorType: 'AuthzError', errorMessage, errorStatus });
     } else if (errorStatus === 404) {
-      errorType = 'NotFoundError';
       logApp.error('[NLQ] Model or deployment not found', {
         error: err,
         enabled: AI_ENABLED,
@@ -506,8 +502,8 @@ export const queryNLQAi = async (promptValue: ChatPromptValueInterface) => {
         azure_deployment: AI_AZURE_DEPLOYMENT,
         promptValue
       });
+      throw UnknownError('Error when calling the NLQ model [NotFoundError]', { cause: err, promptValue, errorType: 'NotFoundError', errorMessage, errorStatus });
     } else if (errorStatus && errorStatus >= 500) {
-      errorType = 'ProviderServerError';
       logApp.error('[NLQ] Provider server error', {
         error: err,
         enabled: AI_ENABLED,
@@ -519,6 +515,7 @@ export const queryNLQAi = async (promptValue: ChatPromptValueInterface) => {
         azure_deployment: AI_AZURE_DEPLOYMENT,
         promptValue
       });
+      throw UnknownError('Error when calling the NLQ model [ProviderServerError]', { cause: err, promptValue, errorType: 'ProviderServerError', errorMessage, errorStatus });
     } else {
       logApp.error('[NLQ] Error when calling the NLQ model', {
         error: err,
@@ -531,8 +528,8 @@ export const queryNLQAi = async (promptValue: ChatPromptValueInterface) => {
         azure_deployment: AI_AZURE_DEPLOYMENT,
         promptValue
       });
+      throw UnknownError('Error when calling the NLQ model [UnknownError]', { cause: err, promptValue, errorType: 'UnknownError', errorMessage, errorStatus });
     }
-    throw UnknownError(`Error when calling the NLQ model [${errorType}]`, { cause: err, promptValue, errorType, errorMessage, errorStatus });
   }
 };
 
