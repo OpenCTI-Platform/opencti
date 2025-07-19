@@ -71,7 +71,9 @@ export const fixSpelling = async (context: AuthContext, user: AuthUser, id: stri
   ${content}
   `;
   const response = await queryAi(id, SYSTEM_PROMPT, prompt, user);
-  return response;
+  if (typeof response === 'string') return response;
+  if (response && typeof response === 'object' && 'error' in response && 'message' in response) throw new Error(String(response.message));
+  return String(response);
 };
 
 export const makeShorter = async (context: AuthContext, user: AuthUser, id: string, content: string, format: InputMaybe<Format> = Format.Text) => {
@@ -91,7 +93,9 @@ export const makeShorter = async (context: AuthContext, user: AuthUser, id: stri
   ${content}
   `;
   const response = await queryAi(id, SYSTEM_PROMPT, prompt, user);
-  return response;
+  if (typeof response === 'string') return response;
+  if (response && typeof response === 'object' && 'error' in response && 'message' in response) throw new Error(String(response.message));
+  return String(response);
 };
 
 export const makeLonger = async (context: AuthContext, user: AuthUser, id: string, content: string, format: InputMaybe<Format> = Format.Text) => {
@@ -112,7 +116,9 @@ export const makeLonger = async (context: AuthContext, user: AuthUser, id: strin
   ${content}
   `;
   const response = await queryAi(id, SYSTEM_PROMPT, prompt, user);
-  return response;
+  if (typeof response === 'string') return response;
+  if (response && typeof response === 'object' && 'error' in response && 'message' in response) throw new Error(String(response.message));
+  return String(response);
 };
 
 // eslint-disable-next-line max-len
@@ -133,7 +139,9 @@ export const changeTone = async (context: AuthContext, user: AuthUser, id: strin
   ${content}
   `;
   const response = await queryAi(id, SYSTEM_PROMPT, prompt, user);
-  return response;
+  if (typeof response === 'string') return response;
+  if (response && typeof response === 'object' && 'error' in response && 'message' in response) throw new Error(String(response.message));
+  return String(response);
 };
 
 export const summarize = async (context: AuthContext, user: AuthUser, id: string, content: string, format: InputMaybe<Format> = Format.Text) => {
@@ -152,7 +160,9 @@ export const summarize = async (context: AuthContext, user: AuthUser, id: string
   ${content}
   `;
   const response = await queryAi(id, SYSTEM_PROMPT, prompt, user);
-  return response;
+  if (typeof response === 'string') return response;
+  if (response && typeof response === 'object' && 'error' in response && 'message' in response) throw new Error(String(response.message));
+  return String(response);
 };
 
 export const explain = async (context: AuthContext, user: AuthUser, id: string, content: string) => {
@@ -171,7 +181,9 @@ export const explain = async (context: AuthContext, user: AuthUser, id: string, 
   ${content}
   `;
   const response = await queryAi(id, SYSTEM_PROMPT, prompt, user);
-  return response;
+  if (typeof response === 'string') return response;
+  if (response && typeof response === 'object' && 'error' in response && 'message' in response) throw new Error(String(response.message));
+  return String(response);
 };
 
 export const generateContainerReport = async (context: AuthContext, user: AuthUser, args: MutationAiContainerGenerateReportArgs) => {
@@ -211,7 +223,11 @@ export const generateContainerReport = async (context: AuthContext, user: AuthUs
     ${entitiesInvolved}
   `;
   const response = await queryAi(id, SYSTEM_PROMPT, prompt, user);
-  return response.replace('```html', '').replace('```markdown', '').replace('```', '').trim();
+  if (typeof response === 'string') {
+    return response.replace('```html', '').replace('```markdown', '').replace('```', '').trim();
+  }
+  if (response && typeof response === 'object' && 'error' in response && 'message' in response) throw new Error(String(response.message));
+  return String(response);
 };
 
 // TODO This function is deprecated (AI Insights)
@@ -270,7 +286,9 @@ export const summarizeFiles = async (context: AuthContext, user: AuthUser, args:
   ${filesContent.join('')}
   `;
   const response = await queryAi(id, SYSTEM_PROMPT, prompt, user);
-  return response;
+  if (typeof response === 'string') return response;
+  if (response && typeof response === 'object' && 'error' in response && 'message' in response) throw new Error(String(response.message));
+  return String(response);
 };
 
 // TODO This function is deprecated (NLP)
@@ -314,7 +332,9 @@ export const convertFilesToStix = async (context: AuthContext, user: AuthUser, a
   ${filesContent.join('')}
   `;
   const response = await queryAi(id, SYSTEM_PROMPT, prompt, user);
-  return response;
+  if (typeof response === 'string') return response;
+  if (response && typeof response === 'object' && 'error' in response && 'message' in response) throw new Error(String(response.message));
+  return String(response);
 };
 
 const resolveValuesIdsMapForEntityTypes = async (context: AuthContext, user: AuthUser, valuesIdsToResolve: string[], entityTypes: string[]) => {
