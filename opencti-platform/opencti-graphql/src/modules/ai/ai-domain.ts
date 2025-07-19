@@ -72,7 +72,7 @@ export const fixSpelling = async (context: AuthContext, user: AuthUser, id: stri
   `;
   const response = await queryAi(id, SYSTEM_PROMPT, prompt, user);
   if (typeof response === 'string') return response;
-  if (response && typeof response === 'object' && 'error' in response && 'message' in response) throw new Error(String(response.message));
+  if ('error' in response && 'message' in response) throw new Error(String(response.message));
   return String(response);
 };
 
@@ -94,7 +94,7 @@ export const makeShorter = async (context: AuthContext, user: AuthUser, id: stri
   `;
   const response = await queryAi(id, SYSTEM_PROMPT, prompt, user);
   if (typeof response === 'string') return response;
-  if (response && typeof response === 'object' && 'error' in response && 'message' in response) throw new Error(String(response.message));
+  if ('error' in response && 'message' in response) throw new Error(String(response.message));
   return String(response);
 };
 
@@ -117,7 +117,7 @@ export const makeLonger = async (context: AuthContext, user: AuthUser, id: strin
   `;
   const response = await queryAi(id, SYSTEM_PROMPT, prompt, user);
   if (typeof response === 'string') return response;
-  if (response && typeof response === 'object' && 'error' in response && 'message' in response) throw new Error(String(response.message));
+  if ('error' in response && 'message' in response) throw new Error(String(response.message));
   return String(response);
 };
 
@@ -140,7 +140,7 @@ export const changeTone = async (context: AuthContext, user: AuthUser, id: strin
   `;
   const response = await queryAi(id, SYSTEM_PROMPT, prompt, user);
   if (typeof response === 'string') return response;
-  if (response && typeof response === 'object' && 'error' in response && 'message' in response) throw new Error(String(response.message));
+  if ('error' in response && 'message' in response) throw new Error(String(response.message));
   return String(response);
 };
 
@@ -161,7 +161,7 @@ export const summarize = async (context: AuthContext, user: AuthUser, id: string
   `;
   const response = await queryAi(id, SYSTEM_PROMPT, prompt, user);
   if (typeof response === 'string') return response;
-  if (response && typeof response === 'object' && 'error' in response && 'message' in response) throw new Error(String(response.message));
+  if ('error' in response && 'message' in response) throw new Error(String(response.message));
   return String(response);
 };
 
@@ -182,7 +182,7 @@ export const explain = async (context: AuthContext, user: AuthUser, id: string, 
   `;
   const response = await queryAi(id, SYSTEM_PROMPT, prompt, user);
   if (typeof response === 'string') return response;
-  if (response && typeof response === 'object' && 'error' in response && 'message' in response) throw new Error(String(response.message));
+  if ('error' in response && 'message' in response) throw new Error(String(response.message));
   return String(response);
 };
 
@@ -226,7 +226,7 @@ export const generateContainerReport = async (context: AuthContext, user: AuthUs
   if (typeof response === 'string') {
     return response.replace('```html', '').replace('```markdown', '').replace('```', '').trim();
   }
-  if (response && typeof response === 'object' && 'error' in response && 'message' in response) throw new Error(String(response.message));
+  if ('error' in response && 'message' in response) throw new Error(String(response.message));
   return String(response);
 };
 
@@ -287,7 +287,7 @@ export const summarizeFiles = async (context: AuthContext, user: AuthUser, args:
   `;
   const response = await queryAi(id, SYSTEM_PROMPT, prompt, user);
   if (typeof response === 'string') return response;
-  if (response && typeof response === 'object' && 'error' in response && 'message' in response) throw new Error(String(response.message));
+  if ('error' in response && 'message' in response) throw new Error(String(response.message));
   return String(response);
 };
 
@@ -333,7 +333,7 @@ export const convertFilesToStix = async (context: AuthContext, user: AuthUser, a
   `;
   const response = await queryAi(id, SYSTEM_PROMPT, prompt, user);
   if (typeof response === 'string') return response;
-  if (response && typeof response === 'object' && 'error' in response && 'message' in response) throw new Error(String(response.message));
+  if ('error' in response && 'message' in response) throw new Error(String(response.message));
   return String(response);
 };
 
