@@ -81,6 +81,10 @@ const PoliciesFragment = graphql`
       name
     }
     otp_mandatory
+    public_organization {
+      id
+      name
+    }
   }
 `;
 
@@ -117,6 +121,7 @@ const policiesValidation = () => Yup.object().shape({
   platform_consent_confirm_text: Yup.string().nullable(),
   platform_banner_level: Yup.string().nullable(),
   platform_banner_text: Yup.string().nullable(),
+  public_organization: Yup.object().nullable(),
 });
 
 interface PoliciesComponentProps {
@@ -181,6 +186,10 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
     platform_banner_text: settings.platform_banner_text,
     otp_mandatory: settings.otp_mandatory,
     default_group_for_ingestion_users: null,
+    public_organization: settings.public_organization ? {
+      label: settings.public_organization.name,
+      value: settings.public_organization.id,
+    } : null,
 
   };
   const authProviders = settings.platform_providers;
@@ -221,6 +230,17 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                               disabled={disabled || !isEnterpriseEdition}
                               label={'Platform organization'}
                               onChange={() => setOpenPlatformOrganizationChanges(true)}
+                              style={{ width: '100%', marginTop: 20 }}
+                              multiple={false}
+                              outlined={false}
+                            />
+                          </EETooltip>
+                          <EETooltip>
+                            <ObjectOrganizationField
+                              name="public_organization"
+                              disabled={disabled || !isEnterpriseEdition}
+                              label={'Public organization'}
+                              onChange={(name: string, value: string) => handleSubmitField(name, value || null)}
                               style={{ width: '100%', marginTop: 20 }}
                               multiple={false}
                               outlined={false}

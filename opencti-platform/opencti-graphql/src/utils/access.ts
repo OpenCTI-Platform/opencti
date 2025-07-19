@@ -566,6 +566,7 @@ const isEntityOrganizationsAllowed = (
   entityOrganizations: string[],
   user: AuthUser,
   hasPlatformOrg: boolean,
+  publicOrganization: string | undefined,
 ) => {
   // If platform organization is set
   if (hasPlatformOrg) {
@@ -573,6 +574,10 @@ const isEntityOrganizationsAllowed = (
 
     // If user part of platform organization, is granted by default
     if (context.user_inside_platform_organization) {
+      return true;
+    }
+    // Grant access to public organization
+    if (publicOrganization && entityOrganizations.includes(publicOrganization)) {
       return true;
     }
     // Grant access to the user individual
@@ -587,9 +592,9 @@ const isEntityOrganizationsAllowed = (
   return true;
 };
 
-export const isOrganizationAllowed = (context: AuthContext, element: BasicStoreCommon, user: AuthUser, hasPlatformOrg: boolean) => {
+export const isOrganizationAllowed = (context: AuthContext, element: BasicStoreCommon, user: AuthUser, hasPlatformOrg: boolean, publicOrganization: string | undefined) => {
   const elementOrganizations = element[RELATION_GRANTED_TO] ?? [];
-  return isEntityOrganizationsAllowed(context, element.internal_id, elementOrganizations, user, hasPlatformOrg);
+  return isEntityOrganizationsAllowed(context, element.internal_id, elementOrganizations, user, hasPlatformOrg, publicOrganization);
 };
 
 const isOrganizationUnrestrictedForEntityType = (entityType: string) => {
@@ -620,7 +625,8 @@ export const checkUserFilterStoreElements = (
   user: AuthUser,
   element: BasicStoreCommon,
   authorizedMarkings: string[],
-  hasPlatformOrg: boolean
+  hasPlatformOrg: boolean,
+  publicOrganization: string | undefined,
 ) => {
   // 1. Check markings
   if (!isMarkingAllowed(element, authorizedMarkings)) {
@@ -637,7 +643,7 @@ export const checkUserFilterStoreElements = (
   }
   // Check restricted elements
   // either allowed by orga sharing or has authorized members access if restricted_members are defined (bypass orga sharing)
-  return isOrganizationAllowed(context, element, user, hasPlatformOrg)
+  return isOrganizationAllowed(context, element, user, hasPlatformOrg, publicOrganization)
     || (element.restricted_members && element.restricted_members.length > 0 && hasAuthorizedMemberAccess(user, element));
 };
 
@@ -652,7 +658,7 @@ export const userFilterStoreElements = async (context: AuthContext, user: AuthUs
     const hasPlatformOrg = !!settings.platform_organization;
     const authorizedMarkings = user.allowed_marking.map((a) => a.internal_id);
     return elements.filter((element) => {
-      return checkUserFilterStoreElements(context, user, element, authorizedMarkings, hasPlatformOrg);
+      return checkUserFilterStoreElements(context, user, element, authorizedMarkings, hasPlatformOrg, settings.public_organization);
     });
   };
   return telemetry(context, user, 'FILTERING store filter', {
@@ -666,7 +672,7 @@ export const isUserCanAccessStoreElement = async (context: AuthContext, user: Au
   return elements.length === 1;
 };
 
-export const checkUserCanAccessStixElement = (context: AuthContext, user: AuthUser, instance: StixObject, hasPlatformOrg: boolean) => {
+export const checkUserCanAccessStixElement = (context: AuthContext, user: AuthUser, instance: StixObject, hasPlatformOrg: boolean, publicOrganization: string | undefined) => {
   // If user have bypass, grant access to all
   if (isBypassUser(user)) {
     return true;
@@ -694,7 +700,7 @@ export const checkUserCanAccessStixElement = (context: AuthContext, user: AuthUs
   }
   // Check restricted elements
   const elementOrganizations = instance.extensions?.[STIX_EXT_OCTI]?.granted_refs ?? [];
-  const organizationAllowed = isEntityOrganizationsAllowed(context, instance.id, elementOrganizations, user, hasPlatformOrg);
+  const organizationAllowed = isEntityOrganizationsAllowed(context, instance.id, elementOrganizations, user, hasPlatformOrg, publicOrganization);
   // either allowed by organization or authorized members
   return organizationAllowed || (restricted_members.length > 0 && authorizedMemberAllowed);
 };
@@ -702,7 +708,7 @@ export const checkUserCanAccessStixElement = (context: AuthContext, user: AuthUs
 export const isUserCanAccessStixElement = async (context: AuthContext, user: AuthUser, instance: StixObject) => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
   const hasPlatformOrg = !!settings.platform_organization;
-  return checkUserCanAccessStixElement(context, user, instance, hasPlatformOrg);
+  return checkUserCanAccessStixElement(context, user, instance, hasPlatformOrg, settings.public_organization);
 };
 
 const checkUserCanAccessMarkings = async (user: AuthUser, markingIds: string[]) => {
