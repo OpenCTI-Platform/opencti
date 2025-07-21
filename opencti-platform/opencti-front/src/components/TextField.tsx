@@ -77,20 +77,21 @@ const TextField = (props: TextFieldProps) => {
     }
   }, [onBeforePaste, setFieldValue, name]);
 
-  const [, meta] = useField(name);
-  const { value, ...otherProps } = fieldToTextField(htmlProps);
-
-  const internalKeyDown = useCallback((event) => {
+  const internalOnKeyDown = useCallback((event) => {
     const { key } = event;
-    if (typeof onKeyDown === 'function') {
+    if (onKeyDown) {
       onKeyDown(key);
       return;
     }
 
-    if (key === 'Enter' && !!onSubmit) {
+    if (key === 'Enter' && onSubmit) {
+      const { value } = props.field;
       onSubmit(name, value ?? '');
     }
-  }, [onKeyDown, onSubmit, name, value]);
+  }, [onKeyDown, onSubmit, name]);
+
+  const [, meta] = useField(name);
+  const { value, ...otherProps } = fieldToTextField(htmlProps);
 
   const showError = !isNil(meta.error) && (meta.touched || submitCount > 0);
 
@@ -116,7 +117,7 @@ const TextField = (props: TextFieldProps) => {
       onFocus={internalOnFocus}
       onBlur={internalOnBlur}
       onPaste={internalOnPaste}
-      onKeyDown={internalKeyDown}
+      onKeyDown={internalOnKeyDown}
       slotProps={{
         input: {
           startAdornment,
