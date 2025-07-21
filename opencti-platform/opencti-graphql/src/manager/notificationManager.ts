@@ -66,6 +66,7 @@ export interface NotificationUser {
   user_id: string
   user_email: string
   notifiers: Array<string>
+  user_service_account: boolean
 }
 
 export interface KnowledgeNotificationEvent extends StreamNotifEvent {
@@ -240,9 +241,10 @@ export const getDigestNotifications = async (context: AuthContext, baseDate: Mom
 };
 
 export const convertToNotificationUser = (user: AuthUser, notifiers: Array<string>): NotificationUser => {
-  return {
+  return <NotificationUser>{
     user_id: user.internal_id,
     user_email: user.user_email,
+    user_service_account: user.user_service_account,
     notifiers,
   };
 };

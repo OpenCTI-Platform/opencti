@@ -290,6 +290,9 @@ export const processNotificationEvent = async (
 ): Promise<void> => {
   const storeSettings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
 
+  if (user.user_service_account) {
+    return;
+  }
   const notificationTrigger = notificationMap.get(notificationId);
   if (!notificationTrigger) {
     return;
