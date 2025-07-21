@@ -57,7 +57,7 @@ export const findAll = (context, user, args) => {
   return listEntities(context, user, [ENTITY_TYPE_BACKGROUND_TASK], args);
 };
 
-export const buildQueryFilters = async (context, user, filters, search, taskPosition, scope, orderMode) => {
+export const buildQueryFilters = async (context, user, filters, search, taskPosition, scope, orderMode, excludedIds) => {
   let inputFilters = filters ? JSON.parse(filters) : undefined;
   if (scope === BackgroundTaskScope.Import) {
     const entityIdFilters = inputFilters.filters.findIndex(({ key }) => key.includes('entity_id'));
@@ -95,6 +95,10 @@ export const buildQueryFilters = async (context, user, filters, search, taskPosi
     types = [ENTITY_TYPE_WORKSPACE];
   } else if (scope === BackgroundTaskScope.Playbook) {
     types = [ENTITY_TYPE_PLAYBOOK];
+  }
+  // Remove eventual excluded ids
+  if (excludedIds.length > 0) {
+    inputFilters = addFilter(inputFilters, 'internal_id', excludedIds, 'not_eq', 'and');
   }
   // Construct filters
   return {
