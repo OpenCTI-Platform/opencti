@@ -55,4 +55,5 @@ type Mutation {
     emailTemplateAdd(input: EmailTemplateAddInput!): EmailTemplate @auth(for: [SETTINGS_SETACCESSES])
     emailTemplateDelete(id: ID!): ID @auth(for: [SETTINGS_SETACCESSES])
     emailTemplateFieldPatch(id: ID!, input: [EditInput!]!): EmailTemplate @auth(for: [SETTINGS_SETACCESSES])
+    emailTemplateTestSend(id: ID!, userId: ID!): Boolean @auth(for: [SETTINGS_SETACCESSES])
 }

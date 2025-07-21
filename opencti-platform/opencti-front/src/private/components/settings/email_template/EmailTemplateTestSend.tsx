@@ -14,7 +14,7 @@ import { handleError } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 
 const emailTemplateTestSendMutation = graphql`
-    mutation EmailTemplateTestSendMutation($id: String!, $userId: String!) {
+    mutation EmailTemplateTestSendMutation($id: ID!, $userId: ID!) {
         emailTemplateTestSend(id: $id, userId: $userId)
     }
 `;
