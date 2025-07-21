@@ -16,7 +16,7 @@ import StixRelationshipsTreeMap from '@components/common/stix_relationships/Stix
 import StixRelationshipsMap from '@components/common/stix_relationships/StixRelationshipsMap';
 import StixRelationshipsWordCloud from '@components/common/stix_relationships/StixRelationshipsWordCloud';
 import { computerRelativeDate, dayStartDate, formatDate } from '../../../../utils/Time';
-import type { Widget } from '../../../../utils/widget/widget';
+import type { Widget, WidgetDataSelection } from '../../../../utils/widget/widget';
 import { useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 
 interface DashboardRelationshipsVizProps {
@@ -48,7 +48,7 @@ const DashboardRelationshipsViz = ({
   } else if (widget.perspective === 'audits') {
     mainEntityTypes = ['History'];
   }
-  const dataSelection = widget.dataSelection.map((data) => ({
+  const dataSelection: WidgetDataSelection[] = widget.dataSelection.map((data) => ({
     ...data,
     filters: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.filters, mainEntityTypes),
     dynamicFrom: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.dynamicFrom, ['Stix-Core-Object']),
@@ -131,6 +131,7 @@ const DashboardRelationshipsViz = ({
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           title={undefined} // because calling js component in ts
+          relationshipTypes={undefined}
         />
       );
     case 'timeline':

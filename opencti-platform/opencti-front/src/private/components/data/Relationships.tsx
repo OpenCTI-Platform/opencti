@@ -19,7 +19,6 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import ItemIcon from '../../../components/ItemIcon';
 import { itemColor } from '../../../utils/Colors';
-import ItemEntityType from '../../../components/ItemEntityType';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import type { Theme } from '../../../components/Theme';
 
@@ -302,26 +301,10 @@ const Relationships = () => {
         return (<ItemIcon type={entity_type} />);
       },
     },
-    fromType: {
-      id: 'fromType',
-      label: 'From type',
-      percentWidth: 10,
-      isSortable: false,
-      render: (node) => (
-        <ItemEntityType inList showIcon entityType={node.from?.entity_type} isRestricted={!node.from} />
-      ),
-    },
+    fromType: {},
     fromName: {},
     relationship_type: {},
-    toType: {
-      id: 'toType',
-      label: 'To type',
-      percentWidth: 10,
-      isSortable: false,
-      render: (node) => (
-        <ItemEntityType inList showIcon entityType={node.to?.entity_type} isRestricted={!node.to} />
-      ),
-    },
+    toType: {},
     toName: {},
     createdBy: { percentWidth: 7, isSortable: isRuntimeSort },
     creator: { percentWidth: 7, isSortable: isRuntimeSort },

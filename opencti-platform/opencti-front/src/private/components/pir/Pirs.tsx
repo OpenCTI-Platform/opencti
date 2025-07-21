@@ -5,6 +5,7 @@ import { Pirs_PirsFragment$data } from '@components/pir/__generated__/Pirs_PirsF
 import { Pirs_PirFragment$data } from '@components/pir/__generated__/Pirs_PirFragment.graphql';
 import { useTheme } from '@mui/material/styles';
 import PirCreation from '@components/pir/PirCreation';
+import PirFiltersDisplay from '@components/pir/PirFiltersDisplay';
 import { useFormatter } from '../../../components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
@@ -158,13 +159,12 @@ const Pirs = () => {
       label: 'Criteria',
       percentWidth: 38,
       render: ({ pir_criteria }: Pirs_PirFragment$data) => (
-        <div style={{ marginLeft: theme.spacing(-0.5), display: 'flex' }}>
-          {pir_criteria.map((c) => (
-            <FilterIconButton
-              key={c.filters}
-              filters={JSON.parse(c.filters)}
-              entityTypes={['Stix-Core-Object']}
-              styleNumber={3}
+        <div style={{ display: 'flex', gap: theme.spacing(1) }}>
+          {pir_criteria.map((c, i) => (
+            <PirFiltersDisplay
+              key={i}
+              filterGroup={JSON.parse(c.filters)}
+              size='small'
             />
           ))}
         </div>

@@ -8,7 +8,7 @@ import type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEnt
 import useAuth, { FilterDefinition } from '../hooks/useAuth';
 import { capitalizeFirstLetter, displayEntityTypeForTranslation, isValidDate } from '../String';
 import { FilterRepresentative } from '../../components/filters/FiltersModel';
-import { generateUniqueItemsArray, isEmptyField } from '../utils';
+import { uniqueArray, isEmptyField } from '../utils';
 import { Filter, FilterGroup, FilterValue, handleFilterHelpers } from './filtersHelpers-types';
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -280,11 +280,11 @@ export const getEntityTypeTwoFirstLevelsFilterValues = (
 
 // construct filters and options for widgets
 export const buildFiltersAndOptionsForWidgets = (
-  inputFilters: FilterGroup | undefined,
+  inputFilters: FilterGroup | undefined | null,
   opts: { removeTypeAll?: boolean, startDate?: string, endDate?: string, dateAttribute?: string } = {},
 ) => {
   const { removeTypeAll = false, startDate = null, endDate = null, dateAttribute = 'created_at' } = opts;
-  let filters = inputFilters;
+  let filters = inputFilters ?? undefined;
   // remove 'all' in filter with key=entity_type
   if (removeTypeAll) {
     filters = removeEntityTypeAllFromFilterGroup(filters);
@@ -774,7 +774,7 @@ export const useBuildFilterKeysMapFromEntityType = (entityTypes = ['Stix-Core-Ob
 
 export const useAvailableFilterKeysForEntityTypes = (entityTypes: string[]) => {
   const filterKeysMap = useBuildFilterKeysMapFromEntityType(entityTypes);
-  return generateUniqueItemsArray(filterKeysMap.keys() ?? []);
+  return uniqueArray(filterKeysMap.keys() ?? []);
 };
 
 const notCleanableFilterKeys = ['entity_type', 'authorized_members.id', 'user_id', 'internal_id', 'entity_id'];
@@ -991,7 +991,7 @@ export const extractAllFilters: (filters: FilterGroup) => Filter[] = (filters: F
 };
 
 export const cleanFilters = (filters: FilterGroup, helpers: handleFilterHelpers, types: string[], completeFilterKeysMap: Map<string, Map<string, FilterDefinition>>) => {
-  const newAvailableFilterKeys = generateUniqueItemsArray(types.flatMap((t) => Array.from(completeFilterKeysMap.get(t)?.keys() ?? [])));
+  const newAvailableFilterKeys = uniqueArray(types.flatMap((t) => Array.from(completeFilterKeysMap.get(t)?.keys() ?? [])));
   const allListedFilters = extractAllFilters(filters);
   const filtersToRemoveIds = allListedFilters.filter((f) => !newAvailableFilterKeys.includes(f.key)).map((f) => f.id ?? '');
   filtersToRemoveIds.forEach((id) => helpers.handleRemoveFilterById(id));
@@ -1020,4 +1020,21 @@ export const isRegardingOfFilterWarning = (
     }
   }
   return false;
+};
+
+export const getFilterKeyValues = (filterKey: string, filterGroup: FilterGroup) => {
+  const values: string[] = [];
+  const filtersResult = { ...filterGroup };
+  filtersResult.filters.forEach((filter) => {
+    const { key } = filter;
+    const arrayKeys = Array.isArray(key) ? key : [key];
+    if (arrayKeys.includes(filterKey)) {
+      values.push(...filter.values);
+    }
+  });
+  filtersResult.filterGroups.forEach((fg) => {
+    const vals = getFilterKeyValues(filterKey, fg);
+    values.push(...vals);
+  });
+  return values;
 };

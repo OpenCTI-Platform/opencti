@@ -3012,7 +3012,7 @@ enum ContainersOrdering {
 
 type ContainerConnection {
   pageInfo: PageInfo!
-  edges: [ContainerEdge]
+  edges: [ContainerEdge!]!
 }
 
 type ContainerEdge {
@@ -7735,7 +7735,7 @@ enum StixRelationshipsOrdering {
 
 type StixRelationshipConnection {
   pageInfo: PageInfo!
-  edges: [StixRelationshipEdge]
+  edges: [StixRelationshipEdge!]!
 }
 
 type StixRelationshipEdge {
@@ -8019,7 +8019,7 @@ enum StixRefRelationshipsOrdering {
 
 type StixRefRelationshipConnection {
   pageInfo: PageInfo!
-  edges: [StixRefRelationshipEdge]
+  edges: [StixRefRelationshipEdge!]!
 }
 
 type StixRefRelationshipEdge {
@@ -8292,7 +8292,7 @@ type Query {
   stixRelationship(id: String): StixRelationship
   stixRelationships(first: Int, after: ID, orderBy: StixRelationshipsOrdering, orderMode: OrderingMode, fromOrToId: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, startDate: DateTime, endDate: DateTime, confidences: [Int], search: String, filters: FilterGroup, dynamicFrom: FilterGroup, dynamicTo: FilterGroup, stix: Boolean): StixRelationshipConnection
   stixRelationshipsTimeSeries(field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, fromOrToId: [String], elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup, dynamicFrom: FilterGroup, dynamicTo: FilterGroup): [TimeSeries]
-  stixRelationshipsMultiTimeSeries(operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, timeSeriesParameters: [StixRelationshipsTimeSeriesParameters]): [MultiTimeSeries]
+  stixRelationshipsMultiTimeSeries(operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, timeSeriesParameters: [StixRelationshipsTimeSeriesParameters], relationship_type: [String!]): [MultiTimeSeries]
   stixRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, fromOrToId: [String], elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup, dynamicFrom: FilterGroup, dynamicTo: FilterGroup, aggregateOnConnections: Boolean): [Distribution]
   stixRelationshipsNumber(dateAttribute: String, authorId: String, noDirection: Boolean, endDate: DateTime, onlyInferred: Boolean, fromOrToId: [String], elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup, dynamicFrom: FilterGroup, dynamicTo: FilterGroup): Number
   schemaRelationsTypesMapping: [StixRelationshipSchema!]!
@@ -13380,8 +13380,13 @@ type PirCriterion {
   weight: Int!
 }
 
+type PirDependency {
+  element_id: ID!
+  author_id: ID
+}
+
 type PirExplanation {
-  dependency_ids: [ID!]!
+  dependencies: [PirDependency!]!
   criterion: PirCriterion!
 }
 
@@ -13400,6 +13405,7 @@ type Pir implements InternalObject & BasicObject {
   pir_criteria: [PirCriterion!]!
   pir_filters: String!
   lastEventId: String!
+  pirContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): ContainerConnection
 }
 
 enum PirOrdering {
@@ -13424,8 +13430,13 @@ input PirCriterionInput {
   filters: FilterGroup!
 }
 
+input PirDependencyInput {
+  element_id: ID!
+  author_id: ID
+}
+
 input PirExplanationInput {
-  dependency_ids: [ID!]!
+  dependencies: [PirDependencyInput!]!
   criterion: PirCriterionInput!
 }
 
@@ -13442,6 +13453,7 @@ input PirFlagElementInput {
   relationshipId: ID!
   sourceId: ID!
   matchingCriteria: [PirCriterionInput!]!
+  relationshipAuthorId: ID
 }
 
 input PirUnflagElementInput {

@@ -4152,7 +4152,7 @@ export type ContainerStixCoreRelationshipsDistributionArgs = {
 
 export type ContainerConnection = {
   __typename?: 'ContainerConnection';
-  edges?: Maybe<Array<Maybe<ContainerEdge>>>;
+  edges: Array<ContainerEdge>;
   pageInfo: PageInfo;
 };
 
@@ -19687,11 +19687,22 @@ export type Pir = BasicObject & InternalObject & {
   name: Scalars['String']['output'];
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   parent_types: Array<Scalars['String']['output']>;
+  pirContainers?: Maybe<ContainerConnection>;
   pir_criteria: Array<PirCriterion>;
   pir_filters: Scalars['String']['output'];
   pir_rescan_days: Scalars['Int']['output'];
   standard_id: Scalars['String']['output'];
   updated_at: Scalars['DateTime']['output'];
+};
+
+
+export type PirPirContainersArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<ContainersOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type PirAddInput = {
@@ -19720,6 +19731,17 @@ export type PirCriterionInput = {
   weight: Scalars['Int']['input'];
 };
 
+export type PirDependency = {
+  __typename?: 'PirDependency';
+  author_id?: Maybe<Scalars['ID']['output']>;
+  element_id: Scalars['ID']['output'];
+};
+
+export type PirDependencyInput = {
+  author_id?: InputMaybe<Scalars['ID']['input']>;
+  element_id: Scalars['ID']['input'];
+};
+
 export type PirEdge = {
   __typename?: 'PirEdge';
   cursor: Scalars['String']['output'];
@@ -19729,16 +19751,17 @@ export type PirEdge = {
 export type PirExplanation = {
   __typename?: 'PirExplanation';
   criterion: PirCriterion;
-  dependency_ids: Array<Scalars['ID']['output']>;
+  dependencies: Array<PirDependency>;
 };
 
 export type PirExplanationInput = {
   criterion: PirCriterionInput;
-  dependency_ids: Array<Scalars['ID']['input']>;
+  dependencies: Array<PirDependencyInput>;
 };
 
 export type PirFlagElementInput = {
   matchingCriteria: Array<PirCriterionInput>;
+  relationshipAuthorId?: InputMaybe<Scalars['ID']['input']>;
   relationshipId: Scalars['ID']['input'];
   sourceId: Scalars['ID']['input'];
 };
@@ -23212,6 +23235,7 @@ export type QueryStixRelationshipsMultiTimeSeriesArgs = {
   interval: Scalars['String']['input'];
   onlyInferred?: InputMaybe<Scalars['Boolean']['input']>;
   operation: StatsOperation;
+  relationship_type?: InputMaybe<Array<Scalars['String']['input']>>;
   startDate: Scalars['DateTime']['input'];
   timeSeriesParameters?: InputMaybe<Array<InputMaybe<StixRelationshipsTimeSeriesParameters>>>;
 };
@@ -27472,7 +27496,7 @@ export type StixRefRelationshipAddInput = {
 
 export type StixRefRelationshipConnection = {
   __typename?: 'StixRefRelationshipConnection';
-  edges?: Maybe<Array<Maybe<StixRefRelationshipEdge>>>;
+  edges: Array<StixRefRelationshipEdge>;
   pageInfo: PageInfo;
 };
 
@@ -27553,7 +27577,7 @@ export type StixRelationship = {
 
 export type StixRelationshipConnection = {
   __typename?: 'StixRelationshipConnection';
-  edges?: Maybe<Array<Maybe<StixRelationshipEdge>>>;
+  edges: Array<StixRelationshipEdge>;
   pageInfo: PageInfo;
 };
 
@@ -32980,7 +33004,7 @@ export type ResolversTypes = ResolversObject<{
   ConstraintNumber: ResolverTypeWrapper<Scalars['ConstraintNumber']['output']>;
   ConstraintString: ResolverTypeWrapper<Scalars['ConstraintString']['output']>;
   Container: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['Container']>;
-  ContainerConnection: ResolverTypeWrapper<Omit<ContainerConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['ContainerEdge']>>> }>;
+  ContainerConnection: ResolverTypeWrapper<Omit<ContainerConnection, 'edges'> & { edges: Array<ResolversTypes['ContainerEdge']> }>;
   ContainerEdge: ResolverTypeWrapper<Omit<ContainerEdge, 'node'> & { node: ResolversTypes['Container'] }>;
   ContainerEditMutations: ResolverTypeWrapper<Omit<ContainerEditMutations, 'contextClean' | 'contextPatch' | 'editAuthorizedMembers' | 'fieldPatch' | 'investigationAdd' | 'knowledgeAddFromInvestigation' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Container']>, contextPatch?: Maybe<ResolversTypes['Container']>, editAuthorizedMembers?: Maybe<ResolversTypes['Container']>, fieldPatch?: Maybe<ResolversTypes['Container']>, investigationAdd?: Maybe<ResolversTypes['Workspace']>, knowledgeAddFromInvestigation?: Maybe<ResolversTypes['Container']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Container']> }>;
   ContainersOrdering: ContainersOrdering;
@@ -33441,6 +33465,8 @@ export type ResolversTypes = ResolversObject<{
   PirConnection: ResolverTypeWrapper<Omit<PirConnection, 'edges'> & { edges: Array<ResolversTypes['PirEdge']> }>;
   PirCriterion: ResolverTypeWrapper<PirCriterion>;
   PirCriterionInput: PirCriterionInput;
+  PirDependency: ResolverTypeWrapper<PirDependency>;
+  PirDependencyInput: PirDependencyInput;
   PirEdge: ResolverTypeWrapper<Omit<PirEdge, 'node'> & { node: ResolversTypes['Pir'] }>;
   PirExplanation: ResolverTypeWrapper<PirExplanation>;
   PirExplanationInput: PirExplanationInput;
@@ -33635,13 +33661,13 @@ export type ResolversTypes = ResolversObject<{
   StixRef: ResolverTypeWrapper<Scalars['StixRef']['output']>;
   StixRefRelationship: ResolverTypeWrapper<Omit<StixRefRelationship, 'cases' | 'containers' | 'createdBy' | 'editContext' | 'from' | 'groupings' | 'notes' | 'objectMarking' | 'opinions' | 'reports' | 'to' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, from?: Maybe<ResolversTypes['StixObjectOrStixRelationshipOrCreator']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, to?: Maybe<ResolversTypes['StixObjectOrStixRelationshipOrCreator']>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   StixRefRelationshipAddInput: StixRefRelationshipAddInput;
-  StixRefRelationshipConnection: ResolverTypeWrapper<Omit<StixRefRelationshipConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['StixRefRelationshipEdge']>>> }>;
+  StixRefRelationshipConnection: ResolverTypeWrapper<Omit<StixRefRelationshipConnection, 'edges'> & { edges: Array<ResolversTypes['StixRefRelationshipEdge']> }>;
   StixRefRelationshipEdge: ResolverTypeWrapper<Omit<StixRefRelationshipEdge, 'node'> & { node: ResolversTypes['StixRefRelationship'] }>;
   StixRefRelationshipEditMutations: ResolverTypeWrapper<Omit<StixRefRelationshipEditMutations, 'contextPatch' | 'fieldPatch'> & { contextPatch?: Maybe<ResolversTypes['StixRefRelationship']>, fieldPatch?: Maybe<ResolversTypes['StixRefRelationship']> }>;
   StixRefRelationshipsAddInput: StixRefRelationshipsAddInput;
   StixRefRelationshipsOrdering: StixRefRelationshipsOrdering;
   StixRelationship: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['StixRelationship']>;
-  StixRelationshipConnection: ResolverTypeWrapper<Omit<StixRelationshipConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['StixRelationshipEdge']>>> }>;
+  StixRelationshipConnection: ResolverTypeWrapper<Omit<StixRelationshipConnection, 'edges'> & { edges: Array<ResolversTypes['StixRelationshipEdge']> }>;
   StixRelationshipEdge: ResolverTypeWrapper<Omit<StixRelationshipEdge, 'node'> & { node: ResolversTypes['StixRelationship'] }>;
   StixRelationshipEditMutations: ResolverTypeWrapper<StixRelationshipEditMutations>;
   StixRelationshipRefSchema: ResolverTypeWrapper<StixRelationshipRefSchema>;
@@ -33937,7 +33963,7 @@ export type ResolversParentTypes = ResolversObject<{
   ConstraintNumber: Scalars['ConstraintNumber']['output'];
   ConstraintString: Scalars['ConstraintString']['output'];
   Container: ResolversInterfaceTypes<ResolversParentTypes>['Container'];
-  ContainerConnection: Omit<ContainerConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['ContainerEdge']>>> };
+  ContainerConnection: Omit<ContainerConnection, 'edges'> & { edges: Array<ResolversParentTypes['ContainerEdge']> };
   ContainerEdge: Omit<ContainerEdge, 'node'> & { node: ResolversParentTypes['Container'] };
   ContainerEditMutations: Omit<ContainerEditMutations, 'contextClean' | 'contextPatch' | 'editAuthorizedMembers' | 'fieldPatch' | 'investigationAdd' | 'knowledgeAddFromInvestigation' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Container']>, contextPatch?: Maybe<ResolversParentTypes['Container']>, editAuthorizedMembers?: Maybe<ResolversParentTypes['Container']>, fieldPatch?: Maybe<ResolversParentTypes['Container']>, investigationAdd?: Maybe<ResolversParentTypes['Workspace']>, knowledgeAddFromInvestigation?: Maybe<ResolversParentTypes['Container']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Container']> };
   ContextData: Omit<ContextData, 'external_references'> & { external_references?: Maybe<Array<ResolversParentTypes['ExternalReference']>> };
@@ -34332,6 +34358,8 @@ export type ResolversParentTypes = ResolversObject<{
   PirConnection: Omit<PirConnection, 'edges'> & { edges: Array<ResolversParentTypes['PirEdge']> };
   PirCriterion: PirCriterion;
   PirCriterionInput: PirCriterionInput;
+  PirDependency: PirDependency;
+  PirDependencyInput: PirDependencyInput;
   PirEdge: Omit<PirEdge, 'node'> & { node: ResolversParentTypes['Pir'] };
   PirExplanation: PirExplanation;
   PirExplanationInput: PirExplanationInput;
@@ -34496,12 +34524,12 @@ export type ResolversParentTypes = ResolversObject<{
   StixRef: Scalars['StixRef']['output'];
   StixRefRelationship: Omit<StixRefRelationship, 'cases' | 'containers' | 'createdBy' | 'editContext' | 'from' | 'groupings' | 'notes' | 'objectMarking' | 'opinions' | 'reports' | 'to' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, from?: Maybe<ResolversParentTypes['StixObjectOrStixRelationshipOrCreator']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, to?: Maybe<ResolversParentTypes['StixObjectOrStixRelationshipOrCreator']>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   StixRefRelationshipAddInput: StixRefRelationshipAddInput;
-  StixRefRelationshipConnection: Omit<StixRefRelationshipConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['StixRefRelationshipEdge']>>> };
+  StixRefRelationshipConnection: Omit<StixRefRelationshipConnection, 'edges'> & { edges: Array<ResolversParentTypes['StixRefRelationshipEdge']> };
   StixRefRelationshipEdge: Omit<StixRefRelationshipEdge, 'node'> & { node: ResolversParentTypes['StixRefRelationship'] };
   StixRefRelationshipEditMutations: Omit<StixRefRelationshipEditMutations, 'contextPatch' | 'fieldPatch'> & { contextPatch?: Maybe<ResolversParentTypes['StixRefRelationship']>, fieldPatch?: Maybe<ResolversParentTypes['StixRefRelationship']> };
   StixRefRelationshipsAddInput: StixRefRelationshipsAddInput;
   StixRelationship: ResolversInterfaceTypes<ResolversParentTypes>['StixRelationship'];
-  StixRelationshipConnection: Omit<StixRelationshipConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['StixRelationshipEdge']>>> };
+  StixRelationshipConnection: Omit<StixRelationshipConnection, 'edges'> & { edges: Array<ResolversParentTypes['StixRelationshipEdge']> };
   StixRelationshipEdge: Omit<StixRelationshipEdge, 'node'> & { node: ResolversParentTypes['StixRelationship'] };
   StixRelationshipEditMutations: StixRelationshipEditMutations;
   StixRelationshipRefSchema: StixRelationshipRefSchema;
@@ -36068,7 +36096,7 @@ export type ContainerResolvers<ContextType = any, ParentType extends ResolversPa
 }>;
 
 export type ContainerConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ContainerConnection'] = ResolversParentTypes['ContainerConnection']> = ResolversObject<{
-  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['ContainerEdge']>>>, ParentType, ContextType>;
+  edges?: Resolver<Array<ResolversTypes['ContainerEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -40928,6 +40956,7 @@ export type PirResolvers<ContextType = any, ParentType extends ResolversParentTy
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  pirContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<PirPirContainersArgs>>;
   pir_criteria?: Resolver<Array<ResolversTypes['PirCriterion']>, ParentType, ContextType>;
   pir_filters?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   pir_rescan_days?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -40948,6 +40977,12 @@ export type PirCriterionResolvers<ContextType = any, ParentType extends Resolver
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type PirDependencyResolvers<ContextType = any, ParentType extends ResolversParentTypes['PirDependency'] = ResolversParentTypes['PirDependency']> = ResolversObject<{
+  author_id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  element_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type PirEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['PirEdge'] = ResolversParentTypes['PirEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Pir'], ParentType, ContextType>;
@@ -40956,7 +40991,7 @@ export type PirEdgeResolvers<ContextType = any, ParentType extends ResolversPare
 
 export type PirExplanationResolvers<ContextType = any, ParentType extends ResolversParentTypes['PirExplanation'] = ResolversParentTypes['PirExplanation']> = ResolversObject<{
   criterion?: Resolver<ResolversTypes['PirCriterion'], ParentType, ContextType>;
-  dependency_ids?: Resolver<Array<ResolversTypes['ID']>, ParentType, ContextType>;
+  dependencies?: Resolver<Array<ResolversTypes['PirDependency']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -42999,7 +43034,7 @@ export type StixRefRelationshipResolvers<ContextType = any, ParentType extends R
 }>;
 
 export type StixRefRelationshipConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixRefRelationshipConnection'] = ResolversParentTypes['StixRefRelationshipConnection']> = ResolversObject<{
-  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixRefRelationshipEdge']>>>, ParentType, ContextType>;
+  edges?: Resolver<Array<ResolversTypes['StixRefRelationshipEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -43046,7 +43081,7 @@ export type StixRelationshipResolvers<ContextType = any, ParentType extends Reso
 }>;
 
 export type StixRelationshipConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixRelationshipConnection'] = ResolversParentTypes['StixRelationshipConnection']> = ResolversObject<{
-  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixRelationshipEdge']>>>, ParentType, ContextType>;
+  edges?: Resolver<Array<ResolversTypes['StixRelationshipEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -45186,6 +45221,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Pir?: PirResolvers<ContextType>;
   PirConnection?: PirConnectionResolvers<ContextType>;
   PirCriterion?: PirCriterionResolvers<ContextType>;
+  PirDependency?: PirDependencyResolvers<ContextType>;
   PirEdge?: PirEdgeResolvers<ContextType>;
   PirExplanation?: PirExplanationResolvers<ContextType>;
   PlatformCriticalAlert?: PlatformCriticalAlertResolvers<ContextType>;

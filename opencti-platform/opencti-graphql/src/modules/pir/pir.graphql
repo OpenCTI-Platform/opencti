@@ -4,8 +4,12 @@ type PirCriterion {
 }
 
 # Used in StixRefRelationship
+type PirDependency {
+    element_id: ID!
+    author_id: ID
+}
 type PirExplanation {
-    dependency_ids: [ID!]!
+    dependencies: [PirDependency!]!
     criterion: PirCriterion!
 }
 
@@ -25,6 +29,14 @@ type Pir implements InternalObject & BasicObject {
     pir_criteria: [PirCriterion!]!
     pir_filters: String!
     lastEventId: String!
+    pirContainers(
+        first: Int
+        after: ID
+        orderBy: ContainersOrdering
+        orderMode: OrderingMode
+        filters: FilterGroup
+        search: String
+    ): ContainerConnection
 }
 
 # Ordering
@@ -65,8 +77,12 @@ input PirCriterionInput {
 }
 
 # Used in StixRefRelationshipAddInput
+input PirDependencyInput {
+    element_id: ID!
+    author_id: ID
+}
 input PirExplanationInput {
-    dependency_ids: [ID!]!
+    dependencies: [PirDependencyInput!]!
     criterion: PirCriterionInput!
 }
 
@@ -83,6 +99,7 @@ input PirFlagElementInput {
     relationshipId: ID!
     sourceId: ID!
     matchingCriteria: [PirCriterionInput!]!
+    relationshipAuthorId: ID
 }
 
 input PirUnflagElementInput {
