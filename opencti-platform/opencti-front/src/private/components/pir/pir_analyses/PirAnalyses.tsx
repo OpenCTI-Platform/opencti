@@ -206,7 +206,7 @@ const PirAnalyses = ({ data }: PirAnalysesProps) => {
       id: 'container_objects',
       label: 'Entities in PIR',
       percentWidth: 15,
-      isSortable: true,
+      isSortable: false,
       render: ({ objects }: { objects: PirContainerObjects }) => {
         const max = 10;
         const hasMore = objects.edges.length > max;
