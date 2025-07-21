@@ -215,6 +215,9 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
           }
           from {
             ... on StixDomainObject {
+              representative {
+                main
+              }
               id
               draftVersion {
                 draft_id
@@ -423,6 +426,9 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
             }
             ... on StixCoreRelationship {
               relationship_type
+              representative {
+                main
+              }
               from {
                 ... on BasicObject {
                   id
@@ -468,6 +474,9 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
           to {
             ... on StixDomainObject {
               id
+              representative {
+                main
+              }
               draftVersion {
                 draft_id
                 draft_operation
@@ -675,6 +684,9 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
             }
             ... on StixCoreRelationship {
               relationship_type
+              representative {
+                main
+              }
             }
           }
           toId
