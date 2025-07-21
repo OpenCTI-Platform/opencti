@@ -472,6 +472,9 @@ export interface StixProcess extends StixCyberObject {
 
 // Software Object Specific Properties
 // name, cpe, swid, languages, vendor, version
+export interface SoftwareExtension extends CyberObjectExtension {
+  product: string;
+}
 export interface StixSoftware extends StixCyberObject {
   name: string;
   cpe: string; // optional
@@ -479,6 +482,10 @@ export interface StixSoftware extends StixCyberObject {
   languages: Array<string>; // optional
   vendor: string; // optional
   version: string; // optional
+  extensions: {
+    [STIX_EXT_OCTI]: StixOpenctiExtension;
+    [STIX_EXT_OCTI_SCO]: SoftwareExtension
+  };
 }
 
 // URL Object Specific Properties

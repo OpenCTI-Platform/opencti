@@ -25468,6 +25468,7 @@ export type Software = BasicObject & StixCoreObject & StixCyberObservable & Stix
   vulnerabilities?: Maybe<VulnerabilityConnection>;
   x_opencti_description?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
+  x_opencti_product?: Maybe<Scalars['String']['output']>;
   x_opencti_score?: Maybe<Scalars['Int']['output']>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
 };
@@ -25625,6 +25626,7 @@ export type SoftwareAddInput = {
   swid?: InputMaybe<Scalars['String']['input']>;
   vendor?: InputMaybe<Scalars['String']['input']>;
   version?: InputMaybe<Scalars['String']['input']>;
+  x_opencti_product?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SoftwareConnection = {
@@ -31568,6 +31570,7 @@ export type Vulnerability = BasicObject & StixCoreObject & StixDomainObject & St
   x_opencti_cwe?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   x_opencti_epss_percentile?: Maybe<Scalars['Float']['output']>;
   x_opencti_epss_score?: Maybe<Scalars['Float']['output']>;
+  x_opencti_first_seen_active?: Maybe<Scalars['DateTime']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_score?: Maybe<Scalars['Int']['output']>;
@@ -31787,6 +31790,7 @@ export type VulnerabilityAddInput = {
   x_opencti_cwe?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_epss_percentile?: InputMaybe<Scalars['Float']['input']>;
   x_opencti_epss_score?: InputMaybe<Scalars['Float']['input']>;
+  x_opencti_first_seen_active?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_score?: InputMaybe<Scalars['Int']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -42413,6 +42417,7 @@ export type SoftwareResolvers<ContextType = any, ParentType extends ResolversPar
   vulnerabilities?: Resolver<Maybe<ResolversTypes['VulnerabilityConnection']>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
+  x_opencti_product?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -44434,6 +44439,7 @@ export type VulnerabilityResolvers<ContextType = any, ParentType extends Resolve
   x_opencti_cwe?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   x_opencti_epss_percentile?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   x_opencti_epss_score?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  x_opencti_first_seen_active?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;

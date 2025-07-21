@@ -249,8 +249,8 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
               helperText: (
                 <SubscriptionFocus context={context} fieldName="due_date" />
               ),
+              style: fieldSpacingContainerStyle,
             }}
-            containerStyle={fieldSpacingContainerStyle}
           />
           <Field
             component={MarkdownField}

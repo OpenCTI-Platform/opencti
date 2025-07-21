@@ -397,6 +397,7 @@ const StixCyberObservableDetails = createFragmentContainer(
           languages
           vendor
           version
+          x_opencti_product
         }
         ... on Url {
           value

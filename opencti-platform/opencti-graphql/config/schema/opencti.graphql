@@ -7360,6 +7360,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   x_opencti_epss_score: Float
   x_opencti_epss_percentile: Float
   x_opencti_score: Int
+  x_opencti_first_seen_active: DateTime
   softwares(relationshipType: String, first: Int, after: ID, orderBy: StixCyberObservablesOrdering, orderMode: OrderingMode): StixCyberObservableConnection
   # Technical
   creators: [Creator!]
@@ -7445,6 +7446,7 @@ input VulnerabilityAddInput {
   x_opencti_epss_score: Float
   x_opencti_epss_percentile: Float
   x_opencti_score: Int
+  x_opencti_first_seen_active: DateTime
   confidence: Int
   revoked: Boolean
   lang: String
@@ -10078,6 +10080,7 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   languages: [String]
   vendor: String
   version: String
+  x_opencti_product: String
   vulnerabilities: VulnerabilityConnection
   # Technical
   creators: [Creator!]
@@ -10119,6 +10122,7 @@ input SoftwareAddInput {
   languages: [String]
   vendor: String
   version: String
+  x_opencti_product: String
   file: Upload
 }
 type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
