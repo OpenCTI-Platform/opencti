@@ -38,14 +38,16 @@ const EmailTemplateForm: FunctionComponent<EmailTemplateFormProps> = ({
   const theme = useTheme<Theme>();
 
   const validation = Yup.object().shape({
-    name: Yup.string().trim().required(t_i18n('This field is required')),
+    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
+    email_object: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+    sender_email: Yup.string().trim().required(t_i18n('This field is required')),
   });
 
   const initialValues: EmailTemplateFormInputs = defaultValues ?? {
     name: '',
     description: '',
-    email_object: 'no',
+    email_object: '',
     sender_email: '',
     template_body: '',
   };
@@ -87,6 +89,24 @@ const EmailTemplateForm: FunctionComponent<EmailTemplateFormProps> = ({
             fullWidth={true}
             multiline={true}
             rows={2}
+            style={{ marginTop: theme.spacing(2) }}
+          />
+          <Field
+            component={TextField}
+            name="email_object"
+            label={t_i18n('Email subject')}
+            fullWidth={true}
+            onSubmit={onUpdate}
+            required
+            style={{ marginTop: theme.spacing(2) }}
+          />
+          <Field
+            component={TextField}
+            name="sender_email"
+            label={t_i18n('Display name of the sender')}
+            fullWidth={true}
+            onSubmit={onUpdate}
+            required
             style={{ marginTop: theme.spacing(2) }}
           />
           {!isEdition && (

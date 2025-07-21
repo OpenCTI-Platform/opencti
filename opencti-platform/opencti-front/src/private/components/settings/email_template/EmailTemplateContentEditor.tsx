@@ -23,13 +23,13 @@ const EmailTemplateContentEditor = ({
   const { setEditorValue } = useEmailTemplateContext();
 
   const validation = Yup.object().shape({
-    template_content: Yup.string().trim(),
+    template_body: Yup.string().trim(),
   });
 
   return (
-    <Formik<{ template_content: string }>
+    <Formik<{ template_body: string }>
       validationSchema={validation}
-      initialValues={{ template_content: template.template_content }}
+      initialValues={{ template_body: template.template_body }}
       onSubmit={() => {}}
     >
       {() => (
