@@ -657,7 +657,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
   },
   isShared: {
     id: 'isShared',
-    label: 'Shared',
+    label: 'Publicly shared',
     percentWidth: 8,
     isSortable: false,
     render: ({ isShared }, { t_i18n }) => (
