@@ -1,10 +1,16 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
-import React, {FunctionComponent, useMemo, useState} from 'react';
+import React, { FunctionComponent, useMemo, useState } from 'react';
 import { Route, Routes, useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import AccessesMenu from '@components/settings/AccessesMenu';
+import Typography from '@mui/material/Typography';
+import { Box, styled } from '@mui/material';
+import MenuItem from '@mui/material/MenuItem';
+import GroupDeletionDialog from '@components/settings/groups/GroupDeletionDialog';
+import GroupEdition from '@components/settings/groups/GroupEdition';
+import { useTheme } from '@mui/styles';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -12,18 +18,12 @@ import Group from './Group';
 import { RootGroupsSubscription } from './__generated__/RootGroupsSubscription.graphql';
 import { RootGroupQuery } from './__generated__/RootGroupQuery.graphql';
 import Security from '../../../../utils/Security';
-import useGranted, {KNOWLEDGE_KNUPDATE_KNDELETE, SETTINGS_SETACCESSES} from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNUPDATE_KNDELETE, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
-import Typography from "@mui/material/Typography";
-import PopoverMenu from "../../../../components/PopoverMenu";
-import {Box, styled} from "@mui/material";
-import MenuItem from "@mui/material/MenuItem";
-import GroupDeletionDialog from "@components/settings/groups/GroupDeletionDialog";
-import GroupEdition from "@components/settings/groups/GroupEdition";
-import {useTheme} from "@mui/styles";
-import type {Theme} from "../../../../components/Theme";
+import PopoverMenu from '../../../../components/PopoverMenu';
+import type { Theme } from '../../../../components/Theme';
 
 const subscription = graphql`
     subscription RootGroupsSubscription($id: ID!) {
