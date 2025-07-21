@@ -75,6 +75,7 @@ import { cleanMarkings } from '../utils/markingDefinition-utils';
 import { UnitSystem } from '../generated/graphql';
 import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
+import { addUserIntoServiceAccountCount } from '../manager/telemetryManager';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -718,6 +719,10 @@ export const roleDeleteRelation = async (context, user, roleId, toId, relationsh
 };
 
 // User related
+const isUserServiceAccount = async (context, user, userId) => {
+  const userToUpdate = await internalLoadById(context, user, userId);
+  return userToUpdate.user_service_account;
+};
 export const userEditField = async (context, user, userId, rawInputs) => {
   const inputs = [];
   const userToUpdate = await internalLoadById(context, user, userId);
@@ -771,6 +776,13 @@ export const userEditField = async (context, user, userId, rawInputs) => {
       if (!(input.value.length === 1 && AVAILABLE_LANGUAGES.includes(input.value[0]))) {
         throw FunctionalError('The language you have provided is not valid');
       }
+    }
+    // Turn User into Service Account
+    const isServiceAccount = await isUserServiceAccount(context, user, userId);
+    logApp.info('isServiceAccount', { isServiceAccount });
+    if (serviceAccountFeatureFlag && input.key === 'user_service_account' && !isServiceAccount) {
+      inputs.push({ key: 'password', value: [null] });
+      await addUserIntoServiceAccountCount();
     }
     inputs.push(input);
   }

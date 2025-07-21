@@ -50,6 +50,7 @@ export const TELEMETRY_GAUGE_DRAFT_VALIDATION = 'draftValidationCount';
 export const TELEMETRY_GAUGE_WORKBENCH_UPLOAD = 'workbenchUploadCount';
 export const TELEMETRY_GAUGE_WORKBENCH_DRAFT_CONVERTION = 'workbenchDraftConvertionCount';
 export const TELEMETRY_GAUGE_WORKBENCH_VALIDATION = 'workbenchValidationCount';
+export const TELEMETRY_GAUGE_USER_INTO_SERVICE_ACCOUNT = 'userIntoServiceAccountCount';
 
 export const addDisseminationCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_DISSEMINATION, 1);
@@ -74,6 +75,9 @@ export const addWorkbenchDraftConvertionCount = async () => {
 };
 export const addWorkbenchValidationCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_WORKBENCH_VALIDATION, 1);
+};
+export const addUserIntoServiceAccountCount = async () => {
+  await redisSetTelemetryAdd(TELEMETRY_GAUGE_USER_INTO_SERVICE_ACCOUNT, 1);
 };
 
 // End Region user event counters
