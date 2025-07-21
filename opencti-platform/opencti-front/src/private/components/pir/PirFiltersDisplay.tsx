@@ -31,7 +31,7 @@ const PirFiltersDisplayComponent = ({
     <Chip
       size={size}
       sx={{ textTransform: 'capitalize', borderRadius: 1 }}
-      label={`${t_i18n(`relationship_${relationship}`)} ${target}`}
+      label={`${t_i18n(`relationship_${relationship}`)} ${target ?? t_i18n('Unknown')}`}
     />
   );
 };
