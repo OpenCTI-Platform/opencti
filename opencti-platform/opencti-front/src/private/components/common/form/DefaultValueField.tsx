@@ -196,7 +196,7 @@ const DefaultValueField = ({
     );
   }
   // Handle single string - Markdown
-  if (attribute.name === 'description') {
+  if (attribute.name === 'description' || (attribute.name === 'content' && entityType === 'Note')) {
     return (
       <Field
         component={MarkdownField}
