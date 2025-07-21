@@ -13,11 +13,12 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
+import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
-import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import type { QueryDisseminationListsArgs } from '../../generated/graphql';
 import { type BasicStoreEntityEmailTemplate, ENTITY_TYPE_EMAIL_TEMPLATE } from './emailTemplate-types';
+import { sendEmailToUser } from '../../domain/user';
 
 export const findById = async (context: AuthContext, user: AuthUser, id: string) => {
   await checkEnterpriseEdition(context);
@@ -27,4 +28,9 @@ export const findById = async (context: AuthContext, user: AuthUser, id: string)
 export const findAll = async (context: AuthContext, user: AuthUser, args: QueryDisseminationListsArgs) => {
   await checkEnterpriseEdition(context);
   return listEntitiesPaginated<BasicStoreEntityEmailTemplate>(context, user, [ENTITY_TYPE_EMAIL_TEMPLATE], args);
+};
+
+export const sendTestEmail = async (context: AuthContext, user: AuthUser, id: string, userId: string) => {
+  await checkEnterpriseEdition(context);
+  return sendEmailToUser(context, user, { target_user_id: userId, email_template_id: id });
 };

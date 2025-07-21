@@ -13,14 +13,9 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { handleError } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 
-// const emailTemplateTestSendMutation = graphql`
-//     mutation EmailTemplateTestSendMutation($templateId: String!, $userId: String!) {
-//         emailTemplateTestSend(templateId: $templateId, userId: $userId)
-//     }
-// `;
 const emailTemplateTestSendMutation = graphql`
-    mutation EmailTemplateTestSendMutation($input: SendUserMailInput!) {
-        sendUserMail(input: $input)
+    mutation EmailTemplateTestSendMutation($id: String!, $userId: String!) {
+        emailTemplateTestSend(id: $id, userId: $userId)
     }
 `;
 
@@ -36,7 +31,7 @@ const EmailTemplateTestSend = ({ templateId }: EmailTemplateTestSendProps) => {
   const submitSendEmail = () => {
     commitSendTestEmailMutation({
       variables: {
-        templateId,
+        id: templateId,
         userId: '',
       },
       onCompleted: () => {
