@@ -72,7 +72,7 @@ const Tool: React.FC<ToolProps> = ({ toolData }) => {
   const overviewLayoutCustomization = useOverviewLayoutCustomization(tool.entity_type);
 
   return (
-    <>
+    <div data-testid="tool-overview">
       <Grid
         container={true}
         spacing={3}
@@ -141,7 +141,7 @@ const Tool: React.FC<ToolProps> = ({ toolData }) => {
           })
         }
       </Grid>
-    </>
+    </div>
   );
 };
 
