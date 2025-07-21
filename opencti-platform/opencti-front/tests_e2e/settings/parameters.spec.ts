@@ -31,7 +31,9 @@ test('Check Logo replacement', async ({ page }) => {
   await page
     .locator('input[name="theme_logo"]')
     .fill('https://www.google.com/images/branding/googlelogo/1x/googlelogo_light_color_272x92dp.png');
-
+  await page
+    .getByLabel('Close')
+    .click();
   const isLogoChanged = async () => {
     await page.reload();
     const logoSrcChangedToGoogle = await page.getByRole('link', { name: 'logo' }).locator('img').getAttribute('src');
@@ -45,10 +47,6 @@ test('Check Logo replacement', async ({ page }) => {
   logoSrc = await page.getByRole('link', { name: 'logo' }).locator('img').getAttribute('src');
   expect(logoSrc).not.toContain('static/images/logo');
 
-  // Close toast
-  await page
-    .getByLabel('Close')
-    .click();
   // Reset logo
   openThemeEditMenu('Dark', page);
   await page
@@ -57,6 +55,7 @@ test('Check Logo replacement', async ({ page }) => {
   await page
     .getByLabel('Close')
     .click();
+  await page.waitForTimeout(1000);
 
   const isLogoBackToDefault = async () => {
     await page.reload();
