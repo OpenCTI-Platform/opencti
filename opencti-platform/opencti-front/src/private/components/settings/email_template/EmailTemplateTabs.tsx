@@ -30,11 +30,11 @@ const EmailTemplateTabs = ({ children, data }: EmailTemplateTabsProps) => {
   const [index, setIndex] = useState(0);
 
   const { editorValue, setEditorValue } = useEmailTemplateContext();
-  const { template_content } = useFragment(tabsFragment, data);
+  const { template_body } = useFragment(tabsFragment, data);
 
   useEffect(() => {
-    setEditorValue(template_content);
-  }, [template_content]);
+    setEditorValue(template_body);
+  }, [template_body]);
 
   return (
     <>
@@ -60,7 +60,7 @@ const EmailTemplateTabs = ({ children, data }: EmailTemplateTabsProps) => {
         </Security>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
-          {editorValue !== template_content ? (
+          {editorValue !== template_body ? (
             <span style={{ color: theme.palette.warn.main }}>
               {t_i18n('You have unsaved changes')}
             </span>

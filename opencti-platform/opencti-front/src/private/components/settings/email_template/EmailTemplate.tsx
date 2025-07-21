@@ -14,10 +14,12 @@ import Loader from '../../../../components/Loader';
 
 export const emailTemplateQuery = graphql`
     query EmailTemplateQuery($id: ID!) {
-        disseminationList(id: $id) {
+        emailTemplate(id: $id) {
             id
             entity_type
+            ...EmailTemplateTabs_template
             ...EmailTemplateHeader_template
+            ...EmailTemplateContentEditor_template
         }
     }
 `;
@@ -27,21 +29,21 @@ interface EmailTemplateProps {
 }
 
 const EmailTemplateComponent = ({ queryRef }: EmailTemplateProps) => {
-  const { disseminationList: email_template } = usePreloadedQuery(emailTemplateQuery, queryRef);
-  if (!email_template) return <ErrorNotFound/>;
+  const { emailTemplate } = usePreloadedQuery(emailTemplateQuery, queryRef);
+  if (!emailTemplate) return <ErrorNotFound/>;
 
   return (
     <EmailTemplateProvider>
       <div style={{ marginRight: EMAIL_TEMPLATE_SIDEBAR_WIDTH }}>
         <EmailTemplateHeader
-          data={email_template}
+          data={emailTemplate}
         />
 
-        <EmailTemplateTabs data={email_template}>
+        <EmailTemplateTabs data={emailTemplate}>
           {({ index }) => (
             <>
               <div role="tabpanel" hidden={index !== 0}>
-                <EmailTemplateContentEditor data={email_template} />
+                <EmailTemplateContentEditor data={emailTemplate} />
               </div>
               <div role="tabpanel" hidden={index !== 1}>
                 <EmailTemplatePreview />
@@ -57,13 +59,13 @@ const EmailTemplateComponent = ({ queryRef }: EmailTemplateProps) => {
 };
 
 const EmailTemplate = () => {
-  const { templateId, subTypeId } = useParams<{ templateId?: string, subTypeId?: string }>();
-  if (!templateId || !subTypeId) return <ErrorNotFound/>;
+  const { emailTemplateId } = useParams<{ emailTemplateId?: string }>();
+  if (!emailTemplateId) return <ErrorNotFound/>;
 
   const templateRef = useQueryLoading<EmailTemplateQuery>(
     emailTemplateQuery,
     {
-      id: templateId,
+      id: emailTemplateId,
     },
   );
 
