@@ -215,6 +215,7 @@ SCO_PROPERTIES = """
         languages
         vendor
         version
+        x_opencti_product
     }
     ... on Url {
         value
@@ -519,6 +520,7 @@ SCO_PROPERTIES_WITH_FILES = """
         languages
         vendor
         version
+        x_opencti_product
     }
     ... on Url {
         value

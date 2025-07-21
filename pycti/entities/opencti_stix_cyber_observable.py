@@ -809,6 +809,18 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                 }
             elif type == "Software":
+                if (
+                    "x_opencti_product" not in observable_data
+                    and self.opencti.get_attribute_in_extension(
+                        "x_opencti_product", observable_data
+                    )
+                    is not None
+                ):
+                    observable_data["x_opencti_product"] = (
+                        self.opencti.get_attribute_in_extension(
+                            "x_opencti_product", observable_data
+                        )
+                    )
                 input_variables["Software"] = {
                     "name": (
                         observable_data["name"] if "name" in observable_data else None
@@ -830,6 +842,11 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     "version": (
                         observable_data["version"]
                         if "version" in observable_data
+                        else None
+                    ),
+                    "x_opencti_product": (
+                        observable_data["x_opencti_product"]
+                        if "x_opencti_product" in observable_data
                         else None
                     ),
                 }
