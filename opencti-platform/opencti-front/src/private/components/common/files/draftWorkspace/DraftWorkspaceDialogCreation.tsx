@@ -57,7 +57,7 @@ const DraftWorkspaceDialogCreation: FunctionComponent<DraftWorkspaceCreationProp
     'draftWorkspaceAdd',
   );
 
-  const draftValidation = () => Yup.object().shape({
+  const draftValidation = Yup.object().shape({
     name: Yup.string().trim().required(t_i18n('This field is required')),
   });
 

@@ -5,23 +5,20 @@ import IconButton from '@mui/material/IconButton';
 import { Add } from '@mui/icons-material';
 import Paper from '@mui/material/Paper';
 import Drafts from '@components/drafts/Drafts';
-import { useTheme } from '@mui/styles';
 import { KNOWLEDGE_KNASKIMPORT } from '../../../../../utils/hooks/useGranted';
 import Security from '../../../../../utils/Security';
 import useDraftContext from '../../../../../utils/hooks/useDraftContext';
 import { useFormatter } from '../../../../../components/i18n';
-import type { Theme } from '../../../../../components/Theme';
 
 const DraftWorkspaceViewer = ({ entityId }: { entityId: string }) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme<Theme>();
   const draftContext = useDraftContext();
   const [openCreate, setOpenCreate] = useState(false);
 
   return (
     <Grid item xs={6}>
       <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true} style={{ float: 'left', marginBottom: theme.spacing(2) }}>
+        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t_i18n('Drafts')}
         </Typography>
         {!draftContext && (

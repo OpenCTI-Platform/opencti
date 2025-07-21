@@ -10,7 +10,6 @@ import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
 import IconButton from '@mui/material/IconButton';
 import { Add } from '@mui/icons-material';
-import { useTheme } from '@mui/styles';
 import { TEN_SECONDS } from '../../../../../utils/Time';
 import inject18n from '../../../../../components/i18n';
 import WorkbenchFileLine from './WorkbenchFileLine';
@@ -44,7 +43,6 @@ const WorkbenchFileViewerBase = ({
   const { edges } = pendingFiles;
   const [openCreate, setOpenCreate] = useState(false);
   const draftContext = useDraftContext();
-  const theme = useTheme();
 
   useEffect(() => {
     // Refresh the export viewer every interval
@@ -63,7 +61,7 @@ const WorkbenchFileViewerBase = ({
   return (
     <Grid item xs={6}>
       <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true} style={{ float: 'left', marginBottom: theme.spacing(2) }}>
+        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Analyst workbenches')}
         </Typography>
         {!draftContext && (

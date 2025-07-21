@@ -118,14 +118,14 @@ const computeValidationProgress = (validationWork: Drafts_node$data['validationW
   return `${Math.floor(100 * (validationWork.tracking.import_processed_number / validationWork.tracking.import_expected_number))}%`;
 };
 
-interface DraftProps {
+interface DraftsProps {
   entityId?: string;
   openCreate?: boolean;
   setOpenCreate?: () => void;
   emptyStateMessage?: string
 }
 
-const Drafts: FunctionComponent<DraftProps> = ({ entityId, openCreate, setOpenCreate, emptyStateMessage }) => {
+const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenCreate, emptyStateMessage }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const draftColor = getDraftModeColor(theme);
