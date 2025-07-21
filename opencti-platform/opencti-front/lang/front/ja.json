@@ -1887,6 +1887,7 @@
   "INTERNAL_EXPORT_FILE": "ファイルエクスポート",
   "INTERNAL_IMPORT_FILE": "ファイルインポート",
   "INTERNAL_INGESTION": "データの取り込み",
+  "INTERNAL_INGESTION_PIR": "PIR摂取",
   "Interval": "インターバル",
   "Interval between injections (in minutes)": "注射の間隔（分）",
   "Interval must be a positive number": "間隔は正の数でなければならない",
