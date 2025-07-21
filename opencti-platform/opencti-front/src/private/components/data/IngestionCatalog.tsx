@@ -9,8 +9,7 @@ import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { IngestionCatalogQuery } from '@components/data/__generated__/IngestionCatalogQuery.graphql';
 import IngestionCatalogCard from '@components/data/IngestionCatalog/IngestionCatalogCard';
-import { useTheme } from '@mui/styles';
-import type { Theme } from '../../../components/Theme';
+import ListCardsContent from '../../../components/list_cards/ListCardsContent';
 
 const ingestionCatalogQuery = graphql`
   query IngestionCatalogQuery {
@@ -32,35 +31,44 @@ const IngestionCatalogComponent = ({
   queryRef,
 }: IngestionCatalogComponentProps) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme<Theme>();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Catalog | Ingestion | Data'));
   const { catalogs } = usePreloadedQuery(
     ingestionCatalogQuery,
     queryRef
   );
+  const contracts: string[] = [];
+  for (const catalog of catalogs) {
+    catalog.contracts.map(contract => {
+      contracts.push(contract);
+    });
+  }
+  // for (const catalog of catalogs) {
+  //   catalog.contracts.map(contract => {
+  //     contracts.push(contract);
+  //   });
+  // }
+  // for (const catalog of catalogs) {
+  //   catalog.contracts.map(contract => {
+  //     contracts.push(contract);
+  //   });
+  // }
+
   return (
     <>
       <IngestionMenu />
       <PageContainer withRightMenu withGap>
         <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('Catalog'), current: true }]} />
-        {catalogs.map((catalog) => {
-          return (
-            <>
-              <div key={catalog.id}>{catalog.name}</div>
-              <div
-                style={{
-                  display: 'flex',
-                  gap: theme.spacing(1)
-                }}
-              >
-                {catalog.contracts.map((contract) => (
-                  <IngestionCatalogCard contract={contract} />
-                ))}
-              </div>
-            </>
-          );
-        })}
+        {contracts.length && (
+          <ListCardsContent
+            hasMore={() => false}
+            isLoading={() => false}
+            dataList={contracts}
+            globalCount={contracts.length}
+            CardComponent={IngestionCatalogCard}
+            rowHeight={350}
+          />
+        )}
       </PageContainer>
     </>
   );
