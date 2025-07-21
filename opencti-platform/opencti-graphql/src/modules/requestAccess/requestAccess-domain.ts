@@ -24,7 +24,7 @@ import {
 } from '../../utils/access';
 import { internalLoadById, listAllEntities } from '../../database/middleware-loader';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS } from '../../schema/internalObject';
-import { BUS_TOPICS, logApp } from '../../config/conf';
+import { BUS_TOPICS, isFeatureEnabled, logApp } from '../../config/conf';
 import { addOrganizationRestriction } from '../../domain/stix';
 import { storeLoadByIdWithRefs, updateAttribute } from '../../database/middleware';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, OPENCTI_ADMIN_UUID } from '../../schema/general';
@@ -80,6 +80,7 @@ export interface RequestAccessAction {
   executionDate?: Date
   workflowMapping: RequestAccessActionStatus[],
 }
+const serviceAccountFeatureFlag = isFeatureEnabled('SERVICE_ACCOUNT');
 
 export const getPlatformOrganizationId = async (context: AuthContext, user: AuthUser) => {
   const settings: BasicStoreSettings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
@@ -466,6 +467,7 @@ export const notifyRequestAccessResult = async (
       user_id: applicant.id,
       user_email: applicant.user_email,
       notifiers: applicant.personal_notifiers,
+      user_service_account: user.user_service_account && serviceAccountFeatureFlag ? user.user_service_account : false
     },
     type: 'ACCESS REQUEST',
     message: `${representative} request access is now ${status}`
