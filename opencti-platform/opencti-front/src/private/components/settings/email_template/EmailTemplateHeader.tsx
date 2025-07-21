@@ -43,12 +43,12 @@ const EmailTemplateHeader = ({ data }: EmailTemplateHeaderProps) => {
   const breadcrumb = [
     { label: t_i18n('Settings') },
     { label: t_i18n('Security') },
-    { label: t_i18n('Email template'), link: emailTemplateLink },
+    { label: t_i18n('Email templates'), link: emailTemplateLink },
     { label: template.name },
   ];
 
   const onSubmit = () => {
-    const input = { key: 'template_content', value: [editorValue] };
+    const input = { key: 'template_body', value: [editorValue] };
     commitEditMutation({
       variables: { id: template.id, input: [input] },
     });
