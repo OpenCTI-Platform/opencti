@@ -60,7 +60,7 @@ const RootRoleComponent: FunctionComponent<RootRoleComponentProps> = ({ queryRef
   const handleOpenDelete = () => setOpenDelete(true);
   const handleCloseDelete = () => setOpenDelete(false);
 
-  const { isAllowed, isSensitive } = useSensitiveModifications('roles', role?.standard_id);
+  const { isAllowed, isSensitive } = useSensitiveModifications('roles', role.standard_id);
   const roleEditionData = useLazyLoadQuery<RoleEditionQuery>(
     roleEditionQuery,
     { id: role.id },
@@ -83,82 +83,80 @@ const RootRoleComponent: FunctionComponent<RootRoleComponentProps> = ({ queryRef
 
   return (
     <Security needs={[SETTINGS_SETACCESSES]}>
-      {role ? (
-        <>
-          <AccessesMenu/>
-          <Breadcrumbs
-            isSensitive={isSensitive}
-            elements={[
-              { label: t_i18n('Settings') },
-              { label: t_i18n('Security') },
-              { label: t_i18n('Roles'), link: '/dashboard/settings/accesses/roles' },
-              { label: role.name, current: true },
-            ]}
-          />
-          <RoleHeader>
-            <div>
-              <Typography
-                variant="h1"
-                gutterBottom={true}
-                style={{ float: 'left' }}
-              >
-                {role.name}
-              </Typography>
-              <div className="clearfix"/>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', paddingRight: 200 }}>
-              <div style={{ display: 'flex' }}>
-                <div style={{ marginRight: theme.spacing(0.5) }}>
-                  {canDelete && (
-                    <PopoverMenu>
-                      {({ closeMenu }) => (
-                        <Box>
-                          <MenuItem onClick={() => {
-                            handleOpenDelete();
-                            closeMenu();
-                          }}
-                          >
-                            {t_i18n('Delete')}
-                          </MenuItem>
-                        </Box>
-                      )}
-                    </PopoverMenu>
+      <>
+        <AccessesMenu/>
+        <Breadcrumbs
+          isSensitive={isSensitive}
+          elements={[
+            { label: t_i18n('Settings') },
+            { label: t_i18n('Security') },
+            { label: t_i18n('Roles'), link: '/dashboard/settings/accesses/roles' },
+            { label: role.name, current: true },
+          ]}
+        />
+        <RoleHeader>
+          <div>
+            <Typography
+              variant="h1"
+              gutterBottom={true}
+              style={{ float: 'left' }}
+            >
+              {role.name}
+            </Typography>
+            <div className="clearfix"/>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', paddingRight: 200 }}>
+            <div style={{ display: 'flex' }}>
+              <div style={{ marginRight: theme.spacing(0.5) }}>
+                {canDelete && (
+                <PopoverMenu>
+                  {({ closeMenu }) => (
+                    <Box>
+                      <MenuItem onClick={() => {
+                        handleOpenDelete();
+                        closeMenu();
+                      }}
+                      >
+                        {t_i18n('Delete')}
+                      </MenuItem>
+                    </Box>
                   )}
-                </div>
-                <RoleDeletionDialog
-                  roleId={role.id}
-                  isOpen={openDelete}
-                  handleClose={handleCloseDelete}
-                />
-                <RoleEdition
-                  roleEditionData={roleEditionData}
-                  disabled={!isAllowed && isSensitive}
-                />
+                </PopoverMenu>
+                )}
               </div>
+              <RoleDeletionDialog
+                roleId={role.id}
+                isOpen={openDelete}
+                handleClose={handleCloseDelete}
+              />
+              <RoleEdition
+                roleEditionData={roleEditionData}
+                disabled={!isAllowed && isSensitive}
+              />
             </div>
-          </RoleHeader>
-          <div className="clearfix"/>
-          <>
-            {groupsQueryRef ? (
-              <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-                <Routes>
-                  <Route
-                    path="/"
-                    element={(
-                      <Role roleData={role} groupsQueryRef={groupsQueryRef} />
+          </div>
+        </RoleHeader>
+        <div className="clearfix"/>
+        <>
+          {groupsQueryRef ? (
+            <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+              <Routes>
+                <Route
+                  path="/"
+                  element={(
+                    <Role roleData={role} groupsQueryRef={groupsQueryRef} />
                     )}
-                  />
-                </Routes>
-              </React.Suspense>
-            ) : (
-              <Loader variant={LoaderVariant.inElement} />
-            )
+                />
+              </Routes>
+            </React.Suspense>
+          ) : (
+            <Loader variant={LoaderVariant.inElement} />
+          )
             }
-          </>
         </>
+      </>
       ) : (
-        <ErrorNotFound />
-      )}
+      <ErrorNotFound />
     </Security>
   );
 };

@@ -88,72 +88,70 @@ const RootGroupComponent: FunctionComponent<RootGroupComponentProps> = ({ queryR
 
   return (
     <Security needs={[SETTINGS_SETACCESSES]}>
-      {group ? (
-        <>
-          <AccessesMenu/>
-          <Breadcrumbs
-            isSensitive={isSensitive}
-            elements={[
-              { label: t_i18n('Settings') },
-              { label: t_i18n('Security') },
-              { label: t_i18n('Groups'), link: '/dashboard/settings/accesses/groups' },
-              { label: group.name, current: true },
-            ]}
-          />
-          <GroupHeader>
-            <div>
-              <Typography
-                variant="h1"
-                gutterBottom={true}
-                style={{ float: 'left' }}
-              >
-                {group.name}
-              </Typography>
-              <div className="clearfix"/>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', paddingRight: 200 }}>
-              <div style={{ display: 'flex' }}>
-                <div style={{ marginRight: theme.spacing(0.5) }}>
-                  {canDelete && (
-                    <PopoverMenu>
-                      {({ closeMenu }) => (
-                        <Box>
-                          <MenuItem onClick={() => {
-                            handleOpenDelete();
-                            closeMenu();
-                          }}
-                          >
-                            {t_i18n('Delete')}
-                          </MenuItem>
-                        </Box>
-                      )}
-                    </PopoverMenu>
+      <>
+        <AccessesMenu/>
+        <Breadcrumbs
+          isSensitive={isSensitive}
+          elements={[
+            { label: t_i18n('Settings') },
+            { label: t_i18n('Security') },
+            { label: t_i18n('Groups'), link: '/dashboard/settings/accesses/groups' },
+            { label: group.name, current: true },
+          ]}
+        />
+        <GroupHeader>
+          <div>
+            <Typography
+              variant="h1"
+              gutterBottom={true}
+              style={{ float: 'left' }}
+            >
+              {group.name}
+            </Typography>
+            <div className="clearfix"/>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', paddingRight: 200 }}>
+            <div style={{ display: 'flex' }}>
+              <div style={{ marginRight: theme.spacing(0.5) }}>
+                {canDelete && (
+                <PopoverMenu>
+                  {({ closeMenu }) => (
+                    <Box>
+                      <MenuItem onClick={() => {
+                        handleOpenDelete();
+                        closeMenu();
+                      }}
+                      >
+                        {t_i18n('Delete')}
+                      </MenuItem>
+                    </Box>
                   )}
-                </div>
-                <GroupDeletionDialog
-                  groupId={group.id}
-                  isOpen={openDelete}
-                  handleClose={handleCloseDelete}
-                />
-                <GroupEdition
-                  groupId={group.id}
-                  disabled={!isAllowed && isSensitive}
-                />
+                </PopoverMenu>
+                )}
               </div>
+              <GroupDeletionDialog
+                groupId={group.id}
+                isOpen={openDelete}
+                handleClose={handleCloseDelete}
+              />
+              <GroupEdition
+                groupId={group.id}
+                disabled={!isAllowed && isSensitive}
+              />
             </div>
-          </GroupHeader>
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <Group groupData={group}/>
+          </div>
+        </GroupHeader>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <Group groupData={group}/>
             }
-            />
-          </Routes>
-        </>
+          />
+        </Routes>
+      </>
       ) : (
-        <ErrorNotFound />
-      )}
+      <ErrorNotFound />
     </Security>
   );
 };
