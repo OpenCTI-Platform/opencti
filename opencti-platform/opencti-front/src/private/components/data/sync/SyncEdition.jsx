@@ -148,9 +148,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
   };
 
   useEffect(() => {
-    if (initialValues) {
-      handleGetStreams(initialValues);
-    }
+    handleGetStreams(initialValues);
   }, []);
 
   return (

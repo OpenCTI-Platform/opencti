@@ -16,7 +16,7 @@ import { delEditContext, notify, redisGetWork, redisSetConnectorLogs, setEditCon
 import { internalLoadById, listEntities, storeLoadById } from '../database/middleware-loader';
 import { completeContextDataForEntity, publishUserAction, type UserImportActionContextData } from '../listener/UserActionListener';
 import type { AuthContext, AuthUser } from '../types/user';
-import type { BasicStoreEntityConnector, ConnectorInfo } from '../types/connector';
+import type { BasicStoreEntityConnector, BasicStoreEntitySynchronizer, ConnectorInfo } from '../types/connector';
 import {
   type AddManagedConnectorInput,
   ConnectorType,
@@ -402,7 +402,7 @@ export const patchSync = async (context: AuthContext, user: AuthUser, id: string
   return patched.element;
 };
 export const findSyncById = async (context: AuthContext, user: AuthUser, syncId: string, removeCredentials = false) => {
-  const basicIngestion = await storeLoadById(context, user, syncId, ENTITY_TYPE_SYNC);
+  const basicIngestion = await storeLoadById<BasicStoreEntitySynchronizer>(context, user, syncId, ENTITY_TYPE_SYNC);
   if (removeCredentials) {
     basicIngestion.token = removeAuthenticationCredentials(IngestionAuthType.Bearer, basicIngestion.token);
   }
