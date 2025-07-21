@@ -13,6 +13,7 @@ export type TextFieldProps = FieldProps<string> & MuiTextFieldProps & {
   onFocus?: (name: string) => void
   onChange?: (name: string, value: string) => void
   onSubmit?: (name: string, value: string) => void
+  onKeyDown?: (key: string) => void
   onBeforePaste?: (value: string) => string
 };
 
@@ -24,6 +25,7 @@ const TextField = (props: TextFieldProps) => {
     onChange,
     onFocus,
     onSubmit,
+    onKeyDown,
   } = props;
 
   const internalOnChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
@@ -78,6 +80,18 @@ const TextField = (props: TextFieldProps) => {
   const [, meta] = useField(name);
   const { value, ...otherProps } = fieldToTextField(htmlProps);
 
+  const internalKeyDown = useCallback((event) => {
+    const { key } = event;
+    if (typeof onKeyDown === 'function') {
+      onKeyDown(key);
+      return;
+    }
+
+    if (key === 'Enter' && !!onSubmit) {
+      onSubmit(name, value ?? '');
+    }
+  }, [onKeyDown, onSubmit, name, value]);
+
   const showError = !isNil(meta.error) && (meta.touched || submitCount > 0);
 
   return (
@@ -102,6 +116,7 @@ const TextField = (props: TextFieldProps) => {
       onFocus={internalOnFocus}
       onBlur={internalOnBlur}
       onPaste={internalOnPaste}
+      onKeyDown={internalKeyDown}
       slotProps={{
         input: {
           startAdornment,
