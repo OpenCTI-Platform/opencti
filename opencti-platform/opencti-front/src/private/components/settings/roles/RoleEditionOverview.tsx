@@ -35,14 +35,6 @@ const roleEditionOverviewFocus = graphql`
   }
 `;
 
-export const roleDeletionMutation = graphql`
-  mutation RoleEditionOverviewDeletionMutation($id: ID!) {
-    roleEdit(id: $id) {
-      delete
-    }
-  }
-`;
-
 const roleValidation = (t: (n: string) => string) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string().nullable(),

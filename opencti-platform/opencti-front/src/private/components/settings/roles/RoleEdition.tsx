@@ -7,7 +7,7 @@ import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Dra
 import RoleEditionOverview from './RoleEditionOverview';
 import RoleEditionCapabilities, { roleEditionCapabilitiesLinesSearch } from './RoleEditionCapabilities';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
+import Loader from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import { RoleEditionCapabilitiesLinesSearchQuery } from './__generated__/RoleEditionCapabilitiesLinesSearchQuery.graphql';
 import { RoleEdition_role$key } from './__generated__/RoleEdition_role.graphql';
@@ -69,11 +69,7 @@ const RoleEditionDrawer: FunctionComponent<RoleEditionDrawerProps> = ({
         </Box>
         {currentTab === 0 && <RoleEditionOverview role={role} context={role.editContext} />}
         {currentTab === 1 && queryRef && (
-          <React.Suspense
-            fallback={<Loader variant={LoaderVariant.inline} />}
-          >
-            <RoleEditionCapabilities role={role} queryRef={queryRef} />
-          </React.Suspense>
+          <RoleEditionCapabilities role={role} queryRef={queryRef} />
         )}
       </>)
         : (<Loader />)}
