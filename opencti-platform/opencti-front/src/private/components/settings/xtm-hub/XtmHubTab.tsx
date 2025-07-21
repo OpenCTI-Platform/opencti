@@ -1,4 +1,5 @@
-import React, { useContext, useState, useCallback } from 'react';
+import { graphql } from 'react-relay';
+import React, { useCallback, useContext, useState } from 'react';
 import { Dialog, DialogContent, DialogTitle, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import useExternalTab from './useExternalTab';
@@ -8,25 +9,85 @@ import EnrollmentInstructions from './EnrollmentInstructions';
 import EnrollmentLoader from './EnrollmentLoader';
 import ConfirmationDialog from './ConfirmationDialog';
 import { UserContext } from '../../../../utils/hooks/useAuth';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import EnrollmentSuccess from './EnrollmentSuccess';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+
+enum EnrollmentSteps {
+  INSTRUCTIONS = 'INSTRUCTIONS',
+  WAITING_HUB = 'WAITING_HUB',
+  SUCCESS = 'SUCCESS',
+  ERROR = 'ERROR',
+  CANCELED = 'CANCELED',
+}
+
+const xtmHubTabSettingsFieldPatchMutation = graphql`
+  mutation XtmHubTabSettingsFieldPatchMutation($id: ID!, $input: [EditInput]!) {
+    settingsEdit(id: $id) {
+      fieldPatch(input: $input) {
+        id
+        xtm_hub_enrollment_date
+        xtm_hub_enrollment_status
+        xtm_hub_enrollment_user_id
+        xtm_hub_enrollment_user_name
+        xtm_hub_last_connectivity_check
+        xtm_hub_token
+      }
+    }
+  }
+`;
 
 const XtmHubTab: React.FC = () => {
   const { t_i18n } = useFormatter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const { settings } = useContext(UserContext);
+  const isEnterpriseEdition = useEnterpriseEdition();
   const enrollmentHubUrl = settings?.platform_xtmhub_url ?? 'https://hub.filigran.io/app';
+  const [enrollmentStep, setEnrollmentStep] = useState<EnrollmentSteps>(EnrollmentSteps.INSTRUCTIONS);
 
-  // TODO Did in purpose, will use in next chunk and we will remove the unused-vars.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const OCTIInformations = {
+    platform_url: window.location.origin,
+    platform_title: 'Open CTI Instance',
+    platform_id: settings?.id ?? '',
+    platform_contract: isEnterpriseEdition ? 'EE' : 'CE',
+  };
+  const queryParamsOCTIInformations = new URLSearchParams(OCTIInformations).toString();
+
   const handleTabMessage = useCallback((event: MessageEvent) => {
-    // Handle messages from the enrollment tab-
+    const eventData = event.data;
+    const { action, token } = eventData;
+    if (action === 'enroll') {
+      const [commit] = useApiMutation(xtmHubTabSettingsFieldPatchMutation);
+      commit({
+        variables: { id: settings?.id ?? '',
+          input: [
+            { key: 'xtm_hub_token', value: token },
+            { key: 'xtm_hub_enrollment_status', value: 'enrolled' },
+          ] },
+        onCompleted: () => {
+          setEnrollmentStep(EnrollmentSteps.SUCCESS);
+        },
+        onError: () => {
+          setEnrollmentStep(EnrollmentSteps.ERROR);
+        },
+      });
+    } else if (action === 'cancel') {
+      setEnrollmentStep(EnrollmentSteps.CANCELED);
+    } else {
+      setEnrollmentStep(EnrollmentSteps.ERROR);
+    }
   }, []);
 
-  const { isTabOpen, openTab, closeTab, focusTab } = useExternalTab({
-    url: `${enrollmentHubUrl}/app`,
+  const handleClosingTab = () => {
+    setEnrollmentStep(EnrollmentSteps.CANCELED);
+  };
+
+  const { openTab, closeTab, focusTab } = useExternalTab({
+    url: `${enrollmentHubUrl}/redirect/enroll-octi?${queryParamsOCTIInformations}`,
     tabName: 'xtmhub-enrollment',
     onMessage: handleTabMessage,
-    setIsDialogOpen,
+    onClosingTab: handleClosingTab,
   });
 
   const handleOpenDialog = () => setIsDialogOpen(true);
@@ -38,35 +99,33 @@ const XtmHubTab: React.FC = () => {
     closeTab();
     setIsDialogOpen(false);
     setShowConfirmation(false);
+    setEnrollmentStep(EnrollmentSteps.INSTRUCTIONS);
   };
 
   const handleAttemptClose = () => {
     // If tab is open, show confirmation dialog
-    if (isTabOpen) {
+    if (enrollmentStep === EnrollmentSteps.WAITING_HUB) {
       setShowConfirmation(true);
     } else {
       handleCloseDialog();
     }
   };
 
+  const handleWaitingHubStep = () => {
+    openTab();
+    setEnrollmentStep(EnrollmentSteps.WAITING_HUB);
+  };
+
   const renderDialogContent = () => {
-    if (!isTabOpen && isDialogOpen) {
-      return (
-        <EnrollmentInstructions
-          onContinue={openTab}
-        />
-      );
-    }
-
-    if (isTabOpen) {
-      return (
-        <EnrollmentLoader
-          onFocusTab={focusTab}
-        />
-      );
-    }
-
-    return null;
+    const ENROLLMENT_RENDERERS = new Map([
+      [EnrollmentSteps.INSTRUCTIONS, () => <EnrollmentInstructions onContinue={handleWaitingHubStep} />],
+      [EnrollmentSteps.WAITING_HUB, () => <EnrollmentLoader onFocusTab={focusTab} />],
+      [EnrollmentSteps.SUCCESS, () => <EnrollmentSuccess closeDialog={handleCloseDialog} />],
+      [EnrollmentSteps.ERROR, () => <div> {t_i18n('Sorry, we have an issue, please retry')}</div>],
+      [EnrollmentSteps.CANCELED, () => <div> {t_i18n('You have canceled the enrollment process')}</div>],
+    ]);
+    const renderer = ENROLLMENT_RENDERERS.get(enrollmentStep);
+    return renderer && isDialogOpen ? renderer() : null;
   };
 
   return (
