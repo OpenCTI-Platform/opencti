@@ -3,20 +3,29 @@ import { PaperProps as MuiPaperProps, Typography, Paper as MuiPaper } from '@mui
 
 interface PaperProps extends Omit<MuiPaperProps, 'title'> {
   title?: ReactNode
+  actions?: ReactNode
 }
 
-const Paper = ({ title, children, ...muiProps }: PaperProps) => {
+const Paper = ({ title, actions, children, ...muiProps }: PaperProps) => {
   return (
     <div>
-      {title && (
-        <Typography
-          variant="h4"
-          gutterBottom
-          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
-        >
-          {title}
-        </Typography>
-      )}
+      <div style={{
+        display: 'flex',
+        alignItems: 'flex-start',
+        height: 19,
+      }}
+      >
+        {title && (
+          <Typography
+            variant="h4"
+            gutterBottom
+            sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+          >
+            {title}
+          </Typography>
+        )}
+        {actions}
+      </div>
       <MuiPaper
         variant="outlined"
         className="paper-for-grid"

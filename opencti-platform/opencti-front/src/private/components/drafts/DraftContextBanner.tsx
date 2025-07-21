@@ -177,11 +177,11 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
               <DialogContentText>
                 {t_i18n('Do you want to approve this draft and send it to ingestion?')}
                 {currentlyProcessing && (
-                <Alert style={{ marginTop: 10 }} severity={'warning'}>
-                  <AlertTitle>{t_i18n('Ongoing processes')}</AlertTitle>
-                  {t_i18n('There are processes still running that could impact the data of the draft. '
+                  <Alert style={{ marginTop: 10 }} severity={'warning'}>
+                    <AlertTitle>{t_i18n('Ongoing processes')}</AlertTitle>
+                    {t_i18n('There are processes still running that could impact the data of the draft. '
                       + 'By approving the draft now, the remaining changes that would have been applied by those processes will be ignored.')}
-                </Alert>)}
+                  </Alert>)}
               </DialogContentText>
             </DialogContent>
             <DialogActions>
@@ -206,13 +206,13 @@ const DraftContextBanner = () => {
     return null;
   }
 
-  useEffect(() => {
-    loadQuery({ id: draftContext.id }, { fetchPolicy: 'store-and-network' });
-  }, [draftContext.name]);
-
   const refetch = React.useCallback(() => {
     loadQuery({ id: draftContext.id }, { fetchPolicy: 'store-and-network' });
   }, [queryRef]);
+
+  useEffect(() => {
+    refetch();
+  }, [draftContext.id]);
 
   return (
     <>
