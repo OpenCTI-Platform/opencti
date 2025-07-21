@@ -387,7 +387,7 @@ const ThemeDark = (
             WebkitFontSmoothing: 'auto',
           },
           a: {
-            color: text_color,
+            color: primary || THEME_DARK_DEFAULT_PRIMARY,
           },
           'input:-webkit-autofill': {
             WebkitAnimation: 'autofill 0s forwards',

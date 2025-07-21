@@ -388,7 +388,7 @@ const ThemeLight = (
             WebkitFontSmoothing: 'auto',
           },
           a: {
-            color: text_color,
+            color: primary || THEME_LIGHT_DEFAULT_PRIMARY,
           },
           'input:-webkit-autofill': {
             WebkitAnimation: 'autofill 0s forwards',
