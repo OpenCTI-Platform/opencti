@@ -123,7 +123,7 @@ class ListCardsContent extends Component {
         </div>
       );
     }
-    const { node } = edge;
+    const node = edge.node ?? edge;
     return (
       <div className={className} key={`${rowIndex}-${key}-${node.__id}`} style={finalStyle}>
         {/* TODO remove this when all components are pure function without compose() */}
