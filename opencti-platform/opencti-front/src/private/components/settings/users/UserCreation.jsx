@@ -8,6 +8,7 @@ import Alert from '@mui/material/Alert';
 import MenuItem from '@mui/material/MenuItem';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
+import MailTemplateField from '../../common/form/MailTemplateField';
 import GroupField, { groupsQuery } from '../../common/form/GroupField';
 import UserConfidenceLevelField from './edition/UserConfidenceLevelField';
 import Drawer from '../../common/drawer/Drawer';
@@ -74,11 +75,12 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
   const { groups: defaultGroups } = usePreloadedQuery(groupsQuery, defaultGroupsQueryRef);
 
   const onSubmit = (values, { setSubmitting, resetForm }) => {
-    const { objectOrganization, groups, user_confidence_level, ...rest } = values;
+    const { objectOrganization, groups, user_confidence_level, emailTemplate, ...rest } = values;
     const finalValues = {
       ...rest,
       objectOrganization: objectOrganization.map((n) => n.value),
       groups: groups.map((n) => n.value),
+      email_template_id: emailTemplate.id,
       user_confidence_level: user_confidence_level
         ? {
           max_confidence: parseInt(user_confidence_level, 10),
@@ -253,22 +255,13 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                     label={t_i18n('Max Confidence Level')}
                   />
                 )}
-                <Field
-                  component={SwitchField}
-                  type="checkbox"
-                  name="prevent_default_groups"
-                  label={<div style={{ display: 'flex' }}>
-                    <>{t_i18n('Don\'t add the user to the default groups')}</>
-                    <Tooltip
-                      title={`${t_i18n('The default groups are:')} ${defaultGroups.edges.map((g) => g.node.name)}`}
-                    >
-                      <InformationOutline style={{ marginLeft: 8 }} fontSize="small" color="primary" />
-                    </Tooltip>
-                  </div>}
-                  containerstyle={{ marginTop: 20 }}
+                <MailTemplateField
+                  style={{ marginTop: 20 }}
+                  name="emailTemplate"
+                  label={'Email template'}
                 />
                 <div style={{
-                  marginTop: 20,
+                  marginTop: 40,
                   textAlign: 'right',
                 }}
                 >

@@ -622,6 +622,7 @@ export const sendEmailToUser = async (context, user, input) => {
 };
 
 export const addUser = async (context, user, newUser) => {
+  console.log({ newUser });
   const userEmail = newUser.user_email.toLowerCase();
   const existingUser = await elLoadBy(context, SYSTEM_USER, 'user_email', userEmail, ENTITY_TYPE_USER);
   if (existingUser) {
