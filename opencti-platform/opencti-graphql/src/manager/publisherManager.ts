@@ -380,13 +380,15 @@ const processBufferedEvents = async (
     // For each event, transform it into NotificationData for all targets
     for (let index = 0; index < targets.length; index += 1) {
       const { user, type, message } = targets[index];
-      const notificationMessage = createFullNotificationMessage(message, usersFromCache, event.streamMessage, origin, type);
-      const currentData = { notification_id: event.notification_id, instance, type, message: notificationMessage };
-      const currentNotifDataForUser = notifDataPerUser[user.user_id];
-      if (currentNotifDataForUser) {
-        currentNotifDataForUser.push({ user, data: currentData });
-      } else {
-        notifDataPerUser[user.user_id] = [{ user, data: currentData }];
+      if (!user.user_service_account) {
+        const notificationMessage = createFullNotificationMessage(message, usersFromCache, event.streamMessage, origin, type);
+        const currentData = { notification_id: event.notification_id, instance, type, message: notificationMessage };
+        const currentNotifDataForUser = notifDataPerUser[user.user_id];
+        if (currentNotifDataForUser) {
+          currentNotifDataForUser.push({ user, data: currentData });
+        } else {
+          notifDataPerUser[user.user_id] = [{ user, data: currentData }];
+        }
       }
     }
   }
