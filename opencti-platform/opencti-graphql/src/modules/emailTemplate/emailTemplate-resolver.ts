@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import type { Resolvers } from '../../generated/graphql';
-import { findById, findAll } from './emailTemplate-domain';
+import { findById, findAll, sendTestEmail } from './emailTemplate-domain';
 
 const emailTemplateResolver: Resolvers = {
   Query: {
@@ -31,6 +31,9 @@ const emailTemplateResolver: Resolvers = {
     },
     emailTemplateFieldPatch: (_, { id, input }, context) => {
       return fieldPatchEmailTemplate(context, context.user, id, input);
+    },
+    emailTemplateTestSend: (_, { id, userId }, context) => {
+      return sendTestEmail(context, context.user, id, userId);
     },
   }
 };
