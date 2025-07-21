@@ -15,6 +15,7 @@ import { enableCEAndUnSetOrganization, enableEEAndSetOrganization } from '../../
 import { type BasicStoreEntityOrganization } from '../../../src/modules/organization/organization-types';
 import { SETTINGS_SET_ACCESSES } from '../../../src/utils/access';
 import type { Group } from '../../../src/types/group';
+import { storeLoadById } from '../../../src/database/middleware-loader';
 
 /**
  * Create a new user in elastic for this test purpose using domain APIs only.
@@ -281,7 +282,7 @@ describe('Service account with platform organization coverage', async () => {
       password: 'youWillNeverBeStored',
     };
     const userAddResult = await addUser(testContext, authUser, userAddInput);
-    const userCreated: any = await findById(testContext, authUser, userAddResult.id);
+    const userCreated: any = await storeLoadById(testContext, authUser, userAddResult.id, ENTITY_TYPE_USER);
 
     expect(userCreated.password).toBeUndefined();
 

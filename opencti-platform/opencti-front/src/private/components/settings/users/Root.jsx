@@ -10,6 +10,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { styled } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
 import { useTheme } from '@mui/styles';
+import ConvertUser from './ConvertUser';
 import useHelper from '../../../../utils/hooks/useHelper';
 import UserDeletionDialog from './UserDeletionDialog';
 import AccessesMenu from '../AccessesMenu';
@@ -80,6 +81,7 @@ const userQuery = graphql`
       id
       name
       user_email
+      user_service_account
       ...User_user
         @arguments(
           groupsOrderBy: $groupsOrderBy
@@ -167,12 +169,18 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
                     </PopoverMenu>
                   )}
                 </div>
-                <UserDeletionDialog
-                  userId={data.id}
-                  isOpen={openDelete}
-                  handleClose={handleCloseDelete}
-                />
-                <UserEdition userEditionData={userEditionData} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  < ConvertUser
+                    userId={data.id}
+                    userServiceAccount={data.user_service_account}
+                  />
+                  <UserDeletionDialog
+                    userId={data.id}
+                    isOpen={openDelete}
+                    handleClose={handleCloseDelete}
+                  />
+                  <UserEdition userEditionData={userEditionData} />
+                </div>
               </div>
             </div>
           </UserHeader>
