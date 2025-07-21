@@ -9388,6 +9388,7 @@ type Mutation {
   emailTemplateAdd(input: EmailTemplateAddInput!): EmailTemplate
   emailTemplateDelete(id: ID!): ID
   emailTemplateFieldPatch(id: ID!, input: [EditInput!]!): EmailTemplate
+  emailTemplateTestSend(id: ID!, userId: ID!): Boolean
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {

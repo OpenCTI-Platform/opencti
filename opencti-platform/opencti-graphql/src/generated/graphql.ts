@@ -14259,6 +14259,7 @@ export type Mutation = {
   emailTemplateAdd?: Maybe<EmailTemplate>;
   emailTemplateDelete?: Maybe<Scalars['ID']['output']>;
   emailTemplateFieldPatch?: Maybe<EmailTemplate>;
+  emailTemplateTestSend?: Maybe<Scalars['Boolean']['output']>;
   entitySettingsFieldPatch?: Maybe<Array<Maybe<EntitySetting>>>;
   eventAdd?: Maybe<Event>;
   eventContextClean?: Maybe<Event>;
@@ -15156,6 +15157,12 @@ export type MutationEmailTemplateDeleteArgs = {
 export type MutationEmailTemplateFieldPatchArgs = {
   id: Scalars['ID']['input'];
   input: Array<EditInput>;
+};
+
+
+export type MutationEmailTemplateTestSendArgs = {
+  id: Scalars['ID']['input'];
+  userId: Scalars['ID']['input'];
 };
 
 
@@ -39821,6 +39828,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   emailTemplateAdd?: Resolver<Maybe<ResolversTypes['EmailTemplate']>, ParentType, ContextType, RequireFields<MutationEmailTemplateAddArgs, 'input'>>;
   emailTemplateDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationEmailTemplateDeleteArgs, 'id'>>;
   emailTemplateFieldPatch?: Resolver<Maybe<ResolversTypes['EmailTemplate']>, ParentType, ContextType, RequireFields<MutationEmailTemplateFieldPatchArgs, 'id' | 'input'>>;
+  emailTemplateTestSend?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationEmailTemplateTestSendArgs, 'id' | 'userId'>>;
   entitySettingsFieldPatch?: Resolver<Maybe<Array<Maybe<ResolversTypes['EntitySetting']>>>, ParentType, ContextType, RequireFields<MutationEntitySettingsFieldPatchArgs, 'ids' | 'input'>>;
   eventAdd?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<MutationEventAddArgs, 'input'>>;
   eventContextClean?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<MutationEventContextCleanArgs, 'id'>>;
