@@ -3,19 +3,24 @@ import { useNavigate } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import { Typography, Button } from '@mui/material';
 import { useTheme } from '@mui/styles';
+import { Theme } from '@mui/material/styles/createTheme';
 import useEmailTemplateEdit from '@components/settings/email_template/useEmailTemplateEdit';
 import { useEmailTemplateContext } from '@components/settings/email_template/EmailTemplateContext';
 import EmailTemplatePopover from '@components/settings/email_template/EmailTemplatePopover';
 import EmailTemplateFormDrawer from '@components/settings/email_template/EmailTemplateFormDrawer';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
-import { Theme } from '../../../../components/Theme';
+import { EmailTemplateHeader_template$key } from './__generated__/EmailTemplateHeader_template.graphql';
 
 const headerFragment = graphql`
-    fragment EmailTemplateHeader_template on DisseminationList {
+    fragment EmailTemplateHeader_template on EmailTemplate {
         id
+        entity_type
         name
         description
+        email_object
+        sender_email
+        template_body
     }
 `;
 
@@ -62,7 +67,7 @@ const EmailTemplateHeader = ({ data }: EmailTemplateHeaderProps) => {
           variant="outlined"
           onClick={onSubmit}
           style={{ marginLeft: 'auto' }}
-          disabled={editorValue === template.template_content || editOnGoing}
+          disabled={editorValue === template.template_body || editOnGoing}
         >
           {t_i18n('Save template')}
         </Button>
@@ -77,12 +82,7 @@ const EmailTemplateHeader = ({ data }: EmailTemplateHeaderProps) => {
 
       <EmailTemplateFormDrawer
         isOpen={isFormOpen}
-        template={{
-          id: template.id,
-          name: template.name,
-          emails: '',
-          description: template.description ?? null,
-        }}
+        template={template}
         onClose={() => setFormOpen(false)}
       />
     </>

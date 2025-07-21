@@ -4,10 +4,11 @@ import * as Yup from 'yup';
 import { graphql, useFragment } from 'react-relay';
 import { useEmailTemplateContext } from '@components/settings/email_template/EmailTemplateContext';
 import RichTextField from '../../../../components/fields/RichTextField';
+import { EmailTemplateContentEditor_template$key } from './__generated__/EmailTemplateContentEditor_template.graphql';
 
 const editorFragment = graphql`
-    fragment EmailTemplateContentEditor_template on FintelTemplate {
-        template_content
+    fragment EmailTemplateContentEditor_template on EmailTemplate {
+        template_body
     }
 `;
 

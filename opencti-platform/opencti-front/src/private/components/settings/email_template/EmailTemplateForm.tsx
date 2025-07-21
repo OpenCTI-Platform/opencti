@@ -11,7 +11,7 @@ import MarkdownField from '../../../../components/fields/MarkdownField';
 
 export interface EmailTemplateFormInputs {
   name: string;
-  description: string;
+  description: string | null | undefined;
   email_object: string;
   sender_email: string;
   template_body: string;

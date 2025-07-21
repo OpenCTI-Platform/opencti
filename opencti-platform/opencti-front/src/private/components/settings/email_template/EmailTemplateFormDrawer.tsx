@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import EmailTemplateForm, { EmailTemplateFormInputKeys, EmailTemplateFormInputs } from '@components/settings/email_template/EmailTemplateForm';
 import useEmailTemplateAdd from '@components/settings/email_template/useEmailTemplateAdd';
 import useEmailTemplateEdit from '@components/settings/email_template/useEmailTemplateEdit';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { useFormatter } from '../../../../components/i18n';
 import { handleError, MESSAGING$ } from '../../../../relay/environment';
 import { resolveLink } from '../../../../utils/Entity';
@@ -13,12 +14,14 @@ interface EmailTemplateFormDrawerProps {
   isOpen: boolean
   onClose: () => void
   template?: { id: string } & EmailTemplateFormInputs
+  updater?: (store: RecordSourceSelectorProxy, rootField: string) => void
 }
 
 const FintelTemplateFormDrawer = ({
   isOpen,
   onClose,
   template,
+  updater,
 }: EmailTemplateFormDrawerProps) => {
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
@@ -32,7 +35,6 @@ const FintelTemplateFormDrawer = ({
     values,
     { setSubmitting, resetForm },
   ) => {
-    console.log('onAdd');
     commitAddMutation({
       variables: {
         input: {
@@ -42,6 +44,9 @@ const FintelTemplateFormDrawer = ({
           sender_email: values.sender_email,
           template_body: values.template_body,
         },
+      },
+      updater: (store) => {
+        if (updater) updater(store, 'emailTemplateAdd');
       },
       onCompleted: (response) => {
         setSubmitting(false);
@@ -76,15 +81,13 @@ const FintelTemplateFormDrawer = ({
         open={isOpen}
         onClose={onClose}
       >
-        <>
-          <EmailTemplateForm
-            onClose={onClose}
-            onSubmit={onAdd}
-            onSubmitField={onEdit}
-            isEdition={!!template}
-            defaultValues={template}
-          />
-        </>
+        <EmailTemplateForm
+          onClose={onClose}
+          onSubmit={onAdd}
+          onSubmitField={onEdit}
+          isEdition={!!template}
+          defaultValues={template}
+        />
       </Drawer>
     </>
   );
