@@ -4,6 +4,7 @@ import FeedbackDetailsPage from 'tests_e2e/model/feedbackDetails.pageModel';
 import ObservedDataPage from 'tests_e2e/model/observedData.pageModel';
 import CaseRftPage from 'tests_e2e/model/caseRft.pageModel';
 import CaseRftDetailsPage from 'tests_e2e/model/caseRftDetails.pageModel';
+import ChannelPage from 'tests_e2e/model/channel.pageModel';
 import { expect, test } from '../fixtures/baseFixtures';
 import LeftBarPage from '../model/menu/leftBar.pageModel';
 import ReportPage from '../model/report.pageModel';
@@ -42,12 +43,17 @@ import ThreatActorGroupPage from '../model/threatActorGroup.pageModel';
 import ThreatActorGroupDetailsPage from '../model/threatActorGroupDetails.pageModel';
 import ThreatActorIndividualPage from '../model/threatActorIndividual.pageModel';
 import ThreatActorIndividualDetailsPage from '../model/threatActorIndividualDetails.pageModel';
-import IntrusionSetPage from "../model/intrusionSet.pageModel";
-import IntrusionSetDetailsPage from "../model/intrusionSetDetails.pageModel";
-import CampaignPageModel from "../model/campaign.pageModel";
-import CampaignDetailsPage from "../model/campaignDetails.pageModel";
-import MalwarePageModel from "../model/malware.pageModel";
-import MalwareDetailsPage from "../model/malwareDetails.pageModel";
+import IntrusionSetPage from '../model/intrusionSet.pageModel';
+import IntrusionSetDetailsPage from '../model/intrusionSetDetails.pageModel';
+import CampaignPageModel from '../model/campaign.pageModel';
+import CampaignDetailsPage from '../model/campaignDetails.pageModel';
+import MalwarePageModel from '../model/malware.pageModel';
+import MalwareDetailsPage from '../model/malwareDetails.pageModel';
+import ChannelDetailsPage from '../model/channelDetails.pageModel';
+import ToolPage from 'tests_e2e/model/tool.pageModel';
+import ToolDetailsPage from 'tests_e2e/model/toolDetails.pageModel';
+import VulnerabilityPage from 'tests_e2e/model/vulnerability.pageModel';
+import VulnerabilityDetailsPage from 'tests_e2e/model/vulnerabilityDetails.pageModel';
 
 /**
  * Goal: validate that everything is opening without errors in Analyses > Note.
@@ -776,7 +782,7 @@ const navigateCampaign = async (page: Page) => {
   await campaignDetailsPage.tabs.goToKnowledgeTab();
   await expect(page.getByTestId('campaign-knowledge-page')).toBeVisible();
 
-// -- Content
+  // -- Content
   await campaignDetailsPage.tabs.goToContentTab();
   const contentTab = new StixCoreObjectContentTabPage(page);
   await expect(contentTab.getPage()).toBeVisible();
@@ -827,8 +833,109 @@ const navigateMalware = async (page: Page) => {
   await malwareDetailsPage.tabs.goToHistoryTab();
   const historyTab = new StixCoreObjectHistoryTab(page);
   await expect(historyTab.getPage()).toBeVisible();
+};
 
-}
+const navigateChannel = async (page: Page) => {
+  const channelInitData = 'Channel e2e';
+  const channelPage = new ChannelPage(page);
+  await channelPage.navigateFromMenu();
+  await expect(channelPage.getPage()).toBeVisible();
+  await expect(page.getByText(channelInitData)).toBeVisible();
+  await channelPage.getItemFromList(channelInitData).click();
+
+  const channelDetailsPage = new ChannelDetailsPage(page);
+  await expect(channelDetailsPage.getPage()).toBeVisible();
+
+  // -- Knowledge
+  await channelDetailsPage.tabs.goToKnowledgeTab();
+  await expect(page.getByTestId('channel-knowledge')).toBeVisible();
+
+  // -- Content
+  await channelDetailsPage.tabs.goToContentTab();
+  const contentTab = new StixCoreObjectContentTabPage(page);
+  await expect(contentTab.getPage()).toBeVisible();
+
+  // -- Analysis
+  await channelDetailsPage.tabs.goToAnalysesTab();
+  await expect(page.getByPlaceholder('Search these results...')).toBeVisible();
+
+  // -- Data
+  await channelDetailsPage.tabs.goToDataTab();
+  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+
+  // -- channelDetailsPage
+  await channelDetailsPage.tabs.goToHistoryTab();
+  const historyTab = new StixCoreObjectHistoryTab(page);
+  await expect(historyTab.getPage()).toBeVisible();
+};
+
+const navigateTool = async (page: Page) => {
+  const toolInitData = 'tool e2e';
+  const toolPage = new ToolPage(page);
+  await toolPage.navigateFromMenu();
+  await expect(toolPage.getPage()).toBeVisible();
+  await expect(page.getByText(toolInitData)).toBeVisible();
+  await toolPage.getItemFromList(toolInitData).click();
+
+  const toolDetailsPage = new ToolDetailsPage(page);
+  await expect(toolDetailsPage.getPage()).toBeVisible();
+
+  // -- Knowledge
+  await toolDetailsPage.tabs.goToKnowledgeTab();
+  await expect(page.getByTestId('tool-knowledge')).toBeVisible();
+
+  // -- Content
+  await toolDetailsPage.tabs.goToContentTab();
+  const contentTab = new StixCoreObjectContentTabPage(page);
+  await expect(contentTab.getPage()).toBeVisible();
+
+  // -- Analyses
+  await toolDetailsPage.tabs.goToAnalysesTab();
+  await expect(page.getByPlaceholder('Search these results...')).toBeVisible();
+
+  // -- Data
+  await toolDetailsPage.tabs.goToDataTab();
+  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+
+  // -- History
+  await toolDetailsPage.tabs.goToHistoryTab();
+  const historyTab = new StixCoreObjectHistoryTab(page);
+  await expect(historyTab.getPage()).toBeVisible();
+};
+
+const navigateVulnerability = async (page: Page) => {
+  const vulnerabilityInitData = 'E2E dashboard - Vulnerability - now';
+  const vulnerabilityPage = new VulnerabilityPage(page);
+  await vulnerabilityPage.navigateFromMenu();
+  await expect(vulnerabilityPage.getPage()).toBeVisible();
+  await expect(page.getByText(vulnerabilityInitData)).toBeVisible();
+  await vulnerabilityPage.getItemFromList(vulnerabilityInitData).click();
+
+  const vulnerabilityDetailsPage = new VulnerabilityDetailsPage(page);
+  await expect(vulnerabilityDetailsPage.getPage()).toBeVisible();
+
+  // -- Knowledge
+  await vulnerabilityDetailsPage.tabs.goToKnowledgeTab();
+  await expect(page.getByTestId('vulnerability-knowledge')).toBeVisible();
+
+  // -- Content
+  await vulnerabilityDetailsPage.tabs.goToContentTab();
+  const contentTab = new StixCoreObjectContentTabPage(page);
+  await expect(contentTab.getPage()).toBeVisible();
+
+  // -- Analyses
+  await vulnerabilityDetailsPage.tabs.goToAnalysesTab();
+  await expect(page.getByPlaceholder('Search these results...')).toBeVisible();
+
+  // -- Data
+  await vulnerabilityDetailsPage.tabs.goToDataTab();
+  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+
+  // -- History
+  await vulnerabilityDetailsPage.tabs.goToHistoryTab();
+  const historyTab = new StixCoreObjectHistoryTab(page);
+  await expect(historyTab.getPage()).toBeVisible();
+};
 
 const navigateAllMenu = async (page: Page) => {
   const leftBarPage = new LeftBarPage(page);
@@ -998,5 +1105,8 @@ test('Check navigation on all pages', { tag: ['@navigation'] }, async ({ page })
   // await navigateInfrastructure(page);
   // await navigateThreatActorGroup(page);
   // await navigateThreatActorIndividual(page);
-  await navigateMalware(page);
+  // await navigateMalware(page);
+  await navigateChannel(page);
+  await navigateTool(page);
+  await navigateVulnerability(page);
 });
