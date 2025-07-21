@@ -241,10 +241,10 @@ export const getDigestNotifications = async (context: AuthContext, baseDate: Mom
 };
 
 export const convertToNotificationUser = (user: AuthUser, notifiers: Array<string>): NotificationUser => {
-  return <NotificationUser>{
+  return {
     user_id: user.internal_id,
     user_email: user.user_email,
-    user_service_account: user.user_service_account,
+    user_service_account: user.user_service_account ? user.user_service_account : false,
     notifiers,
   };
 };
