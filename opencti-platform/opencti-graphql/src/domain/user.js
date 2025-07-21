@@ -75,7 +75,7 @@ import { cleanMarkings } from '../utils/markingDefinition-utils';
 import { UnitSystem } from '../generated/graphql';
 import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
-import { addUserIntoServiceAccountCount } from '../manager/telemetryManager';
+import { addServiceAccountIntoUserCount, addUserIntoServiceAccountCount } from '../manager/telemetryManager';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -777,12 +777,19 @@ export const userEditField = async (context, user, userId, rawInputs) => {
         throw FunctionalError('The language you have provided is not valid');
       }
     }
-    // Turn User into Service Account
+
     const isServiceAccount = await isUserServiceAccount(context, user, userId);
-    logApp.info('isServiceAccount', { isServiceAccount });
-    if (serviceAccountFeatureFlag && input.key === 'user_service_account' && !isServiceAccount) {
+    // Turn User into Service Account
+    if (serviceAccountFeatureFlag && input.key === 'user_service_account' && !isServiceAccount && input.value[0] === true) {
       inputs.push({ key: 'password', value: [null] });
       await addUserIntoServiceAccountCount();
+    }
+    // Turn Service Account into User
+    if (serviceAccountFeatureFlag && input.key === 'user_service_account' && isServiceAccount && input.value[0] === false) {
+      const userPassword = uuid();
+      await checkPasswordFromPolicy(context, userPassword);
+      inputs.push({ key: 'password', value: [bcrypt.hashSync(userPassword)] });
+      await addServiceAccountIntoUserCount();
     }
     inputs.push(input);
   }
