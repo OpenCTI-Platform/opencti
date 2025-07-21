@@ -30,7 +30,7 @@ enum EmailTemplateOrdering {
 
 # Queries
 type Query {
-    emailTemplate(id: ID!): EmailTemplate
+    emailTemplate(id: ID!): EmailTemplate @auth(for: [SETTINGS_SETACCESSES])
     emailTemplates (
         first: Int
         after: ID
@@ -38,7 +38,7 @@ type Query {
         orderMode: OrderingMode
         filters: FilterGroup
         search: String
-    ): EmailTemplateConnection
+    ): EmailTemplateConnection @auth(for: [SETTINGS_SETACCESSES])
 }
 
 #Input
@@ -52,7 +52,7 @@ input EmailTemplateAddInput {
 
 # Mutations
 type Mutation {
-    emailTemplateAdd(input: EmailTemplateAddInput!): EmailTemplate
-    emailTemplateDelete(id: ID!): ID
-    emailTemplateFieldPatch(id: ID!, input: [EditInput!]!): EmailTemplate
+    emailTemplateAdd(input: EmailTemplateAddInput!): EmailTemplate @auth(for: [SETTINGS_SETACCESSES])
+    emailTemplateDelete(id: ID!): ID @auth(for: [SETTINGS_SETACCESSES])
+    emailTemplateFieldPatch(id: ID!, input: [EditInput!]!): EmailTemplate @auth(for: [SETTINGS_SETACCESSES])
 }
