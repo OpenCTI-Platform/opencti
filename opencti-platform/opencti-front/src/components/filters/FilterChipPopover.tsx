@@ -401,6 +401,22 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
           onChange={(event) => handleChangeOperator(event, finalFilterDefinition)}
           style={{ marginBottom: 15 }}
           disabled={disabled}
+          MenuProps={{
+            // Force MUI to use a backdrop
+            hideBackdrop: false,
+            BackdropProps: {
+              style: {
+                // Make the backdrop invisible because we already have one
+                backgroundColor: 'rgba(0, 0, 0, 0)',
+              },
+              // Prevent clicks from going through
+              onClick: (e) => {
+                stopEvent(e);
+                handleClose();
+              },
+              onMouseDown: stopEvent,
+            },
+          }}
         >
           {availableOperators.map((value) => (
             <MenuItem key={value} value={value}>
