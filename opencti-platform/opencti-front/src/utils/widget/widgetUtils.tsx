@@ -18,7 +18,7 @@ import {
 } from 'mdi-material-ui';
 import React from 'react';
 // eslint-disable-next-line import/extensions
-import { WidgetDataSelection } from './widget';
+import type { WidgetDataSelection } from './widget';
 
 const widgetVisualizationTypes = [
   {
@@ -272,7 +272,7 @@ export const renderWidgetIcon = (key: string, fontSize: 'large' | 'small' | 'med
   }
 };
 
-export const isDataSelectionNumber = (type: string, dataSelection: WidgetDataSelection[]) => {
+export const isDataSelectionNumberValid = (type: string, dataSelection: WidgetDataSelection[]) => {
   if (type === 'list'
     || type === 'distribution-list'
     || type === 'timeline'
