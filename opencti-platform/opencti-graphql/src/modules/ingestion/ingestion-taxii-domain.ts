@@ -72,6 +72,9 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
   if (input.some((editInput) => editInput.key === 'authentication_value')) {
     const { authentication_value, authentication_type } = await findById(context, user, ingestionId);
     const authenticationValueField = input.find((editInput) => editInput.key === 'authentication_value');
+    if (authenticationValueField?.value[0]) {
+      verifyIngestionAuthenticationContent(authentication_type, authenticationValueField?.value[0]);
+    }
     const updatedAuthenticationValue = addAuthenticationCredentials(
       authentication_value,
       authenticationValueField?.value[0],
@@ -89,10 +92,6 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
     });
 
     patchInput.splice(0, patchInput.length, ...updatedInput); // Replace contents
-
-    if (updatedAuthenticationValue) {
-      verifyIngestionAuthenticationContent(authentication_type, updatedAuthenticationValue);
-    }
   }
 
   if (input.some((editInput) => editInput.key === 'added_after_start')) {
