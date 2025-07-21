@@ -50,7 +50,6 @@ import {
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { BackgroundTaskScope } from '../generated/graphql';
 import { getDraftContext } from '../utils/draftContext';
-import { addFilter } from '../utils/filtering/filtering-utils';
 import { getBestBackgroundConnectorId, pushToWorkerForConnector } from '../database/rabbitmq';
 import { updateExpectationsNumber, updateProcessedTime } from '../domain/work';
 import { convertStoreToStix, convertTypeToStixType } from '../database/stix-2-1-converter';
@@ -113,10 +112,7 @@ export const taskRule = async (context, user, task, callback) => {
 
 export const taskQuery = async (context, user, task, callback) => {
   const { task_position, task_filters, task_search = null, task_excluded_ids = [], scope, task_order_mode } = task;
-  const options = await buildQueryFilters(context, user, task_filters, task_search, task_position, scope, task_order_mode);
-  if (task_excluded_ids.length > 0) {
-    options.filters = addFilter(options.filters, 'id', task_excluded_ids, 'not_eq');
-  }
+  const options = await buildQueryFilters(context, user, task_filters, task_search, task_position, scope, task_order_mode, task_excluded_ids);
   const finalOpts = { ...options, connectionFormat: false, baseData: true, callback };
   await elList(context, user, READ_DATA_INDICES, finalOpts);
 };
