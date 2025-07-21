@@ -8,6 +8,7 @@ import useEmailTemplateEdit from '@components/settings/email_template/useEmailTe
 import { useEmailTemplateContext } from '@components/settings/email_template/EmailTemplateContext';
 import EmailTemplatePopover from '@components/settings/email_template/EmailTemplatePopover';
 import EmailTemplateFormDrawer from '@components/settings/email_template/EmailTemplateFormDrawer';
+import EmailTemplateTestSend from '@components/settings/email_template/EmailTemplateTestSend';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { EmailTemplateHeader_template$key } from './__generated__/EmailTemplateHeader_template.graphql';
@@ -58,15 +59,14 @@ const EmailTemplateHeader = ({ data }: EmailTemplateHeaderProps) => {
     <>
       <Breadcrumbs elements={breadcrumb} />
 
-      <div style={{ display: 'flex', gap: theme.spacing(1) }}>
-        <Typography variant="h1" sx={{ float: 'left' }}>
+      <div style={{ display: 'flex', gap: theme.spacing(1), justifyContent: 'right', alignItems: 'center', position: 'relative' }}>
+        <Typography variant="h1" sx={{ marginRight: 'auto' }}>
           {template.name}
         </Typography>
-
+        <EmailTemplateTestSend templateId={template.id} />
         <Button
           variant="outlined"
           onClick={onSubmit}
-          style={{ marginLeft: 'auto' }}
           disabled={editorValue === template.template_body || editOnGoing}
         >
           {t_i18n('Save template')}
