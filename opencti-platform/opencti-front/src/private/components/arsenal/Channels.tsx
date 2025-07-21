@@ -155,7 +155,7 @@ const Channels = () => {
   } as UsePreloadedPaginationFragment<ChannelsLinesPaginationQuery>;
 
   return (
-    <>
+    <div data-testid="channel-page">
       <Breadcrumbs elements={[{ label: t_i18n('Arsenal') }, { label: t_i18n('Channels'), current: true }]} />
       {queryRef && (
         <DataTable
@@ -174,7 +174,7 @@ const Channels = () => {
           )}
         />
       )}
-    </>
+    </div>
   );
 };
 export default Channels;

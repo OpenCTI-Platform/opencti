@@ -1127,6 +1127,18 @@
       ]
     },
     {
+      "id": "channel--e4c2a9ad-44aa-55f8-9e68-b2da712d0721",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 0,
+      "created": "2024-02-09T13:34:13.638Z",
+      "modified": "2025-03-26T10:45:52.586Z",
+      "name": "channel e2e",
+      "x_opencti_id": "4e2b016c-b0f1-4976-9eb8-06f902348bb3",
+      "x_opencti_type": "Channel",
+      "type": "channel"
+    },
+    {
       "id": "infrastructure--41b8c3be-db27-55bd-b708-2a877644220b",
       "spec_version": "2.1",
       "revoked": false,
@@ -1141,6 +1153,22 @@
       "x_opencti_id": "92112010-122c-4274-966f-420d1a0e9da9",
       "x_opencti_type": "Infrastructure",
       "type": "infrastructure"
+    },
+    {
+      "id": "tool--dccdb7e3-a5bf-5f10-8ca2-9413c9b0ba75",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 50,
+      "created": "2020-04-29T07:13:03.248Z",
+      "modified": "2025-02-21T09:43:38.058Z",
+      "name": "tool e2e",
+      "description": "e2e test description",
+      "tool_types": [
+        "information-gathering"
+      ],
+      "x_opencti_id": "06debf6c-e38a-464e-be37-383cd82effb7",
+      "x_opencti_type": "Tool",
+      "type": "tool"
     }
   ]
 }

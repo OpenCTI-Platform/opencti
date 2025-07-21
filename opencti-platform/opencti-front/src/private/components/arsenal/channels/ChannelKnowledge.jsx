@@ -32,7 +32,7 @@ const ChannelKnowledgeComponent = ({
   const { schema } = useAuth();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(channel.entity_type, schema);
   return (
-    <>
+    <div data-testid="channel-knowledge">
       <Routes>
         <Route
           path="/relations/:relationId"
@@ -264,7 +264,7 @@ const ChannelKnowledgeComponent = ({
             }
         />
       </Routes>
-    </>
+    </div>
   );
 };
 
