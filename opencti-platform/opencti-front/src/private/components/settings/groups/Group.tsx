@@ -39,9 +39,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   gridContainer: {
     marginBottom: 20,
   },
-  title: {
-    float: 'left',
-  },
   paper: {
     marginTop: theme.spacing(1),
     padding: '15px',
