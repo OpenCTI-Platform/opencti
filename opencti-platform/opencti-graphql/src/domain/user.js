@@ -591,7 +591,7 @@ export const sendEmailToUser = async (context, user, input) => {
   });
 
   const sendMailArgs = {
-    from: emailTemplate.sender_email,
+    from: `${emailTemplate.sender_email} <${settings.platform_email}>`,
     to: targetUser.user_email,
     subject: emailTemplate.email_object,
     html: renderedHtml,
