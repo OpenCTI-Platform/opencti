@@ -1,4 +1,4 @@
-import React, { ChangeEvent, ClipboardEvent, FocusEvent, ReactNode, useCallback } from 'react';
+import React, { ChangeEvent, ClipboardEvent, FocusEvent, KeyboardEvent, ReactNode, useCallback } from 'react';
 import { TextField as MuiTextField, TextFieldProps as MuiTextFieldProps } from '@mui/material';
 import { fieldToTextField } from 'formik-mui';
 import { FieldProps, useField } from 'formik';
@@ -77,7 +77,7 @@ const TextField = (props: TextFieldProps) => {
     }
   }, [onBeforePaste, setFieldValue, name]);
 
-  const internalOnKeyDown = useCallback((event) => {
+  const internalOnKeyDown = useCallback((event: KeyboardEvent<HTMLInputElement>) => {
     const { key } = event;
     if (onKeyDown) {
       onKeyDown(key);
