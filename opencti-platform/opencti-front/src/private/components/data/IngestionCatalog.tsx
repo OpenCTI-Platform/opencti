@@ -1,17 +1,17 @@
 import React from 'react';
-import Breadcrumbs from '../../../components/Breadcrumbs';
 import IngestionMenu from '@components/data/IngestionMenu';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import { IngestionCatalogQuery } from '@components/data/__generated__/IngestionCatalogQuery.graphql';
+import IngestionCatalogCard from '@components/data/IngestionCatalog/IngestionCatalogCard';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import PageContainer from '../../../components/PageContainer';
 import Loader, { LoaderVariant } from '../../../components/Loader';
-import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { IngestionCatalogQuery } from '@components/data/__generated__/IngestionCatalogQuery.graphql';
-import IngestionCatalogCard from '@components/data/IngestionCatalog/IngestionCatalogCard';
 import ListCardsContent from '../../../components/list_cards/ListCardsContent';
 
-const ingestionCatalogQuery = graphql`
+export const ingestionCatalogQuery = graphql`
   query IngestionCatalogQuery {
     catalogs {
       id
@@ -35,24 +35,14 @@ const IngestionCatalogComponent = ({
   setTitle(t_i18n('Catalog | Ingestion | Data'));
   const { catalogs } = usePreloadedQuery(
     ingestionCatalogQuery,
-    queryRef
+    queryRef,
   );
   const contracts: string[] = [];
   for (const catalog of catalogs) {
-    catalog.contracts.map(contract => {
-      contracts.push(contract);
+    catalog.contracts.map((contract) => {
+      return contracts.push(contract);
     });
   }
-  // for (const catalog of catalogs) {
-  //   catalog.contracts.map(contract => {
-  //     contracts.push(contract);
-  //   });
-  // }
-  // for (const catalog of catalogs) {
-  //   catalog.contracts.map(contract => {
-  //     contracts.push(contract);
-  //   });
-  // }
 
   return (
     <>
