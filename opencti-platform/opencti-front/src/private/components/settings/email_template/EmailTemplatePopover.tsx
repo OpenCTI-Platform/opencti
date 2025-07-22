@@ -49,9 +49,8 @@ const EmailTemplatePopover = ({
 
   const onDelete = (e: UIEvent) => {
     stopEvent(e);
-    if (!templateId) return;
 
-    commitDeleteMutation(templateId, {
+    commitDeleteMutation({
       variables: { id: templateId },
       onCompleted: () => {
         handleCloseDelete();
