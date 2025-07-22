@@ -1837,7 +1837,6 @@ input UserAddInput {
 input SendUserMailInput {
   target_user_id: ID!
   email_template_id: ID!
-  email_object: String!
 }
 
 input ConfidenceLevelInput {

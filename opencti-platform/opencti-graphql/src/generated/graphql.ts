@@ -25311,7 +25311,6 @@ export enum Selection {
 }
 
 export type SendUserMailInput = {
-  email_object: Scalars['String']['input'];
   email_template_id: Scalars['ID']['input'];
   target_user_id: Scalars['ID']['input'];
 };
