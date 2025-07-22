@@ -91,7 +91,16 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
       return editInput;
     });
 
-    patchInput.splice(0, patchInput.length, ...updatedInput); // Replace contents
+    patchInput.splice(0, patchInput.length, ...updatedInput);
+  }
+
+  // Reset `authentication_value` on `authentication_type` change
+  if (input.some((editInput) => editInput.key === 'authentication_type')) {
+    const resetAuthenticationValue: EditInput = {
+      key: 'authentication_value',
+      value: [''],
+    };
+    patchInput.push(resetAuthenticationValue);
   }
 
   if (input.some((editInput) => editInput.key === 'added_after_start')) {

@@ -218,6 +218,15 @@ export const ingestionCsvEditField = async (context: AuthContext, user: AuthUser
     return editInput;
   }));
 
+  // Reset `authentication_value` on `authentication_type` change
+  if (input.some((editInput) => editInput.key === 'authentication_type')) {
+    const resetAuthenticationValue: EditInput = {
+      key: 'authentication_value',
+      value: [''],
+    };
+    parsedInput.push(resetAuthenticationValue);
+  }
+
   const { element } = await updateAttribute(context, user, ingestionId, ENTITY_TYPE_INGESTION_CSV, parsedInput);
   await registerConnectorForIngestion(context, {
     id: element.id,
