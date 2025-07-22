@@ -70,6 +70,7 @@ import './savedFilter/savedFilter';
 import './pir/pir';
 import './fintelDesign/fintelDesign';
 import './securityPlatform/securityPlatform';
+import './emailTemplate/emailTemplate';
 
 // incomplete modules
 import './report/report';
