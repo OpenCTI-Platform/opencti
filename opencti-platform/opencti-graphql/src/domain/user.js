@@ -560,14 +560,34 @@ export const sendEmailToUser = async (context, user, input) => {
   if (!targetUser) {
     throw UnsupportedError('Target user not found', { id: input.target_user_id });
   }
+
+  const organizationIds = targetUser['participate-to'] || [];
+  let organizationName = '';
+  if (organizationIds.length > 0) {
+    const organization = await internalLoadById(context, user, organizationIds[0]);
+    if (organization) {
+      organizationName = organization.name || '';
+    }
+  }
+
   const emailTemplate = await internalLoadById(context, user, input.email_template_id);
   if (!emailTemplate || emailTemplate.entity_type !== ENTITY_TYPE_EMAIL_TEMPLATE) {
     throw UnsupportedError('Invalid email template', { id: input.email_template_id });
   }
 
-  const renderedHtml = ejs.render(emailTemplate.template_body, {
+  const preprocessedTemplate = emailTemplate.template_body
+    .replace(/\$user\.firstname/g, '<%= user.firstname %>')
+    .replace(/\$user\.lastname/g, '<%= user.lastname %>')
+    .replace(/\$user\.name/g, '<%= user.name %>')
+    .replace(/\$user\.user_email/g, '<%= user.user_email %>')
+    .replace(/\$user\.api_token/g, '<%= user.api_token %>')
+    .replace(/\$user\.account_status/g, '<%= user.account_status %>')
+    .replace(/\$user\.objectOrganization/g, '<%= organizationName %>');
+
+  const renderedHtml = ejs.render(preprocessedTemplate, {
     settings,
     user: targetUser,
+    organizationName,
   });
 
   const sendMailArgs = {
