@@ -42,7 +42,7 @@ export const pirFormDataToMutationInput = (data: PirCreationFormData): PirAddInp
     pir_filters: {
       mode: 'and',
       filterGroups: [],
-      filters: [{ key: ['confidence'], values: [`${data.confidence}`], operator: 'gt', mode: 'or' }],
+      filters: [{ key: ['confidence'], values: [`${data.confidence}`], operator: 'gte', mode: 'or' }],
     },
     pir_criteria: [
       ...optionsToFilters(data.locations, 'targets'),
