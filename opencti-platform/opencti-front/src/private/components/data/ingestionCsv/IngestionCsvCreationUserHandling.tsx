@@ -59,7 +59,7 @@ const IngestionCsvCreationUserHandlingComponent = ({ queryRef }: IngestionCsvCre
       type="checkbox"
       name="automatic_user"
       checked={values.automatic_user ?? true}
-      label={t_i18n('Automatically create a user')}
+      label={t_i18n('Automatically create a service account')}
     />
     { displayDefaultGroupWarning && values.automatic_user && <Box sx={{ width: '100%', marginTop: 3 }}>
       <Alert

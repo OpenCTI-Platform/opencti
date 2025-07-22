@@ -115,9 +115,9 @@ const IngestionCsvEditionUserHandling: FunctionComponent<IngestionCsvEditionUser
         sx={{ padding: '0px 10px 0px 10px', marginTop: '20px' }}
       >
         <Box>
-          {t_i18n('You have set System as a creator. Create a specific user for this feed to ensure traceabilitiy of your data')}
+          {t_i18n('You have set System as a creator. Create a service account for this feed to ensure traceability of your data')}
         </Box>
-        <Button onClick={() => setOpenDialog(true)}>{t_i18n('Create a user for this feed')}</Button>
+        <Button onClick={() => setOpenDialog(true)}>{t_i18n('Create a service account for this feed')}</Button>
 
       </Alert>
 
