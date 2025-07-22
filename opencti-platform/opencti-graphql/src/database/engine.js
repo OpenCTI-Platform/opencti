@@ -2953,7 +2953,8 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
             regardingFilters.push({ key: [relKey], operator, values: ['EXISTS'] });
           });
         } else {
-          const keys = isEmptyField(types) ? buildRefRelationKey('*', '*')
+          const keys = isEmptyField(types)
+            ? buildRefRelationKey('*', '*')
             : types.flatMap((t) => [buildRefRelationKey(t, ID_INTERNAL), buildRefRelationKey(t, ID_INFERRED)]);
           regardingFilters.push({ key: keys, operator, values: ids });
         }
