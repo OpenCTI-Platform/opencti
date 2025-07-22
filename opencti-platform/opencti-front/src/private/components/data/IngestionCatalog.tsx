@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import IngestionMenu from '@components/data/IngestionMenu';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { IngestionCatalogQuery } from '@components/data/__generated__/IngestionCatalogQuery.graphql';
@@ -33,10 +33,12 @@ const IngestionCatalogComponent = ({
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Catalog | Ingestion | Data'));
+
   const { catalogs } = usePreloadedQuery(
     ingestionCatalogQuery,
     queryRef,
   );
+
   const contracts: string[] = [];
   for (const catalog of catalogs) {
     catalog.contracts.map((contract) => {
@@ -49,7 +51,7 @@ const IngestionCatalogComponent = ({
       <IngestionMenu />
       <PageContainer withRightMenu withGap>
         <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('Catalog'), current: true }]} />
-        {contracts.length && (
+        {contracts.length > 0 && (
           <ListCardsContent
             hasMore={() => false}
             isLoading={() => false}
@@ -68,14 +70,10 @@ const IngestionCatalog = () => {
   const queryRef = useQueryLoading<IngestionCatalogQuery>(
     ingestionCatalogQuery,
   );
-  return queryRef ? (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-      <IngestionCatalogComponent
-        queryRef={queryRef}
-      />
-    </React.Suspense>
-  ) : (
-    <Loader variant={LoaderVariant.container} />
+  return (
+    <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+      {queryRef && <IngestionCatalogComponent queryRef={queryRef} />}
+    </Suspense>
   );
 };
 
