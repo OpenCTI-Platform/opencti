@@ -47,7 +47,7 @@ const EmailTemplateAttributesSidebar = () => {
       <Drawer variant="permanent" anchor="right" sx={paperStyle}>
         <Toolbar />
         <Alert severity="info" variant="outlined" sx={{ margin: 2, marginTop: 0 }}>
-          <Typography variant="body2" gutterBottom>
+          <Typography variant="body2">
             {t_i18n('Use these variables in your template.')}
           </Typography>
         </Alert>
@@ -57,6 +57,7 @@ const EmailTemplateAttributesSidebar = () => {
           sx={{
             borderBottom: `1px solid ${theme.palette.divider}`,
             paddingRight: 1,
+            paddingTop: 0,
             gap: 0,
             flexDirection: 'column',
             alignItems: 'stretch',
