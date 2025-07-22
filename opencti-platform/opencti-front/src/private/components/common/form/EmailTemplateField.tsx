@@ -114,12 +114,12 @@ const EmailTemplateField = ({ ...props }: EmailTemplateFieldProps) => {
           label,
         }}
       />
-        }
+    }
     >
       <EmailTemplateFieldComponent {...props} queryRef={queryRef} />
     </React.Suspense>
   ) : (
-    <Loader variant={LoaderVariant.inElement} />
+    <Loader variant={LoaderVariant.inElement}/>
   );
 };
 
