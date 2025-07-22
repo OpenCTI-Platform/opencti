@@ -41,85 +41,87 @@ const PirOverviewDetails = ({ data }: PirOverviewDetailsProps) => {
   const lastEventDate = parse(parseInt((pir.lastEventId || '-').split('-')[0], 10));
 
   return (
-    <Paper title={t_i18n('PIR Details')}>
-      <Grid container spacing={2}>
-        <Grid
-          size={{ xs: 6 }}
-          sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
-        >
-          <div>
-            <Typography variant="h3" gutterBottom>
-              {t_i18n('Description')}
-            </Typography>
-            <ExpandableMarkdown source={pir.description} limit={400}/>
-          </div>
-
-          <div>
-            <Typography variant="h3" gutterBottom>
-              {t_i18n('Creation date')}
-            </Typography>
-            {fldt(pir.created_at)}
-          </div>
-
-          <div>
-            <Typography variant="h3" gutterBottom>
-              {t_i18n('Filters')}
-            </Typography>
-            <FilterIconButton
-              key={pir.pir_filters}
-              filters={JSON.parse(pir.pir_filters)}
-              entityTypes={['Stix-Core-Object']}
-              styleNumber={1}
-            />
-          </div>
-        </Grid>
-
-        <Grid
-          size={{ xs: 6 }}
-          sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
-        >
-          <div>
-            <Typography variant="h3" gutterBottom>
-              {t_i18n('Rescan period (days)')}
-            </Typography>
-            {pir.pir_rescan_days}
-          </div>
-
-          <div>
-            <Typography variant="h3" gutterBottom>
-              {t_i18n('Last event processed')}
-            </Typography>
-            {fldt(lastEventDate)}
-          </div>
-
-          <div>
-            <Typography variant="h3" gutterBottom>
-              {t_i18n('Creators')}
-            </Typography>
-            <ItemCreators creators={pir.creators ?? []}/>
-          </div>
-        </Grid>
-
-        <Grid
-          size={{ xs: 12 }}
-          sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
-        >
-          <div>
-            <Typography variant="h3" gutterBottom>
-              {t_i18n('Criteria')}
-            </Typography>
-            <div style={{ display: 'flex', gap: theme.spacing(1) }}>
-              {pir.pir_criteria.map((c, i) => (
-                <PirFiltersDisplay
-                  key={i}
-                  filterGroup={JSON.parse(c.filters)}
-                />
-              ))}
+    <Grid size={{ xs: 12 }}>
+      <Paper title={t_i18n('PIR Details')}>
+        <Grid container spacing={2}>
+          <Grid
+            size={{ xs: 6 }}
+            sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
+          >
+            <div>
+              <Typography variant="h3" gutterBottom>
+                {t_i18n('Description')}
+              </Typography>
+              <ExpandableMarkdown source={pir.description} limit={400}/>
             </div>
-          </div>
+
+            <div>
+              <Typography variant="h3" gutterBottom>
+                {t_i18n('Creation date')}
+              </Typography>
+              {fldt(pir.created_at)}
+            </div>
+
+            <div>
+              <Typography variant="h3" gutterBottom>
+                {t_i18n('Filters')}
+              </Typography>
+              <FilterIconButton
+                key={pir.pir_filters}
+                filters={JSON.parse(pir.pir_filters)}
+                entityTypes={['Stix-Core-Object']}
+                styleNumber={1}
+              />
+            </div>
+          </Grid>
+
+          <Grid
+            size={{ xs: 6 }}
+            sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
+          >
+            <div>
+              <Typography variant="h3" gutterBottom>
+                {t_i18n('Rescan period (days)')}
+              </Typography>
+              {pir.pir_rescan_days}
+            </div>
+
+            <div>
+              <Typography variant="h3" gutterBottom>
+                {t_i18n('Last event processed')}
+              </Typography>
+              {fldt(lastEventDate)}
+            </div>
+
+            <div>
+              <Typography variant="h3" gutterBottom>
+                {t_i18n('Creators')}
+              </Typography>
+              <ItemCreators creators={pir.creators ?? []}/>
+            </div>
+          </Grid>
+
+          <Grid
+            size={{ xs: 12 }}
+            sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
+          >
+            <div>
+              <Typography variant="h3" gutterBottom>
+                {t_i18n('Criteria')}
+              </Typography>
+              <div style={{ display: 'flex', gap: theme.spacing(1), flexFlow: 'row wrap' }}>
+                {pir.pir_criteria.map((c, i) => (
+                  <PirFiltersDisplay
+                    key={i}
+                    filterGroup={JSON.parse(c.filters)}
+                  />
+                ))}
+              </div>
+            </div>
+          </Grid>
         </Grid>
-      </Grid>
-    </Paper>
+      </Paper>
+    </Grid>
   );
 };
 

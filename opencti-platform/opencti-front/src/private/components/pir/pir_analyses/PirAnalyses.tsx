@@ -206,7 +206,7 @@ const PirAnalyses = ({ data }: PirAnalysesProps) => {
       id: 'container_objects',
       label: 'Entities in PIR',
       percentWidth: 15,
-      isSortable: true,
+      isSortable: false,
       render: ({ objects }: { objects: PirContainerObjects }) => {
         const max = 10;
         const hasMore = objects.edges.length > max;
@@ -221,7 +221,6 @@ const PirAnalyses = ({ data }: PirAnalysesProps) => {
                 padding: theme.spacing(1),
               }}
               >
-
                 {// eslint-disable-next-line @typescript-eslint/no-explicit-any
                   objects.edges.slice(0, max).map((e: any, i: number) => (
                     <div
@@ -240,7 +239,7 @@ const PirAnalyses = ({ data }: PirAnalysesProps) => {
                           background: itemColor(e.node.entity_type),
                         }}
                       />
-                      <div>
+                      <div style={{ flex: 1 }}>
                         {e.node.representative.main} ({t_i18n(e.node.entity_type)})
                       </div>
                     </div>

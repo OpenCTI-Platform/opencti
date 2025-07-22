@@ -175,7 +175,20 @@ const PirOverviewHistory = ({ dataHistory, dataPir }: PirOverviewHistoryProps) =
           const historyMessage = getHistoryMessage(historyItem);
 
           const isAddInPir = /adds .+ in `In PIR`/.test(context_data?.message ?? '');
-          const redirectURI = isAddInPir ? '' : `/dashboard/id/${context_data?.entity_id}`;
+          let redirectURI = `/dashboard/id/${context_data?.entity_id}`;
+          if (isAddInPir) {
+            const addInPirFilters = context_data?.entity_id
+              ? JSON.stringify({
+                mode: 'and',
+                filters: [{
+                  key: 'fromId',
+                  values: [context_data.entity_id],
+                }],
+                filterGroups: [],
+              })
+              : '';
+            redirectURI = `/dashboard/pirs/${pir.id}/knowledge/?filters=${encodeURIComponent(addInPirFilters)}`;
+          }
 
           const content = (
             <MarkdownDisplay

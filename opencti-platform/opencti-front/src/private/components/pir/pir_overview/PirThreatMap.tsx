@@ -1,5 +1,6 @@
 import React, { CSSProperties, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
+import Grid from '@mui/material/Grid2';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { InfoOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
@@ -150,25 +151,27 @@ const PirThreatMap = ({ queryRef }: PirThreatMapProps) => {
   );
 
   return (
-    <Paper title={title}>
-      <div style={containerStyle}>
-        <div style={{ height: CHART_SIZE }}>
-          <WidgetScatter series={series} />
+    <Grid size={{ xs: 12 }}>
+      <Paper title={title}>
+        <div style={containerStyle}>
+          <div style={{ height: CHART_SIZE }}>
+            <WidgetScatter series={series} />
+          </div>
+          <div style={xLegendStyle}>
+            <span>Less recent</span>
+            <span>Most recent</span>
+          </div>
+          <div style={yLegendStyle}>
+            <span>0 - Less relevant</span>
+            <span>Most relevant - 100</span>
+          </div>
         </div>
-        <div style={xLegendStyle}>
-          <span>Less recent</span>
-          <span>Most recent</span>
-        </div>
-        <div style={yLegendStyle}>
-          <span>0 - Less relevant</span>
-          <span>Most relevant - 100</span>
-        </div>
-      </div>
-      <PirThreatMapLegend
-        entityTypes={entityTypes}
-        onFilter={setFilteredEntityTypes}
-      />
-    </Paper>
+        <PirThreatMapLegend
+          entityTypes={entityTypes}
+          onFilter={setFilteredEntityTypes}
+        />
+      </Paper>
+    </Grid>
   );
 };
 

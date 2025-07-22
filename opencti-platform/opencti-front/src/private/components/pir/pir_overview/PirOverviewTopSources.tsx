@@ -1,4 +1,5 @@
 import React from 'react';
+import Grid from '@mui/material/Grid2';
 import { graphql, useFragment } from 'react-relay';
 import StixRelationshipsDonut from '@components/common/stix_relationships/StixRelationshipsDonut';
 import { PirOverviewTopSourcesFragment$key } from './__generated__/PirOverviewTopSourcesFragment.graphql';
@@ -41,17 +42,19 @@ const PirOverviewTopSources = ({ data }: PirOverviewTopSourcesProps) => {
   ];
 
   return (
-    <Paper title={t_i18n('Top sources')}>
-      <StixRelationshipsDonut
-        dataSelection={topSourcesDataSelection}
-        variant="inLine"
-        height={250}
-        startDate={null}
-        endDate={null}
-        withoutTitle
-        isReadOnly
-      />
-    </Paper>
+    <Grid size={{ xs: 12 }}>
+      <Paper title={t_i18n('Top sources')}>
+        <StixRelationshipsDonut
+          dataSelection={topSourcesDataSelection}
+          variant="inLine"
+          height={250}
+          startDate={null}
+          endDate={null}
+          withoutTitle
+          isReadOnly
+        />
+      </Paper>
+    </Grid>
   );
 };
 
