@@ -1283,6 +1283,15 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       return <ItemCvssScore score={value} />;
     },
   },
+  x_opencti_cvss_v4_base_score: {
+    id: 'x_opencti_cvss_v4_base_score',
+    label: 'CVSS4 - Score',
+    percentWidth: 15,
+    render: ({ x_opencti_cvss_v4_base_score }) => {
+      const value = x_opencti_cvss_v4_base_score ? Math.trunc(x_opencti_cvss_v4_base_score * 10) / 10 : null;
+      return <ItemCvssScore score={value} />;
+    },
+  },
   x_opencti_cisa_kev: {
     id: 'x_opencti_cisa_kev',
     label: 'CISA KEV',
@@ -1321,6 +1330,18 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       <ItemSeverity
         severity={x_opencti_cvss_base_severity}
         label={x_opencti_cvss_base_severity || t_i18n('Unknown')}
+      />
+    ),
+  },
+  x_opencti_cvss_v4_base_severity: {
+    id: 'x_opencti_cvss_v4_base_severity',
+    label: 'CVSS4 - Severity',
+    percentWidth: 15,
+    isSortable: true,
+    render: ({ x_opencti_cvss_v4_base_severity }, { t_i18n }) => (
+      <ItemSeverity
+        severity={x_opencti_cvss_v4_base_severity}
+        label={x_opencti_cvss_v4_base_severity || t_i18n('Unknown')}
       />
     ),
   },
