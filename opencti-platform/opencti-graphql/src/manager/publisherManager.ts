@@ -45,7 +45,9 @@ const PUBLISHER_ENGINE_KEY = conf.get('publisher_manager:lock_key');
 const PUBLISHER_ENABLE_BUFFERING = conf.get('publisher_manager:enable_buffering');
 const PUBLISHER_BUFFERING_SECONDS = conf.get('publisher_manager:buffering_seconds');
 const STREAM_SCHEDULE_TIME = 10000;
+
 const serviceAccountFeatureFlag = isFeatureEnabled('SERVICE_ACCOUNT');
+
 export async function processNotificationData(
   context: AuthContext,
   notificationMap: Map<string, BasicStoreEntityTrigger>,
@@ -246,6 +248,9 @@ export const internalProcessNotification = async (
   // eslint-disable-next-line consistent-return
 ): Promise<{ error: string } | void> => {
   try {
+    if (notificationUser.user_service_account && serviceAccountFeatureFlag) {
+      return;
+    }
     const notificationName = triggerList.map((trigger) => trigger?.name).join(';');
     const notificationType = triggerList.length > 1 ? 'buffer' : triggerList[0].trigger_type;
     const triggerIds = triggerList.map((trigger) => trigger?.id).filter((id) => id);
@@ -290,9 +295,6 @@ export const processNotificationEvent = async (
 ): Promise<void> => {
   const storeSettings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
 
-  if (user.user_service_account && serviceAccountFeatureFlag) {
-    return;
-  }
   const notificationTrigger = notificationMap.get(notificationId);
   if (!notificationTrigger) {
     return;
@@ -380,15 +382,13 @@ const processBufferedEvents = async (
     // For each event, transform it into NotificationData for all targets
     for (let index = 0; index < targets.length; index += 1) {
       const { user, type, message } = targets[index];
-      if (!user.user_service_account && serviceAccountFeatureFlag) {
-        const notificationMessage = createFullNotificationMessage(message, usersFromCache, event.streamMessage, origin, type);
-        const currentData = { notification_id: event.notification_id, instance, type, message: notificationMessage };
-        const currentNotifDataForUser = notifDataPerUser[user.user_id];
-        if (currentNotifDataForUser) {
-          currentNotifDataForUser.push({ user, data: currentData });
-        } else {
-          notifDataPerUser[user.user_id] = [{ user, data: currentData }];
-        }
+      const notificationMessage = createFullNotificationMessage(message, usersFromCache, event.streamMessage, origin, type);
+      const currentData = { notification_id: event.notification_id, instance, type, message: notificationMessage };
+      const currentNotifDataForUser = notifDataPerUser[user.user_id];
+      if (currentNotifDataForUser) {
+        currentNotifDataForUser.push({ user, data: currentData });
+      } else {
+        notifDataPerUser[user.user_id] = [{ user, data: currentData }];
       }
     }
   }
