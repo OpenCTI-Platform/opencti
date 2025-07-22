@@ -821,7 +821,6 @@ class DataTableToolBar extends Component {
       container,
       taskScope,
       t,
-      isUserDatatable,
     } = this.props;
     const scope = taskScope ?? 'KNOWLEDGE';
     if (numberOfSelectedElements === 0) return;
@@ -829,7 +828,7 @@ class DataTableToolBar extends Component {
       removeIdAndIncorrectKeysFromFilterGroupObject(filters, availableFilterKeys),
     );
 
-    const finalActions = isUserDatatable
+    const finalActions = taskScope === 'USER'
       ? this.getUserDatatableFinalActions(actions)
       : R.map(
         (n) => ({
@@ -907,8 +906,10 @@ class DataTableToolBar extends Component {
   }
 
   renderFieldOptions(i, selectedTypes, entityTypeFilterValues, isAdmin) {
-    const { t, isUserDatatable } = this.props;
+    const { t, taskScope } = this.props;
     const { actionsInputs } = this.state;
+
+    const isUserDatatable = taskScope === 'USER';
     const disabled = actionsInputs[i]?.type == null || actionsInputs[i]?.type === '';
     const checkTypes = (typesList) => selectedTypes.every((type) => typesList.includes(type))
       && entityTypeFilterValues.every((type) => typesList.includes(type));
@@ -2107,9 +2108,10 @@ class DataTableToolBar extends Component {
       warning,
       warningMessage,
       taskScope,
-      isUserDatatable,
     } = this.props;
     const { actions, keptEntityId, mergingElement, actionsInputs, promoteToContainer } = this.state;
+
+    const isUserDatatable = taskScope === 'USER';
 
     let deleteCapability = KNOWLEDGE_KNUPDATE_KNDELETE;
     if (taskScope === 'DASHBOARD') deleteCapability = EXPLORE_EXUPDATE_EXDELETE;
