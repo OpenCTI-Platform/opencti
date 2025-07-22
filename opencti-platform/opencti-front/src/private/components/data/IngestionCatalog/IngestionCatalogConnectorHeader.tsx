@@ -18,7 +18,7 @@ const IngestionCatalogConnectorHeader = ({ connector }: IngestionCatalogConnecto
     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: theme.spacing(2) }}>
 
       <div style={{ display: 'flex', gap: 20 }}>
-        <img style={{ height: 37, maxWidth: 100, borderRadius: 4 }} src={connector.logo} alt={connector.title} />
+        <img style={{ height: 80, width: 80, objectFit: 'cover', borderRadius: 4 }} src={connector.logo} alt={connector.title} />
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
             <Typography variant="h1" style={{ textTransform: 'uppercase', marginBottom: 0 }}>{connector.title}</Typography>
