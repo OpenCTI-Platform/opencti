@@ -33,6 +33,7 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
     startsWithAction,
     startsWithIcon,
     endsWithAction,
+    startColumnWidth,
     useDataTablePaginationLocalStorage: {
       viewStorage: { sortBy, orderAsc },
     },
