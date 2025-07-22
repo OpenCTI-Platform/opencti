@@ -1,25 +1,18 @@
 import { graphql } from 'react-relay';
 import React, { useCallback, useContext, useState } from 'react';
-import { Dialog, DialogContent, DialogTitle, IconButton } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import useExternalTab from './useExternalTab';
+import { Button } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import GradientButton from '../../../../components/GradientButton';
-import EnrollmentInstructions from './EnrollmentInstructions';
-import EnrollmentLoader from './EnrollmentLoader';
 import ConfirmationDialog from './ConfirmationDialog';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import EnrollmentSuccess from './EnrollmentSuccess';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-
-enum EnrollmentSteps {
-  INSTRUCTIONS = 'INSTRUCTIONS',
-  WAITING_HUB = 'WAITING_HUB',
-  SUCCESS = 'SUCCESS',
-  ERROR = 'ERROR',
-  CANCELED = 'CANCELED',
-}
+import useExternalTab from './useExternalTab';
+import ProcessInstructions from './ProcessInstructions';
+import ProcessLoader from './ProcessLoader';
+import ProcessSuccess from './ProcessSuccess';
+import ProcessDialog from './ProcessDialog';
+import { ProcessSteps, OperationType } from './processSteps';
 
 const xtmHubTabSettingsFieldPatchMutation = graphql`
   mutation XtmHubTabSettingsFieldPatchMutation($id: ID!, $input: [EditInput]!) {
@@ -37,14 +30,26 @@ const xtmHubTabSettingsFieldPatchMutation = graphql`
   }
 `;
 
-const XtmHubTab: React.FC = () => {
+interface XtmHubTabProps {
+  enrollmentStatus?: string;
+}
+
+const XtmHubTab: React.FC<XtmHubTabProps> = ({ enrollmentStatus }) => {
   const { t_i18n } = useFormatter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const { settings } = useContext(UserContext);
   const isEnterpriseEdition = useEnterpriseEdition();
   const enrollmentHubUrl = settings?.platform_xtmhub_url ?? 'https://hub.filigran.io/app';
-  const [enrollmentStep, setEnrollmentStep] = useState<EnrollmentSteps>(EnrollmentSteps.INSTRUCTIONS);
+  const [processStep, setProcessStep] = useState<ProcessSteps>(
+    ProcessSteps.INSTRUCTIONS,
+  );
+  const [operationType, setOperationType] = useState<OperationType | null>(
+    null,
+  );
+  const [commit] = useApiMutation(xtmHubTabSettingsFieldPatchMutation);
+
+  const isEnrolled = enrollmentStatus === 'enrolled';
 
   const OCTIInformations = {
     platform_url: window.location.origin,
@@ -52,59 +57,95 @@ const XtmHubTab: React.FC = () => {
     platform_id: settings?.id ?? '',
     platform_contract: isEnterpriseEdition ? 'EE' : 'CE',
   };
-  const queryParamsOCTIInformations = new URLSearchParams(OCTIInformations).toString();
+  const queryParamsOCTIInformations = new URLSearchParams(
+    OCTIInformations,
+  ).toString();
 
-  const handleTabMessage = useCallback((event: MessageEvent) => {
-    const eventData = event.data;
-    const { action, token } = eventData;
-    if (action === 'enroll') {
-      const [commit] = useApiMutation(xtmHubTabSettingsFieldPatchMutation);
-      commit({
-        variables: { id: settings?.id ?? '',
-          input: [
-            { key: 'xtm_hub_token', value: token },
-            { key: 'xtm_hub_enrollment_status', value: 'enrolled' },
-          ] },
-        onCompleted: () => {
-          setEnrollmentStep(EnrollmentSteps.SUCCESS);
-        },
-        onError: () => {
-          setEnrollmentStep(EnrollmentSteps.ERROR);
-        },
-      });
-    } else if (action === 'cancel') {
-      setEnrollmentStep(EnrollmentSteps.CANCELED);
-    } else {
-      setEnrollmentStep(EnrollmentSteps.ERROR);
-    }
-  }, []);
+  const enrollmentUrl = `${enrollmentHubUrl}/redirect/enroll-octi?${queryParamsOCTIInformations}`;
+  const unenrollmentUrl = `${enrollmentHubUrl}/unenroll/octi?platform_id=${settings?.id ?? ''}`;
+
+  const handleTabMessage = useCallback(
+    (event: MessageEvent) => {
+      const eventData = event.data;
+      const { action, token } = eventData;
+
+      if (action === 'enroll') {
+        setOperationType(OperationType.ENROLL);
+        commit({
+          variables: {
+            id: settings?.id ?? '',
+            input: [
+              { key: 'xtm_hub_token', value: token },
+              { key: 'xtm_hub_enrollment_status', value: 'enrolled' },
+            ],
+          },
+          onCompleted: () => {
+            setProcessStep(ProcessSteps.SUCCESS);
+          },
+          onError: () => {
+            setProcessStep(ProcessSteps.ERROR);
+          },
+        });
+      } else if (action === 'unenroll') {
+        setOperationType(OperationType.UNENROLL);
+        commit({
+          variables: {
+            id: settings?.id ?? '',
+            input: [
+              { key: 'xtm_hub_token', value: '' },
+              { key: 'xtm_hub_enrollment_date', value: '' },
+              { key: 'xtm_hub_enrollment_status', value: 'unenrolled' },
+            ],
+          },
+          onCompleted: () => {
+            setProcessStep(ProcessSteps.SUCCESS);
+          },
+          onError: () => {
+            setProcessStep(ProcessSteps.ERROR);
+          },
+        });
+      } else if (action === 'cancel') {
+        setProcessStep(ProcessSteps.CANCELED);
+      } else {
+        setProcessStep(ProcessSteps.ERROR);
+      }
+    },
+    [commit, settings?.id],
+  );
 
   const handleClosingTab = () => {
-    setEnrollmentStep(EnrollmentSteps.CANCELED);
+    setProcessStep(ProcessSteps.CANCELED);
   };
 
   const { openTab, closeTab, focusTab } = useExternalTab({
-    url: `${enrollmentHubUrl}/redirect/enroll-octi?${queryParamsOCTIInformations}`,
-    tabName: 'xtmhub-enrollment',
+    url: isEnrolled ? unenrollmentUrl : enrollmentUrl,
+    tabName: isEnrolled ? 'xtmhub-unenrollment' : 'xtmhub-enrollment',
     onMessage: handleTabMessage,
     onClosingTab: handleClosingTab,
   });
 
-  const handleOpenDialog = () => setIsDialogOpen(true);
+  const handleOpenDialog = () => {
+    setOperationType(
+      isEnrolled ? OperationType.UNENROLL : OperationType.ENROLL,
+    );
+    setIsDialogOpen(true);
+  };
 
   const handleCancelClose = () => {
     setShowConfirmation(false);
   };
+
   const handleCloseDialog = () => {
     closeTab();
     setIsDialogOpen(false);
     setShowConfirmation(false);
-    setEnrollmentStep(EnrollmentSteps.INSTRUCTIONS);
+    setProcessStep(ProcessSteps.INSTRUCTIONS);
+    setOperationType(null);
   };
 
   const handleAttemptClose = () => {
     // If tab is open, show confirmation dialog
-    if (enrollmentStep === EnrollmentSteps.WAITING_HUB) {
+    if (processStep === ProcessSteps.WAITING_HUB) {
       setShowConfirmation(true);
     } else {
       handleCloseDialog();
@@ -113,72 +154,161 @@ const XtmHubTab: React.FC = () => {
 
   const handleWaitingHubStep = () => {
     openTab();
-    setEnrollmentStep(EnrollmentSteps.WAITING_HUB);
+    setProcessStep(ProcessSteps.WAITING_HUB);
+  };
+
+  const getProcessConfig = () => {
+    const isUnenroll = operationType === OperationType.UNENROLL;
+    return {
+      dialogTitle: t_i18n(
+        isUnenroll
+          ? 'Waiting for unenrolling your OCTI...'
+          : 'Waiting for enrolling your OCTI...',
+      ),
+      successMessage: t_i18n(
+        isUnenroll
+          ? 'Your OpenCTI platform is successfully unenrolled'
+          : 'Your OpenCTI platform is successfully enrolled',
+      ),
+      errorMessage: t_i18n('Sorry, we have an issue, please retry'),
+      canceledMessage: t_i18n(
+        isUnenroll
+          ? 'You have canceled the unenrollment process'
+          : 'You have canceled the enrollment process',
+      ),
+      loaderButtonText: t_i18n(
+        isUnenroll ? 'Continue to unenroll' : 'Continue to enroll',
+      ),
+      confirmationTitle: t_i18n(
+        isUnenroll
+          ? 'Close unenrollment process?'
+          : 'Close enrollment process?',
+      ),
+      confirmationMessage: t_i18n(
+        isUnenroll
+          ? 'unenrollment_confirmation_dialog'
+          : 'enrollment_confirmation_dialog',
+      ),
+      continueButtonText: t_i18n(
+        isUnenroll ? 'Continue unenrollment' : 'Continue enrollment',
+      ),
+      instructionKey: isUnenroll
+        ? 'unenrollment_instruction_paragraph'
+        : 'enrollment_instruction_paragraph',
+    };
   };
 
   const renderDialogContent = () => {
-    const ENROLLMENT_RENDERERS = new Map([
-      [EnrollmentSteps.INSTRUCTIONS, () => <EnrollmentInstructions onContinue={handleWaitingHubStep} />],
-      [EnrollmentSteps.WAITING_HUB, () => <EnrollmentLoader onFocusTab={focusTab} />],
-      [EnrollmentSteps.SUCCESS, () => <EnrollmentSuccess closeDialog={handleCloseDialog} />],
-      [EnrollmentSteps.ERROR, () => <div> {t_i18n('Sorry, we have an issue, please retry')}</div>],
-      [EnrollmentSteps.CANCELED, () => <div> {t_i18n('You have canceled the enrollment process')}</div>],
+    const config = getProcessConfig();
+    const PROCESS_RENDERERS = new Map([
+      [
+        ProcessSteps.INSTRUCTIONS,
+        () => (
+          <ProcessInstructions
+            onContinue={handleWaitingHubStep}
+            instructionKey={config.instructionKey}
+          />
+        ),
+      ],
+      [
+        ProcessSteps.WAITING_HUB,
+        () => (
+          <ProcessLoader
+            onFocusTab={focusTab}
+            buttonText={config.loaderButtonText}
+          />
+        ),
+      ],
+      [
+        ProcessSteps.SUCCESS,
+        () => (
+          <ProcessSuccess
+            message={config.successMessage}
+            onClose={handleCloseDialog}
+          />
+        ),
+      ],
+      [ProcessSteps.ERROR, () => <div>{config.errorMessage}</div>],
+      [ProcessSteps.CANCELED, () => <div>{config.canceledMessage}</div>],
     ]);
-    const renderer = ENROLLMENT_RENDERERS.get(enrollmentStep);
+    const renderer = PROCESS_RENDERERS.get(processStep);
     return renderer && isDialogOpen ? renderer() : null;
   };
+
+  const getButtonText = () => {
+    if (isEnrolled) {
+      return t_i18n('Unregister from XTM Hub');
+    }
+    return t_i18n('Register in XTM Hub');
+  };
+
+  if (isEnrolled) {
+    return (
+      <>
+        <Button
+          variant="outlined"
+          size="small"
+          color="error"
+          sx={{
+            marginLeft: 1,
+            flex: '0 0 auto',
+            height: 'fit-content',
+          }}
+          onClick={handleOpenDialog}
+        >
+          {getButtonText()}
+        </Button>
+
+        <ProcessDialog
+          open={isDialogOpen}
+          title={getProcessConfig().dialogTitle}
+          onClose={handleAttemptClose}
+        >
+          {renderDialogContent()}
+        </ProcessDialog>
+
+        <ConfirmationDialog
+          open={showConfirmation}
+          title={getProcessConfig().confirmationTitle}
+          message={getProcessConfig().confirmationMessage}
+          confirmButtonText={t_i18n('Yes, close')}
+          cancelButtonText={getProcessConfig().continueButtonText}
+          onConfirm={handleCloseDialog}
+          onCancel={handleCancelClose}
+        />
+      </>
+    );
+  }
 
   return (
     <>
       <GradientButton
         size="small"
-        sx={{ marginLeft: 1,
+        sx={{
+          marginLeft: 1,
           flex: '0 0 auto',
-          height: 'fit-content' }}
-        title={t_i18n('Register in XTM Hub')}
+          height: 'fit-content',
+        }}
+        title={getButtonText()}
         onClick={handleOpenDialog}
       >
-        {t_i18n('Register in XTM Hub')}
+        {getButtonText()}
       </GradientButton>
 
-      <Dialog
+      <ProcessDialog
         open={isDialogOpen}
+        title={getProcessConfig().dialogTitle}
         onClose={handleAttemptClose}
-        slotProps={{ paper: { elevation: 1 } }}
-        maxWidth="md"
-        fullWidth
       >
-        <DialogTitle sx={{ m: 0, p: 2 }}>
-          {t_i18n('Waiting for enrolling your OCTI...')}
-          <IconButton
-            aria-label="close"
-            onClick={handleAttemptClose}
-            sx={{ position: 'absolute',
-              right: 8,
-              top: 8,
-              color: (theme) => theme.palette.grey[500] }}
-          >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
+        {renderDialogContent()}
+      </ProcessDialog>
 
-        <DialogContent dividers sx={{ p: 0,
-          position: 'relative',
-          padding: '0 16px 16px 16px',
-          height: '200px',
-          border: 'none' }}
-        >
-          {renderDialogContent()}
-        </DialogContent>
-      </Dialog>
       <ConfirmationDialog
         open={showConfirmation}
-        title={t_i18n('Close enrollment process?')}
-        message={t_i18n(
-          'enrollment_confirmation_dialog',
-        )}
+        title={getProcessConfig().confirmationTitle}
+        message={getProcessConfig().confirmationMessage}
         confirmButtonText={t_i18n('Yes, close')}
-        cancelButtonText={t_i18n('Continue enrollment')}
+        cancelButtonText={getProcessConfig().continueButtonText}
         onConfirm={handleCloseDialog}
         onCancel={handleCancelClose}
       />

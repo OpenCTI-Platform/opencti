@@ -14,7 +14,12 @@ interface UseExternalTabReturn {
   focusTab: () => void;
 }
 
-const useExternalTab = ({ url, tabName, onMessage, onClosingTab }: UseExternalTabProps): UseExternalTabReturn => {
+const useExternalTab = ({
+  url,
+  tabName,
+  onMessage,
+  onClosingTab,
+}: UseExternalTabProps): UseExternalTabReturn => {
   const tabRef = useRef<WindowProxy | null>(null);
   const [isTabOpen, setIsTabOpen] = useState(false);
   const beforeUnloadHandler = (event: BeforeUnloadEvent) => {
@@ -40,7 +45,7 @@ const useExternalTab = ({ url, tabName, onMessage, onClosingTab }: UseExternalTa
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       if (event.source === tabRef.current) {
-        const closingTabEvent = ['cancel', 'enroll'];
+        const closingTabEvent = ['cancel', 'enroll', 'unenroll'];
         if (closingTabEvent.includes(event.data.action)) {
           closeTab();
         }
