@@ -1,7 +1,6 @@
 import { MeterProvider } from '@opentelemetry/sdk-metrics';
 import type { ObservableResult } from '@opentelemetry/api-metrics';
 import { ValueType } from '@opentelemetry/api';
-import { addServiceAccountIntoUserCount, addUserIntoServiceAccountCount } from '../manager/telemetryManager';
 
 export const TELEMETRY_SERVICE_NAME = 'opencti-telemetry';
 
