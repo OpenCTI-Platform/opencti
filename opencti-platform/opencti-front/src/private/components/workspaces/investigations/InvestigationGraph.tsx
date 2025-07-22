@@ -5,6 +5,7 @@ import { useTheme } from '@mui/material/styles';
 import { knowledgeGraphStixCoreObjectQuery, knowledgeGraphStixRelationshipQuery } from '@components/common/containers/KnowledgeGraphQuery';
 import fetchMetaObjectsCount from '@components/workspaces/investigations/utils/fetchMetaObjectsCount';
 import WorkspaceHeader from '@components/workspaces/workspaceHeader/WorkspaceHeader';
+import { useInvestigationState } from '@components/workspaces/investigations/utils/useInvestigationState';
 import { InvestigationGraphObjectsQuery } from './__generated__/InvestigationGraphObjectsQuery.graphql';
 import { InvestigationGraphObjects_fragment$key } from './__generated__/InvestigationGraphObjects_fragment.graphql';
 import { InvestigationGraphQuery$data } from './__generated__/InvestigationGraphQuery.graphql';
@@ -435,6 +436,11 @@ const InvestigationGraphComponent = ({
 
   const investigation = useFragment(investigationGraphFragment, dataInvestigation);
 
+  const {
+    addInvestigationOpInStack,
+    getOpsUntilExpand,
+  } = useInvestigationState(investigation.id);
+
   useEffect(() => {
     setLoadingTotal(totalData);
     setLoadingCurrent(currentData);
@@ -499,8 +505,47 @@ const InvestigationGraphComponent = ({
     updateInvestigationEntitiesGraph(ids, 'remove', onCompleted);
   };
 
-  const replaceInGraph: GraphToolbarProps['onInvestigationRollback'] = (ids, onCompleted) => {
+  const replaceInGraph = (ids: string[], onCompleted: () => void) => {
     updateInvestigationEntitiesGraph(ids, 'replace', onCompleted);
+  };
+
+  const remove: GraphToolbarProps['onRemove'] = (ids, onCompleted) => {
+    const removed = rawObjects.filter((o) => ids.includes(o.id));
+    addInvestigationOpInStack({
+      type: 'remove',
+      dateTime: new Date().getTime(),
+      objects: removed,
+    });
+    removeInGraph(ids, onCompleted);
+  };
+
+  const expand: GraphToolbarProps['onInvestigationExpand'] = (newObjects) => {
+    addInvestigationOpInStack({
+      type: 'expand',
+      dateTime: new Date().getTime(),
+      objectsIds: newObjects.map((e) => e.id),
+    });
+    addInGraph(newObjects);
+  };
+
+  const rollback: GraphToolbarProps['onInvestigationRollback'] = () => {
+    const opsToRollback = getOpsUntilExpand();
+    if (opsToRollback.length > 0) {
+      let objectsToKeep = rawObjects;
+      opsToRollback.forEach((operation) => {
+        if (operation.type === 'expand') {
+          // Remove objects that were added during the expansion.
+          objectsToKeep = objectsToKeep.filter((o) => !operation.objectsIds.includes(o.id));
+        } else if (operation.type === 'remove') {
+          // Re-add objects that were removed.
+          objectsToKeep = [...objectsToKeep, ...operation.objects];
+        }
+      });
+      replaceInGraph(
+        objectsToKeep.map((o) => o.id),
+        () => rebuildGraphData(objectsToKeep),
+      );
+    }
   };
 
   return (
@@ -519,9 +564,9 @@ const InvestigationGraphComponent = ({
             relationshipRefetchQuery={knowledgeGraphStixRelationshipQuery}
             entity={investigation}
             onAddRelation={addRelationInGraph}
-            onRemove={removeInGraph}
-            onInvestigationExpand={addInGraph}
-            onInvestigationRollback={replaceInGraph}
+            onRemove={remove}
+            onInvestigationExpand={expand}
+            onInvestigationRollback={rollback}
           />
         </Graph>
       </div>

@@ -1,14 +1,10 @@
 import { OpenWithOutlined, Undo } from '@mui/icons-material';
 import React, { useState } from 'react';
-import InvestigationExpandForm, { InvestigationExpandFormProps } from '@components/workspaces/investigations/InvestigationExpandForm';
 import Dialog from '@mui/material/Dialog';
-import setStackDataInSessionStorage from '@components/workspaces/investigations/utils/setStackDataInSessionStorage/setStackDataInSessionStorage';
-import {
-  getPreExpansionStateList,
-  investigationPreExpansionStateListStorageKey,
-  updatePreExpansionStateList,
-} from '@components/workspaces/investigations/utils/investigationStorage';
 import { graphql } from 'react-relay';
+import { useParams } from 'react-router-dom';
+import InvestigationExpandForm, { InvestigationExpandFormProps } from '@components/workspaces/investigations/InvestigationExpandForm';
+import { useInvestigationState } from '@components/workspaces/investigations/utils/useInvestigationState';
 import InvestigationRollBackExpandDialog from '@components/workspaces/investigations/dialog/InvestigationRollBackExpandDialog';
 import GraphToolbarItem from './GraphToolbarItem';
 import { useFormatter } from '../../i18n';
@@ -566,14 +562,19 @@ const expandFilterGroup = (
 
 export interface GraphToolbarExpandToolsProps {
   onInvestigationExpand?: (newObjects: ObjectToParse[]) => void
-  onInvestigationRollback?: (ids: string[], onCompleted: () => void) => void
+  onInvestigationRollback?: () => void
 }
 
 const GraphToolbarExpandTools = ({
   onInvestigationExpand,
   onInvestigationRollback,
 }: GraphToolbarExpandToolsProps) => {
+  const { workspaceId } = useParams();
   const { t_i18n } = useFormatter();
+
+  const {
+    containsExpandOp,
+  } = useInvestigationState(workspaceId ?? '');
 
   const {
     graphData,
@@ -587,31 +588,13 @@ const GraphToolbarExpandTools = ({
 
   const {
     setLinearProgress,
-    rebuildGraphData,
     setIsExpandOpen,
   } = useGraphInteractions();
 
   const [rollBackOpen, setRollBackOpen] = useState(false);
 
   const onRollbackExpand = () => {
-    const storedPreExpansion = getPreExpansionStateList();
-    if (storedPreExpansion) {
-      const currentStoredPreExpansion = JSON.parse(storedPreExpansion);
-      const { investigatedEntitiesList } = currentStoredPreExpansion[0];
-      const objectsToKeep = rawObjects.filter((o) => {
-        return investigatedEntitiesList.find((e: { id: string }) => e.id === o.id);
-      });
-      const objectsToAdd = investigatedEntitiesList.filter((e: { id: string }) => {
-        return !rawObjects.find((o) => e.id === o.id);
-      });
-      onInvestigationRollback?.(
-        [...objectsToKeep, ...objectsToAdd].map((o) => o.id),
-        () => {
-          rebuildGraphData([...objectsToKeep, ...objectsToAdd]);
-          updatePreExpansionStateList(currentStoredPreExpansion);
-        },
-      );
-    }
+    onInvestigationRollback?.();
   };
 
   const onExpand: InvestigationExpandFormProps['onSubmit'] = async (
@@ -622,15 +605,6 @@ const GraphToolbarExpandTools = ({
       // Do not expand if nothing has been checked.
       return;
     }
-
-    setStackDataInSessionStorage(
-      investigationPreExpansionStateListStorageKey,
-      {
-        dateTime: new Date().getTime(),
-        investigatedEntitiesList: rawObjects,
-      },
-      10,
-    );
 
     setLinearProgress(true);
     const entityTypes = entity_types.map((o) => o.value);
@@ -673,7 +647,7 @@ const GraphToolbarExpandTools = ({
         color="primary"
         onClick={() => setRollBackOpen(true)}
         title={t_i18n('Restore the state of the graphic before the last expansion')}
-        disabled={!getPreExpansionStateList()}
+        disabled={!containsExpandOp()}
       />
 
       <InvestigationRollBackExpandDialog
