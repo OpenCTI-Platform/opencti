@@ -4,10 +4,11 @@ import CardHeader from '@mui/material/CardHeader';
 import CardContent from '@mui/material/CardContent';
 import { CardActions, Grid, Tooltip } from '@mui/material';
 import Button from '@mui/material/Button';
-import { useFormatter } from '../../../../components/i18n';
 import Chip from '@mui/material/Chip';
+import { VerifiedOutlined } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { truncate } from '../../../../utils/String';
-import { Verified, VerifiedOutlined } from '@mui/icons-material';
+import { useFormatter } from '../../../../components/i18n';
 
 const styles = {
   description: {
@@ -18,7 +19,7 @@ const styles = {
     textOverflow: 'ellipsis',
     '-webkit-line-clamp': 3,
     '-webkit-box-orient': 'vertical',
-  }
+  },
 };
 
 interface IngestionCatalogCardProps {
@@ -27,7 +28,9 @@ interface IngestionCatalogCardProps {
 
 const IngestionCatalogCard = ({ node }: IngestionCatalogCardProps) => {
   const { t_i18n } = useFormatter();
+  const navigate = useNavigate();
   const connector = JSON.parse(node);
+  const link = `/dashboard/data/ingestion/catalog/${connector.default.CONNECTOR_NAME}`;
 
   const renderUseCases = () => {
     return (
@@ -69,57 +72,57 @@ const IngestionCatalogCard = ({ node }: IngestionCatalogCardProps) => {
   };
 
   return (
-    <>
-      <Card
+    <Card
+      style={{
+        width: '100%',
+        height: 330,
+        borderRadius: 4,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+      }}
+      variant="outlined"
+    >
+      <CardHeader
         style={{
-          width: '100%',
-          height: 330,
-          borderRadius: 4,
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
+          height: 100,
+          paddingBottom: 0,
+          marginBottom: 0,
+          alignItems: 'start',
         }}
-        variant="outlined"
-      >
-        <CardHeader
-          style={{
-            height: 100,
-            paddingBottom: 0,
-            marginBottom: 0,
-            alignItems: 'start',
-          }}
-          avatar={
-            <img
-              style={{ height: 37, maxWidth: 100, borderRadius: 4 }}
-              src={connector.logo}
-              alt={connector.title}
-            />
-          }
-          title={
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-              <div style={{ fontSize: 20, fontWeight: 600 }}>{connector.title}</div>
-              <VerifiedOutlined color={'success'} />
-            </div>
-          }
-          subheader={renderUseCases()}
-        />
-        <CardContent style={{
-          width: '100%',
-          height: '100%',
-          paddingTop: 0,
-        }}>
-          <div style={styles.description}>
-            {connector.description}
+        avatar={
+          <img
+            style={{ height: 37, maxWidth: 100, borderRadius: 4 }}
+            src={connector.logo}
+            alt={connector.title}
+          />
+        }
+        title={
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+            <div style={{ fontSize: 20, fontWeight: 600 }}>{connector.title}</div>
+            <VerifiedOutlined color={'success'} />
           </div>
-        </CardContent>
-        <CardActions style={{
-          alignSelf: 'end'
-        }}>
-          <Button variant={'contained'} size={'small'} disabled>{t_i18n('Details')}</Button>
-          <Button variant={'contained'} size={'small'} disabled>{t_i18n('Deploy')}</Button>
-        </CardActions>
-      </Card>
-    </>
+        }
+        subheader={renderUseCases()}
+      />
+      <CardContent style={{
+        width: '100%',
+        height: '100%',
+        paddingTop: 0,
+      }}
+      >
+        <div style={styles.description}>
+          {connector.short_description}
+        </div>
+      </CardContent>
+      <CardActions style={{
+        alignSelf: 'end',
+      }}
+      >
+        <Button variant={'contained'} size={'small'} onClick={() => navigate(link)}>{t_i18n('Details')}</Button>
+        <Button variant={'contained'} size={'small'} disabled>{t_i18n('Deploy')}</Button>
+      </CardActions>
+    </Card>
   );
 };
 
