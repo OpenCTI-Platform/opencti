@@ -26,7 +26,7 @@ const EmailTemplateAttributesSidebar = () => {
     { variableName: 'user.objectOrganization', label: 'Organizations' },
   ];
   const platformAttributes = [
-    { variableName: 'platform.url', label: 'Platform URL' },
+    { variableName: 'settings.platform_url', label: 'Platform URL' },
   ];
 
   const copyAttributeToClipboard = async (varName: string) => {
