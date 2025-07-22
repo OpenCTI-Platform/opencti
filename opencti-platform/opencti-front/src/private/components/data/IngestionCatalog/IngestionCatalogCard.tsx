@@ -53,7 +53,7 @@ const IngestionCatalogCard = ({ node }: IngestionCatalogCardProps) => {
           marginBottom: 0,
           alignItems: 'start',
         }}
-        avatar={<img style={{ height: 37, maxWidth: 100, borderRadius: 4 }} src={connector.logo} alt={connector.title} />}
+        avatar={<img style={{ height: 50, width: 50, objectFit: 'cover', borderRadius: 4 }} src={connector.logo} alt={connector.title} />}
         title={<div style={{ width: '100%', fontSize: 20, fontWeight: 600 }}>{connector.title}</div>}
         subheader={renderUseCases()}
         action={<VerifiedOutlined color={'success'} />}
