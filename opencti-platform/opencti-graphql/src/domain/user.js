@@ -718,11 +718,6 @@ export const roleDeleteRelation = async (context, user, roleId, toId, relationsh
   return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user);
 };
 
-// User related
-const isUserServiceAccount = async (context, user, userId) => {
-  const userToUpdate = await internalLoadById(context, user, userId);
-  return userToUpdate.user_service_account;
-};
 export const userEditField = async (context, user, userId, rawInputs) => {
   const inputs = [];
   const userToUpdate = await internalLoadById(context, user, userId);
@@ -735,7 +730,14 @@ export const userEditField = async (context, user, userId, rawInputs) => {
   }
   for (let index = 0; index < rawInputs.length; index += 1) {
     const input = rawInputs[index];
+    let skipThisInput = false;
     if (input.key === 'password') {
+      if (serviceAccountFeatureFlag) {
+        const userServiceAccountInput = rawInputs.find((x) => x.key === 'user_service_account');
+        if (userServiceAccountInput && userToUpdate.user_service_account !== userServiceAccountInput.value[0]) {
+          skipThisInput = true;
+        }
+      }
       const userPassword = R.head(input.value).toString();
       await checkPasswordFromPolicy(context, userPassword);
       input.value = [bcrypt.hashSync(userPassword)];
@@ -778,20 +780,24 @@ export const userEditField = async (context, user, userId, rawInputs) => {
       }
     }
 
-    const isServiceAccount = await isUserServiceAccount(context, user, userId);
-    // Turn User into Service Account
-    if (serviceAccountFeatureFlag && input.key === 'user_service_account' && !isServiceAccount && input.value[0] === true) {
-      inputs.push({ key: 'password', value: [null] });
-      await addUserIntoServiceAccountCount();
+    if (serviceAccountFeatureFlag) {
+      // Turn User into Service Account
+      if (input.key === 'user_service_account' && !userToUpdate.user_service_account && input.value[0] === true) {
+        inputs.push({ key: 'password', value: [null] });
+        await addUserIntoServiceAccountCount();
+      }
+      // Turn Service Account into User
+      if (input.key === 'user_service_account' && userToUpdate.user_service_account && input.value[0] === false) {
+        const userPassword = uuid();
+        await checkPasswordFromPolicy(context, userPassword);
+        inputs.push({ key: 'password', value: [bcrypt.hashSync(userPassword)] });
+        await addServiceAccountIntoUserCount();
+      }
     }
-    // Turn Service Account into User
-    if (serviceAccountFeatureFlag && input.key === 'user_service_account' && isServiceAccount && input.value[0] === false) {
-      const userPassword = uuid();
-      await checkPasswordFromPolicy(context, userPassword);
-      inputs.push({ key: 'password', value: [bcrypt.hashSync(userPassword)] });
-      await addServiceAccountIntoUserCount();
+
+    if (!skipThisInput) {
+      inputs.push(input);
     }
-    inputs.push(input);
   }
   const { element } = await updateAttribute(context, user, userId, ENTITY_TYPE_USER, inputs);
   const input = updatedInputsToData(element, inputs);

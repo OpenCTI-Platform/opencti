@@ -1159,7 +1159,7 @@ describe('User is impersonated', async () => {
   });
 });
 
-describe('Service account User coverage', async () => {
+describe.only('Service account User coverage', async () => {
   let userInternalId: string;
   const userToDeleteIds: string[] = [];
   it('should service account user created', async () => {
@@ -1234,7 +1234,7 @@ describe('Service account User coverage', async () => {
       query: UPDATE_QUERY,
       variables: {
         id: userInternalId,
-        input: { key: 'user_service_account', value: [true] }
+        input: [{ key: 'user_service_account', value: [true] }, { key: 'password', value: ['toto'] }]
       },
     });
     const { userEdit } = queryResult.data;
