@@ -245,11 +245,11 @@ export const internalProcessNotification = async (
   notificationData: NotificationData[],
   triggerList: BasicStoreEntityTrigger[],
   usersMap: Map<string, AuthUser>,
-
+  // eslint-disable-next-line consistent-return
 ): Promise<{ error: string } | void> => {
   try {
     if (notificationUser.user_service_account && serviceAccountFeatureFlag) {
-      return;
+      return { error: 'Cannot send notification to service account user' };
     }
     const notificationName = triggerList.map((trigger) => trigger?.name).join(';');
     const notificationType = triggerList.length > 1 ? 'buffer' : triggerList[0].trigger_type;
@@ -281,7 +281,6 @@ export const internalProcessNotification = async (
         break;
     }
   } catch (error) {
-    // eslint-disable-next-line consistent-return
     return { error: (error as Error).message };
   }
 };
