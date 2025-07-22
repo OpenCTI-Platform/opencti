@@ -9,6 +9,8 @@ import { Form, Formik } from 'formik';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
+import EmailTemplateField, { EmailTemplateFieldOption } from '@components/common/form/EmailTemplateField';
+import { FormikConfig } from 'formik/dist/types';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { handleError } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
@@ -19,6 +21,9 @@ const userEmailSendMutation = graphql`
   }
 `;
 
+interface UserEmailFormInputs {
+  emailTemplate: EmailTemplateFieldOption
+}
 interface UserEmailSendProps {
   userId: string;
 }
@@ -27,10 +32,10 @@ const UserEmailSend = ({ userId }: UserEmailSendProps) => {
   const [commitSendEmailMutation] = useApiMutation(userEmailSendMutation);
   const [isEmailTemplateSelectionShown, setIsEmailTemplateSelectionShown] = useState(false);
 
-  const submitSendEmail = () => {
+  const submitSendEmail: FormikConfig<UserEmailFormInputs>['onSubmit'] = (values, { setSubmitting }) => {
     const input = {
       target_user_id: userId,
-      email_template_id: '',
+      email_template_id: values.emailTemplate.value.id,
       email_object: '',
     };
     commitSendEmailMutation({
@@ -39,14 +44,17 @@ const UserEmailSend = ({ userId }: UserEmailSendProps) => {
       },
       onCompleted: () => {
         setIsEmailTemplateSelectionShown(false);
+        setSubmitting(false);
       },
       onError: (error: Error) => {
         handleError(error);
         setIsEmailTemplateSelectionShown(false);
+        setSubmitting(false);
       },
     });
   };
 
+  const initialValues: UserEmailFormInputs = { emailTemplate: { value: { id: '', name: '' }, label: '' } };
   return (
     <>
       <EETooltip title={t_i18n('Send email')}>
@@ -59,11 +67,11 @@ const UserEmailSend = ({ userId }: UserEmailSendProps) => {
         </ToggleButton>
       </EETooltip>
       <Formik
-        initialValues={{ email_template_id: { value: '', label: '' } }}
+        initialValues={initialValues}
         onSubmit={submitSendEmail}
         onReset={() => setIsEmailTemplateSelectionShown(false)}
       >
-        {({ submitForm, handleReset, isSubmitting }) => (
+        {({ setFieldValue, submitForm, handleReset, isSubmitting }) => (
           <Dialog
             slotProps={{ paper: { elevation: 1 } }}
             open={isEmailTemplateSelectionShown}
@@ -73,6 +81,11 @@ const UserEmailSend = ({ userId }: UserEmailSendProps) => {
             <DialogTitle>{t_i18n('Send email with selected email template')}</DialogTitle>
             <DialogContent style={{ overflowY: 'hidden' }}>
               <Form>
+                <EmailTemplateField
+                  name="emailTemplate"
+                  label={t_i18n('Email template')}
+                  onChange={setFieldValue}
+                />
               </Form>
             </DialogContent>
             <DialogActions>
