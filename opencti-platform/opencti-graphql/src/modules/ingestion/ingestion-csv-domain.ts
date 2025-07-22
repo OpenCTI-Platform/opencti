@@ -36,10 +36,7 @@ import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import { FunctionalError, ValidationError } from '../../config/errors';
 import { convertRepresentationsIds } from '../internal/mapper-utils';
 import { addUser, findAll as findAllUser } from '../../domain/user';
-import { getEntityFromCache } from '../../database/cache';
 import { SYSTEM_USER } from '../../utils/access';
-import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
-import type { BasicStoreSettings } from '../../types/settings';
 import { findDefaultIngestionGroups } from '../../domain/group';
 import type { BasicGroupEntity, BasicStoreCommon } from '../../types/store';
 import { regenerateCsvMapperUUID } from './ingestion-converter';
@@ -100,15 +97,12 @@ export const createOnTheFlyUser = async (context: AuthContext, user: AuthUser, i
   if (isUserAlreadyExisting) {
     throw FunctionalError('This user already exists. Change the feed\'s name to change the automatically created user\'s name', {});
   }
-  const { platform_organization } = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
 
   let userInput: UserAddInput = {
-    password: uuid(),
-    user_email: `automatic+${uuid()}@opencti.invalid`,
     name: input.userName,
     prevent_default_groups: true,
     groups: [defaultIngestionGroups[0].id],
-    objectOrganization: platform_organization ? [platform_organization] : []
+    user_service_account: true,
   };
 
   if (input.confidenceLevel) {
