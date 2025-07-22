@@ -51,6 +51,9 @@ export class TelemetryMeterManager {
   // Number of background task with scope User
   userBackgroundTaskCount = 0;
 
+  // Number of email templates created
+  emailTemplateCreatedCount = 0;
+
   constructor(meterProvider: MeterProvider) {
     this.meterProvider = meterProvider;
   }
@@ -127,6 +130,10 @@ export class TelemetryMeterManager {
     this.userBackgroundTaskCount = n;
   }
 
+  setEmailTemplateCreatedCount(n: number) {
+    this.emailTemplateCreatedCount = n;
+  }
+
   registerGauge(name: string, description: string, observer: string, opts: { unit?: string, valueType?: ValueType } = {}) {
     const meter = this.meterProvider.getMeter(TELEMETRY_SERVICE_NAME);
     const gaugeOptions = { description, unit: opts.unit ?? 'count', valueType: opts.valueType ?? ValueType.INT };
@@ -158,5 +165,6 @@ export class TelemetryMeterManager {
     this.registerGauge('email_send_count', 'Number of emails sent from the platform', 'emailSendCount');
     this.registerGauge('onboarding_email_send_count', 'Number of onboarding emails sent', 'onboardingEmailSendCount');
     this.registerGauge('user_background_task_count', 'Number of background tasks on User scope', 'userBackgroundTaskCount');
+    this.registerGauge('email_template_created_count', 'Number of email templates created', 'emailTemplateCreatedCount');
   }
 }
