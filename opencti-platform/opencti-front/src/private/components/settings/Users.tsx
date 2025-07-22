@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { graphql } from 'react-relay';
 import { UsersLinesPaginationQuery, UsersLinesPaginationQuery$variables } from '@components/settings/__generated__/UsersLinesPaginationQuery.graphql';
 import { UsersLine_node$data } from '@components/settings/__generated__/UsersLine_node.graphql';
@@ -152,22 +152,30 @@ const Users = () => {
     },
   );
 
-  let userCreateButton;
-  if (isSetAccess && defaultGroupsQueryRef) {
-    userCreateButton = (
-      <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <UserCreation paginationOptions={queryPaginationOptions} defaultGroupsQueryRef={defaultGroupsQueryRef} />
-      </React.Suspense>
-    );
-  } else if (!isSetAccess && isAdminOrganization && isEnterpriseEdition) {
-    userCreateButton = (
-      <SettingsOrganizationUserCreation
-        paginationOptions={queryPaginationOptions}
-        organization={organization}
-        variant="controlledDial"
-      />
-    );
-  }
+  const userCreateButton = useMemo(() => {
+    if (isSetAccess && defaultGroupsQueryRef) {
+      return (
+        <React.Suspense>
+          <UserCreation paginationOptions={queryPaginationOptions} defaultGroupsQueryRef={defaultGroupsQueryRef} />
+        </React.Suspense>
+      );
+    } if (!isSetAccess && isAdminOrganization && isEnterpriseEdition) {
+      return (
+        <SettingsOrganizationUserCreation
+          paginationOptions={queryPaginationOptions}
+          organization={organization}
+          variant="controlledDial"
+        />
+      );
+    }
+  }, [
+    isSetAccess,
+    defaultGroupsQueryRef,
+    isAdminOrganization,
+    isEnterpriseEdition,
+    queryPaginationOptions,
+    organization,
+  ]);
 
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
