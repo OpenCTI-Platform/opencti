@@ -35,7 +35,6 @@ import {
 } from '../../utils/testQueryHelper';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 import type { Capability, Member, UserAddInput } from '../../../src/generated/graphql';
-import { findById } from '../../../src/domain/user';
 import { storeLoadById } from '../../../src/database/middleware-loader';
 
 const LIST_QUERY = gql`
