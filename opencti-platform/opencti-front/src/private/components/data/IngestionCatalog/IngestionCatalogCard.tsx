@@ -2,12 +2,13 @@ import Card from '@mui/material/Card';
 import React from 'react';
 import CardHeader from '@mui/material/CardHeader';
 import CardContent from '@mui/material/CardContent';
-import { CardActions, Grid, Tooltip } from '@mui/material';
+import { Badge, CardActions, Grid, Tooltip } from '@mui/material';
 import Button from '@mui/material/Button';
 import { VerifiedOutlined } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import IngestionCatalogUseCaseChip from '@components/data/IngestionCatalog/IngestionCatalogUseCaseChip';
 import { useFormatter } from '../../../../components/i18n';
+import EnrichedTooltip from '../../../../components/EnrichedTooltip';
 
 interface IngestionCatalogCardProps {
   node: string;
@@ -21,7 +22,7 @@ const IngestionCatalogCard = ({ node }: IngestionCatalogCardProps) => {
 
   const renderUseCases = () => {
     return (
-      <Tooltip
+      <EnrichedTooltip
         style={{ display: 'flex', width: 200 }}
         title={(
           <Grid container={true} spacing={3}>
@@ -29,8 +30,27 @@ const IngestionCatalogCard = ({ node }: IngestionCatalogCardProps) => {
           </Grid>
         )}
       >
-        {connector.use_cases.map((useCase: string) => <IngestionCatalogUseCaseChip key={useCase} useCase={useCase} />)}
-      </Tooltip>
+        {connector.use_cases.length > 1 ? (
+          <Badge
+            variant="dot"
+            color="primary"
+            sx={{
+              '& .MuiBadge-badge': {
+                right: 8,
+                top: 8,
+              },
+            }}
+          >
+            {connector.use_cases.slice(0, 1).map((useCase: string) => <IngestionCatalogUseCaseChip key={useCase} useCase={useCase} />)}
+          </Badge>
+        ) : (
+          <>
+            {connector.use_cases.map((useCase: string) => <IngestionCatalogUseCaseChip key={useCase} useCase={useCase} />)}
+          </>
+        )}
+
+
+      </EnrichedTooltip>
     );
   };
 
