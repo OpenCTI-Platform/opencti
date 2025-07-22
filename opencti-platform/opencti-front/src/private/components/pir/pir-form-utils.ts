@@ -7,7 +7,7 @@ export interface PirEditionFormData {
 }
 
 export interface PirCreationFormData {
-  type: 'threat-landscape' | 'threat-origin' | 'threat-custom'
+  pir_type: 'THREAT_LANDSCAPE' | 'THREAT_ORIGIN' | 'THREAT_CUSTOM'
   name: string
   description: string
   markings: FieldOption[]
@@ -35,6 +35,7 @@ const optionsToFilters = (options: FieldOption[], relType: string): PirAddInput[
 export const pirFormDataToMutationInput = (data: PirCreationFormData): PirAddInput => {
   return {
     name: data.name,
+    pir_type: data.pir_type,
     description: data.description ?? undefined,
     objectMarking: data.markings.map((m) => m.value),
     pir_rescan_days: Number(data.pir_rescan_days),

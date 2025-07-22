@@ -11,10 +11,12 @@ import { parse } from '../../../../utils/Time';
 import PirFiltersDisplay from '../PirFiltersDisplay';
 import type { Theme } from '../../../../components/Theme';
 import Paper from '../../../../components/Paper';
+import Chip from '@mui/material/Chip';
 
 const detailsFragment = graphql`
   fragment PirOverviewDetailsFragment on Pir {
     description
+    pir_type
     pir_rescan_days
     created_at
     lastEventId
@@ -79,6 +81,25 @@ const PirOverviewDetails = ({ data }: PirOverviewDetailsProps) => {
             size={{ xs: 6 }}
             sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
           >
+            <div>
+              <Typography variant="h3" gutterBottom>
+                {t_i18n('Type')}
+              </Typography>
+              <Chip
+                style={{
+                  fontSize: 12,
+                  height: 20,
+                  float: 'left',
+                  width: 170,
+                  textTransform: 'uppercase',
+                  borderRadius: 4,
+                }}
+                color="primary"
+                variant="outlined"
+                label={t_i18n(pir.pir_type)}
+              />
+            </div>
+
             <div>
               <Typography variant="h3" gutterBottom>
                 {t_i18n('Rescan period (days)')}

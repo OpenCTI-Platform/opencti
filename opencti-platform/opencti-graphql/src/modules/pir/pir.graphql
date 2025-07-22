@@ -4,6 +4,12 @@ type PirCriterion {
 }
 
 # Used in StixRefRelationship
+enum PirType {
+    THREAT_LANDSCAPE
+    THREAT_ORIGIN
+    THREAT_CUSTOM
+}
+
 type PirDependency {
     element_id: ID!
     author_id: ID
@@ -24,6 +30,7 @@ type Pir implements InternalObject & BasicObject {
     objectMarking: [MarkingDefinition!]
     # Pir
     name: String!
+    pir_type: PirType!
     description: String
     pir_rescan_days: Int!
     pir_criteria: [PirCriterion!]!
@@ -88,6 +95,7 @@ input PirExplanationInput {
 
 input PirAddInput {
     name: String! @constraint(minLength: 2, format: "not-blank")
+    pir_type: PirType!
     description: String
     pir_rescan_days: Int!
     pir_criteria: [PirCriterionInput!]!

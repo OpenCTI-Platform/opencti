@@ -10,17 +10,17 @@ const PirCreationFormType = () => {
 
   const types = [
     {
-      id: 'threat-landscape',
+      id: 'THREAT_LANDSCAPE',
       label: t_i18n('Threat landscape'),
       description: t_i18n('Threat landscape description ...'),
     },
     {
-      id: 'threat-origin',
+      id: 'THREAT_ORIGIN',
       label: t_i18n('Threat origin (coming soon)'),
       description: t_i18n('Threat origin description ...'),
     },
     {
-      id: 'threat-custom',
+      id: 'THREAT_CUSTOM',
       label: t_i18n('Threat with full customization (coming soon)'),
       description: t_i18n('Threat with full customization description ...'),
     },
@@ -29,9 +29,9 @@ const PirCreationFormType = () => {
   return (
     <Box sx={{ display: 'flex', gap: 2 }}>
       {types.map(({ label, description, id }, i) => {
-        const disabled = id !== 'threat-landscape';
+        const disabled = id !== 'THREAT_LANDSCAPE';
         const cardStyle: CSSProperties = { flex: 1 };
-        if (values.type === id) cardStyle.borderColor = 'primary.main';
+        if (values.pir_type === id) cardStyle.borderColor = 'primary.main';
         if (disabled) cardStyle.opacity = 0.7;
 
         return (

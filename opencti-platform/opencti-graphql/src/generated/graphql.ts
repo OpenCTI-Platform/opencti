@@ -19696,6 +19696,7 @@ export type Pir = BasicObject & InternalObject & {
   pir_criteria: Array<PirCriterion>;
   pir_filters: Scalars['String']['output'];
   pir_rescan_days: Scalars['Int']['output'];
+  pir_type: PirType;
   standard_id: Scalars['String']['output'];
   updated_at: Scalars['DateTime']['output'];
 };
@@ -19717,6 +19718,7 @@ export type PirAddInput = {
   pir_criteria: Array<PirCriterionInput>;
   pir_filters: FilterGroup;
   pir_rescan_days: Scalars['Int']['input'];
+  pir_type: PirType;
 };
 
 export type PirConnection = {
@@ -19776,6 +19778,12 @@ export enum PirOrdering {
   Creator = 'creator',
   Name = 'name',
   UpdatedAt = 'updated_at'
+}
+
+export enum PirType {
+  ThreatCustom = 'THREAT_CUSTOM',
+  ThreatLandscape = 'THREAT_LANDSCAPE',
+  ThreatOrigin = 'THREAT_ORIGIN'
 }
 
 export type PirUnflagElementInput = {
@@ -33489,6 +33497,7 @@ export type ResolversTypes = ResolversObject<{
   PirExplanationInput: PirExplanationInput;
   PirFlagElementInput: PirFlagElementInput;
   PirOrdering: PirOrdering;
+  PirType: PirType;
   PirUnflagElementInput: PirUnflagElementInput;
   Platform: Platform;
   PlatformCriticalAlert: ResolverTypeWrapper<Omit<PlatformCriticalAlert, 'details'> & { details?: Maybe<ResolversTypes['PlatformCriticalAlertDetails']> }>;
@@ -40978,6 +40987,7 @@ export type PirResolvers<ContextType = any, ParentType extends ResolversParentTy
   pir_criteria?: Resolver<Array<ResolversTypes['PirCriterion']>, ParentType, ContextType>;
   pir_filters?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   pir_rescan_days?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  pir_type?: Resolver<ResolversTypes['PirType'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { useTheme } from '@mui/styles';
 import { DraftChip } from '@components/common/draft/DraftChip';
 import { HorizontalRule, Security } from '@mui/icons-material';
+import { Pirs_PirFragment$data } from '@components/pir/__generated__/Pirs_PirFragment.graphql';
 import ItemCvssScore from '../ItemCvssScore';
 import type { DataTableColumn } from './dataTableTypes';
 import { DataTableProps, DataTableVariant } from './dataTableTypes';
@@ -30,6 +31,7 @@ import ItemDueDate from '../ItemDueDate';
 import { APP_BASE_PATH } from '../../relay/environment';
 import FieldOrEmpty from '../FieldOrEmpty';
 import ItemHistory from '../ItemHistory';
+import { useFormatter } from '../i18n';
 
 const chipStyle = {
   fontSize: '12px',
@@ -777,6 +779,23 @@ const defaultColumns: DataTableProps['dataColumns'] = {
             e.stopPropagation();
             handleAddFilter('note_types', note_types?.at(0) ?? null, 'eq');
           }}
+        />
+      );
+    },
+  },
+  pir_type: {
+    percentWidth: 10,
+    id: 'pir_type',
+    label: 'Type',
+    render: ({ pir_type }: Pirs_PirFragment$data) => {
+      const classes = useStyles();
+      const { t_i18n } = useFormatter();
+      return (
+        <Chip
+          classes={{ root: classes.chipInList }}
+          color="primary"
+          variant="outlined"
+          label={t_i18n(pir_type)}
         />
       );
     },

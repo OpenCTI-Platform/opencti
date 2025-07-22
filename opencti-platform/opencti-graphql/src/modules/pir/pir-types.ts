@@ -1,8 +1,9 @@
 import type { BasicStoreEntity, BasicStoreRelation, StoreEntity } from '../../types/store';
 import type { StixInternal } from '../../types/stix-2-1-common';
-import type { FilterGroup } from '../../generated/graphql';
+import { PirType, type FilterGroup } from '../../generated/graphql';
 
 export const ENTITY_TYPE_PIR = 'Pir';
+export const PIR_TYPES = Object.values(PirType);
 
 export interface PirCriterion {
   filters: string
@@ -11,6 +12,7 @@ export interface PirCriterion {
 
 export interface BasicStoreEntityPir extends BasicStoreEntity {
   name: string
+  pir_type: PirType
   description: string
   pir_rescan_days: number
   pir_criteria: PirCriterion[]
@@ -20,6 +22,7 @@ export interface BasicStoreEntityPir extends BasicStoreEntity {
 
 export interface StoreEntityPir extends StoreEntity {
   name: string
+  pir_type: PirType
   description: string
   pir_rescan_days: number
   pir_criteria: PirCriterion[]
@@ -39,6 +42,7 @@ export interface ParsedPirCriterion {
 export interface ParsedPir {
   id: string
   name: string
+  pir_type: PirType
   description: string
   pir_rescan_days: number
   // Criteria are filters with a weight,
