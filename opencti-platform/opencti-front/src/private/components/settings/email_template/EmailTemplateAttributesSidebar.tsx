@@ -17,7 +17,7 @@ const EmailTemplateAttributesSidebar = () => {
   const attributesOfTheUserTitle = t_i18n('Attributes of the user');
   const attributesOfThePlatformTitle = t_i18n('Attributes of the platform');
   const userAttributes = [
-    { variableName: '&lt;%= user.firstname %&gt;', label: 'First name' },
+    { variableName: 'user.firstname', label: 'First name' },
     { variableName: 'user.lastname', label: 'Last name' },
     { variableName: 'user.name', label: 'Name' },
     { variableName: 'user.user_email', label: 'Email' },
