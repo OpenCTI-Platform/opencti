@@ -47,8 +47,8 @@ export function refang(input) {
     // [:/] should map to /
     // eslint-disable-next-line no-useless-escape
     .replace(/\[:\/\]/g, '/')
-    // Remove literal ellipsis character
-    .replace(/\u2026/g, '')
+    // // Remove literal ellipsis character
+    // .replace(/\u2026/g, '')
     // Remove common placeholder endings (e.g., trailing [.] or ...)
     // eslint-disable-next-line no-useless-escape
     .replace(/(\[\.\]|\.{2,}|…)+$/g, '');
