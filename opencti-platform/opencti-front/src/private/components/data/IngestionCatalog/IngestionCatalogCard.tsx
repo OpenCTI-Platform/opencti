@@ -4,23 +4,10 @@ import CardHeader from '@mui/material/CardHeader';
 import CardContent from '@mui/material/CardContent';
 import { CardActions, Grid, Tooltip } from '@mui/material';
 import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
 import { VerifiedOutlined } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { truncate } from '../../../../utils/String';
+import IngestionCatalogUseCaseChip from '@components/data/IngestionCatalog/IngestionCatalogUseCaseChip';
 import { useFormatter } from '../../../../components/i18n';
-
-const styles = {
-  description: {
-    marginTop: 5,
-    height: 170,
-    display: '-webkit-box',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    '-webkit-line-clamp': 3,
-    '-webkit-box-orient': 'vertical',
-  },
-};
 
 interface IngestionCatalogCardProps {
   node: string;
@@ -35,54 +22,30 @@ const IngestionCatalogCard = ({ node }: IngestionCatalogCardProps) => {
   const renderUseCases = () => {
     return (
       <Tooltip
+        style={{ display: 'flex', width: 200 }}
         title={(
           <Grid container={true} spacing={3}>
-            {connector.use_cases.map((useCase: string) => (
-              <Grid key={useCase} item xs={6}>
-                <Chip
-                  key={useCase}
-                  variant="outlined"
-                  size="small"
-                  style={{
-                    margin: '7px 7px 7px 0',
-                    borderRadius: 4,
-                  }}
-                  label={useCase}
-                />
-              </Grid>
-            ))}
+            {connector.use_cases.map((useCase: string) => <Grid key={useCase} item xs={6}><IngestionCatalogUseCaseChip useCase={useCase} /></Grid>)}
           </Grid>
         )}
-        style={{ display: 'flex' }}
       >
-        {connector.use_cases.map((useCase: string) => (
-          <Chip
-            key={useCase}
-            variant="outlined"
-            size="small"
-            style={{
-              margin: '7px 7px 7px 0',
-              borderRadius: 4,
-            }}
-            label={truncate(useCase, 25)}
-          />
-        ))}
+        {connector.use_cases.map((useCase: string) => <IngestionCatalogUseCaseChip key={useCase} useCase={useCase} />)}
       </Tooltip>
     );
   };
 
   return (
     <Card
+      variant="outlined"
       style={{
-        width: '100%',
         height: 330,
         borderRadius: 4,
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
       }}
-      variant="outlined"
     >
+
       <CardHeader
         style={{
           height: 100,
@@ -90,38 +53,21 @@ const IngestionCatalogCard = ({ node }: IngestionCatalogCardProps) => {
           marginBottom: 0,
           alignItems: 'start',
         }}
-        avatar={
-          <img
-            style={{ height: 37, maxWidth: 100, borderRadius: 4 }}
-            src={connector.logo}
-            alt={connector.title}
-          />
-        }
-        title={
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-            <div style={{ fontSize: 20, fontWeight: 600 }}>{connector.title}</div>
-            <VerifiedOutlined color={'success'} />
-          </div>
-        }
+        avatar={<img style={{ height: 37, maxWidth: 100, borderRadius: 4 }} src={connector.logo} alt={connector.title} />}
+        title={<div style={{ width: '100%', fontSize: 20, fontWeight: 600 }}>{connector.title}</div>}
         subheader={renderUseCases()}
+        action={<VerifiedOutlined color={'success'} />}
       />
-      <CardContent style={{
-        width: '100%',
-        height: '100%',
-        paddingTop: 0,
-      }}
-      >
-        <div style={styles.description}>
-          {connector.short_description}
-        </div>
+
+      <CardContent style={{ paddingTop: 0 }}>
+        <div style={{ height: 170, overflow: 'hidden', textOverflow: 'ellipsis' }}>{connector.short_description}</div>
       </CardContent>
-      <CardActions style={{
-        alignSelf: 'end',
-      }}
-      >
-        <Button variant={'contained'} size={'small'} onClick={() => navigate(link)}>{t_i18n('Details')}</Button>
-        <Button variant={'contained'} size={'small'} disabled>{t_i18n('Deploy')}</Button>
+
+      <CardActions style={{ alignSelf: 'end' }}>
+        <Button variant="contained" size="small" onClick={() => navigate(link)}>{t_i18n('Details')}</Button>
+        <Button variant="contained" size="small" disabled>{t_i18n('Deploy')}</Button>
       </CardActions>
+
     </Card>
   );
 };
