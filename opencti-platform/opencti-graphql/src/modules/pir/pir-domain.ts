@@ -10,7 +10,7 @@ import { BUS_TOPICS, logApp } from '../../config/conf';
 import { deleteInternalObject } from '../../domain/internalObject';
 import { registerConnectorForPir, unregisterConnectorForIngestion } from '../../domain/connector';
 import type { BasicStoreCommon, BasicStoreObject } from '../../types/store';
-import { RELATION_IN_PIR } from '../../schema/stixRefRelationship';
+import { RELATION_IN_PIR, RELATION_OBJECT } from '../../schema/stixRefRelationship';
 import { createPirRel, serializePir, updatePirExplanations } from './pir-utils';
 import { FunctionalError } from '../../config/errors';
 import { ABSTRACT_STIX_REF_RELATIONSHIP, ENTITY_TYPE_CONTAINER } from '../../schema/general';
@@ -58,7 +58,7 @@ export const findPirContainers = async (
       {
         key: [INSTANCE_DYNAMIC_REGARDING_OF],
         values: [
-          { key: 'relationship_type', values: ['object'] },
+          { key: 'relationship_type', values: [RELATION_OBJECT] },
           { key: 'dynamic', values: [flaggedEntitiesFilter] },
         ],
       }
