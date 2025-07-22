@@ -13,7 +13,6 @@ import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import Loader, { LoaderVariant } from '../../../components/Loader';
 import { groupsQuery } from '../common/form/GroupField';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
@@ -173,7 +172,6 @@ const Users = () => {
     defaultGroupsQueryRef,
     isAdminOrganization,
     isEnterpriseEdition,
-    queryPaginationOptions,
     organization,
   ]);
 
