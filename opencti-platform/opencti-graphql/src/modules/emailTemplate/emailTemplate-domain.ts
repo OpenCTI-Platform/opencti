@@ -25,6 +25,7 @@ import { updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
+import { addEmailTemplateCreatedCount } from '../../manager/telemetryManager';
 
 export const findById = async (context: AuthContext, user: AuthUser, id: string) => {
   await checkEnterpriseEdition(context);
@@ -49,6 +50,7 @@ export const addEmailTemplate = async (context: AuthContext, user: AuthUser, inp
     sender_email: input.sender_email,
     template_body: input.template_body,
   };
+  await addEmailTemplateCreatedCount();
   return createInternalObject<StoreEntityEmailTemplate>(context, user, emailTemplateToCreate, ENTITY_TYPE_EMAIL_TEMPLATE);
 };
 
