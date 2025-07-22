@@ -79,6 +79,7 @@ import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWork
 import { sendMail } from '../database/smtp';
 import { checkEnterpriseEdition } from '../enterprise-edition/ee';
 import { addEmailSendCount } from '../manager/telemetryManager';
+import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -560,16 +561,11 @@ export const sendEmailToUser = async (context, user, input) => {
     throw UnsupportedError('Target user not found', { id: input.target_user_id });
   }
   const emailTemplate = await internalLoadById(context, user, input.email_template_id);
-  // if (!emailTemplate || emailTemplate.entity_type !== ENTITY_TYPE_EMAIL_TEMPLATE) {
-  //   throw UnsupportedError('Invalid email template', { id: opts.email_template_id });
-  // }
-  const templateBody = emailTemplate?.body || `
-    <p>Hello <%= user.user_email %>,</p>
-    <p>This is a default test email sent from the system.</p>
-    <p>Regards,<br/><%= settings.platform_title %></p>
-  `;
+  if (!emailTemplate || emailTemplate.entity_type !== ENTITY_TYPE_EMAIL_TEMPLATE) {
+    throw UnsupportedError('Invalid email template', { id: input.email_template_id });
+  }
 
-  const emailHtml = ejs.render(templateBody, {
+  const renderedHtml = ejs.render(emailTemplate.template_body, {
     settings,
     user: targetUser,
   });
@@ -578,7 +574,7 @@ export const sendEmailToUser = async (context, user, input) => {
     from: `${settings.platform_title} <${settings.platform_email}>`,
     to: targetUser.user_email,
     subject: input.email_object,
-    html: emailHtml,
+    html: renderedHtml,
   };
 
   await sendMail(sendMailArgs, {
