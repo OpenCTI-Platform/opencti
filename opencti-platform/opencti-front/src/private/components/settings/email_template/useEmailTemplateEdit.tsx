@@ -7,9 +7,9 @@ const emailTemplateEditMutation = graphql`
     mutation useEmailTemplateEditMutation($id: ID!, $input: [EditInput!]!) {
         emailTemplateFieldPatch(id: $id, input: $input) {
             id
-            name
-            description
+            entity_type
             ...EmailTemplateTabs_template
+            ...EmailTemplateHeader_template
         }
     }
 `;

@@ -9,9 +9,12 @@ import DialogContent from '@mui/material/DialogContent';
 import { Form, Formik } from 'formik';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
+import CreatorField from '@components/common/form/CreatorField';
+import { FormikConfig } from 'formik/dist/types';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { handleError } from '../../../../relay/environment';
+import { handleError, MESSAGING$ } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const emailTemplateTestSendMutation = graphql`
     mutation EmailTemplateTestSendMutation($id: ID!, $userId: ID!) {
@@ -19,6 +22,9 @@ const emailTemplateTestSendMutation = graphql`
     }
 `;
 
+interface EmailTemplateTestSendFormInputs {
+  user_id: { label: string; value: string }
+}
 interface EmailTemplateTestSendProps {
   templateId: string;
 }
@@ -28,17 +34,20 @@ const EmailTemplateTestSend = ({ templateId }: EmailTemplateTestSendProps) => {
   const [commitSendTestEmailMutation] = useApiMutation(emailTemplateTestSendMutation);
   const [isEmailAddressSelectionShown, setIsEmailAddressSelectionShown] = useState(false);
 
-  const submitSendEmail = () => {
+  const submitSendEmail: FormikConfig<EmailTemplateTestSendFormInputs>['onSubmit'] = (values, { setSubmitting }) => {
     commitSendTestEmailMutation({
       variables: {
         id: templateId,
-        userId: '',
+        userId: values.user_id.value,
       },
       onCompleted: () => {
+        MESSAGING$.notifySuccess(t_i18n('Email sent to user'));
+        setSubmitting(false);
         setIsEmailAddressSelectionShown(false);
       },
       onError: (error: Error) => {
         handleError(error);
+        setSubmitting(false);
         setIsEmailAddressSelectionShown(false);
       },
     });
@@ -60,7 +69,7 @@ const EmailTemplateTestSend = ({ templateId }: EmailTemplateTestSendProps) => {
         onSubmit={submitSendEmail}
         onReset={() => setIsEmailAddressSelectionShown(false)}
       >
-        {({ submitForm, handleReset, isSubmitting }) => (
+        {({ setFieldValue, submitForm, handleReset, isSubmitting }) => (
           <Dialog
             slotProps={{ paper: { elevation: 1 } }}
             open={isEmailAddressSelectionShown}
@@ -70,6 +79,12 @@ const EmailTemplateTestSend = ({ templateId }: EmailTemplateTestSendProps) => {
             <DialogTitle>{t_i18n('Send a test email to selected user')}</DialogTitle>
             <DialogContent style={{ overflowY: 'hidden' }}>
               <Form>
+                <CreatorField
+                  name="user_id"
+                  label={t_i18n('User to send test email to')}
+                  containerStyle={fieldSpacingContainerStyle}
+                  onChange={setFieldValue}
+                />
               </Form>
             </DialogContent>
             <DialogActions>

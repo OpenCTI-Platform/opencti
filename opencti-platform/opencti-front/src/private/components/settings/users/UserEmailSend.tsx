@@ -12,7 +12,7 @@ import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import EmailTemplateField, { EmailTemplateFieldOption } from '@components/common/form/EmailTemplateField';
 import { FormikConfig } from 'formik/dist/types';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { handleError } from '../../../../relay/environment';
+import { handleError, MESSAGING$ } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 
 const userEmailSendMutation = graphql`
@@ -43,6 +43,7 @@ const UserEmailSend = ({ userId }: UserEmailSendProps) => {
         input,
       },
       onCompleted: () => {
+        MESSAGING$.notifySuccess(t_i18n('Email sent to user'));
         setIsEmailTemplateSelectionShown(false);
         setSubmitting(false);
       },
