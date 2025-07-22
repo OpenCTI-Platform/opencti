@@ -210,10 +210,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
               name="token"
               label={t_i18n('token')}
               disabled={true}
-              placeholder={values.token === undefined ? '••••' : undefined}
-              InputLabelProps={{
-                shrink: values.token === undefined ? true : undefined,
-              }}
+              isSecret
             />
             <Field
               component={TextField}
