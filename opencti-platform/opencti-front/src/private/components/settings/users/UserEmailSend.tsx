@@ -36,7 +36,6 @@ const UserEmailSend = ({ userId }: UserEmailSendProps) => {
     const input = {
       target_user_id: userId,
       email_template_id: values.emailTemplate.value.id,
-      email_object: '',
     };
     commitSendEmailMutation({
       variables: {
