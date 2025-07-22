@@ -1,6 +1,6 @@
 import ejs from 'ejs';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
-import conf, { booleanConf, getBaseUrl, logApp } from '../config/conf';
+import conf, { booleanConf, getBaseUrl, isFeatureEnabled, logApp } from '../config/conf';
 import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { createStreamProcessor, NOTIFICATION_STREAM_NAME, type StreamProcessor } from '../database/redis';
@@ -45,6 +45,8 @@ const PUBLISHER_ENGINE_KEY = conf.get('publisher_manager:lock_key');
 const PUBLISHER_ENABLE_BUFFERING = conf.get('publisher_manager:enable_buffering');
 const PUBLISHER_BUFFERING_SECONDS = conf.get('publisher_manager:buffering_seconds');
 const STREAM_SCHEDULE_TIME = 10000;
+
+const serviceAccountFeatureFlag = isFeatureEnabled('SERVICE_ACCOUNT');
 
 export async function processNotificationData(
   context: AuthContext,
@@ -246,6 +248,9 @@ export const internalProcessNotification = async (
   // eslint-disable-next-line consistent-return
 ): Promise<{ error: string } | void> => {
   try {
+    if (notificationUser.user_service_account && serviceAccountFeatureFlag) {
+      return { error: 'Cannot send notification to service account user' };
+    }
     const notificationName = triggerList.map((trigger) => trigger?.name).join(';');
     const notificationType = triggerList.length > 1 ? 'buffer' : triggerList[0].trigger_type;
     const triggerIds = triggerList.map((trigger) => trigger?.id).filter((id) => id);
