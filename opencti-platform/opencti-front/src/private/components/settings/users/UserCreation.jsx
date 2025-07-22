@@ -8,7 +8,7 @@ import Alert from '@mui/material/Alert';
 import MenuItem from '@mui/material/MenuItem';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
-import MailTemplateField from '../../common/form/MailTemplateField';
+import EmailTemplateField from '../../common/form/EmailTemplateField';
 import GroupField, { groupsQuery } from '../../common/form/GroupField';
 import UserConfidenceLevelField from './edition/UserConfidenceLevelField';
 import Drawer from '../../common/drawer/Drawer';
@@ -255,7 +255,7 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                     label={t_i18n('Max Confidence Level')}
                   />
                 )}
-                <MailTemplateField
+                <EmailTemplateField
                   style={{ marginTop: 20 }}
                   name="emailTemplate"
                   label={'Email template'}
