@@ -217,7 +217,7 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
         query={WorkspaceEditionQuery}
         variables={{ id }}
         render={({ props: editionProps }) => {
-          if (!editionProps) {
+          if (!editionProps?.workspace) {
             return <div />;
           }
           return (
