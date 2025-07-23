@@ -24,6 +24,7 @@ const EmailTemplateAttributesSidebar = () => {
     { variableName: 'user.api_token', label: 'API token' },
     { variableName: 'user.account_status', label: 'Status' },
     { variableName: 'user.objectOrganization', label: 'Organizations' },
+    { variableName: 'user.account_lock_after_date', label: 'Expire Date' },
   ];
   const platformAttributes = [
     { variableName: 'settings.platform_url', label: 'Platform URL' },

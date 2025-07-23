@@ -582,7 +582,8 @@ export const sendEmailToUser = async (context, user, input) => {
     .replace(/\$user\.user_email/g, '<%= user.user_email %>')
     .replace(/\$user\.api_token/g, '<%= user.api_token %>')
     .replace(/\$user\.account_status/g, '<%= user.account_status %>')
-    .replace(/\$user\.objectOrganization/g, '<%= organizationName %>');
+    .replace(/\$user\.objectOrganization/g, '<%= organizationName %>')
+    .replace(/\$user\.account_lock_after_date/g, '<%= user.account_lock_after_date %>');
 
   const renderedHtml = ejs.render(preprocessedTemplate, {
     settings,
