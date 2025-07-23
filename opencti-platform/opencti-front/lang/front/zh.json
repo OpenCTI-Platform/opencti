@@ -3095,6 +3095,7 @@
   "Separator": "分隔器",
   "Series attribute": "系列属性",
   "Server capacity": "服务器容量",
+  "Server ingestion is not accepting new work, waiting for current messages in ingestion to be processed until message count go back under threshold": "服务器摄取不接受新工作，等待处理摄取中的当前信息，直到信息数量回到阈值以下",
   "Server ingestion is paused until the size of messages is reduced under max capacity": "服务器摄取暂停，直到信息大小减少到最大容量以下",
   "Session timeout in": "会话超时时间为",
   "Sessions": "会话",

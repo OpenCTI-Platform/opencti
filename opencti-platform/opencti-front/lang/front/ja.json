@@ -3095,6 +3095,7 @@
   "Separator": "セパレータ",
   "Series attribute": "シリーズ属性",
   "Server capacity": "サーバー容量",
+  "Server ingestion is not accepting new work, waiting for current messages in ingestion to be processed until message count go back under threshold": "サーバーのインジェストが新しい仕事を受け付けず、メッセージ数がしきい値以下に戻るまで、インジェスト内の現在のメッセージが処理されるのを待っている。",
   "Server ingestion is paused until the size of messages is reduced under max capacity": "サーバへの取り込みは、メッセージのサイズが最大容量以下になるまで一時停止されます。",
   "Session timeout in": "セッションタイムアウト",
   "Sessions": "セッション",
