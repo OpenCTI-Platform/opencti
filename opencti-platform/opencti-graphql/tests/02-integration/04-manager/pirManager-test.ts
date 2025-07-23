@@ -1,6 +1,6 @@
 import { beforeAll, describe, it, vi, expect } from 'vitest';
 import type { ParsedPir } from '../../../src/modules/pir/pir-types';
-import { FilterMode, FilterOperator } from '../../../src/generated/graphql';
+import { FilterMode, FilterOperator, PirType } from '../../../src/generated/graphql';
 import * as StixFiltering from '../../../src/utils/filtering/filtering-stix/stix-filtering';
 import { isStixMatchFilterGroup_MockableForUnitTests } from '../../../src/utils/filtering/filtering-stix/stix-filtering';
 import { checkEventOnPir } from '../../../src/manager/pirManager';
@@ -46,7 +46,7 @@ const TEST_PIR = {
   id: '0b900f85-4b19-4a3e-8092-719dc91d1148',
   internal_id: '0b900f85-4b19-4a3e-8092-719dc91d1148',
   name: 'TEST PIR',
-  pir_type: 'THREAT_LANDSCAPE',
+  pir_type: PirType.ThreatLandscape,
   description: 'Super PIR',
   pir_rescan_days: 30,
   lastEventId: '1747916825083-0',
