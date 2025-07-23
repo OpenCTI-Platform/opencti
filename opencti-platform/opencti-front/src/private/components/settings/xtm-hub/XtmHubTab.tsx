@@ -10,7 +10,6 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useExternalTab from './useExternalTab';
 import ProcessInstructions from './ProcessInstructions';
 import ProcessLoader from './ProcessLoader';
-import ProcessSuccess from './ProcessSuccess';
 import ProcessDialog from './ProcessDialog';
 import { ProcessSteps, OperationType } from './processSteps';
 
@@ -47,7 +46,23 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ enrollmentStatus }) => {
   const [operationType, setOperationType] = useState<OperationType | null>(
     null,
   );
-  const [commit] = useApiMutation(xtmHubTabSettingsFieldPatchMutation);
+  const [commitEnrollment] = useApiMutation(
+    xtmHubTabSettingsFieldPatchMutation,
+    undefined,
+    {
+      successMessage: t_i18n('Your OpenCTI platform is successfully enrolled'),
+    },
+  );
+
+  const [commitUnenrollment] = useApiMutation(
+    xtmHubTabSettingsFieldPatchMutation,
+    undefined,
+    {
+      successMessage: t_i18n(
+        'Your OpenCTI platform is successfully unenrolled',
+      ),
+    },
+  );
 
   const isEnrolled = enrollmentStatus === 'enrolled';
 
@@ -64,6 +79,53 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ enrollmentStatus }) => {
   const enrollmentUrl = `${enrollmentHubUrl}/redirect/enroll-octi?${queryParamsOCTIInformations}`;
   const unenrollmentUrl = `${enrollmentHubUrl}/unenroll/octi?platform_id=${settings?.id ?? ''}`;
 
+  const handleClosingTab = () => {
+    setProcessStep(ProcessSteps.CANCELED);
+  };
+
+  const handleEnrollment = (token: string) => {
+    commitEnrollment({
+      variables: {
+        id: settings?.id ?? '',
+        input: [
+          { key: 'xtm_hub_token', value: token },
+          { key: 'xtm_hub_enrollment_status', value: 'enrolled' },
+        ],
+      },
+      onCompleted: () => {
+        setIsDialogOpen(false);
+        setShowConfirmation(false);
+        setProcessStep(ProcessSteps.INSTRUCTIONS);
+        setOperationType(null);
+      },
+      onError: () => {
+        setProcessStep(ProcessSteps.ERROR);
+      },
+    });
+  };
+
+  const handleUnenrollment = () => {
+    commitUnenrollment({
+      variables: {
+        id: settings?.id ?? '',
+        input: [
+          { key: 'xtm_hub_token', value: '' },
+          { key: 'xtm_hub_enrollment_date', value: '' },
+          { key: 'xtm_hub_enrollment_status', value: 'unenrolled' },
+        ],
+      },
+      onCompleted: () => {
+        setIsDialogOpen(false);
+        setShowConfirmation(false);
+        setProcessStep(ProcessSteps.INSTRUCTIONS);
+        setOperationType(null);
+      },
+      onError: () => {
+        setProcessStep(ProcessSteps.ERROR);
+      },
+    });
+  };
+
   const handleTabMessage = useCallback(
     (event: MessageEvent) => {
       const eventData = event.data;
@@ -71,51 +133,18 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ enrollmentStatus }) => {
 
       if (action === 'enroll') {
         setOperationType(OperationType.ENROLL);
-        commit({
-          variables: {
-            id: settings?.id ?? '',
-            input: [
-              { key: 'xtm_hub_token', value: token },
-              { key: 'xtm_hub_enrollment_status', value: 'enrolled' },
-            ],
-          },
-          onCompleted: () => {
-            setProcessStep(ProcessSteps.SUCCESS);
-          },
-          onError: () => {
-            setProcessStep(ProcessSteps.ERROR);
-          },
-        });
+        handleEnrollment(token);
       } else if (action === 'unenroll') {
         setOperationType(OperationType.UNENROLL);
-        commit({
-          variables: {
-            id: settings?.id ?? '',
-            input: [
-              { key: 'xtm_hub_token', value: '' },
-              { key: 'xtm_hub_enrollment_date', value: '' },
-              { key: 'xtm_hub_enrollment_status', value: 'unenrolled' },
-            ],
-          },
-          onCompleted: () => {
-            setProcessStep(ProcessSteps.SUCCESS);
-          },
-          onError: () => {
-            setProcessStep(ProcessSteps.ERROR);
-          },
-        });
+        handleUnenrollment();
       } else if (action === 'cancel') {
         setProcessStep(ProcessSteps.CANCELED);
       } else {
         setProcessStep(ProcessSteps.ERROR);
       }
     },
-    [commit, settings?.id],
+    [commitEnrollment, commitUnenrollment, settings?.id],
   );
-
-  const handleClosingTab = () => {
-    setProcessStep(ProcessSteps.CANCELED);
-  };
 
   const { openTab, closeTab, focusTab } = useExternalTab({
     url: isEnrolled ? unenrollmentUrl : enrollmentUrl,
@@ -162,13 +191,8 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ enrollmentStatus }) => {
     return {
       dialogTitle: t_i18n(
         isUnenroll
-          ? 'Waiting for unenrolling your OCTI...'
-          : 'Waiting for enrolling your OCTI...',
-      ),
-      successMessage: t_i18n(
-        isUnenroll
-          ? 'Your OpenCTI platform is successfully unenrolled'
-          : 'Your OpenCTI platform is successfully enrolled',
+          ? 'Unenrolling your platform...'
+          : 'Enrolling your platform...',
       ),
       errorMessage: t_i18n('Sorry, we have an issue, please retry'),
       canceledMessage: t_i18n(
@@ -216,15 +240,6 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ enrollmentStatus }) => {
           <ProcessLoader
             onFocusTab={focusTab}
             buttonText={config.loaderButtonText}
-          />
-        ),
-      ],
-      [
-        ProcessSteps.SUCCESS,
-        () => (
-          <ProcessSuccess
-            message={config.successMessage}
-            onClose={handleCloseDialog}
           />
         ),
       ],

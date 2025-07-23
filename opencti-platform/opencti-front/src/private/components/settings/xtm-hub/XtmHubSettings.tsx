@@ -70,12 +70,12 @@ const XtmHubSettings = () => {
               />
             </Box>
             <Box sx={{ color: '#FFFFFFCC' }}>
-              {t_i18n("By registering your OCTI instance, you'll be able to:")}
+              {t_i18n(
+                "By registering your OpenCTI instance, you'll be able to:",
+              )}
               <List sx={{ listStyleType: 'disc', marginLeft: 4 }}>
                 <li>
-                  {t_i18n(
-                    'deploy in one-click Threats intelligence ressources',
-                  )}
+                  {t_i18n('deploy in one-click Threats intelligence resources')}
                 </li>
                 <li>{t_i18n('see metrics on your instance')}</li>
               </List>

@@ -45,7 +45,6 @@ const ProcessDialog: FunctionComponent<ProcessDialogProps> = ({
           p: 0,
           position: 'relative',
           padding: '0 16px 16px 16px',
-          height: '200px',
           border: 'none',
         }}
       >
