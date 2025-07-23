@@ -64,20 +64,19 @@ const EmailTemplateHeader = ({ data }: EmailTemplateHeaderProps) => {
           {template.name}
         </Typography>
         <EmailTemplateTestSend templateId={template.id} />
-        <Button
-          variant="outlined"
-          onClick={onSubmit}
-          disabled={editorValue === template.template_body || editOnGoing}
-        >
-          {t_i18n('Save template')}
-        </Button>
-
         <EmailTemplatePopover
           onUpdate={() => setFormOpen(true)}
           templateId={template.id}
           inline={false}
           onDeleteComplete={() => navigate(emailTemplateLink)}
         />
+        <Button
+          variant="contained"
+          onClick={onSubmit}
+          disabled={editorValue === template.template_body || editOnGoing}
+        >
+          {t_i18n('Save template')}
+        </Button>
       </div>
 
       <EmailTemplateFormDrawer
