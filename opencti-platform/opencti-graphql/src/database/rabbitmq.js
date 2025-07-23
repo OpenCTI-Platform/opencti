@@ -271,6 +271,26 @@ export const initializeInternalQueues = async () => {
   // endregion
 };
 
+export const getInternalPlaybookQueues = async (context, user) => {
+  const playbookQueues = [];
+  const playbooks = await listAllEntities(context, user, [ENTITY_TYPE_PLAYBOOK]);
+  for (let index = 0; index < playbooks.length; index += 1) {
+    const playbook = playbooks[index];
+    playbookQueues.push({ id: playbook.internal_id, name: `[PLAYBOOK] ${playbook.name}`, type: 'internal', scope: ENTITY_TYPE_PLAYBOOK });
+  }
+  return playbookQueues;
+};
+
+export const getInternalSyncQueues = async (context, user) => {
+  const syncQueues = [];
+  const syncs = await listAllEntities(context, user, [ENTITY_TYPE_SYNC]);
+  for (let index = 0; index < syncs.length; index += 1) {
+    const sync = syncs[index];
+    syncQueues.push({ id: sync.internal_id, name: `[SYNC] ${sync.name}`, type: 'internal', scope: ENTITY_TYPE_SYNC });
+  }
+  return syncQueues;
+};
+
 // This method reinitialize the expected queues in rabbitmq
 // Thanks to this approach if rabbitmq is destroyed, restarting the platform
 // will recreate everything needed by the queuing system.
@@ -283,16 +303,16 @@ export const enforceQueuesConsistency = async (context, user) => {
     await registerConnectorQueues(connector.internal_id, connector.name, connector.connector_type, scopes);
   }
   // List all current platform playbooks and ensure queues are correctly setup
-  const playbooks = await listAllEntities(context, user, [ENTITY_TYPE_PLAYBOOK]);
-  for (let index = 0; index < playbooks.length; index += 1) {
-    const playbook = playbooks[index];
-    await registerConnectorQueues(playbook.internal_id, `Playbook ${playbook.internal_id} queue`, 'internal', ENTITY_TYPE_PLAYBOOK);
+  const playbooksQueues = await getInternalPlaybookQueues(context, user);
+  for (let index = 0; index < playbooksQueues.length; index += 1) {
+    const playbookQueue = playbooksQueues[index];
+    await registerConnectorQueues(playbookQueue.id, playbookQueue.name, playbookQueue.type, playbookQueue.scope);
   }
   // List all current platform synchronizers (OpenCTI Streams) and ensure queues are correctly setup
-  const syncs = await listAllEntities(context, user, [ENTITY_TYPE_SYNC]);
-  for (let i = 0; i < syncs.length; i += 1) {
-    const sync = syncs[i];
-    await registerConnectorQueues(sync.internal_id, `Sync ${sync.internal_id} queue`, 'internal', ENTITY_TYPE_SYNC);
+  const syncQueues = await getInternalSyncQueues(context, user);
+  for (let i = 0; i < syncQueues.length; i += 1) {
+    const syncQueue = syncQueues[i];
+    await registerConnectorQueues(syncQueue.id, syncQueue.name, syncQueue.type, syncQueue.scope);
   }
 };
 
