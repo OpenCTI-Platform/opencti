@@ -39,6 +39,7 @@ const RootWorkspaces = lazy(() => import('./components/workspaces/Root'));
 const RootSettings = lazy(() => import('./components/settings/Root'));
 const RootAudit = lazy(() => import('./components/settings/activity/audit/Root'));
 const RootPir = lazy(() => import('./components/pir/Root'));
+const RootXTMHub = lazy(() => import('./components/xtm-hub/Root'));
 
 interface IndexProps {
   settings: RootSettings$data
@@ -127,6 +128,7 @@ const Index = ({ settings }: IndexProps) => {
               <Route path="/audits/*" element={boundaryWrapper(RootAudit)}/>
               <Route path="/profile/*" element={boundaryWrapper(RootProfile)}/>
               <Route path="/observations/*" element={boundaryWrapper(RootObservations)}/>
+              <Route path="/xtm-hub/*" element={boundaryWrapper(RootXTMHub)}/>
               <Route path="/*" element={<NoMatch/>}/>
             </Routes>
           </Suspense>
