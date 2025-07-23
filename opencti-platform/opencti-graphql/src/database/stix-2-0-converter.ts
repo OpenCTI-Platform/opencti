@@ -1,6 +1,5 @@
 import type { StoreEntity, StoreFileWithRefs, StoreObject, StoreRelation } from '../types/store';
 import type * as S from '../types/stix-2-0-common';
-import type * as S2 from '../types/stix-2-0-common';
 import type * as SDO from '../types/stix-2-0-sdo';
 import type * as SMO from '../types/stix-2-0-smo';
 import { INPUT_CREATED_BY, INPUT_EXTERNAL_REFS, INPUT_GRANTED_REFS, INPUT_KILLCHAIN, INPUT_LABELS, INPUT_MARKINGS } from '../schema/general';
@@ -35,9 +34,9 @@ const CUSTOM_ENTITY_TYPES = [
   ENTITY_TYPE_CONTAINER_CASE_RFT
 ];
 
-export const buildStixId = (instanceType: string, standard_id: S2.StixId): S2.StixId => {
+export const buildStixId = (instanceType: string, standard_id: S.StixId): S.StixId => {
   const isCustomContainer = CUSTOM_ENTITY_TYPES.includes(instanceType);
-  return isCustomContainer ? `x-opencti-${standard_id}` : standard_id as S2.StixId;
+  return isCustomContainer ? `x-opencti-${standard_id}` : standard_id as S.StixId;
 };
 
 export const convertTypeToStix2Type = (type: string): string => {
