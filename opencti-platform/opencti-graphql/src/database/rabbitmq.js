@@ -248,17 +248,28 @@ export const registerConnectorQueues = async (id, name, type, scope) => {
   });
   return connectorConfig(id);
 };
+const CONNECTOR_QUEUE_PLAYBOOK = { id: 'playbook', name: '[PLAYBOOK] Internal playbook manager', type: 'internal', scope: 'playbook' };
+const CONNECTOR_QUEUE_SYNC = { id: 'sync', name: '[SYNC] Internal sync manager', type: 'internal', scope: 'sync' };
+export const getInternalQueues = () => {
+  const backgroundTaskConnectorQueues = [];
+  for (let i = 0; i < BACKGROUND_TASK_QUEUES; i += 1) {
+    backgroundTaskConnectorQueues.push(
+      { id: `background-task-${i}`, name: `[TASK] Internal task processing #${i}`, type: 'internal', scope: ENTITY_TYPE_BACKGROUND_TASK }
+    );
+  }
+  return [CONNECTOR_QUEUE_PLAYBOOK, CONNECTOR_QUEUE_SYNC, ...backgroundTaskConnectorQueues];
+};
 
 export const initializeInternalQueues = async () => {
   // region deprecated fixed queues
   /** @deprecated [>=6.3 & <6.6]. Remove and add migration to remove the queues. */
   await registerConnectorQueues('playbook', 'Internal playbook manager', 'internal', 'playbook');
-  await registerConnectorQueues('sync', 'Internal sync manager', 'internal', 'sync');
-  // endregion
-  // Background task queues
-  for (let i = 0; i < BACKGROUND_TASK_QUEUES; i += 1) {
-    await registerConnectorQueues(`background-task-${i}`, `Background ${i} queue`, 'internal', ENTITY_TYPE_BACKGROUND_TASK);
+  const internalQueues = getInternalQueues();
+  for (let i = 0; i < internalQueues.length; i += 1) {
+    const internalQueue = internalQueues[i];
+    await registerConnectorQueues(internalQueue.id, internalQueue.name, internalQueue.type, internalQueue.scope);
   }
+  // endregion
 };
 
 // This method reinitialize the expected queues in rabbitmq
