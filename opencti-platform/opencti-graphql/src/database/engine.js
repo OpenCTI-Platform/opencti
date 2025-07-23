@@ -2936,7 +2936,8 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         }
         const types = type?.values;
         if (isEmptyField(ids)) {
-          const keys = isEmptyField(types) ? buildRefRelationKey('*', '*')
+          const keys = isEmptyField(types)
+            ? buildRefRelationKey('*', '*')
             : types.map((t) => buildRefRelationKey(t, '*'));
           keys.forEach((relKey) => {
             regardingFilters.push({ key: [relKey], operator, values: ['EXISTS'] });
@@ -2947,7 +2948,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
           regardingFilters.push({ key: keys, operator, values: ids });
         }
         finalFilterGroups.push({
-          mode: filter.mode,
+          mode: filter.mode ?? FilterMode.Or,
           filters: regardingFilters,
           filterGroups: []
         });
