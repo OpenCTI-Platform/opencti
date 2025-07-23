@@ -1,8 +1,8 @@
-import { buildStixDomain, convertObjectReferences } from '../../database/stix-2-1-converter';
+import { buildStixDomain } from '../../database/stix-2-1-converter';
 import type { StixThreatActorIndividual, StoreEntityThreatActorIndividual } from './threatActorIndividual-types';
 import { INPUT_BORN_IN, INPUT_ETHNICITY, INPUT_OBJECTS } from '../../schema/general';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
-import { cleanObject, convertToStixDate } from '../../database/stix-converter-utils';
+import { cleanObject, convertObjectReferences, convertToStixDate } from '../../database/stix-converter-utils';
 
 const convertThreatActorIndividualToStix = (instance: StoreEntityThreatActorIndividual): StixThreatActorIndividual => {
   const threatActor = buildStixDomain(instance);

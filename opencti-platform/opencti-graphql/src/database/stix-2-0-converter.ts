@@ -1,8 +1,9 @@
 import type { StoreEntity, StoreFileWithRefs, StoreObject, StoreRelation } from '../types/store';
 import type * as S from '../types/stix-2-0-common';
+import type * as S2 from '../types/stix-2-0-common';
 import type * as SDO from '../types/stix-2-0-sdo';
 import type * as SMO from '../types/stix-2-0-smo';
-import { INPUT_CREATED_BY, INPUT_EXTERNAL_REFS, INPUT_GRANTED_REFS, INPUT_KILLCHAIN, INPUT_LABELS, INPUT_MARKINGS, INPUT_OBJECTS } from '../schema/general';
+import { INPUT_CREATED_BY, INPUT_EXTERNAL_REFS, INPUT_GRANTED_REFS, INPUT_KILLCHAIN, INPUT_LABELS, INPUT_MARKINGS } from '../schema/general';
 import { INPUT_OPERATING_SYSTEM, INPUT_SAMPLE } from '../schema/stixRefRelationship';
 import {
   ENTITY_TYPE_CONTAINER_NOTE,
@@ -16,7 +17,7 @@ import {
   isStixDomainObjectLocation,
   isStixDomainObjectThreatActor
 } from '../schema/stixDomainObject';
-import { assertType, cleanObject, convertToStixDate, buildStixId } from './stix-converter-utils';
+import { assertType, cleanObject, convertObjectReferences, convertToStixDate } from './stix-converter-utils';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../schema/stixCyberObservable';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
@@ -24,8 +25,20 @@ import { ENTITY_TYPE_CONTAINER_TASK } from '../modules/task/task-types';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../modules/case/case-incident/case-incident-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../modules/case/case-rft/case-rft-types';
-import { isInferredIndex } from './utils';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedback-types';
+
+const CUSTOM_ENTITY_TYPES = [
+  ENTITY_TYPE_CONTAINER_TASK,
+  ENTITY_TYPE_CONTAINER_FEEDBACK,
+  ENTITY_TYPE_CONTAINER_CASE_INCIDENT,
+  ENTITY_TYPE_CONTAINER_CASE_RFI,
+  ENTITY_TYPE_CONTAINER_CASE_RFT
+];
+
+export const buildStixId = (instanceType: string, standard_id: S2.StixId): S2.StixId => {
+  const isCustomContainer = CUSTOM_ENTITY_TYPES.includes(instanceType);
+  return isCustomContainer ? `x-opencti-${standard_id}` : standard_id as S2.StixId;
+};
 
 export const convertTypeToStix2Type = (type: string): string => {
   if (isStixDomainObjectIdentity(type)) {
@@ -82,16 +95,6 @@ const buildExternalReferences = (instance: StoreObject): Array<SMO.StixInternalE
     };
     return cleanObject(data);
   });
-};
-
-export const convertObjectReferences = (instance: StoreEntity, isInferred = false) => { // TODO mutualize with STIX 2.1 exporter
-  const objectRefs = instance[INPUT_OBJECTS] ?? [];
-  return objectRefs.filter((r) => {
-    // If related relation not available, it's just a creation, so inferred false
-    if (!r.i_relation) return !isInferred;
-    // If related relation is available, select accordingly
-    return isInferredIndex(r.i_relation._index) === isInferred;
-  }).map((m) => m.standard_id);
 };
 
 // Builders

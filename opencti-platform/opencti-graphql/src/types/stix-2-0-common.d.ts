@@ -3,7 +3,6 @@ import type { StixInternalExternalReference } from './stix-2-0-smo';
 
 export type StixDate = string | undefined;
 export type StixId = `${string}--${v4 | v5}`;
-export type CustomId = `x-opencti-${v4 | v5}`;
 
 interface StixFile {
   name: string;
@@ -14,7 +13,7 @@ interface StixFile {
 }
 
 export interface StixObject {
-  id: StixId | CustomId;
+  id: StixId;
   x_opencti_id: string;
   spec_version: string;
   x_opencti_granted_refs?: string[]

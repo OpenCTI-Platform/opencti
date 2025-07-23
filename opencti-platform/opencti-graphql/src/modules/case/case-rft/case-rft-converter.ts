@@ -2,7 +2,7 @@ import { buildStixDomain } from '../../../database/stix-2-1-converter';
 import { STIX_EXT_OCTI } from '../../../types/stix-2-1-extensions';
 import { INPUT_OBJECTS } from '../../../schema/general';
 import { ENTITY_TYPE_CONTAINER_CASE_RFT, type Stix2CaseRft, type StixCaseRft, type StoreEntityCaseRft, type StoreEntityCaseRft2 } from './case-rft-types';
-import { assertType, cleanObject } from '../../../database/stix-converter-utils';
+import { assertType, cleanObject, convertObjectReferences } from '../../../database/stix-converter-utils';
 import { buildStixDomain as buildStixDomain2 } from '../../../database/stix-2-0-converter';
 
 export const convertCaseRftToStix_2_1 = (instance: StoreEntityCaseRft): StixCaseRft => {
@@ -36,6 +36,6 @@ export const convertCaseRftToStix_2_0 = (instance: StoreEntityCaseRft2, type: st
     severity: instance.severity,
     priority: instance.priority,
     takedown_types: instance.takedown_types,
-    object_refs: (instance[INPUT_OBJECTS] ?? []).map((m) => m.standard_id),
+    object_refs: convertObjectReferences(instance),
   };
 };
