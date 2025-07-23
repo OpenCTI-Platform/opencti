@@ -419,10 +419,11 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
               )}
             </>
           )}
-          {displayButtons && (<div style={{ float: 'right', margin: 0 }}>
-            <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
-              {[...viewButtons]}
-              {typeof handleToggleExports === 'function' && (
+          {displayButtons
+            && (<div style={{ float: 'right', margin: 0 }} id="container-view-buttons">
+              <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
+                {[...viewButtons]}
+                {typeof handleToggleExports === 'function' && (
                 <Tooltip
                   key="export"
                   title={
@@ -444,23 +445,23 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
                     />
                   </ToggleButton>
                 </Tooltip>
-              )}
-            </ToggleButtonGroup>
+                )}
+              </ToggleButtonGroup>
 
-            <div
-              style={{
-                float: 'right',
-                margin: '0 0 0 20px',
-              }}
-            >
-              <ExportButtons
-                domElementId="container"
-                name={t_i18n('Attack patterns kill chain')}
-                csvData={csvData}
-                csvFileName={`${t_i18n('Attack pattern courses of action')}.csv`}
-              />
-            </div>
-          </div>)}
+              <div
+                style={{
+                  float: 'right',
+                  margin: '0 0 0 20px',
+                }}
+              >
+                <ExportButtons
+                  domElementId="container"
+                  name={t_i18n('Attack patterns kill chain')}
+                  csvData={csvData}
+                  csvFileName={`${t_i18n('Attack pattern courses of action')}.csv`}
+                />
+              </div>
+            </div>)}
           <div className="clearfix"/>
         </div>
       )}
