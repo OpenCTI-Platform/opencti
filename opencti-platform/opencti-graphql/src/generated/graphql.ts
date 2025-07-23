@@ -19690,7 +19690,6 @@ export type Pir = BasicObject & InternalObject & {
   id: Scalars['ID']['output'];
   lastEventId: Scalars['String']['output'];
   name: Scalars['String']['output'];
-  objectMarking?: Maybe<Array<MarkingDefinition>>;
   parent_types: Array<Scalars['String']['output']>;
   pirContainers?: Maybe<ContainerConnection>;
   pir_criteria: Array<PirCriterion>;
@@ -19714,7 +19713,6 @@ export type PirPirContainersArgs = {
 export type PirAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
-  objectMarking?: InputMaybe<Array<Scalars['String']['input']>>;
   pir_criteria: Array<PirCriterionInput>;
   pir_filters: FilterGroup;
   pir_rescan_days: Scalars['Int']['input'];
@@ -40981,7 +40979,6 @@ export type PirResolvers<ContextType = any, ParentType extends ResolversParentTy
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   lastEventId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pirContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<PirPirContainersArgs>>;
   pir_criteria?: Resolver<Array<ResolversTypes['PirCriterion']>, ParentType, ContextType>;

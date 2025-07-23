@@ -40,7 +40,6 @@ const PirCreationForm = ({ onCancel, onSubmit }: PirCreationFormProps) => {
     pir_type: 'THREAT_LANDSCAPE',
     name: '',
     description: '',
-    markings: [],
     pir_rescan_days: 30,
     confidence: 60,
     locations: [],

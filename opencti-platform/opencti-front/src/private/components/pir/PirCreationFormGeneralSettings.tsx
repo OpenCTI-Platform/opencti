@@ -1,8 +1,6 @@
-import { Field, useFormikContext } from 'formik';
+import { Field } from 'formik';
 import React from 'react';
-import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import MenuItem from '@mui/material/MenuItem';
-import { PirCreationFormData } from '@components/pir/pir-form-utils';
 import MarkdownField from '../../../components/fields/MarkdownField';
 import { useFormatter } from '../../../components/i18n';
 import { fieldSpacingContainerStyle } from '../../../utils/field';
@@ -11,7 +9,6 @@ import SelectField from '../../../components/fields/SelectField';
 
 const PirCreationFormGeneralSettings = () => {
   const { t_i18n } = useFormatter();
-  const { setFieldValue } = useFormikContext<PirCreationFormData>();
 
   return (
     <>
@@ -29,11 +26,6 @@ const PirCreationFormGeneralSettings = () => {
         label={t_i18n('Description')}
         rows="4"
         style={fieldSpacingContainerStyle}
-      />
-      <ObjectMarkingField
-        name="markings"
-        style={fieldSpacingContainerStyle}
-        setFieldValue={setFieldValue}
       />
       <Field
         component={SelectField}
