@@ -315,6 +315,7 @@ const StixSightingRelationshipCreationFromEntity = ({
           inputValue={search}
           paginationOptions={stixDomainObjectsPaginationOptions}
           stixDomainObjectTypes={stixCoreObjectTypes}
+          controlledDialStyles={{ margin: 2 }}
         />
       </div>
     );
