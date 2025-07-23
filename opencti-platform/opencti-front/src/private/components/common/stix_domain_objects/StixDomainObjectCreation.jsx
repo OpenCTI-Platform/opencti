@@ -805,7 +805,7 @@ const StixDomainObjectCreation = ({
   open,
   speeddial,
   controlledDialStyles = {},
-  controlledDialSize,
+  controlledDialSize = undefined,
   handleClose,
   paginationKey,
   paginationOptions,
