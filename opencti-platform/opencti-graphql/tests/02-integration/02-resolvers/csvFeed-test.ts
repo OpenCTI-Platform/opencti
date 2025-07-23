@@ -73,6 +73,47 @@ describe('CSV Feed resolver standard behavior', () => {
     publicFeedId = feed.data?.feedAdd.id;
   });
 
+  it('should update public CSV Feed', async () => {
+    const UPDATE_FEED = gql(`
+      mutation FeedEdition($id: ID!, $input: FeedAddInput!) {
+          feedEdit(id: $id, input: $input) {
+          id
+          name
+          description
+          feed_public
+          authorized_members {
+            id
+            member_id
+            name
+          }
+        }
+      }
+    `);
+    const feed = await queryAsAdminWithSuccess({
+      query: UPDATE_FEED,
+      variables: {
+        id: publicFeedId,
+        input: {
+          name: 'List of created countries - public csv feed',
+          description: 'Description updated',
+          separator: '|',
+          rolling_time: 60,
+          include_header: true,
+          feed_types: ['Country'],
+          feed_date_attribute: 'created_at',
+          feed_attributes: [{
+            attribute: 'A',
+            mappings: [{ type: 'Country', attribute: 'name' }]
+          }],
+          feed_public: true,
+          authorized_members: [],
+        }
+      },
+    });
+    expect(feed).not.toBeNull();
+    expect(feed.data?.feedEdit.description).toEqual('Description updated');
+  });
+
   it('should access feed if user has capa to manage feeds', async () => {
     const QUERY_FEED = gql(`
       query QueryFeed($id: String!) {
