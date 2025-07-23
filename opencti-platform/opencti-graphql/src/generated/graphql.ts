@@ -20611,6 +20611,7 @@ export type Query = {
   containersDistribution?: Maybe<Array<Maybe<Distribution>>>;
   containersNumber?: Maybe<Number>;
   containersObjectsOfObject?: Maybe<StixObjectOrStixRelationshipConnection>;
+  contract?: Maybe<Scalars['String']['output']>;
   countries?: Maybe<CountryConnection>;
   country?: Maybe<Country>;
   courseOfAction?: Maybe<CourseOfAction>;
@@ -21278,6 +21279,11 @@ export type QueryContainersObjectsOfObjectArgs = {
   id: Scalars['String']['input'];
   search?: InputMaybe<Scalars['String']['input']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type QueryContractArgs = {
+  name: Scalars['String']['input'];
 };
 
 
@@ -41420,6 +41426,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   containersDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryContainersDistributionArgs, 'field' | 'operation'>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, Partial<QueryContainersNumberArgs>>;
   containersObjectsOfObject?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipConnection']>, ParentType, ContextType, RequireFields<QueryContainersObjectsOfObjectArgs, 'id'>>;
+  contract?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryContractArgs, 'name'>>;
   countries?: Resolver<Maybe<ResolversTypes['CountryConnection']>, ParentType, ContextType, Partial<QueryCountriesArgs>>;
   country?: Resolver<Maybe<ResolversTypes['Country']>, ParentType, ContextType, Partial<QueryCountryArgs>>;
   courseOfAction?: Resolver<Maybe<ResolversTypes['CourseOfAction']>, ParentType, ContextType, Partial<QueryCourseOfActionArgs>>;
