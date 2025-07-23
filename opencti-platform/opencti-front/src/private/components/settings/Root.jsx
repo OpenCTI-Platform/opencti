@@ -271,7 +271,7 @@ const Root = () => {
             }
           />
           <Route
-            path="customization/email_templates/:emailTemplateId/*"
+            path="/accesses/email_templates/:emailTemplateId/*"
             element={
               <Security needs={[SETTINGS_SETACCESSES]} placeholder={<Navigate to={urlWithCapabilities()} />}>
                 <EmailTemplate />
