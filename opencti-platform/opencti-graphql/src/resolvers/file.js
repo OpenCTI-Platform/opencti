@@ -1,17 +1,9 @@
 import { guessMimeType, loadFile } from '../database/file-storage';
-import { batchFileMarkingDefinitions, batchFileWorks, deleteImport, filesMetrics, uploadAndAskJobImport, uploadImport, uploadPending } from '../domain/file';
-import { batchLoader } from '../database/middleware';
-import { batchCreator } from '../domain/user';
-import { batchStixDomainObjects } from '../domain/stixDomainObject';
+import { deleteImport, filesMetrics, uploadAndAskJobImport, uploadImport, uploadPending } from '../domain/file';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { buildDraftVersion } from '../modules/draftWorkspace/draftWorkspace-domain';
 import { getDraftContextFilesPrefix } from '../database/draft-utils';
 import { askJobImport } from '../domain/connector';
-
-const creatorLoader = batchLoader(batchCreator);
-const domainLoader = batchLoader(batchStixDomainObjects);
-const markingDefinitionsLoader = batchLoader(batchFileMarkingDefinitions);
-const worksLoader = batchLoader(batchFileWorks);
 
 const fileResolvers = {
   Query: {
@@ -27,13 +19,13 @@ const fileResolvers = {
     guessMimeType: (_, { fileId }) => guessMimeType(fileId),
   },
   File: {
-    objectMarking: (rel, _, context) => markingDefinitionsLoader.load(rel, context, context.user),
-    works: (file, _, context) => worksLoader.load(file.id, context, context.user),
+    objectMarking: (rel, _, context) => context.batch.fileMarkingsBatchLoader.load(rel),
+    works: (file, _, context) => context.batch.fileWorksBatchLoader.load(file.id),
     draftVersion: (file) => buildDraftVersion(file),
   },
   FileMetadata: {
-    entity: (metadata, _, context) => domainLoader.load(metadata.entity_id, context, context.user),
-    creator: (metadata, _, context) => creatorLoader.load(metadata.creator_id, context, context.user),
+    entity: (metadata, _, context) => context.batch.domainsBatchLoader.load(metadata.entity_id),
+    creator: (metadata, _, context) => context.batch.creatorBatchLoader.load(metadata.creator_id),
   },
   Mutation: {
     uploadImport: (_, args, context) => uploadImport(context, context.user, args),

@@ -57,6 +57,8 @@ interface AuthContext {
   tracing: TracingContext
   user: AuthUser | undefined
   draft_context?: string | undefined
+  batch?: Record<string, any>
+  changeDraftContext?: (draftId: string) => void
   eventId?: string | undefined
   user_inside_platform_organization: boolean
   user_otp_validated?: boolean

@@ -1,5 +1,5 @@
 import { uniq } from 'ramda';
-import { buildRefRelationKey, RULE_PREFIX } from '../../schema/general';
+import { buildRefRelationKey, REL_INDEX_PREFIX, RULE_PREFIX } from '../../schema/general';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import { type Filter, type FilterGroup, FilterMode, FilterOperator } from '../../generated/graphql';
@@ -329,8 +329,8 @@ export const convertRelationRefsFilterKeys = (filterGroup: FilterGroup): FilterG
 // input: an array of relations names
 // return an array of the converted names in the rel_'database_name' format
 const getConvertedRelationsNames = (relationNames: string[]) => {
-  const convertedRelationsNames = relationNames.map((relationName) => `rel_${relationName}`);
-  convertedRelationsNames.push('rel_*'); // means 'all the relations'
+  const convertedRelationsNames = relationNames.map((relationName) => `${REL_INDEX_PREFIX}${relationName}`);
+  convertedRelationsNames.push(`${REL_INDEX_PREFIX}*`); // means 'all the relations'
   return convertedRelationsNames;
 };
 

@@ -41,7 +41,6 @@ import {
   updateReceivedTime,
   worksForConnector
 } from '../domain/work';
-import { batchCreator } from '../domain/user';
 import { now, sinceNowInMinutes } from '../utils/format';
 import {
   computeManagerConnectorContract,
@@ -58,14 +57,12 @@ import {
   connectorsForNotification,
   connectorsForWorker
 } from '../database/repository';
-import { batchLoader } from '../database/middleware';
 import { getConnectorQueueSize } from '../database/rabbitmq';
 import { redisGetConnectorLogs } from '../database/redis';
 import pjson from '../../package.json';
 import { COMPOSER_FF } from '../modules/catalog/catalog-types';
 import { enforceEnableFeatureFlag } from '../utils/access';
 
-const creatorLoader = batchLoader(batchCreator);
 export const PLATFORM_VERSION = pjson.version;
 
 const connectorResolvers = {
@@ -111,11 +108,11 @@ const connectorResolvers = {
   },
   Work: {
     connector: (work, _, context) => connectorForWork(context, context.user, work.id),
-    user: (work, _, context) => creatorLoader.load(work.user_id, context, context.user),
+    user: (work, _, context) => context.batch.creatorBatchLoader.load(work.user_id),
     tracking: (work) => computeWorkStatus(work),
   },
   Synchronizer: {
-    user: (sync, _, context) => creatorLoader.load(sync.user_id, context, context.user),
+    user: (sync, _, context) => context.batch.creatorBatchLoader.load(sync.user_id),
     queue_messages: async (sync, _, context) => getConnectorQueueSize(context, context.user, sync.id)
   },
   Mutation: {

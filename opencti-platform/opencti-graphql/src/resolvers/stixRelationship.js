@@ -12,15 +12,8 @@ import {
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, INPUT_CREATED_BY, } from '../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { STIX_REF_RELATIONSHIP_TYPES } from '../schema/stixRefRelationship';
-import { batchLoader, stixLoadByIdStringify, timeSeriesRelations } from '../database/middleware';
-import { elBatchIds } from '../database/engine';
-import { batchCreators } from '../domain/user';
-import { batchMarkingDefinitions } from '../domain/stixCoreObject';
+import { stixLoadByIdStringify, timeSeriesRelations } from '../database/middleware';
 import { loadThroughDenormalized } from './stix';
-
-const loadByIdLoader = batchLoader(elBatchIds);
-const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);
-const creatorsLoader = batchLoader(batchCreators);
 
 const stixRelationshipResolvers = {
   Query: {
@@ -34,12 +27,20 @@ const stixRelationshipResolvers = {
   },
   StixRelationshipsOrdering: {},
   StixRelationship: {
-    from: (rel, _, context) => (rel.from ? rel.from : loadByIdLoader.load({ id: rel.fromId, type: rel.fromType }, context, context.user)),
-    to: (rel, _, context) => (rel.to ? rel.to : loadByIdLoader.load({ id: rel.toId, type: rel.toType }, context, context.user)),
-    creators: (rel, _, context) => creatorsLoader.load(rel.creator_id, context, context.user),
+    from: (rel, _, context) => {
+      // If relation is in a draft, we want to force the context to also be in the same draft
+      const idLoadArgs = { id: rel.fromId, type: rel.fromType };
+      return (rel.from ? rel.from : context.batch.idsBatchLoader.load(idLoadArgs));
+    },
+    to: (rel, _, context) => {
+      // If relation is in a draft, we want to force the context to also be in the same draft
+      const idLoadArgs = { id: rel.toId, type: rel.toType };
+      return (rel.to ? rel.to : context.batch.idsBatchLoader.load(idLoadArgs));
+    },
+    creators: (rel, _, context) => context.batch.creatorsBatchLoader.load(rel.creator_id),
     createdBy: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_CREATED_BY),
     toStix: (rel, _, context) => stixLoadByIdStringify(context, context.user, rel.id),
-    objectMarking: (rel, _, context) => markingDefinitionsLoader.load(rel, context, context.user),
+    objectMarking: (rel, _, context) => context.batch.markingsBatchLoader.load(rel, context, context.user),
     // eslint-disable-next-line
     __resolveType(obj) {
       if (STIX_REF_RELATIONSHIP_TYPES.some((type) => obj.parent_types.includes(type))) {
