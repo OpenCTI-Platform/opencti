@@ -1,16 +1,15 @@
-import React, { useState } from 'react';
+import React, { UIEvent, useState } from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
 import Box from '@mui/material/Box';
 import MoreVert from '@mui/icons-material/MoreVert';
-import makeStyles from '@mui/styles/makeStyles';
-import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
+import { graphql, useFragment } from 'react-relay';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
 import PublicDashboardCreationForm from './dashboards/public_dashboards/PublicDashboardCreationForm';
 import Drawer from '../common/drawer/Drawer';
 import { useFormatter } from '../../../components/i18n';
-import { QueryRenderer } from '../../../relay/environment';
 import WorkspaceEditionContainer from './WorkspaceEditionContainer';
 import Security from '../../../utils/Security';
 import { EXPLORE_EXUPDATE, EXPLORE_EXUPDATE_EXDELETE, EXPLORE_EXUPDATE_PUBLISH, INVESTIGATION_INUPDATE_INDELETE } from '../../../utils/hooks/useGranted';
@@ -22,46 +21,60 @@ import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
 import stopEvent from '../../../utils/domEvent';
 import DeleteDialog from '../../../components/DeleteDialog';
 import useDeletion from '../../../utils/hooks/useDeletion';
-import WorkspaceEditionQuery from './WorkspacePopoverContainerQuery';
 import WorkspacePopoverDeletionMutation from './WorkspacePopoverDeletionMutation';
+import { WorkspacesLinesPaginationQuery$variables } from './__generated__/WorkspacesLinesPaginationQuery.graphql';
+import { WorkspacePopoverFragment$key } from './__generated__/WorkspacePopoverFragment.graphql';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-  },
-}));
+const workspacePopoverFragment = graphql`
+  fragment WorkspacePopoverFragment on Workspace {
+    id
+    type
+    name
+    currentUserAccessRight
+    ...WorkspaceEditionContainer_workspace
+    ...WorkspaceDuplicationDialogFragment
+  }
+`;
 
-const WorkspacePopover = ({ workspace, paginationOptions }) => {
-  const { id, type } = workspace;
+interface WorkspacePopoverProps {
+  data: WorkspacePopoverFragment$key
+  paginationOptions: WorkspacesLinesPaginationQuery$variables
+}
+
+const WorkspacePopover = ({ data, paginationOptions }: WorkspacePopoverProps) => {
   const navigate = useNavigate();
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
-  const [anchorEl, setAnchorEl] = useState(null);
+  const workspace = useFragment(workspacePopoverFragment, data);
+  const {
+    id,
+    type,
+    currentUserAccessRight,
+  } = workspace;
+
+  const [anchorEl, setAnchorEl] = useState<Element | null>(null);
   const [displayEdit, setDisplayEdit] = useState(false);
   const [displayDuplicate, setDisplayDuplicate] = useState(false);
   const [duplicating, setDuplicating] = useState(false);
 
-  const handleOpen = (event) => {
+  const handleOpen = (event: UIEvent) => {
     stopEvent(event);
     setAnchorEl(event.currentTarget);
   };
 
-  const handleClose = (event) => {
+  const handleClose = (event: UIEvent) => {
     stopEvent(event);
     setAnchorEl(null);
   };
 
-  const handleCloseDuplicate = (event) => {
+  const handleCloseDuplicate = (event?: UIEvent) => {
     if (event) stopEvent(event);
     setDisplayDuplicate(false);
   };
 
   const [commit] = useApiMutation(WorkspacePopoverDeletionMutation);
 
-  const updater = (store) => {
+  const updater = (store: RecordSourceSelectorProxy) => {
     if (paginationOptions) {
       insertNode(store, 'Pagination_workspaces', paginationOptions, 'workspaceDuplicate');
     }
@@ -70,7 +83,7 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
   const deletion = useDeletion({ handleClose: () => setAnchorEl(null) });
   const { setDeleting, handleOpenDelete, handleCloseDelete } = deletion;
 
-  const submitDelete = (event) => {
+  const submitDelete = (event: UIEvent) => {
     stopEvent(event);
     setDeleting(true);
     commit({
@@ -92,24 +105,24 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
     });
   };
 
-  const handleOpenEdit = (event) => {
+  const handleOpenEdit = (event: UIEvent) => {
     setDisplayEdit(true);
     handleClose(event);
   };
 
-  const handleDashboardDuplication = (event) => {
+  const handleDashboardDuplication = (event: UIEvent) => {
     setDisplayDuplicate(true);
     handleClose(event);
   };
 
   const handleCloseEdit = () => setDisplayEdit(false);
 
-  const { canManage, canEdit } = useGetCurrentUserAccessRight(workspace.currentUserAccessRight);
-  if (!canEdit && workspace.type !== 'dashboard') {
+  const { canManage, canEdit } = useGetCurrentUserAccessRight(currentUserAccessRight);
+  if (!canEdit && type !== 'dashboard') {
     return <></>;
   }
 
-  const goToPublicDashboards = (event) => {
+  const goToPublicDashboards = (event: UIEvent) => {
     stopEvent(event);
 
     const filter = {
@@ -117,7 +130,7 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
       filterGroups: [],
       filters: [{
         key: 'dashboard_id',
-        values: [workspace.id],
+        values: [id],
         mode: 'or',
         operator: 'eq',
       }],
@@ -128,7 +141,7 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
   // -- Creation public dashboard --
   const [displayCreate, setDisplayCreate] = useState(false);
 
-  const handleOpenCreation = (event) => {
+  const handleOpenCreation = (event: UIEvent) => {
     setDisplayCreate(true);
     handleClose(event);
   };
@@ -137,13 +150,13 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
     setDisplayCreate(false);
   };
 
-  const handleExport = (event) => {
+  const handleExport = (event: UIEvent) => {
     stopEvent(event);
     handleExportJson(workspace);
   };
 
   return (
-    <div className={classes.container}>
+    <div>
       <IconButton
         onClick={handleOpen}
         aria-haspopup="true"
@@ -157,7 +170,7 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
         <Security needs={[EXPLORE_EXUPDATE]} hasAccess={canEdit}>
           <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
         </Security>
-        {workspace.type === 'dashboard' && (
+        {type === 'dashboard' && (
           <Box>
             <Security needs={[EXPLORE_EXUPDATE]} hasAccess={canEdit}>
               <MenuItem onClick={handleDashboardDuplication}>{t_i18n('Duplicate')}</MenuItem>
@@ -178,7 +191,7 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
             </Box>
           </Box>
         )}
-        {workspace.type === 'investigation' && (
+        {type === 'investigation' && (
           <Security needs={[INVESTIGATION_INUPDATE_INDELETE]} hasAccess={canManage}>
             <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
           </Security>
@@ -191,14 +204,14 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
       >
         {({ onClose }) => (
           <PublicDashboardCreationForm
-            onClose={handleCloseCreate}
+            onCancel={handleCloseCreate}
             onCompleted={onClose}
-            dashboard_id={workspace.id || undefined}
+            dashboard_id={id || undefined}
           />
         )}
       </Drawer>
       <WorkspaceDuplicationDialog
-        workspace={workspace}
+        data={workspace}
         displayDuplicate={displayDuplicate}
         handleCloseDuplicate={handleCloseDuplicate}
         duplicating={duplicating}
@@ -209,34 +222,18 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
       <DeleteDialog
         deletion={deletion}
         submitDelete={submitDelete}
-        message={workspace.type === 'investigation'
+        message={type === 'investigation'
           ? t_i18n('Do you want to delete this investigation?')
           : t_i18n('Do you want to delete this dashboard?')}
       />
-      <QueryRenderer
-        query={WorkspaceEditionQuery}
-        variables={{ id }}
-        render={({ props: editionProps }) => {
-          if (!editionProps) {
-            return <div />;
-          }
-          return (
-            <WorkspaceEditionContainer
-              workspace={editionProps.workspace}
-              handleClose={handleCloseEdit}
-              open={displayEdit}
-              type={type}
-            />
-          );
-        }}
+      <WorkspaceEditionContainer
+        workspace={workspace}
+        handleClose={handleCloseEdit}
+        open={displayEdit}
+        type={type}
       />
     </div>
   );
-};
-
-WorkspacePopover.propTypes = {
-  workspace: PropTypes.object,
-  paginationOptions: PropTypes.object,
 };
 
 export default WorkspacePopover;

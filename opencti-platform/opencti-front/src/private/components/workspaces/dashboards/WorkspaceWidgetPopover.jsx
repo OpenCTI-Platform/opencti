@@ -80,7 +80,7 @@ const WorkspaceWidgetPopover = ({
             closeMenu={() => setAnchorEl(null)}
             onComplete={onUpdate}
             widget={widget}
-            workspace={workspace}
+            data={workspace}
           />
           <MenuItem onClick={handleExportWidget}>{t_i18n('Export')}</MenuItem>
           <MenuItem onClick={handleOpenDuplicate}>{t_i18n('Duplicate')}</MenuItem>

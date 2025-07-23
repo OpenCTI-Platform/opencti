@@ -5,23 +5,32 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import DialogTitle from '@mui/material/DialogTitle';
 import TextField from '@mui/material/TextField';
-import { graphql } from 'react-relay';
+import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router-dom';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
 import {
   WorkspaceDuplicationDialogDuplicatedWorkspaceCreationMutation,
   WorkspaceDuplicationDialogDuplicatedWorkspaceCreationMutation$data,
-} from '@components/workspaces/__generated__/WorkspaceDuplicationDialogDuplicatedWorkspaceCreationMutation.graphql';
-import { RecordSourceSelectorProxy } from 'relay-runtime';
-import { Dashboard_workspace$data } from '@components/workspaces/dashboards/__generated__/Dashboard_workspace.graphql';
-import { InvestigationGraph_fragment$data } from '@components/workspaces/investigations/__generated__/InvestigationGraph_fragment.graphql';
+} from './__generated__/WorkspaceDuplicationDialogDuplicatedWorkspaceCreationMutation.graphql';
+import { WorkspaceDuplicationDialogFragment$data, WorkspaceDuplicationDialogFragment$key } from './__generated__/WorkspaceDuplicationDialogFragment.graphql';
+import { WorkspacesLinesPaginationQuery$variables } from './__generated__/WorkspacesLinesPaginationQuery.graphql';
 import { useFormatter } from '../../../components/i18n';
 import Transition from '../../../components/Transition';
 import { handleError, MESSAGING$ } from '../../../relay/environment';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import stopEvent from '../../../utils/domEvent';
 
+const workspaceDuplicationFragment = graphql`
+  fragment WorkspaceDuplicationDialogFragment on Workspace {
+    name
+    type
+    description
+    manifest
+  }
+`;
+
 interface WorkspaceDuplicationDialogProps {
-  workspace: Dashboard_workspace$data | InvestigationGraph_fragment$data;
+  data: WorkspaceDuplicationDialogFragment$key;
   displayDuplicate: boolean;
   duplicating: boolean;
   handleCloseDuplicate: () => void;
@@ -29,12 +38,7 @@ interface WorkspaceDuplicationDialogProps {
   updater?: (
     store: RecordSourceSelectorProxy<WorkspaceDuplicationDialogDuplicatedWorkspaceCreationMutation$data>,
   ) => void;
-  paginationOptions?: {
-    search: string;
-    orderBy: string;
-    orderMode: string;
-    filters: Array<{ key: string; values: Array<string> }>;
-  };
+  paginationOptions?: WorkspacesLinesPaginationQuery$variables;
 }
 
 const workspaceDuplicationDialogDuplicatedWorkspaceCreation = graphql`
@@ -50,7 +54,7 @@ const workspaceDuplicationDialogDuplicatedWorkspaceCreation = graphql`
 const WorkspaceDuplicationDialog: FunctionComponent<
 WorkspaceDuplicationDialogProps
 > = ({
-  workspace,
+  data,
   duplicating,
   setDuplicating,
   displayDuplicate,
@@ -59,6 +63,8 @@ WorkspaceDuplicationDialogProps
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
+  const workspace = useFragment(workspaceDuplicationFragment, data);
+
   const duplicatedDashboardInitialName = useMemo(
     () => `${workspace.name} - ${t_i18n('copy')}`,
     [t_i18n, workspace.name],
@@ -69,7 +75,7 @@ WorkspaceDuplicationDialogProps
   );
   const submitDashboardDuplication = (
     e: UIEvent,
-    submittedWorkspace: Dashboard_workspace$data | InvestigationGraph_fragment$data,
+    submittedWorkspace: WorkspaceDuplicationDialogFragment$data,
   ) => {
     stopEvent(e);
     commitDuplicatedWorkspaceCreation({
@@ -85,7 +91,7 @@ WorkspaceDuplicationDialogProps
       onError: (error) => {
         handleError(error);
       },
-      onCompleted: (data) => {
+      onCompleted: (result) => {
         handleCloseDuplicate();
         const isDashboardView = !paginationOptions;
         if (isDashboardView) {
@@ -93,7 +99,7 @@ WorkspaceDuplicationDialogProps
             <span>
               {t_i18n('The dashboard has been duplicated. You can manage it')}{' '}
               <Link
-                to={`/dashboard/workspaces/dashboards/${data.workspaceDuplicate?.id}`}
+                to={`/dashboard/workspaces/dashboards/${result.workspaceDuplicate?.id}`}
               >
                 {t_i18n('here')}
               </Link>
