@@ -5,6 +5,7 @@ import { IngestionCatalogQuery } from '@components/data/__generated__/IngestionC
 import React, { Suspense } from 'react';
 import IngestionCatalogConnectorHeader from '@components/data/IngestionCatalog/IngestionCatalogConnectorHeader';
 import IngestionCatalogConnectorOverview from '@components/data/IngestionCatalog/IngestionCatalogConnectorOverview';
+import { IngestionConnector } from '@components/data/IngestionCatalog/IngestionCatalogCard';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -16,18 +17,7 @@ interface IngestionCatalogConnectorComponentProps {
 }
 
 export interface IngestionCatalogConnectorConnectorProps {
-  connector: {
-    logo: string,
-    title: string,
-    description: string,
-    source_code: string,
-    last_verified_date: string,
-    subscription_link: string,
-    use_cases: string[],
-    default: {
-      CONNECTOR_NAME: string
-    }
-  };
+  connector: IngestionConnector;
 }
 
 const IngestionCatalogConnectorComponent = ({
