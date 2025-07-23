@@ -208,7 +208,7 @@ const DraftContextBanner = () => {
 
   const refetch = React.useCallback(() => {
     loadQuery({ id: draftContext.id }, { fetchPolicy: 'store-and-network' });
-  }, [queryRef]);
+  }, [queryRef, draftContext]);
 
   useEffect(() => {
     refetch();

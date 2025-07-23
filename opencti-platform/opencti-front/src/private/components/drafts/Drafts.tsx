@@ -8,9 +8,6 @@ import Chip from '@mui/material/Chip';
 import { useTheme } from '@mui/styles';
 import { getDraftModeColor } from '@components/common/draft/DraftChip';
 import ImportMenu from '@components/data/ImportMenu';
-import { DraftContextBannerMutation } from '@components/drafts/__generated__/DraftContextBannerMutation.graphql';
-import { draftContextBannerMutation } from '@components/drafts/DraftContextBanner';
-import { useNavigate } from 'react-router-dom';
 import DraftWorkspaceDialogCreation from '@components/common/files/draftWorkspace/DraftWorkspaceDialogCreation';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import { useFormatter } from '../../../components/i18n';
@@ -26,7 +23,6 @@ import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocum
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 import { hexToRGB } from '../../../utils/Colors';
 import type { Theme } from '../../../components/Theme';
-import useApiMutation from '../../../utils/hooks/useApiMutation';
 
 const DraftLineFragment = graphql`
     fragment Drafts_node on DraftWorkspace {
@@ -129,14 +125,12 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const draftColor = getDraftModeColor(theme);
-  const navigate = useNavigate();
   const validatedDraftColor = theme.palette.success.main;
   const draftContext = useDraftContext();
   const { setTitle } = useConnectedDocumentModifier();
   if (!entityId) {
     setTitle(t_i18n('Drafts'));
   }
-  const [commitSwitchToDraft] = useApiMutation<DraftContextBannerMutation>(draftContextBannerMutation);
 
   const initialValues = {
     filters: emptyFilterGroup,
@@ -220,33 +214,31 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
     },
   };
 
-  const handleDraftSelection = (id: string) => {
-    commitSwitchToDraft({
-      variables: {
-        input: [{ key: 'draft_context', value: [id] }],
-      },
-      onCompleted: () => {
-        navigate('/dashboard/data/import/draft');
-      },
-    });
-  };
-
-  const renderInEntity = () => {
-    return (
-      <>
-        {queryRef && (
+  return (
+    <span data-testid="draft-page">
+      {!entityId && (
+        <>
+          <Breadcrumbs
+            elements={[{ label: t_i18n('Data') }, { label: t_i18n('Import'), current: true }]}
+          />
+          <ImportMenu />
+        </>
+      )}
+      {queryRef && (
+        <>
           <DataTable
             dataColumns={dataColumns}
-            hideHeaders={true}
-            storageKey={LOCAL_STORAGE_KEY}
-            hideFilters={true}
             resolvePath={(data: DraftsLines_data$data) => (data.draftWorkspaces?.edges ?? []).map((n) => n?.node)}
-            lineFragment={DraftLineFragment}
-            hideSearch={true}
-            onLineClick={(row) => handleDraftSelection(row.id)}
-            disableLineSelection
+            storageKey={LOCAL_STORAGE_KEY}
             initialValues={initialValues}
+            toolbarFilters={contextFilters}
             preloadedPaginationProps={preloadedPaginationProps}
+            lineFragment={DraftLineFragment}
+            hideSearch={!!entityId}
+            hideFilters={!!entityId}
+            hideHeaders={!!entityId}
+            emptyStateMessage={emptyStateMessage}
+            createButton={!draftContext && <DraftCreation paginationOptions={queryPaginationOptions} />}
             actions={(row) => (
               <DraftPopover
                 draftId={row.id}
@@ -254,51 +246,13 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
                 paginationOptions={queryPaginationOptions}
               />
             )}
-            emptyStateMessage={emptyStateMessage}
           />
-        )}
-        <DraftWorkspaceDialogCreation
-          paginationOptions={queryPaginationOptions}
-          handleCloseCreate={setOpenCreate}
-          entityId={entityId}
-          openCreate={openCreate}
-        />
-      </>
-    );
-  };
-
-  return (
-    <span data-testid="draft-page">
-      {entityId ? (
-        renderInEntity()
-      ) : (
-        <>
-          <Breadcrumbs
-            elements={[{ label: t_i18n('Data') }, { label: t_i18n('Import'), current: true }]}
+          <DraftWorkspaceDialogCreation
+            paginationOptions={queryPaginationOptions}
+            handleCloseCreate={setOpenCreate}
+            entityId={entityId}
+            openCreate={openCreate}
           />
-          <ImportMenu />
-          {queryRef && (
-            <DataTable
-              dataColumns={dataColumns}
-              resolvePath={(data: DraftsLines_data$data) => (data.draftWorkspaces?.edges ?? []).map((n) => n?.node)
-              }
-              storageKey={LOCAL_STORAGE_KEY}
-              initialValues={initialValues}
-              toolbarFilters={contextFilters}
-              preloadedPaginationProps={preloadedPaginationProps}
-              lineFragment={DraftLineFragment}
-              createButton={
-                !draftContext && <DraftCreation paginationOptions={queryPaginationOptions} />
-              }
-              actions={(row) => (
-                <DraftPopover
-                  draftId={row.id}
-                  draftLocked={row.draft_status !== 'open'}
-                  paginationOptions={queryPaginationOptions}
-                />
-              )}
-            />
-          )}
         </>
       )}
     </span>
