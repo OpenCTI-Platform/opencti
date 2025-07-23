@@ -805,6 +805,7 @@ const StixDomainObjectCreation = ({
   open,
   speeddial,
   controlledDialStyles = {},
+  controlledDialSize,
   handleClose,
   paginationKey,
   paginationOptions,
@@ -853,6 +854,7 @@ const StixDomainObjectCreation = ({
           onOpen={stateHandleOpen}
           onClose={() => {}}
           style={controlledDialStyles}
+          size={controlledDialSize}
         />
       )}
       <div style={{ display: display ? 'block' : 'none' }}>
