@@ -489,7 +489,7 @@ const InvestigationGraphComponent = ({
     });
   };
 
-  const addRelationInGraph: GraphToolbarProps['onAddRelation'] = (rel) => {
+  const addRelationInGraph = (rel: ObjectToParse) => {
     updateInvestigationEntitiesGraph([rel.id], 'add', () => addLink(rel));
   };
 
@@ -533,7 +533,7 @@ const InvestigationGraphComponent = ({
     if (opsToRollback.length > 0) {
       let objectsToKeep = rawObjects;
       opsToRollback.forEach((operation) => {
-        if (operation.type === 'expand') {
+        if (operation.type === 'expand' || operation.type === 'add') {
           // Remove objects that were added during the expansion.
           objectsToKeep = objectsToKeep.filter((o) => !operation.objectsIds.includes(o.id));
         } else if (operation.type === 'remove') {
@@ -546,6 +546,15 @@ const InvestigationGraphComponent = ({
         () => rebuildGraphData(objectsToKeep),
       );
     }
+  };
+
+  const addRelation: GraphToolbarProps['onAddRelation'] = (rel) => {
+    addInvestigationOpInStack({
+      type: 'add',
+      dateTime: new Date().getTime(),
+      objectsIds: [rel.id],
+    });
+    addRelationInGraph(rel);
   };
 
   return (
@@ -563,7 +572,7 @@ const InvestigationGraphComponent = ({
             stixCoreObjectRefetchQuery={knowledgeGraphStixCoreObjectQuery}
             relationshipRefetchQuery={knowledgeGraphStixRelationshipQuery}
             entity={investigation}
-            onAddRelation={addRelationInGraph}
+            onAddRelation={addRelation}
             onRemove={remove}
             onInvestigationExpand={expand}
             onInvestigationRollback={rollback}

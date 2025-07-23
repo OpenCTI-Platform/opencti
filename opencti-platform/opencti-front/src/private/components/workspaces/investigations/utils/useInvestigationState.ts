@@ -7,13 +7,19 @@ interface InvestigationOpExpand {
   objectsIds: string[];
 }
 
+interface InvestigationOpAdd {
+  type: 'add'
+  dateTime: number;
+  objectsIds: string[];
+}
+
 interface InvestigationOpRemove {
   type: 'remove'
   dateTime: number;
   objects: ObjectToParse[];
 }
 
-type AllInvestigationOps = InvestigationOpExpand | InvestigationOpRemove;
+type AllInvestigationOps = InvestigationOpExpand | InvestigationOpAdd | InvestigationOpRemove;
 type InvestigationState = AllInvestigationOps[];
 
 // eslint-disable-next-line import/prefer-default-export
