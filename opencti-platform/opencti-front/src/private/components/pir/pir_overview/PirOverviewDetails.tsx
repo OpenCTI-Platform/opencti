@@ -2,6 +2,7 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Grid2 as Grid, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import Chip from '@mui/material/Chip';
 import { PirOverviewDetailsFragment$key } from './__generated__/PirOverviewDetailsFragment.graphql';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
@@ -11,7 +12,6 @@ import { parse } from '../../../../utils/Time';
 import PirFiltersDisplay from '../PirFiltersDisplay';
 import type { Theme } from '../../../../components/Theme';
 import Paper from '../../../../components/Paper';
-import Chip from '@mui/material/Chip';
 
 const detailsFragment = graphql`
   fragment PirOverviewDetailsFragment on Pir {

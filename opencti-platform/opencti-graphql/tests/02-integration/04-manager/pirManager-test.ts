@@ -46,6 +46,7 @@ const TEST_PIR = {
   id: '0b900f85-4b19-4a3e-8092-719dc91d1148',
   internal_id: '0b900f85-4b19-4a3e-8092-719dc91d1148',
   name: 'TEST PIR',
+  pir_type: 'THREAT_LANDSCAPE',
   description: 'Super PIR',
   pir_rescan_days: 30,
   lastEventId: '1747916825083-0',
