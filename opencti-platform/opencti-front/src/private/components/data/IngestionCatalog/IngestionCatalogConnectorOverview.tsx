@@ -5,11 +5,11 @@ import React from 'react';
 import { useTheme } from '@mui/styles';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
-import { IngestionCatalogConnectorConnectorProps } from '@components/data/IngestionCatalog/IngestionCatalogConnector';
+import { IngestionConnector } from '@components/data/IngestionCatalog/IngestionCatalogCard';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 
-const IngestionCatalogConnectorOverview = ({ connector }: IngestionCatalogConnectorConnectorProps) => {
+const IngestionCatalogConnectorOverview = ({ connector }: { connector: IngestionConnector }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 

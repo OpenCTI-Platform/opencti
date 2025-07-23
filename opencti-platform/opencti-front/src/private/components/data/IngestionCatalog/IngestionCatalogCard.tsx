@@ -2,7 +2,7 @@ import Card from '@mui/material/Card';
 import React from 'react';
 import CardHeader from '@mui/material/CardHeader';
 import CardContent from '@mui/material/CardContent';
-import { Badge, CardActions, Grid, Tooltip } from '@mui/material';
+import { Badge, CardActions, Grid } from '@mui/material';
 import Button from '@mui/material/Button';
 import { VerifiedOutlined } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
@@ -14,10 +14,25 @@ interface IngestionCatalogCardProps {
   node: string;
 }
 
+export interface IngestionConnector {
+  logo: string,
+  title: string,
+  description: string,
+  short_description: string,
+  source_code: string,
+  last_verified_date: string,
+  subscription_link: string,
+  verified: boolean,
+  use_cases: string[],
+  default: {
+    CONNECTOR_NAME: string
+  }
+}
+
 const IngestionCatalogCard = ({ node }: IngestionCatalogCardProps) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
-  const connector = JSON.parse(node);
+  const connector: IngestionConnector = JSON.parse(node);
   const link = `/dashboard/data/ingestion/catalog/${connector.default.CONNECTOR_NAME}`;
 
   const renderUseCases = () => {
@@ -48,8 +63,6 @@ const IngestionCatalogCard = ({ node }: IngestionCatalogCardProps) => {
             {connector.use_cases.map((useCase: string) => <IngestionCatalogUseCaseChip key={useCase} useCase={useCase} />)}
           </>
         )}
-
-
       </EnrichedTooltip>
     );
   };
@@ -76,7 +89,7 @@ const IngestionCatalogCard = ({ node }: IngestionCatalogCardProps) => {
         avatar={<img style={{ height: 50, width: 50, objectFit: 'cover', borderRadius: 4 }} src={connector.logo} alt={connector.title} />}
         title={<div style={{ width: '100%', fontSize: 20, fontWeight: 600 }}>{connector.title}</div>}
         subheader={renderUseCases()}
-        action={<VerifiedOutlined color={'success'} />}
+        action={connector.verified && <VerifiedOutlined color="success" />}
       />
 
       <CardContent style={{ paddingTop: 0 }}>
