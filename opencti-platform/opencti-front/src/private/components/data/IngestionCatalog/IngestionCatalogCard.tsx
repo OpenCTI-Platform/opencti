@@ -38,7 +38,6 @@ const IngestionCatalogCard = ({ node }: IngestionCatalogCardProps) => {
   const renderUseCases = () => {
     return (
       <EnrichedTooltip
-        style={{ display: 'flex', width: 200 }}
         title={(
           <Grid container={true} spacing={3}>
             {connector.use_cases.map((useCase: string) => <Grid key={useCase} item xs={6}><IngestionCatalogUseCaseChip useCase={useCase} /></Grid>)}

@@ -1,23 +1,24 @@
 import { useParams } from 'react-router-dom';
-import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { ingestionCatalogQuery } from '@components/data/IngestionCatalog';
-import { IngestionCatalogQuery } from '@components/data/__generated__/IngestionCatalogQuery.graphql';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React, { Suspense } from 'react';
 import IngestionCatalogConnectorHeader from '@components/data/IngestionCatalog/IngestionCatalogConnectorHeader';
 import IngestionCatalogConnectorOverview from '@components/data/IngestionCatalog/IngestionCatalogConnectorOverview';
-import { IngestionConnector } from '@components/data/IngestionCatalog/IngestionCatalogCard';
+import { IngestionCatalogConnectorQuery } from '@components/data/IngestionCatalog/__generated__/IngestionCatalogConnectorQuery.graphql';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { useFormatter } from '../../../../components/i18n';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
+import ErrorNotFound from '../../../../components/ErrorNotFound';
+
+const ingestionCatalogConnectorQuery = graphql`
+  query IngestionCatalogConnectorQuery($name: String!) {
+    contract(name: $name)
+  }
+`;
 
 interface IngestionCatalogConnectorComponentProps {
-  queryRef: PreloadedQuery<IngestionCatalogQuery>;
-}
-
-export interface IngestionCatalogConnectorConnectorProps {
-  connector: IngestionConnector;
+  queryRef: PreloadedQuery<IngestionCatalogConnectorQuery>;
 }
 
 const IngestionCatalogConnectorComponent = ({
@@ -26,26 +27,13 @@ const IngestionCatalogConnectorComponent = ({
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Catalog | Ingestion | Data'));
-  const { connectorId } = useParams();
 
-  const { catalogs } = usePreloadedQuery(
-    ingestionCatalogQuery,
+  const { contract } = usePreloadedQuery(
+    ingestionCatalogConnectorQuery,
     queryRef,
   );
-
-  const findContractByName = () => {
-    for (const catalog of catalogs) {
-      for (const contractStr of catalog.contracts || []) {
-        const contract = JSON.parse(contractStr);
-        if (contract.default.CONNECTOR_NAME === connectorId) {
-          return contract;
-        }
-      }
-    }
-    return null;
-  };
-
-  const connector = findContractByName();
+  if (!contract) return <ErrorNotFound />;
+  const connector = JSON.parse(contract);
 
   return (
     <>
@@ -57,8 +45,10 @@ const IngestionCatalogConnectorComponent = ({
 };
 
 const IngestionCatalogConnector = () => {
-  const queryRef = useQueryLoading<IngestionCatalogQuery>(
-    ingestionCatalogQuery,
+  const { connectorId } = useParams();
+  const queryRef = useQueryLoading<IngestionCatalogConnectorQuery>(
+    ingestionCatalogConnectorQuery,
+    { name: connectorId ?? '' },
   );
   return (
     <Suspense fallback={<Loader variant={LoaderVariant.container} />}>

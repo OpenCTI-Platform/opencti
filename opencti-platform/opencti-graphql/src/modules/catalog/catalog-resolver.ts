@@ -1,4 +1,4 @@
-import { findAll, findById } from './catalog-domain';
+import { findAll, findById, findContractByName } from './catalog-domain';
 import type { Resolvers } from '../../generated/graphql';
 import { enforceEnableFeatureFlag } from '../../utils/access';
 import { COMPOSER_FF } from './catalog-types';
@@ -13,6 +13,10 @@ const catalogResolver: Resolvers = {
       enforceEnableFeatureFlag(COMPOSER_FF);
       return findAll(context, context.user);
     },
+    contract: (_, { name }, context) => {
+      enforceEnableFeatureFlag(COMPOSER_FF);
+      return findContractByName(context, context.user, name);
+    }
   },
 };
 
