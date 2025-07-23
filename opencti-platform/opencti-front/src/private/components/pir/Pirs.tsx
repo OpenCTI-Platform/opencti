@@ -136,7 +136,7 @@ const Pirs = () => {
     },
     pir_type: {},
     pir_rescan_days: {
-      percentWidth: 7,
+      percentWidth: 8,
       id: 'pir_rescan_days',
       label: 'Rescan (days)',
       render: ({ pir_rescan_days }: Pirs_PirFragment$data) => pir_rescan_days,
@@ -172,7 +172,9 @@ const Pirs = () => {
         </div>
       ),
     },
-    creator: {},
+    creator: {
+      percentWidth: 9,
+    },
     created_at: {
       id: 'created_at',
       percentWidth: 12,
