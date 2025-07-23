@@ -3,6 +3,7 @@ import gql from 'graphql-tag';
 import { v4 as uuidv4 } from 'uuid';
 import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
+import { wait } from '../../../src/database/utils';
 import { XTMComposerMock } from '../../utils/XTMComposerMock';
 import type { ApiConnector } from '../../utils/XTMComposerMock';
 
@@ -170,9 +171,7 @@ describe('Connector Composer and Managed Connectors', () => {
       const previousSync = previousResult.data?.connectorManager.last_sync_execution;
 
       // Wait a bit to ensure timestamp difference
-      await new Promise((resolve) => {
-        setTimeout(resolve, 10);
-      });
+      await wait(10);
 
       const result = await queryAsAdminWithSuccess({
         query: UPDATE_CONNECTOR_MANAGER_STATUS_MUTATION,
