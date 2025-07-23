@@ -1768,12 +1768,12 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
         size: ES_MAX_PAGINATION,
         track_total_hits: false,
         _source,
-        body
+        body,
       };
       if (withoutRels) { // Force denorm rel security
         query.docvalue_fields = REL_DEFAULT_FETCH;
       }
-      logApp.debug('[SEARCH] elFindByIds', { query });
+      logApp.debug('[SEARCH] elInternalLoadById', { query });
       const searchType = `${ids} (${types ? types.join(', ') : 'Any'})`;
       const data = await elRawSearch(context, user, searchType, query).catch((err) => {
         throw DatabaseError('Find direct ids fail', { cause: err, query });

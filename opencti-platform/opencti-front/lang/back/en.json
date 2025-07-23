@@ -907,5 +907,11 @@
   "Workflow status": "Workflow status",
   "Workspace graph data": "Workspace graph data",
   "Workspace type": "Workspace type",
-  "X_Aliases": "X_Aliases"
+  "X_Aliases": "X_Aliases",
+  "XTM Hub enrollment date": "XTM Hub enrollment date",
+  "XTM Hub enrollment status": "XTM Hub enrollment status",
+  "XTM Hub enrollment User ID": "XTM Hub enrollment User ID",
+  "XTM Hub enrollment User name": "XTM Hub enrollment User name",
+  "XTM Hub last connectivity check": "XTM Hub last connectivity check",
+  "XTM Hub Token": "XTM Hub Token"
 }

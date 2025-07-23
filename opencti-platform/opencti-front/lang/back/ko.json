@@ -907,5 +907,11 @@
   "Workflow status": "워크플로우 상태",
   "Workspace graph data": "작업 공간 그래프 데이터",
   "Workspace type": "작업 공간 유형",
-  "X_Aliases": "X_Aliases"
+  "X_Aliases": "X_Aliases",
+  "XTM Hub enrollment date": "XTM Hub 등록 날짜",
+  "XTM Hub enrollment status": "XTM Hub 등록 상태",
+  "XTM Hub enrollment User ID": "XTM Hub 등록 사용자 ID",
+  "XTM Hub enrollment User name": "XTM Hub 등록 사용자 이름",
+  "XTM Hub last connectivity check": "XTM Hub 마지막 연결 확인",
+  "XTM Hub Token": "XTM 허브 토큰"
 }
