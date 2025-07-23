@@ -622,7 +622,6 @@ export const sendEmailToUser = async (context, user, input) => {
 };
 
 export const addUser = async (context, user, newUser) => {
-  console.log({ newUser });
   const userEmail = newUser.user_email.toLowerCase();
   const existingUser = await elLoadBy(context, SYSTEM_USER, 'user_email', userEmail, ENTITY_TYPE_USER);
   if (existingUser) {
@@ -663,7 +662,8 @@ export const addUser = async (context, user, newUser) => {
     R.assoc('personal_notifiers', [STATIC_NOTIFIER_UI, STATIC_NOTIFIER_EMAIL]),
     R.dissoc('roles'),
     R.dissoc('groups'),
-    R.dissoc('prevent_default_groups')
+    R.dissoc('prevent_default_groups'),
+    R.dissoc('email_template_id'),
   )(newUser);
   const { element, isCreation } = await createEntity(context, user, userToCreate, ENTITY_TYPE_USER, { complete: true });
   // Link to organizations
@@ -712,6 +712,14 @@ export const addUser = async (context, user, newUser) => {
       message: `creates user \`${actionEmail}\``,
       context_data: { id: element.id, entity_type: ENTITY_TYPE_USER, input: newUser }
     });
+  }
+
+  if (newUser.email_template_id) {
+    const input = {
+      target_user_id: element.id,
+      email_template_id: newUser.email_template_id,
+    };
+    await sendEmailToUser(context, user, input);
   }
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].ADDED_TOPIC, element, user);
 };

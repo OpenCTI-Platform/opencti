@@ -2,6 +2,8 @@ import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React, { FunctionComponent } from 'react';
 import { Field } from 'formik';
 import { EmailTemplateFieldQuery } from '@components/common/form/__generated__/EmailTemplateFieldQuery.graphql';
+import useEnterpriseEdition from 'src/utils/hooks/useEnterpriseEdition';
+import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useFormatter } from '../../../../components/i18n';
@@ -99,8 +101,33 @@ const EmailTemplateFieldComponent: FunctionComponent<EmailTemplateFieldComponent
 type EmailTemplateFieldProps = Omit<EmailTemplateFieldComponentProps, 'queryRef'>;
 
 const EmailTemplateField = ({ ...props }: EmailTemplateFieldProps) => {
+  const { t_i18n } = useFormatter();
+  const isEnterpriseEdition = useEnterpriseEdition();
+
   const queryRef = useQueryLoading<EmailTemplateFieldQuery>(emailTemplateFieldQuery);
   const { name, label } = props;
+
+  if (!isEnterpriseEdition) {
+    return (
+      <>
+        <EETooltip title={t_i18n('Only available in EE')}>
+          <Field
+            component={AutocompleteField}
+            name={name}
+            disabled={true}
+            fullWidth={true}
+            options={[]}
+            style={fieldSpacingContainerStyle}
+            renderOption={() => null}
+            textfieldprops={{
+              label: 'Enterprise Edition',
+            }}
+          />
+        </EETooltip>
+      </>
+    );
+  }
+
   return queryRef ? (
     <React.Suspense fallback={
       <Field

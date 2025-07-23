@@ -80,7 +80,7 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
       ...rest,
       objectOrganization: objectOrganization.map((n) => n.value),
       groups: groups.map((n) => n.value),
-      email_template_id: emailTemplate.id,
+      email_template_id: emailTemplate.value.id,
       user_confidence_level: user_confidence_level
         ? {
           max_confidence: parseInt(user_confidence_level, 10),
@@ -132,6 +132,7 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
               account_lock_after_date: null,
               user_confidence_level: null,
               prevent_default_groups: false,
+              emailTemplate: '',
             }}
             validationSchema={userValidation(t_i18n)}
             onSubmit={onSubmit}
@@ -249,17 +250,16 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                     fullWidth: true,
                   }}
                 />
+                <EmailTemplateField
+                  name="emailTemplate"
+                  label={t_i18n('Email template')}
+                />
                 {hasSetAccess && (
                   <UserConfidenceLevelField
                     name="user_confidence_level"
                     label={t_i18n('Max Confidence Level')}
                   />
                 )}
-                <EmailTemplateField
-                  style={{ marginTop: 20 }}
-                  name="emailTemplate"
-                  label={'Email template'}
-                />
                 <div style={{
                   marginTop: 40,
                   textAlign: 'right',
