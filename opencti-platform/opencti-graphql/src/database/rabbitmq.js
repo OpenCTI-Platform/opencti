@@ -248,6 +248,8 @@ export const registerConnectorQueues = async (id, name, type, scope) => {
   });
   return connectorConfig(id);
 };
+// region deprecated fixed queues
+/** @deprecated [>=6.3 & <6.6]. Remove and add migration to remove the queues. */
 const CONNECTOR_QUEUE_PLAYBOOK = { id: 'playbook', name: '[PLAYBOOK] Internal playbook manager', type: 'internal', scope: 'playbook' };
 const CONNECTOR_QUEUE_SYNC = { id: 'sync', name: '[SYNC] Internal sync manager', type: 'internal', scope: 'sync' };
 export const getInternalQueues = () => {
@@ -261,9 +263,6 @@ export const getInternalQueues = () => {
 };
 
 export const initializeInternalQueues = async () => {
-  // region deprecated fixed queues
-  /** @deprecated [>=6.3 & <6.6]. Remove and add migration to remove the queues. */
-  await registerConnectorQueues('playbook', 'Internal playbook manager', 'internal', 'playbook');
   const internalQueues = getInternalQueues();
   for (let i = 0; i < internalQueues.length; i += 1) {
     const internalQueue = internalQueues[i];
