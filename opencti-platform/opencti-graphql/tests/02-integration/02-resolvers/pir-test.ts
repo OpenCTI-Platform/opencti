@@ -82,6 +82,7 @@ const READ_QUERY = gql`
       id
       standard_id
       name
+      pir_type
       pir_criteria {
         weight
         filters
