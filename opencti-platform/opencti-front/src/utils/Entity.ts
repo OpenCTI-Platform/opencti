@@ -141,7 +141,7 @@ export const resolveLink = (type = 'unknown'): string | null => {
       return '/dashboard/pirs';
     case 'DisseminationList':
     case 'EmailTemplate':
-      return '/dashboard/settings/customization/email_templates';
+      return '/dashboard/settings/accesses/email_templates';
     default:
       return null;
   }
