@@ -167,6 +167,7 @@ const Users = () => {
         />
       );
     }
+    return null;
   }, [
     isSetAccess,
     defaultGroupsQueryRef,
