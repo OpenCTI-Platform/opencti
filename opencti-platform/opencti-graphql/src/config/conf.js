@@ -224,9 +224,12 @@ export const auditRequestHeaderToKeep = nconf.get('app:audit_logs:trace_request_
 
 // Gather all request header that are configured to be added to audit or activity logs.
 export const getRequestAuditHeaders = (req) => {
-  const reqAuditHeaderList = R.mergeAll((auditRequestHeaderToKeep ?? [])
-    .map((header) => ({ [header]: req.header(header) })));
-  return JSON.stringify(reqAuditHeaderList);
+  if (isFeatureEnabled('AUDIT_USER_AGENT')) {
+    const reqAuditHeaderList = R.mergeAll((auditRequestHeaderToKeep ?? [])
+      .map((header) => ({ [header]: req.header(header) })));
+    return JSON.stringify(reqAuditHeaderList);
+  }
+  return undefined;
 };
 
 export const auditLogTypes = nconf.get('app:audit_logs:logs_in_transports') ?? ['administration'];
