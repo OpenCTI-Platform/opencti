@@ -562,12 +562,15 @@ export const sendEmailToUser = async (context, user, input) => {
   }
 
   const organizationIds = targetUser['participate-to'] || [];
-  let organizationName = '';
+  let organizationNames = [];
   if (organizationIds.length > 0) {
-    const organization = await internalLoadById(context, user, organizationIds[0]);
-    if (organization) {
-      organizationName = organization.name || '';
-    }
+    const organizations = await Promise.all(
+      organizationIds.map((orgId) => internalLoadById(context, user, orgId))
+    );
+    organizationNames = organizations
+      .filter((org) => !!org)
+      .map((org) => org.name)
+      .filter((name) => !!name);
   }
 
   const emailTemplate = await internalLoadById(context, user, input.email_template_id);
@@ -582,7 +585,7 @@ export const sendEmailToUser = async (context, user, input) => {
     .replace(/\$user\.user_email/g, '<%= user.user_email %>')
     .replace(/\$user\.api_token/g, '<%= user.api_token %>')
     .replace(/\$user\.account_status/g, '<%= user.account_status %>')
-    .replace(/\$user\.objectOrganization/g, '<%= organizationName %>')
+    .replace(/\$user\.objectOrganization/g, '<%= organizationNames.join(", ") %>')
     .replace(/\$user\.account_lock_after_date/g, '<%= user.account_lock_after_date %>')
     .replace(/\$settings\.platform_url/g, '<%= platformUrl %>');
 
@@ -591,7 +594,7 @@ export const sendEmailToUser = async (context, user, input) => {
   const renderedHtml = ejs.render(preprocessedTemplate, {
     platformUrl,
     user: targetUser,
-    organizationName,
+    organizationNames,
   });
 
   const sendMailArgs = {
