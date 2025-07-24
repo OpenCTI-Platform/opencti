@@ -72,7 +72,7 @@ const DataComponent: React.FC<DataComponentProps> = ({ dataComponentData }) => {
   const overviewLayoutCustomization = useOverviewLayoutCustomization(dataComponent.entity_type);
 
   return (
-    <>
+    <div data-testid="data-component-details-page">
       <Grid
         container={true}
         spacing={3}
@@ -141,7 +141,7 @@ const DataComponent: React.FC<DataComponentProps> = ({ dataComponentData }) => {
           })
         }
       </Grid>
-    </>
+    </div>
   );
 };
 
