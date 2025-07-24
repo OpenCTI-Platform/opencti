@@ -9,10 +9,13 @@ interface IngestionCatalogChipProps {
   variant?: 'outlined' | 'filled';
   color?: 'primary' | 'secondary' | 'error' | 'success';
   withTooltip?: boolean;
+  isInTooltip?: boolean;
+  isInlist?: boolean;
 }
 
-const IngestionCatalogChip = ({ label, variant, color, withTooltip = false }: IngestionCatalogChipProps) => {
+const IngestionCatalogChip = ({ label, variant, color, withTooltip = false, isInTooltip = false, isInlist = false }: IngestionCatalogChipProps) => {
   const theme = useTheme<Theme>();
+  const width = isInTooltip ? '100%' : 'auto';
   return (
     <Tooltip title={withTooltip ? label : undefined}>
       <Chip
@@ -22,9 +25,10 @@ const IngestionCatalogChip = ({ label, variant, color, withTooltip = false }: In
         style={{
           fontSize: 12,
           lineHeight: '12px',
-          margin: '7px 7px 7px 0',
           borderRadius: 4,
+          marginRight: isInlist ? theme.spacing(1) : 0,
           border: `2px solid ${color ? theme.palette[color].main : theme.palette.chip.main}`,
+          width,
         }}
         label={label}
       />
