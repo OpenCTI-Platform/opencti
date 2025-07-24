@@ -2511,6 +2511,10 @@ class OpenCTIStix2:
                 self.opencti.notification.update_field(
                     id=item_id, input=field_patch_without_files
                 )
+            elif item["type"] == "user":
+                self.opencti.user.update_field(
+                    id=item_id, input=field_patch_without_files
+                )
             else:
                 self.opencti.stix_domain_object.update_field(
                     id=item_id, input=field_patch_without_files
@@ -2581,6 +2585,65 @@ class OpenCTIStix2:
             # Element is considered stix core object
             self.opencti.stix_core_object.organization_unshare(
                 item["id"], organization_ids, sharing_direct_container
+            )
+
+    def element_add_organizations(self, item):
+        organization_ids = self.opencti.get_attribute_in_extension(
+            "organization_ids", item
+        )
+        if organization_ids is None:
+            organization_ids = item["organization_ids"]
+        if item["type"] == "user":
+            for organization_id in organization_ids:
+                self.opencti.user.add_organization(
+                    id=item["id"], organization_id=organization_id
+                )
+        else:
+            raise ValueError(
+                "Add organizations operation not compatible with type",
+                {"type": item["type"]},
+            )
+
+    def element_remove_organizations(self, item):
+        organization_ids = self.opencti.get_attribute_in_extension(
+            "organization_ids", item
+        )
+        if organization_ids is None:
+            organization_ids = item["organization_ids"]
+        if item["type"] == "user":
+            for organization_id in organization_ids:
+                self.opencti.user.delete_organization(
+                    id=item["id"], organization_id=organization_id
+                )
+        else:
+            raise ValueError(
+                "Remove organizations operation not compatible with type",
+                {"type": item["type"]},
+            )
+
+    def element_add_groups(self, item):
+        group_ids = self.opencti.get_attribute_in_extension("group_ids", item)
+        if group_ids is None:
+            group_ids = item["group_ids"]
+        if item["type"] == "user":
+            for group_id in group_ids:
+                self.opencti.user.add_membership(id=item["id"], group_id=group_id)
+        else:
+            raise ValueError(
+                "Add groups operation not compatible with type", {"type": item["type"]}
+            )
+
+    def element_remove_groups(self, item):
+        group_ids = self.opencti.get_attribute_in_extension("group_ids", item)
+        if group_ids is None:
+            group_ids = item["group_ids"]
+        if item["type"] == "user":
+            for group_id in group_ids:
+                self.opencti.user.delete_membership(id=item["id"], group_id=group_id)
+        else:
+            raise ValueError(
+                "Remove groups operation not compatible with type",
+                {"type": item["type"]},
             )
 
     def element_operation_delete(self, item, operation):
@@ -2665,6 +2728,14 @@ class OpenCTIStix2:
             self.opencti.stix_core_object.ask_enrichments(
                 element_id=item["id"], connector_ids=connector_ids
             )
+        elif operation == "add_organizations":
+            self.element_add_organizations(item)
+        elif operation == "remove_organizations":
+            self.element_remove_organizations(item)
+        elif operation == "add_groups":
+            self.element_add_groups(item)
+        elif operation == "remove_groups":
+            self.element_remove_groups(item)
         else:
             raise ValueError(
                 "Not supported opencti_operation",
