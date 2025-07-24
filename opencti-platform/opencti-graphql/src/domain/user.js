@@ -11,6 +11,7 @@ import {
   BUS_TOPICS,
   DEFAULT_ACCOUNT_STATUS,
   ENABLED_DEMO_MODE,
+  getRequestAuditHeaders,
   isFeatureEnabled,
   logApp
 } from '../config/conf';
@@ -135,21 +136,25 @@ export const userWithOrigin = (req, user) => {
   // - In audit logs to identify the user
   // - In stream message to also identifier the user
   // - In logging system to know the level of the error message
-  const headers_metadata = R.mergeAll((user.headers_audit ?? [])
+
+  // Additional header from "authentication with header" authentication mode
+  const sso_headers_metadata = R.mergeAll((user.headers_audit ?? [])
     .map((header) => ({ [header]: req.header(header) })));
+  const tracing_headers_metadata = getRequestAuditHeaders(req);
+
   const origin = {
     socket: 'query',
     ip: req?.ip,
     user_id: user.id,
     group_ids: user.groups?.map((g) => g.internal_id) ?? [],
     organization_ids: user.organizations?.map((o) => o.internal_id) ?? [],
-    user_metadata: { ...headers_metadata },
+    user_metadata: { ...sso_headers_metadata, ...tracing_headers_metadata },
     referer: req?.headers.referer,
     applicant_id: req?.headers['opencti-applicant-id'],
     call_retry_number: req?.headers['opencti-retry-number'],
-    playbook_id: req?.headers['opencti-playbook-id'],
-    user_agent: req?.headers['user-agent']
+    playbook_id: req?.headers['opencti-playbook-id']
   };
+  console.log('origin:', origin);
   return { ...user, origin };
 };
 

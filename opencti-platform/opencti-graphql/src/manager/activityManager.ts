@@ -90,6 +90,7 @@ const historyIndexing = async (context: AuthContext, events: Array<SseEvent<Acti
       }
       const activityDate = utcDate(eventDate).toDate();
       const isAdminEvent = event.data.event_access === 'administration';
+      console.log('activityManager - user_metadata:', { user_metadata: event.data.origin?.user_metadata });
       return {
         _index: INDEX_HISTORY,
         internal_id: event.id,
@@ -103,7 +104,6 @@ const historyIndexing = async (context: AuthContext, events: Array<SseEvent<Acti
         event_scope: event.data.event_scope,
         user_id: ENABLED_DEMO_MODE ? REDACTED_USER.id : event.data.origin?.user_id,
         user_metadata: event.data.origin?.user_metadata,
-        request_metadata: event.data.origin.request_metadata,
         group_ids: event.data.origin?.group_ids ?? [],
         organization_ids: event.data.origin?.organization_ids ?? [],
         applicant_id: event.data.origin?.applicant_id,
