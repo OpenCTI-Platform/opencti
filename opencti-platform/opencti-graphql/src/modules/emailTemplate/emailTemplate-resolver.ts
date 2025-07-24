@@ -32,8 +32,8 @@ const emailTemplateResolver: Resolvers = {
     emailTemplateFieldPatch: (_, { id, input }, context) => {
       return fieldPatchEmailTemplate(context, context.user, id, input);
     },
-    emailTemplateTestSend: (_, { id, userId }, context) => {
-      return sendTestEmail(context, context.user, id, userId);
+    emailTemplateTestSend: (_, { id }, context) => {
+      return sendTestEmail(context, context.user, id);
     },
   }
 };

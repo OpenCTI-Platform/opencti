@@ -37,9 +37,9 @@ export const findAll = async (context: AuthContext, user: AuthUser, args: QueryE
   return listEntitiesPaginated<BasicStoreEntityEmailTemplate>(context, user, [ENTITY_TYPE_EMAIL_TEMPLATE], args);
 };
 
-export const sendTestEmail = async (context: AuthContext, user: AuthUser, id: string, userId: string) => {
+export const sendTestEmail = async (context: AuthContext, user: AuthUser, id: string) => {
   await checkEnterpriseEdition(context);
-  return sendEmailToUser(context, user, { target_user_id: userId, email_template_id: id });
+  return sendEmailToUser(context, user, { target_user_id: user.id, email_template_id: id });
 };
 
 export const addEmailTemplate = async (context: AuthContext, user: AuthUser, input: EmailTemplateAddInput) => {
