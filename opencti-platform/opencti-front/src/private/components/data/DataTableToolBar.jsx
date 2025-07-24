@@ -64,6 +64,7 @@ import Avatar from '@mui/material/Avatar';
 import { Switch, FormControlLabel } from '@mui/material';
 import Checkbox from '@mui/material/Checkbox';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import UserEmailSend from '@components/settings/users/UserEmailSend';
 import { objectParticipantFieldMembersSearchQuery } from '../common/form/ObjectParticipantField';
 import { objectAssigneeFieldMembersSearchQuery } from '../common/form/ObjectAssigneeField';
 import { vocabularyQuery } from '../common/form/OpenVocabField';
@@ -372,6 +373,7 @@ class DataTableToolBar extends Component {
       displayShare: false,
       displayUnshare: false,
       displayPromote: false,
+      displaySendEmail: false,
       containerCreation: false,
       organizationCreation: false,
       actions: [],
@@ -475,6 +477,10 @@ class DataTableToolBar extends Component {
 
   handleCloseUnshare() {
     this.setState({ displayUnshare: false });
+  }
+
+  handleCloseSendEmail() {
+    this.setState({ displaySendEmail: false });
   }
 
   handleOpenPromote() {
@@ -2095,6 +2101,19 @@ class DataTableToolBar extends Component {
     return { entityTypeFilterValues, selectedElementsList, selectedTypes };
   }
 
+  handleSubmitEmailTemplate(emailTemplate) {
+    this.handleCloseSendEmail();
+    const sendEmailAction = [
+      {
+        type: 'SEND_EMAIL',
+        context: { values: [emailTemplate.id] },
+      },
+    ];
+    this.setState({ actions: sendEmailAction }, () => {
+      this.handleOpenTask();
+    });
+  }
+
   render() {
     const {
       t,
@@ -2321,6 +2340,13 @@ class DataTableToolBar extends Component {
                           </IconButton>
                         </span>
                       </Tooltip>
+                    )}
+                    {isUserDatatable && isEnterpriseEdition && (
+                      <UserEmailSend
+                        isOpen={this.state.displaySendEmail}
+                        onClose={this.handleCloseSendEmail.bind(this)}
+                        onSubmit={this.handleSubmitEmailTemplate.bind(this)}
+                      />
                     )}
                     {!removeAuthMembersEnabled && !removeFromDraftEnabled && !isInDraft && !isUserDatatable && (
                     <UserContext.Consumer>

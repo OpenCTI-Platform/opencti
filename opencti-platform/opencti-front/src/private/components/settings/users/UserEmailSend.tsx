@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { graphql } from 'react-relay';
 import ToggleButton from '@mui/material/ToggleButton';
-import { SendOutline } from 'mdi-material-ui';
+import { SendOutline, Send } from 'mdi-material-ui';
 import Dialog from '@mui/material/Dialog';
 import { DialogTitle } from '@mui/material';
 import DialogContent from '@mui/material/DialogContent';
@@ -9,8 +9,9 @@ import { Form, Formik } from 'formik';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
-import EmailTemplateField, { EmailTemplateFieldOption } from '@components/common/form/EmailTemplateField';
+import EmailTemplateField, { EmailTemplate, EmailTemplateFieldOption } from '@components/common/form/EmailTemplateField';
 import { FormikConfig } from 'formik/dist/types';
+import IconButton from '@mui/material/IconButton';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { handleError, MESSAGING$ } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
@@ -26,13 +27,25 @@ interface UserEmailFormInputs {
 }
 interface UserEmailSendProps {
   userId: string;
+  outlined?: boolean;
+  onSubmit?: (value: EmailTemplate) => void;
+  onClose: () => void;
+  isOpen?: boolean;
 }
-const UserEmailSend = ({ userId }: UserEmailSendProps) => {
+const UserEmailSend = ({ userId, isOpen, onSubmit, outlined }: UserEmailSendProps) => {
   const { t_i18n } = useFormatter();
   const [commitSendEmailMutation] = useApiMutation(userEmailSendMutation);
-  const [isEmailTemplateSelectionShown, setIsEmailTemplateSelectionShown] = useState(false);
+  const [isEmailTemplateSelectionShown, setIsEmailTemplateSelectionShown] = useState<boolean>(false);
 
-  const submitSendEmail: FormikConfig<UserEmailFormInputs>['onSubmit'] = (values, { setSubmitting }) => {
+  useEffect(() => {
+    if (typeof isOpen === 'boolean') setIsEmailTemplateSelectionShown(isOpen);
+  }, [isOpen]);
+  const submitSendEmail: FormikConfig<UserEmailFormInputs>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
+    if (onSubmit) {
+      onSubmit(values.emailTemplate.value);
+      resetForm();
+      return;
+    }
     const input = {
       target_user_id: userId,
       email_template_id: values.emailTemplate.value.id,
@@ -55,16 +68,34 @@ const UserEmailSend = ({ userId }: UserEmailSendProps) => {
   };
 
   const initialValues: UserEmailFormInputs = { emailTemplate: { value: { id: '', name: '' }, label: '' } };
+
+  const renderOutlinedButton = () => (
+    <ToggleButton
+      onClick={() => setIsEmailTemplateSelectionShown(true)}
+      value="sendEmail"
+      size="small"
+    >
+      <SendOutline fontSize="small" color="primary"/>
+    </ToggleButton>
+  );
+
+  const renderMainButton = () => (
+    <IconButton
+      onClick={() => setIsEmailTemplateSelectionShown(true)}
+      value="sendEmail"
+      size="small"
+    >
+      <Send fontSize="small" color="primary"/>
+    </IconButton>
+  );
+
   return (
     <>
       <EETooltip title={t_i18n('Send email')}>
-        <ToggleButton
-          onClick={() => setIsEmailTemplateSelectionShown(true)}
-          value="sendEmail"
-          size="small"
-        >
-          <SendOutline fontSize="small" color="primary" />
-        </ToggleButton>
+        {outlined
+          ? renderOutlinedButton()
+          : renderMainButton()
+        }
       </EETooltip>
       <Formik
         initialValues={initialValues}

@@ -146,7 +146,7 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
               <div className="clearfix"/>
             </div>
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              <UserEmailSend userId={userId} />
+              <UserEmailSend outlined userId={userId} />
               <div style={{ display: 'flex' }}>
                 <div style={{ marginRight: theme.spacing(0.5) }}>
                   {canDelete && (
