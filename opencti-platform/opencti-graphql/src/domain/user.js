@@ -3,7 +3,17 @@ import { authenticator } from 'otplib';
 import * as R from 'ramda';
 import { uniq } from 'ramda';
 import { v4 as uuid } from 'uuid';
-import { ACCOUNT_STATUS_ACTIVE, ACCOUNT_STATUS_EXPIRED, ACCOUNT_STATUSES, BUS_TOPICS, DEFAULT_ACCOUNT_STATUS, ENABLED_DEMO_MODE, logApp } from '../config/conf';
+import {
+  ACCOUNT_STATUS_ACTIVE,
+  ACCOUNT_STATUS_EXPIRED,
+  ACCOUNT_STATUSES,
+  auditRequestHeaderToKeep,
+  BUS_TOPICS,
+  DEFAULT_ACCOUNT_STATUS,
+  ENABLED_DEMO_MODE,
+  isFeatureEnabled,
+  logApp
+} from '../config/conf';
 import { AuthenticationFailure, DatabaseError, DraftLockedError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { elLoadBy, elRawDeleteByQuery } from '../database/engine';
@@ -75,7 +85,6 @@ import { cleanMarkings } from '../utils/markingDefinition-utils';
 import { UnitSystem } from '../generated/graphql';
 import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
-import { addServiceAccountIntoUserCount, addUserIntoServiceAccountCount } from '../manager/telemetryManager';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -103,6 +112,7 @@ const ME_USER_MODIFIABLE_ATTRIBUTES = [
   'draft_context',
 ];
 const AVAILABLE_LANGUAGES = ['auto', 'es-es', 'fr-fr', 'ja-jp', 'zh-cn', 'en-us', 'de-de', 'ko-kr', 'ru-ru'];
+const serviceAccountFeatureFlag = isFeatureEnabled('SERVICE_ACCOUNT');
 const computeImpactedUsers = async (context, user, roleId) => {
   // Get all groups that have this role
   const groupsRoles = await listAllRelations(context, user, RELATION_HAS_ROLE, { toId: roleId, fromTypes: [ENTITY_TYPE_GROUP] });
@@ -257,17 +267,6 @@ export const userOrganizationsPaginatedWithoutInferences = async (context, user,
 
 export const userOrganizationsPaginated = async (context, user, userId, opts) => {
   return listEntitiesThroughRelationsPaginated(context, user, userId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION, false, opts);
-};
-
-// Get the creator of userId
-export const getCreator = async (context, _user, userId) => {
-  const allUsersInCache = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  const userLoaded = allUsersInCache.get(userId);
-  const firstCreatorId = Array.isArray(userLoaded.creator_id) && userLoaded.creator_id.length > 0
-    ? userLoaded.creator_id.at(0)
-    : userLoaded.creator_id;
-  const userCreatorFromCache = allUsersInCache.get(firstCreatorId);
-  return buildCreatorUser(userCreatorFromCache);
 };
 
 export const userRoles = async (context, _user, userId, opts) => {
@@ -466,7 +465,7 @@ export const assignOrganizationToUser = async (context, user, userId, organizati
     event_scope: 'update',
     event_access: 'administration',
     message: `adds ${created.toType} \`${extractEntityRepresentativeName(created.to)}\` to user \`${actionEmail}\``,
-    context_data: { id: targetUser.id, entity_type: ENTITY_TYPE_USER, input }
+    context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user);
 };
@@ -556,7 +555,7 @@ export const checkPasswordFromPolicy = async (context, password) => {
 
 export const addUser = async (context, user, newUser) => {
   let userEmail;
-  const userServiceAccount = newUser.user_service_account;
+  const userServiceAccount = newUser.user_service_account && serviceAccountFeatureFlag;
   if (newUser.user_email && !userServiceAccount) {
     userEmail = newUser.user_email.toLowerCase();
     const existingUser = await elLoadBy(context, SYSTEM_USER, 'user_email', userEmail, ENTITY_TYPE_USER);
@@ -606,10 +605,12 @@ export const addUser = async (context, user, newUser) => {
     R.dissoc('prevent_default_groups')
   )(newUser);
 
-  userToCreate = {
-    ...userToCreate,
-    user_service_account: newUser.user_service_account || false,
-  };
+  if (serviceAccountFeatureFlag) {
+    userToCreate = {
+      ...userToCreate,
+      user_service_account: newUser.user_service_account || false,
+    };
+  }
 
   if (userServiceAccount) {
     userToCreate = {
@@ -727,6 +728,7 @@ export const roleDeleteRelation = async (context, user, roleId, toId, relationsh
   return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user);
 };
 
+// User related
 export const userEditField = async (context, user, userId, rawInputs) => {
   const inputs = [];
   const userToUpdate = await internalLoadById(context, user, userId);
@@ -739,20 +741,10 @@ export const userEditField = async (context, user, userId, rawInputs) => {
   }
   for (let index = 0; index < rawInputs.length; index += 1) {
     const input = rawInputs[index];
-    let skipThisInput = false;
     if (input.key === 'password') {
-      const userServiceAccountInput = rawInputs.find((x) => x.key === 'user_service_account');
-      if (userServiceAccountInput && userToUpdate.user_service_account !== userServiceAccountInput.value[0]) {
-        skipThisInput = true;
-      }
-
-      if (!userToUpdate.user_service_account) {
-        const userPassword = R.head(input.value).toString();
-        await checkPasswordFromPolicy(context, userPassword);
-        input.value = [bcrypt.hashSync(userPassword)];
-      } else {
-        throw FunctionalError('Cannot update password for Service account');
-      }
+      const userPassword = R.head(input.value).toString();
+      await checkPasswordFromPolicy(context, userPassword);
+      input.value = [bcrypt.hashSync(userPassword)];
     }
     if (input.key === 'account_status') {
       // If account status is not active, kill all current user sessions
@@ -791,23 +783,7 @@ export const userEditField = async (context, user, userId, rawInputs) => {
         throw FunctionalError('The language you have provided is not valid');
       }
     }
-
-    // Turn User into Service Account
-    if (input.key === 'user_service_account' && !userToUpdate.user_service_account && input.value[0] === true) {
-      inputs.push({ key: 'password', value: [null] });
-      await addUserIntoServiceAccountCount();
-    }
-    // Turn Service Account into User
-    if (input.key === 'user_service_account' && userToUpdate.user_service_account && input.value[0] === false) {
-      const userPassword = uuid();
-      await checkPasswordFromPolicy(context, userPassword);
-      inputs.push({ key: 'password', value: [bcrypt.hashSync(userPassword)] });
-      await addServiceAccountIntoUserCount();
-    }
-
-    if (!skipThisInput) {
-      inputs.push(input);
-    }
+    inputs.push(input);
   }
   const { element } = await updateAttribute(context, user, userId, ENTITY_TYPE_USER, inputs);
   const input = updatedInputsToData(element, inputs);
@@ -1060,7 +1036,7 @@ export const userAddRelation = async (context, user, userId, input) => {
     event_scope: 'update',
     event_access: 'administration',
     message: `adds ${relationData.toType} \`${extractEntityRepresentativeName(relationData.to)}\` for user \`${actionEmail}\``,
-    context_data: { id: userData.id, entity_type: ENTITY_TYPE_USER, input: finalInput }
+    context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input: finalInput }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userData, user).then(() => relationData);
 };
@@ -1123,7 +1099,7 @@ export const userDeleteOrganizationRelation = async (context, user, userId, toId
     event_scope: 'update',
     event_access: 'administration',
     message: `removes ${to.entity_type} \`${extractEntityRepresentativeName(to)}\` for user \`${actionEmail}\``,
-    context_data: { id: targetUser.id, entity_type: ENTITY_TYPE_USER, input }
+    context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user);
 };

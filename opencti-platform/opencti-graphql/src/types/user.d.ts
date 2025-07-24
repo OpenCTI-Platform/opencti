@@ -20,8 +20,7 @@ interface UserOrigin {
   playbook_id?: string;
   referer?: string;
   user_metadata?: object;
-  user_agent?: string
-  source_ip?: string[]
+  request_metadata?: string;
 }
 
 interface AuthUser extends BasicStoreIdentifier {
