@@ -18,6 +18,7 @@ import { SYSTEM_USER } from '../../utils/access';
 import { killUserSessions } from '../../database/session';
 import { logApp } from '../../config/conf';
 import type { SendMailArgs } from '../../types/smtp';
+import { addForgotPasswordCount } from '../../manager/telemetryManager';
 
 export const getLocalProviderUser = async (email: string) => {
   const user: any = await getUserByEmail(email);
@@ -99,6 +100,7 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
       message: `Failed to send password reset code to ${input.email}`,
     });
   }
+  await addForgotPasswordCount();
 
   // In all cases, return the transaction ID
   return transactionId;
