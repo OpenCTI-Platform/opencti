@@ -2,7 +2,6 @@ import React, { FunctionComponent } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
-import ExternalReferenceDeletion from '@components/analyses/external_references/ExternalReferenceDeletion';
 import ExternalReferenceOverview from './ExternalReferenceOverview';
 import ExternalReferenceDetails from './ExternalReferenceDetails';
 import ExternalReferenceEdition from './ExternalReferenceEdition';
@@ -11,7 +10,7 @@ import ExternalReferenceHeader from './ExternalReferenceHeader';
 import ExternalReferenceFileImportViewer from './ExternalReferenceFileImportViewer';
 import ExternalReferenceStixCoreObjects from './ExternalReferenceStixCoreObjects';
 import { ExternalReference_externalReference$data } from './__generated__/ExternalReference_externalReference.graphql';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -48,11 +47,6 @@ ExternalReferenceComponentProps
         EditComponent={(
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <ExternalReferenceEdition externalReferenceId={externalReference.id} />
-          </Security>
-        )}
-        DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
-          <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-            <ExternalReferenceDeletion id={externalReference.id} isOpen={isOpen} handleClose={onClose} />
           </Security>
         )}
       />

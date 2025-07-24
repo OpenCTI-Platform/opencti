@@ -4,11 +4,13 @@ import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { Box } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
+import ExternalReferenceDeletion from '@components/analyses/external_references/ExternalReferenceDeletion';
 import { truncate } from '../../../../utils/String';
 import { ExternalReferenceHeader_externalReference$data } from './__generated__/ExternalReferenceHeader_externalReference.graphql';
 import PopoverMenu from '../../../../components/PopoverMenu';
 import { useFormatter } from '../../../../components/i18n';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -18,21 +20,14 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-interface DeleteComponentProps {
-  isOpen: boolean
-  onClose: () => void;
-}
-
 interface ExternalReferenceHeaderComponentProps {
   externalReference: ExternalReferenceHeader_externalReference$data;
   EditComponent?: React.JSX.Element | boolean;
-  DeleteComponent: React.ComponentType<DeleteComponentProps>;
 }
 
 const ExternalReferenceHeaderComponent = ({
   externalReference,
   EditComponent,
-  DeleteComponent,
 }: ExternalReferenceHeaderComponentProps) => {
   const classes = useStyles();
   const canDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]);
@@ -77,7 +72,9 @@ const ExternalReferenceHeaderComponent = ({
             </PopoverMenu>
           )}
           {EditComponent}
-          <DeleteComponent isOpen={openDelete} onClose={handleCloseDelete}/>
+          <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+            <ExternalReferenceDeletion id={externalReference.id} isOpen={openDelete} handleClose={handleCloseDelete} />
+          </Security>
         </div>
       </div></div>
   );

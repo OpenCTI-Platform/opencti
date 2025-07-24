@@ -110,7 +110,6 @@ const FintelTemplateHeader = ({ entitySettingId, data }: FintelTemplateHeaderPro
           published: !!template.start_date,
         }}
         onClose={() => setFormOpen(false)}
-        onDeleteComplete={() => navigate(subTypeLink)}
       />
     </>
   );
