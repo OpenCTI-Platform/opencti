@@ -248,18 +248,26 @@ export const registerConnectorQueues = async (id, name, type, scope) => {
   });
   return connectorConfig(id);
 };
-// region deprecated fixed queues
-/** @deprecated [>=6.3 & <6.6]. Remove and add migration to remove the queues. */
-const CONNECTOR_QUEUE_PLAYBOOK = { id: 'playbook', name: '[PLAYBOOK] Internal playbook manager', type: 'internal', scope: 'playbook' };
-const CONNECTOR_QUEUE_SYNC = { id: 'sync', name: '[SYNC] Internal sync manager', type: 'internal', scope: 'sync' };
-export const getInternalQueues = () => {
+
+export const getInternalBackgroundTaskQueues = () => {
   const backgroundTaskConnectorQueues = [];
   for (let i = 0; i < BACKGROUND_TASK_QUEUES; i += 1) {
     backgroundTaskConnectorQueues.push(
       { id: `background-task-${i}`, name: `[TASK] Internal task processing #${i}`, type: 'internal', scope: ENTITY_TYPE_BACKGROUND_TASK }
     );
   }
-  return [CONNECTOR_QUEUE_PLAYBOOK, CONNECTOR_QUEUE_SYNC, ...backgroundTaskConnectorQueues];
+  return backgroundTaskConnectorQueues;
+};
+// region deprecated fixed queues
+// we have now dedicated queues for each playbook and each sync (see getInternalPlaybookQueues & getInternalSyncQueues)
+const CONNECTOR_QUEUE_PLAYBOOK = { id: 'playbook', name: 'Internal playbook manager', type: 'internal', scope: 'playbook' };
+const CONNECTOR_QUEUE_SYNC = { id: 'sync', name: 'Internal sync manager', type: 'internal', scope: 'sync' };
+/** @deprecated [>=6.3 & <6.6]. Remove and add migration to remove the queues. */
+const DEPRECATED_INTERNAL_QUEUES = [CONNECTOR_QUEUE_PLAYBOOK, CONNECTOR_QUEUE_SYNC];
+// endregion
+export const getInternalQueues = () => {
+  const backgroundTaskConnectorQueues = getInternalBackgroundTaskQueues();
+  return [...DEPRECATED_INTERNAL_QUEUES, ...backgroundTaskConnectorQueues];
 };
 
 export const initializeInternalQueues = async () => {
@@ -268,7 +276,6 @@ export const initializeInternalQueues = async () => {
     const internalQueue = internalQueues[i];
     await registerConnectorQueues(internalQueue.id, internalQueue.name, internalQueue.type, internalQueue.scope);
   }
-  // endregion
 };
 
 export const getInternalPlaybookQueues = async (context, user) => {

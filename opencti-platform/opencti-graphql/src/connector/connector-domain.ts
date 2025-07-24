@@ -2,15 +2,15 @@ import { importCsvConnector, importCsvConnectorRuntime } from './importCsv/impor
 import type { AuthContext, AuthUser } from '../types/user';
 import { ENABLED_IMPORT_CSV_BUILT_IN_CONNECTOR } from './importCsv/importCsv-configuration';
 import { DRAFT_VALIDATION_CONNECTOR, draftValidationConnectorRuntime } from '../modules/draftWorkspace/draftWorkspace-connector';
-import { getInternalPlaybookQueues, getInternalQueues, getInternalSyncQueues } from '../database/rabbitmq';
+import { getInternalBackgroundTaskQueues, getInternalPlaybookQueues, getInternalSyncQueues } from '../database/rabbitmq';
 import type { Connector } from './internalConnector';
 
 const builtInInternalConnectors = async (context: AuthContext, user: AuthUser) => {
   const builtInInternalConnectorsList: Connector[] = [];
-  const internalQueues = getInternalQueues();
+  const backgroundTaskQueues = getInternalBackgroundTaskQueues();
   const playbookQueues = await getInternalPlaybookQueues(context, user);
   const syncQueues = await getInternalSyncQueues(context, user);
-  const allInternalQueues = [...internalQueues, ...playbookQueues, ...syncQueues];
+  const allInternalQueues = [...backgroundTaskQueues, ...playbookQueues, ...syncQueues];
   for (let i = 0; i < allInternalQueues.length; i += 1) {
     const internalQueue = allInternalQueues[i];
     builtInInternalConnectorsList.push({
