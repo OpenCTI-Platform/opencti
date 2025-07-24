@@ -41,8 +41,9 @@ const dashboardFragment = graphql`
       entity_type
     }
     currentUserAccessRight
-    ...WorkspaceManageAccessDialog_authorizedMembers
     ...WorkspaceEditionContainer_workspace
+    ...WorkspaceHeaderFragment
+    ...WorkspaceWidgetConfigFragment
   }
 `;
 
@@ -243,7 +244,7 @@ const DashboardComponent = ({ data, noToolbar }) => {
         <>
           <WorkspaceHeader
             handleAddWidget={handleAddWidget}
-            workspace={workspace}
+            data={workspace}
             variant="dashboard"
           />
           <div style={{ marginTop: 8 }}>

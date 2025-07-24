@@ -46,8 +46,8 @@ const investigationGraphFragment = graphql`
       entity_type
     }
     currentUserAccessRight
-    ...WorkspaceManageAccessDialog_authorizedMembers
     ...WorkspaceEditionContainer_workspace
+    ...WorkspaceHeaderFragment
   }
 `;
 
@@ -506,7 +506,7 @@ const InvestigationGraphComponent = ({
   return (
     <div style={{ display: 'flex', flexFlow: 'column' }}>
       <WorkspaceHeader
-        workspace={investigation}
+        data={investigation}
         variant="investigation"
         handleAddWidget={undefined}
         adjust={undefined}
