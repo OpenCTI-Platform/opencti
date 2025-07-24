@@ -75,12 +75,12 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
   const { groups: defaultGroups } = usePreloadedQuery(groupsQuery, defaultGroupsQueryRef);
 
   const onSubmit = (values, { setSubmitting, resetForm }) => {
-    const { objectOrganization, groups, user_confidence_level, emailTemplate, ...rest } = values;
+    const { objectOrganization, groups, user_confidence_level, email_template_id, ...rest } = values;
     const finalValues = {
       ...rest,
       objectOrganization: objectOrganization.map((n) => n.value),
       groups: groups.map((n) => n.value),
-      email_template_id: emailTemplate.value.id,
+      email_template_id: email_template_id?.value?.id ?? null,
       user_confidence_level: user_confidence_level
         ? {
           max_confidence: parseInt(user_confidence_level, 10),
@@ -132,7 +132,7 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
               account_lock_after_date: null,
               user_confidence_level: null,
               prevent_default_groups: false,
-              emailTemplate: '',
+              email_template_id: null,
             }}
             validationSchema={userValidation(t_i18n)}
             onSubmit={onSubmit}
@@ -251,7 +251,7 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                   }}
                 />
                 <EmailTemplateField
-                  name="emailTemplate"
+                  name="email_template_id"
                   label={t_i18n('Email template')}
                 />
                 {hasSetAccess && (

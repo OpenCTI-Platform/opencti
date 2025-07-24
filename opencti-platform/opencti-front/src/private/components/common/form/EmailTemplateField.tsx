@@ -85,10 +85,10 @@ const EmailTemplateFieldComponent: FunctionComponent<EmailTemplateFieldComponent
         options={emailTemplates}
         renderOption={(
           props: React.HTMLAttributes<HTMLLIElement>,
-          option: { label: string },
+          option: EmailTemplateFieldOption,
         ) => (
-          <li {...props} style={{ display: 'flex', alignItems: 'center' }}>
-            <ItemIcon type='email-templates' />
+          <li {...props} key={option.value.id} style={{ display: 'flex', alignItems: 'center' }}>
+            <ItemIcon color={'#afb505'} type='email-templates' />
             <div style={{ flexGrow: 1, marginLeft: 10 }}>{option.label}</div>
           </li>
         )}
