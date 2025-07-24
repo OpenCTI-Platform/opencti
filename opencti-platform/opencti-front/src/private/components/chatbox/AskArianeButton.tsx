@@ -127,7 +127,7 @@ const AskArianeButton = () => {
       {isEnterpriseEdition ? (
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        <flowise-chatbot
+        <filigran-chatbot
           ref={chatboxRef}
           text={!navOpen ? '' : 'ASK ARIANE'}
           left={navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH}
