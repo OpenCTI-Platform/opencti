@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React, { CSSProperties, ReactNode } from 'react';
 import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
 import StixCoreObjectLabels from '@components/common/stix_core_objects/StixCoreObjectLabels';
@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { useTheme } from '@mui/styles';
 import { DraftChip } from '@components/common/draft/DraftChip';
 import { HorizontalRule, Security } from '@mui/icons-material';
+import { Pirs_PirFragment$data } from '@components/pir/__generated__/Pirs_PirFragment.graphql';
 import ItemCvssScore from '../ItemCvssScore';
 import type { DataTableColumn } from './dataTableTypes';
 import { DataTableProps, DataTableVariant } from './dataTableTypes';
@@ -30,13 +31,15 @@ import ItemDueDate from '../ItemDueDate';
 import { APP_BASE_PATH } from '../../relay/environment';
 import FieldOrEmpty from '../FieldOrEmpty';
 import ItemHistory from '../ItemHistory';
+import { useFormatter } from '../i18n';
 
-const chipStyle = {
+const chipStyle: CSSProperties = {
   fontSize: '12px',
   lineHeight: '12px',
   height: '20px',
   marginRight: '7px',
-  borderRadius: '10px',
+  borderRadius: '4px',
+  textTransform: 'uppercase',
 };
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -228,16 +231,6 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       </Tooltip>
     ),
   },
-  usages: {
-    id: 'usages',
-    label: 'Usages',
-    percentWidth: 20,
-    isSortable: false,
-    render: ({ usages }) => {
-      const value = usages != null ? usages : '-';
-      return defaultRender(value);
-    },
-  },
   confidence: {
     id: 'confidence',
     label: 'Confidence',
@@ -334,12 +327,27 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       />
     ),
   },
+  due_date: {
+    id: 'due_date',
+    label: 'Due Date',
+    percentWidth: 15,
+    render: ({ due_date }) => <ItemDueDate due_date={due_date} variant={'inList'} />,
+  },
   effective_confidence_level: {
     id: 'effective_confidence_level',
     label: 'Max Confidence',
     percentWidth: 10,
     isSortable: false,
     render: ({ effective_confidence_level }) => defaultRender(effective_confidence_level?.max_confidence),
+  },
+  event_scope: {
+    id: 'event_scope',
+    label: 'Activity',
+    percentWidth: 50,
+    isSortable: false,
+    render: ({ user, context_data }) => (
+      <ItemHistory username={user.name} message={context_data.message} />
+    ),
   },
   entity_type: {
     id: 'entity_type',
@@ -388,12 +396,6 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       const value = isNotEmptyField(event_types) ? event_types.join(', ') : '-';
       return defaultRender(value);
     },
-  },
-  due_date: {
-    id: 'due_date',
-    label: 'Due Date',
-    percentWidth: 15,
-    render: ({ due_date }) => <ItemDueDate due_date={due_date} variant={'inList'} />,
   },
   external_id: {
     id: 'external_id',
@@ -580,28 +582,6 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       );
     },
   },
-  response_types: {
-    id: 'response_types',
-    label: 'Response type',
-    percentWidth: 9,
-    isSortable: true,
-    render: ({ response_types }, { t_i18n, storageHelpers: { handleAddFilter } }) => {
-      const classes = useStyles();
-      return (
-        <Chip
-          classes={{ root: classes.chipInList }}
-          color="primary"
-          variant="outlined"
-          label={response_types?.at(0) ?? t_i18n('Unknown')}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleAddFilter('response_types', response_types?.at(0) ?? null, 'eq');
-          }}
-        />
-      );
-    },
-  },
   information_types: {
     id: 'information_types',
     label: 'Information type',
@@ -619,28 +599,6 @@ const defaultColumns: DataTableProps['dataColumns'] = {
             e.preventDefault();
             e.stopPropagation();
             handleAddFilter('information_types', information_types?.at(0) ?? null, 'eq');
-          }}
-        />
-      );
-    },
-  },
-  takedown_types: {
-    id: 'takedown_types',
-    label: 'Takedown type',
-    percentWidth: 9,
-    isSortable: true,
-    render: ({ takedown_types }, { t_i18n, storageHelpers: { handleAddFilter } }) => {
-      const classes = useStyles();
-      return (
-        <Chip
-          classes={{ root: classes.chipInList }}
-          color="primary"
-          variant="outlined"
-          label={takedown_types?.at(0) ?? t_i18n('Unknown')}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleAddFilter('takedown_types', takedown_types?.at(0) ?? null, 'eq');
           }}
         />
       );
@@ -776,28 +734,6 @@ const defaultColumns: DataTableProps['dataColumns'] = {
             e.preventDefault();
             e.stopPropagation();
             handleAddFilter('note_types', note_types?.at(0) ?? null, 'eq');
-          }}
-        />
-      );
-    },
-  },
-  tool_types: {
-    id: 'tool_types',
-    label: 'Type',
-    percentWidth: 10,
-    isSortable: true,
-    render: ({ tool_types }, { t_i18n, storageHelpers: { handleAddFilter } }) => {
-      const classes = useStyles();
-      return (
-        <Chip
-          classes={{ root: classes.chipInList }}
-          color="primary"
-          variant="outlined"
-          label={tool_types?.at(0) ?? t_i18n('Unknown')}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleAddFilter('tool_types', tool_types?.at(0) ?? null, 'eq');
           }}
         />
       );
@@ -958,6 +894,22 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: ({ phase_name }) => defaultRender(phase_name),
   },
+  pir_type: {
+    percentWidth: 12,
+    id: 'pir_type',
+    label: 'Type',
+    render: ({ pir_type }: Pirs_PirFragment$data) => {
+      const { t_i18n } = useFormatter();
+      return (
+        <Chip
+          style={chipStyle}
+          color="primary"
+          variant="outlined"
+          label={t_i18n(pir_type)}
+        />
+      );
+    },
+  },
   primary_motivation: {
     id: 'primary_motivation',
     label: 'Primary motivation',
@@ -1067,6 +1019,28 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       />
     ),
   },
+  response_types: {
+    id: 'response_types',
+    label: 'Response type',
+    percentWidth: 9,
+    isSortable: true,
+    render: ({ response_types }, { t_i18n, storageHelpers: { handleAddFilter } }) => {
+      const classes = useStyles();
+      return (
+        <Chip
+          classes={{ root: classes.chipInList }}
+          color="primary"
+          variant="outlined"
+          label={response_types?.at(0) ?? t_i18n('Unknown')}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleAddFilter('response_types', response_types?.at(0) ?? null, 'eq');
+          }}
+        />
+      );
+    },
+  },
   result_name: {
     id: 'result_name',
     label: 'Result name',
@@ -1154,6 +1128,28 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: ({ submitted }, { fd }) => fd(submitted),
   },
+  takedown_types: {
+    id: 'takedown_types',
+    label: 'Takedown type',
+    percentWidth: 9,
+    isSortable: true,
+    render: ({ takedown_types }, { t_i18n, storageHelpers: { handleAddFilter } }) => {
+      const classes = useStyles();
+      return (
+        <Chip
+          classes={{ root: classes.chipInList }}
+          color="primary"
+          variant="outlined"
+          label={takedown_types?.at(0) ?? t_i18n('Unknown')}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleAddFilter('takedown_types', takedown_types?.at(0) ?? null, 'eq');
+          }}
+        />
+      );
+    },
+  },
   tags: {
     id: 'tags',
     label: 'Tags',
@@ -1189,6 +1185,13 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       return defaultRender(value);
     },
   },
+  timestamp: {
+    id: 'timestamp',
+    label: 'Timestamp',
+    percentWidth: 50,
+    isSortable: true,
+    render: ({ timestamp }, { nsdt }) => defaultRender(nsdt(timestamp)),
+  },
   toName: {
     id: 'toName',
     label: 'To name',
@@ -1198,6 +1201,28 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       const value = to ? getMainRepresentative(to) : helpers.t_i18n('Restricted');
       const displayDraftChip = !!to?.draftVersion;
       return defaultRender(value, displayDraftChip);
+    },
+  },
+  tool_types: {
+    id: 'tool_types',
+    label: 'Type',
+    percentWidth: 10,
+    isSortable: true,
+    render: ({ tool_types }, { t_i18n, storageHelpers: { handleAddFilter } }) => {
+      const classes = useStyles();
+      return (
+        <Chip
+          classes={{ root: classes.chipInList }}
+          color="primary"
+          variant="outlined"
+          label={tool_types?.at(0) ?? t_i18n('Unknown')}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleAddFilter('tool_types', tool_types?.at(0) ?? null, 'eq');
+          }}
+        />
+      );
     },
   },
   toType: {
@@ -1237,6 +1262,16 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 45,
     isSortable: true,
     render: ({ url }) => defaultRender(url),
+  },
+  usages: {
+    id: 'usages',
+    label: 'Usages',
+    percentWidth: 20,
+    isSortable: false,
+    render: ({ usages }) => {
+      const value = usages != null ? usages : '-';
+      return defaultRender(value);
+    },
   },
   user_email: {
     id: 'user_email',
@@ -1461,22 +1496,6 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: true,
     render: ({ x_opencti_score }) => <ItemScore score={x_opencti_score} />,
-  },
-  timestamp: {
-    id: 'timestamp',
-    label: 'Timestamp',
-    percentWidth: 50,
-    isSortable: true,
-    render: ({ timestamp }, { nsdt }) => defaultRender(nsdt(timestamp)),
-  },
-  event_scope: {
-    id: 'event_scope',
-    label: 'Activity',
-    percentWidth: 50,
-    isSortable: false,
-    render: ({ user, context_data }) => (
-      <ItemHistory username={user.name} message={context_data.message} />
-    ),
   },
 };
 

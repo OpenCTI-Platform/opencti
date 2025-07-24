@@ -23,6 +23,7 @@ const pirFragment = graphql`
   fragment Pirs_PirFragment on Pir {
     id
     name
+    pir_type
     pir_rescan_days
     created_at
     updated_at
@@ -133,8 +134,9 @@ const Pirs = () => {
     name: {
       percentWidth: 13,
     },
+    pir_type: {},
     pir_rescan_days: {
-      percentWidth: 9,
+      percentWidth: 8,
       id: 'pir_rescan_days',
       label: 'Rescan (days)',
       render: ({ pir_rescan_days }: Pirs_PirFragment$data) => pir_rescan_days,
@@ -142,7 +144,7 @@ const Pirs = () => {
     filters: {
       id: 'filters',
       label: 'Filters',
-      percentWidth: 15,
+      percentWidth: 13,
       render: ({ pir_filters }: Pirs_PirFragment$data) => (
         <div style={{ marginLeft: theme.spacing(-0.5) }}>
           <FilterIconButton
@@ -157,7 +159,7 @@ const Pirs = () => {
     criteria: {
       id: 'criteria',
       label: 'Criteria',
-      percentWidth: 38,
+      percentWidth: 33,
       render: ({ pir_criteria }: Pirs_PirFragment$data) => (
         <div style={{ display: 'flex', gap: theme.spacing(1) }}>
           {pir_criteria.map((c, i) => (
@@ -170,10 +172,12 @@ const Pirs = () => {
         </div>
       ),
     },
-    creator: {},
+    creator: {
+      percentWidth: 9,
+    },
     created_at: {
       id: 'created_at',
-      percentWidth: 13,
+      percentWidth: 12,
     },
   };
 

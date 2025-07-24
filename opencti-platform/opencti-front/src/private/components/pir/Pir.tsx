@@ -72,7 +72,7 @@ const PirComponent = ({
           )}
         />
         <Route
-          path="/knowledge"
+          path="/threats"
           element={<PirKnowledge data={pir} />}
         />
         <Route

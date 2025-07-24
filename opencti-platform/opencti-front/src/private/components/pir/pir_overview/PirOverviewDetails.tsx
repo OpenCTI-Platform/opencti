@@ -2,6 +2,7 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Grid2 as Grid, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import Chip from '@mui/material/Chip';
 import { PirOverviewDetailsFragment$key } from './__generated__/PirOverviewDetailsFragment.graphql';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
@@ -15,6 +16,7 @@ import Paper from '../../../../components/Paper';
 const detailsFragment = graphql`
   fragment PirOverviewDetailsFragment on Pir {
     description
+    pir_type
     pir_rescan_days
     created_at
     lastEventId
@@ -79,6 +81,21 @@ const PirOverviewDetails = ({ data }: PirOverviewDetailsProps) => {
             size={{ xs: 6 }}
             sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
           >
+            <div>
+              <Typography variant="h3" gutterBottom>
+                {t_i18n('Type')}
+              </Typography>
+              <Chip
+                style={{
+                  textTransform: 'uppercase',
+                  borderRadius: 4,
+                }}
+                color="primary"
+                variant="outlined"
+                label={t_i18n(pir.pir_type)}
+              />
+            </div>
+
             <div>
               <Typography variant="h3" gutterBottom>
                 {t_i18n('Rescan period (days)')}

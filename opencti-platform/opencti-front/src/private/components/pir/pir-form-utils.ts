@@ -7,10 +7,9 @@ export interface PirEditionFormData {
 }
 
 export interface PirCreationFormData {
-  type: 'threat-landscape' | 'threat-origin' | 'threat-custom'
+  pir_type: 'THREAT_LANDSCAPE' | 'THREAT_ORIGIN' | 'THREAT_CUSTOM'
   name: string
   description: string
-  markings: FieldOption[]
   pir_rescan_days: number
   confidence: number | null
   // TODO PIR should have different defs depending of type
@@ -35,13 +34,13 @@ const optionsToFilters = (options: FieldOption[], relType: string): PirAddInput[
 export const pirFormDataToMutationInput = (data: PirCreationFormData): PirAddInput => {
   return {
     name: data.name,
+    pir_type: data.pir_type,
     description: data.description ?? undefined,
-    objectMarking: data.markings.map((m) => m.value),
     pir_rescan_days: Number(data.pir_rescan_days),
     pir_filters: {
       mode: 'and',
       filterGroups: [],
-      filters: [{ key: ['confidence'], values: [`${data.confidence}`], operator: 'gt', mode: 'or' }],
+      filters: [{ key: ['confidence'], values: [`${data.confidence}`], operator: 'gte', mode: 'or' }],
     },
     pir_criteria: [
       ...optionsToFilters(data.locations, 'targets'),

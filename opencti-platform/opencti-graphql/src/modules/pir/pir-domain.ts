@@ -2,7 +2,7 @@ import { now } from 'moment';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type EntityOptions, internalLoadById, listEntitiesPaginated, listRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityPir, ENTITY_TYPE_PIR, type PirExplanation } from './pir-types';
-import { type EditInput, EditOperation, type FilterGroup, OrderingMode, type PirAddInput, type PirFlagElementInput, type PirUnflagElementInput } from '../../generated/graphql';
+import { type EditInput, EditOperation, type FilterGroup, FilterMode, type PirAddInput, type PirFlagElementInput, type PirUnflagElementInput } from '../../generated/graphql';
 import { createEntity, deleteRelationsByFromAndTo, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
@@ -10,14 +10,14 @@ import { BUS_TOPICS, logApp } from '../../config/conf';
 import { deleteInternalObject } from '../../domain/internalObject';
 import { registerConnectorForPir, unregisterConnectorForIngestion } from '../../domain/connector';
 import type { BasicStoreCommon, BasicStoreObject } from '../../types/store';
-import { RELATION_IN_PIR } from '../../schema/stixRefRelationship';
+import { RELATION_IN_PIR, RELATION_OBJECT } from '../../schema/stixRefRelationship';
 import { createPirRel, serializePir, updatePirExplanations } from './pir-utils';
 import { FunctionalError } from '../../config/errors';
 import { ABSTRACT_STIX_REF_RELATIONSHIP, ENTITY_TYPE_CONTAINER } from '../../schema/general';
 import { elRawUpdateByQuery } from '../../database/engine';
 import { READ_INDEX_HISTORY } from '../../database/utils';
-import { addFilter, extractFilterKeyValues } from '../../utils/filtering/filtering-utils';
-import { RELATION_TO_FILTER } from '../../utils/filtering/filtering-constants';
+import { extractFilterKeyValues } from '../../utils/filtering/filtering-utils';
+import { INSTANCE_DYNAMIC_REGARDING_OF, INSTANCE_REGARDING_OF, OBJECT_CONTAINS_FILTER, RELATION_TO_FILTER } from '../../utils/filtering/filtering-constants';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityPir>(context, user, id, ENTITY_TYPE_PIR);
@@ -33,26 +33,45 @@ export const findPirContainers = async (
   pir: BasicStoreEntityPir,
   opts?: EntityOptions<BasicStoreObject>
 ) => {
-  const { edges: relations } = await listRelationsPaginated(
-    context,
-    user,
-    [RELATION_IN_PIR],
-    {
-      first: 100,
-      orderBy: 'modified',
-      orderMode: OrderingMode.Desc,
-      toId: pir.id,
-    }
-  );
-  // TODO: use dynamic filters instead?
-  const flaggedIds = relations.flatMap((rel) => rel.node.fromId);
+  // fetch filters entities ids
   const pirFilters: FilterGroup[] = pir.pir_criteria.map((c) => JSON.parse(c.filters));
   const pirToIdFilterIds = pirFilters.flatMap((f) => extractFilterKeyValues(RELATION_TO_FILTER, f));
-  const idsOfInterest = [...flaggedIds, ...pirToIdFilterIds];
-  if (idsOfInterest.length === 0) {
-    idsOfInterest.push('<invalid id>'); // To force empty result in the query result
-  }
-  const filters = addFilter(opts?.filters, 'objects', idsOfInterest, 'contains');
+  // fetch the containers containing those ids or containing flagged entities ids
+  const flaggedEntitiesFilter = {
+    mode: FilterMode.And,
+    filters: [{
+      key: [INSTANCE_REGARDING_OF],
+      values: [
+        { key: 'relationship_type', values: [RELATION_IN_PIR] },
+        { key: 'id', values: [pir.id] },
+      ],
+    }],
+    filterGroups: [],
+  };
+  const containsFilter = {
+    mode: FilterMode.Or,
+    filters: [
+      {
+        key: [OBJECT_CONTAINS_FILTER],
+        values: pirToIdFilterIds,
+      },
+      {
+        key: [INSTANCE_DYNAMIC_REGARDING_OF],
+        values: [
+          { key: 'relationship_type', values: [RELATION_OBJECT] },
+          { key: 'dynamic', values: [flaggedEntitiesFilter] },
+        ],
+      }
+    ],
+    filterGroups: [],
+  };
+  const filters = opts?.filters
+    ? {
+      mode: FilterMode.And,
+      filters: [],
+      filterGroups: [containsFilter, opts.filters],
+    }
+    : containsFilter;
   return listEntitiesPaginated(context, user, [ENTITY_TYPE_CONTAINER], { ...opts, filters });
 };
 

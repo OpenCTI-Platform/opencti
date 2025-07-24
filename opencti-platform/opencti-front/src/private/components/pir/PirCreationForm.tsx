@@ -19,7 +19,7 @@ const PirCreationForm = ({ onCancel, onSubmit }: PirCreationFormProps) => {
   const [step, setStep] = useState(0);
 
   const validation = Yup.object().shape({
-    type: Yup.string().trim().required(t_i18n('This field is required')),
+    pir_type: Yup.string().trim().required(t_i18n('This field is required')),
     name: Yup.string().trim().required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     pir_rescan_days: Yup.number().nullable().required(t_i18n('This field is required')),
@@ -37,10 +37,9 @@ const PirCreationForm = ({ onCancel, onSubmit }: PirCreationFormProps) => {
   }, [['sectors', 'locations']]);
 
   const initialValues: PirCreationFormData = {
-    type: 'threat-landscape',
+    pir_type: 'THREAT_LANDSCAPE',
     name: '',
     description: '',
-    markings: [],
     pir_rescan_days: 30,
     confidence: 60,
     locations: [],
@@ -54,7 +53,7 @@ const PirCreationForm = ({ onCancel, onSubmit }: PirCreationFormProps) => {
       onSubmit={onSubmit}
     >
       {({ values, errors, isValid, submitForm }) => {
-        const step0Valid = !!values.type && !errors.type;
+        const step0Valid = !!values.pir_type && !errors.pir_type;
         const step1Valid = (!!values.name && !errors.name)
           && (!errors.description)
           && ((!!values.pir_rescan_days || values.pir_rescan_days === 0) && !errors.pir_rescan_days);

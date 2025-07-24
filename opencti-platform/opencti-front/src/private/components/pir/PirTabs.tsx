@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Box, Tab, Tabs } from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
@@ -19,12 +19,11 @@ const PirTabs = ({ data }: PirTabsProps) => {
   const { id } = useFragment(tabsFragment, data);
   const { pathname } = useLocation();
   const { t_i18n } = useFormatter();
-  const [index, setIndex] = useState(() => {
-    if (pathname.endsWith('knowledge')) return 1;
-    if (pathname.endsWith('analyses')) return 2;
-    if (pathname.endsWith('ttps')) return 3;
-    return 0;
-  });
+
+  let index = 0;
+  if (pathname.endsWith('threats')) index = 1;
+  if (pathname.endsWith('analyses')) index = 2;
+  if (pathname.endsWith('ttps')) index = 3;
 
   return (
     <Box sx={{
@@ -36,7 +35,7 @@ const PirTabs = ({ data }: PirTabsProps) => {
       justifyContent: 'space-between',
     }}
     >
-      <Tabs value={index} onChange={(_, i) => setIndex(i)}>
+      <Tabs value={index}>
         <Tab
           component={Link}
           label={t_i18n('Overview')}
@@ -44,8 +43,8 @@ const PirTabs = ({ data }: PirTabsProps) => {
         />
         <Tab
           component={Link}
-          label={t_i18n('Knowledge')}
-          to={`/dashboard/pirs/${id}/knowledge`}
+          label={t_i18n('Threats')}
+          to={`/dashboard/pirs/${id}/threats`}
         />
         <Tab
           component={Link}

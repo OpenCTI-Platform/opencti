@@ -201,11 +201,13 @@ const PirAnalyses = ({ data }: PirAnalysesProps) => {
 
   const dataColumns: DataTableProps['dataColumns'] = {
     entity_type: { percentWidth: 10 },
-    name: {},
+    name: {
+      percentWidth: 30,
+    },
     container_objects: {
       id: 'container_objects',
       label: 'Entities in PIR',
-      percentWidth: 15,
+      percentWidth: 10,
       isSortable: false,
       render: ({ objects }: { objects: PirContainerObjects }) => {
         const max = 10;

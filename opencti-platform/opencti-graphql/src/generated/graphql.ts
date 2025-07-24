@@ -19690,12 +19690,12 @@ export type Pir = BasicObject & InternalObject & {
   id: Scalars['ID']['output'];
   lastEventId: Scalars['String']['output'];
   name: Scalars['String']['output'];
-  objectMarking?: Maybe<Array<MarkingDefinition>>;
   parent_types: Array<Scalars['String']['output']>;
   pirContainers?: Maybe<ContainerConnection>;
   pir_criteria: Array<PirCriterion>;
   pir_filters: Scalars['String']['output'];
   pir_rescan_days: Scalars['Int']['output'];
+  pir_type: PirType;
   standard_id: Scalars['String']['output'];
   updated_at: Scalars['DateTime']['output'];
 };
@@ -19713,10 +19713,10 @@ export type PirPirContainersArgs = {
 export type PirAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
-  objectMarking?: InputMaybe<Array<Scalars['String']['input']>>;
   pir_criteria: Array<PirCriterionInput>;
   pir_filters: FilterGroup;
   pir_rescan_days: Scalars['Int']['input'];
+  pir_type: PirType;
 };
 
 export type PirConnection = {
@@ -19776,6 +19776,12 @@ export enum PirOrdering {
   Creator = 'creator',
   Name = 'name',
   UpdatedAt = 'updated_at'
+}
+
+export enum PirType {
+  ThreatCustom = 'THREAT_CUSTOM',
+  ThreatLandscape = 'THREAT_LANDSCAPE',
+  ThreatOrigin = 'THREAT_ORIGIN'
 }
 
 export type PirUnflagElementInput = {
@@ -33489,6 +33495,7 @@ export type ResolversTypes = ResolversObject<{
   PirExplanationInput: PirExplanationInput;
   PirFlagElementInput: PirFlagElementInput;
   PirOrdering: PirOrdering;
+  PirType: PirType;
   PirUnflagElementInput: PirUnflagElementInput;
   Platform: Platform;
   PlatformCriticalAlert: ResolverTypeWrapper<Omit<PlatformCriticalAlert, 'details'> & { details?: Maybe<ResolversTypes['PlatformCriticalAlertDetails']> }>;
@@ -40972,12 +40979,12 @@ export type PirResolvers<ContextType = any, ParentType extends ResolversParentTy
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   lastEventId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pirContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<PirPirContainersArgs>>;
   pir_criteria?: Resolver<Array<ResolversTypes['PirCriterion']>, ParentType, ContextType>;
   pir_filters?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   pir_rescan_days?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  pir_type?: Resolver<ResolversTypes['PirType'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

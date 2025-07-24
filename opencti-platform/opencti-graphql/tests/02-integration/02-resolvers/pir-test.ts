@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { describe, expect, it } from 'vitest';
 import { queryAsAdmin, testContext } from '../../utils/testQuery';
-import { FilterMode, FilterOperator } from '../../../src/generated/graphql';
+import { FilterMode, FilterOperator, PirType } from '../../../src/generated/graphql';
 import { RELATION_IN_PIR } from '../../../src/schema/stixRefRelationship';
 import { SYSTEM_USER } from '../../../src/utils/access';
 import { storeLoadById } from '../../../src/database/middleware-loader';
@@ -25,6 +25,7 @@ const LIST_QUERY = gql`
         node {
           id
           name
+          pir_type
           pir_filters
           pir_criteria {
             weight
@@ -81,6 +82,7 @@ const READ_QUERY = gql`
       id
       standard_id
       name
+      pir_type
       pir_criteria {
         weight
         filters
@@ -108,6 +110,7 @@ describe('PIR resolver standard behavior', () => {
     const PIR_TO_CREATE = {
       input: {
         name: 'MyPir',
+        pir_type: PirType.ThreatLandscape,
         pir_rescan_days: 30,
         pir_filters: {
           mode: FilterMode.And,
@@ -155,6 +158,7 @@ describe('PIR resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data?.pir).not.toBeNull();
     expect(queryResult.data?.pir.id).toEqual(pirInternalId);
+    expect(queryResult.data?.pir.pir_type).toEqual(PirType.ThreatLandscape);
     expect(queryResult.data?.pir.pir_criteria.length).toEqual(2);
     expect(queryResult.data?.pir.pir_criteria[0].weight).toEqual(2);
     expect(JSON.parse(queryResult.data?.pir.pir_criteria[0].filters).filters[0].key[0]).toEqual('toId');
