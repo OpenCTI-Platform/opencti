@@ -4191,7 +4191,7 @@ export const prepareElementForIndexing = async (element) => {
           // If we extends the preparation 5 times, log an error
           // It will help to understand what kind of key have so much elements
           if (extendLoopSplit === 5) {
-            logApp.error('[ENGINE] Element preparation too many values', { id: element.id, key, size: value.length });
+            logApp.warn('[ENGINE] Element preparation too many values', { id: element.id, key, size: value.length });
           }
           extendLoopSplit += 1;
           innerProcessingTime = new Date().getTime();
