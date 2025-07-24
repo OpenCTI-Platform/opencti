@@ -338,7 +338,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Max Confidence',
     percentWidth: 10,
     isSortable: false,
-    render: ({ effective_confidence_level }) => defaultRender(effective_confidence_level.max_confidence),
+    render: ({ effective_confidence_level }) => defaultRender(effective_confidence_level?.max_confidence),
   },
   entity_type: {
     id: 'entity_type',
