@@ -805,6 +805,7 @@ const StixDomainObjectCreation = ({
   open,
   speeddial,
   controlledDialStyles = {},
+  controlledDialSize = undefined,
   handleClose,
   paginationKey,
   paginationOptions,
@@ -849,10 +850,11 @@ const StixDomainObjectCreation = ({
     <>
       {!speeddial && (
         <CreateEntityControlledDial
-          entityType={stixDomainObjectTypes}
+          entityType={stixDomainObjectTypes.length === 1 ? stixDomainObjectTypes[0] : 'Stix-Domain-Object'}
           onOpen={stateHandleOpen}
           onClose={() => {}}
           style={controlledDialStyles}
+          size={controlledDialSize}
         />
       )}
       <div style={{ display: display ? 'block' : 'none' }}>
