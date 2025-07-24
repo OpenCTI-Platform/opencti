@@ -7,10 +7,12 @@ import Button from '@mui/material/Button';
 import { VerifiedOutlined } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import IngestionCatalogChip from '@components/data/IngestionCatalog/IngestionCatalogUseCaseChip';
+import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
 import EnrichedTooltip from '../../../../components/EnrichedTooltip';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
+import type { Theme } from '../../../../components/Theme';
 
 interface IngestionCatalogCardProps {
   node: string;
@@ -57,6 +59,7 @@ export const ingestionConnectorTypeMetadata: Record<IngestionConnectorType, { la
 const IngestionCatalogCard = ({ node }: IngestionCatalogCardProps) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
+  const theme = useTheme<Theme>();
   const connector: IngestionConnector = JSON.parse(node);
   const link = `/dashboard/data/ingestion/catalog/${connector.default.CONNECTOR_NAME}`;
 
@@ -67,11 +70,13 @@ const IngestionCatalogCard = ({ node }: IngestionCatalogCardProps) => {
           <Grid container={true} spacing={3}>
             <Grid key={connector.container_type} item xs={6}>
               <IngestionCatalogChip
+                withTooltip
+                isInTooltip
                 label={t_i18n(ingestionConnectorTypeMetadata[connector.container_type].label)}
                 color={ingestionConnectorTypeMetadata[connector.container_type].color}
               />
             </Grid>
-            {connector.use_cases.map((useCase: string) => <Grid key={useCase} item xs={6}><IngestionCatalogChip withTooltip label={useCase} /></Grid>)}
+            {connector.use_cases.map((useCase: string) => <Grid key={useCase} item xs={6}><IngestionCatalogChip withTooltip isInTooltip label={useCase} /></Grid>)}
           </Grid>
         )}
       >
@@ -79,7 +84,6 @@ const IngestionCatalogCard = ({ node }: IngestionCatalogCardProps) => {
           <Badge
             variant="dot"
             color="primary"
-            sx={{ '& .MuiBadge-badge': { right: 8, top: 8 } }}
           >
             <IngestionCatalogChip
               label={t_i18n(ingestionConnectorTypeMetadata[connector.container_type].label)}
@@ -109,14 +113,16 @@ const IngestionCatalogCard = ({ node }: IngestionCatalogCardProps) => {
     >
 
       <CardHeader
-        style={{
-          height: 100,
+        sx={{
           paddingBottom: 0,
           marginBottom: 0,
           alignItems: 'start',
+          '& .MuiCardHeader-content': {
+            minWidth: 0,
+          },
         }}
         avatar={<img style={{ height: 50, width: 50, objectFit: 'cover', borderRadius: 4 }} src={connector.logo} alt={connector.title} />}
-        title={<div style={{ width: '100%', fontSize: 20, fontWeight: 600 }}>{connector.title}</div>}
+        title={<div style={{ width: '100%', fontSize: 20, fontWeight: 600, marginBottom: theme.spacing(1) }}>{connector.title}</div>}
         subheader={renderLabels()}
         action={connector.verified && <VerifiedOutlined color="success" />}
       />
