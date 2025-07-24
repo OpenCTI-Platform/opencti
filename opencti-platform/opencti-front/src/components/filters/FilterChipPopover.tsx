@@ -28,7 +28,6 @@ import { useFormatter } from '../i18n';
 import ItemIcon from '../ItemIcon';
 import { getOptionsFromEntities } from '../../utils/filters/SearchEntitiesUtil';
 import { FilterDefinition } from '../../utils/hooks/useAuth';
-import stopEvent from '../../utils/domEvent';
 import { FilterRepresentative } from './FiltersModel';
 import useSearchEntities from '../../utils/filters/useSearchEntities';
 import { Filter, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
