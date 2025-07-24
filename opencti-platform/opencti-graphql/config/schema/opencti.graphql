@@ -507,7 +507,6 @@ type Log {
   raw_data: String @auth(for: [SETTINGS_SECURITYACTIVITY])
   context_uri: String
   context_data: ContextData
-  request_metadata: String
 }
 
 ############## Attributes

@@ -12792,7 +12792,6 @@ export type Log = {
   event_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   raw_data?: Maybe<Scalars['String']['output']>;
-  request_metadata?: Maybe<Scalars['String']['output']>;
   timestamp: Scalars['DateTime']['output'];
   user?: Maybe<Creator>;
   user_id: Scalars['String']['output'];
@@ -39179,7 +39178,6 @@ export type LogResolvers<ContextType = any, ParentType extends ResolversParentTy
   event_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   raw_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  request_metadata?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   timestamp?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   user?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
   user_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
