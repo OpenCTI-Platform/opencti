@@ -87,10 +87,6 @@ const PirOverviewDetails = ({ data }: PirOverviewDetailsProps) => {
               </Typography>
               <Chip
                 style={{
-                  fontSize: 12,
-                  height: 20,
-                  float: 'left',
-                  width: 170,
                   textTransform: 'uppercase',
                   borderRadius: 4,
                 }}
