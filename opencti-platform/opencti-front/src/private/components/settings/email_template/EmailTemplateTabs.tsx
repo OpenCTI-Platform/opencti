@@ -47,17 +47,9 @@ const EmailTemplateTabs = ({ children, data }: EmailTemplateTabsProps) => {
         justifyContent: 'space-between',
       }}
       >
-        <Security needs={[KNOWLEDGE]} placeholder={(
-          <Tabs value={index} onChange={(_, i) => setIndex(i)}>
-            <Tab label={t_i18n('Template Editor')} />
-          </Tabs>
-                )}
-        >
-          <Tabs value={index} onChange={(_, i) => setIndex(i)}>
-            <Tab label={t_i18n('Template Editor')} />
-            <Tab label={t_i18n('Template Preview')} />
-          </Tabs>
-        </Security>
+        <Tabs value={index} onChange={(_, i) => setIndex(i)}>
+          <Tab label={t_i18n('Template Editor')} />
+        </Tabs>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
           {editorValue !== template_body ? (
