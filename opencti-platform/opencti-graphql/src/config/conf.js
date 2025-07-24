@@ -220,6 +220,7 @@ const appLogger = winston.createLogger({
 // Setup audit log logApp
 const auditLogFileTransport = booleanConf('app:audit_logs:logs_files', true);
 const auditLogConsoleTransport = booleanConf('app:audit_logs:logs_console', true);
+export const auditRequestHeaderToKeep = nconf.get('app:audit_logs:keep_request_headers') ?? ['user-agent', 'x-forwarded-for'];
 export const auditLogTypes = nconf.get('app:audit_logs:logs_in_transports') ?? ['administration'];
 const auditLogTransports = [];
 if (auditLogFileTransport) {
