@@ -1,4 +1,4 @@
-import { dissoc } from 'ramda';
+import { dissoc, uniq } from 'ramda';
 import { storeLoadByIdWithRefs, updateAttribute, updateAttributeFromLoadedWithRefs } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
@@ -46,9 +46,9 @@ export const schemaRefRelationships = async (context, user, id, toType) => {
 // return the possible types with which an entity type can have a nested relation ref
 export const schemaRefRelationshipsPossibleTypes = async (entityType) => {
   const registeredTypes = schemaRelationsRefDefinition.getRegisteredTypes();
-  const possibleToTypes = schemaRelationsRefDefinition.getRelationsRef(entityType)
+  const possibleToTypes = uniq(schemaRelationsRefDefinition.getRelationsRef(entityType)
     .filter((ref) => !notNestedRefRelation.includes(ref.databaseName))
-    .flatMap((ref) => ref.toTypes);
+    .flatMap((ref) => ref.toTypes));
   const possibleFromTypes = registeredTypes.filter((type) => {
     const reversedRelationRefs = schemaRelationsRefDefinition.getRelationsRef(type)
       .filter((ref) => !notNestedRefRelation.includes(ref.databaseName))
@@ -56,7 +56,6 @@ export const schemaRefRelationshipsPossibleTypes = async (entityType) => {
     return reversedRelationRefs.length > 0;
   });
   const possibleTypes = [...possibleFromTypes, ...possibleToTypes];
-  console.log('possibleTypes', possibleTypes);
   return possibleTypes;
 };
 export const isDatable = (entityType, relationshipType) => {

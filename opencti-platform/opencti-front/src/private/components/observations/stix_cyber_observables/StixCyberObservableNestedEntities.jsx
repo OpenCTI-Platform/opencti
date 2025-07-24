@@ -174,20 +174,6 @@ class StixCyberObservableNestedEntities extends Component {
     );
   }
 
-  getTargetStixCoreObjectTypes() {
-    const { entityType } = this.props;
-
-    if (entityType === 'Network-Traffic') {
-      return [
-        'IPv4-Addr',
-        'IPv6-Addr',
-        'Domain-Name',
-        'Mac-Addr',
-      ];
-    }
-    return undefined;
-  }
-
   render() {
     const { searchTerm, sortBy, orderAsc } = this.state;
     const { entityId, t, entityType, classes } = this.props;
@@ -197,8 +183,6 @@ class StixCyberObservableNestedEntities extends Component {
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };
-
-    const targetStixCoreObjectTypes = this.getTargetStixCoreObjectTypes();
 
     return (
       <div style={{ height: '100%' }}>
@@ -214,7 +198,6 @@ class StixCyberObservableNestedEntities extends Component {
             entityId={entityId}
             variant="inLine"
             entityType={entityType}
-            targetStixCoreObjectTypes={targetStixCoreObjectTypes}
           />
         </Security>
         <div style={{ float: 'right', marginTop: -10 }}>

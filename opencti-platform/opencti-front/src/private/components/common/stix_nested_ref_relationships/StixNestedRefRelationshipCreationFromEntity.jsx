@@ -330,10 +330,8 @@ const StixNestedRefRelationshipCreationFromEntity = ({
   entityId,
   entityType,
   paginationOptions,
-  targetStixCoreObjectTypes,
   variant,
 }) => {
-  console.log('targetStixCoreObjectTypes', targetStixCoreObjectTypes);
   const classes = useStyles();
   const { t_i18n } = useFormatter();
 
@@ -352,7 +350,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
   const [searchTerm, setSearchTerm] = useState('');
   const containerRef = useRef(null);
 
-  const { stixSchemaRefRelationshipsPossibleTypes: possibleRelatedTypes } = usePreloadedQuery(stixNestedRefRelationResolveTypes, possibleTypesQueryRef);
+  const { stixSchemaRefRelationshipsPossibleTypes: targetStixCoreObjectTypes } = usePreloadedQuery(stixNestedRefRelationResolveTypes, possibleTypesQueryRef);
 
   const actualTypeFilter = [
     ...(targetStixCoreObjectTypes ?? []),

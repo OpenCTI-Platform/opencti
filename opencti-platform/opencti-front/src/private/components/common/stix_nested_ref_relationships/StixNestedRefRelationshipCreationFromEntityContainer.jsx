@@ -7,10 +7,8 @@ const StixNestedRefRelationshipCreationFromEntityContainer = ({
   entityId,
   entityType,
   paginationOptions,
-  targetStixCoreObjectTypes,
   variant,
 }) => {
-  console.log('entityType', entityType);
   const queryRef = useQueryLoading(stixNestedRefRelationResolveTypes, { type: entityType });
   return (
     <>
@@ -23,7 +21,6 @@ const StixNestedRefRelationshipCreationFromEntityContainer = ({
             entityId={entityId}
             entityType={entityType}
             paginationOptions={paginationOptions}
-            targetStixCoreObjectTypes={targetStixCoreObjectTypes}
             variant={variant}
           />
         </React.Suspense>
