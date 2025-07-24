@@ -6,6 +6,142 @@
   "contracts": [
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "https://www.filigran.io/cve.schema.json",
+      "title": "CVE connector",
+      "description": "The OpenCTI CVE connector is a software component designed to automatically import information about Common Vulnerabilities and Exposures (CVEs) into the OpenCTI platform",
+      "short_description": "Collecting and updating CVE data in OpenCTI",
+      "use_cases": [
+        "Vulnerability Management",
+        "Open Source Threat Intel"
+      ],
+      "max_confidence_level": 80,
+      "manager_supported": true,
+      "container_version": "6.7.0",
+      "container_image": "opencti/connector-cve",
+      "container_type": "EXTERNAL_IMPORT",
+      "verified": true,
+      "last_verified_date": "15-12-2023",
+      "playbook_supported": false,
+      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
+      "support_version": ">= 6.5.1",
+      "subscription_link": "https://nvd.nist.gov/contact",
+      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/cve",
+      "type": "object",
+      "additionalProperties": true,
+      "default": {
+        "CONNECTOR_LOG_LEVEL": "error",
+        "CONNECTOR_DURATION_PERIOD": "PT24H",
+        "CVE_BASE_URL": "https://services.nvd.nist.gov/rest/json/cves",
+        "CVE_INTERVAL": 6,
+        "CVE_MAX_DATE_RANGE": 120,
+        "CVE_MAINTAIN_DATA": true,
+        "CVE_PULL_HISTORY": false,
+        "CVE_HISTORY_START_YEAR": 2019
+      },
+      "required": [
+        "CVE_API_KEY"
+      ],
+      "properties": {
+        "OPENCTI_URL": {
+          "type": "string",
+          "format": "uri",
+          "minLength": 1,
+          "maxLength": 2083,
+          "description": "The OpenCTI platform URL."
+        },
+        "OPENCTI_TOKEN": {
+          "type": "string",
+          "description": "The token of the user who represents the connector in the OpenCTI platform."
+        },
+        "CONNECTOR_TYPE": {
+          "description": "Should always be set to EXTERNAL_IMPORT for this connector.",
+          "type": "string"
+        },
+        "CONNECTOR_LOG_LEVEL": {
+          "description": "Determines the verbosity of the logs.",
+          "type": "string",
+          "enum": [
+            "debug",
+            "info",
+            "warn",
+            "error"
+          ]
+        },
+        "CONNECTOR_DURATION_PERIOD": {
+          "description": "Duration between two scheduled runs of the connector (ISO 8601 format).",
+          "format": "duration",
+          "type": "string"
+        },
+        "CONNECTOR_ID": {
+          "description": "A unique UUIDv4 identifier for this connector instance.",
+          "type": "string"
+        },
+        "CONNECTOR_NAME": {
+          "description": "Name of the connector.",
+          "type": "string"
+        },
+        "CONNECTOR_SCOPE": {
+          "description": "The scope or type of data the connector is importing, either a MIME type or Stix Object (for information only).",
+          "type": "string"
+        },
+        "CONNECTOR_QUEUE_THRESHOLD": {
+          "description": "Connector queue max size in Mbytes. Default to 500.",
+          "type": "integer"
+        },
+        "CONNECTOR_RUN_AND_TERMINATE": {
+          "description": "Connector run-and-terminate flag.",
+          "type": "boolean"
+        },
+        "CONNECTOR_SEND_TO_QUEUE": {
+          "description": "Connector send-to-queue flag.",
+          "type": "boolean"
+        },
+        "CONNECTOR_SEND_TO_DIRECTORY": {
+          "description": "Connector send-to-directory flag.",
+          "type": "boolean"
+        },
+        "CONNECTOR_SEND_TO_DIRECTORY_PATH": {
+          "description": "Connector send-to-directory path.",
+          "type": "string"
+        },
+        "CONNECTOR_SEND_TO_DIRECTORY_RETENTION": {
+          "description": "Connector send-to-directory retention in days.",
+          "type": "integer"
+        },
+        "CVE_BASE_URL": {
+          "description": "URL for the CVE API.",
+          "type": "string"
+        },
+        "CVE_INTERVAL": {
+          "description": "Interval in hours to check and import new CVEs. Must be strictly greater than 1, advice from NIST minimum 2 hours.",
+          "type": "integer"
+        },
+        "CVE_MAX_DATE_RANGE": {
+          "description": "Determines how many days to collect CVE. Maximum of 120 days.",
+          "type": "integer"
+        },
+        "CVE_MAINTAIN_DATA": {
+          "description": "If set to `True`, import CVEs from the last run of the connector to the current time. Takes 2 values: `True` or `False`.",
+          "type": "boolean"
+        },
+        "CVE_PULL_HISTORY": {
+          "description": "If set to `True`, import all CVEs from start year define in history start year configuration and history start year is required. Takes 2 values: `True` or `False`.",
+          "type": "boolean"
+        },
+        "CVE_HISTORY_START_YEAR": {
+          "description": "Year in number. Required when pull_history is set to `True`.  Minimum 2019 as CVSS V3.1 was released in June 2019, thus most CVE published before 2019 do not include the cvssMetricV31 object.",
+          "type": "integer"
+        },
+        "CVE_API_KEY": {
+          "type": "string",
+          "writeOnly": true,
+          "format": "password",
+          "description": "API Key for the CVE API."
+        }
+      }
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "$id": "https://www.filigran.io/servicenow.schema.json",
       "title": "ServiceNow connector",
       "description": "ServiceNow provides Security Incident Response and Security Incident Tasks module handled by this connector which collects SIR and SIT and related entities.",
@@ -13,6 +149,7 @@
       "use_cases": [
         "Incident Response & Ticketing"
       ],
+      "max_confidence_level": 50,
       "manager_supported": true,
       "container_version": "6.7.0",
       "container_image": "opencti/connector-servicenow",
@@ -205,6 +342,7 @@
         "Incident Response & Ticketing",
         "Enrichment"
       ],
+      "max_confidence_level": 75,
       "manager_supported": true,
       "container_image": "opencti/connector-ipinfo",
       "container_version": "6.7.0",
