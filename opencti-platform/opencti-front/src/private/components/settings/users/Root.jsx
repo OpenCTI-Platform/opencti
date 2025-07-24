@@ -7,6 +7,7 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import makeStyles from '@mui/styles/makeStyles';
+import ConvertUser from '@components/settings/users/ConvertUser';
 import useHelper from '../../../../utils/hooks/useHelper';
 import AccessesMenu from '../AccessesMenu';
 import Security from '../../../../utils/Security';
@@ -75,6 +76,7 @@ const userQuery = graphql`
       id
       name
       user_email
+      user_service_account
       ...User_user
         @arguments(
           groupsOrderBy: $groupsOrderBy
@@ -119,14 +121,22 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
             { label: data.name || data.user_email, current: true },
           ]}
           />
-          <Typography
-            variant="h1"
-            gutterBottom={true}
-            classes={{ root: classes.title }}
-          >
-            {data.name}
-          </Typography>
-          <UserEdition userEditionData={userEditionData} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
+            <Typography
+              variant="h1"
+              gutterBottom={true}
+              classes={{ root: classes.title }}
+            >
+              {data.name}
+            </Typography>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              < ConvertUser
+                userId={data.id}
+                userServiceAccount={data.user_service_account}
+              />
+              <UserEdition userEditionData={userEditionData} />
+            </div>
+          </div>
           <div className="clearfix" />
           <Box
             sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 4 }}
