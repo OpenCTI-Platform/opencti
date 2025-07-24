@@ -3,7 +3,17 @@ import { authenticator } from 'otplib';
 import * as R from 'ramda';
 import { uniq } from 'ramda';
 import { v4 as uuid } from 'uuid';
-import { ACCOUNT_STATUS_ACTIVE, ACCOUNT_STATUS_EXPIRED, ACCOUNT_STATUSES, BUS_TOPICS, DEFAULT_ACCOUNT_STATUS, ENABLED_DEMO_MODE, isFeatureEnabled, logApp } from '../config/conf';
+import {
+  ACCOUNT_STATUS_ACTIVE,
+  ACCOUNT_STATUS_EXPIRED,
+  ACCOUNT_STATUSES,
+  auditRequestHeaderToKeep,
+  BUS_TOPICS,
+  DEFAULT_ACCOUNT_STATUS,
+  ENABLED_DEMO_MODE,
+  isFeatureEnabled,
+  logApp
+} from '../config/conf';
 import { AuthenticationFailure, DatabaseError, DraftLockedError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { elLoadBy, elRawDeleteByQuery } from '../database/engine';
@@ -124,8 +134,15 @@ export const userWithOrigin = (req, user) => {
   // - In audit logs to identify the user
   // - In stream message to also identifier the user
   // - In logging system to know the level of the error message
+
+  // Additional header from "authentication with header" authentication mode
   const headers_metadata = R.mergeAll((user.headers_audit ?? [])
     .map((header) => ({ [header]: req.header(header) })));
+
+  // Additional header to be used in audit log and activity
+  const req_audit_headers_list = R.mergeAll((auditRequestHeaderToKeep ?? [])
+    .map((header) => ({ [header]: req.header(header) })));
+
   const origin = {
     socket: 'query',
     ip: req?.ip,
@@ -137,7 +154,7 @@ export const userWithOrigin = (req, user) => {
     applicant_id: req?.headers['opencti-applicant-id'],
     call_retry_number: req?.headers['opencti-retry-number'],
     playbook_id: req?.headers['opencti-playbook-id'],
-    user_agent: req?.headers['user-agent']
+    request_metadata: JSON.stringify(req_audit_headers_list)
   };
   return { ...user, origin };
 };
