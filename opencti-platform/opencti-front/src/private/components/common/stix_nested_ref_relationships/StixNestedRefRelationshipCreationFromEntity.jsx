@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import { v4 as uuid } from 'uuid';
-import { graphql } from 'react-relay';
+import { graphql, usePreloadedQuery } from 'react-relay';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import Drawer from '@mui/material/Drawer';
@@ -309,6 +309,12 @@ const stixNestedRefRelationshipCreationFromEntityMutation = graphql`
   }
 `;
 
+export const stixNestedRefRelationResolveTypes = graphql`
+  query StixNestedRefRelationshipCreationFromEntityPossibleTypesQuery($type: String!) {
+    stixSchemaRefRelationshipsPossibleTypes(type: $type)
+  }
+`;
+
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   const userProxy = store.get(userId);
   const conn = ConnectionHandler.getConnection(
@@ -320,14 +326,17 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
 };
 
 const StixNestedRefRelationshipCreationFromEntity = ({
+  possibleTypesQueryRef,
   entityId,
   entityType,
   paginationOptions,
   targetStixCoreObjectTypes,
   variant,
 }) => {
+  console.log('targetStixCoreObjectTypes', targetStixCoreObjectTypes);
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+
   const [open, setOpen] = useState(false);
   const [openSpeedDial, setOpenSpeedDial] = useState(false);
   const [openCreateEntity, setOpenCreateEntity] = useState(false);
@@ -342,6 +351,9 @@ const StixNestedRefRelationshipCreationFromEntity = ({
   });
   const [searchTerm, setSearchTerm] = useState('');
   const containerRef = useRef(null);
+
+  const { stixSchemaRefRelationshipsPossibleTypes: possibleRelatedTypes } = usePreloadedQuery(stixNestedRefRelationResolveTypes, possibleTypesQueryRef);
+
   const actualTypeFilter = [
     ...(targetStixCoreObjectTypes ?? []),
   ];
@@ -932,7 +944,10 @@ const StixNestedRefRelationshipCreationFromEntity = ({
         onClose={handleClose}
       >
         <>
-          {step === 0 ? renderSelectEntity() : null}
+          {step === 0
+            ? renderSelectEntity()
+            : null
+          }
           {step === 1
             ? <QueryRenderer
                 query={stixNestedRefRelationshipResolveTypes}
@@ -951,7 +966,8 @@ const StixNestedRefRelationshipCreationFromEntity = ({
                   return renderLoader();
                 }}
               />
-            : null}
+            : null
+          }
         </>
       </Drawer>
     </>

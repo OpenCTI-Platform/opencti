@@ -12,7 +12,6 @@ import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { findById as findStixObjectOrStixRelationshipById } from './stixObjectOrStixRelationship';
 import { elCount } from '../database/engine';
 import { READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS, READ_INDEX_STIX_META_RELATIONSHIPS, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
-import { schemaAttributesDefinition } from '../schema/schema-attributes';
 
 // Query
 
@@ -49,7 +48,7 @@ export const schemaRefRelationshipsPossibleTypes = async (entityType) => {
   const registeredTypes = schemaRelationsRefDefinition.getRegisteredTypes();
   const possibleToTypes = schemaRelationsRefDefinition.getRelationsRef(entityType)
     .filter((ref) => !notNestedRefRelation.includes(ref.databaseName))
-    .map((ref) => ref.toTypes);
+    .flatMap((ref) => ref.toTypes);
   const possibleFromTypes = registeredTypes.filter((type) => {
     const reversedRelationRefs = schemaRelationsRefDefinition.getRelationsRef(type)
       .filter((ref) => !notNestedRefRelation.includes(ref.databaseName))
@@ -57,6 +56,7 @@ export const schemaRefRelationshipsPossibleTypes = async (entityType) => {
     return reversedRelationRefs.length > 0;
   });
   const possibleTypes = [...possibleFromTypes, ...possibleToTypes];
+  console.log('possibleTypes', possibleTypes);
   return possibleTypes;
 };
 export const isDatable = (entityType, relationshipType) => {

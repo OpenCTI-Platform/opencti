@@ -10,7 +10,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import inject18n from '../../../../components/i18n';
-import StixNestedRefRelationCreationFromEntity from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipCreationFromEntity';
+import StixNestedRefRelationshipCreationFromEntityContainer from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipCreationFromEntityContainer';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import SearchInput from '../../../../components/SearchInput';
@@ -209,7 +209,7 @@ class StixCyberObservableNestedEntities extends Component {
           needs={[KNOWLEDGE_KNUPDATE]}
           placeholder={<div style={{ height: 29 }} />}
         >
-          <StixNestedRefRelationCreationFromEntity
+          <StixNestedRefRelationshipCreationFromEntityContainer
             paginationOptions={paginationOptions}
             entityId={entityId}
             variant="inLine"

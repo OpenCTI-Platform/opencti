@@ -5,7 +5,7 @@ import withStyles from '@mui/styles/withStyles';
 import Typography from '@mui/material/Typography';
 import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
 import List from '@mui/material/List';
-import StixNestedRefRelationshipCreationFromEntity from '../stix_nested_ref_relationships/StixNestedRefRelationshipCreationFromEntity';
+import StixNestedRefRelationshipCreationFromEntityContainer from '../stix_nested_ref_relationships/StixNestedRefRelationshipCreationFromEntityContainer';
 import inject18n from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
@@ -161,7 +161,7 @@ class StixDomainObjectNestedEntities extends Component {
           needs={[KNOWLEDGE_KNUPDATE]}
           placeholder={<div style={{ height: 29 }} />}
         >
-          <StixNestedRefRelationshipCreationFromEntity
+          <StixNestedRefRelationshipCreationFromEntityContainer
             paginationOptions={paginationOptions}
             entityId={entityId}
             variant="inLine"
