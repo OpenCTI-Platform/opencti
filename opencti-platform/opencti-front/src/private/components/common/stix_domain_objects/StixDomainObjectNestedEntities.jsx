@@ -3,7 +3,6 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Typography from '@mui/material/Typography';
-import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
 import List from '@mui/material/List';
 import StixNestedRefRelationshipCreationFromEntityContainer from '../stix_nested_ref_relationships/StixNestedRefRelationshipCreationFromEntityContainer';
 import inject18n from '../../../../components/i18n';
@@ -52,56 +51,6 @@ const styles = (theme) => ({
   },
 });
 
-const inlineStylesHeaders = {
-  iconSort: {
-    position: 'absolute',
-    margin: '0 0 0 5px',
-    padding: 0,
-    top: '0px',
-  },
-  relationship_type: {
-    float: 'left',
-    width: '20%',
-    fontSize: 12,
-    fontWeight: '700',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-    cursor: 'pointer',
-  },
-  entity_type: {
-    float: 'left',
-    width: '20%',
-    fontSize: 12,
-    fontWeight: '700',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
-  name: {
-    float: 'left',
-    width: '40%',
-    fontSize: 12,
-    fontWeight: '700',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
-  start_time: {
-    float: 'left',
-    fontSize: 12,
-    fontWeight: '700',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-    cursor: 'pointer',
-  },
-};
-
 class StixDomainObjectNestedEntities extends Component {
   constructor(props) {
     super(props);
@@ -114,38 +63,9 @@ class StixDomainObjectNestedEntities extends Component {
     };
   }
 
-  handleSort(field, orderAsc) {
-    this.setState({ sortBy: field, orderAsc });
-  }
-
-  SortHeader(field, label, isSortable) {
-    const { t } = this.props;
-    const sortComponent = this.state.orderAsc ? (
-      <ArrowDropDown style={inlineStylesHeaders.iconSort} />
-    ) : (
-      <ArrowDropUp style={inlineStylesHeaders.iconSort} />
-    );
-    if (isSortable) {
-      return (
-        <div
-          style={inlineStylesHeaders[field]}
-          onClick={this.handleSort.bind(this, field, !this.state.orderAsc)}
-        >
-          <span>{t(label)}</span>
-          {this.state.sortBy === field ? sortComponent : ''}
-        </div>
-      );
-    }
-    return (
-      <div style={inlineStylesHeaders[field]}>
-        <span>{t(label)}</span>
-      </div>
-    );
-  }
-
   render() {
     const { searchTerm, sortBy, orderAsc } = this.state;
-    const { entityId, t, entityType, targetStixCoreObjectTypes } = this.props;
+    const { entityId, t, entityType } = this.props;
     const paginationOptions = {
       fromOrToId: entityId,
       search: searchTerm,
@@ -166,7 +86,6 @@ class StixDomainObjectNestedEntities extends Component {
             entityId={entityId}
             variant="inLine"
             entityType={entityType}
-            targetStixCoreObjectTypes={targetStixCoreObjectTypes}
           />
         </Security>
         <div className="clearfix" />
