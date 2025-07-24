@@ -222,9 +222,7 @@ const Users = () => {
         { label: t_i18n('Security') },
         { label: t_i18n('Users'), current: true }]}
       />
-      {!isSetAccess || !isEnterpriseEdition ? (
-        <EnterpriseEdition feature="Organization sharing"/>
-      ) : (
+      {isSetAccess || isEnterpriseEdition ? (
         <>
           {queryRef && (
           <DataTable
@@ -247,6 +245,8 @@ const Users = () => {
           />
           )}
         </>
+      ) : (
+        <EnterpriseEdition feature="Organization sharing"/>
       )}
     </div>
   );
