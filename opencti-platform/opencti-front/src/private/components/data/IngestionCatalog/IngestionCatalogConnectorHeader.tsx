@@ -1,16 +1,15 @@
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import { VerifiedOutlined } from '@mui/icons-material';
-import IngestionCatalogUseCaseChip from '@components/data/IngestionCatalog/IngestionCatalogUseCaseChip';
 import Button from '@mui/material/Button';
 import { Launch } from 'mdi-material-ui';
 import React from 'react';
 import { useTheme } from '@mui/styles';
-import { IngestionConnector } from '@components/data/IngestionCatalog/IngestionCatalogCard';
+import { IngestionConnector, ingestionConnectorTypeMetadata } from '@components/data/IngestionCatalog/IngestionCatalogCard';
+import IngestionCatalogChip from '@components/data/IngestionCatalog/IngestionCatalogUseCaseChip';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
-import { INGESTION_SETINGESTIONS, MODULES } from '../../../../utils/hooks/useGranted';
-import { Navigate } from 'react-router-dom';
+import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 
 const IngestionCatalogConnectorHeader = ({ connector }: { connector: IngestionConnector }) => {
@@ -36,7 +35,11 @@ const IngestionCatalogConnectorHeader = ({ connector }: { connector: IngestionCo
             )}
           </div>
           <div style={{ display: 'flex' }}>
-            {connector.use_cases.map((useCase: string) => <IngestionCatalogUseCaseChip key={useCase} useCase={useCase} />)}
+            <IngestionCatalogChip
+              label={t_i18n(ingestionConnectorTypeMetadata[connector.container_type].label)}
+              color={ingestionConnectorTypeMetadata[connector.container_type].color}
+            />
+            {connector.use_cases.map((useCase: string) => <IngestionCatalogChip key={useCase} label={useCase} />)}
           </div>
         </div>
       </div>
