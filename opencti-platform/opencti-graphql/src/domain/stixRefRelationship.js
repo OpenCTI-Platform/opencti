@@ -44,7 +44,8 @@ export const schemaRefRelationships = async (context, user, id, toType) => {
     });
 };
 // return the possible types with which an entity type can have a nested relation ref
-export const schemaRefRelationshipsPossibleTypes = async (entityType) => {
+export const schemaRefRelationshipsPossibleTypes = async (inputType) => {
+  const entityType = inputType === 'File' ? 'InternalFile' : inputType;
   const registeredTypes = schemaRelationsRefDefinition.getRegisteredTypes();
   const possibleToTypes = uniq(schemaRelationsRefDefinition.getRelationsRef(entityType)
     .filter((ref) => !notNestedRefRelation.includes(ref.databaseName))

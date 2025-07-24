@@ -35,6 +35,7 @@ import ListLines from '../../../../components/list_lines/ListLines';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import { emptyFilterGroup, removeIdFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
+import useAuth from '../../../../utils/hooks/useAuth';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -350,7 +351,20 @@ const StixNestedRefRelationshipCreationFromEntity = ({
   const [searchTerm, setSearchTerm] = useState('');
   const containerRef = useRef(null);
 
-  const { stixSchemaRefRelationshipsPossibleTypes: targetStixCoreObjectTypes } = usePreloadedQuery(stixNestedRefRelationResolveTypes, possibleTypesQueryRef);
+  const { scos, sdos } = useAuth().schema;
+  const { stixSchemaRefRelationshipsPossibleTypes } = usePreloadedQuery(stixNestedRefRelationResolveTypes, possibleTypesQueryRef);
+  // clean target types if it includes abstract types
+  let targetStixCoreObjectTypes = stixSchemaRefRelationshipsPossibleTypes;
+  if (targetStixCoreObjectTypes.includes('Stix-Core-Object')) {
+    targetStixCoreObjectTypes = ['Stix-Core-Object'];
+  } else {
+    if (targetStixCoreObjectTypes.includes('Stix-Cyber-Observable')) {
+      targetStixCoreObjectTypes = targetStixCoreObjectTypes.filter((t) => !scos.map((n) => n.id).includes(t));
+    }
+    if (targetStixCoreObjectTypes.includes('Stix-Domain-Object')) {
+      targetStixCoreObjectTypes = targetStixCoreObjectTypes.filter((t) => !sdos.map((n) => n.id).includes(t));
+    }
+  }
 
   const actualTypeFilter = [
     ...(targetStixCoreObjectTypes ?? []),
