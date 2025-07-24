@@ -151,7 +151,7 @@ const CoursesOfAction = () => {
   } as UsePreloadedPaginationFragment<CoursesOfActionLinesPaginationQuery>;
 
   return (
-    <>
+    <div data-testid="course-of-action-page">
       <Breadcrumbs elements={[{ label: t_i18n('Techniques') }, { label: t_i18n('Courses of action'), current: true }]} />
       {queryRef && (
         <DataTable
@@ -170,7 +170,7 @@ const CoursesOfAction = () => {
           )}
         />
       )}
-    </>
+    </div>
   );
 };
 
