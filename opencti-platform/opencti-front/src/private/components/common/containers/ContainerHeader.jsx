@@ -547,7 +547,7 @@ const ContainerHeader = (props) => {
 
   const displayPopoverMenu = (displaySharing && !displaySharingButton)
     || (displayAuthorizedMembers && !displayAuthorizedMembersButton)
-    || (displayEnrollPlaybook && !displayEnrollPlaybookButton) || canDelete;
+    || (displayEnrollPlaybook && !displayEnrollPlaybookButton) || (!knowledge && canDelete);
 
   return (
     <div style={containerStyle}>
@@ -741,10 +741,11 @@ const ContainerHeader = (props) => {
                  />
             }
             {displayPopoverMenu && (
-              <PopoverMenu>
-                {({ closeMenu }) => (
-                  <Box>
-                    {displaySharing && !displaySharingButton && (
+              <>
+                <PopoverMenu>
+                  {({ closeMenu }) => (
+                    <Box>
+                      {displaySharing && !displaySharingButton && (
                       <StixCoreObjectMenuItemUnderEE
                         setOpen={setOpenSharing}
                         title={t_i18n('Share with an organization')}
@@ -752,8 +753,8 @@ const ContainerHeader = (props) => {
                         handleCloseMenu={closeMenu}
                         needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}
                       />
-                    )}
-                    {displayAuthorizedMembers && !displayAuthorizedMembersButton && (
+                      )}
+                      {displayAuthorizedMembers && !displayAuthorizedMembersButton && (
                       <StixCoreObjectMenuItemUnderEE
                         setOpen={setOpenAccessRestriction}
                         title={t_i18n('Manage access restriction')}
@@ -761,16 +762,16 @@ const ContainerHeader = (props) => {
                         isDisabled={!enableManageAuthorizedMembers}
                         needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
                       />
-                    )}
-                    {displayEnrollPlaybook && !displayEnrollPlaybookButton && (
+                      )}
+                      {displayEnrollPlaybook && !displayEnrollPlaybookButton && (
                       <StixCoreObjectMenuItemUnderEE
                         title={t_i18n('Enroll in playbook')}
                         setOpen={setOpenEnrollPlaybook}
                         handleCloseMenu={closeMenu}
                         needs={[KNOWLEDGE_KNENRICHMENT]}
                       />
-                    )}
-                    {canDelete && (
+                      )}
+                      {canDelete && (
                       <MenuItem onClick={() => {
                         handleOpenDelete();
                         closeMenu();
@@ -778,13 +779,14 @@ const ContainerHeader = (props) => {
                       >
                         {t_i18n('Delete')}
                       </MenuItem>
-                    )}
-                  </Box>
-                )}
-              </PopoverMenu>
+                      )}
+                    </Box>
+                  )}
+                </PopoverMenu>
+                {EditComponent}
+                <DeleteComponent isOpen={openDelete} onClose={handleCloseDelete} />
+              </>
             )}
-            {EditComponent}
-            <DeleteComponent isOpen={openDelete} onClose={handleCloseDelete} />
           </div>
         </div>
       </React.Suspense>
