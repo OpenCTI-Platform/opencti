@@ -1,19 +1,25 @@
 import Chip from '@mui/material/Chip';
 import React from 'react';
 
-const IngestionCatalogUseCaseChip = ({ useCase }: { useCase: string }) => {
+interface IngestionCatalogChipProps {
+  label: string;
+  variant?: 'outlined' | 'filled';
+  color?: 'primary' | 'secondary' | 'error' | 'success';
+}
+
+const IngestionCatalogChip = ({ label, variant, color }: IngestionCatalogChipProps) => {
   return (
     <Chip
-      key={useCase}
-      variant="outlined"
+      variant={variant ?? 'outlined'}
       size="small"
+      color={color ?? 'default'}
       style={{
         margin: '7px 7px 7px 0',
         borderRadius: 4,
       }}
-      label={useCase}
+      label={label}
     />
   );
 };
 
-export default IngestionCatalogUseCaseChip;
+export default IngestionCatalogChip;

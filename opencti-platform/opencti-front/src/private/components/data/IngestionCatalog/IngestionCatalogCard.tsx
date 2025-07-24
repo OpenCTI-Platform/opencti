@@ -6,7 +6,7 @@ import { Badge, CardActions, Grid } from '@mui/material';
 import Button from '@mui/material/Button';
 import { VerifiedOutlined } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import IngestionCatalogUseCaseChip from '@components/data/IngestionCatalog/IngestionCatalogUseCaseChip';
+import IngestionCatalogChip from '@components/data/IngestionCatalog/IngestionCatalogUseCaseChip';
 import { useFormatter } from '../../../../components/i18n';
 import EnrichedTooltip from '../../../../components/EnrichedTooltip';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
@@ -21,6 +21,7 @@ export interface IngestionConnector {
   title: string,
   description: string,
   short_description: string,
+  container_type: IngestionConnectorType,
   source_code: string,
   last_verified_date: string,
   subscription_link: string,
@@ -31,38 +32,59 @@ export interface IngestionConnector {
   }
 }
 
+export type IngestionConnectorType = 'INTERNAL_ENRICHMENT' | 'EXTERNAL_IMPORT' | 'INTERNAL_EXPORT_FILE' | 'INTERNAL_IMPORT_FILE';
+
+export const ingestionConnectorTypeMetadata: Record<IngestionConnectorType, { label: string; color: 'primary' | 'secondary' | 'error' | 'success' }> = {
+  EXTERNAL_IMPORT: {
+    label: 'External import',
+    color: 'primary',
+  },
+  INTERNAL_ENRICHMENT: {
+    label: 'Internal enrichment',
+    color: 'secondary',
+  },
+  INTERNAL_EXPORT_FILE: {
+    label: 'Internal export file',
+    color: 'error',
+  },
+  INTERNAL_IMPORT_FILE: {
+    label: 'Internal import file',
+    color: 'success',
+  },
+};
+
 const IngestionCatalogCard = ({ node }: IngestionCatalogCardProps) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const connector: IngestionConnector = JSON.parse(node);
   const link = `/dashboard/data/ingestion/catalog/${connector.default.CONNECTOR_NAME}`;
 
-  const renderUseCases = () => {
+  const renderLabels = () => {
     return (
       <EnrichedTooltip
         title={(
           <Grid container={true} spacing={3}>
-            {connector.use_cases.map((useCase: string) => <Grid key={useCase} item xs={6}><IngestionCatalogUseCaseChip useCase={useCase} /></Grid>)}
+            {connector.use_cases.map((useCase: string) => <Grid key={useCase} item xs={6}><IngestionCatalogChip label={useCase} /></Grid>)}
           </Grid>
         )}
       >
-        {connector.use_cases.length > 1 ? (
+        {connector.use_cases.length > 0 ? (
           <Badge
             variant="dot"
             color="primary"
-            sx={{
-              '& .MuiBadge-badge': {
-                right: 8,
-                top: 8,
-              },
-            }}
+            sx={{ '& .MuiBadge-badge': { right: 8, top: 8 } }}
           >
-            {connector.use_cases.slice(0, 1).map((useCase: string) => <IngestionCatalogUseCaseChip key={useCase} useCase={useCase} />)}
+            <IngestionCatalogChip
+              label={t_i18n(ingestionConnectorTypeMetadata[connector.container_type].label)}
+              color={ingestionConnectorTypeMetadata[connector.container_type].color}
+            />
           </Badge>
         ) : (
-          <>
-            {connector.use_cases.map((useCase: string) => <IngestionCatalogUseCaseChip key={useCase} useCase={useCase} />)}
-          </>
+          <IngestionCatalogChip
+            variant={'filled'}
+            label={t_i18n(ingestionConnectorTypeMetadata[connector.container_type].label)}
+            color={ingestionConnectorTypeMetadata[connector.container_type].color}
+          />
         )}
       </EnrichedTooltip>
     );
@@ -89,7 +111,7 @@ const IngestionCatalogCard = ({ node }: IngestionCatalogCardProps) => {
         }}
         avatar={<img style={{ height: 50, width: 50, objectFit: 'cover', borderRadius: 4 }} src={connector.logo} alt={connector.title} />}
         title={<div style={{ width: '100%', fontSize: 20, fontWeight: 600 }}>{connector.title}</div>}
-        subheader={renderUseCases()}
+        subheader={renderLabels()}
         action={connector.verified && <VerifiedOutlined color="success" />}
       />
 
