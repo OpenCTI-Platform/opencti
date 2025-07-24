@@ -3095,6 +3095,7 @@
   "Separator": "구분자",
   "Series attribute": "시리즈 속성",
   "Server capacity": "서버 용량",
+  "Server ingestion is not accepting new work, waiting for current messages in ingestion to be processed until message count go back under threshold": "서버 수집이 새 작업을 수락하지 않고, 메시지 수가 임계값 미만으로 돌아올 때까지 수집 중인 현재 메시지가 처리될 때까지 기다립니다",
   "Server ingestion is paused until the size of messages is reduced under max capacity": "메시지 크기가 최대 용량 이하로 줄어들 때까지 서버 수집이 일시 중지됩니다",
   "Session timeout in": "세션 시간 초과",
   "Sessions": "세션",

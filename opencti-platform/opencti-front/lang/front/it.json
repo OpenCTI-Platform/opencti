@@ -3095,6 +3095,7 @@
   "Separator": "Separatore",
   "Series attribute": "Attributo della serie",
   "Server capacity": "Capacità del server",
+  "Server ingestion is not accepting new work, waiting for current messages in ingestion to be processed until message count go back under threshold": "L'ingestione del server non accetta nuovo lavoro, in attesa che i messaggi correnti nell'ingestione vengano elaborati finché il numero di messaggi non torna sotto la soglia",
   "Server ingestion is paused until the size of messages is reduced under max capacity": "L'ingestione del server è in pausa fino a quando la dimensione dei messaggi non viene ridotta sotto la capacità massima",
   "Session timeout in": "Sessione scaduta in",
   "Sessions": "Sessioni",

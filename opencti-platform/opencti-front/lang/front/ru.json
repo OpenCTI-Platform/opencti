@@ -3095,6 +3095,7 @@
   "Separator": "Сепаратор",
   "Series attribute": "Атрибут серии",
   "Server capacity": "Мощность сервера",
+  "Server ingestion is not accepting new work, waiting for current messages in ingestion to be processed until message count go back under threshold": "Сервер ингестирования не принимает новую работу, ожидая, пока текущие сообщения в ингестировании не будут обработаны, пока количество сообщений не вернется к пороговому значению",
   "Server ingestion is paused until the size of messages is reduced under max capacity": "Прием сообщений на сервер приостанавливается до тех пор, пока их размер не уменьшится до максимальной емкости",
   "Session timeout in": "Таймаут сеанса в",
   "Sessions": "Сессии",
