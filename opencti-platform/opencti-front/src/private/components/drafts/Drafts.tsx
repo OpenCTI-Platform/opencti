@@ -237,6 +237,7 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
             hideSearch={!!entityId}
             hideFilters={!!entityId}
             hideHeaders={!!entityId}
+            disableLineSelection={!!entityId}
             emptyStateMessage={emptyStateMessage}
             createButton={!draftContext && <DraftCreation paginationOptions={queryPaginationOptions} />}
             actions={(row) => (
