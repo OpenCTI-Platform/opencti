@@ -150,10 +150,6 @@ export const UserLine = createFragmentContainer(UserLineComponent, {
       }
       otp_activated
       created_at
-      createdBy{
-          id
-          name
-      }
     }
   `,
 });

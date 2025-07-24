@@ -181,10 +181,6 @@ const UserFragment = graphql`
       }
     }
     user_service_account
-    createdBy{
-      id
-      name
-    }
     effective_confidence_level {
       max_confidence
       overrides {
@@ -359,7 +355,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
   const accountExpireDate = fldt(user.account_lock_after_date);
   const isServiceAccount = user.user_service_account && serviceAccountFeatureFlag;
   const creationDate = fldt(user.created_at);
-  const creator = user.createdBy?.name;
+  // const creator = user.createdBy?.name;
   let historyTypes = ['History'];
   if (isGrantedToAudit && !isGrantedToKnowledge) {
     historyTypes = ['Activity'];
@@ -541,7 +537,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                   <Typography variant="h3" gutterBottom={true}>
                     {t_i18n('Created by')}
                   </Typography>
-                  {creator || '-'}
+                  {/* {creator || '-'} */}
                 </Grid>
                 <Grid item xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
