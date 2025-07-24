@@ -4,6 +4,7 @@ import * as R from 'ramda';
 import { uniq } from 'ramda';
 import { v4 as uuid } from 'uuid';
 import ejs from 'ejs';
+import { DateTime } from 'luxon';
 import { ACCOUNT_STATUS_ACTIVE, ACCOUNT_STATUS_EXPIRED, ACCOUNT_STATUSES, BUS_TOPICS, DEFAULT_ACCOUNT_STATUS, ENABLED_DEMO_MODE, logApp } from '../config/conf';
 import { AuthenticationFailure, DatabaseError, DraftLockedError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
@@ -593,7 +594,12 @@ export const sendEmailToUser = async (context, user, input) => {
 
   const renderedHtml = ejs.render(preprocessedTemplate, {
     platformUrl,
-    user: targetUser,
+    user: {
+      ...targetUser,
+      account_lock_after_date: targetUser.account_lock_after_date
+        ? DateTime.fromISO(targetUser.account_lock_after_date).toFormat('yyyy-MM-dd')
+        : ''
+    },
     organizationNames,
   });
 
