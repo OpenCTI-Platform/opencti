@@ -11,6 +11,7 @@ import {
   BUS_TOPICS,
   DEFAULT_ACCOUNT_STATUS,
   ENABLED_DEMO_MODE,
+  getRequestAuditHeaders,
   isFeatureEnabled,
   logApp
 } from '../config/conf';
@@ -139,10 +140,6 @@ export const userWithOrigin = (req, user) => {
   const headers_metadata = R.mergeAll((user.headers_audit ?? [])
     .map((header) => ({ [header]: req.header(header) })));
 
-  // Additional header to be used in audit log and activity
-  const req_audit_headers_list = R.mergeAll((auditRequestHeaderToKeep ?? [])
-    .map((header) => ({ [header]: req.header(header) })));
-
   const origin = {
     socket: 'query',
     ip: req?.ip,
@@ -154,7 +151,7 @@ export const userWithOrigin = (req, user) => {
     applicant_id: req?.headers['opencti-applicant-id'],
     call_retry_number: req?.headers['opencti-retry-number'],
     playbook_id: req?.headers['opencti-playbook-id'],
-    request_metadata: JSON.stringify(req_audit_headers_list)
+    request_metadata: getRequestAuditHeaders(req)
   };
   return { ...user, origin };
 };
@@ -1479,7 +1476,7 @@ export const authenticateUserByTokenOrUserId = async (context, req, tokenOrId) =
     validateUser(authenticatedUser, settings);
     return userWithOrigin(req, authenticatedUser);
   }
-  throw FunctionalError(`Cant identify with ${tokenOrId}`);
+  throw FunctionalError(`Cant identify with ${tokenOrId}`, { request_metadata: getRequestAuditHeaders(req) });
 };
 
 export const userRenewToken = async (context, user, userId) => {
@@ -1594,7 +1591,8 @@ export const authenticateUserFromRequest = async (context, req) => {
     try {
       return await authenticateUserByTokenOrUserId(context, req, tokenUUID);
     } catch (err) {
-      logApp.error('Error resolving user by token', { cause: err });
+      const requestAuditHeaders = getRequestAuditHeaders(req);
+      logApp.error('Error resolving user by token', { cause: err, request_metadata: requestAuditHeaders });
     }
   }
   // endregion
