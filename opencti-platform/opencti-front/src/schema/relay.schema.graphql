@@ -1755,6 +1755,7 @@ type User implements BasicObject & InternalObject {
   submenu_auto_collapse: Boolean
   monochrome_labels: Boolean
   editContext: [EditUserContext!]
+  createdBy: Identity
 }
 
 type MeUser implements BasicObject & InternalObject {
