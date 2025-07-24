@@ -27,6 +27,8 @@ import { RootCampaignQuery } from './__generated__/RootCampaignQuery.graphql';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import CampaignEdition from './CampaignEdition';
+import StixCoreRelationshipCreationFromEntityHeader from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
+import CreateRelationshipContextProvider from '../../common/stix_core_relationships/CreateRelationshipContextProvider';
 
 const subscription = graphql`
   subscription RootCampaignSubscription($id: ID!) {
@@ -97,7 +99,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
   const link = `/dashboard/threats/campaigns/${campaignId}/knowledge`;
   const paddingRight = getPaddingRight(location.pathname, campaignId, '/dashboard/threats/campaigns');
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {campaign ? (
         <>
           <Routes>
@@ -140,6 +142,13 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <CampaignEdition campaignId={campaign.id} />
+                </Security>
+              )}
+              RelateComponent={(
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <StixCoreRelationshipCreationFromEntityHeader
+                    entityId={campaign.id}
+                  />
                 </Security>
               )}
               enableEnricher={true}
@@ -259,7 +268,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 
