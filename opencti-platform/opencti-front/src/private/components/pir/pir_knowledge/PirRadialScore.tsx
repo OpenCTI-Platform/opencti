@@ -23,7 +23,8 @@ const PirRadialScore = ({ value }: PirRadialScoreProps) => {
               size: '35%',
             },
             track: {
-              show: false,
+              show: true,
+              background: theme.palette.background.accent,
             },
             dataLabels: {
               name: {
@@ -37,13 +38,13 @@ const PirRadialScore = ({ value }: PirRadialScoreProps) => {
             },
           },
         },
-        colors: ['#f3722c'],
+        colors: ['#8ac926'],
         fill: {
           type: 'gradient',
           gradient: {
             shade: 'dark',
             type: 'horizontal',
-            gradientToColors: ['#8ac926'],
+            gradientToColors: ['#f3722c'],
             stops: [0, 100],
           },
         },
