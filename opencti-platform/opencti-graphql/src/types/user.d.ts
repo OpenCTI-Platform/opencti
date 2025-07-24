@@ -53,7 +53,6 @@ interface AuthUser extends BasicStoreIdentifier {
 }
 
 interface AuthContext {
-  req: Express.Request
   otp_mandatory: boolean
   source: string
   tracing: TracingContext
@@ -65,4 +64,5 @@ interface AuthContext {
   user_inside_platform_organization: boolean
   user_otp_validated?: boolean
   user_with_session?: boolean
+  req?: Express.Request
 }
