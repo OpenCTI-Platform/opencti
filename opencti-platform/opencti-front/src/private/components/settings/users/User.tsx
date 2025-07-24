@@ -154,6 +154,9 @@ const UserFragment = graphql`
     api_token
     otp_activated
     created_at
+    creator {
+      name
+    }
     roles(orderBy: $rolesOrderBy, orderMode: $rolesOrderMode) {
       id
       name
@@ -355,7 +358,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
   const accountExpireDate = fldt(user.account_lock_after_date);
   const isServiceAccount = user.user_service_account && serviceAccountFeatureFlag;
   const creationDate = fldt(user.created_at);
-  // const creator = user.createdBy?.name;
+  const creatorName = user.creator ? user.creator?.name : '-';
   let historyTypes = ['History'];
   if (isGrantedToAudit && !isGrantedToKnowledge) {
     historyTypes = ['Activity'];
@@ -537,7 +540,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                   <Typography variant="h3" gutterBottom={true}>
                     {t_i18n('Created by')}
                   </Typography>
-                  {/* {creator || '-'} */}
+                  { creatorName }
                 </Grid>
                 <Grid item xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
