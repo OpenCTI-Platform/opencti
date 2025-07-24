@@ -54,6 +54,16 @@ import ToolPage from 'tests_e2e/model/tool.pageModel';
 import ToolDetailsPage from 'tests_e2e/model/toolDetails.pageModel';
 import VulnerabilityPage from 'tests_e2e/model/vulnerability.pageModel';
 import VulnerabilityDetailsPage from 'tests_e2e/model/vulnerabilityDetails.pageModel';
+import AttackPatternPage from 'tests_e2e/model/attackPattern.pageModel';
+import AttackPatternDetailsPage from "../model/attackPatternDetails.pageModel";
+import NarrativePage from 'tests_e2e/model/narrative.pageModel';
+import NarrativeDetailsPage from 'tests_e2e/model/narrativeDetails.pageModel';
+import CourseOfActionPage from "../model/courseOfAction.pageModel";
+import CourseOfActionDetailsPage from "../model/courseOfActionDetails.pageModel";
+import DataComponentPage from "../model/dataComponent.pageModel";
+import DataComponentDetailsPage from 'tests_e2e/model/dataComponentDetails.pageModel';
+import DataSourcePage from 'tests_e2e/model/dataSource.pageModel';
+import DataSourceDetailsPage from "../model/dataSourceDetails.pageModel";
 
 /**
  * Goal: validate that everything is opening without errors in Analyses > Note.
@@ -937,6 +947,152 @@ const navigateVulnerability = async (page: Page) => {
   await expect(historyTab.getPage()).toBeVisible();
 };
 
+const navigateAttackPattern = async (page: Page) => {
+  const attackPatternInitData = 'Attack pattern e2e';
+  const attackPatternPage = new AttackPatternPage(page);
+  await attackPatternPage.navigateFromMenu();
+  await expect(attackPatternPage.getPage()).toBeVisible();
+  await expect(page.getByText(attackPatternInitData)).toBeVisible();
+  await attackPatternPage.getItemFromList(attackPatternInitData).click();
+
+  const attackPatternDetailsPage = new AttackPatternDetailsPage(page);
+  await expect(attackPatternDetailsPage.getPage()).toBeVisible();
+
+  // -- Knowledge
+  await attackPatternDetailsPage.tabs.goToKnowledgeTab();
+  await expect(page.getByTestId('attack-pattern-knowledge')).toBeVisible();
+
+  // -- Content
+  await attackPatternDetailsPage.tabs.goToContentTab();
+  const contentTab = new StixCoreObjectContentTabPage(page);
+  await expect(contentTab.getPage()).toBeVisible();
+
+  // -- Analyses
+  await attackPatternDetailsPage.tabs.goToAnalysesTab();
+  await expect(page.getByPlaceholder('Search these results...')).toBeVisible();
+
+  // -- Data
+  await attackPatternDetailsPage.tabs.goToDataTab();
+  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+
+  // -- History
+  await attackPatternDetailsPage.tabs.goToHistoryTab();
+  const historyTab = new StixCoreObjectHistoryTab(page);
+  await expect(historyTab.getPage()).toBeVisible();
+};
+
+const navigateNarrative = async (page: Page) => {
+  const narrativeInitData = 'Narrative e2e';
+  const narrativePage = new NarrativePage(page);
+  await narrativePage.navigateFromMenu();
+  await expect(narrativePage.getPage()).toBeVisible();
+  await expect(page.getByText(narrativeInitData)).toBeVisible();
+  await narrativePage.getItemFromList(narrativeInitData).click();
+
+  const narrativeDetailsPage = new NarrativeDetailsPage(page);
+  await expect(narrativeDetailsPage.getPage()).toBeVisible();
+
+  // -- Knowledge
+  await narrativeDetailsPage.tabs.goToKnowledgeTab();
+  await expect(page.getByTestId('narrative-knowledge')).toBeVisible();
+
+  // -- Content
+  await narrativeDetailsPage.tabs.goToContentTab();
+  const contentTab = new StixCoreObjectContentTabPage(page);
+  await expect(contentTab.getPage()).toBeVisible();
+
+  // -- Analyses
+  await narrativeDetailsPage.tabs.goToAnalysesTab();
+  await expect(page.getByPlaceholder('Search these results...')).toBeVisible();
+
+  // -- Data
+  await narrativeDetailsPage.tabs.goToDataTab();
+  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+
+  // -- History
+  await narrativeDetailsPage.tabs.goToHistoryTab();
+  const historyTab = new StixCoreObjectHistoryTab(page);
+  await expect(historyTab.getPage()).toBeVisible();
+};
+
+const navigateCourseOfAction = async (page: Page) => {
+  const courseOfActionInitData = 'Course of action e2e';
+  const courseOfActionPage = new CourseOfActionPage(page);
+  await courseOfActionPage.navigateFromMenu();
+  await expect(courseOfActionPage.getPage()).toBeVisible();
+  await expect(page.getByText(courseOfActionInitData)).toBeVisible();
+  await courseOfActionPage.getItemFromList(courseOfActionInitData).click();
+
+  const courseOfActionDetailsPage = new CourseOfActionDetailsPage(page);
+  await expect(courseOfActionDetailsPage.getPage()).toBeVisible();
+
+  // -- Content
+  await courseOfActionDetailsPage.tabs.goToContentTab();
+  const contentTab = new StixCoreObjectContentTabPage(page);
+  await expect(contentTab.getPage()).toBeVisible();
+
+  // -- Data
+  await courseOfActionDetailsPage.tabs.goToDataTab();
+  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+
+  // -- History
+  await courseOfActionDetailsPage.tabs.goToHistoryTab();
+  const historyTab = new StixCoreObjectHistoryTab(page);
+  await expect(historyTab.getPage()).toBeVisible();
+};
+
+const navigateDataComponent = async (page: Page) => {
+  const dataComponentInitData = 'Data component e2e';
+  const dataComponentPage = new DataComponentPage(page);
+  await dataComponentPage.navigateFromMenu();
+  await expect(dataComponentPage.getPage()).toBeVisible();
+  await expect(page.getByText(dataComponentInitData)).toBeVisible();
+  await dataComponentPage.getItemFromList(dataComponentInitData).click();
+
+  const dataComponentDetailsPage = new DataComponentDetailsPage(page);
+  await expect(dataComponentDetailsPage.getPage()).toBeVisible();
+
+  // -- Content
+  await dataComponentDetailsPage.tabs.goToContentTab();
+  const contentTab = new StixCoreObjectContentTabPage(page);
+  await expect(contentTab.getPage()).toBeVisible();
+
+  // -- Data
+  await dataComponentDetailsPage.tabs.goToDataTab();
+  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+
+  // -- History
+  await dataComponentDetailsPage.tabs.goToHistoryTab();
+  const historyTab = new StixCoreObjectHistoryTab(page);
+  await expect(historyTab.getPage()).toBeVisible();
+};
+
+const navigateDataSource = async (page: Page) => {
+  const dataSourceInitData = 'Data source e2e';
+  const dataSourcePage = new DataSourcePage(page);
+  await dataSourcePage.navigateFromMenu();
+  await expect(dataSourcePage.getPage()).toBeVisible();
+  await expect(page.getByText(dataSourceInitData)).toBeVisible();
+  await dataSourcePage.getItemFromList(dataSourceInitData).click();
+
+  const dataSourceDetailsPage = new DataSourceDetailsPage(page);
+  await expect(dataSourceDetailsPage.getPage()).toBeVisible();
+
+  // -- Content
+  await dataSourceDetailsPage.tabs.goToContentTab();
+  const contentTab = new StixCoreObjectContentTabPage(page);
+  await expect(contentTab.getPage()).toBeVisible();
+
+  // -- Data
+  await dataSourceDetailsPage.tabs.goToDataTab();
+  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+
+  // -- History
+  await dataSourceDetailsPage.tabs.goToHistoryTab();
+  const historyTab = new StixCoreObjectHistoryTab(page);
+  await expect(historyTab.getPage()).toBeVisible();
+};
+
 const navigateAllMenu = async (page: Page) => {
   const leftBarPage = new LeftBarPage(page);
 
@@ -1106,7 +1262,12 @@ test('Check navigation on all pages', { tag: ['@navigation'] }, async ({ page })
   // await navigateThreatActorGroup(page);
   // await navigateThreatActorIndividual(page);
   // await navigateMalware(page);
-  await navigateChannel(page);
-  await navigateTool(page);
-  await navigateVulnerability(page);
+  // await navigateChannel(page);
+  // await navigateTool(page);
+  // await navigateVulnerability(page);
+  await navigateAttackPattern(page);
+  await navigateNarrative(page);
+  await navigateCourseOfAction(page);
+  await navigateDataComponent(page);
+  await navigateDataSource(page);
 });

@@ -73,7 +73,7 @@ const DataSourceComponent: React.FC<DataSourceProps> = ({ dataSourceData }) => {
   const overviewLayoutCustomization = useOverviewLayoutCustomization(dataSource.entity_type);
 
   return (
-    <>
+    <div data-testid="data-source-details-page">
       <Grid
         container={true}
         spacing={3}
@@ -143,7 +143,7 @@ const DataSourceComponent: React.FC<DataSourceProps> = ({ dataSourceData }) => {
           })
         }
       </Grid>
-    </>
+    </div>
   );
 };
 

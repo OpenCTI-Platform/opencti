@@ -1139,6 +1139,94 @@
       "type": "channel"
     },
     {
+      "id": "attack-pattern--9675c42e-1fe3-50da-a185-10f7c669b6f7",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2020-02-11T18:46:56.263Z",
+      "modified": "2025-02-21T15:42:33.534Z",
+      "name": "Attack pattern e2e",
+      "description": "attack pattern e2e description",
+      "labels": [
+        "e2e"
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "mitre-attack",
+          "phase_name": "credential-access",
+          "x_opencti_order": 0
+        },
+        {
+          "kill_chain_name": "operator-chain",
+          "phase_name": "phase1",
+          "x_opencti_order": 0
+        }
+      ],
+      "x_opencti_id": "3ad88983-ba9c-42bb-875e-4627d9ff6dc4",
+      "x_opencti_type": "Attack-Pattern",
+      "type": "attack-pattern"
+    },
+    {
+      "id": "narrative--94e38491-7a58-539a-8d2c-b69d1d560dfc",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2024-03-07T21:10:00.027Z",
+      "modified": "2024-03-11T10:14:02.509Z",
+      "name": "Narrative e2e",
+      "x_opencti_id": "925675f1-ed8d-45f6-aed1-63aef938e7c0",
+      "x_opencti_type": "Narrative",
+      "type": "narrative"
+    },
+    {
+      "id": "x-mitre-data-component--f58da03c-b2e6-5932-8c27-dce8dec74e74",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2021-10-20T15:05:19.274Z",
+      "modified": "2024-12-11T11:12:41.884Z",
+      "name": "Data component e2e",
+      "description": "Data component e2e",
+      "x_opencti_id": "45daf5bb-76db-4b00-b2f2-45f66a5a3419",
+      "x_opencti_type": "Data-Component",
+      "type": "x-mitre-data-component"
+    },
+    {
+      "id": "x-mitre-data-source--4a901889-b00b-5960-9069-69ff62834a63",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2021-10-20T15:05:19.274Z",
+      "modified": "2024-11-06T08:02:03.069Z",
+      "name": "Data source e2e",
+      "description": "Data source e2e",
+      "x_mitre_platforms": [
+        "Windows",
+        "Identity Provider"
+      ],
+      "x_mitre_collection_layers": [
+        "Cloud Control Plane",
+        "host"
+      ],
+      "x_opencti_id": "1470824f-2eb2-477b-8fb8-3b2b2a60abc7",
+      "x_opencti_type": "Data-Source",
+      "type": "x-mitre-data-source"
+    },
+    {
+      "id": "course-of-action--381caeaf-923c-5809-854f-2d9f1cc06ea3",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 26,
+      "created": "2023-10-19T14:36:24.411Z",
+      "modified": "2024-05-30T12:53:29.121Z",
+      "name": "Course of action e2e",
+      "description": "Course of action e2e",
+      "x_mitre_id": "T1453",
+      "x_opencti_id": "df9724f0-2d51-46bc-bf8d-cdf5cecb1088",
+      "x_opencti_type": "Course-Of-Action",
+      "type": "course-of-action"
+    },
+    {
       "id": "infrastructure--41b8c3be-db27-55bd-b708-2a877644220b",
       "spec_version": "2.1",
       "revoked": false,
@@ -1154,6 +1242,7 @@
       "x_opencti_type": "Infrastructure",
       "type": "infrastructure"
     },
+
     {
       "id": "tool--dccdb7e3-a5bf-5f10-8ca2-9413c9b0ba75",
       "spec_version": "2.1",

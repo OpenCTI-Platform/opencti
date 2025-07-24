@@ -31,7 +31,7 @@ const NarrativeKnowledgeComponent = ({
   const { schema } = useAuth();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(narrative.entity_type, schema);
   return (
-    <>
+    <div data-testid="narrative-knowledge">
       <Routes>
         <Route
           path="/relations/:relationId"
@@ -201,7 +201,7 @@ const NarrativeKnowledgeComponent = ({
             }
         />
       </Routes>
-    </>
+    </div>
   );
 };
 
