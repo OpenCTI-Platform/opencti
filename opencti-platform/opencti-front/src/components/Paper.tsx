@@ -9,13 +9,14 @@ interface PaperProps extends Omit<MuiPaperProps, 'title'> {
 const Paper = ({ title, actions, children, ...muiProps }: PaperProps) => {
   return (
     <div>
-      <div style={{
-        display: 'flex',
-        alignItems: 'flex-start',
-        height: 19,
-      }}
-      >
-        {title && (
+      {(title || actions) && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          height: 19,
+        }}
+        >
+          {title && (
           <Typography
             variant="h4"
             gutterBottom
@@ -23,14 +24,15 @@ const Paper = ({ title, actions, children, ...muiProps }: PaperProps) => {
           >
             {title}
           </Typography>
-        )}
-        {actions}
-      </div>
+          )}
+          {actions}
+        </div>
+      )}
       <MuiPaper
         variant="outlined"
         className="paper-for-grid"
         sx={{
-          marginTop: 1,
+          marginTop: title || actions ? 1 : 0,
           padding: 2,
           borderRadius: 1,
           position: 'relative',

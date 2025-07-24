@@ -1,5 +1,6 @@
 import React, { Suspense } from 'react';
 import Grid from '@mui/material/Grid2';
+import Typography from '@mui/material/Typography';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { useTheme } from '@mui/material/styles';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -11,6 +12,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { dayAgo } from '../../../../utils/Time';
 import NumberDifference from '../../../../components/NumberDifference';
 import type { Theme } from '../../../../components/Theme';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const countsFragment = graphql`
   fragment PirOverviewCountsFragment on Pir {
@@ -45,19 +47,35 @@ const PirOverviewCount = ({ label, value, value24h, size }: PirOverviewCountProp
 
   return (
     <Grid key={label} size={{ xs: size }}>
-      <Paper
-        title={t_i18n(`entity_${label}`)}
-        style={{
-          display: 'flex',
-          alignItems: 'flex-end',
-          gap: theme.spacing(2),
-        }}
+      <Paper style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+      }}
       >
-        <div style={{ fontSize: 40, lineHeight: 1 }}>{n(value)}</div>
-        <NumberDifference
-          value={value24h}
-          description={t_i18n('24 hours')}
-        />
+        <div>
+          <Typography
+            color={theme.palette.text?.secondary}
+            sx={{ marginBottom: 1, textTransform: 'uppercase' }}
+            variant="body2"
+            gutterBottom
+          >
+            {t_i18n(`entity_${label}`)}
+          </Typography>
+
+          <div style={{
+            display: 'flex',
+            alignItems: 'flex-end',
+            gap: theme.spacing(2),
+          }}
+          >
+            <div style={{ fontSize: 40, lineHeight: 1 }}>{n(value)}</div>
+            <NumberDifference
+              value={value24h}
+              description={t_i18n('24 hours')}
+            />
+          </div>
+        </div>
+        <ItemIcon type={label} size='large' />
       </Paper>
     </Grid>
   );
@@ -72,6 +90,8 @@ const PirOverviewCountsComponent = ({
   countsQueryRef,
   counts24hQueryRef,
 }: PirOverviewCountsComponentProps) => {
+  const { t_i18n } = useFormatter();
+
   const resultAll = usePreloadedQuery(countsQuery, countsQueryRef);
   const result24h = usePreloadedQuery(countsQuery, counts24hQueryRef);
 
@@ -96,37 +116,42 @@ const PirOverviewCountsComponent = ({
   const threatActorGroups24h = data24h?.find((d) => d.label === 'Threat-Actor-Group');
 
   return (
-    <Grid container spacing={3}>
-      <PirOverviewCount
-        size={4}
-        label="Malware"
-        value={malwares?.value ?? 0}
-        value24h={malwares24h?.value ?? 0}
-      />
-      <PirOverviewCount
-        size={4}
-        label="Campaign"
-        value={campaigns?.value ?? 0}
-        value24h={campaigns24h?.value ?? 0}
-      />
-      <PirOverviewCount
-        size={4}
-        label="Intrusion-Set"
-        value={instrusionSets?.value ?? 0}
-        value24h={instrusionSets24h?.value ?? 0}
-      />
-      <PirOverviewCount
-        size={6}
-        label="Threat-Actor-Individual"
-        value={threatActorIndividuals?.value ?? 0}
-        value24h={threatActorIndividuals24h?.value ?? 0}
-      />
-      <PirOverviewCount
-        size={6}
-        label="Threat-Actor-Group"
-        value={threatActorGroups?.value ?? 0}
-        value24h={threatActorGroups24h?.value ?? 0}
-      />
+    <Grid>
+      <Typography variant="h4">
+        {t_i18n('Number of entities')}
+      </Typography>
+      <Grid container spacing={3}>
+        <PirOverviewCount
+          size={4}
+          label="Malware"
+          value={malwares?.value ?? 0}
+          value24h={malwares24h?.value ?? 0}
+        />
+        <PirOverviewCount
+          size={4}
+          label="Campaign"
+          value={campaigns?.value ?? 0}
+          value24h={campaigns24h?.value ?? 0}
+        />
+        <PirOverviewCount
+          size={4}
+          label="Intrusion-Set"
+          value={instrusionSets?.value ?? 0}
+          value24h={instrusionSets24h?.value ?? 0}
+        />
+        <PirOverviewCount
+          size={6}
+          label="Threat-Actor-Individual"
+          value={threatActorIndividuals?.value ?? 0}
+          value24h={threatActorIndividuals24h?.value ?? 0}
+        />
+        <PirOverviewCount
+          size={6}
+          label="Threat-Actor-Group"
+          value={threatActorGroups?.value ?? 0}
+          value24h={threatActorGroups24h?.value ?? 0}
+        />
+      </Grid>
     </Grid>
   );
 };
