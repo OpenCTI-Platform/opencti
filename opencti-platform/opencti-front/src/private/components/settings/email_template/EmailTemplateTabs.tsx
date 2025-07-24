@@ -6,8 +6,6 @@ import { useEmailTemplateContext } from '@components/settings/email_template/Ema
 import { EmailTemplateTabs_template$key } from '@components/settings/email_template/__generated__/EmailTemplateTabs_template.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
-import { KNOWLEDGE } from '../../../../utils/hooks/useGranted';
-import Security from '../../../../utils/Security';
 
 const tabsFragment = graphql`
     fragment EmailTemplateTabs_template on EmailTemplate {
