@@ -7,7 +7,7 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import makeStyles from '@mui/styles/makeStyles';
-import ConvertUser from '@components/settings/users/ConvertUser';
+import ConvertUser from './ConvertUser';
 import useHelper from '../../../../utils/hooks/useHelper';
 import AccessesMenu from '../AccessesMenu';
 import Security from '../../../../utils/Security';
