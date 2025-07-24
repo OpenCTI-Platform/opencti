@@ -63,10 +63,10 @@ import Grid from '@mui/material/Grid';
 import Avatar from '@mui/material/Avatar';
 import { Switch, FormControlLabel } from '@mui/material';
 import Checkbox from '@mui/material/Checkbox';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { objectParticipantFieldMembersSearchQuery } from '../common/form/ObjectParticipantField';
 import { objectAssigneeFieldMembersSearchQuery } from '../common/form/ObjectAssigneeField';
 import { vocabularyQuery } from '../common/form/OpenVocabField';
-import { usersLinesSearchQuery } from '../settings/users/UsersLines';
 import PromoteDrawer from './drawers/PromoteDrawer';
 import TasksFilterValueContainer from '../../../components/TasksFilterValueContainer';
 import inject18n from '../../../components/i18n';
@@ -326,6 +326,39 @@ const toolBarOrganizationsQuery = graphql`
   }
 `;
 
+const toolbarGroupsQuery = graphql`
+    query DataTableToolBarGroupsQuery($search: String) {
+      groups(search: $search) {
+        edges {
+          node {
+            id
+            name
+            entity_type
+          }
+        }
+      }
+    }
+`;
+
+export const toolBarUsersLinesSearchQuery = graphql`
+    query  DataTableToolBarUsersLinesSearchQuery(
+        $first: Int, $search: String,
+        $orderBy: UsersOrdering
+        $orderMode: OrderingMode
+    ) {
+        users(first: $first, search: $search, orderBy: $orderBy, orderMode: $orderMode) {
+            edges {
+                node {
+                    id
+                    entity_type
+                    name
+                    user_email
+                }
+            }
+        }
+    }
+`;
+
 class DataTableToolBar extends Component {
   constructor(props) {
     super(props);
@@ -374,6 +407,7 @@ class DataTableToolBar extends Component {
       assignees: [],
       participants: [],
       killChainPhases: [],
+      groups: [],
     };
   }
 
@@ -749,6 +783,30 @@ class DataTableToolBar extends Component {
     return t('Copy to clipboard');
   }
 
+  static getActionType(type, field) {
+    if (type === 'ADD' && field === 'groups') return 'ADD_GROUPS';
+    if (type === 'ADD' && field === 'organizations') return 'ADD_ORGANIZATIONS';
+
+    if (type === 'REMOVE' && field === 'groups') return 'REMOVE_GROUPS';
+    if (type === 'REMOVE' && field === 'organizations') return 'REMOVE_ORGANIZATIONS';
+
+    return type;
+  }
+
+  getUserDatatableFinalActions(actions) {
+    return actions.map((action) => {
+      const currentType = this.constructor.getActionType(action.type, action.context.field);
+      return {
+        type: currentType,
+        context: {
+          ...action.context,
+          values: action.context.values.map((element) => element.id || element.value || element),
+        },
+        containerId: null,
+      };
+    });
+  }
+
   submitTask(availableFilterKeys, isInDraft) {
     this.setState({ processing: true });
     const { description, actions, mergingElement, promoteToContainer } = this.state;
@@ -770,19 +828,21 @@ class DataTableToolBar extends Component {
       removeIdAndIncorrectKeysFromFilterGroupObject(filters, availableFilterKeys),
     );
 
-    const finalActions = R.map(
-      (n) => ({
-        type: n.type,
-        context: n.context
-          ? {
-            ...n.context,
-            values: R.map((o) => o.id || o.value || o, n.context.values),
-          }
-          : null,
-        containerId: n.type === 'PROMOTE' && promoteToContainer && container?.id ? container.id : null,
-      }),
-      actions,
-    );
+    const finalActions = taskScope === 'USER'
+      ? this.getUserDatatableFinalActions(actions)
+      : R.map(
+        (n) => ({
+          type: n.type,
+          context: n.context
+            ? {
+              ...n.context,
+              values: R.map((o) => o.id || o.value || o, n.context.values),
+            }
+            : null,
+          containerId: n.type === 'PROMOTE' && promoteToContainer && container?.id ? container.id : null,
+        }),
+        actions,
+      );
 
     if (selectAll) {
       commitMutation({
@@ -846,37 +906,82 @@ class DataTableToolBar extends Component {
   }
 
   renderFieldOptions(i, selectedTypes, entityTypeFilterValues, isAdmin) {
-    const { t } = this.props;
+    const { t, taskScope } = this.props;
     const { actionsInputs } = this.state;
-    const disabled = actionsInputs[i]?.type == null || actionsInputs[i]?.type === '';
 
+    const isUserDatatable = taskScope === 'USER';
+    const disabled = actionsInputs[i]?.type == null || actionsInputs[i]?.type === '';
     const checkTypes = (typesList) => selectedTypes.every((type) => typesList.includes(type))
       && entityTypeFilterValues.every((type) => typesList.includes(type));
 
-    const options = [
-      { label: t('Marking definitions'), value: 'object-marking' },
-      { label: t('Labels'), value: 'object-label' },
-      checkTypes(typesWithAssignee) && { label: t('Assignees'), value: 'object-assignee' },
-      checkTypes(typesWithParticipant) && { label: t('Participant'), value: 'object-participant' },
-      ((actionsInputs[i]?.type === 'ADD' && isAdmin) || (actionsInputs[i]?.type === 'REPLACE' && isAdmin)) && { label: t('Creator'), value: 'creator_id' },
-      (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REMOVE') && { label: t('External references'), value: 'external-reference' },
-      checkTypes(typesWithKillChains) && (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && { label: t('Kill chains'), value: 'killChainPhases' },
-      checkTypes(typesWithIndicatorTypes) && (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && { label: t('Indicator types'), value: 'indicator_type_ov' },
-      checkTypes(typesWithPlatforms) && (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && { label: t('Platforms'), value: 'platforms_ov' },
-      ...(actionsInputs[i]?.type === 'REPLACE' ? [
-        { label: t('Author'), value: 'created-by' },
-        { label: t('Confidence'), value: 'confidence' },
-        { label: t('Description'), value: 'description' },
-        checkTypes(typesWithSeverity) && { label: t('Severity'), value: 'case_severity_ov' },
-        checkTypes(typesWithPriority) && { label: t('Priority'), value: 'case_priority_ov' },
-        checkTypes(typesWithIncidentResponseType) && { label: t('Incident response type'), value: 'incident_response_types_ov' },
-        checkTypes(typesWithRfiTypes) && { label: t('Request for information type'), value: 'request_for_information_types_ov' },
-        checkTypes(typesWithRftTypes) && { label: t('Request for takedown type'), value: 'request_for_takedown_types_ov' },
-        checkTypes(typesWithScore) && { label: t('Score'), value: 'x_opencti_score' },
-        checkTypes(typesWithDetection) && { label: t('Detection'), value: 'x_opencti_detection' },
-        selectedTypes.length === 1 && !typesWithoutStatus.includes(selectedTypes[0]) && { label: t('Status'), value: 'x_opencti_workflow_id' },
-      ] : []),
-    ].filter(Boolean);
+    let options = [];
+    if (isUserDatatable) {
+      if (['ADD', 'REMOVE'].includes(actionsInputs[i]?.type)) {
+        options = [
+          { label: t('Organizations'), value: 'organizations' },
+          { label: t('Groups'), value: 'groups' },
+        ];
+      }
+      if (actionsInputs[i]?.type === 'REPLACE') {
+        options = [
+          ...options,
+          { label: t('Account status'), value: 'account_status' },
+          { label: t('Account expiration date'), value: 'account_lock_after_date' },
+        ];
+      }
+    } else {
+      options = [
+        { label: t('Marking definitions'), value: 'object-marking' },
+        { label: t('Labels'), value: 'object-label' },
+        checkTypes(typesWithAssignee) && { label: t('Assignees'), value: 'object-assignee' },
+        checkTypes(typesWithParticipant) && { label: t('Participant'), value: 'object-participant' },
+        ((actionsInputs[i]?.type === 'ADD' && isAdmin) || (actionsInputs[i]?.type === 'REPLACE' && isAdmin)) && {
+          label: t('Creator'),
+          value: 'creator_id',
+        },
+        (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REMOVE') && {
+          label: t('External references'),
+          value: 'external-reference',
+        },
+        checkTypes(typesWithKillChains) && (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && {
+          label: t('Kill chains'),
+          value: 'killChainPhases',
+        },
+        checkTypes(typesWithIndicatorTypes) && (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && {
+          label: t('Indicator types'),
+          value: 'indicator_type_ov',
+        },
+        checkTypes(typesWithPlatforms) && (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && {
+          label: t('Platforms'),
+          value: 'platforms_ov',
+        },
+        ...(actionsInputs[i]?.type === 'REPLACE' ? [
+          { label: t('Author'), value: 'created-by' },
+          { label: t('Confidence'), value: 'confidence' },
+          { label: t('Description'), value: 'description' },
+          checkTypes(typesWithSeverity) && { label: t('Severity'), value: 'case_severity_ov' },
+          checkTypes(typesWithPriority) && { label: t('Priority'), value: 'case_priority_ov' },
+          checkTypes(typesWithIncidentResponseType) && {
+            label: t('Incident response type'),
+            value: 'incident_response_types_ov',
+          },
+          checkTypes(typesWithRfiTypes) && {
+            label: t('Request for information type'),
+            value: 'request_for_information_types_ov',
+          },
+          checkTypes(typesWithRftTypes) && {
+            label: t('Request for takedown type'),
+            value: 'request_for_takedown_types_ov',
+          },
+          checkTypes(typesWithScore) && { label: t('Score'), value: 'x_opencti_score' },
+          checkTypes(typesWithDetection) && { label: t('Detection'), value: 'x_opencti_detection' },
+          selectedTypes.length === 1 && !typesWithoutStatus.includes(selectedTypes[0]) && {
+            label: t('Status'),
+            value: 'x_opencti_workflow_id',
+          },
+        ] : []),
+      ].filter(Boolean);
+    }
 
     const sortedOptions = options.sort((a, b) => a.label.localeCompare(b.label));
 
@@ -929,9 +1034,7 @@ class DataTableToolBar extends Component {
       });
   }
 
-  searchOrganizations(event, newValue) {
-    if (!event) return;
-    this.setState({ organizationInput: newValue && newValue.length > 0 ? newValue : '' });
+  fetchOrganizations(newValue) {
     fetchQuery(toolBarOrganizationsQuery, {
       search: newValue && newValue.length > 0 ? newValue : '',
     })
@@ -948,6 +1051,51 @@ class DataTableToolBar extends Component {
           .sort((a, b) => a.type.localeCompare(b.type));
         this.setState({ organizations });
       });
+  }
+
+  searchGroups(i, event, newValue) {
+    if (!event) return;
+    const { actionsInputs } = this.state;
+    actionsInputs[i] = R.assoc(
+      'inputValue',
+      newValue && newValue.length > 0 ? newValue : '',
+      actionsInputs[i],
+    );
+    this.setState({ actionsInputs });
+
+    fetchQuery(toolbarGroupsQuery, {
+      search: newValue && newValue.length > 0 ? newValue : '',
+    })
+      .toPromise()
+      .then((data) => {
+        const elements = data.groups.edges.map((e) => e.node);
+        const groups = elements.map((element) => ({
+          label: element.name,
+          type: element.entity_type,
+          value: element.id,
+        }))
+          .sort((a, b) => a.label.localeCompare(b.label))
+          .sort((a, b) => a.type.localeCompare(b.type));
+        this.setState({ groups });
+      });
+  }
+
+  searchActionInputOrganizations(i, event, newValue) {
+    if (!event) return;
+    const { actionsInputs } = this.state;
+    actionsInputs[i] = R.assoc(
+      'inputValue',
+      newValue && newValue.length > 0 ? newValue : '',
+      actionsInputs[i],
+    );
+    this.setState({ actionsInputs });
+    this.fetchOrganizations(newValue);
+  }
+
+  searchOrganizations(event, newValue) {
+    if (!event) return;
+    this.setState({ organizationInput: newValue && newValue.length > 0 ? newValue : '' });
+    this.fetchOrganizations(newValue);
   }
 
   searchMarkingDefinitions(i, event, newValue) {
@@ -1060,6 +1208,17 @@ class DataTableToolBar extends Component {
           identities: R.union(this.state.identities, identities),
         });
       });
+  }
+
+  searchAccountStatus(i, event, newValue) {
+    if (!event) return;
+    const { actionsInputs } = this.state;
+    actionsInputs[i] = R.assoc(
+      'inputValue',
+      newValue && newValue.length > 0 ? newValue : '',
+      actionsInputs[i],
+    );
+    this.setState({ actionsInputs });
   }
 
   searchStatuses(i, selectedTypes, event, newValue) {
@@ -1198,7 +1357,7 @@ class DataTableToolBar extends Component {
       actionsInputs[i],
     );
     this.setState({ actionsInputs });
-    fetchQuery(usersLinesSearchQuery, {
+    fetchQuery(toolBarUsersLinesSearchQuery, {
       search: newValue && newValue.length > 0 ? newValue : '',
       first: 100,
     })
@@ -1245,8 +1404,36 @@ class DataTableToolBar extends Component {
       });
   }
 
-  renderValuesOptions(i, selectedTypes) {
+  static getUserStatusOptionList(userStatuses) {
+    return userStatuses.map((userStatus) => ({
+      label: userStatus.status,
+      value: userStatus.status,
+    }));
+  }
+
+  handleChangeDate(i, newValue) {
+    const { actionsInputs } = this.state;
+    actionsInputs[i] = R.assoc(
+      'inputValue',
+      newValue && newValue.length > 0 ? newValue : '',
+      actionsInputs[i],
+    );
+    this.setState({ actionsInputs });
+  }
+
+  handleAcceptDate(i, newValue) {
+    const { actionsInputs } = this.state;
+    actionsInputs[i] = R.assoc(
+      'values',
+      Array.isArray(newValue) ? newValue : [newValue],
+      actionsInputs[i] || {},
+    );
+    this.setState({ actionsInputs });
+  }
+
+  renderValuesOptions(i, selectedTypes, userStatuses) {
     const { t, classes } = this.props;
+
     const { actionsInputs } = this.state;
     const selectedField = actionsInputs[i]?.field;
     const disabled = selectedField == null || selectedField === '';
@@ -1745,6 +1932,122 @@ class DataTableToolBar extends Component {
             label={t('Value')}
           />
         );
+      case 'organizations':
+        return (
+          <Autocomplete
+            disabled={disabled}
+            size="small"
+            fullWidth={true}
+            selectOnFocus={true}
+            autoHighlight={true}
+            getOptionLabel={(option) => (option.label ? option.label : '')}
+            value={actionsInputs[i]?.values || []}
+            multiple={true}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                variant="standard"
+                label={t('Values')}
+                fullWidth={true}
+                onFocus={this.searchActionInputOrganizations.bind(this, i)}
+                style={{ marginTop: 3 }}
+              />
+            )}
+            noOptionsText={t('No available options')}
+            options={this.state.organizations}
+            onInputChange={this.searchActionInputOrganizations.bind(this, i)}
+            inputValue={actionsInputs[i]?.inputValue || ''}
+            onChange={this.handleChangeActionInputValues.bind(this, i)}
+            renderOption={(props, option) => (
+              <li {...props}>
+                <div className={classes.icon}>
+                  <ItemIcon type={option.type} />
+                </div>
+                <div className={classes.text}>{option.label}</div>
+              </li>
+            )}
+          />
+        );
+      case 'groups':
+        return (
+          <Autocomplete
+            disabled={disabled}
+            size="small"
+            fullWidth={true}
+            selectOnFocus={true}
+            autoHighlight={true}
+            getOptionLabel={(option) => (option.label ? option.label : '')}
+            value={actionsInputs[i]?.values || []}
+            multiple={true}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                variant="standard"
+                label={t('Values')}
+                fullWidth={true}
+                onFocus={this.searchGroups.bind(this, i)}
+                style={{ marginTop: 3 }}
+              />
+            )}
+            noOptionsText={t('No available options')}
+            options={this.state.groups}
+            onInputChange={this.searchGroups.bind(this, i)}
+            inputValue={actionsInputs[i]?.inputValue || ''}
+            onChange={this.handleChangeActionInputValues.bind(this, i)}
+            renderOption={(props, option) => (
+              <li {...props}>
+                <div className={classes.icon}>
+                  <ItemIcon type={option.type} />
+                </div>
+                <div className={classes.text}>{option.label}</div>
+              </li>
+            )}
+          />
+        );
+      case 'account_status':
+        return (
+          <Autocomplete
+            disabled={disabled}
+            size="small"
+            fullWidth={true}
+            selectOnFocus={true}
+            autoHighlight={true}
+            getOptionLabel={(option) => (option.label ? option.label : '')}
+            value={actionsInputs[i]?.values[0] || []}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                variant="standard"
+                label={t('Values')}
+                fullWidth={true}
+                style={{ marginTop: 3 }}
+              />
+            )}
+            noOptionsText={t('No available options')}
+            options={this.constructor.getUserStatusOptionList(userStatuses)}
+            onInputChange={this.searchAccountStatus.bind(this, i)}
+            inputValue={actionsInputs[i]?.inputValue || ''}
+            onChange={this.handleChangeActionInputValues.bind(this, i)}
+            renderOption={(props, option) => (
+              <li {...props}>
+                <div className={classes.text}>{option.label}</div>
+              </li>
+            )}
+          />
+        );
+      case 'account_lock_after_date':
+        return (
+          <DateTimePicker
+            variant="inline"
+            disableToolbar={false}
+            autoOk={true}
+            allowKeyboardControl={true}
+            onChange={this.handleChangeDate.bind(this, i)}
+            onAccept={this.handleAcceptDate.bind(this, i)}
+            views={['year', 'month', 'day', 'hours', 'minutes', 'seconds']}
+            format='yyyy-MM-dd hh:mm:ss a'
+          />
+        );
       default:
         return (
           <TextField
@@ -1807,6 +2110,8 @@ class DataTableToolBar extends Component {
       taskScope,
     } = this.props;
     const { actions, keptEntityId, mergingElement, actionsInputs, promoteToContainer } = this.state;
+
+    const isUserDatatable = taskScope === 'USER';
 
     let deleteCapability = KNOWLEDGE_KNUPDATE_KNDELETE;
     if (taskScope === 'DASHBOARD') deleteCapability = EXPLORE_EXUPDATE_EXDELETE;
@@ -2005,7 +2310,7 @@ class DataTableToolBar extends Component {
                         </span>
                       </Tooltip>
                     )}
-                    {!removeAuthMembersEnabled && !removeFromDraftEnabled && !isInDraft && (
+                    {!removeAuthMembersEnabled && !removeFromDraftEnabled && !isInDraft && !isUserDatatable && (
                     <UserContext.Consumer>
                       {({ platformModuleHelpers }) => {
                         const label = platformModuleHelpers.isRuleEngineEnable()
@@ -2051,7 +2356,7 @@ class DataTableToolBar extends Component {
                         </span>
                       </Tooltip>
                     )}
-                    {!enrichDisable && !removeAuthMembersEnabled && (
+                    {!enrichDisable && !removeAuthMembersEnabled && !isUserDatatable && (
                       <Tooltip title={t('Enrichment')}>
                         <span>
                           <IconButton
@@ -2081,7 +2386,7 @@ class DataTableToolBar extends Component {
                         </span>
                       </Tooltip>
                     )}
-                    {enableMerge && !removeAuthMembersEnabled && !removeFromDraftEnabled && !isInDraft && (
+                    {enableMerge && !removeAuthMembersEnabled && !removeFromDraftEnabled && !isInDraft && !isUserDatatable && (
                       <Tooltip title={t('Merge')}>
                         <span>
                           <IconButton
@@ -2104,7 +2409,7 @@ class DataTableToolBar extends Component {
                       </Tooltip>
                     )}
                   </Security>
-                  {!typesAreNotAddableInContainer && !removeAuthMembersEnabled && (
+                  {!typesAreNotAddableInContainer && !removeAuthMembersEnabled && !isUserDatatable && (
                     <Security needs={[KNOWLEDGE_KNUPDATE]}>
                       <Tooltip title={t('Add in container')}>
                         <span>
@@ -2144,7 +2449,7 @@ class DataTableToolBar extends Component {
                       </Tooltip>
                     </Security>
                   )}
-                  {!deleteOperationEnabled && isShareableType && !removeAuthMembersEnabled && !removeFromDraftEnabled && !isInDraft && (
+                  {!deleteOperationEnabled && isShareableType && !removeAuthMembersEnabled && !removeFromDraftEnabled && !isInDraft && !isUserDatatable && (
                     <>
                       <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
                         <EETooltip title={t('Share with organizations')}>
@@ -2180,7 +2485,7 @@ class DataTableToolBar extends Component {
                       </Security>
                     </>
                   )}
-                  {deleteDisable !== true && !removeAuthMembersEnabled && !removeFromDraftEnabled && (
+                  {deleteDisable !== true && !removeAuthMembersEnabled && !removeFromDraftEnabled && !isUserDatatable && (
                     <Security needs={[deleteCapability]}>
                       <Tooltip title={warningMessage || t('Delete')}>
                         <span>
@@ -2447,7 +2752,7 @@ class DataTableToolBar extends Component {
                 <div className={classes.container} style={{ marginTop: 20 }}>
                   {Array(actionsInputs.length)
                     .fill(0)
-                    .map((_, i) => (
+                    .map((item, i) => (
                       <div key={i} className={classes.step}>
                         <IconButton
                           disabled={actionsInputs.length === 1}
@@ -2485,8 +2790,8 @@ class DataTableToolBar extends Component {
                               {this.renderFieldOptions(i, selectedTypes, entityTypeFilterValues, isAdmin)}
                             </FormControl>
                           </Grid>
-                          <Grid item xs={6}>
-                            {this.renderValuesOptions(i, selectedTypes)}
+                          <Grid item xs={6} style={{ display: 'flex', flexDirection: 'column-reverse' }}>
+                            {this.renderValuesOptions(i, selectedTypes, settings.platform_user_statuses)}
                           </Grid>
                         </Grid>
                       </div>

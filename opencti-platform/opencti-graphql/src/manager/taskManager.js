@@ -24,7 +24,7 @@ import { storeLoadByIdsWithRefs } from '../database/middleware';
 import { now } from '../utils/format';
 import { isEmptyField, MAX_EVENT_LOOP_PROCESSING_TIME, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED } from '../database/utils';
 import { elList } from '../database/engine';
-import { FunctionalError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
+import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, INPUT_OBJECTS, RULE_PREFIX } from '../schema/general';
 import { executionContext, isUserInPlatformOrganization, RULE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
 import { buildEntityFilters, internalFindByIds, internalLoadById, listAllRelations } from '../database/middleware-loader';
@@ -33,10 +33,14 @@ import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { generateIndicatorFromObservable } from '../domain/stixCyberObservable';
 import {
+  ACTION_TYPE_ADD_GROUPS,
+  ACTION_TYPE_ADD_ORGANIZATIONS,
   ACTION_TYPE_COMPLETE_DELETE,
   ACTION_TYPE_DELETE,
   ACTION_TYPE_REMOVE_AUTH_MEMBERS,
   ACTION_TYPE_REMOVE_FROM_DRAFT,
+  ACTION_TYPE_REMOVE_GROUPS,
+  ACTION_TYPE_REMOVE_ORGANIZATIONS,
   ACTION_TYPE_RESTORE,
   ACTION_TYPE_SHARE,
   ACTION_TYPE_SHARE_MULTIPLE,
@@ -221,6 +225,24 @@ const baseOperationBuilder = (actionType, operations, element) => {
   // Access management
   if (actionType === ACTION_TYPE_REMOVE_AUTH_MEMBERS) {
     baseOperationObject.opencti_operation = 'clear_access_restriction';
+  }
+  // User orga management
+  if (actionType === ACTION_TYPE_ADD_ORGANIZATIONS) {
+    baseOperationObject.opencti_operation = 'add_organizations';
+    baseOperationObject.organization_ids = operations[0].context.values;
+  }
+  if (actionType === ACTION_TYPE_REMOVE_ORGANIZATIONS) {
+    baseOperationObject.opencti_operation = 'remove_organizations';
+    baseOperationObject.organization_ids = operations[0].context.values;
+  }
+  // User group management
+  if (actionType === ACTION_TYPE_ADD_GROUPS) {
+    baseOperationObject.opencti_operation = 'add_groups';
+    baseOperationObject.group_ids = operations[0].context.values;
+  }
+  if (actionType === ACTION_TYPE_REMOVE_GROUPS) {
+    baseOperationObject.opencti_operation = 'remove_groups';
+    baseOperationObject.group_ids = operations[0].context.values;
   }
   return baseOperationObject;
 };
@@ -608,14 +630,13 @@ const taskHandlerGenerator = (context) => {
       // No need for transformation
       return action.type;
     }, task.actions);
-    const nbTypeOfActions = Object.keys(actionsGroup).length;
-    const [actionType, operations] = Object.entries(actionsGroup)[0];
-    if (nbTypeOfActions === 1) {
-      throwErrorInDraftContext(context, user, actionType);
+    const typeOfActions = Object.keys(actionsGroup);
+    for (let typeOfActionIndex = 0; typeOfActionIndex < typeOfActions.length; typeOfActionIndex += 1) {
+      const typeOfAction = typeOfActions[typeOfActionIndex];
+      throwErrorInDraftContext(context, user, typeOfAction);
+      const operations = actionsGroup[typeOfAction];
       logApp.info('[TASK-MANAGER] Executing job through distributed workers');
-      await workerTaskHandler(fullContext, user, task, actionType, operations);
-    } else {
-      throw UnsupportedError('Multiple types of action inside the same background task', { actions: Object.keys(actionsGroup) });
+      await workerTaskHandler(fullContext, user, task, typeOfAction, operations);
     }
   };
 };
