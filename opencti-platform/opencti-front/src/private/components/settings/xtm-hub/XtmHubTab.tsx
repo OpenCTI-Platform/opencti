@@ -11,7 +11,18 @@ import useExternalTab from './useExternalTab';
 import ProcessInstructions from './ProcessInstructions';
 import ProcessLoader from './ProcessLoader';
 import ProcessDialog from './ProcessDialog';
-import { ProcessSteps, OperationType } from './processSteps';
+
+enum ProcessSteps {
+  INSTRUCTIONS = 'INSTRUCTIONS',
+  WAITING_HUB = 'WAITING_HUB',
+  ERROR = 'ERROR',
+  CANCELED = 'CANCELED',
+}
+
+enum OperationType {
+  ENROLL = 'enroll',
+  UNENROLL = 'unenroll',
+}
 
 const xtmHubTabSettingsFieldPatchMutation = graphql`
   mutation XtmHubTabSettingsFieldPatchMutation($id: ID!, $input: [EditInput]!) {
@@ -252,9 +263,9 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ enrollmentStatus }) => {
 
   const getButtonText = () => {
     if (isEnrolled) {
-      return t_i18n('Unregister from XTM Hub');
+      return t_i18n('Unenroll from XTM Hub');
     }
-    return t_i18n('Register in XTM Hub');
+    return t_i18n('Enroll in XTM Hub');
   };
 
   if (isEnrolled) {

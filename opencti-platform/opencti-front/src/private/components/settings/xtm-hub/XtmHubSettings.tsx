@@ -2,7 +2,7 @@ import { graphql, useLazyLoadQuery } from 'react-relay';
 import React from 'react';
 import Paper from '@mui/material/Paper';
 import { Grid2, List, ListItem, ListItemText, Typography } from '@mui/material';
-import { makeStyles, useTheme } from '@mui/styles';
+import { useTheme } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
 import Box from '@mui/material/Box';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
@@ -11,16 +11,6 @@ import XtmHubTab from './XtmHubTab';
 import { XtmHubSettingsQuery } from './__generated__/XtmHubSettingsQuery.graphql';
 import { dateFormat } from '../../../../utils/Time';
 import ItemBoolean from '../../../../components/ItemBoolean';
-
-const useStyles = makeStyles<Theme>((_theme) => ({
-  paper: {
-    height: '100%',
-    minHeight: '100%',
-    margin: '10px 0 0 0',
-    padding: '15px',
-    borderRadius: 4,
-  },
-}));
 
 export const xtmHubSettingsQuery = graphql`
   query XtmHubSettingsQuery {
@@ -38,7 +28,6 @@ export const xtmHubSettingsQuery = graphql`
 
 const XtmHubSettings = () => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const theme = useTheme<Theme>();
   const { settings: xtmHubSettings } = useLazyLoadQuery<XtmHubSettingsQuery>(
     xtmHubSettingsQuery,
@@ -69,18 +58,29 @@ const XtmHubSettings = () => {
           >
             <XtmHubTab
               enrollmentStatus={
-                xtmHubSettings.xtm_hub_enrollment_status ?? 'unenrolled'
+                xtmHubSettings.xtm_hub_enrollment_status || undefined
               }
             />
           </div>
           <div className="clearfix" />
           <Paper
-            classes={{ root: classes.paper }}
             className="paper-for-grid"
             variant="outlined"
-            style={{ marginTop: 4 }}
+            sx={{
+              height: '100%',
+              minHeight: '100%',
+              margin: '10px 0 0 0',
+              padding: '15px',
+              borderRadius: 1,
+              marginTop: '4px',
+            }}
           >
-            <Box sx={{ color: '#FFFFFFCC', marginBottom: 2 }}>
+            <Box
+              sx={{
+                color: theme.palette.text.disabled,
+                marginBottom: 2,
+              }}
+            >
               <Typography variant="h6" sx={{ marginBottom: 1 }}>
                 {t_i18n(
                   'XTM Hub is the focal point to find every Services and Products.',

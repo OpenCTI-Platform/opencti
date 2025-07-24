@@ -44,7 +44,7 @@ const ProcessDialog: FunctionComponent<ProcessDialogProps> = ({
         sx={{
           p: 0,
           position: 'relative',
-          padding: '0 16px 16px 16px',
+          padding: (theme) => `0 ${theme.spacing(2)} ${theme.spacing(2)} ${theme.spacing(2)}`,
           border: 'none',
         }}
       >
