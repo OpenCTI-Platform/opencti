@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
-import * as R from 'ramda';
-import { omit } from 'ramda';
 import * as Yup from 'yup';
 import { makeStyles } from '@mui/styles';
 import { graphql } from 'react-relay';
 import MenuItem from '@mui/material/MenuItem';
 import { Add } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
-import EmailTemplateField from '@components/common/form/EmailTemplateField';
+import EmailTemplateField from '../../common/form/EmailTemplateField';
 import Drawer from '../../common/drawer/Drawer';
 import GroupField from '../../common/form/GroupField';
 import { convertGrantableGroups } from '../organizations/SettingsOrganizationEdition';

@@ -1,3 +1,4 @@
+import type Express from 'express';
 import type { BasicStoreCommon, BasicStoreIdentifier, StoreMarkingDefinition } from './store';
 import type { Group } from './group';
 import type { ConfidenceLevel } from '../generated/graphql';
@@ -52,6 +53,7 @@ interface AuthUser extends BasicStoreIdentifier {
 }
 
 interface AuthContext {
+  req: Express.Request
   otp_mandatory: boolean
   source: string
   tracing: TracingContext

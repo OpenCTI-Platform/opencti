@@ -80,7 +80,6 @@ import { sendMail } from '../database/smtp';
 import { checkEnterpriseEdition } from '../enterprise-edition/ee';
 import { addEmailSendCount } from '../manager/telemetryManager';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
-import {getSettings} from "./settings";
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -555,6 +554,7 @@ export const checkPasswordFromPolicy = async (context, password) => {
 
 export const sendEmailToUser = async (context, user, input) => {
   await checkEnterpriseEdition(context);
+  const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
 
   const targetUser = await internalLoadById(context, user, input.target_user_id);
   if (!targetUser) {
@@ -586,7 +586,6 @@ export const sendEmailToUser = async (context, user, input) => {
     .replace(/\$user\.account_lock_after_date/g, '<%= user.account_lock_after_date %>')
     .replace(/\$settings\.platform_url/g, '<%= platformUrl %>');
 
-  const settings = await getSettings(context);
   const platformUrl = settings.platform_url;
 
   const renderedHtml = ejs.render(preprocessedTemplate, {
