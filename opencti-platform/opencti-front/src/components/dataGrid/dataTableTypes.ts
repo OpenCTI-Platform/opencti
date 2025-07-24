@@ -149,6 +149,7 @@ export interface DataTableProps {
   hideHeaders?: boolean
   message?: string
   isLocalStorageEnabled?: boolean
+  emptyStateMessage?: string
 }
 
 export interface DataTableBodyProps {
@@ -157,6 +158,7 @@ export interface DataTableBodyProps {
   settingsMessagesBannerHeight?: DataTableProps['settingsMessagesBannerHeight']
   pageSize: number
   pageStart: number
+  emptyStateMessage?: string
   hideHeaders: DataTableProps['hideHeaders']
 }
 
