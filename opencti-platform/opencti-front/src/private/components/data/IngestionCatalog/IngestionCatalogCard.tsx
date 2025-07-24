@@ -26,6 +26,7 @@ export interface IngestionConnector {
   last_verified_date: string,
   subscription_link: string,
   verified: boolean,
+  manager_supported: boolean,
   use_cases: string[],
   default: {
     CONNECTOR_NAME: string
@@ -90,7 +91,7 @@ const IngestionCatalogCard = ({ node }: IngestionCatalogCardProps) => {
     );
   };
 
-  return (
+  return connector.manager_supported && (
     <Card
       variant="outlined"
       style={{
