@@ -9,6 +9,8 @@ import { useNavigate } from 'react-router-dom';
 import IngestionCatalogUseCaseChip from '@components/data/IngestionCatalog/IngestionCatalogUseCaseChip';
 import { useFormatter } from '../../../../components/i18n';
 import EnrichedTooltip from '../../../../components/EnrichedTooltip';
+import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
 
 interface IngestionCatalogCardProps {
   node: string;
@@ -96,8 +98,10 @@ const IngestionCatalogCard = ({ node }: IngestionCatalogCardProps) => {
       </CardContent>
 
       <CardActions style={{ alignSelf: 'end' }}>
-        <Button variant="contained" size="small" onClick={() => navigate(link)}>{t_i18n('Details')}</Button>
-        <Button variant="contained" size="small" disabled>{t_i18n('Deploy')}</Button>
+        <Button variant="outlined" size="small" onClick={() => navigate(link)}>{t_i18n('Details')}</Button>
+        <Security needs={[INGESTION_SETINGESTIONS]}>
+          <Button variant="contained" size="small" disabled>{t_i18n('Deploy')}</Button>
+        </Security>
       </CardActions>
 
     </Card>

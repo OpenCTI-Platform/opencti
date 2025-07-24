@@ -9,6 +9,9 @@ import { useTheme } from '@mui/styles';
 import { IngestionConnector } from '@components/data/IngestionCatalog/IngestionCatalogCard';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
+import { INGESTION_SETINGESTIONS, MODULES } from '../../../../utils/hooks/useGranted';
+import { Navigate } from 'react-router-dom';
+import Security from '../../../../utils/Security';
 
 const IngestionCatalogConnectorHeader = ({ connector }: { connector: IngestionConnector }) => {
   const { t_i18n } = useFormatter();
@@ -39,17 +42,18 @@ const IngestionCatalogConnectorHeader = ({ connector }: { connector: IngestionCo
       </div>
 
       <div>
-        <Button variant="contained" disabled>{t_i18n('Deploy')}</Button>
         <Button
-          variant="contained"
+          variant="outlined"
           startIcon={<Launch />}
-          style={{ marginLeft: theme.spacing(2) }}
           href={connector.subscription_link}
           target="blank"
           rel="noopener noreferrer"
         >
           {t_i18n('', { id: 'Test ... with OpenCTI', values: { connectorName: connector.default.CONNECTOR_NAME } })}
         </Button>
+        <Security needs={[INGESTION_SETINGESTIONS]}>
+          <Button variant="contained" style={{ marginLeft: theme.spacing(1) }} disabled>{t_i18n('Deploy')}</Button>
+        </Security>
       </div>
 
     </div>
