@@ -65,7 +65,13 @@ const IngestionCatalogCard = ({ node }: IngestionCatalogCardProps) => {
       <EnrichedTooltip
         title={(
           <Grid container={true} spacing={3}>
-            {connector.use_cases.map((useCase: string) => <Grid key={useCase} item xs={6}><IngestionCatalogChip label={useCase} /></Grid>)}
+            <Grid key={connector.container_type} item xs={6}>
+              <IngestionCatalogChip
+                label={t_i18n(ingestionConnectorTypeMetadata[connector.container_type].label)}
+                color={ingestionConnectorTypeMetadata[connector.container_type].color}
+              />
+            </Grid>
+            {connector.use_cases.map((useCase: string) => <Grid key={useCase} item xs={6}><IngestionCatalogChip withTooltip label={useCase} /></Grid>)}
           </Grid>
         )}
       >
@@ -82,7 +88,6 @@ const IngestionCatalogCard = ({ node }: IngestionCatalogCardProps) => {
           </Badge>
         ) : (
           <IngestionCatalogChip
-            variant={'filled'}
             label={t_i18n(ingestionConnectorTypeMetadata[connector.container_type].label)}
             color={ingestionConnectorTypeMetadata[connector.container_type].color}
           />
