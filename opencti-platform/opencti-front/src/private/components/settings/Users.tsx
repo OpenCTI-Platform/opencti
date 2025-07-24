@@ -226,25 +226,25 @@ const Users = () => {
       {isSetAccess || isEnterpriseEdition ? (
         <>
           {queryRef && (
-          <DataTable
-            dataColumns={dataColumns}
-            resolvePath={(data) => data.users?.edges?.map(({ node }: { node: UsersLine_node$data }) => node)}
-            storageKey={LOCAL_STORAGE_KEY}
-            initialValues={initialValues}
-            toolbarFilters={contextFilters}
-            lineFragment={usersLineFragment}
-            preloadedPaginationProps={preloadedPaginationProps}
-            createButton={userCreateButton}
-            disableLineSelection={isOnlyAdminOrganization}
-            icon={(user) => {
-              const external = user.external === true;
-              if (external) {
-                return <AccountCircleOutlined color="primary" />;
-              }
-              return <PersonOutlined color="primary" />;
-            }}
-            taskScope={'USER'}
-          />
+            <DataTable
+              dataColumns={dataColumns}
+              resolvePath={(data) => data.users?.edges?.map(({ node }: { node: UsersLine_node$data }) => node)}
+              storageKey={LOCAL_STORAGE_KEY}
+              initialValues={initialValues}
+              toolbarFilters={contextFilters}
+              lineFragment={usersLineFragment}
+              preloadedPaginationProps={preloadedPaginationProps}
+              createButton={userCreateButton}
+              disableLineSelection={isOnlyAdminOrganization}
+              icon={(user) => {
+                const external = user.external === true;
+                if (external) {
+                  return <AccountCircleOutlined color="primary" />;
+                }
+                return <PersonOutlined color="primary" />;
+              }}
+              taskScope={'USER'}
+            />
           )}
         </>
       ) : (
