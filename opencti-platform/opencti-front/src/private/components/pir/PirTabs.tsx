@@ -44,8 +44,8 @@ const PirTabs = ({ data }: PirTabsProps) => {
         />
         <Tab
           component={Link}
-          label={t_i18n('Knowledge')}
-          to={`/dashboard/pirs/${id}/knowledge`}
+          label={t_i18n('Threats')}
+          to={`/dashboard/pirs/${id}/threats`}
         />
         <Tab
           component={Link}

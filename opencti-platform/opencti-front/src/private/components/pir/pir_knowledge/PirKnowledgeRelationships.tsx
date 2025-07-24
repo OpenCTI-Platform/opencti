@@ -1,4 +1,5 @@
 import { graphql } from 'react-relay';
+import Tooltip from '@mui/material/Tooltip';
 import React from 'react';
 import { useTheme } from '@mui/material/styles';
 import PirRadialScore from './PirRadialScore';
@@ -164,7 +165,27 @@ const PirKnowledgeRelationships = ({
       label: 'Score',
       percentWidth: 6,
       isSortable: true,
-      render: ({ pir_score }) => <PirRadialScore value={pir_score} />,
+      render: ({ pir_score, pir_explanations }) => {
+        return (
+          <Tooltip
+            title={(
+              <div style={{ display: 'flex', gap: theme.spacing(1) }}>
+                {pir_explanations.map((e: { criterion: { filters: string } }, i: number) => (
+                  <PirFiltersDisplay
+                    key={i}
+                    filterGroup={JSON.parse(e.criterion.filters)}
+                    size='small'
+                  />
+                ))}
+              </div>
+          )}
+          >
+            <div>
+              <PirRadialScore value={pir_score}/>
+            </div>
+          </Tooltip>
+        );
+      },
     },
     fromType: {
       label: 'Type',
@@ -172,41 +193,25 @@ const PirKnowledgeRelationships = ({
     },
     fromName: {
       label: 'Name',
-      percentWidth: 25,
+      percentWidth: 29,
     },
     created_at: {
       label: 'First match',
-      percentWidth: 8,
+      percentWidth: 13,
     },
     updated_at: {
       label: 'Last match',
-      percentWidth: 9,
+      percentWidth: 13,
     },
     from_objectLabel: {
       id: 'from_objectLabel',
       label: 'Labels',
-      percentWidth: 9,
+      percentWidth: 15,
     },
     from_objectMarking: {
       label: 'Marking',
-      percentWidth: 9,
+      percentWidth: 14,
       isSortable: false,
-    },
-    pirCriteria: {
-      id: 'explanations',
-      label: 'Explanations',
-      percentWidth: 24,
-      render: ({ pir_explanations }) => (
-        <div style={{ display: 'flex', gap: theme.spacing(1) }}>
-          {pir_explanations.map((e: { criterion: { filters: string } }, i: number) => (
-            <PirFiltersDisplay
-              key={i}
-              filterGroup={JSON.parse(e.criterion.filters)}
-              size='small'
-            />
-          ))}
-        </div>
-      ),
     },
   };
 
