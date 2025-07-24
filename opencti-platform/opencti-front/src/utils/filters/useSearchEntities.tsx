@@ -27,8 +27,8 @@ import { KillChainPhasesSearchQuery$data } from '@components/settings/__generate
 import { triggersQueriesSearchQuery } from '@components/profile/triggers/TriggersQueries';
 import { TriggersQueriesSearchQuery$data } from '@components/profile/triggers/__generated__/TriggersQueriesSearchQuery.graphql';
 import { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
-import { usersLinesSearchQuery } from '@components/settings/users/UsersLines';
-import { UsersLinesSearchQuery$data } from '@components/settings/users/__generated__/UsersLinesSearchQuery.graphql';
+import { toolBarUsersLinesSearchQuery } from '@components/data/DataTableToolBar';
+import { DataTableToolBarUsersLinesSearchQuery$data } from '@components/data/__generated__/DataTableToolBarUsersLinesSearchQuery.graphql';
 import useAuth, { FilterDefinition } from '../hooks/useAuth';
 import { useSearchEntitiesStixCoreObjectsSearchQuery$data } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
 import { useFormatter } from '../../components/i18n';
@@ -618,14 +618,14 @@ const useSearchEntities = ({
         case 'contextCreator':
           if (searchContext.connectorsScope && canDisplayAllUsers) {
             // fetch all the users
-            fetchQuery(usersLinesSearchQuery, {
+            fetchQuery(toolBarUsersLinesSearchQuery, {
               first: 10,
               orderBy: 'name',
               orderMode: 'asc',
             })
               .toPromise()
               .then((response) => {
-                const data = response as UsersLinesSearchQuery$data;
+                const data = response as DataTableToolBarUsersLinesSearchQuery$data;
                 buildCachedOptionsFromGenericFetchResponse(filterKey, 'User', data?.users);
               });
           }

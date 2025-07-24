@@ -134,6 +134,7 @@ export const UserLine = createFragmentContainer(UserLineComponent, {
   node: graphql`
     fragment UserLine_node on User {
       id
+      entity_type
       name
       user_service_account
       user_email

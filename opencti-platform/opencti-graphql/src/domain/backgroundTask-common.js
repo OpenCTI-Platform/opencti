@@ -2,7 +2,7 @@ import { uniq } from 'ramda';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
-import { ENTITY_TYPE_BACKGROUND_TASK } from '../schema/internalObject';
+import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { now } from '../utils/format';
 import { isUserHasCapability, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE, MEMBER_ACCESS_RIGHT_ADMIN, SETTINGS_SET_ACCESSES, SETTINGS_SETLABELS, SYSTEM_USER } from '../utils/access';
 import { isKnowledge, KNOWLEDGE_DELETE, KNOWLEDGE_UPDATE } from '../schema/general';
@@ -37,6 +37,10 @@ export const ACTION_TYPE_SHARE_MULTIPLE = 'SHARE_MULTIPLE';
 export const ACTION_TYPE_UNSHARE_MULTIPLE = 'UNSHARE_MULTIPLE';
 export const ACTION_TYPE_REMOVE_AUTH_MEMBERS = 'REMOVE_AUTH_MEMBERS';
 export const ACTION_TYPE_REMOVE_FROM_DRAFT = 'REMOVE_FROM_DRAFT';
+export const ACTION_TYPE_ADD_ORGANIZATIONS = 'ADD_ORGANIZATIONS';
+export const ACTION_TYPE_REMOVE_ORGANIZATIONS = 'REMOVE_ORGANIZATIONS';
+export const ACTION_TYPE_ADD_GROUPS = 'ADD_GROUPS';
+export const ACTION_TYPE_REMOVE_GROUPS = 'REMOVE_GROUPS';
 
 const isDeleteRestrictedAction = ({ type }) => {
   return type === ACTION_TYPE_DELETE || type === ACTION_TYPE_RESTORE || type === ACTION_TYPE_COMPLETE_DELETE;
@@ -91,7 +95,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
     } else {
       throw UnsupportedError('A background task should be of type query or list.');
     }
-  } else if (scope === BackgroundTaskScope.User) { // 03. Background task of scope User (i.e. on Notifications)
+  } else if (scope === BackgroundTaskScope.UserNotification) { // 03. Background task of scope UserNotification (i.e. on Notifications)
     // Check the targeted entities are Notifications
     // and the user has the right to modify them (= notifications are the ones of the user OR the user has SET_ACCESS capability)
     if (taskType === TASK_TYPE_QUERY) {
@@ -124,7 +128,30 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
     } else {
       throw UnsupportedError('A background task should be of type query or list.');
     }
-  } else if (scope === BackgroundTaskScope.Import) { // 04. Background task of scope Import (i.e. on files and workbenches in Data/import)
+  } else if (scope === BackgroundTaskScope.User) { // 04. Background task of scope User
+    // 2.1. The user should have the capability SETTINGS_SET_ACCESSES
+    const isAuthorized = isUserHasCapability(user, SETTINGS_SET_ACCESSES);
+    if (!isAuthorized) {
+      throw ForbiddenAccess();
+    }
+    // Check the targeted entities are User
+    if (taskType === TASK_TYPE_QUERY) {
+      const isUsers = entityTypeFilters.length === 1
+          && entityTypeFilters[0].values.length === 1
+          && entityTypeFilters[0].values[0] === 'User';
+      if (!isUsers) {
+        throw ForbiddenAccess('The targeted ids are not users.');
+      }
+    } else if (taskType === TASK_TYPE_LIST) {
+      const objects = await Promise.all(ids.map((id) => storeLoadById(context, user, id, ENTITY_TYPE_USER)));
+      const isNotUsers = objects.includes(undefined);
+      if (isNotUsers) {
+        throw ForbiddenAccess('The targeted ids are not users.');
+      }
+    } else {
+      throw UnsupportedError('A background task should be of type query or list.');
+    }
+  } else if (scope === BackgroundTaskScope.Import) { // 05. Background task of scope Import (i.e. on files and workbenches in Data/import)
     // The user should have the capability KNOWLEDGE_KNASKIMPORT
     const isAuthorized = isUserHasCapability(user, KNOWLEDGE_KNASKIMPORT);
     if (!isAuthorized) {
@@ -300,6 +327,7 @@ const authorizedAuthoritiesForTask = (scope) => {
     case 'KNOWLEDGE':
       return [KNOWLEDGE_KNUPDATE];
     case 'USER':
+    case 'USER_NOTIFICATION':
       return [SETTINGS_SET_ACCESSES];
     case 'IMPORT':
       return [KNOWLEDGE_KNASKIMPORT];

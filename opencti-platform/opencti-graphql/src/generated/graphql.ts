@@ -1325,6 +1325,8 @@ export type BackgroundTaskActionInput = {
 
 export enum BackgroundTaskActionType {
   Add = 'ADD',
+  AddGroups = 'ADD_GROUPS',
+  AddOrganizations = 'ADD_ORGANIZATIONS',
   CompleteDelete = 'COMPLETE_DELETE',
   Delete = 'DELETE',
   Enrichment = 'ENRICHMENT',
@@ -1333,6 +1335,8 @@ export enum BackgroundTaskActionType {
   Remove = 'REMOVE',
   RemoveAuthMembers = 'REMOVE_AUTH_MEMBERS',
   RemoveFromDraft = 'REMOVE_FROM_DRAFT',
+  RemoveGroups = 'REMOVE_GROUPS',
+  RemoveOrganizations = 'REMOVE_ORGANIZATIONS',
   Replace = 'REPLACE',
   Restore = 'RESTORE',
   RuleElementRescan = 'RULE_ELEMENT_RESCAN',
@@ -1393,7 +1397,8 @@ export enum BackgroundTaskScope {
   Playbook = 'PLAYBOOK',
   PublicDashboard = 'PUBLIC_DASHBOARD',
   Settings = 'SETTINGS',
-  User = 'USER'
+  User = 'USER',
+  UserNotification = 'USER_NOTIFICATION'
 }
 
 export enum BackgroundTaskType {

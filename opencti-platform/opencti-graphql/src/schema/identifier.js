@@ -54,8 +54,6 @@ export const X_WORKFLOW_ID = 'x_opencti_workflow_id';
 export const X_SCORE = 'x_opencti_score';
 // endregion
 
-export const lowerCaseObservablesTypes = ['Domain-Name', 'Email-Addr', 'Hostname'];
-
 export const normalizeName = (name) => {
   return (name || '').toLowerCase().trim();
 };
@@ -139,9 +137,6 @@ const stixBaseCyberObservableContribution = {
   resolvers: {
     from(from) {
       return from?.standard_id;
-    },
-    value(value, type) {
-      return lowerCaseObservablesTypes.includes(type) ? value?.toLowerCase() : value;
     },
     src(src) {
       return src?.standard_id;
@@ -363,7 +358,7 @@ export const isFieldContributingToStandardId = (instance, keys) => {
   const keysIncluded = fieldsContributingToStandardId(instance, keys);
   return keysIncluded.length > 0;
 };
-const filteredIdContributions = (type, contrib, way, data) => {
+const filteredIdContributions = (contrib, way, data) => {
   const propertiesToKeep = R.flatten(R.map((t) => t.src, way));
   const dataRelated = R.pick(propertiesToKeep, data);
   if (R.isEmpty(dataRelated)) {
@@ -384,7 +379,7 @@ const filteredIdContributions = (type, contrib, way, data) => {
     const destKey = dest || src;
     const resolver = contrib.resolvers[src];
     if (resolver) {
-      objectData[destKey] = value ? resolver(value, type) : value;
+      objectData[destKey] = value ? resolver(value) : value;
     } else {
       objectData[destKey] = value;
     }
@@ -412,7 +407,7 @@ const generateDataUUID = (type, input) => {
   if (haveDiffWays) {
     for (let index = 0; index < properties.length; index += 1) {
       const way = properties[index];
-      const uuid = filteredIdContributions(type, contrib, way, data);
+      const uuid = filteredIdContributions(contrib, way, data);
       if (!R.isEmpty(uuid)) {
         dataWay.way = way;
         dataWay.data = uuid;
@@ -421,7 +416,7 @@ const generateDataUUID = (type, input) => {
     }
   } else {
     dataWay.way = properties;
-    dataWay.data = filteredIdContributions(type, contrib, properties, data);
+    dataWay.data = filteredIdContributions(contrib, properties, data);
   }
   return dataWay;
 };

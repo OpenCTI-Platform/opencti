@@ -5,7 +5,7 @@ export default class UserFormPage {
   constructor(private page: Page) {}
 
   getNameInput() {
-    return this.page.getByLabel('Name', { exact: true });
+    return this.page.getByRole('textbox', { name: 'Name', exact: true });
   }
 
   async fillNameInput(name: string) {
@@ -32,7 +32,7 @@ export default class UserFormPage {
   }
 
   getPasswordConfirmationInput() {
-    return this.page.getByLabel('Confirmation');
+    return this.page.getByRole('textbox', { name: 'Confirmation' });
   }
 
   async fillPasswordConfirmationInput(passwordConfirmation: string) {

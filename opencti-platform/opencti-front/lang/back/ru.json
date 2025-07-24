@@ -897,5 +897,11 @@
   "Workflow status": "Состояние рабочего процесса",
   "Workspace graph data": "Данные графиков рабочей области",
   "Workspace type": "Тип рабочего пространства",
-  "X_Aliases": "X_Aliases"
+  "X_Aliases": "X_Aliases",
+  "XTM Hub enrollment date": "Дата регистрации в XTM Hub",
+  "XTM Hub enrollment status": "Статус регистрации в центре XTM",
+  "XTM Hub enrollment User ID": "Идентификатор пользователя XTM Hub",
+  "XTM Hub enrollment User name": "XTM Hub регистрация Имя пользователя",
+  "XTM Hub last connectivity check": "Последняя проверка подключения концентратора XTM",
+  "XTM Hub Token": "Токен концентратора XTM"
 }

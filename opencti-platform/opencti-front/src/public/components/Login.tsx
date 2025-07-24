@@ -1,4 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
+import { useCookies } from 'react-cookie';
 import Button from '@mui/material/Button';
 import { useTheme } from '@mui/styles';
 import { Facebook, Github, Google, KeyOutline } from 'mdi-material-ui';
@@ -124,6 +125,7 @@ interface LoginProps {
   themes: LoginRootPublicQuery$data['themes'];
 }
 
+const FLASH_COOKIE = 'opencti_flash';
 const Login: FunctionComponent<LoginProps> = ({ type, settings, themes }) => {
   const classes = useStyles();
   const theme = useTheme<Theme>();
@@ -132,6 +134,9 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings, themes }) => {
   const isEnterpriseEdition = settings.platform_enterprise_edition.license_validated;
   const [resetPassword, setResetPassword] = useState(false);
   const [email, setEmail] = useState('');
+  const [cookies, , removeCookie] = useCookies([FLASH_COOKIE]);
+  const flashError = cookies[FLASH_COOKIE] || '';
+  removeCookie(FLASH_COOKIE);
 
   const renderExternalAuthButton = (provider?: string | null) => {
     switch (provider) {
@@ -264,6 +269,21 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings, themes }) => {
           <Alert severity="warning">
             <AlertTitle style={{ textAlign: 'left' }}>Warning</AlertTitle>
             You were automatically logged out due to session expiration.
+          </Alert>
+        </Paper>
+      )}
+      {flashError && (
+        <Paper
+          classes={{ root: classes.paper }}
+          style={{
+            backgroundImage: 'none',
+            backgroundColor: 'transparent',
+            boxShadow: 'none',
+          }}
+        >
+          <Alert severity="error">
+            <AlertTitle style={{ textAlign: 'left' }}>Error</AlertTitle>
+            {flashError}
           </Alert>
         </Paper>
       )}

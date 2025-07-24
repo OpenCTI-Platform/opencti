@@ -2,30 +2,37 @@ import React, { useState } from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import MoreVert from '@mui/icons-material/MoreVert';
-import { Dashboard_workspace$data } from '@components/workspaces/dashboards/__generated__/Dashboard_workspace.graphql';
-import { InvestigationGraph_fragment$data } from '@components/workspaces/investigations/__generated__/InvestigationGraph_fragment.graphql';
 import ToggleButton from '@mui/material/ToggleButton';
+import { useNavigate } from 'react-router-dom';
+import { graphql, useFragment } from 'react-relay';
 import WorkspaceManageAccessDialog from '@components/workspaces/WorkspaceManageAccessDialog';
 import WorkspaceTurnToContainerDialog from '@components/workspaces/WorkspaceTurnToContainerDialog';
 import WorkspaceDuplicationDialog from '@components/workspaces/WorkspaceDuplicationDialog';
 import Drawer from '@components/common/drawer/Drawer';
 import PublicDashboardCreationForm from '@components/workspaces/dashboards/public_dashboards/PublicDashboardCreationForm';
-import { useNavigate } from 'react-router-dom';
-import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { WorkspaceKebabMenuFragment$key } from './__generated__/WorkspaceKebabMenuFragment.graphql';
 import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
 import Security from '../../../utils/Security';
 import useGranted, { EXPLORE_EXUPDATE, EXPLORE_EXUPDATE_PUBLISH, INVESTIGATION_INUPDATE } from '../../../utils/hooks/useGranted';
 import { useFormatter } from '../../../components/i18n';
-import { insertNode } from '../../../utils/store';
+
+const kebabMenuFragment = graphql`
+  fragment WorkspaceKebabMenuFragment on Workspace {
+    id
+    type
+    owner {
+      id
+      name
+      entity_type
+    }
+    currentUserAccessRight
+    ...WorkspaceDuplicationDialogFragment
+    ...WorkspaceManageAccessDialog_authorizedMembers
+  }
+`;
 
 interface WorkspaceKebabMenuProps {
-  workspace: Dashboard_workspace$data | InvestigationGraph_fragment$data;
-  paginationOptions?: {
-    search: string;
-    orderBy: string;
-    orderMode: string;
-    filters: Array<{ key: string; values: Array<string> }>;
-  };
+  data: WorkspaceKebabMenuFragment$key;
 }
 
 const noop = () => {};
@@ -71,7 +78,8 @@ const useAddToContainer = (onAddToContainer = noop) => {
   return { isAddToContainerDialogOpen, handleOpenTurnToReportOrCaseContainer, handleCloseTurnToReportOrCaseContainer };
 };
 
-const WorkspaceKebabMenu = ({ workspace, paginationOptions }: WorkspaceKebabMenuProps) => {
+const WorkspaceKebabMenu = ({ data }: WorkspaceKebabMenuProps) => {
+  const workspace = useFragment(kebabMenuFragment, data);
   const variant = workspace.type;
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
@@ -95,12 +103,6 @@ const WorkspaceKebabMenu = ({ workspace, paginationOptions }: WorkspaceKebabMenu
   } = useDuplicate(isGrantedToUpdateDashboard, handleClose);
   const { displayManageAccess, handleOpenManageAccess, handleCloseManageAccess } = useManageAccess(handleClose);
   const { isAddToContainerDialogOpen, handleOpenTurnToReportOrCaseContainer, handleCloseTurnToReportOrCaseContainer } = useAddToContainer(handleClose);
-
-  const updater = (store: RecordSourceSelectorProxy) => {
-    if (paginationOptions) {
-      insertNode(store, 'Pagination_workspaces', paginationOptions, 'workspaceDuplicate');
-    }
-  };
 
   const goToPublicDashboards = () => {
     const filter = {
@@ -202,7 +204,7 @@ const WorkspaceKebabMenu = ({ workspace, paginationOptions }: WorkspaceKebabMenu
       )}
       {variant === 'dashboard' && (
         <WorkspaceDuplicationDialog
-          workspace={workspace}
+          data={workspace}
           displayDuplicate={displayDuplicate}
           handleCloseDuplicate={handleCloseDuplicate}
           duplicating={duplicating}
@@ -223,13 +225,11 @@ const WorkspaceKebabMenu = ({ workspace, paginationOptions }: WorkspaceKebabMenu
         )}
       </Drawer>
       <WorkspaceDuplicationDialog
-        workspace={workspace}
+        data={workspace}
         displayDuplicate={displayDuplicate}
         handleCloseDuplicate={handleCloseDuplicate}
         duplicating={duplicating}
         setDuplicating={setDuplicating}
-        updater={updater}
-        paginationOptions={paginationOptions}
       />
     </div>
   );
