@@ -12,6 +12,7 @@ import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { findById as findStixObjectOrStixRelationshipById } from './stixObjectOrStixRelationship';
 import { elCount } from '../database/engine';
 import { READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS, READ_INDEX_STIX_META_RELATIONSHIPS, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
+import { schemaAttributesDefinition } from '../schema/schema-attributes';
 
 // Query
 
@@ -42,6 +43,21 @@ export const schemaRefRelationships = async (context, user, id, toType) => {
         .sort();
       return { entity, from, to };
     });
+};
+// return the possible types with which an entity type can have a nested relation ref
+export const schemaRefRelationshipsPossibleTypes = async (entityType) => {
+  const registeredTypes = schemaRelationsRefDefinition.getRegisteredTypes();
+  const possibleToTypes = schemaRelationsRefDefinition.getRelationsRef(entityType)
+    .filter((ref) => !notNestedRefRelation.includes(ref.databaseName))
+    .map((ref) => ref.toTypes);
+  const possibleFromTypes = registeredTypes.filter((type) => {
+    const reversedRelationRefs = schemaRelationsRefDefinition.getRelationsRef(type)
+      .filter((ref) => !notNestedRefRelation.includes(ref.databaseName))
+      .filter((ref) => (!ref.isRefExistingForTypes ? true : ref.isRefExistingForTypes(type, entityType)));
+    return reversedRelationRefs.length > 0;
+  });
+  const possibleTypes = [...possibleFromTypes, ...possibleToTypes];
+  return possibleTypes;
 };
 export const isDatable = (entityType, relationshipType) => {
   return schemaRelationsRefDefinition.isDatable(entityType, relationshipType);
