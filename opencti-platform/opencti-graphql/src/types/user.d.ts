@@ -50,6 +50,7 @@ interface AuthUser extends BasicStoreIdentifier {
   draft_context?: string | undefined
   otp_activated?: boolean;
   otp_secret?: string;
+  creator_id?: string | string[];
 }
 
 interface AuthContext {

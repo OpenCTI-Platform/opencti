@@ -78,6 +78,10 @@ const READ_QUERY = gql`
       standard_id
       name
       description
+      created_at
+      creator {
+        name
+      }
       user_confidence_level {
         max_confidence
       }
@@ -288,6 +292,7 @@ describe('User resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data?.user).not.toBeNull();
     expect(queryResult.data?.user.id).toEqual(userInternalId);
+    expect(queryResult.data?.user.creator.name).toEqual('admin');
   });
   it('should user loaded by standard id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userStandardId } });
