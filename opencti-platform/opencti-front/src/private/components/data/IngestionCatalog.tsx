@@ -39,12 +39,7 @@ const IngestionCatalogComponent = ({
     queryRef,
   );
 
-  const contracts: string[] = [];
-  for (const catalog of catalogs) {
-    catalog.contracts.map((contract) => {
-      return contracts.push(contract);
-    });
-  }
+  const contracts: string[] = catalogs.flatMap(catalog => catalog.contracts);
 
   return (
     <>
