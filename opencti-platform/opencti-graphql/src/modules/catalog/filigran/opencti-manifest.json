@@ -7,7 +7,8 @@
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "$id": "https://www.filigran.io/cve.schema.json",
-      "title": "CVE connector",
+      "title": "CVE - Common Vulnerabilities and Exposures",
+      "slug": "cve",
       "description": "The OpenCTI CVE connector is a software component designed to automatically import information about Common Vulnerabilities and Exposures (CVEs) into the OpenCTI platform",
       "short_description": "Collecting and updating CVE data in OpenCTI",
       "use_cases": [
@@ -143,7 +144,8 @@
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "$id": "https://www.filigran.io/servicenow.schema.json",
-      "title": "ServiceNow connector",
+      "title": "ServiceNow",
+      "slug": "servicenow",
       "description": "ServiceNow provides Security Incident Response and Security Incident Tasks module handled by this connector which collects SIR and SIT and related entities.",
       "short_description": "Ingestion of SIR and SIT as Case Incident and Tasks.",
       "use_cases": [
@@ -335,7 +337,8 @@
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "$id": "https://www.filigran.io/ipinfo.schema.json",
-      "title": "IpInfo connector",
+      "title": "IpInfo",
+      "slug": "ipinfo",
       "description": "Accurate IP address data that keeps pace with secure, specific, and forward-looking use cases",
       "short_description": "IpInfo enrichment connector",
       "use_cases": [

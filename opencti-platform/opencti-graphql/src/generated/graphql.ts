@@ -21206,7 +21206,7 @@ export type QueryContainersObjectsOfObjectArgs = {
 
 
 export type QueryContractArgs = {
-  name: Scalars['String']['input'];
+  slug: Scalars['String']['input'];
 };
 
 
@@ -41254,7 +41254,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   containersDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryContainersDistributionArgs, 'field' | 'operation'>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, Partial<QueryContainersNumberArgs>>;
   containersObjectsOfObject?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipConnection']>, ParentType, ContextType, RequireFields<QueryContainersObjectsOfObjectArgs, 'id'>>;
-  contract?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryContractArgs, 'name'>>;
+  contract?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryContractArgs, 'slug'>>;
   countries?: Resolver<Maybe<ResolversTypes['CountryConnection']>, ParentType, ContextType, Partial<QueryCountriesArgs>>;
   country?: Resolver<Maybe<ResolversTypes['Country']>, ParentType, ContextType, Partial<QueryCountryArgs>>;
   courseOfAction?: Resolver<Maybe<ResolversTypes['CourseOfAction']>, ParentType, ContextType, Partial<QueryCourseOfActionArgs>>;
