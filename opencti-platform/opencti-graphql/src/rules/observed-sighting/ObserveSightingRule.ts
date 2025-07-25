@@ -8,7 +8,7 @@ import { createRuleContent } from '../rules-utils';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../schema/general';
 import { generateInternalType } from '../../schema/schemaUtils';
-import type { RuleRuntime } from '../../types/rules';
+import type { createInferredEntityOverrideFunction, createInferredRelationOverrideFunction, RuleRuntime } from '../../types/rules';
 import type { StixDomainObject, StixObject } from '../../types/stix-2-1-common';
 import type { StixObservedData } from '../../types/stix-2-1-sdo';
 import type { StixRelation } from '../../types/stix-2-1-sro';
@@ -45,7 +45,11 @@ const ruleObserveSightingBuilder = (): RuleRuntime => {
       indicatorId,
     ];
   };
-  const handleIndicatorUpsert = async (context: AuthContext, indicator: StixDomainObject): Promise<void> => {
+  const handleIndicatorUpsert = async (
+    context: AuthContext,
+    indicator: StixDomainObject,
+    createInferredRelationOverride?: createInferredRelationOverrideFunction | undefined
+  ): Promise<void> => {
     const { id: indicatorId } = indicator.extensions[STIX_EXT_OCTI];
     const { object_marking_refs: indicatorMarkings } = indicator;
     const baseOnArgs = { toType: ABSTRACT_STIX_CYBER_OBSERVABLE, fromId: indicatorId };
@@ -82,12 +86,20 @@ const ruleObserveSightingBuilder = (): RuleRuntime => {
             confidence,
             objectMarking: elementMarkings,
           });
-          await createInferredRelation(context, input, ruleContent);
+          if (createInferredRelationOverride) {
+            createInferredRelationOverride(context, input, ruleContent);
+          } else {
+            await createInferredRelation(context, input, ruleContent);
+          }
         }
       }
     }
   };
-  const handleObservedDataUpsert = async (context: AuthContext, observedData: StixObservedData): Promise<void> => {
+  const handleObservedDataUpsert = async (
+    context: AuthContext,
+    observedData: StixObservedData,
+    createInferredRelationOverride?: createInferredRelationOverrideFunction | undefined
+  ): Promise<void> => {
     const { created_by_ref: organizationId } = observedData;
     const { id: observedDataId } = observedData.extensions[STIX_EXT_OCTI];
     const { number_observed, first_observed, last_observed, confidence } = observedData;
@@ -125,36 +137,53 @@ const ruleObserveSightingBuilder = (): RuleRuntime => {
             confidence,
             objectMarking: elementMarkings,
           });
-          await createInferredRelation(context, input, ruleContent);
+          if (createInferredRelationOverride) {
+            createInferredRelationOverride(context, input, ruleContent);
+          } else {
+            await createInferredRelation(context, input, ruleContent);
+          }
         }
       }
     }
   };
-  const handleObservableRelationUpsert = async (context: AuthContext, baseOnRelation: StixRelation) => {
+  const handleObservableRelationUpsert = async (
+    context: AuthContext,
+    baseOnRelation: StixRelation,
+    createInferredRelationOverride?: createInferredRelationOverrideFunction | undefined
+  ) => {
     const { source_ref: indicatorId } = baseOnRelation.extensions[STIX_EXT_OCTI];
     const baseOnIndicator = (await stixLoadById(context, RULE_MANAGER_USER, indicatorId)) as unknown as StixIndicator;
-    return handleIndicatorUpsert(context, baseOnIndicator);
+    return handleIndicatorUpsert(context, baseOnIndicator, createInferredRelationOverride);
   };
-  const applyUpsert = async (data: StixObject): Promise<void> => {
+  const applyUpsert = async (
+    data: StixObject,
+    createInferredRelationOverride?: createInferredRelationOverrideFunction | undefined
+  ): Promise<void> => {
     const context = executionContext(def.name, RULE_MANAGER_USER);
     const entityType = generateInternalType(data);
     if (entityType === ENTITY_TYPE_INDICATOR) {
-      await handleIndicatorUpsert(context, data as StixDomainObject);
+      await handleIndicatorUpsert(context, data as StixDomainObject, createInferredRelationOverride);
     }
     if (entityType === ENTITY_TYPE_CONTAINER_OBSERVED_DATA) {
-      await handleObservedDataUpsert(context, data as StixObservedData);
+      await handleObservedDataUpsert(context, data as StixObservedData, createInferredRelationOverride);
     }
     const upsertRelation = data as StixRelation;
     const { relationship_type: relationType } = upsertRelation;
     if (relationType === RELATION_BASED_ON) {
-      await handleObservableRelationUpsert(context, upsertRelation);
+      await handleObservableRelationUpsert(context, upsertRelation, createInferredRelationOverride);
     }
   };
   // Contract
   const clean = async (element: StoreObject, deletedDependencies: Array<string>): Promise<void> => {
     await deleteInferredRuleElement(def.id, element, deletedDependencies);
   };
-  const insert = async (element: StixObject): Promise<void> => applyUpsert(element);
+  const insert = async (
+    element: StixObject,
+    _createInferredEntityOverride?: createInferredEntityOverrideFunction | undefined,
+    createInferredRelationOverride?: createInferredRelationOverrideFunction | undefined
+  ): Promise<void> => {
+    return applyUpsert(element, createInferredRelationOverride);
+  };
   const update = async (element: StixObject): Promise<void> => applyUpsert(element);
   return { ...def, insert, update, clean };
 };
