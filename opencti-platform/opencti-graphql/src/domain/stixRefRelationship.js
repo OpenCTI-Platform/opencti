@@ -19,7 +19,6 @@ import { findById as findStixObjectOrStixRelationshipById } from './stixObjectOr
 import { elCount } from '../database/engine';
 import { READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS, READ_INDEX_STIX_META_RELATIONSHIPS, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { findAll as findSubTypes } from './subType';
-import { ENTITY_TYPE_INTERNAL_FILE } from '../schema/internalObject';
 
 // Query
 
@@ -52,8 +51,7 @@ export const schemaRefRelationships = async (context, user, id, toType) => {
     });
 };
 // return the possible types with which an entity type can have a nested relation ref
-export const schemaRefRelationshipsPossibleTypes = async (context, user, inputType) => {
-  const entityType = inputType === 'File' ? ENTITY_TYPE_INTERNAL_FILE : inputType;
+export const schemaRefRelationshipsPossibleTypes = async (context, user, entityType) => {
   const registeredTypes = schemaRelationsRefDefinition.getRegisteredTypes();
   const possibleToTypes = uniq(schemaRelationsRefDefinition.getRelationsRef(entityType)
     .filter((ref) => !notNestedRefRelation.includes(ref.databaseName))
