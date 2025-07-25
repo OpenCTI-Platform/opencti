@@ -3942,7 +3942,7 @@
   "You are about to switch to Draft mode. All your OpenCTI platform will be in draft. The selected Draft will be the draft by default.": "Vous êtes sur le point de passer en mode \"Brouillon\". Toute votre plateforme OpenCTI sera en brouillon. Le brouillon sélectionné sera le brouillon par défaut.",
   "You are about to validate this mapping, it will add suggested entities to your container.": "Vous êtes sur le point de valider ce mapping, cela ajoutera les entités suggérées à votre conteneur.",
   "You are not allowed to do this": "Vous n'êtes pas autorisé à le faire",
-  "You are not allowed to do this.": "Vous n'ête pas autorisés à faire cette action.",
+  "You are not allowed to do this.": "Vous n'êtes pas autorisé à faire cette action.",
   "You are not authorized to see this data.": "Vous n'êtes pas autorisé à voir ces données.",
   "You are now in Draft Mode": "Vous êtes maintenant en mode brouillon",
   "You are trying to check the security posture of your organization against this threat intelligence set of knowledge using the OpenBAS platform.": "Vous essayez de vérifier la position de sécurité de votre organisation par rapport à cet ensemble de connaissances sur les menaces à l'aide de la plate-forme OpenBAS.",
