@@ -29,5 +29,5 @@ type CatalogEdge {
 type Query {
   catalog(id: String!): Catalog @auth(for: [INGESTION])
   catalogs: [Catalog!]! @auth(for: [INGESTION])
-  contract(name: String!): String @auth(for: [INGESTION])
+  contract(slug: String!): String @auth(for: [INGESTION])
 }

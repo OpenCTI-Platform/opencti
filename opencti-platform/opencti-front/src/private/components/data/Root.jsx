@@ -124,7 +124,7 @@ const Root = () => {
         )}
         {isComposerEnable && (
           <Route
-            path="/ingestion/catalog/:connectorId"
+            path="/ingestion/catalog/:connectorSlug"
             element={boundaryWrapper(IngestionCatalogConnector)}
           />
         )}

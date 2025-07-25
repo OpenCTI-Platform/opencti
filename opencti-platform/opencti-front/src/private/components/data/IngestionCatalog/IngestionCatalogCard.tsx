@@ -19,20 +19,28 @@ interface IngestionCatalogCardProps {
 }
 
 export interface IngestionConnector {
-  logo: string,
+  $schema: string,
+  $id: string,
   title: string,
+  slug: string,
   description: string,
   short_description: string,
-  container_type: IngestionConnectorType,
-  source_code: string,
-  last_verified_date: string,
-  subscription_link: string,
-  verified: boolean,
-  manager_supported: boolean,
   use_cases: string[],
-  default: {
-    CONNECTOR_NAME: string
-  }
+  max_confidence_level: number,
+  manager_supported: boolean,
+  container_version: string,
+  container_image: string,
+  container_type: IngestionConnectorType,
+  verified: boolean,
+  last_verified_date: string,
+  playbook_supported: boolean,
+  logo: string,
+  support_version: string,
+  subscription_link: string,
+  source_code: string,
+  type: string,
+  additionalProperties: string,
+  default: object
 }
 
 export type IngestionConnectorType = 'INTERNAL_ENRICHMENT' | 'EXTERNAL_IMPORT' | 'INTERNAL_EXPORT_FILE' | 'INTERNAL_IMPORT_FILE';
@@ -61,7 +69,7 @@ const IngestionCatalogCard = ({ node }: IngestionCatalogCardProps) => {
   const navigate = useNavigate();
   const theme = useTheme<Theme>();
   const connector: IngestionConnector = JSON.parse(node);
-  const link = `/dashboard/data/ingestion/catalog/${connector.default.CONNECTOR_NAME}`;
+  const link = `/dashboard/data/ingestion/catalog/${connector.slug}`;
 
   const renderLabels = () => {
     return (

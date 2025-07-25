@@ -12,8 +12,8 @@ import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDo
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 
 const ingestionCatalogConnectorQuery = graphql`
-  query IngestionCatalogConnectorQuery($name: String!) {
-    contract(name: $name)
+  query IngestionCatalogConnectorQuery($slug: String!) {
+    contract(slug: $slug)
   }
 `;
 
@@ -38,17 +38,17 @@ const IngestionCatalogConnectorComponent = ({
   return (
     <>
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('Catalog') }, { label: connector.default.CONNECTOR_NAME, current: true }]} />
-      <IngestionCatalogConnectorHeader connector={connector} />
+      <IngestionCatalogConnectorHeader connector={connector} contract={contract} />
       <IngestionCatalogConnectorOverview connector={connector} />
     </>
   );
 };
 
 const IngestionCatalogConnector = () => {
-  const { connectorId } = useParams();
+  const { connectorSlug } = useParams();
   const queryRef = useQueryLoading<IngestionCatalogConnectorQuery>(
     ingestionCatalogConnectorQuery,
-    { name: connectorId ?? '' },
+    { slug: connectorSlug ?? '' },
   );
   return (
     <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
