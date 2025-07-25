@@ -18,7 +18,7 @@ import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../../components/dataGrid/DataTable';
-import useGranted, {SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN} from "../../../../utils/hooks/useGranted";
+import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
 
 export const settingsOrganizationUsersQuery = graphql`
   query SettingsOrganizationUsersPaginationQuery(
