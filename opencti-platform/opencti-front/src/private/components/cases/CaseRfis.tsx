@@ -50,7 +50,7 @@ const caseFragment = graphql`
       value
       color
     }
-    creators {
+    creators {                                                          
       id
       name
     }

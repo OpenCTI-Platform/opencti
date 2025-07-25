@@ -5,7 +5,7 @@ import Tooltip from '@mui/material/Tooltip';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
-import { PersonOutlined, AccountCircleOutlined, KeyboardArrowRightOutlined, HorizontalRule, Security, ReportGmailerrorred } from '@mui/icons-material';
+import { PersonOutlined, AccountCircleOutlined, KeyboardArrowRightOutlined, HorizontalRule, Security, ReportGmailerrorred, ManageAccountsOutlined } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
 import { UserLine_node$data } from '@components/settings/users/__generated__/UserLine_node.graphql';
@@ -14,6 +14,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { DataColumns } from '../../../../components/list_lines';
 import type { Theme } from '../../../../components/Theme';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -49,9 +50,11 @@ interface UserLineComponentProps {
 }
 
 const UserLineComponent: React.FC<UserLineComponentProps> = (props) => {
+  const { isFeatureEnable } = useHelper();
+  const serviceAccountFeatureFlag = isFeatureEnable('SERVICE_ACCOUNT');
   const { dataColumns, node } = props;
   const external = node.external === true;
-
+  const userServiceAccount = node.user_service_account && serviceAccountFeatureFlag;
   const classes = useStyles();
   const { t_i18n, fd } = useFormatter();
 
@@ -63,7 +66,8 @@ const UserLineComponent: React.FC<UserLineComponentProps> = (props) => {
       to={`/dashboard/settings/accesses/users/${node.id}`}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        {external ? <AccountCircleOutlined /> : <PersonOutlined />}
+        {userServiceAccount && (<ManageAccountsOutlined />)}
+        {!userServiceAccount && (external ? <AccountCircleOutlined /> : <PersonOutlined />)}
       </ListItemIcon>
       <ListItemText
         primary={

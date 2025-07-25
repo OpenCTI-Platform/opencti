@@ -51,7 +51,8 @@ import {
   userOrganizationsPaginatedWithoutInferences,
   userRenewToken,
   userWithOrigin,
-  userRoles
+  userRoles,
+  getCreator
 } from '../domain/user';
 import { subscribeToInstanceEvents, subscribeToUserEvents } from '../graphql/subscriptionWrapper';
 import { publishUserAction } from '../listener/UserActionListener';
@@ -87,6 +88,7 @@ const userResolvers = {
     sessions: (current) => findUserSessions(current.id),
     effective_confidence_level: (current, _, context) => context.batch.userEffectiveConfidenceBatchLoader.load(current),
     personal_notifiers: (current, _, context) => getNotifiers(context, context.user, current.personal_notifiers),
+    creator: (current, _, context) => getCreator(context, context.user, current.id),
   },
   Member: {
     name: (current, _, context) => {

@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { graphql } from 'react-relay';
 import { UsersLinesPaginationQuery, UsersLinesPaginationQuery$variables } from '@components/settings/__generated__/UsersLinesPaginationQuery.graphql';
 import { UsersLine_node$data } from '@components/settings/__generated__/UsersLine_node.graphql';
-import { AccountCircleOutlined, PersonOutlined } from '@mui/icons-material';
+import { AccountCircleOutlined, ManageAccountsOutlined, PersonOutlined } from '@mui/icons-material';
 import SettingsOrganizationUserCreation from './users/SettingsOrganizationUserCreation';
 import EnterpriseEdition from '../common/entreprise_edition/EnterpriseEdition';
 import UserCreation from './users/UserCreation';
@@ -20,6 +20,7 @@ import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import useAuth from '../../../utils/hooks/useAuth';
+import useHelper from '../../../utils/hooks/useHelper';
 
 export const usersQuery = graphql`
   query UsersLinesPaginationQuery(
@@ -87,6 +88,7 @@ const usersLineFragment = graphql`
       external
       lastname
       entity_type
+      user_service_account
       effective_confidence_level {
         max_confidence
       }
@@ -106,6 +108,8 @@ const Users = () => {
   const isAdminOrganization = useGranted([VIRTUAL_ORGANIZATION_ADMIN]);
   const { me } = useAuth();
   const organization = me.administrated_organizations?.[0] ?? null;
+  const { isFeatureEnable } = useHelper();
+  const serviceAccountFeatureFlag = isFeatureEnable('SERVICE_ACCOUNT');
 
   const initialValues = {
     searchTerm: '',
@@ -238,6 +242,10 @@ const Users = () => {
             createButton={userCreateButton}
             icon={(user) => {
               const external = user.external === true;
+              const userServiceAccount = user.user_service_account && serviceAccountFeatureFlag;
+              if (userServiceAccount) {
+                return <ManageAccountsOutlined color="primary" />;
+              }
               if (external) {
                 return <AccountCircleOutlined color="primary" />;
               }

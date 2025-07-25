@@ -258,6 +258,17 @@ export const userOrganizationsPaginated = async (context, user, userId, opts) =>
   return listEntitiesThroughRelationsPaginated(context, user, userId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION, false, opts);
 };
 
+// Get the creator of userId
+export const getCreator = async (context, _user, userId) => {
+  const allUsersInCache = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const userLoaded = allUsersInCache.get(userId);
+  const firstCreatorId = Array.isArray(userLoaded.creator_id) && userLoaded.creator_id.length > 0
+    ? userLoaded.creator_id.at(0)
+    : userLoaded.creator_id;
+  const userCreatorFromCache = allUsersInCache.get(firstCreatorId);
+  return buildCreatorUser(userCreatorFromCache);
+};
+
 export const userRoles = async (context, _user, userId, opts) => {
   const { orderBy, orderMode } = opts;
   const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
