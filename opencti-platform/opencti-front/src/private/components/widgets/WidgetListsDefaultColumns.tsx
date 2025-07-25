@@ -123,6 +123,8 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
   Vulnerability: [
     { attribute: 'x_opencti_cvss_base_score', label: 'CVSS3 - Score' },
     { attribute: 'x_opencti_cvss_base_severity', label: 'CVSS3 - Severity' },
+    { attribute: 'x_opencti_cvss_v4_base_score', label: 'CVSS4 - Score' },
+    { attribute: 'x_opencti_cvss_v4_base_severity', label: 'CVSS4 - Severity' },
     { attribute: 'x_opencti_cisa_kev', label: 'CISA - KEV' },
     { attribute: 'x_opencti_epss_score', label: 'EPSS Score' },
     { attribute: 'x_opencti_epss_percentile', label: 'EPSS Percentile' },
@@ -138,6 +140,7 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
   ],
   Organization: [
     { attribute: 'x_opencti_organization_type', label: 'Organization type' },
+    { attribute: 'x_opencti_score', label: 'Score' },
   ],
 };
 
