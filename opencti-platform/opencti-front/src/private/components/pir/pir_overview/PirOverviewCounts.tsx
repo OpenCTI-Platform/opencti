@@ -104,16 +104,18 @@ const PirOverviewCountsComponent = ({
     return distribution;
   });
 
-  const malwares = data?.find((d) => d.label === 'Malware');
-  const malwares24h = data24h?.find((d) => d.label === 'Malware');
-  const campaigns = data?.find((d) => d.label === 'Campaign');
-  const campaigns24h = data24h?.find((d) => d.label === 'Campaign');
-  const instrusionSets = data?.find((d) => d.label === 'Intrusion-Set');
-  const instrusionSets24h = data24h?.find((d) => d.label === 'Intrusion-Set');
-  const threatActorIndividuals = data?.find((d) => d.label === 'Threat-Actor-Individual');
-  const threatActorIndividuals24h = data24h?.find((d) => d.label === 'Threat-Actor-Individual');
-  const threatActorGroups = data?.find((d) => d.label === 'Threat-Actor-Group');
-  const threatActorGroups24h = data24h?.find((d) => d.label === 'Threat-Actor-Group');
+  const malwares = data?.find((d) => d.label === 'Malware')?.value ?? 0;
+  const malwares24h = data24h?.find((d) => d.label === 'Malware')?.value ?? 0;
+  const campaigns = data?.find((d) => d.label === 'Campaign')?.value ?? 0;
+  const campaigns24h = data24h?.find((d) => d.label === 'Campaign')?.value ?? 0;
+  const instrusionSets = data?.find((d) => d.label === 'Intrusion-Set')?.value ?? 0;
+  const instrusionSets24h = data24h?.find((d) => d.label === 'Intrusion-Set')?.value ?? 0;
+  const threatActorIndividuals = data?.find((d) => d.label === 'Threat-Actor-Individual')?.value ?? 0;
+  const threatActorIndividuals24h = data24h?.find((d) => d.label === 'Threat-Actor-Individual')?.value ?? 0;
+  const threatActorGroups = data?.find((d) => d.label === 'Threat-Actor-Group')?.value ?? 0;
+  const threatActorGroups24h = data24h?.find((d) => d.label === 'Threat-Actor-Group')?.value ?? 0;
+  const threatActor = threatActorIndividuals + threatActorGroups;
+  const threatActor24h = threatActorIndividuals24h + threatActorGroups24h;
 
   return (
     <Grid>
@@ -122,34 +124,28 @@ const PirOverviewCountsComponent = ({
       </Typography>
       <Grid container spacing={3}>
         <PirOverviewCount
-          size={4}
+          size={6}
           label="Malware"
-          value={malwares?.value ?? 0}
-          value24h={malwares24h?.value ?? 0}
+          value={malwares}
+          value24h={malwares24h}
         />
         <PirOverviewCount
-          size={4}
+          size={6}
           label="Campaign"
-          value={campaigns?.value ?? 0}
-          value24h={campaigns24h?.value ?? 0}
+          value={campaigns}
+          value24h={campaigns24h}
         />
         <PirOverviewCount
-          size={4}
+          size={6}
           label="Intrusion-Set"
-          value={instrusionSets?.value ?? 0}
-          value24h={instrusionSets24h?.value ?? 0}
+          value={instrusionSets}
+          value24h={instrusionSets24h}
         />
         <PirOverviewCount
           size={6}
-          label="Threat-Actor-Individual"
-          value={threatActorIndividuals?.value ?? 0}
-          value24h={threatActorIndividuals24h?.value ?? 0}
-        />
-        <PirOverviewCount
-          size={6}
-          label="Threat-Actor-Group"
-          value={threatActorGroups?.value ?? 0}
-          value24h={threatActorGroups24h?.value ?? 0}
+          label="Threat-Actor"
+          value={threatActor}
+          value24h={threatActor24h}
         />
       </Grid>
     </Grid>
