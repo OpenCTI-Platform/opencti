@@ -1,8 +1,14 @@
-import { dissoc } from 'ramda';
+import { dissoc, uniq } from 'ramda';
 import { storeLoadByIdWithRefs, updateAttribute, updateAttributeFromLoadedWithRefs } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { ABSTRACT_STIX_REF_RELATIONSHIP, ABSTRACT_STIX_RELATIONSHIP } from '../schema/general';
+import {
+  ABSTRACT_STIX_CORE_OBJECT,
+  ABSTRACT_STIX_CYBER_OBSERVABLE,
+  ABSTRACT_STIX_DOMAIN_OBJECT,
+  ABSTRACT_STIX_REF_RELATIONSHIP,
+  ABSTRACT_STIX_RELATIONSHIP
+} from '../schema/general';
 import { FunctionalError } from '../config/errors';
 import { isStixRefRelationship, META_RELATIONS, STIX_REF_RELATIONSHIP_TYPES } from '../schema/stixRefRelationship';
 import { internalLoadById, listRelations, storeLoadById } from '../database/middleware-loader';
@@ -12,6 +18,7 @@ import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { findById as findStixObjectOrStixRelationshipById } from './stixObjectOrStixRelationship';
 import { elCount } from '../database/engine';
 import { READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS, READ_INDEX_STIX_META_RELATIONSHIPS, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
+import { findAll as findSubTypes } from './subType';
 
 // Query
 
@@ -42,6 +49,35 @@ export const schemaRefRelationships = async (context, user, id, toType) => {
         .sort();
       return { entity, from, to };
     });
+};
+// return the possible types with which an entity type can have a nested relation ref
+export const schemaRefRelationshipsPossibleTypes = async (context, user, entityType) => {
+  const registeredTypes = schemaRelationsRefDefinition.getRegisteredTypes();
+  const possibleToTypes = uniq(schemaRelationsRefDefinition.getRelationsRef(entityType)
+    .filter((ref) => !notNestedRefRelation.includes(ref.databaseName))
+    .flatMap((ref) => ref.toTypes));
+  const possibleFromTypes = registeredTypes.filter((type) => {
+    const reversedRelationRefs = schemaRelationsRefDefinition.getRelationsRef(type)
+      .filter((ref) => !notNestedRefRelation.includes(ref.databaseName))
+      .filter((ref) => (!ref.isRefExistingForTypes ? true : ref.isRefExistingForTypes(type, entityType)));
+    return reversedRelationRefs.length > 0;
+  });
+  const possibleTypes = [...possibleFromTypes, ...possibleToTypes];
+  // clean target types if it includes abstract types
+  const scos = await findSubTypes(context, user, { type: ABSTRACT_STIX_CYBER_OBSERVABLE });
+  const sdos = await findSubTypes(context, user, { type: ABSTRACT_STIX_DOMAIN_OBJECT });
+  let cleanedPossibleTypes = possibleTypes;
+  if (cleanedPossibleTypes.includes(ABSTRACT_STIX_CORE_OBJECT)) {
+    cleanedPossibleTypes = [ABSTRACT_STIX_CORE_OBJECT];
+  } else {
+    if (cleanedPossibleTypes.includes(ABSTRACT_STIX_CYBER_OBSERVABLE)) {
+      cleanedPossibleTypes = cleanedPossibleTypes.filter((t) => !scos.edges.map((n) => n.node.id).includes(t));
+    }
+    if (cleanedPossibleTypes.includes(ABSTRACT_STIX_DOMAIN_OBJECT)) {
+      cleanedPossibleTypes = cleanedPossibleTypes.filter((t) => !sdos.edges.map((n) => n.node.id).includes(t));
+    }
+  }
+  return cleanedPossibleTypes;
 };
 export const isDatable = (entityType, relationshipType) => {
   return schemaRelationsRefDefinition.isDatable(entityType, relationshipType);
