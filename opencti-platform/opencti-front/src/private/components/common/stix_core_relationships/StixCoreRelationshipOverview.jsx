@@ -437,6 +437,7 @@ class StixCoreRelationshipContainer extends Component {
                       }
                       remarkGfmPlugin={true}
                       commonmark={true}
+                      breakWords={true}
                     />
                     <StixCoreObjectKillChainPhasesView
                       killChainPhases={
