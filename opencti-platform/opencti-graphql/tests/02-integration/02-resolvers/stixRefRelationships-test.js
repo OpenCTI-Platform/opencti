@@ -1,8 +1,9 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
-import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../../src/schema/general';
+import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../../src/schema/general';
 import { ENTITY_TYPE_MALWARE_ANALYSIS } from '../../../src/modules/malwareAnalysis/malwareAnalysis-types';
+import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_SOFTWARE } from '../../../src/schema/stixCyberObservable';
 
 describe('StixRefRelationship', () => {
   let stixRefRelationshipInternalId;
@@ -64,16 +65,33 @@ describe('StixRefRelationship', () => {
     expect(queryResult.data.stixRefRelationship).toBeNull();
   });
   it('should return allowed types for a rel relationship with a given type', async () => {
+    // Malware Analysis
     const ALLOWED_TYPES_QUERY = gql`
         query allowedRefRelationshipTypesQuery($type: String!) {
             stixSchemaRefRelationshipsPossibleTypes(type: $type)
         }
     `;
-    const queryResult = await queryAsAdmin({
+    const queryResult1 = await queryAsAdmin({
       query: ALLOWED_TYPES_QUERY,
       variables: { type: ENTITY_TYPE_MALWARE_ANALYSIS }
     });
-    expect(queryResult.data.stixSchemaRefRelationshipsPossibleTypes.length).toEqual(1);
-    expect(queryResult.data.stixSchemaRefRelationshipsPossibleTypes[0]).toEqual(ABSTRACT_STIX_CYBER_OBSERVABLE);
+    expect(queryResult1.data.stixSchemaRefRelationshipsPossibleTypes.length).toEqual(1);
+    expect(queryResult1.data.stixSchemaRefRelationshipsPossibleTypes[0]).toEqual(ABSTRACT_STIX_CYBER_OBSERVABLE);
+    // Malware
+    const queryResult2 = await queryAsAdmin({
+      query: ALLOWED_TYPES_QUERY,
+      variables: { type: 'Malware' }
+    });
+    expect(queryResult2.data.stixSchemaRefRelationshipsPossibleTypes.length).toEqual(3);
+    expect(queryResult2.data.stixSchemaRefRelationshipsPossibleTypes.includes(ENTITY_HASHED_OBSERVABLE_STIX_FILE)).toBeTruthy();
+    expect(queryResult2.data.stixSchemaRefRelationshipsPossibleTypes.includes(ENTITY_SOFTWARE)).toBeTruthy();
+    expect(queryResult2.data.stixSchemaRefRelationshipsPossibleTypes.includes(ENTITY_HASHED_OBSERVABLE_ARTIFACT)).toBeTruthy();
+    // File
+    const queryResult3 = await queryAsAdmin({
+      query: ALLOWED_TYPES_QUERY,
+      variables: { type: ENTITY_HASHED_OBSERVABLE_STIX_FILE }
+    });
+    expect(queryResult3.data.stixSchemaRefRelationshipsPossibleTypes.length).toEqual(1);
+    expect(queryResult3.data.stixSchemaRefRelationshipsPossibleTypes[0]).toEqual(ABSTRACT_STIX_CORE_OBJECT);
   });
 });
