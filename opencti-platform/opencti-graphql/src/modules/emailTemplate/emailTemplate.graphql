@@ -30,7 +30,7 @@ enum EmailTemplateOrdering {
 
 # Queries
 type Query {
-    emailTemplate(id: ID!): EmailTemplate @auth(for: [SETTINGS_SETACCESSES])
+    emailTemplate(id: ID!): EmailTemplate @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
     emailTemplates (
         first: Int
         after: ID
@@ -38,7 +38,7 @@ type Query {
         orderMode: OrderingMode
         filters: FilterGroup
         search: String
-    ): EmailTemplateConnection @auth(for: [SETTINGS_SETACCESSES])
+    ): EmailTemplateConnection @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
 }
 
 #Input
@@ -52,8 +52,8 @@ input EmailTemplateAddInput {
 
 # Mutations
 type Mutation {
-    emailTemplateAdd(input: EmailTemplateAddInput!): EmailTemplate @auth(for: [SETTINGS_SETACCESSES])
-    emailTemplateDelete(id: ID!): ID @auth(for: [SETTINGS_SETACCESSES])
-    emailTemplateFieldPatch(id: ID!, input: [EditInput!]!): EmailTemplate @auth(for: [SETTINGS_SETACCESSES])
-    emailTemplateTestSend(id: ID!): Boolean @auth(for: [SETTINGS_SETACCESSES])
+    emailTemplateAdd(input: EmailTemplateAddInput!): EmailTemplate @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
+    emailTemplateDelete(id: ID!): ID @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
+    emailTemplateFieldPatch(id: ID!, input: [EditInput!]!): EmailTemplate @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
+    emailTemplateTestSend(id: ID!): Boolean @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
 }
