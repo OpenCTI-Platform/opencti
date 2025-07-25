@@ -12,24 +12,24 @@ import { findById as findUserById } from '../../../src/domain/user';
 import { executionContext, SYSTEM_USER } from '../../../src/utils/access';
 
 const DELETE_USER_QUERY = gql`
-    mutation userDelete($id: ID!) {
-        userEdit(id: $id) {
-            delete
-        }
+  mutation userDelete($id: ID!) {
+    userEdit(id: $id) {
+      delete
     }
+  }
 `;
 
 const READ_USER_QUERY = gql`
-    query user($id: String!) {
-        user(id: $id) {
-            id
-            name
-            description
-            user_confidence_level {
-                max_confidence
-            }
-        }
+  query user($id: String!) {
+    user(id: $id) {
+      id
+      name
+      description
+      user_confidence_level {
+        max_confidence
+      }
     }
+  }
 `;
 describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
   const ingestionCreatedIds: string[] = [];
