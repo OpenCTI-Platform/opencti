@@ -11,13 +11,17 @@ import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../schema/stixCyberObservable
 import { telemetry } from '../config/tracing';
 import type { AuthContext, AuthUser } from '../types/user';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
+import { ENTITY_TYPE_LANGUAGE } from '../modules/language/language-types';
+
+const NOT_EXPOSED_TYPES = [ENTITY_TYPE_LANGUAGE];
 
 // -- ENTITY TYPES --
 
 export const queryDefaultSubTypes = async (context: AuthContext, user: AuthUser, search : string | null = null) => {
   const queryDefaultSubTypesFn = async () => {
     const sortByLabel = R.sortBy(R.toLower);
-    const types = schemaTypesDefinition.get(ABSTRACT_STIX_DOMAIN_OBJECT).filter((n) => n.includes(search ?? ''));
+    const types = schemaTypesDefinition.get(ABSTRACT_STIX_DOMAIN_OBJECT)
+      .filter((n) => n.includes(search ?? '') && !NOT_EXPOSED_TYPES.includes(n));
     const finalResult = R.pipe(
       sortByLabel,
       R.map((n) => ({ node: { id: n, label: n } })),
@@ -48,14 +52,15 @@ const querySubTypes = async (context: AuthContext, user: AuthUser, { type = null
   if (type === null) {
     return queryDefaultSubTypes(context, user, search);
   }
-  const sortByLabel = R.sortBy(R.toLower);
 
   let types;
   if (type === ABSTRACT_STIX_NESTED_REF_RELATIONSHIP) {
     types = schemaRelationsRefDefinition.getDatables();
   } else {
-    types = schemaTypesDefinition.get(type).filter((n) => n.includes(search ?? ''));
+    types = schemaTypesDefinition.get(type)
+      .filter((n) => n.includes(search ?? '') && !NOT_EXPOSED_TYPES.includes(n));
   }
+  const sortByLabel = R.sortBy(R.toLower);
   const finalResult = R.pipe(
     sortByLabel,
     R.map((n) => ({ node: { id: n, label: n } })),
