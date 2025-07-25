@@ -428,9 +428,6 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                           variant="outlined"
                           label={t_i18n('Service account')}
                           style={{
-                            backgroundColor: 'rgba(92, 123, 245, 0.08)',
-                            color: '#f7f8fb',
-                            borderColor: '#f7f8fb',
                             borderRadius: 4,
                             width: 150 }}
                         />
