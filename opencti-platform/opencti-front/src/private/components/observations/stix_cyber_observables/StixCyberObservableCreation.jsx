@@ -529,6 +529,17 @@ const StixCyberObservableCreation = ({
                 initialValues[attribute.value] = null;
               } else if (includes(attribute.value, booleanAttributes)) {
                 initialValues[attribute.value] = false;
+              } else if (attribute.value === 'bic' || attribute.value === 'iban') {
+                initialValues.bic = '';
+                initialValues.iban = '';
+                const bicregex = /^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/i;
+                const ibanregex = /^[A-Z]{2}[0-9]{2}[A-Z0-9]{1,30}$/i;
+                extraFieldsToValidate = {
+                  bic: Yup.string()
+                    .matches(bicregex, t_i18n('bic values can only include A-Z and 0-9, 8 or 11 characters')),
+                  iban: Yup.string()
+                    .matches(ibanregex, t_i18n('iban values must begin with a country code and can only include A-Z and 0-9, 34 characters')),
+                };
               } else if (attribute.value === 'hashes') {
                 initialValues.hashes_MD5 = '';
                 initialValues['hashes_SHA-1'] = '';
