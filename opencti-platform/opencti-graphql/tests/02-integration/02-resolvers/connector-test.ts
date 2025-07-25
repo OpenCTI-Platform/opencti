@@ -131,12 +131,13 @@ const DELETE_CONNECTOR_QUERY = gql`
 `;
 
 const TEST_CN_ID = '5ed680de-75e2-4aa0-bec0-4e8e5a0d1695';
+const TEST_CN_NAME = 'TestConnector';
 
 beforeAll(async () => {
   const CONNECTOR_TO_CREATE = {
     input: {
       id: TEST_CN_ID,
-      name: 'TestConnector',
+      name: TEST_CN_NAME,
       type: 'EXTERNAL_IMPORT',
       scope: 'Observable',
       auto: true,
@@ -149,18 +150,25 @@ beforeAll(async () => {
   });
   expect(connector).not.toBeNull();
   expect(connector.data.registerConnector).not.toBeNull();
-  expect(connector.data.registerConnector.name).toEqual('TestConnector');
+  expect(connector.data.registerConnector.name).toEqual(TEST_CN_NAME);
   expect(connector.data.registerConnector.id).toEqual(TEST_CN_ID);
 });
+
+const CREATED_CN_COUNT = 1;
+const BUILT_IN_CN_COUNT = BACKGROUND_TASK_QUEUES + 2;
 
 describe('Connector resolver standard behaviour', () => {
   let workId: string;
   it('should list all connectors', async () => {
     const queryResult = await queryAsUserWithSuccess(USER_CONNECTOR.client, { query: LIST_CONNECTORS_QUERY, variables: {} });
     expect(queryResult.data.connectors).toBeDefined();
-    expect(queryResult.data.connectors.length).toEqual(7); // 1 created (TestConnector) + 6 built-in connectors (4 background tasks + import csv + draft validation)
-    // TestConnector created above is the only not built_in connector
-    expect(queryResult.data.connectors.filter((c: Connector) => !c.built_in).length).toEqual(1);
+    // currently 7 : 1 created (TestConnector) + 6 built-in connectors (4 background tasks + import csv + draft validation)
+    expect(queryResult.data.connectors.length).toEqual(CREATED_CN_COUNT + BUILT_IN_CN_COUNT);
+    // TestConnector created above
+    expect(queryResult.data.connectors.find((c: Connector) => c.id === TEST_CN_ID)).toBeDefined();
+    expect(queryResult.data.connectors.find((c: Connector) => c.id === TEST_CN_ID).name).toEqual(TEST_CN_NAME);
+    // 6 built-in connectors
+    expect(queryResult.data.connectors.filter((c: Connector) => c.built_in).length).toEqual(BUILT_IN_CN_COUNT);
     // check background tasks built_in connectors
     expect(queryResult.data.connectors.filter((c: Connector) => c.connector_scope?.includes(ENTITY_TYPE_BACKGROUND_TASK)).length).toEqual(BACKGROUND_TASK_QUEUES);
     // check built_in csv connector
