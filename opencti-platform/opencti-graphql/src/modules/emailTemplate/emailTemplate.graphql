@@ -1,0 +1,59 @@
+type EmailTemplate implements InternalObject & BasicObject {
+    id: ID!
+    standard_id: String!
+    entity_type: String!
+    parent_types: [String]!
+    # EmailTemplate
+    name: String!
+    description: String
+    email_object: String!
+    sender_email: String!
+    template_body: String!
+}
+
+# Relay connections
+type EmailTemplateConnection {
+    pageInfo: PageInfo!
+    edges: [EmailTemplateEdge!]!
+}
+
+type EmailTemplateEdge {
+    cursor: String!
+    node: EmailTemplate!
+}
+
+# Ordering
+enum EmailTemplateOrdering {
+    name
+    _score
+}
+
+# Queries
+type Query {
+    emailTemplate(id: ID!): EmailTemplate @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
+    emailTemplates (
+        first: Int
+        after: ID
+        orderBy: EmailTemplateOrdering
+        orderMode: OrderingMode
+        filters: FilterGroup
+        search: String
+    ): EmailTemplateConnection @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
+}
+
+#Input
+input EmailTemplateAddInput {
+    name: String! @constraint(minLength: 2, format: "not-blank")
+    description: String
+    email_object: String! @constraint(minLength: 2, format: "not-blank")
+    sender_email: String!
+    template_body: String!
+}
+
+# Mutations
+type Mutation {
+    emailTemplateAdd(input: EmailTemplateAddInput!): EmailTemplate @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
+    emailTemplateDelete(id: ID!): ID @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
+    emailTemplateFieldPatch(id: ID!, input: [EditInput!]!): EmailTemplate @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
+    emailTemplateTestSend(id: ID!): Boolean @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
+}
