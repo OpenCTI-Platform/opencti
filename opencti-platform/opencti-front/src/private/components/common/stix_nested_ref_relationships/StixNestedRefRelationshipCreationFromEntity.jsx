@@ -35,7 +35,6 @@ import ListLines from '../../../../components/list_lines/ListLines';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import { emptyFilterGroup, removeIdFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
-import useAuth from '../../../../utils/hooks/useAuth';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
