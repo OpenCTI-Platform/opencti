@@ -402,7 +402,7 @@ const StixDomainObjectHeader = (props) => {
   const displaySharingButton = disableSharing !== true && initialNumberOfButtons < 3;
 
   const displayPopoverMenu = (disableSharing !== true && !displaySharingButton)
-    || (enableEnrollPlaybook && !displayEnrollPlaybookButton);
+    || (enableEnrollPlaybook && !displayEnrollPlaybookButton) || (enableEnricher && isKnowledgeEnricher);
 
   return (
     <React.Suspense fallback={<span />}>
