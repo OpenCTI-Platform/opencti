@@ -249,16 +249,53 @@ export const registerConnectorQueues = async (id, name, type, scope) => {
   return connectorConfig(id);
 };
 
-export const initializeInternalQueues = async () => {
-  // region deprecated fixed queues
-  /** @deprecated [>=6.3 & <6.6]. Remove and add migration to remove the queues. */
-  await registerConnectorQueues('playbook', 'Internal playbook manager', 'internal', 'playbook');
-  await registerConnectorQueues('sync', 'Internal sync manager', 'internal', 'sync');
-  // endregion
-  // Background task queues
+export const getInternalBackgroundTaskQueues = () => {
+  const backgroundTaskConnectorQueues = [];
   for (let i = 0; i < BACKGROUND_TASK_QUEUES; i += 1) {
-    await registerConnectorQueues(`background-task-${i}`, `Background ${i} queue`, 'internal', ENTITY_TYPE_BACKGROUND_TASK);
+    backgroundTaskConnectorQueues.push(
+      { id: `background-task-${i}`, name: `[TASK] Internal task processing #${i}`, type: 'internal', scope: ENTITY_TYPE_BACKGROUND_TASK }
+    );
   }
+  return backgroundTaskConnectorQueues;
+};
+// region deprecated fixed queues
+// we have now dedicated queues for each playbook and each sync (see getInternalPlaybookQueues & getInternalSyncQueues)
+const CONNECTOR_QUEUE_PLAYBOOK = { id: 'playbook', name: 'Internal playbook manager', type: 'internal', scope: 'playbook' };
+const CONNECTOR_QUEUE_SYNC = { id: 'sync', name: 'Internal sync manager', type: 'internal', scope: 'sync' };
+/** @deprecated [>=6.3 & <6.6]. Remove and add migration to remove the queues. */
+const DEPRECATED_INTERNAL_QUEUES = [CONNECTOR_QUEUE_PLAYBOOK, CONNECTOR_QUEUE_SYNC];
+// endregion
+export const getInternalQueues = () => {
+  const backgroundTaskConnectorQueues = getInternalBackgroundTaskQueues();
+  return [...DEPRECATED_INTERNAL_QUEUES, ...backgroundTaskConnectorQueues];
+};
+
+export const initializeInternalQueues = async () => {
+  const internalQueues = getInternalQueues();
+  for (let i = 0; i < internalQueues.length; i += 1) {
+    const internalQueue = internalQueues[i];
+    await registerConnectorQueues(internalQueue.id, internalQueue.name, internalQueue.type, internalQueue.scope);
+  }
+};
+
+export const getInternalPlaybookQueues = async (context, user) => {
+  const playbookQueues = [];
+  const playbooks = await listAllEntities(context, user, [ENTITY_TYPE_PLAYBOOK]);
+  for (let index = 0; index < playbooks.length; index += 1) {
+    const playbook = playbooks[index];
+    playbookQueues.push({ id: playbook.internal_id, name: `[PLAYBOOK] ${playbook.name}`, type: 'internal', scope: ENTITY_TYPE_PLAYBOOK });
+  }
+  return playbookQueues;
+};
+
+export const getInternalSyncQueues = async (context, user) => {
+  const syncQueues = [];
+  const syncs = await listAllEntities(context, user, [ENTITY_TYPE_SYNC]);
+  for (let index = 0; index < syncs.length; index += 1) {
+    const sync = syncs[index];
+    syncQueues.push({ id: sync.internal_id, name: `[SYNC] ${sync.name}`, type: 'internal', scope: ENTITY_TYPE_SYNC });
+  }
+  return syncQueues;
 };
 
 // This method reinitialize the expected queues in rabbitmq
@@ -273,16 +310,16 @@ export const enforceQueuesConsistency = async (context, user) => {
     await registerConnectorQueues(connector.internal_id, connector.name, connector.connector_type, scopes);
   }
   // List all current platform playbooks and ensure queues are correctly setup
-  const playbooks = await listAllEntities(context, user, [ENTITY_TYPE_PLAYBOOK]);
-  for (let index = 0; index < playbooks.length; index += 1) {
-    const playbook = playbooks[index];
-    await registerConnectorQueues(playbook.internal_id, `Playbook ${playbook.internal_id} queue`, 'internal', ENTITY_TYPE_PLAYBOOK);
+  const playbooksQueues = await getInternalPlaybookQueues(context, user);
+  for (let index = 0; index < playbooksQueues.length; index += 1) {
+    const playbookQueue = playbooksQueues[index];
+    await registerConnectorQueues(playbookQueue.id, playbookQueue.name, playbookQueue.type, playbookQueue.scope);
   }
   // List all current platform synchronizers (OpenCTI Streams) and ensure queues are correctly setup
-  const syncs = await listAllEntities(context, user, [ENTITY_TYPE_SYNC]);
-  for (let i = 0; i < syncs.length; i += 1) {
-    const sync = syncs[i];
-    await registerConnectorQueues(sync.internal_id, `Sync ${sync.internal_id} queue`, 'internal', ENTITY_TYPE_SYNC);
+  const syncQueues = await getInternalSyncQueues(context, user);
+  for (let i = 0; i < syncQueues.length; i += 1) {
+    const syncQueue = syncQueues[i];
+    await registerConnectorQueues(syncQueue.id, syncQueue.name, syncQueue.type, syncQueue.scope);
   }
 };
 
