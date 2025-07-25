@@ -40,6 +40,7 @@ const UserEmailSend = ({ userId, isOpen, onSubmit, outlined }: UserEmailSendProp
   useEffect(() => {
     if (typeof isOpen === 'boolean') setIsEmailTemplateSelectionShown(isOpen);
   }, [isOpen]);
+
   const submitSendEmail: FormikConfig<UserEmailFormInputs>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
     if (onSubmit) {
       onSubmit(values.emailTemplate.value);
