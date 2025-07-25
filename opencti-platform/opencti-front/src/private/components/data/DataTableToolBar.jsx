@@ -985,6 +985,8 @@ class DataTableToolBar extends Component {
 
     const sortedOptions = options.sort((a, b) => a.label.localeCompare(b.label));
 
+    const selectedFields = actionsInputs.map((a) => a.field).filter(Boolean);
+
     return (
       <Select
         variant="standard"
@@ -995,7 +997,11 @@ class DataTableToolBar extends Component {
         {sortedOptions.length > 0 ? (
           sortedOptions.map(
             (n) => (
-              <MenuItem key={n.value} value={n.value}>
+              <MenuItem
+                key={n.value}
+                value={n.value}
+                disabled={selectedFields.includes(n.value) && actionsInputs[i]?.field !== n.value}  // disable already selected fields to prevent making several actions on the same key
+              >
                 {n.label}
               </MenuItem>
             ),
