@@ -50,12 +50,6 @@ const useStyles = makeStyles((theme) => ({
     right: 30,
     zIndex: 1001,
   },
-  title: {
-    float: 'left',
-  },
-  search: {
-    float: 'right',
-  },
   header: {
     backgroundColor: theme.palette.background.nav,
     padding: '20px 20px 20px 60px',
@@ -177,6 +171,12 @@ const StixSightingRelationshipCreationFromEntity = ({
     undefined,
     { successMessage: `${t_i18n('entity_Sighting')} ${t_i18n('successfully created')}` },
   );
+  const stixDomainObjectsPaginationOptions = {
+    search,
+    types: stixCoreObjectTypes,
+    orderBy: 'created_at',
+    orderMode: 'desc',
+  };
 
   const handleOpen = () => {
     setOpen(true);
@@ -281,13 +281,6 @@ const StixSightingRelationshipCreationFromEntity = ({
       return null;
     }
 
-    const stixDomainObjectsPaginationOptions = {
-      search,
-      types: stixCoreObjectTypes,
-      orderBy: 'created_at',
-      orderMode: 'desc',
-    };
-
     return (
       <div>
         <QueryRenderer
@@ -309,12 +302,6 @@ const StixSightingRelationshipCreationFromEntity = ({
             }
             return renderFakeList();
           }}
-        />
-        <StixDomainObjectCreation
-          display={open}
-          inputValue={search}
-          paginationOptions={stixDomainObjectsPaginationOptions}
-          stixDomainObjectTypes={stixCoreObjectTypes}
         />
       </div>
     );
@@ -380,16 +367,17 @@ const StixSightingRelationshipCreationFromEntity = ({
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="h6" classes={{ root: classes.title }}>
+          <Typography variant="h6" style={{ float: 'left' }}>
             {t_i18n('Create a sighting')}
           </Typography>
-          <div className={classes.search}>
-            <SearchInput
-              variant="inDrawer"
-              keyword={search}
-              onSubmit={handleSearch}
-            />
-          </div>
+          <StixDomainObjectCreation
+            display={open}
+            inputValue={search}
+            paginationOptions={stixDomainObjectsPaginationOptions}
+            stixDomainObjectTypes={stixCoreObjectTypes}
+            controlledDialStyles={{ float: 'right' }}
+            controlledDialSize="small"
+          />
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
@@ -405,6 +393,14 @@ const StixSightingRelationshipCreationFromEntity = ({
               )}
             </Alert>
           )}
+          <div style={{ float: 'left', marginLeft: 15, marginTop: 15 }}>
+            <SearchInput
+              variant="inDrawer"
+              keyword={search}
+              onSubmit={handleSearch}
+            />
+          </div>
+          <div className="clearfix"/>
           {renderSearchResults()}
         </div>
       </div>

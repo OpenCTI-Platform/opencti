@@ -67,7 +67,7 @@ export const editFeed = async (context: AuthContext, user: AuthUser, id: string,
   }
   // authorized_members renaming
   let finalInput = { ...input };
-  if (finalInput.authorized_members && finalInput.authorized_members.length > 0) {
+  if (finalInput.authorized_members) {
     finalInput = { ...finalInput, restricted_members: finalInput.authorized_members } as FeedAddInput & { restricted_members: MemberAccessInput[] };
     delete finalInput.authorized_members;
   }

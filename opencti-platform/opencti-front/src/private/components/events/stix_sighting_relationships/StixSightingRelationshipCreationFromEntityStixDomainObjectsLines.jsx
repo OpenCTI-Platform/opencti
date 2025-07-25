@@ -42,13 +42,7 @@ const styles = (theme) => ({
     color: theme.palette.primary.main,
   },
   noResult: {
-    top: 95,
-    left: 16,
-    right: 0,
-    position: 'absolute',
-    color: theme.palette.text.primary,
-    fontSize: 15,
-    zIndex: -5,
+    padding: 20,
   },
 });
 

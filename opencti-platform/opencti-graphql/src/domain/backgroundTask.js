@@ -2,7 +2,7 @@ import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
 import { elIndex, elPaginate } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS, READ_DATA_INDICES } from '../database/utils';
-import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_INTERNAL_FILE } from '../schema/internalObject';
+import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { deleteElementById, patchAttribute } from '../database/middleware';
 import { getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../utils/access';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, RULE_PREFIX } from '../schema/general';
@@ -35,6 +35,7 @@ export const DEFAULT_ALLOWED_TASK_ENTITY_TYPES = [
   ENTITY_TYPE_EXTERNAL_REFERENCE,
   ENTITY_TYPE_INTERNAL_FILE,
   ENTITY_TYPE_DRAFT_WORKSPACE,
+  ENTITY_TYPE_USER,
 ];
 
 export const MAX_TASK_ELEMENTS = 500;
