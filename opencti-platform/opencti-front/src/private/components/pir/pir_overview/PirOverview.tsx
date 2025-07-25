@@ -48,13 +48,13 @@ const PirOverview = ({
   return (
     <Grid container spacing={3}>
       <Grid size={{ xs: 6 }} container direction='column' spacing={3}>
+        <PirOverviewCounts data={dataPir} />
         {threatMapQueryRef && <PirThreatMap queryRef={threatMapQueryRef} />}
         <PirOverviewTopSources data={dataPir} />
         <PirOverviewCountFlagged data={dataPir} />
         <PirOverviewDetails data={dataPir} />
       </Grid>
       <Grid size={{ xs: 6 }} container direction='column' spacing={3}>
-        <PirOverviewCounts data={dataPir} />
         <PirOverviewHistory
           dataHistory={dataHistory}
           dataPir={dataPir}

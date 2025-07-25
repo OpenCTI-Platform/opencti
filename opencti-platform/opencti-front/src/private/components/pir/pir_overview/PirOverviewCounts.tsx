@@ -47,35 +47,32 @@ const PirOverviewCount = ({ label, value, value24h, size }: PirOverviewCountProp
 
   return (
     <Grid key={label} size={{ xs: size }}>
-      <Paper style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-      }}
-      >
-        <div>
+      <Paper style={{ padding: theme.spacing(1.5), paddingTop: theme.spacing(1) }}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
           <Typography
             color={theme.palette.text?.secondary}
-            sx={{ marginBottom: 1, textTransform: 'uppercase' }}
+            sx={{ marginBottom: 0, textTransform: 'uppercase', flex: 1 }}
             variant="body2"
             gutterBottom
           >
             {t_i18n(`entity_${label}`)}
           </Typography>
-
-          <div style={{
-            display: 'flex',
-            alignItems: 'flex-end',
-            gap: theme.spacing(2),
-          }}
-          >
-            <div style={{ fontSize: 40, lineHeight: 1 }}>{n(value)}</div>
-            <NumberDifference
-              value={value24h}
-              description={t_i18n('24 hours')}
-            />
-          </div>
+          <ItemIcon type={label} size='medium' />
         </div>
-        <ItemIcon type={label} size='large' />
+
+        <div style={{
+          display: 'flex',
+          alignItems: 'flex-end',
+          gap: theme.spacing(1),
+          marginTop: theme.spacing(1),
+        }}
+        >
+          <div style={{ fontSize: 40, lineHeight: 1 }}>{n(value)}</div>
+          <NumberDifference
+            value={value24h}
+            description={t_i18n('24 hours')}
+          />
+        </div>
       </Paper>
     </Grid>
   );
@@ -118,31 +115,31 @@ const PirOverviewCountsComponent = ({
   const threatActor24h = threatActorIndividuals24h + threatActorGroups24h;
 
   return (
-    <Grid>
+    <Grid size={{ xs: 12 }}>
       <Typography variant="h4">
         {t_i18n('Number of entities')}
       </Typography>
       <Grid container spacing={3}>
         <PirOverviewCount
-          size={6}
+          size={3}
           label="Malware"
           value={malwares}
           value24h={malwares24h}
         />
         <PirOverviewCount
-          size={6}
+          size={3}
           label="Campaign"
           value={campaigns}
           value24h={campaigns24h}
         />
         <PirOverviewCount
-          size={6}
+          size={3}
           label="Intrusion-Set"
           value={instrusionSets}
           value24h={instrusionSets24h}
         />
         <PirOverviewCount
-          size={6}
+          size={3}
           label="Threat-Actor"
           value={threatActor}
           value24h={threatActor24h}

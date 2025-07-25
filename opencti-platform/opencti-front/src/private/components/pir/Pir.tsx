@@ -105,31 +105,44 @@ const Pir = () => {
           values: ['create', 'delete', 'mutation'], // retro-compatibility
         },
       ],
-      filterGroups: [{
-        mode: 'or',
-        filters: [
-          {
-            key: ['event_scope'],
-            values: ['create', 'delete', 'update'],
-          },
-          {
-            key: ['event_scope'],
-            values: [], // if event_scope is null, event_type is not
-            operator: 'nil',
-          },
-        ],
-        filterGroups: [],
-      },
-      {
-        mode: 'or',
-        filters: [
-          {
-            key: ['context_data.pir_ids'],
-            values: [pirId],
-          },
-        ],
-        filterGroups: [],
-      }],
+      filterGroups: [
+        {
+          mode: 'or',
+          filters: [
+            {
+              key: ['event_scope'],
+              values: ['create', 'delete', 'update'],
+            },
+            {
+              key: ['event_scope'],
+              values: [], // if event_scope is null, event_type is not
+              operator: 'nil',
+            },
+          ],
+          filterGroups: [],
+        },
+        {
+          mode: 'or',
+          filters: [
+            {
+              key: ['context_data.pir_ids'],
+              values: [pirId],
+            },
+          ],
+          filterGroups: [],
+        },
+        {
+          mode: 'or',
+          filters: [
+            {
+              operator: 'not_eq',
+              key: ['context_data.entity_type'],
+              values: ['indicates'],
+            },
+          ],
+          filterGroups: [],
+        },
+      ],
     },
   });
 
