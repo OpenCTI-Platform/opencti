@@ -73,6 +73,7 @@ const PirOverviewTopSources = ({ data }: PirOverviewTopSourcesProps) => {
           startDate={null}
           endDate={null}
           isReadOnly
+          withoutTitle
         />
       </Paper>
       <Paper title={t_i18n('Top sources of the relationships causing the flags')}>
@@ -83,6 +84,7 @@ const PirOverviewTopSources = ({ data }: PirOverviewTopSourcesProps) => {
           startDate={null}
           endDate={null}
           isReadOnly
+          withoutTitle
         />
       </Paper>
     </Grid>
