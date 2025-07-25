@@ -171,7 +171,7 @@
     "winston-daily-rotate-file": "5.0.0",
     "ws": "8.18.2",
     "xml2js": "0.6.2",
-    "zod": "3.24.2"
+    "zod": "4.0.10"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "5.0.5",
