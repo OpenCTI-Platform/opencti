@@ -48,23 +48,22 @@ const PirOverviewCount = ({ label, value, value24h, size }: PirOverviewCountProp
   return (
     <Grid key={label} size={{ xs: size }}>
       <Paper style={{ padding: theme.spacing(1.5), paddingTop: theme.spacing(1) }}>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'start' }}>
           <Typography
             color={theme.palette.text?.secondary}
-            sx={{ marginBottom: 0, textTransform: 'uppercase', flex: 1 }}
+            sx={{ marginTop: 0.5, textTransform: 'uppercase', flex: 1 }}
             variant="body2"
             gutterBottom
           >
             {t_i18n(`entity_${label}`)}
           </Typography>
-          <ItemIcon type={label} size='medium' />
+          <ItemIcon type={label} size='large' />
         </div>
 
         <div style={{
           display: 'flex',
           alignItems: 'flex-end',
           gap: theme.spacing(1),
-          marginTop: theme.spacing(1),
         }}
         >
           <div style={{ fontSize: 40, lineHeight: 1 }}>{n(value)}</div>
@@ -121,25 +120,25 @@ const PirOverviewCountsComponent = ({
       </Typography>
       <Grid container spacing={3}>
         <PirOverviewCount
-          size={3}
+          size={6}
           label="Malware"
           value={malwares}
           value24h={malwares24h}
         />
         <PirOverviewCount
-          size={3}
+          size={6}
           label="Campaign"
           value={campaigns}
           value24h={campaigns24h}
         />
         <PirOverviewCount
-          size={3}
+          size={6}
           label="Intrusion-Set"
           value={instrusionSets}
           value24h={instrusionSets24h}
         />
         <PirOverviewCount
-          size={3}
+          size={6}
           label="Threat-Actor"
           value={threatActor}
           value24h={threatActor24h}
