@@ -104,6 +104,7 @@ const Users = () => {
   setTitle(t_i18n('Users | Security | Settings'));
   const isSetAccess = useGranted([SETTINGS_SETACCESSES]);
   const isAdminOrganization = useGranted([VIRTUAL_ORGANIZATION_ADMIN]);
+  const isOnlyAdminOrganization = !isSetAccess && isAdminOrganization;
   const { me } = useAuth();
   const organization = me.administrated_organizations?.[0] ?? null;
 
@@ -158,7 +159,7 @@ const Users = () => {
           <UserCreation paginationOptions={queryPaginationOptions} defaultGroupsQueryRef={defaultGroupsQueryRef} />
         </React.Suspense>
       );
-    } if (!isSetAccess && isAdminOrganization && isEnterpriseEdition) {
+    } if (isOnlyAdminOrganization && isEnterpriseEdition) {
       return (
         <SettingsOrganizationUserCreation
           paginationOptions={queryPaginationOptions}
@@ -234,6 +235,7 @@ const Users = () => {
             lineFragment={usersLineFragment}
             preloadedPaginationProps={preloadedPaginationProps}
             createButton={userCreateButton}
+            disableLineSelection={isOnlyAdminOrganization}
             icon={(user) => {
               const external = user.external === true;
               if (external) {

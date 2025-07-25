@@ -18,6 +18,7 @@ import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../../components/dataGrid/DataTable';
+import useGranted, {SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN} from "../../../../utils/hooks/useGranted";
 
 export const settingsOrganizationUsersQuery = graphql`
   query SettingsOrganizationUsersPaginationQuery(
@@ -110,6 +111,10 @@ interface MembersListContainerProps {
 const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = ({ organization }) => {
   const { t_i18n } = useFormatter();
   const LOCAL_STORAGE_KEY = `organization-${organization.id}-users`;
+
+  const isSetAccess = useGranted([SETTINGS_SETACCESSES]);
+  const isAdminOrganization = useGranted([VIRTUAL_ORGANIZATION_ADMIN]);
+  const isOnlyAdminOrganization = !isSetAccess && isAdminOrganization;
 
   const initialValues = {
     searchTerm: '',
@@ -221,6 +226,7 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           toolbarFilters={contextFilters}
+          disableLineSelection={isOnlyAdminOrganization}
           lineFragment={settingsOrganizationUsersLineFragment}
           preloadedPaginationProps={preloadedPaginationProps}
           icon={(user) => {
