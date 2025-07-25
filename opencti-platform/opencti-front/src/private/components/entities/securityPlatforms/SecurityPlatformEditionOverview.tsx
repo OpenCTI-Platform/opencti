@@ -6,8 +6,6 @@ import { Field, Form, Formik } from 'formik';
 import OpenVocabField from '@components/common/form/OpenVocabField';
 import CreatedByField from '@components/common/form/CreatedByField';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
-import { Stack } from '@mui/material';
-import SecurityPlatformDeletion from '@components/entities/securityPlatforms/SecurityPlatformDeletion';
 import { ExternalReferencesValues } from '@components/common/form/ExternalReferencesField';
 import CommitMessage from '@components/common/form/CommitMessage';
 import {
@@ -270,21 +268,16 @@ const SecurityPlatformEditionOverview: FunctionComponent<SecurityPlatformEdition
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
-            <SecurityPlatformDeletion
+          {enableReferences && (
+            <CommitMessage
+              submitForm={submitForm}
+              disabled={isSubmitting || !isValid || !dirty}
+              setFieldValue={setFieldValue}
+              open={false}
+              values={values.references}
               id={securityPlatform.id}
             />
-            {enableReferences && (
-              <CommitMessage
-                submitForm={submitForm}
-                disabled={isSubmitting || !isValid || !dirty}
-                setFieldValue={setFieldValue}
-                open={false}
-                values={values.references}
-                id={securityPlatform.id}
-              />
-            )}
-          </Stack>
+          )}
         </Form>
       )}
     </Formik>

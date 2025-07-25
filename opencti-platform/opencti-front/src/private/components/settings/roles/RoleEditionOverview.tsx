@@ -1,11 +1,9 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import { useTheme } from '@mui/styles';
-import { useNavigate } from 'react-router-dom';
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText } from '@mui/material';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
@@ -13,7 +11,6 @@ import { useFormatter } from '../../../../components/i18n';
 import { RoleEditionOverview_role$data } from './__generated__/RoleEditionOverview_role.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
-import Transition from '../../../../components/Transition';
 
 const roleMutationFieldPatch = graphql`
   mutation RoleEditionOverviewFieldPatchMutation(
@@ -38,14 +35,6 @@ const roleEditionOverviewFocus = graphql`
   }
 `;
 
-export const roleDeletionMutation = graphql`
-  mutation RoleEditionOverviewDeletionMutation($id: ID!) {
-    roleEdit(id: $id) {
-      delete
-    }
-  }
-`;
-
 const roleValidation = (t: (n: string) => string) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string().nullable(),
@@ -62,32 +51,6 @@ interface RoleEditionOverviewComponentProps {
 const RoleEditionOverviewComponent: FunctionComponent<RoleEditionOverviewComponentProps> = ({ role, context }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const navigate = useNavigate();
-  const [deleting, setDeleting] = useState(false);
-  const [displayDelete, setDisplayDelete] = useState(false);
-
-  const deleteSuccessMessage = t_i18n('', {
-    id: '... successfully deleted',
-    values: { entity_type: t_i18n('Role') },
-  });
-  const [commit] = useApiMutation(
-    roleDeletionMutation,
-    undefined,
-    { successMessage: deleteSuccessMessage },
-  );
-
-  const handleOpenDelete = () => setDisplayDelete(true);
-  const handleCloseDelete = () => setDisplayDelete(false);
-  const submitDelete = (roleId: string) => {
-    setDeleting(true);
-    commit({
-      variables: { id: roleId },
-      onCompleted: () => {
-        setDeleting(false);
-        navigate('/dashboard/settings/accesses/roles');
-      },
-    });
-  };
 
   const initialValues = R.pick(
     ['name', 'description'],
@@ -151,45 +114,6 @@ const RoleEditionOverviewComponent: FunctionComponent<RoleEditionOverviewCompone
                 <SubscriptionFocus context={context} fieldName="description" />
               }
             />
-            <>
-              <Button
-                onClick={handleOpenDelete}
-                variant='contained'
-                color='error'
-                disabled={deleting}
-                sx={{ marginTop: 2 }}
-              >
-                {t_i18n('Delete')}
-              </Button>
-              <Dialog
-                open={displayDelete}
-                PaperProps={{ elevation: 1 }}
-                keepMounted={true}
-                TransitionComponent={Transition}
-                onClose={handleCloseDelete}
-              >
-                <DialogContent>
-                  <DialogContentText>
-                    {t_i18n('Do you want to delete this role?')}
-                  </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                  <Button
-                    onClick={handleCloseDelete}
-                    disabled={deleting}
-                  >
-                    {t_i18n('Cancel')}
-                  </Button>
-                  <Button
-                    color="secondary"
-                    onClick={() => submitDelete(role.id)}
-                    disabled={deleting}
-                  >
-                    {t_i18n('Delete')}
-                  </Button>
-                </DialogActions>
-              </Dialog>
-            </>
           </Form>
         )}
       </Formik>

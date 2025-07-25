@@ -4,7 +4,6 @@ import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import * as Yup from 'yup';
 import { GenericContext } from '@components/common/model/GenericContextModel';
-import { Stack } from '@mui/material';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
@@ -26,7 +25,6 @@ import StatusField from '../../common/form/StatusField';
 import { CaseIncidentEditionOverview_case$key } from './__generated__/CaseIncidentEditionOverview_case.graphql';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-import CaseIncidentDeletion from './CaseIncidentDeletion';
 
 export const caseIncidentMutationFieldPatch = graphql`
   mutation CaseIncidentEditionOverviewCaseFieldPatchMutation(
@@ -425,19 +423,16 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
-            <CaseIncidentDeletion id={caseData.id}/>
-            {enableReferences && (
-              <CommitMessage
-                submitForm={submitForm}
-                disabled={isSubmitting || !isValid || !dirty}
-                setFieldValue={setFieldValue}
-                open={false}
-                values={values.references}
-                id={caseData.id}
-              />
-            )}
-          </Stack>
+          {enableReferences && (
+            <CommitMessage
+              submitForm={submitForm}
+              disabled={isSubmitting || !isValid || !dirty}
+              setFieldValue={setFieldValue}
+              open={false}
+              values={values.references}
+              id={caseData.id}
+            />
+          )}
         </Form>
       )}
     </Formik>

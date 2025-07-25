@@ -26,8 +26,9 @@ import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import OrganizationEdition from './OrganizationEdition';
+import OrganizationDeletion from './OrganizationDeletion';
 
 const subscription = graphql`
   subscription RootOrganizationSubscription($id: ID!) {
@@ -171,6 +172,11 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <OrganizationEdition organizationId={organization.id} />
+                </Security>
+              )}
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+                <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                  <OrganizationDeletion id={organization.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
               )}
               onViewAs={handleChangeViewAs}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { graphql, PreloadedQuery, useFragment, useLazyLoadQuery, usePreloadedQuery } from 'react-relay';
+import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import Typography from '@mui/material/Typography';
@@ -8,29 +8,17 @@ import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { ListItemButton } from '@mui/material';
-import AccessesMenu from '../AccessesMenu';
 import { useFormatter } from '../../../../components/i18n';
 import { Role_role$data, Role_role$key } from './__generated__/Role_role.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { roleEditionCapabilitiesLinesSearch } from './RoleEditionCapabilities';
 import { RoleEditionCapabilitiesLinesSearchQuery } from './__generated__/RoleEditionCapabilitiesLinesSearchQuery.graphql';
-import RoleEdition from './RoleEdition';
-import { RoleEditionQuery } from './__generated__/RoleEditionQuery.graphql';
 import CapabilitiesList from './CapabilitiesList';
 import { groupsSearchQuery } from '../Groups';
 import { GroupsSearchQuery } from '../__generated__/GroupsSearchQuery.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import type { Theme } from '../../../../components/Theme';
-import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
-
-const roleEditionQuery = graphql`
-  query RoleEditionQuery($id: String!) {
-    role(id: $id) {
-      ...RoleEdition_role
-    }
-  }
-`;
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -41,9 +29,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   gridContainer: {
     marginBottom: 20,
-  },
-  title: {
-    float: 'left',
   },
   paper: {
     marginTop: theme.spacing(1),
@@ -78,6 +63,7 @@ const Role = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+
   const groupsData = usePreloadedQuery(groupsSearchQuery, groupsQueryRef);
   const groupNodes = (role: Role_role$data) => {
     return (groupsData.groups?.edges ?? [])
@@ -87,31 +73,12 @@ const Role = ({
       .filter((n) => n !== null && n !== undefined);
   };
   const role = useFragment<Role_role$key>(roleFragment, roleData);
-  const { isAllowed, isSensitive } = useSensitiveModifications('roles', role.standard_id);
   const queryRef = useQueryLoading<RoleEditionCapabilitiesLinesSearchQuery>(
     roleEditionCapabilitiesLinesSearch,
   );
-  const roleEditionData = useLazyLoadQuery<RoleEditionQuery>(
-    roleEditionQuery,
-    { id: role.id },
-  );
+
   return (
     <div className={classes.container}>
-      <AccessesMenu />
-      <div>
-        <Typography
-          variant="h1"
-          gutterBottom={true}
-          classes={{ root: classes.title }}
-        >
-          {role.name}
-        </Typography>
-        <RoleEdition
-          roleEditionData={roleEditionData}
-          disabled={!isAllowed && isSensitive}
-        />
-        <div className="clearfix"/>
-      </div>
       <Grid
         container={true}
         spacing={3}

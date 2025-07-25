@@ -19,8 +19,6 @@ import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { PlaybookEditionFormQuery } from '@components/data/playbooks/__generated__/PlaybookEditionFormQuery.graphql';
 import { PlaybookEditionForm_playbook$key } from '@components/data/playbooks/__generated__/PlaybookEditionForm_playbook.graphql';
-import { Stack } from '@mui/material';
-import PlaybookDeletion from '@components/data/playbooks/PlaybookDeletion';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -119,11 +117,6 @@ const PlaybookEditionForm: FunctionComponent<PlaybookEditionFormProps> = ({ quer
             style={{ marginTop: 20 }}
             onSubmit={handleSubmitField}
           />
-          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
-            <PlaybookDeletion
-              id={playbookData.id}
-            />
-          </Stack>
         </Form>
       )}
     </Formik>

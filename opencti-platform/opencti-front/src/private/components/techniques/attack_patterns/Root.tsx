@@ -23,8 +23,9 @@ import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import AttackPatternEdition from './AttackPatternEdition';
+import AttackPatternDeletion from './AttackPatternDeletion';
 
 const subscription = graphql`
   subscription RootAttackPatternSubscription($id: ID!) {
@@ -138,6 +139,11 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <AttackPatternEdition attackPatternId={attackPattern.id} />
+                </Security>
+              )}
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+                <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                  <AttackPatternDeletion id={attackPattern.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
               )}
               redirectToContent={true}

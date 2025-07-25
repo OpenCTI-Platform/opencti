@@ -7,12 +7,12 @@ import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Dra
 import RoleEditionOverview from './RoleEditionOverview';
 import RoleEditionCapabilities, { roleEditionCapabilitiesLinesSearch } from './RoleEditionCapabilities';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
+import Loader from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import { RoleEditionCapabilitiesLinesSearchQuery } from './__generated__/RoleEditionCapabilitiesLinesSearchQuery.graphql';
 import { RoleEdition_role$key } from './__generated__/RoleEdition_role.graphql';
-import { RoleEditionQuery$data } from './__generated__/RoleEditionQuery.graphql';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
+import { RootRoleEditionQuery$data } from './__generated__/RootRoleEditionQuery.graphql';
 
 const RoleEditionFragment = graphql`
   fragment RoleEdition_role on Role {
@@ -27,7 +27,7 @@ const RoleEditionFragment = graphql`
 `;
 
 interface RoleEditionDrawerProps {
-  roleRef: RoleEditionQuery$data['role']
+  roleRef: RootRoleEditionQuery$data['role']
   handleClose?: () => void
   open?: boolean
   disabled?: boolean
@@ -69,11 +69,7 @@ const RoleEditionDrawer: FunctionComponent<RoleEditionDrawerProps> = ({
         </Box>
         {currentTab === 0 && <RoleEditionOverview role={role} context={role.editContext} />}
         {currentTab === 1 && queryRef && (
-          <React.Suspense
-            fallback={<Loader variant={LoaderVariant.inline} />}
-          >
-            <RoleEditionCapabilities role={role} queryRef={queryRef} />
-          </React.Suspense>
+          <RoleEditionCapabilities role={role} queryRef={queryRef} />
         )}
       </>)
         : (<Loader />)}
@@ -82,7 +78,7 @@ const RoleEditionDrawer: FunctionComponent<RoleEditionDrawerProps> = ({
 };
 
 interface RoleEditionProps {
-  roleEditionData?: RoleEditionQuery$data
+  roleEditionData?: RootRoleEditionQuery$data
   handleClose?: () => void
   open?: boolean
   disabled?: boolean

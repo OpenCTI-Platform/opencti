@@ -11,8 +11,6 @@ import Box from '@mui/material/Box';
 import { InformationOutline } from 'mdi-material-ui';
 import { FormikConfig } from 'formik/dist/types';
 import ObservableTypesField from '@components/common/form/ObservableTypesField';
-import { Stack } from '@mui/material';
-import DecayRuleDeletion from '@components/settings/decay/DecayRuleDeletion';
 import decayRuleValidator from './DecayRuleValidator';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
@@ -223,11 +221,6 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
             onChange={handleSubmitField}
             containerstyle={fieldSpacingContainerStyle}
           />
-          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
-            <DecayRuleDeletion
-              id={decayRuleId}
-            />
-          </Stack>
         </Form>
       )}
     </Formik>
