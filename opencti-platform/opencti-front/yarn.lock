@@ -9028,9 +9028,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"apexcharts@npm:4.4.0":
-  version: 4.4.0
-  resolution: "apexcharts@npm:4.4.0"
+"apexcharts@npm:5.3.1":
+  version: 5.3.1
+  resolution: "apexcharts@npm:5.3.1"
   dependencies:
     "@svgdotjs/svg.draggable.js": "npm:^3.0.4"
     "@svgdotjs/svg.filter.js": "npm:^3.0.8"
@@ -9038,7 +9038,7 @@ __metadata:
     "@svgdotjs/svg.resize.js": "npm:^2.0.2"
     "@svgdotjs/svg.select.js": "npm:^4.0.1"
     "@yr/monotone-cubic-spline": "npm:^1.0.3"
-  checksum: 10/e11ea8d24fe2abaf748d030957ccebb7808df6c1599605a62285c1f37d277a096e1fda9c2027207b0aec28cf9872511c3c25e0316e1128579de344f1f1d09a20
+  checksum: 10/a1f5dba7721e9a88db54c4d19f30f0e9e48992d6f5e55f172d66889a9aa23e1250cded3b1ea65a33e2070b62f70cb9f15ba33d87681be7a8fa864cb8731ee28a
   languageName: node
   linkType: hard
 
@@ -18051,7 +18051,7 @@ __metadata:
     "@types/relay-test-utils": "npm:19.0.0"
     "@vitejs/plugin-react": "npm:4.5.2"
     analytics: "npm:0.8.16"
-    apexcharts: "npm:4.4.0"
+    apexcharts: "npm:5.3.1"
     axios: "npm:1.10.0"
     babel-plugin-relay: "npm:20.0.0"
     buffer: "npm:6.0.3"
