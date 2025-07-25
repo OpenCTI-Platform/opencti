@@ -14,7 +14,17 @@ import { convertUser } from '../../../../utils/edition';
 import SelectField from '../../../../components/fields/SelectField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import Drawer from '../../common/drawer/Drawer';
-import { BASIC_AUTH, BEARER_AUTH, CERT_AUTH, extractCA, extractCert, extractKey, extractPassword, extractUsername } from '../../../../utils/ingestionAuthentificationUtils';
+import {
+  BASIC_AUTH,
+  BEARER_AUTH,
+  CERT_AUTH,
+  extractCA,
+  extractCert,
+  extractKey,
+  extractPassword,
+  extractToken,
+  extractUsername,
+} from '../../../../utils/ingestionAuthentificationUtils';
 import SwitchField from '../../../../components/fields/SwitchField';
 import PasswordTextField from '../../../../components/PasswordTextField';
 
@@ -67,6 +77,12 @@ const IngestionTaxiiEditionContainer = ({
 
         // region authentication  -- If you change something here, please have a look at IngestionCsvEdition
         const backendAuthValue = ingestionTaxii.authentication_value;
+
+        if (name === 'token') {
+          finalName = 'authentication_value';
+          finalValue = extractToken(backendAuthValue);
+        }
+
         // re-compose username:password
         if (name === 'username') {
           finalName = 'authentication_value';
@@ -105,56 +121,48 @@ const IngestionTaxiiEditionContainer = ({
       })
       .catch(() => false);
   };
-  const initialValues = R.pipe(
-    R.assoc('user_id', convertUser(ingestionTaxii, 'user')),
-    R.assoc(
-      'username',
-      ingestionTaxii.authentication_type === BASIC_AUTH
-        ? ingestionTaxii.authentication_value.split(':')[0]
-        : '',
-    ),
-    R.assoc(
-      'password',
-      ingestionTaxii.authentication_type === BASIC_AUTH
-        ? ingestionTaxii.authentication_value.split(':')[1]
-        : '',
-    ),
-    R.assoc(
-      'cert',
-      ingestionTaxii.authentication_type === CERT_AUTH
-        ? ingestionTaxii.authentication_value.split(':')[0]
-        : '',
-    ),
-    R.assoc(
-      'key',
-      ingestionTaxii.authentication_type === CERT_AUTH
-        ? ingestionTaxii.authentication_value.split(':')[1]
-        : '',
-    ),
-    R.assoc(
-      'ca',
-      ingestionTaxii.authentication_type === CERT_AUTH
-        ? ingestionTaxii.authentication_value.split(':')[2]
-        : '',
-    ),
-    R.pick([
-      'name',
-      'description',
-      'uri',
-      'version',
-      'collection',
-      'authentication_type',
-      'authentication_value',
-      'username',
-      'password',
-      'cert',
-      'key',
-      'ca',
-      'user_id',
-      'added_after_start',
-      'confidence_to_score',
-    ]),
-  )(ingestionTaxii);
+
+  const initialValues = {
+    ...{
+      name: ingestionTaxii.name,
+      description: ingestionTaxii.description,
+      uri: ingestionTaxii.uri,
+      version: ingestionTaxii.version,
+      collection: ingestionTaxii.collection,
+      authentication_type: ingestionTaxii.authentication_type,
+      authentication_value: ingestionTaxii.authentication_value,
+      user_id: convertUser(ingestionTaxii, 'user'),
+      added_after_start: ingestionTaxii.added_after_start,
+      confidence_to_score: ingestionTaxii.confidence_to_score,
+    },
+    ...(ingestionTaxii.authentication_type === BEARER_AUTH
+      ? {
+        token: extractToken(ingestionTaxii.authentication_value),
+      }
+      : {
+        token: '',
+      }),
+    ...(ingestionTaxii.authentication_type === BASIC_AUTH
+      ? {
+        username: extractUsername(ingestionTaxii.authentication_value),
+        password: extractPassword(ingestionTaxii.authentication_value),
+      }
+      : {
+        username: '',
+        password: '',
+      }),
+    ...(ingestionTaxii.authentication_type === CERT_AUTH
+      ? {
+        cert: extractCert(ingestionTaxii.authentication_value),
+        key: extractKey(ingestionTaxii.authentication_value),
+        ca: extractCA(ingestionTaxii.authentication_value),
+      }
+      : {
+        cert: '',
+        key: '',
+        ca: '',
+      }),
+  };
 
   return (
     <Drawer
@@ -252,14 +260,16 @@ const IngestionTaxiiEditionContainer = ({
                   name="password"
                   label={t('Password')}
                   onSubmit={handleSubmitField}
+                  isSecret
                 />
               </>
             )}
             {values.authentication_type === BEARER_AUTH && (
               <PasswordTextField
-                name="authentication_value"
+                name="token"
                 label={t('Token')}
                 onSubmit={handleSubmitField}
+                isSecret
               />
             )}
             {values.authentication_type === CERT_AUTH && (
@@ -269,7 +279,7 @@ const IngestionTaxiiEditionContainer = ({
                   variant="standard"
                   name="cert"
                   label={t('Certificate (base64)')}
-                  onSubmit={handleSubmitField}
+                  onSubmit={(name, value) => handleSubmitField(name, value)}
                   fullWidth={true}
                   style={fieldSpacingContainerStyle}
                 />
@@ -277,13 +287,14 @@ const IngestionTaxiiEditionContainer = ({
                   name="key"
                   label={t('Key (base64)')}
                   onSubmit={handleSubmitField}
+                  isSecret
                 />
                 <Field
                   component={TextField}
                   variant="standard"
                   name="ca"
                   label={t('CA certificate (base64)')}
-                  onSubmit={handleSubmitField}
+                  onSubmit={(name, value) => handleSubmitField(name, value)}
                   fullWidth={true}
                   style={fieldSpacingContainerStyle}
                 />

@@ -221,22 +221,24 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
           {t_i18n('Reset state')}
         </MenuItem>
       </Menu>
-      <QueryRenderer
-        query={ingestionTaxiiEditionQuery}
-        variables={{ id: ingestionTaxiiId }}
-        render={({ props }: { props: IngestionTaxiiPopoverEditionQuery$data }) => {
-          if (props) {
-            return (
-              <IngestionTaxiiEdition
-                ingestionTaxii={props.ingestionTaxii}
-                handleClose={handleCloseUpdate}
-                open={displayUpdate}
-              />
-            );
-          }
-          return <div />;
-        }}
-      />
+      {displayUpdate && (
+        <QueryRenderer
+          query={ingestionTaxiiEditionQuery}
+          variables={{ id: ingestionTaxiiId }}
+          render={({ props }: { props: IngestionTaxiiPopoverEditionQuery$data }) => {
+            if (props) {
+              return (
+                <IngestionTaxiiEdition
+                  ingestionTaxii={props.ingestionTaxii}
+                  handleClose={handleCloseUpdate}
+                  open={displayUpdate}
+                />
+              );
+            }
+            return <div/>;
+          }}
+        />
+      )}
       <DeleteDialog
         deletion={deletion}
         submitDelete={submitDelete}
