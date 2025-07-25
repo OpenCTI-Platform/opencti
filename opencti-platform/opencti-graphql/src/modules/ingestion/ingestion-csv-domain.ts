@@ -109,6 +109,7 @@ export const createOnTheFlyUser = async (context: AuthContext, user: AuthUser, i
       prevent_default_groups: true,
       groups: [defaultIngestionGroups[0].id],
       user_service_account: true,
+      objectOrganization: platform_organization ? [platform_organization] : []
     };
   } else {
     userInput = {
