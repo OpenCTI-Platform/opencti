@@ -1,5 +1,5 @@
 import { graphql, useFragment } from 'react-relay';
-import React from 'react';
+import React, { useState } from 'react';
 import { Chip, Tooltip } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { PirAnalysesContainersListQuery, PirAnalysesContainersListQuery$variables } from './__generated__/PirAnalysesContainersListQuery.graphql';
@@ -148,6 +148,8 @@ const PirAnalyses = ({ data }: PirAnalysesProps) => {
   const { t_i18n } = useFormatter();
   const { id, pir_criteria } = useFragment(analysesFragment, data);
 
+  const [ref, setRef] = useState<HTMLDivElement | null>(null);
+
   const LOCAL_STORAGE_KEY = `PirAnalysesContainersList-${id}`;
   const initialValues = {
     filters: emptyFilterGroup,
@@ -278,27 +280,30 @@ const PirAnalyses = ({ data }: PirAnalysesProps) => {
   };
 
   return queryRef && (
-    <DataTable
-      removeSelectAll
-      disableLineSelection
-      dataColumns={dataColumns}
-      storageKey={LOCAL_STORAGE_KEY}
-      initialValues={initialValues}
-      toolbarFilters={filters}
-      lineFragment={pirAnalysesContainerFragment}
-      entityTypes={['Container']}
-      searchContextFinal={{ entityTypes: ['Container'] }}
-      resolvePath={(d: PirAnalyses_ContainersFragment$data) => {
-        return d.pir?.pirContainers?.edges?.map((e) => e?.node);
-      }}
-      preloadedPaginationProps={{
-        linesQuery: pirAnalysesContainersListQuery,
-        linesFragment: pirAnalysesContainersFragment,
-        queryRef,
-        nodePath: ['pir', 'pirContainers', 'pageInfo', 'globalCount'],
-        setNumberOfElements: helpers.handleSetNumberOfElements,
-      }}
-    />
+    <div style={{ height: 'calc(100vh - 250px)' }} ref={(r) => setRef(r)}>
+      <DataTable
+        rootRef={ref ?? undefined}
+        removeSelectAll
+        disableLineSelection
+        dataColumns={dataColumns}
+        storageKey={LOCAL_STORAGE_KEY}
+        initialValues={initialValues}
+        toolbarFilters={filters}
+        lineFragment={pirAnalysesContainerFragment}
+        entityTypes={['Container']}
+        searchContextFinal={{ entityTypes: ['Container'] }}
+        resolvePath={(d: PirAnalyses_ContainersFragment$data) => {
+          return d.pir?.pirContainers?.edges?.map((e) => e?.node);
+        }}
+        preloadedPaginationProps={{
+          linesQuery: pirAnalysesContainersListQuery,
+          linesFragment: pirAnalysesContainersFragment,
+          queryRef,
+          nodePath: ['pir', 'pirContainers', 'pageInfo', 'globalCount'],
+          setNumberOfElements: helpers.handleSetNumberOfElements,
+        }}
+      />
+    </div>
   );
 };
 

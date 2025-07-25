@@ -12,6 +12,8 @@ import ErrorNotFound from '../../../components/ErrorNotFound';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import Loader from '../../../components/Loader';
 import PirAnalyses from './pir_analyses/PirAnalyses';
+import PirHistory from './pir_history/PirHistory';
+import { pirHistoryFilterGroup } from './pir-history-utils';
 
 const pirQuery = graphql`
   query PirQuery($id: ID!) {
@@ -19,6 +21,7 @@ const pirQuery = graphql`
       ...PirAnalysesFragment
       ...PirEditionFragment
       ...PirHeaderFragment
+      ...PirHistoryFragment
       ...PirKnowledgeFragment
       ...PirOverviewFragment
       ...PirOverviewCountsFragment
@@ -76,8 +79,8 @@ const PirComponent = ({
           element={<PirKnowledge data={pir} />}
         />
         <Route
-          path="/ttps"
-          element={<p>ttps</p>}
+          path="/history"
+          element={<PirHistory data={pir} />}
         />
         <Route
           path="/analyses"
@@ -97,53 +100,7 @@ const Pir = () => {
     first: 20,
     orderBy: 'timestamp',
     orderMode: 'desc',
-    filters: {
-      mode: 'and',
-      filters: [
-        {
-          key: ['event_type'],
-          values: ['create', 'delete', 'mutation'], // retro-compatibility
-        },
-      ],
-      filterGroups: [
-        {
-          mode: 'or',
-          filters: [
-            {
-              key: ['event_scope'],
-              values: ['create', 'delete', 'update'],
-            },
-            {
-              key: ['event_scope'],
-              values: [], // if event_scope is null, event_type is not
-              operator: 'nil',
-            },
-          ],
-          filterGroups: [],
-        },
-        {
-          mode: 'or',
-          filters: [
-            {
-              key: ['context_data.pir_ids'],
-              values: [pirId],
-            },
-          ],
-          filterGroups: [],
-        },
-        {
-          mode: 'or',
-          filters: [
-            {
-              operator: 'not_eq',
-              key: ['context_data.entity_type'],
-              values: ['indicates'],
-            },
-          ],
-          filterGroups: [],
-        },
-      ],
-    },
+    filters: pirHistoryFilterGroup(pirId),
   });
 
   return (
