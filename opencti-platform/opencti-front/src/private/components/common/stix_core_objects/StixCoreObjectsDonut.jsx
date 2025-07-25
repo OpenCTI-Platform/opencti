@@ -96,6 +96,7 @@ const StixCoreObjectsDonut = ({
   parameters = {},
   withExportPopover = false,
   isReadOnly = false,
+  withoutTitle = false,
 }) => {
   const { t_i18n } = useFormatter();
   const renderContent = () => {
@@ -146,6 +147,7 @@ const StixCoreObjectsDonut = ({
       height={height}
       title={parameters.title ?? t_i18n('Distribution of entities')}
       variant={variant}
+      withoutTitle={withoutTitle}
     >
       {renderContent()}
     </WidgetContainer>
