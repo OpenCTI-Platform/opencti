@@ -2,7 +2,7 @@ import Typography from '@mui/material/Typography';
 import { VerifiedOutlined } from '@mui/icons-material';
 import Button from '@mui/material/Button';
 import { Launch } from 'mdi-material-ui';
-import React from 'react';
+import React, { useState } from 'react';
 import { useTheme } from '@mui/styles';
 import { IngestionConnector, ingestionConnectorTypeMetadata } from '@components/data/IngestionCatalog/IngestionCatalogCard';
 import IngestionCatalogChip from '@components/data/IngestionCatalog/IngestionCatalogUseCaseChip';
@@ -11,10 +11,12 @@ import type { Theme } from '../../../../components/Theme';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import ItemBoolean from '../../../../components/ItemBoolean';
+import IngestionCatalogConnectorCreation from '@components/data/IngestionCatalog/IngestionCatalogConnectorCreation';
 
-const IngestionCatalogConnectorHeader = ({ connector }: { connector: IngestionConnector }) => {
+const IngestionCatalogConnectorHeader = ({ connector, contract }: { connector: IngestionConnector, contract: string }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
+  const [openCreation, setOpenCreation] = useState(false);
 
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: theme.spacing(2) }}>
@@ -55,12 +57,14 @@ const IngestionCatalogConnectorHeader = ({ connector }: { connector: IngestionCo
           target="blank"
           rel="noopener noreferrer"
         >
-          {t_i18n('', { id: 'Test ... with OpenCTI', values: { connectorName: connector.default.CONNECTOR_NAME } })}
+          {t_i18n('', { id: 'Test ... with OpenCTI', values: { connectorName: connector.title } })}
         </Button>
         <Security needs={[INGESTION_SETINGESTIONS]}>
-          <Button variant="contained" style={{ marginLeft: theme.spacing(1) }} disabled>{t_i18n('Deploy')}</Button>
+          <Button variant="contained" onClick={() => setOpenCreation(true)} style={{ marginLeft: theme.spacing(1) }}>{t_i18n('Deploy')}</Button>
         </Security>
       </div>
+
+      <IngestionCatalogConnectorCreation open={openCreation} connector={connector} contract={contract} onClose={() => setOpenCreation(false)} />
 
     </div>
   );

@@ -8345,7 +8345,7 @@ type Query {
   channels(first: Int, after: ID, orderBy: ChannelsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): ChannelConnection
   catalog(id: String!): Catalog
   catalogs: [Catalog!]!
-  contract(name: String!): String
+  contract(slug: String!): String
   language(id: String!): Language
   languages(first: Int, after: ID, orderBy: LanguagesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): LanguageConnection
   event(id: String!): Event

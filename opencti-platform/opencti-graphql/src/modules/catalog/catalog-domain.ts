@@ -106,13 +106,13 @@ export const findAll = (_context: AuthContext, _user: AuthUser) => {
   return Object.values(catalogDefinitions).map((catalog) => catalog.graphql);
 };
 
-export const findContractByName = (_context: AuthContext, _user: AuthUser, contractName: string) => {
+export const findContractBySlug = (_context: AuthContext, _user: AuthUser, contractSlug: string) => {
   const catalogDefinitions = getCatalogs();
   const catalogs = Object.values(catalogDefinitions).map((catalog) => catalog.graphql);
   return catalogs
     .flatMap((catalog) => catalog.contracts || [])
     .find((contractStr) => {
       const contract = JSON.parse(contractStr);
-      return contract.default.CONNECTOR_NAME === contractName;
+      return contract.slug === contractSlug;
     });
 };
