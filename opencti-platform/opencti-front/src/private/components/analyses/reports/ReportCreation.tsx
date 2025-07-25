@@ -342,7 +342,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
-          {!isEnterpriseEdition && (
+          {isEnterpriseEdition && (
             <Security
               needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
             >
