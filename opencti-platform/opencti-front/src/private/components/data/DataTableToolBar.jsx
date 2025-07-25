@@ -64,7 +64,7 @@ import Avatar from '@mui/material/Avatar';
 import { Switch, FormControlLabel } from '@mui/material';
 import Checkbox from '@mui/material/Checkbox';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
-import UserEmailSend from '@components/settings/users/UserEmailSend';
+import UserEmailSend from '../settings/users/UserEmailSend';
 import { objectParticipantFieldMembersSearchQuery } from '../common/form/ObjectParticipantField';
 import { objectAssigneeFieldMembersSearchQuery } from '../common/form/ObjectAssigneeField';
 import { vocabularyQuery } from '../common/form/OpenVocabField';
