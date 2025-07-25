@@ -166,6 +166,12 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
       variables: {
         input: finalValues,
       },
+      updater: (store: RecordSourceSelectorProxy) => insertNode(
+        store,
+        'Pagination_externalReferences',
+        paginationOptions,
+        'externalReferenceAdd',
+      ),
       onError: (error: Error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
@@ -178,7 +184,6 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
           handleCloseContextual();
         }
       },
-      updater: undefined,
       optimisticUpdater: undefined,
       optimisticResponse: undefined,
     });
