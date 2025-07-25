@@ -1,6 +1,8 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../../src/schema/general';
+import { ENTITY_TYPE_MALWARE_ANALYSIS } from '../../../src/modules/malwareAnalysis/malwareAnalysis-types';
 
 describe('StixRefRelationship', () => {
   let stixRefRelationshipInternalId;
@@ -60,5 +62,18 @@ describe('StixRefRelationship', () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: stixRefRelationshipInternalId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.stixRefRelationship).toBeNull();
+  });
+  it('should return allowed types for a rel relationship with a given type', async () => {
+    const ALLOWED_TYPES_QUERY = gql`
+        query allowedRefRelationshipTypesQuery($type: String!) {
+            stixSchemaRefRelationshipsPossibleTypes(type: $type)
+        }
+    `;
+    const queryResult = await queryAsAdmin({
+      query: ALLOWED_TYPES_QUERY,
+      variables: { type: ENTITY_TYPE_MALWARE_ANALYSIS }
+    });
+    expect(queryResult.data.stixSchemaRefRelationshipsPossibleTypes.length).toEqual(1);
+    expect(queryResult.data.stixSchemaRefRelationshipsPossibleTypes[0]).toEqual(ABSTRACT_STIX_CYBER_OBSERVABLE);
   });
 });
