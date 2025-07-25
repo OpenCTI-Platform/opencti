@@ -263,7 +263,7 @@ const Root = () => {
             path="/accesses/email_templates"
             element={
               <Security
-                needs={[SETTINGS_SETACCESSES]}
+                needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
                 placeholder={<Navigate to={urlWithCapabilities()} />}
               >
                 <EmailTemplates />
@@ -273,7 +273,7 @@ const Root = () => {
           <Route
             path="/accesses/email_templates/:emailTemplateId/*"
             element={
-              <Security needs={[SETTINGS_SETACCESSES]} placeholder={<Navigate to={urlWithCapabilities()} />}>
+              <Security needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]} placeholder={<Navigate to={urlWithCapabilities()} />}>
                 <EmailTemplate />
               </Security>
             }
