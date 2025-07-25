@@ -4,7 +4,8 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-import { getPreExpansionStateList } from '../utils/investigationStorage';
+import { useParams } from 'react-router-dom';
+import { useInvestigationState } from '../utils/useInvestigationState';
 import { useFormatter } from '../../../../../components/i18n';
 
 type InvestigationRollBackExpandDialogProps = {
@@ -13,8 +14,17 @@ type InvestigationRollBackExpandDialogProps = {
   isOpen: boolean;
 };
 
-const InvestigationRollBackExpandDialog = ({ closeDialog, handleRollBackToPreExpansionState, isOpen }: InvestigationRollBackExpandDialogProps) => {
+const InvestigationRollBackExpandDialog = ({
+  closeDialog,
+  handleRollBackToPreExpansionState,
+  isOpen,
+}: InvestigationRollBackExpandDialogProps) => {
+  const { workspaceId } = useParams();
   const { t_i18n, fldt } = useFormatter();
+
+  const {
+    getLastExpandOp,
+  } = useInvestigationState(workspaceId ?? '');
 
   const handleSubmit = () => {
     handleRollBackToPreExpansionState();
@@ -22,10 +32,8 @@ const InvestigationRollBackExpandDialog = ({ closeDialog, handleRollBackToPreExp
   };
 
   const getLastRollBackExpandDate = () => {
-    const storedPreExpansion = getPreExpansionStateList();
-    if (storedPreExpansion) {
-      return fldt(JSON.parse(storedPreExpansion)[0].dateTime);
-    }
+    const expandOp = getLastExpandOp();
+    if (expandOp) return fldt(expandOp.dateTime);
     return null;
   };
 
