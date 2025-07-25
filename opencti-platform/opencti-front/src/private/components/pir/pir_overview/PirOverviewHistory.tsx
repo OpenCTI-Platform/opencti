@@ -5,8 +5,7 @@ import { Link } from 'react-router-dom';
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { useTheme } from '@mui/material/styles';
-import MarkdownDisplay from '../../../../components/MarkdownDisplay';
-import { isNotEmptyField } from '../../../../utils/utils';
+import PirHistoryMessage from '../PirHistoryMessage';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { displayEntityTypeForTranslation } from '../../../../utils/String';
@@ -34,7 +33,6 @@ const pirHistoryFragment = graphql`
       edges {
         node {
           id
-          event_type
           event_scope
           timestamp
           user {
@@ -46,14 +44,6 @@ const pirHistoryFragment = graphql`
             entity_type
             entity_name
             message
-            commit
-            external_references {
-              id
-              source_name
-              external_id
-              url
-              description
-            }
           }
         }
       }
@@ -74,39 +64,6 @@ const PirOverviewHistory = ({ dataHistory, dataPir }: PirOverviewHistoryProps) =
   const { logs } = useFragment(pirHistoryFragment, dataHistory);
   const history = (logs?.edges ?? []).flatMap((e) => e?.node ?? []);
 
-  const getHistoryMessage = ({ context_data, entity_type, event_scope, user }: typeof history[0]) => {
-    const message = context_data?.message ?? '';
-    const entityType = t_i18n(displayEntityTypeForTranslation(context_data?.entity_type ?? ''));
-
-    if (message.match(/adds .+ in `In PIR`/)) {
-      return t_i18n('', {
-        id: '{entityType} `{entityName}` added to `{pirName}`',
-        values: {
-          entityType,
-          entityName: context_data?.entity_name,
-          pirName: pir.name,
-        },
-      });
-    }
-    if (message.match(/removes .+ in `In PIR`/)) {
-      return t_i18n('', {
-        id: '{entityType} `{entityName}` removed from `{pirName}`',
-        values: {
-          entityType,
-          entityName: context_data?.entity_name,
-          pirName: pir.name,
-        },
-      });
-    }
-
-    const isUpdate = entity_type === 'History'
-      && event_scope === 'update'
-      && isNotEmptyField(context_data?.entity_name);
-
-    // Default message
-    return `\`${user?.name}\` ${message} ${isUpdate ? `for \`${context_data?.entity_name}\` (${entityType})` : ''}`;
-  };
-
   return (
     <Paper
       title={t_i18n('News feed')}
@@ -121,8 +78,6 @@ const PirOverviewHistory = ({ dataHistory, dataPir }: PirOverviewHistoryProps) =
 
         {history.map((historyItem) => {
           const { id, context_data, timestamp } = historyItem;
-          const historyMessage = getHistoryMessage(historyItem);
-
           const isAddInPir = /adds .+ in `In PIR`/.test(context_data?.message ?? '');
           let redirectURI = `/dashboard/id/${context_data?.entity_id}`;
           if (isAddInPir) {
@@ -138,14 +93,6 @@ const PirOverviewHistory = ({ dataHistory, dataPir }: PirOverviewHistoryProps) =
               : '';
             redirectURI = `/dashboard/pirs/${pir.id}/threats/?filters=${encodeURIComponent(addInPirFilters)}`;
           }
-
-          const content = (
-            <MarkdownDisplay
-              commonmark
-              remarkGfmPlugin
-              content={historyMessage}
-            />
-          );
 
           return (
             <Box
@@ -175,7 +122,10 @@ const PirOverviewHistory = ({ dataHistory, dataPir }: PirOverviewHistoryProps) =
                     {nsdt(timestamp)}
                   </Typography>
                   <Typography variant="body2">
-                    {content}
+                    <PirHistoryMessage
+                      log={historyItem}
+                      pirName={pir.name}
+                    />
                   </Typography>
                 </div>
               </Link>
