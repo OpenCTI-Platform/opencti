@@ -135,8 +135,8 @@ const IngestionCatalogCard = ({ node }: IngestionCatalogCardProps) => {
         action={connector.verified && <VerifiedOutlined color="success" />}
       />
 
-      <CardContent style={{ paddingTop: 0 }}>
-        <div style={{ height: 170, overflow: 'hidden', textOverflow: 'ellipsis' }}>{connector.short_description}</div>
+      <CardContent style={{ height: '100%' }}>
+        <div>{connector.short_description}</div>
       </CardContent>
 
       <CardActions style={{ alignSelf: 'end' }}>
