@@ -88,7 +88,7 @@ const userResolvers = {
     sessions: (current) => findUserSessions(current.id),
     effective_confidence_level: (current, _, context) => context.batch.userEffectiveConfidenceBatchLoader.load(current),
     personal_notifiers: (current, _, context) => getNotifiers(context, context.user, current.personal_notifiers),
-    creator: (current, context) => getCreator(context, context.user, current.id),
+    creator: (current, _, context) => getCreator(context, context.user, current.id),
   },
   Member: {
     name: (current, _, context) => {
