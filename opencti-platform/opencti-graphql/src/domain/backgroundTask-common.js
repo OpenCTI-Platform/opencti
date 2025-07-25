@@ -4,7 +4,16 @@ import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicD
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { now } from '../utils/format';
-import { isUserHasCapability, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE, MEMBER_ACCESS_RIGHT_ADMIN, SETTINGS_SET_ACCESSES, SETTINGS_SETLABELS, SYSTEM_USER } from '../utils/access';
+import {
+  isOnlyOrgaAdmin,
+  isUserHasCapability,
+  KNOWLEDGE_KNASKIMPORT,
+  KNOWLEDGE_KNUPDATE,
+  MEMBER_ACCESS_RIGHT_ADMIN,
+  SETTINGS_SET_ACCESSES,
+  SETTINGS_SETLABELS,
+  SYSTEM_USER
+} from '../utils/access';
 import { isKnowledge, KNOWLEDGE_DELETE, KNOWLEDGE_UPDATE } from '../schema/general';
 import { ForbiddenAccess, UnsupportedError } from '../config/errors';
 import { elIndex } from '../database/engine';
@@ -130,7 +139,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
     }
   } else if (scope === BackgroundTaskScope.User) { // 04. Background task of scope User
     // 2.1. The user should have the capability SETTINGS_SET_ACCESSES
-    const isAuthorized = isUserHasCapability(user, SETTINGS_SET_ACCESSES);
+    const isAuthorized = isUserHasCapability(user, SETTINGS_SET_ACCESSES) || isOnlyOrgaAdmin(user);
     if (!isAuthorized) {
       throw ForbiddenAccess();
     }

@@ -325,7 +325,7 @@ const TasksList = ({ data, options }) => {
                         && (isFilterGroupNotEmpty(filters)
                           ? <TasksFilterValueContainer
                               filters={filters}
-                              entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Notification']}
+                              entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Notification', 'User']}
                             />
                           : (
                             <Chip
