@@ -23,7 +23,7 @@ const pirAnalysesContainerFragment = graphql`
   ) {
     id
     entity_type
-    created_at
+    created
     status {
       id
       order
@@ -153,7 +153,7 @@ const PirAnalyses = ({ data }: PirAnalysesProps) => {
     filters: emptyFilterGroup,
     searchTerm: '',
     sortBy: 'created',
-    orderAsc: true,
+    orderAsc: false,
     openExports: false,
   };
 
@@ -202,7 +202,7 @@ const PirAnalyses = ({ data }: PirAnalysesProps) => {
   const dataColumns: DataTableProps['dataColumns'] = {
     entity_type: { percentWidth: 10 },
     name: {
-      percentWidth: 30,
+      percentWidth: 29,
     },
     container_objects: {
       id: 'container_objects',
@@ -267,8 +267,8 @@ const PirAnalyses = ({ data }: PirAnalysesProps) => {
       isSortable: isRuntimeSort,
       percentWidth: 10,
     },
-    created_at: {
-      percentWidth: 12,
+    created: {
+      percentWidth: 13,
     },
     x_opencti_workflow_id: {},
     objectMarking: {
