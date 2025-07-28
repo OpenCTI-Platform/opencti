@@ -99,6 +99,9 @@ import { convertMembersToUsers, extractBundleBaseElement } from './playbook-util
 import { convertStoreToStix_2_1 } from '../../database/stix-2-1-converter';
 import { ENTITY_TYPE_SECURITY_COVERAGE, INPUT_COVERED, type StixSecurityCoverage, type StoreEntitySecurityCoverage } from '../securityCoverage/securityCoverage-types';
 
+import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
+import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../case/feedback/feedback-types';
+
 const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixObject => {
   const baseData = bundle.objects.find((o) => o.id === instanceId);
   if (!baseData) throw FunctionalError('Playbook base element no longer accessible');
