@@ -117,6 +117,7 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
   );
   const { isFeatureEnable } = useHelper();
   const isUserHistoryTab = isFeatureEnable('USER_HISTORY_TAB');
+  const serviceAccountFeatureFlag = isFeatureEnable('SERVICE_ACCOUNT');
   const [openDelete, setOpenDelete] = useState(false);
   const handleOpenDelete = () => setOpenDelete(true);
   const handleCloseDelete = () => setOpenDelete(false);
@@ -170,10 +171,12 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
                   )}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  < ConvertUser
-                    userId={data.id}
-                    userServiceAccount={data.user_service_account}
-                  />
+                  {serviceAccountFeatureFlag
+                    && < ConvertUser
+                      userId={data.id}
+                      userServiceAccount={data.user_service_account}
+                       />
+                  }
                   <UserDeletionDialog
                     userId={data.id}
                     isOpen={openDelete}
