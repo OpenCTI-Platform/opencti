@@ -24,6 +24,8 @@ import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { PirEditionFragment$key } from './__generated__/PirEditionFragment.graphql';
 import { authorizedMembersToOptions } from '../../../utils/authorizedMembers';
+import { CAPAPIR_PIRUPDATE } from '../../../utils/hooks/useGranted';
+import Security from '../../../utils/Security';
 
 const headerFragment = graphql`
   fragment PirHeaderFragment on Pir {
@@ -83,26 +85,30 @@ const PirHeader = ({ data, editionData }: PirHeaderProps) => {
           {name}
         </Typography>
 
-        <div>
-          <FormAuthorizedMembersDialog
-            id={id}
-            owner={creators?.[0]}
-            mutation={pirHeaderEditAuthorizedMembersMutation}
-            authorizedMembers={authorizedMembersToOptions(authorizedMembers)}
-          />
+        <Security needs={[CAPAPIR_PIRUPDATE]}>
+          <>
+            <div>
+              <FormAuthorizedMembersDialog
+                id={id}
+                owner={creators?.[0]}
+                mutation={pirHeaderEditAuthorizedMembersMutation}
+                authorizedMembers={authorizedMembersToOptions(authorizedMembers)}
+              />
 
-          <PirPopover data={pir} />
-        </div>
+              <PirPopover data={pir} />
+            </div>
 
-        <Button
-          onClick={() => setIsEditionOpen(true)}
-          color="primary"
-          variant="contained"
-          aria-label={t_i18n('Update')}
-          title={t_i18n('Update')}
-        >
-          {t_i18n('Update')}
-        </Button>
+            <Button
+              onClick={() => setIsEditionOpen(true)}
+              color="primary"
+              variant="contained"
+              aria-label={t_i18n('Update')}
+              title={t_i18n('Update')}
+            >
+              {t_i18n('Update')}
+            </Button>
+          </>
+        </Security>
       </Box>
 
       <PirEdition

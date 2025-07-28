@@ -1937,6 +1937,8 @@ export enum CampaignsOrdering {
 
 export enum Capabilities {
   Bypass = 'BYPASS',
+  Capapir = 'CAPAPIR',
+  CapapirPirupdate = 'CAPAPIR_PIRUPDATE',
   Connectorapi = 'CONNECTORAPI',
   Csvmappers = 'CSVMAPPERS',
   Explore = 'EXPLORE',

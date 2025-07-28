@@ -19,10 +19,10 @@ import Button from '@mui/material/Button';
 import { Menu, MenuItem, PopoverProps } from '@mui/material';
 import { graphql, useFragment } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
+import { PirPopoverFragment$key } from './__generated__/PirPopoverFragment.graphql';
 import { useFormatter } from '../../../components/i18n';
 import stopEvent from '../../../utils/domEvent';
 import PirDeletion from './PirDeletion';
-import { PirPopoverFragment$key } from './__generated__/PirPopoverFragment.graphql';
 
 const popoverFragment = graphql`
   fragment PirPopoverFragment on Pir {
@@ -31,7 +31,7 @@ const popoverFragment = graphql`
 `;
 
 interface PirPopoverProps {
-  data: PirPopoverFragment$key
+  data: PirPopoverFragment$key,
 }
 
 const PirPopover = ({ data }: PirPopoverProps) => {

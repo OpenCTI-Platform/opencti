@@ -80,6 +80,7 @@ import { useFormatter } from '../../../components/i18n';
 import Security from '../../../utils/Security';
 import useGranted, {
   BYPASS,
+  CAPAPIR,
   CSVMAPPERS,
   EXPLORE,
   INGESTION,
@@ -582,7 +583,7 @@ const LeftBar = () => {
               </MenuItem>
             </StyledTooltip>
           )}
-          <Security needs={[KNOWLEDGE]}>
+          <Security needs={[CAPAPIR]}>
             {!draftContext && isFeatureEnable('Pir') && (
               <StyledTooltip title={!navOpen && t_i18n('PIR')} placement="right">
                 <MenuItem
