@@ -55,6 +55,8 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
 
   const entitiesFilters = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object']);
 
+  const bookmarkAvailableEntityType = ['Malware', 'Threat-Actor-Individual', 'Threat-Actor-Group', 'Intrusion-Set', 'Campaign'];
+
   return (
     <>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', paddingTop: 2 }}>
@@ -141,7 +143,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
           filters={filters}
           helpers={helpers}
           searchContext={searchContext}
-          availableEntityTypes={availableEntityTypes}
+          availableEntityTypes={type === 'bookmark' ? bookmarkAvailableEntityType : availableEntityTypes}
           entityTypes={searchContext.entityTypes}
           fintelTemplatesContext={context === 'fintelTemplate'}
         />
