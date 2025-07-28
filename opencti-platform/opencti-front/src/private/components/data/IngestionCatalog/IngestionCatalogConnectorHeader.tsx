@@ -6,14 +6,14 @@ import React, { useState } from 'react';
 import { useTheme } from '@mui/styles';
 import { IngestionConnector, ingestionConnectorTypeMetadata } from '@components/data/IngestionCatalog/IngestionCatalogCard';
 import IngestionCatalogChip from '@components/data/IngestionCatalog/IngestionCatalogUseCaseChip';
+import IngestionCatalogConnectorCreation from '@components/data/IngestionCatalog/IngestionCatalogConnectorCreation';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import ItemBoolean from '../../../../components/ItemBoolean';
-import IngestionCatalogConnectorCreation from '@components/data/IngestionCatalog/IngestionCatalogConnectorCreation';
 
-const IngestionCatalogConnectorHeader = ({ connector, contract }: { connector: IngestionConnector, contract: string }) => {
+const IngestionCatalogConnectorHeader = ({ connector }: { connector: IngestionConnector }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const [openCreation, setOpenCreation] = useState(false);
@@ -64,7 +64,7 @@ const IngestionCatalogConnectorHeader = ({ connector, contract }: { connector: I
         </Security>
       </div>
 
-      <IngestionCatalogConnectorCreation open={openCreation} connector={connector} contract={contract} onClose={() => setOpenCreation(false)} />
+      <IngestionCatalogConnectorCreation open={openCreation} connector={connector} onClose={() => setOpenCreation(false)} />
 
     </div>
   );

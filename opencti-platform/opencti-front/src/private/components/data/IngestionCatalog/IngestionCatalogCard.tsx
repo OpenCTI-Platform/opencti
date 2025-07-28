@@ -1,5 +1,5 @@
 import Card from '@mui/material/Card';
-import React from 'react';
+import React, { useState } from 'react';
 import CardHeader from '@mui/material/CardHeader';
 import CardContent from '@mui/material/CardContent';
 import { Badge, CardActions, Grid } from '@mui/material';
@@ -13,6 +13,7 @@ import EnrichedTooltip from '../../../../components/EnrichedTooltip';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import type { Theme } from '../../../../components/Theme';
+import IngestionCatalogConnectorCreation from '@components/data/IngestionCatalog/IngestionCatalogConnectorCreation';
 
 interface IngestionCatalogCardProps {
   node: string;
@@ -68,6 +69,7 @@ const IngestionCatalogCard = ({ node }: IngestionCatalogCardProps) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const theme = useTheme<Theme>();
+  const [openCreation, setOpenCreation] = useState(false);
   const connector: IngestionConnector = JSON.parse(node);
   const link = `/dashboard/data/ingestion/catalog/${connector.slug}`;
 
@@ -109,44 +111,48 @@ const IngestionCatalogCard = ({ node }: IngestionCatalogCardProps) => {
   };
 
   return connector.manager_supported && (
-    <Card
-      variant="outlined"
-      style={{
-        height: 330,
-        borderRadius: 4,
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-      }}
-    >
-
-      <CardHeader
-        sx={{
-          paddingBottom: 0,
-          marginBottom: 0,
-          alignItems: 'start',
-          '& .MuiCardHeader-content': {
-            minWidth: 0,
-          },
+    <>
+      <Card
+        variant="outlined"
+        style={{
+          height: 330,
+          borderRadius: 4,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
         }}
-        avatar={<img style={{ height: 50, width: 50, objectFit: 'cover', borderRadius: 4 }} src={connector.logo} alt={connector.title} />}
-        title={<div style={{ width: '100%', fontSize: 20, fontWeight: 600, marginBottom: theme.spacing(1) }}>{connector.title}</div>}
-        subheader={renderLabels()}
-        action={connector.verified && <VerifiedOutlined color="success" />}
-      />
+      >
 
-      <CardContent style={{ height: '100%' }}>
-        <div>{connector.short_description}</div>
-      </CardContent>
+        <CardHeader
+          sx={{
+            paddingBottom: 0,
+            marginBottom: 0,
+            alignItems: 'start',
+            '& .MuiCardHeader-content': {
+              minWidth: 0,
+            },
+          }}
+          avatar={<img style={{ height: 50, width: 50, objectFit: 'cover', borderRadius: 4 }} src={connector.logo} alt={connector.title} />}
+          title={<div style={{ width: '100%', fontSize: 20, fontWeight: 600, marginBottom: theme.spacing(1) }}>{connector.title}</div>}
+          subheader={renderLabels()}
+          action={connector.verified && <VerifiedOutlined color="success" />}
+        />
 
-      <CardActions style={{ alignSelf: 'end' }}>
-        <Button variant="outlined" size="small" onClick={() => navigate(link)}>{t_i18n('Details')}</Button>
-        <Security needs={[INGESTION_SETINGESTIONS]}>
-          <Button variant="contained" size="small" disabled>{t_i18n('Deploy')}</Button>
-        </Security>
-      </CardActions>
+        <CardContent style={{ height: '100%' }}>
+          <div>{connector.short_description}</div>
+        </CardContent>
 
-    </Card>
+        <CardActions style={{ alignSelf: 'end' }}>
+          <Button variant="outlined" size="small" onClick={() => navigate(link)}>{t_i18n('Details')}</Button>
+          <Security needs={[INGESTION_SETINGESTIONS]}>
+            <Button variant="contained" onClick={() => setOpenCreation(true)} size="small">{t_i18n('Deploy')}</Button>
+          </Security>
+        </CardActions>
+
+      </Card>
+
+      <IngestionCatalogConnectorCreation open={openCreation} connector={connector} onClose={() => setOpenCreation(false)} />
+    </>
   );
 };
 

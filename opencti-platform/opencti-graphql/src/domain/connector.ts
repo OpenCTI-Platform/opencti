@@ -191,7 +191,6 @@ export const managedConnectorAdd = async (
   const connectorToCreate: any = {
     name: input.name,
     connector_type: targetContract.container_type,
-    catalog_id: input.catalog_id,
     connector_user_id: input.connector_user_id,
     manager_contract_image: input.manager_contract_image,
     manager_contract_configuration: contractConfigurations,

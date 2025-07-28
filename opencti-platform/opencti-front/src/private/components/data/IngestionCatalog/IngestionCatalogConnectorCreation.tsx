@@ -1,21 +1,25 @@
 import { Field, Form, Formik } from 'formik';
-import TextField from '../../../../components/TextField';
-import { type FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import Button from '@mui/material/Button';
 import Drawer from '@components/common/drawer/Drawer';
-import React from 'react';
-import { useFormatter } from '../../../../components/i18n';
+import React, { useState } from 'react';
 import { useTheme } from '@mui/styles';
-import type { Theme } from '../../../../components/Theme';
 import { IngestionConnector } from '@components/data/IngestionCatalog/IngestionCatalogCard';
 import { FormikHelpers } from 'formik/dist/types';
 import * as Yup from 'yup';
 import CreatorField from '@components/common/form/CreatorField';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { graphql } from 'react-relay';
 import ConfidenceField from '@components/common/form/ConfidenceField';
 import { materialRenderers } from '@jsonforms/material-renderers';
 import { JsonForms } from '@jsonforms/react';
+import { Schema, Validator } from '@cfworker/json-schema';
+import { Link } from 'react-router-dom';
+import { JsonSchema } from '@jsonforms/core';
+import { MESSAGING$ } from '../../../../relay/environment';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import type { Theme } from '../../../../components/Theme';
+import { useFormatter } from '../../../../components/i18n';
+import { type FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
+import TextField from '../../../../components/TextField';
 
 const ingestionCatalogConnectorCreationMutation = graphql`
   mutation IngestionCatalogConnectorCreationMutation($input: AddManagedConnectorInput) {
@@ -37,18 +41,16 @@ interface IngestionCatalogConnectorCreationProps {
   connector: IngestionConnector;
   open: boolean;
   onClose: () => void;
-  contract: string;
 }
 
 interface ManagedConnectorValues {
   name: string;
-  contract?: number;
   creator?: FieldOption;
   contractValues: Record<string, string | boolean>;
   confidence: number;
 }
 
-const IngestionCatalogConnectorCreation = ({ connector, open, onClose, contract }: IngestionCatalogConnectorCreationProps) => {
+const IngestionCatalogConnectorCreation = ({ connector, open, onClose }: IngestionCatalogConnectorCreationProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
@@ -70,12 +72,15 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, contract 
       },
       onError: () => setSubmitting?.(false),
       onCompleted: () => {
+        MESSAGING$.notifySuccess(<span><Link to={'/dashboard/data/ingestion/connectors'}>{t_i18n('The connector has been created')}</Link></span>);
         setSubmitting?.(false);
         resetForm?.();
         onClose();
       },
     });
   };
+
+  const [compiledValidator, setCompiledValidator] = useState<Validator | undefined>(undefined);
 
   return (
     <Drawer
@@ -95,12 +100,19 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, contract 
           creator: undefined,
           name: '',
           confidence: connector.max_confidence_level,
-          ...connector.default
+          ...connector.default,
         }}
         onSubmit={() => {
         }}
       >
         {({ values, setFieldValue, isSubmitting, setSubmitting, resetForm, isValid }) => {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          if (!compiledValidator || compiledValidator.schema.container_image !== connector.container_image) {
+            setCompiledValidator(new Validator(connector as unknown as Schema));
+            setFieldValue('contractValues', connector.default);
+          }
+          const errors = compiledValidator?.validate(values.contractValues)?.errors;
           return (
             <Form>
               {(connector) && (
@@ -127,7 +139,7 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, contract 
                   />
                   <JsonForms
                     data={connector.default}
-                    schema={connector as any}
+                    schema={connector as JsonSchema}
                     renderers={materialRenderers}
                     validationMode={'NoValidation'}
                     onChange={({ data }) => setFieldValue('contractValues', data)}
@@ -153,7 +165,7 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, contract 
                       resetForm,
                     });
                   }}
-                  disabled={!isValid || isSubmitting}
+                  disabled={!isValid || isSubmitting || !!errors?.[0]}
                 >
                   {t_i18n('Create')}
                 </Button>

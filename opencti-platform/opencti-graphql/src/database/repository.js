@@ -16,7 +16,7 @@ import { getSupportedContractsByImage } from '../modules/catalog/catalog-domain'
 export const completeConnector = (connector) => {
   if (connector) {
     const completed = { ...connector };
-    completed.is_managed = isNotEmptyField(connector.catalog_id);
+    completed.is_managed = isNotEmptyField(connector.manager_requested_status);
     completed.connector_scope = connector.connector_scope ? connector.connector_scope.split(',') : [];
     completed.config = connectorConfig(connector.id, connector.listen_callback_uri);
     completed.active = connector.built_in ? (connector.active ?? true) : (sinceNowInMinutes(connector.updated_at) < 5);
