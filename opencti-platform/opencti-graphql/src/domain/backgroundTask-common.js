@@ -15,7 +15,7 @@ import {
   SYSTEM_USER
 } from '../utils/access';
 import { isKnowledge, KNOWLEDGE_DELETE, KNOWLEDGE_UPDATE } from '../schema/general';
-import { ForbiddenAccess, UnsupportedError } from '../config/errors';
+import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
 import { elIndex } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { ENTITY_TYPE_NOTIFICATION } from '../modules/notification/notification-types';
@@ -59,6 +59,12 @@ const areParentTypesKnowledge = (parentTypes) => parentTypes && parentTypes.flat
 // check a user has the right to create a list or a query background task
 export const checkActionValidity = async (context, user, input, scope, taskType) => {
   const { actions, filters: baseFilterString, ids } = input;
+  // check actions validity
+  const actionsFields = actions.map((a) => a.field).filter(Boolean);
+  if (actionsFields.length !== uniq(actionsFields).length) {
+    throw FunctionalError('A single task cannot perform several actions on the same field.', { data: actionsFields });
+  }
+  // check rights
   const baseFilterObject = baseFilterString ? JSON.parse(baseFilterString) : undefined;
   const filters = isFilterGroupNotEmpty(baseFilterObject)
     ? (baseFilterObject?.filters ?? [])
