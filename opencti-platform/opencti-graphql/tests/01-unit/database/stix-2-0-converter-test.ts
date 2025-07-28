@@ -10,19 +10,35 @@ import { EXPECTED_TASK, TASK_INSTANCE } from './instances-stix-2-0-converter/con
 import { EXPECTED_IR, INCIDENT_RESPONSE_INSTANCE } from './instances-stix-2-0-converter/containers/incident_response';
 import { EXPECTED_RFT, RFT_INSTANCE } from './instances-stix-2-0-converter/containers/case_rft';
 import { EXPECTED_RFI, RFI_INSTANCE } from './instances-stix-2-0-converter/containers/case_rfi';
-import { convertMalwareToStix, convertNoteToStix, convertObservedDataToStix, convertOpinionToStix, convertReportToStix } from '../../../src/database/stix-2-0-converter';
+import {
+  convertIncidentToStix,
+  convertMalwareToStix,
+  convertNoteToStix,
+  convertObservedDataToStix,
+  convertOpinionToStix,
+  convertReportToStix,
+  convertSightingToStix
+} from '../../../src/database/stix-2-0-converter';
 import { convertGroupingToStix_2_0 } from '../../../src/modules/grouping/grouping-converter';
 import { convertFeedbackToStix_2_0 } from '../../../src/modules/case/feedback/feedback-converter';
 import { convertTaskToStix_2_0 } from '../../../src/modules/task/task-converter';
 import { convertCaseIncidentToStix_2_0 } from '../../../src/modules/case/case-incident/case-incident-converter';
 import { convertCaseRftToStix_2_0 } from '../../../src/modules/case/case-rft/case-rft-converter';
 import { convertCaseRfiToStix_2_0 } from '../../../src/modules/case/case-rfi/case-rfi-converter';
+import { EXPECTED_INCIDENT, INCIDENT_INSTANCE } from './instances-stix-2-0-converter/SDOs/incident';
+import { EXPECTED_SIGHTING, SIGHTING_INSTANCE } from './instances-stix-2-0-converter/sightings';
 
 describe('Stix 2.0 opencti converter', () => {
+  // SDOs
   it('should convert Malware', async () => {
     const result = convertMalwareToStix(MALWARE_INSTANCE);
     expect(result).toEqual(EXPECTED_MALWARE);
   });
+  it('should convert Incident', async () => {
+    const result = convertIncidentToStix(INCIDENT_INSTANCE);
+    expect(result).toEqual(EXPECTED_INCIDENT);
+  });
+  // Containers
   it('should convert Report', async () => {
     const result = convertReportToStix(REPORT_INSTANCE);
     expect(result).toEqual(EXPECTED_REPORT);
@@ -62,5 +78,10 @@ describe('Stix 2.0 opencti converter', () => {
   it('should convert Case RFT', async () => {
     const result = convertCaseRftToStix_2_0(RFT_INSTANCE);
     expect(result).toEqual(EXPECTED_RFT);
+  });
+  // SROs
+  it('should convert StixSightingRelationship', async () => {
+    const result = convertSightingToStix(SIGHTING_INSTANCE);
+    expect(result).toEqual(EXPECTED_SIGHTING);
   });
 });
