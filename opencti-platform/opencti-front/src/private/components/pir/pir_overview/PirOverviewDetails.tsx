@@ -75,6 +75,20 @@ const PirOverviewDetails = ({ data }: PirOverviewDetailsProps) => {
                 styleNumber={1}
               />
             </div>
+
+            <div>
+              <Typography variant="h3" gutterBottom>
+                {t_i18n('Criteria')}
+              </Typography>
+              <div style={{ display: 'flex', gap: theme.spacing(1), flexFlow: 'row wrap' }}>
+                {pir.pir_criteria.map((c, i) => (
+                  <PirFiltersDisplay
+                    key={i}
+                    filterGroup={JSON.parse(c.filters)}
+                  />
+                ))}
+              </div>
+            </div>
           </Grid>
 
           <Grid
@@ -115,25 +129,6 @@ const PirOverviewDetails = ({ data }: PirOverviewDetailsProps) => {
                 {t_i18n('Creators')}
               </Typography>
               <ItemCreators creators={pir.creators ?? []}/>
-            </div>
-          </Grid>
-
-          <Grid
-            size={{ xs: 12 }}
-            sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
-          >
-            <div>
-              <Typography variant="h3" gutterBottom>
-                {t_i18n('Criteria')}
-              </Typography>
-              <div style={{ display: 'flex', gap: theme.spacing(1), flexFlow: 'row wrap' }}>
-                {pir.pir_criteria.map((c, i) => (
-                  <PirFiltersDisplay
-                    key={i}
-                    filterGroup={JSON.parse(c.filters)}
-                  />
-                ))}
-              </div>
             </div>
           </Grid>
         </Grid>

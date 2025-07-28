@@ -65,28 +65,32 @@ const PirOverviewTopSources = ({ data }: PirOverviewTopSourcesProps) => {
 
   return (
     <Grid container spacing={3}>
-      <Paper title={t_i18n('Top sources of flagged entities')}>
-        <StixCoreObjectsDonut
-          dataSelection={flaggedEntitiesTopSourcesDataSelection}
-          variant="inLine"
-          height={250}
-          startDate={null}
-          endDate={null}
-          isReadOnly
-          withoutTitle
-        />
-      </Paper>
-      <Paper title={t_i18n('Top sources of the relationships causing the flags')}>
-        <StixRelationshipsDonut
-          dataSelection={relationshipsTopSourcesDataSelection}
-          variant="inLine"
-          height={250}
-          startDate={null}
-          endDate={null}
-          isReadOnly
-          withoutTitle
-        />
-      </Paper>
+      <Grid size={{ xs: 6 }}>
+        <Paper title={t_i18n('Top sources of flagged entities')}>
+          <StixCoreObjectsDonut
+            dataSelection={flaggedEntitiesTopSourcesDataSelection}
+            variant="inLine"
+            height={250}
+            startDate={null}
+            endDate={null}
+            isReadOnly
+            withoutTitle
+          />
+        </Paper>
+      </Grid>
+      <Grid size={{ xs: 6 }}>
+        <Paper title={t_i18n('Top sources of the relationships causing the flags')}>
+          <StixRelationshipsDonut
+            dataSelection={relationshipsTopSourcesDataSelection}
+            variant="inLine"
+            height={250}
+            startDate={null}
+            endDate={null}
+            isReadOnly
+            withoutTitle
+          />
+        </Paper>
+      </Grid>
     </Grid>
   );
 };
