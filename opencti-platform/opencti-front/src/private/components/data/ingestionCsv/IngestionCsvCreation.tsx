@@ -231,7 +231,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
 
       if ((existingUsers as IngestionCsvCreationUsersQuery$data)?.userAlreadyExists) {
         setSubmitting(false);
-        setFieldError('user_id', t_i18n('This user already exists. Change the feed\'s name to change the automatically created user\'s name'));
+        setFieldError('user_id', t_i18n('This service account already exists. Change the feed\'s name to change the automatically created service account name'));
         return;
       }
     }

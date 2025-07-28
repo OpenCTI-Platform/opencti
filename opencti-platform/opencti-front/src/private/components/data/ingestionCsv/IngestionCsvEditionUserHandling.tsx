@@ -87,7 +87,7 @@ const IngestionCsvEditionUserHandling: FunctionComponent<IngestionCsvEditionUser
 
     if ((existingUsers as IngestionCsvEditionUserHandlingQuery$data)?.userAlreadyExists) {
       setSubmitting(false);
-      setFieldError('user_name', t_i18n('This user already exists. Change the feed\'s name to change the automatically created user\'s name'));
+      setFieldError('user_name', t_i18n('This service account already exists. Change the feed\'s name to change the automatically created service account name'));
       return;
     }
 
@@ -149,7 +149,7 @@ const IngestionCsvEditionUserHandling: FunctionComponent<IngestionCsvEditionUser
                 <Box sx={{ margin: '0 70px 0' }}>
                   <CreatorField
                     name="user_name"
-                    label={t_i18n('User responsible for data creation')}
+                    label={!serviceAccountFeatureFlag ? t_i18n('User responsible for data creation') : t_i18n('Service account responsible for data creation')}
                     containerStyle={fieldSpacingContainerStyle}
                     showConfidence disabled={true}
                   />

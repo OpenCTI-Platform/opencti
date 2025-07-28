@@ -99,7 +99,7 @@ export const createOnTheFlyUser = async (context: AuthContext, user: AuthUser, i
   }
   const isUserAlreadyExisting = await userAlreadyExists(context, input.userName);
   if (isUserAlreadyExisting) {
-    throw FunctionalError('This user already exists. Change the feed\'s name to change the automatically created user\'s name', {});
+    throw FunctionalError('This service account already exists. Change the feed\'s name to change the automatically created service account name', {});
   }
   const { platform_organization } = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   let userInput: UserAddInput;
@@ -137,7 +137,7 @@ export const addIngestionCsv = async (context: AuthContext, user: AuthUser, inpu
     verifyIngestionAuthenticationContent(input.authentication_type, input.authentication_value);
   }
   if (input.user_id.length < 2) {
-    throw FunctionalError('You have not choosen a user responsible for data creation', {});
+    throw FunctionalError('You have not chosen a user responsible for data creation', {});
   }
 
   let onTheFlyCreatedUser;

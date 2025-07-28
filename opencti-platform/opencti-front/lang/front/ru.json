@@ -3149,6 +3149,7 @@
   "Server ingestion is paused until the size of messages is reduced under max capacity": "Прием сообщений на сервер приостанавливается до тех пор, пока их размер не уменьшится до максимальной емкости",
   "Service account": "Сервисный счет",
   "Service account policy": "Политика учетной записи обслуживания",
+  "Service account responsible for data creation": "Учетная запись службы, ответственная за создание данных",
   "Service Account will automatically be part of the Platform Main Organization, but will not be listed in the list of users of this organisation": "Учетная запись сервиса будет автоматически входить в состав основной организации платформы, но не будет указана в списке пользователей этой организации",
   "Service accounts do not have any password and a randomized email address will be generated, if not provided on creation. Service account do not receive notifications. Service account pertains automatically to the main platform organization.": "Сервисные аккаунты не имеют пароля, а адрес электронной почты будет сгенерирован случайным образом, если он не был указан при создании. Сервисные учетные записи не получают уведомлений. Сервисная учетная запись автоматически относится к основной организации платформы.",
   "Session timeout in": "Таймаут сеанса в",

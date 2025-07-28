@@ -76,7 +76,7 @@ const IngestionCsvCreationUserHandlingComponent = ({ queryRef }: IngestionCsvCre
   </Box>
     <CreatorField
       name="user_id"
-      label={t_i18n('User responsible for data creation')}
+      label={!serviceAccountFeatureFlag ? t_i18n('User responsible for data creation') : t_i18n('Service account responsible for data creation')}
       containerStyle={fieldSpacingContainerStyle}
       showConfidence disabled={values.automatic_user !== false}
     />

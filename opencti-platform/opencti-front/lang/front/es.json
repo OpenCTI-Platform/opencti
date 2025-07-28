@@ -3149,6 +3149,7 @@
   "Server ingestion is paused until the size of messages is reduced under max capacity": "La ingesta del servidor se pausa hasta que el tamaño de los mensajes se reduce por debajo de la capacidad máxima",
   "Service account": "Cuenta de servicio",
   "Service account policy": "Política de cuentas de servicio",
+  "Service account responsible for data creation": "Cuenta de servicio responsable de la creación de datos",
   "Service Account will automatically be part of the Platform Main Organization, but will not be listed in the list of users of this organisation": "La cuenta de servicio formará parte automáticamente de la organización principal de la plataforma, pero no aparecerá en la lista de usuarios de esta organización",
   "Service accounts do not have any password and a randomized email address will be generated, if not provided on creation. Service account do not receive notifications. Service account pertains automatically to the main platform organization.": "Las cuentas de servicio no tienen contraseña y se generará una dirección de correo electrónico aleatoria, si no se proporciona en la creación. Las cuentas de servicio no reciben notificaciones. La cuenta de servicio pertenece automáticamente a la organización principal de la plataforma.",
   "Session timeout in": "Tiempo de espera de la sesión en",

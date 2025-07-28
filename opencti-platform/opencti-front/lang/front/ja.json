@@ -3149,6 +3149,7 @@
   "Server ingestion is paused until the size of messages is reduced under max capacity": "サーバへの取り込みは、メッセージのサイズが最大容量以下になるまで一時停止されます。",
   "Service account": "サービスアカウント",
   "Service account policy": "サービスアカウントポリシー",
+  "Service account responsible for data creation": "データ作成を担当するサービスアカウント",
   "Service Account will automatically be part of the Platform Main Organization, but will not be listed in the list of users of this organisation": "サービスアカウントは自動的にプラットフォームのメイン組織に属しますが、この組織のユーザーリストには表示されません。",
   "Service accounts do not have any password and a randomized email address will be generated, if not provided on creation. Service account do not receive notifications. Service account pertains automatically to the main platform organization.": "サービスアカウントにはパスワードはなく、作成時に提供されない場合、ランダムな電子メールアドレスが生成されます。サービスアカウントは通知を受け取りません。サービスアカウントは自動的にメインプラットフォームの組織に関連します。",
   "Session timeout in": "セッションタイムアウト",
