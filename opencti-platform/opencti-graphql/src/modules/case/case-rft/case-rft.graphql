@@ -123,7 +123,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   ): ContainerConnection
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(stixVersion: StixVersion): String
   importFiles(
     first: Int
     prefixMimeType: String

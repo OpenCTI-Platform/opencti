@@ -105,7 +105,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
     aliases: [String]
     # Technical
     creators: [Creator!]
-    toStix: String
+    toStix(stixVersion: StixVersion): String
     importFiles(
     first: Int
     prefixMimeType: String
