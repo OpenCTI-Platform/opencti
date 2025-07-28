@@ -56,7 +56,7 @@ describe('Background task validity check (checkActionValidity)', () => {
     { name: 'INVESTIGATION_INUPDATE_INDELETE' },
   ]);
 
-  it('should throw an error if task QUERY and filter is not PublicDashboard', async () => {
+  it('should throw an error if there are several actions on the same field', async () => {
     const user = userEditor;
     const type = TASK_TYPE_QUERY;
     const input = {
