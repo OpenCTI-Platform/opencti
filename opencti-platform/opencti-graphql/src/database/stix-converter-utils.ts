@@ -4,7 +4,7 @@ import type * as S2 from '../types/stix-2-0-common';
 import { FROM_START, FROM_START_STR, UNTIL_END, UNTIL_END_STR } from '../utils/format';
 import { objects } from '../schema/stixRefRelationship';
 import { isEmptyField, isInferredIndex } from './utils';
-import type { StoreEntity } from '../types/store';
+import type { StoreEntity, StoreRelation } from '../types/store';
 import { INPUT_OBJECTS } from '../schema/general';
 
 export const assertType = (type: string, instanceType: string) => {
@@ -49,4 +49,12 @@ export const convertObjectReferences = (instance: StoreEntity, isInferred = fals
     // If related relation is available, select accordingly
     return isInferredIndex(r.i_relation._index) === isInferred;
   }).map((m) => m.standard_id);
+};
+export const checkInstanceCompletion = (instance: StoreRelation) => {
+  if (instance.from === undefined || isEmptyField(instance.from)) {
+    throw UnsupportedError(`Cannot convert relation without a resolved from: ${instance.fromId}`);
+  }
+  if (instance.to === undefined || isEmptyField(instance.to)) {
+    throw UnsupportedError(`Cannot convert relation without a resolved to: ${instance.toId}`);
+  }
 };
