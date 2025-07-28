@@ -216,6 +216,7 @@ const PIR_MANAGER_DEFINITION: ManagerDefinition = {
   enabledToStart(): boolean {
     return this.enabledByConfig && !!PIR_MANAGER_LOCK_KEY;
   },
+  enterpriseEditionOnly: true,
   cronSchedulerHandler: {
     handler: pirManagerHandler,
     interval: PIR_MANAGER_INTERVAL,

@@ -145,7 +145,9 @@ const initManager = (manager: ManagerDefinition) => {
     status: (settings?: BasicStoreSettings) => {
       return {
         id: manager.id,
-        enable: manager.enabled(settings),
+        enable: manager.enterpriseEditionOnly
+          ? settings?.valid_enterprise_edition === true && manager.enabled(settings)
+          : manager.enabled(settings),
         running,
         warning: manager.warning?.() || false,
       };
