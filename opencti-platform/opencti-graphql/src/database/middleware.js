@@ -175,7 +175,8 @@ import {
 import { isRuleUser, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules-utils';
 import { instanceMetaRefsExtractor, isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
 import { createEntityAutoEnrichment, updateEntityAutoEnrichment } from '../domain/enrichment';
-import { convertExternalReferenceToStix, convertStoreToStix } from './stix-2-1-converter';
+import { convertExternalReferenceToStix, convertStoreToStix_2_1 } from './stix-2-1-converter';
+import { convertStoreToStix } from './stix-common-converter';
 import {
   buildAggregationRelationFilter,
   buildEntityFilters,
@@ -212,7 +213,7 @@ import {
   xOpenctiStixIds
 } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
-import { FilterMode, FilterOperator } from '../generated/graphql';
+import { FilterMode, FilterOperator, Version } from '../generated/graphql';
 import { getMandatoryAttributesForSetting } from '../modules/entitySetting/entitySetting-attributeUtils';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import {
@@ -510,10 +511,11 @@ export const storeLoadByIdWithRefs = async (context, user, id, opts = {}) => {
 };
 export const stixLoadById = async (context, user, id, opts = {}) => {
   const instance = await storeLoadByIdWithRefs(context, user, id, opts);
-  return instance ? convertStoreToStix(instance) : undefined;
+  const { version = Version.Stix_2_1 } = opts;
+  return instance ? convertStoreToStix(instance, version) : undefined;
 };
-const convertStoreToStixWithResolvedFiles = async (instance) => {
-  const instanceInStix = convertStoreToStix(instance);
+const convertStoreToStixWithResolvedFiles = async (instance, version = Version.Stix_2_1) => {
+  const instanceInStix = convertStoreToStix(instance, version);
   const nonResolvedFiles = instanceInStix.extensions[STIX_EXT_OCTI].files;
   if (nonResolvedFiles) {
     for (let i = 0; i < nonResolvedFiles.length; i += 1) {
@@ -527,7 +529,7 @@ const convertStoreToStixWithResolvedFiles = async (instance) => {
   return instanceInStix;
 };
 export const stixLoadByIds = async (context, user, ids, opts = {}) => {
-  const { resolveStixFiles = false } = opts;
+  const { resolveStixFiles = false, version = Version.Stix_2_1 } = opts;
   const elements = await storeLoadByIdsWithRefs(context, user, ids, opts);
   // As stix load by ids doesn't respect the ordering we need to remap the result
   const loadedInstancesMap = new Map(elements.map((i) => ({ instance: i, ids: extractIdsFromStoreObject(i) }))
@@ -535,12 +537,12 @@ export const stixLoadByIds = async (context, user, ids, opts = {}) => {
   if (resolveStixFiles) {
     const fileResolvedInstancesPromise = ids.map((id) => loadedInstancesMap.get(id))
       .filter((i) => isNotEmptyField(i))
-      .map((e) => (convertStoreToStixWithResolvedFiles(e)));
+      .map((e) => (convertStoreToStixWithResolvedFiles(e, version)));
     return Promise.all(fileResolvedInstancesPromise);
   }
   return ids.map((id) => loadedInstancesMap.get(id))
     .filter((i) => isNotEmptyField(i))
-    .map((e) => (convertStoreToStix(e)));
+    .map((e) => (convertStoreToStix(e, version)));
 };
 export const stixBundleByIdStringify = async (context, user, type, id) => {
   const resolver = modules.get(type)?.bundleResolver;
@@ -550,13 +552,14 @@ export const stixBundleByIdStringify = async (context, user, type, id) => {
   return await resolver(context, user, id);
 };
 
-export const stixLoadByIdStringify = async (context, user, id) => {
-  const data = await stixLoadById(context, user, id);
+export const stixLoadByIdStringify = async (context, user, id, opts = {}) => {
+  const { version = Version.Stix_2_1 } = opts;
+  const data = await stixLoadById(context, user, id, { version });
   return data ? JSON.stringify(data) : '';
 };
 export const stixLoadByFilters = async (context, user, types, args) => {
   const elements = await loadByFiltersWithDependencies(context, user, types, args);
-  return elements ? elements.map((element) => convertStoreToStix(element)) : [];
+  return elements ? elements.map((element) => convertStoreToStix_2_1(element)) : [];
 };
 // endregion
 
