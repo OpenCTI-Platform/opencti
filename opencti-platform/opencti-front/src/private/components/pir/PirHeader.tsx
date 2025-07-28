@@ -1,8 +1,6 @@
 import { graphql, useFragment } from 'react-relay';
 import React, { useState } from 'react';
 import { Box, Button, Typography } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import PirDeletion from '@components/pir/PirDeletion';
 import PirPopover from './PirPopover';
 import PirEdition from './PirEdition';
 import { PirHeaderFragment$key } from './__generated__/PirHeaderFragment.graphql';
@@ -12,8 +10,8 @@ import { PirEditionFragment$key } from './__generated__/PirEditionFragment.graph
 
 const headerFragment = graphql`
   fragment PirHeaderFragment on Pir {
-    id
     name
+    ...PirPopoverFragment
   }
 `;
 
@@ -23,9 +21,9 @@ interface PirHeaderProps {
 }
 
 const PirHeader = ({ data, editionData }: PirHeaderProps) => {
-  const navigate = useNavigate();
   const { t_i18n } = useFormatter();
-  const { name, id } = useFragment(headerFragment, data);
+  const pir = useFragment(headerFragment, data);
+  const { name } = pir;
 
   const [isFormOpen, setFormOpen] = useState(false);
 
@@ -35,45 +33,33 @@ const PirHeader = ({ data, editionData }: PirHeaderProps) => {
   ];
 
   return (
-    <PirDeletion
-      pirId={id}
-      onDeleteComplete={() => navigate('/dashboard/pirs')}
-    >
-      {({ handleOpenDelete, deleting }) => (
-        <>
-          <Breadcrumbs elements={breadcrumb} />
+    <>
+      <Breadcrumbs elements={breadcrumb} />
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="h1" sx={{ marginBottom: 0, flex: 1 }}>
-              {name}
-            </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Typography variant="h1" sx={{ marginBottom: 0, flex: 1 }}>
+          {name}
+        </Typography>
 
-            <Button
-              onClick={() => setFormOpen(true)}
-              color="primary"
-              variant="contained"
-              aria-label={t_i18n('Update')}
-              title={t_i18n('Update')}
-            >
-              {t_i18n('Update')}
-            </Button>
+        <PirPopover data={pir} />
 
-            <PirPopover
-              deleting={deleting}
-              handleOpenDelete={handleOpenDelete}
-            />
-          </Box>
+        <Button
+          onClick={() => setFormOpen(true)}
+          color="primary"
+          variant="contained"
+          aria-label={t_i18n('Update')}
+          title={t_i18n('Update')}
+        >
+          {t_i18n('Update')}
+        </Button>
+      </Box>
 
-          <PirEdition
-            isOpen={isFormOpen}
-            onClose={() => setFormOpen(false)}
-            data={editionData}
-            deleting={deleting}
-            handleOpenDelete={handleOpenDelete}
-          />
-        </>
-      )}
-    </PirDeletion>
+      <PirEdition
+        isOpen={isFormOpen}
+        onClose={() => setFormOpen(false)}
+        data={editionData}
+      />
+    </>
   );
 };
 

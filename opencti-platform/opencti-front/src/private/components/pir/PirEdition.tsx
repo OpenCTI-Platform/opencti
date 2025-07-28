@@ -1,7 +1,6 @@
-import React, { UIEvent } from 'react';
+import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Drawer from '@components/common/drawer/Drawer';
-import Button from '@mui/material/Button';
 import { PirEditionMutation } from './__generated__/PirEditionMutation.graphql';
 import { PirEditionFragment$key } from './__generated__/PirEditionFragment.graphql';
 import { useFormatter } from '../../../components/i18n';
@@ -28,16 +27,12 @@ interface PirEditionProps {
   isOpen: boolean
   onClose: () => void
   data: PirEditionFragment$key
-  handleOpenDelete: (e?: UIEvent) => void
-  deleting: boolean
 }
 
 const PirEdition = ({
   data,
   isOpen,
   onClose,
-  handleOpenDelete,
-  deleting,
 }: PirEditionProps) => {
   const { t_i18n } = useFormatter();
   const pir = useFragment(editionFragment, data);
@@ -56,27 +51,13 @@ const PirEdition = ({
   };
 
   return (
-    <>
-      <Drawer
-        title={t_i18n('Update a PIR')}
-        open={isOpen}
-        onClose={onClose}
-      >
-        <>
-          <PirEditionForm onSubmitField={onEdit} pir={pir} />
-
-          <Button
-            color="error"
-            variant="contained"
-            onClick={handleOpenDelete}
-            sx={{ marginTop: 2 }}
-            disabled={deleting}
-          >
-            {t_i18n('Delete')}
-          </Button>
-        </>
-      </Drawer>
-    </>
+    <Drawer
+      title={t_i18n('Update a PIR')}
+      open={isOpen}
+      onClose={onClose}
+    >
+      <PirEditionForm onSubmitField={onEdit} pir={pir} />
+    </Drawer>
   );
 };
 

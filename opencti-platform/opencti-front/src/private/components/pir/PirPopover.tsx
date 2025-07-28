@@ -2,20 +2,29 @@ import React, { UIEvent, useState } from 'react';
 import MoreVert from '@mui/icons-material/MoreVert';
 import Button from '@mui/material/Button';
 import { Menu, MenuItem, PopoverProps } from '@mui/material';
+import { graphql, useFragment } from 'react-relay';
+import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../components/i18n';
 import stopEvent from '../../../utils/domEvent';
+import PirDeletion from './PirDeletion';
+import { PirPopoverFragment$key } from './__generated__/PirPopoverFragment.graphql';
+
+const popoverFragment = graphql`
+  fragment PirPopoverFragment on Pir {
+    id
+  }
+`;
 
 interface PirPopoverProps {
-  handleOpenDelete: (e?: UIEvent) => void
-  deleting: boolean
+  data: PirPopoverFragment$key
 }
 
-const PirPopover = ({
-  handleOpenDelete,
-  deleting,
-}: PirPopoverProps) => {
+const PirPopover = ({ data }: PirPopoverProps) => {
+  const navigate = useNavigate();
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
+
+  const { id } = useFragment(popoverFragment, data);
 
   const onOpenMenu = (e: UIEvent) => {
     stopEvent(e);
@@ -39,9 +48,16 @@ const PirPopover = ({
       </Button>
 
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={onCloseMenu}>
-        <MenuItem onClick={handleOpenDelete} disabled={deleting}>
-          {t_i18n('Delete')}
-        </MenuItem>
+        <PirDeletion
+          pirId={id}
+          onDeleteComplete={() => navigate('/dashboard/pirs')}
+        >
+          {({ handleOpenDelete, deleting }) => (
+            <MenuItem onClick={handleOpenDelete} disabled={deleting}>
+              {t_i18n('Delete')}
+            </MenuItem>
+          )}
+        </PirDeletion>
       </Menu>
     </>
   );
