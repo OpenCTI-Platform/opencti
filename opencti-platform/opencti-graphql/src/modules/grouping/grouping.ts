@@ -1,11 +1,12 @@
-import convertGroupingToStix from './grouping-converter';
+import { convertGroupingToStix_2_1 } from './grouping-converter';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
-import { ENTITY_TYPE_CONTAINER_GROUPING, type StixGrouping, type StoreEntityGrouping } from './grouping-types';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { authorizedMembers, authorizedMembersActivationDate } from '../../schema/attribute-definition';
 import { RELATION_DERIVED_FROM } from '../../schema/stixCoreRelationship';
 import { REL_BUILT_IN } from '../../database/stix';
+
+import { ENTITY_TYPE_CONTAINER_GROUPING, type StixGrouping, type StoreEntityGrouping } from './grouping-types';
 
 const GROUPING_DEFINITION: ModuleDefinition<StoreEntityGrouping, StixGrouping> = {
   type: {
@@ -51,7 +52,7 @@ const GROUPING_DEFINITION: ModuleDefinition<StoreEntityGrouping, StixGrouping> =
   representative: (stix: StixGrouping) => {
     return stix.name;
   },
-  converter_2_1: convertGroupingToStix
+  converter_2_1: convertGroupingToStix_2_1
 };
 
 registerDefinition(GROUPING_DEFINITION);

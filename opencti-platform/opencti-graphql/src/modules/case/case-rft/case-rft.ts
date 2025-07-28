@@ -5,7 +5,7 @@ import { registerDefinition } from '../../../schema/module';
 import { createdBy, objectAssignee, objectMarking, objectParticipant } from '../../../schema/stixRefRelationship';
 import type { StixCaseRft, StoreEntityCaseRft } from './case-rft-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFT } from './case-rft-types';
-import convertCaseRftToStix from './case-rft-converter';
+import { convertCaseRftToStix_2_1 } from './case-rft-converter';
 import { authorizedMembers, authorizedMembersActivationDate } from '../../../schema/attribute-definition';
 
 const CASE_RFT_DEFINITION: ModuleDefinition<StoreEntityCaseRft, StixCaseRft> = {
@@ -50,7 +50,7 @@ const CASE_RFT_DEFINITION: ModuleDefinition<StoreEntityCaseRft, StixCaseRft> = {
   representative: (stix: StixCaseRft) => {
     return stix.name;
   },
-  converter_2_1: convertCaseRftToStix
+  converter_2_1: convertCaseRftToStix_2_1
 };
 
 registerDefinition(CASE_RFT_DEFINITION);
