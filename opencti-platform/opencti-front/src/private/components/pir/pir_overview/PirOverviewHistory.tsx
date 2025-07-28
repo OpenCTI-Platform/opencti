@@ -91,7 +91,7 @@ const PirOverviewHistory = ({ dataHistory, dataPir }: PirOverviewHistoryProps) =
                 filterGroups: [],
               })
               : '';
-            redirectURI = `/dashboard/pirs/${pir.id}/threats/?filters=${encodeURIComponent(addInPirFilters)}`;
+            redirectURI = `/dashboard/pirs/${pir.id}/threats?filters=${encodeURIComponent(addInPirFilters)}`;
           }
 
           return (
