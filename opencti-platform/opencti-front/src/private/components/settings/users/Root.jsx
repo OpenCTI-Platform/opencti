@@ -14,7 +14,6 @@ import { useTheme } from '@mui/styles';
 import UserDeletionDialog from './UserDeletionDialog';
 import AccessesMenu from '../AccessesMenu';
 import Security from '../../../../utils/Security';
-import { VIRTUAL_ORGANIZATION_ADMIN, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import useGranted, { VIRTUAL_ORGANIZATION_ADMIN, SETTINGS_SETACCESSES, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
