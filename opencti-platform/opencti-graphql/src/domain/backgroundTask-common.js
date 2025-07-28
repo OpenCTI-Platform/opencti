@@ -60,7 +60,7 @@ const areParentTypesKnowledge = (parentTypes) => parentTypes && parentTypes.flat
 export const checkActionValidity = async (context, user, input, scope, taskType) => {
   const { actions, filters: baseFilterString, ids } = input;
   // check actions validity
-  const actionsFields = actions.map((a) => a.field);
+  const actionsFields = actions.map((a) => a.field).filter(Boolean);
   if (actionsFields.length !== uniq(actionsFields).length) {
     throw FunctionalError('A single task cannot perform several actions on the same field.', { data: actionsFields });
   }

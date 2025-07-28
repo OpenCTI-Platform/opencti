@@ -61,8 +61,8 @@ describe('Background task validity check (checkActionValidity)', () => {
     const type = TASK_TYPE_QUERY;
     const input = {
       actions: [
-        { type: ACTION_TYPE_ADD, field: 'label', value: ['label1'] },
-        { type: ACTION_TYPE_ADD, field: 'label', value: ['label2'] }
+        { type: ACTION_TYPE_ADD, field: 'object-label', value: ['label1'] },
+        { type: ACTION_TYPE_ADD, field: 'object-label', value: ['label2'] }
       ],
       filters: filterEntityType(ENTITY_TYPE_CONTAINER_REPORT)
     };

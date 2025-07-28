@@ -1000,7 +1000,8 @@ class DataTableToolBar extends Component {
               <MenuItem
                 key={n.value}
                 value={n.value}
-                disabled={selectedFields.includes(n.value) && actionsInputs[i]?.field !== n.value}  // disable already selected fields to prevent making several actions on the same key
+                disabled={selectedFields.includes(n.value)
+                  && actionsInputs[i]?.field !== n.value} // disable already selected fields to prevent making several actions on the same key
               >
                 {n.label}
               </MenuItem>
