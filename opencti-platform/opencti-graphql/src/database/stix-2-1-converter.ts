@@ -121,7 +121,7 @@ import { isRelationBuiltin, STIX_SPEC_VERSION } from './stix';
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { isInternalObject } from '../schema/internalObject';
 import { isInternalId, isStixId } from '../schema/schemaUtils';
-import { assertType, cleanObject, convertObjectReferences, convertToStixDate } from './stix-converter-utils';
+import { assertType, checkInstanceCompletion, cleanObject, convertObjectReferences, convertToStixDate } from './stix-converter-utils';
 
 export const isTrustedStixId = (stixId: string): boolean => {
   const segments = stixId.split('--');
@@ -1182,15 +1182,6 @@ const convertPersonaToStix = (instance: StoreCyberObservable, type: string): SCO
       [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' }
     }
   };
-};
-
-const checkInstanceCompletion = (instance: StoreRelation) => {
-  if (instance.from === undefined || isEmptyField(instance.from)) {
-    throw UnsupportedError(`Cannot convert relation without a resolved from: ${instance.fromId}`);
-  }
-  if (instance.to === undefined || isEmptyField(instance.to)) {
-    throw UnsupportedError(`Cannot convert relation without a resolved to: ${instance.toId}`);
-  }
 };
 
 // SRO
