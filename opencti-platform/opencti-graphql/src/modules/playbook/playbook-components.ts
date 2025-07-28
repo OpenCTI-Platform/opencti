@@ -81,6 +81,8 @@ import { ENTITY_TYPE_INDICATOR, type StixIndicator } from '../indicator/indicato
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../case/case-rft/case-rft-types';
 import { ENTITY_TYPE_CONTAINER_TASK, type StixTask, type StoreEntityTask } from '../task/task-types';
+import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
+import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../case/feedback/feedback-types';
 import { EditOperation, FilterMode } from '../../generated/graphql';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { schemaTypesDefinition } from '../../schema/schema-types';
@@ -91,23 +93,11 @@ import type { BasicStoreEntityTaskTemplate } from '../task/task-template/task-te
 import type { BasicStoreSettings } from '../../types/settings';
 import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES, editAuthorizedMembers } from '../../utils/authorizedMembers';
 import { removeOrganizationRestriction } from '../../domain/stix';
-import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
-import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../case/feedback/feedback-types';
 import { PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT } from './components/send-email-template-component';
 import { PLAYBOOK_DATA_STREAM_PIR } from './components/data-stream-pir-component';
 import { convertMembersToUsers, extractBundleBaseElement } from './playbook-utils';
 import { convertStoreToStix_2_1 } from '../../database/stix-2-1-converter';
 import { ENTITY_TYPE_SECURITY_COVERAGE, INPUT_COVERED, type StixSecurityCoverage, type StoreEntitySecurityCoverage } from '../securityCoverage/securityCoverage-types';
-
-import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
-import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../case/feedback/feedback-types';
-
-const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixObject => {
-  const baseData = bundle.objects.find((o) => o.id === instanceId);
-  if (!baseData) throw FunctionalError('Playbook base element no longer accessible');
-  return baseData;
-};
-
 
 // region built in playbook components
 interface LoggerConfiguration {
