@@ -1,4 +1,3 @@
-import * as R from 'ramda';
 import { v4 as uuidv4, version as uuidVersion } from 'uuid';
 import { isEmptyField, isInferredIndex, isNotEmptyField } from './utils';
 import { extractEntityRepresentativeName } from './entity-representative';
@@ -122,7 +121,7 @@ import { isRelationBuiltin, STIX_SPEC_VERSION } from './stix';
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { isInternalObject } from '../schema/internalObject';
 import { isInternalId, isStixId } from '../schema/schemaUtils';
-import { assertType, cleanObject, convertToStixDate } from './stix-converter-utils';
+import { assertType, cleanObject, convertToStixDate, isValidStix } from './stix-converter-utils';
 
 export const isTrustedStixId = (stixId: string): boolean => {
   const segments = stixId.split('--');
@@ -152,10 +151,6 @@ export const convertTypeToStixType = (type: string): string => {
     return 'threat-actor';
   }
   return type.toLowerCase();
-};
-const isValidStix = (data: S.StixObject): boolean => {
-  // TODO @JRI @SAM
-  return !R.isEmpty(data);
 };
 
 export const convertObjectReferences = (instance: StoreEntity, isInferred = false) => {

@@ -101,7 +101,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
     aliases: [String]
     # Technical
     creators: [Creator!]
-    toStix: String
+    toStix(stixVersion: StixVersion): String
     importFiles(
     first: Int
     prefixMimeType: String

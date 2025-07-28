@@ -1,3 +1,4 @@
+import * as R from 'ramda';
 import { UnsupportedError } from '../config/errors';
 import type * as S from '../types/stix-2-1-common';
 import type * as S2 from '../types/stix-2-0-common';
@@ -38,4 +39,8 @@ export const cleanObject = <T>(data: T): T => {
     }
   }
   return obj;
+};
+export const isValidStix = (data: S.StixObject | S2.StixObject): boolean => {
+  // TODO @JRI @SAM
+  return !R.isEmpty(data);
 };
