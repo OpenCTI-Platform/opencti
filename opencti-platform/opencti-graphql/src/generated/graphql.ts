@@ -80,7 +80,6 @@ export type AckDetails = {
 };
 
 export type AddManagedConnectorInput = {
-  catalog_id: Scalars['ID']['input'];
   connector_user_id: Scalars['ID']['input'];
   manager_contract_configuration: Array<ContractConfigInput>;
   manager_contract_image: Scalars['String']['input'];

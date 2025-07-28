@@ -38,7 +38,7 @@ const IngestionCatalogConnectorComponent = ({
   return (
     <>
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('Catalog') }, { label: connector.default.CONNECTOR_NAME, current: true }]} />
-      <IngestionCatalogConnectorHeader connector={connector} contract={contract} />
+      <IngestionCatalogConnectorHeader connector={connector} />
       <IngestionCatalogConnectorOverview connector={connector} />
     </>
   );
