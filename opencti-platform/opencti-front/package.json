@@ -52,7 +52,7 @@
     "html-to-image": "1.11.13",
     "html-to-pdfmake": "2.5.28",
     "invert-color": "2.0.0",
-    "is-svg": "6.0.0",
+    "is-svg": "6.1.0",
     "js-base64": "3.7.7",
     "js-file-download": "0.4.12",
     "json5": "2.2.3",
