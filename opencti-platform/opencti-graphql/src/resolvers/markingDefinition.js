@@ -19,7 +19,7 @@ const markingDefinitionResolvers = {
     markingDefinitions: (_, args, context) => findMarkingsPaginated(context, context.user, args),
   },
   MarkingDefinition: {
-    toStix: (markingDefinition, _, context) => stixLoadByIdStringify(context, context.user, markingDefinition.id),
+    toStix: (markingDefinition, { stixVersion }, context) => stixLoadByIdStringify(context, context.user, markingDefinition.id, stixVersion),
     editContext: (markingDefinition) => fetchEditContext(markingDefinition.id),
   },
   Mutation: {

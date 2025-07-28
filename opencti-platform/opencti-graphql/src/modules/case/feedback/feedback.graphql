@@ -122,7 +122,7 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   ): ContainerConnection
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(stixVersion: StixVersion): String
   importFiles(
     first: Int
     prefixMimeType: String
