@@ -152,21 +152,21 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
             </div>
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <div style={{ display: 'flex' }}>
-                <div style={{ marginRight: theme.spacing(0.5) }}>
+                <div style={{ marginRight: theme.spacing(1.5) }}>
                   {canDelete && (
-                    <PopoverMenu>
-                      {({ closeMenu }) => (
-                        <Box>
-                          <MenuItem onClick={() => {
-                            handleOpenDelete();
-                            closeMenu();
-                          }}
-                          >
-                            {t_i18n('Delete')}
-                          </MenuItem>
-                        </Box>
-                      )}
-                    </PopoverMenu>
+                  <PopoverMenu>
+                    {({ closeMenu }) => (
+                      <Box>
+                        <MenuItem onClick={() => {
+                          handleOpenDelete();
+                          closeMenu();
+                        }}
+                        >
+                          {t_i18n('Delete')}
+                        </MenuItem>
+                      </Box>
+                    )}
+                  </PopoverMenu>
                   )}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
