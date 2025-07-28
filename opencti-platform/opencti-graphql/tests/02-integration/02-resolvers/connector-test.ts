@@ -2,7 +2,11 @@ import { expect, it, describe, afterAll, beforeAll } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin, USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
 import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
-import type { ConnectorInfo } from '../../../src/generated/graphql';
+import type { ConnectorInfo, Connector } from '../../../src/generated/graphql';
+import { BACKGROUND_TASK_QUEUES } from '../../../src/database/rabbitmq';
+import { ENTITY_TYPE_BACKGROUND_TASK } from '../../../src/schema/internalObject';
+import { IMPORT_CSV_CONNECTOR } from '../../../src/connector/importCsv/importCsv';
+import { DRAFT_VALIDATION_CONNECTOR } from '../../../src/modules/draftWorkspace/draftWorkspace-connector';
 
 const CREATE_WORK_QUERY = gql`
   mutation workAdd($connectorId: String!, $friendlyName: String) {
@@ -76,6 +80,22 @@ const CREATE_CONNECTOR_QUERY = gql`
   }
 `;
 
+const LIST_CONNECTORS_QUERY = gql`
+  query ListConnectors {
+    connectors {
+      id
+      name
+      active
+      auto
+      only_contextual
+      connector_type
+      connector_scope
+      connector_state
+      built_in
+    }
+  }
+`;
+
 const READ_CONNECTOR_QUERY = gql`
   query GetConnectors($id: String!) {
     connector(id: $id) {
@@ -111,12 +131,13 @@ const DELETE_CONNECTOR_QUERY = gql`
 `;
 
 const TEST_CN_ID = '5ed680de-75e2-4aa0-bec0-4e8e5a0d1695';
+const TEST_CN_NAME = 'TestConnector';
 
 beforeAll(async () => {
   const CONNECTOR_TO_CREATE = {
     input: {
       id: TEST_CN_ID,
-      name: 'TestConnector',
+      name: TEST_CN_NAME,
       type: 'EXTERNAL_IMPORT',
       scope: 'Observable',
       auto: true,
@@ -129,12 +150,32 @@ beforeAll(async () => {
   });
   expect(connector).not.toBeNull();
   expect(connector.data.registerConnector).not.toBeNull();
-  expect(connector.data.registerConnector.name).toEqual('TestConnector');
+  expect(connector.data.registerConnector.name).toEqual(TEST_CN_NAME);
   expect(connector.data.registerConnector.id).toEqual(TEST_CN_ID);
 });
 
+const CREATED_CN_COUNT = 1;
+const BUILT_IN_CN_COUNT = BACKGROUND_TASK_QUEUES + 2;
+
 describe('Connector resolver standard behaviour', () => {
   let workId: string;
+  it('should list all connectors', async () => {
+    const queryResult = await queryAsUserWithSuccess(USER_CONNECTOR.client, { query: LIST_CONNECTORS_QUERY, variables: {} });
+    expect(queryResult.data.connectors).toBeDefined();
+    // currently 7 : 1 created (TestConnector) + 6 built-in connectors (4 background tasks + import csv + draft validation)
+    expect(queryResult.data.connectors.length).toEqual(CREATED_CN_COUNT + BUILT_IN_CN_COUNT);
+    // TestConnector created above
+    expect(queryResult.data.connectors.find((c: Connector) => c.id === TEST_CN_ID)).toBeDefined();
+    expect(queryResult.data.connectors.find((c: Connector) => c.id === TEST_CN_ID).name).toEqual(TEST_CN_NAME);
+    // 6 built-in connectors
+    expect(queryResult.data.connectors.filter((c: Connector) => c.built_in).length).toEqual(BUILT_IN_CN_COUNT);
+    // check background tasks built_in connectors
+    expect(queryResult.data.connectors.filter((c: Connector) => c.connector_scope?.includes(ENTITY_TYPE_BACKGROUND_TASK)).length).toEqual(BACKGROUND_TASK_QUEUES);
+    // check built_in csv connector
+    expect(queryResult.data.connectors.filter((c: Connector) => c.id === IMPORT_CSV_CONNECTOR.id).length).toEqual(1);
+    // check built_in draft validation connector
+    expect(queryResult.data.connectors.filter((c: Connector) => c.id === DRAFT_VALIDATION_CONNECTOR.id).length).toEqual(1);
+  });
   it('should create work', async () => {
     const WORK_TO_CREATE = {
       connectorId: TEST_CN_ID,

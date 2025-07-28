@@ -31,7 +31,7 @@ export const connector = async (context, user, id) => {
     .then((conn) => completeConnector(conn));
   if (isEmptyField(element)) {
     // Built in connector
-    const conn = builtInConnector(id);
+    const conn = await builtInConnector(context, user, id);
     return completeConnector(conn);
   }
   return element;
