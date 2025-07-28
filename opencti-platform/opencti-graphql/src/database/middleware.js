@@ -212,7 +212,7 @@ import {
   xOpenctiStixIds
 } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
-import { FilterMode, FilterOperator } from '../generated/graphql';
+import { FilterMode, FilterOperator, StixVersion } from '../generated/graphql';
 import { getMandatoryAttributesForSetting } from '../modules/entitySetting/entitySetting-attributeUtils';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import {
@@ -236,6 +236,7 @@ import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetti
 import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
 import { generateVulnerabilitiesUpdates } from '../utils/vulnerabilities';
 import { idLabel } from '../schema/schema-labels';
+import { convertStoreToStix_2_0 } from './stix-2-0-converter';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -514,8 +515,11 @@ export const storeLoadByIdWithRefs = async (context, user, id, opts = {}) => {
   const elements = await storeLoadByIdsWithRefs(context, user, [id], opts);
   return elements.length > 0 ? R.head(elements) : null;
 };
-export const stixLoadById = async (context, user, id, opts = {}) => {
+export const stixLoadById = async (context, user, id, opts = {}, stixVersion = StixVersion.Stix_2_1) => {
   const instance = await storeLoadByIdWithRefs(context, user, id, opts);
+  if (stixVersion === StixVersion.Stix_2_0) {
+    return instance ? convertStoreToStix_2_0(instance) : undefined;
+  }
   return instance ? convertStoreToStix(instance) : undefined;
 };
 const convertStoreToStixWithResolvedFiles = async (instance) => {
@@ -548,8 +552,8 @@ export const stixLoadByIds = async (context, user, ids, opts = {}) => {
     .filter((i) => isNotEmptyField(i))
     .map((e) => (convertStoreToStix(e)));
 };
-export const stixLoadByIdStringify = async (context, user, id) => {
-  const data = await stixLoadById(context, user, id);
+export const stixLoadByIdStringify = async (context, user, id, stixVersion) => {
+  const data = await stixLoadById(context, user, id, {}, stixVersion);
   return data ? JSON.stringify(data) : '';
 };
 export const stixLoadByFilters = async (context, user, types, args) => {
