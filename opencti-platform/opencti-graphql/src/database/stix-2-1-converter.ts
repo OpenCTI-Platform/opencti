@@ -121,7 +121,7 @@ import { isRelationBuiltin, STIX_SPEC_VERSION } from './stix';
 import { isInternalRelationship, isStoreRelationPir, RELATION_IN_PIR } from '../schema/internalRelationship';
 import { isInternalObject } from '../schema/internalObject';
 import { isInternalId, isStixId } from '../schema/schemaUtils';
-import { assertType, cleanObject, convertObjectReferences, convertToStixDate, isValidStix } from './stix-converter-utils';
+import { assertType, checkInstanceCompletion, cleanObject, convertObjectReferences, convertToStixDate, isValidStix } from './stix-converter-utils';
 import { type StoreRelationPir } from '../modules/pir/pir-types';
 import { pushAll } from '../utils/arrayUtil';
 
