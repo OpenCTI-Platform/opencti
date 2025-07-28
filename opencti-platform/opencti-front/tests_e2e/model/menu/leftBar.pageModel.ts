@@ -25,6 +25,9 @@ export default class LeftBarPage {
     if (subMenuItem) {
       await this.page.getByRole('menuitem', { name: subMenuItem }).click();
     }
+    if (subMenuItem === 'Events') {
+      await this.page.getByLabel('Events').click();
+    }
   }
 
   async expectBreadcrumb(...items: string[]) {

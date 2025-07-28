@@ -73,7 +73,7 @@ const Sector: React.FC<SectorProps> = ({ sectorData }) => {
     sectorData,
   );
   return (
-    <>
+    <div data-testid="sector-details-page">
       <Grid
         container={true}
         spacing={3}
@@ -109,7 +109,7 @@ const Sector: React.FC<SectorProps> = ({ sectorData }) => {
         stixCoreObjectOrStixCoreRelationshipId={sector.id}
         defaultMarkings={sector.objectMarking ?? []}
       />
-    </>
+    </div>
   );
 };
 

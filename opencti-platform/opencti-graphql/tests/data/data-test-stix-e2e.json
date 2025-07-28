@@ -1258,6 +1258,174 @@
       "x_opencti_id": "06debf6c-e38a-464e-be37-383cd82effb7",
       "x_opencti_type": "Tool",
       "type": "tool"
+    },
+    {
+      "id": "identity--a18a3229-3a7b-50a8-ad50-1383dee7e1fc",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 55,
+      "created": "2024-08-30T18:16:54.957Z",
+      "modified": "2025-02-21T21:50:31.839Z",
+      "identity_class": "class",
+      "name": "Sector e2e",
+      "labels": [
+        "e2e"
+      ],
+      "x_opencti_id": "0bc7dbeb-3560-4cb2-9639-3827c0c0a74a",
+      "x_opencti_type": "Sector",
+      "type": "identity"
+    },
+    {
+      "id": "event--26f4afeb-ea5a-5082-a136-5706482ad8c9",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2025-03-20T22:50:47.976Z",
+      "modified": "2025-06-13T12:47:13.739Z",
+      "name": "Event e2e",
+      "event_types": [
+        "e2e test"
+      ],
+      "x_opencti_id": "1442bc2c-4e12-4a41-bc99-09e0c5561276",
+      "x_opencti_type": "Event",
+      "type": "event"
+    },
+    {
+      "id": "identity--dc69794b-48c9-5530-a68e-e959b0f719a8",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2024-03-09T19:15:07.856Z",
+      "modified": "2024-03-10T01:59:00.214Z",
+      "identity_class": "organization",
+      "name": "Organization e2e",
+      "x_opencti_id": "bd5b1a4c-251b-482c-921b-0304d3cbab98",
+      "x_opencti_type": "Organization",
+      "type": "identity"
+    },
+    {
+      "id": "identity--760aee52-1349-593e-8fac-ce335522275e",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2025-06-23T13:37:49.911Z",
+      "modified": "2025-06-23T13:37:49.973Z",
+      "identity_class": "securityplatform",
+      "name": "Security platform e2e",
+      "security_platform_type": "E2E",
+      "x_opencti_id": "6e98f233-8878-42f8-95e0-de7b010d49ea",
+      "x_opencti_type": "SecurityPlatform",
+      "type": "identity"
+    },
+    {
+      "id": "identity--125d469f-c7c0-551f-be83-e3b2532088a6",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2024-02-27T20:13:32.560Z",
+      "modified": "2025-06-16T16:33:53.689Z",
+      "identity_class": "system",
+      "name": "System e2e",
+      "x_opencti_id": "7545ed1a-a556-4d1e-8369-bac8fd6722ef",
+      "x_opencti_type": "System",
+      "type": "identity"
+    },
+    {
+      "id": "identity--f8bb44a4-f9e5-5c91-b5b5-fed0f2f7795c",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2025-01-01T00:00:00.000Z",
+      "modified": "2025-06-18T07:44:44.067Z",
+      "identity_class": "individual",
+      "name": "Individual e2e",
+      "x_opencti_id": "21d17163-54d4-42a1-87c4-d623dd4bd552",
+      "x_opencti_type": "Individual",
+      "type": "identity"
+    },
+    {
+      "id": "location--7e13827c-720f-5725-978b-907dc66a6f6f",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2021-09-02T12:46:59.351Z",
+      "modified": "2025-04-16T08:47:38.072Z",
+      "name": "Region e2e",
+      "latitude": 11.5024338,
+      "longitude": 17.7578122,
+      "x_opencti_location_type": "Region",
+      "region": "Africa",
+      "labels": [
+        "e2e"
+      ],
+      "x_opencti_id": "54e835d8-888d-425b-9eb0-6c9b6c059710",
+      "x_opencti_type": "Region",
+      "type": "location"
+    },
+    {
+      "id": "location--757931f5-e0b9-535e-9809-42ff88343a1e",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2021-09-02T12:46:59.380Z",
+      "modified": "2025-06-05T11:37:45.822Z",
+      "name": "Country e2e",
+      "latitude": 33.93911,
+      "longitude": 67.709953,
+      "x_opencti_location_type": "Country",
+      "labels": [
+        "e2e"
+      ],
+      "x_opencti_id": "4f9a6180-3307-4eda-96c3-92333d8d5445",
+      "x_opencti_type": "Country",
+      "type": "location"
+    },
+    {
+      "id": "location--99ad9bb2-5611-56ce-a047-ff53f5b3c812",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 0,
+      "created": "2023-11-24T16:05:40.509Z",
+      "modified": "2024-09-20T13:48:19.005Z",
+      "name": "Administrative area e2e",
+      "description": "e2e",
+      "latitude": 121,
+      "longitude": 122,
+      "x_opencti_location_type": "Administrative-Area",
+      "x_opencti_id": "d67551cd-17cc-4bc6-a74a-5a90fd7c7056",
+      "x_opencti_type": "Administrative-Area",
+      "type": "location"
+    },
+    {
+      "id": "location--61cb1fb1-25ae-558d-8258-fdd0948f2112",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 75,
+      "created": "2024-08-13T08:04:09.430Z",
+      "modified": "2024-08-13T08:04:09.430Z",
+      "name": "City e2e",
+      "latitude": 55.0443,
+      "longitude": 9.4174,
+      "x_opencti_location_type": "City",
+      "city": "Aabenraa",
+      "x_opencti_id": "189ea0c9-f1af-44ee-9c7e-ee75924811ff",
+      "x_opencti_type": "City",
+      "type": "location"
+    },
+    {
+      "id": "location--9f65922b-b50b-5d5e-8d37-9692c7244a9e",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 55,
+      "created": "2023-10-24T12:54:51.065Z",
+      "modified": "2025-05-07T14:26:46.107Z",
+      "name": "Position e2e",
+      "latitude": 48.85821480740149,
+      "longitude": 2.2944812999999997,
+      "x_opencti_location_type": "Position",
+      "x_opencti_id": "40174351-d2b7-4349-b5e1-f2421a969281",
+      "x_opencti_type": "Position",
+      "type": "location"
     }
   ]
 }

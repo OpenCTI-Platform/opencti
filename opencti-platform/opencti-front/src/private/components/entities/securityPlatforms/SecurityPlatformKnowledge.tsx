@@ -34,7 +34,7 @@ const SecurityPlatformKnowledgeComponent = ({
   const { schema } = useAuth();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(securityPlatform.entity_type, schema);
   return (
-    <>
+    <div data-testid="security-platform-knowledge">
       <Routes>
         <Route
           path="/relations/:relationId"
@@ -95,7 +95,7 @@ const SecurityPlatformKnowledgeComponent = ({
         }
         />
       </Routes>
-    </>
+    </div>
   );
 };
 
