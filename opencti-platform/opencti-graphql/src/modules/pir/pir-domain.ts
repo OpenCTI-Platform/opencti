@@ -33,12 +33,15 @@ import { elRawUpdateByQuery } from '../../database/engine';
 import { READ_INDEX_HISTORY } from '../../database/utils';
 import { extractFilterKeyValues } from '../../utils/filtering/filtering-utils';
 import { INSTANCE_DYNAMIC_REGARDING_OF, INSTANCE_REGARDING_OF, OBJECT_CONTAINS_FILTER, RELATION_TO_FILTER } from '../../utils/filtering/filtering-constants';
+import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 
-export const findById = (context: AuthContext, user: AuthUser, id: string) => {
+export const findById = async (context: AuthContext, user: AuthUser, id: string) => {
+  await checkEnterpriseEdition(context);
   return storeLoadById<BasicStoreEntityPir>(context, user, id, ENTITY_TYPE_PIR);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, opts?: EntityOptions<BasicStoreEntityPir>) => {
+export const findAll = async (context: AuthContext, user: AuthUser, opts?: EntityOptions<BasicStoreEntityPir>) => {
+  await checkEnterpriseEdition(context);
   return listEntitiesPaginated<BasicStoreEntityPir>(context, user, [ENTITY_TYPE_PIR], opts);
 };
 
@@ -48,6 +51,7 @@ export const findPirContainers = async (
   pir: BasicStoreEntityPir,
   opts?: EntityOptions<BasicStoreObject>
 ) => {
+  await checkEnterpriseEdition(context);
   // fetch filters entities ids
   const pirFilters: FilterGroup[] = pir.pir_criteria.map((c) => JSON.parse(c.filters));
   const pirToIdFilterIds = pirFilters.flatMap((f) => extractFilterKeyValues(RELATION_TO_FILTER, f));
@@ -91,6 +95,7 @@ export const findPirContainers = async (
 };
 
 export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAddInput) => {
+  await checkEnterpriseEdition(context);
   // -- create Pir --
   const rescanStartDate = now() - (input.pir_rescan_days * 24 * 3600 * 1000); // rescan start date in milliseconds
   const finalInput = {
@@ -119,6 +124,7 @@ export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAdd
 };
 
 export const deletePir = async (context: AuthContext, user: AuthUser, pirId: string) => {
+  await checkEnterpriseEdition(context);
   // remove the Pir rabbit queue
   try {
     await unregisterConnectorForIngestion(context, pirId);
@@ -148,6 +154,7 @@ export const deletePir = async (context: AuthContext, user: AuthUser, pirId: str
 };
 
 export const updatePir = async (context: AuthContext, user: AuthUser, pirId: string, input: EditInput[]) => {
+  await checkEnterpriseEdition(context);
   const allowedKeys = ['lastEventId', 'name', 'description'];
   const keys = input.map((i) => i.key);
   if (keys.some((k) => !allowedKeys.includes(k))) {
@@ -173,6 +180,7 @@ export const pirFlagElement = async (
   pirId: string,
   input: PirFlagElementInput,
 ) => {
+  await checkEnterpriseEdition(context);
   const pir = await storeLoadById<BasicStoreEntityPir>(context, user, pirId, ENTITY_TYPE_PIR);
   if (!pir) {
     throw FunctionalError('No PIR found');
@@ -213,6 +221,7 @@ export const pirUnflagElement = async (
   pirId: string,
   input: PirUnflagElementInput,
 ) => {
+  await checkEnterpriseEdition(context);
   const pir = await storeLoadById<BasicStoreEntityPir>(context, user, pirId, ENTITY_TYPE_PIR);
   if (!pir) {
     throw FunctionalError('No PIR found');
