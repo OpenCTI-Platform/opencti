@@ -187,6 +187,15 @@ const PirHistory = ({ data }: PirHistoryProps) => {
         lineFragment={pirHistoryLogFragment}
         entityTypes={['History']}
         searchContextFinal={{ entityTypes: ['History'] }}
+        availableFilterKeys={[
+          'timestamp',
+          'contextObjectLabel',
+          'contextObjectMarking',
+          'contextCreator',
+          'contextCreatedBy',
+          'contextEntityType',
+          'contextEntityId',
+        ]}
         resolvePath={(d: PirHistoryLogsFragment$data) => {
           return d.logs?.edges?.map((e) => e?.node);
         }}
