@@ -9365,6 +9365,7 @@ type Mutation {
   requestAccessConfigure(input: RequestAccessConfigureInput!): RequestAccessConfiguration
   pirAdd(input: PirAddInput!): Pir
   pirFieldPatch(id: ID!, input: [EditInput!]!): Pir
+  pirEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]!): Pir
   pirDelete(id: ID!): ID
   pirFlagElement(id: ID!, input: PirFlagElementInput!): ID
   pirUnflagElement(id: ID!, input: PirUnflagElementInput!): ID
@@ -13429,6 +13430,8 @@ type Pir implements InternalObject & BasicObject {
   pir_criteria: [PirCriterion!]!
   pir_filters: String!
   lastEventId: String!
+  authorizedMembers: [MemberAccess!]!
+  currentUserAccessRight: String
   pirContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): ContainerConnection
 }
 
@@ -13471,6 +13474,7 @@ input PirAddInput {
   pir_rescan_days: Int!
   pir_criteria: [PirCriterionInput!]!
   pir_filters: FilterGroup!
+  authorized_members: [MemberAccessInput!]
 }
 
 input PirFlagElementInput {

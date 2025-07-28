@@ -14373,6 +14373,7 @@ export type Mutation = {
   pingConnector?: Maybe<Connector>;
   pirAdd?: Maybe<Pir>;
   pirDelete?: Maybe<Scalars['ID']['output']>;
+  pirEditAuthorizedMembers?: Maybe<Pir>;
   pirFieldPatch?: Maybe<Pir>;
   pirFlagElement?: Maybe<Scalars['ID']['output']>;
   pirUnflagElement?: Maybe<Scalars['ID']['output']>;
@@ -15954,6 +15955,12 @@ export type MutationPirAddArgs = {
 
 export type MutationPirDeleteArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationPirEditAuthorizedMembersArgs = {
+  id: Scalars['ID']['input'];
+  input: Array<MemberAccessInput>;
 };
 
 
@@ -19683,8 +19690,10 @@ export type PhoneNumberAddInput = {
 
 export type Pir = BasicObject & InternalObject & {
   __typename?: 'Pir';
+  authorizedMembers: Array<MemberAccess>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
+  currentUserAccessRight?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
@@ -19711,6 +19720,7 @@ export type PirPirContainersArgs = {
 };
 
 export type PirAddInput = {
+  authorized_members?: InputMaybe<Array<MemberAccessInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
   pir_criteria: Array<PirCriterionInput>;
@@ -39959,6 +39969,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   pingConnector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<MutationPingConnectorArgs, 'id'>>;
   pirAdd?: Resolver<Maybe<ResolversTypes['Pir']>, ParentType, ContextType, RequireFields<MutationPirAddArgs, 'input'>>;
   pirDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationPirDeleteArgs, 'id'>>;
+  pirEditAuthorizedMembers?: Resolver<Maybe<ResolversTypes['Pir']>, ParentType, ContextType, RequireFields<MutationPirEditAuthorizedMembersArgs, 'id' | 'input'>>;
   pirFieldPatch?: Resolver<Maybe<ResolversTypes['Pir']>, ParentType, ContextType, RequireFields<MutationPirFieldPatchArgs, 'id' | 'input'>>;
   pirFlagElement?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationPirFlagElementArgs, 'id' | 'input'>>;
   pirUnflagElement?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationPirUnflagElementArgs, 'id' | 'input'>>;
@@ -40973,8 +40984,10 @@ export type PhoneNumberResolvers<ContextType = any, ParentType extends Resolvers
 }>;
 
 export type PirResolvers<ContextType = any, ParentType extends ResolversParentTypes['Pir'] = ResolversParentTypes['Pir']> = ResolversObject<{
+  authorizedMembers?: Resolver<Array<ResolversTypes['MemberAccess']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
+  currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;

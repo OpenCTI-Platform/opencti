@@ -18,7 +18,7 @@ import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { ENTITY_TYPE_PIR, PIR_TYPES, type StixPir, type StoreEntityPir } from './pir-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import convertEntityPirToStix from './pir-converter';
-import { createdAt, creators, lastEventId, updatedAt } from '../../schema/attribute-definition';
+import { authorizedMembers, createdAt, creators, lastEventId, updatedAt } from '../../schema/attribute-definition';
 import { isFeatureEnabled } from '../../config/conf';
 
 const ENTITY_PIR_DEFINITION: ModuleDefinition<StoreEntityPir, StixPir> = {
@@ -44,6 +44,7 @@ const ENTITY_PIR_DEFINITION: ModuleDefinition<StoreEntityPir, StixPir> = {
     { name: 'pir_rescan_days', label: 'PIR Rescan in days', type: 'numeric', precision: 'integer', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'pir_criteria', label: 'PIR Criteria', type: 'object', format: 'flat', mandatoryType: 'internal', editDefault: false, multiple: true, upsert: false, isFilterable: false },
     { name: 'pir_filters', label: 'PIR Filters', type: 'string', format: 'json', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    authorizedMembers
   ],
   relations: [],
   representative: (stix: StixPir) => stix.name,

@@ -17,7 +17,16 @@ import { now } from 'moment';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type EntityOptions, internalLoadById, listEntitiesPaginated, listRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityPir, ENTITY_TYPE_PIR, type PirExplanation } from './pir-types';
-import { type EditInput, EditOperation, type FilterGroup, FilterMode, type PirAddInput, type PirFlagElementInput, type PirUnflagElementInput } from '../../generated/graphql';
+import {
+  type EditInput,
+  EditOperation,
+  type FilterGroup,
+  FilterMode,
+  type MemberAccessInput,
+  type PirAddInput,
+  type PirFlagElementInput,
+  type PirUnflagElementInput
+} from '../../generated/graphql';
 import { createEntity, deleteRelationsByFromAndTo, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
@@ -34,6 +43,8 @@ import { READ_INDEX_HISTORY } from '../../database/utils';
 import { extractFilterKeyValues } from '../../utils/filtering/filtering-utils';
 import { INSTANCE_DYNAMIC_REGARDING_OF, INSTANCE_REGARDING_OF, OBJECT_CONTAINS_FILTER, RELATION_TO_FILTER } from '../../utils/filtering/filtering-constants';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
+import { editAuthorizedMembers } from '../../utils/authorizedMembers';
+import { MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_VIEW } from '../../utils/access';
 
 export const findById = async (context: AuthContext, user: AuthUser, id: string) => {
   await checkEnterpriseEdition(context);
@@ -98,9 +109,20 @@ export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAdd
   await checkEnterpriseEdition(context);
   // -- create Pir --
   const rescanStartDate = now() - (input.pir_rescan_days * 24 * 3600 * 1000); // rescan start date in milliseconds
+  const authorized_members = input.authorized_members ?? [
+    {
+      id: user.id,
+      access_right: MEMBER_ACCESS_RIGHT_ADMIN,
+    },
+    {
+      id: 'ALL',
+      access_right: MEMBER_ACCESS_RIGHT_VIEW,
+    }
+  ];
   const finalInput = {
     ...serializePir(input),
     lastEventId: `${rescanStartDate}-0`,
+    authorized_members
   };
   const created: BasicStoreEntityPir = await createEntity(
     context,
@@ -245,4 +267,22 @@ export const pirUnflagElement = async (
     } // nothing to do
   }
   return pir.id;
+};
+
+export const pirEditAuthorizedMembers = async (
+  context: AuthContext,
+  user: AuthUser,
+  pirId: string,
+  input: MemberAccessInput[],
+) => {
+  await checkEnterpriseEdition(context);
+  const args = {
+    entityId: pirId,
+    input,
+    requiredCapabilities: ['KNOWLEDGE_KNUPDATE'],
+    entityType: ENTITY_TYPE_PIR,
+    busTopicKey: ENTITY_TYPE_PIR,
+  };
+  // @ts-expect-error TODO improve busTopicKey types to avoid this
+  return editAuthorizedMembers(context, user, args);
 };

@@ -16,6 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import type { BasicStoreEntity, BasicStoreRelation, StoreEntity } from '../../types/store';
 import type { StixInternal } from '../../types/stix-2-1-common';
 import { PirType, type FilterGroup } from '../../generated/graphql';
+import type { AuthorizedMember } from '../../utils/access';
 
 export const ENTITY_TYPE_PIR = 'Pir';
 export const PIR_TYPES = Object.values(PirType);
@@ -33,6 +34,7 @@ export interface BasicStoreEntityPir extends BasicStoreEntity {
   pir_criteria: PirCriterion[]
   pir_filters: string
   lastEventId: string
+  restricted_members: Array<AuthorizedMember>;
 }
 
 export interface StoreEntityPir extends StoreEntity {
@@ -43,6 +45,7 @@ export interface StoreEntityPir extends StoreEntity {
   pir_criteria: PirCriterion[]
   pir_filters: string
   lastEventId: string
+  restricted_members: Array<AuthorizedMember>;
 }
 
 export interface StixPir extends StixInternal {

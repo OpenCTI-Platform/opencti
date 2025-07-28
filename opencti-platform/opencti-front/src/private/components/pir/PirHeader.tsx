@@ -16,17 +16,44 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import { graphql, useFragment } from 'react-relay';
 import React, { useState } from 'react';
 import { Box, Button, Typography } from '@mui/material';
+import FormAuthorizedMembersDialog from '@components/common/form/FormAuthorizedMembersDialog';
 import PirPopover from './PirPopover';
 import PirEdition from './PirEdition';
 import { PirHeaderFragment$key } from './__generated__/PirHeaderFragment.graphql';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { PirEditionFragment$key } from './__generated__/PirEditionFragment.graphql';
+import { authorizedMembersToOptions } from '../../../utils/authorizedMembers';
 
 const headerFragment = graphql`
   fragment PirHeaderFragment on Pir {
+    id
     name
+    creators {
+      id
+      name
+      entity_type
+    }
+    authorizedMembers {
+      id
+      name
+      entity_type
+      access_right
+      member_id
+      groups_restriction {
+        id
+        name
+      }
+    }
     ...PirPopoverFragment
+  }
+`;
+
+const pirHeaderEditAuthorizedMembersMutation = graphql`
+  mutation PirHeaderEditAuthorizedMembersMutation($id: ID!, $input: [MemberAccessInput!]!) {
+    pirEditAuthorizedMembers(id: $id, input: $input) {
+      ...PirHeaderFragment
+    }
   }
 `;
 
@@ -38,9 +65,9 @@ interface PirHeaderProps {
 const PirHeader = ({ data, editionData }: PirHeaderProps) => {
   const { t_i18n } = useFormatter();
   const pir = useFragment(headerFragment, data);
-  const { name } = pir;
+  const { name, id, authorizedMembers, creators } = pir;
 
-  const [isFormOpen, setFormOpen] = useState(false);
+  const [isEditionOpen, setIsEditionOpen] = useState(false);
 
   const breadcrumb = [
     { label: t_i18n('PIR'), link: '/dashboard/pirs' },
@@ -51,15 +78,24 @@ const PirHeader = ({ data, editionData }: PirHeaderProps) => {
     <>
       <Breadcrumbs elements={breadcrumb} />
 
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
         <Typography variant="h1" sx={{ marginBottom: 0, flex: 1 }}>
           {name}
         </Typography>
 
-        <PirPopover data={pir} />
+        <div>
+          <FormAuthorizedMembersDialog
+            id={id}
+            owner={creators?.[0]}
+            mutation={pirHeaderEditAuthorizedMembersMutation}
+            authorizedMembers={authorizedMembersToOptions(authorizedMembers)}
+          />
+
+          <PirPopover data={pir} />
+        </div>
 
         <Button
-          onClick={() => setFormOpen(true)}
+          onClick={() => setIsEditionOpen(true)}
           color="primary"
           variant="contained"
           aria-label={t_i18n('Update')}
@@ -70,8 +106,8 @@ const PirHeader = ({ data, editionData }: PirHeaderProps) => {
       </Box>
 
       <PirEdition
-        isOpen={isFormOpen}
-        onClose={() => setFormOpen(false)}
+        isOpen={isEditionOpen}
+        onClose={() => setIsEditionOpen(false)}
         data={editionData}
       />
     </>
