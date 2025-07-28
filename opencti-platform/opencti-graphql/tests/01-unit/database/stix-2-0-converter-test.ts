@@ -4,9 +4,19 @@ import {
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_CONTAINER_OPINION,
   ENTITY_TYPE_CONTAINER_REPORT,
-  ENTITY_TYPE_MALWARE
+  ENTITY_TYPE_MALWARE,
+  ENTITY_TYPE_TOOL,
+  ENTITY_TYPE_VULNERABILITY
 } from '../../../src/schema/stixDomainObject';
-import { convertMalwareToStix, convertNoteToStix, convertObservedDataToStix, convertOpinionToStix, convertReportToStix } from '../../../src/database/stix-2-0-converter';
+import {
+  convertMalwareToStix,
+  convertNoteToStix,
+  convertObservedDataToStix,
+  convertOpinionToStix,
+  convertReportToStix,
+  convertToolToStix,
+  convertVulnerabilityToStix
+} from '../../../src/database/stix-2-0-converter';
 import { EXPECTED_MALWARE, MALWARE_INSTANCE } from './instances-stix-2-0-converter/malware';
 import { EXPECTED_REPORT, REPORT_INSTANCE } from './instances-stix-2-0-converter/containers/report';
 import { EXPECTED_OBSERVED_DATA, OBSERVED_DATA_INSTANCE } from './instances-stix-2-0-converter/containers/observed-data';
@@ -30,11 +40,21 @@ import { EXPECTED_RFI, RFI_INSTANCE } from './instances-stix-2-0-converter/conta
 import { convertCaseRfiToStix_2_0 } from '../../../src/modules/case/case-rfi/case-rfi-converter';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../../src/modules/grouping/grouping-types';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../../../src/modules/case/feedback/feedback-types';
+import { EXPECTED_TOOL, TOOL_INSTANCE } from './instances-stix-2-0-converter/tool';
+import { EXPECTED_VULNERABILITY, INSTANCE_VULNERABILITY } from './instances-stix-2-0-converter/vulnerability';
 
 describe('Stix 2.0 opencti converter', () => {
   it('should convert Malware', async () => {
     const result = convertMalwareToStix(MALWARE_INSTANCE, ENTITY_TYPE_MALWARE);
     expect(result).toEqual(EXPECTED_MALWARE);
+  });
+  it('should convert Tool', async () => {
+    const result = convertToolToStix(TOOL_INSTANCE, ENTITY_TYPE_TOOL);
+    expect(result).toEqual(EXPECTED_TOOL);
+  });
+  it('should convert Vulnerability', async () => {
+    const result = convertVulnerabilityToStix(INSTANCE_VULNERABILITY, ENTITY_TYPE_VULNERABILITY);
+    expect(result).toEqual(EXPECTED_VULNERABILITY);
   });
   it('should convert Report', async () => {
     const result = convertReportToStix(REPORT_INSTANCE, ENTITY_TYPE_CONTAINER_REPORT);
