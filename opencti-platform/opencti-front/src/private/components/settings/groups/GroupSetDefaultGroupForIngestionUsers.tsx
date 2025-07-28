@@ -112,7 +112,7 @@ const GroupSetDefaultGroupForIngestionUsersComponent = ({ queryRef }: GroupSetDe
       <GroupField
         style={{ marginTop: 20 }}
         name="default_group_for_ingestion_users"
-        label={t_i18n('Default service account for Service accounts ')}
+        label={t_i18n('Default service account for Service accounts')}
         multiple={false}
         onChange={handleChange}
       />
