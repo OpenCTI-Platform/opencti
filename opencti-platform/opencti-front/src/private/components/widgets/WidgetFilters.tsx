@@ -55,7 +55,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
 
   const entitiesFilters = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object']);
 
-  const bookmarkAvailableEntityType = ['Malware', 'Threat-Actor-Individual', 'Threat-Actor-Group', 'Intrusion-Set', 'Campaign'];
+  const bookmarkAvailableEntityTypes = ['Malware', 'Threat-Actor-Individual', 'Threat-Actor-Group', 'Intrusion-Set', 'Campaign'];
 
   return (
     <>
