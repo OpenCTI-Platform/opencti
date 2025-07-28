@@ -12,6 +12,8 @@ import {
   ENTITY_TYPE_DATA_COMPONENT,
   ENTITY_TYPE_DATA_SOURCE,
   ENTITY_TYPE_MALWARE,
+  ENTITY_TYPE_TOOL,
+  ENTITY_TYPE_VULNERABILITY,
   isStixDomainObjectIdentity,
   isStixDomainObjectLocation,
   isStixDomainObjectThreatActor
@@ -149,6 +151,80 @@ export const convertMalwareToStix = (instance: StoreEntity, type: string): SDO.S
     capabilities: instance.capabilities,
     operating_system_refs: (instance[INPUT_OPERATING_SYSTEM] ?? []).map((m) => m.standard_id),
     sample_refs: (instance[INPUT_SAMPLE] ?? []).map((m) => m.standard_id),
+  };
+};
+
+export const convertToolToStix = (instance: StoreEntity, type: string): SDO.StixTool => {
+  assertType(ENTITY_TYPE_TOOL, type);
+  return {
+    ...buildStixDomain(instance),
+    name: instance.name,
+    description: instance.description,
+    tool_types: instance.tool_types,
+    aliases: instance.aliases,
+    kill_chain_phases: buildKillChainPhases(instance),
+    tool_version: instance.tool_version
+  };
+};
+
+export const convertVulnerabilityToStix = (instance: StoreEntity, type: string): SDO.StixVulnerability => {
+  assertType(ENTITY_TYPE_VULNERABILITY, type);
+  const vulnerability = buildStixDomain(instance);
+  return {
+    ...vulnerability,
+    name: instance.name,
+    description: instance.description,
+    x_opencti_cisa_kev: instance.x_opencti_cisa_kev,
+    x_opencti_first_seen_active: instance.x_opencti_first_seen_active,
+    // CVSS3
+    x_opencti_cvss_vector_string: instance.x_opencti_cvss_vector_string,
+    x_opencti_cvss_base_score: instance.x_opencti_cvss_base_score,
+    x_opencti_cvss_base_severity: instance.x_opencti_cvss_base_severity,
+    x_opencti_cvss_attack_vector: instance.x_opencti_cvss_attack_vector,
+    x_opencti_cvss_attack_complexity: instance.x_opencti_cvss_attack_complexity,
+    x_opencti_cvss_privileges_required: instance.x_opencti_cvss_privileges_required,
+    x_opencti_cvss_user_interaction: instance.x_opencti_cvss_user_interaction,
+    x_opencti_cvss_scope: instance.x_opencti_cvss_scope,
+    x_opencti_cvss_confidentiality_impact: instance.x_opencti_cvss_confidentiality_impact,
+    x_opencti_cvss_integrity_impact: instance.x_opencti_cvss_integrity_impact,
+    x_opencti_cvss_availability_impact: instance.x_opencti_cvss_availability_impact,
+    x_opencti_cvss_exploit_code_maturity: instance.x_opencti_cvss_exploit_code_maturity,
+    x_opencti_cvss_remediation_level: instance.x_opencti_cvss_remediation_level,
+    x_opencti_cvss_report_confidence: instance.x_opencti_cvss_report_confidence,
+    x_opencti_cvss_temporal_score: instance.x_opencti_cvss_temporal_score,
+    // CVSS2
+    x_opencti_cvss_v2_vector_string: instance.x_opencti_cvss_v2_vector_string,
+    x_opencti_cvss_v2_base_score: instance.x_opencti_cvss_v2_base_score,
+    x_opencti_cvss_v2_access_vector: instance.x_opencti_cvss_v2_access_vector,
+    x_opencti_cvss_v2_access_complexity: instance.x_opencti_cvss_v2_access_complexity,
+    x_opencti_cvss_v2_authentication: instance.x_opencti_cvss_v2_authentication,
+    x_opencti_cvss_v2_confidentiality_impact: instance.x_opencti_cvss_v2_confidentiality_impact,
+    x_opencti_cvss_v2_integrity_impact: instance.x_opencti_cvss_v2_integrity_impact,
+    x_opencti_cvss_v2_availability_impact: instance.x_opencti_cvss_v2_availability_impact,
+    x_opencti_cvss_v2_exploitability: instance.x_opencti_cvss_v2_exploitability,
+    x_opencti_cvss_v2_remediation_level: instance.x_opencti_cvss_v2_remediation_level,
+    x_opencti_cvss_v2_report_confidence: instance.x_opencti_cvss_v2_report_confidence,
+    x_opencti_cvss_v2_temporal_score: instance.x_opencti_cvss_v2_temporal_score,
+    // CVSS4
+    x_opencti_cvss_v4_vector_string: instance.x_opencti_cvss_v4_vector_string,
+    x_opencti_cvss_v4_base_score: instance.x_opencti_cvss_v4_base_score,
+    x_opencti_cvss_v4_base_severity: instance.x_opencti_cvss_v4_base_severity,
+    x_opencti_cvss_v4_attack_vector: instance.x_opencti_cvss_v4_attack_vector,
+    x_opencti_cvss_v4_attack_complexity: instance.x_opencti_cvss_v4_attack_complexity,
+    x_opencti_cvss_v4_attack_requirements: instance.x_opencti_cvss_v4_attack_requirements,
+    x_opencti_cvss_v4_privileges_required: instance.x_opencti_cvss_v4_privileges_required,
+    x_opencti_cvss_v4_user_interaction: instance.x_opencti_cvss_v4_user_interaction,
+    x_opencti_cvss_v4_confidentiality_impact_v: instance.x_opencti_cvss_v4_confidentiality_impact_v,
+    x_opencti_cvss_v4_confidentiality_impact_s: instance.x_opencti_cvss_v4_confidentiality_impact_s,
+    x_opencti_cvss_v4_integrity_impact_v: instance.x_opencti_cvss_v4_integrity_impact_v,
+    x_opencti_cvss_v4_integrity_impact_s: instance.x_opencti_cvss_v4_integrity_impact_s,
+    x_opencti_cvss_v4_availability_impact_v: instance.x_opencti_cvss_v4_availability_impact_v,
+    x_opencti_cvss_v4_availability_impact_s: instance.x_opencti_cvss_v4_availability_impact_s,
+    x_opencti_cvss_v4_exploit_maturity: instance.x_opencti_cvss_v4_exploit_maturity,
+    // Others
+    x_opencti_score: instance.x_opencti_score,
+    x_opencti_epss_score: instance.x_opencti_epss_score,
+    x_opencti_epss_percentile: instance.x_opencti_epss_percentile,
   };
 };
 
