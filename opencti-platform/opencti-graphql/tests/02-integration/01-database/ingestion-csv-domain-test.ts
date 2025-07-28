@@ -118,8 +118,12 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
     const userInDefaultGroup: BasicGroupEntity[] = createdUser.groups.filter((group: BasicGroupEntity) => group.id === ingestionDefaultGroupId);
     expect(userInDefaultGroup[0].name).toBe('Connectors'); // just to check that user is in default ingestion group
     expect(createdUser.groups.length, 'Platform default group should not apply, only default ingestion group').toBe(1);
-    expect(createdUser.organizations.length, 'There is one platform org, so user should have one organization').toBe(1);
-    expect(createdUser.organizations[0].id).toBe(platformOrganization.id);
+    if (!createdUser.user_service_account) {
+      expect(createdUser.organizations.length, 'There is one platform org, so user should have one organization').toBe(1);
+      expect(createdUser.organizations[0].id).toBe(platformOrganization.id);
+    } else {
+      expect(createdUser.organizations.length, 'There is one platform org, so user should not have organization').toBe(0);
+    }
     // Delete just created user
     await adminQuery({
       query: DELETE_USER_QUERY,
