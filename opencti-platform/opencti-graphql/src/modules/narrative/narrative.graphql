@@ -106,7 +106,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
     isSubNarrative: Boolean
     # Technical
     creators: [Creator!]
-    toStix: String
+    toStix(stixVersion: StixVersion): String
     importFiles(
     first: Int
     prefixMimeType: String
