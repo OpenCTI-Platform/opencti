@@ -1,5 +1,4 @@
-import type { StixDomainObject } from './stix-2-0-common';
-import type { StixId, StixDate, StixKillChainPhase } from './stix-2-1-common';
+import type { StixDate, StixDomainObject } from './stix-2-0-common';
 
 export interface StixMalware extends StixDomainObject {
   name: string; // optional
@@ -15,6 +14,18 @@ export interface StixMalware extends StixDomainObject {
   capabilities: Array<string>; // optional
   operating_system_refs: Array<StixId>; // optional
   sample_refs: Array<StixId>; // optional
+}
+
+interface StixIncident extends StixDomainObject {
+  name: string;
+  description: string; // optional
+  incident_type: string; // optional
+  first_seen: StixDate;
+  last_seen: StixDate;
+  objective: string;
+  aliases: Array<string>;
+  source: string;
+  severity: string;
 }
 
 // Container specific Properties

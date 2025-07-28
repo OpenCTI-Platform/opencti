@@ -28,11 +28,24 @@ export interface StixObject {
 export interface StixDomainObject extends StixObject {
   created: StixDate;
   modified: StixDate;
-  revoked: boolean; // optional
+  revoked?: boolean; // optional
   confidence: number; // optional
   // lang: string; // optional
   labels: Array<string>; // optional
   object_marking_refs?: Array<StixId>; // optional
   created_by_ref: StixId | undefined; // optional
   external_references?: Array<StixInternalExternalReference>;
+}
+
+// SRO
+interface StixRelationshipObject extends StixObject {
+  created_by_ref: StixId | undefined; // optional
+  created: StixDate;
+  modified: StixDate;
+  revoked?: boolean; // optional
+  labels: Array<string>; // optional
+  confidence: number; // optional
+  lang?: string; // optional
+  external_references?: Array<StixInternalExternalReference>; // optional
+  object_marking_refs?: Array<StixId>; // optional
 }
