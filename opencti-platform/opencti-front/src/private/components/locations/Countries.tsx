@@ -112,10 +112,10 @@ const Countries: FunctionComponent = () => {
     );
   };
   return (
-    <>
+    <div data-testid="country-page">
       <Breadcrumbs elements={[{ label: t_i18n('Locations') }, { label: t_i18n('Countries'), current: true }]} />
       {renderLines()}
-    </>
+    </div>
   );
 };
 

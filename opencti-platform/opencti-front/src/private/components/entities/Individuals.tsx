@@ -118,10 +118,10 @@ const Individuals = () => {
   };
 
   return (
-    <>
+    <div data-testid="individual-page">
       <Breadcrumbs elements={[{ label: t_i18n('Entities') }, { label: t_i18n('Individuals'), current: true }]} />
       {renderLines()}
-    </>
+    </div>
   );
 };
 

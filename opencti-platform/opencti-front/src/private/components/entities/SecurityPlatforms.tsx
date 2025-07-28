@@ -127,7 +127,7 @@ const SecurityPlatforms = () => {
   } as UsePreloadedPaginationFragment<SecurityPlatformsPaginationQuery>;
 
   return (
-    <>
+    <div data-testid="security-platform-page">
       <Breadcrumbs elements={[{ label: t_i18n('Entities') }, { label: t_i18n('Security platforms'), current: true }]} />
       {queryRef && (
       <DataTable
@@ -144,7 +144,7 @@ const SecurityPlatforms = () => {
                       />}
       />
       )}
-    </>
+    </div>
   );
 };
 
