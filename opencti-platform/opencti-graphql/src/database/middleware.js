@@ -722,7 +722,7 @@ export const distributionRelations = async (context, user, args) => {
   const types = relationshipTypes || [ABSTRACT_BASIC_RELATIONSHIP];
   const distributionDateAttribute = dateAttribute || 'created_at';
   let finalField = field;
-  if (field.includes('.')) {
+  if (field.includes('.') && !field.includes('pir_explanations')) {
     finalField = REL_INDEX_PREFIX + field;
   }
   // Using elastic can only be done if the distribution is a count on types

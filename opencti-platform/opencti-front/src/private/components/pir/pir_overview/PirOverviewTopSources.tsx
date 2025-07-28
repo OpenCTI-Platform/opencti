@@ -43,7 +43,7 @@ const PirOverviewTopSources = ({ data }: PirOverviewTopSourcesProps) => {
 
   const relationshipsTopSourcesDataSelection = [ // TODO PIR not working
     {
-      attribute: 'created-by.internal_id', // TODO set dependencies
+      attribute: 'pir_explanations.dependencies.author_id',
       isTo: false,
       relationship_type: 'in-pir',
       filters: {
