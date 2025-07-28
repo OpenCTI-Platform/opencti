@@ -78,7 +78,7 @@ const System: React.FC<SystemProps> = ({ systemData, viewAs }) => {
     : { authorId: system.id };
 
   return (
-    <>
+    <div data-testid="system-details-page">
       <Grid
         container={true}
         spacing={3}
@@ -119,7 +119,7 @@ const System: React.FC<SystemProps> = ({ systemData, viewAs }) => {
         stixCoreObjectOrStixCoreRelationshipId={system.id}
         defaultMarkings={system.objectMarking ?? []}
       />
-    </>
+    </div>
   );
 };
 

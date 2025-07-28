@@ -75,7 +75,7 @@ const SecurityPlatform: React.FC<SecurityPlatformProps> = ({ securityPlatformDat
     securityPlatformData,
   );
   return (
-    <>
+    <div data-testid="security-platform-details-page">
       <Grid
         container={true}
         spacing={3}
@@ -116,7 +116,7 @@ const SecurityPlatform: React.FC<SecurityPlatformProps> = ({ securityPlatformDat
           />
         </Grid>
       </Grid>
-    </>
+    </div>
   );
 };
 

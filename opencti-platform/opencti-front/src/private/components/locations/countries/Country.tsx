@@ -98,7 +98,7 @@ const CountryComponent = ({
     countryData,
   );
   return (
-    <>
+    <div data-testid="country-details-page">
       <Grid
         container={true}
         spacing={3}
@@ -145,7 +145,7 @@ const CountryComponent = ({
         stixCoreObjectOrStixCoreRelationshipId={country.id}
         defaultMarkings={country.objectMarking ?? []}
       />
-    </>
+    </div>
   );
 };
 

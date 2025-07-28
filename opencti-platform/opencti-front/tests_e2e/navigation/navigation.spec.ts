@@ -64,6 +64,28 @@ import DataComponentPage from "../model/dataComponent.pageModel";
 import DataComponentDetailsPage from 'tests_e2e/model/dataComponentDetails.pageModel';
 import DataSourcePage from 'tests_e2e/model/dataSource.pageModel';
 import DataSourceDetailsPage from "../model/dataSourceDetails.pageModel";
+import SectorPage from 'tests_e2e/model/sector.pageModel';
+import SectorDetailsPage from "../model/sectorDetails.pageModel";
+import EventPage from "../model/events.pageModel";
+import EventDetailsPage from "../model/eventDetails.pageModel";
+import OrganizationPage from 'tests_e2e/model/organization.pageModel';
+import OrganizationDetailsPage from 'tests_e2e/model/organizationDetails.pageModel';
+import SecurityPlatformPage from "../model/securityPlatform.pageModel";
+import SecurityPlatformDetailsPage from 'tests_e2e/model/securityPlatformDetails.pageModel';
+import SystemPage from "../model/system.pageModel";
+import SystemDetailsPage from "../model/systemDetails.pageModel";
+import IndividualPage from "../model/individual.pageModel";
+import IndividualDetailsPage from "../model/individualDetails.pageModel";
+import RegionPage from "../model/region.pageModel";
+import RegionDetailsPage from "../model/regionDetails.pageModel";
+import CountryPage from "../model/country.pageModel";
+import CountryDetailsPage from "../model/countryDetails.pageModel";
+import AdministrativeAreaPage from "../model/administrativeArea.pageModel";
+import AdministrativeAreaDetailsPage from "../model/AdministrativeAreaDetails.pageModel";
+import CityPage from "../model/city.pageModel";
+import CityDetailsPage from "../model/cityDetails.pageModel";
+import PositionPage from "../model/position.pageModel";
+import PositionDetailsPage from "../model/positionDetails.pageModel";
 
 /**
  * Goal: validate that everything is opening without errors in Analyses > Note.
@@ -1093,6 +1115,420 @@ const navigateDataSource = async (page: Page) => {
   await expect(historyTab.getPage()).toBeVisible();
 };
 
+const navigateSector = async (page: Page) => {
+  const sectorInitData = 'Sector e2e';
+  const sectorPage = new SectorPage(page);
+  await sectorPage.navigateFromMenu();
+  await expect(sectorPage.getPage()).toBeVisible();
+  await expect(page.getByText(sectorInitData)).toBeVisible();
+  await sectorPage.getItemFromList(sectorInitData).click();
+
+  const sectorDetailsPage = new SectorDetailsPage(page);
+  await expect(sectorDetailsPage.getPage()).toBeVisible();
+
+  // -- Knowledge
+  await sectorDetailsPage.tabs.goToKnowledgeTab();
+  await expect(page.getByTestId('sector-knowledge')).toBeVisible();
+
+  // -- Content
+  await sectorDetailsPage.tabs.goToContentTab();
+  const contentTab = new StixCoreObjectContentTabPage(page);
+  await expect(contentTab.getPage()).toBeVisible();
+
+  // -- Analyses
+  await sectorDetailsPage.tabs.goToAnalysesTab();
+  await expect(page.getByPlaceholder('Search these results...')).toBeVisible();
+
+  // -- Sightings
+  await sectorDetailsPage.tabs.goToSightingsTab();
+  await expect(page.getByTestId('sightings-overview')).toBeVisible();
+
+  // -- Data
+  await sectorDetailsPage.tabs.goToDataTab();
+  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+
+  // -- History
+  await sectorDetailsPage.tabs.goToHistoryTab();
+  const historyTab = new StixCoreObjectHistoryTab(page);
+  await expect(historyTab.getPage()).toBeVisible();
+};
+
+const navigateEvent = async (page: Page) => {
+  const eventInitData = 'Event e2e';
+  const eventPage = new EventPage(page);
+  await eventPage.navigateFromMenu();
+  await expect(eventPage.getPage()).toBeVisible();
+  await expect(page.getByText(eventInitData)).toBeVisible();
+  await eventPage.getItemFromList(eventInitData).click();
+
+  const eventDetailsPage = new EventDetailsPage(page);
+  await expect(eventDetailsPage.getPage()).toBeVisible();
+
+  // -- Knowledge
+  await eventDetailsPage.tabs.goToKnowledgeTab();
+  await expect(page.getByTestId('event-knowledge')).toBeVisible();
+
+  // -- Content
+  await eventDetailsPage.tabs.goToContentTab();
+  const contentTab = new StixCoreObjectContentTabPage(page);
+  await expect(contentTab.getPage()).toBeVisible();
+
+  // -- Analyses
+  await eventDetailsPage.tabs.goToAnalysesTab();
+  await expect(page.getByPlaceholder('Search these results...')).toBeVisible();
+
+  // -- Sightings
+  await eventDetailsPage.tabs.goToSightingsTab();
+  await expect(page.getByTestId('sightings-overview')).toBeVisible();
+
+  // -- Data
+  await eventDetailsPage.tabs.goToDataTab();
+  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+
+  // -- History
+  await eventDetailsPage.tabs.goToHistoryTab();
+  const historyTab = new StixCoreObjectHistoryTab(page);
+  await expect(historyTab.getPage()).toBeVisible();
+};
+
+const navigateOrganization = async (page: Page) => {
+  const organizationInitData = 'Organization e2e';
+  const organizationPage = new OrganizationPage(page);
+  await organizationPage.navigateFromMenu();
+  await expect(organizationPage.getPage()).toBeVisible();
+  await expect(page.getByText(organizationInitData)).toBeVisible();
+  await organizationPage.getItemFromList(organizationInitData).click();
+
+  const organizationDetailsPage = new OrganizationDetailsPage(page);
+  await expect(organizationDetailsPage.getPage()).toBeVisible();
+
+  // -- Knowledge
+  await organizationDetailsPage.tabs.goToKnowledgeTab();
+  await expect(page.getByTestId('organization-knowledge')).toBeVisible();
+
+  // -- Content
+  await organizationDetailsPage.tabs.goToContentTab();
+  const contentTab = new StixCoreObjectContentTabPage(page);
+  await expect(contentTab.getPage()).toBeVisible();
+
+  // -- Analyses
+  await organizationDetailsPage.tabs.goToAnalysesTab();
+  await expect(page.getByPlaceholder('Search these results...')).toBeVisible();
+
+  // -- Sightings
+  await organizationDetailsPage.tabs.goToSightingsTab();
+  await expect(page.getByTestId('sightings-overview')).toBeVisible();
+
+  // -- Data
+  await organizationDetailsPage.tabs.goToDataTab();
+  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+
+  // -- History
+  await organizationDetailsPage.tabs.goToHistoryTab();
+  const historyTab = new StixCoreObjectHistoryTab(page);
+  await expect(historyTab.getPage()).toBeVisible();
+};
+
+const navigateSecurityPlatform = async (page: Page) => {
+  const securityPlatformInitData = 'Security platform e2e';
+  const securityPlatformPage = new SecurityPlatformPage(page);
+  await securityPlatformPage.navigateFromMenu();
+  await expect(securityPlatformPage.getPage()).toBeVisible();
+  await expect(page.getByText(securityPlatformInitData)).toBeVisible();
+  await securityPlatformPage.getItemFromList(securityPlatformInitData).click();
+
+  const securityPlatformDetailsPage = new SecurityPlatformDetailsPage(page);
+  await expect(securityPlatformDetailsPage.getPage()).toBeVisible();
+
+  // -- Knowledge
+  await securityPlatformDetailsPage.tabs.goToKnowledgeTab();
+  await expect(page.getByTestId('security-platform-knowledge')).toBeVisible();
+
+  // -- Content
+  await securityPlatformDetailsPage.tabs.goToContentTab();
+  const contentTab = new StixCoreObjectContentTabPage(page);
+  await expect(contentTab.getPage()).toBeVisible();
+
+  // -- Analyses
+  await securityPlatformDetailsPage.tabs.goToAnalysesTab();
+  await expect(page.getByPlaceholder('Search these results...')).toBeVisible();
+
+  // -- Data
+  await securityPlatformDetailsPage.tabs.goToDataTab();
+  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+
+  // -- History
+  await securityPlatformDetailsPage.tabs.goToHistoryTab();
+  const historyTab = new StixCoreObjectHistoryTab(page);
+  await expect(historyTab.getPage()).toBeVisible();
+};
+
+const navigateSystem = async (page: Page) => {
+  const systemInitData = 'System e2e';
+  const systemPage = new SystemPage(page);
+  await systemPage.navigateFromMenu();
+  await expect(systemPage.getPage()).toBeVisible();
+  await expect(page.getByText(systemInitData)).toBeVisible();
+  await systemPage.getItemFromList(systemInitData).click();
+
+  const systemDetailsPage = new SystemDetailsPage(page);
+  await expect(systemDetailsPage.getPage()).toBeVisible();
+
+  // -- Knowledge
+  await systemDetailsPage.tabs.goToKnowledgeTab();
+  await expect(page.getByTestId('system-knowledge')).toBeVisible();
+
+  // -- Content
+  await systemDetailsPage.tabs.goToContentTab();
+  const contentTab = new StixCoreObjectContentTabPage(page);
+  await expect(contentTab.getPage()).toBeVisible();
+
+  // -- Analyses
+  await systemDetailsPage.tabs.goToAnalysesTab();
+  await expect(page.getByPlaceholder('Search these results...')).toBeVisible();
+
+  // -- Sightings
+  await systemDetailsPage.tabs.goToSightingsTab();
+  await expect(page.getByTestId('sightings-overview')).toBeVisible();
+
+  // -- Data
+  await systemDetailsPage.tabs.goToDataTab();
+  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+
+  // -- History
+  await systemDetailsPage.tabs.goToHistoryTab();
+  const historyTab = new StixCoreObjectHistoryTab(page);
+  await expect(historyTab.getPage()).toBeVisible();
+};
+
+const navigateIndividual = async (page: Page) => {
+  const individualInitData = 'Individual e2e';
+  const individualPage = new IndividualPage(page);
+  await individualPage.navigateFromMenu();
+  await expect(individualPage.getPage()).toBeVisible();
+  await expect(page.getByText(individualInitData)).toBeVisible();
+  await individualPage.getItemFromList(individualInitData).click();
+
+  const individualDetailsPage = new IndividualDetailsPage(page);
+  await expect(individualDetailsPage.getPage()).toBeVisible();
+
+  // -- Knowledge
+  await individualDetailsPage.tabs.goToKnowledgeTab();
+  await expect(page.getByTestId('individual-knowledge')).toBeVisible();
+
+  // -- Content
+  await individualDetailsPage.tabs.goToContentTab();
+  const contentTab = new StixCoreObjectContentTabPage(page);
+  await expect(contentTab.getPage()).toBeVisible();
+
+  // -- Analyses
+  await individualDetailsPage.tabs.goToAnalysesTab();
+  await expect(page.getByPlaceholder('Search these results...')).toBeVisible();
+
+  // -- Sightings
+  await individualDetailsPage.tabs.goToSightingsTab();
+  await expect(page.getByTestId('sightings-overview')).toBeVisible();
+
+  // -- Data
+  await individualDetailsPage.tabs.goToDataTab();
+  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+
+  // -- History
+  await individualDetailsPage.tabs.goToHistoryTab();
+  const historyTab = new StixCoreObjectHistoryTab(page);
+  await expect(historyTab.getPage()).toBeVisible();
+};
+
+const navigateRegion = async (page: Page) => {
+  const regionInitData = 'Region e2e';
+  const regionPage = new RegionPage(page);
+  await regionPage.navigateFromMenu();
+  await expect(regionPage.getPage()).toBeVisible();
+  await expect(page.getByText(regionInitData)).toBeVisible();
+  await regionPage.getItemFromList(regionInitData).click();
+
+  const regionDetailsPage = new RegionDetailsPage(page);
+  await expect(regionDetailsPage.getPage()).toBeVisible();
+
+  // -- Knowledge
+  await regionDetailsPage.tabs.goToKnowledgeTab();
+  await expect(page.getByTestId('region-knowledge')).toBeVisible();
+
+  // -- Content
+  await regionDetailsPage.tabs.goToContentTab();
+  const contentTab = new StixCoreObjectContentTabPage(page);
+  await expect(contentTab.getPage()).toBeVisible();
+
+  // -- Analyses
+  await regionDetailsPage.tabs.goToAnalysesTab();
+  await expect(page.getByPlaceholder('Search these results...')).toBeVisible();
+
+  // -- Sightings
+  await regionDetailsPage.tabs.goToSightingsTab();
+  await expect(page.getByTestId('sightings-overview')).toBeVisible();
+
+  // -- Data
+  await regionDetailsPage.tabs.goToDataTab();
+  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+
+  // -- History
+  await regionDetailsPage.tabs.goToHistoryTab();
+  const historyTab = new StixCoreObjectHistoryTab(page);
+  await expect(historyTab.getPage()).toBeVisible();
+};
+
+const navigateCountry = async (page: Page) => {
+  const countryInitData = 'Country e2e';
+  const countryPage = new CountryPage(page);
+  await countryPage.navigateFromMenu();
+  await expect(countryPage.getPage()).toBeVisible();
+  await expect(page.getByText(countryInitData)).toBeVisible();
+  await countryPage.getItemFromList(countryInitData).click();
+
+  const countryDetailsPage = new CountryDetailsPage(page);
+  await expect(countryDetailsPage.getPage()).toBeVisible();
+
+  // -- Knowledge
+  await countryDetailsPage.tabs.goToKnowledgeTab();
+  await expect(page.getByTestId('country-knowledge')).toBeVisible();
+
+  // -- Content
+  await countryDetailsPage.tabs.goToContentTab();
+  const contentTab = new StixCoreObjectContentTabPage(page);
+  await expect(contentTab.getPage()).toBeVisible();
+
+  // -- Analyses
+  await countryDetailsPage.tabs.goToAnalysesTab();
+  await expect(page.getByPlaceholder('Search these results...')).toBeVisible();
+
+  // -- Sightings
+  await countryDetailsPage.tabs.goToSightingsTab();
+  await expect(page.getByTestId('sightings-overview')).toBeVisible();
+
+  // -- Data
+  await countryDetailsPage.tabs.goToDataTab();
+  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+
+  // -- History
+  await countryDetailsPage.tabs.goToHistoryTab();
+  const historyTab = new StixCoreObjectHistoryTab(page);
+  await expect(historyTab.getPage()).toBeVisible();
+};
+
+const navigateAdministrativeArea = async (page: Page) => {
+  const administrativeAreaInitData = 'Administrative area e2e';
+  const administrativeAreaPage = new AdministrativeAreaPage(page);
+  await administrativeAreaPage.navigateFromMenu();
+  await expect(administrativeAreaPage.getPage()).toBeVisible();
+  await expect(page.getByText(administrativeAreaInitData)).toBeVisible();
+  await administrativeAreaPage.getItemFromList(administrativeAreaInitData).click();
+
+  const administrativeAreaDetailsPage = new AdministrativeAreaDetailsPage(page);
+  await expect(administrativeAreaDetailsPage.getPage()).toBeVisible();
+
+  // -- Knowledge
+  await administrativeAreaDetailsPage.tabs.goToKnowledgeTab();
+  await expect(page.getByTestId('administrative-area-knowledge')).toBeVisible();
+
+  // -- Content
+  await administrativeAreaDetailsPage.tabs.goToContentTab();
+  const contentTab = new StixCoreObjectContentTabPage(page);
+  await expect(contentTab.getPage()).toBeVisible();
+
+  // -- Analyses
+  await administrativeAreaDetailsPage.tabs.goToAnalysesTab();
+  await expect(page.getByPlaceholder('Search these results...')).toBeVisible();
+
+  // -- Sightings
+  await administrativeAreaDetailsPage.tabs.goToSightingsTab();
+  await expect(page.getByTestId('sightings-overview')).toBeVisible();
+
+  // -- Data
+  await administrativeAreaDetailsPage.tabs.goToDataTab();
+  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+
+  // -- History
+  await administrativeAreaDetailsPage.tabs.goToHistoryTab();
+  const historyTab = new StixCoreObjectHistoryTab(page);
+  await expect(historyTab.getPage()).toBeVisible();
+};
+
+const navigateCity = async (page: Page) => {
+  const cityInitData = 'City e2e';
+  const cityPage = new CityPage(page);
+  await cityPage.navigateFromMenu();
+  await expect(cityPage.getPage()).toBeVisible();
+  await expect(page.getByText(cityInitData)).toBeVisible();
+  await cityPage.getItemFromList(cityInitData).click();
+
+  const cityDetailsPage = new CityDetailsPage(page);
+  await expect(cityDetailsPage.getPage()).toBeVisible();
+
+  // -- Knowledge
+  await cityDetailsPage.tabs.goToKnowledgeTab();
+  await expect(page.getByTestId('city-knowledge')).toBeVisible();
+
+  // -- Content
+  await cityDetailsPage.tabs.goToContentTab();
+  const contentTab = new StixCoreObjectContentTabPage(page);
+  await expect(contentTab.getPage()).toBeVisible();
+
+  // -- Analyses
+  await cityDetailsPage.tabs.goToAnalysesTab();
+  await expect(page.getByPlaceholder('Search these results...')).toBeVisible();
+
+  // -- Sightings
+  await cityDetailsPage.tabs.goToSightingsTab();
+  await expect(page.getByTestId('sightings-overview')).toBeVisible();
+
+  // -- Data
+  await cityDetailsPage.tabs.goToDataTab();
+  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+
+  // -- History
+  await cityDetailsPage.tabs.goToHistoryTab();
+  const historyTab = new StixCoreObjectHistoryTab(page);
+  await expect(historyTab.getPage()).toBeVisible();
+};
+
+const navigatePosition = async (page: Page) => {
+  const positionInitData = 'Position e2e';
+  const positionPage = new PositionPage(page);
+  await positionPage.navigateFromMenu();
+  await expect(positionPage.getPage()).toBeVisible();
+  await expect(page.getByText(positionInitData)).toBeVisible();
+  await positionPage.getItemFromList(positionInitData).click();
+
+  const positionDetailsPage = new PositionDetailsPage(page);
+  await expect(positionDetailsPage.getPage()).toBeVisible();
+
+  // -- Knowledge
+  await positionDetailsPage.tabs.goToKnowledgeTab();
+  await expect(page.getByTestId('position-knowledge')).toBeVisible();
+
+  // -- Content
+  await positionDetailsPage.tabs.goToContentTab();
+  const contentTab = new StixCoreObjectContentTabPage(page);
+  await expect(contentTab.getPage()).toBeVisible();
+
+  // -- Analyses
+  await positionDetailsPage.tabs.goToAnalysesTab();
+  await expect(page.getByPlaceholder('Search these results...')).toBeVisible();
+
+  // -- Sightings
+  await positionDetailsPage.tabs.goToSightingsTab();
+  await expect(page.getByTestId('sightings-overview')).toBeVisible();
+
+  // -- Data
+  await positionDetailsPage.tabs.goToDataTab();
+  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+
+  // -- History
+  await positionDetailsPage.tabs.goToHistoryTab();
+  const historyTab = new StixCoreObjectHistoryTab(page);
+  await expect(historyTab.getPage()).toBeVisible();
+};
+
 const navigateAllMenu = async (page: Page) => {
   const leftBarPage = new LeftBarPage(page);
 
@@ -1265,9 +1701,20 @@ test('Check navigation on all pages', { tag: ['@navigation'] }, async ({ page })
   // await navigateChannel(page);
   // await navigateTool(page);
   // await navigateVulnerability(page);
-  await navigateAttackPattern(page);
-  await navigateNarrative(page);
-  await navigateCourseOfAction(page);
-  await navigateDataComponent(page);
-  await navigateDataSource(page);
+  // await navigateAttackPattern(page);
+  // await navigateNarrative(page);
+  // await navigateCourseOfAction(page);
+  // await navigateDataComponent(page);
+  // await navigateDataSource(page);
+  await navigateSector(page);
+  await navigateEvent(page);
+  await navigateOrganization(page);
+  await navigateSecurityPlatform(page);
+  await navigateSystem(page);
+  await navigateIndividual(page);
+  await navigateRegion(page);
+  await navigateCountry(page);
+  await navigateAdministrativeArea(page);
+  await navigateCity(page);
+  await navigatePosition(page);
 });

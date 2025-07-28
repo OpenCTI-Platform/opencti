@@ -79,7 +79,7 @@ const Individual: React.FC<IndividualProps> = ({ individualData, viewAs }) => {
     ? { stixCoreObjectOrStixRelationshipId: individual.id }
     : { authorId: individual.id };
   return (
-    <>
+    <div data-testid="individual-details-page">
       <Grid
         container={true}
         spacing={3}
@@ -122,7 +122,7 @@ const Individual: React.FC<IndividualProps> = ({ individualData, viewAs }) => {
         stixCoreObjectOrStixCoreRelationshipId={individual.id}
         defaultMarkings={individual.objectMarking ?? []}
       />
-    </>
+    </div>
   );
 };
 

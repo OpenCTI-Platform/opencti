@@ -32,7 +32,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
   const { schema } = useAuth();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(city.entity_type, schema);
   return (
-    <>
+    <div data-testid="city-knowledge">
       <Routes>
         <Route
           path="/relations/:relationId"
@@ -285,7 +285,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
           }
         />
       </Routes>
-    </>
+    </div>
   );
 };
 

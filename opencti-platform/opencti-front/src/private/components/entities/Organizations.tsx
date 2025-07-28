@@ -126,10 +126,10 @@ const Organizations = () => {
   };
 
   return (
-    <>
+    <div data-testid="organization-page">
       <Breadcrumbs elements={[{ label: t_i18n('Entities') }, { label: t_i18n('Organizations'), current: true }]} />
       {renderLines()}
-    </>
+    </div>
   );
 };
 
