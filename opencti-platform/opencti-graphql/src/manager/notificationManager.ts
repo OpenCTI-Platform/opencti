@@ -4,7 +4,7 @@ import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from
 import type { Moment } from 'moment';
 import { createStreamProcessor, fetchRangeNotifications, storeNotificationEvent, type StreamProcessor } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
-import conf, { booleanConf, isFeatureEnabled, logApp } from '../config/conf';
+import conf, { booleanConf, logApp } from '../config/conf';
 import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
 import { executionContext, INTERNAL_USERS, isUserCanAccessStixElement, isUserCanAccessStreamUpdateEvent, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';
 import type { DataEvent, SseEvent, StreamNotifEvent, UpdateEvent } from '../types/event';
@@ -46,7 +46,6 @@ export const TRIGGER_TYPE_VALUES = Object.values(TriggerType);
 export const DIGEST_PERIOD_VALUES = Object.values(DigestPeriod);
 export const TRIGGER_SCOPE_VALUES = ['knowledge', 'activity'];
 export const REQUEST_SHARE_ACCESS_INFO_TYPE = 'Request sharing';
-const serviceAccountFeatureFlag = isFeatureEnabled('SERVICE_ACCOUNT');
 
 export interface ResolvedTrigger {
   users: Array<AuthUser>
@@ -245,7 +244,7 @@ export const convertToNotificationUser = (user: AuthUser, notifiers: Array<strin
   return {
     user_id: user.internal_id,
     user_email: user.user_email,
-    user_service_account: user.user_service_account && serviceAccountFeatureFlag ? user.user_service_account : false,
+    user_service_account: user.user_service_account ? user.user_service_account : false,
     notifiers,
   };
 };

@@ -42,7 +42,6 @@ import Transition from '../../../components/Transition';
 import type { Theme } from '../../../components/Theme';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { FieldOption } from '../../../utils/field';
-import useHelper from '../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -130,8 +129,6 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
 }) => {
   const isEnterpriseEdition = useEnterpriseEdition();
   const [openPlatformOrganizationChanges, setOpenPlatformOrganizationChanges] = useState<boolean>(false);
-  const { isFeatureEnable } = useHelper();
-  const serviceAccountFeatureFlag = isFeatureEnable('SERVICE_ACCOUNT');
 
   const data = usePreloadedQuery(policiesQuery, queryRef);
   const settings = useFragment<Policies$key>(PoliciesFragment, data.settings);
@@ -218,7 +215,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                             <br/>
                             {t_i18n('Therefore all pieces of knowledge which are not explicitly shared with any organization won\'t be accessible to user(s) not member of the platform organization.')}
                             <br/>
-                            {serviceAccountFeatureFlag && (t_i18n('Service Account will automatically be part of the Platform Main Organization, but will not be listed in the list of users of this organisation'))}
+                            {t_i18n('Service Account will automatically be part of the Platform Main Organization, but will not be listed in the list of users of this organisation')}
                           </Alert>
                           <EETooltip>
                             <ObjectOrganizationField

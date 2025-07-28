@@ -27,7 +27,6 @@ import AuditsRadar from '@components/common/audits/AuditsRadar';
 import AuditsList from '@components/common/audits/AuditsList';
 import { useFormatter } from '../../../../components/i18n';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -51,12 +50,10 @@ interface UserAnalyticsProps {
 }
 
 const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
-  const { isFeatureEnable } = useHelper();
-  const serviceAccountFeatureFlag = isFeatureEnable('SERVICE_ACCOUNT');
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const user = useFragment(UserFragment, data);
-  const userServiceAccount = user.user_service_account && serviceAccountFeatureFlag;
+  const userServiceAccount = user.user_service_account;
   const isEnterpriseEdition = useEnterpriseEdition();
   if (!isEnterpriseEdition) {
     return <EnterpriseEdition feature={'User activity'} />;

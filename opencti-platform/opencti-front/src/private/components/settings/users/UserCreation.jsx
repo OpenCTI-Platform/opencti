@@ -8,7 +8,6 @@ import Alert from '@mui/material/Alert';
 import MenuItem from '@mui/material/MenuItem';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
-import useHelper from '../../../../utils/hooks/useHelper';
 import GroupField, { groupsQuery } from '../../common/form/GroupField';
 import UserConfidenceLevelField from './edition/UserConfidenceLevelField';
 import Drawer from '../../common/drawer/Drawer';
@@ -82,8 +81,6 @@ const CreateUserControlledDial = (props) => (
 
 const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
   const { settings } = useAuth();
-  const { isFeatureEnable } = useHelper();
-  const serviceAccountFeatureFlag = isFeatureEnable('SERVICE_ACCOUNT');
   const theme = useTheme();
   const { t_i18n } = useFormatter();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
@@ -107,7 +104,7 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
     delete finalValues.confirmation;
     delete finalValues.user_confidence_level_enabled;
 
-    if (serviceAccountFeatureFlag && finalValues.user_service_account) {
+    if (finalValues.user_service_account) {
       delete finalValues.password;
       if (finalValues.user_email === '') {
         delete finalValues.user_email;
@@ -145,7 +142,7 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
   };
   const initialValues = {
     ...initialValuesBase,
-    ...(serviceAccountFeatureFlag && { user_service_account: false }),
+    ...{ user_service_account: false },
   };
 
   return (
@@ -167,7 +164,6 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
           >
             {({ submitForm, handleReset, isSubmitting }) => (
               <Form>
-                {serviceAccountFeatureFlag && (
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                   <Field
                     component={SwitchField}
@@ -184,7 +180,7 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                       style={{ cursor: 'default' }}
                     />
                   </Tooltip>
-                </div>)}
+                </div>
                 <Field
                   component={TextField}
                   name="name"

@@ -20,7 +20,6 @@ import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import useAuth from '../../../utils/hooks/useAuth';
-import useHelper from '../../../utils/hooks/useHelper';
 
 export const usersQuery = graphql`
   query UsersLinesPaginationQuery(
@@ -109,8 +108,6 @@ const Users = () => {
   const isOnlyAdminOrganization = !isSetAccess && isAdminOrganization;
   const { me } = useAuth();
   const organization = me.administrated_organizations?.[0] ?? null;
-  const { isFeatureEnable } = useHelper();
-  const serviceAccountFeatureFlag = isFeatureEnable('SERVICE_ACCOUNT');
 
   const initialValues = {
     searchTerm: '',
@@ -242,7 +239,7 @@ const Users = () => {
             disableLineSelection={isOnlyAdminOrganization}
             icon={(user) => {
               const external = user.external === true;
-              const userServiceAccount = user.user_service_account && serviceAccountFeatureFlag;
+              const userServiceAccount = user.user_service_account;
               if (userServiceAccount) {
                 return <ManageAccountsOutlined color="primary" />;
               }
