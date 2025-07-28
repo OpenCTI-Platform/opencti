@@ -18,15 +18,22 @@ import { Route, Routes } from 'react-router-dom';
 import { boundaryWrapper } from '@components/Error';
 import Pirs from '@components/pir/Pirs';
 import Pir from '@components/pir/Pir';
+import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
 import Loader from '../../../components/Loader';
+import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
+import { useFormatter } from '../../../components/i18n';
 
 const PirRoot = () => {
+  const isEnterpriseEdition = useEnterpriseEdition();
+  const { t_i18n } = useFormatter();
   return (
     <Suspense fallback={<Loader />}>
-      <Routes>
-        <Route path="/" element={boundaryWrapper(Pirs)} />
-        <Route path="/:pirId/*" element={boundaryWrapper(Pir)} />
-      </Routes>
+      {isEnterpriseEdition
+        ? <Routes>
+          <Route path="/" element={boundaryWrapper(Pirs)}/>
+          <Route path="/:pirId/*" element={boundaryWrapper(Pir)}/>
+        </Routes>
+        : <EnterpriseEdition feature={t_i18n('PIR')} />}
     </Suspense>
   );
 };
