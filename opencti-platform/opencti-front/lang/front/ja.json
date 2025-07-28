@@ -2951,7 +2951,7 @@
   "Resolve from": "解決",
   "Resolve indicators based on observables (add in bundle)": "観測値に基づく指標を解決する (バンドルに追加)",
   "Resolve neighbors relations and entities (add in bundle)": "近傍関係と実体を解決 (バンドルに追加)",
-  "Resolve observables an indicator is based on (add in bundle)": "(バンドルに追加) #__# インジケータが基づいている観測値を解決する (バンドルに追加)",
+  "Resolve observables an indicator is based on (add in bundle)": "インジケーターの基礎となる観察を解決します（バンドルに追加）",
   "Resolve operation": "解決操作",
   "Resource level": "リソースレベル",
   "Response type": "応答タイプ",
