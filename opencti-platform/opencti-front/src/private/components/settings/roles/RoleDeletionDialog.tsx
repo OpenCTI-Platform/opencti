@@ -1,50 +1,51 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogTitle } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import Transition from '../../../../components/Transition';
 
-const groupDeletionMutation = graphql`
-  mutation GroupDeletionDialogContainerDeletionMutation($id: ID!) {
-    groupEdit(id: $id) {
+export const roleDeletionMutation = graphql`
+  mutation RoleDeletionDialogMutation($id: ID!) {
+    roleEdit(id: $id) {
       delete
     }
   }
 `;
 
-interface GroupDeletionDialogProps {
-  groupId: string,
+interface RoleDeletionDialogProps {
+  roleId: string,
   isOpen: boolean
   handleClose: () => void
 }
 
-const GroupDeletionDialog: FunctionComponent<GroupDeletionDialogProps> = ({
-  groupId,
+const RoleDeletionDialog: FunctionComponent<RoleDeletionDialogProps> = ({
+  roleId,
   isOpen,
   handleClose,
 }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [deleting, setDeleting] = useState<boolean>(false);
+
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
-    values: { entity_type: t_i18n('Group') },
+    values: { entity_type: t_i18n('Role') },
   });
-  const [commitDeleteMutation] = useApiMutation(
-    groupDeletionMutation,
+  const [commit] = useApiMutation(
+    roleDeletionMutation,
     undefined,
     { successMessage: deleteSuccessMessage },
   );
 
   const submitDelete = () => {
     setDeleting(true);
-    commitDeleteMutation({
-      variables: { id: groupId },
+    commit({
+      variables: { id: roleId },
       onCompleted: () => {
         setDeleting(false);
-        navigate('/dashboard/settings/accesses/groups');
+        navigate('/dashboard/settings/accesses/roles');
       },
     });
   };
@@ -57,16 +58,19 @@ const GroupDeletionDialog: FunctionComponent<GroupDeletionDialogProps> = ({
       TransitionComponent={Transition}
       onClose={handleClose}
     >
-      <DialogContent>
-        <DialogContentText>
-          {t_i18n('Do you want to delete this group?')}
-        </DialogContentText>
-      </DialogContent>
+      <DialogTitle>{t_i18n('Do you want to delete this role?')}</DialogTitle>
       <DialogActions>
-        <Button onClick={handleClose} disabled={deleting}>
+        <Button
+          onClick={handleClose}
+          disabled={deleting}
+        >
           {t_i18n('Cancel')}
         </Button>
-        <Button color="secondary" onClick={submitDelete} disabled={deleting}>
+        <Button
+          color="secondary"
+          onClick={submitDelete}
+          disabled={deleting}
+        >
           {t_i18n('Delete')}
         </Button>
       </DialogActions>
@@ -74,4 +78,4 @@ const GroupDeletionDialog: FunctionComponent<GroupDeletionDialogProps> = ({
   );
 };
 
-export default GroupDeletionDialog;
+export default RoleDeletionDialog;

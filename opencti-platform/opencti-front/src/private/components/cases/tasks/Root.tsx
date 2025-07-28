@@ -11,7 +11,7 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import Security from 'src/utils/Security';
-import { KNOWLEDGE_KNUPDATE } from 'src/utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from 'src/utils/hooks/useGranted';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -27,6 +27,7 @@ import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings
 import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import TaskEdition from './TaskEdition';
+import TaskDeletion from './TaskDeletion';
 
 const subscription = graphql`
   subscription RootTaskSubscription($id: ID!) {
@@ -104,6 +105,11 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
             EditComponent={(
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <TaskEdition caseId={data.id} />
+              </Security>
+            )}
+            DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                <TaskDeletion id={data.id} isOpen={isOpen} handleClose={onClose} />
               </Security>
             )}
             enableSuggestions={false}

@@ -20,7 +20,6 @@ import { isOnlyOrganizationAdmin } from '../../../../../utils/hooks/useGranted';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import PasswordTextField from '../../../../../components/PasswordTextField';
 import type { Theme } from '../../../../../components/Theme';
-import UserDeletionDialog from '../UserDeletionDialog';
 
 export const userMutationFieldPatch = graphql`
   mutation UserEditionOverviewFieldPatchMutation(
@@ -323,7 +322,6 @@ UserEditionOverviewComponentProps
             onFocus={handleChangeFocus}
             onChange={handleSubmitField}
           />
-          <UserDeletionDialog userId={user.id} />
         </Form>
       )}
     </Formik>

@@ -1,7 +1,6 @@
 import { graphql } from 'react-relay';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import Button from '@mui/material/Button';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../../utils/hooks/useDeletion';
@@ -17,7 +16,9 @@ const fintelDesignDeletionMutation = graphql`
 
 const FintelDesignDeletion = ({
   id,
-}: { id: string }) => {
+  isOpen,
+  handleClose,
+}: { id: string, isOpen: boolean, handleClose: () => void }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const deleteSuccessMessage = t_i18n('', {
@@ -33,7 +34,7 @@ const FintelDesignDeletion = ({
 
   // delete
   const deletion = useDeletion({});
-  const { setDeleting, handleOpenDelete, deleting } = deletion;
+  const { setDeleting } = deletion;
   const submitDelete = () => {
     commitDelete({
       variables: {
@@ -51,22 +52,13 @@ const FintelDesignDeletion = ({
   };
 
   return (
-    <>
-      <Button
-        color="error"
-        variant="contained"
-        onClick={handleOpenDelete}
-        disabled={deleting}
-        sx={{ marginTop: 2 }}
-      >
-        {t_i18n('Delete')}
-      </Button>
-      <DeleteDialog
-        deletion={deletion}
-        submitDelete={submitDelete}
-        message={t_i18n('Do you want to delete this fintel design?')}
-      />
-    </>
+    <DeleteDialog
+      deletion={deletion}
+      submitDelete={submitDelete}
+      isOpen={isOpen}
+      onClose={handleClose}
+      message={t_i18n('Do you want to delete this fintel design?')}
+    />
   );
 };
 

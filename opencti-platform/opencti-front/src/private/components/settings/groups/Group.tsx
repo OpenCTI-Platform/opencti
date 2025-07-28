@@ -20,17 +20,14 @@ import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { truncate } from '../../../../utils/String';
-import AccessesMenu from '../AccessesMenu';
 import Triggers from '../common/Triggers';
 import GroupUsers from '../users/GroupUsers';
 import { Group_group$key } from './__generated__/Group_group.graphql';
-import GroupEdition from './GroupEdition';
 import ItemIcon from '../../../../components/ItemIcon';
 import GroupHiddenTypesChipList from './GroupHiddenTypesChipList';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { checkIsMarkingAllowed } from '../../../../utils/markings/markingsFiltering';
 import type { Theme } from '../../../../components/Theme';
-import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -41,9 +38,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   gridContainer: {
     marginBottom: 20,
-  },
-  title: {
-    float: 'left',
   },
   paper: {
     marginTop: theme.spacing(1),
@@ -122,7 +116,6 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
   const { t_i18n } = useFormatter();
 
   const group = useFragment<Group_group$key>(groupFragment, groupData);
-  const { isAllowed, isSensitive } = useSensitiveModifications('groups', group.standard_id);
 
   const markingsSort = R.sortWith([
     R.ascend(R.propOr('TLP', 'definition_type')),
@@ -144,21 +137,9 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
   const canAccessDashboard = (
     group.default_dashboard?.authorizedMembers || []
   ).some(({ id }) => ['ALL', group.id].includes(id));
+
   return (
     <div className={classes.container}>
-      <AccessesMenu />
-      <Typography
-        variant="h1"
-        gutterBottom={true}
-        classes={{ root: classes.title }}
-      >
-        {group.name}
-      </Typography>
-      <GroupEdition
-        groupId={group.id}
-        disabled={!isAllowed && isSensitive}
-      />
-      <div className="clearfix" />
       <Grid
         container={true}
         spacing={3}
@@ -180,7 +161,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                 />
               </Grid>
               <Grid item xs={12}>
-                <GroupHiddenTypesChipList groupData={group} />
+                <GroupHiddenTypesChipList groupData={group}/>
               </Grid>
               <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>

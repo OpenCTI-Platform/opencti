@@ -10,6 +10,8 @@ import { FintelDesign_fintelDesign$key } from '@components/settings/fintel_desig
 import CustomizationMenu from '@components/settings/CustomizationMenu';
 import FintelDesignForm from '@components/settings/fintel_design/FintelDesignForm';
 import FintelDesignEdition from '@components/settings/fintel_design/FintelDesignEdition';
+import { Box, styled } from '@mui/material';
+import MenuItem from '@mui/material/MenuItem';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import PageContainer from '../../../../components/PageContainer';
@@ -19,6 +21,9 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { htmlToPdfReport } from '../../../../utils/htmlToPdf/htmlToPdf';
 import useFileFromTemplate from '../../../../utils/outcome_template/engine/useFileFromTemplate';
 import PdfViewer from '../../../../components/PdfViewer';
+import PopoverMenu from '../../../../components/PopoverMenu';
+import FintelDesignDeletion from './FintelDesignDeletion';
+import useGranted, { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 
 const fintelDesignQuery = graphql`
   query FintelDesignQuery($id: String!) {
@@ -50,8 +55,14 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
+  const canDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]);
+  const [openDelete, setOpenDelete] = useState(false);
+
   const [pdf, setPdf] = useState<File>();
   const { buildFileFromTemplate } = useFileFromTemplate();
+
+  const handleOpenDelete = () => setOpenDelete(true);
+  const handleCloseDelete = () => setOpenDelete(false);
 
   const queryResult = usePreloadedQuery(fintelDesignQuery, queryRef);
   const fintelDesign = useFragment<FintelDesign_fintelDesign$key>(
@@ -79,6 +90,12 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
     buildPreview();
   }, [fintelDesign]);
 
+  const FintelDesignHeader = styled('div')({
+    display: 'flex',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+  });
+
   return (
     <>
       <PageContainer withRightMenu>
@@ -91,20 +108,47 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
             { label: `${fintelDesign.name}`, current: true },
           ]}
         />
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Typography
-            variant="h1"
-            gutterBottom={true}
-          >
-            {fintelDesign.name}
-          </Typography>
+        <FintelDesignHeader>
           <div>
-            <FintelDesignEdition
-              fintelDesignId={fintelDesign.id}
-              overviewData={queryResult.fintelDesign}
-            />
+            <Typography
+              variant="h1"
+              gutterBottom={true}
+            >
+              {fintelDesign.name}
+            </Typography>
+            <div className="clearfix"/>
           </div>
-        </div>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{ display: 'flex' }}>
+              <div style={{ marginRight: theme.spacing(0.5) }}>
+                {canDelete && (
+                  <PopoverMenu>
+                    {({ closeMenu }) => (
+                      <Box>
+                        <MenuItem onClick={() => {
+                          handleOpenDelete();
+                          closeMenu();
+                        }}
+                        >
+                          {t_i18n('Delete')}
+                        </MenuItem>
+                      </Box>
+                    )}
+                  </PopoverMenu>
+                )}
+              </div>
+              <FintelDesignDeletion
+                id={fintelDesign.id}
+                isOpen={openDelete}
+                handleClose={handleCloseDelete}
+              />
+              <FintelDesignEdition
+                fintelDesignId={fintelDesign.id}
+                overviewData={queryResult.fintelDesign}
+              />
+            </div>
+          </div>
+        </FintelDesignHeader>
         <Grid
           container spacing={3}
           sx={{ marginTop: 2 }}

@@ -2,18 +2,12 @@ import Drawer from '@components/common/drawer/Drawer';
 import React from 'react';
 import { FormikConfig } from 'formik/dist/types';
 import { useNavigate } from 'react-router-dom';
-import Button from '@mui/material/Button';
-import { useTheme } from '@mui/styles';
 import useFintelTemplateAdd from '@components/settings/sub_types/fintel_templates/useFintelTemplateAdd';
-import useFintelTemplateDelete from '@components/settings/sub_types/fintel_templates/useFintelTemplateDelete';
 import useFintelTemplateEdit from './useFintelTemplateEdit';
 import FintelTemplateForm, { FintelTemplateFormInputKeys, FintelTemplateFormInputs } from './FintelTemplateForm';
 import { useFormatter } from '../../../../../components/i18n';
 import { handleError, MESSAGING$ } from '../../../../../relay/environment';
 import { resolveLink } from '../../../../../utils/Entity';
-import useDeletion from '../../../../../utils/hooks/useDeletion';
-import type { Theme } from '../../../../../components/Theme';
-import DeleteDialog from '../../../../../components/DeleteDialog';
 
 interface FintelTemplateFormDrawerProps {
   isOpen: boolean
@@ -21,7 +15,6 @@ interface FintelTemplateFormDrawerProps {
   entitySettingId: string
   entityType?: string
   template?: { id: string } & FintelTemplateFormInputs
-  onDeleteComplete?: () => void
 }
 
 const FintelTemplateFormDrawer = ({
@@ -30,9 +23,7 @@ const FintelTemplateFormDrawer = ({
   entityType,
   entitySettingId,
   template,
-  onDeleteComplete,
 }: FintelTemplateFormDrawerProps) => {
-  const theme = useTheme<Theme>();
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
   const createTitle = t_i18n('Create a template');
@@ -40,25 +31,6 @@ const FintelTemplateFormDrawer = ({
 
   const [commitAddMutation] = useFintelTemplateAdd(entitySettingId);
   const [commitEditMutation] = useFintelTemplateEdit();
-  const [commitDeleteMutation] = useFintelTemplateDelete(entitySettingId);
-
-  const deletion = useDeletion({});
-  const { handleOpenDelete, handleCloseDelete } = deletion;
-
-  const onDelete = () => {
-    if (!template) return;
-
-    commitDeleteMutation(template.id, {
-      variables: { id: template.id },
-      onCompleted: () => {
-        handleCloseDelete();
-        onDeleteComplete?.();
-      },
-      onError: () => {
-        handleCloseDelete();
-      },
-    });
-  };
 
   const onAdd: FormikConfig<FintelTemplateFormInputs>['onSubmit'] = (
     values,
@@ -109,32 +81,14 @@ const FintelTemplateFormDrawer = ({
         open={isOpen}
         onClose={onClose}
       >
-        <>
-          <FintelTemplateForm
-            onClose={onClose}
-            onSubmit={onAdd}
-            onSubmitField={onEdit}
-            isEdition={!!template}
-            defaultValues={template}
-          />
-          {template && (
-            <Button
-              color="error"
-              variant="contained"
-              onClick={handleOpenDelete}
-              sx={{ marginTop: theme.spacing(2) }}
-            >
-              {t_i18n('Delete')}
-            </Button>
-          )}
-        </>
+        <FintelTemplateForm
+          onClose={onClose}
+          onSubmit={onAdd}
+          onSubmitField={onEdit}
+          isEdition={!!template}
+          defaultValues={template}
+        />
       </Drawer>
-
-      <DeleteDialog
-        deletion={deletion}
-        submitDelete={onDelete}
-        message={t_i18n('Do you want to delete this FINTEL template?')}
-      />
     </>
   );
 };

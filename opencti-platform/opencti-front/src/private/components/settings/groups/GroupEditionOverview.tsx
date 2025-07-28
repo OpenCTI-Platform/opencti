@@ -18,7 +18,6 @@ import { GroupEditionOverview_group$data } from './__generated__/GroupEditionOve
 import GroupHiddenTypesField from './GroupHiddenTypesField';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import type { Theme } from '../../../../components/Theme';
-import GroupDeletionDialog from './GroupDeletionDialog';
 
 export const groupMutationFieldPatch = graphql`
   mutation GroupEditionOverviewFieldPatchMutation(
@@ -239,7 +238,6 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
                 fieldName="restrict_delete"
               />
             </FormHelperText>
-            <GroupDeletionDialog groupId={group.id} />
           </Form>
         )}
       </Formik>

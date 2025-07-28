@@ -26,8 +26,9 @@ import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import InfrastructureEdition from './InfrastructureEdition';
+import InfrastructureDeletion from './InfrastructureDeletion';
 
 const subscription = graphql`
   subscription RootInfrastructureSubscription($id: ID!) {
@@ -112,6 +113,11 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
             EditComponent={(
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <InfrastructureEdition infrastructureId={infrastructure.id} />
+              </Security>
+            )}
+            DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                <InfrastructureDeletion id={infrastructure.id} isOpen={isOpen} handleClose={onClose} />
               </Security>
             )}
             enableQuickSubscription={true}

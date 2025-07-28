@@ -4,7 +4,6 @@ import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import { Stack } from '@mui/material';
-import GroupingDeletion from './GroupingDeletion';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -291,9 +290,6 @@ const GroupingEditionOverviewComponent = (props) => {
               onChange={editor.changeMarking}
             />
             <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
-              <GroupingDeletion
-                groupingId={grouping.id}
-              />
               {enableReferences && (
                 <CommitMessage
                   submitForm={submitForm}

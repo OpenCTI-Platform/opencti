@@ -27,10 +27,11 @@ import { RootCaseRftCaseQuery } from './__generated__/RootCaseRftCaseQuery.graph
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import CaseRftEdition from './CaseRftEdition';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
+import CaseRftDeletion from './CaseRftDeletion';
 
 const subscription = graphql`
   subscription RootCaseRftCaseSubscription($id: ID!) {
@@ -114,6 +115,11 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
         EditComponent={(
           <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={currentAccessRight.canEdit}>
             <CaseRftEdition caseId={caseData.id} />
+          </Security>
+        )}
+        DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+          <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+            <CaseRftDeletion id={caseData.id} isOpen={isOpen} handleClose={onClose} />
           </Security>
         )}
         enableQuickSubscription={true}

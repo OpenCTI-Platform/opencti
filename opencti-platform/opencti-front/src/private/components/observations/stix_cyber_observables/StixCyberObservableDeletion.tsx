@@ -1,11 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import Button from '@mui/material/Button';
 import { graphql } from 'react-relay';
-import { Stack } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { MESSAGING$ } from '../../../../relay/environment';
@@ -21,7 +17,7 @@ const StixCyberObservableDeletionDeleteMutation = graphql`
   `;
 
 const StixCyberObservableDeletion = (
-  { id }: { id: string },
+  { id, isOpen, handleClose }: { id: string, isOpen: boolean, handleClose: () => void },
 ) => {
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
@@ -35,9 +31,8 @@ const StixCyberObservableDeletion = (
     { successMessage: deleteSuccessMessage },
   );
   const isArtifactInURL = window.location.href.includes('artifact');
-  const handleClose = () => { };
   const deletion = useDeletion({ handleClose });
-  const { setDeleting, handleOpenDelete, deleting } = deletion;
+  const { setDeleting } = deletion;
   const submitDelete = () => {
     setDeleting(true);
     commit({
@@ -56,24 +51,13 @@ const StixCyberObservableDeletion = (
     });
   };
   return (
-    <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
-      <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-        <Button
-          color="error"
-          variant="contained"
-          onClick={handleOpenDelete}
-          disabled={deleting}
-          sx={{ marginTop: 2 }}
-        >
-          {t_i18n('Delete')}
-        </Button>
-      </Security>
-      <DeleteDialog
-        deletion={deletion}
-        submitDelete={submitDelete}
-        message={t_i18n('Do you want to delete this observable?')}
-      />
-    </Stack>
+    <DeleteDialog
+      deletion={deletion}
+      submitDelete={submitDelete}
+      isOpen={isOpen}
+      onClose={handleClose}
+      message={t_i18n('Do you want to delete this observable?')}
+    />
   );
 };
 

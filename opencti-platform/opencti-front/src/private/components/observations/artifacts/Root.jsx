@@ -22,6 +22,9 @@ import StixSightingRelationship from '../../events/stix_sighting_relationships/S
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import StixCyberObservableDeletion from '../stix_cyber_observables/StixCyberObservableDeletion';
 
 const subscription = graphql`
   subscription RootArtifactSubscription($id: ID!) {
@@ -109,7 +112,14 @@ class RootArtifact extends Component {
                       { label: stixCyberObservable.observable_value, current: true },
                     ]}
                     />
-                    <StixCyberObservableHeader stixCyberObservable={stixCyberObservable} />
+                    <StixCyberObservableHeader
+                      stixCyberObservable={stixCyberObservable}
+                      DeleteComponent={({ isOpen, onClose }) => (
+                        <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                          <StixCyberObservableDeletion id={stixCyberObservable.id} isOpen={isOpen} handleClose={onClose} />
+                        </Security>
+                      )}
+                    />
                     <Box
                       sx={{
                         borderBottom: 1,
