@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { type AttributeDefinition, authorizedMembers, createdAt, creators, draftContext, errors, id, lastEventId, updatedAt } from '../../schema/attribute-definition';
+import { type AttributeDefinition, authorizedMembers, createdAt, creators, draftChange, draftContext, errors, id, lastEventId, updatedAt } from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import {
   ENTITY_TYPE_ACTIVITY,
@@ -323,9 +323,10 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'otp_qr', label: 'OTP QR', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'otp_activated', label: '2FA state', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'default_dashboard', label: 'Default dashboard', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    draftContext,
+    { ...draftContext, isFilterable: false },
+    { ...draftChange, isFilterable: false },
     { name: 'default_time_field', label: 'Default time field', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'account_status', label: 'Account status', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: false },
+    { name: 'account_status', label: 'Account status', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
     { name: 'account_lock_after_date', label: 'User account expiration date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'administrated_organizations', label: 'Administrated organizations', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'unit_system', label: 'Unit system', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
