@@ -34,8 +34,6 @@ const XtmHubSettings = () => {
     {},
   );
 
-  const isEnrolled = xtmHubSettings.xtm_hub_enrollment_status === 'enrolled';
-
   return (
     <section>
       <Breadcrumbs
@@ -97,46 +95,75 @@ const XtmHubSettings = () => {
               </List>
             </Box>
             <List style={{ marginTop: -10 }}>
-              {isEnrolled && (
-                <>
+              {
+                xtmHubSettings.xtm_hub_enrollment_status === 'enrolled' && (
+                  <>
+                    <ListItem divider={true}>
+                      <ListItemText primary={t_i18n('Enrollment status')} />
+                      <ItemBoolean
+                        variant="large"
+                        label={t_i18n('Enrolled')}
+                        status={true}
+                      />
+                    </ListItem>
+                    <ListItem divider={true}>
+                      <ListItemText primary={t_i18n('Enrollment date')} />
+                      <ItemBoolean
+                        variant="large"
+                        neutralLabel={dateFormat(
+                          xtmHubSettings.xtm_hub_enrollment_date,
+                        )}
+                        status={null}
+                      />
+                    </ListItem>
+                    <ListItem divider={true}>
+                      <ListItemText primary={t_i18n('Enrolled by')} />
+                      <ItemBoolean
+                        variant="large"
+                        neutralLabel={xtmHubSettings.xtm_hub_enrollment_user_name}
+                        status={null}
+                      />
+                    </ListItem>
+                  </>
+                )
+              }
+              {
+                xtmHubSettings.xtm_hub_enrollment_status === 'lost_connectivity' && (
+                  <>
+                    <ListItem divider={true}>
+                      <ListItemText primary={t_i18n('Enrollment status')} />
+                      <ItemBoolean
+                        variant="large"
+                        label={t_i18n('Connectivity lost')}
+                        status={false}
+                      />
+                    </ListItem>
+
+                    <ListItem divider={true}>
+                      <ListItemText primary={t_i18n('Last successful check')} />
+                      <ItemBoolean
+                        variant="large"
+                        neutralLabel={dateFormat(
+                          xtmHubSettings.xtm_hub_last_connectivity_check,
+                        )}
+                        status={null}
+                      />
+                    </ListItem>
+                  </>
+                )
+              }
+              {
+                xtmHubSettings.xtm_hub_enrollment_status === 'unenrolled' && (
                   <ListItem divider={true}>
                     <ListItemText primary={t_i18n('Enrollment status')} />
                     <ItemBoolean
                       variant="large"
-                      label={t_i18n('Enrolled')}
-                      status={true}
+                      label={t_i18n('Not enrolled')}
+                      status={false}
                     />
                   </ListItem>
-                  <ListItem divider={true}>
-                    <ListItemText primary={t_i18n('Enrollment date')} />
-                    <ItemBoolean
-                      variant="large"
-                      neutralLabel={dateFormat(
-                        xtmHubSettings.xtm_hub_enrollment_date,
-                      )}
-                      status={null}
-                    />
-                  </ListItem>
-                  <ListItem divider={true}>
-                    <ListItemText primary={t_i18n('Enrolled by')} />
-                    <ItemBoolean
-                      variant="large"
-                      neutralLabel={xtmHubSettings.xtm_hub_enrollment_user_name}
-                      status={null}
-                    />
-                  </ListItem>
-                </>
-              )}
-              {!isEnrolled && (
-                <ListItem divider={true}>
-                  <ListItemText primary={t_i18n('Enrollment status')} />
-                  <ItemBoolean
-                    variant="large"
-                    label={t_i18n('Not enrolled')}
-                    status={false}
-                  />
-                </ListItem>
-              )}
+                )
+              }
             </List>
           </Paper>
         </Grid2>
