@@ -75,6 +75,7 @@ import { cleanMarkings } from '../utils/markingDefinition-utils';
 import { UnitSystem } from '../generated/graphql';
 import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
+import { addServiceAccountIntoUserCount, addUserIntoServiceAccountCount } from '../manager/telemetryManager';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -728,7 +729,6 @@ export const roleDeleteRelation = async (context, user, roleId, toId, relationsh
   return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user);
 };
 
-// User related
 export const userEditField = async (context, user, userId, rawInputs) => {
   const inputs = [];
   const userToUpdate = await internalLoadById(context, user, userId);
@@ -741,10 +741,21 @@ export const userEditField = async (context, user, userId, rawInputs) => {
   }
   for (let index = 0; index < rawInputs.length; index += 1) {
     const input = rawInputs[index];
+    let skipThisInput = false;
     if (input.key === 'password') {
-      const userPassword = R.head(input.value).toString();
-      await checkPasswordFromPolicy(context, userPassword);
-      input.value = [bcrypt.hashSync(userPassword)];
+      if (serviceAccountFeatureFlag) {
+        const userServiceAccountInput = rawInputs.find((x) => x.key === 'user_service_account');
+        if (userServiceAccountInput && userToUpdate.user_service_account !== userServiceAccountInput.value[0]) {
+          skipThisInput = true;
+        }
+      }
+      if (!userToUpdate.user_service_account) {
+        const userPassword = R.head(input.value).toString();
+        await checkPasswordFromPolicy(context, userPassword);
+        input.value = [bcrypt.hashSync(userPassword)];
+      } else {
+        throw FunctionalError('Cannot update password for Service account');
+      }
     }
     if (input.key === 'account_status') {
       // If account status is not active, kill all current user sessions
@@ -783,7 +794,25 @@ export const userEditField = async (context, user, userId, rawInputs) => {
         throw FunctionalError('The language you have provided is not valid');
       }
     }
-    inputs.push(input);
+
+    if (serviceAccountFeatureFlag) {
+      // Turn User into Service Account
+      if (input.key === 'user_service_account' && !userToUpdate.user_service_account && input.value[0] === true) {
+        inputs.push({ key: 'password', value: [null] });
+        await addUserIntoServiceAccountCount();
+      }
+      // Turn Service Account into User
+      if (input.key === 'user_service_account' && userToUpdate.user_service_account && input.value[0] === false) {
+        const userPassword = uuid();
+        await checkPasswordFromPolicy(context, userPassword);
+        inputs.push({ key: 'password', value: [bcrypt.hashSync(userPassword)] });
+        await addServiceAccountIntoUserCount();
+      }
+    }
+
+    if (!skipThisInput) {
+      inputs.push(input);
+    }
   }
   const { element } = await updateAttribute(context, user, userId, ENTITY_TYPE_USER, inputs);
   const input = updatedInputsToData(element, inputs);

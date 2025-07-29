@@ -16,6 +16,7 @@ import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGra
 import { RootUserEditionQuery$data } from './__generated__/RootUserEditionQuery.graphql';
 import Loader from '../../../../components/Loader';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const UserEditionFragment = graphql`
   fragment UserEdition_user on User
@@ -27,6 +28,7 @@ const UserEditionFragment = graphql`
   ) {
     id
     external
+    user_service_account
     user_confidence_level {
       max_confidence
       overrides {
@@ -111,6 +113,9 @@ const UserEditionDrawer: FunctionComponent<UserEditionDrawerProps> = ({
   const { t_i18n } = useFormatter();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
   const user = useFragment<UserEdition_user$key>(UserEditionFragment, userRef);
+  const { isFeatureEnable } = useHelper();
+  const serviceAccountFeatureFlag = isFeatureEnable('SERVICE_ACCOUNT');
+  const isServiceAccount = user?.user_service_account && serviceAccountFeatureFlag;
   const [currentTab, setCurrentTab] = useState(0);
   const handleChangeTab = (value: number) => {
     setCurrentTab(value);
@@ -131,7 +136,9 @@ const UserEditionDrawer: FunctionComponent<UserEditionDrawerProps> = ({
             onChange={(event, value) => handleChangeTab(value)}
           >
             <Tab label={t_i18n('Overview')} />
-            <Tab disabled={!!user.external} label={t_i18n('Password')} />
+            {!isServiceAccount
+              && <Tab disabled={!!user.external} label={t_i18n('Password')} />
+            }
             <Tab label={t_i18n('Groups')} />
             {hasSetAccess
               && <Tab label={

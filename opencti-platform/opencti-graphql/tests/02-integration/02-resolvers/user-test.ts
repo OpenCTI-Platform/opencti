@@ -25,6 +25,7 @@ import {
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { VIRTUAL_ORGANIZATION_ADMIN } from '../../../src/utils/access';
 import {
+  adminQueryWithError,
   adminQueryWithSuccess,
   enableCEAndUnSetOrganization,
   enableEEAndSetOrganization,
@@ -35,6 +36,7 @@ import {
 } from '../../utils/testQueryHelper';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 import type { Capability, Member, UserAddInput } from '../../../src/generated/graphql';
+import { storeLoadById } from '../../../src/database/middleware-loader';
 
 const LIST_QUERY = gql`
   query users(
@@ -187,6 +189,40 @@ const CREATE_QUERY = gql`
   }
 `;
 
+const UPDATE_QUERY = gql`
+  mutation UserEdit(
+    $id: ID!
+    $input: [EditInput]!
+  ) {
+    userEdit(id: $id) {
+      fieldPatch(input: $input) {
+        id
+        name
+        description
+        language
+        user_email
+        api_token
+        user_service_account
+        account_status
+        user_confidence_level {
+          max_confidence
+        }
+        effective_confidence_level {
+          max_confidence
+          source {
+            type
+            object {
+              ... on User { entity_type id name }
+              ... on Group { entity_type id name }
+            }
+          }
+        }
+        
+      }
+    }
+  }
+`;
+
 const GROUP_ADD_QUERY = gql`
   mutation GroupAdd($input: GroupAddInput!) {
     groupAdd(input: $input) {
@@ -329,16 +365,6 @@ describe('User resolver standard behavior', () => {
     expect(userList.filter((userNode: any) => userNode.node.user_email === 'user@mail.com').length).toBe(1);
   });
   it('should update user', async () => {
-    const UPDATE_QUERY = gql`
-      mutation UserEdit($id: ID!, $input: [EditInput]!) {
-        userEdit(id: $id) {
-          fieldPatch(input: $input) {
-            id
-            name
-          }
-        }
-      }
-    `;
     const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
       variables: { id: userInternalId, input: { key: 'name', value: ['User - test'] } },
@@ -346,16 +372,6 @@ describe('User resolver standard behavior', () => {
     expect(queryResult.data?.userEdit.fieldPatch.name).toEqual('User - test');
   });
   it('should update language only if the value is valid', async () => {
-    const UPDATE_QUERY = gql`
-      mutation UserEdit($id: ID!, $input: [EditInput]!) {
-        userEdit(id: $id) {
-          fieldPatch(input: $input) {
-            id
-            language
-          }
-        }
-      }
-    `;
     const validQueryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
       variables: { id: userInternalId, input: { key: 'language', value: ['en-us'] } },
@@ -397,28 +413,6 @@ describe('User resolver standard behavior', () => {
     }
   });
   it('should update user confidence level', async () => {
-    const UPDATE_QUERY = gql`
-      mutation UserEdit($id: ID!, $input: [EditInput]!) {
-        userEdit(id: $id) {
-          fieldPatch(input: $input) {
-            id
-            user_confidence_level {
-              max_confidence
-            }
-            effective_confidence_level {
-              max_confidence
-              source {
-                type
-                object {
-                  ... on User { entity_type id name }
-                  ... on Group { entity_type id name }
-                }
-              }
-            }
-          }
-        }
-      }
-    `;
     const queryResult = await adminQuery({
       query: UPDATE_QUERY,
       variables: {
@@ -530,28 +524,6 @@ describe('User resolver standard behavior', () => {
     expect(queryResult.data.user.effective_confidence_level.source.object.id).toEqual(userInternalId);
   });
   it('should remove user confidence level, effective level should be accurate', async () => {
-    const UPDATE_QUERY = gql`
-      mutation UserEdit($id: ID!, $input: [EditInput]!) {
-        userEdit(id: $id) {
-          fieldPatch(input: $input) {
-            id
-            user_confidence_level {
-              max_confidence
-            }
-            effective_confidence_level {
-              max_confidence
-              source {
-                type
-                object {
-                  ... on User { entity_type id name }
-                  ... on Group { entity_type id name }
-                }
-              }
-            }
-          }
-        }
-      }
-    `;
     const queryResult = await adminQuery({
       query: UPDATE_QUERY,
       variables: {
@@ -878,6 +850,18 @@ describe('User has no settings capability and is organization admin query behavi
         }
     `;
 
+  const UPDATE_ORGANIZATION_QUERY = gql`
+    mutation OrganizationEdit($id: ID!, $input: [EditInput]!) {
+      organizationFieldPatch(id: $id, input: $input) {
+        id
+        name
+        grantable_groups {
+          id
+        }
+      }
+    }
+  `;
+
   const ORGANIZATION_DELETE_QUERY = gql`
         mutation UserOrganizationDeleteMutation(
             $id: ID!
@@ -901,17 +885,6 @@ describe('User has no settings capability and is organization admin query behavi
             }
         `;
 
-    const UPDATE_QUERY = gql`
-      mutation OrganizationEdit($id: ID!, $input: [EditInput]!) {
-        organizationFieldPatch(id: $id, input: $input) {
-          id
-          name
-          grantable_groups {
-              id
-          }
-        }
-      }
-        `;
     // Delete admin to ORGANIZATION
     await adminQuery({
       query: ORGA_ADMIN_DELETE_QUERY, // +1 update organization
@@ -923,7 +896,7 @@ describe('User has no settings capability and is organization admin query behavi
     for (let i = 0; i < organizationsIds.length; i += 1) {
       // remove granted_groups to ORGANIZATION
       await adminQuery({
-        query: UPDATE_QUERY, // +1 update organization for each (+2 total)
+        query: UPDATE_ORGANIZATION_QUERY, // +1 update organization for each (+2 total)
         variables: { id: organizationsIds[i], input: { key: 'grantable_groups', value: [] } },
       });
     }
@@ -967,19 +940,8 @@ describe('User has no settings capability and is organization admin query behavi
     };
 
     // Need to add granted_groups to TEST_ORGANIZATION because of line 533 in domain/user.js
-    const UPDATE_QUERY = gql`
-      mutation OrganizationEdit($id: ID!, $input: [EditInput]!) {
-        organizationFieldPatch(id: $id, input: $input) {
-          id
-          name
-          grantable_groups {
-              id
-          }
-        }
-      }
-        `;
     const queryResult = await adminQuery({
-      query: UPDATE_QUERY,
+      query: UPDATE_ORGANIZATION_QUERY,
       variables: { id: testOrganizationId, input: { key: 'grantable_groups', value: [amberGroupId] } },
     });
     expect(queryResult.data.organizationFieldPatch.grantable_groups.length).toEqual(1);
@@ -996,15 +958,6 @@ describe('User has no settings capability and is organization admin query behavi
     userInternalId = user.data.userAdd.id;
   });
   it('should update user from its own organization', async () => {
-    const UPDATE_QUERY = gql`
-      mutation UserEdit($id: ID!, $input: [EditInput]!) {
-        userEdit(id: $id) {
-          fieldPatch(input: $input) {
-              account_status
-          }
-        }
-      }
-        `;
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
       query: UPDATE_QUERY,
       variables: { id: userInternalId, input: { key: 'account_status', value: ['Inactive'] } },
@@ -1023,19 +976,8 @@ describe('User has no settings capability and is organization admin query behavi
   });
   it('should administrate more than 1 organization', async () => {
     // Need to add granted_groups to PLATFORM_ORGANIZATION because of line 533 in domain/user.js
-    const UPDATE_QUERY = gql`
-      mutation OrganizationEdit($id: ID!, $input: [EditInput]!) {
-        organizationFieldPatch(id: $id, input: $input) {
-          id
-          name
-          grantable_groups {
-            id
-          }
-        }
-      }
-        `;
     const grantableGroupQueryResult = await adminQuery({
-      query: UPDATE_QUERY,
+      query: UPDATE_ORGANIZATION_QUERY,
       variables: { id: platformOrganizationId, input: { key: 'grantable_groups', value: [amberGroupId] } },
     });
     expect(grantableGroupQueryResult.data.organizationFieldPatch.grantable_groups.length).toEqual(1);
@@ -1278,6 +1220,43 @@ describe('Service account User coverage', async () => {
     const queryResult = await queryAsAdminWithSuccess({ query: QUERY_SERVICE_ACCOUNT_USER, variables: { id: userInternalId } });
     expect(queryResult.data?.user).not.toBeNull();
     expect(queryResult.data?.user.id).toEqual(userInternalId);
+  });
+  it('should turn service account into user', async () => {
+    const queryResult = await adminQueryWithSuccess({
+      query: UPDATE_QUERY,
+      variables: {
+        id: userInternalId,
+        input: { key: 'user_service_account', value: [false] }
+      },
+    });
+    const { userEdit } = queryResult.data;
+    expect(userEdit.fieldPatch.user_service_account).toEqual(false);
+    // check password has been created
+    const userCreated: any = await storeLoadById(testContext, ADMIN_USER, userInternalId, ENTITY_TYPE_USER);
+    expect(userCreated.password).toBeDefined();
+  });
+  it('should turn user into service account', async () => {
+    const queryResult = await adminQueryWithSuccess({
+      query: UPDATE_QUERY,
+      variables: {
+        id: userInternalId,
+        input: [{ key: 'user_service_account', value: [true] }, { key: 'password', value: ['toto'] }]
+      },
+    });
+    const { userEdit } = queryResult.data;
+    expect(userEdit.fieldPatch.user_service_account).toEqual(true);
+    // check password has been removed
+    const userCreated: any = await storeLoadById(testContext, ADMIN_USER, userInternalId, ENTITY_TYPE_USER);
+    expect(userCreated.password).toBeUndefined();
+  });
+  it('should not update password for service account', async () => {
+    await adminQueryWithError({
+      query: UPDATE_QUERY,
+      variables: {
+        id: userInternalId,
+        input: [{ key: 'password', value: ['toto'] }]
+      },
+    }, 'Cannot update password for Service account');
   });
   it('should service account user deleted', async () => {
     // Delete the users

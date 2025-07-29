@@ -10,6 +10,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { styled } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
 import { useTheme } from '@mui/styles';
+import ConvertUser from './ConvertUser';
 import useHelper from '../../../../utils/hooks/useHelper';
 import UserDeletionDialog from './UserDeletionDialog';
 import AccessesMenu from '../AccessesMenu';
@@ -80,6 +81,7 @@ const userQuery = graphql`
       id
       name
       user_email
+      user_service_account
       ...User_user
         @arguments(
           groupsOrderBy: $groupsOrderBy
@@ -115,6 +117,7 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
   );
   const { isFeatureEnable } = useHelper();
   const isUserHistoryTab = isFeatureEnable('USER_HISTORY_TAB');
+  const serviceAccountFeatureFlag = isFeatureEnable('SERVICE_ACCOUNT');
   const [openDelete, setOpenDelete] = useState(false);
   const handleOpenDelete = () => setOpenDelete(true);
   const handleCloseDelete = () => setOpenDelete(false);
@@ -150,29 +153,37 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
             </div>
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <div style={{ display: 'flex' }}>
-                <div style={{ marginRight: theme.spacing(0.5) }}>
+                <div style={{ marginRight: theme.spacing(1.5) }}>
                   {canDelete && (
-                    <PopoverMenu>
-                      {({ closeMenu }) => (
-                        <Box>
-                          <MenuItem onClick={() => {
-                            handleOpenDelete();
-                            closeMenu();
-                          }}
-                          >
-                            {t_i18n('Delete')}
-                          </MenuItem>
-                        </Box>
-                      )}
-                    </PopoverMenu>
+                  <PopoverMenu>
+                    {({ closeMenu }) => (
+                      <Box>
+                        <MenuItem onClick={() => {
+                          handleOpenDelete();
+                          closeMenu();
+                        }}
+                        >
+                          {t_i18n('Delete')}
+                        </MenuItem>
+                      </Box>
+                    )}
+                  </PopoverMenu>
                   )}
                 </div>
-                <UserDeletionDialog
-                  userId={data.id}
-                  isOpen={openDelete}
-                  handleClose={handleCloseDelete}
-                />
-                <UserEdition userEditionData={userEditionData} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  {serviceAccountFeatureFlag
+                    && < ConvertUser
+                      userId={data.id}
+                      userServiceAccount={data.user_service_account}
+                       />
+                  }
+                  <UserDeletionDialog
+                    userId={data.id}
+                    isOpen={openDelete}
+                    handleClose={handleCloseDelete}
+                  />
+                  <UserEdition userEditionData={userEditionData} />
+                </div>
               </div>
             </div>
           </UserHeader>
