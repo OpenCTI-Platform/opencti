@@ -83,7 +83,7 @@ export const SETTINGS_CAPABILITIES = {
   ],
 };
 const PIR_CAPABILITIES = {
-  name: 'CAPAPIR',
+  name: 'PIRAPI',
   description: 'Access PIR',
   attribute_order: 2900,
   dependencies: [

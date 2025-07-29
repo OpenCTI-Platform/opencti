@@ -67,7 +67,7 @@ type PirEdge {
 
 # Queries
 type Query {
-    pir(id: ID!): Pir @auth(for: [CAPAPIR])
+    pir(id: ID!): Pir @auth(for: [PIRAPI])
     pirs(
         first: Int
         after: ID
@@ -75,7 +75,7 @@ type Query {
         orderMode: OrderingMode
         filters: FilterGroup
         search: String
-    ): PirConnection @auth(for: [CAPAPIR])
+    ): PirConnection @auth(for: [PIRAPI])
 }
 
 # Mutations inputs
@@ -118,10 +118,10 @@ input PirUnflagElementInput {
 
 # Mutations
 type Mutation {
-    pirAdd(input: PirAddInput!): Pir @auth(for: [CAPAPIR_PIRUPDATE])
-    pirFieldPatch(id: ID!, input: [EditInput!]!): Pir @auth(for: [CAPAPIR_PIRUPDATE])
-    pirEditAuthorizedMembers(id: ID!, input:[MemberAccessInput!]!): Pir @auth(for: [CAPAPIR_PIRUPDATE])
-    pirDelete(id: ID!): ID @auth(for: [CAPAPIR_PIRUPDATE])
+    pirAdd(input: PirAddInput!): Pir @auth(for: [PIRAPI_PIRUPDATE])
+    pirFieldPatch(id: ID!, input: [EditInput!]!): Pir @auth(for: [PIRAPI_PIRUPDATE])
+    pirEditAuthorizedMembers(id: ID!, input:[MemberAccessInput!]!): Pir @auth(for: [PIRAPI_PIRUPDATE])
+    pirDelete(id: ID!): ID @auth(for: [PIRAPI_PIRUPDATE])
     pirFlagElement(id: ID!, input: PirFlagElementInput!): ID @auth(for: [BYPASS])
     pirUnflagElement(id: ID!, input: PirUnflagElementInput!): ID @auth(for: [BYPASS])
 }

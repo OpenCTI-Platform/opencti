@@ -8,13 +8,13 @@ export const up = async (next) => {
   const context = executionContext('migration');
 
   await addCapability(context, SYSTEM_USER, {
-    name: 'CAPAPIR',
+    name: 'PIRAPI',
     description: 'Access PIR',
     attribute_order: 2900,
   });
 
   await addCapability(context, SYSTEM_USER, {
-    name: 'CAPAPIR_PIRUPDATE',
+    name: 'PIRAPI_PIRUPDATE',
     description: 'Create / Update / Delete PIR',
     attribute_order: 2950,
   });

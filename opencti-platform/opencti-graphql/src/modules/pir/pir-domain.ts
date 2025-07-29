@@ -285,7 +285,7 @@ export const pirEditAuthorizedMembers = async (
   const args = {
     entityId: pirId,
     input,
-    requiredCapabilities: ['KNOWLEDGE_KNUPDATE'],
+    requiredCapabilities: ['PIRAPI_PIRUPDATE'],
     entityType: ENTITY_TYPE_PIR,
     busTopicKey: ENTITY_TYPE_PIR,
   };

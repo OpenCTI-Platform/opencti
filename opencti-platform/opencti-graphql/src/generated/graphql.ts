@@ -1937,8 +1937,6 @@ export enum CampaignsOrdering {
 
 export enum Capabilities {
   Bypass = 'BYPASS',
-  Capapir = 'CAPAPIR',
-  CapapirPirupdate = 'CAPAPIR_PIRUPDATE',
   Connectorapi = 'CONNECTORAPI',
   Csvmappers = 'CSVMAPPERS',
   Explore = 'EXPLORE',
@@ -1964,6 +1962,8 @@ export enum Capabilities {
   KnowledgeKnupload = 'KNOWLEDGE_KNUPLOAD',
   Modules = 'MODULES',
   ModulesModmanage = 'MODULES_MODMANAGE',
+  Pirapi = 'PIRAPI',
+  PirapiPirupdate = 'PIRAPI_PIRUPDATE',
   Settings = 'SETTINGS',
   SettingsFileindexing = 'SETTINGS_FILEINDEXING',
   SettingsSecurityactivity = 'SETTINGS_SECURITYACTIVITY',
