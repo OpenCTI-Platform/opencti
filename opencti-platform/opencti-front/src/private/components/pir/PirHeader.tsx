@@ -69,7 +69,7 @@ const PirHeader = ({ data, editionData }: PirHeaderProps) => {
   const { t_i18n } = useFormatter();
   const pir = useFragment(headerFragment, data);
   const { name, id, authorizedMembers, creators, currentUserAccessRight } = pir;
-  const { canManage } = useGetCurrentUserAccessRight(currentUserAccessRight);
+  const { canManage, canEdit } = useGetCurrentUserAccessRight(currentUserAccessRight);
 
   const [isEditionOpen, setIsEditionOpen] = useState(false);
 
@@ -87,7 +87,7 @@ const PirHeader = ({ data, editionData }: PirHeaderProps) => {
           {name}
         </Typography>
 
-        <Security needs={[CAPAPIR_PIRUPDATE]}>
+        <Security needs={[CAPAPIR_PIRUPDATE]} hasAccess={canEdit}>
           <>
             <div>
               <Security matchAll needs={[CAPAPIR_PIRUPDATE, SETTINGS_SETACCESSES]} hasAccess={canManage}>
@@ -99,7 +99,9 @@ const PirHeader = ({ data, editionData }: PirHeaderProps) => {
                 />
               </Security>
 
-              <PirPopover data={pir} />
+              <Security needs={[CAPAPIR_PIRUPDATE]} hasAccess={canManage}>
+                <PirPopover data={pir} />
+              </Security>
             </div>
 
             <Button
