@@ -84,18 +84,18 @@ describe('Playbook resolver standard behavior', () => {
     ],
     filterGroups: [],
   });
-  it('should list playbooks', async () => {
-    const queryResult = await adminQueryWithSuccess({ query: LIST_PLAYBOOKS, variables: { first: 10 } });
-    expect(queryResult.data?.playbooks.edges.length).toEqual(0);
-  });
   it('should not list playbooks if platform not under EE', async () => {
-    await disableEE();
     await adminQueryWithError(
       { query: LIST_PLAYBOOKS, variables: { first: 10 } },
       'Enterprise edition is not enabled',
       UNSUPPORTED_ERROR,
     );
+  });
+  it('should list playbooks', async () => {
+    // Activate EE
     await enableEE();
+    const queryResult = await adminQueryWithSuccess({ query: LIST_PLAYBOOKS, variables: { first: 10 } });
+    expect(queryResult.data?.playbooks.edges.length).toEqual(0);
   });
   it('should add playbook', async () => {
     const input = {
@@ -273,5 +273,7 @@ describe('Playbook resolver standard behavior', () => {
       variables: { id: playbookId },
     });
     expect(queryResult.data?.playbookDelete).toEqual(playbookId);
+    // Deactivate EE
+    await disableEE();
   });
 });
