@@ -11,39 +11,40 @@ import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../components/Loader';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 export const groupSetDefaultGroupForIngestionUsersFragment = graphql`
-    fragment GroupSetDefaultGroupForIngestionUsersFragment on Group {
-        name
-        id
-    }`;
+  fragment GroupSetDefaultGroupForIngestionUsersFragment on Group {
+    name
+    id
+  }`;
 
 const groupSetDefaultGroupForIngestionUsersMutationFieldPatch = graphql`
-    mutation GroupSetDefaultGroupForIngestionUsersMutation(
-        $id: ID!
-        $input: [EditInput]!
-    ) {
-        groupEdit(id: $id) {
-            fieldPatch(input: $input) {
-                ...GroupSetDefaultGroupForIngestionUsersFragment
-            }
-        }
+  mutation GroupSetDefaultGroupForIngestionUsersMutation(
+    $id: ID!
+    $input: [EditInput]!
+  ) {
+    groupEdit(id: $id) {
+      fieldPatch(input: $input) {
+        ...GroupSetDefaultGroupForIngestionUsersFragment
+      }
     }
+  }
 `;
 
 export const groupSetDefaultGroupForIngestionUsersQuery = graphql`
-    query GroupSetDefaultGroupForIngestionUsersQuery(
-        $filters: FilterGroup
-    ) {
-        groups(filters: $filters) {
-            edges {
-                node {
-                    id
-                    name
-                }
-            }
+  query GroupSetDefaultGroupForIngestionUsersQuery(
+    $filters: FilterGroup
+  ) {
+    groups(filters: $filters) {
+      edges {
+        node {
+          id
+          name
         }
+      }
     }
+  }
 `;
 interface GroupSetDefaultGroupForIngestionUsersComponentProps {
   queryRef: PreloadedQuery<GroupSetDefaultGroupForIngestionUsersQuery>
@@ -51,7 +52,8 @@ interface GroupSetDefaultGroupForIngestionUsersComponentProps {
 const GroupSetDefaultGroupForIngestionUsersComponent = ({ queryRef }: GroupSetDefaultGroupForIngestionUsersComponentProps) => {
   const { t_i18n } = useFormatter();
   const [commitFieldPatch] = useApiMutation(groupSetDefaultGroupForIngestionUsersMutationFieldPatch);
-
+  const { isFeatureEnable } = useHelper();
+  const serviceAccountFeatureFlag = isFeatureEnable('SERVICE_ACCOUNT');
   const [currentGroupForAutoIntegrationAssignation, setCurrentGroupForAutoIntegrationAssignation] = useState<
   { id: string | undefined, name: string | undefined }>({ id: undefined, name: undefined });
   const { setFieldValue } = useFormikContext();
@@ -97,7 +99,7 @@ const GroupSetDefaultGroupForIngestionUsersComponent = ({ queryRef }: GroupSetDe
 
   return <Grid item xs={6}>
     <Typography variant="h4" gutterBottom={true}>
-      {t_i18n('Default group for ingestion user')}
+      {serviceAccountFeatureFlag ? t_i18n('Service account policy') : t_i18n('Default group for ingestion user')}
     </Typography>
     <Paper style={{
       marginTop: 8,
@@ -106,12 +108,13 @@ const GroupSetDefaultGroupForIngestionUsersComponent = ({ queryRef }: GroupSetDe
     }} className={'paper-for-grid'} variant="outlined"
     >
       <Alert severity="info" variant="outlined">
-        {t_i18n('Define a group that will be assigned to each user created on the fly for ingestion')}
+        {serviceAccountFeatureFlag ? t_i18n('Define a group that will be assigned to each service account created on the fly for each ingestion type. \n'
+          + 'Service accounts will have specific rights (no ability to login via UI). ') : t_i18n('Define a group that will be assigned to each user created on the fly for ingestion')}
       </Alert>
       <GroupField
         style={{ marginTop: 20 }}
         name="default_group_for_ingestion_users"
-        label={t_i18n('Default group for ingestion user')}
+        label={serviceAccountFeatureFlag ? t_i18n('Default service account for Service accounts') : t_i18n('Default group for ingestion user')}
         multiple={false}
         onChange={handleChange}
       />

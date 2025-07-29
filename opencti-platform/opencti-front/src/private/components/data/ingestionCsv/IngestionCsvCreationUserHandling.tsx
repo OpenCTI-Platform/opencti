@@ -16,6 +16,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../components/Loader';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const ingestionCsvCreationUserHandlingDefaultGroupForIngestionUsersQuery = graphql`
     query IngestionCsvCreationUserHandlingDefaultGroupForIngestionUsersQuery {
@@ -32,7 +33,8 @@ const IngestionCsvCreationUserHandlingComponent = ({ queryRef }: IngestionCsvCre
   const { values, setFieldValue } = useFormikContext<IngestionCsvAddInput>();
   const [displayDefaultGroupWarning, setDisplayDefaultGroupWarning] = useState<boolean>(false);
   const data = usePreloadedQuery(ingestionCsvCreationUserHandlingDefaultGroupForIngestionUsersQuery, queryRef);
-
+  const { isFeatureEnable } = useHelper();
+  const serviceAccountFeatureFlag = isFeatureEnable('SERVICE_ACCOUNT');
   useEffect(() => {
     setFieldValue(
       'user_id',
@@ -59,7 +61,7 @@ const IngestionCsvCreationUserHandlingComponent = ({ queryRef }: IngestionCsvCre
       type="checkbox"
       name="automatic_user"
       checked={values.automatic_user ?? true}
-      label={t_i18n('Automatically create a user')}
+      label={!serviceAccountFeatureFlag ? t_i18n('Automatically create a user') : t_i18n('Automatically create a service account')}
     />
     { displayDefaultGroupWarning && values.automatic_user && <Box sx={{ width: '100%', marginTop: 3 }}>
       <Alert
@@ -74,7 +76,7 @@ const IngestionCsvCreationUserHandlingComponent = ({ queryRef }: IngestionCsvCre
   </Box>
     <CreatorField
       name="user_id"
-      label={t_i18n('User responsible for data creation')}
+      label={!serviceAccountFeatureFlag ? t_i18n('User responsible for data creation') : t_i18n('Service account responsible for data creation')}
       containerStyle={fieldSpacingContainerStyle}
       showConfidence disabled={values.automatic_user !== false}
     />
