@@ -249,6 +249,8 @@ const Users = () => {
               return <PersonOutlined color="primary" />;
             }}
             taskScope={'USER'}
+            searchContextFinal={{ entityTypes: ['InternalObject'] }}
+            availableFilterKeys={['user_service_account']}
           />
           )}
         </>
