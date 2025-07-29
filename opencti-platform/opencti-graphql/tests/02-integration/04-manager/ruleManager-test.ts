@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { getRules, setRuleActivation } from '../../../src/domain/rules';
+import { getActivatedRules, getRules, setRuleActivation } from '../../../src/domain/rules';
 import ParticipateToPartsRule from '../../../src/rules/participate-to-parts/ParticipateToPartsRule';
-import { EVENT_TYPE_CREATE, READ_INDEX_INFERRED_RELATIONSHIPS, READ_RELATIONSHIPS_INDICES, waitInSec } from '../../../src/database/utils';
+import { EVENT_TYPE_CREATE, READ_RELATIONSHIPS_INDICES } from '../../../src/database/utils';
 import { addOrganization } from '../../../src/modules/organization/organization-domain';
 import { addSector } from '../../../src/domain/sector';
 import { addUser, findById as findUserById } from '../../../src/domain/user';
@@ -10,21 +10,27 @@ import type { AuthUser } from '../../../src/types/user';
 import type { UserAddInput } from '../../../src/generated/graphql';
 import { addStixCoreRelationship } from '../../../src/domain/stixCoreRelationship';
 import { stixLoadById } from '../../../src/database/middleware';
-import { RULE_MANAGER_USER, SYSTEM_USER } from '../../../src/utils/access';
+import { RULE_MANAGER_USER } from '../../../src/utils/access';
 import { buildInternalEvent, rulesApplyHandler } from '../../../src/manager/ruleManager';
 import type { StixCoreObject } from '../../../src/types/stix-2-1-common';
 import type { RuleRuntime } from '../../../src/types/rules';
-import type { BasicStoreEntity, BasicStoreRelation } from '../../../src/types/store';
-import { listAllRelations, listRelations } from '../../../src/database/middleware-loader';
+import type { BasicStoreRelation } from '../../../src/types/store';
+import { listAllRelations } from '../../../src/database/middleware-loader';
 import { RELATION_PARTICIPATE_TO } from '../../../src/schema/internalRelationship';
 
 describe('ParticipateToPartsRule tests', () => {
   it('should sector not be added as organisation on users', async () => {
+    // Disable all rules
+    const allActivatedRules = await getActivatedRules(testContext, ADMIN_USER);
+    for (let i = 0; i < allActivatedRules.length; i += 1) {
+      const rule = allActivatedRules[i];
+      await setRuleActivation(testContext, ADMIN_USER, rule.id, false);
+    }
+    // ----------------
     // GIVEN an Organization A that has relation "part of" with a sector
     // GIVEN an Organization A that has relation "part of" with an organization B
     // AND ParticipateToPartsRule is enabled
     // AND a user that is in the organization "Organization A"
-    await setRuleActivation(testContext, ADMIN_USER, ParticipateToPartsRule.id, true);
     const ruleRuntimeAll: RuleRuntime[] = await getRules(testContext, ADMIN_USER);
     const testOrgA = await addOrganization(testContext, ADMIN_USER, { name: 'RuleTestOrgA' });
     const testOrgB = await addOrganization(testContext, ADMIN_USER, { name: 'RuleTestOrgB' });
@@ -39,29 +45,33 @@ describe('ParticipateToPartsRule tests', () => {
       objectOrganization: [testOrgA.id]
     };
     const userInOrgA: AuthUser = await addUser(testContext, ADMIN_USER, userInput);
-    console.log('userInOrgA', userInOrgA);
-    // WHEN the ParticipateToPartsRule is applied
-    const orgAData: StixCoreObject = await stixLoadById(testContext, RULE_MANAGER_USER, testOrgA.id) as StixCoreObject;
-    const eventOrgAData = buildInternalEvent(EVENT_TYPE_CREATE, orgAData);
-    const orgBData: StixCoreObject = await stixLoadById(testContext, RULE_MANAGER_USER, testOrgB.id) as StixCoreObject;
-    const eventOrgBData = buildInternalEvent(EVENT_TYPE_CREATE, orgBData);
-    const sectorData: StixCoreObject = await stixLoadById(testContext, RULE_MANAGER_USER, testSector.id) as StixCoreObject;
-    const eventSectorData = buildInternalEvent(EVENT_TYPE_CREATE, sectorData);
 
-    await rulesApplyHandler(testContext, RULE_MANAGER_USER, [eventOrgAData, eventOrgBData, eventSectorData], ruleRuntimeAll.filter((rule) => rule.id === ParticipateToPartsRule.id));
-    await waitInSec(2); // need to wait ES data update
+    // ----------------
+    // WHEN rule is applied on event "create participate-to from user to orgA"
+    // (Triggering manually rule on this event)
+    const userRelationsParticipateTo = await listAllRelations(testContext, ADMIN_USER, RELATION_PARTICIPATE_TO, { fromId: userInOrgA.internal_id, toId: testOrgA.internal_id });
+    expect(userRelationsParticipateTo.length).toBe(1); // at this point the only rel should be user --> orgA since rule are disabled
+    const relUserParticipateToOrgAData = await stixLoadById(testContext, RULE_MANAGER_USER, userRelationsParticipateTo[0].id) as StixCoreObject;
+    const eventRelUserParticipateToOrgAData = buildInternalEvent(EVENT_TYPE_CREATE, relUserParticipateToOrgAData);
+    await rulesApplyHandler(testContext, RULE_MANAGER_USER, [eventRelUserParticipateToOrgAData], ruleRuntimeAll.filter((rule) => rule.id === ParticipateToPartsRule.id));
 
+    // ----------------
     // THEN Organization B has rel with user
     // AND Sector has no relation with user
-
     const userAuthAfter = await findUserById(testContext, ADMIN_USER, userInOrgA.id);
-    console.log('userAuthAfter', userAuthAfter);
 
     const allUserRelations = await listAllRelations<BasicStoreRelation>(testContext, userAuthAfter, [RELATION_PARTICIPATE_TO], { indices: READ_RELATIONSHIPS_INDICES });
     const currentUserParticipateTo = allUserRelations.filter((rel) => rel.fromId === userAuthAfter.id);
-    console.log('currentUserParticipateTo', currentUserParticipateTo);
+
     expect(currentUserParticipateTo.filter((rel) => rel.toId === testOrgA.id).length).toBe(1); // Direct organization
     expect(currentUserParticipateTo.filter((rel) => rel.toId === testOrgB.id).length).toBe(1); // Organization because of rule OrgB --part of --> OrgA
     expect(currentUserParticipateTo.filter((rel) => rel.toId === testSector.id).length).toBe(0); // Sector not there even if Sector --part of --> OrgA
+
+    // BACK to what it was before test
+    // await setRuleActivation(testContext, ADMIN_USER, ParticipateToPartsRule.id, false);
+    for (let i = 0; i < allActivatedRules.length; i += 1) {
+      const rule = allActivatedRules[i];
+      await setRuleActivation(testContext, ADMIN_USER, rule.id, true);
+    }
   });
 });
