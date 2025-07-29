@@ -4,6 +4,7 @@ import { adminQueryWithError, adminQueryWithSuccess, disableEE, enableEE } from 
 import type { PlaybookAddNodeInput } from '../../../src/generated/graphql';
 import { PLAYBOOK_INTERNAL_DATA_CRON, PLAYBOOK_MATCHING_COMPONENT } from '../../../src/modules/playbook/playbook-components';
 import { UNSUPPORTED_ERROR } from '../../../src/config/errors';
+import { adminQuery } from '../../utils/testQuery';
 
 const LIST_PLAYBOOKS = gql`
   query playbooks(
@@ -85,11 +86,12 @@ describe('Playbook resolver standard behavior', () => {
     filterGroups: [],
   });
   it('should not list playbooks if platform not under EE', async () => {
-    await adminQueryWithError(
+    const queryResult = await adminQuery(
       { query: LIST_PLAYBOOKS, variables: { first: 10 } },
-      'Enterprise edition is not enabled',
-      UNSUPPORTED_ERROR,
     );
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.errors.length).toEqual(1);
+    expect(queryResult.errors.at(0).message).toEqual('Enterprise edition is not enabled');
   });
   it('should list playbooks', async () => {
     // Activate EE
