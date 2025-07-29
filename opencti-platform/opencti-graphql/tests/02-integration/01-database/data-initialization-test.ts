@@ -29,7 +29,7 @@ describe('Data initialization test', () => {
 
   it('should create all capabilities', async () => {
     const capabilities = await listAllEntities<BasicStoreEntity>(testContext, ADMIN_USER, [ENTITY_TYPE_CAPABILITY]);
-    expect(capabilities.length).toEqual(42);
+    expect(capabilities.length).toEqual(44);
     const capabilitiesNames = capabilities.map((capa) => capa.name).sort();
     const allExpectedNames = [
       'BYPASS',
@@ -61,6 +61,8 @@ describe('Data initialization test', () => {
       'KNOWLEDGE_KNUPLOAD',
       'MODULES',
       'MODULES_MODMANAGE',
+      'CAPAPIR',
+      'CAPAPIR_PIRUPDATE',
       'SETTINGS',
       'SETTINGS_FILEINDEXING',
       'SETTINGS_SECURITYACTIVITY',
