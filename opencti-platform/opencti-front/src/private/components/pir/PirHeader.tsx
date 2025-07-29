@@ -23,7 +23,7 @@ import { PirHeaderFragment$key } from './__generated__/PirHeaderFragment.graphql
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { PirEditionFragment$key } from './__generated__/PirEditionFragment.graphql';
-import { authorizedMembersToOptions } from '../../../utils/authorizedMembers';
+import { authorizedMembersToOptions, useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
 import { CAPAPIR_PIRUPDATE } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
 
@@ -36,6 +36,7 @@ const headerFragment = graphql`
       name
       entity_type
     }
+    currentUserAccessRight
     authorizedMembers {
       id
       name
@@ -67,7 +68,8 @@ interface PirHeaderProps {
 const PirHeader = ({ data, editionData }: PirHeaderProps) => {
   const { t_i18n } = useFormatter();
   const pir = useFragment(headerFragment, data);
-  const { name, id, authorizedMembers, creators } = pir;
+  const { name, id, authorizedMembers, creators, currentUserAccessRight } = pir;
+  const { canManage } = useGetCurrentUserAccessRight(currentUserAccessRight);
 
   const [isEditionOpen, setIsEditionOpen] = useState(false);
 
@@ -88,12 +90,14 @@ const PirHeader = ({ data, editionData }: PirHeaderProps) => {
         <Security needs={[CAPAPIR_PIRUPDATE]}>
           <>
             <div>
-              <FormAuthorizedMembersDialog
-                id={id}
-                owner={creators?.[0]}
-                mutation={pirHeaderEditAuthorizedMembersMutation}
-                authorizedMembers={authorizedMembersToOptions(authorizedMembers)}
-              />
+              <Security needs={[CAPAPIR_PIRUPDATE]} hasAccess={canManage}>
+                <FormAuthorizedMembersDialog
+                  id={id}
+                  owner={creators?.[0]}
+                  mutation={pirHeaderEditAuthorizedMembersMutation}
+                  authorizedMembers={authorizedMembersToOptions(authorizedMembers)}
+                />
+              </Security>
 
               <PirPopover data={pir} />
             </div>
