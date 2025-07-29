@@ -42,7 +42,7 @@ const playbookResolvers: Resolvers = {
     playbooksForEntity: (_, { id }, context) => findPlaybooksForEntity(context, context.user, id),
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    playbookComponents: () => availableComponents(),
+    playbookComponents: (_, __, context) => availableComponents(context),
   },
   Playbook: {
     playbook_definition: async (current, _, context) => getPlaybookDefinition(context, current),
