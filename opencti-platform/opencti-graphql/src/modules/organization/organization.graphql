@@ -124,7 +124,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   default_hidden_types: [String!]
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(stixVersion: StixVersion): String
   importFiles(
     first: Int
     prefixMimeType: String
