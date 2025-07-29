@@ -185,7 +185,7 @@ const PirKnowledgeRelationships = ({
         return (
           <Tooltip
             title={(
-              <div style={{ display: 'flex', gap: theme.spacing(1) }}>
+              <div style={{ display: 'flex', gap: theme.spacing(1), flexWrap: 'wrap' }}>
                 {pir_explanations.map((e: { criterion: { filters: string } }, i: number) => (
                   <PirFiltersDisplay
                     key={i}
