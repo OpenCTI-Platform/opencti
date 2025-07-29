@@ -740,12 +740,11 @@ export const userEditField = async (context, user, userId, rawInputs) => {
     const input = rawInputs[index];
     let skipThisInput = false;
     if (input.key === 'password') {
-      if (serviceAccountFeatureFlag) {
-        const userServiceAccountInput = rawInputs.find((x) => x.key === 'user_service_account');
-        if (userServiceAccountInput && userToUpdate.user_service_account !== userServiceAccountInput.value[0]) {
-          skipThisInput = true;
-        }
+      const userServiceAccountInput = rawInputs.find((x) => x.key === 'user_service_account');
+      if (userServiceAccountInput && userToUpdate.user_service_account !== userServiceAccountInput.value[0]) {
+        skipThisInput = true;
       }
+
       if (!userToUpdate.user_service_account) {
         const userPassword = R.head(input.value).toString();
         await checkPasswordFromPolicy(context, userPassword);
@@ -792,19 +791,17 @@ export const userEditField = async (context, user, userId, rawInputs) => {
       }
     }
 
-    if (serviceAccountFeatureFlag) {
-      // Turn User into Service Account
-      if (input.key === 'user_service_account' && !userToUpdate.user_service_account && input.value[0] === true) {
-        inputs.push({ key: 'password', value: [null] });
-        await addUserIntoServiceAccountCount();
-      }
-      // Turn Service Account into User
-      if (input.key === 'user_service_account' && userToUpdate.user_service_account && input.value[0] === false) {
-        const userPassword = uuid();
-        await checkPasswordFromPolicy(context, userPassword);
-        inputs.push({ key: 'password', value: [bcrypt.hashSync(userPassword)] });
-        await addServiceAccountIntoUserCount();
-      }
+    // Turn User into Service Account
+    if (input.key === 'user_service_account' && !userToUpdate.user_service_account && input.value[0] === true) {
+      inputs.push({ key: 'password', value: [null] });
+      await addUserIntoServiceAccountCount();
+    }
+    // Turn Service Account into User
+    if (input.key === 'user_service_account' && userToUpdate.user_service_account && input.value[0] === false) {
+      const userPassword = uuid();
+      await checkPasswordFromPolicy(context, userPassword);
+      inputs.push({ key: 'password', value: [bcrypt.hashSync(userPassword)] });
+      await addServiceAccountIntoUserCount();
     }
 
     if (!skipThisInput) {

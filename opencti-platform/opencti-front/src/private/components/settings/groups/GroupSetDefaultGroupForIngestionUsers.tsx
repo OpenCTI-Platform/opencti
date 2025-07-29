@@ -11,7 +11,6 @@ import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../components/Loader';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 export const groupSetDefaultGroupForIngestionUsersFragment = graphql`
   fragment GroupSetDefaultGroupForIngestionUsersFragment on Group {
@@ -52,8 +51,6 @@ interface GroupSetDefaultGroupForIngestionUsersComponentProps {
 const GroupSetDefaultGroupForIngestionUsersComponent = ({ queryRef }: GroupSetDefaultGroupForIngestionUsersComponentProps) => {
   const { t_i18n } = useFormatter();
   const [commitFieldPatch] = useApiMutation(groupSetDefaultGroupForIngestionUsersMutationFieldPatch);
-  const { isFeatureEnable } = useHelper();
-  const serviceAccountFeatureFlag = isFeatureEnable('SERVICE_ACCOUNT');
   const [currentGroupForAutoIntegrationAssignation, setCurrentGroupForAutoIntegrationAssignation] = useState<
   { id: string | undefined, name: string | undefined }>({ id: undefined, name: undefined });
   const { setFieldValue } = useFormikContext();
@@ -99,7 +96,7 @@ const GroupSetDefaultGroupForIngestionUsersComponent = ({ queryRef }: GroupSetDe
 
   return <Grid item xs={6}>
     <Typography variant="h4" gutterBottom={true}>
-      {serviceAccountFeatureFlag ? t_i18n('Service account policy') : t_i18n('Default group for ingestion user')}
+      { t_i18n('Service account policy')}
     </Typography>
     <Paper style={{
       marginTop: 8,
@@ -108,13 +105,13 @@ const GroupSetDefaultGroupForIngestionUsersComponent = ({ queryRef }: GroupSetDe
     }} className={'paper-for-grid'} variant="outlined"
     >
       <Alert severity="info" variant="outlined">
-        {serviceAccountFeatureFlag ? t_i18n('Define a group that will be assigned to each service account created on the fly for each ingestion type. \n'
-          + 'Service accounts will have specific rights (no ability to login via UI). ') : t_i18n('Define a group that will be assigned to each user created on the fly for ingestion')}
+        {t_i18n('Define a group that will be assigned to each service account created on the fly for each ingestion type. \n'
+          + 'Service accounts will have specific rights (no ability to login via UI). ')}
       </Alert>
       <GroupField
         style={{ marginTop: 20 }}
         name="default_group_for_ingestion_users"
-        label={serviceAccountFeatureFlag ? t_i18n('Default service account for Service accounts') : t_i18n('Default group for ingestion user')}
+        label={t_i18n('Default service account for Service accounts')}
         multiple={false}
         onChange={handleChange}
       />
