@@ -99,7 +99,7 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
     avatar: OpenCtiFile
     # Technical
     creators: [Creator!]
-    toStix: String
+    toStix(stixVersion: StixVersion): String
     importFiles(
     first: Int
     prefixMimeType: String
