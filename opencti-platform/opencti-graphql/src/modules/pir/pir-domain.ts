@@ -36,7 +36,7 @@ import { registerConnectorForPir, unregisterConnectorForIngestion } from '../../
 import type { BasicStoreCommon, BasicStoreObject } from '../../types/store';
 import { RELATION_IN_PIR, RELATION_OBJECT } from '../../schema/stixRefRelationship';
 import { createPirRel, serializePir, updatePirExplanations } from './pir-utils';
-import { FunctionalError } from '../../config/errors';
+import { ForbiddenAccess, FunctionalError } from '../../config/errors';
 import { ABSTRACT_STIX_REF_RELATIONSHIP, ENTITY_TYPE_CONTAINER } from '../../schema/general';
 import { elRawUpdateByQuery } from '../../database/engine';
 import { READ_INDEX_HISTORY } from '../../database/utils';
@@ -44,7 +44,7 @@ import { extractFilterKeyValues } from '../../utils/filtering/filtering-utils';
 import { INSTANCE_DYNAMIC_REGARDING_OF, INSTANCE_REGARDING_OF, OBJECT_CONTAINS_FILTER, RELATION_TO_FILTER } from '../../utils/filtering/filtering-constants';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
-import { MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_VIEW } from '../../utils/access';
+import { isBypassUser, MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_VIEW } from '../../utils/access';
 
 export const findById = async (context: AuthContext, user: AuthUser, id: string) => {
   await checkEnterpriseEdition(context);
@@ -202,6 +202,9 @@ export const pirFlagElement = async (
   pirId: string,
   input: PirFlagElementInput,
 ) => {
+  if (!isBypassUser(user)) {
+    throw ForbiddenAccess();
+  }
   await checkEnterpriseEdition(context);
   const pir = await storeLoadById<BasicStoreEntityPir>(context, user, pirId, ENTITY_TYPE_PIR);
   if (!pir) {
@@ -243,6 +246,9 @@ export const pirUnflagElement = async (
   pirId: string,
   input: PirUnflagElementInput,
 ) => {
+  if (!isBypassUser(user)) {
+    throw ForbiddenAccess();
+  }
   await checkEnterpriseEdition(context);
   const pir = await storeLoadById<BasicStoreEntityPir>(context, user, pirId, ENTITY_TYPE_PIR);
   if (!pir) {
