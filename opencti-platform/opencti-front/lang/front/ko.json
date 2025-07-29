@@ -536,6 +536,7 @@
   "Control": "제어",
   "Convert": "전환",
   "Convert associated files to STIX 2.1": "관련 파일을 STIX 2.1로 변환",
+  "Convert Service account": "서비스 계정 전환",
   "Convert this workbench to a draft": "이 워크벤치를 초안으로 변환",
   "Convert to draft": "초안으로 변환",
   "Convert User": "사용자 전환",
