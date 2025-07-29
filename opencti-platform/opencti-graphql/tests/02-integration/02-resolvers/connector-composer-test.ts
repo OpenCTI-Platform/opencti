@@ -348,6 +348,156 @@ describe('Connector Composer and Managed Connectors', () => {
       expect(restartedConnector.manager_current_status).toEqual('started');
     });
 
+    it('should change/update the connector log level (e.g., DEBUG, INFO, WARN, ERROR)', async () => {
+      // Create a dedicated connector for this test
+      const createInput = {
+        name: 'Log Level Test Connector',
+        connector_user_id: TEST_USER_CONNECTOR_ID,
+        catalog_id: 'filigran-catalog-id',
+        manager_contract_image: 'opencti/connector-ipinfo',
+        manager_contract_configuration: [
+          { key: 'IPINFO_TOKEN', value: ['log-level-test-token'] },
+          { key: 'CONNECTOR_SCOPE', value: ['IPv4-Addr'] },
+          { key: 'CONNECTOR_AUTO', value: ['true'] },
+          { key: 'IPINFO_MAX_TLP', value: ['TLP:AMBER'] },
+          { key: 'CONNECTOR_LOG_LEVEL', value: ['info'] }, // Initial log level
+          { key: 'IPINFO_USE_ASN_NAME', value: ['false'] }
+        ]
+      };
+
+      const createResult = await queryAsAdminWithSuccess({
+        query: ADD_MANAGED_CONNECTOR_MUTATION,
+        variables: { input: createInput }
+      });
+
+      expect(createResult.data).toBeDefined();
+      const logLevelConnectorId = createResult.data?.managedConnectorAdd.id;
+      createdConnectorIds.add(logLevelConnectorId);
+
+      // Start the connector
+      await queryAsAdminWithSuccess({
+        query: UPDATE_CONNECTOR_REQUESTED_STATUS_MUTATION,
+        variables: { input: { id: logLevelConnectorId, status: 'starting' } }
+      });
+      await xtmComposer.deployConnector(logLevelConnectorId);
+
+      // Get current configuration to preserve other settings
+      const connectors = await xtmComposer.getConnectorsForManagers();
+      const currentConnector = connectors.find((c: any) => c.id === logLevelConnectorId);
+      const currentConfig = currentConnector.manager_contract_configuration || [];
+      const configWithoutLogLevel = currentConfig.filter((c: any) => c.key !== 'CONNECTOR_LOG_LEVEL');
+
+      // Update the connector configuration with a new log level (change from 'info' to 'debug')
+      const updateInput = {
+        id: logLevelConnectorId,
+        name: 'Log Level Test Connector',
+        connector_user_id: TEST_USER_CONNECTOR_ID,
+        manager_contract_configuration: [
+          ...configWithoutLogLevel,
+          { key: 'CONNECTOR_LOG_LEVEL', value: ['debug'] } // Changed from 'info' to 'debug'
+        ]
+      };
+
+      const updateResult = await queryAsAdminWithSuccess({
+        query: EDIT_MANAGED_CONNECTOR_MUTATION,
+        variables: { input: updateInput }
+      });
+
+      expect(updateResult.data).toBeDefined();
+      expect(updateResult.data?.managedConnectorEdit).toBeDefined();
+
+      // Simulate XTM Composer detecting the configuration change
+      await xtmComposer.updateConnectorConfiguration(logLevelConnectorId);
+
+      // Query the connector logs to verify the restart happened
+      const logsResult = await queryAsAdminWithSuccess({
+        query: CONNECTOR_LOGS_QUERY,
+        variables: { id: logLevelConnectorId }
+      });
+
+      expect(logsResult.data).toBeDefined();
+      const logs = logsResult.data?.connector.manager_connector_logs || [];
+
+      // Verify logs contain evidence of log level change and restart
+      const logStrings = logs.join('\n');
+      expect(logStrings).toContain('Log level change detected: info -> debug');
+      expect(logStrings).toContain('Restarting connector to apply new log level');
+      expect(logStrings).toContain('Starting connector with log level: debug');
+      expect(logStrings).toContain('Connector restarted successfully with new log level');
+
+      // Verify the connector is still running after the restart
+      const connectorsAfterUpdate = await xtmComposer.getConnectorsForManagers();
+      const updatedConnector = connectorsAfterUpdate.find((c: any) => c.id === logLevelConnectorId);
+      expect(updatedConnector.manager_current_status).toEqual('started');
+
+      // Test changing to another log level (ERROR)
+      const updateInput2 = {
+        id: logLevelConnectorId,
+        name: 'Log Level Test Connector',
+        connector_user_id: TEST_USER_CONNECTOR_ID,
+        manager_contract_configuration: [
+          ...configWithoutLogLevel,
+          { key: 'CONNECTOR_LOG_LEVEL', value: ['error'] } // Changed from 'debug' to 'error'
+        ]
+      };
+
+      await queryAsAdminWithSuccess({
+        query: EDIT_MANAGED_CONNECTOR_MUTATION,
+        variables: { input: updateInput2 }
+      });
+
+      // Simulate XTM Composer detecting the configuration change again
+      await xtmComposer.updateConnectorConfiguration(logLevelConnectorId);
+
+      // Query logs again
+      const logsResult2 = await queryAsAdminWithSuccess({
+        query: CONNECTOR_LOGS_QUERY,
+        variables: { id: logLevelConnectorId }
+      });
+
+      const logs2 = logsResult2.data?.connector.manager_connector_logs || [];
+      const logStrings2 = logs2.join('\n');
+
+      // Verify the second log level change
+      expect(logStrings2).toContain('Log level change detected: debug -> error');
+
+      // Test updating configuration without changing log level (should not restart)
+      const updateInput3 = {
+        id: logLevelConnectorId,
+        name: 'Log Level Test Connector - Updated Name',
+        connector_user_id: TEST_USER_CONNECTOR_ID,
+        manager_contract_configuration: [
+          ...configWithoutLogLevel,
+          { key: 'CONNECTOR_LOG_LEVEL', value: ['error'] } // Same log level as before
+        ]
+      };
+
+      await queryAsAdminWithSuccess({
+        query: EDIT_MANAGED_CONNECTOR_MUTATION,
+        variables: { input: updateInput3 }
+      });
+
+      // Clear logs before checking
+      await xtmComposer.updateConnectorLogs(logLevelConnectorId, ['[Test] Clearing logs for verification']);
+
+      // Simulate XTM Composer checking configuration
+      await xtmComposer.updateConnectorConfiguration(logLevelConnectorId);
+
+      // Query logs one more time
+      const logsResult3 = await queryAsAdminWithSuccess({
+        query: CONNECTOR_LOGS_QUERY,
+        variables: { id: logLevelConnectorId }
+      });
+
+      const logs3 = logsResult3.data?.connector.manager_connector_logs || [];
+      const recentLogs = logs3.slice(-5); // Get last 5 logs
+
+      // Verify no restart happened (no log level change messages in recent logs)
+      const recentLogStrings = recentLogs.join('\n');
+      expect(recentLogStrings).not.toContain('Log level change detected');
+      expect(recentLogStrings).not.toContain('Restarting connector to apply new log level');
+    });
+
     it('should delete a managed connector deployment', async () => {
       // First ensure connector is stopped
       const stopRequestInput = {

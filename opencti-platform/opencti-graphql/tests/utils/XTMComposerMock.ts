@@ -1,5 +1,6 @@
 import gql from 'graphql-tag';
 import { queryAsAdminWithSuccess } from './testQueryHelper';
+import { wait } from '../../src/database/utils';
 
 /**
  * XTM Composer Mock - TypeScript implementation
@@ -47,6 +48,8 @@ export class XTMComposerMock {
 
   private connectors: Map<string, ApiConnector> = new Map();
 
+  private connectorLogLevels: Map<string, string> = new Map();
+
   private logToConsole: boolean;
 
   private operationDelay: number;
@@ -90,9 +93,7 @@ export class XTMComposerMock {
 
   // Helper methods
   private async simulateDelay(): Promise<void> {
-    await new Promise<void>((resolve) => {
-      setTimeout(resolve, this.operationDelay);
-    });
+    await wait(this.operationDelay);
   }
 
   private shouldFail(): boolean {
@@ -141,6 +142,16 @@ export class XTMComposerMock {
     }
   }
 
+  private static getLogLevelFromConfiguration(configuration: Array<{ key: string; value: string | string[] }>): string {
+    const logLevelConfig = configuration.find((config) => config.key === 'CONNECTOR_LOG_LEVEL');
+    if (logLevelConfig) {
+      // Handle both string and array values
+      const { value } = logLevelConfig;
+      return Array.isArray(value) ? value[0] : value;
+    }
+    return 'info';
+  }
+
   // GraphQL methods
   static async updateConnectorLogs(connectorId: string, logs: string[]): Promise<string> {
     const mutation = gql`
@@ -184,6 +195,11 @@ export class XTMComposerMock {
           manager_contract_image
           manager_requested_status
           manager_current_status
+          manager_contract_configuration {
+            key
+            value
+          }
+          manager_connector_logs
         }
       }
     `;
@@ -197,7 +213,6 @@ export class XTMComposerMock {
   }
 
   // Workflow methods using GraphQL
-  // eslint-disable-next-line class-methods-use-this
   async deployConnector(connectorId: string) {
     // 1. Get connector details
     const connectors = await XTMComposerMock.getConnectorsForManagers();
@@ -207,21 +222,29 @@ export class XTMComposerMock {
       throw new Error('Connector not found or not in starting state');
     }
 
-    // 2. Simulate deployment logs
-    await XTMComposerMock.updateConnectorLogs(connectorId, [
-      '[XTM-Composer] Deploying connector...',
-      `[XTM-Composer] Pulling image: ${connector.manager_contract_image}`,
-      '[XTM-Composer] Creating container...',
-      '[XTM-Composer] Starting container...'
-    ]);
+    // Check for log level changes
+    const newLogLevel = XTMComposerMock.getLogLevelFromConfiguration(connector.manager_contract_configuration || []);
+    const logLevelChanged = await this.handleLogLevelChange(connectorId, newLogLevel);
 
-    // 3. Update status to started
-    await XTMComposerMock.updateConnectorCurrentStatus(connectorId, 'started');
+    if (!logLevelChanged) {
+      // Normal deployment without log level change
+      // 2. Simulate deployment logs
+      await XTMComposerMock.updateConnectorLogs(connectorId, [
+        '[XTM-Composer] Deploying connector...',
+        `[XTM-Composer] Pulling image: ${connector.manager_contract_image}`,
+        '[XTM-Composer] Creating container...',
+        '[XTM-Composer] Starting container...'
+      ]);
 
-    // 4. Final log
-    await XTMComposerMock.updateConnectorLogs(connectorId, [
-      '[XTM-Composer] Connector deployed successfully'
-    ]);
+      // 3. Update status to started
+      await XTMComposerMock.updateConnectorCurrentStatus(connectorId, 'started');
+
+      // 4. Final log
+      await XTMComposerMock.updateConnectorLogs(connectorId, [
+        '[XTM-Composer] Connector deployed successfully'
+      ]);
+    }
+    // If log level changed, the restart was already handled in handleLogLevelChange
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -245,9 +268,7 @@ export class XTMComposerMock {
     await this.stopConnector(connectorId);
 
     // Simulate restart delay
-    await new Promise((resolve) => {
-      setTimeout(resolve, 100);
-    });
+    await wait(100);
 
     await XTMComposerMock.updateConnectorLogs(connectorId, [
       '[XTM-Composer] Restarting connector...'
@@ -258,6 +279,47 @@ export class XTMComposerMock {
     await XTMComposerMock.updateConnectorLogs(connectorId, [
       '[XTM-Composer] Connector restarted successfully'
     ]);
+  }
+
+  async handleLogLevelChange(connectorId: string, newLogLevel: string): Promise<boolean> {
+    const currentLogLevel = this.connectorLogLevels.get(connectorId);
+
+    if (currentLogLevel && currentLogLevel !== newLogLevel) {
+      // Log level has changed, need to restart the connector
+      // Since updateConnectorLogs replaces logs, we need to send all logs at once
+      const restartLogs = [
+        `Log level change detected: ${currentLogLevel} -> ${newLogLevel}`,
+        'Restarting connector to apply new log level...',
+        'Stopping connector...',
+        'Sending termination signal...',
+        'Connector stopped successfully',
+        `Starting connector with log level: ${newLogLevel}`,
+        'Connector restarted successfully with new log level'
+      ];
+
+      await XTMComposerMock.updateConnectorLogs(connectorId, restartLogs);
+
+      // Update status to stopped then started
+      await XTMComposerMock.updateConnectorCurrentStatus(connectorId, 'stopped');
+
+      // Update the stored log level
+      this.connectorLogLevels.set(connectorId, newLogLevel);
+
+      // Simulate restart delay
+      await wait(100);
+
+      // Update status back to started
+      await XTMComposerMock.updateConnectorCurrentStatus(connectorId, 'started');
+
+      return true; // Restart was performed
+    }
+
+    // No change in log level
+    if (!currentLogLevel) {
+      // First time setting log level
+      this.connectorLogLevels.set(connectorId, newLogLevel);
+    }
+    return false; // No restart needed
   }
 
   // Wrapper methods for backward compatibility
@@ -299,6 +361,10 @@ export class XTMComposerMock {
     // Store connector with updated status
     const updatedConnector = { ...connector, currentStatus: 'stopped' };
     this.connectors.set(connector.id, updatedConnector);
+
+    // Store initial log level
+    const logLevel = XTMComposerMock.getLogLevelFromConfiguration(connector.contractConfiguration);
+    this.connectorLogLevels.set(connector.id, logLevel);
 
     // Start if requested
     if (connector.requestedStatus === 'starting') {
@@ -503,6 +569,21 @@ export class XTMComposerMock {
     this.log('info', 'Orchestration cycle completed');
   }
 
+  // Method to handle configuration updates
+  async updateConnectorConfiguration(connectorId: string): Promise<void> {
+    // Get the latest connector details
+    const connectors = await XTMComposerMock.getConnectorsForManagers();
+    const connector = connectors.find((c: any) => c.id === connectorId);
+
+    if (!connector) {
+      throw new Error(`Connector not found: ${connectorId}`);
+    }
+
+    // Check for log level changes
+    const newLogLevel = XTMComposerMock.getLogLevelFromConfiguration(connector.manager_contract_configuration || []);
+    await this.handleLogLevelChange(connectorId, newLogLevel);
+  }
+
   // Test helpers
   getContainerCount(): number {
     return this.containers.size;
@@ -515,6 +596,7 @@ export class XTMComposerMock {
   reset(): void {
     this.containers.clear();
     this.connectors.clear();
+    this.connectorLogLevels.clear();
     this.log('info', 'Mock state reset');
   }
 }
