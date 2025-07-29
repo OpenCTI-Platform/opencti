@@ -8,12 +8,12 @@ import { VerifiedOutlined } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import IngestionCatalogChip from '@components/data/IngestionCatalog/IngestionCatalogUseCaseChip';
 import { useTheme } from '@mui/styles';
+import IngestionCatalogConnectorCreation from '@components/data/IngestionCatalog/IngestionCatalogConnectorCreation';
 import { useFormatter } from '../../../../components/i18n';
 import EnrichedTooltip from '../../../../components/EnrichedTooltip';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import type { Theme } from '../../../../components/Theme';
-import IngestionCatalogConnectorCreation from '@components/data/IngestionCatalog/IngestionCatalogConnectorCreation';
 
 interface IngestionCatalogCardProps {
   node: string;
@@ -41,7 +41,9 @@ export interface IngestionConnector {
   source_code: string,
   type: string,
   additionalProperties: string,
-  default: object
+  default: object,
+  required: string[],
+  properties: object,
 }
 
 export type IngestionConnectorType = 'INTERNAL_ENRICHMENT' | 'EXTERNAL_IMPORT' | 'INTERNAL_EXPORT_FILE' | 'INTERNAL_IMPORT_FILE';
@@ -145,7 +147,7 @@ const IngestionCatalogCard = ({ node }: IngestionCatalogCardProps) => {
         <CardActions style={{ alignSelf: 'end' }}>
           <Button variant="outlined" size="small" onClick={() => navigate(link)}>{t_i18n('Details')}</Button>
           <Security needs={[INGESTION_SETINGESTIONS]}>
-            <Button variant="contained" onClick={() => setOpenCreation(true)} size="small">{t_i18n('Deploy')}</Button>
+            <Button variant="contained" color="secondary" onClick={() => setOpenCreation(true)} size="small">{t_i18n('Deploy')}</Button>
           </Security>
         </CardActions>
 

@@ -60,7 +60,7 @@ const IngestionCatalogConnectorHeader = ({ connector }: { connector: IngestionCo
           {t_i18n('', { id: 'Test ... with OpenCTI', values: { connectorName: connector.title } })}
         </Button>
         <Security needs={[INGESTION_SETINGESTIONS]}>
-          <Button variant="contained" onClick={() => setOpenCreation(true)} style={{ marginLeft: theme.spacing(1) }}>{t_i18n('Deploy')}</Button>
+          <Button variant="contained" color="secondary" onClick={() => setOpenCreation(true)} style={{ marginLeft: theme.spacing(1) }}>{t_i18n('Deploy')}</Button>
         </Security>
       </div>
 
