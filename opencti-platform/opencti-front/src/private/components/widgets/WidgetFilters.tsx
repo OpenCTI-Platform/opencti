@@ -143,7 +143,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
           filters={filters}
           helpers={helpers}
           searchContext={searchContext}
-          availableEntityTypes={type === 'bookmark' ? bookmarkAvailableEntityType : availableEntityTypes}
+          availableEntityTypes={type === 'bookmark' ? bookmarkAvailableEntityTypes : availableEntityTypes}
           entityTypes={searchContext.entityTypes}
           fintelTemplatesContext={context === 'fintelTemplate'}
         />
