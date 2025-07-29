@@ -14,12 +14,29 @@ import { JsonForms } from '@jsonforms/react';
 import { Schema, Validator } from '@cfworker/json-schema';
 import { Link } from 'react-router-dom';
 import { JsonSchema } from '@jsonforms/core';
+import { Alert } from '@mui/material';
+import makeStyles from '@mui/styles/makeStyles';
 import { MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { type FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import TextField from '../../../../components/TextField';
+
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
+const useStyles = makeStyles(() => ({
+  alert: {
+    width: '100%',
+    marginTop: 20,
+    paddingBottom: 0,
+  },
+  message: {
+    width: '100%',
+    overflow: 'visible',
+    paddingBottom: 0,
+  },
+}));
 
 const ingestionCatalogConnectorCreationMutation = graphql`
   mutation IngestionCatalogConnectorCreationMutation($input: AddManagedConnectorInput) {
@@ -53,6 +70,7 @@ interface ManagedConnectorValues {
 const IngestionCatalogConnectorCreation = ({ connector, open, onClose }: IngestionCatalogConnectorCreationProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
+  const classes = useStyles();
 
   const [commitRegister] = useApiMutation(ingestionCatalogConnectorCreationMutation);
 
@@ -137,18 +155,26 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose }: Ingesti
                     containerStyle={fieldSpacingContainerStyle}
                     maxConfidenceLevel={connector.max_confidence_level}
                   />
-                  <JsonForms
-                    data={connector.default}
-                    schema={connector as JsonSchema}
-                    renderers={materialRenderers}
-                    validationMode={'NoValidation'}
-                    onChange={({ data }) => setFieldValue('contractValues', data)}
-                  />
+                  <Alert
+                    classes={{ root: classes.alert, message: classes.message }}
+                    severity="info"
+                    icon={false}
+                    variant="outlined"
+                    style={{ position: 'relative' }}
+                  >
+                    <JsonForms
+                      data={connector.default}
+                      schema={connector as JsonSchema}
+                      renderers={materialRenderers}
+                      validationMode={'NoValidation'}
+                      onChange={({ data }) => setFieldValue('contractValues', data)}
+                    />
+                  </Alert>
                 </>
               )}
-              <div style={{ float: 'right', marginTop: theme.spacing(2), gap: theme.spacing(1), display: 'flex' }}>
+              <div style={{ textAlign: 'right', marginTop: theme.spacing(2) }}>
                 <Button
-                  variant="outlined"
+                  variant="contained"
                   color="primary"
                   onClick={() => {
                     resetForm();
@@ -158,7 +184,8 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose }: Ingesti
                 </Button>
                 <Button
                   variant="contained"
-                  color="primary"
+                  color="secondary"
+                  style={{ marginLeft: theme.spacing(2) }}
                   onClick={() => {
                     submitConnectorManagementCreation(values, {
                       setSubmitting,
