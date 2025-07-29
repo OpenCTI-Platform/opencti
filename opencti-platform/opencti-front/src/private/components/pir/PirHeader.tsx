@@ -24,7 +24,7 @@ import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { PirEditionFragment$key } from './__generated__/PirEditionFragment.graphql';
 import { authorizedMembersToOptions, useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
-import { CAPAPIR_PIRUPDATE } from '../../../utils/hooks/useGranted';
+import { CAPAPIR_PIRUPDATE, SETTINGS_SETACCESSES } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
 
 const headerFragment = graphql`
@@ -90,7 +90,7 @@ const PirHeader = ({ data, editionData }: PirHeaderProps) => {
         <Security needs={[CAPAPIR_PIRUPDATE]}>
           <>
             <div>
-              <Security needs={[CAPAPIR_PIRUPDATE]} hasAccess={canManage}>
+              <Security matchAll needs={[CAPAPIR_PIRUPDATE, SETTINGS_SETACCESSES]} hasAccess={canManage}>
                 <FormAuthorizedMembersDialog
                   id={id}
                   owner={creators?.[0]}

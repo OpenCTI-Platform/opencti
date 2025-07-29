@@ -120,7 +120,7 @@ input PirUnflagElementInput {
 type Mutation {
     pirAdd(input: PirAddInput!): Pir @auth(for: [CAPAPIR_PIRUPDATE])
     pirFieldPatch(id: ID!, input: [EditInput!]!): Pir @auth(for: [CAPAPIR_PIRUPDATE])
-    pirEditAuthorizedMembers(id: ID!, input:[MemberAccessInput!]!): Pir @auth(for: [KNOWLEDGE_KNUPDATE])
+    pirEditAuthorizedMembers(id: ID!, input:[MemberAccessInput!]!): Pir @auth(for: [CAPAPIR_PIRUPDATE])
     pirDelete(id: ID!): ID @auth(for: [CAPAPIR_PIRUPDATE])
     pirFlagElement(id: ID!, input: PirFlagElementInput!): ID @auth(for: [BYPASS])
     pirUnflagElement(id: ID!, input: PirUnflagElementInput!): ID @auth(for: [BYPASS])
