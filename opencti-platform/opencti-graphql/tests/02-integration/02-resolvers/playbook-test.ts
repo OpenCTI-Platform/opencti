@@ -86,11 +86,12 @@ describe('Playbook resolver standard behavior', () => {
     filterGroups: [],
   });
   it('should not list playbooks if platform not under EE', async () => {
+    await disableEE();
     const queryResult = await adminQuery(
       { query: LIST_PLAYBOOKS, variables: { first: 10 } },
     );
     expect(queryResult).not.toBeNull();
-    expect(queryResult.errors.length).toEqual(1);
+    expect(queryResult).toEqual(1);
     expect(queryResult.errors.at(0).message).toEqual('Enterprise edition is not enabled');
   });
   it('should list playbooks', async () => {
