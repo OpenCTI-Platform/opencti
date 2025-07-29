@@ -3630,6 +3630,8 @@
   "Top Labels (3 last months)": "Лучшие ярлыки (3 последних месяца)",
   "Top read or exported entities": "Самые читаемые или экспортируемые сущности",
   "Top sources": "Лучшие источники",
+  "Top sources of flagged entities": "Лучшие источники отмеченных сущностей",
+  "Top sources of the relationships causing the flags": "Лучшие источники отношений, вызывающих флаги",
   "toSightingId": "toSightingId",
   "Total analyses": "Всего анализов",
   "Total direct relations": "Всего прямых отношений",

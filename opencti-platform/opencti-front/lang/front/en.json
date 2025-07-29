@@ -3630,6 +3630,8 @@
   "Top Labels (3 last months)": "Top Labels (3 last months)",
   "Top read or exported entities": "Top read or exported entities",
   "Top sources": "Top sources",
+  "Top sources of flagged entities": "Top sources of flagged entities",
+  "Top sources of the relationships causing the flags": "Top sources of the relationships causing the flags",
   "toSightingId": "Sighted in/at",
   "Total analyses": "Total analyses",
   "Total direct relations": "Total direct relations",

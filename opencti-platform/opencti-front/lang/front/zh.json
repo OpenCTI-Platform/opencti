@@ -3630,6 +3630,8 @@
   "Top Labels (3 last months)": "最多标签(最近3个月)",
   "Top read or exported entities": "读取或导出实体最多的作者",
   "Top sources": "主要来源",
+  "Top sources of flagged entities": "标记实体的最大来源",
+  "Top sources of the relationships causing the flags": "导致标记的主要关系源",
   "toSightingId": "目击ID",
   "Total analyses": "总分析",
   "Total direct relations": "直接关系总数",

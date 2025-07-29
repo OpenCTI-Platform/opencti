@@ -3630,6 +3630,8 @@
   "Top Labels (3 last months)": "상위 레이블 (지난 3개월)",
   "Top read or exported entities": "가장 많이 읽은 또는 내보낸 엔터티",
   "Top sources": "상위 소스",
+  "Top sources of flagged entities": "플래그가 지정된 엔티티의 상위 소스",
+  "Top sources of the relationships causing the flags": "플래그를 유발하는 관계의 상위 소스",
   "toSightingId": "관찰된 위치",
   "Total analyses": "총 분석",
   "Total direct relations": "총 직접 관계",

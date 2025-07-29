@@ -3630,6 +3630,8 @@
   "Top Labels (3 last months)": "上位のラベル(過去3ヶ月)",
   "Top read or exported entities": "リードまたはエクスポートされたエンティティのトップ",
   "Top sources": "トップ情報源",
+  "Top sources of flagged entities": "フラグを立てたエンティティのトップ・ソース",
+  "Top sources of the relationships causing the flags": "フラグの原因となった関係のトップ・ソース",
   "toSightingId": "目撃情報",
   "Total analyses": "分析の総数",
   "Total direct relations": "直接的なリレーションの総数",
