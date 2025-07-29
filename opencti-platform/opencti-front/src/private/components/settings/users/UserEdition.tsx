@@ -136,9 +136,7 @@ const UserEditionDrawer: FunctionComponent<UserEditionDrawerProps> = ({
             onChange={(event, value) => handleChangeTab(value)}
           >
             <Tab label={t_i18n('Overview')} />
-            {!isServiceAccount
-              && <Tab disabled={!!user.external} label={t_i18n('Password')} />
-            }
+            <Tab disabled={!!user.external || isServiceAccount === true} label={t_i18n('Password')} />
             <Tab label={t_i18n('Groups')} />
             {hasSetAccess
               && <Tab label={
