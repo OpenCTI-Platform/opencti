@@ -79,9 +79,11 @@ const buildRelationToRelationRule = (ruleDefinition: RuleDefinition, relationTyp
             stop_time: range.end,
             objectMarking: elementMarkings,
           });
+          // FIXME or check target type before creating inferred relation
           await createInferredRelation(context, input, ruleContent);
         }
       };
+      // FIXME need to filter on toType
       const listToArgs = { fromId: targetRef, callback: listToCallback };
       await listAllRelations(context, RULE_MANAGER_USER, rightType, listToArgs);
     }

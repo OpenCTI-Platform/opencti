@@ -117,7 +117,6 @@ const isMatchRuleScope = (scopeFilter: RuleScope, element: StixCoreObject): bool
     }
     if (toTypes.length > 0) {
       const instanceToTypes = [toType, ...getParentTypes(toType)];
-      // FIXME looking at parent type here is the issue.
       const isCompatibleType = toTypes.some((r) => instanceToTypes.includes(r));
       if (!isCompatibleType) {
         return false;
