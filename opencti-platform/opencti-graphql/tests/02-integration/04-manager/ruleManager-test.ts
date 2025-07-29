@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { getActivatedRules, getRules, setRuleActivation } from '../../../src/domain/rules';
 import ParticipateToPartsRule from '../../../src/rules/participate-to-parts/ParticipateToPartsRule';
@@ -19,13 +19,26 @@ import { listAllRelations } from '../../../src/database/middleware-loader';
 import { RELATION_PARTICIPATE_TO } from '../../../src/schema/internalRelationship';
 
 describe('ParticipateToPartsRule tests', () => {
-  it('should sector not be added as organisation on users', async () => {
+  let allActivatedRules: RuleRuntime[];
+  beforeAll(async () => {
     // Disable all rules
-    const allActivatedRules = await getActivatedRules(testContext, ADMIN_USER);
+    allActivatedRules = await getActivatedRules(testContext, ADMIN_USER);
     for (let i = 0; i < allActivatedRules.length; i += 1) {
       const rule = allActivatedRules[i];
       await setRuleActivation(testContext, ADMIN_USER, rule.id, false);
     }
+  });
+
+  afterAll(async () => {
+    // BACK to what it was before test
+    // await setRuleActivation(testContext, ADMIN_USER, ParticipateToPartsRule.id, false);
+    for (let i = 0; i < allActivatedRules.length; i += 1) {
+      const rule = allActivatedRules[i];
+      await setRuleActivation(testContext, ADMIN_USER, rule.id, true);
+    }
+  });
+
+  it('should sector not be added as organisation on users', async () => {
     // ----------------
     // GIVEN an Organization A that has relation "part of" with a sector
     // GIVEN an Organization A that has relation "part of" with an organization B
@@ -66,12 +79,50 @@ describe('ParticipateToPartsRule tests', () => {
     expect(currentUserParticipateTo.filter((rel) => rel.toId === testOrgA.id).length).toBe(1); // Direct organization
     expect(currentUserParticipateTo.filter((rel) => rel.toId === testOrgB.id).length).toBe(1); // Organization because of rule OrgB --part of --> OrgA
     expect(currentUserParticipateTo.filter((rel) => rel.toId === testSector.id).length).toBe(0); // Sector not there even if Sector --part of --> OrgA
+  });
 
-    // BACK to what it was before test
-    // await setRuleActivation(testContext, ADMIN_USER, ParticipateToPartsRule.id, false);
-    for (let i = 0; i < allActivatedRules.length; i += 1) {
-      const rule = allActivatedRules[i];
-      await setRuleActivation(testContext, ADMIN_USER, rule.id, true);
-    }
+  it('should sector not be added as organisation on users', async () => {
+    // ----------------
+    // GIVEN an Organization A that has relation "part of" with a sector
+    // GIVEN an Organization A that has relation "part of" with an organization B
+    // AND ParticipateToPartsRule is enabled
+    // AND a user that is in the organization "Organization A"
+    const ruleRuntimeAll: RuleRuntime[] = await getRules(testContext, ADMIN_USER);
+    const testOrgA = await addOrganization(testContext, ADMIN_USER, { name: 'RuleTestOrgA2' });
+    const testOrgB = await addOrganization(testContext, ADMIN_USER, { name: 'RuleTestOrgB2' });
+    const testSector = await addSector(testContext, ADMIN_USER, { name: 'SectorTestOrg2' });
+    const relPartOfOrg = await addStixCoreRelationship(testContext, ADMIN_USER, { fromId: testOrgA.id, toId: testOrgB.id, relationship_type: 'part-of' });
+    const relPartOfSector = await addStixCoreRelationship(testContext, ADMIN_USER, { fromId: testOrgA.id, toId: testSector.id, relationship_type: 'part-of' });
+
+    const userInput: UserAddInput = {
+      name: `User for ParticipateToPartsRule2 ${Date.now()}`,
+      password: 'youshallnotbeinsector',
+      user_email: 'user.ParticipateToPartsRule2@opencti.invalid',
+      objectOrganization: [testOrgA.id]
+    };
+    const userInOrgA: AuthUser = await addUser(testContext, ADMIN_USER, userInput);
+
+    // ----------------
+    // WHEN rule is applied on event "create part-of from orgA to orgB" & "create part-of from orgA to Sector"
+    // (Triggering manually rule on this event)
+    const userRelationsParticipateTo = await listAllRelations(testContext, ADMIN_USER, RELATION_PARTICIPATE_TO, { fromId: userInOrgA.internal_id, toId: testOrgA.internal_id });
+    expect(userRelationsParticipateTo.length).toBe(1); // at this point the only rel should be user --> orgA since rule are disabled
+    const relPartOfOrgStix = await stixLoadById(testContext, RULE_MANAGER_USER, relPartOfOrg.id) as StixCoreObject;
+    const eventPartOfOrg = buildInternalEvent(EVENT_TYPE_CREATE, relPartOfOrgStix);
+    const relPartOfSectorStix = await stixLoadById(testContext, RULE_MANAGER_USER, relPartOfSector.id) as StixCoreObject;
+    const eventPartOfSector = buildInternalEvent(EVENT_TYPE_CREATE, relPartOfSectorStix);
+    await rulesApplyHandler(testContext, RULE_MANAGER_USER, [eventPartOfOrg, eventPartOfSector], ruleRuntimeAll.filter((rule) => rule.id === ParticipateToPartsRule.id));
+
+    // ----------------
+    // THEN Organization B has rel with user
+    // AND Sector has no relation with user
+    const userAuthAfter = await findUserById(testContext, ADMIN_USER, userInOrgA.id);
+
+    const allUserRelations = await listAllRelations<BasicStoreRelation>(testContext, userAuthAfter, [RELATION_PARTICIPATE_TO], { indices: READ_RELATIONSHIPS_INDICES });
+    const currentUserParticipateTo = allUserRelations.filter((rel) => rel.fromId === userAuthAfter.id);
+
+    expect(currentUserParticipateTo.filter((rel) => rel.toId === testOrgA.id).length).toBe(1); // Direct organization
+    expect(currentUserParticipateTo.filter((rel) => rel.toId === testOrgB.id).length).toBe(1); // Organization because of rule OrgB --part of --> OrgA
+    expect(currentUserParticipateTo.filter((rel) => rel.toId === testSector.id).length).toBe(0); // Sector not there even if Sector --part of --> OrgA
   });
 });
