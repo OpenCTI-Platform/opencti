@@ -3439,7 +3439,9 @@ export const elAggregationRelationsCount = async (context, user, indexName, opti
     body.aggs = {
       genres: {
         terms: {
-          field: isBooleanAttribute(field) ? field : `${field}.keyword`,
+          field: isBooleanAttribute(field) || field.includes('pir_explanations')
+            ? field
+            : `${field}.keyword`,
           size: MAX_AGGREGATION_SIZE,
         },
         aggs: {
