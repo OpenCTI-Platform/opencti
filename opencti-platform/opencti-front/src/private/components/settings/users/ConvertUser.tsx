@@ -103,7 +103,7 @@ const ConvertUser: FunctionComponent<ConvertUserProps> = ({ userId, userServiceA
           handleClose();
         }}
       >
-        <DialogTitle>{t_i18n('Convert User')}</DialogTitle>
+        <DialogTitle>{userServiceAccount ? t_i18n('Convert User') : t_i18n('Convert Service account') }</DialogTitle>
         <DialogContent>
           <DialogContentText>
             <Alert
