@@ -85,7 +85,7 @@ const ConvertUser: FunctionComponent<ConvertUserProps> = ({ userId, userServiceA
     <div>
       <Button
         variant="outlined"
-        size="small"
+        size="medium"
         onClick={() => setOpenDialog(true)}
         value="convert-user"
         style={{ marginRight: 3 }}
