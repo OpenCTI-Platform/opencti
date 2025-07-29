@@ -136,12 +136,10 @@ const PirOverviewHistory = ({ dataHistory, dataPir }: PirOverviewHistoryProps) =
                   <Typography variant="body2" color={theme.palette.text?.secondary}>
                     {nsdt(timestamp)}
                   </Typography>
-                  <Typography variant="body2">
-                    <PirHistoryMessage
-                      log={historyItem}
-                      pirName={pir.name}
-                    />
-                  </Typography>
+                  <PirHistoryMessage
+                    log={historyItem}
+                    pirName={pir.name}
+                  />
                 </div>
               </Link>
             </Box>

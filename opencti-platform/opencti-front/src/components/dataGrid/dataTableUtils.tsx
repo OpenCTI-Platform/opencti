@@ -525,6 +525,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 15,
     isSortable: false,
     render: ({ from }) => {
+      if (!from) return '-';
       const { objectLabel } = from;
       return (
         <StixCoreObjectLabels
@@ -540,6 +541,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 8,
     isSortable: true,
     render: ({ from }, { storageHelpers: { handleAddFilter } }) => {
+      if (!from) return '-';
       const { objectMarking } = from;
       return (
         <ItemMarkings
