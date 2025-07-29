@@ -427,7 +427,7 @@ export const sanitizeFilterGroupKeysForBackend = (
 };
 
 // reverse operation of sanitizeFilterGroupKeysForBackend
-const sanitizeFilterGroupKeysForFrontend = (
+export const sanitizeFilterGroupKeysForFrontend = (
   filterGroup: GqlFilterGroup,
 ): FilterGroup => {
   return {

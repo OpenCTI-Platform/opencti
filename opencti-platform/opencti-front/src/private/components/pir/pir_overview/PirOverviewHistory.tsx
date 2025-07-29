@@ -28,6 +28,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { PirOverviewHistoryPirFragment$key } from './__generated__/PirOverviewHistoryPirFragment.graphql';
 import { PirOverviewHistoryFragment$key } from './__generated__/PirOverviewHistoryFragment.graphql';
 import Paper from '../../../../components/Paper';
+import { sanitizeFilterGroupKeysForFrontend } from '../../../../utils/filters/filtersUtils';
 
 const pirFragment = graphql`
   fragment PirOverviewHistoryPirFragment on Pir {
@@ -97,14 +98,14 @@ const PirOverviewHistory = ({ dataHistory, dataPir }: PirOverviewHistoryProps) =
           let redirectURI = `/dashboard/id/${context_data?.entity_id}`;
           if (isAddInPir) {
             const addInPirFilters = context_data?.entity_id
-              ? JSON.stringify({
+              ? JSON.stringify(sanitizeFilterGroupKeysForFrontend({
                 mode: 'and',
                 filters: [{
-                  key: 'fromId',
+                  key: ['fromId'],
                   values: [context_data.entity_id],
                 }],
                 filterGroups: [],
-              })
+              }))
               : '';
             redirectURI = `/dashboard/pirs/${pir.id}/threats?filters=${encodeURIComponent(addInPirFilters)}`;
           }
