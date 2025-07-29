@@ -58,7 +58,7 @@ const PirOverviewCountFlagged = ({ data }: PirOverviewCountFlaggedProps) => {
 
   return (
     <Grid size={{ xs: 12 }}>
-      <Paper title={t_i18n('Number of flagged entities')}>
+      <Paper title={t_i18n('Number of threats over time')}>
         <StixRelationshipsMultiAreaChart
           relationshipTypes={['in-pir']}
           dataSelection={dataSelection}

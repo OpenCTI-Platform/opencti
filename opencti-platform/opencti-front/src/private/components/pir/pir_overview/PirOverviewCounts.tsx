@@ -131,7 +131,7 @@ const PirOverviewCountsComponent = ({
   return (
     <Grid size={{ xs: 12 }}>
       <Typography variant="h4">
-        {t_i18n('Number of entities')}
+        {t_i18n('Number of threats')}
       </Typography>
       <Grid container spacing={3}>
         <PirOverviewCount

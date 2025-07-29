@@ -81,7 +81,7 @@ const PirOverviewTopSources = ({ data }: PirOverviewTopSourcesProps) => {
   return (
     <Grid container spacing={3}>
       <Grid size={{ xs: 6 }}>
-        <Paper title={t_i18n('Top sources of flagged entities')}>
+        <Paper title={t_i18n('Top authors of threat entities')}>
           <StixCoreObjectsDonut
             dataSelection={flaggedEntitiesTopSourcesDataSelection}
             variant="inLine"
@@ -94,7 +94,7 @@ const PirOverviewTopSources = ({ data }: PirOverviewTopSourcesProps) => {
         </Paper>
       </Grid>
       <Grid size={{ xs: 6 }}>
-        <Paper title={t_i18n('Top sources of the relationships causing the flags')}>
+        <Paper title={t_i18n('Top authors of relationships from threats')}>
           <StixRelationshipsDonut
             dataSelection={relationshipsTopSourcesDataSelection}
             variant="inLine"
