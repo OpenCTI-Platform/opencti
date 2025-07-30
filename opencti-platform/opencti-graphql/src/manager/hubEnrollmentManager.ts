@@ -1,6 +1,6 @@
 import ejs from 'ejs';
 import { type ManagerDefinition, registerManager } from './managerModule';
-import conf, { booleanConf, logApp } from '../config/conf';
+import conf, { booleanConf, isFeatureEnabled, logApp } from '../config/conf';
 import { BYPASS, executionContext, SETTINGS_SETMANAGEXTMHUB, SYSTEM_USER } from '../utils/access';
 import { settingsEditField } from '../domain/settings';
 import { XtmHubEnrollmentStatus } from '../generated/graphql';
@@ -117,4 +117,6 @@ const HUB_ENROLLMENT_MANAGER_DEFINITION: ManagerDefinition = {
   }
 };
 
-registerManager(HUB_ENROLLMENT_MANAGER_DEFINITION);
+if (isFeatureEnabled('OCTI_ENROLLMENT')) {
+  registerManager(HUB_ENROLLMENT_MANAGER_DEFINITION);
+}
