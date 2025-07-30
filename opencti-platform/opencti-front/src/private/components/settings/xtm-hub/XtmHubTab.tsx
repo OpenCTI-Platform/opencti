@@ -272,7 +272,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ enrollmentStatus }) => {
     return (
       <>
         <Button
-          variant="outlined"
+          variant="contained"
           size="small"
           color="error"
           sx={{

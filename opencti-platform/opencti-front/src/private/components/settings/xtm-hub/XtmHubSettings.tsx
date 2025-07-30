@@ -88,7 +88,7 @@ const XtmHubSettings = () => {
               <List sx={{ listStyleType: 'disc', marginLeft: 4, marginTop: 1 }}>
                 <li>
                   {t_i18n(
-                    'deploy in one-click Threats intelligence ressources',
+                    'deploy in one-click Threats Intelligence Ressources',
                   )}
                 </li>
                 <li>{t_i18n('see metrics on your instance')}</li>
@@ -112,6 +112,7 @@ const XtmHubSettings = () => {
                         variant="large"
                         neutralLabel={dateFormat(
                           xtmHubSettings.xtm_hub_enrollment_date,
+                          'DD MMM YYYY',
                         )}
                         status={null}
                       />
@@ -145,6 +146,7 @@ const XtmHubSettings = () => {
                         variant="large"
                         neutralLabel={dateFormat(
                           xtmHubSettings.xtm_hub_last_connectivity_check,
+                          'DD MMM YYYY',
                         )}
                         status={null}
                       />

@@ -896,7 +896,7 @@
   "Dependencies": "依存関係",
   "Depending on the selected CSV mapper configurations, marking definition levels can be set in the dedicated field.": "選択されたCSVマッパーの構成に応じて、マーキング定義レベルを専用フィールドに設定できます。",
   "Depending on the selected JSON mapper configurations, marking definition levels can be set in the dedicated field.": "選択したJSONマッパーの設定に応じて、マーキングの定義レベルを専用フィールドに設定できます。",
-  "deploy in one-click Threats intelligence resources": "ワンクリックで展開 脅威インテリジェンス・リソース",
+  "deploy in one-click Threats Intelligence Ressources": "ワンクリックで展開 脅威インテリジェンス・リソース",
   "Desc": "降順",
   "Description": "説明",
   "description": "説明",
