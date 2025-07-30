@@ -1,5 +1,5 @@
 import { graphql } from 'react-relay';
-import React, { useCallback, useContext, useState } from 'react';
+import React, { useCallback, useContext, useMemo, useState } from 'react';
 import { Button } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import GradientButton from '../../../../components/GradientButton';
@@ -197,7 +197,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ enrollmentStatus }) => {
     setProcessStep(ProcessSteps.WAITING_HUB);
   };
 
-  const getProcessConfig = () => {
+  const config = useMemo(() => {
     const isUnenroll = operationType === OperationType.UNENROLL;
     return {
       dialogTitle: t_i18n(
@@ -231,10 +231,9 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ enrollmentStatus }) => {
         ? 'unenrollment_instruction_paragraph'
         : 'enrollment_instruction_paragraph',
     };
-  };
+  }, [operationType, t_i18n]);
 
   const renderDialogContent = () => {
-    const config = getProcessConfig();
     const PROCESS_RENDERERS = new Map([
       [
         ProcessSteps.INSTRUCTIONS,
@@ -287,7 +286,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ enrollmentStatus }) => {
 
         <ProcessDialog
           open={isDialogOpen}
-          title={getProcessConfig().dialogTitle}
+          title={config.dialogTitle}
           onClose={handleAttemptClose}
         >
           {renderDialogContent()}
@@ -295,10 +294,10 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ enrollmentStatus }) => {
 
         <ConfirmationDialog
           open={showConfirmation}
-          title={getProcessConfig().confirmationTitle}
-          message={getProcessConfig().confirmationMessage}
+          title={config.confirmationTitle}
+          message={config.confirmationMessage}
           confirmButtonText={t_i18n('Yes, close')}
-          cancelButtonText={getProcessConfig().continueButtonText}
+          cancelButtonText={config.continueButtonText}
           onConfirm={handleCloseDialog}
           onCancel={handleCancelClose}
         />
@@ -323,7 +322,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ enrollmentStatus }) => {
 
       <ProcessDialog
         open={isDialogOpen}
-        title={getProcessConfig().dialogTitle}
+        title={config.dialogTitle}
         onClose={handleAttemptClose}
       >
         {renderDialogContent()}
@@ -331,10 +330,10 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ enrollmentStatus }) => {
 
       <ConfirmationDialog
         open={showConfirmation}
-        title={getProcessConfig().confirmationTitle}
-        message={getProcessConfig().confirmationMessage}
+        title={config.confirmationTitle}
+        message={config.confirmationMessage}
         confirmButtonText={t_i18n('Yes, close')}
-        cancelButtonText={getProcessConfig().continueButtonText}
+        cancelButtonText={config.continueButtonText}
         onConfirm={handleCloseDialog}
         onCancel={handleCancelClose}
       />
