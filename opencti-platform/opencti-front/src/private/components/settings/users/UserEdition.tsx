@@ -16,7 +16,6 @@ import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGra
 import { RootUserEditionQuery$data } from './__generated__/RootUserEditionQuery.graphql';
 import Loader from '../../../../components/Loader';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const UserEditionFragment = graphql`
   fragment UserEdition_user on User
@@ -113,9 +112,7 @@ const UserEditionDrawer: FunctionComponent<UserEditionDrawerProps> = ({
   const { t_i18n } = useFormatter();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
   const user = useFragment<UserEdition_user$key>(UserEditionFragment, userRef);
-  const { isFeatureEnable } = useHelper();
-  const serviceAccountFeatureFlag = isFeatureEnable('SERVICE_ACCOUNT');
-  const isServiceAccount = user?.user_service_account && serviceAccountFeatureFlag;
+  const isServiceAccount = user?.user_service_account;
   const [currentTab, setCurrentTab] = useState(0);
   const handleChangeTab = (value: number) => {
     setCurrentTab(value);

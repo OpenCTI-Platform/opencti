@@ -814,11 +814,10 @@ export const validateMarking = async (context: AuthContext, user: AuthUser, mark
 };
 
 export const isUserInPlatformOrganization = (user: AuthUser, settings: BasicStoreSettings) => {
-  const serviceAccountFeatureFlag = isFeatureEnabled('SERVICE_ACCOUNT');
   if (isBypassUser(user)) {
     return true;
   }
-  if (user.user_service_account && serviceAccountFeatureFlag) {
+  if (user.user_service_account) {
     return true;
   }
   const userOrganizationIds = (user.organizations ?? []).map((organization) => organization.internal_id);

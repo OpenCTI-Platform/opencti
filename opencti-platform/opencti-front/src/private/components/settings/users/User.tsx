@@ -52,7 +52,6 @@ import type { Theme } from '../../../../components/Theme';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import ItemCopy from '../../../../components/ItemCopy';
 import { maskString } from '../../../../utils/String';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const startDate = yearsAgo(1);
 const endDate = now();
@@ -238,8 +237,6 @@ interface UserProps {
 }
 
 const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
-  const { isFeatureEnable } = useHelper();
-  const serviceAccountFeatureFlag = isFeatureEnable('SERVICE_ACCOUNT');
   const classes = useStyles();
   const { t_i18n, nsdt, fsd, fldt } = useFormatter();
   const { me } = useAuth();
@@ -356,7 +353,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
       (a: Session, b: Session) => timestamp(a?.created) - timestamp(b?.created),
     );
   const accountExpireDate = fldt(user.account_lock_after_date);
-  const isServiceAccount = user.user_service_account && serviceAccountFeatureFlag;
+  const isServiceAccount = user.user_service_account;
   const creationDate = fldt(user.created_at);
   const creatorName = user.creator ? user.creator?.name : '-';
   let historyTypes = ['History'];

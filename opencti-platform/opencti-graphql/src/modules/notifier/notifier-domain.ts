@@ -1,5 +1,5 @@
 import Ajv from 'ajv';
-import conf, { BUS_TOPICS, isFeatureEnabled } from '../../config/conf';
+import conf, { BUS_TOPICS } from '../../config/conf';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
@@ -32,7 +32,6 @@ const ajv = new Ajv();
 
 const EJS_FUNCTION_ALLOWED_LIST = conf.get('app:notifier_authorized_functions') || [];
 const EJS_FORBIDDEN_WORD_LIST = ['process', 'global', '__dirname', '__filename', 'exports', 'module', '__proto__', 'Object.prototype'];
-const serviceAccountFeatureFlag = isFeatureEnabled('SERVICE_ACCOUNT');
 
 export const checkAllowedEjsFunctions = (template: string, throwError: boolean = true) => {
   // look for <% xxxx %> including new lines.
@@ -194,7 +193,7 @@ export const testNotifier = async (context: AuthContext, user: AuthUser, notifie
     {
       user_id: user.id,
       user_email: user.user_email,
-      user_service_account: user.user_service_account && serviceAccountFeatureFlag ? user.user_service_account : false,
+      user_service_account: user.user_service_account ? user.user_service_account : false,
       notifiers: [],
     },
     notifier,

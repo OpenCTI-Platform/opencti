@@ -18,7 +18,6 @@ import { useFormatter } from '../../../../components/i18n';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import Transition from '../../../../components/Transition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 export const ingestionCsvEditionUserHandlingQuery = graphql`
   query IngestionCsvEditionUserHandlingQuery(
@@ -64,8 +63,6 @@ const IngestionCsvEditionUserHandling: FunctionComponent<IngestionCsvEditionUser
 
   const [openDialog, setOpenDialog] = useState(false);
   const [commitUpdate] = useApiMutation(ingestionCsvEditionUserHandlingPatch);
-  const { isFeatureEnable } = useHelper();
-  const serviceAccountFeatureFlag = isFeatureEnable('SERVICE_ACCOUNT');
   const ingestionCsvCreationValidation = () => Yup.object().shape({
     user_name: Yup.string(),
     confidence_level: Yup.string(),
@@ -117,12 +114,9 @@ const IngestionCsvEditionUserHandling: FunctionComponent<IngestionCsvEditionUser
         sx={{ padding: '0px 10px 0px 10px', marginTop: '20px' }}
       >
         <Box>
-          {!serviceAccountFeatureFlag
-            ? t_i18n('You have set System as a creator. Create a specific user for this feed to ensure traceabilitiy of your data')
-            : t_i18n('You have set System as a creator. Create a service account for this feed to ensure traceability of your data')}
+          {t_i18n('You have set System as a creator. Create a service account for this feed to ensure traceability of your data')}
         </Box>
-        <Button onClick={() => setOpenDialog(true)}>{!serviceAccountFeatureFlag
-          ? t_i18n('Create a user for this feed') : t_i18n('Create a service account for this feed')}</Button>
+        <Button onClick={() => setOpenDialog(true)}>{ t_i18n('Create a service account for this feed')}</Button>
 
       </Alert>
 
@@ -149,7 +143,7 @@ const IngestionCsvEditionUserHandling: FunctionComponent<IngestionCsvEditionUser
                 <Box sx={{ margin: '0 70px 0' }}>
                   <CreatorField
                     name="user_name"
-                    label={!serviceAccountFeatureFlag ? t_i18n('User responsible for data creation') : t_i18n('Service account responsible for data creation')}
+                    label={t_i18n('Service account responsible for data creation')}
                     containerStyle={fieldSpacingContainerStyle}
                     showConfidence disabled={true}
                   />

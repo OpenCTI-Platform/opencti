@@ -15,7 +15,7 @@ import {
   type UserAddInput
 } from '../../generated/graphql';
 import { notify } from '../../database/redis';
-import { BUS_TOPICS, isFeatureEnabled, PLATFORM_VERSION } from '../../config/conf';
+import { BUS_TOPICS, PLATFORM_VERSION } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import {
   type BasicStoreEntityCsvMapper,
@@ -40,12 +40,8 @@ import { SYSTEM_USER } from '../../utils/access';
 import { findDefaultIngestionGroups } from '../../domain/group';
 import type { BasicGroupEntity, BasicStoreCommon } from '../../types/store';
 import { regenerateCsvMapperUUID } from './ingestion-converter';
-import { getEntityFromCache } from '../../database/cache';
-import type { BasicStoreSettings } from '../../types/settings';
-import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 
 const MINIMAL_CSV_FEED_COMPATIBLE_VERSION = '6.6.0';
-const serviceAccountFeatureFlag = isFeatureEnabled('SERVICE_ACCOUNT');
 
 export const findById = async (context: AuthContext, user: AuthUser, ingestionId: string, removeCredentials = false) => {
   const csvIngestion = await storeLoadById<BasicStoreEntityIngestionCsv>(context, user, ingestionId, ENTITY_TYPE_INGESTION_CSV);
@@ -101,25 +97,13 @@ export const createOnTheFlyUser = async (context: AuthContext, user: AuthUser, i
   if (isUserAlreadyExisting) {
     throw FunctionalError('This service account already exists. Change the feed\'s name to change the automatically created service account name', {});
   }
-  const { platform_organization } = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   let userInput: UserAddInput;
-  if (serviceAccountFeatureFlag) {
-    userInput = {
-      name: input.userName,
-      prevent_default_groups: true,
-      groups: [defaultIngestionGroups[0].id],
-      user_service_account: true,
-    };
-  } else {
-    userInput = {
-      password: uuid(),
-      user_email: `automatic+${uuid()}@opencti.invalid`,
-      name: input.userName,
-      prevent_default_groups: true,
-      groups: [defaultIngestionGroups[0].id],
-      objectOrganization: platform_organization ? [platform_organization] : []
-    };
-  }
+  userInput = {
+    name: input.userName,
+    prevent_default_groups: true,
+    groups: [defaultIngestionGroups[0].id],
+    user_service_account: true,
+  };
   if (input.confidenceLevel) {
     const userConfidence = parseFloat(input.confidenceLevel);
     if (userConfidence < 0 || userConfidence > 100 || !Number.isInteger(userConfidence)) {
