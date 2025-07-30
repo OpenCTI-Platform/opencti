@@ -124,11 +124,15 @@ const MetricsWeeklyChart: React.FC<MetricsWeeklyChartProps> = ({
       const start = new Date(now);
       const end = new Date(now);
 
-      start.setDate(now.getDate() - i * 7);
+      start.setDate(now.getDate() - i * 7 + 1);
       start.setHours(0, 0, 0, 0);
 
-      end.setDate(now.getDate() - (i - 1) * 7 - 1);
-      end.setHours(23, 59, 59, 999);
+      if (i === 1) {
+        end.setHours(23, 59, 59, 999);
+      } else {
+        end.setDate(now.getDate() - (i - 1) * 7);
+        end.setHours(23, 59, 59, 999);
+      }
 
       distributionParameters.push({
         field: 'user_id',
