@@ -94,6 +94,7 @@ const SearchInput = (props) => {
   }, [keyword]);
 
   const isAIEnabled = variant === 'topBar' && isEnterpriseEdition && enabled && configured;
+  const isAIConfigured = enabled && configured;
   const isNLQActivated = isAIEnabled && askAI;
   const isAdmin = useGranted([SETTINGS_SETPARAMETERS]);
   const { settings: { id: settingsId } } = useAuth();
@@ -206,6 +207,7 @@ const SearchInput = (props) => {
                 <ContentPasteSearchOutlined fontSize="medium"/>
               </IconButton>
             </Tooltip>
+            {isAIConfigured && (
             <EETooltip forAi={true} title={t_i18n('Ask AI')}>
               <IconButton
                 size="medium"
@@ -215,6 +217,7 @@ const SearchInput = (props) => {
                 <AutoAwesomeOutlined fontSize='medium'/>
               </IconButton>
             </EETooltip>
+            )}
           </InputAdornment>
           ),
           classes: {
