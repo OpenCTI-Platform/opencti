@@ -23,7 +23,7 @@ import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { AuthContext } from '../types/user';
 import { FunctionalError } from '../config/errors';
 import { type BasicStoreEntityPir, ENTITY_TYPE_PIR, type ParsedPir, type ParsedPirCriterion, type StoreEntityPir } from '../modules/pir/pir-types';
-import { parsePir } from '../modules/pir/pir-utils';
+import { constructFinalPirFilters, parsePir } from '../modules/pir/pir-utils';
 import { getEntitiesListFromCache } from '../database/cache';
 import { createRedisClient, fetchStreamEventsRangeFromEventId } from '../database/redis';
 import { updatePir } from '../modules/pir/pir-domain';
@@ -122,9 +122,10 @@ const pirUnflagElementFromQueue = async (
  */
 export const checkEventOnPir = async (context: AuthContext, event: SseEvent<any>, pir: ParsedPir) => {
   const { data } = event;
-  const { pir_criteria, pir_filters } = pir;
+  const { pir_type, pir_criteria, pir_filters } = pir;
   // 1. Check Pir filters (filters that do not count as criteria).
-  const eventMatchesPirFilters = await isStixMatchFilterGroup(context, PIR_MANAGER_USER, data, pir_filters);
+  const pirFinalFilters = constructFinalPirFilters(pir_type, pir_filters);
+  const eventMatchesPirFilters = await isStixMatchFilterGroup(context, PIR_MANAGER_USER, data, pirFinalFilters);
   // 2. Check Pir criteria one by one (because we need to know which one matches or not).
   const matchingCriteria: typeof pir_criteria = [];
   if (eventMatchesPirFilters) {
