@@ -144,7 +144,7 @@ const AIInsights = ({
   const [containersBusId] = useState(uuid());
   const [loading, setLoading] = useState(false);
   const isAdmin = useGranted([SETTINGS_SETPARAMETERS]);
-
+  const { enabled, configured } = useAI();
   const handleClose = () => {
     setLoading(false);
     setDisplay(false);
@@ -174,6 +174,8 @@ const AIInsights = ({
   };
   // TODO make the filter "objects" readonly?
   const [containersFilters, containersFiltersHelpers] = useFiltersState(initialContainersFilters);
+  const isAIConfigured = enabled && configured;
+
   if (!isEnterpriseEdition) {
     return (
       <>
@@ -216,7 +218,7 @@ const AIInsights = ({
       </>
     );
   }
-  if (!fullyActive) {
+  if (!fullyActive && isAIConfigured) {
     return (
       <>
         <Tooltip title={t_i18n('AI Insights')}>
@@ -251,7 +253,7 @@ const AIInsights = ({
             {t_i18n('Enable AI powered platform')}
           </DialogTitle>
           <DialogContent>
-            {t_i18n('To use AI, please enable it in the configuration of your platform.')}
+            {t_i18n('To use AI, please enable it add a token.')}
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setDisplayAIDialog(false)}>{t_i18n('Close')}</Button>
@@ -260,88 +262,89 @@ const AIInsights = ({
       </>
     );
   }
-  return (
-    <>
-      <Tooltip title={t_i18n('AI Insights')}>
-        {onlyIcon ? (
-          <IconButton
-            size="small"
-            onClick={() => setDisplay(true)}
-            className={floating ? classes.chipFloating : classes.chip}
-          >
-            <AutoAwesomeOutlined style={{ fontSize: 14 }} />
-          </IconButton>
-        ) : (
-          <Button
-            variant="outlined"
-            size="small"
-            onClick={() => setDisplay(true)}
-            className={floating ? classes.chipFloating : classes.chip}
-            startIcon={<AutoAwesomeOutlined style={{ fontSize: 14 }} />}
-          >
-            {t_i18n('AI Insights')}
-          </Button>
-        )}
-      </Tooltip>
-      <Drawer
-        open={display}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            onClick={handleClose}
-            size="large"
-            color="primary"
-          >
-            <Close fontSize="small" color="primary"/>
-          </IconButton>
-          <Typography variant="subtitle2" style={{ textWrap: 'nowrap' }}>
-            {t_i18n('AI Insights')}
-          </Typography>
-          <Button
-            variant="outlined"
-            size="small"
-            className={classes.chipNoAction}
-            startIcon={<AutoAwesomeOutlined style={{ fontSize: 14 }} />}
-          >
-            {t_i18n('XTM AI')}
-          </Button>
-        </div>
-        <div className={classes.container}>
-          <Box sx={{
-            borderBottom: 1,
-            borderColor: 'divider',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItem: 'center',
-          }}
-          >
-            <Tabs value={currentTab} onChange={handleChangeTab}>
-              {tabs.includes('activity') && <Tab value="activity" label={t_i18n('Activity')} />}
-              {tabs.includes('containers') && <Tab value="containers" label={isContainer ? t_i18n('Container summary') : t_i18n('Containers digest')} />}
-              {tabs.includes('forecast') && <Tab value="forecast" label={t_i18n('Forecast')} />}
-              {tabs.includes('history') && <Tab value="history" label={t_i18n('Internal history')} />}
-            </Tabs>
-            {loading && (
+  if (isAIConfigured) {
+    return (
+      <>
+        <Tooltip title={t_i18n('AI Insights')}>
+          {onlyIcon ? (
+            <IconButton
+              size="small"
+              onClick={() => setDisplay(true)}
+              className={floating ? classes.chipFloating : classes.chip}
+            >
+              <AutoAwesomeOutlined style={{ fontSize: 14 }} />
+            </IconButton>
+          ) : (
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => setDisplay(true)}
+              className={floating ? classes.chipFloating : classes.chip}
+              startIcon={<AutoAwesomeOutlined style={{ fontSize: 14 }} />}
+            >
+              {t_i18n('AI Insights')}
+            </Button>
+          )}
+        </Tooltip>
+        <Drawer
+          open={display}
+          anchor="right"
+          elevation={1}
+          sx={{ zIndex: 1202 }}
+          classes={{ paper: classes.drawerPaper }}
+          onClose={handleClose}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className={classes.header}>
+            <IconButton
+              aria-label="Close"
+              onClick={handleClose}
+              size="large"
+              color="primary"
+            >
+              <Close fontSize="small" color="primary"/>
+            </IconButton>
+            <Typography variant="subtitle2" style={{ textWrap: 'nowrap' }}>
+              {t_i18n('AI Insights')}
+            </Typography>
+            <Button
+              variant="outlined"
+              size="small"
+              className={classes.chipNoAction}
+              startIcon={<AutoAwesomeOutlined style={{ fontSize: 14 }} />}
+            >
+              {t_i18n('XTM AI')}
+            </Button>
+          </div>
+          <div className={classes.container}>
+            <Box sx={{
+              borderBottom: 1,
+              borderColor: 'divider',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItem: 'center',
+            }}
+            >
+              <Tabs value={currentTab} onChange={handleChangeTab}>
+                {tabs.includes('activity') && <Tab value="activity" label={t_i18n('Activity')} />}
+                {tabs.includes('containers') && <Tab value="containers" label={isContainer ? t_i18n('Container summary') : t_i18n('Containers digest')} />}
+                {tabs.includes('forecast') && <Tab value="forecast" label={t_i18n('Forecast')} />}
+                {tabs.includes('history') && <Tab value="history" label={t_i18n('Internal history')} />}
+              </Tabs>
+              {loading && (
               <div style={{ paddingTop: 10 }}>
                 <Loader variant={LoaderVariant.inline} />
               </div>
-            )}
-          </Box>
-          {currentTab === 'activity' && (
+              )}
+            </Box>
+            {currentTab === 'activity' && (
             <AISummaryActivity
               id={id}
               loading={loading}
               setLoading={setLoading}
             />
-          )}
-          {currentTab === 'containers' && (
+            )}
+            {currentTab === 'containers' && (
             <AISummaryContainers
               busId={containersBusId}
               isContainer={isContainer}
@@ -350,25 +353,26 @@ const AIInsights = ({
               loading={loading}
               setLoading={setLoading}
             />
-          )}
-          {currentTab === 'forecast' && (
+            )}
+            {currentTab === 'forecast' && (
             <AISummaryForecast
               id={id}
               loading={loading}
               setLoading={setLoading}
             />
-          )}
-          {currentTab === 'history' && (
+            )}
+            {currentTab === 'history' && (
             <AISummaryHistory
               id={id}
               loading={loading}
               setLoading={setLoading}
             />
-          )}
-        </div>
-      </Drawer>
-    </>
-  );
+            )}
+          </div>
+        </Drawer>
+      </>
+    );
+  }
 };
 
 export default AIInsights;
