@@ -32,7 +32,7 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import FilterIconButton from '../../../components/FilterIconButton';
 import type { Theme } from '../../../components/Theme';
 import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import { PIRAPI_PIRUPDATE } from '../../../utils/hooks/useGranted';
 
 const pirFragment = graphql`
   fragment Pirs_PirFragment on Pir {
@@ -219,7 +219,7 @@ const Pirs = () => {
           entityTypes={['Pir']}
           searchContextFinal={{ entityTypes: ['Pir'] }}
           createButton={(
-            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <Security needs={[PIRAPI_PIRUPDATE]} >
               <PirCreation paginationOptions={queryPaginationOptions} />
             </Security>
           )}
