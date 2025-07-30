@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { FilterMode } from '../../../src/generated/graphql';
-import { arePirExplanationsEqual, diffPirExplanations } from '../../../src/modules/pir/pir-utils';
+import { arePirExplanationsEqual, diffPirExplanations, updatePirExplanationsArray } from '../../../src/modules/pir/pir-utils';
 
 const createFilter = (id: string) => {
   return JSON.stringify({
@@ -57,20 +57,40 @@ describe('Pir utilities: arePirExplanationsEqual()', () => {
         criterion: { weight: 1, filters: filters1 }
       }
     )).toEqual(false);
+    expect(arePirExplanationsEqual(
+      {
+        dependencies: [{ element_id: relationshipId1 }],
+        criterion: { weight: 1, filters: filters1 }
+      },
+      {
+        dependencies: [{ element_id: relationshipId1, author_id: 'author1_id' }],
+        criterion: { weight: 1, filters: filters1 }
+      }
+    )).toEqual(false);
+    expect(arePirExplanationsEqual(
+      {
+        dependencies: [{ element_id: relationshipId1, author_id: 'author1_id' }],
+        criterion: { weight: 1, filters: filters1 }
+      },
+      {
+        dependencies: [{ element_id: relationshipId1, author_id: 'author2_id' }],
+        criterion: { weight: 1, filters: filters1 }
+      }
+    )).toEqual(false);
   });
 
   it('should return true if same explanation', () => {
     expect(arePirExplanationsEqual(
       {
         dependencies: [
-          { element_id: relationshipId1 },
+          { element_id: relationshipId1, author_id: 'author1_id' },
           { element_id: relationshipId2 }
         ],
         criterion: { weight: 1, filters: filters1 }
       },
       {
         dependencies: [
-          { element_id: relationshipId1 },
+          { element_id: relationshipId1, author_id: 'author1_id' },
           { element_id: relationshipId2 }
         ],
         criterion: { weight: 1, filters: filters1 }
@@ -198,5 +218,64 @@ describe('Pir utilities: diffPirExplanations()', () => {
         criterion: { weight: 1, filters: filters4 }
       }
     ]);
+  });
+});
+
+describe('Pir utilities: updatePirExplanationsArray()', () => {
+  const pirExplanations = [
+    {
+      dependencies: [
+        { element_id: relationshipId1 },
+      ],
+      criterion: { weight: 1, filters: filters1 }
+    },
+  ];
+
+  it('should add the new explanations concerning other relationships', () => {
+    const newExplanations = [
+      {
+        dependencies: [
+          { element_id: relationshipId2 },
+        ],
+        criterion: { weight: 1, filters: filters2 }
+      },
+    ];
+    const result = updatePirExplanationsArray(pirExplanations, newExplanations);
+    expect(result.length).toEqual(2);
+    expect(result).toEqual(pirExplanations.concat(newExplanations));
+  });
+
+  it('should add the new information concerning a relationship already in the dependencies', () => {
+    const newExplanations = [
+      {
+        dependencies: [
+          { element_id: relationshipId1, author_id: 'author1_id' },
+        ],
+        criterion: { weight: 1, filters: filters2 }
+      },
+    ];
+    const result = updatePirExplanationsArray(pirExplanations, newExplanations);
+    expect(result.length).toEqual(1);
+    expect(result).toEqual(newExplanations);
+  });
+
+  it('should update a complex array of pir explanations', () => {
+    const newExplanations = [
+      {
+        dependencies: [
+          { element_id: relationshipId1, author_id: 'author1_id' },
+        ],
+        criterion: { weight: 1, filters: filters2 }
+      },
+      {
+        dependencies: [
+          { element_id: relationshipId2, author_id: 'author2_id' },
+        ],
+        criterion: { weight: 1, filters: filters2 }
+      },
+    ];
+    const result = updatePirExplanationsArray(pirExplanations, newExplanations);
+    expect(result.length).toEqual(2);
+    expect(result).toEqual(newExplanations);
   });
 });
