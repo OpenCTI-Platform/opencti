@@ -19,7 +19,8 @@ import Tooltip from '@mui/material/Tooltip';
 import { PirHistoryLogsFragment$data } from './__generated__/PirHistoryLogsFragment.graphql';
 import { PirHistoryLogsQuery, PirHistoryLogsQuery$variables } from './__generated__/PirHistoryLogsQuery.graphql';
 import { PirHistoryFragment$key } from './__generated__/PirHistoryFragment.graphql';
-import { pirHistoryFilterGroup } from '../pir-history-utils';
+import { PirHistoryLogFragment$data } from './__generated__/PirHistoryLogFragment.graphql';
+import { pirHistoryFilterGroup, pirLogRedirectUri } from '../pir-history-utils';
 import PirHistoryMessage from '../PirHistoryMessage';
 import { useFormatter } from '../../../../components/i18n';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
@@ -201,6 +202,9 @@ const PirHistory = ({ data }: PirHistoryProps) => {
         toolbarFilters={contextFilters}
         lineFragment={pirHistoryLogFragment}
         entityTypes={['History']}
+        useComputeLink={({ context_data }: PirHistoryLogFragment$data) => {
+          return pirLogRedirectUri(id, context_data);
+        }}
         searchContextFinal={{ entityTypes: ['History'] }}
         availableFilterKeys={[
           'timestamp',
