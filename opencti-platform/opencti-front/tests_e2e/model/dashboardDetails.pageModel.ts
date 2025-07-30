@@ -32,8 +32,10 @@ export default class DashboardDetailsPage {
     return this.page.getByRole('button', { name: 'Export', exact: true });
   }
 
-  getDeleteButton() {
-    return this.page.getByRole('button', { name: 'Delete' });
+  async delete() {
+    await this.page.getByRole('button', { name: 'Popover of actions' }).click();
+    await this.page.getByRole('menuitem', { name: 'Delete' }).click();
+    return this.page.getByRole('dialog').getByRole('button', { name: 'Confirm' }).click();
   }
 
   getConfirmButton() {
