@@ -9,11 +9,11 @@ import useSchema from './hooks/useSchema';
 export interface Connector {
   name: string;
   active: boolean;
-  auto: boolean;
+  auto: boolean ;
   only_contextual: boolean;
   connector_trigger_filters: string;
   connector_type: string;
-  connector_scope: string[];
+  connector_scope: ReadonlyArray<string>;
   connector_state: string;
 }
 
@@ -29,7 +29,7 @@ export const CONNECTOR_TRIGGER_AUTO = 'Automatic';
 export const CONNECTOR_TRIGGER_MANUAL = 'Manual';
 
 export const getConnectorTriggerStatus = (connector: Connector): ConnectorStatus => {
-  if (!connectorsWithTrigger.includes(connector.connector_type)) {
+  if (!connector.connector_type || !connectorsWithTrigger.includes(connector.connector_type)) {
     return { status: null, label: CONNECTOR_STATUS_NOT_APPLICABLE };
   }
   if (connector.auto || connector.connector_trigger_filters) { // automatic is either auto or trigger with filters
@@ -39,19 +39,19 @@ export const getConnectorTriggerStatus = (connector: Connector): ConnectorStatus
 };
 
 export const getConnectorOnlyContextualStatus = (connector: Connector): ConnectorStatus => {
-  if (!connectorsWithTrigger.includes(connector.connector_type)) {
+  if (!connector.connector_type || !connectorsWithTrigger.includes(connector.connector_type)) {
     return { status: null, label: CONNECTOR_STATUS_NOT_APPLICABLE };
   }
   if (connector.only_contextual) {
-    return { status: connector.auto, label: 'Yes' };
+    return { status: connector.auto ?? false, label: 'Yes' };
   }
-  return { status: connector.auto, label: 'No' };
+  return { status: connector.auto ?? false, label: 'No' };
 };
 
 export const useGetConnectorFilterEntityTypes = (connector: Connector): string[] => {
   const { allEntityTypes } = useSchema();
   // keep the scopes that are entity types (remove scope like 'text/csv')
-  const entityTypesScopes = connector.connector_scope.filter((scope) => allEntityTypes.includes(scope));
+  const entityTypesScopes = (connector.connector_scope ?? []).filter((scope) => allEntityTypes.includes(scope));
   // return the entity types scopes
   return entityTypesScopes.length > 0 ? [...entityTypesScopes] : ['Stix-Core-Object', 'Stix-Filtering'];
 };
