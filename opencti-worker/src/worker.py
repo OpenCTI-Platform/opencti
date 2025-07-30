@@ -56,6 +56,8 @@ running_ingestion_units_gauge = meter.create_gauge(
     description="Number of running ingestion units",
 )
 
+execution_pool = None
+
 
 @dataclass(unsafe_hash=True)
 class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
@@ -99,7 +101,7 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
             self.channel.confirm_delivery()
         except Exception as err:  # pylint: disable=broad-except
             self.worker_logger.warning(str(err))
-        self.channel.basic_qos(prefetch_count=self.execution_pool._max_workers + 1)
+        self.channel.basic_qos(prefetch_count=execution_pool._max_workers + 1)
         assert self.channel is not None
         self.current_bundle_id: [str, None] = None
         self.current_bundle_seq: int = 0
@@ -208,7 +210,7 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
                     "Processing a new message, launching a thread...",
                     {"tag": method.delivery_tag},
                 )
-                task_future = self.execution_pool.submit(
+                task_future = execution_pool.submit(
                     self.api_data_handler,
                     self.pika_connection,
                     self.channel,
@@ -274,7 +276,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
             self.channel.confirm_delivery()
         except Exception as err:  # pylint: disable=broad-except
             self.worker_logger.warning(str(err))
-        self.channel.basic_qos(prefetch_count=self.execution_pool._max_workers + 1)
+        self.channel.basic_qos(prefetch_count=execution_pool._max_workers + 1)
         assert self.channel is not None
         self.current_bundle_id: [str, None] = None
         self.current_bundle_seq: int = 0
@@ -493,7 +495,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                         "Processing a new message, launching a thread...",
                         {"queue": self.queue_name, "tag": method.delivery_tag},
                     )
-                    task_future = self.execution_pool.submit(
+                    task_future = execution_pool.submit(
                         self.data_handler,
                         self.pika_connection,
                         self.channel,
@@ -643,7 +645,8 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
         # Initialize variables
         self.connectors: List[Any] = []
         self.queues: List[Any] = []
-        self.execution_pool = ThreadPoolExecutor(max_workers=self.opencti_pool_size)
+        global execution_pool
+        execution_pool = ThreadPoolExecutor(max_workers=self.opencti_pool_size)
         self.listen_api_execution_pool = ThreadPoolExecutor(
             max_workers=self.listen_pool_size
         )
@@ -666,7 +669,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
         while not self.exit_event.is_set():
             try:
                 max_ingestion_units_count.set(self.opencti_pool_size)
-                running_ingestion_units_gauge.set(len(self.execution_pool._threads))
+                running_ingestion_units_gauge.set(len(execution_pool._threads))
                 # Fetch queue configuration from API
                 self.queues = list()
                 self.connectors = self.api.connector.list()
@@ -682,7 +685,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                                 {"queue": push_queue},
                             )
                             self.consumer_threads[push_queue] = Consumer(
-                                self.execution_pool,
+                                execution_pool,
                                 connector,
                                 self.config,
                                 self.opencti_url,
@@ -695,7 +698,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             self.consumer_threads[push_queue].start()
                     else:
                         self.consumer_threads[push_queue] = Consumer(
-                            self.execution_pool,
+                            execution_pool,
                             connector,
                             self.config,
                             self.opencti_url,
