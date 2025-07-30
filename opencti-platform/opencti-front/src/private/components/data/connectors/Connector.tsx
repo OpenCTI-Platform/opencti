@@ -14,7 +14,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
-import { makeStyles, useTheme } from '@mui/styles';
+import { useTheme } from '@mui/styles';
 import { Link, useNavigate } from 'react-router-dom';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -26,7 +26,6 @@ import UpdateIcon from '@mui/icons-material/Update';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import DialogTitle from '@mui/material/DialogTitle';
-import Drawer from '../../common/drawer/Drawer';
 import ManagedConnectorEdition from './ManagedConnectorEdition';
 import DangerZoneBlock from '../../common/danger_zone/DangerZoneBlock';
 import Filters from '../../common/lists/Filters';
@@ -44,7 +43,7 @@ import useFiltersState from '../../../../utils/filters/useFiltersState';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import Security from '../../../../utils/Security';
 import useGranted, { MODULES_MODMANAGE, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
-import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
+import { MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import ConnectorWorks, { connectorWorksQuery } from './ConnectorWorks';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -62,34 +61,9 @@ import type { Theme } from '../../../../components/Theme';
 import { Connector_connector$data } from './__generated__/Connector_connector.graphql';
 import { ConnectorUpdateTriggerMutation, EditInput } from './__generated__/ConnectorUpdateTriggerMutation.graphql';
 import { ConnectorUpdateStatusMutation } from './__generated__/ConnectorUpdateStatusMutation.graphql';
-import { ConnectorWorksQuery$variables, ConnectorWorksQuery$data, Filter } from './__generated__/ConnectorWorksQuery.graphql';
+import { ConnectorWorksQuery$variables, ConnectorWorksQuery$data } from './__generated__/ConnectorWorksQuery.graphql';
 
 const interval$ = interval(FIVE_SECONDS);
-
-const useStyles = makeStyles((theme: Theme) => ({
-  gridContainer: {
-    marginBottom: 20,
-  },
-  popover: {
-    float: 'right',
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1),
-  },
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: '15px',
-    borderRadius: 4,
-  },
-  chip: {
-    height: 30,
-    float: 'left',
-    margin: '0 10px 10px 0',
-    borderRadius: 4,
-    backgroundColor: theme.palette.background.accent,
-    color: theme.palette.text?.primary,
-  },
-}));
 
 export const connectorUpdateTriggerMutation = graphql`
   mutation ConnectorUpdateTriggerMutation($id: ID!, $input: [EditInput]!) {
@@ -141,13 +115,13 @@ interface ConnectorComponentProps {
 const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connector, relay }) => {
   const { t_i18n, nsdt } = useFormatter();
   const navigate = useNavigate();
-  const classes = useStyles();
   const theme = useTheme<Theme>();
 
   const { isFeatureEnable } = useHelper();
   const isComposerEnable = isFeatureEnable('COMPOSER');
 
-  const connectorTriggerStatus = getConnectorTriggerStatus({
+  // Helper function to create connector configuration
+  const getConnectorConfig = () => ({
     name: connector.name,
     active: connector.active ?? false,
     auto: connector.auto ?? false,
@@ -157,39 +131,16 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
     connector_scope: connector.connector_scope ?? [],
     connector_state: connector.connector_state ?? '',
   });
-  const connectorOnlyContextualStatus = getConnectorOnlyContextualStatus({
-    name: connector.name,
-    active: connector.active ?? false,
-    auto: connector.auto ?? false,
-    only_contextual: connector.only_contextual ?? false,
-    connector_trigger_filters: connector.connector_trigger_filters ?? '',
-    connector_type: connector.connector_type ?? '',
-    connector_scope: connector.connector_scope ?? [],
-    connector_state: connector.connector_state ?? '',
-  });
+
+  const connectorConfig = getConnectorConfig();
+  const connectorTriggerStatus = getConnectorTriggerStatus(connectorConfig);
+  const connectorOnlyContextualStatus = getConnectorOnlyContextualStatus(connectorConfig);
+
   // connector trigger filters
   const connectorFilters = deserializeFilterGroupForFrontend(connector.connector_trigger_filters);
   const connectorFiltersEnabled = connector.connector_type === 'INTERNAL_ENRICHMENT';
-  const connectorFiltersScope = useGetConnectorFilterEntityTypes({
-    name: connector.name,
-    active: connector.active ?? false,
-    auto: connector.auto ?? false,
-    only_contextual: connector.only_contextual ?? false,
-    connector_trigger_filters: connector.connector_trigger_filters ?? '',
-    connector_type: connector.connector_type ?? '',
-    connector_scope: connector.connector_scope ?? [],
-    connector_state: connector.connector_state ?? '',
-  });
-  const connectorAvailableFilterKeys = useGetConnectorAvailableFilterKeys({
-    name: connector.name,
-    active: connector.active ?? false,
-    auto: connector.auto ?? false,
-    only_contextual: connector.only_contextual ?? false,
-    connector_trigger_filters: connector.connector_trigger_filters ?? '',
-    connector_type: connector.connector_type ?? '',
-    connector_scope: connector.connector_scope ?? [],
-    connector_state: connector.connector_state ?? '',
-  });
+  const connectorFiltersScope = useGetConnectorFilterEntityTypes(connectorConfig);
+  const connectorAvailableFilterKeys = useGetConnectorAvailableFilterKeys(connectorConfig);
   const [filters, helpers] = useFiltersState(connectorFilters);
 
   const [displayResetState, setDisplayResetState] = useState(false);
@@ -197,6 +148,13 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
   const [displayClearWorks, setDisplayClearWorks] = useState(false);
   const [clearing, setClearing] = useState(false);
   const [editionOpen, setEditionOpen] = useState(false);
+
+  // API mutations - defined early to avoid use-before-define errors
+  const [commitUpdateStatus] = useApiMutation<ConnectorUpdateStatusMutation>(updateRequestedStatus);
+  const [commitResetState] = useApiMutation(connectorResetStateMutation);
+  const [commitDeleteConnector] = useApiMutation(connectorDeletionMutation);
+  const [commitClearWorks] = useApiMutation(connectorWorkDeleteMutation);
+  const [commitUpdateConnectorTrigger] = useApiMutation<ConnectorUpdateTriggerMutation>(connectorUpdateTriggerMutation);
 
   useEffect(() => {
     const subscription = interval$.subscribe(() => {
@@ -206,17 +164,11 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
   }, [connector.id, relay]);
 
   const submitUpdateConnectorTrigger = (variables: ConnectorUpdateTriggerMutation['variables']) => {
-    commitMutation({
-      mutation: connectorUpdateTriggerMutation,
+    commitUpdateConnectorTrigger({
       variables,
-      updater: undefined,
-      optimisticUpdater: undefined,
-      optimisticResponse: undefined,
       onCompleted: () => {
         MESSAGING$.notifySuccess('The connector trigger filters have been updated.');
       },
-      onError: undefined,
-      setSubmitting: undefined,
     });
   };
 
@@ -256,41 +208,29 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
 
   const submitResetState = () => {
     setResetting(true);
-    commitMutation({
-      mutation: connectorResetStateMutation,
+    commitResetState({
       variables: {
         id: connector.id,
       },
-      updater: undefined,
-      optimisticUpdater: undefined,
-      optimisticResponse: undefined,
       onCompleted: () => {
         MESSAGING$.notifySuccess('The connector state has been reset and messages queue has been purged');
         setResetting(false);
         setDisplayResetState(false);
       },
-      onError: undefined,
-      setSubmitting: undefined,
     });
   };
 
   const submitClearWorks = () => {
     setClearing(true);
-    commitMutation({
-      mutation: connectorWorkDeleteMutation,
+    commitClearWorks({
       variables: {
         connectorId: connector.id,
       },
-      updater: undefined,
-      optimisticUpdater: undefined,
-      optimisticResponse: undefined,
       onCompleted: () => {
         MESSAGING$.notifySuccess('The connector works have been cleared');
         setClearing(false);
         setDisplayClearWorks(false);
       },
-      onError: undefined,
-      setSubmitting: undefined,
     });
   };
 
@@ -298,20 +238,14 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
   const { setDeleting, handleOpenDelete, handleCloseDelete } = deletion;
   const submitDelete = () => {
     setDeleting(true);
-    commitMutation({
-      mutation: connectorDeletionMutation,
+    commitDeleteConnector({
       variables: {
         id: connector.id,
       },
-      updater: undefined,
-      optimisticUpdater: undefined,
-      optimisticResponse: undefined,
       onCompleted: () => {
         handleCloseDelete();
         navigate('/dashboard/data/ingestion/connectors');
       },
-      onError: undefined,
-      setSubmitting: undefined,
     });
   };
 
@@ -321,8 +255,8 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
     filters: {
       mode: 'and',
       filters: [
-        { key: ['connector_id'], values: [connector.id], operator: 'eq', mode: 'or' } as Filter,
-        { key: ['status'], values: ['wait', 'progress'], operator: 'eq', mode: 'or' } as Filter,
+        { key: ['connector_id'], values: [connector.id] },
+        { key: ['status'], values: ['wait', 'progress'] },
       ],
       filterGroups: [],
     },
@@ -332,8 +266,8 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
     filters: {
       mode: 'and',
       filters: [
-        { key: ['connector_id'], values: [connector.id], operator: 'eq', mode: 'or' } as Filter,
-        { key: ['status'], values: ['complete'], operator: 'eq', mode: 'or' } as Filter,
+        { key: ['connector_id'], values: [connector.id] },
+        { key: ['status'], values: ['complete'] },
       ],
       filterGroups: [],
     },
@@ -353,8 +287,6 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
   const { isSensitive } = useSensitiveModifications('connector_reset');
 
   const computeConnectorStatus = useComputeConnectorStatus();
-
-  const [commitUpdateStatus] = useApiMutation<ConnectorUpdateStatusMutation>(updateRequestedStatus);
 
   return (
     <>
@@ -402,7 +334,13 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
             </div>
           )}
         </Typography>
-        <div className={classes.popover}>
+        <div style={{
+          float: 'right',
+          display: 'flex',
+          alignItems: 'center',
+          gap: theme.spacing(1),
+        }}
+        >
           <Security needs={[MODULES_MODMANAGE]}>
             <>
               {isSensitive && (
@@ -494,13 +432,18 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        style={{ marginBottom: 20 }}
       >
         <Grid item xs={6}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Basic information')}
           </Typography>
-          <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+          <Paper style={{
+            marginTop: theme.spacing(1),
+            padding: '15px',
+            borderRadius: 4,
+          }} className={'paper-for-grid'} variant="outlined"
+          >
             <Grid container={true} spacing={3}>
               <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
@@ -508,7 +451,14 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                 </Typography>
                 <Chip
                   key={connector.connector_type}
-                  classes={{ root: classes.chip }}
+                  style={{
+                    height: 30,
+                    float: 'left',
+                    margin: '0 10px 10px 0',
+                    borderRadius: 4,
+                    backgroundColor: theme.palette.background.accent,
+                    color: theme.palette.text?.primary,
+                  }}
                   label={connector.connector_type}
                 />
               </Grid>
@@ -543,7 +493,14 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                 {connector.connector_scope?.map((scope) => (
                   <Chip
                     key={scope}
-                    classes={{ root: classes.chip }}
+                    style={{
+                      height: 30,
+                      float: 'left',
+                      margin: '0 10px 10px 0',
+                      borderRadius: 4,
+                      backgroundColor: theme.palette.background.accent,
+                      color: theme.palette.text?.primary,
+                    }}
                     label={scope}
                   />
                 ))}
@@ -731,7 +688,12 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Details')}
           </Typography>
-          <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+          <Paper style={{
+            marginTop: theme.spacing(1),
+            padding: '15px',
+            borderRadius: 4,
+          }} className={'paper-for-grid'} variant="outlined"
+          >
             <Grid container={true} spacing={3}>
               {connector.connector_info?.buffering && (
                 <Grid item xs={12}>
@@ -863,9 +825,6 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                   <Typography variant="h3" gutterBottom={true}>
                     {t_i18n('Logs')}
                   </Typography>
-                  <Drawer title="">
-                    <div>Coucou</div>
-                  </Drawer>
                   <pre
                     style={{
                       height: '100%',
