@@ -90,7 +90,7 @@ const ConvertUser: FunctionComponent<ConvertUserProps> = ({ userId, userServiceA
         value="convert-user"
         style={{ marginRight: 3 }}
       >
-        {t_i18n('convert USER')}
+        {t_i18n('Convert')}
       </Button>
       <Dialog
         open={openDialog}
@@ -103,7 +103,7 @@ const ConvertUser: FunctionComponent<ConvertUserProps> = ({ userId, userServiceA
           handleClose();
         }}
       >
-        <DialogTitle>{userServiceAccount ? t_i18n('Convert User') : t_i18n('Convert Service account') }</DialogTitle>
+        <DialogTitle>{userServiceAccount ? t_i18n('Convert User into Service account') : t_i18n('Convert Service account into User') }</DialogTitle>
         <DialogContent>
           <DialogContentText>
             <Alert

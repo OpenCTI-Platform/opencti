@@ -123,7 +123,7 @@ const UserEditionDrawer: FunctionComponent<UserEditionDrawerProps> = ({
 
   return (
     <Drawer
-      title={t_i18n('Update a user')}
+      title={isServiceAccount ? t_i18n('Update a Service account') : t_i18n('Update a User') }
       open={open}
       onClose={handleClose}
       context={user?.editContext}
