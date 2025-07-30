@@ -8,7 +8,6 @@ import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { SYSTEM_USER } from '../utils/access';
 import { RELATION_ACCESSES_TO, RELATION_MEMBER_OF } from '../schema/internalRelationship';
 import { groupAddRelation, groupEditField, groupMaxShareableMarkings } from './group';
-import { getEntitiesListFromCache } from '../database/cache';
 import { READ_RELATIONSHIPS_INDICES } from '../database/utils';
 
 export const findById = (context, user, markingDefinitionId) => {
@@ -21,7 +20,7 @@ export const findAll = (context, user, args) => {
 };
 
 const notifyMembersOfNewMarking = async (context, user, newMarking) => {
-  const allMarkings = await getEntitiesListFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  const allMarkings = await findAll(context, SYSTEM_USER, { connectionFormat: false });
   const userGroupedMarkings = R.groupBy((m) => m.definition_type, allMarkings);
   const otherExistingTypeMarkingIds = (userGroupedMarkings[newMarking.definition_type] ?? []).map((m) => m.internal_id);
   const groupIds = new Set();
