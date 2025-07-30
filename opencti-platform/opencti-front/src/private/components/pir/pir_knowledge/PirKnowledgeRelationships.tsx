@@ -1,6 +1,21 @@
+/*
+Copyright (c) 2021-2025 Filigran SAS
+
+This file is part of the OpenCTI Enterprise Edition ("EE") and is
+licensed under the OpenCTI Enterprise Edition License (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*/
+
 import { graphql } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
-import React from 'react';
+import React, { useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import PirRadialScore from './PirRadialScore';
 import PirFiltersDisplay from '../PirFiltersDisplay';
@@ -133,6 +148,7 @@ const PirKnowledgeRelationships = ({
   initialValues,
 }: PirKnowledgeRelationshipsProps) => {
   const theme = useTheme<Theme>();
+  const [ref, setRef] = useState<HTMLDivElement | null>(null);
 
   const {
     viewStorage,
@@ -169,7 +185,7 @@ const PirKnowledgeRelationships = ({
         return (
           <Tooltip
             title={(
-              <div style={{ display: 'flex', gap: theme.spacing(1) }}>
+              <div style={{ display: 'flex', gap: theme.spacing(1), flexWrap: 'wrap' }}>
                 {pir_explanations.map((e: { criterion: { filters: string } }, i: number) => (
                   <PirFiltersDisplay
                     key={i}
@@ -218,35 +234,38 @@ const PirKnowledgeRelationships = ({
   return (
     <>
       {queryRef && (
-        <DataTable
-          removeSelectAll
-          disableLineSelection
-          dataColumns={dataColumns}
-          resolvePath={(d: PirKnowledgeRelationships_SourcesFlaggedFragment$data) => {
-            return d.stixRefRelationships?.edges?.map((e) => e?.node);
-          }}
-          storageKey={localStorageKey}
-          initialValues={initialValues}
-          toolbarFilters={contextFilters}
-          preloadedPaginationProps={{
-            linesQuery: sourcesFlaggedListQuery,
-            linesFragment: sourcesFlaggedFragment,
-            queryRef,
-            nodePath: ['stixRefRelationships', 'pageInfo', 'globalCount'],
-            setNumberOfElements: helpers.handleSetNumberOfElements,
-          }}
-          lineFragment={sourceFlaggedFragment}
-          availableFilterKeys={['fromId', 'fromTypes', 'pir_score']}
-          entityTypes={['stix-ref-relationship']}
-          searchContextFinal={{ entityTypes: ['stix-ref-relationship'] }}
-          currentView={viewStorage.view}
-          useComputeLink={(e: PirKnowledgeRelationships_SourceFlaggedFragment$data) => {
-            if (!e.from || !e.from.id || !e.from.entity_type) return '';
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            return computeLink(e.from);
-          }}
-        />
+        <div style={{ height: 'calc(100vh - 250px)' }} ref={(r) => setRef(r)}>
+          <DataTable
+            rootRef={ref ?? undefined}
+            removeSelectAll
+            disableLineSelection
+            dataColumns={dataColumns}
+            resolvePath={(d: PirKnowledgeRelationships_SourcesFlaggedFragment$data) => {
+              return d.stixRefRelationships?.edges?.map((e) => e?.node);
+            }}
+            storageKey={localStorageKey}
+            initialValues={initialValues}
+            toolbarFilters={contextFilters}
+            preloadedPaginationProps={{
+              linesQuery: sourcesFlaggedListQuery,
+              linesFragment: sourcesFlaggedFragment,
+              queryRef,
+              nodePath: ['stixRefRelationships', 'pageInfo', 'globalCount'],
+              setNumberOfElements: helpers.handleSetNumberOfElements,
+            }}
+            lineFragment={sourceFlaggedFragment}
+            availableFilterKeys={['fromId', 'fromTypes', 'pir_score']}
+            entityTypes={['stix-ref-relationship']}
+            searchContextFinal={{ entityTypes: ['stix-ref-relationship'] }}
+            currentView={viewStorage.view}
+            useComputeLink={(e: PirKnowledgeRelationships_SourceFlaggedFragment$data) => {
+              if (!e.from || !e.from.id || !e.from.entity_type) return '';
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              return computeLink(e.from);
+            }}
+          />
+        </div>
       )}
     </>
   );

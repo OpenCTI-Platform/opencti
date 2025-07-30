@@ -1,6 +1,22 @@
+/*
+Copyright (c) 2021-2025 Filigran SAS
+
+This file is part of the OpenCTI Enterprise Edition ("EE") and is
+licensed under the OpenCTI Enterprise Edition License (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*/
+
 import type { BasicStoreEntity, BasicStoreRelation, StoreEntity } from '../../types/store';
 import type { StixInternal } from '../../types/stix-2-1-common';
 import { PirType, type FilterGroup } from '../../generated/graphql';
+import type { AuthorizedMember } from '../../utils/access';
 
 export const ENTITY_TYPE_PIR = 'Pir';
 export const PIR_TYPES = Object.values(PirType);
@@ -18,6 +34,7 @@ export interface BasicStoreEntityPir extends BasicStoreEntity {
   pir_criteria: PirCriterion[]
   pir_filters: string
   lastEventId: string
+  restricted_members: Array<AuthorizedMember>;
 }
 
 export interface StoreEntityPir extends StoreEntity {
@@ -28,6 +45,7 @@ export interface StoreEntityPir extends StoreEntity {
   pir_criteria: PirCriterion[]
   pir_filters: string
   lastEventId: string
+  restricted_members: Array<AuthorizedMember>;
 }
 
 export interface StixPir extends StixInternal {

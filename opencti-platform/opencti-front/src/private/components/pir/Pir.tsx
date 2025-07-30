@@ -1,3 +1,18 @@
+/*
+Copyright (c) 2021-2025 Filigran SAS
+
+This file is part of the OpenCTI Enterprise Edition ("EE") and is
+licensed under the OpenCTI Enterprise Edition License (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*/
+
 import React, { Suspense } from 'react';
 import { graphql, usePreloadedQuery } from 'react-relay';
 import { Route, Routes, useParams } from 'react-router-dom';
@@ -12,6 +27,8 @@ import ErrorNotFound from '../../../components/ErrorNotFound';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import Loader from '../../../components/Loader';
 import PirAnalyses from './pir_analyses/PirAnalyses';
+import PirHistory from './pir_history/PirHistory';
+import { pirHistoryFilterGroup } from './pir-history-utils';
 
 const pirQuery = graphql`
   query PirQuery($id: ID!) {
@@ -19,6 +36,7 @@ const pirQuery = graphql`
       ...PirAnalysesFragment
       ...PirEditionFragment
       ...PirHeaderFragment
+      ...PirHistoryFragment
       ...PirKnowledgeFragment
       ...PirOverviewFragment
       ...PirOverviewCountsFragment
@@ -76,8 +94,8 @@ const PirComponent = ({
           element={<PirKnowledge data={pir} />}
         />
         <Route
-          path="/ttps"
-          element={<p>ttps</p>}
+          path="/history"
+          element={<PirHistory data={pir} />}
         />
         <Route
           path="/analyses"
@@ -97,40 +115,7 @@ const Pir = () => {
     first: 20,
     orderBy: 'timestamp',
     orderMode: 'desc',
-    filters: {
-      mode: 'and',
-      filters: [
-        {
-          key: ['event_type'],
-          values: ['create', 'delete', 'mutation'], // retro-compatibility
-        },
-      ],
-      filterGroups: [{
-        mode: 'or',
-        filters: [
-          {
-            key: ['event_scope'],
-            values: ['create', 'delete', 'update'],
-          },
-          {
-            key: ['event_scope'],
-            values: [], // if event_scope is null, event_type is not
-            operator: 'nil',
-          },
-        ],
-        filterGroups: [],
-      },
-      {
-        mode: 'or',
-        filters: [
-          {
-            key: ['context_data.pir_ids'],
-            values: [pirId],
-          },
-        ],
-        filterGroups: [],
-      }],
-    },
+    filters: pirHistoryFilterGroup(pirId),
   });
 
   return (

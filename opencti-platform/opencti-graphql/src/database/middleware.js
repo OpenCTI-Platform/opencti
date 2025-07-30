@@ -722,7 +722,7 @@ export const distributionRelations = async (context, user, args) => {
   const types = relationshipTypes || [ABSTRACT_BASIC_RELATIONSHIP];
   const distributionDateAttribute = dateAttribute || 'created_at';
   let finalField = field;
-  if (field.includes('.')) {
+  if (field.includes('.') && !field.includes('pir_explanations')) {
     finalField = REL_INDEX_PREFIX + field;
   }
   // Using elastic can only be done if the distribution is a count on types
@@ -731,7 +731,7 @@ export const distributionRelations = async (context, user, args) => {
   const distributionData = await elAggregationRelationsCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_RELATIONSHIPS : READ_RELATIONSHIPS_INDICES, distributionArgs);
   // Take a maximum amount of distribution depending on the ordering.
   const orderingFunction = order === 'asc' ? R.ascend : R.descend;
-  if (field.includes(ID_INTERNAL) || field === 'creator_id' || field === 'x_opencti_workflow_id') {
+  if (field.includes(ID_INTERNAL) || field === 'creator_id' || field === 'x_opencti_workflow_id' || field.includes('author_id')) {
     return convertAggregateDistributions(context, user, limit, orderingFunction, distributionData);
   }
   return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));

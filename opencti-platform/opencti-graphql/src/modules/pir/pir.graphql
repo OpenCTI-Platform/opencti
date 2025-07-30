@@ -35,6 +35,8 @@ type Pir implements InternalObject & BasicObject {
     pir_criteria: [PirCriterion!]!
     pir_filters: String!
     lastEventId: String!
+    authorizedMembers: [MemberAccess!]!
+    currentUserAccessRight: String
     pirContainers(
         first: Int
         after: ID
@@ -65,7 +67,7 @@ type PirEdge {
 
 # Queries
 type Query {
-    pir(id: ID!): Pir @auth(for: [KNOWLEDGE])
+    pir(id: ID!): Pir @auth(for: [PIRAPI])
     pirs(
         first: Int
         after: ID
@@ -73,7 +75,7 @@ type Query {
         orderMode: OrderingMode
         filters: FilterGroup
         search: String
-    ): PirConnection @auth(for: [KNOWLEDGE])
+    ): PirConnection @auth(for: [PIRAPI])
 }
 
 # Mutations inputs
@@ -99,6 +101,7 @@ input PirAddInput {
     pir_rescan_days: Int!
     pir_criteria: [PirCriterionInput!]!
     pir_filters: FilterGroup!
+    authorized_members: [MemberAccessInput!]
 }
 
 input PirFlagElementInput {
@@ -115,9 +118,10 @@ input PirUnflagElementInput {
 
 # Mutations
 type Mutation {
-    pirAdd(input: PirAddInput!): Pir @auth(for: [KNOWLEDGE_KNUPDATE])
-    pirFieldPatch(id: ID!, input: [EditInput!]!): Pir @auth(for: [KNOWLEDGE_KNUPDATE])
-    pirDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-    pirFlagElement(id: ID!, input: PirFlagElementInput!): ID @auth(for: [KNOWLEDGE_KNUPDATE])
-    pirUnflagElement(id: ID!, input: PirUnflagElementInput!): ID @auth(for: [KNOWLEDGE_KNUPDATE])
+    pirAdd(input: PirAddInput!): Pir @auth(for: [PIRAPI_PIRUPDATE])
+    pirFieldPatch(id: ID!, input: [EditInput!]!): Pir @auth(for: [PIRAPI_PIRUPDATE])
+    pirEditAuthorizedMembers(id: ID!, input:[MemberAccessInput!]!): Pir @auth(for: [PIRAPI_PIRUPDATE])
+    pirDelete(id: ID!): ID @auth(for: [PIRAPI_PIRUPDATE])
+    pirFlagElement(id: ID!, input: PirFlagElementInput!): ID @auth(for: [BYPASS])
+    pirUnflagElement(id: ID!, input: PirUnflagElementInput!): ID @auth(for: [BYPASS])
 }

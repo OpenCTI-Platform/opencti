@@ -1,3 +1,18 @@
+/*
+Copyright (c) 2021-2025 Filigran SAS
+
+This file is part of the OpenCTI Enterprise Edition ("EE") and is
+licensed under the OpenCTI Enterprise Edition License (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*/
+
 import React, { Suspense } from 'react';
 import Grid from '@mui/material/Grid2';
 import Typography from '@mui/material/Typography';
@@ -47,35 +62,31 @@ const PirOverviewCount = ({ label, value, value24h, size }: PirOverviewCountProp
 
   return (
     <Grid key={label} size={{ xs: size }}>
-      <Paper style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-      }}
-      >
-        <div>
+      <Paper style={{ padding: theme.spacing(1.5), paddingTop: theme.spacing(1) }}>
+        <div style={{ display: 'flex', alignItems: 'start' }}>
           <Typography
             color={theme.palette.text?.secondary}
-            sx={{ marginBottom: 1, textTransform: 'uppercase' }}
+            sx={{ marginTop: 0.5, textTransform: 'uppercase', flex: 1 }}
             variant="body2"
             gutterBottom
           >
             {t_i18n(`entity_${label}`)}
           </Typography>
-
-          <div style={{
-            display: 'flex',
-            alignItems: 'flex-end',
-            gap: theme.spacing(2),
-          }}
-          >
-            <div style={{ fontSize: 40, lineHeight: 1 }}>{n(value)}</div>
-            <NumberDifference
-              value={value24h}
-              description={t_i18n('24 hours')}
-            />
-          </div>
+          <ItemIcon type={label} size='large' />
         </div>
-        <ItemIcon type={label} size='large' />
+
+        <div style={{
+          display: 'flex',
+          alignItems: 'flex-end',
+          gap: theme.spacing(1),
+        }}
+        >
+          <div style={{ fontSize: 40, lineHeight: 1 }}>{n(value)}</div>
+          <NumberDifference
+            value={value24h}
+            description={t_i18n('24 hours')}
+          />
+        </div>
       </Paper>
     </Grid>
   );
@@ -104,52 +115,48 @@ const PirOverviewCountsComponent = ({
     return distribution;
   });
 
-  const malwares = data?.find((d) => d.label === 'Malware');
-  const malwares24h = data24h?.find((d) => d.label === 'Malware');
-  const campaigns = data?.find((d) => d.label === 'Campaign');
-  const campaigns24h = data24h?.find((d) => d.label === 'Campaign');
-  const instrusionSets = data?.find((d) => d.label === 'Intrusion-Set');
-  const instrusionSets24h = data24h?.find((d) => d.label === 'Intrusion-Set');
-  const threatActorIndividuals = data?.find((d) => d.label === 'Threat-Actor-Individual');
-  const threatActorIndividuals24h = data24h?.find((d) => d.label === 'Threat-Actor-Individual');
-  const threatActorGroups = data?.find((d) => d.label === 'Threat-Actor-Group');
-  const threatActorGroups24h = data24h?.find((d) => d.label === 'Threat-Actor-Group');
+  const malwares = data?.find((d) => d.label === 'Malware')?.value ?? 0;
+  const malwares24h = data24h?.find((d) => d.label === 'Malware')?.value ?? 0;
+  const campaigns = data?.find((d) => d.label === 'Campaign')?.value ?? 0;
+  const campaigns24h = data24h?.find((d) => d.label === 'Campaign')?.value ?? 0;
+  const instrusionSets = data?.find((d) => d.label === 'Intrusion-Set')?.value ?? 0;
+  const instrusionSets24h = data24h?.find((d) => d.label === 'Intrusion-Set')?.value ?? 0;
+  const threatActorIndividuals = data?.find((d) => d.label === 'Threat-Actor-Individual')?.value ?? 0;
+  const threatActorIndividuals24h = data24h?.find((d) => d.label === 'Threat-Actor-Individual')?.value ?? 0;
+  const threatActorGroups = data?.find((d) => d.label === 'Threat-Actor-Group')?.value ?? 0;
+  const threatActorGroups24h = data24h?.find((d) => d.label === 'Threat-Actor-Group')?.value ?? 0;
+  const threatActor = threatActorIndividuals + threatActorGroups;
+  const threatActor24h = threatActorIndividuals24h + threatActorGroups24h;
 
   return (
-    <Grid>
+    <Grid size={{ xs: 12 }}>
       <Typography variant="h4">
-        {t_i18n('Number of entities')}
+        {t_i18n('Number of threats')}
       </Typography>
       <Grid container spacing={3}>
         <PirOverviewCount
-          size={4}
+          size={6}
           label="Malware"
-          value={malwares?.value ?? 0}
-          value24h={malwares24h?.value ?? 0}
+          value={malwares}
+          value24h={malwares24h}
         />
         <PirOverviewCount
-          size={4}
+          size={6}
           label="Campaign"
-          value={campaigns?.value ?? 0}
-          value24h={campaigns24h?.value ?? 0}
+          value={campaigns}
+          value24h={campaigns24h}
         />
         <PirOverviewCount
-          size={4}
+          size={6}
           label="Intrusion-Set"
-          value={instrusionSets?.value ?? 0}
-          value24h={instrusionSets24h?.value ?? 0}
+          value={instrusionSets}
+          value24h={instrusionSets24h}
         />
         <PirOverviewCount
           size={6}
-          label="Threat-Actor-Individual"
-          value={threatActorIndividuals?.value ?? 0}
-          value24h={threatActorIndividuals24h?.value ?? 0}
-        />
-        <PirOverviewCount
-          size={6}
-          label="Threat-Actor-Group"
-          value={threatActorGroups?.value ?? 0}
-          value24h={threatActorGroups24h?.value ?? 0}
+          label="Threat-Actor"
+          value={threatActor}
+          value24h={threatActor24h}
         />
       </Grid>
     </Grid>

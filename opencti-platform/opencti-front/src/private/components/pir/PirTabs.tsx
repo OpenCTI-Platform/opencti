@@ -1,3 +1,18 @@
+/*
+Copyright (c) 2021-2025 Filigran SAS
+
+This file is part of the OpenCTI Enterprise Edition ("EE") and is
+licensed under the OpenCTI Enterprise Edition License (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*/
+
 import React from 'react';
 import { Box, Tab, Tabs } from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
@@ -23,7 +38,7 @@ const PirTabs = ({ data }: PirTabsProps) => {
   let index = 0;
   if (pathname.endsWith('threats')) index = 1;
   if (pathname.endsWith('analyses')) index = 2;
-  if (pathname.endsWith('ttps')) index = 3;
+  if (pathname.endsWith('history')) index = 3;
 
   return (
     <Box sx={{
@@ -52,10 +67,9 @@ const PirTabs = ({ data }: PirTabsProps) => {
           to={`/dashboard/pirs/${id}/analyses`}
         />
         <Tab
-          disabled
           component={Link}
-          label={t_i18n('TTPs')}
-          to={`/dashboard/pirs/${id}/ttps`}
+          label={t_i18n('History')}
+          to={`/dashboard/pirs/${id}/history`}
         />
       </Tabs>
     </Box>

@@ -16,7 +16,7 @@ import useAuth from '../../../../utils/hooks/useAuth';
 interface FormAuthorizedMembersDialogProps {
   id: string;
   mutation: GraphQLTaggedNode;
-  authorizedMembers?: AuthorizedMemberOption[];
+  authorizedMembers?: AuthorizedMemberOption[] | null;
   owner?: Creator;
   open?: boolean;
   handleClose?: () => void;

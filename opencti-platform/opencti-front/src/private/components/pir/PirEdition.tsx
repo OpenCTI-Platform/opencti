@@ -1,7 +1,21 @@
-import React, { UIEvent } from 'react';
+/*
+Copyright (c) 2021-2025 Filigran SAS
+
+This file is part of the OpenCTI Enterprise Edition ("EE") and is
+licensed under the OpenCTI Enterprise Edition License (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*/
+
+import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Drawer from '@components/common/drawer/Drawer';
-import Button from '@mui/material/Button';
 import { PirEditionMutation } from './__generated__/PirEditionMutation.graphql';
 import { PirEditionFragment$key } from './__generated__/PirEditionFragment.graphql';
 import { useFormatter } from '../../../components/i18n';
@@ -28,16 +42,12 @@ interface PirEditionProps {
   isOpen: boolean
   onClose: () => void
   data: PirEditionFragment$key
-  handleOpenDelete: (e?: UIEvent) => void
-  deleting: boolean
 }
 
 const PirEdition = ({
   data,
   isOpen,
   onClose,
-  handleOpenDelete,
-  deleting,
 }: PirEditionProps) => {
   const { t_i18n } = useFormatter();
   const pir = useFragment(editionFragment, data);
@@ -56,27 +66,13 @@ const PirEdition = ({
   };
 
   return (
-    <>
-      <Drawer
-        title={t_i18n('Update a PIR')}
-        open={isOpen}
-        onClose={onClose}
-      >
-        <>
-          <PirEditionForm onSubmitField={onEdit} pir={pir} />
-
-          <Button
-            color="error"
-            variant="contained"
-            onClick={handleOpenDelete}
-            sx={{ marginTop: 2 }}
-            disabled={deleting}
-          >
-            {t_i18n('Delete')}
-          </Button>
-        </>
-      </Drawer>
-    </>
+    <Drawer
+      title={t_i18n('Update a PIR')}
+      open={isOpen}
+      onClose={onClose}
+    >
+      <PirEditionForm onSubmitField={onEdit} pir={pir} />
+    </Drawer>
   );
 };
 
