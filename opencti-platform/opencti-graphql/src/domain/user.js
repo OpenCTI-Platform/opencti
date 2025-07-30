@@ -101,7 +101,7 @@ const ME_USER_MODIFIABLE_ATTRIBUTES = [
   'password',
   'draft_context',
 ];
-const AVAILABLE_LANGUAGES = ['auto', 'es-es', 'fr-fr', 'ja-jp', 'zh-cn', 'en-us', 'de-de', 'ko-kr', 'ru-ru', 'it-it'];
+const AVAILABLE_LANGUAGES = ['auto', 'es-es', 'fr-fr', 'ja-jp', 'zh-cn', 'en-us', 'de-de', 'ko-kr', 'ru-ru'];
 
 const computeImpactedUsers = async (context, user, roleId) => {
   // Get all groups that have this role
@@ -1369,7 +1369,7 @@ export const buildCompleteUsers = async (context, clients) => {
     }
     const isByPass = R.find((s) => s.name === BYPASS, capabilities) !== undefined;
     const organizations = (user?.organizationIds ?? []).map((organizationId) => resolvedObject[organizationId])
-      .filter((e) => isNotEmptyField(e));
+      .filter((e) => isNotEmptyField(e) && e.entity_type === ENTITY_TYPE_IDENTITY_ORGANIZATION);
     const defaultHiddenTypesGroups = getDefaultHiddenTypes(groups);
     const defaultHiddenTypesOrgs = getDefaultHiddenTypes(organizations);
     const default_hidden_types = uniq(defaultHiddenTypesGroups.concat(defaultHiddenTypesOrgs));
