@@ -10,10 +10,11 @@ import WorkspaceTurnToContainerDialog from '@components/workspaces/WorkspaceTurn
 import WorkspaceDuplicationDialog from '@components/workspaces/WorkspaceDuplicationDialog';
 import Drawer from '@components/common/drawer/Drawer';
 import PublicDashboardCreationForm from '@components/workspaces/dashboards/public_dashboards/PublicDashboardCreationForm';
+import WorkspaceDeletion from '@components/workspaces/WorkspaceDeletion';
 import { WorkspaceKebabMenuFragment$key } from './__generated__/WorkspaceKebabMenuFragment.graphql';
 import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
 import Security from '../../../utils/Security';
-import useGranted, { EXPLORE_EXUPDATE, EXPLORE_EXUPDATE_PUBLISH, INVESTIGATION_INUPDATE } from '../../../utils/hooks/useGranted';
+import useGranted, { EXPLORE_EXUPDATE, EXPLORE_EXUPDATE_EXDELETE, EXPLORE_EXUPDATE_PUBLISH, INVESTIGATION_INUPDATE } from '../../../utils/hooks/useGranted';
 import { useFormatter } from '../../../components/i18n';
 
 const kebabMenuFragment = graphql`
@@ -78,6 +79,17 @@ const useAddToContainer = (onAddToContainer = noop) => {
   return { isAddToContainerDialogOpen, handleOpenTurnToReportOrCaseContainer, handleCloseTurnToReportOrCaseContainer };
 };
 
+const useDelete = (onDelete = noop) => {
+  const [openDelete, setOpenDelete] = useState(false);
+  const handleCloseDeletion = () => setOpenDelete(false);
+  const handleOpenDeletion = () => {
+    onDelete();
+    setOpenDelete(true);
+  };
+
+  return { openDelete, handleOpenDeletion, handleCloseDeletion };
+};
+
 const WorkspaceKebabMenu = ({ data }: WorkspaceKebabMenuProps) => {
   const workspace = useFragment(kebabMenuFragment, data);
   const variant = workspace.type;
@@ -103,6 +115,7 @@ const WorkspaceKebabMenu = ({ data }: WorkspaceKebabMenuProps) => {
   } = useDuplicate(isGrantedToUpdateDashboard, handleClose);
   const { displayManageAccess, handleOpenManageAccess, handleCloseManageAccess } = useManageAccess(handleClose);
   const { isAddToContainerDialogOpen, handleOpenTurnToReportOrCaseContainer, handleCloseTurnToReportOrCaseContainer } = useAddToContainer(handleClose);
+  const { openDelete, handleOpenDeletion, handleCloseDeletion } = useDelete(handleClose);
 
   const goToPublicDashboards = () => {
     const filter = {
@@ -186,6 +199,9 @@ const WorkspaceKebabMenu = ({ data }: WorkspaceKebabMenuProps) => {
             </Security>
           </>
         )}
+        <Security needs={[EXPLORE_EXUPDATE_EXDELETE]} hasAccess={canEdit}>
+          <MenuItem onClick={handleOpenDeletion}>{t_i18n('Delete')}</MenuItem>
+        </Security>
       </Menu>
 
       <WorkspaceManageAccessDialog
@@ -194,6 +210,12 @@ const WorkspaceKebabMenu = ({ data }: WorkspaceKebabMenuProps) => {
         authorizedMembersData={workspace}
         owner={workspace.owner}
         handleClose={handleCloseManageAccess}
+      />
+      <WorkspaceDeletion
+        id={workspace.id}
+        isOpen={openDelete}
+        handleClose={handleCloseDeletion}
+        workspaceType={workspace.type}
       />
       {variant === 'investigation' && (
         <WorkspaceTurnToContainerDialog
