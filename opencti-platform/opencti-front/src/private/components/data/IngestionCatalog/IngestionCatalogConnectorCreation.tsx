@@ -16,12 +16,15 @@ import { Link } from 'react-router-dom';
 import { JsonSchema } from '@jsonforms/core';
 import { Alert } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
+import Typography from '@mui/material/Typography';
+import AccordionDetails from '@mui/material/AccordionDetails';
 import { MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { type FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import TextField from '../../../../components/TextField';
+import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -29,12 +32,10 @@ const useStyles = makeStyles(() => ({
   alert: {
     width: '100%',
     marginTop: 8,
-    paddingBottom: 0,
   },
   message: {
     width: '100%',
     overflow: 'visible',
-    paddingBottom: 0,
   },
 }));
 
@@ -102,6 +103,13 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
 
   const [compiledValidator, setCompiledValidator] = useState<Validator | undefined>(undefined);
 
+  // Filter required and optional properties to use into JsonForms
+  const propertiesArray = Object.entries(connector.properties);
+  const requiredProperties = propertiesArray.filter((property) => connector.required.includes(property[0]));
+  const optionalProperties = propertiesArray.filter((property) => !connector.required.includes(property[0]));
+  const connectorWithRequired = { ...connector, properties: Object.fromEntries(requiredProperties) };
+  const connectorWithOptional = { ...connector, properties: Object.fromEntries(optionalProperties) };
+
   return (
     <Drawer
       title={t_i18n('Deploy a new connector')}
@@ -165,12 +173,29 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
               >
                 <JsonForms
                   data={connector.default}
-                  schema={connector as JsonSchema}
+                  schema={connectorWithRequired as JsonSchema}
                   renderers={materialRenderers}
                   validationMode={'NoValidation'}
                   onChange={({ data }) => setFieldValue('contractValues', data)}
                 />
               </Alert>
+              <div style={fieldSpacingContainerStyle}>
+                <Accordion>
+                  <AccordionSummary id="accordion-panel">
+                    <Typography>{t_i18n('Advanced options')}</Typography>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <JsonForms
+                      data={connector.default}
+                      schema={connectorWithOptional as JsonSchema}
+                      renderers={materialRenderers}
+                      validationMode={'NoValidation'}
+                      onChange={({ data }) => setFieldValue('contractValues', data)}
+                    />
+
+                  </AccordionDetails>
+                </Accordion>
+              </div>
               <div style={{ textAlign: 'right', marginTop: theme.spacing(2) }}>
                 <Button
                   variant="contained"
