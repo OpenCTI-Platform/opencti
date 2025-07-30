@@ -220,6 +220,11 @@ export const findAllMembers = (context, user, args) => {
   return listEntities(context, user, types, args);
 };
 
+export const findUserWithCapabilities = async (context, user, capabilities) => {
+  const users = await getEntitiesListFromCache(context, user, ENTITY_TYPE_USER);
+  return users.filter((u) => u.capabilities.some((userCapability) => capabilities.some((capability) => capability === userCapability.name)));
+};
+
 export const findAllSystemMembers = () => {
   const members = R.values(INTERNAL_USERS_WITHOUT_REDACTED);
   return buildPagination(0, null, members.map((r) => ({ node: r })), members.length);
