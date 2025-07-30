@@ -249,6 +249,7 @@ const Users = () => {
               return <PersonOutlined color="primary" />;
             }}
             taskScope={'USER'}
+            entityTypes={['User']}
           />
           )}
         </>
