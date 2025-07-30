@@ -66,7 +66,9 @@ const multipleDataTooltip = (theme) => ({ seriesIndex, dataPointIndex, w }) => {
   const containerColors = `background:${theme.palette.background.nav}; color:${theme.palette.text.primary};`;
   const containerLayout = 'padding: 2px 6px; font-size: 12px; display:flex; flex-direction:column;';
   const { group } = w.config.series[seriesIndex].data[dataPointIndex].meta;
-  const rows = group.map((data) => `
+  const max = 10;
+  const hasMore = group.length > max;
+  const rows = group.slice(0, max).map((data) => `
     <div style="display:flex; align-items:center; gap:4px">
       <div style="width:10px; height:10px; background:${itemColor(data.type)}; border-radius:10px;"></div>
       <span>${data.name}: ${data.score}%</span>
@@ -75,6 +77,7 @@ const multipleDataTooltip = (theme) => ({ seriesIndex, dataPointIndex, w }) => {
   return (`
     <div style="${containerColors}${containerLayout}">
       ${rows}
+      ${hasMore ? '<div>...</div>' : ''}
     </div>
   `);
 };
