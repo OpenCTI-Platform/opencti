@@ -518,11 +518,10 @@ export const storeLoadByIdWithRefs = async (context, user, id, opts = {}) => {
 };
 export const stixLoadById = async (context, user, id, opts = {}, stixVersion = StixVersion.Stix_2_1) => {
   const instance = await storeLoadByIdWithRefs(context, user, id, opts);
-  if (stixVersion === StixVersion.Stix_2_1) {
-    return instance ? convertStoreToStix(instance) : undefined;
-  } if (stixVersion === StixVersion.Stix_2_0) {
+  if (stixVersion === StixVersion.Stix_2_0) {
     return instance ? convertStoreToStix_2_0(instance) : undefined;
   }
+  return instance ? convertStoreToStix(instance) : undefined;
 };
 const convertStoreToStixWithResolvedFiles = async (instance) => {
   const instanceInStix = convertStoreToStix(instance);
