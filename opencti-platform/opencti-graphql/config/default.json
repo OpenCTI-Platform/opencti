@@ -155,6 +155,10 @@
       "to_email": "no-reply@filigran.io",
       "max_list_size": 500
     },
+    "enrollment": {
+      "to_email": "no-reply@filigran.io",
+      "max_list_size": 500
+    },
     "forgot_password": {
       "otp_ttl_second": 600
     }
