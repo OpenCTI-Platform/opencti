@@ -11,6 +11,7 @@ import {
   ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_DATA_COMPONENT,
   ENTITY_TYPE_DATA_SOURCE,
+  ENTITY_TYPE_INCIDENT,
   ENTITY_TYPE_MALWARE,
   isStixDomainObjectIdentity,
   isStixDomainObjectLocation,
@@ -129,6 +130,23 @@ export const buildStixDomain = (instance: StoreEntity | StoreRelation): S.StixDo
     object_marking_refs: (instance[INPUT_MARKINGS] ?? []).map((m) => m.standard_id),
     created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     external_references: buildExternalReferences(instance),
+  };
+};
+
+export const convertIncidentToStix = (instance: StoreEntity, type: string): SDO.StixIncident => {
+  assertType(ENTITY_TYPE_INCIDENT, type);
+  const incident = buildStixDomain(instance);
+  return {
+    ...incident,
+    name: instance.name,
+    description: instance.description,
+    first_seen: convertToStixDate(instance.first_seen),
+    last_seen: convertToStixDate(instance.last_seen),
+    aliases: instance.aliases,
+    objective: instance.objective,
+    incident_type: instance.incident_type,
+    severity: instance.severity,
+    source: instance.source,
   };
 };
 
