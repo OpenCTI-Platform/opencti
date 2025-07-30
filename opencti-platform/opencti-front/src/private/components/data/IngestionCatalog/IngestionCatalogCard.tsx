@@ -17,6 +17,7 @@ import type { Theme } from '../../../../components/Theme';
 
 interface IngestionCatalogCardProps {
   node: string;
+  dataListId: string;
 }
 
 export interface IngestionConnector {
@@ -67,7 +68,7 @@ export const ingestionConnectorTypeMetadata: Record<IngestionConnectorType, { la
   },
 };
 
-const IngestionCatalogCard = ({ node }: IngestionCatalogCardProps) => {
+const IngestionCatalogCard = ({ node, dataListId }: IngestionCatalogCardProps) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const theme = useTheme<Theme>();
@@ -147,13 +148,13 @@ const IngestionCatalogCard = ({ node }: IngestionCatalogCardProps) => {
         <CardActions style={{ alignSelf: 'end' }}>
           <Button variant="outlined" size="small" onClick={() => navigate(link)}>{t_i18n('Details')}</Button>
           <Security needs={[INGESTION_SETINGESTIONS]}>
-            <Button variant="contained" color="secondary" onClick={() => setOpenCreation(true)} size="small">{t_i18n('Deploy')}</Button>
+            <Button variant="contained" onClick={() => setOpenCreation(true)} size="small">{t_i18n('Deploy')}</Button>
           </Security>
         </CardActions>
 
       </Card>
 
-      <IngestionCatalogConnectorCreation open={openCreation} connector={connector} onClose={() => setOpenCreation(false)} />
+      <IngestionCatalogConnectorCreation open={openCreation} connector={connector} onClose={() => setOpenCreation(false)} catalogId={dataListId} />
     </>
   );
 };

@@ -93,6 +93,7 @@ class ListCardsContent extends Component {
     const {
       classes,
       dataList,
+      dataListId,
       bookmarkList,
       CardComponent,
       DummyCardComponent,
@@ -132,6 +133,7 @@ class ListCardsContent extends Component {
             node={node}
             bookmarksIds={bookmarksIds}
             onLabelClick={onLabelClick}
+            dataListId={dataListId}
           />
         ) : (
           React.cloneElement(CardComponent, {
@@ -225,6 +227,7 @@ ListCardsContent.propTypes = {
   hasMore: PropTypes.func,
   isLoading: PropTypes.func,
   dataList: PropTypes.array,
+  dataListId: PropTypes.string,
   bookmarkList: PropTypes.array,
   globalCount: PropTypes.number,
   CardComponent: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),

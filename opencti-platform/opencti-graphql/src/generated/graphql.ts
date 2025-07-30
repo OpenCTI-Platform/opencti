@@ -80,6 +80,7 @@ export type AckDetails = {
 };
 
 export type AddManagedConnectorInput = {
+  catalog_id: Scalars['ID']['input'];
   connector_user_id: Scalars['ID']['input'];
   manager_contract_configuration: Array<ContractConfigInput>;
   manager_contract_image: Scalars['String']['input'];
@@ -7824,6 +7825,12 @@ export type ExportAskInput = {
 export type ExportContext = {
   entity_id?: InputMaybe<Scalars['String']['input']>;
   entity_type: Scalars['String']['input'];
+};
+
+export type ExtendedContract = {
+  __typename?: 'ExtendedContract';
+  catalog_id: Scalars['String']['output'];
+  contract: Scalars['String']['output'];
 };
 
 export type ExternalReference = BasicObject & StixMetaObject & StixObject & {
@@ -20610,7 +20617,7 @@ export type Query = {
   containersDistribution?: Maybe<Array<Maybe<Distribution>>>;
   containersNumber?: Maybe<Number>;
   containersObjectsOfObject?: Maybe<StixObjectOrStixRelationshipConnection>;
-  contract?: Maybe<Scalars['String']['output']>;
+  contract?: Maybe<ExtendedContract>;
   countries?: Maybe<CountryConnection>;
   country?: Maybe<Country>;
   courseOfAction?: Maybe<CourseOfAction>;
@@ -33189,6 +33196,7 @@ export type ResolversTypes = ResolversObject<{
   ExclusionListOrdering: ExclusionListOrdering;
   ExportAskInput: ExportAskInput;
   ExportContext: ExportContext;
+  ExtendedContract: ResolverTypeWrapper<ExtendedContract>;
   ExternalReference: ResolverTypeWrapper<Omit<ExternalReference, 'connectors' | 'editContext' | 'exportFiles' | 'importFiles' | 'jobs' | 'pendingFiles' | 'references' | 'x_opencti_inferences'> & { connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, importFiles: ResolversTypes['FileConnection'], jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, pendingFiles: ResolversTypes['FileConnection'], references?: Maybe<ResolversTypes['StixObjectOrStixRelationshipConnection']>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   ExternalReferenceAddInput: ExternalReferenceAddInput;
   ExternalReferenceConnection: ResolverTypeWrapper<Omit<ExternalReferenceConnection, 'edges'> & { edges: Array<ResolversTypes['ExternalReferenceEdge']> }>;
@@ -34130,6 +34138,7 @@ export type ResolversParentTypes = ResolversObject<{
   ExclusionListFileAddInput: ExclusionListFileAddInput;
   ExportAskInput: ExportAskInput;
   ExportContext: ExportContext;
+  ExtendedContract: ExtendedContract;
   ExternalReference: Omit<ExternalReference, 'connectors' | 'editContext' | 'exportFiles' | 'importFiles' | 'jobs' | 'pendingFiles' | 'references' | 'x_opencti_inferences'> & { connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, importFiles: ResolversParentTypes['FileConnection'], jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, pendingFiles: ResolversParentTypes['FileConnection'], references?: Maybe<ResolversParentTypes['StixObjectOrStixRelationshipConnection']>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   ExternalReferenceAddInput: ExternalReferenceAddInput;
   ExternalReferenceConnection: Omit<ExternalReferenceConnection, 'edges'> & { edges: Array<ResolversParentTypes['ExternalReferenceEdge']> };
@@ -37398,6 +37407,12 @@ export type ExclusionListConnectionResolvers<ContextType = any, ParentType exten
 export type ExclusionListEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['ExclusionListEdge'] = ResolversParentTypes['ExclusionListEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['ExclusionList'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ExtendedContractResolvers<ContextType = any, ParentType extends ResolversParentTypes['ExtendedContract'] = ResolversParentTypes['ExtendedContract']> = ResolversObject<{
+  catalog_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  contract?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -41425,7 +41440,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   containersDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryContainersDistributionArgs, 'field' | 'operation'>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, Partial<QueryContainersNumberArgs>>;
   containersObjectsOfObject?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipConnection']>, ParentType, ContextType, RequireFields<QueryContainersObjectsOfObjectArgs, 'id'>>;
-  contract?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryContractArgs, 'slug'>>;
+  contract?: Resolver<Maybe<ResolversTypes['ExtendedContract']>, ParentType, ContextType, RequireFields<QueryContractArgs, 'slug'>>;
   countries?: Resolver<Maybe<ResolversTypes['CountryConnection']>, ParentType, ContextType, Partial<QueryCountriesArgs>>;
   country?: Resolver<Maybe<ResolversTypes['Country']>, ParentType, ContextType, Partial<QueryCountryArgs>>;
   courseOfAction?: Resolver<Maybe<ResolversTypes['CourseOfAction']>, ParentType, ContextType, Partial<QueryCourseOfActionArgs>>;
@@ -45072,6 +45087,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ExclusionListCacheStatus?: ExclusionListCacheStatusResolvers<ContextType>;
   ExclusionListConnection?: ExclusionListConnectionResolvers<ContextType>;
   ExclusionListEdge?: ExclusionListEdgeResolvers<ContextType>;
+  ExtendedContract?: ExtendedContractResolvers<ContextType>;
   ExternalReference?: ExternalReferenceResolvers<ContextType>;
   ExternalReferenceConnection?: ExternalReferenceConnectionResolvers<ContextType>;
   ExternalReferenceEdge?: ExternalReferenceEdgeResolvers<ContextType>;

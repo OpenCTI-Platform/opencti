@@ -39,23 +39,24 @@ const IngestionCatalogComponent = ({
     queryRef,
   );
 
-  const contracts: string[] = catalogs.flatMap((catalog) => catalog.contracts);
-
   return (
     <>
       <IngestionMenu />
       <PageContainer withRightMenu withGap>
         <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('Catalog'), current: true }]} />
-        {contracts.length > 0 && (
-          <ListCardsContent
-            hasMore={() => false}
-            isLoading={() => false}
-            dataList={contracts}
-            globalCount={contracts.length}
-            CardComponent={IngestionCatalogCard}
-            rowHeight={350}
-          />
-        )}
+        {catalogs.map((catalog) => {
+          return catalog.contracts.length > 0 && (
+            <ListCardsContent
+              hasMore={() => false}
+              isLoading={() => false}
+              dataList={catalog.contracts}
+              dataListId={catalog.id}
+              globalCount={catalog.contracts.length}
+              CardComponent={IngestionCatalogCard}
+              rowHeight={350}
+            />
+          );
+        })}
       </PageContainer>
     </>
   );

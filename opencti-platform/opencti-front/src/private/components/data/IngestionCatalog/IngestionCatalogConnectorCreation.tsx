@@ -28,7 +28,7 @@ import TextField from '../../../../components/TextField';
 const useStyles = makeStyles(() => ({
   alert: {
     width: '100%',
-    marginTop: 20,
+    marginTop: 8,
     paddingBottom: 0,
   },
   message: {
@@ -58,6 +58,7 @@ interface IngestionCatalogConnectorCreationProps {
   connector: IngestionConnector;
   open: boolean;
   onClose: () => void;
+  catalogId: string;
 }
 
 interface ManagedConnectorValues {
@@ -67,7 +68,7 @@ interface ManagedConnectorValues {
   confidence: number;
 }
 
-const IngestionCatalogConnectorCreation = ({ connector, open, onClose }: IngestionCatalogConnectorCreationProps) => {
+const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId }: IngestionCatalogConnectorCreationProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const classes = useStyles();
@@ -80,6 +81,7 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose }: Ingesti
   }: Partial<FormikHelpers<ManagedConnectorValues>>) => {
     const input = {
       name: values.name,
+      catalog_id: catalogId,
       connector_user_id: values.creator?.value,
       manager_contract_image: connector.container_image,
       manager_contract_configuration: Object.entries(values.contractValues).map(([key, value]) => ({ key, value: value.toString() })),
@@ -133,45 +135,42 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose }: Ingesti
           const errors = compiledValidator?.validate(values.contractValues)?.errors;
           return (
             <Form>
-              {(connector) && (
-                <>
-                  <Field
-                    component={TextField}
-                    style={fieldSpacingContainerStyle}
-                    variant="standard"
-                    name="name"
-                    label={t_i18n('Instance name')}
-                    required
-                    fullWidth={true}
-                  />
-                  <CreatorField
-                    label={'User'}
-                    containerStyle={fieldSpacingContainerStyle}
-                    onChange={setFieldValue}
-                    name="creator"
-                    required
-                  />
-                  <ConfidenceField
-                    containerStyle={fieldSpacingContainerStyle}
-                    maxConfidenceLevel={connector.max_confidence_level}
-                  />
-                  <Alert
-                    classes={{ root: classes.alert, message: classes.message }}
-                    severity="info"
-                    icon={false}
-                    variant="outlined"
-                    style={{ position: 'relative' }}
-                  >
-                    <JsonForms
-                      data={connector.default}
-                      schema={connector as JsonSchema}
-                      renderers={materialRenderers}
-                      validationMode={'NoValidation'}
-                      onChange={({ data }) => setFieldValue('contractValues', data)}
-                    />
-                  </Alert>
-                </>
-              )}
+              <Field
+                component={TextField}
+                style={fieldSpacingContainerStyle}
+                variant="standard"
+                name="name"
+                label={t_i18n('Instance name')}
+                required
+                fullWidth={true}
+              />
+              <CreatorField
+                label={'User'}
+                containerStyle={fieldSpacingContainerStyle}
+                onChange={setFieldValue}
+                name="creator"
+                required
+              />
+              <ConfidenceField
+                containerStyle={fieldSpacingContainerStyle}
+                maxConfidenceLevel={connector.max_confidence_level}
+              />
+              <div style={fieldSpacingContainerStyle}>{t_i18n('Configuration')}</div>
+              <Alert
+                classes={{ root: classes.alert, message: classes.message }}
+                severity="info"
+                icon={false}
+                variant="outlined"
+                style={{ position: 'relative' }}
+              >
+                <JsonForms
+                  data={connector.default}
+                  schema={connector as JsonSchema}
+                  renderers={materialRenderers}
+                  validationMode={'NoValidation'}
+                  onChange={({ data }) => setFieldValue('contractValues', data)}
+                />
+              </Alert>
               <div style={{ textAlign: 'right', marginTop: theme.spacing(2) }}>
                 <Button
                   variant="contained"
