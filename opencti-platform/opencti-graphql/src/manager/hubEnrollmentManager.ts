@@ -1,6 +1,6 @@
 import ejs from 'ejs';
 import { type ManagerDefinition, registerManager } from './managerModule';
-import conf, { booleanConf, isFeatureEnabled, logApp } from '../config/conf';
+import conf, { booleanConf, getBaseUrl, isFeatureEnabled, logApp } from '../config/conf';
 import { BYPASS, executionContext, SETTINGS_SETMANAGEXTMHUB, SYSTEM_USER } from '../utils/access';
 import { settingsEditField } from '../domain/settings';
 import { XtmHubEnrollmentStatus } from '../generated/graphql';
@@ -27,6 +27,7 @@ const EMAIL_BODY = `
   <p>To restore functionality, please navigate to the <strong>Settings</strong> section and re-initiate the registration process for the OCTI instance. This will re-establish the connection and allow continued use of the integrated features.</p>
   <p>If you need assistance during the process, don’t hesitate to reach out.</p>
   <p>
+    <a href="${getBaseUrl()}">Go to OpenCTI</a>
     Best,<br />
     Filigran Team<br />
   </p>
