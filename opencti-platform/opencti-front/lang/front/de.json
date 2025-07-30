@@ -3614,6 +3614,7 @@
   "To prevent people seeing all the data...": "Um zu verhindern, dass andere Personen alle Daten im öffentlichen Dashboard sehen können, wählen Sie eine Markierungsdefinition, um die gemeinsamen Daten einzuschränken.",
   "to terminate your session.": "um Ihre Sitzung zu beenden.",
   "To type": "Nach Typ",
+  "To use AI, please add a token.": "Um AI zu nutzen, fügen Sie bitte ein Token hinzu.",
   "To use AI, please enable it in the configuration of your platform.": "Um AI zu nutzen, aktivieren Sie es bitte in der Konfiguration Ihrer Plattform.",
   "To use this feature, your platform administrator must enable the according manager in the config.": "Um diese Funktion zu nutzen, muss Ihr Plattformadministrator den entsprechenden Manager in der Konfiguration aktivieren.",
   "To use this feature, your platform administrator must enable the subscription manager in the config.": "Um diese Funktion zu nutzen, muss Ihr Plattformadministrator den Abonnementmanager in der Konfiguration aktivieren.",
