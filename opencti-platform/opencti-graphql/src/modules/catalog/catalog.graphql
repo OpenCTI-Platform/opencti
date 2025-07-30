@@ -9,6 +9,11 @@ type Catalog implements InternalObject & BasicObject {
   contracts: [String!]!
 }
 
+type ExtendedContract {
+  catalog_id: String!
+  contract: String!
+}
+
 # Ordering
 enum CatalogsOrdering {
   name
@@ -29,5 +34,5 @@ type CatalogEdge {
 type Query {
   catalog(id: String!): Catalog @auth(for: [INGESTION])
   catalogs: [Catalog!]! @auth(for: [INGESTION])
-  contract(slug: String!): String @auth(for: [INGESTION])
+  contract(slug: String!): ExtendedContract @auth(for: [INGESTION])
 }

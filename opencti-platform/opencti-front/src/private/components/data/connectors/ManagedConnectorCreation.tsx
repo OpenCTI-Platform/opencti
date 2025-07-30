@@ -73,6 +73,7 @@ const ManagedConnectorCreation = ({ catalog, onClose }: {
     const contract = contracts[values.contract];
     const input = {
       name: values.name,
+      catalog_id: catalog.id,
       connector_user_id: values.creator?.value,
       manager_contract_image: contract.container_image,
       manager_contract_configuration: Object.entries(values.contractValues).map(([key, value]) => ({ key, value: value.toString() })),

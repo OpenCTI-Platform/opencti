@@ -13,7 +13,10 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 
 const ingestionCatalogConnectorQuery = graphql`
   query IngestionCatalogConnectorQuery($slug: String!) {
-    contract(slug: $slug)
+    contract(slug: $slug) {
+      catalog_id
+      contract
+    }
   }
 `;
 
@@ -33,12 +36,12 @@ const IngestionCatalogConnectorComponent = ({
     queryRef,
   );
   if (!contract) return <ErrorNotFound />;
-  const connector = JSON.parse(contract);
+  const connector = JSON.parse(contract.contract);
 
   return (
     <>
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('Catalog') }, { label: connector.default.CONNECTOR_NAME, current: true }]} />
-      <IngestionCatalogConnectorHeader connector={connector} />
+      <IngestionCatalogConnectorHeader connector={connector} catalogId={contract.catalog_id} />
       <IngestionCatalogConnectorOverview connector={connector} />
     </>
   );

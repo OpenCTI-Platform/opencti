@@ -110,9 +110,9 @@ export const findContractBySlug = (_context: AuthContext, _user: AuthUser, contr
   const catalogDefinitions = getCatalogs();
   const catalogs = Object.values(catalogDefinitions).map((catalog) => catalog.graphql);
   return catalogs
-    .flatMap((catalog) => catalog.contracts || [])
-    .find((contractStr) => {
-      const contract = JSON.parse(contractStr);
-      return contract.slug === contractSlug;
-    });
+    .map((catalog) => {
+      const contract = catalog.contracts.find((contractStr) => JSON.parse(contractStr).slug === contractSlug);
+      return contract ? { catalog_id: catalog.id, contract } : null;
+    })
+    .find((result) => result !== null);
 };
