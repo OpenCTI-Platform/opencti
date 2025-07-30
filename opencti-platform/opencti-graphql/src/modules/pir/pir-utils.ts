@@ -19,7 +19,11 @@ import { listRelationsPaginated, storeLoadById } from '../../database/middleware
 import { RELATION_IN_PIR } from '../../schema/stixRefRelationship';
 import { FunctionalError } from '../../config/errors';
 import { createRelation, patchAttribute } from '../../database/middleware';
-import type { PirAddInput } from '../../generated/graphql';
+import { type FilterGroup, type PirAddInput, PirType } from '../../generated/graphql';
+import { addFilter } from '../../utils/filtering/filtering-utils';
+import { ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE } from '../../schema/stixDomainObject';
+import { ENTITY_TYPE_THREAT_ACTOR } from '../../schema/general';
+import { RELATION_FROM_TYPES_FILTER } from '../../utils/filtering/filtering-constants';
 
 /**
  * Helper function to parse filters that are saved as string in elastic.
@@ -53,6 +57,24 @@ export const serializePir = (pir: PirAddInput) => {
       filters: JSON.stringify(c.filters),
     })),
   };
+};
+
+/**
+ * Helper function to construct final pir filters that the entity of the stream events should match.
+ *
+ * @param pirType The PIR type
+ * @params pirFilters the PIR filters
+ * @returns filters applied on the entity of the stream events
+ */
+export const constructFinalPirFilters = (pirType: PirType, pirFilters: FilterGroup) => {
+  if (pirType === PirType.ThreatLandscape) {
+    return addFilter(
+      pirFilters,
+      RELATION_FROM_TYPES_FILTER,
+      [ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_THREAT_ACTOR, ENTITY_TYPE_MALWARE],
+    );
+  }
+  return pirFilters;
 };
 
 /**
