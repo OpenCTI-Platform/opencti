@@ -123,7 +123,7 @@ const UserEditionDrawer: FunctionComponent<UserEditionDrawerProps> = ({
 
   return (
     <Drawer
-      title={t_i18n('Update a user')}
+      title={isServiceAccount ? t_i18n('Update Service account') : t_i18n('Update User') }
       open={open}
       onClose={handleClose}
       context={user?.editContext}
@@ -136,9 +136,7 @@ const UserEditionDrawer: FunctionComponent<UserEditionDrawerProps> = ({
             onChange={(event, value) => handleChangeTab(value)}
           >
             <Tab label={t_i18n('Overview')} />
-            {!isServiceAccount
-              && <Tab disabled={!!user.external} label={t_i18n('Password')} />
-            }
+            <Tab disabled={!!user.external || isServiceAccount === true} label={t_i18n('Password')} />
             <Tab label={t_i18n('Groups')} />
             {hasSetAccess
               && <Tab label={
