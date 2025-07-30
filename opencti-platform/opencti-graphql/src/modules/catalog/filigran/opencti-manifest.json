@@ -43,21 +43,6 @@
         "CVE_API_KEY"
       ],
       "properties": {
-        "OPENCTI_URL": {
-          "type": "string",
-          "format": "uri",
-          "minLength": 1,
-          "maxLength": 2083,
-          "description": "The OpenCTI platform URL."
-        },
-        "OPENCTI_TOKEN": {
-          "type": "string",
-          "description": "The token of the user who represents the connector in the OpenCTI platform."
-        },
-        "CONNECTOR_TYPE": {
-          "description": "Should always be set to EXTERNAL_IMPORT for this connector.",
-          "type": "string"
-        },
         "CONNECTOR_LOG_LEVEL": {
           "description": "Determines the verbosity of the logs.",
           "type": "string",
@@ -186,21 +171,6 @@
         "SERVICENOW_API_KEY"
       ],
       "properties": {
-        "OPENCTI_URL": {
-          "type": "string",
-          "format": "uri",
-          "minLength": 1,
-          "maxLength": 2083,
-          "description": "The OpenCTI platform URL."
-        },
-        "OPENCTI_TOKEN": {
-          "type": "string",
-          "description": "The token of the user who represents the connector in the OpenCTI platform."
-        },
-        "CONNECTOR_TYPE": {
-          "description": "Should always be set to EXTERNAL_IMPORT for this connector.",
-          "type": "string"
-        },
         "CONNECTOR_NAME": {
           "description": "Name of the connector.",
           "type": "string"
@@ -372,21 +342,6 @@
         "IPINFO_TOKEN"
       ],
       "properties": {
-        "OPENCTI_URL": {
-          "type": "string",
-          "format": "uri",
-          "minLength": 1,
-          "maxLength": 2083,
-          "description": "The OpenCTI platform URL."
-        },
-        "OPENCTI_TOKEN": {
-          "type": "string",
-          "description": "The token of the user who represents the connector in the OpenCTI platform."
-        },
-        "CONNECTOR_TYPE": {
-          "description": "Should always be set to INTERNAL_ENRICHMENT for this connector.",
-          "type": "string"
-        },
         "CONNECTOR_NAME": {
           "description": "Name of the connector.",
           "type": "string"
