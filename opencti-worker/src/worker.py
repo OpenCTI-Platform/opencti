@@ -99,7 +99,7 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
             self.channel.confirm_delivery()
         except Exception as err:  # pylint: disable=broad-except
             self.worker_logger.warning(str(err))
-        self.channel.basic_qos(prefetch_count=1)
+        self.channel.basic_qos(prefetch_count=self.execution_pool._max_workers + 1)
         assert self.channel is not None
         self.current_bundle_id: [str, None] = None
         self.current_bundle_seq: int = 0
@@ -274,7 +274,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
             self.channel.confirm_delivery()
         except Exception as err:  # pylint: disable=broad-except
             self.worker_logger.warning(str(err))
-        self.channel.basic_qos(prefetch_count=1)
+        self.channel.basic_qos(prefetch_count=self.execution_pool._max_workers + 1)
         assert self.channel is not None
         self.current_bundle_id: [str, None] = None
         self.current_bundle_seq: int = 0
