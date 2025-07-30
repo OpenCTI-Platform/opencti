@@ -359,7 +359,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
           ] },
       ]
     },
-    { name: 'user_service_account', label: 'User service account', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag: 'SERVICE_ACCOUNT' },
+    { name: 'user_service_account', label: 'User service account', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   ],
   [ENTITY_TYPE_ROLE]: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
