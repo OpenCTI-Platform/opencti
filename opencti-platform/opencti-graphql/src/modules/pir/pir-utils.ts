@@ -107,9 +107,11 @@ export const arePirExplanationsEqual = (
 ) => {
   const sameRelationships = explanation1.dependencies.map((d1) => d1.element_id)
     .every((d) => explanation2.dependencies.map((d2) => d2.element_id).includes(d));
+  const sameRelationshipsAuthors = explanation1.dependencies.map((d1) => d1.author_id)
+    .every((d) => explanation2.dependencies.map((d2) => d2.author_id).includes(d));
   const sameCriteriaWeight = explanation1.criterion.weight === explanation2.criterion.weight;
   const sameCriteriaFilters = explanation1.criterion.filters === explanation2.criterion.filters;
-  return sameRelationships && sameCriteriaWeight && sameCriteriaFilters;
+  return sameRelationships && sameRelationshipsAuthors && sameCriteriaWeight && sameCriteriaFilters;
 };
 
 /**
@@ -166,7 +168,16 @@ export const updatePirExplanations = async (
       // In this case there is nothing to add so skip.
       return;
     }
-    explanations = [...pirMetaRel.pir_explanations, ...newExplanations];
+    explanations = [
+      ...pirMetaRel.pir_explanations.filter((e) => {
+        return newExplanations.every((newE) => {
+          const sameRelationships = e.dependencies.map((d1) => d1.element_id)
+            .every((d) => newE.dependencies.map((d2) => d2.element_id).includes(d));
+          return !sameRelationships;
+        });
+      }),
+      ...newExplanations
+    ];
   }
 
   // region compute score
