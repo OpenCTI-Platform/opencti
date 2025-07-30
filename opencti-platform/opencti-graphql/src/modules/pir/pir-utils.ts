@@ -132,6 +132,29 @@ export const diffPirExplanations = (
 };
 
 /**
+ * Update an array of pir explanations by adding the new information
+ *
+ * @param actualExplanations Explanations of the pir meta rel
+ * @param newExplanations New explanations information to add
+ * @returns an array of pir explanations updated with the new information
+ */
+export const updatePirExplanationsArray = (
+  actualExplanations: PirExplanation[],
+  newExplanations: PirExplanation[],
+) => {
+  return [
+    ...actualExplanations.filter((e) => { // remove explanations concerning the same relationship as new explanations
+      return newExplanations.every((newE) => {
+        const sameRelationships = e.dependencies.map((d1) => d1.element_id)
+          .every((d) => newE.dependencies.map((d2) => d2.element_id).includes(d));
+        return !sameRelationships;
+      });
+    }),
+    ...newExplanations
+  ];
+};
+
+/**
  * Find a meta relationship "in-pir" between an entity and a Pir and update
  * its explanations (matching criteria).
  *
@@ -161,23 +184,14 @@ export const updatePirExplanations = async (
   }
 
   const pirMetaRel = pirMetaRels.edges[0].node;
-  let explanations = pirExplanations; // By default replace the entire array.
-  if (operation === 'add') {
+  let explanations = pirExplanations; // Default case : replace the entire array.
+  if (operation === 'add') { // Add case: add the new information contained in pirExplanations
     const newExplanations = diffPirExplanations(pirExplanations, pirMetaRel.pir_explanations);
     if (newExplanations.length === 0) {
       // In this case there is nothing to add so skip.
       return;
     }
-    explanations = [
-      ...pirMetaRel.pir_explanations.filter((e) => {
-        return newExplanations.every((newE) => {
-          const sameRelationships = e.dependencies.map((d1) => d1.element_id)
-            .every((d) => newE.dependencies.map((d2) => d2.element_id).includes(d));
-          return !sameRelationships;
-        });
-      }),
-      ...newExplanations
-    ];
+    explanations = updatePirExplanationsArray(pirMetaRel.pir_explanations, newExplanations);
   }
 
   // region compute score
