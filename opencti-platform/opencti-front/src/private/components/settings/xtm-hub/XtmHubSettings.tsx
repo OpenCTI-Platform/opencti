@@ -5,9 +5,9 @@ import { Grid2, List, ListItem, ListItemText, Typography } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
 import Box from '@mui/material/Box';
+import XtmHubTab from '@components/settings/xtm-hub/XtmHubTab';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
-import XtmHubTab from './XtmHubTab';
 import { XtmHubSettingsQuery } from './__generated__/XtmHubSettingsQuery.graphql';
 import { dateFormat } from '../../../../utils/Time';
 import ItemBoolean from '../../../../components/ItemBoolean';
@@ -43,23 +43,10 @@ const XtmHubSettings = () => {
         ]}
       />
       <Grid2 container spacing={3}>
-        <Grid2 size={6}>
+        <Grid2 size={7}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('XTM Hub Enrollment')}
           </Typography>
-          <div
-            style={{
-              float: 'right',
-              marginTop: theme.spacing(-4.5),
-              position: 'relative',
-            }}
-          >
-            <XtmHubTab
-              enrollmentStatus={
-                xtmHubSettings.xtm_hub_enrollment_status || undefined
-              }
-            />
-          </div>
           <div className="clearfix" />
           <Paper
             className="paper-for-grid"
@@ -79,11 +66,18 @@ const XtmHubSettings = () => {
                 marginBottom: 2,
               }}
             >
-              <Typography variant="h6" sx={{ marginBottom: 1 }}>
-                {t_i18n(
-                  'XTM Hub is the focal point to find every Services and Products.',
-                )}
-              </Typography>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1em' }}>
+                <Typography variant="h6">
+                  {t_i18n(
+                    'XTM Hub is the focal point to find every Services and Products.',
+                  )}
+                </Typography>
+                <XtmHubTab
+                  enrollmentStatus={
+                    xtmHubSettings.xtm_hub_enrollment_status || undefined
+                  }
+                />
+              </div>
               {t_i18n("By enrolling your OpenCTI instance, you'll be able to:")}
               <List sx={{ listStyleType: 'disc', marginLeft: 4, marginTop: 1 }}>
                 <li>
