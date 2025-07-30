@@ -896,7 +896,7 @@
   "Dependencies": "종속성",
   "Depending on the selected CSV mapper configurations, marking definition levels can be set in the dedicated field.": "선택한 CSV 매퍼 구성에 따라 전용 필드에서 마킹 정의 수준을 설정할 수 있습니다.",
   "Depending on the selected JSON mapper configurations, marking definition levels can be set in the dedicated field.": "선택한 JSON 매퍼 구성에 따라 전용 필드에서 마킹 정의 수준을 설정할 수 있습니다.",
-  "deploy in one-click Threats intelligence resources": "원클릭으로 위협 인텔리전스 리소스 배포",
+  "deploy in one-click Threats Intelligence Ressources": "원클릭으로 위협 인텔리전스 리소스 배포",
   "Desc": "Desc",
   "Description": "설명",
   "description": "설명",
