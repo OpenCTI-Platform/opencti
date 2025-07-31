@@ -57,7 +57,6 @@ interface MarkdownWithRedirectionWarningProps {
   remarkPlugins?: MarkdownProps['remarkPlugins'];
   emptyStringIfUndefined?: boolean;
   disableWarningAtLinkClick?: boolean;
-  breakWords?: boolean;
 }
 
 const MarkdownDisplay: FunctionComponent<
@@ -74,7 +73,6 @@ MarkdownWithRedirectionWarningProps
   remarkPlugins,
   emptyStringIfUndefined,
   disableWarningAtLinkClick,
-  breakWords = true,
 }) => {
   const theme = useTheme<Theme>();
   const [displayExternalLink, setDisplayExternalLink] = useState(false);
@@ -92,13 +90,11 @@ MarkdownWithRedirectionWarningProps
   if (removeLineBreaks) {
     disallowedElements.push('p');
   }
-  const markdownStyle: React.CSSProperties = breakWords
-    ? {
-      overflowWrap: 'break-word',
-      wordBreak: 'break-word',
-      hyphens: 'auto',
-    }
-    : {};
+  const markdownStyle: React.CSSProperties = {
+    overflowWrap: 'break-word',
+    wordBreak: 'break-word',
+    hyphens: 'auto',
+  };
 
   const markdownElement = () => {
     return (
