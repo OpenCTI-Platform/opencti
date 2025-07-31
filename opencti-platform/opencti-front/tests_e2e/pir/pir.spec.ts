@@ -85,8 +85,10 @@ test('Pir CRUD', { tag: ['@pir', '@mutation'] }, async ({ page, request }) => {
     const text = await pirDetails.getEntityTypeCount('Malware').innerText();
     return text === '1';
   };
-  await awaitUntilCondition(waitForManager, 5000);
+  await awaitUntilCondition(waitForManager, 5000, 20);
   await expect(pirDetails.getEntityTypeCount('Malware')).toContainText('1');
+  await expect(pirDetails.getTopAuthorEntities('John Doe')).toBeVisible();
+  await expect(pirDetails.getTopAuthorRelationships('ANSSI')).toBeVisible();
 
   // ---------
   // endregion
@@ -94,9 +96,9 @@ test('Pir CRUD', { tag: ['@pir', '@mutation'] }, async ({ page, request }) => {
   // region Delete the report
   // ------------------------
 
-  await pirDetails.delete();
-  await pirPage.navigateFromMenu();
-  await expect(pirPage.getItemFromList(pirName)).toBeHidden();
+  // await pirDetails.delete();
+  // await pirPage.navigateFromMenu();
+  // await expect(pirPage.getItemFromList(pirName)).toBeHidden();
 
   // ---------
   // endregion

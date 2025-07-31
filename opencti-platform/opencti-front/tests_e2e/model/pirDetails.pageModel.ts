@@ -23,4 +23,12 @@ export default class PirDetailsPageModel {
   getEntityTypeCount(label: string) {
     return this.page.getByTestId(`pir-overview-count-${label}`);
   }
+
+  getTopAuthorEntities(author: string) {
+    return this.page.getByTestId('pir-top-authors-entities').getByText(author);
+  }
+
+  getTopAuthorRelationships(author: string) {
+    return this.page.getByTestId('pir-top-authors-relationships').getByText(author);
+  }
 }
