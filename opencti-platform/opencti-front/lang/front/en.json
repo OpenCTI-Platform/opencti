@@ -3614,7 +3614,7 @@
   "To prevent people seeing all the data...": "To prevent people seeing all the data in the public dashboard, select a marking definition to restrict the shared data.",
   "to terminate your session.": "to terminate your session.",
   "To type": "To type",
-  "To use AI, please add a token.": "To use AI, please add a token.",
+  "To use this AI Enterprise edition feature, please add a token": "To use this AI Enterprise edition feature, please add a token",
   "To use AI, please enable it in the configuration of your platform.": "To use AI, please enable it in the configuration of your platform.",
   "To use this feature, your platform administrator must enable the according manager in the config.": "To use this feature, your platform administrator must enable the according manager in configuration.",
   "To use this feature, your platform administrator must enable the subscription manager in the config.": "To use this feature, your platform administrator must enable the subscription manager in configuration.",
@@ -4070,5 +4070,5 @@
   "your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to",
   "Zoom": "Zoom",
   "Zoom in": "Zoom in",
-  "Zoom out": "Zoom out"
+  "Zoom out": "Zoom out",
 }

@@ -253,7 +253,7 @@ const AIInsights = ({
             {t_i18n('Enable AI powered platform')}
           </DialogTitle>
           <DialogContent>
-            {t_i18n('To use AI, please add a token.')}
+            {t_i18n('To use this AI Enterprise edition feature, please add a token')}
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setDisplayAIDialog(false)}>{t_i18n('Close')}</Button>
