@@ -114,7 +114,8 @@ const StixCoreObjectFileExportForm = ({
 }: StixCoreObjectFileExportFormProps) => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { fullyActive } = useAI();
+  const { fullyActive, enabled, configured } = useAI();
+  const isAIConfigured = enabled && configured;
   const [stepIndex, setStepIndex] = useState(defaultValues?.format ? 1 : 0);
   const isBuiltInConnector = (connector?: string) => [BUILT_IN_FROM_TEMPLATE.value, BUILT_IN_HTML_TO_PDF.value].includes(connector ?? '');
 
@@ -311,7 +312,7 @@ const StixCoreObjectFileExportForm = ({
                       </Card>
                     </Grid>
                   ))}
-                  {isContainer && (
+                  {isContainer && isAIConfigured && (
                     <Grid item xs={4}>
                       <Card
                         variant="outlined"
