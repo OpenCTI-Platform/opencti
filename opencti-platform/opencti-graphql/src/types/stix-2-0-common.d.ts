@@ -42,7 +42,7 @@ interface StixRelationshipObject extends StixObject {
   created_by_ref: StixId | undefined; // optional
   created: StixDate;
   modified: StixDate;
-  revoked: boolean; // optional
+  revoked?: boolean; // optional
   labels: Array<string>; // optional
   confidence: number; // optional
   lang?: string; // optional
