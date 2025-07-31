@@ -81,7 +81,12 @@ const PirOverviewCount = ({ label, value, value24h, size }: PirOverviewCountProp
           gap: theme.spacing(1),
         }}
         >
-          <div style={{ fontSize: 40, lineHeight: 1 }}>{n(value)}</div>
+          <div
+            data-testid={`pir-overview-count-${label}`}
+            style={{ fontSize: 40, lineHeight: 1 }}
+          >
+            {n(value)}
+          </div>
           <NumberDifference
             value={value24h}
             description={t_i18n('24 hours')}

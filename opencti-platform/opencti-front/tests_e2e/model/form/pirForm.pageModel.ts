@@ -32,6 +32,6 @@ export default class PirFormPageModel {
   }
 
   selectType(type: 'threat landscape') {
-    return this.page.getByText(type).click();
+    return this.formLocator.getByText(type).click();
   }
 }

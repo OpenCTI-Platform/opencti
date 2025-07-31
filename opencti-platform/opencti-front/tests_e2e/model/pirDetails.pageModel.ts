@@ -9,4 +9,18 @@ export default class PirDetailsPageModel {
   getTitle(name: string) {
     return this.page.getByRole('heading', { name });
   }
+
+  getDescription(description: string) {
+    return this.page.getByText(description, { exact: true });
+  }
+
+  async delete() {
+    await this.page.getByRole('button', { name: 'Popover of actions' }).click();
+    await this.page.getByRole('menuitem', { name: 'Delete' }).click();
+    return this.page.getByRole('dialog').getByRole('button', { name: 'Confirm' }).click();
+  }
+
+  getEntityTypeCount(label: string) {
+    return this.page.getByTestId(`pir-overview-count-${label}`);
+  }
 }
