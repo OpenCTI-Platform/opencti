@@ -146,7 +146,7 @@ const WorkspaceKebabMenu = ({ data }: WorkspaceKebabMenuProps) => {
   return (
     <div>
       <ToggleButton
-        aria-label={t_i18n('Popover of actions')}
+        aria-label={t_i18n('Popover of actions workspace')}
         value="popover"
         size="small"
         color="primary"

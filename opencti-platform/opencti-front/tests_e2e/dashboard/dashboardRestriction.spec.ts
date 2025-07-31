@@ -109,7 +109,6 @@ test('Dashboard restriction access', async ({ page }) => {
   await expect(dashboardPage.getItemFromList(`${dashboardName} - copy`)).toBeVisible();
   await dashboardPage.getItemFromList(`${dashboardName} - copy`).click();
   await dashboardDetailsPage.delete();
-  await dashboardDetailsPage.getConfirmButton().click();
   await page.waitForTimeout(1000);// After delete need to wait a bit
 
   // Try to export
@@ -150,7 +149,6 @@ test('Dashboard restriction access', async ({ page }) => {
   await accessRestriction.save();
   await goToDashboardAsJeanMichel(dashboardName);
   await dashboardDetailsPage.delete();
-  await dashboardDetailsPage.getConfirmButton().click();
   await page.waitForTimeout(1000);// After delete need to wait a bit
   await expect(dashboardPage.getItemFromList(dashboardName)).toBeHidden();
 

@@ -138,7 +138,6 @@ test('Dashboard CRUD', async ({ page }) => {
   // region Delete a dashboard
   // -------------------------
 
-  await dashboardDetailsPage.getEditButton().click();
   await dashboardDetailsPage.delete();
   await page.waitForTimeout(1000); // After delete need to wait a bit
   await leftBarPage.clickOnMenu('Dashboards', 'Custom dashboards');
@@ -169,7 +168,6 @@ test('Dashboard CRUD', async ({ page }) => {
   await fileChooser.setFiles(`./test-results/e2e-files/${download.suggestedFilename()}`);
   await expect(dashboardDetailsPage.getDashboardDetailsPage()).toBeVisible();
   await expect(dashboardDetailsPage.getTitle(updateDashboardName)).toBeVisible();
-  await dashboardDetailsPage.getEditButton().click();
   await dashboardDetailsPage.delete();
   await page.waitForTimeout(1000);// After delete need to wait a bit
 
@@ -206,7 +204,6 @@ test('Dashboard CRUD', async ({ page }) => {
   // End Export dashboard as PDF
 
   // Delete imported dashboard
-  await dashboardDetailsPage.getEditButton().click();
   await dashboardDetailsPage.delete();
   await page.waitForTimeout(1000); // After delete need to wait a bit
   // ---------
@@ -287,7 +284,6 @@ test('Dashboard CRUD', async ({ page }) => {
 
   await leftBarPage.clickOnMenu('Dashboards', 'Custom dashboards');
   await dashboardPage.getItemFromList(updateDashboardName).click();
-  await dashboardDetailsPage.getEditButton().click();
   await dashboardDetailsPage.delete();
   await page.waitForTimeout(1000);// After delete need to wait a bit
 });
