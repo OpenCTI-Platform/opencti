@@ -2017,8 +2017,10 @@ input EditManagedConnectorInput {
 
 input AddManagedConnectorInput {
   name: String!
-  connector_user_id: ID!
+  user_id: ID!
   catalog_id: ID!
+  automatic_user: Boolean
+  confidence_level: String
   manager_contract_image: String!
   manager_contract_configuration: [ContractConfigInput!]!
 }

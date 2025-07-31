@@ -1,4 +1,4 @@
-import { v5 as uuidv5 } from 'uuid';
+import { v4 as uuid, v5 as uuidv5 } from 'uuid';
 import { createEntity, deleteElementById, internalDeleteElementById, patchAttribute, updateAttribute } from '../database/middleware';
 import { type GetHttpClient, getHttpClient } from '../utils/http-client';
 import { completeConnector, connector, connectors, connectorsFor } from '../database/repository';
@@ -47,6 +47,7 @@ import { addWorkbenchDraftConvertionCount, addWorkbenchValidationCount } from '.
 import { computeConnectorTargetContract, getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { removeAuthenticationCredentials } from '../modules/ingestion/ingestion-common';
+import { createOnTheFlyUser } from '../modules/ingestion/ingestion-csv-domain';
 
 // region connectors
 export const connectorForWork = async (context: AuthContext, user: AuthUser, id: string) => {
@@ -178,7 +179,16 @@ export const managedConnectorAdd = async (
   user:AuthUser,
   input: AddManagedConnectorInput
 ) => {
-  const connectorUser: any = await storeLoadById(context, user, input.connector_user_id, ENTITY_TYPE_USER);
+  if (input.user_id.length < 2) {
+    throw FunctionalError('You have not chosen a user responsible for data creation', {});
+  }
+  let finalUserId = input.user_id;
+  if (input.automatic_user) {
+    const onTheFlyCreatedUser = await createOnTheFlyUser(context, user, { userName: input.user_id, confidenceLevel: input.confidence_level });
+    finalUserId = onTheFlyCreatedUser.id;
+  }
+
+  const connectorUser = await storeLoadById(context, user, finalUserId, ENTITY_TYPE_USER);
   if (isEmptyField(connectorUser)) {
     throw UnsupportedError('Connector user not found');
   }
@@ -192,7 +202,7 @@ export const managedConnectorAdd = async (
     name: input.name,
     connector_type: targetContract.container_type,
     catalog_id: input.catalog_id,
-    connector_user_id: input.connector_user_id,
+    connector_user_id: connectorUser.id,
     manager_contract_image: input.manager_contract_image,
     manager_contract_configuration: contractConfigurations,
     manager_requested_status: 'stopped',
