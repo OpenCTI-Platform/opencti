@@ -13,7 +13,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React, { Suspense } from 'react';
+import React, { CSSProperties, Suspense } from 'react';
 import Grid from '@mui/material/Grid2';
 import Typography from '@mui/material/Typography';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
@@ -21,13 +21,28 @@ import { useTheme } from '@mui/material/styles';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { PirOverviewCountsQuery, PirOverviewCountsQuery$variables } from './__generated__/PirOverviewCountsQuery.graphql';
 import { PirOverviewCountsFragment$key } from './__generated__/PirOverviewCountsFragment.graphql';
-import Loader from '../../../../components/Loader';
 import Paper from '../../../../components/Paper';
 import { useFormatter } from '../../../../components/i18n';
 import { dayAgo } from '../../../../utils/Time';
 import NumberDifference from '../../../../components/NumberDifference';
 import type { Theme } from '../../../../components/Theme';
 import ItemIcon from '../../../../components/ItemIcon';
+
+const PirOverviewCountsDummy = () => {
+  const theme = useTheme<Theme>();
+  const dummyStyle: CSSProperties = {
+    height: 97,
+    background: theme.palette.background.paper,
+  };
+  return (
+    <>
+      <Grid size={{ xs: 6 }} style={dummyStyle}></Grid>
+      <Grid size={{ xs: 6 }} style={dummyStyle}></Grid>
+      <Grid size={{ xs: 6 }} style={dummyStyle}></Grid>
+      <Grid size={{ xs: 6 }} style={dummyStyle}></Grid>
+    </>
+  );
+};
 
 const countsFragment = graphql`
   fragment PirOverviewCountsFragment on Pir {
@@ -53,15 +68,14 @@ interface PirOverviewCountProps {
   label: string
   value: number
   value24h: number
-  size: number
 }
 
-const PirOverviewCount = ({ label, value, value24h, size }: PirOverviewCountProps) => {
+const PirOverviewCount = ({ label, value, value24h }: PirOverviewCountProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n, n } = useFormatter();
 
   return (
-    <Grid key={label} size={{ xs: size }}>
+    <Grid key={label} size={{ xs: 6 }}>
       <Paper style={{ padding: theme.spacing(1.5), paddingTop: theme.spacing(1) }}>
         <div style={{ display: 'flex', alignItems: 'start' }}>
           <Typography
@@ -106,8 +120,6 @@ const PirOverviewCountsComponent = ({
   countsQueryRef,
   counts24hQueryRef,
 }: PirOverviewCountsComponentProps) => {
-  const { t_i18n } = useFormatter();
-
   const resultAll = usePreloadedQuery(countsQuery, countsQueryRef);
   const result24h = usePreloadedQuery(countsQuery, counts24hQueryRef);
 
@@ -134,37 +146,28 @@ const PirOverviewCountsComponent = ({
   const threatActor24h = threatActorIndividuals24h + threatActorGroups24h;
 
   return (
-    <Grid size={{ xs: 12 }}>
-      <Typography variant="h4">
-        {t_i18n('Number of threats')}
-      </Typography>
-      <Grid container spacing={3}>
-        <PirOverviewCount
-          size={6}
-          label="Malware"
-          value={malwares}
-          value24h={malwares24h}
-        />
-        <PirOverviewCount
-          size={6}
-          label="Campaign"
-          value={campaigns}
-          value24h={campaigns24h}
-        />
-        <PirOverviewCount
-          size={6}
-          label="Intrusion-Set"
-          value={instrusionSets}
-          value24h={instrusionSets24h}
-        />
-        <PirOverviewCount
-          size={6}
-          label="Threat-Actor"
-          value={threatActor}
-          value24h={threatActor24h}
-        />
-      </Grid>
-    </Grid>
+    <>
+      <PirOverviewCount
+        label="Malware"
+        value={malwares}
+        value24h={malwares24h}
+      />
+      <PirOverviewCount
+        label="Campaign"
+        value={campaigns}
+        value24h={campaigns24h}
+      />
+      <PirOverviewCount
+        label="Intrusion-Set"
+        value={instrusionSets}
+        value24h={instrusionSets24h}
+      />
+      <PirOverviewCount
+        label="Threat-Actor"
+        value={threatActor}
+        value24h={threatActor24h}
+      />
+    </>
   );
 };
 
@@ -173,6 +176,7 @@ interface PirOverviewCountsProps {
 }
 
 const PirOverviewCounts = ({ data }: PirOverviewCountsProps) => {
+  const { t_i18n } = useFormatter();
   const { id } = useFragment(countsFragment, data);
 
   const filters: PirOverviewCountsQuery$variables['filters'] = {
@@ -199,14 +203,21 @@ const PirOverviewCounts = ({ data }: PirOverviewCountsProps) => {
   );
 
   return (
-    <Suspense fallback={<Loader />}>
-      {countsQueryRef && counts24hQueryRef && (
-        <PirOverviewCountsComponent
-          countsQueryRef={countsQueryRef}
-          counts24hQueryRef={counts24hQueryRef}
-        />
-      )}
-    </Suspense>
+    <Grid size={{ xs: 12 }}>
+      <Typography variant="h4">
+        {t_i18n('Number of threats')}
+      </Typography>
+      <Grid container spacing={3}>
+        <Suspense fallback={<PirOverviewCountsDummy />}>
+          {countsQueryRef && counts24hQueryRef && (
+          <PirOverviewCountsComponent
+            countsQueryRef={countsQueryRef}
+            counts24hQueryRef={counts24hQueryRef}
+          />
+          )}
+        </Suspense>
+      </Grid>
+    </Grid>
   );
 };
 
