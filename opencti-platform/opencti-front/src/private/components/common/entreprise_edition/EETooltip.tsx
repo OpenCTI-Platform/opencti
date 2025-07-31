@@ -27,15 +27,15 @@ const EETooltip = ({
   const [openConfigAI, setOpenConfigAI] = useState(false);
   const isAdmin = useGranted([SETTINGS_SETPARAMETERS]);
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { enabled, configured, fullyActive } = useAI();
-  const isAIConfigurated = enabled && configured;
+  const { configured, enabled, fullyActive } = useAI();
+  const isAIConfigured = enabled && configured;
   const {
     settings: { id: settingsId },
   } = useAuth();
   if (isEnterpriseEdition && (!forAi || (forAi && enabled && configured))) {
     return <Tooltip title={title ? t_i18n(title) : undefined}>{children}</Tooltip>;
   }
-  if (!fullyActive && forAi && isAIConfigurated) {
+  if (!fullyActive && forAi && isAIConfigured) {
     return (
       <>
         <Tooltip title={title ? t_i18n(title) : undefined}>
