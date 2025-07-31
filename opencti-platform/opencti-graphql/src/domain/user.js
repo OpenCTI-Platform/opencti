@@ -102,7 +102,8 @@ const ME_USER_MODIFIABLE_ATTRIBUTES = [
   'password',
   'draft_context',
 ];
-const AVAILABLE_LANGUAGES = ['auto', 'es-es', 'fr-fr', 'ja-jp', 'zh-cn', 'en-us', 'de-de', 'ko-kr', 'ru-ru'];
+const AVAILABLE_LANGUAGES = ['auto', 'es-es', 'fr-fr', 'ja-jp', 'zh-cn', 'en-us', 'de-de', 'ko-kr', 'ru-ru', 'it-it'];
+
 const computeImpactedUsers = async (context, user, roleId) => {
   // Get all groups that have this role
   const groupsRoles = await listAllRelations(context, user, RELATION_HAS_ROLE, { toId: roleId, fromTypes: [ENTITY_TYPE_GROUP] });

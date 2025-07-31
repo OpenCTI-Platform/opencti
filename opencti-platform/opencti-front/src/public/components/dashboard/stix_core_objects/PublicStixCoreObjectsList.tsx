@@ -122,6 +122,7 @@ const publicStixCoreObjectsListQuery = graphql`
             modified
             x_opencti_aliases
             x_opencti_organization_type
+            x_opencti_score
           }
           ... on SecurityPlatform {
             name
@@ -242,6 +243,8 @@ const publicStixCoreObjectsListQuery = graphql`
             x_opencti_aliases
             x_opencti_cvss_base_score
             x_opencti_cvss_base_severity
+            x_opencti_cvss_v4_base_score
+            x_opencti_cvss_v4_base_severity
             x_opencti_cisa_kev
             x_opencti_epss_score
             x_opencti_epss_percentile

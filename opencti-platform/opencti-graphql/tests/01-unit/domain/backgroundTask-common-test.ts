@@ -7,6 +7,7 @@ import { ENTITY_TYPE_WORKSPACE } from '../../../src/modules/workspace/workspace-
 import { ENTITY_TYPE_NOTIFICATION } from '../../../src/modules/notification/notification-types';
 import { TYPE_FILTER, USER_ID_FILTER } from '../../../src/utils/filtering/filtering-constants';
 import { BackgroundTaskScope } from '../../../src/generated/graphql';
+import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
 
 const filterEntityType = (entityType: string) => {
   return JSON.stringify({
@@ -54,6 +55,21 @@ describe('Background task validity check (checkActionValidity)', () => {
     { name: 'EXPLORE_EXUPDATE_PUBLISH' },
     { name: 'INVESTIGATION_INUPDATE_INDELETE' },
   ]);
+
+  it('should throw an error if there are several actions on the same field', async () => {
+    const user = userEditor;
+    const type = TASK_TYPE_QUERY;
+    const input = {
+      actions: [
+        { type: ACTION_TYPE_ADD, field: 'object-label', value: ['label1'] },
+        { type: ACTION_TYPE_ADD, field: 'object-label', value: ['label2'] }
+      ],
+      filters: filterEntityType(ENTITY_TYPE_CONTAINER_REPORT)
+    };
+    await expect(async () => {
+      await checkActionValidity(testContext, user, input, BackgroundTaskScope.Knowledge, type);
+    }).rejects.toThrowError('A single task cannot perform several actions on the same field.');
+  });
 
   describe('Scope SETTINGS', () => {
     const scope = BackgroundTaskScope.Settings;
