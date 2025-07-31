@@ -79,6 +79,12 @@ test('Pir CRUD', { tag: ['@pir', '@mutation'] }, async ({ page, request }) => {
     createdBy: 'identity--7b82b010-b1c0-4dae-981f-7756374a17df',
   });
 
+  // ---------
+  // endregion
+
+  // region Control tab Overview after flagging
+  // ------------------------------------------
+
   const waitForFlagging = async () => {
     await pirPage.navigateFromMenu();
     await pirPage.getItemFromList(pirName).click();
@@ -102,12 +108,31 @@ test('Pir CRUD', { tag: ['@pir', '@mutation'] }, async ({ page, request }) => {
   // ---------
   // endregion
 
+  // region Control tab Threats after flagging
+  // -----------------------------------------
+
+  await pirDetails.tabs.goToThreatsTab();
+  await expect(pirDetails.dataTable.container.getByText('E2E dashboard - Malware - month ago')).toBeVisible();
+  await expect(pirDetails.dataTable.container.getByText('50')).toBeVisible();
+
+  // ---------
+  // endregion
+
+  // region Control tab History after flagging
+  // -----------------------------------------
+
+  await pirDetails.tabs.goToHistoryTab();
+  await expect(pirDetails.dataTable.container.getByText(historyItemName)).toBeVisible();
+
+  // ---------
+  // endregion
+
   // region Delete the report
   // ------------------------
 
-  // await pirDetails.delete();
-  // await pirPage.navigateFromMenu();
-  // await expect(pirPage.getItemFromList(pirName)).toBeHidden();
+  await pirDetails.delete();
+  await pirPage.navigateFromMenu();
+  await expect(pirPage.getItemFromList(pirName)).toBeHidden();
 
   // ---------
   // endregion

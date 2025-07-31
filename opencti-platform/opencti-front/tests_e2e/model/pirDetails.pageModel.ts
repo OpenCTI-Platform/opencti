@@ -1,8 +1,10 @@
 import { Page } from '@playwright/test';
 import PirTabsPage from './pirTabs.pageModel';
+import DataTablePage from './DataTable.pageModel';
 
 export default class PirDetailsPageModel {
   tabs = new PirTabsPage(this.page);
+  dataTable = new DataTablePage(this.page);
 
   constructor(private page: Page) {}
 
