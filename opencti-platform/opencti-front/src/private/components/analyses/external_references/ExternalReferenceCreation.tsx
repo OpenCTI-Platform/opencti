@@ -12,22 +12,16 @@ import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import useApiMutation from 'src/utils/hooks/useApiMutation';
-import {
-  ExternalReferencesLinesPaginationQuery$variables
-} from '@components/analyses/__generated__/ExternalReferencesLinesPaginationQuery.graphql';
+import { ExternalReferencesLinesPaginationQuery$variables } from '../__generated__/ExternalReferencesLinesPaginationQuery.graphql';
+import { useTheme } from '@mui/material/styles';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { insertNode } from '../../../../utils/store';
-import {
-  ExternalReferenceAddInput,
-  ExternalReferenceCreationMutation,
-  ExternalReferenceCreationMutation$data
-} from './__generated__/ExternalReferenceCreationMutation.graphql';
+import { ExternalReferenceAddInput, ExternalReferenceCreationMutation, ExternalReferenceCreationMutation$data } from './__generated__/ExternalReferenceCreationMutation.graphql';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import { useTheme } from '@mui/material/styles';
 
 const externalReferenceCreationMutation = graphql`
   mutation ExternalReferenceCreationMutation(
