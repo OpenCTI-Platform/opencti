@@ -11,6 +11,8 @@ const TEST_COMPOSER_ID = uuidv4();
 const TEST_USER_CONNECTOR_ID: string = USER_CONNECTOR.id; // Initialize with default value
 
 // Test configuration
+// The goal is to achieve a 1:1 behavior match between XTMComposerMock and XTMComposer. 
+// This enables authentic integration testing (assuming the XTM Composer is available in the CI) without the need to rewrite the test suite.
 const FORCE_POLLING = true; // Set to true for faster tests, false for realistic XTM Composer behavior
 
 // Mutations
