@@ -37,4 +37,11 @@ export default class PirDetailsPageModel {
       .locator('../..')
       .getByText(author);
   }
+
+  getNewsFeedItem(news: string) {
+    return this.page
+      .getByRole('heading', { name: 'News feed' })
+      .locator('../..')
+      .getByText(news);
+  }
 }

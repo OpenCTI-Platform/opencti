@@ -79,16 +79,25 @@ test('Pir CRUD', { tag: ['@pir', '@mutation'] }, async ({ page, request }) => {
     createdBy: 'identity--7b82b010-b1c0-4dae-981f-7756374a17df',
   });
 
-  const waitForManager = async () => {
-    await pirDetails.tabs.goToHistoryTab();
-    await pirDetails.tabs.goToOverviewTab();
+  const waitForFlagging = async () => {
+    await pirPage.navigateFromMenu();
+    await pirPage.getItemFromList(pirName).click();
     const text = await pirDetails.getEntityTypeCount('Malware').innerText();
     return text === '1';
   };
-  await awaitUntilCondition(waitForManager, 5000, 20);
+  await awaitUntilCondition(waitForFlagging, 5000, 20);
   await expect(pirDetails.getEntityTypeCount('Malware')).toContainText('1');
   await expect(pirDetails.getTopAuthorEntities('John Doe')).toBeVisible();
   await expect(pirDetails.getTopAuthorRelationships('ANSSI')).toBeVisible();
+
+  const historyItemName = 'Malware E2E dashboard - Malware - month ago added to PIR';
+  const waitForHistory = async () => {
+    await pirPage.navigateFromMenu();
+    await pirPage.getItemFromList(pirName).click();
+    return pirDetails.getNewsFeedItem(historyItemName).isVisible();
+  };
+  await awaitUntilCondition(waitForHistory, 5000, 20);
+  await expect(pirDetails.getNewsFeedItem(historyItemName)).toBeVisible();
 
   // ---------
   // endregion
