@@ -1,12 +1,12 @@
-import { getHttpClient } from './http-client';
-import conf, { logApp } from '../config/conf';
+import { getHttpClient } from '../../../utils/http-client';
+import conf, { logApp } from '../../../config/conf';
 
-type EnrollmentStatus = 'active' | 'inactive';
+type RegistrationStatus = 'active' | 'inactive';
 
-const HUB_BACKEND_URL = conf.get('xtm:xtmhub_backend_url');
+const HUB_BACKEND_URL = conf.get('xtm:hub:backend_url');
 
-export const hubClient = {
-  loadEnrollmentStatus: async ({ platformId, token }: { platformId: string, token: string }): Promise<EnrollmentStatus> => {
+export const xtmHubClient = {
+  loadRegistrationStatus: async ({ platformId, token }: { platformId: string, token: string }): Promise<RegistrationStatus> => {
     const query = `
       query OctiPlatformEnrollmentStatus($input: OCTIPlatformEnrollmentStatusInput!) {
         octiPlatformEnrollmentStatus(input: $input) {
