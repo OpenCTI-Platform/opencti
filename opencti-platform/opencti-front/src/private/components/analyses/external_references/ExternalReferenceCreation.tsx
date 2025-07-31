@@ -166,12 +166,16 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
       variables: {
         input: finalValues,
       },
-      updater: (store: RecordSourceSelectorProxy) => insertNode(
-        store,
-        'Pagination_externalReferences',
-        paginationOptions,
-        'externalReferenceAdd',
-      ),
+      updater: (store: RecordSourceSelectorProxy) => {
+        if (!creationCallback) {
+          insertNode(
+            store,
+            'Pagination_externalReferences',
+            paginationOptions,
+            'externalReferenceAdd',
+          );
+        }
+      },
       onError: (error: Error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
