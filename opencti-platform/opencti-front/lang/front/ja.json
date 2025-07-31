@@ -3497,6 +3497,7 @@
   "THEN": "その後",
   "There are not any configurations set yet": "まだ設定がありません",
   "There are two built-in notifiers in the platform: User Interface and Default Mailer. They are not configurable and you can create your custom ones here.": "プラットフォームには、ユーザーインターフェイスとデフォルトメーラーの2つの組み込み通知機能があります。これらは構成できず、ここでカスタムのものを作成できます。",
+  "Therefore all pieces of knowledge which are not explicitly shared with any organization won\\'t be accessible to user(s) not member of the platform organization.": "したがって、どの組織とも明示的に共有されていないすべての知識は、プラットフォーム組織のメンバーでないユーザーからアクセスできない。",
   "Third-party analytics": "サードパーティ分析",
   "This action will generate observables from the selected indicators.": "この操作によって選択されたインジケータから観測結果が生成されます。",
   "This action will generate STIX patterns indicators from the selected observables.": "この操作によって選択された観測結果からSTIXパターンインジケータを生成します。",

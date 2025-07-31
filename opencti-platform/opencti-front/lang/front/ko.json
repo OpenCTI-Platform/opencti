@@ -3497,6 +3497,7 @@
   "THEN": "THEN",
   "There are not any configurations set yet": "아직 설정된 구성이 없습니다",
   "There are two built-in notifiers in the platform: User Interface and Default Mailer. They are not configurable and you can create your custom ones here.": "플랫폼에는 두 개의 내장 알림이 있습니다: 사용자 인터페이스와 기본 메일러. 이들은 구성할 수 없으며 여기서 사용자 지정 알림을 만들 수 있습니다.",
+  "Therefore all pieces of knowledge which are not explicitly shared with any organization won\\'t be accessible to user(s) not member of the platform organization.": "따라서 어떤 조직과도 명시적으로 공유되지 않은 모든 지식은 플랫폼 조직의 구성원이 아닌 사용자가 액세스할 수 없습니다.",
   "Third-party analytics": "타사 분석",
   "This action will generate observables from the selected indicators.": "이 작업은 선택된 인디케이터에서 관찰 가능 항목을 생성합니다.",
   "This action will generate STIX patterns indicators from the selected observables.": "이 작업은 선택된 관찰 가능 항목에서 STIX 패턴 인디케이터를 생성합니다.",
