@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import * as PropTypes from 'prop-types';
-import { createRefetchContainer, graphql } from 'react-relay';
+import React, { FunctionComponent, useEffect, useState } from 'react';
+import { createRefetchContainer, graphql, RelayRefetchProp } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
@@ -15,7 +14,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
-import { makeStyles, useTheme } from '@mui/styles';
+import { useTheme } from '@mui/styles';
 import { Link, useNavigate } from 'react-router-dom';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -27,7 +26,6 @@ import UpdateIcon from '@mui/icons-material/Update';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import DialogTitle from '@mui/material/DialogTitle';
-import Drawer from '../../common/drawer/Drawer';
 import ManagedConnectorEdition from './ManagedConnectorEdition';
 import DangerZoneBlock from '../../common/danger_zone/DangerZoneBlock';
 import Filters from '../../common/lists/Filters';
@@ -45,10 +43,10 @@ import useFiltersState from '../../../../utils/filters/useFiltersState';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import Security from '../../../../utils/Security';
 import useGranted, { MODULES_MODMANAGE, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
-import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
+import { MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import ConnectorWorks, { connectorWorksQuery } from './ConnectorWorks';
 import FilterIconButton from '../../../../components/FilterIconButton';
-import Loader from '../../../../components/Loader';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 import ItemCopy from '../../../../components/ItemCopy';
 import Transition from '../../../../components/Transition';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -59,33 +57,13 @@ import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModif
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useHelper from '../../../../utils/hooks/useHelper';
+import type { Theme } from '../../../../components/Theme';
+import { Connector_connector$data } from './__generated__/Connector_connector.graphql';
+import { ConnectorUpdateTriggerMutation, EditInput } from './__generated__/ConnectorUpdateTriggerMutation.graphql';
+import { ConnectorUpdateStatusMutation } from './__generated__/ConnectorUpdateStatusMutation.graphql';
+import { ConnectorWorksQuery$variables, ConnectorWorksQuery$data } from './__generated__/ConnectorWorksQuery.graphql';
 
 const interval$ = interval(FIVE_SECONDS);
-
-const useStyles = makeStyles((theme) => ({
-  gridContainer: {
-    marginBottom: 20,
-  },
-  popover: {
-    float: 'right',
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1),
-  },
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: '15px',
-    borderRadius: 4,
-  },
-  chip: {
-    height: 30,
-    float: 'left',
-    margin: '0 10px 10px 0',
-    borderRadius: 4,
-    backgroundColor: theme.palette.background.accent,
-    color: theme.palette.text.primary,
-  },
-}));
 
 export const connectorUpdateTriggerMutation = graphql`
   mutation ConnectorUpdateTriggerMutation($id: ID!, $input: [EditInput]!) {
@@ -129,38 +107,64 @@ const updateRequestedStatus = graphql`
   }
 `;
 
-const ConnectorComponent = ({ connector, relay }) => {
+interface ConnectorComponentProps {
+  connector: Connector_connector$data;
+  relay: RelayRefetchProp;
+}
+
+const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connector, relay }) => {
   const { t_i18n, nsdt } = useFormatter();
   const navigate = useNavigate();
-  const classes = useStyles();
+  const theme = useTheme<Theme>();
 
   const { isFeatureEnable } = useHelper();
   const isComposerEnable = isFeatureEnable('COMPOSER');
 
-  const connectorTriggerStatus = getConnectorTriggerStatus(connector);
-  const connectorOnlyContextualStatus = getConnectorOnlyContextualStatus(connector);
+  // Helper function to create connector configuration
+  const getConnectorConfig = () => ({
+    name: connector.name,
+    active: connector.active ?? false,
+    auto: connector.auto ?? false,
+    only_contextual: connector.only_contextual ?? false,
+    connector_trigger_filters: connector.connector_trigger_filters ?? '',
+    connector_type: connector.connector_type ?? '',
+    connector_scope: connector.connector_scope ?? [],
+    connector_state: connector.connector_state ?? '',
+  });
+
+  const connectorConfig = getConnectorConfig();
+  const connectorTriggerStatus = getConnectorTriggerStatus(connectorConfig);
+  const connectorOnlyContextualStatus = getConnectorOnlyContextualStatus(connectorConfig);
+
   // connector trigger filters
   const connectorFilters = deserializeFilterGroupForFrontend(connector.connector_trigger_filters);
   const connectorFiltersEnabled = connector.connector_type === 'INTERNAL_ENRICHMENT';
-  const connectorFiltersScope = useGetConnectorFilterEntityTypes(connector);
-  const connectorAvailableFilterKeys = useGetConnectorAvailableFilterKeys(connector);
+  const connectorFiltersScope = useGetConnectorFilterEntityTypes(connectorConfig);
+  const connectorAvailableFilterKeys = useGetConnectorAvailableFilterKeys(connectorConfig);
   const [filters, helpers] = useFiltersState(connectorFilters);
 
   const [displayResetState, setDisplayResetState] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [displayClearWorks, setDisplayClearWorks] = useState(false);
   const [clearing, setClearing] = useState(false);
+  const [editionOpen, setEditionOpen] = useState(false);
+
+  // API mutations - defined early to avoid use-before-define errors
+  const [commitUpdateStatus] = useApiMutation<ConnectorUpdateStatusMutation>(updateRequestedStatus);
+  const [commitResetState] = useApiMutation(connectorResetStateMutation);
+  const [commitDeleteConnector] = useApiMutation(connectorDeletionMutation);
+  const [commitClearWorks] = useApiMutation(connectorWorkDeleteMutation);
+  const [commitUpdateConnectorTrigger] = useApiMutation<ConnectorUpdateTriggerMutation>(connectorUpdateTriggerMutation);
 
   useEffect(() => {
     const subscription = interval$.subscribe(() => {
       relay.refetch({ id: connector.id });
     });
     return () => subscription.unsubscribe();
-  }, []);
+  }, [connector.id, relay]);
 
-  const submitUpdateConnectorTrigger = (variables) => {
-    commitMutation({
-      mutation: connectorUpdateTriggerMutation,
+  const submitUpdateConnectorTrigger = (variables: ConnectorUpdateTriggerMutation['variables']) => {
+    commitUpdateConnectorTrigger({
       variables,
       onCompleted: () => {
         MESSAGING$.notifySuccess('The connector trigger filters have been updated.');
@@ -180,11 +184,11 @@ const ConnectorComponent = ({ connector, relay }) => {
       // submit update only if filters have changed, otherwise do nothing
       const variables = {
         id: connector.id,
-        input: { key: 'connector_trigger_filters', value: jsonFilters },
+        input: [{ key: 'connector_trigger_filters', value: [jsonFilters] }] as EditInput[],
       };
       submitUpdateConnectorTrigger(variables);
     }
-  }, [filters]);
+  }, [filters, connector.id, connector.connector_trigger_filters, connectorFiltersEnabled]);
 
   const handleOpenResetState = () => {
     setDisplayResetState(true);
@@ -204,8 +208,7 @@ const ConnectorComponent = ({ connector, relay }) => {
 
   const submitResetState = () => {
     setResetting(true);
-    commitMutation({
-      mutation: connectorResetStateMutation,
+    commitResetState({
       variables: {
         id: connector.id,
       },
@@ -219,8 +222,7 @@ const ConnectorComponent = ({ connector, relay }) => {
 
   const submitClearWorks = () => {
     setClearing(true);
-    commitMutation({
-      mutation: connectorWorkDeleteMutation,
+    commitClearWorks({
       variables: {
         connectorId: connector.id,
       },
@@ -231,12 +233,12 @@ const ConnectorComponent = ({ connector, relay }) => {
       },
     });
   };
+
   const deletion = useDeletion({});
   const { setDeleting, handleOpenDelete, handleCloseDelete } = deletion;
   const submitDelete = () => {
     setDeleting(true);
-    commitMutation({
-      mutation: connectorDeletionMutation,
+    commitDeleteConnector({
       variables: {
         id: connector.id,
       },
@@ -247,48 +249,44 @@ const ConnectorComponent = ({ connector, relay }) => {
     });
   };
 
-  const optionsInProgress = {
+  const optionsInProgress: ConnectorWorksQuery$variables = {
     count: 50,
     orderMode: 'asc',
     filters: {
       mode: 'and',
       filters: [
-        { key: 'connector_id', values: [connector.id], operator: 'eq', mode: 'or' },
-        { key: 'status', values: ['wait', 'progress'], operator: 'eq', mode: 'or' },
+        { key: ['connector_id'], values: [connector.id] },
+        { key: ['status'], values: ['wait', 'progress'] },
       ],
       filterGroups: [],
     },
   };
-  const optionsFinished = {
+  const optionsFinished: ConnectorWorksQuery$variables = {
     count: 50,
     filters: {
       mode: 'and',
       filters: [
-        { key: 'connector_id', values: [connector.id], operator: 'eq', mode: 'or' },
-        { key: 'status', values: ['complete'], operator: 'eq', mode: 'or' },
+        { key: ['connector_id'], values: [connector.id] },
+        { key: ['status'], values: ['complete'] },
       ],
       filterGroups: [],
     },
   };
   const filtersSearchContext = { entityTypes: connectorFiltersScope, connectorsScope: true };
 
-  const theme = useTheme();
   const userHasSettingsCapability = useGranted([SETTINGS_SETACCESSES]);
   const connectorStateConverted = connector.connector_state ? JSON.parse(connector.connector_state) : null;
-  const checkLastRunExistingInState = connectorStateConverted && Object.hasOwn(connectorStateConverted, 'last_run');
+  const checkLastRunExistingInState = connectorStateConverted && Object.prototype.hasOwnProperty.call(connectorStateConverted, 'last_run');
   const checkLastRunIsNumber = checkLastRunExistingInState && Number.isFinite(connectorStateConverted.last_run);
   const lastRunConverted = checkLastRunIsNumber && new Date(connectorStateConverted.last_run * 1000);
 
   const isBuffering = () => {
-    return connector.connector_info?.queue_messages_size > connector.connector_info?.queue_threshold;
+    return connector.connector_info ? connector.connector_info.queue_messages_size > connector.connector_info.queue_threshold : false;
   };
 
   const { isSensitive } = useSensitiveModifications('connector_reset');
 
-  const [editionOpen, setEditionOpen] = useState(false);
   const computeConnectorStatus = useComputeConnectorStatus();
-
-  const [commitUpdateStatus] = useApiMutation(updateRequestedStatus);
 
   return (
     <>
@@ -336,94 +334,116 @@ const ConnectorComponent = ({ connector, relay }) => {
             </div>
           )}
         </Typography>
-        <div className={classes.popover}>
+        <div style={{
+          float: 'right',
+          display: 'flex',
+          alignItems: 'center',
+          gap: theme.spacing(1),
+        }}
+        >
           <Security needs={[MODULES_MODMANAGE]}>
-            {isSensitive && (
-              <div style={{ position: 'relative', display: 'inline-block' }}>
-                <DangerZoneBlock
-                  type="connector_reset"
-                  sx={{
-                    root: { border: 'none', padding: 0, margin: 0 },
-                    title: { position: 'absolute', zIndex: 1, left: 4, top: 9, fontSize: 8 },
-                  }}
-                >
-                  {({ disabled }) => (
-                    <Button
-                      color="dangerZone"
-                      variant="outlined"
-                      disabled={disabled || !!connector.built_in}
-                      onClick={handleOpenResetState}
-                      style={{
-                        minWidth: '6rem',
-                      }}
-                    >
-                      <span style={{ zIndex: 2 }}>
-                        {t_i18n('Reset')}
-                      </span>
-                    </Button>
-                  )}
-                </DangerZoneBlock>
-              </div>
-            )}
-            <ToggleButtonGroup
-              size="small"
-            >
-              {!isSensitive && (
-                <Tooltip title={t_i18n('Reset the connector state')}>
-                  <ToggleButton
-                    onClick={handleOpenResetState}
-                    aria-haspopup="true"
-                    disabled={connector.built_in}
+            <>
+              {isSensitive && (
+                <div style={{ position: 'relative', display: 'inline-block' }}>
+                  <DangerZoneBlock
+                    type="connector_reset"
+                    sx={{
+                      root: { border: 'none', padding: 0, margin: 0 },
+                      title: { position: 'absolute', zIndex: 1, left: 4, top: 9, fontSize: 8 },
+                    }}
                   >
-                    <PlaylistRemoveOutlined
-                      color="primary"
-                    />
-                  </ToggleButton>
-                </Tooltip>
+                    {({ disabled = false }: { disabled?: boolean }) => (
+                      <Button
+                        color="error"
+                        variant="outlined"
+                        disabled={disabled || !!connector.built_in}
+                        onClick={handleOpenResetState}
+                        style={{
+                          minWidth: '6rem',
+                        }}
+                      >
+                        <span style={{ zIndex: 2 }}>
+                          {t_i18n('Reset')}
+                        </span>
+                      </Button>
+                    )}
+                  </DangerZoneBlock>
+                </div>
               )}
-              <Tooltip title={t_i18n('Clear all works')}>
-                <ToggleButton
-                  onClick={handleOpenClearWorks}
-                  aria-haspopup="true"
-                >
-                  <DeleteSweepOutlined
-                    color="primary"
-                  />
-                </ToggleButton>
-              </Tooltip>
-              <Tooltip title={t_i18n('Clear this connector')}>
-                <ToggleButton
-                  onClick={handleOpenDelete}
-                  aria-haspopup="true"
-                  disabled={connector.active || connector.built_in}
-                >
-                  <DeleteOutlined
-                    color="primary"
-                  />
-                </ToggleButton>
-              </Tooltip>
-            </ToggleButtonGroup>
-            {connector.is_managed && (
-              <EditEntityControlledDial
-                onOpen={() => setEditionOpen(true)}
-                style={{}}
-              />
-            )}
+              <ToggleButtonGroup
+                size="small"
+              >
+                {!isSensitive && (
+                  <Tooltip title={t_i18n('Reset the connector state')}>
+                    <span>
+                      <ToggleButton
+                        onClick={handleOpenResetState}
+                        aria-haspopup="true"
+                        disabled={!!connector.built_in}
+                        value={t_i18n('Reset')}
+                      >
+                        <PlaylistRemoveOutlined
+                          color="primary"
+                        />
+                      </ToggleButton>
+                    </span>
+                  </Tooltip>
+                )}
+                <Tooltip title={t_i18n('Clear all works')}>
+                  <span>
+                    <ToggleButton
+                      onClick={handleOpenClearWorks}
+                      aria-haspopup="true"
+                      value={t_i18n('Clear')}
+                    >
+                      <DeleteSweepOutlined
+                        color="primary"
+                      />
+                    </ToggleButton>
+                  </span>
+                </Tooltip>
+                <Tooltip title={t_i18n('Clear this connector')}>
+                  <span>
+                    <ToggleButton
+                      onClick={handleOpenDelete}
+                      aria-haspopup="true"
+                      disabled={!!connector.active || !!connector.built_in}
+                      value={t_i18n('Delete')}
+                    >
+                      <DeleteOutlined
+                        color="primary"
+                      />
+                    </ToggleButton>
+                  </span>
+                </Tooltip>
+              </ToggleButtonGroup>
+              {connector.is_managed && (
+                <EditEntityControlledDial
+                  onOpen={() => setEditionOpen(true)}
+                  style={{}}
+                />
+              )}
+            </>
           </Security>
         </div>
       </div>
       {editionOpen
-          && (<ManagedConnectorEdition catalog={connector.manager} connector={connector} onClose={() => setEditionOpen(false)} />)}
+          && (<ManagedConnectorEdition connector={connector} onClose={() => setEditionOpen(false)} />)}
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        style={{ marginBottom: 20 }}
       >
         <Grid item xs={6}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Basic information')}
           </Typography>
-          <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+          <Paper style={{
+            marginTop: theme.spacing(1),
+            padding: '15px',
+            borderRadius: 4,
+          }} className={'paper-for-grid'} variant="outlined"
+          >
             <Grid container={true} spacing={3}>
               <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
@@ -431,7 +451,14 @@ const ConnectorComponent = ({ connector, relay }) => {
                 </Typography>
                 <Chip
                   key={connector.connector_type}
-                  classes={{ root: classes.chip }}
+                  style={{
+                    height: 30,
+                    float: 'left',
+                    margin: '0 10px 10px 0',
+                    borderRadius: 4,
+                    backgroundColor: theme.palette.background.accent,
+                    color: theme.palette.text?.primary,
+                  }}
                   label={connector.connector_type}
                 />
               </Grid>
@@ -463,24 +490,33 @@ const ConnectorComponent = ({ connector, relay }) => {
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Scope')}
                 </Typography>
-                {connector.connector_scope.map((scope) => (
+                {connector.connector_scope?.map((scope) => (
                   <Chip
                     key={scope}
-                    classes={{ root: classes.chip }}
+                    style={{
+                      height: 30,
+                      float: 'left',
+                      margin: '0 10px 10px 0',
+                      borderRadius: 4,
+                      backgroundColor: theme.palette.background.accent,
+                      color: theme.palette.text?.primary,
+                    }}
                     label={scope}
                   />
                 ))}
               </Grid>
               {connectorFiltersEnabled && (
                 <Grid item xs={6}>
-                  <Typography variant="h3" gutterBottom={true}>
-                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                      <span>{t_i18n('Trigger filters')}</span>
-                      <Tooltip title={t_i18n('Trigger filters can be used to trigger automatically this connector on entities matching the filters and scope.')}>
+                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                    <Typography variant="h3" gutterBottom={true}>
+                      {t_i18n('Trigger filters')}
+                    </Typography>
+                    <Tooltip title={t_i18n('Trigger filters can be used to trigger automatically this connector on entities matching the filters and scope.')}>
+                      <span>
                         <InformationOutline fontSize="small" color="primary" />
-                      </Tooltip>
-                    </Box>
-                  </Typography>
+                      </span>
+                    </Tooltip>
+                  </Box>
                   <Box sx={{ display: 'flex', gap: 1, paddingTop: '4px' }}>
                     <Filters
                       availableFilterKeys={connectorAvailableFilterKeys}
@@ -502,145 +538,147 @@ const ConnectorComponent = ({ connector, relay }) => {
                 </Grid>
               )}
               <Security needs={[SETTINGS_SETACCESSES]}>
-                <Grid item xs={6}>
-                  <Typography variant="h3" gutterBottom={true}>
-                    {t_i18n('Associated user')}
-                  </Typography>
-                  {connector.connector_user ? (
-                    <ListItemButton
-                      key={connector.connector_user.id}
-                      dense={true}
-                      divider={true}
-                      component={Link}
-                      to={`/dashboard/settings/accesses/users/${connector.connector_user.id}`}
-                    >
-                      <ListItemIcon>
-                        <ItemIcon type="user" color={theme.palette.primary.main} />
-                      </ListItemIcon>
-                      <ListItemText primary={connector.connector_user.name} />
-                    </ListItemButton>
-                  ) : (
-                    <FieldOrEmpty source={connector.connector_user}></FieldOrEmpty>
-                  )}
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="h3" gutterBottom={true}>
-                    {t_i18n('Max confidence level')}
-                  </Typography>
-                  {connector.connector_user ? (
-                    <FieldOrEmpty source={connector.connector_user?.effective_confidence_level.max_confidence}>
-                      {connector.connector_user.effective_confidence_level.max_confidence}
-                    </FieldOrEmpty>
-                  ) : (
-                    <FieldOrEmpty source={connector.connector_user}></FieldOrEmpty>
-                  )}
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="h3" gutterBottom={true}>
-                    {t_i18n("User's roles")}
-                  </Typography>
-                  {connector.connector_user ? (
-                    <FieldOrEmpty source={connector.connector_user.roles ?? []}>
-                      <List>
-                        {(connector.connector_user.roles ?? []).map((role) => (userHasSettingsCapability ? (
-                          <ListItemButton
-                            key={role?.id}
-                            dense={true}
-                            divider={true}
-                            component={Link}
-                            to={`/dashboard/settings/accesses/roles/${role?.id}`}
-                          >
-                            <ListItemIcon>
-                              <ItemIcon type="Role" />
-                            </ListItemIcon>
-                            <ListItemText primary={role?.name} />
-                          </ListItemButton>
-                        ) : (
-                          <ListItem key={role?.id} dense={true} divider={true}>
-                            <ListItemIcon>
-                              <ItemIcon type="Role" />
-                            </ListItemIcon>
-                            <ListItemText primary={role?.name} />
-                          </ListItem>
-                        )))}
-                      </List>
-                    </FieldOrEmpty>
-                  ) : (
-                    <FieldOrEmpty source={connector.connector_user}></FieldOrEmpty>
-                  )}
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="h3" gutterBottom={true}>
-                    {t_i18n("User's groups")}
-                  </Typography>
-                  {connector.connector_user ? (
-                    <FieldOrEmpty source={connector.connector_user.groups?.edges}>
-                      <List>
-                        {(connector.connector_user.groups?.edges ?? []).map((groupEdge) => (userHasSettingsCapability ? (
-                          <ListItemButton
-                            key={groupEdge?.node.id}
-                            dense={true}
-                            divider={true}
-                            component={Link}
-                            to={`/dashboard/settings/accesses/groups/${groupEdge?.node.id}`}
-                          >
-                            <ListItemIcon>
-                              <ItemIcon type="Group" />
-                            </ListItemIcon>
-                            <ListItemText primary={groupEdge?.node.name} />
-                          </ListItemButton>
-                        ) : (
-                          <ListItem
-                            key={groupEdge?.node.id}
-                            dense={true}
-                            divider={true}
-                          >
-                            <ListItemIcon>
-                              <ItemIcon type="Group" />
-                            </ListItemIcon>
-                            <ListItemText primary={groupEdge?.node.name} />
-                          </ListItem>
-                        )))}
-                      </List>
-                    </FieldOrEmpty>
-                  ) : (
-                    <FieldOrEmpty source={connector.connector_user}></FieldOrEmpty>
-                  )}
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="h3" gutterBottom={true}>
-                    {t_i18n("User's organizations")}
-                  </Typography>
-                  {connector.connector_user ? (
-                    <FieldOrEmpty source={connector.connector_user.objectOrganization?.edges}>
-                      <List>
-                        {connector.connector_user.objectOrganization?.edges.map((organizationEdge) => (
-                          <ListItemButton
-                            key={organizationEdge.node.id}
-                            dense={true}
-                            divider={true}
-                            component={Link}
-                            to={`/dashboard/settings/accesses/organizations/${organizationEdge.node.id}`}
-                          >
-                            <ListItemIcon>
-                              <ItemIcon
-                                type="Organization"
-                                color={
-                                  (organizationEdge.node.authorized_authorities ?? []).includes(connector.connector_user.id)
-                                    ? theme.palette.warning.main
-                                    : theme.palette.primary.main
-                                }
-                              />
-                            </ListItemIcon>
-                            <ListItemText primary={organizationEdge.node.name} />
-                          </ListItemButton>
-                        ))}
-                      </List>
-                    </FieldOrEmpty>
-                  ) : (
-                    <FieldOrEmpty source={connector.connector_user}></FieldOrEmpty>
-                  )}
-                </Grid>
+                <>
+                  <Grid item xs={6}>
+                    <Typography variant="h3" gutterBottom={true}>
+                      {t_i18n('Associated user')}
+                    </Typography>
+                    {connector.connector_user ? (
+                      <ListItemButton
+                        key={connector.connector_user.id}
+                        dense={true}
+                        divider={true}
+                        component={Link}
+                        to={`/dashboard/settings/accesses/users/${connector.connector_user.id}`}
+                      >
+                        <ListItemIcon>
+                          <ItemIcon type="user" color={theme.palette.primary.main} />
+                        </ListItemIcon>
+                        <ListItemText primary={connector.connector_user.name} />
+                      </ListItemButton>
+                    ) : (
+                      <FieldOrEmpty source={connector.connector_user}>{null}</FieldOrEmpty>
+                    )}
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="h3" gutterBottom={true}>
+                      {t_i18n('Max confidence level')}
+                    </Typography>
+                    {connector.connector_user ? (
+                      <FieldOrEmpty source={connector.connector_user?.effective_confidence_level?.max_confidence}>
+                        {connector.connector_user.effective_confidence_level?.max_confidence}
+                      </FieldOrEmpty>
+                    ) : (
+                      <FieldOrEmpty source={connector.connector_user}>{null}</FieldOrEmpty>
+                    )}
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="h3" gutterBottom={true}>
+                      {t_i18n("User's roles")}
+                    </Typography>
+                    {connector.connector_user ? (
+                      <FieldOrEmpty source={connector.connector_user.roles ?? []}>
+                        <List>
+                          {(connector.connector_user.roles ?? []).map((role) => (userHasSettingsCapability ? (
+                            <ListItemButton
+                              key={role?.id}
+                              dense={true}
+                              divider={true}
+                              component={Link}
+                              to={`/dashboard/settings/accesses/roles/${role?.id}`}
+                            >
+                              <ListItemIcon>
+                                <ItemIcon type="Role" />
+                              </ListItemIcon>
+                              <ListItemText primary={role?.name} />
+                            </ListItemButton>
+                          ) : (
+                            <ListItem key={role?.id} dense={true} divider={true}>
+                              <ListItemIcon>
+                                <ItemIcon type="Role" />
+                              </ListItemIcon>
+                              <ListItemText primary={role?.name} />
+                            </ListItem>
+                          )))}
+                        </List>
+                      </FieldOrEmpty>
+                    ) : (
+                      <FieldOrEmpty source={connector.connector_user}>{null}</FieldOrEmpty>
+                    )}
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="h3" gutterBottom={true}>
+                      {t_i18n("User's groups")}
+                    </Typography>
+                    {connector.connector_user ? (
+                      <FieldOrEmpty source={connector.connector_user.groups?.edges}>
+                        <List>
+                          {(connector.connector_user.groups?.edges ?? []).map((groupEdge) => (userHasSettingsCapability ? (
+                            <ListItemButton
+                              key={groupEdge?.node.id}
+                              dense={true}
+                              divider={true}
+                              component={Link}
+                              to={`/dashboard/settings/accesses/groups/${groupEdge?.node.id}`}
+                            >
+                              <ListItemIcon>
+                                <ItemIcon type="Group" />
+                              </ListItemIcon>
+                              <ListItemText primary={groupEdge?.node.name} />
+                            </ListItemButton>
+                          ) : (
+                            <ListItem
+                              key={groupEdge?.node.id}
+                              dense={true}
+                              divider={true}
+                            >
+                              <ListItemIcon>
+                                <ItemIcon type="Group" />
+                              </ListItemIcon>
+                              <ListItemText primary={groupEdge?.node.name} />
+                            </ListItem>
+                          )))}
+                        </List>
+                      </FieldOrEmpty>
+                    ) : (
+                      <FieldOrEmpty source={connector.connector_user}>{null}</FieldOrEmpty>
+                    )}
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="h3" gutterBottom={true}>
+                      {t_i18n("User's organizations")}
+                    </Typography>
+                    {connector.connector_user ? (
+                      <FieldOrEmpty source={connector.connector_user.objectOrganization?.edges}>
+                        <List>
+                          {connector.connector_user.objectOrganization?.edges.map((organizationEdge) => (
+                            <ListItemButton
+                              key={organizationEdge.node.id}
+                              dense={true}
+                              divider={true}
+                              component={Link}
+                              to={`/dashboard/settings/accesses/organizations/${organizationEdge.node.id}`}
+                            >
+                              <ListItemIcon>
+                                <ItemIcon
+                                  type="Organization"
+                                  color={
+                                    (organizationEdge.node.authorized_authorities ?? []).includes(connector.connector_user?.id ?? '')
+                                      ? theme.palette.dangerZone
+                                      : theme.palette.primary.main
+                                  }
+                                />
+                              </ListItemIcon>
+                              <ListItemText primary={organizationEdge.node.name} />
+                            </ListItemButton>
+                          ))}
+                        </List>
+                      </FieldOrEmpty>
+                    ) : (
+                      <FieldOrEmpty source={connector.connector_user}>{null}</FieldOrEmpty>
+                    )}
+                  </Grid>
+                </>
               </Security>
             </Grid>
 
@@ -650,13 +688,20 @@ const ConnectorComponent = ({ connector, relay }) => {
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Details')}
           </Typography>
-          <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+          <Paper style={{
+            marginTop: theme.spacing(1),
+            padding: '15px',
+            borderRadius: 4,
+          }} className={'paper-for-grid'} variant="outlined"
+          >
             <Grid container={true} spacing={3}>
               {connector.connector_info?.buffering && (
                 <Grid item xs={12}>
-                  <Alert severity="warning" icon={<UpdateIcon color={theme.palette.warning.main} />} style={{ alignItems: 'center' }}>
-                    <strong>{t_i18n('Buffering: ')}</strong>
-                    {t_i18n('Server ingestion is not accepting new work, waiting for current messages in ingestion to be processed until message count go back under threshold')}
+                  <Alert severity="warning" icon={<UpdateIcon color="warning" />} style={{ alignItems: 'center' }}>
+                    <div>
+                      <strong>{t_i18n('Buffering: ')}</strong>
+                      {t_i18n('Server ingestion is not accepting new work, waiting for current messages in ingestion to be processed until message count go back under threshold')}
+                    </div>
                   </Alert>
                 </Grid>
               )}
@@ -664,10 +709,10 @@ const ConnectorComponent = ({ connector, relay }) => {
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('State')}
                 </Typography>
-                <Tooltip title={connector.connector_state}>
+                <Tooltip title={connector.connector_state || ''}>
                   <pre>
                     <ItemCopy
-                      content={connector.connector_state}
+                      content={connector.connector_state || ''}
                       limit={200}
                     />
                   </pre>
@@ -765,7 +810,7 @@ const ConnectorComponent = ({ connector, relay }) => {
                 {connector.connector_info && (connector.connector_info.queue_messages_size !== 0
                   || connector.connector_info.last_run_datetime) ? (
                     <FieldOrEmpty source={connector.connector_info?.queue_messages_size}>
-                      <span style={isBuffering() ? { color: theme.palette.warning.main } : {}}>{connector.connector_info?.queue_messages_size.toFixed(2)}</span>
+                      <span style={isBuffering() ? { color: theme.palette.dangerZone.main } : {}}>{connector.connector_info?.queue_messages_size.toFixed(2)}</span>
                       <span> / {connector.connector_info?.queue_threshold} Mo</span>
                     </FieldOrEmpty>
                   ) : (
@@ -779,9 +824,6 @@ const ConnectorComponent = ({ connector, relay }) => {
                 <Grid item xs={12}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t_i18n('Logs')}
-                    <Drawer>
-                      Coucou
-                    </Drawer>
                   </Typography>
                   <pre
                     style={{
@@ -791,7 +833,7 @@ const ConnectorComponent = ({ connector, relay }) => {
                       paddingBottom: theme.spacing(2),
                     }}
                   >
-                    {connector.manager_connector_logs.join('\n')}
+                    {connector.manager_connector_logs?.join('\n')}
                   </pre>
                 </Grid>
               )}
@@ -815,7 +857,7 @@ const ConnectorComponent = ({ connector, relay }) => {
           {t_i18n('Are you sure?')}
         </DialogTitle>
         <DialogContent>
-          <DialogContentText>
+          <DialogContentText component="div">
             <Alert
               severity={isSensitive ? 'warning' : 'info'}
               variant="outlined"
@@ -824,9 +866,11 @@ const ConnectorComponent = ({ connector, relay }) => {
                 borderColor: theme.palette.dangerZone.main,
               } : {}}
             >
-              {t_i18n('Do you want to reset the state and purge messages queue of this connector?')}
-              <br />
-              {t_i18n('Number of messages: ') + connector.connector_queue_details.messages_number}
+              <div>
+                {t_i18n('Do you want to reset the state and purge messages queue of this connector?')}
+                <br />
+                {t_i18n('Number of messages: ') + connector.connector_queue_details.messages_number}
+              </div>
             </Alert>
           </DialogContentText>
         </DialogContent>
@@ -839,7 +883,7 @@ const ConnectorComponent = ({ connector, relay }) => {
           </Button>
           <Button
             onClick={submitResetState}
-            color={isSensitive ? 'dangerZone' : 'secondary'}
+            color={isSensitive ? 'error' : 'secondary'}
             disabled={resetting}
           >
             {t_i18n('Confirm')}
@@ -881,32 +925,32 @@ const ConnectorComponent = ({ connector, relay }) => {
       <QueryRenderer
         query={connectorWorksQuery}
         variables={optionsInProgress}
-        render={({ props }) => {
-          if (props) {
-            return (
-              <ConnectorWorks data={props} options={optionsInProgress} inProgress={true} />
-            );
-          }
-          return <Loader variant="inElement" />;
-        }}
+        render={({ props }: { props: ConnectorWorksQuery$data | null }) => (
+          <>
+            {props ? (
+              <ConnectorWorks data={props} options={[optionsInProgress]} inProgress={true} />
+            ) : (
+              <Loader variant={LoaderVariant.inElement} />
+            )}
+          </>
+        )}
       />
 
       <QueryRenderer
         query={connectorWorksQuery}
         variables={optionsFinished}
-        render={({ props }) => {
-          if (props) {
-            return <ConnectorWorks data={props} options={optionsFinished} />;
-          }
-          return <Loader variant="inElement" />;
-        }}
+        render={({ props }: { props: ConnectorWorksQuery$data | null }) => (
+          <>
+            {props ? (
+              <ConnectorWorks data={props} options={[optionsFinished]} />
+            ) : (
+              <Loader variant={LoaderVariant.inElement} />
+            )}
+          </>
+        )}
       />
     </>
   );
-};
-
-ConnectorComponent.propTypes = {
-  connector: PropTypes.object,
 };
 
 export const connectorQuery = graphql`
@@ -967,6 +1011,7 @@ const Connector = createRefetchContainer(
               node {
                 id
                 name
+                authorized_authorities
               }
             }
           }
