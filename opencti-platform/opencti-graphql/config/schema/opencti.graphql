@@ -9788,6 +9788,8 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   is_active: Boolean
   src_port: Int
   dst_port: Int
+  src_ref: Int
+  dst_ref: Int
   protocols: [String]
   src_byte_count: Int
   dst_byte_count: Int
