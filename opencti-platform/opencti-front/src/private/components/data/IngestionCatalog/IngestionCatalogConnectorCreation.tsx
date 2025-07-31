@@ -25,6 +25,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { type FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import TextField from '../../../../components/TextField';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
+import { IngestionCatalogConnectorCreationMutation, IngestionCatalogConnectorCreationMutation$data } from '@components/data/IngestionCatalog/__generated__/IngestionCatalogConnectorCreationMutation.graphql';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -64,7 +65,7 @@ interface IngestionCatalogConnectorCreationProps {
 
 interface ManagedConnectorValues {
   name: string;
-  creator?: FieldOption;
+  creator: FieldOption;
   contractValues: Record<string, string | boolean>;
   confidence: number;
 }
@@ -74,7 +75,7 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
   const theme = useTheme<Theme>();
   const classes = useStyles();
 
-  const [commitRegister] = useApiMutation(ingestionCatalogConnectorCreationMutation);
+  const [commitRegister] = useApiMutation<IngestionCatalogConnectorCreationMutation>(ingestionCatalogConnectorCreationMutation);
 
   const submitConnectorManagementCreation = (values: ManagedConnectorValues, {
     setSubmitting,
@@ -83,17 +84,17 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
     const input = {
       name: values.name,
       catalog_id: catalogId,
-      connector_user_id: values.creator?.value,
+      connector_user_id: values.creator.value,
       manager_contract_image: connector.container_image,
-      manager_contract_configuration: Object.entries(values.contractValues).map(([key, value]) => ({ key, value: value.toString() })),
+      manager_contract_configuration: Object.entries(values.contractValues).map(([key, value]) => ({ key, value: [value.toString()] })),
     };
     commitRegister({
       variables: {
         input,
       },
       onError: () => setSubmitting?.(false),
-      onCompleted: () => {
-        MESSAGING$.notifySuccess(<span><Link to={'/dashboard/data/ingestion/connectors'}>{t_i18n('The connector has been created')}</Link></span>);
+      onCompleted: (response: IngestionCatalogConnectorCreationMutation$data) => {
+        MESSAGING$.notifySuccess(<span><Link to={`/dashboard/data/ingestion/connectors/${response.managedConnectorAdd?.id}`}>{t_i18n('The connector has been created')}</Link></span>);
         setSubmitting?.(false);
         resetForm?.();
         onClose();
@@ -103,12 +104,18 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
 
   const [compiledValidator, setCompiledValidator] = useState<Validator | undefined>(undefined);
 
+  // Manage 2 JsonForms validation, preventing one from overriding the other values
+  const handleChange = ({ data, values, setFieldValue }: { data: {}, values: ManagedConnectorValues, setFieldValue: FormikHelpers<ManagedConnectorValues>['setFieldValue'] }) => {
+    const allData = { ...values.contractValues, ...data };
+    return setFieldValue('contractValues', allData);
+  };
+
   // Filter required and optional properties to use into JsonForms
   const propertiesArray = Object.entries(connector.properties);
   const requiredProperties = propertiesArray.filter((property) => connector.required.includes(property[0]));
   const optionalProperties = propertiesArray.filter((property) => !connector.required.includes(property[0]));
   const connectorWithRequired = { ...connector, properties: Object.fromEntries(requiredProperties) };
-  const connectorWithOptional = { ...connector, properties: Object.fromEntries(optionalProperties) };
+  const connectorWithOptional = { ...connector, required: [], properties: Object.fromEntries(optionalProperties) };
 
   return (
     <Drawer
@@ -125,7 +132,10 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
         })}
         initialValues={{
           contractValues: {},
-          creator: undefined,
+          creator: {
+            value: '',
+            label: '',
+          },
           name: '',
           confidence: connector.max_confidence_level,
           ...connector.default,
@@ -176,7 +186,7 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
                   schema={connectorWithRequired as JsonSchema}
                   renderers={materialRenderers}
                   validationMode={'NoValidation'}
-                  onChange={({ data }) => setFieldValue('contractValues', data)}
+                  onChange={({ data }) => handleChange({ data, values, setFieldValue })}
                 />
               </Alert>
               <div style={fieldSpacingContainerStyle}>
@@ -190,9 +200,8 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
                       schema={connectorWithOptional as JsonSchema}
                       renderers={materialRenderers}
                       validationMode={'NoValidation'}
-                      onChange={({ data }) => setFieldValue('contractValues', data)}
+                      onChange={({ data }) => handleChange({ data, values, setFieldValue })}
                     />
-
                   </AccordionDetails>
                 </Accordion>
               </div>
