@@ -88,7 +88,7 @@ test('Dashboard restriction access', async ({ page }) => {
   await expect(dashboardDetailsPage.getExportButton()).toBeVisible();
   await dashboardDetailsPage.getActionsPopover().click();
   await expect(dashboardDetailsPage.getActionButton('Duplicate')).toBeVisible();
-  await expect(dashboardDetailsPage.getDeleteButton()).toBeHidden();
+  await expect(dashboardDetailsPage.getActionButton('Delete')).toBeVisible();
   await page.locator('body').click();
 
   // Try to update
@@ -108,8 +108,7 @@ test('Dashboard restriction access', async ({ page }) => {
   await leftBar.clickOnMenu('Dashboards', 'Custom dashboards');
   await expect(dashboardPage.getItemFromList(`${dashboardName} - copy`)).toBeVisible();
   await dashboardPage.getItemFromList(`${dashboardName} - copy`).click();
-  await dashboardDetailsPage.getEditButton().click();
-  await dashboardDetailsPage.getDeleteButton().click();
+  await dashboardDetailsPage.delete();
   await dashboardDetailsPage.getConfirmButton().click();
   await page.waitForTimeout(1000);// After delete need to wait a bit
 
@@ -150,8 +149,7 @@ test('Dashboard restriction access', async ({ page }) => {
   await accessRestriction.addAccess('Jean Michel', 'can manage');
   await accessRestriction.save();
   await goToDashboardAsJeanMichel(dashboardName);
-  await dashboardDetailsPage.getEditButton().click();
-  await dashboardDetailsPage.getDeleteButton().click();
+  await dashboardDetailsPage.delete();
   await dashboardDetailsPage.getConfirmButton().click();
   await page.waitForTimeout(1000);// After delete need to wait a bit
   await expect(dashboardPage.getItemFromList(dashboardName)).toBeHidden();
