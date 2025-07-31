@@ -24,51 +24,18 @@ const EETooltip = ({
 }) => {
   const { t_i18n } = useFormatter();
   const [feedbackCreation, setFeedbackCreation] = useState(false);
-  const [openEnableAI, setOpenEnableAI] = useState(false);
   const [openConfigAI, setOpenConfigAI] = useState(false);
   const isAdmin = useGranted([SETTINGS_SETPARAMETERS]);
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { enabled, configured } = useAI();
+  const { enabled, configured, fullyActive } = useAI();
+  const isAIConfigurated = enabled && configured;
   const {
     settings: { id: settingsId },
   } = useAuth();
   if (isEnterpriseEdition && (!forAi || (forAi && enabled && configured))) {
     return <Tooltip title={title ? t_i18n(title) : undefined}>{children}</Tooltip>;
   }
-  if (isEnterpriseEdition && forAi && !enabled) {
-    return (
-      <>
-        <Tooltip title={title ? t_i18n(title) : undefined}>
-          <span onClick={(e) => {
-            setOpenEnableAI(true);
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-          >
-            {children}
-          </span>
-        </Tooltip>
-        <Dialog
-          slotProps={{ paper: { elevation: 1 } }}
-          open={openEnableAI}
-          onClose={() => setOpenEnableAI(false)}
-          fullWidth={true}
-          maxWidth="sm"
-        >
-          <DialogTitle>
-            {t_i18n('Enable AI powered platform')}
-          </DialogTitle>
-          <DialogContent>
-            {t_i18n('To use AI, please enable it in the configuration of your platform.')}
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setOpenEnableAI(false)}>{t_i18n('Close')}</Button>
-          </DialogActions>
-        </Dialog>
-      </>
-    );
-  }
-  if (isEnterpriseEdition && forAi && !configured) {
+  if (!fullyActive && forAi && isAIConfigurated) {
     return (
       <>
         <Tooltip title={title ? t_i18n(title) : undefined}>
