@@ -225,8 +225,7 @@ export const auditRequestHeaderToKeep = nconf.get('app:audit_logs:trace_request_
 // Gather all request header that are configured to be added to audit or activity logs.
 export const getRequestAuditHeaders = (req) => {
   if (isFeatureEnabled('AUDIT_USER_AGENT')) {
-    return R.mergeAll((auditRequestHeaderToKeep ?? [])
-      .map((header) => ({ [header]: req.header(header) })));
+    return R.mergeAll((auditRequestHeaderToKeep).map((header) => ({ [header]: req.header(header) })));
   }
   return undefined;
 };
