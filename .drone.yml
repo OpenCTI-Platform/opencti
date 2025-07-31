@@ -10,7 +10,7 @@ steps:
     image: alpine:3.19
     commands:
     - echo DRONE_STAGE_MACHINE ${DRONE_STAGE_MACHINE}
-    - echo "test no cache 2"
+    - echo "test no cache 3"
 
   - name: dependencies-checkout
     image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
