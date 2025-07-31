@@ -68,8 +68,3 @@ export const logsWorkerConfig = () => {
     elasticsearch_ssl_reject_unauthorized: booleanConf('elasticsearch:ssl:reject_unauthorized', true),
   };
 };
-
-export const getRawLog = (context: AuthContext, user: AuthUser, log:any) => {
-  console.log('Get raw log for ', log);
-  return JSON.stringify(log, null, 2);
-};
