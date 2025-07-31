@@ -57,6 +57,7 @@ interface MarkdownWithRedirectionWarningProps {
   remarkPlugins?: MarkdownProps['remarkPlugins'];
   emptyStringIfUndefined?: boolean;
   disableWarningAtLinkClick?: boolean;
+  breakWords?: boolean;
 }
 
 const MarkdownDisplay: FunctionComponent<
@@ -73,6 +74,7 @@ MarkdownWithRedirectionWarningProps
   remarkPlugins,
   emptyStringIfUndefined,
   disableWarningAtLinkClick,
+  breakWords = true,
 }) => {
   const theme = useTheme<Theme>();
   const [displayExternalLink, setDisplayExternalLink] = useState(false);
@@ -90,9 +92,17 @@ MarkdownWithRedirectionWarningProps
   if (removeLineBreaks) {
     disallowedElements.push('p');
   }
+  const markdownStyle: React.CSSProperties = breakWords
+    ? {
+      overflowWrap: 'break-word',
+      wordBreak: 'break-word',
+      hyphens: 'auto',
+    }
+    : {};
+
   const markdownElement = () => {
     return (
-      <div className="markdown">
+      <div style={markdownStyle}>
         <Markdown
           disallowedElements={disallowedElements}
           unwrapDisallowed={true}
@@ -105,7 +115,7 @@ MarkdownWithRedirectionWarningProps
   const remarkGfmMarkdownElement = () => {
     if (remarkPlugins) {
       return (
-        <div className="markdown">
+        <div style={markdownStyle}>
           <Markdown
             remarkPlugins={remarkPlugins}
             disallowedElements={disallowedElements}
@@ -119,7 +129,7 @@ MarkdownWithRedirectionWarningProps
     }
     if (markdownComponents) {
       return (
-        <div className="markdown">
+        <div style={markdownStyle}>
           <Markdown
             remarkPlugins={[
               remarkGfm,
@@ -136,7 +146,7 @@ MarkdownWithRedirectionWarningProps
       );
     }
     return (
-      <div className="markdown">
+      <div style={markdownStyle}>
         <Markdown
           remarkPlugins={[
             remarkGfm,
