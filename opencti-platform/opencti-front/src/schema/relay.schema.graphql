@@ -536,6 +536,7 @@ type Log {
   raw_data: String
   context_uri: String
   context_data: ContextData
+  user_metadata: JSON
 }
 
 enum AttributesOrdering {
