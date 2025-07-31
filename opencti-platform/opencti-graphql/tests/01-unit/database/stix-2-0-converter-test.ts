@@ -13,7 +13,8 @@ import {
   convertNoteToStix,
   convertObservedDataToStix,
   convertOpinionToStix,
-  convertReportToStix
+  convertReportToStix,
+  convertSightingToStix
 } from '../../../src/database/stix-2-0-converter';
 import { EXPECTED_MALWARE, MALWARE_INSTANCE } from './instances-stix-2-0-converter/malware';
 import { EXPECTED_REPORT, REPORT_INSTANCE } from './instances-stix-2-0-converter/containers/report';
@@ -39,8 +40,10 @@ import { convertCaseRfiToStix_2_0 } from '../../../src/modules/case/case-rfi/cas
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../../src/modules/grouping/grouping-types';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../../../src/modules/case/feedback/feedback-types';
 import { EXPECTED_INCIDENT, INCIDENT_INSTANCE } from './instances-stix-2-0-converter/SDOs/incident';
+import { EXPECTED_SIGHTING, SIGHTING_INSTANCE } from './instances-stix-2-0-converter/sightings';
 
 describe('Stix 2.0 opencti converter', () => {
+  // SDOs
   it('should convert Malware', async () => {
     const result = convertMalwareToStix(MALWARE_INSTANCE, ENTITY_TYPE_MALWARE);
     expect(result).toEqual(EXPECTED_MALWARE);
@@ -89,5 +92,10 @@ describe('Stix 2.0 opencti converter', () => {
   it('should convert Case RFT', async () => {
     const result = convertCaseRftToStix_2_0(RFT_INSTANCE, ENTITY_TYPE_CONTAINER_CASE_RFT);
     expect(result).toEqual(EXPECTED_RFT);
+  });
+  // SROs
+  it('should convert StixSightingRelationship', async () => {
+    const result = convertSightingToStix(SIGHTING_INSTANCE);
+    expect(result).toEqual(EXPECTED_SIGHTING);
   });
 });
