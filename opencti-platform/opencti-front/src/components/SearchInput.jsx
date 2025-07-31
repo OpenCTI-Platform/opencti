@@ -207,7 +207,7 @@ const SearchInput = (props) => {
                 <ContentPasteSearchOutlined fontSize="medium"/>
               </IconButton>
             </Tooltip>
-            {!fullyActive && isAIConfigured && (
+            { isAIConfigured && (
             <EETooltip forAi={true} title={t_i18n('Ask AI')}>
               <IconButton
                 size="medium"
