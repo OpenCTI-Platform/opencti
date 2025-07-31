@@ -87,7 +87,8 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { enabled, configured } = useAI();
+  const { enabled, configured, fullyActive } = useAI();
+  const isConfigured = enabled && configured;
 
   const [content, setContent] = useState('');
   const [disableResponse, setDisableResponse] = useState(false);
@@ -241,7 +242,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
   };
 
   const renderButton = () => {
-    if (enabled && configured) {
+    if (!fullyActive || isConfigured) {
       return (
         <>
           <EETooltip forAi={true} title={t_i18n('Ask AI')}>
