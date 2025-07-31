@@ -12,6 +12,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { SettingsMessagesBannerQuery } from './__generated__/SettingsMessagesBannerQuery.graphql';
 import { MessageFromLocalStorage } from '../../../../utils/hooks/useLocalStorageModel';
 import { isEmptyField } from '../../../../utils/utils';
+import { extractUrlsFromText } from '../../../../utils/String';
 
 export const settingsMessagesQuery = graphql`
   query SettingsMessagesBannerQuery {
@@ -200,6 +201,7 @@ const SettingsMessagesBannerComponent = ({
   const { backgroundColor, borderLeft, color } = generateBannerMessageColors(
     messageToDisplay?.color,
   );
+
   return (
     <div
       ref={ref}
@@ -211,7 +213,7 @@ const SettingsMessagesBannerComponent = ({
       }}
     >
       <div className={classes.message} style={{ color }}>
-        {messageToDisplay.message}
+        {extractUrlsFromText(messageToDisplay.message)}
       </div>
       {messageToDisplay.dismissible && (
         <IconButton
