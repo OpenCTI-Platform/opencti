@@ -23,11 +23,11 @@ const TO_EMAIL = conf.get('app:enrollment:to_email') || 'no-reply@filigran.io';
 const EMAIL_BODY = `
   <h2>Hi,</h2>
   
-  <p>We wanted to inform you that the connectivity between OCTI and the XTM Hub has been lost. As a result, the integration is currently inactive.</p>
-  <p>To restore functionality, please navigate to the <strong>Settings</strong> section and re-initiate the registration process for the OCTI instance. This will re-establish the connection and allow continued use of the integrated features.</p>
+  <p>We wanted to inform you that the connectivity between OpenCTI and the XTM Hub has been lost. As a result, the integration is currently inactive.</p>
+  <p>To restore functionality, please navigate to the <strong>Settings</strong> section and re-initiate the registration process for the OpenCTI platform. This will re-establish the connection and allow continued use of the integrated features.</p>
   <p>If you need assistance during the process, don’t hesitate to reach out.</p>
   <p>
-    <a href="${getBaseUrl()}">Go to OpenCTI</a>
+    <a href="${getBaseUrl()}">Access OpenCTI</a>
     Best,<br />
     Filigran Team<br />
   </p>
