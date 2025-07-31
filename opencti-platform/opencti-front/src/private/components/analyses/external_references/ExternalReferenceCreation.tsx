@@ -8,33 +8,26 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import useApiMutation from 'src/utils/hooks/useApiMutation';
-import { ExternalReferencesLinesPaginationQuery$variables } from '@components/analyses/__generated__/ExternalReferencesLinesPaginationQuery.graphql';
+import {
+  ExternalReferencesLinesPaginationQuery$variables
+} from '@components/analyses/__generated__/ExternalReferencesLinesPaginationQuery.graphql';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { insertNode } from '../../../../utils/store';
-import type { Theme } from '../../../../components/Theme';
-import { ExternalReferenceAddInput, ExternalReferenceCreationMutation, ExternalReferenceCreationMutation$data } from './__generated__/ExternalReferenceCreationMutation.graphql';
+import {
+  ExternalReferenceAddInput,
+  ExternalReferenceCreationMutation,
+  ExternalReferenceCreationMutation$data
+} from './__generated__/ExternalReferenceCreationMutation.graphql';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-}));
+import { useTheme } from '@mui/material/styles';
 
 const externalReferenceCreationMutation = graphql`
   mutation ExternalReferenceCreationMutation(
@@ -102,8 +95,9 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
   openContextual,
   dryrun,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const theme = useTheme();
+  const buttonStyle = { marginLeft: theme.spacing(2) };
 
   const [open, setOpen] = useState(false);
 
@@ -271,12 +265,12 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
                   rows="4"
                   style={{ marginTop: 20 }}
                 />
-                <div className={classes.buttons}>
+                <div style={{ marginTop: 20, textAlign: 'right' }}>
                   <Button
                     variant="contained"
                     onClick={handleReset}
                     disabled={isSubmitting}
-                    classes={{ root: classes.button }}
+                    style={buttonStyle}
                   >
                     {t_i18n('Cancel')}
                   </Button>
@@ -285,7 +279,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
                     color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
-                    classes={{ root: classes.button }}
+                    style={buttonStyle}
                   >
                     {t_i18n('Create')}
                   </Button>
