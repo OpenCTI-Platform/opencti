@@ -25,10 +25,16 @@ export default class PirDetailsPageModel {
   }
 
   getTopAuthorEntities(author: string) {
-    return this.page.getByTestId('pir-top-authors-entities').getByText(author);
+    return this.page
+      .getByRole('heading', { name: 'Top authors of threat entities' })
+      .locator('../..')
+      .getByText(author);
   }
 
   getTopAuthorRelationships(author: string) {
-    return this.page.getByTestId('pir-top-authors-relationships').getByText(author);
+    return this.page
+      .getByRole('heading', { name: 'Top authors of relationships from threats' })
+      .locator('../..')
+      .getByText(author);
   }
 }
