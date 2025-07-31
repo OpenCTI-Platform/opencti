@@ -241,103 +241,105 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
   };
 
   const renderButton = () => {
-    return (
-      <>
-        <EETooltip forAi={true} title={t_i18n('Ask AI')}>
-          <IconButton
-            size="small"
-            onClick={(event) => ((isEnterpriseEdition && enabled && configured) ? handleOpenMenu(event) : null)}
-            disabled={disabled || currentValue.length < 10}
-            style={{ color: theme.palette.ai.main }}
-          >
-            <AutoAwesomeOutlined fontSize='small' />
-          </IconButton>
-        </EETooltip>
-        <Menu
-          id="menu-appbar"
-          anchorEl={menuOpen.anchorEl}
-          open={menuOpen.open}
-          onClose={handleCloseMenu}
-        >
-          <MenuItem onClick={() => handleAskAi('spelling')}>
-            {t_i18n('Fix spelling & grammar')}
-          </MenuItem>
-          <MenuItem onClick={() => handleAskAi('shorter')}>
-            {t_i18n('Make it shorter')}
-          </MenuItem>
-          <MenuItem onClick={() => handleAskAi('longer')}>
-            {t_i18n('Make it longer')}
-          </MenuItem>
-          <MenuItem onClick={handleOpenToneOptions}>
-            {t_i18n('Change tone')}
-          </MenuItem>
-          <MenuItem onClick={() => handleAskAi('summarize')}>
-            {t_i18n('Summarize')}
-          </MenuItem>
-          <MenuItem onClick={() => handleAskAi('explain', false)}>
-            {t_i18n('Explain')}
-          </MenuItem>
-        </Menu>
-        {busId && (
-        <ResponseDialog
-          id={busId}
-          isDisabled={disableResponse}
-          isOpen={displayAskAI}
-          handleClose={handleCloseAskAI}
-          content={content}
-          setContent={setContent}
-          handleAccept={(value) => {
-            setFieldValue(value);
-            handleCloseAskAI();
-          }}
-          handleFollowUp={handleCloseAskAI}
-          followUpActions={[{ key: 'retry', label: t_i18n('Retry') }]}
-          format={format}
-          isAcceptable={isAcceptable}
-        />
-        )}
-        <Dialog
-          slotProps={{ paper: { elevation: 1 } }}
-          open={openToneOptions}
-          onClose={handleCloseToneOptions}
-          fullWidth={true}
-          maxWidth="xs"
-        >
-          <DialogTitle>{t_i18n('Select options')}</DialogTitle>
-          <DialogContent>
-            <FormControl style={{ width: '100%' }}>
-              <InputLabel id="tone">{t_i18n('Tone')}</InputLabel>
-              <Select
-                labelId="tone"
-                value={tone}
-                onChange={(event) => setTone(event.target.value as unknown as 'tactical' | 'operational' | 'strategic')}
-                fullWidth={true}
-              >
-                <MenuItem value="tactical">{t_i18n('Tactical')}</MenuItem>
-                <MenuItem value="operational">{t_i18n('Operational')}</MenuItem>
-                <MenuItem value="strategic">{t_i18n('Strategic')}</MenuItem>
-              </Select>
-            </FormControl>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseToneOptions}>
-              {t_i18n('Cancel')}
-            </Button>
-            <Button
-              onClick={() => {
-                handleCloseToneOptions();
-                handleAskAi('tone');
-              }}
-              color="secondary"
+    if (enabled && configured) {
+      return (
+        <>
+          <EETooltip forAi={true} title={t_i18n('Ask AI')}>
+            <IconButton
+              size="small"
+              onClick={(event) => ((isEnterpriseEdition && enabled && configured) ? handleOpenMenu(event) : null)}
+              disabled={disabled || currentValue.length < 10}
+              style={{ color: theme.palette.ai.main }}
             >
-              {t_i18n('Generate')}
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </>
-    );
+              <AutoAwesomeOutlined fontSize='small' />
+            </IconButton>
+          </EETooltip>
+          <Menu
+            id="menu-appbar"
+            anchorEl={menuOpen.anchorEl}
+            open={menuOpen.open}
+            onClose={handleCloseMenu}
+          >
+            <MenuItem onClick={() => handleAskAi('spelling')}>
+              {t_i18n('Fix spelling & grammar')}
+            </MenuItem>
+            <MenuItem onClick={() => handleAskAi('shorter')}>
+              {t_i18n('Make it shorter')}
+            </MenuItem>
+            <MenuItem onClick={() => handleAskAi('longer')}>
+              {t_i18n('Make it longer')}
+            </MenuItem>
+            <MenuItem onClick={handleOpenToneOptions}>
+              {t_i18n('Change tone')}
+            </MenuItem>
+            <MenuItem onClick={() => handleAskAi('summarize')}>
+              {t_i18n('Summarize')}
+            </MenuItem>
+            <MenuItem onClick={() => handleAskAi('explain', false)}>
+              {t_i18n('Explain')}
+            </MenuItem>
+          </Menu>
+          {busId && (
+          <ResponseDialog
+            id={busId}
+            isDisabled={disableResponse}
+            isOpen={displayAskAI}
+            handleClose={handleCloseAskAI}
+            content={content}
+            setContent={setContent}
+            handleAccept={(value) => {
+              setFieldValue(value);
+              handleCloseAskAI();
+            }}
+            handleFollowUp={handleCloseAskAI}
+            followUpActions={[{ key: 'retry', label: t_i18n('Retry') }]}
+            format={format}
+            isAcceptable={isAcceptable}
+          />
+          )}
+          <Dialog
+            slotProps={{ paper: { elevation: 1 } }}
+            open={openToneOptions}
+            onClose={handleCloseToneOptions}
+            fullWidth={true}
+            maxWidth="xs"
+          >
+            <DialogTitle>{t_i18n('Select options')}</DialogTitle>
+            <DialogContent>
+              <FormControl style={{ width: '100%' }}>
+                <InputLabel id="tone">{t_i18n('Tone')}</InputLabel>
+                <Select
+                  labelId="tone"
+                  value={tone}
+                  onChange={(event) => setTone(event.target.value as unknown as 'tactical' | 'operational' | 'strategic')}
+                  fullWidth={true}
+                >
+                  <MenuItem value="tactical">{t_i18n('Tactical')}</MenuItem>
+                  <MenuItem value="operational">{t_i18n('Operational')}</MenuItem>
+                  <MenuItem value="strategic">{t_i18n('Strategic')}</MenuItem>
+                </Select>
+              </FormControl>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleCloseToneOptions}>
+                {t_i18n('Cancel')}
+              </Button>
+              <Button
+                onClick={() => {
+                  handleCloseToneOptions();
+                  handleAskAi('tone');
+                }}
+                color="secondary"
+              >
+                {t_i18n('Generate')}
+              </Button>
+            </DialogActions>
+          </Dialog>
+        </>
+      );
+    }
+    return (<></>);
   };
-
   if (variant === 'markdown') {
     return (
       <div style={style || { position: 'absolute', top: 17, right: 0, paddingTop: 4 }}>
@@ -352,6 +354,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
       </div>
     );
   }
+
   return (
     <InputAdornment position="end" style={{ position: 'absolute', right: 0 }}>
       {renderButton()}

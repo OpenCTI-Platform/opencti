@@ -72,7 +72,7 @@ const SearchInput = (props) => {
   const classes = useStyles();
   const location = useLocation();
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { enabled, configured } = useAI();
+  const { enabled, configured, fullyActive } = useAI();
   const theme = useTheme();
   const { t_i18n } = useFormatter();
   const {
@@ -207,7 +207,7 @@ const SearchInput = (props) => {
                 <ContentPasteSearchOutlined fontSize="medium"/>
               </IconButton>
             </Tooltip>
-            {isAIConfigured && (
+            {!fullyActive && isAIConfigured && (
             <EETooltip forAi={true} title={t_i18n('Ask AI')}>
               <IconButton
                 size="medium"
@@ -239,7 +239,7 @@ const SearchInput = (props) => {
           openDrawer={displayEEDialog}
           handleCloseDrawer={() => setDisplayEEDialog(false)}
           initialValue={{
-            description: t_i18n('I would like to use a EE feature AI Summary but I don\'t have EE activated.\nI would like to discuss with you about activating EE.'),
+            description: t_i18n('To use this AI Enterprise edition feature, please add a token'),
           }}
         />
       )}
