@@ -72,7 +72,7 @@ const SearchInput = (props) => {
   const classes = useStyles();
   const location = useLocation();
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { enabled, configured, fullyActive } = useAI();
+  const { enabled, configured } = useAI();
   const theme = useTheme();
   const { t_i18n } = useFormatter();
   const {
