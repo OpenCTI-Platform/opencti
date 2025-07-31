@@ -352,6 +352,7 @@
   "Because by default the workbench won't include the updates made on the entity after the creation of the workbench.": "Потому что по умолчанию рабочий стол не включает обновления, сделанные для сущности после его создания.",
   "Before creating a ticket with your support package takes some time to check if you can safely share the content depending of your security policy.": "Прежде чем создавать тикет в службе поддержки, потратьте некоторое время на то, чтобы проверить, можно ли безопасно делиться содержимым в зависимости от политики безопасности.",
   "Belonging to this organization": "Принадлежность к этой организации",
+  "bic values can only include A-Z and 0-9, 8 or 11 characters": "значения bic могут включать только символы A-Z и 0-9, 8 или 11",
   "Biographic Information": "Биографическая информация",
   "Biographics": "Биографии",
   "Body": "Тело",
