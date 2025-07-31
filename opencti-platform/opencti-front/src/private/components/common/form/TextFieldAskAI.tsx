@@ -242,7 +242,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
   };
 
   const renderButton = () => {
-    if (!fullyActive || isConfigured) {
+    if (!fullyActive && isConfigured) {
       return (
         <>
           <EETooltip forAi={true} title={t_i18n('Ask AI')}>
