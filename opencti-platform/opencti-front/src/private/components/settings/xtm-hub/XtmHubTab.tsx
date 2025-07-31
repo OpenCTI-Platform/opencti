@@ -88,7 +88,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ enrollmentStatus }) => {
   ).toString();
 
   const enrollmentUrl = `${enrollmentHubUrl}/redirect/enroll-octi?${queryParamsOCTIInformations}`;
-  const unenrollmentUrl = `${enrollmentHubUrl}/unenroll/octi?platform_id=${settings?.id ?? ''}`;
+  const unenrollmentUrl = `${enrollmentHubUrl}/redirect/unenroll-octi?platform_id=${settings?.id ?? ''}`;
 
   const handleClosingTab = () => {
     setProcessStep(ProcessSteps.CANCELED);

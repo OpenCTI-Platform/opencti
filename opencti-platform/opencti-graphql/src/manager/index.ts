@@ -1,6 +1,6 @@
 import './indicatorDecayManager';
 import './garbageCollectionManager';
-import './hubEnrollmentManager'
+import './hubRegistrationManager';
 import './telemetryManager';
 import './retentionManager';
 import './exclusionListCacheBuildManager';

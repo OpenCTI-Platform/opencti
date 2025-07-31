@@ -21,7 +21,7 @@ const ProcessInstructions: FunctionComponent<ProcessInstructionsProps> = ({
         {t_i18n(instructionKey)}
       </p>
       <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
-        <Button variant="contained" onClick={onContinue}>
+        <Button onClick={onContinue}>
           {t_i18n('Continue')}
         </Button>
       </div>

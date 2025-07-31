@@ -899,10 +899,10 @@
   "Workspace type": "Tipo di spazio di lavoro",
   "X_Aliases": "X_Alias",
   "XTM Hub enrollment date": "Data di iscrizione a XTM Hub",
-  "XTM Hub enrollment manager": "Gestore dell'iscrizione a XTM Hub",
   "XTM Hub enrollment status": "Stato di iscrizione a XTM Hub",
   "XTM Hub enrollment User ID": "ID utente per l'iscrizione a XTM Hub",
   "XTM Hub enrollment User name": "Iscrizione a XTM Hub Nome utente",
   "XTM Hub last connectivity check": "Ultimo controllo di connettività di XTM Hub",
+  "XTM Hub registration manager": "Gestore della registrazione di XTM Hub",
   "XTM Hub Token": "Token XTM Hub"
 }
