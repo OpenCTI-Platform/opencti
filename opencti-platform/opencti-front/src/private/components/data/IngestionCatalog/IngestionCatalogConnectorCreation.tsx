@@ -6,9 +6,7 @@ import { useTheme } from '@mui/styles';
 import { IngestionConnector } from '@components/data/IngestionCatalog/IngestionCatalogCard';
 import { FormikHelpers } from 'formik/dist/types';
 import * as Yup from 'yup';
-import CreatorField from '@components/common/form/CreatorField';
 import { graphql } from 'react-relay';
-import ConfidenceField from '@components/common/form/ConfidenceField';
 import { materialRenderers } from '@jsonforms/material-renderers';
 import { JsonForms } from '@jsonforms/react';
 import { Schema, Validator } from '@cfworker/json-schema';
@@ -18,6 +16,11 @@ import { Alert } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 import Typography from '@mui/material/Typography';
 import AccordionDetails from '@mui/material/AccordionDetails';
+import {
+  IngestionCatalogConnectorCreationMutation,
+  IngestionCatalogConnectorCreationMutation$data,
+} from '@components/data/IngestionCatalog/__generated__/IngestionCatalogConnectorCreationMutation.graphql';
+import IngestionCatalogConnectorCreationUserHandling from '@components/data/IngestionCatalog/IngestionCatalogConnectorCreationUserHandling';
 import { MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
@@ -25,7 +28,6 @@ import { useFormatter } from '../../../../components/i18n';
 import { type FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import TextField from '../../../../components/TextField';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
-import { IngestionCatalogConnectorCreationMutation, IngestionCatalogConnectorCreationMutation$data } from '@components/data/IngestionCatalog/__generated__/IngestionCatalogConnectorCreationMutation.graphql';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -63,11 +65,12 @@ interface IngestionCatalogConnectorCreationProps {
   catalogId: string;
 }
 
-interface ManagedConnectorValues {
+export interface ManagedConnectorValues {
   name: string;
-  creator: FieldOption;
   contractValues: Record<string, string | boolean>;
-  confidence: number;
+  user_id: string | FieldOption;
+  automatic_user?: boolean;
+  confidence_level?: string;
 }
 
 const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId }: IngestionCatalogConnectorCreationProps) => {
@@ -84,7 +87,9 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
     const input = {
       name: values.name,
       catalog_id: catalogId,
-      connector_user_id: values.creator.value,
+      user_id: typeof values.user_id === 'string' ? values.user_id : values.user_id?.value,
+      automatic_user: values.automatic_user ?? true,
+      ...((values.automatic_user !== false) && { confidence_level: values.confidence_level }),
       manager_contract_image: connector.container_image,
       manager_contract_configuration: Object.entries(values.contractValues).map(([key, value]) => ({ key, value: [value.toString()] })),
     };
@@ -105,7 +110,7 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
   const [compiledValidator, setCompiledValidator] = useState<Validator | undefined>(undefined);
 
   // Manage 2 JsonForms validation, preventing one from overriding the other values
-  const handleChange = ({ data, values, setFieldValue }: { data: {}, values: ManagedConnectorValues, setFieldValue: FormikHelpers<ManagedConnectorValues>['setFieldValue'] }) => {
+  const handleChange = ({ data, values, setFieldValue }: { data: object, values: ManagedConnectorValues, setFieldValue: FormikHelpers<ManagedConnectorValues>['setFieldValue'] }) => {
     const allData = { ...values.contractValues, ...data };
     return setFieldValue('contractValues', allData);
   };
@@ -127,17 +132,15 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
         onReset={onClose}
         validationSchema={Yup.object().shape({
           name: Yup.string().required().min(2),
-          creator: Yup.object().required(),
+          user_id: Yup.object().required(),
           contractValues: Yup.object().required(),
         })}
         initialValues={{
           contractValues: {},
-          creator: {
-            value: '',
-            label: '',
-          },
           name: '',
-          confidence: connector.max_confidence_level,
+          confidence_level: connector.max_confidence_level.toString(),
+          user_id: '',
+          automatic_user: true,
           ...connector.default,
         }}
         onSubmit={() => {
@@ -162,17 +165,7 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
                 required
                 fullWidth={true}
               />
-              <CreatorField
-                label={'User'}
-                containerStyle={fieldSpacingContainerStyle}
-                onChange={setFieldValue}
-                name="creator"
-                required
-              />
-              <ConfidenceField
-                containerStyle={fieldSpacingContainerStyle}
-                maxConfidenceLevel={connector.max_confidence_level}
-              />
+              <IngestionCatalogConnectorCreationUserHandling max_confidence_level={connector.max_confidence_level} />
               <div style={fieldSpacingContainerStyle}>{t_i18n('Configuration')}</div>
               <Alert
                 classes={{ root: classes.alert, message: classes.message }}
