@@ -373,6 +373,7 @@ const AIInsights = ({
       </>
     );
   }
+  return (<></>);
 };
 
 export default AIInsights;
