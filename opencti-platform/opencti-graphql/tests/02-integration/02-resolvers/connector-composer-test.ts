@@ -10,6 +10,11 @@ import type { ApiConnector } from '../../utils/XTMComposerMock';
 const TEST_COMPOSER_ID = uuidv4();
 const TEST_USER_CONNECTOR_ID: string = USER_CONNECTOR.id; // Initialize with default value
 
+// Test configuration
+// The goal is to achieve a 1:1 behavior match between XTMComposerMock and XTMComposer. 
+// This enables authentic integration testing (assuming the XTM Composer is available in the CI) without the need to rewrite the test suite.
+const FORCE_POLLING = true; // Set to true for faster tests, false for realistic XTM Composer behavior
+
 // Mutations
 const REGISTER_CONNECTORS_MANAGER_MUTATION = gql`
     mutation RegisterConnectorsManager($input: RegisterConnectorsManagerInput!) {
@@ -121,11 +126,17 @@ describe('Connector Composer and Managed Connectors', () => {
   let xtmComposer: XTMComposerMock;
 
   // Initialize XTM Composer mock
-  beforeAll(() => {
+  beforeAll(async () => {
     xtmComposer = new XTMComposerMock({
       operationDelay: 100, // Faster for testing
       failureRate: 0, // No failures for basic tests
+      executeSchedule: 1, // Poll every 1 second for tests
     }, null);
+
+    if (!FORCE_POLLING) {
+      // Start the orchestration loop only if not forcing polling
+      await xtmComposer.startOrchestration();
+    }
   });
 
   describe('Connector Composer operations', () => {
@@ -253,18 +264,49 @@ describe('Connector Composer and Managed Connectors', () => {
       expect(deployResult.data).toBeDefined();
       expect(deployResult.data?.updateConnectorRequestedStatus.manager_requested_status).toEqual('starting');
 
-      // Simulate XTM Composer deploying the connector
-      await xtmComposer.deployConnector(deploymentConnectorId);
+      // Wait for XTM Composer to detect and deploy the connector
+      if (FORCE_POLLING) {
+        await xtmComposer.runOrchestrationCycle();
+      } else {
+        await wait(1500); // Wait for at least one polling cycle
+      }
 
       // Verify the connector is now started
-      const connectors = await xtmComposer.getConnectorsForManagers();
-      const deployedConnector = connectors.find((c: any) => c.id === deploymentConnectorId);
-      expect(deployedConnector.manager_current_status).toEqual('started');
+      const GET_CONNECTOR_QUERY = gql`
+        query GetConnector($id: String!) {
+          connector(id: $id) {
+            id
+            manager_current_status
+          }
+        }
+      `;
+
+      const connectorResult = await queryAsAdminWithSuccess({
+        query: GET_CONNECTOR_QUERY,
+        variables: { id: deploymentConnectorId }
+      });
+
+      expect(connectorResult.data?.connector.manager_current_status).toEqual('started');
     });
 
     it('should start a deployed connector', async () => {
-      // First ensure connector is stopped using XTM Composer
-      await xtmComposer.stopConnector(deploymentConnectorId);
+      // First ensure connector is stopped
+      const stopInput = {
+        id: deploymentConnectorId,
+        status: 'stopping'
+      };
+
+      await queryAsAdminWithSuccess({
+        query: UPDATE_CONNECTOR_REQUESTED_STATUS_MUTATION,
+        variables: { input: stopInput }
+      });
+
+      // Wait for XTM Composer to detect and stop
+      if (FORCE_POLLING) {
+        await xtmComposer.runOrchestrationCycle();
+      } else {
+        await wait(1500);
+      }
 
       // Request start through platform
       const startRequestInput = {
@@ -280,13 +322,29 @@ describe('Connector Composer and Managed Connectors', () => {
       expect(startResult.data).toBeDefined();
       expect(startResult.data?.updateConnectorRequestedStatus.manager_requested_status).toEqual('starting');
 
-      // XTM Composer starts the connector
-      await xtmComposer.deployConnector(deploymentConnectorId);
+      // Wait for XTM Composer to detect and start the connector
+      if (FORCE_POLLING) {
+        await xtmComposer.runOrchestrationCycle();
+      } else {
+        await wait(1500);
+      }
 
       // Verify status
-      const connectors = await xtmComposer.getConnectorsForManagers();
-      const startedConnector = connectors.find((c: any) => c.id === deploymentConnectorId);
-      expect(startedConnector.manager_current_status).toEqual('started');
+      const GET_CONNECTOR_QUERY = gql`
+        query GetConnector($id: String!) {
+          connector(id: $id) {
+            id
+            manager_current_status
+          }
+        }
+      `;
+
+      const connectorResult = await queryAsAdminWithSuccess({
+        query: GET_CONNECTOR_QUERY,
+        variables: { id: deploymentConnectorId }
+      });
+
+      expect(connectorResult.data?.connector.manager_current_status).toEqual('started');
     });
 
     it('should stop a running connector', async () => {
@@ -304,13 +362,29 @@ describe('Connector Composer and Managed Connectors', () => {
       expect(stopResult.data).toBeDefined();
       expect(stopResult.data?.updateConnectorRequestedStatus.manager_requested_status).toEqual('stopping');
 
-      // XTM Composer stops the connector
-      await xtmComposer.stopConnector(deploymentConnectorId);
+      // Wait for XTM Composer to detect and stop the connector
+      if (FORCE_POLLING) {
+        await xtmComposer.runOrchestrationCycle();
+      } else {
+        await wait(1500);
+      }
 
       // Verify status
-      const connectors = await xtmComposer.getConnectorsForManagers();
-      const stoppedConnector = connectors.find((c: any) => c.id === deploymentConnectorId);
-      expect(stoppedConnector.manager_current_status).toEqual('stopped');
+      const GET_CONNECTOR_QUERY = gql`
+        query GetConnector($id: String!) {
+          connector(id: $id) {
+            id
+            manager_current_status
+          }
+        }
+      `;
+
+      const connectorResult = await queryAsAdminWithSuccess({
+        query: GET_CONNECTOR_QUERY,
+        variables: { id: deploymentConnectorId }
+      });
+
+      expect(connectorResult.data?.connector.manager_current_status).toEqual('stopped');
     });
 
     it('should restart a connector', async () => {
@@ -326,7 +400,28 @@ describe('Connector Composer and Managed Connectors', () => {
       });
 
       // Wait for XTM Composer to process stop
-      await xtmComposer.stopConnector(deploymentConnectorId);
+      if (FORCE_POLLING) {
+        await xtmComposer.runOrchestrationCycle();
+      } else {
+        await wait(1500);
+      }
+
+      // Verify stopped
+      const GET_CONNECTOR_QUERY = gql`
+        query GetConnector($id: String!) {
+          connector(id: $id) {
+            id
+            manager_current_status
+          }
+        }
+      `;
+
+      let connectorResult = await queryAsAdminWithSuccess({
+        query: GET_CONNECTOR_QUERY,
+        variables: { id: deploymentConnectorId }
+      });
+
+      expect(connectorResult.data?.connector.manager_current_status).toEqual('stopped');
 
       // Request start through platform
       const startRequestInput = {
@@ -339,13 +434,211 @@ describe('Connector Composer and Managed Connectors', () => {
         variables: { input: startRequestInput }
       });
 
-      // XTM Composer performs restart
-      await xtmComposer.restartConnector(deploymentConnectorId);
+      // Wait for XTM Composer to restart
+      if (FORCE_POLLING) {
+        await xtmComposer.runOrchestrationCycle();
+      } else {
+        await wait(1500);
+      }
 
       // Verify status
-      const connectors = await xtmComposer.getConnectorsForManagers();
-      const restartedConnector = connectors.find((c: any) => c.id === deploymentConnectorId);
-      expect(restartedConnector.manager_current_status).toEqual('started');
+      connectorResult = await queryAsAdminWithSuccess({
+        query: GET_CONNECTOR_QUERY,
+        variables: { id: deploymentConnectorId }
+      });
+
+      expect(connectorResult.data?.connector.manager_current_status).toEqual('started');
+    });
+
+    it('should change/update the connector log level (e.g., DEBUG, INFO, WARN, ERROR)', async () => {
+      // Create a dedicated connector for this test
+      const createInput = {
+        name: 'Log Level Test Connector',
+        connector_user_id: TEST_USER_CONNECTOR_ID,
+        catalog_id: 'filigran-catalog-id',
+        manager_contract_image: 'opencti/connector-ipinfo',
+        manager_contract_configuration: [
+          { key: 'IPINFO_TOKEN', value: ['log-level-test-token'] },
+          { key: 'CONNECTOR_SCOPE', value: ['IPv4-Addr'] },
+          { key: 'CONNECTOR_AUTO', value: ['true'] },
+          { key: 'IPINFO_MAX_TLP', value: ['TLP:AMBER'] },
+          { key: 'CONNECTOR_LOG_LEVEL', value: ['info'] }, // Initial log level
+          { key: 'IPINFO_USE_ASN_NAME', value: ['false'] }
+        ]
+      };
+
+      const createResult = await queryAsAdminWithSuccess({
+        query: ADD_MANAGED_CONNECTOR_MUTATION,
+        variables: { input: createInput }
+      });
+
+      expect(createResult.data).toBeDefined();
+      const logLevelConnectorId = createResult.data?.managedConnectorAdd.id;
+      createdConnectorIds.add(logLevelConnectorId);
+
+      // Start the connector
+      await queryAsAdminWithSuccess({
+        query: UPDATE_CONNECTOR_REQUESTED_STATUS_MUTATION,
+        variables: { input: { id: logLevelConnectorId, status: 'starting' } }
+      });
+
+      // Wait for XTM Composer to deploy
+      if (FORCE_POLLING) {
+        await xtmComposer.runOrchestrationCycle();
+      } else {
+        await wait(1500);
+      }
+
+      // Get current configuration to preserve other settings
+      const GET_CONNECTOR_QUERY = gql`
+        query GetConnector($id: String!) {
+          connector(id: $id) {
+            id
+            manager_current_status
+            manager_contract_configuration {
+              key
+              value
+            }
+          }
+        }
+      `;
+
+      const connectorResult = await queryAsAdminWithSuccess({
+        query: GET_CONNECTOR_QUERY,
+        variables: { id: logLevelConnectorId }
+      });
+
+      expect(connectorResult.data?.connector.manager_current_status).toEqual('started');
+
+      const currentConfig = connectorResult.data?.connector.manager_contract_configuration || [];
+      const configWithoutLogLevel = currentConfig.filter((c: any) => c.key !== 'CONNECTOR_LOG_LEVEL');
+
+      // Update the connector configuration with a new log level (change from 'info' to 'debug')
+      const updateInput = {
+        id: logLevelConnectorId,
+        name: 'Log Level Test Connector',
+        connector_user_id: TEST_USER_CONNECTOR_ID,
+        manager_contract_configuration: [
+          ...configWithoutLogLevel,
+          { key: 'CONNECTOR_LOG_LEVEL', value: ['debug'] } // Changed from 'info' to 'debug'
+        ]
+      };
+
+      const updateResult = await queryAsAdminWithSuccess({
+        query: EDIT_MANAGED_CONNECTOR_MUTATION,
+        variables: { input: updateInput }
+      });
+
+      expect(updateResult.data).toBeDefined();
+      expect(updateResult.data?.managedConnectorEdit).toBeDefined();
+
+      // Wait for XTM Composer to detect the configuration change and redeploy
+      if (FORCE_POLLING) {
+        await xtmComposer.runOrchestrationCycle();
+      } else {
+        await wait(2000); // Wait a bit longer for configuration change detection
+      }
+
+      // Query the connector logs to verify the redeploy happened
+      const logsResult = await queryAsAdminWithSuccess({
+        query: CONNECTOR_LOGS_QUERY,
+        variables: { id: logLevelConnectorId }
+      });
+
+      expect(logsResult.data).toBeDefined();
+      const logs = logsResult.data?.connector.manager_connector_logs || [];
+
+      // Verify logs contain evidence of configuration change and redeploy
+      const logStrings = logs.join('\n');
+      expect(logStrings).toContain('[XTM-Composer] Configuration changed, redeploying connector...');
+      expect(logStrings).toContain('[XTM-Composer] Connector redeployed successfully');
+
+      // Verify the connector is still running after the redeploy
+      const statusResult = await queryAsAdminWithSuccess({
+        query: GET_CONNECTOR_QUERY,
+        variables: { id: logLevelConnectorId }
+      });
+      expect(statusResult.data?.connector.manager_current_status).toEqual('started');
+
+      // Verify the new log level is applied
+      const newConfig = statusResult.data?.connector.manager_contract_configuration || [];
+      const logLevelConfig = newConfig.find((c: any) => c.key === 'CONNECTOR_LOG_LEVEL');
+      expect(logLevelConfig?.value).toEqual('debug');
+
+      // Test changing to another log level (ERROR)
+      const updateInput2 = {
+        id: logLevelConnectorId,
+        name: 'Log Level Test Connector',
+        connector_user_id: TEST_USER_CONNECTOR_ID,
+        manager_contract_configuration: [
+          ...configWithoutLogLevel,
+          { key: 'CONNECTOR_LOG_LEVEL', value: ['error'] } // Changed from 'debug' to 'error'
+        ]
+      };
+
+      await queryAsAdminWithSuccess({
+        query: EDIT_MANAGED_CONNECTOR_MUTATION,
+        variables: { input: updateInput2 }
+      });
+
+      // Wait for XTM Composer to detect the configuration change again
+      if (FORCE_POLLING) {
+        await xtmComposer.runOrchestrationCycle();
+      } else {
+        await wait(2000);
+      }
+
+      // Query logs again
+      const logsResult2 = await queryAsAdminWithSuccess({
+        query: CONNECTOR_LOGS_QUERY,
+        variables: { id: logLevelConnectorId }
+      });
+
+      const logs2 = logsResult2.data?.connector.manager_connector_logs || [];
+      const logStrings2 = logs2.join('\n');
+
+      // Verify the second configuration change triggered a redeploy
+      expect(logStrings2).toContain('[XTM-Composer] Configuration changed, redeploying connector...');
+      expect(logStrings2).toContain('[XTM-Composer] Connector redeployed successfully');
+
+      // Test updating only the name without changing configuration (should not redeploy)
+      const updateInput3 = {
+        id: logLevelConnectorId,
+        name: 'Log Level Test Connector - Updated Name Only',
+        connector_user_id: TEST_USER_CONNECTOR_ID,
+        manager_contract_configuration: [
+          ...configWithoutLogLevel,
+          { key: 'CONNECTOR_LOG_LEVEL', value: ['error'] } // Same log level as before
+        ]
+      };
+
+      // Clear logs before the name-only update
+      await wait(100);
+
+      await queryAsAdminWithSuccess({
+        query: EDIT_MANAGED_CONNECTOR_MUTATION,
+        variables: { input: updateInput3 }
+      });
+
+      // Wait for XTM Composer to check configuration
+      if (FORCE_POLLING) {
+        await xtmComposer.runOrchestrationCycle();
+      } else {
+        await wait(2000);
+      }
+
+      // Query logs one more time
+      const logsResult3 = await queryAsAdminWithSuccess({
+        query: CONNECTOR_LOGS_QUERY,
+        variables: { id: logLevelConnectorId }
+      });
+
+      const logs3 = logsResult3.data?.connector.manager_connector_logs || [];
+
+      // Count occurrences of redeploys - should only have the two from configuration changes
+      const allLogStrings = logs3.join('\n');
+      const redeployCount = (allLogStrings.match(/Connector redeployed successfully/g) || []).length;
+      expect(redeployCount).toBe(2); // Only the two previous configuration changes
     });
 
     it('should delete a managed connector deployment', async () => {
@@ -360,8 +653,12 @@ describe('Connector Composer and Managed Connectors', () => {
         variables: { input: stopRequestInput }
       });
 
-      // XTM Composer stops the connector
-      await xtmComposer.stopConnector(deploymentConnectorId);
+      // Wait for XTM Composer to stop the connector
+      if (FORCE_POLLING) {
+        await xtmComposer.runOrchestrationCycle();
+      } else {
+        await wait(1500);
+      }
 
       // Now delete the connector
       const deleteResult = await queryAsAdminWithSuccess({
@@ -531,17 +828,32 @@ describe('Connector Composer and Managed Connectors', () => {
         }))
       );
 
-      // Simulate XTM Composer processing all connectors concurrently
-      await Promise.all(
-        connectorIds.map((id) => xtmComposer.deployConnector(id))
-      );
+      // Wait for XTM Composer to process all connectors
+      if (FORCE_POLLING) {
+        await xtmComposer.runOrchestrationCycle();
+      } else {
+        await wait(2000); // Wait a bit longer for multiple connectors
+      }
 
       // Verify all connectors are started
-      const connectors = await xtmComposer.getConnectorsForManagers();
-      connectorIds.forEach((id) => {
-        const connector = connectors.find((c: any) => c.id === id);
-        expect(connector.manager_current_status).toEqual('started');
-      });
+      const GET_CONNECTOR_QUERY = gql`
+        query GetConnector($id: String!) {
+          connector(id: $id) {
+            id
+            manager_current_status
+          }
+        }
+      `;
+
+      await Promise.all(
+        connectorIds.map(async (id) => {
+          const connectorResult = await queryAsAdminWithSuccess({
+            query: GET_CONNECTOR_QUERY,
+            variables: { id }
+          });
+          expect(connectorResult.data?.connector.manager_current_status).toEqual('started');
+        })
+      );
     });
   });
 
@@ -906,6 +1218,11 @@ describe('Connector Composer and Managed Connectors', () => {
   });
 
   afterAll(async () => {
+    // Stop the orchestration loop
+    if (xtmComposer) {
+      xtmComposer.stopOrchestration();
+    }
+
     // Final cleanup of any remaining connectors
     const allConnectorsToDelete = Array.from(createdConnectorIds).filter(Boolean);
 
