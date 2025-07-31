@@ -6,7 +6,7 @@ import { RecordSourceSelectorProxy } from 'relay-runtime';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
-import { commitMutation, fetchQuery } from '../../../../relay/environment';
+import { fetchQuery } from '../../../../relay/environment';
 import { insertNode } from '../../../../utils/store';
 import { truncate } from '../../../../utils/String';
 import { ExternalReferenceCreationMutation$data } from '../../analyses/external_references/__generated__/ExternalReferenceCreationMutation.graphql';
@@ -18,19 +18,11 @@ import { externalReferenceLinesMutationRelationAdd } from '../../analyses/extern
 import ExternalReferenceCreation from '../../analyses/external_references/ExternalReferenceCreation';
 import { externalReferencesQueriesSearchQuery } from '../../analyses/external_references/ExternalReferencesQueries';
 import { FieldOption } from '../../../../utils/field';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles(() => ({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
   autoCompleteIndicator: {
     display: 'none',
   },
@@ -111,6 +103,8 @@ ExternalReferencesFieldProps
   }[]
   >([]);
 
+  const [commitExternalReference] = useApiMutation(externalReferenceLinesMutationRelationAdd);
+
   const handleOpenExternalReferenceCreation = () => {
     setExternalReferenceCreation(true);
   };
@@ -190,10 +184,21 @@ ExternalReferencesFieldProps
           option: FieldOption,
         ) => (
           <li {...props} key={option.value}>
-            <div className={classes.icon}>
+            <div style={{
+              paddingTop: 4,
+              display: 'inline-block',
+            }}
+            >
               <ItemIcon type="External-Reference" />
             </div>
-            <div className={classes.text}>{option.label}</div>
+            <div style={{
+              display: 'inline-block',
+              flexGrow: 1,
+              marginLeft: 10,
+            }}
+            >
+              {option.label}
+            </div>
           </li>
         )}
         classes={{ clearIndicator: classes.autoCompleteIndicator }}
@@ -212,8 +217,7 @@ ExternalReferencesFieldProps
               fromId: id,
               relationship_type: 'external-reference',
             };
-            commitMutation({
-              mutation: externalReferenceLinesMutationRelationAdd,
+            commitExternalReference({
               variables: {
                 id: newExternalReference?.id,
                 input,
@@ -232,11 +236,6 @@ ExternalReferencesFieldProps
                   );
                 }
               },
-              optimisticUpdater: undefined,
-              optimisticResponse: undefined,
-              onCompleted: undefined,
-              onError: undefined,
-              setSubmitting: undefined,
             });
           }
           if (newExternalReference) {
