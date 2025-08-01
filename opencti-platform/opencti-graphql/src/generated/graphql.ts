@@ -299,7 +299,7 @@ export type AdministrativeAreaStixCoreRelationshipsDistributionArgs = {
 
 
 export type AdministrativeAreaToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type AdministrativeAreaAddInput = {
@@ -637,7 +637,7 @@ export type ArtifactStixCoreRelationshipsDistributionArgs = {
 
 
 export type ArtifactToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type ArtifactAddInput = {
@@ -918,7 +918,7 @@ export type AttackPatternSubAttackPatternsArgs = {
 
 
 export type AttackPatternToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type AttackPatternAddInput = {
@@ -1328,7 +1328,7 @@ export type AutonomousSystemStixCoreRelationshipsDistributionArgs = {
 
 
 export type AutonomousSystemToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type AutonomousSystemAddInput = {
@@ -1656,7 +1656,7 @@ export type BankAccountStixCoreRelationshipsDistributionArgs = {
 
 
 export type BankAccountToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type BankAccountAddInput = {
@@ -1911,7 +1911,7 @@ export type CampaignStixCoreRelationshipsDistributionArgs = {
 
 
 export type CampaignToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type CampaignAddInput = {
@@ -2322,7 +2322,7 @@ export type CaseStixCoreRelationshipsDistributionArgs = {
 
 
 export type CaseToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type CaseConnection = {
@@ -2589,7 +2589,7 @@ export type CaseIncidentStixCoreRelationshipsDistributionArgs = {
 
 
 export type CaseIncidentToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type CaseIncidentAddInput = {
@@ -2907,7 +2907,7 @@ export type CaseRfiStixCoreRelationshipsDistributionArgs = {
 
 
 export type CaseRfiToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type CaseRfiAddInput = {
@@ -3222,7 +3222,7 @@ export type CaseRftStixCoreRelationshipsDistributionArgs = {
 
 
 export type CaseRftToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type CaseRftAddInput = {
@@ -3579,7 +3579,7 @@ export type ChannelStixCoreRelationshipsDistributionArgs = {
 
 
 export type ChannelToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type ChannelAddInput = {
@@ -3858,7 +3858,7 @@ export type CityStixCoreRelationshipsDistributionArgs = {
 
 
 export type CityToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type CityAddInput = {
@@ -4626,7 +4626,7 @@ export type CountryStixCoreRelationshipsDistributionArgs = {
 
 
 export type CountryToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type CountryAddInput = {
@@ -4906,7 +4906,7 @@ export type CourseOfActionStixCoreRelationshipsDistributionArgs = {
 
 
 export type CourseOfActionToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type CourseOfActionAddInput = {
@@ -5207,7 +5207,7 @@ export type CredentialStixCoreRelationshipsDistributionArgs = {
 
 
 export type CredentialToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type CredentialAddInput = {
@@ -5409,7 +5409,7 @@ export type CryptocurrencyWalletStixCoreRelationshipsDistributionArgs = {
 
 
 export type CryptocurrencyWalletToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type CryptocurrencyWalletAddInput = {
@@ -5611,7 +5611,7 @@ export type CryptographicKeyStixCoreRelationshipsDistributionArgs = {
 
 
 export type CryptographicKeyToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type CryptographicKeyAddInput = {
@@ -5974,7 +5974,7 @@ export type DataComponentStixCoreRelationshipsDistributionArgs = {
 
 
 export type DataComponentToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type DataComponentAddInput = {
@@ -6230,7 +6230,7 @@ export type DataSourceStixCoreRelationshipsDistributionArgs = {
 
 
 export type DataSourceToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type DataSourceAddInput = {
@@ -6651,7 +6651,7 @@ export type DirectoryStixCoreRelationshipsDistributionArgs = {
 
 
 export type DirectoryToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type DirectoryAddInput = {
@@ -6932,7 +6932,7 @@ export type DomainNameStixCoreRelationshipsDistributionArgs = {
 
 
 export type DomainNameToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type DomainNameAddInput = {
@@ -7277,7 +7277,7 @@ export type EmailAddrStixCoreRelationshipsDistributionArgs = {
 
 
 export type EmailAddrToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type EmailAddrAddInput = {
@@ -7486,7 +7486,7 @@ export type EmailMessageStixCoreRelationshipsDistributionArgs = {
 
 
 export type EmailMessageToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type EmailMessageAddInput = {
@@ -7696,7 +7696,7 @@ export type EmailMimePartTypeStixCoreRelationshipsDistributionArgs = {
 
 
 export type EmailMimePartTypeToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type EmailMimePartTypeAddInput = {
@@ -8000,7 +8000,7 @@ export type EventStixCoreRelationshipsDistributionArgs = {
 
 
 export type EventToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type EventAddInput = {
@@ -8609,7 +8609,7 @@ export type FeedbackStixCoreRelationshipsDistributionArgs = {
 
 
 export type FeedbackToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type FeedbackAddInput = {
@@ -9315,7 +9315,7 @@ export type GroupingStixCoreRelationshipsDistributionArgs = {
 
 
 export type GroupingToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type GroupingAddInput = {
@@ -9586,7 +9586,7 @@ export type HashedObservableStixCoreRelationshipsDistributionArgs = {
 
 
 export type HashedObservableToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type HeaderInput = {
@@ -9795,7 +9795,7 @@ export type HostnameStixCoreRelationshipsDistributionArgs = {
 
 
 export type HostnameToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type HostnameAddInput = {
@@ -9998,7 +9998,7 @@ export type IPv4AddrStixCoreRelationshipsDistributionArgs = {
 
 
 export type IPv4AddrToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type IPv4AddrAddInput = {
@@ -10203,7 +10203,7 @@ export type IPv6AddrStixCoreRelationshipsDistributionArgs = {
 
 
 export type IPv6AddrToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type IPv6AddrAddInput = {
@@ -10420,7 +10420,7 @@ export type IdentityStixCoreRelationshipsDistributionArgs = {
 
 
 export type IdentityToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type IdentityAddInput = {
@@ -10719,7 +10719,7 @@ export type IncidentStixCoreRelationshipsDistributionArgs = {
 
 
 export type IncidentToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type IncidentAddInput = {
@@ -11071,7 +11071,7 @@ export type IndicatorStixCoreRelationshipsDistributionArgs = {
 
 
 export type IndicatorToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type IndicatorAddInput = {
@@ -11369,7 +11369,7 @@ export type IndividualStixCoreRelationshipsDistributionArgs = {
 
 
 export type IndividualToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type IndividualAddInput = {
@@ -11676,7 +11676,7 @@ export type InfrastructureStixCoreRelationshipsDistributionArgs = {
 
 
 export type InfrastructureToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type InfrastructureAddInput = {
@@ -12338,7 +12338,7 @@ export type IntrusionSetStixCoreRelationshipsDistributionArgs = {
 
 
 export type IntrusionSetToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type IntrusionSetAddInput = {
@@ -12655,7 +12655,7 @@ export type Label = BasicObject & StixMetaObject & StixObject & {
 
 
 export type LabelToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type LabelAddInput = {
@@ -12912,7 +12912,7 @@ export type LanguageStixCoreRelationshipsDistributionArgs = {
 
 
 export type LanguageToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type LanguageAddInput = {
@@ -13184,7 +13184,7 @@ export type LocationStixCoreRelationshipsDistributionArgs = {
 
 
 export type LocationToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type LocationAddInput = {
@@ -13516,7 +13516,7 @@ export type MacAddrStixCoreRelationshipsDistributionArgs = {
 
 
 export type MacAddrToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type MacAddrAddInput = {
@@ -13737,7 +13737,7 @@ export type MalwareStixCoreRelationshipsDistributionArgs = {
 
 
 export type MalwareToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type MalwareAddInput = {
@@ -14003,7 +14003,7 @@ export type MalwareAnalysisStixCoreRelationshipsDistributionArgs = {
 
 
 export type MalwareAnalysisToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type MalwareAnalysisAddInput = {
@@ -14213,7 +14213,7 @@ export type MarkingDefinition = BasicObject & StixMetaObject & StixObject & {
 
 
 export type MarkingDefinitionToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type MarkingDefinitionAddInput = {
@@ -14563,7 +14563,7 @@ export type MediaContentStixCoreRelationshipsDistributionArgs = {
 
 
 export type MediaContentToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type MediaContentAddInput = {
@@ -17711,7 +17711,7 @@ export type MutexStixCoreRelationshipsDistributionArgs = {
 
 
 export type MutexToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type MutexAddInput = {
@@ -17933,7 +17933,7 @@ export type NarrativeStixCoreRelationshipsDistributionArgs = {
 
 
 export type NarrativeToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type NarrativeAddInput = {
@@ -18190,7 +18190,7 @@ export type NetworkTrafficStixCoreRelationshipsDistributionArgs = {
 
 
 export type NetworkTrafficToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type NetworkTrafficAddInput = {
@@ -18457,7 +18457,7 @@ export type NoteStixCoreRelationshipsDistributionArgs = {
 
 
 export type NoteToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type NoteAddInput = {
@@ -18950,7 +18950,7 @@ export type ObservedDataStixCoreRelationshipsDistributionArgs = {
 
 
 export type ObservedDataToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type ObservedDataAddInput = {
@@ -19292,7 +19292,7 @@ export type OpinionStixCoreRelationshipsDistributionArgs = {
 
 
 export type OpinionToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type OpinionAddInput = {
@@ -19642,7 +19642,7 @@ export type OrganizationStixCoreRelationshipsDistributionArgs = {
 
 
 export type OrganizationToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type OrganizationAddInput = {
@@ -19949,7 +19949,7 @@ export type PaymentCardStixCoreRelationshipsDistributionArgs = {
 
 
 export type PaymentCardToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type PaymentCardAddInput = {
@@ -20155,7 +20155,7 @@ export type PersonaStixCoreRelationshipsDistributionArgs = {
 
 
 export type PersonaToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type PersonaAddInput = {
@@ -20357,7 +20357,7 @@ export type PhoneNumberStixCoreRelationshipsDistributionArgs = {
 
 
 export type PhoneNumberToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type PhoneNumberAddInput = {
@@ -20907,7 +20907,7 @@ export type PositionStixCoreRelationshipsDistributionArgs = {
 
 
 export type PositionToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type PositionAddInput = {
@@ -21213,7 +21213,7 @@ export type ProcessStixCoreRelationshipsDistributionArgs = {
 
 
 export type ProcessToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type ProcessAddInput = {
@@ -24957,7 +24957,7 @@ export type RegionStixCoreRelationshipsDistributionArgs = {
 
 
 export type RegionToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type RegionAddInput = {
@@ -25315,7 +25315,7 @@ export type ReportStixCoreRelationshipsDistributionArgs = {
 
 
 export type ReportToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type ReportAddInput = {
@@ -25938,7 +25938,7 @@ export type SectorStixCoreRelationshipsDistributionArgs = {
 
 
 export type SectorToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type SectorAddInput = {
@@ -26230,7 +26230,7 @@ export type SecurityPlatformStixCoreRelationshipsDistributionArgs = {
 
 
 export type SecurityPlatformToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type SecurityPlatformAddInput = {
@@ -26652,7 +26652,7 @@ export type SoftwareStixCoreRelationshipsDistributionArgs = {
 
 
 export type SoftwareToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type SoftwareAddInput = {
@@ -26943,7 +26943,7 @@ export type StixCoreObjectStixCoreRelationshipsDistributionArgs = {
 
 
 export type StixCoreObjectToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type StixCoreObjectConnection = {
@@ -27253,7 +27253,7 @@ export type StixCoreRelationshipStixCoreRelationshipsArgs = {
 
 
 export type StixCoreRelationshipToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type StixCoreRelationshipAddInput = {
@@ -27622,7 +27622,7 @@ export type StixCyberObservableStixCoreRelationshipsDistributionArgs = {
 
 
 export type StixCyberObservableToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type StixCyberObservableConnection = {
@@ -27926,7 +27926,7 @@ export type StixDomainObjectStixCoreRelationshipsDistributionArgs = {
 
 
 export type StixDomainObjectToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type StixDomainObjectAddInput = {
@@ -28321,7 +28321,7 @@ export type StixFileStixCoreRelationshipsDistributionArgs = {
 
 
 export type StixFileToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type StixFileAddInput = {
@@ -28529,7 +28529,7 @@ export type StixRefRelationshipReportsArgs = {
 
 
 export type StixRefRelationshipToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type StixRefRelationshipAddInput = {
@@ -28634,7 +28634,7 @@ export type StixRelationship = {
 
 
 export type StixRelationshipToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type StixRelationshipConnection = {
@@ -28802,7 +28802,7 @@ export type StixSightingRelationshipReportsArgs = {
 
 
 export type StixSightingRelationshipToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type StixSightingRelationshipAddInput = {
@@ -28917,11 +28917,6 @@ export enum StixSightingRelationshipsOrdering {
   UpdatedAt = 'updated_at',
   XOpenctiNegative = 'x_opencti_negative',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
-}
-
-export enum StixVersion {
-  Stix_2_0 = 'stix_2_0',
-  Stix_2_1 = 'stix_2_1'
 }
 
 export type StreamCollection = {
@@ -29495,7 +29490,7 @@ export type SystemStixCoreRelationshipsDistributionArgs = {
 
 
 export type SystemToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type SystemAddInput = {
@@ -29828,7 +29823,7 @@ export type TaskStixCoreRelationshipsDistributionArgs = {
 
 
 export type TaskToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type TaskAddInput = {
@@ -30167,7 +30162,7 @@ export type TextStixCoreRelationshipsDistributionArgs = {
 
 
 export type TextToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type TextAddInput = {
@@ -30414,7 +30409,7 @@ export type ThreatActorStixCoreRelationshipsDistributionArgs = {
 
 
 export type ThreatActorToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type ThreatActorConnection = {
@@ -30645,7 +30640,7 @@ export type ThreatActorGroupStixCoreRelationshipsDistributionArgs = {
 
 
 export type ThreatActorGroupToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type ThreatActorGroupAddInput = {
@@ -30952,7 +30947,7 @@ export type ThreatActorIndividualStixCoreRelationshipsDistributionArgs = {
 
 
 export type ThreatActorIndividualToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type ThreatActorIndividualAddInput = {
@@ -31259,7 +31254,7 @@ export type ToolStixCoreRelationshipsDistributionArgs = {
 
 
 export type ToolToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type ToolAddInput = {
@@ -31541,7 +31536,7 @@ export type TrackingNumberStixCoreRelationshipsDistributionArgs = {
 
 
 export type TrackingNumberToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type TrackingNumberAddInput = {
@@ -31871,7 +31866,7 @@ export type UrlStixCoreRelationshipsDistributionArgs = {
 
 
 export type UrlToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type UrlAddInput = {
@@ -32159,7 +32154,7 @@ export type UserAccountStixCoreRelationshipsDistributionArgs = {
 
 
 export type UserAccountToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type UserAccountAddInput = {
@@ -32397,7 +32392,7 @@ export type UserAgentStixCoreRelationshipsDistributionArgs = {
 
 
 export type UserAgentToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type UserAgentAddInput = {
@@ -32518,6 +32513,11 @@ export type VerifyOtpInput = {
   otp: Scalars['String']['input'];
   transactionId: Scalars['String']['input'];
 };
+
+export enum Version {
+  Stix_2_0 = 'stix_2_0',
+  Stix_2_1 = 'stix_2_1'
+}
 
 export type Vocabulary = BasicObject & StixMetaObject & StixObject & {
   __typename?: 'Vocabulary';
@@ -32920,7 +32920,7 @@ export type VulnerabilityStixCoreRelationshipsDistributionArgs = {
 
 
 export type VulnerabilityToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type VulnerabilityAddInput = {
@@ -33299,7 +33299,7 @@ export type WindowsRegistryKeyStixCoreRelationshipsDistributionArgs = {
 
 
 export type WindowsRegistryKeyToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type WindowsRegistryKeyAddInput = {
@@ -33505,7 +33505,7 @@ export type WindowsRegistryValueTypeStixCoreRelationshipsDistributionArgs = {
 
 
 export type WindowsRegistryValueTypeToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type WindowsRegistryValueTypeAddInput = {
@@ -33911,7 +33911,7 @@ export type X509CertificateStixCoreRelationshipsDistributionArgs = {
 
 
 export type X509CertificateToStixArgs = {
-  stixVersion?: InputMaybe<StixVersion>;
+  version?: InputMaybe<Version>;
 };
 
 export type X509CertificateAddInput = {
@@ -34909,7 +34909,6 @@ export type ResolversTypes = ResolversObject<{
   StixSightingRelationshipEditMutations: ResolverTypeWrapper<Omit<StixSightingRelationshipEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete' | 'relationsAdd' | 'restrictionOrganizationAdd' | 'restrictionOrganizationDelete'> & { contextClean?: Maybe<ResolversTypes['StixSightingRelationship']>, contextPatch?: Maybe<ResolversTypes['StixSightingRelationship']>, fieldPatch?: Maybe<ResolversTypes['StixSightingRelationship']>, relationAdd?: Maybe<ResolversTypes['StixSightingRelationship']>, relationDelete?: Maybe<ResolversTypes['StixSightingRelationship']>, relationsAdd?: Maybe<ResolversTypes['StixSightingRelationship']>, restrictionOrganizationAdd?: Maybe<ResolversTypes['StixSightingRelationship']>, restrictionOrganizationDelete?: Maybe<ResolversTypes['StixSightingRelationship']> }>;
   StixSightingRelationshipsEdge: ResolverTypeWrapper<Omit<StixSightingRelationshipsEdge, 'node'> & { node: ResolversTypes['StixSightingRelationship'] }>;
   StixSightingRelationshipsOrdering: StixSightingRelationshipsOrdering;
-  StixVersion: StixVersion;
   StreamCollection: ResolverTypeWrapper<StreamCollection>;
   StreamCollectionAddInput: StreamCollectionAddInput;
   StreamCollectionConnection: ResolverTypeWrapper<StreamCollectionConnection>;
@@ -35023,6 +35022,7 @@ export type ResolversTypes = ResolversObject<{
   VerifyMfaInput: VerifyMfaInput;
   VerifyOtp: ResolverTypeWrapper<VerifyOtp>;
   VerifyOtpInput: VerifyOtpInput;
+  Version: Version;
   Vocabulary: ResolverTypeWrapper<BasicStoreEntityVocabulary>;
   VocabularyAddInput: VocabularyAddInput;
   VocabularyCategory: VocabularyCategory;
