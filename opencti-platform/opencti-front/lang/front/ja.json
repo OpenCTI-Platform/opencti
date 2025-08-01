@@ -2367,6 +2367,7 @@
   "No import connectors on this platform": "有効なインポート用コネクタがありません",
   "No import works for this file": "このファイルはインポートできません",
   "No label": "ラベルなし",
+  "No logs available": "過去ログなし",
   "No Malware analysis on this observable.": "この観測点では、マルウェアの解析は行われていません。",
   "No malware analysis on this observable.": "この観測値に関するマルウェア解析はありません。",
   "No mapping": "マッピングなし",

@@ -2367,6 +2367,7 @@
   "No import connectors on this platform": "На этой платформе нет коннекторов для импорта",
   "No import works for this file": "Импорт не работает для этого файла",
   "No label": "Без этикетки",
+  "No logs available": "Журналы отсутствуют",
   "No Malware analysis on this observable.": "Анализ вредоносного ПО на этом наблюдаемом объекте не проводился.",
   "No malware analysis on this observable.": "Анализ вредоносных программ для этого объекта наблюдения не проводился.",
   "No mapping": "Нет отображения",
