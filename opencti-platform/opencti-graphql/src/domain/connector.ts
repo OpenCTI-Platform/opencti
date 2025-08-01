@@ -1,4 +1,4 @@
-import { v4 as uuid, v5 as uuidv5 } from 'uuid';
+import { v5 as uuidv5 } from 'uuid';
 import { createEntity, deleteElementById, internalDeleteElementById, patchAttribute, updateAttribute } from '../database/middleware';
 import { type GetHttpClient, getHttpClient } from '../utils/http-client';
 import { completeConnector, connector, connectors, connectorsFor } from '../database/repository';
@@ -47,7 +47,7 @@ import { addWorkbenchDraftConvertionCount, addWorkbenchValidationCount } from '.
 import { computeConnectorTargetContract, getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { removeAuthenticationCredentials } from '../modules/ingestion/ingestion-common';
-import { createOnTheFlyUser } from '../modules/ingestion/ingestion-csv-domain';
+import { createOnTheFlyUser } from '../modules/user/user-domain';
 
 // region connectors
 export const connectorForWork = async (context: AuthContext, user: AuthUser, id: string) => {
