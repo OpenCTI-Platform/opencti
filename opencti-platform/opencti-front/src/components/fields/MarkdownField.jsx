@@ -4,6 +4,8 @@ import { useField } from 'formik';
 import InputLabel from '@mui/material/InputLabel';
 import FormHelperText from '@mui/material/FormHelperText';
 import { isNil } from 'ramda';
+import useEnterpriseEdition from '../../utils/hooks/useEnterpriseEdition';
+import useAI from '../../utils/hooks/useAI';
 import TextFieldAskAI from '../../private/components/common/form/TextFieldAskAI';
 import { useFormatter } from '../i18n';
 import MarkdownDisplay from '../MarkdownDisplay';
@@ -27,6 +29,9 @@ const MarkdownField = (props) => {
   const { t_i18n } = useFormatter();
   const [selectedTab, setSelectedTab] = useState('write');
   const [field, meta] = useField(name);
+  const isEnterpriseEdition = useEnterpriseEdition();
+  const { configured, enabled } = useAI();
+  const isAIConfigured = enabled && configured;
   const internalOnFocus = (event) => {
     const { nodeName } = event.relatedTarget || {};
     if (nodeName === 'INPUT' || nodeName === undefined) {
@@ -102,7 +107,7 @@ const MarkdownField = (props) => {
       {showError && (
         <FormHelperText error={true}>{showError}</FormHelperText>
       )}
-      {askAi && (
+      {askAi && (isAIConfigured || !isEnterpriseEdition) && (
         <TextFieldAskAI
           currentValue={field.value ?? ''}
           setFieldValue={(val) => {

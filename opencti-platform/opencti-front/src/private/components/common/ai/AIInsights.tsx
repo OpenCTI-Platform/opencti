@@ -144,7 +144,7 @@ const AIInsights = ({
   const [containersBusId] = useState(uuid());
   const [loading, setLoading] = useState(false);
   const isAdmin = useGranted([SETTINGS_SETPARAMETERS]);
-
+  const { enabled, configured } = useAI();
   const handleClose = () => {
     setLoading(false);
     setDisplay(false);
@@ -174,6 +174,9 @@ const AIInsights = ({
   };
   // TODO make the filter "objects" readonly?
   const [containersFilters, containersFiltersHelpers] = useFiltersState(initialContainersFilters);
+  const isAIConfigured = enabled && configured;
+
+  if (isEnterpriseEdition && !isAIConfigured) return null;
   if (!isEnterpriseEdition) {
     return (
       <>
@@ -251,7 +254,7 @@ const AIInsights = ({
             {t_i18n('Enable AI powered platform')}
           </DialogTitle>
           <DialogContent>
-            {t_i18n('To use AI, please enable it in the configuration of your platform.')}
+            {t_i18n('To use this AI feature in the enterprise edition, please add a token.')}
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setDisplayAIDialog(false)}>{t_i18n('Close')}</Button>

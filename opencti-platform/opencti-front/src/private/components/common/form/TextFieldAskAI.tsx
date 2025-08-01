@@ -26,7 +26,6 @@ import { useFormatter } from '../../../../components/i18n';
 // eslint-disable-next-line import/no-cycle
 import ResponseDialog from '../../../../utils/ai/ResponseDialog';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import useAI from '../../../../utils/hooks/useAI';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
 
@@ -87,7 +86,6 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { enabled, configured } = useAI();
 
   const [content, setContent] = useState('');
   const [disableResponse, setDisableResponse] = useState(false);
@@ -246,7 +244,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
         <EETooltip forAi={true} title={t_i18n('Ask AI')}>
           <IconButton
             size="small"
-            onClick={(event) => ((isEnterpriseEdition && enabled && configured) ? handleOpenMenu(event) : null)}
+            onClick={(event) => (handleOpenMenu(event))}
             disabled={disabled || currentValue.length < 10}
             style={{ color: theme.palette.ai.main }}
           >
@@ -279,22 +277,22 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
           </MenuItem>
         </Menu>
         {busId && (
-        <ResponseDialog
-          id={busId}
-          isDisabled={disableResponse}
-          isOpen={displayAskAI}
-          handleClose={handleCloseAskAI}
-          content={content}
-          setContent={setContent}
-          handleAccept={(value) => {
-            setFieldValue(value);
-            handleCloseAskAI();
-          }}
-          handleFollowUp={handleCloseAskAI}
-          followUpActions={[{ key: 'retry', label: t_i18n('Retry') }]}
-          format={format}
-          isAcceptable={isAcceptable}
-        />
+          <ResponseDialog
+            id={busId}
+            isDisabled={disableResponse}
+            isOpen={displayAskAI}
+            handleClose={handleCloseAskAI}
+            content={content}
+            setContent={setContent}
+            handleAccept={(value) => {
+              setFieldValue(value);
+              handleCloseAskAI();
+            }}
+            handleFollowUp={handleCloseAskAI}
+            followUpActions={[{ key: 'retry', label: t_i18n('Retry') }]}
+            format={format}
+            isAcceptable={isAcceptable}
+          />
         )}
         <Dialog
           slotProps={{ paper: { elevation: 1 } }}
@@ -337,7 +335,6 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
       </>
     );
   };
-
   if (variant === 'markdown') {
     return (
       <div style={style || { position: 'absolute', top: 17, right: 0, paddingTop: 4 }}>
@@ -352,6 +349,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
       </div>
     );
   }
+
   return (
     <InputAdornment position="end" style={{ position: 'absolute', right: 0 }}>
       {renderButton()}
