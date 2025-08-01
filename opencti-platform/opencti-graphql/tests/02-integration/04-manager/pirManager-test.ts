@@ -6,6 +6,7 @@ import { isStixMatchFilterGroup_MockableForUnitTests } from '../../../src/utils/
 import { checkEventOnPir } from '../../../src/manager/pirManager';
 import type { AuthContext } from '../../../src/types/user';
 import type { SseEvent } from '../../../src/types/event';
+import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 
 const TEST_PIR_TARGET_1 = 'locations--9b8fd9c3-1ca3-41c2-be13-730f35b166b2';
 const TEST_PIR_TARGET_2 = 'locations--9b8fd9c3-1ca3-41c2-be13-730f35b166a3';
@@ -74,6 +75,11 @@ const buildEvent = ({
       source_ref: 'malware--bb3bf652-fe46-4e1a-b2a8-d588f114a096',
       target_ref: target,
       confidence,
+      extensions: {
+        [STIX_EXT_OCTI]: {
+          source_type: 'Malware',
+        }
+      }
     }
   } as SseEvent<any>;
 };

@@ -58,6 +58,7 @@ const PirPopover = ({ data }: PirPopoverProps) => {
         aria-haspopup="true"
         className="icon-outlined"
         variant="outlined"
+        aria-label={t_i18n('Popover of actions')}
       >
         <MoreVert fontSize="small" />
       </Button>

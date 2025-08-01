@@ -20,6 +20,7 @@ import { Link } from 'react-router-dom';
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { useTheme } from '@mui/material/styles';
+import { pirLogRedirectUri } from '@components/pir/pir-history-utils';
 import PirHistoryMessage from '../PirHistoryMessage';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
@@ -28,7 +29,6 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { PirOverviewHistoryPirFragment$key } from './__generated__/PirOverviewHistoryPirFragment.graphql';
 import { PirOverviewHistoryFragment$key } from './__generated__/PirOverviewHistoryFragment.graphql';
 import Paper from '../../../../components/Paper';
-import { sanitizeFilterGroupKeysForFrontend } from '../../../../utils/filters/filtersUtils';
 
 const pirFragment = graphql`
   fragment PirOverviewHistoryPirFragment on Pir {
@@ -94,21 +94,7 @@ const PirOverviewHistory = ({ dataHistory, dataPir }: PirOverviewHistoryProps) =
 
         {history.map((historyItem) => {
           const { id, context_data, timestamp } = historyItem;
-          const isAddInPir = /adds .+ in `In PIR`/.test(context_data?.message ?? '');
-          let redirectURI = `/dashboard/id/${context_data?.entity_id}`;
-          if (isAddInPir) {
-            const addInPirFilters = context_data?.entity_id
-              ? JSON.stringify(sanitizeFilterGroupKeysForFrontend({
-                mode: 'and',
-                filters: [{
-                  key: ['fromId'],
-                  values: [context_data.entity_id],
-                }],
-                filterGroups: [],
-              }))
-              : '';
-            redirectURI = `/dashboard/pirs/${pir.id}/threats?filters=${encodeURIComponent(addInPirFilters)}`;
-          }
+          const redirectURI = pirLogRedirectUri(pir.id, context_data);
 
           return (
             <Box

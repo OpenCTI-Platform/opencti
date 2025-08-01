@@ -13,9 +13,8 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import { GqlFilterGroup } from '../../../utils/filters/filtersUtils';
+import { GqlFilterGroup, sanitizeFilterGroupKeysForFrontend } from '../../../utils/filters/filtersUtils';
 
-// eslint-disable-next-line import/prefer-default-export
 export const pirHistoryFilterGroup = (pirId: string): GqlFilterGroup => {
   return {
     mode: 'and',
@@ -64,4 +63,29 @@ export const pirHistoryFilterGroup = (pirId: string): GqlFilterGroup => {
       },
     ],
   };
+};
+
+export const pirLogRedirectUri = (
+  pirId: string,
+  context: {
+    readonly entity_id: string | null | undefined
+    readonly entity_name: string | null | undefined
+    readonly entity_type: string | null | undefined
+    readonly message: string
+  } | null | undefined,
+) => {
+  const isAddInPir = /adds .+ in `In PIR`/.test(context?.message ?? '');
+  let redirectURI = `/dashboard/id/${context?.entity_id}`;
+  if (isAddInPir && context?.entity_id) {
+    const filter = encodeURIComponent(JSON.stringify(sanitizeFilterGroupKeysForFrontend({
+      mode: 'and',
+      filters: [{
+        key: ['fromId'],
+        values: [context.entity_id],
+      }],
+      filterGroups: [],
+    })));
+    redirectURI = `/dashboard/pirs/${pirId}/threats?filters=${filter}`;
+  }
+  return redirectURI;
 };
