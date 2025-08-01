@@ -176,7 +176,7 @@ const AIInsights = ({
   const [containersFilters, containersFiltersHelpers] = useFiltersState(initialContainersFilters);
   const isAIConfigured = enabled && configured;
 
-  if (!isAIConfigured) return null;
+  if (isEnterpriseEdition && !isAIConfigured) return null;
   if (!isEnterpriseEdition) {
     return (
       <>
