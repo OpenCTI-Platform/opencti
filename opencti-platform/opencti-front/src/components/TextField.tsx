@@ -5,6 +5,8 @@ import { FieldProps, useField } from 'formik';
 import { isNil } from 'ramda';
 import TextFieldAskAI from '../private/components/common/form/TextFieldAskAI';
 import StixDomainObjectDetectDuplicate from '../private/components/common/stix_domain_objects/StixDomainObjectDetectDuplicate';
+import useEnterpriseEdition from '../utils/hooks/useEnterpriseEdition';
+import useAI from '../utils/hooks/useAI';
 
 export type TextFieldProps = FieldProps<string> & MuiTextFieldProps & {
   detectDuplicate?: string[]
@@ -27,6 +29,9 @@ const TextField = (props: TextFieldProps) => {
     onSubmit,
     onKeyDown,
   } = props;
+  const isEnterpriseEdition = useEnterpriseEdition();
+  const { configured, enabled } = useAI();
+  const isAIConfigured = enabled && configured;
 
   const internalOnChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
@@ -121,7 +126,7 @@ const TextField = (props: TextFieldProps) => {
       slotProps={{
         input: {
           startAdornment,
-          endAdornment: askAi && (
+          endAdornment: askAi && (isAIConfigured || !isEnterpriseEdition) && (
             <TextFieldAskAI
               currentValue={value as string ?? ''}
               setFieldValue={(val) => {
