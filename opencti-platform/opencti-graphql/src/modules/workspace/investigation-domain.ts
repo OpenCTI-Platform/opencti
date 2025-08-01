@@ -3,7 +3,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntityWorkspace } from './workspace-types';
 import { FunctionalError } from '../../config/errors';
 import { storeLoadByIdsWithRefs } from '../../database/middleware';
-import { buildStixBundle, convertStoreToStix } from '../../database/stix-2-1-converter';
+import { buildStixBundle } from '../../database/stix-2-1-converter';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../schema/stixDomainObject';
 import { generateStandardId } from '../../schema/identifier';
 import type { StixId, StixObject } from '../../types/stix-2-1-common';
@@ -14,6 +14,8 @@ import { nowTime } from '../../utils/format';
 import { READ_STIX_INDICES } from '../../database/utils';
 import { getParentTypes } from '../../schema/schemaUtils';
 import { filterUnwantedEntitiesOut } from '../../domain/container';
+
+import { convertStoreToStix } from '../../database/stix-common-converter';
 
 const buildStixReportForExport = (workspace: BasicStoreEntityWorkspace, investigatedEntities: StoreEntity[]): StixObject => {
   const id = generateStandardId(ENTITY_TYPE_CONTAINER_REPORT, { name: workspace.name, published: workspace.created_at }) as StixId;
@@ -26,7 +28,7 @@ const buildStixReportForExport = (workspace: BasicStoreEntityWorkspace, investig
     parent_types: getParentTypes(ENTITY_TYPE_CONTAINER_REPORT),
     objects: investigatedEntities,
   };
-  return convertStoreToStix(report);
+  return convertStoreToStix(report) as unknown as StixObject;
 };
 
 export const toStixReportBundle = async (context: AuthContext, user: AuthUser, workspace: BasicStoreEntityWorkspace): Promise<string> => {
@@ -36,7 +38,7 @@ export const toStixReportBundle = async (context: AuthContext, user: AuthUser, w
   const investigatedEntitiesIds = workspace.investigated_entities_ids ?? [];
   const storeInvestigatedEntities = await storeLoadByIdsWithRefs(context, user, investigatedEntitiesIds, { indices: READ_STIX_INDICES });
   const stixReportForExport = buildStixReportForExport(workspace, storeInvestigatedEntities);
-  const bundle = buildStixBundle([stixReportForExport, ...storeInvestigatedEntities.map((s) => convertStoreToStix(s))]);
+  const bundle = buildStixBundle([stixReportForExport, ...storeInvestigatedEntities.map((s) => convertStoreToStix(s) as unknown as StixObject)]);
   return JSON.stringify(bundle);
 };
 
