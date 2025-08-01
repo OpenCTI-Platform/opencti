@@ -53,7 +53,7 @@ import { BackgroundTaskScope } from '../generated/graphql';
 import { getDraftContext } from '../utils/draftContext';
 import { getBestBackgroundConnectorId, pushToWorkerForConnector } from '../database/rabbitmq';
 import { updateExpectationsNumber, updateProcessedTime } from '../domain/work';
-import { convertStoreToStix, convertTypeToStixType } from '../database/stix-2-1-converter';
+import { convertTypeToStixType } from '../database/stix-2-1-converter';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { extractValidObservablesFromIndicatorPattern } from '../utils/syntax';
@@ -64,6 +64,8 @@ import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { getEntityFromCache } from '../database/cache';
 import { objects as getContainerObjects } from '../domain/container';
+
+import { convertStoreToStix } from '../database/stix-common-converter';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
