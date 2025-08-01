@@ -176,7 +176,7 @@ import {
 import { isRuleUser, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules-utils';
 import { instanceMetaRefsExtractor, isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
 import { createEntityAutoEnrichment } from '../domain/enrichment';
-import { convertExternalReferenceToStix, convertStoreToStix } from './stix-2-1-converter';
+import { convertExternalReferenceToStix } from './stix-2-1-converter';
 import {
   buildAggregationRelationFilter,
   buildEntityFilters,
@@ -237,7 +237,8 @@ import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetti
 import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
 import { generateVulnerabilitiesUpdates } from '../utils/vulnerabilities';
 import { idLabel } from '../schema/schema-labels';
-import { convertStoreToStix_2_0 } from './stix-2-0-converter';
+
+import { convertStoreToStix } from './stix-common-converter';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -519,10 +520,7 @@ export const storeLoadByIdWithRefs = async (context, user, id, opts = {}) => {
 export const stixLoadById = async (context, user, id, opts = {}) => {
   const instance = await storeLoadByIdWithRefs(context, user, id, opts);
   const version = opts?.version ?? Version.Stix_2_1;
-  if (version === Version.Stix_2_0) {
-    return instance ? convertStoreToStix_2_0(instance) : undefined;
-  }
-  return instance ? convertStoreToStix(instance) : undefined;
+  return instance ? convertStoreToStix(instance, version) : undefined;
 };
 const convertStoreToStixWithResolvedFiles = async (instance) => {
   const instanceInStix = convertStoreToStix(instance);
