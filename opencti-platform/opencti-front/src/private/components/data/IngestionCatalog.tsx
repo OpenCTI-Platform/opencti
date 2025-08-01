@@ -47,6 +47,7 @@ const IngestionCatalogComponent = ({
         {catalogs.map((catalog) => {
           return catalog.contracts.length > 0 && (
             <ListCardsContent
+              key={catalog.id}
               hasMore={() => false}
               isLoading={() => false}
               dataList={catalog.contracts}

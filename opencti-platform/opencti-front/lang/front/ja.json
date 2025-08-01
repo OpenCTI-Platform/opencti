@@ -3866,6 +3866,7 @@
   "Used TTPs": "使用されたTTPs",
   "USER": "利用者",
   "User": "ユーザー",
+  "User cannot be created automatically for this connector since no default group has been defined.": "デフォルト・グループが定義されていないため、このコネクタにユーザを自動的に作成することはできません。",
   "User cannot be created automatically for this feed since no default group has been defined.": "デフォルトグループが定義されていないため、このフィードのユーザーを自動的に作成することはできません。",
   "User cannot be created automatically for this feed since no default group has been defined. ": "デフォルトのグループが定義されていないため、このフィードに対してユーザーを自動的に作成することはできません。",
   "User experience": "ユーザーエクスペリエンス",

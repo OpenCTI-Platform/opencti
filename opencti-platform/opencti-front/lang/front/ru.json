@@ -3866,6 +3866,7 @@
   "Used TTPs": "Используемые ТТП",
   "USER": "ПОЛЬЗОВАТЕЛЬ",
   "User": "Пользователь",
+  "User cannot be created automatically for this connector since no default group has been defined.": "Пользователь не может быть создан автоматически для этого коннектора, поскольку не определена группа по умолчанию.",
   "User cannot be created automatically for this feed since no default group has been defined.": "Пользователь не может быть создан автоматически для этого фида, так как не определена группа по умолчанию.",
   "User cannot be created automatically for this feed since no default group has been defined. ": "Пользователь не может быть создан автоматически для этого фида, так как не определена группа по умолчанию.",
   "User experience": "Пользовательский интерфейс",

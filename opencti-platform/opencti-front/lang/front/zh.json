@@ -3866,6 +3866,7 @@
   "Used TTPs": "使用的TTPs",
   "USER": "使用者",
   "User": "用户",
+  "User cannot be created automatically for this connector since no default group has been defined.": "由于未定义默认组，因此无法为该连接器自动创建用户。",
   "User cannot be created automatically for this feed since no default group has been defined.": "由于未定义默认组，因此无法为该信息源自动创建用户。",
   "User cannot be created automatically for this feed since no default group has been defined. ": "由于未定义默认组，因此无法为该信息源自动创建用户。",
   "User experience": "用户体验",

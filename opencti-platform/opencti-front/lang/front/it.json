@@ -3866,6 +3866,7 @@
   "Used TTPs": "TTP utilizzati",
   "USER": "UTENTE",
   "User": "Utente",
+  "User cannot be created automatically for this connector since no default group has been defined.": "L'utente non può essere creato automaticamente per questo connettore, poiché non è stato definito un gruppo predefinito.",
   "User cannot be created automatically for this feed since no default group has been defined.": "L'utente non può essere creato automaticamente per questo feed poiché non è stato definito un gruppo predefinito.",
   "User cannot be created automatically for this feed since no default group has been defined. ": "L'utente non può essere creato automaticamente per questo feed, poiché non è stato definito un gruppo predefinito.",
   "User experience": "Esperienza utente",
