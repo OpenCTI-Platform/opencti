@@ -519,8 +519,9 @@ export const storeLoadByIdWithRefs = async (context, user, id, opts = {}) => {
   const elements = await storeLoadByIdsWithRefs(context, user, [id], opts);
   return elements.length > 0 ? R.head(elements) : null;
 };
-export const stixLoadById = async (context, user, id, opts = {}, version = Version.Stix_2_1) => {
+export const stixLoadById = async (context, user, id, opts = {}) => {
   const instance = await storeLoadByIdWithRefs(context, user, id, opts);
+  const version = opts?.version ?? Version.Stix_2_1;
   if (version === Version.Stix_2_0) {
     return instance ? convertStoreToStix_2_0(instance) : undefined;
   }
@@ -557,7 +558,8 @@ export const stixLoadByIds = async (context, user, ids, opts = {}) => {
     .map((e) => (convertStoreToStix(e)));
 };
 export const stixLoadByIdStringify = async (context, user, id, version) => {
-  const data = await stixLoadById(context, user, id, {}, version);
+  const opts = { version };
+  const data = await stixLoadById(context, user, id, opts);
   return data ? JSON.stringify(data) : '';
 };
 export const stixLoadByFilters = async (context, user, types, args) => {
