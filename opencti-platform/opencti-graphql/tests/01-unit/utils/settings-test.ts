@@ -19,8 +19,8 @@ describe('XTM Hub settings helper', () => {
     const userId = data.find((item) => item.key === 'xtm_hub_enrollment_user_id');
     const userName = data.find((item) => item.key === 'xtm_hub_enrollment_user_name');
     const enrollmentDate = data.find((item) => item.key === 'xtm_hub_enrollment_date');
-
-    expect(data.length).toEqual(6);
+    const lastConnectivityCheck = data.find((item) => item.key === 'xtm_hub_last_connectivity_check');
+    expect(data.length).toEqual(7);
     expect(xtmHubToken).toBeTruthy();
     expect(enrollmentStatus).toBeTruthy();
     expect(userId).toBeTruthy();
@@ -28,6 +28,7 @@ describe('XTM Hub settings helper', () => {
     expect(userName).toBeTruthy();
     expect(userName?.value).toEqual([ADMIN_USER.name]);
     expect(enrollmentDate).toBeTruthy();
+    expect(lastConnectivityCheck).toBeTruthy();
   });
   it('should not complete XTM Data', () => {
     const mockInput: InputSettingsData[] = [
