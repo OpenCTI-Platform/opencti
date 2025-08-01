@@ -85,15 +85,6 @@ describe('Playbook resolver standard behavior', () => {
     ],
     filterGroups: [],
   });
-  it('should not list playbooks if platform not under EE', async () => {
-    await disableEE();
-    const queryResult = await adminQuery(
-      { query: LIST_PLAYBOOKS, variables: { first: 10 } },
-    );
-    expect(queryResult).not.toBeNull();
-    expect(queryResult).toEqual(1);
-    expect(queryResult.errors.at(0).message).toEqual('Enterprise edition is not enabled');
-  });
   it('should list playbooks', async () => {
     // Activate EE
     await enableEE();
@@ -116,6 +107,16 @@ describe('Playbook resolver standard behavior', () => {
   it('should list playbooks', async () => {
     const queryResult = await adminQueryWithSuccess({ query: LIST_PLAYBOOKS, variables: { first: 10 } });
     expect(queryResult.data?.playbooks.edges.length).toEqual(1);
+  });
+  it('should not list playbooks if platform not under EE', async () => {
+    await disableEE();
+    const queryResult = await adminQuery(
+      { query: LIST_PLAYBOOKS, variables: { first: 10 } },
+    );
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.errors.length).toEqual(1);
+    expect(queryResult.errors.at(0).message).toEqual('Enterprise edition is not enabled');
+    await enableEE();
   });
   it('should read playbook', async () => {
     const queryResult = await adminQueryWithSuccess({ query: READ_PLAYBOOK, variables: { id: playbookId } });

@@ -124,7 +124,12 @@ export const getPlaybookDefinition = async (context: AuthContext, playbook: Basi
   return playbook.playbook_definition;
 };
 
-const checkPlaybookFiltersAndBuildConfigWithCorrectFilters = async (context: AuthContext, user: AuthUser, input: PlaybookAddNodeInput, userId: string) => {
+const checkPlaybookFiltersAndBuildConfigWithCorrectFilters = async (
+  context: AuthContext,
+  user: AuthUser,
+  input: PlaybookAddNodeInput,
+  userId: string
+) => {
   if (!input.configuration) {
     return '{}';
   }
@@ -222,7 +227,13 @@ export const playbookUpdatePositions = async (context: AuthContext, user: AuthUs
   return patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch).then(() => id);
 };
 
-export const playbookReplaceNode = async (context: AuthContext, user: AuthUser, id: string, nodeId: string, input: PlaybookAddNodeInput) => {
+export const playbookReplaceNode = async (
+  context: AuthContext,
+  user: AuthUser,
+  id: string,
+  nodeId: string,
+  input: PlaybookAddNodeInput
+) => {
   await checkEnterpriseEdition(context);
   const configuration = await checkPlaybookFiltersAndBuildConfigWithCorrectFilters(context, user, input, user.id);
 
