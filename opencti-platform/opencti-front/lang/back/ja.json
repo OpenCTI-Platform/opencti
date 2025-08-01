@@ -898,11 +898,11 @@
   "Workspace graph data": "ワークスペースのグラフデータ",
   "Workspace type": "ワークスペースタイプ",
   "X_Aliases": "X_エイリアス",
-  "XTM Hub enrollment date": "XTMハブ登録日",
-  "XTM Hub enrollment status": "XTMハブ登録状況",
-  "XTM Hub enrollment User ID": "XTMハブ登録ユーザーID",
-  "XTM Hub enrollment User name": "XTM ハブの登録 ユーザー名",
   "XTM Hub last connectivity check": "XTM ハブの最終接続チェック",
+  "XTM Hub registration date": "XTMハブ登録日",
   "XTM Hub registration manager": "XTMハブ登録マネージャー",
+  "XTM Hub registration status": "XTMハブ登録状況",
+  "XTM Hub registration User ID": "XTMハブ登録ユーザーID",
+  "XTM Hub registration User name": "XTMハブ登録ユーザー名",
   "XTM Hub Token": "XTM ハブ・トークン"
 }
