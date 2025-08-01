@@ -3614,7 +3614,7 @@
   "To prevent people seeing all the data...": "要防止他人看到公共仪表板中的所有数据，请选择标记定义来限制共享数据。",
   "to terminate your session.": "终止您的会话。",
   "To type": "目标类型",
-  "To use this AI Enterprise edition feature, please add a token": "要使用此人工智能企业版功能，请添加一个令牌",
+  "To use this AI feature in the enterprise edition, please add a token.": "要在企业版中使用此人工智能功能，请添加一个令牌。",
   "To use this feature, your platform administrator must enable the according manager in the config.": "要使用此功能，您的平台管理员必须在配置中启用相应的管理器。",
   "To use this feature, your platform administrator must enable the subscription manager in the config.": "要使用此功能，平台管理员必须在配置中启用订阅管理器。",
   "toCreatedAt": "创建",

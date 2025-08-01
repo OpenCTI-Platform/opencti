@@ -242,45 +242,44 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
   };
 
   const renderButton = () => {
-    if (isAIConfigured || !isEnterpriseEdition) {
-      return (
-        <>
-          <EETooltip forAi={true} title={t_i18n('Ask AI')}>
-            <IconButton
-              size="small"
-              onClick={(event) => (handleOpenMenu(event))}
-              disabled={disabled || currentValue.length < 10}
-              style={{ color: theme.palette.ai.main }}
-            >
-              <AutoAwesomeOutlined fontSize='small' />
-            </IconButton>
-          </EETooltip>
-          <Menu
-            id="menu-appbar"
-            anchorEl={menuOpen.anchorEl}
-            open={menuOpen.open}
-            onClose={handleCloseMenu}
+    return (
+      <>
+        <EETooltip forAi={true} title={t_i18n('Ask AI')}>
+          <IconButton
+            size="small"
+            onClick={(event) => (handleOpenMenu(event))}
+            disabled={disabled || currentValue.length < 10}
+            style={{ color: theme.palette.ai.main }}
           >
-            <MenuItem onClick={() => handleAskAi('spelling')}>
-              {t_i18n('Fix spelling & grammar')}
-            </MenuItem>
-            <MenuItem onClick={() => handleAskAi('shorter')}>
-              {t_i18n('Make it shorter')}
-            </MenuItem>
-            <MenuItem onClick={() => handleAskAi('longer')}>
-              {t_i18n('Make it longer')}
-            </MenuItem>
-            <MenuItem onClick={handleOpenToneOptions}>
-              {t_i18n('Change tone')}
-            </MenuItem>
-            <MenuItem onClick={() => handleAskAi('summarize')}>
-              {t_i18n('Summarize')}
-            </MenuItem>
-            <MenuItem onClick={() => handleAskAi('explain', false)}>
-              {t_i18n('Explain')}
-            </MenuItem>
-          </Menu>
-          {busId && (
+            <AutoAwesomeOutlined fontSize='small' />
+          </IconButton>
+        </EETooltip>
+        <Menu
+          id="menu-appbar"
+          anchorEl={menuOpen.anchorEl}
+          open={menuOpen.open}
+          onClose={handleCloseMenu}
+        >
+          <MenuItem onClick={() => handleAskAi('spelling')}>
+            {t_i18n('Fix spelling & grammar')}
+          </MenuItem>
+          <MenuItem onClick={() => handleAskAi('shorter')}>
+            {t_i18n('Make it shorter')}
+          </MenuItem>
+          <MenuItem onClick={() => handleAskAi('longer')}>
+            {t_i18n('Make it longer')}
+          </MenuItem>
+          <MenuItem onClick={handleOpenToneOptions}>
+            {t_i18n('Change tone')}
+          </MenuItem>
+          <MenuItem onClick={() => handleAskAi('summarize')}>
+            {t_i18n('Summarize')}
+          </MenuItem>
+          <MenuItem onClick={() => handleAskAi('explain', false)}>
+            {t_i18n('Explain')}
+          </MenuItem>
+        </Menu>
+        {busId && (
           <ResponseDialog
             id={busId}
             isDisabled={disableResponse}
@@ -297,49 +296,47 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
             format={format}
             isAcceptable={isAcceptable}
           />
-          )}
-          <Dialog
-            slotProps={{ paper: { elevation: 1 } }}
-            open={openToneOptions}
-            onClose={handleCloseToneOptions}
-            fullWidth={true}
-            maxWidth="xs"
-          >
-            <DialogTitle>{t_i18n('Select options')}</DialogTitle>
-            <DialogContent>
-              <FormControl style={{ width: '100%' }}>
-                <InputLabel id="tone">{t_i18n('Tone')}</InputLabel>
-                <Select
-                  labelId="tone"
-                  value={tone}
-                  onChange={(event) => setTone(event.target.value as unknown as 'tactical' | 'operational' | 'strategic')}
-                  fullWidth={true}
-                >
-                  <MenuItem value="tactical">{t_i18n('Tactical')}</MenuItem>
-                  <MenuItem value="operational">{t_i18n('Operational')}</MenuItem>
-                  <MenuItem value="strategic">{t_i18n('Strategic')}</MenuItem>
-                </Select>
-              </FormControl>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleCloseToneOptions}>
-                {t_i18n('Cancel')}
-              </Button>
-              <Button
-                onClick={() => {
-                  handleCloseToneOptions();
-                  handleAskAi('tone');
-                }}
-                color="secondary"
+        )}
+        <Dialog
+          slotProps={{ paper: { elevation: 1 } }}
+          open={openToneOptions}
+          onClose={handleCloseToneOptions}
+          fullWidth={true}
+          maxWidth="xs"
+        >
+          <DialogTitle>{t_i18n('Select options')}</DialogTitle>
+          <DialogContent>
+            <FormControl style={{ width: '100%' }}>
+              <InputLabel id="tone">{t_i18n('Tone')}</InputLabel>
+              <Select
+                labelId="tone"
+                value={tone}
+                onChange={(event) => setTone(event.target.value as unknown as 'tactical' | 'operational' | 'strategic')}
+                fullWidth={true}
               >
-                {t_i18n('Generate')}
-              </Button>
-            </DialogActions>
-          </Dialog>
-        </>
-      );
-    }
-    return (<></>);
+                <MenuItem value="tactical">{t_i18n('Tactical')}</MenuItem>
+                <MenuItem value="operational">{t_i18n('Operational')}</MenuItem>
+                <MenuItem value="strategic">{t_i18n('Strategic')}</MenuItem>
+              </Select>
+            </FormControl>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseToneOptions}>
+              {t_i18n('Cancel')}
+            </Button>
+            <Button
+              onClick={() => {
+                handleCloseToneOptions();
+                handleAskAi('tone');
+              }}
+              color="secondary"
+            >
+              {t_i18n('Generate')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </>
+    );
   };
   if (variant === 'markdown') {
     return (

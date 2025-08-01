@@ -3614,7 +3614,7 @@
   "To prevent people seeing all the data...": "公開ダッシュボードのすべてのデータを見られないようにするには、共有データを制限するマーキング定義を選択します。",
   "to terminate your session.": "セッションを終了します。",
   "To type": "ターゲットタイプ",
-  "To use this AI Enterprise edition feature, please add a token": "このAIエンタープライズ版の機能を使用するには、トークンを追加してください。",
+  "To use this AI feature in the enterprise edition, please add a token.": "エンタープライズ版でこのAI機能を使用するには、トークンを追加してください。",
   "To use this feature, your platform administrator must enable the according manager in the config.": "この機能を使用するには、プラットフォーム管理者が構成で適切なマネージャーを有効にする必要があります。",
   "To use this feature, your platform administrator must enable the subscription manager in the config.": "この機能を使用するためには、プラットフォーム管理者が設定でサブスクリプションマネージャーを有効にする必要があります。",
   "toCreatedAt": "作成日時",

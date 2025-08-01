@@ -239,7 +239,7 @@ const SearchInput = (props) => {
           openDrawer={displayEEDialog}
           handleCloseDrawer={() => setDisplayEEDialog(false)}
           initialValue={{
-            description: t_i18n('To use this AI Enterprise edition feature, please add a token'),
+            description: t_i18n('To use this AI feature in the enterprise edition, please add a token.'),
           }}
         />
       )}

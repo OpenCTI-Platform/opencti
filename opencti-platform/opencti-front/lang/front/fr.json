@@ -3614,7 +3614,7 @@
   "To prevent people seeing all the data...": "Pour empêcher les gens de voir toutes les données du tableau de bord public, sélectionnez une définition de marquage pour restreindre les données partagées.",
   "to terminate your session.": "pour mettre fin à votre session.",
   "To type": "Type cible",
-  "To use this AI Enterprise edition feature, please add a token": "Pour utiliser cette fonctionnalité de l'édition AI Enterprise, veuillez ajouter un jeton",
+  "To use this AI feature in the enterprise edition, please add a token.": "Pour utiliser cette fonction d'IA de l'édition entreprise, veuillez ajouter un jeton.",
   "To use this feature, your platform administrator must enable the according manager in the config.": "Pour utiliser cette fonctionnalité, l'administrateur de votre plateforme doit activer la configuration correspondante.",
   "To use this feature, your platform administrator must enable the subscription manager in the config.": "Pour utiliser cette fonctionnalité, l'administrateur de votre plateforme doit activer le manager de souscriptions.",
   "toCreatedAt": "Ingéré",
