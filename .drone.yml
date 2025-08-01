@@ -2,6 +2,9 @@
 kind: pipeline
 name: opencti-tests
 
+node:
+  env: kubernetes
+
 steps:
   - name: Runner information
     image: alpine:3.19
@@ -495,3 +498,6 @@ volumes:
   - name: cache-node-frontend-e2e
     host:
       path: /tmp/cache-node-frontend-e2e
+
+image_pull_secrets:
+  - dockerconfigjson
