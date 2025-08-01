@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { adminQueryWithError, adminQueryWithSuccess } from '../../utils/testQueryHelper';
+import { adminQueryWithError, adminQueryWithSuccess, disableEE, enableEE } from '../../utils/testQueryHelper';
 import type { PlaybookAddNodeInput } from '../../../src/generated/graphql';
 import { PLAYBOOK_INTERNAL_DATA_CRON, PLAYBOOK_MATCHING_COMPONENT } from '../../../src/modules/playbook/playbook-components';
 import { UNSUPPORTED_ERROR } from '../../../src/config/errors';
+import { adminQuery } from '../../utils/testQuery';
 
 const LIST_PLAYBOOKS = gql`
   query playbooks(
@@ -85,6 +86,8 @@ describe('Playbook resolver standard behavior', () => {
     filterGroups: [],
   });
   it('should list playbooks', async () => {
+    // Activate EE
+    await enableEE();
     const queryResult = await adminQueryWithSuccess({ query: LIST_PLAYBOOKS, variables: { first: 10 } });
     expect(queryResult.data?.playbooks.edges.length).toEqual(0);
   });
@@ -104,6 +107,15 @@ describe('Playbook resolver standard behavior', () => {
   it('should list playbooks', async () => {
     const queryResult = await adminQueryWithSuccess({ query: LIST_PLAYBOOKS, variables: { first: 10 } });
     expect(queryResult.data?.playbooks.edges.length).toEqual(1);
+  });
+  it('should not list playbooks if platform not under EE', async () => {
+    await disableEE();
+    const queryResult = await adminQuery(
+      { query: LIST_PLAYBOOKS, variables: { first: 10 } },
+    );
+    expect(queryResult.data?.playbooks.edges.length).toEqual(0);
+
+    await enableEE();
   });
   it('should read playbook', async () => {
     const queryResult = await adminQueryWithSuccess({ query: READ_PLAYBOOK, variables: { id: playbookId } });
@@ -264,5 +276,7 @@ describe('Playbook resolver standard behavior', () => {
       variables: { id: playbookId },
     });
     expect(queryResult.data?.playbookDelete).toEqual(playbookId);
+    // Deactivate EE
+    await disableEE();
   });
 });
