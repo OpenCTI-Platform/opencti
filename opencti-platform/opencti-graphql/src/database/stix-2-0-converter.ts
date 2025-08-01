@@ -13,7 +13,7 @@ import {
   isStixDomainObjectLocation,
   isStixDomainObjectThreatActor
 } from '../schema/stixDomainObject';
-import { assertType, cleanObject, convertToStixDate, isValidStix } from './stix-converter-utils';
+import { assertType, cleanObject, convertToStixDate } from './stix-converter-utils';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../schema/stixCyberObservable';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
@@ -24,8 +24,7 @@ import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rf
 import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../modules/case/case-rft/case-rft-types';
 import { isBasicObject } from '../schema/stixCoreObject';
 import { isBasicRelationship } from '../schema/stixRelationship';
-import { FunctionalError, UnsupportedError } from '../config/errors';
-import { isEmptyField } from './utils';
+import { UnsupportedError } from '../config/errors';
 
 export const convertTypeToStix2Type = (type: string): string => {
   if (isStixDomainObjectIdentity(type)) {
@@ -145,7 +144,7 @@ export type ConvertFn<T extends StoreEntity, Z extends S.StixObject> = (instance
 const stixDomainConverters = new Map<string, ConvertFn<any, any>>();
 // TODO add registerConverters for module converters
 
-const convertToStix_2_0 = (instance: StoreCommon): S.StixObject => {
+export const convertToStix_2_0 = (instance: StoreCommon): S.StixObject => {
   const type = instance.entity_type;
   if (!isBasicObject(type) && !isBasicRelationship(type)) {
     throw UnsupportedError('Type cannot be converted to Stix', { type });
@@ -169,16 +168,4 @@ const convertToStix_2_0 = (instance: StoreCommon): S.StixObject => {
   }
   // TODO add SRO (relations and sightings), InternalObject, MetaObject, StixCyberObservable :)
   throw UnsupportedError(`No entity stix 2.0 converter available for ${type}`);
-};
-
-export const convertStoreToStix_2_0 = (instance: StoreCommon): S.StixObject => {
-  if (isEmptyField(instance.standard_id) || isEmptyField(instance.entity_type)) {
-    throw UnsupportedError('convertInstanceToStix must be used with opencti fully loaded instance');
-  }
-  const converted = convertToStix_2_0(instance);
-  const stix = cleanObject(converted);
-  if (!isValidStix(stix)) {
-    throw FunctionalError('Invalid stix data conversion', { id: instance.standard_id, type: instance.entity_type });
-  }
-  return stix;
 };

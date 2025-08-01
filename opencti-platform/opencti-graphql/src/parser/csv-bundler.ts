@@ -5,7 +5,6 @@ import type { CsvMapperParsed } from '../modules/internal/csvMapper/csvMapper-ty
 import { sanitized, validateCsvMapper } from '../modules/internal/csvMapper/csvMapper-utils';
 import { BundleBuilder } from './bundle-creator';
 import { handleRefEntities, mappingProcess } from './csv-mapper';
-import { convertStoreToStix } from '../database/stix-2-1-converter';
 import type { BasicStoreBase, StoreCommon } from '../types/store';
 import { parseReadableToLines, parsingProcess } from './csv-parser';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
@@ -14,6 +13,8 @@ import { isEmptyField } from '../database/utils';
 import conf, { logApp } from '../config/conf';
 import type { StixBundle, StixObject } from '../types/stix-2-1-common';
 import { pushToWorkerForConnector } from '../database/rabbitmq';
+
+import { convertStoreToStix } from '../database/stix-common-converter';
 
 const inlineEntityTypes = [ENTITY_TYPE_EXTERNAL_REFERENCE];
 const LOG_PREFIX = '[OPENCTI MODULE] CSV';

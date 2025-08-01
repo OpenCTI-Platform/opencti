@@ -39,7 +39,6 @@ import { SYSTEM_USER } from '../utils/access';
 import type { BasicStoreObject, StoreCommon } from '../types/store';
 import { INPUT_MARKINGS } from '../schema/general';
 import { isStixRelationshipExceptRef } from '../schema/stixRelationship';
-import { convertStoreToStix } from '../database/stix-2-1-converter';
 import { BundleBuilder } from './bundle-creator';
 import { handleInnerType } from '../domain/stixDomainObject';
 import { createStixPatternSync } from '../python/pythonBridge';
@@ -47,6 +46,8 @@ import { from as fromDef, to as toDef } from '../schema/stixRefRelationship';
 import { logApp } from '../config/conf';
 import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import type { AuthContext, AuthUser } from '../types/user';
+
+import { convertStoreToStix } from '../database/stix-common-converter';
 
 const format = (value: string | string[], def: AttributeDefinition, attribute: SimpleAttributePath | ComplexAttributePath | undefined) => {
   if (Array.isArray(value)) {
