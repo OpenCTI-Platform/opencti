@@ -134,7 +134,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
                 fullWidth={true}
                 slotProps={{
                   input: {
-                    endAdornment: isAIConfigured || !isEnterpriseEdition && (
+                    endAdornment: (isAIConfigured || !isEnterpriseEdition) && (
                       <TextFieldAskAI
                         currentValue={content ?? ''}
                         setFieldValue={(val) => {
