@@ -113,9 +113,8 @@ describe('Playbook resolver standard behavior', () => {
     const queryResult = await adminQuery(
       { query: LIST_PLAYBOOKS, variables: { first: 10 } },
     );
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.errors.length).toEqual(1);
-    expect(queryResult.errors.at(0).message).toEqual('Enterprise edition is not enabled');
+    expect(queryResult.data?.playbooks.edges.length).toEqual(0);
+
     await enableEE();
   });
   it('should read playbook', async () => {
