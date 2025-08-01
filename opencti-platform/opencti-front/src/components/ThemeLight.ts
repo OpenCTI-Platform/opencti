@@ -227,7 +227,7 @@ const ThemeLight = (
       paper: paper || THEME_LIGHT_DEFAULT_PAPER,
       nav: nav || THEME_LIGHT_DEFAULT_NAV,
       accent: accent || THEME_LIGHT_DEFAULT_ACCENT,
-      shadow: 'rgba(0, 0, 0, .05)',
+      shadow: 'rgba(0, 0, 0, .15)',
     },
     entities: ThemeLightEntities,
     relationships: ThemeLightRelationships,

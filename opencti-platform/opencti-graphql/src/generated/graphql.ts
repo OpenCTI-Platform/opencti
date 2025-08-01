@@ -19835,6 +19835,7 @@ export type PlatformEe = {
   license_global: Scalars['Boolean']['output'];
   license_platform: Scalars['String']['output'];
   license_platform_match: Scalars['Boolean']['output'];
+  license_raw_pem?: Maybe<Scalars['String']['output']>;
   license_start_date: Scalars['DateTime']['output'];
   license_type: Scalars['String']['output'];
   license_valid_cert: Scalars['Boolean']['output'];
@@ -25322,6 +25323,7 @@ export type Settings = BasicObject & InternalObject & {
   created_at: Scalars['DateTime']['output'];
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
+  filigran_agentic_ai_url?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   messages_administration?: Maybe<Array<SettingsMessage>>;
   otp_mandatory?: Maybe<Scalars['Boolean']['output']>;
@@ -41059,6 +41061,7 @@ export type PlatformEeResolvers<ContextType = any, ParentType extends ResolversP
   license_global?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   license_platform?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   license_platform_match?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  license_raw_pem?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   license_start_date?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   license_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   license_valid_cert?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -42343,6 +42346,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  filigran_agentic_ai_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   messages_administration?: Resolver<Maybe<Array<ResolversTypes['SettingsMessage']>>, ParentType, ContextType>;
   otp_mandatory?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;

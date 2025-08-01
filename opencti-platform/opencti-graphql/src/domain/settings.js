@@ -137,6 +137,7 @@ export const getSettings = async (context) => {
     platform_ai_has_token: !!isNotEmptyField(nconf.get('ai:token')),
     platform_trash_enabled: nconf.get('app:trash:enabled') ?? true,
     platform_translations: nconf.get('app:translations') ?? '{}',
+    filigran_agentic_ai_url: nconf.get('ai:agentic:url'),
     platform_feature_flags: [
       { id: 'RUNTIME_SORTING', enable: isRuntimeSortEnable() },
       ...(ENABLED_FEATURE_FLAGS.map((feature) => ({ id: feature, enable: true })))
