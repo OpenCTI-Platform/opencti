@@ -121,7 +121,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   ): ContainerConnection
   # Technical
   creators: [Creator!]
-  toStix(stixVersion: StixVersion): String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String

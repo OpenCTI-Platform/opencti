@@ -19,7 +19,7 @@ const markingDefinitionResolvers = {
     markingDefinitions: (_, args, context) => findAll(context, context.user, args),
   },
   MarkingDefinition: {
-    toStix: (markingDefinition, { stixVersion }, context) => stixLoadByIdStringify(context, context.user, markingDefinition.id, stixVersion),
+    toStix: (markingDefinition, { version }, context) => stixLoadByIdStringify(context, context.user, markingDefinition.id, version),
     editContext: (markingDefinition) => fetchEditContext(markingDefinition.id),
   },
   Mutation: {

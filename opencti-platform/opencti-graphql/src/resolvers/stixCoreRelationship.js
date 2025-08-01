@@ -90,7 +90,7 @@ const stixCoreRelationshipResolvers = {
     opinions: (rel, args, context) => opinionsPaginated(context, context.user, rel.id, args),
     // endregion
     editContext: (rel) => fetchEditContext(rel.id),
-    toStix: (rel, { stixVersion }, context) => stixLoadByIdStringify(context, context.user, rel.id, stixVersion),
+    toStix: (rel, { version }, context) => stixLoadByIdStringify(context, context.user, rel.id, version),
     status: (entity, _, context) => (entity.x_opencti_workflow_id ? findStatusById(context, context.user, entity.x_opencti_workflow_id) : null),
     workflowEnabled: async (__, _, context) => {
       const statusesEdges = await getTypeStatuses(context, context.user, ABSTRACT_STIX_CORE_RELATIONSHIP);
