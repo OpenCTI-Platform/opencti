@@ -3,10 +3,11 @@ import { elAggregationCount } from '../../src/database/engine';
 import { ADMIN_USER, createHttpClient, executeExternalQuery, testContext } from '../utils/testQuery';
 import { READ_DATA_INDICES } from '../../src/database/utils';
 import { storeLoadByIdWithRefs } from '../../src/database/middleware';
-import { convertStoreToStix } from '../../src/database/stix-2-1-converter';
 import { checkInstanceDiff } from '../utils/testStream';
 import { logApp } from '../../src/config/conf';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../../src/modules/deleteOperation/deleteOperation-types';
+
+import { convertStoreToStix } from '../../src/database/stix-common-converter';
 
 const STAT_QUERY = `query stats {
       about {
