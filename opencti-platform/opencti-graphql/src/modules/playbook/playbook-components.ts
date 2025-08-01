@@ -42,7 +42,6 @@ import {
   INPUT_MARKINGS,
   INPUT_PARTICIPANT
 } from '../../schema/general';
-import { convertStoreToStix } from '../../database/stix-2-1-converter';
 import type { BasicStoreCommon, BasicStoreRelation, StoreCommon, StoreRelation } from '../../types/store';
 import { generateInternalId, generateStandardId, idGenFromData } from '../../schema/identifier';
 import { now, observableValue, utcDate } from '../../utils/format';
@@ -100,6 +99,8 @@ import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
 import { findAllByCaseTemplateId } from '../task/task-domain';
 import type { BasicStoreEntityTaskTemplate } from '../task/task-template/task-template-types';
 import type { BasicStoreSettings } from '../../types/settings';
+
+import { convertStoreToStix } from '../../database/stix-common-converter';
 
 const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixObject => {
   const baseData = bundle.objects.find((o) => o.id === instanceId);
