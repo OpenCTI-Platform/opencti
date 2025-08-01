@@ -70,7 +70,7 @@ const useStyles = makeStyles<Theme>({
 const inlineStyles: Record<string, CSSProperties> = {
   name: {
     float: 'left',
-    width: '25%',
+    width: '20%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -105,6 +105,14 @@ const inlineStyles: Record<string, CSSProperties> = {
     width: '15%',
   },
   updated_at: {
+    float: 'left',
+    width: '15%',
+    height: 20,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  manager_deployment: {
     float: 'left',
     width: '15%',
     height: 20,
@@ -307,6 +315,11 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
         valueB = -1;
       }
     }
+    // is_managed is a boolean, convert to number for sorting
+    if (sortBy === 'is_managed') {
+      valueA = valueA ? 1 : 0;
+      valueB = valueB ? 1 : 0;
+    }
     if (orderAsc) {
       return valueA < valueB ? -1 : 1;
     }
@@ -390,7 +403,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                     width: '100%',
                   }}
                   >
-                    <div style={{ width: '25%' }}>
+                    <div style={{ width: '20%' }}>
                       <SortConnectorsHeader field="name" label="Name" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
                     </div>
                     <div style={{ width: '10%' }}>
@@ -407,6 +420,9 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                     </div>
                     <div style={{ width: '15%' }}>
                       <SortConnectorsHeader field="updated_at" label="Modified" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
+                    </div>
+                    <div style={{ width: '15%' }}>
+                      <SortConnectorsHeader field="is_managed" label="Manager Deployment" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
                     </div>
                   </div>
                 }
@@ -511,6 +527,16 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                             style={inlineStyles.updated_at}
                           >
                             {nsdt(connector.updated_at)}
+                          </div>
+                          <div
+                            className={classes.bodyItem}
+                            style={inlineStyles.manager_deployment}
+                          >
+                            <ItemBoolean
+                              label={connector.is_managed ? 'TRUE' : 'FALSE'}
+                              status={connector.is_managed}
+                              variant="inList"
+                            />
                           </div>
                         </div>
                       }
