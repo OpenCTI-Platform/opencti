@@ -26,6 +26,8 @@ import UpdateIcon from '@mui/icons-material/Update';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import DialogTitle from '@mui/material/DialogTitle';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 import ManagedConnectorEdition from './ManagedConnectorEdition';
 import DangerZoneBlock from '../../common/danger_zone/DangerZoneBlock';
 import Filters from '../../common/lists/Filters';
@@ -148,6 +150,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
   const [displayClearWorks, setDisplayClearWorks] = useState(false);
   const [clearing, setClearing] = useState(false);
   const [editionOpen, setEditionOpen] = useState(false);
+  const [tabValue, setTabValue] = useState(0);
 
   // API mutations - defined early to avoid use-before-define errors
   const [commitUpdateStatus] = useApiMutation<ConnectorUpdateStatusMutation>(updateRequestedStatus);
@@ -288,152 +291,14 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
 
   const computeConnectorStatus = useComputeConnectorStatus();
 
-  return (
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setTabValue(newValue);
+  };
+
+  // Component for Overview content
+  const ConnectorOverview = () => (
     <>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          width: '100%',
-          marginBottom: theme.spacing(2),
-        }}
-      >
-        <Typography
-          variant="h1"
-          gutterBottom={true}
-          style={{
-            textTransform: 'uppercase',
-            alignItems: 'center',
-            display: 'flex',
-            gap: theme.spacing(1),
-            margin: 0,
-          }}
-        >
-          {connector.name}
-          <div style={{ display: 'inline-block' }}>
-            {computeConnectorStatus(connector).render}
-          </div>
-          {connector.is_managed && (
-            <div>
-              <Button
-                variant="outlined"
-                size="small"
-                disabled={computeConnectorStatus(connector).processing}
-                color={connector.manager_current_status === 'started' ? 'error' : 'primary'}
-                onClick={() => commitUpdateStatus({
-                  variables: {
-                    input: {
-                      id: connector.id,
-                      status: connector.manager_current_status === 'started' ? 'stopping' : 'starting',
-                    },
-                  },
-                })}
-              >
-                {t_i18n(connector.manager_current_status === 'started' ? 'Stop' : 'Start')}
-              </Button>
-            </div>
-          )}
-        </Typography>
-        <div style={{
-          float: 'right',
-          display: 'flex',
-          alignItems: 'center',
-          gap: theme.spacing(1),
-        }}
-        >
-          <Security needs={[MODULES_MODMANAGE]}>
-            <>
-              {isSensitive && (
-                <div style={{ position: 'relative', display: 'inline-block' }}>
-                  <DangerZoneBlock
-                    type="connector_reset"
-                    sx={{
-                      root: { border: 'none', padding: 0, margin: 0 },
-                      title: { position: 'absolute', zIndex: 1, left: 4, top: 9, fontSize: 8 },
-                    }}
-                  >
-                    {({ disabled = false }: { disabled?: boolean }) => (
-                      <Button
-                        color="error"
-                        variant="outlined"
-                        disabled={disabled || !!connector.built_in}
-                        onClick={handleOpenResetState}
-                        style={{
-                          minWidth: '6rem',
-                        }}
-                      >
-                        <span style={{ zIndex: 2 }}>
-                          {t_i18n('Reset')}
-                        </span>
-                      </Button>
-                    )}
-                  </DangerZoneBlock>
-                </div>
-              )}
-              <ToggleButtonGroup
-                size="small"
-              >
-                {!isSensitive && (
-                  <Tooltip title={t_i18n('Reset the connector state')}>
-                    <span>
-                      <ToggleButton
-                        onClick={handleOpenResetState}
-                        aria-haspopup="true"
-                        disabled={!!connector.built_in}
-                        value={t_i18n('Reset')}
-                      >
-                        <PlaylistRemoveOutlined
-                          color="primary"
-                        />
-                      </ToggleButton>
-                    </span>
-                  </Tooltip>
-                )}
-                <Tooltip title={t_i18n('Clear all works')}>
-                  <span>
-                    <ToggleButton
-                      onClick={handleOpenClearWorks}
-                      aria-haspopup="true"
-                      value={t_i18n('Clear')}
-                    >
-                      <DeleteSweepOutlined
-                        color="primary"
-                      />
-                    </ToggleButton>
-                  </span>
-                </Tooltip>
-                <Tooltip title={t_i18n('Clear this connector')}>
-                  <span>
-                    <ToggleButton
-                      onClick={handleOpenDelete}
-                      aria-haspopup="true"
-                      disabled={!!connector.active || !!connector.built_in}
-                      value={t_i18n('Delete')}
-                    >
-                      <DeleteOutlined
-                        color="primary"
-                      />
-                    </ToggleButton>
-                  </span>
-                </Tooltip>
-              </ToggleButtonGroup>
-              {connector.is_managed && (
-                <EditEntityControlledDial
-                  onOpen={() => setEditionOpen(true)}
-                  style={{}}
-                />
-              )}
-            </>
-          </Security>
-        </div>
-      </div>
-      {editionOpen
-          && (<ManagedConnectorEdition connector={connector} onClose={() => setEditionOpen(false)} />)}
-      <Grid
-        container={true}
-        spacing={3}
-        style={{ marginBottom: 20 }}
-      >
+      <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
         <Grid item xs={6}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Basic information')}
@@ -506,36 +371,36 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                 ))}
               </Grid>
               {connectorFiltersEnabled && (
-                <Grid item xs={6}>
-                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                    <Typography variant="h3" gutterBottom={true}>
-                      {t_i18n('Trigger filters')}
-                    </Typography>
-                    <Tooltip title={t_i18n('Trigger filters can be used to trigger automatically this connector on entities matching the filters and scope.')}>
-                      <span>
-                        <InformationOutline fontSize="small" color="primary" />
-                      </span>
-                    </Tooltip>
-                  </Box>
-                  <Box sx={{ display: 'flex', gap: 1, paddingTop: '4px' }}>
-                    <Filters
-                      availableFilterKeys={connectorAvailableFilterKeys}
+              <Grid item xs={6}>
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t_i18n('Trigger filters')}
+                  </Typography>
+                  <Tooltip title={t_i18n('Trigger filters can be used to trigger automatically this connector on entities matching the filters and scope.')}>
+                    <span>
+                      <InformationOutline fontSize="small" color="primary" />
+                    </span>
+                  </Tooltip>
+                </Box>
+                <Box sx={{ display: 'flex', gap: 1, paddingTop: '4px' }}>
+                  <Filters
+                    availableFilterKeys={connectorAvailableFilterKeys}
+                    helpers={helpers}
+                    searchContext={filtersSearchContext}
+                  />
+                </Box>
+                {filters && (
+                  <Box sx={{ overflow: 'hidden' }}>
+                    <FilterIconButton
+                      filters={filters}
                       helpers={helpers}
+                      styleNumber={2}
                       searchContext={filtersSearchContext}
+                      entityTypes={connectorFiltersScope}
                     />
                   </Box>
-                  {filters && (
-                    <Box sx={{ overflow: 'hidden' }}>
-                      <FilterIconButton
-                        filters={filters}
-                        helpers={helpers}
-                        styleNumber={2}
-                        searchContext={filtersSearchContext}
-                        entityTypes={connectorFiltersScope}
-                      />
-                    </Box>
-                  )}
-                </Grid>
+                )}
+              </Grid>
               )}
               <Security needs={[SETTINGS_SETACCESSES]}>
                 <>
@@ -663,10 +528,10 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                                 <ItemIcon
                                   type="Organization"
                                   color={
-                                    (organizationEdge.node.authorized_authorities ?? []).includes(connector.connector_user?.id ?? '')
-                                      ? theme.palette.dangerZone
-                                      : theme.palette.primary.main
-                                  }
+                                  (organizationEdge.node.authorized_authorities ?? []).includes(connector.connector_user?.id ?? '')
+                                    ? theme.palette.dangerZone
+                                    : theme.palette.primary.main
+                                }
                                 />
                               </ListItemIcon>
                               <ListItemText primary={organizationEdge.node.name} />
@@ -681,7 +546,6 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                 </>
               </Security>
             </Grid>
-
           </Paper>
         </Grid>
         <Grid item xs={6}>
@@ -696,14 +560,14 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
           >
             <Grid container={true} spacing={3}>
               {connector.connector_info?.buffering && (
-                <Grid item xs={12}>
-                  <Alert severity="warning" icon={<UpdateIcon color="warning" />} style={{ alignItems: 'center' }}>
-                    <div>
-                      <strong>{t_i18n('Buffering: ')}</strong>
-                      {t_i18n('Server ingestion is not accepting new work, waiting for current messages in ingestion to be processed until message count go back under threshold')}
-                    </div>
-                  </Alert>
-                </Grid>
+              <Grid item xs={12}>
+                <Alert severity="warning" icon={<UpdateIcon color="warning" />} style={{ alignItems: 'center' }}>
+                  <div>
+                    <strong>{t_i18n('Buffering: ')}</strong>
+                    {t_i18n('Server ingestion is not accepting new work, waiting for current messages in ingestion to be processed until message count go back under threshold')}
+                  </div>
+                </Alert>
+              </Grid>
               )}
               <Grid item={true} xs={12}>
                 <Typography variant="h3" gutterBottom={true}>
@@ -718,20 +582,19 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                   </pre>
                 </Tooltip>
               </Grid>
-
               <Grid item xs={6}>
                 {!connector.connector_info && (
                   connector.connector_state
-                  && connectorStateConverted !== null
-                  && checkLastRunExistingInState && checkLastRunIsNumber ? (
-                    <>
-                      <Typography variant="h3" gutterBottom={true}>
-                        {t_i18n('Last run (from State)')}
-                      </Typography>
-                      <Typography variant="body1" gutterBottom={true}>
-                        {nsdt(lastRunConverted)}
-                      </Typography>
-                    </>
+                && connectorStateConverted !== null
+                && checkLastRunExistingInState && checkLastRunIsNumber ? (
+                  <>
+                    <Typography variant="h3" gutterBottom={true}>
+                      {t_i18n('Last run (from State)')}
+                    </Typography>
+                    <Typography variant="body1" gutterBottom={true}>
+                      {nsdt(lastRunConverted)}
+                    </Typography>
+                  </>
                     ) : (
                       <>
                         <Typography variant="h3" gutterBottom={true}>
@@ -744,7 +607,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                     )
                 )}
                 {connector.connector_info && (
-                  // eslint-disable-next-line no-nested-ternary
+                // eslint-disable-next-line no-nested-ternary
                   connector.connector_info.last_run_datetime ? (
                     <>
                       <Typography variant="h3" gutterBottom={true}>
@@ -754,15 +617,15 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                         {nsdt(connector.connector_info?.last_run_datetime)}
                       </Typography>
                     </>) : (connector.connector_state
-                    && connectorStateConverted !== null
-                    && checkLastRunExistingInState && checkLastRunIsNumber ? (<>
-                      <Typography variant="h3" gutterBottom={true}>
-                        {t_i18n('Last run (from State)')}
-                      </Typography>
-                      <Typography variant="body1" gutterBottom={true}>
-                        {nsdt(lastRunConverted)}
-                      </Typography>
-                    </>)
+                  && connectorStateConverted !== null
+                  && checkLastRunExistingInState && checkLastRunIsNumber ? (<>
+                    <Typography variant="h3" gutterBottom={true}>
+                      {t_i18n('Last run (from State)')}
+                    </Typography>
+                    <Typography variant="body1" gutterBottom={true}>
+                      {nsdt(lastRunConverted)}
+                    </Typography>
+                  </>)
                     : (<>
                       <Typography variant="h3" gutterBottom={true}>
                         {t_i18n('Last run')}
@@ -774,13 +637,12 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                   )
                 )}
               </Grid>
-
               <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Next run')}
                 </Typography>
                 {connector.connector_info && (
-                  // eslint-disable-next-line no-nested-ternary
+                // eslint-disable-next-line no-nested-ternary
                   connector.connector_info.run_and_terminate ? (
                     <Typography variant="body1" gutterBottom={true}>
                       {t_i18n('External schedule')}
@@ -798,9 +660,9 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                   )
                 )}
                 {!connector.connector_info && (
-                  <Typography variant="body1" gutterBottom={true}>
-                    {t_i18n('Not provided')}
-                  </Typography>
+                <Typography variant="body1" gutterBottom={true}>
+                  {t_i18n('Not provided')}
+                </Typography>
                 )}
               </Grid>
               <Grid item xs={6}>
@@ -808,39 +670,233 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                   {t_i18n('Server capacity')}
                 </Typography>
                 {connector.connector_info && (connector.connector_info.queue_messages_size !== 0
-                  || connector.connector_info.last_run_datetime) ? (
-                    <FieldOrEmpty source={connector.connector_info?.queue_messages_size}>
-                      <span style={isBuffering() ? { color: theme.palette.dangerZone.main } : {}}>{connector.connector_info?.queue_messages_size.toFixed(2)}</span>
-                      <span> / {connector.connector_info?.queue_threshold} Mo</span>
-                    </FieldOrEmpty>
+                || connector.connector_info.last_run_datetime) ? (
+                  <FieldOrEmpty source={connector.connector_info?.queue_messages_size}>
+                    <span style={isBuffering() ? { color: theme.palette.dangerZone.main } : {}}>{connector.connector_info?.queue_messages_size.toFixed(2)}</span>
+                    <span> / {connector.connector_info?.queue_threshold} Mo</span>
+                  </FieldOrEmpty>
                   ) : (
                     <Typography variant="body1" gutterBottom={true}>
                       {t_i18n('Not provided')}
                     </Typography>
                   )
-                }
+              }
               </Grid>
-              { isComposerEnable && (
-                <Grid item xs={12}>
-                  <Typography variant="h3" gutterBottom={true}>
-                    {t_i18n('Logs')}
-                  </Typography>
-                  <pre
-                    style={{
-                      height: '100%',
-                      maxHeight: 400,
-                      overflowX: 'scroll',
-                      paddingBottom: theme.spacing(2),
-                    }}
-                  >
-                    {connector.manager_connector_logs?.join('\n')}
-                  </pre>
-                </Grid>
-              )}
             </Grid>
           </Paper>
         </Grid>
       </Grid>
+      <QueryRenderer
+        query={connectorWorksQuery}
+        variables={optionsInProgress}
+        render={({ props }: { props: ConnectorWorksQuery$data | null }) => (
+          <>
+            {props ? (
+              <ConnectorWorks data={props} options={[optionsInProgress]} inProgress={true} />
+            ) : (
+              <Loader variant={LoaderVariant.inElement} />
+            )}
+          </>
+        )}
+      />
+
+      <QueryRenderer
+        query={connectorWorksQuery}
+        variables={optionsFinished}
+        render={({ props }: { props: ConnectorWorksQuery$data | null }) => (
+          <>
+            {props ? (
+              <ConnectorWorks data={props} options={[optionsFinished]} />
+            ) : (
+              <Loader variant={LoaderVariant.inElement} />
+            )}
+          </>
+        )}
+      />
+    </>
+  );
+
+  // Component for Logs content
+  const ConnectorLogs = () => (
+    <Box sx={{ marginBottom: '20px' }}>
+      <pre
+        style={{
+          height: '100%',
+          overflowX: 'scroll',
+          paddingBottom: theme.spacing(2),
+          backgroundColor: theme.palette.background.paper,
+          padding: theme.spacing(2),
+          borderRadius: 4,
+          border: `1px solid ${theme.palette.divider}`,
+        }}
+      >
+        {connector.manager_connector_logs?.join('\n') || t_i18n('No logs available')}
+      </pre>
+    </Box>
+  );
+
+  return (
+    <>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          width: '100%',
+          marginBottom: theme.spacing(2),
+        }}
+      >
+        <Typography
+          variant="h1"
+          gutterBottom={true}
+          style={{
+            textTransform: 'uppercase',
+            alignItems: 'center',
+            display: 'flex',
+            gap: theme.spacing(1),
+            margin: 0,
+          }}
+        >
+          {connector.name}
+          <div style={{ display: 'inline-block' }}>
+            {computeConnectorStatus(connector).render}
+          </div>
+        </Typography>
+        <div style={{
+          float: 'right',
+          display: 'flex',
+          alignItems: 'center',
+          gap: theme.spacing(1),
+        }}
+        >
+          <Security needs={[MODULES_MODMANAGE]}>
+            <>
+              {connector.is_managed && (
+              <Button
+                variant="contained"
+                disabled={computeConnectorStatus(connector).processing}
+                color={connector.manager_current_status === 'started' ? 'error' : 'primary'}
+                onClick={() => commitUpdateStatus({
+                  variables: {
+                    input: {
+                      id: connector.id,
+                      status: connector.manager_current_status === 'started' ? 'stopping' : 'starting',
+                    },
+                  },
+                })}
+              >
+                {t_i18n(connector.manager_current_status === 'started' ? 'Stop' : 'Start')}
+              </Button>
+              )}
+              {isSensitive && (
+                <div style={{ position: 'relative', display: 'inline-block' }}>
+                  <DangerZoneBlock
+                    type="connector_reset"
+                    sx={{
+                      root: { border: 'none', padding: 0, margin: 0 },
+                      title: { position: 'absolute', zIndex: 1, left: 4, top: 9, fontSize: 8 },
+                    }}
+                  >
+                    {({ disabled = false }: { disabled?: boolean }) => (
+                      <Button
+                        color="error"
+                        variant="outlined"
+                        disabled={disabled || !!connector.built_in}
+                        onClick={handleOpenResetState}
+                        style={{
+                          minWidth: '6rem',
+                        }}
+                      >
+                        <span style={{ zIndex: 2 }}>
+                          {t_i18n('Reset')}
+                        </span>
+                      </Button>
+                    )}
+                  </DangerZoneBlock>
+                </div>
+              )}
+              <ToggleButtonGroup
+                size="small"
+              >
+                {!isSensitive && (
+                  <Tooltip title={t_i18n('Reset the connector state')}>
+                    <span>
+                      <ToggleButton
+                        onClick={handleOpenResetState}
+                        aria-haspopup="true"
+                        disabled={!!connector.built_in}
+                        value={t_i18n('Reset')}
+                      >
+                        <PlaylistRemoveOutlined
+                          color="primary"
+                        />
+                      </ToggleButton>
+                    </span>
+                  </Tooltip>
+                )}
+                <Tooltip title={t_i18n('Clear all works')}>
+                  <span>
+                    <ToggleButton
+                      onClick={handleOpenClearWorks}
+                      aria-haspopup="true"
+                      value={t_i18n('Clear')}
+                    >
+                      <DeleteSweepOutlined
+                        color="primary"
+                      />
+                    </ToggleButton>
+                  </span>
+                </Tooltip>
+                <Tooltip title={t_i18n('Clear this connector')}>
+                  <span>
+                    <ToggleButton
+                      onClick={handleOpenDelete}
+                      aria-haspopup="true"
+                      disabled={!!connector.active || !!connector.built_in}
+                      value={t_i18n('Delete')}
+                    >
+                      <DeleteOutlined
+                        color="primary"
+                      />
+                    </ToggleButton>
+                  </span>
+                </Tooltip>
+              </ToggleButtonGroup>
+              {connector.is_managed && (
+                <EditEntityControlledDial
+                  onOpen={() => setEditionOpen(true)}
+                  variant='outlined'
+                  style={{}}
+                />
+              )}
+            </>
+          </Security>
+        </div>
+      </div>
+      {editionOpen
+          && (<ManagedConnectorEdition connector={connector} onClose={() => setEditionOpen(false)} />)}
+
+      {isComposerEnable ? (
+        <>
+          <Box
+            sx={{
+              borderBottom: 1,
+              borderColor: 'divider',
+              marginBottom: 3,
+            }}
+          >
+            <Tabs value={tabValue} onChange={handleTabChange}>
+              <Tab label={t_i18n('Overview')} />
+              <Tab label={t_i18n('Logs')} />
+            </Tabs>
+          </Box>
+          <Box>
+            {tabValue === 0 && <ConnectorOverview />}
+            {tabValue === 1 && <ConnectorLogs />}
+          </Box>
+        </>
+      ) : (
+        <ConnectorOverview />
+      )}
       <DeleteDialog
         deletion={deletion}
         submitDelete={submitDelete}
@@ -922,33 +978,6 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
         </DialogActions>
       </Dialog>
 
-      <QueryRenderer
-        query={connectorWorksQuery}
-        variables={optionsInProgress}
-        render={({ props }: { props: ConnectorWorksQuery$data | null }) => (
-          <>
-            {props ? (
-              <ConnectorWorks data={props} options={[optionsInProgress]} inProgress={true} />
-            ) : (
-              <Loader variant={LoaderVariant.inElement} />
-            )}
-          </>
-        )}
-      />
-
-      <QueryRenderer
-        query={connectorWorksQuery}
-        variables={optionsFinished}
-        render={({ props }: { props: ConnectorWorksQuery$data | null }) => (
-          <>
-            {props ? (
-              <ConnectorWorks data={props} options={[optionsFinished]} />
-            ) : (
-              <Loader variant={LoaderVariant.inElement} />
-            )}
-          </>
-        )}
-      />
     </>
   );
 };
