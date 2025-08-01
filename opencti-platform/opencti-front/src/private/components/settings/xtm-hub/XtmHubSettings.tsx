@@ -45,7 +45,7 @@ const XtmHubSettings = () => {
       <Grid2 container spacing={3}>
         <Grid2 size={7}>
           <Typography variant="h4" gutterBottom={true}>
-            {t_i18n('XTM Hub Enrollment')}
+            {t_i18n('XTM Hub Registration')}
           </Typography>
           <div className="clearfix" />
           <Paper
@@ -78,14 +78,14 @@ const XtmHubSettings = () => {
                   }
                 />
               </div>
-              {t_i18n("By enrolling your OpenCTI instance, you'll be able to:")}
+              {t_i18n("By registering your OpenCTI platform, you'll be able to:")}
               <List sx={{ listStyleType: 'disc', marginLeft: 4, marginTop: 1 }}>
                 <li>
                   {t_i18n(
                     'deploy in one-click Threats Intelligence Resources',
                   )}
                 </li>
-                <li>{t_i18n('see metrics on your instance')}</li>
+                <li>{t_i18n('see metrics on your platform')}</li>
               </List>
             </Box>
             <List style={{ marginTop: -10 }}>
@@ -93,15 +93,15 @@ const XtmHubSettings = () => {
                 xtmHubSettings.xtm_hub_enrollment_status === 'enrolled' && (
                   <>
                     <ListItem divider={true}>
-                      <ListItemText primary={t_i18n('Enrollment status')} />
+                      <ListItemText primary={t_i18n('Registration status')} />
                       <ItemBoolean
                         variant="large"
-                        label={t_i18n('Enrolled')}
+                        label={t_i18n('Registered')}
                         status={true}
                       />
                     </ListItem>
                     <ListItem divider={true}>
-                      <ListItemText primary={t_i18n('Enrollment date')} />
+                      <ListItemText primary={t_i18n('Registration date')} />
                       <ItemBoolean
                         variant="large"
                         neutralLabel={dateFormat(
@@ -112,7 +112,7 @@ const XtmHubSettings = () => {
                       />
                     </ListItem>
                     <ListItem divider={true}>
-                      <ListItemText primary={t_i18n('Enrolled by')} />
+                      <ListItemText primary={t_i18n('Registered by')} />
                       <ItemBoolean
                         variant="large"
                         neutralLabel={xtmHubSettings.xtm_hub_enrollment_user_name}
@@ -126,7 +126,7 @@ const XtmHubSettings = () => {
                 xtmHubSettings.xtm_hub_enrollment_status === 'lost_connectivity' && (
                   <>
                     <ListItem divider={true}>
-                      <ListItemText primary={t_i18n('Enrollment status')} />
+                      <ListItemText primary={t_i18n('Registration status')} />
                       <ItemBoolean
                         variant="large"
                         label={t_i18n('Connectivity lost')}
@@ -151,10 +151,10 @@ const XtmHubSettings = () => {
               {
                 xtmHubSettings.xtm_hub_enrollment_status === 'unenrolled' && (
                   <ListItem divider={true}>
-                    <ListItemText primary={t_i18n('Enrollment status')} />
+                    <ListItemText primary={t_i18n('Registration status')} />
                     <ItemBoolean
                       variant="large"
-                      label={t_i18n('Not enrolled')}
+                      label={t_i18n('Not registered')}
                       status={false}
                     />
                   </ListItem>
