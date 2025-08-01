@@ -212,7 +212,7 @@ import {
   xOpenctiStixIds
 } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
-import { FilterMode, FilterOperator, StixVersion } from '../generated/graphql';
+import { FilterMode, FilterOperator, Version } from '../generated/graphql';
 import { getMandatoryAttributesForSetting } from '../modules/entitySetting/entitySetting-attributeUtils';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import {
@@ -519,9 +519,9 @@ export const storeLoadByIdWithRefs = async (context, user, id, opts = {}) => {
   const elements = await storeLoadByIdsWithRefs(context, user, [id], opts);
   return elements.length > 0 ? R.head(elements) : null;
 };
-export const stixLoadById = async (context, user, id, opts = {}, stixVersion = StixVersion.Stix_2_1) => {
+export const stixLoadById = async (context, user, id, opts = {}, version = Version.Stix_2_1) => {
   const instance = await storeLoadByIdWithRefs(context, user, id, opts);
-  if (stixVersion === StixVersion.Stix_2_0) {
+  if (version === Version.Stix_2_0) {
     return instance ? convertStoreToStix_2_0(instance) : undefined;
   }
   return instance ? convertStoreToStix(instance) : undefined;
@@ -556,8 +556,8 @@ export const stixLoadByIds = async (context, user, ids, opts = {}) => {
     .filter((i) => isNotEmptyField(i))
     .map((e) => (convertStoreToStix(e)));
 };
-export const stixLoadByIdStringify = async (context, user, id, stixVersion) => {
-  const data = await stixLoadById(context, user, id, {}, stixVersion);
+export const stixLoadByIdStringify = async (context, user, id, version) => {
+  const data = await stixLoadById(context, user, id, {}, version);
   return data ? JSON.stringify(data) : '';
 };
 export const stixLoadByFilters = async (context, user, types, args) => {
