@@ -80,6 +80,16 @@ export interface UserExportAction extends BasicUserAction {
   event_scope: 'export'
   context_data: UserExportActionContextData
 }
+
+export interface UserSendActionContextData extends ElementContextData {
+  input: unknown
+}
+
+export interface UserSendAction extends BasicUserAction {
+  event_type: 'command'
+  event_scope: 'send'
+  context_data: UserSendActionContextData
+}
 // endregion
 
 // region file
@@ -157,7 +167,7 @@ export interface UserForgotPasswordAction extends BasicUserAction {
 // endregion
 
 export type UserAction = UserReadAction | UserFileAction | UserLoginAction | UserEnrichAction | UserAnalyzeAction | UserImportAction |
-UserLogoutAction | UserExportAction | UserModificationAction | UserForbiddenAction | UserSearchAction | DisseminateAction | UserForgotPasswordAction;
+UserLogoutAction | UserExportAction | UserSendAction | UserModificationAction | UserForbiddenAction | UserSearchAction | DisseminateAction | UserForgotPasswordAction;
 
 export interface ActionListener {
   id: string
