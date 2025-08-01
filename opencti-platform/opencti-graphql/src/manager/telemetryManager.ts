@@ -80,7 +80,7 @@ export const addWorkbenchDraftConvertionCount = async () => {
 export const addWorkbenchValidationCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_WORKBENCH_VALIDATION, 1);
 };
-export const addEmailSendCount = async () => {
+export const addUserEmailSendCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_EMAIL_SEND, 1);
 };
 export const addOnboardingEmailSendCount = async () => {

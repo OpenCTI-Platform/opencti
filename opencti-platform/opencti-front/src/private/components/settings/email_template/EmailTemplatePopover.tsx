@@ -87,7 +87,7 @@ const EmailTemplatePopover = ({
       <DeleteDialog
         deletion={deletion}
         submitDelete={onDelete}
-        message={t_i18n('Do you want to delete this Email template?')}
+        message={t_i18n('Do you want to delete this email template?')}
       />
     </>
   );
