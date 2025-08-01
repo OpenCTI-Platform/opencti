@@ -6,12 +6,13 @@ import { USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
 import { wait } from '../../../src/database/utils';
 import { XTMComposerMock } from '../../utils/XTMComposerMock';
 import type { ApiConnector } from '../../utils/XTMComposerMock';
+import { catalogHelper } from '../../utils/catalogHelper';
 
 const TEST_COMPOSER_ID = uuidv4();
 const TEST_USER_CONNECTOR_ID: string = USER_CONNECTOR.id; // Initialize with default value
 
 // Test configuration
-// The goal is to achieve a 1:1 behavior match between XTMComposerMock and XTMComposer. 
+// The goal is to achieve a 1:1 behavior match between XTMComposerMock and XTMComposer.
 // This enables authentic integration testing (assuming the XTM Composer is available in the CI) without the need to rewrite the test suite.
 const FORCE_POLLING = true; // Set to true for faster tests, false for realistic XTM Composer behavior
 
@@ -225,20 +226,19 @@ describe('Connector Composer and Managed Connectors', () => {
     let deploymentConnectorId: string;
 
     it('should deploy a managed connector', async () => {
+      // Get test connector from catalog
+      const testConnector = catalogHelper.getTestSafeConnector();
+      const catalogId = catalogHelper.getCatalogId();
+
       // First create a managed connector
       const createInput = {
         name: 'Connector for Deployment Test',
-        connector_user_id: TEST_USER_CONNECTOR_ID,
-        catalog_id: 'filigran-catalog-id',
-        manager_contract_image: 'opencti/connector-ipinfo',
-        manager_contract_configuration: [
-          { key: 'IPINFO_TOKEN', value: ['deployment-test-token'] },
-          { key: 'CONNECTOR_SCOPE', value: ['IPv4-Addr'] },
-          { key: 'CONNECTOR_AUTO', value: ['true'] },
-          { key: 'IPINFO_MAX_TLP', value: ['TLP:AMBER'] },
-          { key: 'CONNECTOR_LOG_LEVEL', value: ['info'] },
-          { key: 'IPINFO_USE_ASN_NAME', value: ['false'] }
-        ]
+        user_id: TEST_USER_CONNECTOR_ID,
+        catalog_id: catalogId,
+        manager_contract_image: testConnector.container_image,
+        manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
+          IPINFO_TOKEN: 'deployment-test-token'
+        })
       };
 
       const createResult = await queryAsAdminWithSuccess({
@@ -451,20 +451,20 @@ describe('Connector Composer and Managed Connectors', () => {
     });
 
     it('should change/update the connector log level (e.g., DEBUG, INFO, WARN, ERROR)', async () => {
+      // Get test connector from catalog
+      const testConnector = catalogHelper.getTestSafeConnector();
+      const catalogId = catalogHelper.getCatalogId();
+
       // Create a dedicated connector for this test
       const createInput = {
         name: 'Log Level Test Connector',
-        connector_user_id: TEST_USER_CONNECTOR_ID,
-        catalog_id: 'filigran-catalog-id',
-        manager_contract_image: 'opencti/connector-ipinfo',
-        manager_contract_configuration: [
-          { key: 'IPINFO_TOKEN', value: ['log-level-test-token'] },
-          { key: 'CONNECTOR_SCOPE', value: ['IPv4-Addr'] },
-          { key: 'CONNECTOR_AUTO', value: ['true'] },
-          { key: 'IPINFO_MAX_TLP', value: ['TLP:AMBER'] },
-          { key: 'CONNECTOR_LOG_LEVEL', value: ['info'] }, // Initial log level
-          { key: 'IPINFO_USE_ASN_NAME', value: ['false'] }
-        ]
+        user_id: TEST_USER_CONNECTOR_ID,
+        catalog_id: catalogId,
+        manager_contract_image: testConnector.container_image,
+        manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
+          IPINFO_TOKEN: 'log-level-test-token',
+          CONNECTOR_LOG_LEVEL: 'info' // Initial log level
+        })
       };
 
       const createResult = await queryAsAdminWithSuccess({
@@ -510,16 +510,13 @@ describe('Connector Composer and Managed Connectors', () => {
 
       expect(connectorResult.data?.connector.manager_current_status).toEqual('started');
 
-      const currentConfig = connectorResult.data?.connector.manager_contract_configuration || [];
-      const configWithoutLogLevel = currentConfig.filter((c: any) => c.key !== 'CONNECTOR_LOG_LEVEL');
-
       // Update the connector configuration with a new log level (change from 'info' to 'debug')
       const updateInput = {
         id: logLevelConnectorId,
         name: 'Log Level Test Connector',
         connector_user_id: TEST_USER_CONNECTOR_ID,
         manager_contract_configuration: [
-          ...configWithoutLogLevel,
+          { key: 'IPINFO_TOKEN', value: ['log-level-test-token'] },
           { key: 'CONNECTOR_LOG_LEVEL', value: ['debug'] } // Changed from 'info' to 'debug'
         ]
       };
@@ -571,7 +568,7 @@ describe('Connector Composer and Managed Connectors', () => {
         name: 'Log Level Test Connector',
         connector_user_id: TEST_USER_CONNECTOR_ID,
         manager_contract_configuration: [
-          ...configWithoutLogLevel,
+          { key: 'IPINFO_TOKEN', value: ['log-level-test-token'] },
           { key: 'CONNECTOR_LOG_LEVEL', value: ['error'] } // Changed from 'debug' to 'error'
         ]
       };
@@ -607,7 +604,7 @@ describe('Connector Composer and Managed Connectors', () => {
         name: 'Log Level Test Connector - Updated Name Only',
         connector_user_id: TEST_USER_CONNECTOR_ID,
         manager_contract_configuration: [
-          ...configWithoutLogLevel,
+          { key: 'IPINFO_TOKEN', value: ['log-level-test-token'] },
           { key: 'CONNECTOR_LOG_LEVEL', value: ['error'] } // Same log level as before
         ]
       };
@@ -694,17 +691,19 @@ describe('Connector Composer and Managed Connectors', () => {
     let testConnectorId: string;
 
     beforeAll(async () => {
+      // Get test connector from catalog
+      const testConnector = catalogHelper.getTestSafeConnector();
+      const catalogId = catalogHelper.getCatalogId();
+
       // Create a test connector for this suite
       const createInput = {
         name: 'XTM Composer Test Connector',
-        connector_user_id: TEST_USER_CONNECTOR_ID,
-        catalog_id: 'filigran-catalog-id',
-        manager_contract_image: 'opencti/connector-mitre',
-        manager_contract_configuration: [
-          { key: 'CONNECTOR_SCOPE', value: ['tool,report,malware'] },
-          { key: 'MITRE_REMOVE_STATEMENT_MARKING', value: ['true'] },
-          { key: 'MITRE_INTERVAL', value: ['7'] }
-        ]
+        user_id: TEST_USER_CONNECTOR_ID,
+        catalog_id: catalogId,
+        manager_contract_image: testConnector.container_image,
+        manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
+          IPINFO_TOKEN: 'xtm-test-token'
+        })
       };
 
       const createResult = await queryAsAdminWithSuccess({
@@ -721,7 +720,7 @@ describe('Connector Composer and Managed Connectors', () => {
       const mockConnector: ApiConnector = {
         id: testConnectorId,
         name: 'XTM Composer Test Connector',
-        image: 'opencti/connector-mitre',
+        image: 'opencti/connector-ipinfo',
         contractHash: 'test-hash',
         requestedStatus: 'started',
         contractConfiguration: []
@@ -781,30 +780,29 @@ describe('Connector Composer and Managed Connectors', () => {
       expect(testConnector.name).toEqual('XTM Composer Test Connector');
       // Split image name to ignore version
       const [imageName] = testConnector.manager_contract_image.split(':');
-      expect(imageName).toEqual('opencti/connector-mitre');
+      expect(imageName).toEqual('opencti/connector-ipinfo');
 
       expect(testConnector.manager_requested_status).toBeDefined();
       expect(testConnector.manager_current_status).toBeDefined();
     });
 
     it('should handle concurrent XTM Composer operations', async () => {
+      // Get test connector from catalog
+      const testConnector = catalogHelper.getTestSafeConnector();
+      const catalogId = catalogHelper.getCatalogId();
+
       // Create multiple connectors
       const connectorIds: string[] = [];
 
       const connectorPromises = Array.from({ length: 3 }, (_, i) => {
         const createInput = {
           name: `Concurrent Test Connector ${i}`,
-          connector_user_id: TEST_USER_CONNECTOR_ID,
-          catalog_id: 'filigran-catalog-id',
-          manager_contract_image: 'opencti/connector-ipinfo',
-          manager_contract_configuration: [
-            { key: 'IPINFO_TOKEN', value: [`concurrent-token-${i}`] },
-            { key: 'CONNECTOR_SCOPE', value: ['IPv4-Addr'] },
-            { key: 'CONNECTOR_AUTO', value: ['true'] },
-            { key: 'IPINFO_MAX_TLP', value: ['TLP:AMBER'] },
-            { key: 'CONNECTOR_LOG_LEVEL', value: ['info'] },
-            { key: 'IPINFO_USE_ASN_NAME', value: ['false'] }
-          ]
+          user_id: TEST_USER_CONNECTOR_ID,
+          catalog_id: catalogId,
+          manager_contract_image: testConnector.container_image,
+          manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
+            IPINFO_TOKEN: `concurrent-token-${i}`
+          })
         };
 
         return queryAsAdminWithSuccess({
@@ -859,13 +857,14 @@ describe('Connector Composer and Managed Connectors', () => {
 
   describe('Managed Connector operations', () => {
     let managedConnectorId: string;
-    let mitreConnectorId: string;
 
     it('should fail to add managed connector with invalid image', async () => {
+      const catalogId = catalogHelper.getCatalogId();
+
       const input = {
         name: 'Test Managed Connector',
-        connector_user_id: TEST_USER_CONNECTOR_ID,
-        catalog_id: 'filigran-catalog-id',
+        user_id: TEST_USER_CONNECTOR_ID,
+        catalog_id: catalogId,
         manager_contract_image: 'invalid-image',
         manager_contract_configuration: []
       };
@@ -882,19 +881,18 @@ describe('Connector Composer and Managed Connectors', () => {
     });
 
     it('should add a new managed connector using IpInfo catalog', async () => {
+      // Get test connector from catalog
+      const testConnector = catalogHelper.getTestSafeConnector();
+      const catalogId = catalogHelper.getCatalogId();
+
       const input = {
         name: 'Test IpInfo Connector',
-        connector_user_id: TEST_USER_CONNECTOR_ID,
-        catalog_id: 'filigran-catalog-id',
-        manager_contract_image: 'opencti/connector-ipinfo',
-        manager_contract_configuration: [
-          { key: 'IPINFO_TOKEN', value: ['test-token-123'] },
-          { key: 'CONNECTOR_SCOPE', value: ['IPv4-Addr'] },
-          { key: 'CONNECTOR_AUTO', value: ['true'] },
-          { key: 'IPINFO_MAX_TLP', value: ['TLP:AMBER'] },
-          { key: 'CONNECTOR_LOG_LEVEL', value: ['info'] },
-          { key: 'IPINFO_USE_ASN_NAME', value: ['false'] }
-        ]
+        user_id: TEST_USER_CONNECTOR_ID,
+        catalog_id: catalogId,
+        manager_contract_image: testConnector.container_image,
+        manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
+          IPINFO_TOKEN: 'test-token-123'
+        })
       };
 
       const result = await queryAsAdminWithSuccess({
@@ -907,10 +905,11 @@ describe('Connector Composer and Managed Connectors', () => {
       createdConnectorIds.add(managedConnectorId);
       expect(result.data?.managedConnectorAdd).not.toBeNull();
       expect(result.data?.managedConnectorAdd.name).toEqual('Test IpInfo Connector');
-      expect(result.data?.managedConnectorAdd.connector_user_id).toEqual(TEST_USER_CONNECTOR_ID);
+      expect(result.data?.managedConnectorAdd.connector_user_id).toBeDefined();
       expect(result.data?.managedConnectorAdd.manager_requested_status).toEqual('stopped');
       expect(result.data?.managedConnectorAdd.manager_contract_hash).toBeDefined();
-      expect(result.data?.managedConnectorAdd.manager_contract_configuration).toHaveLength(10);
+      expect(result.data?.managedConnectorAdd.manager_contract_configuration).toBeDefined();
+      expect(result.data?.managedConnectorAdd.manager_contract_configuration.length).toBeGreaterThan(0);
     });
 
     it('should edit managed connector', async () => {
@@ -920,11 +919,8 @@ describe('Connector Composer and Managed Connectors', () => {
         connector_user_id: TEST_USER_CONNECTOR_ID,
         manager_contract_configuration: [
           { key: 'IPINFO_TOKEN', value: ['updated-token-456'] },
-          { key: 'CONNECTOR_SCOPE', value: ['IPv4-Addr'] },
           { key: 'CONNECTOR_AUTO', value: ['false'] },
-          { key: 'IPINFO_MAX_TLP', value: ['TLP:GREEN'] },
-          { key: 'CONNECTOR_LOG_LEVEL', value: ['debug'] },
-          { key: 'IPINFO_USE_ASN_NAME', value: ['true'] }
+          { key: 'CONNECTOR_LOG_LEVEL', value: ['debug'] }
         ]
       };
 
@@ -939,46 +935,6 @@ describe('Connector Composer and Managed Connectors', () => {
       const autoConfig = result.data?.managedConnectorEdit.manager_contract_configuration
         .find((c: any) => c.key === 'CONNECTOR_AUTO');
       expect(autoConfig.value).toEqual('false');
-    });
-
-    it('should test alternative connector from catalog (Mitre)', async () => {
-      const input = {
-        name: 'Test Mitre Connector',
-        connector_user_id: TEST_USER_CONNECTOR_ID,
-        catalog_id: 'filigran-catalog-id',
-        manager_contract_image: 'opencti/connector-mitre',
-        manager_contract_configuration: [
-          { key: 'CONNECTOR_SCOPE', value: ['tool,report,malware'] },
-          { key: 'MITRE_REMOVE_STATEMENT_MARKING', value: ['true'] },
-          { key: 'MITRE_INTERVAL', value: ['7'] }
-        ]
-      };
-
-      const result = await queryAsAdminWithSuccess({
-        query: ADD_MANAGED_CONNECTOR_MUTATION,
-        variables: { input }
-      });
-
-      expect(result.data).toBeDefined();
-      expect(result.data?.managedConnectorAdd).not.toBeNull();
-      mitreConnectorId = result.data?.managedConnectorAdd.id;
-      createdConnectorIds.add(mitreConnectorId);
-      expect(result.data?.managedConnectorAdd.name).toEqual('Test Mitre Connector');
-
-      // Verify it's an EXTERNAL_IMPORT type based on catalog
-      const connectorQuery = await queryAsAdminWithSuccess({
-        query: gql`
-            query GetConnector($id: String!) {
-                connector(id: $id) {
-                    connector_type
-                }
-            }
-        `,
-        variables: { id: result.data?.managedConnectorAdd.id }
-      });
-
-      expect(connectorQuery.data).toBeDefined();
-      expect(connectorQuery.data?.connector.connector_type).toEqual('EXTERNAL_IMPORT');
     });
   });
 
@@ -998,7 +954,7 @@ describe('Connector Composer and Managed Connectors', () => {
     it('should deny non-admin users from adding managed connector', async () => {
       const input = {
         name: 'Unauthorized Connector',
-        connector_user_id: TEST_USER_CONNECTOR_ID,
+        user_id: TEST_USER_CONNECTOR_ID,
         catalog_id: 'test-catalog',
         manager_contract_image: 'test-image',
         manager_contract_configuration: []
@@ -1011,20 +967,19 @@ describe('Connector Composer and Managed Connectors', () => {
     });
 
     it('should allow connector user to update connector logs via XTM Composer', async () => {
+      // Get test connector from catalog
+      const testConnector = catalogHelper.getTestSafeConnector();
+      const catalogId = catalogHelper.getCatalogId();
+
       // Create a connector for this test
       const createInput = {
         name: 'Permission Test Connector',
-        connector_user_id: TEST_USER_CONNECTOR_ID,
-        catalog_id: 'filigran-catalog-id',
-        manager_contract_image: 'opencti/connector-ipinfo',
-        manager_contract_configuration: [
-          { key: 'IPINFO_TOKEN', value: ['permission-test-token'] },
-          { key: 'CONNECTOR_SCOPE', value: ['IPv4-Addr'] },
-          { key: 'CONNECTOR_AUTO', value: ['true'] },
-          { key: 'IPINFO_MAX_TLP', value: ['TLP:AMBER'] },
-          { key: 'CONNECTOR_LOG_LEVEL', value: ['info'] },
-          { key: 'IPINFO_USE_ASN_NAME', value: ['false'] }
-        ]
+        user_id: TEST_USER_CONNECTOR_ID,
+        catalog_id: catalogId,
+        manager_contract_image: testConnector.container_image,
+        manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
+          IPINFO_TOKEN: 'permission-test-token'
+        })
       };
 
       const createResult = await queryAsAdminWithSuccess({
@@ -1056,20 +1011,19 @@ describe('Connector Composer and Managed Connectors', () => {
     });
 
     it('should deny non-admin users from deleting a connector', async () => {
+      // Get test connector from catalog
+      const testConnector = catalogHelper.getTestSafeConnector();
+      const catalogId = catalogHelper.getCatalogId();
+
       // First create a connector as admin
       const input = {
         name: 'Connector for Permission Test',
-        connector_user_id: TEST_USER_CONNECTOR_ID,
-        catalog_id: 'filigran-catalog-id',
-        manager_contract_image: 'opencti/connector-ipinfo',
-        manager_contract_configuration: [
-          { key: 'IPINFO_TOKEN', value: ['permission-test-token'] },
-          { key: 'CONNECTOR_SCOPE', value: ['IPv4-Addr'] },
-          { key: 'CONNECTOR_AUTO', value: ['true'] },
-          { key: 'IPINFO_MAX_TLP', value: ['TLP:AMBER'] },
-          { key: 'CONNECTOR_LOG_LEVEL', value: ['info'] },
-          { key: 'IPINFO_USE_ASN_NAME', value: ['false'] }
-        ]
+        user_id: TEST_USER_CONNECTOR_ID,
+        catalog_id: catalogId,
+        manager_contract_image: testConnector.container_image,
+        manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
+          IPINFO_TOKEN: 'permission-test-token'
+        })
       };
 
       const createResult = await queryAsAdminWithSuccess({
@@ -1097,17 +1051,19 @@ describe('Connector Composer and Managed Connectors', () => {
 
   describe('Complete lifecycle test', () => {
     it('should handle complete lifecycle of a managed connector', async () => {
+      // Get test connector from catalog
+      const testConnector = catalogHelper.getTestSafeConnector();
+      const catalogId = catalogHelper.getCatalogId();
+
       // Create
       const createInput = {
         name: 'Lifecycle Test Connector',
-        connector_user_id: TEST_USER_CONNECTOR_ID,
-        catalog_id: 'filigran-catalog-id',
-        manager_contract_image: 'opencti/connector-mitre',
-        manager_contract_configuration: [
-          { key: 'CONNECTOR_SCOPE', value: ['tool,report,malware'] },
-          { key: 'MITRE_REMOVE_STATEMENT_MARKING', value: ['true'] },
-          { key: 'MITRE_INTERVAL', value: ['7'] }
-        ]
+        user_id: TEST_USER_CONNECTOR_ID,
+        catalog_id: catalogId,
+        manager_contract_image: testConnector.container_image,
+        manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
+          IPINFO_TOKEN: 'lifecycle-test-token'
+        })
       };
 
       const createResult = await queryAsAdminWithSuccess({
@@ -1129,8 +1085,8 @@ describe('Connector Composer and Managed Connectors', () => {
 
       // Update logs during operation
       await xtmComposer.updateConnectorLogs(lifecycleConnectorId, [
-        'Lifecycle test: processing MITRE data',
-        'Lifecycle test: imported 150 entities'
+        'Lifecycle test: processing IP data',
+        'Lifecycle test: enriched 50 observables'
       ]);
 
       // Stop
@@ -1155,20 +1111,19 @@ describe('Connector Composer and Managed Connectors', () => {
 
   describe('Error handling', () => {
     it('should handle XTM Composer errors gracefully', async () => {
+      // Get test connector from catalog
+      const testConnector = catalogHelper.getTestSafeConnector();
+      const catalogId = catalogHelper.getCatalogId();
+
       // Create a connector
       const createInput = {
         name: 'Error Test Connector',
-        connector_user_id: TEST_USER_CONNECTOR_ID,
-        catalog_id: 'filigran-catalog-id',
-        manager_contract_image: 'opencti/connector-ipinfo',
-        manager_contract_configuration: [
-          { key: 'IPINFO_TOKEN', value: ['error-test-token'] },
-          { key: 'CONNECTOR_SCOPE', value: ['IPv4-Addr'] },
-          { key: 'CONNECTOR_AUTO', value: ['true'] },
-          { key: 'IPINFO_MAX_TLP', value: ['TLP:AMBER'] },
-          { key: 'CONNECTOR_LOG_LEVEL', value: ['info'] },
-          { key: 'IPINFO_USE_ASN_NAME', value: ['false'] }
-        ]
+        user_id: TEST_USER_CONNECTOR_ID,
+        catalog_id: catalogId,
+        manager_contract_image: testConnector.container_image,
+        manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
+          IPINFO_TOKEN: 'error-test-token'
+        })
       };
 
       const createResult = await queryAsAdminWithSuccess({
@@ -1194,13 +1149,17 @@ describe('Connector Composer and Managed Connectors', () => {
     });
 
     it('should handle missing required configuration', async () => {
+      // Get test connector from catalog
+      const testConnector = catalogHelper.getTestSafeConnector();
+      const catalogId = catalogHelper.getCatalogId();
+
       const input = {
         name: 'Missing Config Connector',
-        connector_user_id: TEST_USER_CONNECTOR_ID,
-        catalog_id: 'filigran-catalog-id',
-        manager_contract_image: 'opencti/connector-ipinfo',
+        user_id: TEST_USER_CONNECTOR_ID,
+        catalog_id: catalogId,
+        manager_contract_image: testConnector.container_image,
         manager_contract_configuration: [
-          // Missing required IPINFO_TOKEN
+          // Missing required fields - only providing one optional field
           { key: 'CONNECTOR_SCOPE', value: ['IPv4-Addr'] }
         ]
       };

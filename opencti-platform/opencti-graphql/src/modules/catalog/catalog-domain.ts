@@ -12,7 +12,7 @@ import filigranCatalog from './filigran/opencti-manifest.json';
 
 const CUSTOM_CATALOGS: string[] = conf.get('app:custom_catalogs') ?? [];
 const ajv = new Ajv({ coerceTypes: true });
-addFormats(ajv, ['password']);
+addFormats(ajv, ['password', 'uri', 'duration']);
 
 const getCatalogs = () => {
   const catalogMap: Record<string, CatalogType> = {};
@@ -104,4 +104,15 @@ export const findById = (_context: AuthContext, _user: AuthUser, catalogId: stri
 export const findAll = (_context: AuthContext, _user: AuthUser) => {
   const catalogDefinitions = getCatalogs();
   return Object.values(catalogDefinitions).map((catalog) => catalog.graphql);
+};
+
+export const findContractBySlug = (_context: AuthContext, _user: AuthUser, contractSlug: string) => {
+  const catalogDefinitions = getCatalogs();
+  const catalogs = Object.values(catalogDefinitions).map((catalog) => catalog.graphql);
+  return catalogs
+    .map((catalog) => {
+      const contract = catalog.contracts.find((contractStr) => JSON.parse(contractStr).slug === contractSlug);
+      return contract ? { catalog_id: catalog.id, contract } : null;
+    })
+    .find((result) => result !== null);
 };

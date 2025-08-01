@@ -33,6 +33,8 @@ const Sync = lazy(() => import('./Sync'));
 const IngestionRss = lazy(() => import('./IngestionRss'));
 const IngestionTaxiis = lazy(() => import('./IngestionTaxiis'));
 const IngestionTaxiiCollections = lazy(() => import('./IngestionTaxiiCollections'));
+const IngestionCatalog = lazy(() => import('./IngestionCatalog'));
+const IngestionCatalogConnector = lazy(() => import('./IngestionCatalog/IngestionCatalogConnector'));
 const Playbooks = lazy(() => import('./Playbooks'));
 const RootPlaybook = lazy(() => import('./playbooks/Root'));
 const RootImport = lazy(() => import('./import/Root'));
@@ -41,6 +43,7 @@ const Management = lazy(() => import('./Management'));
 const Root = () => {
   const { isFeatureEnable } = useHelper();
   const isRightMenuManagementEnable = isFeatureEnable('DATA_MANAGEMENT_RIGHT_MENU');
+  const isComposerEnable = isFeatureEnable('COMPOSER');
 
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
   const isGrantedToIngestion = useGranted([MODULES, INGESTION, INGESTION_SETINGESTIONS]);
@@ -113,6 +116,18 @@ const Root = () => {
           path="/ingestion/taxii"
           element={boundaryWrapper(IngestionTaxiis)}
         />
+        {isComposerEnable && (
+          <Route
+            path="/ingestion/catalog"
+            element={boundaryWrapper(IngestionCatalog)}
+          />
+        )}
+        {isComposerEnable && (
+          <Route
+            path="/ingestion/catalog/:connectorSlug"
+            element={boundaryWrapper(IngestionCatalogConnector)}
+          />
+        )}
         <Route
           path="/ingestion/collection"
           element={boundaryWrapper(IngestionTaxiiCollections)}

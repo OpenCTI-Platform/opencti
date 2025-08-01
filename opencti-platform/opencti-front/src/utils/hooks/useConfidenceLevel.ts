@@ -8,13 +8,13 @@ const useConfidenceLevel = () => {
   const userEffectiveConfidenceLevel = me.effective_confidence_level;
   const overrides = userEffectiveConfidenceLevel?.overrides ?? [];
 
-  const getEffectiveConfidenceLevel = (entityType: string | null | undefined) => {
+  const getEffectiveConfidenceLevel = (entityType: string | null | undefined, maxConfidenceLevel?: number) => {
     if (!userEffectiveConfidenceLevel) {
       return null;
     }
     // asking for the global CL
     if (!entityType) {
-      return userEffectiveConfidenceLevel.max_confidence;
+      return maxConfidenceLevel ?? userEffectiveConfidenceLevel.max_confidence;
     }
     // otherwise, check if an override exist
     const override = overrides.find((n) => n.entity_type === entityType);
