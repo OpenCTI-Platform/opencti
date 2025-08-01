@@ -4,11 +4,13 @@ import { ADMIN_USER, FIVE_MINUTES, SYNC_LIVE_EVENTS_SIZE, testContext } from '..
 import { checkInstanceDiff, checkStreamGenericContent, fetchStreamEvents } from '../../utils/testStream';
 import { storeLoadByIdWithRefs } from '../../../src/database/middleware';
 import { elAggregationCount } from '../../../src/database/engine';
-import { convertStoreToStix, convertTypeToStixType } from '../../../src/database/stix-2-1-converter';
+import { convertTypeToStixType } from '../../../src/database/stix-2-1-converter';
 import { utcDate } from '../../../src/utils/format';
 import { PORT } from '../../../src/config/conf';
 import { READ_DATA_INDICES } from '../../../src/database/utils';
 import { writeTestDataToFile } from '../../utils/testOutput';
+
+import { convertStoreToStix } from '../../../src/database/stix-common-converter';
 
 describe('Live streams tests', () => {
   const getElementsCounting = async () => {
