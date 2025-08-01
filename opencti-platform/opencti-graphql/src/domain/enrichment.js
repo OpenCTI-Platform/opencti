@@ -9,8 +9,9 @@ import { CONNECTOR_INTERNAL_ENRICHMENT } from '../schema/general';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
 import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { SYSTEM_USER } from '../utils/access';
-import { convertStoreToStix } from '../database/stix-2-1-converter';
 import { getDraftContext } from '../utils/draftContext';
+
+import { convertStoreToStix } from '../database/stix-common-converter';
 
 export const createEntityAutoEnrichment = async (context, user, element, scope) => {
   if (!isStixObject(element.entity_type)) {
