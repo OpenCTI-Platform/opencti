@@ -87,8 +87,6 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { enabled, configured } = useAI();
-  const isAIConfigured = enabled && configured;
 
   const [content, setContent] = useState('');
   const [disableResponse, setDisableResponse] = useState(false);
