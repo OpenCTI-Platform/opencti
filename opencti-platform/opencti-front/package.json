@@ -74,7 +74,7 @@
     "react-cookie": "7.2.2",
     "react-csv": "2.2.2",
     "react-dom": "19.0.0",
-    "react-draggable": "4.4.6",
+    "react-draggable": "4.5.0",
     "react-force-graph-2d": "1.27.1",
     "react-force-graph-3d": "1.24.4",
     "react-grid-layout": "1.5.1",
