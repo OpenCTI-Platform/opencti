@@ -168,6 +168,9 @@ const PlaybookAddComponentsContent = ({
   };
   const areStepsValid = () => {
     for (const n of actionsInputs) {
+      if (n.attribute === 'x_opencti_detection') {
+        return true;
+      }
       if (!n || !n.op || !n.attribute || !n.value || n.value.length === 0) {
         return false;
       }
