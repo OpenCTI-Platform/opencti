@@ -45,7 +45,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
   stixCoreObjectTypes = [],
   role,
   isRelationReversed,
-  allDirections,
+  allDirections = true,
   currentView,
   enableNestedView,
   enableContextualView,

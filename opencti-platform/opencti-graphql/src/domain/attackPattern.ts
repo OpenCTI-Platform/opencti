@@ -12,7 +12,7 @@ import {
   findEntitiesIdsWithRelations,
   listAllEntities,
   listAllRelations,
-  listEntities,
+  listEntitiesPaginated,
   listEntitiesThroughRelationsPaginated,
   storeLoadById
 } from '../database/middleware-loader';
@@ -25,7 +25,7 @@ export const findById = (context: AuthContext, user: AuthUser, attackPatternId: 
 };
 
 export const findAll = (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreCommon>) => {
-  return listEntities(context, user, [ENTITY_TYPE_ATTACK_PATTERN], args);
+  return listEntitiesPaginated(context, user, [ENTITY_TYPE_ATTACK_PATTERN], args);
 };
 
 export const addAttackPattern = async (context: AuthContext, user: AuthUser, attackPattern: AttackPatternAddInput) => {

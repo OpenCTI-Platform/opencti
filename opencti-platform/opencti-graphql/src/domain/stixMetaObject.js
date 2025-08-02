@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { listEntities, storeLoadById } from '../database/middleware-loader';
+import { listEntitiesPaginated, storeLoadById } from '../database/middleware-loader';
 import { ABSTRACT_STIX_META_OBJECT } from '../schema/general';
 import { isNotEmptyField } from '../database/utils';
 import { isStixMetaObject } from '../schema/stixMetaObject';
@@ -16,5 +16,5 @@ export const findAll = async (context, user, args) => {
   if (types.length === 0) {
     types.push(ABSTRACT_STIX_META_OBJECT);
   }
-  return listEntities(context, user, types, args);
+  return listEntitiesPaginated(context, user, types, args);
 };

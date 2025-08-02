@@ -1,6 +1,6 @@
 import { assoc, isNil, pipe } from 'ramda';
 import { createEntity, timeSeriesEntities } from '../database/middleware';
-import { listEntities, storeLoadById } from '../database/middleware-loader';
+import { listEntitiesPaginated, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_INCIDENT } from '../schema/stixDomainObject';
@@ -13,7 +13,7 @@ export const findById = (context, user, incidentId) => {
 };
 
 export const findAll = (context, user, args) => {
-  return listEntities(context, user, [ENTITY_TYPE_INCIDENT], args);
+  return listEntitiesPaginated(context, user, [ENTITY_TYPE_INCIDENT], args);
 };
 
 // region time series

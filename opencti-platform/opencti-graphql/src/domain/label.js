@@ -1,7 +1,7 @@
 import { assoc, pipe } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { createEntity, deleteElementById, updateAttribute } from '../database/middleware';
-import { listEntities, storeLoadById } from '../database/middleware-loader';
+import { listEntitiesPaginated, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
 import { generateStandardId, normalizeName } from '../schema/identifier';
@@ -19,7 +19,7 @@ export const findById = (context, user, labelIdOrName) => {
 };
 
 export const findAll = (context, user, args) => {
-  return listEntities(context, user, [ENTITY_TYPE_LABEL], args);
+  return listEntitiesPaginated(context, user, [ENTITY_TYPE_LABEL], args);
 };
 
 export const stringToColour = (str) => {

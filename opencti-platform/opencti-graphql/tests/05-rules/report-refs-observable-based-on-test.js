@@ -40,7 +40,7 @@ describe('Report refs observable rule', () => {
       // 4. Remove a ref from report
       // 5. Remove a based ib relation
       // Delete all reports
-      const reports = await listEntities(testContext, SYSTEM_USER, [ENTITY_TYPE_CONTAINER_REPORT], { connectionFormat: false });
+      const reports = await listEntities(testContext, SYSTEM_USER, [ENTITY_TYPE_CONTAINER_REPORT]);
       await elDeleteElements(testContext, SYSTEM_USER, reports);
 
       // Check that no inferences exists

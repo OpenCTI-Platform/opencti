@@ -135,13 +135,16 @@ import {
 import { convertTypeToStixType } from './stix-2-1-converter';
 import { extractEntityRepresentativeName, extractRepresentative } from './entity-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
-import { addFilter, checkAndConvertFilters, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
+import { addFilter, checkAndConvertFilters, extractFilterKeys, extractFiltersFromGroup, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import {
   ALIAS_FILTER,
   COMPUTED_RELIABILITY_FILTER,
+  ID_FILTER,
   IDS_FILTER,
   INSTANCE_DYNAMIC_REGARDING_OF,
   INSTANCE_REGARDING_OF,
+  INSTANCE_REGARDING_OF_DIRECTION_FORCED,
+  INSTANCE_REGARDING_OF_DIRECTION_REVERSE,
   INSTANCE_RELATION_FILTER,
   INSTANCE_RELATION_TYPES_FILTER,
   IS_INFERRED_FILTER,
@@ -199,6 +202,7 @@ import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_
 import { RELATION_SAMPLE } from '../modules/malwareAnalysis/malwareAnalysis-types';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { getPirWithAccessCheck } from '../modules/pir/pir-checkPirAccess';
+import { asyncMap } from '../utils/data-processing';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -1560,11 +1564,13 @@ export const elConvertHitsToMap = async (elements, opts) => {
 
 export const elConvertHits = async (data) => {
   const convertedHits = [];
+  const convertedHitIds = [];
   let startProcessingTime = new Date().getTime();
   for (let n = 0; n < data.length; n += 1) {
     const hit = data[n];
     const element = elDataConverter(hit);
     convertedHits.push(element);
+    convertedHitIds.push(element.id);
     // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
     if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
       startProcessingTime = new Date().getTime();
@@ -1573,7 +1579,7 @@ export const elConvertHits = async (data) => {
       });
     }
   }
-  return convertedHits;
+  return { ids: convertedHitIds, elements: convertedHits };
 };
 
 const withInferencesEntities = (indices, withInferences) => {
@@ -1795,7 +1801,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
         logApp.warn('Search query returned more elements than expected', { ids: workingIds });
       }
       if (elements.length > 0) {
-        const convertedHits = await elConvertHits(elements);
+        const { elements: convertedHits } = await elConvertHits(elements);
         hits.push(...convertedHits);
         if (elements.length < ES_MAX_PAGINATION) {
           hasNextPage = false;
@@ -3690,7 +3696,7 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
   // eslint-disable-next-line no-use-before-define
   const { baseData = false, baseFields = [], bypassSizeLimit = false } = options;
   const first = options.first ?? ES_DEFAULT_PAGINATION;
-  const { withoutRels = true, types = null, connectionFormat = true } = options;
+  const { withoutRels = true, types = null, withResultMeta = false } = options;
   const body = await elQueryBodyBuilder(context, user, { ...options });
   if (body.size > ES_MAX_PAGINATION && !bypassSizeLimit) {
     logApp.info('[SEARCH] Pagination limited to max result config', { size: body.size, max: ES_MAX_PAGINATION });
@@ -3711,9 +3717,11 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
   logApp.debug('[SEARCH] paginate', { query });
   return elRawSearch(context, user, types !== null ? types : 'Any', query)
     .then((data) => {
-      return buildSearchResult(data, first, body.search_after, connectionFormat);
-    })
-    .catch(
+      return buildSearchResult(context, user, data, first, body.search_after, options);
+    }).then((parsedResult) => {
+      if (withResultMeta) return parsedResult;
+      return parsedResult.elements;
+    }).catch(
       /* v8 ignore next */ (err) => {
         const root_cause = err.meta?.body?.error?.caused_by?.type;
         if (root_cause === TOO_MANY_CLAUSES) throw ComplexSearchError();
@@ -3721,48 +3729,64 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
       }
     );
 };
-export const elList = async (context, user, indexName, opts = {}) => {
+export const elListPaginated = async (context, user, indexName, opts = {}) => {
   const { maxSize = undefined, logForMigration = false } = opts;
   const first = opts.first ?? ES_DEFAULT_PAGINATION;
   let batch = 0;
   let emitSize = 0;
+  let totalHits = 0;
+  let totalFilteredCount = 0;
   let hasNextPage = true;
   let continueProcess = true;
   let searchAfter = opts.after;
   const listing = [];
-  const publish = async (elements) => {
+  const publish = async (edges, total) => {
+    totalHits = total;
     const { callback } = opts;
     if (callback) {
-      const callbackResult = await callback(elements);
+      const callbackResult = await callback(edges, totalHits, totalFilteredCount);
       continueProcess = callbackResult === true || callbackResult === undefined;
     } else {
-      listing.push(...elements);
+      listing.push(...edges);
     }
   };
   while (continueProcess && hasNextPage) {
     // Force options to prevent connection format and manage search after
-    const paginateOpts = { ...opts, first, after: searchAfter, connectionFormat: false };
-    const elements = await elPaginate(context, user, indexName, paginateOpts);
-    emitSize += elements.length;
-    const noMoreElements = elements.length === 0 || elements.length < first;
+    const paginateOpts = { ...opts, first, after: searchAfter, connectionFormat: true, withResultMeta: true };
+    const { elements: page, filterCount, total, endCursor } = await elPaginate(context, user, indexName, paginateOpts);
+    totalFilteredCount += filterCount;
+    emitSize += page.edges.length;
+    if (first === maxSize && batch > 10) {
+      logApp.warn('[PERFORMANCE] Expensive post filtering detected', { batch, opts });
+    }
+    const noMoreElements = page.edges.length === 0 || (page.edges.length + filterCount) < first;
     const moreThanMax = maxSize ? emitSize >= maxSize : false;
     if (noMoreElements || moreThanMax) {
-      batch += 1;
-      if (logForMigration) {
-        logMigration.info(`Migrating batch ${batch}...`);
-      }
-      if (elements.length > 0) {
-        await publish(elements);
+      if (page.edges.length > 0) {
+        if (moreThanMax) {
+          // New edges must be limited to the expected max
+          const missingNumber = maxSize - listing.length;
+          await publish(page.edges.slice(0, missingNumber), total);
+        } else {
+          await publish(page.edges, total);
+        }
       }
       hasNextPage = false;
-    } else if (elements.length > 0) {
-      const { sort } = elements[elements.length - 1];
-      searchAfter = offsetToCursor(sort);
-      await publish(elements);
+    } else if (page.edges.length > 0) {
+      if (logForMigration) logMigration.info(`Migrating loading batch ${batch}...`);
+      searchAfter = endCursor;
+      await publish(page.edges, total);
+      batch += 1;
     }
   }
-  return listing;
+  return { elements: listing, totalCount: totalHits, totalFilteredCount };
 };
+
+export const elList = async (context, user, indexName, opts = {}) => {
+  const data = await elListPaginated(context, user, indexName, opts);
+  return asyncMap(data.elements, (edge) => edge.node);
+};
+
 export const elLoadBy = async (context, user, field, value, type = null, indices = READ_DATA_INDICES) => {
   const filters = {
     mode: 'and',
@@ -3818,13 +3842,133 @@ export const elAttributeValues = async (context, user, field, opts = {}) => {
 };
 // endregion
 
-const buildSearchResult = async (data, first, searchAfter, connectionFormat = true) => {
-  const convertedHits = await elConvertHits(data.hits.hits);
-  if (connectionFormat) {
-    const nodeHits = R.map((n) => ({ node: n, sort: n.sort }), convertedHits);
-    return buildPagination(first, searchAfter, nodeHits, data.hits.total.value);
+// If filters contains an "in regards of" filter a post-security filtering is needed
+const regardingOfFiltering = async (context, user, elements, elementIds, opts) => {
+  const { filters = {} } = opts;
+  let filterCount = 0;
+  const lastElement = R.last(elements);
+  const endCursor = lastElement.sort ? offsetToCursor(lastElement.sort) : null;
+  // First check if there is an "in regards of" filter
+  // If its case we need to ensure elements are filtered according to denormalization rights.
+  if (isNotEmptyField(filters)) {
+    const availableKeys = extractFilterKeys(filters);
+    const isRegardingFilter = availableKeys.includes(INSTANCE_REGARDING_OF) || availableKeys.includes(INSTANCE_DYNAMIC_REGARDING_OF);
+    if (isRegardingFilter) {
+      const extractedFilters = extractFiltersFromGroup(filters, [INSTANCE_REGARDING_OF, INSTANCE_DYNAMIC_REGARDING_OF]);
+      const targetValidatedIds = new Set();
+      const sideIdManualInferred = new Map();
+      for (let i = 0; i < extractedFilters.length; i += 1) {
+        const { values } = extractedFilters[i];
+        const ids = values.filter((v) => v.key === ID_FILTER).map((f) => f.values).flat();
+        const types = values.filter((v) => v.key === RELATION_TYPE_FILTER).map((f) => f.values).flat();
+        const directionForced = R.head(values.filter((v) => v.key === INSTANCE_REGARDING_OF_DIRECTION_FORCED).map((f) => f.values).flat()) ?? false;
+        const directionReverse = R.head(values.filter((v) => v.key === INSTANCE_REGARDING_OF_DIRECTION_REVERSE).map((f) => f.values).flat()) ?? false;
+        // resolve all relationships that target the id values, forcing the type is available
+        const paginateArgs = { baseData: true, types };
+        if (directionForced) {
+          // If a direction is forced, build the filter in the correct direction
+          paginateArgs.filters = {
+            mode: 'and',
+            filters: [
+              { key: ['fromId'], values: directionReverse ? elementIds : ids },
+              { key: ['toId'], values: directionReverse ? ids : elementIds }
+            ],
+            filterGroups: []
+          };
+        } else {
+          // If no direction is setup, create the filter group for both directions
+          paginateArgs.filters = {
+            mode: 'or',
+            filters: [],
+            filterGroups: [{
+              mode: 'and',
+              filterGroups: [],
+              filters: [
+                { key: ['fromId'], values: elementIds },
+                { key: ['toId'], values: ids }
+              ],
+            }, {
+              mode: 'and',
+              filterGroups: [],
+              filters: [
+                { key: ['fromId'], values: ids },
+                { key: ['toId'], values: elementIds }
+              ],
+            }]
+          };
+        }
+        const relationships = await elList(context, user, READ_RELATIONSHIPS_INDICES, paginateArgs);
+        // compute side ids
+        const addTypeSide = (sideId, sideType) => {
+          targetValidatedIds.add(sideId);
+          if (sideIdManualInferred.has(sideId)) {
+            const toTypes = sideIdManualInferred.get(sideId);
+            toTypes.add(sideType);
+            sideIdManualInferred.set(sideId, toTypes);
+          } else {
+            const toTypes = new Set();
+            toTypes.add(sideType);
+            sideIdManualInferred.set(sideId, toTypes);
+          }
+        };
+        let startProcessingTime = new Date().getTime();
+        for (let relIndex = 0; relIndex < relationships.length; relIndex += 1) {
+          const relation = relationships[relIndex];
+          const relType = isInferredIndex(relation._index) ? 'inferred' : 'manual';
+          addTypeSide(relation.fromId, relType);
+          addTypeSide(relation.toId, relType);
+          // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
+          if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
+            startProcessingTime = new Date().getTime();
+            await new Promise((resolve) => {
+              setImmediate(resolve);
+            });
+          }
+        }
+      }
+      // For all convertHit id that is not included in the reduction, convert to restricted visibility
+      const filteredHits = [];
+      let startProcessingTime = new Date().getTime();
+      for (let hitIndex = 0; hitIndex < elements.length; hitIndex += 1) {
+        const convertedHit = elements[hitIndex];
+        if (!targetValidatedIds.has(convertedHit.id)) {
+          filterCount += 1;
+        } else {
+          convertedHit.regardingOfTypes = sideIdManualInferred.get(convertedHit.id);
+          filteredHits.push(convertedHit);
+        }
+        // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
+        if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
+          startProcessingTime = new Date().getTime();
+          await new Promise((resolve) => {
+            setImmediate(resolve);
+          });
+        }
+      }
+      return { elements: filteredHits, filterCount, endCursor };
+    }
   }
-  return convertedHits;
+  return { elements, filterCount, endCursor };
+};
+
+// Build result from generic paginate
+// Ensure also post filtering when in regards of filtering is used.
+const buildSearchResult = async (context, user, data, first, searchAfter, opts = {}) => {
+  const { connectionFormat = true } = opts;
+  if (data.hits.hits.length === 0) {
+    if (connectionFormat) {
+      return { elements: buildPagination(first, searchAfter, [], data.hits.total.value, 0), filterCount: 0, endCursor: null };
+    }
+    return { elements: [], total: 0, filterCount: 0, endCursor: null };
+  }
+  const { elements, ids: elementIds } = await elConvertHits(data.hits.hits);
+  const { filterCount, endCursor, elements: convertedHits } = await regardingOfFiltering(context, user, elements, elementIds, opts);
+  if (connectionFormat) {
+    const nodeHits = R.map((n) => ({ node: n, sort: n.sort, types: n.regardingOfTypes }), convertedHits);
+    const paginateElements = buildPagination(first, searchAfter, nodeHits, data.hits.total.value, filterCount);
+    return { elements: paginateElements, total: data.hits.total.value, filterCount, endCursor };
+  }
+  return { elements: convertedHits, total: data.hits.total.value, filterCount, endCursor };
 };
 
 export const elBulk = async (args) => {

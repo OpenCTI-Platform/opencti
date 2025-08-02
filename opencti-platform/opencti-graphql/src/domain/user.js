@@ -28,6 +28,7 @@ import {
   listAllRelations,
   listAllToEntitiesThroughRelations,
   listEntities,
+  listEntitiesPaginated,
   listEntitiesThroughRelationsPaginated,
   storeLoadById
 } from '../database/middleware-loader';
@@ -217,7 +218,7 @@ export const findAll = async (context, user, args) => {
     )).map((n) => ({ node: n }));
     return buildPagination(0, null, users, users.length);
   }
-  return listEntities(context, user, [ENTITY_TYPE_USER], args);
+  return listEntitiesPaginated(context, user, [ENTITY_TYPE_USER], args);
 };
 
 export const findCreators = (context, user, args) => {
@@ -232,6 +233,12 @@ export const findAssignees = (context, user, args) => {
 export const findParticipants = (context, user, args) => {
   const { entityTypes = [] } = args;
   return listAllEntitiesForFilter(context, user, PARTICIPANT_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes });
+};
+
+export const findAllMembersPaginated = (context, user, args) => {
+  const { entityTypes = null } = args;
+  const types = entityTypes || MEMBERS_ENTITY_TYPES;
+  return listEntitiesPaginated(context, user, types, args);
 };
 
 export const findAllMembers = async (context, user, args) => {
@@ -432,12 +439,12 @@ export const findRoleById = (context, user, roleId) => {
 };
 
 export const findRoles = (context, user, args) => {
-  return listEntities(context, user, [ENTITY_TYPE_ROLE], args);
+  return listEntitiesPaginated(context, user, [ENTITY_TYPE_ROLE], args);
 };
 
 export const findCapabilities = (context, user, args) => {
   const finalArgs = R.assoc('orderBy', 'attribute_order', args);
-  return listEntities(context, user, [ENTITY_TYPE_CAPABILITY], finalArgs);
+  return listEntitiesPaginated(context, user, [ENTITY_TYPE_CAPABILITY], finalArgs);
 };
 
 export const roleDelete = async (context, user, roleId) => {

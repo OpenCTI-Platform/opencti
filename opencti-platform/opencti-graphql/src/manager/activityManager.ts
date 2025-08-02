@@ -186,7 +186,6 @@ const initActivityManager = () => {
       const histoElements = await listEntities<HistoryData>(context, SYSTEM_USER, [ENTITY_TYPE_ACTIVITY], {
         first: 1,
         indices: [INDEX_HISTORY],
-        connectionFormat: false,
         orderBy: ['timestamp'],
         orderMode: OrderingMode.Desc,
         filters: {

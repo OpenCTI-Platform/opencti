@@ -69,7 +69,7 @@ export const computeManagerContractHash = async (context, user, cn) => {
 };
 
 export const connectors = async (context, user) => {
-  const elements = await listEntities(context, user, [ENTITY_TYPE_CONNECTOR], { connectionFormat: false });
+  const elements = await listEntities(context, user, [ENTITY_TYPE_CONNECTOR]);
   const builtInElements = await builtInConnectorsRuntime(context, user);
   return map((conn) => completeConnector(conn), [...elements, ...builtInElements]);
 };
@@ -89,8 +89,7 @@ export const connectorsForManagers = async (context, user) => {
       filters: [{ key: 'catalog_id', values: ['EXISTS'] }],
       filterGroups: [],
     },
-    noFiltersChecking: true,
-    connectionFormat: false
+    noFiltersChecking: true
   };
   const elements = await listEntities(context, user, [ENTITY_TYPE_CONNECTOR], args);
   return elements.map((conn) => completeConnector(conn));

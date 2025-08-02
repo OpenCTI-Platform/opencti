@@ -1,6 +1,6 @@
 import { assoc, isNil, pipe } from 'ramda';
 import { createEntity } from '../database/middleware';
-import { listEntities, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
+import { listEntitiesPaginated, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_INTRUSION_SET } from '../schema/stixDomainObject';
@@ -13,7 +13,7 @@ export const findById = (context, user, intrusionSetId) => {
 };
 
 export const findAll = (context, user, args) => {
-  return listEntities(context, user, [ENTITY_TYPE_INTRUSION_SET], args);
+  return listEntitiesPaginated(context, user, [ENTITY_TYPE_INTRUSION_SET], args);
 };
 
 export const addIntrusionSet = async (context, user, intrusionSet) => {

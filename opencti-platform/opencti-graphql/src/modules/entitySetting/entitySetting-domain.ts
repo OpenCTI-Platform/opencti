@@ -192,7 +192,6 @@ export const queryDefaultValuesAttributesForSetting = async (
       const membersIds = defaultValuesParsed.map((d) => d.id);
       const groupsRestrictionIds = defaultValuesParsed.flatMap((d) => d.groups_restriction_ids ?? []);
       const args = {
-        connectionFormat: false,
         filters: {
           mode: 'and',
           filters: [{ key: 'internal_id', values: [...membersIds, ...groupsRestrictionIds] }],

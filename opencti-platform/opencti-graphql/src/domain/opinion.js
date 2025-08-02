@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { assoc, dissoc, pipe } from 'ramda';
 import { createEntity, distributionEntities, listAllThings, patchAttribute, timeSeriesEntities } from '../database/middleware';
-import { internalLoadById, listEntities, storeLoadById } from '../database/middleware-loader';
+import { internalLoadById, listEntitiesPaginated, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_CONTAINER_OPINION } from '../schema/stixDomainObject';
@@ -19,7 +19,7 @@ export const findById = (context, user, opinionId) => {
   return storeLoadById(context, user, opinionId, ENTITY_TYPE_CONTAINER_OPINION);
 };
 export const findAll = async (context, user, args) => {
-  return listEntities(context, user, [ENTITY_TYPE_CONTAINER_OPINION], args);
+  return listEntitiesPaginated(context, user, [ENTITY_TYPE_CONTAINER_OPINION], args);
 };
 export const findMyOpinion = async (context, user, entityId) => {
   const keyObject = buildRefRelationKey(RELATION_OBJECT);

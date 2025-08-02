@@ -46,7 +46,7 @@ export const changeRule = async (ruleId, active) => {
   let ruleActivated = false;
   while (ruleActivated !== true) {
     // Handle tasks
-    const tasks = await listEntities(testContext, SYSTEM_USER, [ENTITY_TYPE_BACKGROUND_TASK], { connectionFormat: false });
+    const tasks = await listEntities(testContext, SYSTEM_USER, [ENTITY_TYPE_BACKGROUND_TASK]);
     const ruleActivationTask = tasks.filter((t) => t.type === TASK_TYPE_RULE && t.rule === ruleId && t.enable === active);
     ruleActivationTask.forEach((t) => {
       if (t.errors.length > 0) {

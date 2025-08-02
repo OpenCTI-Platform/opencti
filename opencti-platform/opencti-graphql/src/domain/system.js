@@ -1,6 +1,6 @@
 import { assoc } from 'ramda';
 import { createEntity } from '../database/middleware';
-import { listEntities, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
+import { listEntitiesPaginated, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_IDENTITY_SYSTEM } from '../schema/stixDomainObject';
@@ -13,7 +13,7 @@ export const findById = (context, user, systemId) => {
 };
 
 export const findAll = (context, user, args) => {
-  return listEntities(context, user, [ENTITY_TYPE_IDENTITY_SYSTEM], args);
+  return listEntitiesPaginated(context, user, [ENTITY_TYPE_IDENTITY_SYSTEM], args);
 };
 
 export const addSystem = async (context, user, system) => {

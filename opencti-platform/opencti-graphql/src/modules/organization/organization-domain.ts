@@ -22,7 +22,7 @@ import type { BasicObject, OrganizationAddInput, ResolversTypes } from '../../ge
 import { AlreadyDeletedError, FunctionalError } from '../../config/errors';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
-import type { BasicStoreCommon, BasicStoreEntity } from '../../types/store';
+import type { BasicStoreEntity } from '../../types/store';
 import { checkScore } from '../../utils/format';
 
 // region CRUD
@@ -122,22 +122,22 @@ export const buildAdministratedOrganizations = async (context: AuthContext, user
 };
 // endregion
 
-export const organizationSectorsPaginated = async <T extends BasicStoreCommon> (context: AuthContext, user: AuthUser, organizationId: string,
+export const organizationSectorsPaginated = async <T extends BasicStoreEntity> (context: AuthContext, user: AuthUser, organizationId: string,
   args: EntityOptions<T>) => {
   return listEntitiesThroughRelationsPaginated<T>(context, user, organizationId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR, false, args);
 };
 
-export const organizationMembersPaginated = async <T extends BasicStoreCommon> (context: AuthContext, user: AuthUser, organizationId: string,
+export const organizationMembersPaginated = async <T extends BasicStoreEntity> (context: AuthContext, user: AuthUser, organizationId: string,
   args: EntityOptions<T>) => {
   return listEntitiesThroughRelationsPaginated<T>(context, user, organizationId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER, true, args);
 };
 
-export const parentOrganizationsPaginated = async <T extends BasicStoreCommon> (context: AuthContext, user: AuthUser, organizationId: string,
+export const parentOrganizationsPaginated = async <T extends BasicStoreEntity> (context: AuthContext, user: AuthUser, organizationId: string,
   args: EntityOptions<T>) => {
   return listEntitiesThroughRelationsPaginated<T>(context, user, organizationId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION, false, args);
 };
 
-export const childOrganizationsPaginated = async <T extends BasicStoreCommon> (context: AuthContext, user: AuthUser, organizationId: string,
+export const childOrganizationsPaginated = async <T extends BasicStoreEntity> (context: AuthContext, user: AuthUser, organizationId: string,
   args: EntityOptions<T>) => {
   return listEntitiesThroughRelationsPaginated<T>(context, user, organizationId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION, true, args);
 };
