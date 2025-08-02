@@ -3733,6 +3733,7 @@ const regardingOfFiltering = async (context, user, elements, elementIds, opts) =
         const relationships = await opts.listAllRelationsFn(context, user, types, args);
         // compute side ids
         const addTypeSide = (sideId, sideType) => {
+          targetValidatedIds.add(sideId);
           if (sideIdManualInferred.has(sideId)) {
             const toTypes = sideIdManualInferred.get(sideId);
             toTypes.add(sideType);
@@ -3747,9 +3748,8 @@ const regardingOfFiltering = async (context, user, elements, elementIds, opts) =
         for (let j = 0; j < relationships.length; j += 1) {
           const relation = relationships[j];
           const relType = isInferredIndex(relation._index) ? 'inferred' : 'manual';
-          targetValidatedIds.add(relation.fromId);
-          targetValidatedIds.add(relation.toId);
           addTypeSide(relation.fromId, relType);
+          addTypeSide(relation.toId, relType);
           // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
           if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
             startProcessingTime = new Date().getTime();

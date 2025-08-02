@@ -10,7 +10,7 @@ import { ENTITY_TYPE_DATA_COMPONENT, ENTITY_TYPE_DATA_SOURCE } from '../../schem
 import { stixDomainObjectEditField } from '../../domain/stixDomainObject';
 import { INPUT_DATA_SOURCE, RELATION_DATA_SOURCE } from '../dataComponent/dataComponent-types';
 import type { DomainFindById } from '../../domain/domainTypes';
-import type { BasicStoreCommon } from '../../types/store';
+import type { BasicStoreEntity } from '../../types/store';
 
 export const findById: DomainFindById<BasicStoreEntityDataSource> = (context: AuthContext, user: AuthUser, dataSourceId: string) => {
   return storeLoadById(context, user, dataSourceId, ENTITY_TYPE_DATA_SOURCE);
@@ -25,7 +25,7 @@ export const dataSourceAdd = async (context: AuthContext, user: AuthUser, dataSo
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
-export const dataComponentsPaginated = async <T extends BasicStoreCommon> (context: AuthContext, user: AuthUser, dataSourceId: string, opts: QueryDataSourcesArgs) => {
+export const dataComponentsPaginated = async <T extends BasicStoreEntity> (context: AuthContext, user: AuthUser, dataSourceId: string, opts: QueryDataSourcesArgs) => {
   return listEntitiesThroughRelationsPaginated<T>(context, user, dataSourceId, RELATION_DATA_SOURCE, ENTITY_TYPE_DATA_COMPONENT, true, opts);
 };
 
