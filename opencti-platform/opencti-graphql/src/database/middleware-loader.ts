@@ -1,9 +1,7 @@
 import * as R from 'ramda';
 import {
   buildPagination,
-  emptyPaginationResult,
   isEmptyField,
-  isInferredIndex,
   isNotEmptyField,
   READ_DATA_INDICES,
   READ_DATA_INDICES_WITHOUT_INFERRED,
@@ -19,6 +17,7 @@ import {
   elList,
   elLoadById,
   elPaginate,
+  ES_DEFAULT_PAGINATION,
   ES_MINIMUM_FIXED_PAGINATION,
   UNIMPACTED_ENTITIES_ROLE
 } from './engine';
@@ -27,7 +26,6 @@ import type { AuthContext, AuthUser } from '../types/user';
 import type {
   BasicStoreBase,
   BasicStoreCommon,
-  BasicStoreCommonEdge,
   BasicStoreEntity,
   BasicStoreObject,
   BasicStoreRelation,
@@ -461,8 +459,22 @@ export const listEntitiesPaginated = async <T extends BasicStoreEntity>(context:
     throw UnsupportedError('List connection require connectionFormat option to true');
   }
   const computedIndices = computeQueryIndices(indices, entityTypes);
-  const paginateArgs = buildEntityFilters(entityTypes, args);
-  return elPaginate(context, user, computedIndices, paginateArgs);
+  const paginateArgs = { ...buildEntityFilters(entityTypes, args), listAllRelationsFn: listAllRelations, withResultMeta: true };
+  let pagination = await elPaginate(context, user, computedIndices, paginateArgs);
+  const { edges } = pagination.elements;
+  let { pageInfo } = pagination.elements;
+  pageInfo.globalCount -= pagination.filterCount;
+  // If results as some have been post filtered
+  // And more information are available, continue to fetch
+  const first = args.first ?? ES_DEFAULT_PAGINATION;
+  while (pagination.filterCount > 0 && pageInfo.hasNextPage && edges.length < first) {
+    const nextArgs = { ...paginateArgs, first: first - edges.length, after: pageInfo.endCursor };
+    pagination = await elPaginate(context, user, computedIndices, nextArgs);
+    edges.push(...pagination.elements.edges);
+    pageInfo = pagination.elements.pageInfo;
+    pageInfo.globalCount -= pagination.filterCount;
+  }
+  return { edges, pageInfo };
 };
 
 export const listEntitiesThroughRelationsPaginated = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, connectedEntityId: string,
@@ -483,82 +495,25 @@ export const listEntitiesThroughRelationsPaginated = async <T extends BasicStore
         key: [INSTANCE_REGARDING_OF],
         values: [
           { key: 'id', values: [connectedEntityId] },
-          { key: 'relationship_type', values: [relationType] }
+          { key: 'relationship_type', values: [relationType] },
+          { key: 'direction_forced', values: [true] },
+          { key: 'direction_reverse', values: [reverse_relation] },
         ]
       }
     ],
     filterGroups: args.filters && isNotEmptyField(args.filters) ? [args.filters] : [],
   };
-  const paginateArgs = buildEntityFilters(entityType, {
-    ...args,
-    first: args.first ?? ES_MINIMUM_FIXED_PAGINATION,
-    orderBy: args.orderBy ?? 'created_at',
-    orderMode: args.orderMode ?? OrderingMode.Desc,
-    filters: connectedFilters
-  });
-  const entityPagination = await elPaginate(context, user, computedIndices, { ...paginateArgs }) as StoreCommonConnection<T>;
-  if (entityPagination.edges.length === 0) {
-    // no result, just return entityPagination, there is no relationships to find
-    return entityPagination;
-  }
-  // As rel de-normalization are currently not directional, we need to post filters the result
-  // Some entities could be found because of the none-directionality.
-  const entityIds = entityPagination.edges.map((e) => e.node.internal_id);
-  const filters: FilterGroupWithNested = {
-    mode: FilterMode.And,
-    filters: [
-      {
-        key: ['connections'],
-        values: [],
-        nested: [
-          { key: 'internal_id', values: reverse_relation ? entityIds : [connectedEntityId] },
-          ...(reverse_relation ? [{ key: 'types', values: entityTypes }] : []),
-          { key: 'role', values: ['*_from'], operator: FilterOperator.Wildcard },
-        ]
-      }, {
-        key: ['connections'],
-        values: [],
-        nested: [
-          { key: 'internal_id', values: reverse_relation ? [connectedEntityId] : entityIds },
-          ...(reverse_relation ? [] : [{ key: 'types', values: entityTypes }]),
-          { key: 'role', values: ['*_to'], operator: FilterOperator.Wildcard },
-        ],
-      }],
-    filterGroups: [],
+  const paginateArgs = {
+    ...buildEntityFilters(entityType, {
+      ...args,
+      first: args.first ?? ES_MINIMUM_FIXED_PAGINATION,
+      orderBy: args.orderBy ?? 'created_at',
+      orderMode: args.orderMode ?? OrderingMode.Desc,
+      filters: connectedFilters,
+    }),
+    listAllRelationsFn: listAllRelations
   };
-  const connectedRelations = await listAllRelations<BasicStoreRelation>(context, user, relationType, { withInferences: args.withInferences, filters, connectionFormat: false });
-  if (connectedRelations.length === 0) {
-    // no connection found (because of relation direction), just return an empty result
-    return emptyPaginationResult();
-  }
-  const relationsEntityMap = new Map();
-  connectedRelations.forEach((relation) => {
-    const id = reverse_relation ? relation.fromId : relation.toId;
-    if (relationsEntityMap.has(id)) {
-      relationsEntityMap.set(id, [...relationsEntityMap.get(id), relation]);
-    } else {
-      relationsEntityMap.set(id, [relation]);
-    }
-  });
-  const rebuildEdges: BasicStoreCommonEdge<T>[] = [];
-  entityPagination.edges.forEach((edge) => {
-    const relatedRelations = relationsEntityMap.get(edge.node.id);
-    if (relatedRelations) {
-      const types = relatedRelations.map((relation: BasicStoreRelation) => (isInferredIndex(relation._index) ? 'inferred' : 'manual'));
-      const newEdge: BasicStoreCommonEdge<T> = { types, node: edge.node, cursor: edge.cursor };
-      rebuildEdges.push(newEdge);
-    }
-  });
-  return {
-    edges: rebuildEdges,
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    baseCount: entityPagination.edges.length, // Keep the base count to enforce pagination
-    pageInfo: {
-      ...entityPagination.pageInfo,
-      globalCount: entityPagination.pageInfo.globalCount - (entityPagination.edges.length - rebuildEdges.length)
-    },
-  };
+  return await elPaginate(context, user, computedIndices, paginateArgs) as unknown as StoreCommonConnection<T>;
 };
 
 export const findEntitiesIdsWithRelations = async (

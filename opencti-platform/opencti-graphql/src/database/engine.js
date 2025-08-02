@@ -51,7 +51,17 @@ import {
   WRITE_PLATFORM_INDICES
 } from './utils';
 import conf, { booleanConf, extendedErrors, loadCert, logApp, logMigration } from '../config/conf';
-import { ComplexSearchError, ConfigurationError, DatabaseError, EngineShardsError, FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
+import {
+  ComplexSearchError,
+  ConfigurationError,
+  DatabaseError,
+  EngineShardsError,
+  FunctionalError,
+  LockTimeoutError,
+  TYPE_LOCK_ERROR,
+  UnknownError,
+  UnsupportedError
+} from '../config/errors';
 import {
   isStixRefRelationship,
   RELATION_BORN_IN,
@@ -136,7 +146,7 @@ import {
 import { convertTypeToStixType } from './stix-2-1-converter';
 import { extractEntityRepresentativeName, extractRepresentative } from './entity-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
-import { addFilter, checkAndConvertFilters, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
+import { addFilter, checkAndConvertFilters, extractFilterKeys, extractFiltersFromGroup, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import {
   ALIAS_FILTER,
   complexConversionFilterKeys,
@@ -195,6 +205,7 @@ import { ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, isStixCyberObservable } from '../sc
 import { lockResources } from '../lock/master-lock';
 import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_UPDATE_LINKED } from '../modules/draftWorkspace/draftOperations';
 import { RELATION_SAMPLE } from '../modules/malwareAnalysis/malwareAnalysis-types';
+import { uniqAsyncMap } from '../utils/data-processing';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -1545,11 +1556,13 @@ export const elConvertHitsToMap = async (elements, opts) => {
 
 export const elConvertHits = async (data) => {
   const convertedHits = [];
+  const convertedHitIds = [];
   let startProcessingTime = new Date().getTime();
   for (let n = 0; n < data.length; n += 1) {
     const hit = data[n];
     const element = elDataConverter(hit);
     convertedHits.push(element);
+    convertedHitIds.push(element.id);
     // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
     if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
       startProcessingTime = new Date().getTime();
@@ -1558,7 +1571,7 @@ export const elConvertHits = async (data) => {
       });
     }
   }
-  return convertedHits;
+  return { ids: convertedHitIds, elements: convertedHits };
 };
 
 const withInferencesEntities = (indices, withInferences) => {
@@ -1773,7 +1786,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
         logApp.warn('Search query returned more elements than expected', { ids: workingIds });
       }
       if (elements.length > 0) {
-        const convertedHits = await elConvertHits(elements);
+        const { elements: convertedHits } = await elConvertHits(elements);
         hits.push(...convertedHits);
         if (elements.length < ES_MAX_PAGINATION) {
           hasNextPage = false;
@@ -3558,7 +3571,7 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
   // eslint-disable-next-line no-use-before-define
   const { baseData = false, baseFields = [], bypassSizeLimit = false } = options;
   const first = options.first ?? ES_DEFAULT_PAGINATION;
-  const { withoutRels = true, types = null, connectionFormat = true } = options;
+  const { withoutRels = true, types = null, withResultMeta = false } = options;
   const body = await elQueryBodyBuilder(context, user, { ...options });
   if (body.size > ES_MAX_PAGINATION && !bypassSizeLimit) {
     logApp.info('[SEARCH] Pagination limited to max result config', { size: body.size, max: ES_MAX_PAGINATION });
@@ -3579,9 +3592,11 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
   logApp.debug('[SEARCH] paginate', { query });
   return elRawSearch(context, user, types !== null ? types : 'Any', query)
     .then((data) => {
-      return buildSearchResult(data, first, body.search_after, connectionFormat);
-    })
-    .catch(
+      return buildSearchResult(context, user, data, first, body.search_after, options);
+    }).then((parsedResult) => {
+      if (withResultMeta) return parsedResult;
+      return parsedResult.elements;
+    }).catch(
       /* v8 ignore next */ (err) => {
         const root_cause = err.meta?.body?.error?.caused_by?.type;
         if (root_cause === TOO_MANY_CLAUSES) throw ComplexSearchError();
@@ -3686,13 +3701,78 @@ export const elAttributeValues = async (context, user, field, opts = {}) => {
 };
 // endregion
 
-const buildSearchResult = async (data, first, searchAfter, connectionFormat = true) => {
-  const convertedHits = await elConvertHits(data.hits.hits);
+// If filters contains an "in regards of" filter a post-security filtering is needed
+const regardingOfFiltering = async (context, user, elements, elementIds, opts) => {
+  const { filters = {} } = opts;
+  let filterCount = 0;
+  if (isNotEmptyField(filters)) {
+    const availableKeys = extractFilterKeys(filters);
+    const isRegardingFilter = availableKeys.includes(INSTANCE_REGARDING_OF) || availableKeys.includes(INSTANCE_DYNAMIC_REGARDING_OF);
+    if (isRegardingFilter) {
+      const isRelationsFnAvailable = isNotEmptyField(opts.listAllRelationsFn);
+      if (!isRelationsFnAvailable) {
+        throw UnknownError('Regarding of filter require internal resolution function');
+      }
+      const extractedFilters = extractFiltersFromGroup(filters, [INSTANCE_REGARDING_OF, INSTANCE_DYNAMIC_REGARDING_OF]);
+      const targetValidatedIds = [];
+      for (let i = 0; i < extractedFilters.length; i += 1) {
+        const { values } = extractedFilters[i];
+        const ids = values.filter((v) => v.key === 'id')
+          .map((f) => f.values).flat();
+        const types = values.filter((v) => v.key === 'relationship_type')
+          .map((f) => f.values).flat();
+        const directionForced = R.head(values.filter((v) => v.key === 'direction_forced')
+          .map((f) => f.values).flat()) ?? false;
+        const directionReverse = R.head(values.filter((v) => v.key === 'direction_reverse')
+          .map((f) => f.values).flat()) ?? false;
+        // resolve all relationships that target the id values, forcing the type is available
+        let args;
+        if (directionForced) {
+          args = { fromId: directionReverse ? elementIds : ids, toId: directionReverse ? ids : elementIds, baseData: true };
+        } else {
+          const sideIds = [...ids, ...elementIds];
+          args = { fromId: sideIds, toId: sideIds, baseData: true };
+        }
+        const relationships = await opts.listAllRelationsFn(context, user, types, args);
+        const filterValidatedIds = await uniqAsyncMap(relationships, (r) => [r.fromId, r.toId], null, { flat: true });
+        // Reduce the relationships to available target id
+        targetValidatedIds.push(...filterValidatedIds);
+      }
+      // For all convertHit id that is not included in the reduction, convert to restricted visibility
+      const filteredHits = [];
+      let startProcessingTime = new Date().getTime();
+      for (let i = 0; i < elements.length; i += 1) {
+        const convertedHit = elements[i];
+        if (!targetValidatedIds.includes(convertedHit.id)) {
+          filterCount += 1;
+        } else {
+          filteredHits.push(convertedHit);
+        }
+        // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
+        if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
+          startProcessingTime = new Date().getTime();
+          await new Promise((resolve) => {
+            setImmediate(resolve);
+          });
+        }
+      }
+      return { elements: filteredHits, filterCount };
+    }
+  }
+  return { elements, filterCount };
+};
+
+// Build result from generic paginate
+// Ensure also post filtering when in regards of filtering is used.
+const buildSearchResult = async (context, user, data, first, searchAfter, opts = {}) => {
+  const { connectionFormat = true } = opts;
+  const { elements, ids: elementIds } = await elConvertHits(data.hits.hits);
+  const { filterCount, elements: convertedHits } = await regardingOfFiltering(context, user, elements, elementIds, opts);
   if (connectionFormat) {
     const nodeHits = R.map((n) => ({ node: n, sort: n.sort }), convertedHits);
-    return buildPagination(first, searchAfter, nodeHits, data.hits.total.value);
+    return { elements: buildPagination(first, searchAfter, nodeHits, data.hits.total.value, filterCount), filterCount };
   }
-  return convertedHits;
+  return { elements: convertedHits, filterCount };
 };
 
 export const elBulk = async (args) => {
