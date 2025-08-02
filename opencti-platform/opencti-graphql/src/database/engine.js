@@ -205,7 +205,6 @@ import { ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, isStixCyberObservable } from '../sc
 import { lockResources } from '../lock/master-lock';
 import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_UPDATE_LINKED } from '../modules/draftWorkspace/draftOperations';
 import { RELATION_SAMPLE } from '../modules/malwareAnalysis/malwareAnalysis-types';
-import { uniqAsyncMap } from '../utils/data-processing';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -3714,7 +3713,8 @@ const regardingOfFiltering = async (context, user, elements, elementIds, opts) =
         throw UnknownError('Regarding of filter require internal resolution function');
       }
       const extractedFilters = extractFiltersFromGroup(filters, [INSTANCE_REGARDING_OF, INSTANCE_DYNAMIC_REGARDING_OF]);
-      const targetValidatedIds = [];
+      const targetValidatedIds = new Set();
+      const sideIdManualInferred = new Map();
       for (let i = 0; i < extractedFilters.length; i += 1) {
         const { values } = extractedFilters[i];
         const ids = values.filter((v) => v.key === 'id')
@@ -3726,26 +3726,48 @@ const regardingOfFiltering = async (context, user, elements, elementIds, opts) =
         const directionReverse = R.head(values.filter((v) => v.key === 'direction_reverse')
           .map((f) => f.values).flat()) ?? false;
         // resolve all relationships that target the id values, forcing the type is available
-        let args;
-        if (directionForced) {
-          args = { fromId: directionReverse ? elementIds : ids, toId: directionReverse ? ids : elementIds, baseData: true };
-        } else {
-          const sideIds = [...ids, ...elementIds];
-          args = { fromId: sideIds, toId: sideIds, baseData: true };
-        }
+        const sideIds = [...ids, ...elementIds];
+        const args = directionForced
+          ? { fromId: directionReverse ? elementIds : ids, toId: directionReverse ? ids : elementIds, baseData: true }
+          : { fromId: sideIds, toId: sideIds, baseData: true };
         const relationships = await opts.listAllRelationsFn(context, user, types, args);
-        const filterValidatedIds = await uniqAsyncMap(relationships, (r) => [r.fromId, r.toId], null, { flat: true });
-        // Reduce the relationships to available target id
-        targetValidatedIds.push(...filterValidatedIds);
+        // compute side ids
+        const addTypeSide = (sideId, sideType) => {
+          if (sideIdManualInferred.has(sideId)) {
+            const toTypes = sideIdManualInferred.get(sideId);
+            toTypes.add(sideType);
+            sideIdManualInferred.set(sideId, toTypes);
+          } else {
+            const toTypes = new Set();
+            toTypes.add(sideType);
+            sideIdManualInferred.set(sideId, toTypes);
+          }
+        };
+        let startProcessingTime = new Date().getTime();
+        for (let j = 0; j < relationships.length; j += 1) {
+          const relation = relationships[j];
+          const relType = isInferredIndex(relation._index) ? 'inferred' : 'manual';
+          targetValidatedIds.add(relation.fromId);
+          targetValidatedIds.add(relation.toId);
+          addTypeSide(relation.fromId, relType);
+          // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
+          if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
+            startProcessingTime = new Date().getTime();
+            await new Promise((resolve) => {
+              setImmediate(resolve);
+            });
+          }
+        }
       }
       // For all convertHit id that is not included in the reduction, convert to restricted visibility
       const filteredHits = [];
       let startProcessingTime = new Date().getTime();
       for (let i = 0; i < elements.length; i += 1) {
         const convertedHit = elements[i];
-        if (!targetValidatedIds.includes(convertedHit.id)) {
+        if (!targetValidatedIds.has(convertedHit.id)) {
           filterCount += 1;
         } else {
+          convertedHit.regardingOfTypes = sideIdManualInferred.get(convertedHit.id);
           filteredHits.push(convertedHit);
         }
         // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
@@ -3769,7 +3791,7 @@ const buildSearchResult = async (context, user, data, first, searchAfter, opts =
   const { elements, ids: elementIds } = await elConvertHits(data.hits.hits);
   const { filterCount, elements: convertedHits } = await regardingOfFiltering(context, user, elements, elementIds, opts);
   if (connectionFormat) {
-    const nodeHits = R.map((n) => ({ node: n, sort: n.sort }), convertedHits);
+    const nodeHits = R.map((n) => ({ node: n, sort: n.sort, types: n.regardingOfTypes }), convertedHits);
     return { elements: buildPagination(first, searchAfter, nodeHits, data.hits.total.value, filterCount), filterCount };
   }
   return { elements: convertedHits, filterCount };
