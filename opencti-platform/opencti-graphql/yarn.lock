@@ -3250,7 +3250,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@node-saml/node-saml@npm:^5.0.1":
+"@node-saml/node-saml@npm:^5.1.0":
   version: 5.1.0
   resolution: "@node-saml/node-saml@npm:5.1.0"
   dependencies:
@@ -3270,17 +3270,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@node-saml/passport-saml@npm:5.0.1":
-  version: 5.0.1
-  resolution: "@node-saml/passport-saml@npm:5.0.1"
+"@node-saml/passport-saml@npm:5.1.0":
+  version: 5.1.0
+  resolution: "@node-saml/passport-saml@npm:5.1.0"
   dependencies:
-    "@node-saml/node-saml": "npm:^5.0.1"
-    "@types/express": "npm:^4.17.21"
-    "@types/passport": "npm:^1.0.16"
+    "@node-saml/node-saml": "npm:^5.1.0"
+    "@types/express": "npm:^4.17.23"
+    "@types/passport": "npm:^1.0.17"
     "@types/passport-strategy": "npm:^0.2.38"
     passport: "npm:^0.7.0"
     passport-strategy: "npm:^1.0.0"
-  checksum: 10/b921ceeff68326539591ec6ef805535e907b3a63182c8df3418d8b449b88b82fb0137117f087268a3ebc76ef294a37b3e1b4df675f1f1a57b95455b87366db8d
+  checksum: 10/11b6ffd988e7f6a4c8119963eed280280799a5396c5499920518e5a3980e3222f54402244caa3e3f72ab3a759c11b8d2d3d5f1b6d2282b7090f6b05337382d11
   languageName: node
   linkType: hard
 
@@ -4822,7 +4822,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/express@npm:^4.17.13, @types/express@npm:^4.17.21":
+"@types/express@npm:^4.17.13":
   version: 4.17.21
   resolution: "@types/express@npm:4.17.21"
   dependencies:
@@ -4831,6 +4831,18 @@ __metadata:
     "@types/qs": "npm:*"
     "@types/serve-static": "npm:*"
   checksum: 10/7a6d26cf6f43d3151caf4fec66ea11c9d23166e4f3102edfe45a94170654a54ea08cf3103d26b3928d7ebcc24162c90488e33986b7e3a5f8941225edd5eb18c7
+  languageName: node
+  linkType: hard
+
+"@types/express@npm:^4.17.23":
+  version: 4.17.23
+  resolution: "@types/express@npm:4.17.23"
+  dependencies:
+    "@types/body-parser": "npm:*"
+    "@types/express-serve-static-core": "npm:^4.17.33"
+    "@types/qs": "npm:*"
+    "@types/serve-static": "npm:*"
+  checksum: 10/cf4d540bbd90801cdc79a46107b8873404698a7fd0c3e8dd42989d52d3bd7f5b8768672e54c20835e41e27349c319bb47a404ad14c0f8db0e9d055ba1cb8a05b
   languageName: node
   linkType: hard
 
@@ -5028,7 +5040,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/passport@npm:*, @types/passport@npm:^1.0.16":
+"@types/passport@npm:*, @types/passport@npm:^1.0.17":
   version: 1.0.17
   resolution: "@types/passport@npm:1.0.17"
   dependencies:
@@ -12005,7 +12017,7 @@ __metadata:
     "@langchain/openai": "npm:0.5.5"
     "@luckycatfactory/esbuild-graphql-loader": "npm:3.8.1"
     "@mistralai/mistralai": "npm:1.6.1"
-    "@node-saml/passport-saml": "npm:5.0.1"
+    "@node-saml/passport-saml": "npm:5.1.0"
     "@opensearch-project/opensearch": "npm:3.5.1"
     "@opentelemetry/api": "npm:1.9.0"
     "@opentelemetry/api-metrics": "npm:0.33.0"
