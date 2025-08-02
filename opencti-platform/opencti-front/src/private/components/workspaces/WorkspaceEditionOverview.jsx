@@ -5,19 +5,11 @@ import { Formik, Form, Field } from 'formik';
 import withStyles from '@mui/styles/withStyles';
 import { compose, pick } from 'ramda';
 import * as Yup from 'yup';
-import Button from '@mui/material/Button';
-import { Stack } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
 import inject18n, { useFormatter } from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import { SubscriptionFocus } from '../../../components/Subscription';
 import { commitMutation } from '../../../relay/environment';
 import MarkdownField from '../../../components/fields/MarkdownField';
-import useDeletion from '../../../utils/hooks/useDeletion';
-import { deleteNode } from '../../../utils/store';
-import useApiMutation from '../../../utils/hooks/useApiMutation';
-import DeleteDialog from '../../../components/DeleteDialog';
-import WorkspacePopoverDeletionMutation from './WorkspacePopoverDeletionMutation';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -67,16 +59,10 @@ export const workspaceEditionOverviewFocus = graphql`
   }
 `;
 
-const WorkspaceEditionOverviewComponent = ({ paginationOptions, workspace, context }) => {
+const WorkspaceEditionOverviewComponent = ({ workspace, context }) => {
   const { id } = workspace;
   const { t_i18n } = useFormatter();
-  const navigate = useNavigate();
   const initialValues = pick(['name', 'description'], workspace);
-
-  const deletion = useDeletion({ handleClose: () => {} });
-  const { deleting, setDeleting, handleOpenDelete, handleCloseDelete } = deletion;
-
-  const [commit] = useApiMutation(WorkspacePopoverDeletionMutation);
 
   const workspaceValidation = () => Yup.object().shape({
     name: Yup.string().required(t_i18n('This field is required')),
@@ -108,29 +94,6 @@ const WorkspaceEditionOverviewComponent = ({ paginationOptions, workspace, conte
         });
       })
       .catch(() => false);
-  };
-
-  const submitDelete = () => {
-    const { type } = workspace;
-    setDeleting(true);
-    commit({
-      variables: { id },
-      updater: (store) => {
-        if (paginationOptions) {
-          deleteNode(store, 'Pagination_workspaces', paginationOptions, id);
-        }
-      },
-      onCompleted: () => {
-        setDeleting(false);
-        if (paginationOptions) {
-          handleCloseDelete();
-        } else if (type) {
-          navigate(`/dashboard/workspaces/${type}s`);
-        } else {
-          navigate('/dashboard');
-        }
-      },
-    });
   };
 
   return (
@@ -167,23 +130,6 @@ const WorkspaceEditionOverviewComponent = ({ paginationOptions, workspace, conte
               <SubscriptionFocus context={context} fieldName="description" />
               }
           />
-          <Stack flexDirection="row" justifyContent="flex-end" mt={2}>
-            <Button
-              color="error"
-              variant="contained"
-              onClick={handleOpenDelete}
-              disabled={deleting}
-            >
-              {t_i18n('Delete')}
-            </Button>
-            <DeleteDialog
-              deletion={deletion}
-              submitDelete={submitDelete}
-              message={workspace.type === 'investigation'
-                ? t_i18n('Do you want to delete this investigation?')
-                : t_i18n('Do you want to delete this dashboard?')}
-            />
-          </Stack>
         </Form>
       )}
     </Formik>
