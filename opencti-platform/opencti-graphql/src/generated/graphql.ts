@@ -12795,6 +12795,7 @@ export type Log = {
   timestamp: Scalars['DateTime']['output'];
   user?: Maybe<Creator>;
   user_id: Scalars['String']['output'];
+  user_metadata?: Maybe<Scalars['JSON']['output']>;
 };
 
 export type LogConnection = {
@@ -39181,6 +39182,7 @@ export type LogResolvers<ContextType = any, ParentType extends ResolversParentTy
   timestamp?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   user?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
   user_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  user_metadata?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
