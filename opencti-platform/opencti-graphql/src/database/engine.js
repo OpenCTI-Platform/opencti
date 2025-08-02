@@ -3792,7 +3792,8 @@ const buildSearchResult = async (context, user, data, first, searchAfter, opts =
   const { filterCount, elements: convertedHits } = await regardingOfFiltering(context, user, elements, elementIds, opts);
   if (connectionFormat) {
     const nodeHits = R.map((n) => ({ node: n, sort: n.sort, types: n.regardingOfTypes }), convertedHits);
-    return { elements: buildPagination(first, searchAfter, nodeHits, data.hits.total.value, filterCount), filterCount };
+    const paginateElements = buildPagination(first, searchAfter, nodeHits, data.hits.total.value, filterCount);
+    return { elements: paginateElements, filterCount };
   }
   return { elements: convertedHits, filterCount };
 };
