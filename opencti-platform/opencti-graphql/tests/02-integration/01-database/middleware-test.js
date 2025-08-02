@@ -38,7 +38,7 @@ import { READ_DATA_INDICES } from '../../../src/database/utils';
 import { executionContext, SYSTEM_USER } from '../../../src/utils/access';
 import { checkObservableSyntax } from '../../../src/utils/syntax';
 import { FunctionalError } from '../../../src/config/errors';
-import { internalLoadById, listAllRelations, listEntities, listRelations, storeLoadById } from '../../../src/database/middleware-loader';
+import { internalLoadById, listAllRelations, listEntitiesPaginated, listRelations, storeLoadById } from '../../../src/database/middleware-loader';
 import { addThreatActorGroup } from '../../../src/domain/threatActorGroup';
 import { addMalware } from '../../../src/domain/malware';
 import { addIntrusionSet } from '../../../src/domain/intrusionSet';
@@ -165,7 +165,7 @@ describe('Entities listing', () => {
   // const { first = 1000, after, orderBy, orderMode = 'asc' }
   // filters part. Definition -> { key, values, fromRole, toRole }
   it('should list entities', async () => {
-    const malwares = await listEntities(testContext, ADMIN_USER, ['Malware']);
+    const malwares = await listEntitiesPaginated(testContext, ADMIN_USER, ['Malware']);
     expect(malwares).not.toBeNull();
     expect(malwares.edges.length).toEqual(2);
     const dataMap = new Map(malwares.edges.map((i) => [R.head(i.node.x_opencti_stix_ids), i.node]));
@@ -183,7 +183,7 @@ describe('Entities listing', () => {
     expect(malware._index).not.toBeNull();
   });
   it('should list multiple entities', async () => {
-    const entities = await listEntities(testContext, ADMIN_USER, ['Malware', 'Organization']);
+    const entities = await listEntitiesPaginated(testContext, ADMIN_USER, ['Malware', 'Organization']);
     expect(entities).not.toBeNull();
     expect(entities.edges.length).toEqual(TESTING_ORGS.length + 6 + 2); // 2 malwares + 6 organizations from data init
     const aggregationMap = new Map(entities.edges.map((i) => [i.node.name, i.node]));
@@ -194,23 +194,23 @@ describe('Entities listing', () => {
   });
   it('should list entities with basic filtering', async () => {
     const options = { first: 1, orderBy: 'created', orderMode: 'desc' };
-    const indicators = await listEntities(testContext, ADMIN_USER, ['Indicator'], options);
+    const indicators = await listEntitiesPaginated(testContext, ADMIN_USER, ['Indicator'], options);
     expect(indicators.edges.length).toEqual(1);
     const indicator = R.head(indicators.edges).node;
     expect(indicator.name).toEqual('www.xolod-teplo.ru');
   });
   it('should list entities with search', async () => {
     let options = { search: 'xolod' };
-    let indicators = await listEntities(testContext, ADMIN_USER, ['Indicator'], options);
+    let indicators = await listEntitiesPaginated(testContext, ADMIN_USER, ['Indicator'], options);
     expect(indicators.edges.length).toEqual(0);
     options = { search: 'www.xolod' };
-    indicators = await listEntities(testContext, ADMIN_USER, ['Indicator'], options);
+    indicators = await listEntitiesPaginated(testContext, ADMIN_USER, ['Indicator'], options);
     expect(indicators.edges.length).toEqual(1);
     options = { search: 'location' };
-    indicators = await listEntities(testContext, ADMIN_USER, ['Indicator'], options);
+    indicators = await listEntitiesPaginated(testContext, ADMIN_USER, ['Indicator'], options);
     expect(indicators.edges.length).toEqual(2);
     options = { search: 'i want a location' };
-    indicators = await listEntities(testContext, ADMIN_USER, ['Indicator'], options);
+    indicators = await listEntitiesPaginated(testContext, ADMIN_USER, ['Indicator'], options);
     expect(indicators.edges.length).toEqual(3);
   });
   it('should list entities with attribute filters', async () => {
@@ -223,7 +223,7 @@ describe('Entities listing', () => {
       filterGroups: [],
     };
     const options = { filters };
-    const attacks = await listEntities(testContext, ADMIN_USER, ['Attack-Pattern'], options);
+    const attacks = await listEntitiesPaginated(testContext, ADMIN_USER, ['Attack-Pattern'], options);
     expect(attacks).not.toBeNull();
     expect(attacks.edges.length).toEqual(1);
     expect(R.head(attacks.edges).node.standard_id).toEqual('attack-pattern--b5c4784e-6ecc-5347-a231-c9739e077dd8');
@@ -239,7 +239,7 @@ describe('Entities listing', () => {
       filterGroups: [],
     };
     const options = { filters };
-    const entities = await listEntities(testContext, ADMIN_USER, ['Attack-Pattern', 'Intrusion-Set'], options);
+    const entities = await listEntitiesPaginated(testContext, ADMIN_USER, ['Attack-Pattern', 'Intrusion-Set'], options);
     expect(entities).not.toBeNull();
     expect(entities.edges.length).toEqual(3);
   });

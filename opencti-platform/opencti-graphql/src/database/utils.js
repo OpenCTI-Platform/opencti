@@ -250,7 +250,7 @@ export const emptyPaginationResult = () => {
   };
 };
 
-export const buildPagination = (limit, searchAfter, instances, globalCount) => {
+export const buildPagination = (limit, searchAfter, instances, globalCount, filteredCount = 0) => {
   const edges = R.pipe(
     R.mapObjIndexed((record) => {
       const { node, sort, types } = record;
@@ -261,7 +261,7 @@ export const buildPagination = (limit, searchAfter, instances, globalCount) => {
   )(instances);
   // Because of stateless approach its difficult to know if its finish
   // this test could lead to an extra round trip sometimes
-  const hasNextPage = instances.length === limit;
+  const hasNextPage = (instances.length + filteredCount) === limit;
   // For same reason its difficult to know if a previous page exists.
   // Considering for now that if user specific an offset, it should exists a previous page.
   const hasPreviousPage = searchAfter !== undefined && searchAfter !== null;
@@ -272,7 +272,7 @@ export const buildPagination = (limit, searchAfter, instances, globalCount) => {
     endCursor,
     hasNextPage,
     hasPreviousPage,
-    globalCount,
+    globalCount: globalCount - filteredCount,
   };
   return { edges, pageInfo };
 };

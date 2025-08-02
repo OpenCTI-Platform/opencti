@@ -5,7 +5,7 @@ import { elPaginate } from '../database/engine';
 import { isNotEmptyField, READ_STIX_DATA_WITH_INFERRED, READ_STIX_INDICES } from '../database/utils';
 import { ENTITY_TYPE_TAXII_COLLECTION } from '../schema/internalObject';
 import { createEntity, deleteElementById, stixLoadByIds, updateAttribute } from '../database/middleware';
-import { listAllEntities, listEntities, storeLoadById } from '../database/middleware-loader';
+import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../database/middleware-loader';
 import { FunctionalError } from '../config/errors';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import conf, { BUS_TOPICS } from '../config/conf';
@@ -49,12 +49,12 @@ export const findById = async (context, user, collectionId) => {
 export const findAll = (context, user, args) => {
   if (user && isUserHasCapability(user, TAXIIAPI)) {
     const options = { ...args, includeAuthorities: true };
-    return listEntities(context, user, [ENTITY_TYPE_TAXII_COLLECTION], options);
+    return listEntitiesPaginated(context, user, [ENTITY_TYPE_TAXII_COLLECTION], options);
   }
   // No user specify, listing only public taxii collections
   const filters = addFilter(args?.filters, 'taxii_public', 'true');
   const publicArgs = { ...(args ?? {}), filters };
-  return listEntities(context, SYSTEM_USER, [ENTITY_TYPE_TAXII_COLLECTION], publicArgs);
+  return listEntitiesPaginated(context, SYSTEM_USER, [ENTITY_TYPE_TAXII_COLLECTION], publicArgs);
 };
 export const taxiiCollectionEditField = async (context, user, collectionId, input) => {
   const finalInput = input.map(({ key, value }) => {

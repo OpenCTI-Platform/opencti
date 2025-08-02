@@ -8,6 +8,7 @@ import {
   listAllEntities,
   listAllToEntitiesThroughRelations,
   listEntities,
+  listEntitiesPaginated,
   listEntitiesThroughRelationsPaginated,
   storeLoadById
 } from '../database/middleware-loader';
@@ -49,7 +50,7 @@ export const findById = async (context, user, containerId) => {
 export const findAll = async (context, user, args) => {
   const hasTypesArgs = args.types && args.types.length > 0;
   const types = hasTypesArgs ? args.types.filter((type) => isStixDomainObjectContainer(type)) : [ENTITY_TYPE_CONTAINER];
-  return listEntities(context, user, types, args);
+  return listEntitiesPaginated(context, user, types, args);
 };
 
 export const numberOfContainersForObject = (context, user, args) => {
@@ -91,7 +92,7 @@ export const objects = async (context, user, containerId, args) => {
       // Force options to prevent connection format and manage search after
       const paginateOpts = { ...baseOpts, first: args.first ?? ES_DEFAULT_PAGINATION, after: searchAfter };
       const currentPagination = await listEntitiesThroughRelationsPaginated(context, user, containerId, RELATION_OBJECT, types, false, paginateOpts);
-      const noMoreElements = (currentPagination.baseCount ?? 0) === 0 || currentPagination.baseCount < paginateOpts.first;
+      const noMoreElements = currentPagination.edges.length < paginateOpts.first;
       if (noMoreElements) {
         hasNextPage = false;
         paginatedElements.pageInfo = currentPagination.pageInfo;
@@ -321,7 +322,7 @@ export const aiSummary = async (context, user, args) => {
   const { busId = null, language = 'English', forceRefresh = false } = args;
   const hasTypesArgs = args.types && args.types.length > 0;
   const types = hasTypesArgs ? args.types.filter((type) => isStixDomainObjectContainer(type)) : [ENTITY_TYPE_CONTAINER];
-  const finalArgs = { ...args, first: args.first && args.first <= 10 ? args.first : 10, connectionFormat: false };
+  const finalArgs = { ...args, first: args.first && args.first <= 10 ? args.first : 10 };
   const identifier = toBase64(JSON.stringify(R.dissoc('busId', finalArgs)));
   if (!forceRefresh && aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT))) {
     logApp.info('Response found in cache', { busId });
