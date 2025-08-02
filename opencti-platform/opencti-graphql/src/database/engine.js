@@ -151,9 +151,12 @@ import {
   ALIAS_FILTER,
   complexConversionFilterKeys,
   COMPUTED_RELIABILITY_FILTER,
+  ID_FILTER,
   IDS_FILTER,
   INSTANCE_DYNAMIC_REGARDING_OF,
   INSTANCE_REGARDING_OF,
+  INSTANCE_REGARDING_OF_DIRECTION_FORCED,
+  INSTANCE_REGARDING_OF_DIRECTION_REVERSE,
   INSTANCE_RELATION_FILTER,
   INSTANCE_RELATION_TYPES_FILTER,
   IS_INFERRED_FILTER,
@@ -3719,14 +3722,10 @@ const regardingOfFiltering = async (context, user, elements, elementIds, opts) =
       const sideIdManualInferred = new Map();
       for (let i = 0; i < extractedFilters.length; i += 1) {
         const { values } = extractedFilters[i];
-        const ids = values.filter((v) => v.key === 'id')
-          .map((f) => f.values).flat();
-        const types = values.filter((v) => v.key === 'relationship_type')
-          .map((f) => f.values).flat();
-        const directionForced = R.head(values.filter((v) => v.key === 'direction_forced')
-          .map((f) => f.values).flat()) ?? false;
-        const directionReverse = R.head(values.filter((v) => v.key === 'direction_reverse')
-          .map((f) => f.values).flat()) ?? false;
+        const ids = values.filter((v) => v.key === ID_FILTER).map((f) => f.values).flat();
+        const types = values.filter((v) => v.key === RELATION_TYPE_FILTER).map((f) => f.values).flat();
+        const directionForced = R.head(values.filter((v) => v.key === INSTANCE_REGARDING_OF_DIRECTION_FORCED).map((f) => f.values).flat()) ?? false;
+        const directionReverse = R.head(values.filter((v) => v.key === INSTANCE_REGARDING_OF_DIRECTION_REVERSE).map((f) => f.values).flat()) ?? false;
         // resolve all relationships that target the id values, forcing the type is available
         const sideIds = [...ids, ...elementIds];
         const args = directionForced
@@ -3747,8 +3746,8 @@ const regardingOfFiltering = async (context, user, elements, elementIds, opts) =
           }
         };
         let startProcessingTime = new Date().getTime();
-        for (let j = 0; j < relationships.length; j += 1) {
-          const relation = relationships[j];
+        for (let relIndex = 0; relIndex < relationships.length; relIndex += 1) {
+          const relation = relationships[relIndex];
           const relType = isInferredIndex(relation._index) ? 'inferred' : 'manual';
           addTypeSide(relation.fromId, relType);
           addTypeSide(relation.toId, relType);
@@ -3764,8 +3763,8 @@ const regardingOfFiltering = async (context, user, elements, elementIds, opts) =
       // For all convertHit id that is not included in the reduction, convert to restricted visibility
       const filteredHits = [];
       let startProcessingTime = new Date().getTime();
-      for (let i = 0; i < elements.length; i += 1) {
-        const convertedHit = elements[i];
+      for (let hitIndex = 0; hitIndex < elements.length; hitIndex += 1) {
+        const convertedHit = elements[hitIndex];
         if (!targetValidatedIds.has(convertedHit.id)) {
           filterCount += 1;
         } else {

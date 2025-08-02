@@ -35,7 +35,16 @@ import type {
 } from '../types/store';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { type Filter, type FilterGroup, FilterMode, FilterOperator, type InputMaybe, OrderingMode } from '../generated/graphql';
-import { ASSIGNEE_FILTER, CREATOR_FILTER, INSTANCE_REGARDING_OF, PARTICIPANT_FILTER } from '../utils/filtering/filtering-constants';
+import {
+  ASSIGNEE_FILTER,
+  CREATOR_FILTER,
+  ID_FILTER,
+  INSTANCE_REGARDING_OF,
+  INSTANCE_REGARDING_OF_DIRECTION_FORCED,
+  INSTANCE_REGARDING_OF_DIRECTION_REVERSE,
+  PARTICIPANT_FILTER,
+  RELATION_TYPE_FILTER
+} from '../utils/filtering/filtering-constants';
 import type { UserReadActionContextData } from '../listener/UserActionListener';
 import { completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from './entity-representative';
@@ -491,10 +500,10 @@ export const listEntitiesThroughRelationsPaginated = async <T extends BasicStore
       {
         key: [INSTANCE_REGARDING_OF],
         values: [
-          { key: 'id', values: [connectedEntityId] },
-          { key: 'relationship_type', values: [relationType] },
-          { key: 'direction_forced', values: [true] },
-          { key: 'direction_reverse', values: [reverse_relation] },
+          { key: ID_FILTER, values: [connectedEntityId] },
+          { key: RELATION_TYPE_FILTER, values: [relationType] },
+          { key: INSTANCE_REGARDING_OF_DIRECTION_FORCED, values: [true] },
+          { key: INSTANCE_REGARDING_OF_DIRECTION_REVERSE, values: [reverse_relation] },
         ]
       }
     ],
