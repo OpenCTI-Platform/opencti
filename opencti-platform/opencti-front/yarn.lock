@@ -8227,12 +8227,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/ramda@npm:0.30.2":
-  version: 0.30.2
-  resolution: "@types/ramda@npm:0.30.2"
+"@types/ramda@npm:0.31.0":
+  version: 0.31.0
+  resolution: "@types/ramda@npm:0.31.0"
   dependencies:
-    types-ramda: "npm:^0.30.1"
-  checksum: 10/528e62da967adb38b7b6be3314ee11009f4e7312e4fbb9670f4556bb2f640754f08ae68ede87822ae255aba747e67296f40b37d53bfb427c58ab82f5b7a4989e
+    types-ramda: "npm:^0.31.0"
+  checksum: 10/5870f219b1234c1bc1a8254a566ad41264c18d45e32b8c080faad51bc29755dc0564171feb3e3f63b5f25d7ae66f66317b653737720149a6951b417a34b139d9
   languageName: node
   linkType: hard
 
@@ -18133,7 +18133,7 @@ __metadata:
     "@types/html-to-pdfmake": "npm:2.4.4"
     "@types/node": "npm:22.17.0"
     "@types/qrcode": "npm:1.5.5"
-    "@types/ramda": "npm:0.30.2"
+    "@types/ramda": "npm:0.31.0"
     "@types/react": "npm:19.0.0"
     "@types/react-csv": "npm:1.1.10"
     "@types/react-dom": "npm:19.0.0"
@@ -22044,12 +22044,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"types-ramda@npm:^0.30.1":
-  version: 0.30.1
-  resolution: "types-ramda@npm:0.30.1"
+"types-ramda@npm:^0.31.0":
+  version: 0.31.0
+  resolution: "types-ramda@npm:0.31.0"
   dependencies:
     ts-toolbelt: "npm:^9.6.0"
-  checksum: 10/b865c8f97df911b82b51b3cb4afa9b52b971d344dd79d203cd118e424a03761aebfea538c643f6283f700a3b4000d07d2168e353691b5caff076542bad78e420
+  checksum: 10/bc1dcd7306da6449418640b4105db0dd682d9bcc50987caafb9fb99bd9a62801522ee59e9de5de6f136b817d01f2d7baa408acaa6ef3991aa28bd197f975fb85
   languageName: node
   linkType: hard
 
