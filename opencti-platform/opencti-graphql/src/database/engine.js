@@ -3704,6 +3704,8 @@ export const elAttributeValues = async (context, user, field, opts = {}) => {
 const regardingOfFiltering = async (context, user, elements, elementIds, opts) => {
   const { filters = {} } = opts;
   let filterCount = 0;
+  const lastElement = R.last(elements);
+  const endCursor = lastElement.sort ? offsetToCursor(lastElement.sort) : null;
   if (isNotEmptyField(filters)) {
     const availableKeys = extractFilterKeys(filters);
     const isRegardingFilter = availableKeys.includes(INSTANCE_REGARDING_OF) || availableKeys.includes(INSTANCE_DYNAMIC_REGARDING_OF);
@@ -3778,24 +3780,30 @@ const regardingOfFiltering = async (context, user, elements, elementIds, opts) =
           });
         }
       }
-      return { elements: filteredHits, filterCount };
+      return { elements: filteredHits, filterCount, endCursor };
     }
   }
-  return { elements, filterCount };
+  return { elements, filterCount, endCursor };
 };
 
 // Build result from generic paginate
 // Ensure also post filtering when in regards of filtering is used.
 const buildSearchResult = async (context, user, data, first, searchAfter, opts = {}) => {
   const { connectionFormat = true } = opts;
+  if (data.hits.hits.length === 0) {
+    if (connectionFormat) {
+      return { elements: buildPagination(first, searchAfter, [], data.hits.total.value, 0), filterCount: 0, endCursor: null };
+    }
+    return { elements: [], filterCount: 0, endCursor: null };
+  }
   const { elements, ids: elementIds } = await elConvertHits(data.hits.hits);
-  const { filterCount, elements: convertedHits } = await regardingOfFiltering(context, user, elements, elementIds, opts);
+  const { filterCount, endCursor, elements: convertedHits } = await regardingOfFiltering(context, user, elements, elementIds, opts);
   if (connectionFormat) {
     const nodeHits = R.map((n) => ({ node: n, sort: n.sort, types: n.regardingOfTypes }), convertedHits);
     const paginateElements = buildPagination(first, searchAfter, nodeHits, data.hits.total.value, filterCount);
-    return { elements: paginateElements, filterCount };
+    return { elements: paginateElements, filterCount, endCursor };
   }
-  return { elements: convertedHits, filterCount };
+  return { elements: convertedHits, filterCount, endCursor };
 };
 
 export const elBulk = async (args) => {

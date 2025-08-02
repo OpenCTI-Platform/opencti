@@ -466,9 +466,8 @@ export const listEntitiesPaginated = async <T extends BasicStoreEntity>(context:
   // If results as some have been post filtered
   // And more information are available, continue to fetch
   const first = args.first ?? ES_DEFAULT_PAGINATION;
-  while (pagination.filterCount > 0 && pageInfo.hasNextPage && edges.length < first) {
-    const nextArgs = { ...paginateArgs, first: first - edges.length, after: pageInfo.endCursor };
-    pagination = await elPaginate(context, user, computedIndices, nextArgs);
+  while (isNotEmptyField(pagination.endCursor) && pagination.filterCount > 0 && pageInfo.hasNextPage && edges.length < first) {
+    pagination = await elPaginate(context, user, computedIndices, { ...paginateArgs, first: first - edges.length, after: pagination.endCursor });
     edges.push(...pagination.elements.edges);
     pageInfo = pagination.elements.pageInfo;
     pageInfo.globalCount -= pagination.filterCount;
