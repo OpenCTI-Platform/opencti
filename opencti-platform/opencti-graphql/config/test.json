@@ -107,5 +107,8 @@
     "local": {
       "strategy": "LocalStrategy"
     }
+  },
+  "smtp": {
+    "enabled": false
   }
 }

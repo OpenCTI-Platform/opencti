@@ -47,10 +47,7 @@ steps:
       RABBITMQ__HOSTNAME: rabbitmq
       EXPIRATION_SCHEDULER__ENABLED: false
       SUBSCRIPTION_SCHEDULER__ENABLED: false
-      SMTP__HOSTNAME: smtp.ethereal.email
-      SMTP__PORT: 587
-      SMTP__USERNAME: jennyfer.mraz@ethereal.email
-      SMTP__PASSWORD: frhJ2mSPTfaEutpbug
+      SMTP__ENABLED: false
       PYTHONUNBUFFERED: 1
     commands:
       - apk add build-base git libffi-dev cargo
@@ -247,6 +244,7 @@ services:
       RABBITMQ__QUEUE_PREFIX: raw-start
       EXPIRATION_SCHEDULER__ENABLED: false
       SUBSCRIPTION_SCHEDULER__ENABLED: false
+      SMTP__ENABLED: false
     commands:
       - sleep 10
       - ls -lart
@@ -285,6 +283,7 @@ services:
       RABBITMQ__QUEUE_PREFIX: live-start
       EXPIRATION_SCHEDULER__ENABLED: false
       SUBSCRIPTION_SCHEDULER__ENABLED: false
+      SMTP__ENABLED: false
     commands:
       - sleep 10
       - apk add build-base git libffi-dev cargo
@@ -322,6 +321,7 @@ services:
       RABBITMQ__QUEUE_PREFIX: direct-start
       EXPIRATION_SCHEDULER__ENABLED: false
       SUBSCRIPTION_SCHEDULER__ENABLED: false
+      SMTP__ENABLED: false
     commands:
       - sleep 10
       - apk add build-base git libffi-dev cargo
@@ -398,6 +398,7 @@ services:
       RABBITMQ__QUEUE_PREFIX: restore-start
       EXPIRATION_SCHEDULER__ENABLED: false
       SUBSCRIPTION_SCHEDULER__ENABLED: false
+      SMTP__ENABLED: false
     commands:
       - sleep 10
       - apk add build-base git libffi-dev cargo
@@ -436,6 +437,7 @@ services:
       EXPIRATION_SCHEDULER__ENABLED: false
       SUBSCRIPTION_SCHEDULER__ENABLED: false
       PUBLISHER_MANAGER__ENABLED: false
+      SMTP__ENABLED: false
     commands:
       - sleep 10
       - apk add build-base git libffi-dev cargo
