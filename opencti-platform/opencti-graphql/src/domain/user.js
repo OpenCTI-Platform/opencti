@@ -113,7 +113,6 @@ const ME_USER_MODIFIABLE_ATTRIBUTES = [
   'draft_context',
 ];
 const AVAILABLE_LANGUAGES = ['auto', 'es-es', 'fr-fr', 'ja-jp', 'zh-cn', 'en-us', 'de-de', 'ko-kr', 'ru-ru', 'it-it'];
-const serviceAccountFeatureFlag = isFeatureEnabled('SERVICE_ACCOUNT');
 const computeImpactedUsers = async (context, user, roleId) => {
   // Get all groups that have this role
   const groupsRoles = await listAllRelations(context, user, RELATION_HAS_ROLE, { toId: roleId, fromTypes: [ENTITY_TYPE_GROUP] });
@@ -153,7 +152,6 @@ export const userWithOrigin = (req, user) => {
     call_retry_number: req?.headers['opencti-retry-number'],
     playbook_id: req?.headers['opencti-playbook-id']
   };
-  console.log('origin:', origin);
   return { ...user, origin };
 };
 
@@ -571,7 +569,7 @@ export const checkPasswordFromPolicy = async (context, password) => {
 
 export const addUser = async (context, user, newUser) => {
   let userEmail;
-  const userServiceAccount = newUser.user_service_account && serviceAccountFeatureFlag;
+  const userServiceAccount = newUser.user_service_account;
   if (newUser.user_email && !userServiceAccount) {
     userEmail = newUser.user_email.toLowerCase();
     const existingUser = await elLoadBy(context, SYSTEM_USER, 'user_email', userEmail, ENTITY_TYPE_USER);
@@ -621,12 +619,10 @@ export const addUser = async (context, user, newUser) => {
     R.dissoc('prevent_default_groups')
   )(newUser);
 
-  if (serviceAccountFeatureFlag) {
-    userToCreate = {
-      ...userToCreate,
-      user_service_account: newUser.user_service_account || false,
-    };
-  }
+  userToCreate = {
+    ...userToCreate,
+    user_service_account: newUser.user_service_account || false,
+  };
 
   if (userServiceAccount) {
     userToCreate = {
@@ -744,7 +740,6 @@ export const roleDeleteRelation = async (context, user, roleId, toId, relationsh
   return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user);
 };
 
-// User related
 export const userEditField = async (context, user, userId, rawInputs) => {
   const inputs = [];
   const userToUpdate = await internalLoadById(context, user, userId);
