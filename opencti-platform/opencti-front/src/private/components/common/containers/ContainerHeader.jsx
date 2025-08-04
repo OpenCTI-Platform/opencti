@@ -669,11 +669,11 @@ const ContainerHeader = (props) => {
                 actionsFilter={['SHARE', 'UNSHARE', 'SHARE_MULTIPLE', 'UNSHARE_MULTIPLE']}
               />
             )}
+            {displaySharing && (
+              <StixCoreObjectSharedOrganisations data={container}/>
+            )}
             {enableQuickSubscription && (
               <StixCoreObjectSubscribers triggerData={triggerData} />
-            )}
-            {displaySharing && (
-            <StixCoreObjectSharedOrganisations data={container}/>
             )}
             {displayAuthorizedMembers && (
               <FormAuthorizedMembersDialog

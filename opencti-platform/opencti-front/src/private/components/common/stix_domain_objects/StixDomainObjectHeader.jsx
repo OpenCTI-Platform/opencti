@@ -24,7 +24,7 @@ import * as R from 'ramda';
 import * as Yup from 'yup';
 import { useTheme } from '@mui/styles';
 import { useNavigate } from 'react-router-dom';
-import StixCoreObjectSharedOrganisationsDrawer from '@components/common/containers/StixCoreObjectSharedOrganisationsDrawer';
+import StixCoreObjectSharedOrganisationsDrawer from '../containers/StixCoreObjectSharedOrganisationsDrawer';
 import StixCoreObjectSharedOrganisations from '../stix_core_objects/StixCoreObjectSharedOrganisations';
 import StixCoreObjectMenuItemUnderEE from '../stix_core_objects/StixCoreObjectMenuItemUnderEE';
 import { DraftChip } from '../draft/DraftChip';
