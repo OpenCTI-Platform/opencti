@@ -58,10 +58,12 @@ running_ingestion_units_gauge = meter.create_gauge(
 @dataclass(unsafe_hash=True)
 class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
     execution_pool: ThreadPoolExecutor
-    connector: Dict[str, Any] = field(hash=False)
-    config: Dict[str, Any] = field(hash=False)
+    pika_parameters: pika.ConnectionParameters
+    queue_name: str
     log_level: str
     json_logging: bool
+    connector_token: str
+    callback_uri: str
     listen_api_ssl_verify: bool
     listen_api_http_proxy: str
     listen_api_https_proxy: str
@@ -70,26 +72,6 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
         self._is_interrupted: bool = False
         self.logger_class = logger(self.log_level.upper(), self.json_logging)
         self.worker_logger = self.logger_class("worker")
-        self.queue_name = self.connector["config"]["listen"]
-        self.connector_token = self.connector["connector_user"]["api_token"]
-        self.pika_credentials = pika.PlainCredentials(
-            self.connector["config"]["connection"]["user"],
-            self.connector["config"]["connection"]["pass"],
-        )
-        ssl_options = None
-        if self.connector["config"]["connection"]["use_ssl"]:
-            ssl_options = pika.SSLOptions(
-                create_mq_ssl_context(self.config),
-                self.connector["config"]["connection"]["host"],
-            )
-
-        self.pika_parameters = pika.ConnectionParameters(
-            self.connector["config"]["connection"]["host"],
-            self.connector["config"]["connection"]["port"],
-            self.connector["config"]["connection"]["vhost"],
-            self.pika_credentials,
-            ssl_options=ssl_options,
-        )
         self.pika_connection = pika.BlockingConnection(self.pika_parameters)
         self.channel = self.pika_connection.channel()
         try:
@@ -123,13 +105,12 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
         data: str,
     ) -> None:
         try:
-            callback_uri = self.connector["config"].get("listen_callback_uri")
             request_headers = {
                 "User-Agent": "pycti/" + __version__,
                 "Authorization": "Bearer " + self.connector_token,
             }
             response = requests.post(
-                callback_uri,
+                self.callback_uri,
                 data=data,
                 headers=request_headers,
                 verify=self.listen_api_ssl_verify,
@@ -208,13 +189,15 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
 @dataclass(unsafe_hash=True)
 class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
     execution_pool: ThreadPoolExecutor
-    connector: Dict[str, Any] = field(hash=False)
-    config: Dict[str, Any] = field(hash=False)
+    pika_parameters: pika.ConnectionParameters
+    queue_name: str
     log_level: str
     json_logging: bool
     opencti_url: str
     opencti_token: str
     ssl_verify: Union[bool, str]
+    push_exchange: str
+    push_routing: str
 
     def __post_init__(self) -> None:
         self._is_interrupted: bool = False
@@ -227,25 +210,6 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
         )
         self.worker_logger = self.api.logger_class("worker")
 
-        self.queue_name = self.connector["config"]["push"]
-        self.pika_credentials = pika.PlainCredentials(
-            self.connector["config"]["connection"]["user"],
-            self.connector["config"]["connection"]["pass"],
-        )
-        ssl_options = None
-        if self.connector["config"]["connection"]["use_ssl"]:
-            ssl_options = pika.SSLOptions(
-                create_mq_ssl_context(self.config),
-                self.connector["config"]["connection"]["host"],
-            )
-
-        self.pika_parameters = pika.ConnectionParameters(
-            self.connector["config"]["connection"]["host"],
-            self.connector["config"]["connection"]["port"],
-            self.connector["config"]["connection"]["vhost"],
-            self.pika_credentials,
-            ssl_options=ssl_options,
-        )
         self.pika_connection = pika.BlockingConnection(self.pika_parameters)
         self.channel = self.pika_connection.channel()
         try:
@@ -354,8 +318,8 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                             text_bundle.encode("utf-8", "escape")
                         ).decode("utf-8")
                         push_channel.basic_publish(
-                            exchange=self.connector["config"]["push_exchange"],
-                            routing_key=self.connector["config"]["push_routing"],
+                            exchange=self.push_exchange,
+                            routing_key=self.push_routing,
                             body=json.dumps(data),
                             properties=pika.BasicProperties(
                                 delivery_mode=2,
@@ -601,6 +565,25 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
         )
         self.worker_logger = self.api.logger_class("worker")
 
+    def build_pika_parameters(self, connector_config: Dict[str, Any]) -> pika.ConnectionParameters:
+        ssl_options = None
+        if connector_config["connection"]["use_ssl"]:
+            ssl_options = pika.SSLOptions(
+                create_mq_ssl_context(self.config),
+                connector_config["connection"]["host"],
+            )
+
+        return pika.ConnectionParameters(
+            host=connector_config["connection"]["host"],
+            port=connector_config["connection"]["port"],
+            virtual_host=connector_config["connection"]["vhost"],
+            credentials=pika.PlainCredentials(
+                connector_config["connection"]["user"],
+                connector_config["connection"]["pass"],
+            ),
+            ssl_options=ssl_options,
+        )
+
     def stop(self) -> None:
         for thread in self.listen_api_threads:
             self.listen_api_threads[thread].stop()
@@ -633,8 +616,9 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
 
                 # Check if all queues are consumed
                 for connector in connectors:
+                    connector_config = connector["config"]
                     # Push to ingest message
-                    push_queue = connector["config"]["push"]
+                    push_queue = connector_config["push"]
                     queues.append(push_queue)
                     push_thread = self.consumer_threads.get(push_queue)
                     if push_thread is None or not push_thread.is_alive():
@@ -646,29 +630,34 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
 
                         self.consumer_threads[push_queue] = Consumer(
                             execution_pool,
-                            connector,
-                            self.config,
+                            self.build_pika_parameters(connector_config),
+                            push_queue,
                             self.log_level,
                             self.opencti_json_logging,
                             self.opencti_url,
                             self.opencti_token,
                             self.opencti_ssl_verify,
+                            connector_config["push_exchange"],
+                            connector_config["push_routing"],
                         )
                         self.consumer_threads[push_queue].name = push_queue
                         self.consumer_threads[push_queue].start()
 
                     # Listen for webhook message
-                    if connector["config"].get("listen_callback_uri") is not None:
-                        listen_queue = connector["config"]["listen"]
+                    listen_callback_uri = connector_config.get("listen_callback_uri")
+                    if listen_callback_uri is not None:
+                        listen_queue = connector_config["listen"]
                         queues.append(listen_queue)
                         listen_thread = self.listen_api_threads.get(listen_queue)
                         if listen_thread is None or not listen_thread.is_alive():
                             self.listen_api_threads[listen_queue] = ApiConsumer(
                                 listen_api_execution_pool,
-                                connector,
-                                self.config,
+                                self.build_pika_parameters(connector_config),
+                                listen_queue,
                                 self.log_level,
                                 self.opencti_json_logging,
+                                connector["connector_user"]["api_token"],
+                                listen_callback_uri,
                                 self.listen_api_ssl_verify,
                                 self.listen_api_http_proxy,
                                 self.listen_api_https_proxy,
