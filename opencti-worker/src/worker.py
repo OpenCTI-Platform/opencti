@@ -626,33 +626,24 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                 # Telemetry
                 max_ingestion_units_count.set(self.opencti_pool_size)
                 running_ingestion_units_gauge.set(len(execution_pool._threads))
+
                 # Fetch queue configuration from API
                 queues: List[Any] = []
                 connectors: List[Any] = self.api.connector.list()
+
                 # Check if all queues are consumed
                 for connector in connectors:
                     # Push to ingest message
                     push_queue = connector["config"]["push"]
                     queues.append(push_queue)
-                    if push_queue in self.consumer_threads:
-                        if not self.consumer_threads[push_queue].is_alive():
+                    push_thread = self.consumer_threads.get(push_queue)
+                    if push_thread is None or not push_thread.is_alive():
+                        if not push_thread.is_alive():
                             self.worker_logger.info(
                                 "Thread for queue not alive, creating a new one...",
                                 {"queue": push_queue},
                             )
-                            self.consumer_threads[push_queue] = Consumer(
-                                execution_pool,
-                                connector,
-                                self.config,
-                                self.log_level,
-                                self.opencti_json_logging,
-                                self.opencti_url,
-                                self.opencti_token,
-                                self.opencti_ssl_verify,
-                            )
-                            self.consumer_threads[push_queue].name = push_queue
-                            self.consumer_threads[push_queue].start()
-                    else:
+
                         self.consumer_threads[push_queue] = Consumer(
                             execution_pool,
                             connector,
@@ -665,27 +656,13 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                         )
                         self.consumer_threads[push_queue].name = push_queue
                         self.consumer_threads[push_queue].start()
+
                     # Listen for webhook message
                     if connector["config"].get("listen_callback_uri") is not None:
                         listen_queue = connector["config"]["listen"]
                         queues.append(listen_queue)
-                        if listen_queue in self.listen_api_threads:
-                            if not self.listen_api_threads[listen_queue].is_alive():
-                                self.listen_api_threads[listen_queue] = ApiConsumer(
-                                    listen_api_execution_pool,
-                                    connector,
-                                    self.config,
-                                    self.log_level,
-                                    self.opencti_json_logging,
-                                    self.listen_api_ssl_verify,
-                                    self.listen_api_http_proxy,
-                                    self.listen_api_https_proxy,
-                                )
-                                self.listen_api_threads[listen_queue].name = (
-                                    listen_queue
-                                )
-                                self.listen_api_threads[listen_queue].start()
-                        else:
+                        listen_thread = self.listen_api_threads.get(listen_queue)
+                        if listen_thread is None or not listen_thread.is_alive():
                             self.listen_api_threads[listen_queue] = ApiConsumer(
                                 listen_api_execution_pool,
                                 connector,
@@ -698,6 +675,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             )
                             self.listen_api_threads[listen_queue].name = listen_queue
                             self.listen_api_threads[listen_queue].start()
+
                 # Check if some threads must be stopped
                 for thread in list(self.consumer_threads):
                     if thread not in queues:
