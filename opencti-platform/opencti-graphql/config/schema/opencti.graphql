@@ -14144,6 +14144,9 @@ type Query {
     id: String
     toType: String
   ): DefinitionRefRelationship @auth(for: [KNOWLEDGE])
+  stixSchemaRefRelationshipsPossibleTypes(
+    type: String!
+  ): [String!]! @auth(for: [KNOWLEDGE])
   stixRefRelationshipsDistribution(
     field: String!
     operation: StatsOperation!
