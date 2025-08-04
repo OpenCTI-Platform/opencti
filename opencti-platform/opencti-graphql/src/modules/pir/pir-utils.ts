@@ -13,7 +13,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import { type BasicStoreEntityPir, type BasicStoreRelationPir, ENTITY_TYPE_PIR, type ParsedPir, type PirExplanation, type StoreRelationPir } from './pir-types';
+import { type BasicStoreEntityPir, type BasicStoreRelationPir, ENTITY_TYPE_PIR, type ParsedPir, type PirExplanation } from './pir-types';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { listRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
 import { RELATION_IN_PIR } from '../../schema/stixRefRelationship';
@@ -24,7 +24,6 @@ import { addFilter } from '../../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_THREAT_ACTOR } from '../../schema/general';
 import { RELATION_FROM_TYPES_FILTER } from '../../utils/filtering/filtering-constants';
-import type { StoreCommon } from '../../types/store';
 
 /**
  * Helper function to parse filters that are saved as string in elastic.
