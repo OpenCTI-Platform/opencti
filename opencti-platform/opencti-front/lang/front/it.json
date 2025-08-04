@@ -2899,6 +2899,7 @@
   "relationship_hosts": "hosts",
   "relationship_image": "immagine",
   "relationship_impersonates": "impersona",
+  "relationship_in-pir": "in PIR",
   "relationship_indicates": "indica",
   "relationship_installed-software": "software installato",
   "relationship_investigates": "indaga",

@@ -69,6 +69,7 @@ import {
   ArchitectureOutlined,
   PlaylistRemoveOutlined,
   DrawOutlined,
+  TrackChanges,
   AlternateEmailOutlined,
   EmailOutlined,
 } from '@mui/icons-material';
@@ -263,6 +264,8 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       return <PublicOutlined style={style} fontSize={fontSize} role="img" />;
     case 'malware':
       return <Biohazard style={style} fontSize={fontSize} role="img" />;
+    case 'in-pir':
+      return <TrackChanges style={style} fontSize={fontSize} role="img" />;
     case 'malware-analysis':
       return <BiotechOutlined style={style} fontSize={fontSize} role="img" />;
     case 'threat-actor':

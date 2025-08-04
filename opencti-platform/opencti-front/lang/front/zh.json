@@ -2899,6 +2899,7 @@
   "relationship_hosts": "托管",
   "relationship_image": "图片",
   "relationship_impersonates": "冒充",
+  "relationship_in-pir": "在 PIR 中",
   "relationship_indicates": "指示",
   "relationship_installed-software": "安装的软件",
   "relationship_investigates": "调查",
