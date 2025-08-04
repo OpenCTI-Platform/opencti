@@ -99,7 +99,6 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
         except Exception as err:  # pylint: disable=broad-except
             self.worker_logger.warning(str(err))
         self.channel.basic_qos(prefetch_count=1)
-        assert self.channel is not None
 
     def nack_message(
         self, channel: BlockingChannel, delivery_tag: int, requeue=True
@@ -262,7 +261,6 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
         except Exception as err:  # pylint: disable=broad-except
             self.worker_logger.warning(str(err))
         self.channel.basic_qos(prefetch_count=1)
-        assert self.channel is not None
 
     def nack_message(
         self, channel: BlockingChannel, delivery_tag: int, requeue=True
