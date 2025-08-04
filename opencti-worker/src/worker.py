@@ -65,9 +65,9 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
     listen_api_https_proxy: str
     log_level: str = "info"
     json_logging: bool = True
-    _is_interrupted: bool = False
 
     def __post_init__(self) -> None:
+        self._is_interrupted: bool = False
         self.logger_class = logger(self.log_level.upper(), self.json_logging)
         self.worker_logger = self.logger_class("worker")
         self.queue_name = self.connector["config"]["listen"]
@@ -217,7 +217,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
     json_logging: bool = True
 
     def __post_init__(self) -> None:
-        self._is_interrupted = False
+        self._is_interrupted: bool = False
         self.api = OpenCTIApiClient(
             url=self.opencti_url,
             token=self.opencti_token,
