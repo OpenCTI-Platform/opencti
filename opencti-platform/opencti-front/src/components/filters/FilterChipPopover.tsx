@@ -262,17 +262,20 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     // State to track the input value and highlighted option
     const [inputValue, setInputValue] = useState('');
     const [highlightedOption, setHighlightedOption] = useState<FilterOptionValue | null>(null);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     return (
       <Autocomplete
         multiple
         key={fKey}
-        value={selectedOptions} // Ajouter cette ligne
+        value={selectedOptions}
         getOptionLabel={(option) => option.label ?? ''}
         noOptionsText={t_i18n('No available options')}
         options={options}
         inputValue={inputValue}
         groupBy={(option) => groupByEntities(option, fLabel)}
+        onOpen={() => setIsDropdownOpen(true)}
+        onClose={() => setIsDropdownOpen(false)}
         onInputChange={(event, newInputValue, reason) => {
           // Update input value state
           setInputValue(newInputValue);
@@ -290,12 +293,11 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
           if (event.key === 'Enter' && event.ctrlKey === false && event.shiftKey === false) {
             stopEvent(event);
 
-            if (inputValue.trim() === '') {
+            if (!isDropdownOpen) {
               handleClose();
               return;
             }
 
-            // If there's a highlighted option, select/deselect it
             if (highlightedOption) {
               const actualFilterValues = subKey
                 ? filterValues.filter((fVal) => fVal && fVal.key === subKey).at(0)?.values ?? []
@@ -343,8 +345,10 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
           // Extract key from props to avoid React warning
           const { key, ...otherProps } = props;
 
+          // Create a unique key combining multiple properties to avoid duplicates
+          const tooltipKey = [key, option.value, option.type, option.group].filter(Boolean).join('-');
           return (
-            <Tooltip title={option.label} key={key || option.value} followCursor>
+            <Tooltip title={option.label} key={tooltipKey} followCursor>
               <li
                 {...otherProps}
                 onKeyDown={(e) => {
