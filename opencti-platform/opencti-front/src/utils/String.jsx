@@ -255,8 +255,8 @@ export const displayEntityTypeForTranslation = (value) => {
  * @param text
  */
 export const extractUrlsFromText = (text) => {
-  const regex = /\b(?:https?:\/\/|www\.)\S+\b/gm;
-  const matches = [...text.matchAll(regex)];
+  const extractUrlsregex = /\b(?:https?:\/\/|www\.)\S+\b/gm;
+  const matches = [...text.matchAll(extractUrlsregex)];
   const parts = [];
   let lastIndex = 0;
 
