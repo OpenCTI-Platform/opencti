@@ -15,6 +15,7 @@ export default class EventPage {
   async navigateFromMenu() {
     const leftBarPage = new LeftBarPage(this.page);
     await leftBarPage.open();
-    await leftBarPage.clickOnMenu('Entities', 'Events');
+    await leftBarPage.clickOnMenu('Entities');
+    await leftBarPage.getSubItem('Events');
   }
 }
