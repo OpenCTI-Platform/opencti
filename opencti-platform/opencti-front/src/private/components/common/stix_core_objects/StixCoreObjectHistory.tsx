@@ -11,6 +11,7 @@ import StixCoreObjectHistoryLines, { stixCoreObjectHistoryLinesQuery } from './S
 import SearchInput from '../../../../components/SearchInput';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import type { Theme } from '../../../../components/Theme';
 
 type StixCoreObjectHistoryProps = {
   stixCoreObjectId: string;
@@ -21,7 +22,7 @@ const PIR_MANAGER_USER_UUID = '1e20b6e5-e0f7-46f2-bacb-c37e4f8707a2';
 
 const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreObjectHistoryProps) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme();
+  const theme = useTheme<Theme>();
 
   const [entitySearchTerm, setEntitySearchTerm] = useState<string>('');
   const [relationsSearchTerm, setRelationsSearchTerm] = useState<string>('');
