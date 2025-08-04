@@ -14,7 +14,7 @@ import traceback
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from threading import Thread
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Union
 
 import pika
 import requests
@@ -127,7 +127,7 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
         channel: BlockingChannel,
         delivery_tag: str,
         data: str,
-    ) -> Optional[bool]:
+    ) -> None:
         try:
             callback_uri = self.connector["config"].get("listen_callback_uri")
             request_headers = {
@@ -289,7 +289,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
         channel: BlockingChannel,
         delivery_tag: str,
         data: Dict[str, Any],
-    ) -> Optional[bool]:
+    ) -> None:
         imported_items = []
         start_processing = datetime.datetime.now()
         try:
@@ -445,7 +445,6 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
             bundles_global_counter.add(len(imported_items))
             processing_delta = datetime.datetime.now() - start_processing
             bundles_processing_time_gauge.record(processing_delta.seconds)
-            return True
 
     def stop(self):
         self._is_interrupted = True
