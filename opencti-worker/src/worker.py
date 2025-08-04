@@ -7,7 +7,6 @@ import json
 import os
 import random
 import signal
-import sys
 import threading
 import time
 import traceback
@@ -738,10 +737,5 @@ if __name__ == "__main__":
 
     signal.signal(signal.SIGINT, exit_handler)
     signal.signal(signal.SIGTERM, exit_handler)
-    try:
-        worker.start()
-    except Exception as e:  # pylint: disable=broad-except
-        worker.worker_logger.error(
-            "Got unhandled Exception in main loop, exiting. exception: %s" % e
-        )
-        sys.exit(1)
+
+    worker.start()
