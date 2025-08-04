@@ -276,8 +276,20 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
     def data_handler(  # pylint: disable=too-many-statements, too-many-locals
         self,
         delivery_tag: str,
-        data: Dict[str, Any],
+        body: str,
     ) -> None:
+        try:
+            data: Dict[str, Any] = json.loads(body)
+        except Exception as e:
+            self.worker_logger.error(
+                "Could not process message",
+                {"body": body, "exception": e},
+            )
+            # Nack message, no requeue for this unprocessed message
+            cb = functools.partial(self.nack_message, delivery_tag, False)
+            self.pika_connection.add_callback_threadsafe(cb)
+            return None
+
         imported_items = []
         start_processing = datetime.datetime.now()
         try:
@@ -448,28 +460,18 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                 if not all(message):
                     continue
                 method, properties, body = message
-                try:
-                    data = json.loads(body)
-                    self.worker_logger.info(
-                        "Processing a new message, launching a thread...",
-                        {"queue": self.queue_name, "tag": method.delivery_tag},
-                    )
-                    task_future = self.execution_pool.submit(
-                        self.data_handler,
-                        method.delivery_tag,
-                        data,
-                    )
-                    while task_future.running():  # Loop while the thread is processing
-                        self.pika_connection.sleep(0.05)
-                    self.worker_logger.info("Message processed, thread terminated")
-                except Exception as e:
-                    self.worker_logger.error(
-                        "Could not process message",
-                        {"body": body, "exception": e},
-                    )
-                    # Nack message, no requeue for this unprocessed message
-                    cb = functools.partial(self.nack_message, method.delivery_tag, False)
-                    self.pika_connection.add_callback_threadsafe(cb)
+                self.worker_logger.info(
+                    "Processing a new message, launching a thread...",
+                    {"queue": self.queue_name, "tag": method.delivery_tag},
+                )
+                task_future = self.execution_pool.submit(
+                    self.data_handler,
+                    method.delivery_tag,
+                    body,
+                )
+                while task_future.running():  # Loop while the thread is processing
+                    self.pika_connection.sleep(0.05)
+                self.worker_logger.info("Message processed, thread terminated")
         except Exception as e:
             self.worker_logger.error("Unhandled exception", {"exception": e})
         finally:
