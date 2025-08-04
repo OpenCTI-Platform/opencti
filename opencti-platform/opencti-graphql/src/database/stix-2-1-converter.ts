@@ -126,7 +126,7 @@ import { assertType, cleanObject, convertToStixDate } from './stix-converter-uti
 import { type StoreRelationPir } from '../modules/pir/pir-types';
 
 export const isStoreRelationPir = (instance: StoreCommon): instance is StoreRelationPir => {
-  return (instance as StoreRelationPir).type === RELATION_IN_PIR;
+  return (instance as StoreRelationPir).entity_type === RELATION_IN_PIR;
 };
 
 export const isTrustedStixId = (stixId: string): boolean => {

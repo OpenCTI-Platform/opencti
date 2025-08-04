@@ -118,7 +118,8 @@ import {
   isStixRefRelationship,
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
-  RELATION_GRANTED_TO, RELATION_IN_PIR,
+  RELATION_GRANTED_TO,
+  RELATION_IN_PIR,
   RELATION_OBJECT,
   RELATION_OBJECT_MARKING,
   STIX_REF_RELATIONSHIP_TYPES
@@ -3483,11 +3484,16 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
         external_references: references.map((ref) => convertExternalReferenceToStix(ref))
       } : undefined;
       await elDeleteElements(context, user, [element]);
-      const eventPromise = storeUpdateEvent(context, user, previous, instance, message, { ...opts, commit });
-      const taskPromise = createContainerSharingTask(context, ACTION_TYPE_UNSHARE, element);
-      const [, updateEvent] = await Promise.all([taskPromise, eventPromise]);
-      event = updateEvent;
-      element.from = instance; // dynamically update the from to have an up to date relation
+      // Publish event in the stream
+      if (element.entity_type !== RELATION_IN_PIR) {
+        const eventPromise = storeUpdateEvent(context, user, previous, instance, message, { ...opts, commit });
+        const taskPromise = createContainerSharingTask(context, ACTION_TYPE_UNSHARE, element);
+        const [, updateEvent] = await Promise.all([taskPromise, eventPromise]);
+        event = updateEvent;
+        element.from = instance; // dynamically update the from to have an up to date relation
+      } else {
+        event = await storeDeleteEvent(context, user, element, opts);
+      }
     } else {
       // Start by deleting external files
       const isTrashableElement = !isInferredIndex(element._index)
