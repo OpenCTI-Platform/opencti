@@ -234,9 +234,10 @@
     "openmtd_token": "",
     "hub": {
       "backend_url": "https://hub.filigran.io",
-      "to_email": "no-reply@filigran.io"
+      "to_email": ""
     },
-    "xtmhub_url": "https://hub.filigran.io"
+    "xtmhub_url": "https://hub.filigran.io",
+    "xtmhub_to_email": "no-reply@filigran.io"
   },
   "data_sharing": {
     "max_csv_feed_result": 5000

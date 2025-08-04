@@ -18,11 +18,9 @@ const HUB_REGISTRATION_MANAGER_ENABLED = booleanConf('hub_registration_manager:e
 const HUB_REGISTRATION_MANAGER_KEY = conf.get('hub_registration_manager:lock_key') || 'hub_registration_manager_lock';
 const SCHEDULE_TIME = conf.get('hub_registration_manager:interval') || 60 * 60 * 1000; // 1 hour
 const MAX_EMAIL_LIST_SIZE = conf.get('smtp:email_max_cc_size') || 500;
-const TO_EMAIL = conf.get('xtm:hub:to_email') || 'no-reply@filigran.io';
+const TO_EMAIL = conf.get('xtm:xtmhub_to_email') || 'no-reply@filigran.io';
 
 const EMAIL_BODY = `
-  <h2>Hi,</h2>
-  
   <p>We wanted to inform you that the connectivity between OpenCTI and the XTM Hub has been lost. As a result, the integration is currently inactive.</p>
   <p>To restore functionality, please navigate to the <strong>Settings</strong> section and re-initiate the registration process for the OpenCTI platform. This will re-establish the connection and allow continued use of the integrated features.</p>
   <p>If you need assistance during the process, don’t hesitate to reach out.</p>
@@ -33,13 +31,18 @@ const EMAIL_BODY = `
   </p>
 `;
 
-const sendAdministratorsLostConnectivityEmail = async (context: AuthContext, settings: BasicStoreSettings) => {
+const loadAdministratorsList = async (context: AuthContext) => {
   const administrators = (await findUserWithCapabilities(context, HUB_REGISTRATION_MANAGER_USER, [BYPASS, SETTINGS_SETMANAGEXTMHUB])) as AuthUser[];
   if (administrators.length > MAX_EMAIL_LIST_SIZE) {
-    logApp.error(`You cannot have more than ${MAX_EMAIL_LIST_SIZE} e-mail addresses`);
-    return;
+    logApp.warn(`Administrators list too large, loading only ${MAX_EMAIL_LIST_SIZE} first administrators.`);
+    return administrators.slice(0, MAX_EMAIL_LIST_SIZE);
   }
 
+  return administrators;
+};
+
+const sendAdministratorsLostConnectivityEmail = async (context: AuthContext, settings: BasicStoreSettings) => {
+  const administrators = await loadAdministratorsList(context);
   const subject = 'Action Required: Re-register OpenCTI Platform Due to Lost Connectivity with XTM Hub';
   const html = ejs.render(OCTI_EMAIL_TEMPLATE, { settings, body: EMAIL_BODY });
 

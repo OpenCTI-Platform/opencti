@@ -95,7 +95,7 @@ const XtmHubSettings = () => {
                     <ListItem divider={true}>
                       <ListItemText primary={t_i18n('Registration status')} />
                       <ItemBoolean
-                        variant="large"
+                        variant="xlarge"
                         label={t_i18n('Registered')}
                         status={true}
                       />
@@ -103,7 +103,7 @@ const XtmHubSettings = () => {
                     <ListItem divider={true}>
                       <ListItemText primary={t_i18n('Registration date')} />
                       <ItemBoolean
-                        variant="large"
+                        variant="xlarge"
                         neutralLabel={dateFormat(
                           xtmHubSettings.xtm_hub_enrollment_date,
                           'DD MMM YYYY',
@@ -114,7 +114,7 @@ const XtmHubSettings = () => {
                     <ListItem divider={true}>
                       <ListItemText primary={t_i18n('Registered by')} />
                       <ItemBoolean
-                        variant="large"
+                        variant="xlarge"
                         neutralLabel={xtmHubSettings.xtm_hub_enrollment_user_name}
                         status={null}
                       />
@@ -128,7 +128,7 @@ const XtmHubSettings = () => {
                     <ListItem divider={true}>
                       <ListItemText primary={t_i18n('Registration status')} />
                       <ItemBoolean
-                        variant="large"
+                        variant="xlarge"
                         label={t_i18n('Connectivity lost')}
                         status={false}
                       />
@@ -137,7 +137,7 @@ const XtmHubSettings = () => {
                     <ListItem divider={true}>
                       <ListItemText primary={t_i18n('Last successful check')} />
                       <ItemBoolean
-                        variant="large"
+                        variant="xlarge"
                         neutralLabel={dateFormat(
                           xtmHubSettings.xtm_hub_last_connectivity_check,
                           'DD MMM YYYY',
@@ -153,7 +153,7 @@ const XtmHubSettings = () => {
                   <ListItem divider={true}>
                     <ListItemText primary={t_i18n('Registration status')} />
                     <ItemBoolean
-                      variant="large"
+                      variant="xlarge"
                       label={t_i18n('Not registered')}
                       status={false}
                     />

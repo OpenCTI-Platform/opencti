@@ -29,6 +29,8 @@ import messages_zh_back from '../../lang/back/zh.json';
 import messages_ru_back from '../../lang/back/ru.json';
 
 import { useDocumentLangModifier } from '../utils/hooks/useDocumentModifier';
+import { usePublicSettings } from '../public/PublicSettingsProvider';
+import useEntitySettings from '../utils/hooks/useEntitySettings';
 
 type PlatformLang =
   | 'de-de'
