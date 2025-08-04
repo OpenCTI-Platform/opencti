@@ -1,14 +1,15 @@
 import { FILTER_KEY_TESTERS_MAP } from './stix-testers';
 import { testFilterGroup } from '../boolean-logic-engine';
-import { isUserCanAccessStixElement, SYSTEM_USER } from '../../access';
+import { isUserCanAccessStixElement, PIR_MANAGER_USER, SYSTEM_USER } from '../../access';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { getEntitiesMapFromCache } from '../../../database/cache';
 import type { StixObject } from '../../../types/stix-2-1-common';
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../../../schema/stixDomainObject';
-import type { Filter, FilterGroup } from '../../../generated/graphql';
+import { type Filter, type FilterGroup, FilterOperator } from '../../../generated/graphql';
 import type { FilterResolutionMap } from '../filtering-resolution';
 import { buildResolutionMapForFilterGroup, resolveFilterGroup } from '../filtering-resolution';
 import { UnsupportedError } from '../../../config/errors';
+import { addFilter } from '../filtering-utils';
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -87,13 +88,16 @@ export const isStixMatchFilterGroup_MockableForUnitTests = async (
  * @param filterGroup
  * @throws {Error} on invalid filter keys
  */
-export const isStixMatchFilterGroup = async (context: AuthContext, user: AuthUser, stix: any, filterGroup?: FilterGroup) : Promise<boolean> => {
+export const isStixMatchFilterGroup = async (context: AuthContext, user: AuthUser, stix: any, inputFilters?: FilterGroup) : Promise<boolean> => {
+  // filters events that are not in-pir relationships, ie events from the Pir Manager
+  const finalFilters = addFilter(inputFilters, 'creator_id', [PIR_MANAGER_USER.id], FilterOperator.NotEq);
+
   // resolve some of the ids as we filter on their corresponding values or standard-id for instance
   // the provided map will contain replacements for filter values, if any necessary.
   // we use the entities stored in cache for the "Resolved-Filters" (all the entities used by the saved filters - stream, trigger, playbooks)
   // see cacheManager.ts:platformResolvedFilters
   const cache = await getEntitiesMapFromCache<StixObject>(context, SYSTEM_USER, ENTITY_TYPE_RESOLVED_FILTERS);
-  const map = filterGroup ? await buildResolutionMapForFilterGroup(context, user, filterGroup, cache) : new Map();
+  const map = finalFilters ? await buildResolutionMapForFilterGroup(context, user, finalFilters, cache) : new Map();
 
-  return isStixMatchFilterGroup_MockableForUnitTests(context, user, stix, filterGroup, map);
+  return isStixMatchFilterGroup_MockableForUnitTests(context, user, stix, finalFilters, map);
 };

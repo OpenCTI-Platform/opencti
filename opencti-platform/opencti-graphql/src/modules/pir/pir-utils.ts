@@ -227,7 +227,3 @@ export const createPirRel = async (
   };
   await createRelation(context, user, addRefInput);
 };
-
-export const isStoreRelationPir = (instance: StoreCommon): instance is StoreRelationPir => {
-  return (instance as StoreRelationPir).entity_type === RELATION_IN_PIR;
-};

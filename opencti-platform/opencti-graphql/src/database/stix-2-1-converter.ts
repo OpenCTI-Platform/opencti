@@ -124,7 +124,10 @@ import { isInternalObject } from '../schema/internalObject';
 import { isInternalId, isStixId } from '../schema/schemaUtils';
 import { assertType, cleanObject, convertToStixDate } from './stix-converter-utils';
 import { type StoreRelationPir } from '../modules/pir/pir-types';
-import { isStoreRelationPir } from '../modules/pir/pir-utils';
+
+export const isStoreRelationPir = (instance: StoreCommon): instance is StoreRelationPir => {
+  return (instance as StoreRelationPir).type === RELATION_IN_PIR;
+};
 
 export const isTrustedStixId = (stixId: string): boolean => {
   const segments = stixId.split('--');
