@@ -154,7 +154,7 @@ const PirHistory = ({ data }: PirHistoryProps) => {
   const dataColumns: DataTableProps['dataColumns'] = {
     entity_type: {
       percentWidth: 4,
-      id: 'pir_log_message',
+      id: 'entity_type',
       label: 'Type',
       render: ({ context_data }) => {
         const entityTypeLabel = t_i18n(displayEntityTypeForTranslation(context_data?.entity_type ?? ''));

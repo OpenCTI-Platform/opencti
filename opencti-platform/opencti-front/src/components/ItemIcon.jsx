@@ -265,6 +265,7 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       return <Biohazard style={style} fontSize={fontSize} role="img" />;
     case 'malware-analysis':
       return <BiotechOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'threat-actor':
     case 'threat-actor-group':
       return (
         <AccountMultipleOutline style={style} fontSize={fontSize} role="img" />
