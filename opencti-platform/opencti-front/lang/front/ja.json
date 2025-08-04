@@ -2857,6 +2857,7 @@
   "relationship_hosts": "ホストする",
   "relationship_image": "画像",
   "relationship_impersonates": "なりすまし",
+  "relationship_in-pir": "PIR",
   "relationship_indicates": "指し示す",
   "relationship_installed-software": "インストールされたソフトウェア",
   "relationship_investigates": "調査",

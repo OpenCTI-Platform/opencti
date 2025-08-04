@@ -2857,6 +2857,7 @@
   "relationship_hosts": "héberge",
   "relationship_image": "image",
   "relationship_impersonates": "se fait passer pour",
+  "relationship_in-pir": "dans le PIR",
   "relationship_indicates": "indique",
   "relationship_installed-software": "logiciel installé",
   "relationship_investigates": "investigue",

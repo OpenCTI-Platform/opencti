@@ -2857,6 +2857,7 @@
   "relationship_hosts": "hosts",
   "relationship_image": "image",
   "relationship_impersonates": "impersonates",
+  "relationship_in-pir": "в ПИР",
   "relationship_indicates": "indicates",
   "relationship_installed-software": "installed software",
   "relationship_investigates": "investigates",

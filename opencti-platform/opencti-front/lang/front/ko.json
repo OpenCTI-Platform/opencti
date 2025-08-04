@@ -2857,6 +2857,7 @@
   "relationship_hosts": "호스트",
   "relationship_image": "이미지",
   "relationship_impersonates": "사칭",
+  "relationship_in-pir": "pIR",
   "relationship_indicates": "지시",
   "relationship_installed-software": "설치된 소프트웨어",
   "relationship_investigates": "조사",

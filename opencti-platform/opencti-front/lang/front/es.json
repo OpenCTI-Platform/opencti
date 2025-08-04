@@ -2857,6 +2857,7 @@
   "relationship_hosts": "alberga",
   "relationship_image": "imagen",
   "relationship_impersonates": "suplanta",
+  "relationship_in-pir": "en PIR",
   "relationship_indicates": "indica",
   "relationship_installed-software": "software instalado",
   "relationship_investigates": "investiga",
