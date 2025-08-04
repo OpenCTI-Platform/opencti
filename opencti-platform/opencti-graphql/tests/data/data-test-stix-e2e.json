@@ -1304,16 +1304,20 @@
       "type": "identity"
     },
     {
-      "id": "identity--760aee52-1349-593e-8fac-ce335522275e",
+      "id": "identity--c50c511d-8fe3-5c70-a6ad-ffbf02e1295c",
       "spec_version": "2.1",
       "revoked": false,
       "confidence": 100,
-      "created": "2025-06-23T13:37:49.911Z",
-      "modified": "2025-06-23T13:37:49.973Z",
+      "created": "2025-06-20T06:55:47.841Z",
+      "modified": "2025-06-24T00:45:38.554Z",
       "identity_class": "securityplatform",
-      "name": "Security platform e2e",
-      "security_platform_type": "E2E",
-      "x_opencti_id": "6e98f233-8878-42f8-95e0-de7b010d49ea",
+      "name": "E2e EDR",
+      "description": "a super duper EDR",
+      "security_platform_type": "EDR",
+      "labels": [
+        "e2e"
+      ],
+      "x_opencti_id": "d36ac2b2-e248-4012-990e-2cb2d864f9af",
       "x_opencti_type": "SecurityPlatform",
       "type": "identity"
     },
