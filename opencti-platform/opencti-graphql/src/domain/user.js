@@ -1514,7 +1514,7 @@ export const authenticateUserByTokenOrUserId = async (context, req, tokenOrId) =
     validateUser(authenticatedUser, settings);
     return userWithOrigin(req, authenticatedUser);
   }
-  throw FunctionalError(`Cant identify with ${tokenOrId}`);
+  throw FunctionalError(`Cant identify with ${tokenOrId}`, { user_metadata: getRequestAuditHeaders(req) });
 };
 
 export const userRenewToken = async (context, user, userId) => {
@@ -1629,7 +1629,7 @@ export const authenticateUserFromRequest = async (context, req) => {
     try {
       return await authenticateUserByTokenOrUserId(context, req, tokenUUID);
     } catch (err) {
-      logApp.error('Error resolving user by token', { cause: err });
+      logApp.error('Error resolving user by token', { cause: err, user_metadata: getRequestAuditHeaders(req) });
     }
   }
   // endregion
