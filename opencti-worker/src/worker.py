@@ -60,11 +60,11 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
     execution_pool: ThreadPoolExecutor
     connector: Dict[str, Any] = field(hash=False)
     config: Dict[str, Any] = field(hash=False)
+    log_level: str
+    json_logging: bool
     listen_api_ssl_verify: bool
     listen_api_http_proxy: str
     listen_api_https_proxy: str
-    log_level: str = "info"
-    json_logging: bool = True
 
     def __post_init__(self) -> None:
         self._is_interrupted: bool = False
@@ -210,11 +210,11 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
     execution_pool: ThreadPoolExecutor
     connector: Dict[str, Any] = field(hash=False)
     config: Dict[str, Any] = field(hash=False)
+    log_level: str
+    json_logging: bool
     opencti_url: str
     opencti_token: str
-    log_level: str
-    ssl_verify: Union[bool, str] = False
-    json_logging: bool = True
+    ssl_verify: Union[bool, str]
 
     def __post_init__(self) -> None:
         self._is_interrupted: bool = False
@@ -222,8 +222,8 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
             url=self.opencti_url,
             token=self.opencti_token,
             log_level=self.log_level,
-            ssl_verify=self.ssl_verify,
             json_logging=self.json_logging,
+            ssl_verify=self.ssl_verify,
         )
         self.worker_logger = self.api.logger_class("worker")
 
@@ -533,7 +533,10 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
         )
         # Load worker config
         self.log_level = get_config_variable(
-            "WORKER_LOG_LEVEL", ["worker", "log_level"], config
+            "WORKER_LOG_LEVEL",
+            ["worker", "log_level"],
+            config,
+            default="info",
         )
         self.listen_api_ssl_verify = get_config_variable(
             "WORKER_LISTEN_API_SSL_VERIFY",
@@ -591,8 +594,8 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             url=self.opencti_url,
             token=self.opencti_token,
             log_level=self.log_level,
-            ssl_verify=self.opencti_ssl_verify,
             json_logging=self.opencti_json_logging,
+            ssl_verify=self.opencti_ssl_verify,
             perform_health_check=False,  # No need to prevent worker start if API is not available yet
             custom_headers=self.opencti_api_custom_headers,
         )
@@ -641,11 +644,11 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                                 execution_pool,
                                 connector,
                                 self.config,
+                                self.log_level,
+                                self.opencti_json_logging,
                                 self.opencti_url,
                                 self.opencti_token,
-                                self.log_level,
                                 self.opencti_ssl_verify,
-                                self.opencti_json_logging,
                             )
                             self.consumer_threads[push_queue].name = push_queue
                             self.consumer_threads[push_queue].start()
@@ -654,11 +657,11 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             execution_pool,
                             connector,
                             self.config,
+                            self.log_level,
+                            self.opencti_json_logging,
                             self.opencti_url,
                             self.opencti_token,
-                            self.log_level,
                             self.opencti_ssl_verify,
-                            self.opencti_json_logging,
                         )
                         self.consumer_threads[push_queue].name = push_queue
                         self.consumer_threads[push_queue].start()
@@ -672,11 +675,11 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                                     listen_api_execution_pool,
                                     connector,
                                     self.config,
+                                    self.log_level,
+                                    self.opencti_json_logging,
                                     self.listen_api_ssl_verify,
                                     self.listen_api_http_proxy,
                                     self.listen_api_https_proxy,
-                                    self.log_level,
-                                    self.opencti_json_logging,
                                 )
                                 self.listen_api_threads[listen_queue].name = (
                                     listen_queue
@@ -687,11 +690,11 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                                 listen_api_execution_pool,
                                 connector,
                                 self.config,
+                                self.log_level,
+                                self.opencti_json_logging,
                                 self.listen_api_ssl_verify,
                                 self.listen_api_http_proxy,
                                 self.listen_api_https_proxy,
-                                self.log_level,
-                                self.opencti_json_logging,
                             )
                             self.listen_api_threads[listen_queue].name = listen_queue
                             self.listen_api_threads[listen_queue].start()
