@@ -398,8 +398,7 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
 
 @dataclass(unsafe_hash=True)
 class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attributes
-    push_consumers: Dict[str, MessageQueueConsumer] = field(default_factory=dict, hash=False)
-    listen_consumers: Dict[str, MessageQueueConsumer] = field(default_factory=dict, hash=False)
+    consumers: Dict[str, MessageQueueConsumer] = field(default_factory=dict, hash=False)
 
     def __post_init__(self) -> None:
         self.exit_event = threading.Event()
@@ -537,10 +536,12 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
         )
 
     def stop(self) -> None:
-        for listen_consumer in self.listen_consumers.values():
-            listen_consumer.stop(True)
-        for push_consumer in self.push_consumers.values():
-            push_consumer.stop(True)
+        # Initiate stop for all consumers
+        for consumer in self.consumers.values():
+            consumer.stop(False)
+        # Wait for all consumers to stop
+        for consumer in self.consumers.values():
+            consumer.stop(True)
         if self.telemetry_enabled:
             self.prom_httpd.shutdown()
             self.prom_httpd.server_close()
@@ -568,7 +569,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                     # Push to ingest message
                     push_queue = connector_config["push"]
                     queues.append(push_queue)
-                    push_consumer = self.push_consumers.get(push_queue)
+                    push_consumer = self.consumers.get(push_queue)
                     if push_consumer is None or not push_consumer.is_alive():
                         if not push_consumer.is_alive():
                             self.worker_logger.info(
@@ -588,7 +589,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             connector_config["push_routing"],
                             pika_parameters,
                         )
-                        self.push_consumers[push_queue] = MessageQueueConsumer(
+                        self.consumers[push_queue] = MessageQueueConsumer(
                             self.worker_logger,
                             "push",
                             push_queue,
@@ -602,7 +603,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                     if listen_callback_uri is not None:
                         listen_queue = connector_config["listen"]
                         queues.append(listen_queue)
-                        listen_consumer = self.listen_consumers.get(listen_queue)
+                        listen_consumer = self.consumers.get(listen_queue)
                         if listen_consumer is None or not listen_consumer.is_alive():
                             api_data_handler = ApiDataHandler(
                                 self.worker_logger,
@@ -612,7 +613,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                                 self.listen_api_http_proxy,
                                 self.listen_api_https_proxy,
                             )
-                            self.listen_consumers[listen_queue] = MessageQueueConsumer(
+                            self.consumers[listen_queue] = MessageQueueConsumer(
                                 self.worker_logger,
                                 "listen",
                                 listen_queue,
@@ -621,21 +622,15 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                                 api_data_handler.handle_message,
                             )
 
-                # Check if some threads must be stopped
-                for push_queue in self.push_consumers:
-                    if push_queue not in queues:
+                # Check if some consumer must be stopped
+                for consumer_queue in self.consumers:
+                    if consumer_queue not in queues:
                         self.worker_logger.info(
                             "Queue no longer exists, killing thread...",
-                            {"thread": push_queue},
+                            {"queue": consumer_queue},
                         )
-                        try:
-                            self.push_consumers[push_queue].stop(False)
-                            self.push_consumers.pop(push_queue, None)
-                        except:
-                            self.worker_logger.info(
-                                "Unable to kill the thread for queue, an operation is running, keep trying...",
-                                {"thread": push_queue},
-                            )
+                        self.consumers[consumer_queue].stop(False)
+                        self.consumers.pop(consumer_queue, None)
             except Exception as e:  # pylint: disable=broad-except
                 self.worker_logger.error(type(e).__name__, {"reason": str(e)})
             self.exit_event.wait(60)
