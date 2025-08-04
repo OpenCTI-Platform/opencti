@@ -102,15 +102,6 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
         self.channel.basic_qos(prefetch_count=1)
         assert self.channel is not None
 
-    @property
-    def id(self) -> Any:  # pylint: disable=inconsistent-return-statements
-        if hasattr(self, "_thread_id"):
-            return self._thread_id  # type: ignore  # pylint: disable=no-member
-        # pylint: disable=protected-access
-        for id_, thread in threading._active.items():  # type: ignore
-            if thread is self:
-                return id_
-
     def nack_message(
         self, channel: BlockingChannel, delivery_tag: int, requeue=True
     ) -> None:
@@ -274,15 +265,6 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
             self.worker_logger.warning(str(err))
         self.channel.basic_qos(prefetch_count=1)
         assert self.channel is not None
-
-    @property
-    def id(self) -> Any:  # pylint: disable=inconsistent-return-statements
-        if hasattr(self, "_thread_id"):
-            return self._thread_id  # type: ignore  # pylint: disable=no-member
-        # pylint: disable=protected-access
-        for id_, thread in threading._active.items():  # type: ignore
-            if thread is self:
-                return id_
 
     def nack_message(
         self, channel: BlockingChannel, delivery_tag: int, requeue=True
