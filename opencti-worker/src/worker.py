@@ -13,7 +13,7 @@ import traceback
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from threading import Thread
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Union, Callable, Literal
 
 import pika
 import requests
@@ -28,7 +28,6 @@ from pycti.connector.opencti_connector_helper import (
     create_mq_ssl_context,
     get_config_variable,
 )
-from pycti.utils.opencti_logger import logger
 from requests import RequestException, Timeout
 
 ERROR_TYPE_BAD_GATEWAY = "Bad Gateway"
@@ -56,63 +55,116 @@ running_ingestion_units_gauge = meter.create_gauge(
 
 
 @dataclass(unsafe_hash=True)
-class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
-    execution_pool: ThreadPoolExecutor
-    pika_parameters: pika.ConnectionParameters
+class MessageQueueConsumer(Thread):  # pylint: disable=too-many-instance-attributes
+    logger: Any
+    consumer_type: Literal["listen", "push"]
     queue_name: str
-    log_level: str
-    json_logging: bool
+    pika_parameters: pika.ConnectionParameters
+    execution_pool: ThreadPoolExecutor
+    handle_message: Callable[[str], Literal["ack", "nack", "requeue"]]
+
+    def __post_init__(self) -> None:
+        self._is_interrupted: bool = False
+        self.pika_connection = pika.BlockingConnection(self.pika_parameters)
+        self.channel = self.pika_connection.channel()
+        try:
+            self.channel.confirm_delivery()
+        except Exception as err:  # pylint: disable=broad-except
+            self.logger.warning(str(err))
+        self.channel.basic_qos(prefetch_count=1)
+
+    def nack_message(self, delivery_tag: int, requeue: bool) -> None:
+        if self.channel.is_open:
+            self.logger.info("Message rejected", {"tag": delivery_tag})
+            self.channel.basic_nack(delivery_tag, requeue=requeue)
+        else:
+            self.logger.info(
+                "Message NOT rejected (channel closed)", {"tag": delivery_tag}
+            )
+
+    def ack_message(self, delivery_tag: int) -> None:
+        if self.channel.is_open:
+            self.logger.info("Message acknowledged", {"tag": delivery_tag})
+            self.channel.basic_ack(delivery_tag)
+        else:
+            self.logger.info(
+                "Message NOT acknowledged (channel closed)",
+                {"tag": delivery_tag},
+            )
+
+    def consume_message(self, delivery_tag: int, body: str) -> None:
+        result = self.handle_message(body)
+        match result:
+            case "ack":
+                cb = functools.partial(self.ack_message, delivery_tag)
+                self.pika_connection.add_callback_threadsafe(cb)
+            case "nack":
+                cb = functools.partial(self.nack_message, delivery_tag, False)
+                self.pika_connection.add_callback_threadsafe(cb)
+            case "requeue":
+                cb = functools.partial(self.nack_message, delivery_tag, True)
+                self.pika_connection.add_callback_threadsafe(cb)
+
+    def stop(self):
+        self._is_interrupted = True
+
+    def run(self) -> None:
+        try:
+            self.logger.info(
+                "Thread for queue started",
+                {"consumer_type": self.consumer_type, "queue": self.queue_name},
+            )
+
+            # Consume the queue with a generator
+            for message in self.channel.consume(self.queue_name, inactivity_timeout=1):
+                if self._is_interrupted:
+                    break
+                if not all(message):
+                    continue
+                method, properties, body = message
+                self.logger.info(
+                    "Processing a new message, launching a thread...",
+                    {
+                        "consumer_type": self.consumer_type,
+                        "queue": self.queue_name,
+                        "tag": method.delivery_tag
+                    },
+                )
+                task_future = self.execution_pool.submit(
+                    self.consume_message,
+                    method.delivery_tag,
+                    body,
+                )
+                while task_future.running():  # Loop while the thread is processing
+                    self.pika_connection.sleep(0.05)
+                self.logger.info("Message processed, thread terminated")
+        except Exception as e:
+            self.logger.error("Unhandled exception", {"exception": e})
+        finally:
+            self.logger.info(
+                "Thread for queue terminated",
+                {"consumer_type": self.consumer_type, "queue": self.queue_name},
+            )
+
+
+@dataclass(unsafe_hash=True)
+class ApiDataHandler:
+    logger: Any
     connector_token: str
     callback_uri: str
     listen_api_ssl_verify: bool
     listen_api_http_proxy: str
     listen_api_https_proxy: str
 
-    def __post_init__(self) -> None:
-        self._is_interrupted: bool = False
-        self.logger_class = logger(self.log_level.upper(), self.json_logging)
-        self.worker_logger = self.logger_class("worker")
-        self.pika_connection = pika.BlockingConnection(self.pika_parameters)
-        self.channel = self.pika_connection.channel()
+    def handle_message(self, body: str) -> Literal["ack", "nack", "requeue"]:
         try:
-            self.channel.confirm_delivery()
-        except Exception as err:  # pylint: disable=broad-except
-            self.worker_logger.warning(str(err))
-        self.channel.basic_qos(prefetch_count=1)
-
-    def nack_message(self, delivery_tag: int, requeue=True) -> None:
-        if self.channel.is_open:
-            self.worker_logger.info("Message rejected", {"tag": delivery_tag})
-            self.channel.basic_nack(delivery_tag, requeue=requeue)
-        else:
-            self.worker_logger.info(
-                "Message NOT rejected (channel closed)", {"tag": delivery_tag}
-            )
-
-    def ack_message(self, delivery_tag: int) -> None:
-        if self.channel.is_open:
-            self.worker_logger.info("Message acknowledged", {"tag": delivery_tag})
-            self.channel.basic_ack(delivery_tag)
-        else:
-            self.worker_logger.info(
-                "Message NOT acknowledged (channel closed)", {"tag": delivery_tag}
-            )
-
-    # Data handling
-    def api_data_handler(  # pylint: disable=too-many-statements, too-many-locals
-        self,
-        delivery_tag: str,
-        data: str,
-    ) -> None:
-        try:
-            request_headers = {
-                "User-Agent": "pycti/" + __version__,
-                "Authorization": "Bearer " + self.connector_token,
-            }
             response = requests.post(
                 self.callback_uri,
-                data=data,
-                headers=request_headers,
+                data=body,
+                headers={
+                    "User-Agent": f"pycti/{__version__}",
+                    "Authorization": f"Bearer {self.connector_token}",
+                },
                 verify=self.listen_api_ssl_verify,
                 proxies={
                     "http": self.listen_api_http_proxy,
@@ -122,75 +174,34 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
             )
             if response.status_code != 202:
                 raise RequestException(response.status_code, response.text)
-            else:
-                # Ack the message
-                cb = functools.partial(self.ack_message, delivery_tag)
-                self.pika_connection.add_callback_threadsafe(cb)
+
+            return "ack"
         except (RequestException, Timeout):
-            self.worker_logger.error(
+            self.logger.error(
                 "Error executing listen handling, a connection error or timeout occurred"
             )
             # Platform is under heavy load: wait for unlock & retry almost indefinitely.
             sleep_jitter = round(random.uniform(10, 30), 2)
             time.sleep(sleep_jitter)
-            # Nack the message
-            cb = functools.partial(self.nack_message, delivery_tag)
-            self.pika_connection.add_callback_threadsafe(cb)
+
+            return "requeue"
         except Exception as ex:
             # Technical unmanaged exception
-            self.worker_logger.error(
+            self.logger.error(
                 "Error executing listen handling", {"reason": str(ex)}
             )
             error_msg = traceback.format_exc()
             if ERROR_TYPE_BAD_GATEWAY in error_msg or ERROR_TYPE_TIMEOUT in error_msg:
                 # Nack the message and requeue
-                cb = functools.partial(self.nack_message, delivery_tag)
-                self.pika_connection.add_callback_threadsafe(cb)
+                return "requeue"
             else:
                 # Technical error, log and continue, Reject the message
-                cb = functools.partial(self.nack_message, delivery_tag, False)
-                self.pika_connection.add_callback_threadsafe(cb)
-
-    def stop(self):
-        self._is_interrupted = True
-
-    def run(self) -> None:
-        try:
-            # Consume the queue
-            self.worker_logger.info(
-                "Thread for listen queue started", {"queue": self.queue_name}
-            )
-            for message in self.channel.consume(self.queue_name, inactivity_timeout=1):
-                if self._is_interrupted:
-                    break
-                if not all(message):
-                    continue
-                method, properties, body = message
-                self.worker_logger.info(
-                    "Processing a new message, launching a thread...",
-                    {"tag": method.delivery_tag},
-                )
-                task_future = self.execution_pool.submit(
-                    self.api_data_handler,
-                    method.delivery_tag,
-                    body,
-                )
-                while task_future.running():  # Loop while the thread is processing
-                    self.pika_connection.sleep(0.05)
-                self.worker_logger.info("Message processed, thread terminated")
-        except Exception as e:
-            self.worker_logger.error("Unhandled exception", {"exception": e})
-        finally:
-            self.worker_logger.info(
-                "Thread for listen queue terminated", {"queue": self.queue_name}
-            )
+                return "nack"
 
 
 @dataclass(unsafe_hash=True)
-class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
-    execution_pool: ThreadPoolExecutor
-    pika_parameters: pika.ConnectionParameters
-    queue_name: str
+class PushHandler:  # pylint: disable=too-many-instance-attributes
+    logger: Any
     log_level: str
     json_logging: bool
     opencti_url: str
@@ -198,9 +209,9 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
     ssl_verify: Union[bool, str]
     push_exchange: str
     push_routing: str
+    pika_parameters: pika.ConnectionParameters
 
     def __post_init__(self) -> None:
-        self._is_interrupted: bool = False
         self.api = OpenCTIApiClient(
             url=self.opencti_url,
             token=self.opencti_token,
@@ -208,51 +219,20 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
             json_logging=self.json_logging,
             ssl_verify=self.ssl_verify,
         )
-        self.worker_logger = self.api.logger_class("worker")
 
-        self.pika_connection = pika.BlockingConnection(self.pika_parameters)
-        self.channel = self.pika_connection.channel()
-        try:
-            self.channel.confirm_delivery()
-        except Exception as err:  # pylint: disable=broad-except
-            self.worker_logger.warning(str(err))
-        self.channel.basic_qos(prefetch_count=1)
-
-    def nack_message(self, delivery_tag: int, requeue=True) -> None:
-        if self.channel.is_open:
-            self.worker_logger.info("Message rejected", {"tag": delivery_tag})
-            self.channel.basic_nack(delivery_tag, requeue=requeue)
-        else:
-            self.worker_logger.info(
-                "Message NOT rejected (channel closed)", {"tag": delivery_tag}
-            )
-
-    def ack_message(self, delivery_tag: int) -> None:
-        if self.channel.is_open:
-            self.worker_logger.info("Message acknowledged", {"tag": delivery_tag})
-            self.channel.basic_ack(delivery_tag)
-        else:
-            self.worker_logger.info(
-                "Message NOT acknowledged (channel closed)", {"tag": delivery_tag}
-            )
-
-    # Data handling
-    def data_handler(  # pylint: disable=too-many-statements, too-many-locals
-        self,
-        delivery_tag: str,
-        body: str,
-    ) -> None:
+    def handle_message(
+            self,
+            body: str,
+    ) -> Literal["ack", "nack", "requeue"]:
         try:
             data: Dict[str, Any] = json.loads(body)
         except Exception as e:
-            self.worker_logger.error(
+            self.logger.error(
                 "Could not process message",
                 {"body": body, "exception": e},
             )
             # Nack message, no requeue for this unprocessed message
-            cb = functools.partial(self.nack_message, delivery_tag, False)
-            self.pika_connection.add_callback_threadsafe(cb)
-            return None
+            return "nack"
 
         imported_items = []
         start_processing = datetime.datetime.now()
@@ -295,7 +275,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                     try:
                         push_channel.confirm_delivery()
                     except Exception as err:  # pylint: disable=broad-except
-                        self.worker_logger.warning(str(err))
+                        self.logger.warning(str(err))
                     # Instance spliter and split the big bundle
                     event_version = (
                         content_json["x_opencti_event_version"]
@@ -367,17 +347,17 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                         )
                     # All standard operations
                     case (
-                        "delete"  # Standard delete
-                        | "restore"  # Restore an operation from trash
-                        | "delete_force"  # Delete with no trash
-                        | "share"  # Share an element
-                        | "unshare"  # Unshare an element
-                        | "rule_apply"  # Applying a rule (start engine)
-                        | "rule_clear"  # Clearing a rule (stop engine)
-                        | "rules_rescan"  # Rescan a rule (massive operation in UI)
-                        | "enrichment"  # Ask for enrichment (massive operation in UI)
-                        | "clear_access_restriction"  # Clear access members (massive operation in UI)
-                        | "revert_draft"  # Cancel draft modification (massive operation in UI)
+                    "delete"  # Standard delete
+                    | "restore"  # Restore an operation from trash
+                    | "delete_force"  # Delete with no trash
+                    | "share"  # Share an element
+                    | "unshare"  # Unshare an element
+                    | "rule_apply"  # Applying a rule (start engine)
+                    | "rule_clear"  # Clearing a rule (stop engine)
+                    | "rules_rescan"  # Rescan a rule (massive operation in UI)
+                    | "enrichment"  # Ask for enrichment (massive operation in UI)
+                    | "clear_access_restriction"  # Clear access members (massive operation in UI)
+                    | "revert_draft"  # Cancel draft modification (massive operation in UI)
                     ):
                         data_object = event_content["data"]
                         data_object["opencti_operation"] = event_type
@@ -394,54 +374,19 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                         )
             else:
                 raise ValueError("Unsupported event type", {"event_type": event_type})
-            # Ack the message
-            cb = functools.partial(self.ack_message, delivery_tag)
-            self.pika_connection.add_callback_threadsafe(cb)
+
+            return "ack"
         except Exception as ex:
             # Technical unmanaged exception
-            self.worker_logger.error(
+            self.logger.error(
                 "Error executing data handling", {"reason": str(ex)}
             )
             # Nack message and discard
-            cb = functools.partial(self.nack_message, delivery_tag, False)
-            self.pika_connection.add_callback_threadsafe(cb)
+            return "nack"
         finally:
             bundles_global_counter.add(len(imported_items))
             processing_delta = datetime.datetime.now() - start_processing
             bundles_processing_time_gauge.record(processing_delta.seconds)
-
-    def stop(self):
-        self._is_interrupted = True
-
-    def run(self) -> None:
-        try:
-            self.worker_logger.info(
-                "Thread for queue started", {"queue": self.queue_name}
-            )
-            for message in self.channel.consume(self.queue_name, inactivity_timeout=1):
-                if self._is_interrupted:
-                    break
-                if not all(message):
-                    continue
-                method, properties, body = message
-                self.worker_logger.info(
-                    "Processing a new message, launching a thread...",
-                    {"queue": self.queue_name, "tag": method.delivery_tag},
-                )
-                task_future = self.execution_pool.submit(
-                    self.data_handler,
-                    method.delivery_tag,
-                    body,
-                )
-                while task_future.running():  # Loop while the thread is processing
-                    self.pika_connection.sleep(0.05)
-                self.worker_logger.info("Message processed, thread terminated")
-        except Exception as e:
-            self.worker_logger.error("Unhandled exception", {"exception": e})
-        finally:
-            self.worker_logger.info(
-                "Thread for queue terminated", {"queue": self.queue_name}
-            )
 
 
 @dataclass(unsafe_hash=True)
@@ -628,10 +573,9 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                                 {"queue": push_queue},
                             )
 
-                        self.consumer_threads[push_queue] = Consumer(
-                            execution_pool,
-                            self.build_pika_parameters(connector_config),
-                            push_queue,
+                        pika_parameters = self.build_pika_parameters(connector_config)
+                        push_handler = PushHandler(
+                            self.worker_logger,
                             self.log_level,
                             self.opencti_json_logging,
                             self.opencti_url,
@@ -639,7 +583,17 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             self.opencti_ssl_verify,
                             connector_config["push_exchange"],
                             connector_config["push_routing"],
+                            pika_parameters,
                         )
+                        self.consumer_threads[push_queue] = MessageQueueConsumer(
+                            self.worker_logger,
+                            "push",
+                            push_queue,
+                            pika_parameters,
+                            execution_pool,
+                            push_handler.handle_message
+                        )
+
                         self.consumer_threads[push_queue].name = push_queue
                         self.consumer_threads[push_queue].start()
 
@@ -650,18 +604,23 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                         queues.append(listen_queue)
                         listen_thread = self.listen_api_threads.get(listen_queue)
                         if listen_thread is None or not listen_thread.is_alive():
-                            self.listen_api_threads[listen_queue] = ApiConsumer(
-                                listen_api_execution_pool,
-                                self.build_pika_parameters(connector_config),
-                                listen_queue,
-                                self.log_level,
-                                self.opencti_json_logging,
+                            api_data_handler = ApiDataHandler(
+                                self.worker_logger,
                                 connector["connector_user"]["api_token"],
                                 listen_callback_uri,
                                 self.listen_api_ssl_verify,
                                 self.listen_api_http_proxy,
                                 self.listen_api_https_proxy,
                             )
+                            self.listen_api_threads[listen_queue] = MessageQueueConsumer(
+                                self.worker_logger,
+                                "listen",
+                                listen_queue,
+                                self.build_pika_parameters(connector_config),
+                                listen_api_execution_pool,
+                                api_data_handler.handle_message,
+                            )
+
                             self.listen_api_threads[listen_queue].name = listen_queue
                             self.listen_api_threads[listen_queue].start()
 
@@ -689,8 +648,10 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
 if __name__ == "__main__":
     worker: Worker = Worker()
 
+
     def exit_handler(_signum, _frame):
         worker.stop()
+
 
     signal.signal(signal.SIGINT, exit_handler)
     signal.signal(signal.SIGTERM, exit_handler)
