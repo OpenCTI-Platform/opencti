@@ -730,12 +730,12 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
         self.worker_logger.info("Thread for worker terminated")
 
 
-def exit_handler(_signum, _frame):
-    worker.stop()
-
-
 if __name__ == "__main__":
-    worker = Worker()
+    worker: Worker = Worker()
+
+    def exit_handler(_signum, _frame):
+        worker.stop()
+
     signal.signal(signal.SIGINT, exit_handler)
     signal.signal(signal.SIGTERM, exit_handler)
     try:
