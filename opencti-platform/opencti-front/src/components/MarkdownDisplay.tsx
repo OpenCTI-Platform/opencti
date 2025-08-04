@@ -98,7 +98,7 @@ MarkdownWithRedirectionWarningProps
 
   const markdownElement = () => {
     return (
-      <div style={markdownStyle}>
+      <div className="markdown" style={markdownStyle}>
         <Markdown
           disallowedElements={disallowedElements}
           unwrapDisallowed={true}
@@ -111,7 +111,7 @@ MarkdownWithRedirectionWarningProps
   const remarkGfmMarkdownElement = () => {
     if (remarkPlugins) {
       return (
-        <div style={markdownStyle}>
+        <div className="markdown" style={markdownStyle}>
           <Markdown
             remarkPlugins={remarkPlugins}
             disallowedElements={disallowedElements}
@@ -125,7 +125,7 @@ MarkdownWithRedirectionWarningProps
     }
     if (markdownComponents) {
       return (
-        <div style={markdownStyle}>
+        <div className="markdown" style={markdownStyle}>
           <Markdown
             remarkPlugins={[
               remarkGfm,
@@ -142,7 +142,7 @@ MarkdownWithRedirectionWarningProps
       );
     }
     return (
-      <div style={markdownStyle}>
+      <div className="markdown" style={markdownStyle}>
         <Markdown
           remarkPlugins={[
             remarkGfm,
