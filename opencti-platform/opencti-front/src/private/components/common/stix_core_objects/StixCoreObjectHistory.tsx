@@ -18,8 +18,6 @@ type StixCoreObjectHistoryProps = {
   withoutRelations?: boolean;
 };
 
-const PIR_MANAGER_USER_UUID = '1e20b6e5-e0f7-46f2-bacb-c37e4f8707a2';
-
 const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreObjectHistoryProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -63,8 +61,8 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
           values: ['create', 'delete', 'mutation'], // retro-compatibility
         },
         {
-          key: ['user_id'],
-          values: [PIR_MANAGER_USER_UUID],
+          key: ['context_data.entity_type'],
+          values: ['in-pir'],
           operator: 'not_eq',
         },
       ],
