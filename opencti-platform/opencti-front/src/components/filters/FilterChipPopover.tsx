@@ -463,6 +463,9 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
         paper: {
           elevation: 1,
           style: { marginTop: 10 },
+          onMouseDown: (e) => e.stopPropagation(),
+          onPointerDown: (e) => e.stopPropagation(),
+          onClick: (e) => e.stopPropagation(),
         },
         backdrop: {
           style: {
