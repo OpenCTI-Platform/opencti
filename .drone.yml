@@ -24,6 +24,7 @@ steps:
       - ./scripts/clone-dependencies.sh "${DRONE_SOURCE_BRANCH}" "${DRONE_TARGET_BRANCH}" "$(pwd)" "${DRONE_PULL_REQUEST}"
       - ls -lart
       - cd "$DRONE_WORKSPACE/client-python"
+      - sleep 5
       - echo "Dependency checkout" >> workspace_debug.log
       - cat workspace_debug.log
       - echo "[INFO] using client-python on branch $(git branch --show-current)"
