@@ -42,7 +42,7 @@ const IngestionCatalogConnectorCreationUserHandlingComponent = ({ queryRef, max_
       'user_id',
       values.automatic_user === false
         ? ''
-        : { label: `[C] ${values.name}`, value: `[F] ${values.name}` },
+        : { label: `[C] ${values.name}`, value: `[C] ${values.name}` },
     );
   }, [values.name, values.automatic_user]);
   useEffect(() => {
