@@ -19,7 +19,11 @@ import { listRelationsPaginated, storeLoadById } from '../../database/middleware
 import { RELATION_IN_PIR } from '../../schema/stixRefRelationship';
 import { FunctionalError } from '../../config/errors';
 import { createRelation, patchAttribute } from '../../database/middleware';
-import type { PirAddInput } from '../../generated/graphql';
+import { type FilterGroup, type PirAddInput, PirType } from '../../generated/graphql';
+import { addFilter } from '../../utils/filtering/filtering-utils';
+import { ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE } from '../../schema/stixDomainObject';
+import { ENTITY_TYPE_THREAT_ACTOR } from '../../schema/general';
+import { RELATION_FROM_TYPES_FILTER } from '../../utils/filtering/filtering-constants';
 
 /**
  * Helper function to parse filters that are saved as string in elastic.
@@ -56,6 +60,24 @@ export const serializePir = (pir: PirAddInput) => {
 };
 
 /**
+ * Helper function to construct final pir filters that the entity of the stream events should match.
+ *
+ * @param pirType The PIR type
+ * @params pirFilters the PIR filters
+ * @returns filters applied on the entity of the stream events
+ */
+export const constructFinalPirFilters = (pirType: PirType, pirFilters: FilterGroup) => {
+  if (pirType === PirType.ThreatLandscape) {
+    return addFilter(
+      pirFilters,
+      RELATION_FROM_TYPES_FILTER,
+      [ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_THREAT_ACTOR, ENTITY_TYPE_MALWARE],
+    );
+  }
+  return pirFilters;
+};
+
+/**
  * Determines the score of an array of explanations against a PIR.
  *
  * @param context
@@ -85,9 +107,11 @@ export const arePirExplanationsEqual = (
 ) => {
   const sameRelationships = explanation1.dependencies.map((d1) => d1.element_id)
     .every((d) => explanation2.dependencies.map((d2) => d2.element_id).includes(d));
+  const sameRelationshipsAuthors = explanation1.dependencies.map((d1) => d1.author_id)
+    .every((d) => explanation2.dependencies.map((d2) => d2.author_id).includes(d));
   const sameCriteriaWeight = explanation1.criterion.weight === explanation2.criterion.weight;
   const sameCriteriaFilters = explanation1.criterion.filters === explanation2.criterion.filters;
-  return sameRelationships && sameCriteriaWeight && sameCriteriaFilters;
+  return sameRelationships && sameRelationshipsAuthors && sameCriteriaWeight && sameCriteriaFilters;
 };
 
 /**
@@ -105,6 +129,29 @@ export const diffPirExplanations = (
     // For each explanation, check it is different from all explanations in base.
     return baseExplanations.every((e) => !arePirExplanationsEqual(explanation, e));
   });
+};
+
+/**
+ * Update an array of pir explanations by adding the new information
+ *
+ * @param actualExplanations Explanations of the pir meta rel
+ * @param newExplanations New explanations information to add
+ * @returns an array of pir explanations updated with the new information
+ */
+export const updatePirExplanationsArray = (
+  actualExplanations: PirExplanation[],
+  newExplanations: PirExplanation[],
+) => {
+  return [
+    ...actualExplanations.filter((e) => { // remove explanations concerning the same relationship as new explanations
+      return newExplanations.every((newE) => {
+        const sameRelationships = e.dependencies.map((d1) => d1.element_id)
+          .every((d) => newE.dependencies.map((d2) => d2.element_id).includes(d));
+        return !sameRelationships;
+      });
+    }),
+    ...newExplanations
+  ];
 };
 
 /**
@@ -137,14 +184,14 @@ export const updatePirExplanations = async (
   }
 
   const pirMetaRel = pirMetaRels.edges[0].node;
-  let explanations = pirExplanations; // By default replace the entire array.
-  if (operation === 'add') {
+  let explanations = pirExplanations; // Default case : replace the entire array.
+  if (operation === 'add') { // Add case: add the new information contained in pirExplanations
     const newExplanations = diffPirExplanations(pirExplanations, pirMetaRel.pir_explanations);
     if (newExplanations.length === 0) {
       // In this case there is nothing to add so skip.
       return;
     }
-    explanations = [...pirMetaRel.pir_explanations, ...newExplanations];
+    explanations = updatePirExplanationsArray(pirMetaRel.pir_explanations, newExplanations);
   }
 
   // region compute score
