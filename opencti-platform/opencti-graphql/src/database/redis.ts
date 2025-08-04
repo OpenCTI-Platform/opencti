@@ -9,7 +9,7 @@ import type { ClusterOptions } from 'ioredis/built/cluster/ClusterOptions';
 import type { SentinelConnectionOptions } from 'ioredis/built/connectors/SentinelConnector';
 import conf, { booleanConf, configureCA, DEV_MODE, getStoppingState, loadCert, logApp, REDIS_PREFIX } from '../config/conf';
 import { asyncListTransformation, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, isNotEmptyField, wait, waitInSec } from './utils';
-import { isStixExportableData } from '../schema/stixCoreObject';
+import { isStixExportableInStreamData } from '../schema/stixCoreObject';
 import { DatabaseError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { mergeDeepRightAll, now, utcDate } from '../utils/format';
 import { convertStoreToStix } from './stix-2-1-converter';
@@ -586,7 +586,7 @@ const buildUpdateEvent = (user: AuthUser, previous: StoreObject, instance: Store
 };
 export const storeUpdateEvent = async (context: AuthContext, user: AuthUser, previous: StoreObject, instance: StoreObject, message: string, opts: UpdateEventOpts = {}) => {
   try {
-    if (isStixExportableData(instance)) {
+    if (isStixExportableInStreamData(instance)) {
       const event = buildUpdateEvent(user, previous, instance, message, opts);
       await pushToStream(context, user, getClientBase(), event, opts);
       return event;
@@ -610,7 +610,7 @@ export const buildCreateEvent = (user: AuthUser, instance: StoreObject, message:
 };
 export const storeCreateRelationEvent = async (context: AuthContext, user: AuthUser, instance: StoreRelation, opts: CreateEventOpts = {}) => {
   try {
-    if (isStixExportableData(instance)) {
+    if (isStixExportableInStreamData(instance)) {
       const { withoutMessage = false, restore = false } = opts;
       let message = '-';
       if (!withoutMessage) {
@@ -627,7 +627,7 @@ export const storeCreateRelationEvent = async (context: AuthContext, user: AuthU
 };
 export const storeCreateEntityEvent = async (context: AuthContext, user: AuthUser, instance: StoreObject, message: string, opts: CreateEventOpts = {}) => {
   try {
-    if (isStixExportableData(instance)) {
+    if (isStixExportableInStreamData(instance)) {
       const event = buildCreateEvent(user, instance, message);
       await pushToStream(context, user, getClientBase(), event, opts);
       return event;
@@ -656,7 +656,7 @@ export const buildDeleteEvent = async (
 };
 export const storeDeleteEvent = async (context: AuthContext, user: AuthUser, instance: StoreObject, opts: EventOpts = {}) => {
   try {
-    if (isStixExportableData(instance)) {
+    if (isStixExportableInStreamData(instance)) {
       const message = generateDeleteMessage(instance);
       const event = await buildDeleteEvent(user, instance, message);
       await pushToStream(context, user, getClientBase(), event, opts);
