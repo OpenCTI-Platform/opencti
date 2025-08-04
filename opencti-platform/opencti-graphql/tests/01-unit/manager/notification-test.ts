@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { isTimeTrigger, type ResolvedDigest } from '../../../src/manager/notificationManager';
 import { utcDate } from '../../../src/utils/format';
+import NotificationTool from '../../../src/utils/NotificationTool';
 
 const digest = (period: 'hour' | 'day' | 'week' | 'month', triggerTime = ''): ResolvedDigest => {
   return {
@@ -48,5 +49,10 @@ describe.concurrent('notification manager utils', () => {
     expect(isTimeTrigger(digest('month', '1-12:00:00.000Z'), utcDate('2022-01-01T12:00:00.000Z'))).toEqual(true);
     expect(isTimeTrigger(digest('month', '2-12:00:00.000Z'), utcDate('2022-12-02T12:00:00.000Z'))).toEqual(true);
     expect(isTimeTrigger(digest('month', '1-12:00:00.000Z'), utcDate('2022-12-02T12:00:00.000Z'))).toEqual(false);
+  });
+
+  it.only('should covert markdown to html', async () => {
+    const octiTool = new NotificationTool();
+    expect(octiTool.m2h('#Title1')).toEqual('<h1 id="title1">Title1</h1>');
   });
 });
