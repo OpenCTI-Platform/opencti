@@ -6,7 +6,15 @@ import { createStreamProcessor, fetchRangeNotifications, storeNotificationEvent,
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
-import { executionContext, INTERNAL_USERS, isUserCanAccessStixElement, isUserCanAccessStreamUpdateEvent, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';
+import {
+  executionContext,
+  INTERNAL_USERS,
+  isUserCanAccessStixElement,
+  isUserCanAccessStreamUpdateEvent,
+  isUserInPlatformOrganization,
+  PIR_MANAGER_USER,
+  SYSTEM_USER
+} from '../utils/access';
 import type { DataEvent, SseEvent, StreamNotifEvent, UpdateEvent } from '../types/event';
 import type { AuthContext, AuthUser, UserOrigin } from '../types/user';
 import { utcDate } from '../utils/format';
@@ -26,9 +34,9 @@ import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
 import { extractStixRepresentative, extractStixRepresentativeForUser } from '../database/stix-representative';
 import type { StixRelation, StixSighting } from '../types/stix-2-1-sro';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
-import { replaceFilterKey } from '../utils/filtering/filtering-utils';
+import { addFilter, replaceFilterKey } from '../utils/filtering/filtering-utils';
 import { CONNECTED_TO_INSTANCE_FILTER, CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER } from '../utils/filtering/filtering-constants';
-import type { FilterGroup } from '../generated/graphql';
+import { type FilterGroup, FilterOperator } from '../generated/graphql';
 import { DigestPeriod, TriggerEventType, TriggerType } from '../generated/graphql';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import type { Representative } from '../types/store';
@@ -452,6 +460,11 @@ const generateNotificationMessageForFilteredSideEvents = async (
   return undefined; // filtered event (ex: update of an instance containing a listened ref) : no notification
 };
 
+// filters events that are not in-pir relationships, ie events from the Pir Manager
+export const buildFiltersForNotifications = (filters: FilterGroup) => {
+  return addFilter(filters, 'user_id', [PIR_MANAGER_USER.id], FilterOperator.NotEq);
+};
+
 export const buildTargetEvents = async (
   context: AuthContext,
   users: AuthUser[],
@@ -463,7 +476,7 @@ export const buildTargetEvents = async (
   const { event_types, notifiers, instance_trigger, filters, raw_filters } = trigger;
   let finalFilters = raw_filters;
   if (filters) {
-    finalFilters = JSON.parse(filters);
+    finalFilters = buildFiltersForNotifications(JSON.parse(filters));
   }
   if (useSideEventMatching) { // modify filters to look for instance trigger side events
     const sideFilters = raw_filters ?? JSON.parse(trigger.filters);
