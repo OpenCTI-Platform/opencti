@@ -118,7 +118,7 @@ import {
   isStixRefRelationship,
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
-  RELATION_GRANTED_TO,
+  RELATION_GRANTED_TO, RELATION_IN_PIR,
   RELATION_OBJECT,
   RELATION_OBJECT_MARKING,
   STIX_REF_RELATIONSHIP_TYPES
@@ -3047,7 +3047,7 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
     let event;
     // In case on embedded relationship creation, we need to dispatch
     // an update of the from entity that host this embedded ref.
-    if (isStixRefRelationship(relationshipType)) {
+    if (isStixRefRelationship(relationshipType) && relationshipType !== RELATION_IN_PIR) {
       const referencesPromises = opts.references ? internalFindByIds(context, user, opts.references, { type: ENTITY_TYPE_EXTERNAL_REFERENCE }) : Promise.resolve([]);
       const references = await Promise.all(referencesPromises);
       if ((opts.references ?? []).length > 0 && references.length !== (opts.references ?? []).length) {
