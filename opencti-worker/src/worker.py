@@ -101,8 +101,6 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
             self.worker_logger.warning(str(err))
         self.channel.basic_qos(prefetch_count=1)
         assert self.channel is not None
-        self.current_bundle_id: [str, None] = None
-        self.current_bundle_seq: int = 0
 
     @property
     def id(self) -> Any:  # pylint: disable=inconsistent-return-statements
@@ -276,8 +274,6 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
             self.worker_logger.warning(str(err))
         self.channel.basic_qos(prefetch_count=1)
         assert self.channel is not None
-        self.current_bundle_id: [str, None] = None
-        self.current_bundle_seq: int = 0
 
     @property
     def id(self) -> Any:  # pylint: disable=inconsistent-return-statements
@@ -523,10 +519,8 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
 
 @dataclass(unsafe_hash=True)
 class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attributes
-    logs_all_queue: str = "logs_all"
     consumer_threads: Dict[str, Any] = field(default_factory=dict, hash=False)
     listen_api_threads: Dict[str, Any] = field(default_factory=dict, hash=False)
-    logger_threads: Dict[str, Any] = field(default_factory=dict, hash=False)
 
     def __post_init__(self) -> None:
         self.exit_event = threading.Event()
