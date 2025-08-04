@@ -55,7 +55,7 @@ running_ingestion_units_gauge = meter.create_gauge(
 
 
 @dataclass(unsafe_hash=True)
-class MessageQueueConsumer(Thread):  # pylint: disable=too-many-instance-attributes
+class MessageQueueConsumer:  # pylint: disable=too-many-instance-attributes
     logger: Any
     consumer_type: Literal["listen", "push"]
     queue_name: str
@@ -64,7 +64,7 @@ class MessageQueueConsumer(Thread):  # pylint: disable=too-many-instance-attribu
     handle_message: Callable[[str], Literal["ack", "nack", "requeue"]]
 
     def __post_init__(self) -> None:
-        self._is_interrupted: bool = False
+        self.should_stop = False
         self.pika_connection = pika.BlockingConnection(self.pika_parameters)
         self.channel = self.pika_connection.channel()
         try:
@@ -72,6 +72,8 @@ class MessageQueueConsumer(Thread):  # pylint: disable=too-many-instance-attribu
         except Exception as err:  # pylint: disable=broad-except
             self.logger.warning(str(err))
         self.channel.basic_qos(prefetch_count=1)
+        self.thread = Thread(target=self.consume_queue, name=self.queue_name)
+        self.thread.start()
 
     def nack_message(self, delivery_tag: int, requeue: bool) -> None:
         if self.channel.is_open:
@@ -105,10 +107,7 @@ class MessageQueueConsumer(Thread):  # pylint: disable=too-many-instance-attribu
                 cb = functools.partial(self.nack_message, delivery_tag, True)
                 self.pika_connection.add_callback_threadsafe(cb)
 
-    def stop(self):
-        self._is_interrupted = True
-
-    def run(self) -> None:
+    def consume_queue(self) -> None:
         try:
             self.logger.info(
                 "Thread for queue started",
@@ -117,7 +116,7 @@ class MessageQueueConsumer(Thread):  # pylint: disable=too-many-instance-attribu
 
             # Consume the queue with a generator
             for message in self.channel.consume(self.queue_name, inactivity_timeout=1):
-                if self._is_interrupted:
+                if self.should_stop:
                     break
                 if not all(message):
                     continue
@@ -145,6 +144,14 @@ class MessageQueueConsumer(Thread):  # pylint: disable=too-many-instance-attribu
                 "Thread for queue terminated",
                 {"consumer_type": self.consumer_type, "queue": self.queue_name},
             )
+
+    def is_alive(self) -> bool:
+        return self.thread.is_alive()
+
+    def stop(self, wait: bool) -> None:
+        self.should_stop = True
+        if wait:
+            self.thread.join()
 
 
 @dataclass(unsafe_hash=True)
@@ -391,8 +398,8 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
 
 @dataclass(unsafe_hash=True)
 class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attributes
-    consumer_threads: Dict[str, Any] = field(default_factory=dict, hash=False)
-    listen_api_threads: Dict[str, Any] = field(default_factory=dict, hash=False)
+    push_consumers: Dict[str, MessageQueueConsumer] = field(default_factory=dict, hash=False)
+    listen_consumers: Dict[str, MessageQueueConsumer] = field(default_factory=dict, hash=False)
 
     def __post_init__(self) -> None:
         self.exit_event = threading.Event()
@@ -530,12 +537,10 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
         )
 
     def stop(self) -> None:
-        for thread in self.listen_api_threads:
-            self.listen_api_threads[thread].stop()
-            self.listen_api_threads[thread].join()
-        for thread in self.consumer_threads:
-            self.consumer_threads[thread].stop()
-            self.consumer_threads[thread].join()
+        for listen_consumer in self.listen_consumers.values():
+            listen_consumer.stop(True)
+        for push_consumer in self.push_consumers.values():
+            push_consumer.stop(True)
         if self.telemetry_enabled:
             self.prom_httpd.shutdown()
             self.prom_httpd.server_close()
@@ -544,16 +549,14 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
 
     # Start the main loop
     def start(self) -> None:
-        execution_pool = ThreadPoolExecutor(max_workers=self.opencti_pool_size)
-        listen_api_execution_pool = ThreadPoolExecutor(
-            max_workers=self.listen_pool_size
-        )
+        push_execution_pool = ThreadPoolExecutor(max_workers=self.opencti_pool_size)
+        listen_execution_pool = ThreadPoolExecutor(max_workers=self.listen_pool_size)
 
         while not self.exit_event.is_set():
             try:
                 # Telemetry
                 max_ingestion_units_count.set(self.opencti_pool_size)
-                running_ingestion_units_gauge.set(len(execution_pool._threads))
+                running_ingestion_units_gauge.set(len(push_execution_pool._threads))
 
                 # Fetch queue configuration from API
                 queues: List[Any] = []
@@ -565,9 +568,9 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                     # Push to ingest message
                     push_queue = connector_config["push"]
                     queues.append(push_queue)
-                    push_thread = self.consumer_threads.get(push_queue)
-                    if push_thread is None or not push_thread.is_alive():
-                        if not push_thread.is_alive():
+                    push_consumer = self.push_consumers.get(push_queue)
+                    if push_consumer is None or not push_consumer.is_alive():
+                        if not push_consumer.is_alive():
                             self.worker_logger.info(
                                 "Thread for queue not alive, creating a new one...",
                                 {"queue": push_queue},
@@ -585,25 +588,22 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             connector_config["push_routing"],
                             pika_parameters,
                         )
-                        self.consumer_threads[push_queue] = MessageQueueConsumer(
+                        self.push_consumers[push_queue] = MessageQueueConsumer(
                             self.worker_logger,
                             "push",
                             push_queue,
                             pika_parameters,
-                            execution_pool,
+                            push_execution_pool,
                             push_handler.handle_message
                         )
-
-                        self.consumer_threads[push_queue].name = push_queue
-                        self.consumer_threads[push_queue].start()
 
                     # Listen for webhook message
                     listen_callback_uri = connector_config.get("listen_callback_uri")
                     if listen_callback_uri is not None:
                         listen_queue = connector_config["listen"]
                         queues.append(listen_queue)
-                        listen_thread = self.listen_api_threads.get(listen_queue)
-                        if listen_thread is None or not listen_thread.is_alive():
+                        listen_consumer = self.listen_consumers.get(listen_queue)
+                        if listen_consumer is None or not listen_consumer.is_alive():
                             api_data_handler = ApiDataHandler(
                                 self.worker_logger,
                                 connector["connector_user"]["api_token"],
@@ -612,32 +612,29 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                                 self.listen_api_http_proxy,
                                 self.listen_api_https_proxy,
                             )
-                            self.listen_api_threads[listen_queue] = MessageQueueConsumer(
+                            self.listen_consumers[listen_queue] = MessageQueueConsumer(
                                 self.worker_logger,
                                 "listen",
                                 listen_queue,
                                 self.build_pika_parameters(connector_config),
-                                listen_api_execution_pool,
+                                listen_execution_pool,
                                 api_data_handler.handle_message,
                             )
 
-                            self.listen_api_threads[listen_queue].name = listen_queue
-                            self.listen_api_threads[listen_queue].start()
-
                 # Check if some threads must be stopped
-                for thread in list(self.consumer_threads):
-                    if thread not in queues:
+                for push_queue in self.push_consumers:
+                    if push_queue not in queues:
                         self.worker_logger.info(
                             "Queue no longer exists, killing thread...",
-                            {"thread": thread},
+                            {"thread": push_queue},
                         )
                         try:
-                            self.consumer_threads[thread].stop()
-                            self.consumer_threads.pop(thread, None)
+                            self.push_consumers[push_queue].stop(False)
+                            self.push_consumers.pop(push_queue, None)
                         except:
                             self.worker_logger.info(
                                 "Unable to kill the thread for queue, an operation is running, keep trying...",
-                                {"thread": thread},
+                                {"thread": push_queue},
                             )
             except Exception as e:  # pylint: disable=broad-except
                 self.worker_logger.error(type(e).__name__, {"reason": str(e)})
