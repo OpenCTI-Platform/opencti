@@ -9,7 +9,6 @@ import XtmHubTab from '@components/settings/xtm-hub/XtmHubTab';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import { XtmHubSettingsQuery } from './__generated__/XtmHubSettingsQuery.graphql';
-import { dateFormat } from '../../../../utils/Time';
 import ItemBoolean from '../../../../components/ItemBoolean';
 
 export const xtmHubSettingsQuery = graphql`
@@ -27,7 +26,7 @@ export const xtmHubSettingsQuery = graphql`
 `;
 
 const XtmHubSettings = () => {
-  const { t_i18n } = useFormatter();
+  const { t_i18n, fd } = useFormatter();
   const theme = useTheme<Theme>();
   const { settings: xtmHubSettings } = useLazyLoadQuery<XtmHubSettingsQuery>(
     xtmHubSettingsQuery,
@@ -104,9 +103,8 @@ const XtmHubSettings = () => {
                       <ListItemText primary={t_i18n('Registration date')} />
                       <ItemBoolean
                         variant="xlarge"
-                        neutralLabel={dateFormat(
+                        neutralLabel={fd(
                           xtmHubSettings.xtm_hub_enrollment_date,
-                          'DD MMM YYYY',
                         )}
                         status={null}
                       />
@@ -138,9 +136,8 @@ const XtmHubSettings = () => {
                       <ListItemText primary={t_i18n('Last successful check')} />
                       <ItemBoolean
                         variant="xlarge"
-                        neutralLabel={dateFormat(
+                        neutralLabel={fd(
                           xtmHubSettings.xtm_hub_last_connectivity_check,
-                          'DD MMM YYYY',
                         )}
                         status={null}
                       />

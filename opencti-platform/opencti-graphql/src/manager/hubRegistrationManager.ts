@@ -13,6 +13,7 @@ import type { AuthContext, AuthUser } from '../types/user';
 import { OCTI_EMAIL_TEMPLATE } from '../utils/emailTemplates/octiEmailTemplate';
 import type { SendMailArgs } from '../types/smtp';
 import { sendMail } from '../database/smtp';
+import { updateAttribute } from '../database/middleware';
 
 const HUB_REGISTRATION_MANAGER_ENABLED = booleanConf('hub_registration_manager:enabled', true);
 const HUB_REGISTRATION_MANAGER_KEY = conf.get('hub_registration_manager:lock_key') || 'hub_registration_manager_lock';
@@ -70,36 +71,43 @@ export const hubRegistrationManager = async () => {
 
   const status = await xtmHubClient.loadRegistrationStatus({ platformId: settings.id, token: settings.xtm_hub_token });
   if (status === 'active') {
-    await settingsEditField(
-      context,
-      HUB_REGISTRATION_MANAGER_USER,
-      settings.id,
-      [
-        {
-          key: 'xtm_hub_last_connectivity_check', value: [new Date()]
-        },
-        {
-          key: 'xtm_hub_enrollment_status',
-          value: [XtmHubEnrollmentStatus.Enrolled]
-        }
-      ]
-    );
+    const lastConnectivityCheckUpdate = {
+      key: 'xtm_hub_last_connectivity_check', value: [new Date()]
+    };
+    if (settings.xtm_hub_enrollment_status !== XtmHubEnrollmentStatus.Enrolled) {
+      await settingsEditField(
+        context,
+        HUB_REGISTRATION_MANAGER_USER,
+        settings.id,
+        [
+          lastConnectivityCheckUpdate,
+          {
+            key: 'xtm_hub_enrollment_status',
+            value: [XtmHubEnrollmentStatus.Enrolled]
+          }
+        ]
+      );
+    } else {
+      await updateAttribute(context, HUB_REGISTRATION_MANAGER_USER, settings.id, ENTITY_TYPE_SETTINGS, [lastConnectivityCheckUpdate]);
+    }
   } else {
     if (settings.xtm_hub_enrollment_status === XtmHubEnrollmentStatus.Enrolled) {
       await sendAdministratorsLostConnectivityEmail(context, settings);
     }
 
-    await settingsEditField(
-      context,
-      HUB_REGISTRATION_MANAGER_USER,
-      settings.id,
-      [
-        {
-          key: 'xtm_hub_enrollment_status',
-          value: [XtmHubEnrollmentStatus.LostConnectivity]
-        }
-      ]
-    );
+    if (settings.xtm_hub_enrollment_status !== XtmHubEnrollmentStatus.LostConnectivity) {
+      await settingsEditField(
+        context,
+        HUB_REGISTRATION_MANAGER_USER,
+        settings.id,
+        [
+          {
+            key: 'xtm_hub_enrollment_status',
+            value: [XtmHubEnrollmentStatus.LostConnectivity]
+          }
+        ]
+      );
+    }
   }
 };
 
