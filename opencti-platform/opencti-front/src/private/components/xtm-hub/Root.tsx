@@ -3,7 +3,7 @@ import { Route, Routes } from 'react-router-dom';
 import { boundaryWrapper } from '../Error';
 
 const DeployCustomDashboards = lazy(() => import('./DeployCustomDashboard'));
-const DeployCsvFeed = lazy(() => import('./DeployCsvFeed'));
+const IngestionCsv = lazy(() => import('../data/IngestionCsv'));
 
 const Root = () => {
   return (
@@ -15,7 +15,7 @@ const Root = () => {
         />
         <Route
           path="/deploy-csv-feed/:serviceInstanceId/:fileId"
-          element={boundaryWrapper(DeployCsvFeed)}
+          element={boundaryWrapper(IngestionCsv)}
         />
       </Routes>
     </Suspense>
