@@ -24,6 +24,8 @@ steps:
       - ./scripts/clone-dependencies.sh "${DRONE_SOURCE_BRANCH}" "${DRONE_TARGET_BRANCH}" "$(pwd)" "${DRONE_PULL_REQUEST}"
       - ls -lart
       - cd "$DRONE_WORKSPACE/client-python"
+      - echo "Dependency checkout" >> workspace_debug.log
+      - cat workspace_debug.log
       - echo "[INFO] using client-python on branch $(git branch --show-current)"
       - git log -n 1
 
@@ -56,6 +58,8 @@ steps:
       - apk add build-base git libffi-dev cargo
       - pip3 install --upgrade setuptools
       - cd "$DRONE_WORKSPACE/client-python"
+      - echo "$(date)  api test client python install" >> workspace_debug.log
+      - cat workspace_debug.log
       - pip install -r requirements.txt
       - pip install -e .[dev,doc]
       - cd "$DRONE_WORKSPACE/opencti-platform/opencti-graphql"
@@ -254,6 +258,8 @@ services:
       - apk add build-base git libffi-dev cargo
       - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/raw-start-platform/
       - cd "$DRONE_WORKSPACE/client-python"
+      - echo "$(date) opencti-raw-start client python install" >> workspace_debug.log
+      - cat workspace_debug.log
       - pip install -r requirements.txt
       - pip install -e .[dev,doc]
       - cd /tmp/raw-start-platform/opencti-graphql
@@ -292,6 +298,8 @@ services:
       - apk add build-base git libffi-dev cargo
       - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/live-start-platform/
       - cd "$DRONE_WORKSPACE/client-python"
+      - echo "$(date) opencti-live-start client python install" >> workspace_debug.log
+      - cat workspace_debug.log
       - pip install -r requirements.txt
       - pip install -e .[dev,doc]
       - cd /tmp/live-start-platform/opencti-graphql
@@ -330,6 +338,8 @@ services:
       - apk add build-base git libffi-dev cargo
       - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/direct-start-platform/
       - cd "$DRONE_WORKSPACE/client-python"
+      - echo "$(date) opencti-direct-start client python install" >> workspace_debug.log
+      - cat workspace_debug.log
       - pip install -r requirements.txt
       - pip install -e .[dev,doc]
       - cd /tmp/direct-start-platform/opencti-graphql
@@ -348,6 +358,8 @@ services:
       - apk add build-base git libffi-dev cargo
       - cp -a opencti-worker /tmp/direct-start-worker
       - cd "$DRONE_WORKSPACE/client-python"
+      - echo "$(date) opencti-direct-worker client python install" >> workspace_debug.log
+      - cat workspace_debug.log
       - pip install -r requirements.txt
       - pip install -e .[dev,doc]
       - while ! nc -z opencti-direct-start 4300 ; do sleep 1 ; done
@@ -368,6 +380,8 @@ services:
       - cp -a opencti-worker /tmp/opencti-test-worker
       - apk add build-base git libffi-dev cargo
       - cd "$DRONE_WORKSPACE/client-python"
+      - echo "$(date) opencti-test-start client python install" >> workspace_debug.log
+      - cat workspace_debug.log
       - echo "[INFO] using client-python on branch $(git branch --show-current)"
       - pip install -r requirements.txt
       - pip install -e .[dev,doc]
@@ -407,6 +421,8 @@ services:
       - apk add build-base git libffi-dev cargo
       - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/restore-start-platform/
       - cd "$DRONE_WORKSPACE/client-python"
+      - echo "$(date) opencti-restore-start client python install" >> workspace_debug.log
+      - cat workspace_debug.log
       - pip install -r requirements.txt
       - pip install -e .[dev,doc]
       - cd /tmp/restore-start-platform/opencti-graphql
@@ -446,6 +462,8 @@ services:
       - apk add build-base git libffi-dev cargo
       - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/e2e-start-platform/
       - cd "$DRONE_WORKSPACE/client-python"
+      - echo "$(date) opencti-e2e-start client python install" >> workspace_debug.log
+      - cat workspace_debug.log
       - pip install -r requirements.txt
       - pip install -e .[dev,doc]
       - cd /tmp/e2e-start-platform/opencti-graphql
@@ -467,6 +485,8 @@ services:
       - cp -a opencti-worker /tmp/opencti-e2e-worker
       - apk add build-base git libffi-dev cargo
       - cd "$DRONE_WORKSPACE/client-python"
+      - echo "$(date) opencti-e2e-worker client python install" >> workspace_debug.log
+      - cat workspace_debug.log
       - echo "[INFO] using client-python on branch $(git branch --show-current)"
       - pip install -r requirements.txt
       - pip install -e .[dev,doc]
