@@ -37,6 +37,9 @@ export const RELATION_DERIVED_FROM = 'derived-from';
 export const RELATION_DUPLICATE_OF = 'duplicate-of';
 export const RELATION_BELONGS_TO = 'belongs-to';
 export const RELATION_RESOLVES_TO = 'resolves-to';
+export const RELATION_TECHNOLOGY = 'technology';
+export const RELATION_TECHNOLOGY_TO = 'technology-to';
+export const RELATION_DEMONSTRATES = 'demonstrates';
 // endregion
 
 // region Extended relationships
@@ -101,6 +104,9 @@ export const STIX_CORE_RELATIONSHIPS = [
   RELATION_REVOKED_BY,
   RELATION_BELONGS_TO,
   RELATION_RESOLVES_TO,
+  RELATION_TECHNOLOGY,
+  RELATION_TECHNOLOGY_TO,
+  RELATION_DEMONSTRATES,
   RELATION_DETECTS,
   RELATION_PUBLISHES,
   RELATION_AMPLIFIES,
