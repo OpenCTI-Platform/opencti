@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import IngestionCatalogChip from '@components/data/IngestionCatalog/IngestionCatalogUseCaseChip';
 import { useTheme } from '@mui/styles';
 import IngestionCatalogConnectorCreation from '@components/data/IngestionCatalog/IngestionCatalogConnectorCreation';
+import { IngestionConnector } from '@components/data/IngestionCatalog';
 import { useFormatter } from '../../../../components/i18n';
 import EnrichedTooltip from '../../../../components/EnrichedTooltip';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
@@ -16,35 +17,8 @@ import Security from '../../../../utils/Security';
 import type { Theme } from '../../../../components/Theme';
 
 interface IngestionCatalogCardProps {
-  node: string;
+  node: IngestionConnector;
   dataListId: string;
-}
-
-export interface IngestionConnector {
-  $schema: string,
-  $id: string,
-  title: string,
-  slug: string,
-  description: string,
-  short_description: string,
-  use_cases: string[],
-  max_confidence_level: number,
-  manager_supported: boolean,
-  container_version: string,
-  container_image: string,
-  container_type: IngestionConnectorType,
-  verified: boolean,
-  last_verified_date: string,
-  playbook_supported: boolean,
-  logo: string,
-  support_version: string,
-  subscription_link: string,
-  source_code: string,
-  type: string,
-  additionalProperties: string,
-  default: object,
-  required: string[],
-  properties: object,
 }
 
 export type IngestionConnectorType = 'INTERNAL_ENRICHMENT' | 'EXTERNAL_IMPORT' | 'INTERNAL_EXPORT_FILE' | 'INTERNAL_IMPORT_FILE';
@@ -68,12 +42,11 @@ export const ingestionConnectorTypeMetadata: Record<IngestionConnectorType, { la
   },
 };
 
-const IngestionCatalogCard = ({ node, dataListId }: IngestionCatalogCardProps) => {
+const IngestionCatalogCard = ({ node: connector, dataListId }: IngestionCatalogCardProps) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const theme = useTheme<Theme>();
   const [openCreation, setOpenCreation] = useState(false);
-  const connector: IngestionConnector = JSON.parse(node);
   const link = `/dashboard/data/ingestion/catalog/${connector.slug}`;
 
   const renderLabels = () => {

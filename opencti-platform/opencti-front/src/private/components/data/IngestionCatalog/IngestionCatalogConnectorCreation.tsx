@@ -1,9 +1,8 @@
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import Drawer from '@components/common/drawer/Drawer';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTheme } from '@mui/styles';
-import { IngestionConnector } from '@components/data/IngestionCatalog/IngestionCatalogCard';
 import { FormikHelpers } from 'formik/dist/types';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
@@ -21,6 +20,7 @@ import {
   IngestionCatalogConnectorCreationMutation$data,
 } from '@components/data/IngestionCatalog/__generated__/IngestionCatalogConnectorCreationMutation.graphql';
 import IngestionCatalogConnectorCreationUserHandling from '@components/data/IngestionCatalog/IngestionCatalogConnectorCreationUserHandling';
+import { IngestionConnector } from '@components/data/IngestionCatalog';
 import { MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
@@ -67,7 +67,6 @@ interface IngestionCatalogConnectorCreationProps {
 
 export interface ManagedConnectorValues {
   name: string;
-  contractValues: Record<string, string | boolean>;
   user_id: string | FieldOption;
   automatic_user?: boolean;
   confidence_level?: string;
@@ -77,8 +76,16 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const classes = useStyles();
-
+  const [compiledValidator, setCompiledValidator] = useState<Validator | undefined>(undefined);
   const [commitRegister] = useApiMutation<IngestionCatalogConnectorCreationMutation>(ingestionCatalogConnectorCreationMutation);
+
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    if (!compiledValidator || compiledValidator.schema.container_image !== connector.container_image) {
+      setCompiledValidator(new Validator(connector as unknown as Schema));
+    }
+  }, [compiledValidator, connector]);
 
   const submitConnectorManagementCreation = (values: ManagedConnectorValues, {
     setSubmitting,
@@ -91,7 +98,7 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
       automatic_user: values.automatic_user ?? true,
       ...((values.automatic_user !== false) && { confidence_level: values.confidence_level?.toString() }),
       manager_contract_image: connector.container_image,
-      manager_contract_configuration: Object.entries(values.contractValues).map(([key, value]) => ({ key, value: [value.toString()] })),
+      manager_contract_configuration: Object.entries(values).map(([key, value]) => ({ key, value: [value.toString()] })),
     };
     commitRegister({
       variables: {
@@ -105,14 +112,6 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
         onClose();
       },
     });
-  };
-
-  const [compiledValidator, setCompiledValidator] = useState<Validator | undefined>(undefined);
-
-  // Manage 2 JsonForms validation, preventing one from overriding the other values
-  const handleChange = ({ data, values, setFieldValue }: { data: object, values: ManagedConnectorValues, setFieldValue: FormikHelpers<ManagedConnectorValues>['setFieldValue'] }) => {
-    const allData = { ...values.contractValues, ...data };
-    return setFieldValue('contractValues', allData);
   };
 
   // Filter required and optional properties to use into JsonForms
@@ -133,10 +132,8 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
         validationSchema={Yup.object().shape({
           name: Yup.string().required().min(2),
           user_id: Yup.object().required(),
-          contractValues: Yup.object().required(),
         })}
         initialValues={{
-          contractValues: {},
           name: '',
           confidence_level: connector.max_confidence_level.toString(),
           user_id: '',
@@ -146,14 +143,8 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
         onSubmit={() => {
         }}
       >
-        {({ values, setFieldValue, isSubmitting, setSubmitting, resetForm, isValid }) => {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          if (!compiledValidator || compiledValidator.schema.container_image !== connector.container_image) {
-            setCompiledValidator(new Validator(connector as unknown as Schema));
-            setFieldValue('contractValues', connector.default);
-          }
-          const errors = compiledValidator?.validate(values.contractValues)?.errors;
+        {({ values, isSubmitting, setSubmitting, resetForm, isValid, setValues }) => {
+          const errors = compiledValidator?.validate(values)?.errors;
           return (
             <Form>
               <Field
@@ -179,7 +170,7 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
                   schema={connectorWithRequired as JsonSchema}
                   renderers={materialRenderers}
                   validationMode={'NoValidation'}
-                  onChange={({ data }) => handleChange({ data, values, setFieldValue })}
+                  onChange={({ data }) => setValues({ ...values, ...data })}
                 />
               </Alert>
               <div style={fieldSpacingContainerStyle}>
@@ -193,7 +184,7 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
                       schema={connectorWithOptional as JsonSchema}
                       renderers={materialRenderers}
                       validationMode={'NoValidation'}
-                      onChange={({ data }) => handleChange({ data, values, setFieldValue })}
+                      onChange={({ data }) => setValues({ ...values, ...data })}
                     />
                   </AccordionDetails>
                 </Accordion>
