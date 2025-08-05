@@ -2,6 +2,9 @@
 kind: pipeline
 name: opencti-tests
 
+node:
+  env: kubernetes
+
 steps:
   - name: Runner information
     image: alpine:3.19
@@ -128,7 +131,7 @@ steps:
         - generate-licenses
 
   - name: frontend-e2e-tests
-    image: node:22.16.0
+    image: node:22.17.1
     volumes:
     - name: cache-node-frontend-e2e
       path: /drone/src/opencti-platform/opencti-front/node_modules
@@ -149,7 +152,7 @@ steps:
       - frontend-tests
 
   - name: upload-build-artefact
-    image: node:22.16.0
+    image: node:22.17.1
     failure: ignore
     when:
       status:
@@ -181,7 +184,7 @@ steps:
       - api-tests
 
   - name: frontend-verify-translation
-    image: node:22.16.0
+    image: node:22.17.1
     commands:
       - cd opencti-platform/opencti-front
       - node script/verify-translation.js
@@ -239,7 +242,7 @@ services:
   - name: redis
     image: redis:8.0.3
   - name: elastic
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.18.3
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.19.0
     environment:
       discovery.type: single-node
       xpack.security.enabled: false
@@ -526,3 +529,6 @@ volumes:
   - name: cache-node-frontend-e2e
     host:
       path: /tmp/cache-node-frontend-e2e
+
+image_pull_secrets:
+  - dockerconfigjson

@@ -20866,6 +20866,7 @@ export type Query = {
   stixRelationshipsNumber?: Maybe<Number>;
   stixRelationshipsTimeSeries?: Maybe<Array<Maybe<TimeSeries>>>;
   stixSchemaRefRelationships?: Maybe<DefinitionRefRelationship>;
+  stixSchemaRefRelationshipsPossibleTypes: Array<Scalars['String']['output']>;
   stixSightingRelationship?: Maybe<StixSightingRelationship>;
   stixSightingRelationships?: Maybe<StixSightingRelationshipConnection>;
   stixSightingRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -23314,6 +23315,11 @@ export type QueryStixRelationshipsTimeSeriesArgs = {
 export type QueryStixSchemaRefRelationshipsArgs = {
   id?: InputMaybe<Scalars['String']['input']>;
   toType?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryStixSchemaRefRelationshipsPossibleTypesArgs = {
+  type: Scalars['String']['input'];
 };
 
 
@@ -41668,6 +41674,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   stixRelationshipsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, Partial<QueryStixRelationshipsNumberArgs>>;
   stixRelationshipsTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryStixRelationshipsTimeSeriesArgs, 'field' | 'interval' | 'operation' | 'startDate'>>;
   stixSchemaRefRelationships?: Resolver<Maybe<ResolversTypes['DefinitionRefRelationship']>, ParentType, ContextType, Partial<QueryStixSchemaRefRelationshipsArgs>>;
+  stixSchemaRefRelationshipsPossibleTypes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryStixSchemaRefRelationshipsPossibleTypesArgs, 'type'>>;
   stixSightingRelationship?: Resolver<Maybe<ResolversTypes['StixSightingRelationship']>, ParentType, ContextType, Partial<QueryStixSightingRelationshipArgs>>;
   stixSightingRelationships?: Resolver<Maybe<ResolversTypes['StixSightingRelationshipConnection']>, ParentType, ContextType, Partial<QueryStixSightingRelationshipsArgs>>;
   stixSightingRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryStixSightingRelationshipsDistributionArgs, 'field' | 'operation'>>;

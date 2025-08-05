@@ -6,7 +6,6 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { Add } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
-import makeStyles from '@mui/styles/makeStyles';
 import { Button } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import Drawer from '../../common/drawer/Drawer';
@@ -14,23 +13,10 @@ import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
 import AddExternalReferencesLines, { addExternalReferencesLinesQuery } from './AddExternalReferencesLines';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles({
-  createButton: {
-    float: 'left',
-    marginTop: -15,
-  },
-  container: {
-    padding: 0,
-  },
-});
-
 const AddExternalReferences = ({
   stixCoreObjectOrStixCoreRelationshipId,
   stixCoreObjectOrStixCoreRelationshipReferences,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -49,14 +35,22 @@ const AddExternalReferences = ({
     setSearch(keyword);
   };
 
-  const paginationOptions = { search };
+  const paginationOptions = {
+    search,
+    orderBy: 'created_at',
+    orderMode: 'desc',
+    count: 20,
+  };
   return (
     <>
       <IconButton
         color="primary"
         aria-label="Add"
         onClick={handleOpen}
-        classes={{ root: classes.createButton }}
+        style={{
+          float: 'left',
+          marginTop: -15,
+        }}
         size="large"
       >
         <Add fontSize="small" />
@@ -90,13 +84,10 @@ const AddExternalReferences = ({
           </div>
         )}
       >
-        <div className={classes.container}>
+        <div style={{ padding: 0 }}>
           <QueryRenderer
             query={addExternalReferencesLinesQuery}
-            variables={{
-              search,
-              count: 20,
-            }}
+            variables={paginationOptions}
             render={({ props }) => {
               if (props) {
                 return (

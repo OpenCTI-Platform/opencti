@@ -1,6 +1,6 @@
 {
   "name": "opencti-graphql",
-  "version": "6.7.8",
+  "version": "6.7.9",
   "main": "src/back.js",
   "scripts": {
     "check-ts": "tsc --noEmit",
@@ -50,12 +50,12 @@
     "@aws-sdk/lib-storage": "3.837.0",
     "@aws-sdk/property-provider": "3.374.0",
     "@datadog/pprof": "5.8.2",
-    "@elastic/elasticsearch": "8.18.2",
+    "@elastic/elasticsearch": "8.19.0",
     "@escape.tech/graphql-armor": "3.1.6",
-    "@graphql-tools/import": "7.0.19",
-    "@graphql-tools/merge": "9.0.24",
-    "@graphql-tools/schema": "10.0.23",
-    "@graphql-tools/utils": "10.8.6",
+    "@graphql-tools/import": "7.0.21",
+    "@graphql-tools/merge": "9.1.1",
+    "@graphql-tools/schema": "10.0.25",
+    "@graphql-tools/utils": "10.9.1",
     "@jorgeferrero/stream-to-buffer": "2.0.6",
     "@langchain/core": "0.3.59",
     "@langchain/mistralai": "0.2.0",
@@ -90,7 +90,7 @@
     "archiver": "7.0.1",
     "archiver-zip-encrypted": "2.0.0",
     "async-lock": "1.4.1",
-    "axios": "1.10.0",
+    "axios": "1.11.0",
     "axios-cookiejar-support": "6.0.2",
     "bcryptjs": "2.4.3",
     "bluebird": "3.7.2",
@@ -173,7 +173,7 @@
     "winston-daily-rotate-file": "5.0.0",
     "ws": "8.18.2",
     "xml2js": "0.6.2",
-    "zod": "4.0.10"
+    "zod": "4.0.14"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "5.0.7",
@@ -218,11 +218,11 @@
     "fast-glob": "3.3.3",
     "graphql-tag": "2.12.6",
     "ts-loader": "9.5.2",
-    "typescript": "5.8.3",
+    "typescript": "5.9.2",
     "vitest": "2.0.5"
   },
   "resolutions": {
-    "axios": "1.10.0",
+    "axios": "1.11.0",
     "chokidar": "4.0.3",
     "cross-spawn": "7.0.6",
     "body-parser": "1.20.3",

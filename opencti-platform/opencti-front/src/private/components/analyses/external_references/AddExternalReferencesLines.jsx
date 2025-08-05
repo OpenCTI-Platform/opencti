@@ -17,10 +17,6 @@ import { isNotEmptyField } from '../../../../utils/utils';
 import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
-  avatar: {
-    width: 24,
-    height: 24,
-  },
   icon: {
     color: theme.palette.primary.main,
   },
@@ -287,9 +283,11 @@ export const addExternalReferencesLinesQuery = graphql`
     $search: String
     $count: Int!
     $cursor: ID
+    $orderBy: ExternalReferencesOrdering
+    $orderMode: OrderingMode
   ) {
     ...AddExternalReferencesLines_data
-      @arguments(search: $search, count: $count, cursor: $cursor)
+      @arguments(search: $search, count: $count, cursor: $cursor, orderBy: $orderBy, orderMode: $orderMode)
   }
 `;
 
@@ -302,8 +300,10 @@ const AddExternalReferencesLines = createPaginationContainer(
         search: { type: "String" }
         count: { type: "Int", defaultValue: 25 }
         cursor: { type: "ID" }
+        orderBy: { type: "ExternalReferencesOrdering" }
+        orderMode: { type: "OrderingMode" }
       ) {
-        externalReferences(search: $search, first: $count, after: $cursor)
+        externalReferences(search: $search, first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode)
           @connection(key: "Pagination_externalReferences") {
           edges {
             node {

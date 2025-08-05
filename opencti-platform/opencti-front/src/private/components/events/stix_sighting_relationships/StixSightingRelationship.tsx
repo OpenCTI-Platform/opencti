@@ -66,7 +66,7 @@ StixSightingRelationshipProps
 
   const SightingHeader = styled('div')({
     display: 'flex',
-    justifyContent: 'space-between',
+    justifyContent: 'end',
     marginBottom: 24,
   });
 
@@ -78,35 +78,35 @@ StixSightingRelationshipProps
         render={(result: { props: StixSightingRelationshipQuery$data }) => {
           if (result.props && result.props.stixSightingRelationship) {
             return (<>
+              <Breadcrumbs elements={[
+                { label: t_i18n('Events') },
+                { label: t_i18n('Sightings'), link: '/dashboard/events/sightings' },
+                { label: t_i18n('Sighting'), current: true },
+              ]}
+              />
               <SightingHeader>
-                <Breadcrumbs elements={[
-                  { label: t_i18n('Events') },
-                  { label: t_i18n('Sightings'), link: '/dashboard/events/sightings' },
-                  { label: t_i18n('Sighting'), current: true },
-                ]}
-                />
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                   <div style={{ display: 'flex' }}>
                     {canDelete && (
-                      <PopoverMenu>
-                        {({ closeMenu }) => (
-                          <Box>
-                            <MenuItem onClick={() => {
-                              handleOpenDelete();
-                              closeMenu();
-                            }}
-                            >
-                              {t_i18n('Delete')}
-                            </MenuItem>
-                          </Box>
-                        )}
-                      </PopoverMenu>
+                    <PopoverMenu>
+                      {({ closeMenu }) => (
+                        <Box>
+                          <MenuItem onClick={() => {
+                            handleOpenDelete();
+                            closeMenu();
+                          }}
+                          >
+                            {t_i18n('Delete')}
+                          </MenuItem>
+                        </Box>
+                      )}
+                    </PopoverMenu>
                     )}
                     {(
                       <Security needs={[KNOWLEDGE_KNUPDATE]}>
                         <Button
                           variant='contained'
-                          size='small'
+                          size='medium'
                           aria-label={t_i18n('Update')}
                           onClick={handleOpenEdit}
                           style={{ marginLeft: theme.spacing(0.5) }}
