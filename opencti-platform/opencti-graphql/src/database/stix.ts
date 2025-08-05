@@ -1163,9 +1163,7 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
     { name: RELATION_COMMUNICATES_WITH, type: REL_EXTENDED }
   ],
   [`${ENTITY_HASHED_OBSERVABLE_STIX_FILE}_${ENTITY_TYPE_VULNERABILITY}`]: [
-    { name: RELATION_TARGETS, type: REL_EXTENDED }
-  ],
-  [`${ENTITY_HASHED_OBSERVABLE_STIX_FILE}_${ENTITY_TYPE_VULNERABILITY}`]: [
+    { name: RELATION_TARGETS, type: REL_EXTENDED },
     { name: RELATION_DEMONSTRATES, type: REL_EXTENDED }
   ],
   // endregion
