@@ -240,7 +240,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
   };
 
   const renderButton = () => {
-    if (!isEnterpriseEdition || !isAIConfigured) return null;
+    if (!isAIConfigured) return null;
     return (
       <>
         <EETooltip forAi={true} title={t_i18n('Ask AI')}>

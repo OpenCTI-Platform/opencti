@@ -7,7 +7,11 @@ import Button from '@mui/material/Button';
 import DialogActions from '@mui/material/DialogActions';
 import { useFormatter } from '../../../../components/i18n';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import FeedbackCreation from '../../cases/feedbacks/FeedbackCreation';
+import EnterpriseEditionAgreement from './EnterpriseEditionAgreement';
 import useAI from '../../../../utils/hooks/useAI';
+import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useGranted';
+import useAuth from '../../../../utils/hooks/useAuth';
 
 const EETooltip = ({
   children,
@@ -19,10 +23,15 @@ const EETooltip = ({
   forAi?: boolean;
 }) => {
   const { t_i18n } = useFormatter();
+  const [feedbackCreation, setFeedbackCreation] = useState(false);
   const [openConfigAI, setOpenConfigAI] = useState(false);
+  const isAdmin = useGranted([SETTINGS_SETPARAMETERS]);
   const isEnterpriseEdition = useEnterpriseEdition();
   const { configured, enabled, fullyActive } = useAI();
   const isAIConfigured = enabled && configured;
+  const {
+    settings: { id: settingsId },
+  } = useAuth();
 
   if (!isEnterpriseEdition) return null;
   if (!forAi || (forAi && enabled && configured)) {
@@ -62,7 +71,36 @@ const EETooltip = ({
     );
   }
   return (
-    <></>
+    <>
+      <Tooltip title={title ? t_i18n(title) : undefined}>
+        <span onClickCapture={(e) => {
+          setFeedbackCreation(true);
+          e.preventDefault();
+          e.stopPropagation();
+        }}
+        >
+          {children}
+        </span>
+      </Tooltip>
+      {isAdmin ? (
+        <EnterpriseEditionAgreement
+          open={feedbackCreation}
+          onClose={() => setFeedbackCreation(false)}
+          settingsId={settingsId}
+        />
+      ) : (
+        <FeedbackCreation
+          openDrawer={feedbackCreation}
+          handleCloseDrawer={() => setFeedbackCreation(false)}
+          initialValue={{
+            description: t_i18n('', {
+              id: 'I would like to use a EE feature ...',
+              values: { feature: title },
+            }),
+          }}
+        />
+      )}
+    </>
   );
 };
 
