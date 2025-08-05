@@ -821,7 +821,10 @@ export const removeIdAndIncorrectKeysFromFilterGroupObject = (filters: FilterGro
         delete newFilter.id;
         if (newFilter.key === 'dynamicRegardingOf') { // remove id from filters contained in dynamic values of dynamicRegardingOf filter
           const dynamicValues = newFilter.values.filter((value) => value.key === 'dynamic')
-            .map((dynamic) => dynamic.values.map((dynamicFilter: FilterGroup) => removeIdFromFilterGroupObject(dynamicFilter)));
+            .map((dynamic) => ({
+              ...dynamic,
+              values: dynamic.values.map((dynamicFilter: FilterGroup) => removeIdFromFilterGroupObject(dynamicFilter)),
+            }));
           const relationshipTypeValues = newFilter.values.filter((value) => value.key === 'relationship_type');
           newFilter.values = [...dynamicValues, ...relationshipTypeValues];
         }
