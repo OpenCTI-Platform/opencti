@@ -2069,6 +2069,8 @@ input RegisterConnectorInput {
   type: ConnectorType!
   scope: [String!]
   auto: Boolean
+  auto_update: Boolean
+  enrichment_resolution: String
   only_contextual: Boolean
   playbook_compatible: Boolean
   listen_callback_uri: String
@@ -2220,6 +2222,8 @@ type Connector implements BasicObject & InternalObject {
   title: String!
   active: Boolean
   auto: Boolean
+  auto_update: Boolean
+  enrichment_resolution: String
   only_contextual: Boolean
   playbook_compatible: Boolean
   connector_trigger_filters: String
@@ -2697,6 +2701,12 @@ input KillChainPhaseAddInput {
 }
 
 ######## STIX CORE OBJECT ENTITIES
+interface StixAssessmentObject {
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+}
 
 type Representative {
   main: String!
@@ -4340,7 +4350,7 @@ type ReportEdge {
   cursor: String!
   node: Report!
 }
-type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container {
+type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container& StixAssessmentObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
@@ -5665,7 +5675,7 @@ type IntrusionSetEdge {
   cursor: String!
   node: IntrusionSet!
 }
-type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
+type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDomainObject & StixAssessmentObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
@@ -6960,7 +6970,7 @@ type ThreatActorGroupEdge {
   node: ThreatActorGroup!
 }
 
-interface ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
+interface ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDomainObject & StixAssessmentObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
@@ -7115,7 +7125,7 @@ type  ThreatActorConnection {
   edges: [ThreatActorEdge]
 }
 
-type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & StixDomainObject & ThreatActor {
+type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & StixDomainObject & ThreatActor & StixAssessmentObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
