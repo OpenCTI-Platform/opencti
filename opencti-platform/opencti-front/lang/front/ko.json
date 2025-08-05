@@ -1534,6 +1534,7 @@
   "Failed": "실패",
   "Failed to create draft workspace.": "초안 작업 공간을 만들지 못했습니다.",
   "Failed to import theme": "테마를 가져오지 못했습니다",
+  "Failed to parse a contract": "컨트랙트 파싱에 실패했습니다",
   "Failed to parse file": "파일을 구문 분석하지 못했습니다",
   "Failed to set draft context.": "초안 컨텍스트를 설정하지 못했습니다.",
   "Failed to update theme": "테마를 업데이트하지 못했습니다",

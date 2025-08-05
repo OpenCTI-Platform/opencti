@@ -1534,6 +1534,7 @@
   "Failed": "Fallito",
   "Failed to create draft workspace.": "Impossibile creare l'area di lavoro della bozza.",
   "Failed to import theme": "Importazione fallita del tema",
+  "Failed to parse a contract": "Errore nell'analisi di un contratto",
   "Failed to parse file": "Non è stato analizzato il file",
   "Failed to set draft context.": "Impossibile impostare il contesto della bozza.",
   "Failed to update theme": "Fallito l'aggiornamento del tema",

@@ -1534,6 +1534,7 @@
   "Failed": "失敗",
   "Failed to create draft workspace.": "ドラフトワークスペースの作成に失敗しました。",
   "Failed to import theme": "テーマのインポートに失敗",
+  "Failed to parse a contract": "契約の解析に失敗しました",
   "Failed to parse file": "ファイルの解析に失敗",
   "Failed to set draft context.": "ドラフトコンテキストの設定に失敗しました。",
   "Failed to update theme": "テーマの更新に失敗",

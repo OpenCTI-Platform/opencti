@@ -1534,6 +1534,7 @@
   "Failed": "失败",
   "Failed to create draft workspace.": "创建草稿工作区失败。",
   "Failed to import theme": "导入主题选项失败",
+  "Failed to parse a contract": "解析合同失败",
   "Failed to parse file": "解析json文件失败: ",
   "Failed to set draft context.": "设置草稿上下文失败。",
   "Failed to update theme": "无法更新主题模组。",

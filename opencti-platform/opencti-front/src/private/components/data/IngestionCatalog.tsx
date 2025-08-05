@@ -84,7 +84,7 @@ const IngestionCatalogComponent = ({
           const parsedContract = JSON.parse(contract);
           finalContracts.push(parsedContract);
         } catch (e) {
-          MESSAGING$.notifyError(t_i18n('Error during to parse a contract'));
+          MESSAGING$.notifyError(t_i18n('Failed to parse a contract'));
         }
         const finalCatalog = { ...catalog, contracts: finalContracts };
         setCatalogsParsed([...catalogsParsed, finalCatalog]);

@@ -19,7 +19,7 @@ import {
   IngestionCatalogConnectorCreationMutation,
   IngestionCatalogConnectorCreationMutation$data,
 } from '@components/data/IngestionCatalog/__generated__/IngestionCatalogConnectorCreationMutation.graphql';
-import IngestionCatalogConnectorCreationUserHandling from '@components/data/IngestionCatalog/IngestionCatalogConnectorCreationUserHandling';
+import IngestionCreationUserHandling, { BasicUserHandlingValues } from '@components/data/IngestionCreationUserHandling';
 import { IngestionConnector } from '@components/data/IngestionCatalog';
 import { MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -65,7 +65,7 @@ interface IngestionCatalogConnectorCreationProps {
   catalogId: string;
 }
 
-export interface ManagedConnectorValues {
+export interface ManagedConnectorValues extends BasicUserHandlingValues {
   name: string;
   user_id: string | FieldOption;
   automatic_user?: boolean;
@@ -156,7 +156,11 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
                 required
                 fullWidth={true}
               />
-              <IngestionCatalogConnectorCreationUserHandling max_confidence_level={connector.max_confidence_level} />
+              <IngestionCreationUserHandling
+                confidence_level={connector.max_confidence_level}
+                max_confidence_level={connector.max_confidence_level}
+                labelTag="C"
+              />
               <div style={fieldSpacingContainerStyle}>{t_i18n('Configuration')}</div>
               <Alert
                 classes={{ root: classes.alert, message: classes.message }}

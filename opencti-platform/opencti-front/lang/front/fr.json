@@ -1534,6 +1534,7 @@
   "Failed": "Échec",
   "Failed to create draft workspace.": "Échec de la création de l'espace de travail.",
   "Failed to import theme": "Impossible d’importer le thème",
+  "Failed to parse a contract": "Échec de l'analyse d'un contrat",
   "Failed to parse file": "Échec de l'analyse du fichier",
   "Failed to set draft context.": "Échec de la définition du contexte de l'ébauche.",
   "Failed to update theme": "Échec de la mise à jour du thème.",

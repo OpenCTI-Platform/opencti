@@ -1534,6 +1534,7 @@
   "Failed": "Gescheitert",
   "Failed to create draft workspace.": "Entwurfsarbeitsbereich konnte nicht erstellt werden.",
   "Failed to import theme": "Theme konnte nicht importiert werden",
+  "Failed to parse a contract": "Ein Vertrag konnte nicht analysiert werden",
   "Failed to parse file": "Fehler beim Parsen",
   "Failed to set draft context.": "Der Entwurfskontext konnte nicht gesetzt werden.",
   "Failed to update theme": "Fehler beim Aktualisieren von Theme Mods.",

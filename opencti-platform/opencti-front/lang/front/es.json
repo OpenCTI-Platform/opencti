@@ -1534,6 +1534,7 @@
   "Failed": "Fallido",
   "Failed to create draft workspace.": "Error al crear espacio de trabajo de borrador.",
   "Failed to import theme": "Error al importar las opciones del tema",
+  "Failed to parse a contract": "Error al analizar un contrato",
   "Failed to parse file": "No se ha podido analizar el archivo",
   "Failed to set draft context.": "Error al establecer el contexto de borrador.",
   "Failed to update theme": "Error al actualizar los mods de tema.",

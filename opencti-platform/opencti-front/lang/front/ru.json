@@ -1534,6 +1534,7 @@
   "Failed": "Не удалось",
   "Failed to create draft workspace.": "Не удалось создать черновое рабочее пространство.",
   "Failed to import theme": "Не удалось импортировать тему",
+  "Failed to parse a contract": "Не удалось разобрать контракт",
   "Failed to parse file": "Не удалось разобрать файл",
   "Failed to set draft context.": "Не удалось установить контекст проекта.",
   "Failed to update theme": "Не удалось обновить тему",

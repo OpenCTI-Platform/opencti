@@ -1534,6 +1534,7 @@
   "Failed": "Failed",
   "Failed to create draft workspace.": "Failed to create draft workspace.",
   "Failed to import theme": "Failed to import theme",
+  "Failed to parse a contract": "Failed to parse a contract",
   "Failed to parse file": "Failed to parse file",
   "Failed to set draft context.": "Failed to set draft context.",
   "Failed to update theme": "Failed to update theme",
