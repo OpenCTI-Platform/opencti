@@ -7,7 +7,7 @@ import { Link, useLocation } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
 import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/styles';
-import useEnterpriseEdition from 'src/utils/hooks/useEnterpriseEdition';
+import useEnterpriseEdition from '../utils/hooks/useEnterpriseEdition';
 import EETooltip from '../private/components/common/entreprise_edition/EETooltip';
 import { useFormatter } from './i18n';
 import useGranted, { SETTINGS_SETPARAMETERS } from '../utils/hooks/useGranted';
