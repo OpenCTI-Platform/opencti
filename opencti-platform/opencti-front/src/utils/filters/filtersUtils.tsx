@@ -791,7 +791,13 @@ export const useRemoveIdAndIncorrectKeysFromFilterGroupObject = (filters?: Filte
       .filter((f) => ['nil', 'not_nil'].includes(f.operator ?? 'eq') || f.values.length > 0)
       .map((f) => {
         const newFilter = { ...f };
-        delete newFilter.id;
+        delete newFilter.id; // remove id of the filter
+        if (newFilter.key === 'dynamicRegardingOf') { // remove id from filters contained in dynamic values of dynamicRegardingOf filter
+          const dynamicValues = newFilter.values.filter((value) => value.key === 'dynamic')
+            .map((dynamic) => dynamic.values.map((dynamicFilter: FilterGroup) => useRemoveIdAndIncorrectKeysFromFilterGroupObject(dynamicFilter)));
+          const otherValues = newFilter.values.filter((value) => value.key === 'relationship_type');
+          newFilter.values = [...dynamicValues, ...otherValues];
+        }
         return newFilter;
       }),
     filterGroups: filters.filterGroups.map((group) => useRemoveIdAndIncorrectKeysFromFilterGroupObject(group, entityTypes)) as FilterGroup[],
