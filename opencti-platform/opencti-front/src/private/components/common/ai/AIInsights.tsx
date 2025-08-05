@@ -1,7 +1,5 @@
 import makeStyles from '@mui/styles/makeStyles';
 import React, { useState } from 'react';
-import FeedbackCreation from '@components/cases/feedbacks/FeedbackCreation';
-import EnterpriseEditionAgreement from '@components/common/entreprise_edition/EnterpriseEditionAgreement';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
@@ -23,12 +21,11 @@ import AISummaryForecast from '@components/common/ai/AISummaryForecast';
 import { v4 as uuid } from 'uuid';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
-import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useGranted';
 import useAuth from '../../../../utils/hooks/useAuth';
 import useAI from '../../../../utils/hooks/useAI';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -132,19 +129,17 @@ const AIInsights = ({
   onlyIcon = false,
   isContainer = false,
 }: AIInsightProps) => {
-  const { bannerSettings: { bannerHeightNumber }, settings: { id: settingsId } } = useAuth();
+  const { bannerSettings: { bannerHeightNumber } } = useAuth();
   const classes = useStyles({ bannerHeightNumber });
-  const isEnterpriseEdition = useEnterpriseEdition();
   const { fullyActive } = useAI();
   const { t_i18n } = useFormatter();
   const [display, setDisplay] = useState(false);
-  const [displayEEDialog, setDisplayEEDialog] = useState(false);
   const [displayAIDialog, setDisplayAIDialog] = useState(false);
   const [currentTab, setCurrentTab] = useState(defaultTab);
   const [containersBusId] = useState(uuid());
   const [loading, setLoading] = useState(false);
-  const isAdmin = useGranted([SETTINGS_SETPARAMETERS]);
   const { enabled, configured } = useAI();
+  const isEnterpriseEdition = useEnterpriseEdition();
   const handleClose = () => {
     setLoading(false);
     setDisplay(false);
@@ -176,49 +171,7 @@ const AIInsights = ({
   const [containersFilters, containersFiltersHelpers] = useFiltersState(initialContainersFilters);
   const isAIConfigured = enabled && configured;
 
-  if (isEnterpriseEdition && !isAIConfigured) return null;
-  if (!isEnterpriseEdition) {
-    return (
-      <>
-        <Tooltip title={t_i18n('AI Insights')}>
-          {onlyIcon ? (
-            <IconButton
-              size="small"
-              onClick={() => setDisplayEEDialog(true)}
-              className={floating ? classes.chipFloating : classes.chip}
-            >
-              <AutoAwesomeOutlined style={{ fontSize: 14 }} />
-            </IconButton>
-          ) : (
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={() => setDisplayEEDialog(true)}
-              className={floating ? classes.chipFloating : classes.chip}
-              startIcon={<AutoAwesomeOutlined style={{ fontSize: 14 }} />}
-            >
-              {t_i18n('AI Insights')}
-            </Button>
-          )}
-        </Tooltip>
-        {isAdmin ? (
-          <EnterpriseEditionAgreement
-            open={displayEEDialog}
-            onClose={() => setDisplayEEDialog(false)}
-            settingsId={settingsId}
-          />
-        ) : (
-          <FeedbackCreation
-            openDrawer={displayEEDialog}
-            handleCloseDrawer={() => setDisplayEEDialog(false)}
-            initialValue={{
-              description: t_i18n('I would like to use a EE feature AI Summary but I don\'t have EE activated.\nI would like to discuss with you about activating EE.'),
-            }}
-          />
-        )}
-      </>
-    );
-  }
+  if (!isAIConfigured || !isEnterpriseEdition) return null;
   if (!fullyActive) {
     return (
       <>
@@ -272,7 +225,7 @@ const AIInsights = ({
             onClick={() => setDisplay(true)}
             className={floating ? classes.chipFloating : classes.chip}
           >
-            <AutoAwesomeOutlined style={{ fontSize: 14 }} />
+            <AutoAwesomeOutlined style={{ fontSize: 14 }}/>
           </IconButton>
         ) : (
           <Button
@@ -280,7 +233,7 @@ const AIInsights = ({
             size="small"
             onClick={() => setDisplay(true)}
             className={floating ? classes.chipFloating : classes.chip}
-            startIcon={<AutoAwesomeOutlined style={{ fontSize: 14 }} />}
+            startIcon={<AutoAwesomeOutlined style={{ fontSize: 14 }}/>}
           >
             {t_i18n('AI Insights')}
           </Button>
@@ -311,7 +264,7 @@ const AIInsights = ({
             variant="outlined"
             size="small"
             className={classes.chipNoAction}
-            startIcon={<AutoAwesomeOutlined style={{ fontSize: 14 }} />}
+            startIcon={<AutoAwesomeOutlined style={{ fontSize: 14 }}/>}
           >
             {t_i18n('XTM AI')}
           </Button>
@@ -326,47 +279,47 @@ const AIInsights = ({
           }}
           >
             <Tabs value={currentTab} onChange={handleChangeTab}>
-              {tabs.includes('activity') && <Tab value="activity" label={t_i18n('Activity')} />}
-              {tabs.includes('containers') && <Tab value="containers" label={isContainer ? t_i18n('Container summary') : t_i18n('Containers digest')} />}
-              {tabs.includes('forecast') && <Tab value="forecast" label={t_i18n('Forecast')} />}
-              {tabs.includes('history') && <Tab value="history" label={t_i18n('Internal history')} />}
+              {tabs.includes('activity') && <Tab value="activity" label={t_i18n('Activity')}/>}
+              {tabs.includes('containers') && <Tab value="containers" label={isContainer ? t_i18n('Container summary') : t_i18n('Containers digest')}/>}
+              {tabs.includes('forecast') && <Tab value="forecast" label={t_i18n('Forecast')}/>}
+              {tabs.includes('history') && <Tab value="history" label={t_i18n('Internal history')}/>}
             </Tabs>
             {loading && (
-              <div style={{ paddingTop: 10 }}>
-                <Loader variant={LoaderVariant.inline} />
-              </div>
+            <div style={{ paddingTop: 10 }}>
+              <Loader variant={LoaderVariant.inline}/>
+            </div>
             )}
           </Box>
           {currentTab === 'activity' && (
-            <AISummaryActivity
-              id={id}
-              loading={loading}
-              setLoading={setLoading}
-            />
+          <AISummaryActivity
+            id={id}
+            loading={loading}
+            setLoading={setLoading}
+          />
           )}
           {currentTab === 'containers' && (
-            <AISummaryContainers
-              busId={containersBusId}
-              isContainer={isContainer}
-              filters={containersFilters}
-              helpers={containersFiltersHelpers}
-              loading={loading}
-              setLoading={setLoading}
-            />
+          <AISummaryContainers
+            busId={containersBusId}
+            isContainer={isContainer}
+            filters={containersFilters}
+            helpers={containersFiltersHelpers}
+            loading={loading}
+            setLoading={setLoading}
+          />
           )}
           {currentTab === 'forecast' && (
-            <AISummaryForecast
-              id={id}
-              loading={loading}
-              setLoading={setLoading}
-            />
+          <AISummaryForecast
+            id={id}
+            loading={loading}
+            setLoading={setLoading}
+          />
           )}
           {currentTab === 'history' && (
-            <AISummaryHistory
-              id={id}
-              loading={loading}
-              setLoading={setLoading}
-            />
+          <AISummaryHistory
+            id={id}
+            loading={loading}
+            setLoading={setLoading}
+          />
           )}
         </div>
       </Drawer>

@@ -19,7 +19,6 @@ import { useFormatter } from '../../components/i18n';
 import MarkdownDisplay from '../../components/MarkdownDisplay';
 import { isNotEmptyField } from '../utils';
 import CKEditor from '../../components/CKEditor';
-import useEnterpriseEdition from '../hooks/useEnterpriseEdition';
 import useAI from '../hooks/useAI';
 
 // region types
@@ -71,7 +70,6 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
   const markdownFieldRef = useRef<HTMLTextAreaElement>(null);
   const { t_i18n } = useFormatter();
   const [markdownSelectedTab, setMarkdownSelectedTab] = useState<'write' | 'preview' | undefined>('write');
-  const isEnterpriseEdition = useEnterpriseEdition();
   const { configured, enabled } = useAI();
   const isAIConfigured = enabled && configured;
 
@@ -134,7 +132,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
                 fullWidth={true}
                 slotProps={{
                   input: {
-                    endAdornment: (isAIConfigured || !isEnterpriseEdition) && (
+                    endAdornment: (isAIConfigured) && (
                       <TextFieldAskAI
                         currentValue={content ?? ''}
                         setFieldValue={(val) => {

@@ -29,7 +29,6 @@ const TextField = (props: TextFieldProps) => {
     onSubmit,
     onKeyDown,
   } = props;
-  const isEnterpriseEdition = useEnterpriseEdition();
   const { configured, enabled } = useAI();
   const isAIConfigured = enabled && configured;
 
@@ -126,7 +125,7 @@ const TextField = (props: TextFieldProps) => {
       slotProps={{
         input: {
           startAdornment,
-          endAdornment: askAi && (isAIConfigured || !isEnterpriseEdition) && (
+          endAdornment: askAi && (isAIConfigured) && (
             <TextFieldAskAI
               currentValue={value as string ?? ''}
               setFieldValue={(val) => {

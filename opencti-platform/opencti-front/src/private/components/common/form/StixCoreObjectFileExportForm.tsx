@@ -312,7 +312,7 @@ const StixCoreObjectFileExportForm = ({
                       </Card>
                     </Grid>
                   ))}
-                  {isContainer && (isAIConfigured || !isEnterpriseEdition) && (
+                  {isContainer && (isAIConfigured && isEnterpriseEdition) && (
                     <Grid item xs={4}>
                       <Card
                         variant="outlined"

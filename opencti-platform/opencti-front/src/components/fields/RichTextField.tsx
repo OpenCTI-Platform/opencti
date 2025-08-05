@@ -14,7 +14,6 @@ import type { Theme } from '../Theme';
 import { getHtmlTextContent } from '../../utils/html';
 import CKEditor from '../CKEditor';
 import { useFormatter } from '../i18n';
-import useEnterpriseEdition from '../../utils/hooks/useEnterpriseEdition';
 import useAI from '../../utils/hooks/useAI';
 
 interface RichTextFieldProps extends FieldProps<string> {
@@ -51,7 +50,6 @@ const RichTextField = ({
   const editorReference = useRef<ClassicEditor>(undefined);
   const [fullScreen, setFullScreen] = useState(false);
   const [, meta] = useField(name);
-  const isEnterpriseEdition = useEnterpriseEdition();
   const { configured, enabled } = useAI();
   const isAIConfigured = enabled && configured;
 
@@ -109,7 +107,7 @@ const RichTextField = ({
               <span>{t_i18n('You have unsaved changes')}</span>
             )}
           </div>
-          {askAi && (isAIConfigured || !isEnterpriseEdition) && (
+          {askAi && (isAIConfigured) && (
             <TextFieldAskAI
               currentValue={value ?? ''}
               setFieldValue={(val) => {

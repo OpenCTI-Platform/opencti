@@ -28,6 +28,7 @@ import ResponseDialog from '../../../../utils/ai/ResponseDialog';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
+import useAI from '../../../../utils/hooks/useAI';
 
 // region types
 interface TextFieldAskAiProps {
@@ -86,7 +87,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
-
+  const { enabled, configured } = useAI();
   const [content, setContent] = useState('');
   const [disableResponse, setDisableResponse] = useState(false);
   const [openToneOptions, setOpenToneOptions] = useState(false);
@@ -95,7 +96,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
   const [menuOpen, setMenuOpen] = useState<{ open: boolean; anchorEl: HTMLButtonElement | null; }>({ open: false, anchorEl: null });
   const [busId, setBusId] = useState<string | null>(null);
   const [displayAskAI, setDisplayAskAI] = useState(false);
-
+  const isAIConfigured = enabled && configured;
   const handleOpenMenu = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     if (isEnterpriseEdition) {
       event.preventDefault();
@@ -239,6 +240,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
   };
 
   const renderButton = () => {
+    if (!isEnterpriseEdition || !isAIConfigured) return null;
     return (
       <>
         <EETooltip forAi={true} title={t_i18n('Ask AI')}>
@@ -248,7 +250,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
             disabled={disabled || currentValue.length < 10}
             style={{ color: theme.palette.ai.main }}
           >
-            <AutoAwesomeOutlined fontSize='small' />
+            <AutoAwesomeOutlined fontSize='small'/>
           </IconButton>
         </EETooltip>
         <Menu
@@ -277,22 +279,22 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
           </MenuItem>
         </Menu>
         {busId && (
-          <ResponseDialog
-            id={busId}
-            isDisabled={disableResponse}
-            isOpen={displayAskAI}
-            handleClose={handleCloseAskAI}
-            content={content}
-            setContent={setContent}
-            handleAccept={(value) => {
-              setFieldValue(value);
-              handleCloseAskAI();
-            }}
-            handleFollowUp={handleCloseAskAI}
-            followUpActions={[{ key: 'retry', label: t_i18n('Retry') }]}
-            format={format}
-            isAcceptable={isAcceptable}
-          />
+        <ResponseDialog
+          id={busId}
+          isDisabled={disableResponse}
+          isOpen={displayAskAI}
+          handleClose={handleCloseAskAI}
+          content={content}
+          setContent={setContent}
+          handleAccept={(value) => {
+            setFieldValue(value);
+            handleCloseAskAI();
+          }}
+          handleFollowUp={handleCloseAskAI}
+          followUpActions={[{ key: 'retry', label: t_i18n('Retry') }]}
+          format={format}
+          isAcceptable={isAcceptable}
+        />
         )}
         <Dialog
           slotProps={{ paper: { elevation: 1 } }}
