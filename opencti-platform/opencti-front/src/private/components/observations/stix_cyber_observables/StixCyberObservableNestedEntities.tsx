@@ -1,7 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
-import StixNestedRefRelationCreationFromEntity from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipCreationFromEntity';
+import StixNestedRefRelationshipCreationFromEntityContainer from '@components/common/stix_nested_ref_relationships/StixNestedRefRelationshipCreationFromEntityContainer';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import SearchInput from '../../../../components/SearchInput';
@@ -22,8 +22,6 @@ const StixCyberObservableNestedEntities: React.FC<StixCyberObservableNestedEntit
   const { t_i18n } = useFormatter();
   const [searchTerm, setSearchTerm] = useState('');
   const isInLine = variant === 'inLine';
-  const isNetworkTraffic = entityType === 'Network-Traffic';
-  const targetStixCoreObjectTypes = useMemo(() => (isNetworkTraffic ? ['IPv4-Addr', 'IPv6-Addr', 'Domain-Name', 'Mac-Addr'] : undefined), [isNetworkTraffic]);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
@@ -49,12 +47,11 @@ const StixCyberObservableNestedEntities: React.FC<StixCyberObservableNestedEntit
         needs={[KNOWLEDGE_KNUPDATE]}
         placeholder={<div style={{ height: 29 }}/>}
       >
-        <StixNestedRefRelationCreationFromEntity
+        <StixNestedRefRelationshipCreationFromEntityContainer
           paginationOptions={paginationOptions}
           entityId={entityId}
           variant="inLine"
           entityType={entityType}
-          targetStixCoreObjectTypes={targetStixCoreObjectTypes}
         />
       </Security>
       {!isInLine && (
