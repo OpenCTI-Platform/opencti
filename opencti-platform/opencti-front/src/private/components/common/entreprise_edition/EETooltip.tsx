@@ -23,15 +23,11 @@ const EETooltip = ({
   forAi?: boolean;
 }) => {
   const { t_i18n } = useFormatter();
-  const [feedbackCreation, setFeedbackCreation] = useState(false);
   const [openConfigAI, setOpenConfigAI] = useState(false);
-  const isAdmin = useGranted([SETTINGS_SETPARAMETERS]);
   const isEnterpriseEdition = useEnterpriseEdition();
   const { configured, enabled, fullyActive } = useAI();
   const isAIConfigured = enabled && configured;
-  const {
-    settings: { id: settingsId },
-  } = useAuth();
+
   if (!isEnterpriseEdition) return null;
   if (!forAi || (forAi && enabled && configured)) {
     return <Tooltip title={title ? t_i18n(title) : undefined}>{children}</Tooltip>;
@@ -70,36 +66,7 @@ const EETooltip = ({
     );
   }
   return (
-    <>
-      <Tooltip title={title ? t_i18n(title) : undefined}>
-        <span onClickCapture={(e) => {
-          setFeedbackCreation(true);
-          e.preventDefault();
-          e.stopPropagation();
-        }}
-        >
-          {children}
-        </span>
-      </Tooltip>
-      {isAdmin ? (
-        <EnterpriseEditionAgreement
-          open={feedbackCreation}
-          onClose={() => setFeedbackCreation(false)}
-          settingsId={settingsId}
-        />
-      ) : (
-        <FeedbackCreation
-          openDrawer={feedbackCreation}
-          handleCloseDrawer={() => setFeedbackCreation(false)}
-          initialValue={{
-            description: t_i18n('', {
-              id: 'I would like to use a EE feature ...',
-              values: { feature: title },
-            }),
-          }}
-        />
-      )}
-    </>
+    <></>
   );
 };
 
