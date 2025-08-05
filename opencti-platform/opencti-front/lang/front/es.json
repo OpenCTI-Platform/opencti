@@ -2513,6 +2513,7 @@
   "Only letters, numbers and special chars _ and - are allowed": "Sólo se permiten letras, números y caracteres especiales _ y -",
   "Only successful tests allow the ingestion creation.": "Sólo las pruebas exitosas permiten la creación de la ingesta.",
   "Only successful tests allow the ingestion edition.": "Sólo las pruebas exitosas permiten la edición de ingestión.",
+  "Open chatbot": "Abrir chatbot",
   "Open correlation details": "Detalles de la correlación abierta",
   "Open export panel": "Abrir panel de exportación",
   "Open last execution traces": "Abrir últimas trazas de ejecución",

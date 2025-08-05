@@ -183,7 +183,7 @@
     "verify-translation": "node script/verify-translation.js",
     "sort-translation": "node script/sort-translation-files.js",
     "auto-translation:all": "node script/auto-translate.js && npm run sort-translation",
-    "verify-licenses": "npx license-checker-rseidelsohn --production --summary --onlyAllow 'Hippocratic-2.1;MIT;Apache-2.0;GPL-2.0-or-later;OFL-1.1;BSD-3-Clause;ISC;BSD-2-Clause;Python-2.0;MPL-2.0;CC-BY-4.0;CC-BY-3.0;BlueOak-1.0.0;CC0-1.0;UNLICENSED;0BSD;Unlicense;WTFPL' --excludePackagesStartingWith  '@ckeditor;eslint;opencti'",
+    "verify-licenses": "npx license-checker-rseidelsohn --production --summary --onlyAllow 'Hippocratic-2.1;MIT;Apache-2.0;GPL-2.0-or-later;OFL-1.1;BSD-3-Clause;ISC;BSD-2-Clause;Python-2.0;MPL-2.0;CC-BY-4.0;CC-BY-3.0;BlueOak-1.0.0;CC0-1.0;UNLICENSED;0BSD;Unlicense;WTFPL' --excludePackagesStartingWith  '@ckeditor;eslint;opencti;device-detector-js'",
     "test:e2e": "E2E_TEST=true yarn playwright test --workers=1 --retries=1 -x",
     "test:e2e:ui": "E2E_TEST=true yarn playwright test --ui --workers=1",
     "generate-test-e2e": "npx playwright codegen http://localhost:3000/",
