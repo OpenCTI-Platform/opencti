@@ -1,4 +1,3 @@
-import type { JSONSchemaType } from 'ajv';
 import { ENTITY_TYPE_THREAT_ACTOR } from '../../schema/general';
 import { INNER_TYPE, NAME_FIELD, normalizeName } from '../../schema/identifier';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
@@ -50,25 +49,6 @@ import { ENTITY_TYPE_EVENT } from '../event/event-types';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_PERSONA } from '../../schema/stixCyberObservable';
 import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../administrativeArea/administrativeArea-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
-
-interface Measures {
-  measure: number | null
-  date_seen: object | string | null
-}
-
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-export const schemaMeasure: JSONSchemaType<Measures[]> = {
-  type: 'array',
-  items: {
-    type: 'object',
-    properties: {
-      measure: { type: ['null', 'number'] },
-      date_seen: { type: ['null', 'string', 'object'] },
-    },
-    required: ['measure', 'date_seen']
-  }
-};
 
 const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActorIndividual, StixThreatActorIndividual> = {
   type: {
