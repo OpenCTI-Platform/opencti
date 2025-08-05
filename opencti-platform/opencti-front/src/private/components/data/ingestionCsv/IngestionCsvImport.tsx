@@ -1,4 +1,4 @@
-import React, { BaseSyntheticEvent, FunctionComponent, useRef, useState } from 'react';
+import React, { BaseSyntheticEvent, FunctionComponent, useContext, useEffect, useRef, useState } from 'react';
 import VisuallyHiddenInput from '@components/common/VisuallyHiddenInput';
 import { graphql } from 'react-relay';
 import { IngestionCsvCreationContainer } from '@components/data/ingestionCsv/IngestionCsvCreation';
@@ -7,9 +7,11 @@ import { IngestionCsvImportQuery$data } from '@components/data/ingestionCsv/__ge
 import { IngestionCsvEditionFragment_ingestionCsv$data } from '@components/data/ingestionCsv/__generated__/IngestionCsvEditionFragment_ingestionCsv.graphql';
 import { FileUploadOutlined } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton/ToggleButton';
+import { useNavigate, useParams } from 'react-router-dom';
 import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { RelayError } from '../../../../relay/relayTypes';
+import { UserContext } from '../../../../utils/hooks/useAuth';
 
 export const csvFeedImportQuery = graphql`
   query IngestionCsvImportQuery($file: Upload!) {
@@ -65,12 +67,16 @@ interface IngestionCsvImportProps {
   paginationOptions?: IngestionCsvLinesPaginationQuery$variables | null | undefined;
 }
 const IngestionCsvImport: FunctionComponent<IngestionCsvImportProps> = ({ paginationOptions }) => {
+  const params = useParams();
+  const navigate = useNavigate();
+  const { settings } = useContext(UserContext);
+
   const inputFileRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState<boolean>(false);
   const [ingestCSVData, setIngestCSVData] = useState<IngestionCsvImportQuery$data['csvFeedAddInputFromImport'] | undefined>(undefined);
   const { t_i18n } = useFormatter();
-  const handleFileImport = (event: BaseSyntheticEvent) => {
-    const file = event.target.files[0];
+
+  const handleFileImport = (file: File) => {
     if (file) {
       fetchQuery(csvFeedImportQuery, { file })
         .toPromise()
@@ -88,6 +94,40 @@ const IngestionCsvImport: FunctionComponent<IngestionCsvImportProps> = ({ pagina
         });
     }
   };
+
+  const fileImport = (event: BaseSyntheticEvent) => {
+    const file = event.target.files[0];
+    handleFileImport(file);
+  };
+
+  useEffect(() => {
+    if (!params.fileId || !params.serviceInstanceId) {
+      return;
+    }
+    const fetchData = async () => {
+      try {
+        const response = await fetch(
+          `${settings?.platform_xtmhub_url}/document/get/${params.serviceInstanceId}/${params.fileId}`,
+          {
+            method: 'GET',
+            credentials: 'include',
+          },
+        );
+
+        const blob = await response.blob();
+        const file = new File([blob], 'downloaded.json', {
+          type: 'application/json',
+        });
+
+        handleFileImport(file);
+      } catch (e) {
+        navigate('/dashboard/data/ingestion/csv');
+        MESSAGING$.notifyError('An error occured while importing CSV Feed configuration.');
+      }
+    };
+    fetchData();
+  }, [params]);
+
   return <>
     <ToggleButton
       value="import"
@@ -102,7 +142,7 @@ const IngestionCsvImport: FunctionComponent<IngestionCsvImportProps> = ({ pagina
       ref={inputFileRef}
       type="file"
       accept={'application/JSON'}
-      onChange={handleFileImport}
+      onChange={fileImport}
     />
     <IngestionCsvCreationContainer
       ingestionCsvData={{
