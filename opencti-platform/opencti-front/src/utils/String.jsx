@@ -247,3 +247,37 @@ export const displayEntityTypeForTranslation = (value) => {
     ? `entity_${value.toString()}`
     : `relationship_${value.toString()}`;
 };
+
+/**
+ * Extract urls from a string
+ *
+ * @returns {*[]}
+ * @param text
+ */
+export const extractUrlsFromText = (text) => {
+  const extractUrlsregex = /\b(?:https?:\/\/|www\.)\S+\b/gm;
+  const matches = [...text.matchAll(extractUrlsregex)];
+  const parts = [];
+  let lastIndex = 0;
+
+  matches.forEach((match) => {
+    if (match.index > lastIndex) {
+      parts.push(<span key={`text-${lastIndex}`}>{text.substring(lastIndex, match.index)}</span>);
+    }
+    const url = match[0];
+    const href = url.startsWith('www.') ? `http://${url}` : url;
+
+    parts.push(
+      <a key={`url-${match.index}`} href={href} target="_blank" rel="noopener noreferrer">
+        {url}
+      </a>,
+    );
+    lastIndex = match.index + url.length;
+  });
+
+  if (lastIndex < text.length) {
+    parts.push(<span key={`text-${lastIndex}`}>{text.substring(lastIndex)}</span>);
+  }
+
+  return parts;
+};
