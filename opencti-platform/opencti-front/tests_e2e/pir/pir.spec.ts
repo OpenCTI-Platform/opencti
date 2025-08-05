@@ -4,7 +4,7 @@ import LeftBarPage from '../model/menu/leftBar.pageModel';
 import PirPage from '../model/pir.pageModel';
 import PirFormPageModel from '../model/form/pirForm.pageModel';
 import PirDetailsPageModel from '../model/pirDetails.pageModel';
-import { addRelationship } from '../dataForTesting/relationship.data';
+import { addRelationship, deleteRelationship } from '../dataForTesting/relationship.data';
 import { awaitUntilCondition } from '../utils';
 
 /**
@@ -123,6 +123,35 @@ test('Pir CRUD', { tag: ['@pir', '@mutation'] }, async ({ page, request }) => {
 
   await pirDetails.tabs.goToHistoryTab();
   await expect(pirDetails.dataTable.container.getByText(historyItemName)).toBeVisible();
+
+  // ---------
+  // endregion
+
+  // region Delete relation that flags entity
+  // ----------------------------------------
+
+  await pirDetails.tabs.goToOverviewTab();
+  await expect(pirDetails.getEntityTypeCount('Malware')).toContainText('1');
+  await deleteRelationship(request, {
+    relationship_type: 'targets',
+    toId: 'location--5acd8b26-51c2-4608-86ed-e9edd43ad971',
+    fromId: 'malware--48534a79-a9d7-4c34-a292-f5f102d26dea',
+  });
+
+  // ---------
+  // endregion
+
+  // region Control tab Overview after unflagging
+  // --------------------------------------------
+
+  const waitForUnflagging = async () => {
+    await pirPage.navigateFromMenu();
+    await pirPage.getItemFromList(pirName).click();
+    const text = await pirDetails.getEntityTypeCount('Malware').innerText();
+    return text === '0';
+  };
+  await awaitUntilCondition(waitForUnflagging, 5000, 20);
+  await expect(pirDetails.getEntityTypeCount('Malware')).toContainText('0');
 
   // ---------
   // endregion
