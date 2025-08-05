@@ -97,7 +97,7 @@ export const isStixMatchFilterGroup = async (context: AuthContext, user: AuthUse
   // we use the entities stored in cache for the "Resolved-Filters" (all the entities used by the saved filters - stream, trigger, playbooks)
   // see cacheManager.ts:platformResolvedFilters
   const cache = await getEntitiesMapFromCache<StixObject>(context, SYSTEM_USER, ENTITY_TYPE_RESOLVED_FILTERS);
-  const map = finalFilters ? await buildResolutionMapForFilterGroup(context, user, finalFilters, cache) : new Map();
+  const map = await buildResolutionMapForFilterGroup(context, user, finalFilters, cache);
 
   return isStixMatchFilterGroup_MockableForUnitTests(context, user, stix, finalFilters, map);
 };
