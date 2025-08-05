@@ -23,7 +23,7 @@ import { findById } from '../modules/organization/organization-domain';
 import { READ_DATA_INDICES } from '../database/utils';
 import { internalFindByIds } from '../database/middleware-loader';
 import { getEnterpriseEditionInfo } from '../modules/settings/licensing';
-import { isAgenticAiEnabled, isRequestAccessEnabled } from '../modules/requestAccess/requestAccess-domain';
+import { isRequestAccessEnabled } from '../modules/requestAccess/requestAccess-domain';
 
 const settingsResolvers = {
   Query: {

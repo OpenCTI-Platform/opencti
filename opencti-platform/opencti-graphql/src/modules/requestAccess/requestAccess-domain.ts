@@ -24,7 +24,7 @@ import {
 } from '../../utils/access';
 import { internalLoadById, listAllEntities } from '../../database/middleware-loader';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS } from '../../schema/internalObject';
-import { BUS_TOPICS, isFeatureEnabled, logApp } from '../../config/conf';
+import { BUS_TOPICS, logApp } from '../../config/conf';
 import { addOrganizationRestriction } from '../../domain/stix';
 import { storeLoadByIdWithRefs, updateAttribute } from '../../database/middleware';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, OPENCTI_ADMIN_UUID } from '../../schema/general';
