@@ -9,6 +9,7 @@ import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { FROM_START_STR, truncate, UNTIL_END_STR } from '../utils/format';
 import { authorizedMembers, creators as creatorsAttribute } from '../schema/attribute-definition';
 import { X_WORKFLOW_ID } from '../schema/identifier';
+import { isStoreRelationPir } from './stix-2-1-converter';
 
 export const generateMergeMessage = (instance, sources) => {
   const name = extractEntityRepresentativeName(instance);
@@ -18,6 +19,14 @@ export const generateMergeMessage = (instance, sources) => {
 
 const generateCreateDeleteMessage = (type, instance) => {
   const name = extractEntityRepresentativeName(instance);
+  if (isStoreRelationPir(instance)) {
+    const action = type === EVENT_TYPE_CREATE ? 'added to' : 'removed from';
+    const from = extractEntityRepresentativeName(instance.from);
+    const fromType = instance.from.entity_type;
+    const to = extractEntityRepresentativeName(instance.to);
+    const toType = instance.to.entity_type;
+    return `${fromType} \`${from}\` ${action} ${toType} \`${to}\``;
+  }
   if (isStixObject(instance.entity_type)) {
     let entityType = instance.entity_type;
     if (entityType === ENTITY_HASHED_OBSERVABLE_STIX_FILE) {
