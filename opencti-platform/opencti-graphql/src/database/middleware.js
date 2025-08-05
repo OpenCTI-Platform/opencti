@@ -140,6 +140,7 @@ import {
   ATTRIBUTE_ALIASES_OPENCTI,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
+  ENTITY_TYPE_RESOLVED_ASSESSMENT_TARGET,
   ENTITY_TYPE_VULNERABILITY,
   isStixDomainObjectIdentity,
   isStixDomainObjectShareableContainer,
@@ -173,7 +174,7 @@ import {
 } from '../utils/access';
 import { isRuleUser, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules-utils';
 import { instanceMetaRefsExtractor, isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
-import { createEntityAutoEnrichment } from '../domain/enrichment';
+import { createEntityAutoEnrichment, updateEntityAutoEnrichment } from '../domain/enrichment';
 import { convertExternalReferenceToStix, convertStoreToStix } from './stix-2-1-converter';
 import {
   buildAggregationRelationFilter,
@@ -236,6 +237,7 @@ import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
 import { generateVulnerabilitiesUpdates } from '../utils/vulnerabilities';
 import { idLabel } from '../schema/schema-labels';
 import { pirExplanation } from '../modules/attributes/internalRelationship-registrationAttributes';
+import { modules } from '../schema/module';
 import { doYield } from '../utils/eventloop-utils';
 import { hasSameSourceAlreadyUpdateThisScore, INDICATOR_DEFAULT_SCORE } from '../modules/indicator/indicator-utils';
 
@@ -539,6 +541,12 @@ export const stixLoadByIds = async (context, user, ids, opts = {}) => {
     .filter((i) => isNotEmptyField(i))
     .map((e) => (convertStoreToStix(e)));
 };
+export const stixBundleByIdStringify = async (context, user, type, id) => {
+  const resolver = modules.get(type)?.bundleResolver;
+  if (resolver) return await resolver(context, user, id);
+  throw UnsupportedError('No bundle resolver for type', { type });
+};
+
 export const stixLoadByIdStringify = async (context, user, id) => {
   const data = await stixLoadById(context, user, id);
   return data ? JSON.stringify(data) : '';
@@ -2429,6 +2437,16 @@ export const updateAttributeFromLoadedWithRefs = async (context, user, initial, 
   return updateAttributeMetaResolved(context, user, initial, revolvedInputs, opts);
 };
 
+const triggerEntityUpdateAutoEnrichment = async (context, user, element) => {
+  // If element really updated, try to enrich if needed
+  const elementType = element.entity_type;
+  const loaders = {
+    loadById: () => stixLoadByIdStringify(context, user, element.internal_id),
+    bundleById: () => stixBundleByIdStringify(context, user, elementType, element.internal_id),
+  };
+  await updateEntityAutoEnrichment(context, user, element, elementType, loaders);
+};
+
 export const updateAttribute = async (context, user, id, type, inputs, opts = {}) => {
   const initial = await storeLoadByIdWithRefs(context, user, id, { ...opts, type });
   if (!initial) {
@@ -2438,7 +2456,12 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
   const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
   await validateInputUpdate(context, user, initial.entity_type, initial, inputs, entitySetting);
   // Continue update
-  return updateAttributeFromLoadedWithRefs(context, user, initial, inputs, opts);
+  const data = await updateAttributeFromLoadedWithRefs(context, user, initial, inputs, opts);
+  if (data.event) {
+    // If element really updated, try to enrich if needed
+    await triggerEntityUpdateAutoEnrichment(context, user, data.element);
+  }
+  return data;
 };
 
 export const patchAttribute = async (context, user, id, type, patch, opts = {}) => {
@@ -3119,6 +3142,18 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
       event = await storeCreateRelationEvent(context, user, createdRelation, opts);
     }
     // - TRANSACTION END
+    // region Hardcoded hook to notify security assessment
+    if (isStixCoreRelationship(relationshipType)) {
+      const targetAssessmentMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_RESOLVED_ASSESSMENT_TARGET);
+      if (targetAssessmentMap.has(fromId)) {
+        const securityAssessments = targetAssessmentMap.get(fromId);
+        for (let index = 0; index < securityAssessments.length; index += 1) {
+          const securityAssessment = securityAssessments[index];
+          await triggerEntityUpdateAutoEnrichment(context, user, securityAssessment);
+        }
+      }
+    }
+    // endregion
     return { element: { ...resolvedInput, ...dataRel.element }, event, isCreation: true };
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
@@ -3408,6 +3443,8 @@ export const createEntity = async (context, user, input, type, opts = {}) => {
   // In case of creation, start an enrichment
   if (data.isCreation) {
     await createEntityAutoEnrichment(context, user, data.element, type);
+  } else { // upsert
+    await triggerEntityUpdateAutoEnrichment(context, user, data.element);
   }
   return isCompleteResult ? data : data.element;
 };

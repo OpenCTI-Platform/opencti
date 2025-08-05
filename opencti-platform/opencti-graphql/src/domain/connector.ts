@@ -307,7 +307,8 @@ export const registerConnector = async (
   opts: RegisterOptions = {}
 ) => {
   // eslint-disable-next-line camelcase
-  const { id, name, type, scope, auto = null, only_contextual = null, playbook_compatible = false, listen_callback_uri } = connectorData;
+  const { id, name, type, scope, only_contextual = null, playbook_compatible = false, listen_callback_uri } = connectorData;
+  const { auto = null, auto_update = null, enrichment_resolution = null } = connectorData;
   const conn = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR);
   // Register queues
   await registerConnectorQueues(id, name, type, scope);
@@ -319,6 +320,8 @@ export const registerConnector = async (
       connector_type: type,
       connector_scope: scope && scope.length > 0 ? scope.join(',') : null,
       auto,
+      auto_update,
+      enrichment_resolution,
       only_contextual,
       playbook_compatible,
       listen_callback_uri,
@@ -340,6 +343,8 @@ export const registerConnector = async (
     connector_type: type,
     connector_scope: scope && scope.length > 0 ? scope.join(',') : null,
     auto,
+    auto_update,
+    enrichment_resolution,
     only_contextual,
     playbook_compatible,
     listen_callback_uri,

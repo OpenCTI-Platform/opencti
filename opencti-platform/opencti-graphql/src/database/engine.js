@@ -1572,7 +1572,7 @@ const elDataConverter = (esHit) => {
 };
 // endregion
 
-export const elConvertHitsToMap = async (elements, opts) => {
+export const elConvertHitsToMap = async (elements, opts = {}) => {
   const { mapWithAllIds = false } = opts;
   const convertedHitsMap = {};
   for (let n = 0; n < elements.length; n += 1) {
