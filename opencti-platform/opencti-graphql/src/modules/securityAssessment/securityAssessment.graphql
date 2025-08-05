@@ -1,19 +1,8 @@
-type Measure {
-  index: Int
-  measure: Float
-  date_seen: DateTime
-}
-input MeasureInput {
-  measure: Float
-  date_seen: DateTime
-}
-
-type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject & StixDomainObject & ThreatActor& StixAssessmentObject {
+type SecurityAssessment implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  metrics:[Metric]
   # StixObject
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -21,7 +10,6 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
-  refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]
@@ -108,32 +96,16 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
-  # ThreatActorIndividual
+  # Identity
+  identity_class: String!
   name: String!
   description: String
-  aliases: [String]
-  threat_actor_types: [String]
-  first_seen: DateTime
-  last_seen: DateTime
+  contact_information: String
   roles: [String]
-  goals: [String]
-  sophistication: String
-  resource_level: String
-  primary_motivation: String
-  secondary_motivations: [String]
-  personal_motivations: [String]
-  locations: LocationConnection
-  countries: CountryConnection
-  date_of_birth: DateTime
-  gender: String
-  job_title: String
-  marital_status: String
-  eye_color: String
-  hair_color: String
-  height: [Measure!]
-  weight: [Measure!]
-  bornIn: Country
-  ethnicity: Country
+  x_opencti_aliases: [String]
+  x_opencti_reliability: String
+  # SecurityAssessment
+  security_platform_type: String
   # Technical
   creators: [Creator!]
   toStix: String
@@ -160,94 +132,73 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  # SecurityAssessment
+  objectAssess: StixAssessmentObject
+  toStixBundle: String
 }
 
-enum ThreatActorsIndividualOrdering {
+# Ordering
+enum SecurityAssessmentOrdering {
   name
-  created
-  modified
-  created_at
-  updated_at
-  x_opencti_workflow_id
-  sophistication
-  resource_level
   confidence
+  created
+  created_at
+  modified
+  updated_at
   _score
-  objectMarking
-  threat_actor_types
 }
-type ThreatActorIndividualConnection {
+
+# Relay connections
+type SecurityAssessmentConnection {
   pageInfo: PageInfo!
-  edges: [ThreatActorIndividualEdge]
+  edges: [SecurityAssessmentEdge!]!
 }
-type ThreatActorIndividualEdge {
+type SecurityAssessmentEdge {
   cursor: String!
-  node: ThreatActorIndividual!
+  node: SecurityAssessment!
 }
 
-input ThreatActorIndividualAddInput {
-  stix_id: StixId
-  x_opencti_stix_ids: [StixId]
-  name: String! @constraint(minLength: 2, format: "not-blank")
-  description: String
-  aliases: [String]
-  threat_actor_types: [String]
-  first_seen: DateTime
-  last_seen: DateTime
-  roles: [String]
-  goals: [String]
-  sophistication: String
-  resource_level: String
-  primary_motivation: String
-  secondary_motivations: [String]
-  personal_motivations: [String]
-  date_of_birth: DateTime
-  gender: String
-  job_title: String
-  marital_status: String
-  eye_color: String
-  hair_color: String
-  height: [MeasureInput!]
-  weight: [MeasureInput!]
-  confidence: Int
-  revoked: Boolean
-  lang: String
-  createdBy: String
-  objectMarking: [String]
-  objectOrganization: [String]
-  objectAssignee: [String]
-  objectLabel: [String]
-  bornIn: String
-  ethnicity: String
-  externalReferences: [String]
-  created: DateTime
-  modified: DateTime
-  clientMutationId: String
-  x_opencti_workflow_id: String
-  update: Boolean
-  file: Upload
-}
-
+# Queries
 type Query {
-  threatActorIndividual(id: String!): ThreatActorIndividual @auth(for: [KNOWLEDGE])
-  threatActorsIndividuals(
+  securityAssessment(id: String!): SecurityAssessment @auth(for: [KNOWLEDGE])
+  securityAssessments(
     first: Int
     after: ID
-    orderBy: ThreatActorsIndividualOrdering
+    orderBy: SecurityAssessmentOrdering
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
     toStix: Boolean
-  ): ThreatActorIndividualConnection @auth(for: [KNOWLEDGE])
+  ): SecurityAssessmentConnection @auth(for: [KNOWLEDGE])
+}
+
+# Mutations
+input SecurityAssessmentAddInput {
+  name: String! @constraint(minLength: 2, format: "not-blank")
+  description: String
+  confidence: Int
+  createdBy: String
+  objectMarking: [String]
+  objectLabel: [String]
+  objectAssess: String!
+  created: DateTime
+  modified: DateTime
+  revoked: Boolean
+  # inherited, used by client python
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
+  x_opencti_workflow_id: String
+  externalReferences: [String]
+  update: Boolean
 }
 
 type Mutation {
-  threatActorIndividualAdd(input: ThreatActorIndividualAddInput!): ThreatActorIndividual @auth(for: [KNOWLEDGE_KNUPDATE])
-  threatActorIndividualDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  threatActorIndividualFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): ThreatActorIndividual @auth(for: [KNOWLEDGE_KNUPDATE])
-  threatActorIndividualContextPatch(id: ID!, input: EditContext): ThreatActorIndividual @auth(for: [KNOWLEDGE_KNUPDATE])
-  threatActorIndividualContextClean(id: ID!): ThreatActorIndividual @auth(for: [KNOWLEDGE_KNUPDATE])
-  threatActorIndividualRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  threatActorIndividualRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): ThreatActorIndividual @auth(for: [KNOWLEDGE_KNUPDATE])
+  securityAssessmentAdd(input: SecurityAssessmentAddInput!): SecurityAssessment @auth(for: [KNOWLEDGE_KNUPDATE])
+  securityAssessmentDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  securityAssessmentFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): SecurityAssessment @auth(for: [KNOWLEDGE_KNUPDATE])
+  securityAssessmentContextPatch(id: ID!, input: EditContext!): SecurityAssessment @auth(for: [KNOWLEDGE_KNUPDATE])
+  securityAssessmentContextClean(id: ID!): SecurityAssessment @auth(for: [KNOWLEDGE_KNUPDATE])
+  securityAssessmentRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  securityAssessmentRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): SecurityAssessment @auth(for: [KNOWLEDGE_KNUPDATE])
 }
+
