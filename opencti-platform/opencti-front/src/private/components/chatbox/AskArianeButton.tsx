@@ -1,6 +1,6 @@
 import { AutoAwesomeOutlined } from '@mui/icons-material';
 import EEChip from '@components/common/entreprise_edition/EEChip';
-import React, { MouseEventHandler, useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
 import { useTheme } from '@mui/styles';
 import IconButton from '@mui/material/IconButton';
@@ -23,6 +23,10 @@ const AskArianeButton = () => {
     settings: { platform_url, filigran_agentic_ai_url, platform_enterprise_edition },
   } = useAuth();
 
+  console.log(`filigran_agentic_ai_url:${filigran_agentic_ai_url}`);
+  console.log(`platform_url:${platform_url}`);
+  console.log(`isEnterpriseEdition:${isEnterpriseEdition}`);
+
   // navopen
   const [navOpen, setNavOpen] = useState(
     localStorage.getItem('navOpen') === 'true',
@@ -38,19 +42,6 @@ const AskArianeButton = () => {
 
   const chatboxRef = useRef<HTMLDivElement>(null);
   const EEref = useRef<HTMLDivElement>(null);
-  const [opened, setOpened] = useState(false);
-  const toggleChatbot = useCallback<MouseEventHandler<HTMLButtonElement>>((e) => {
-    setOpened(!opened);
-    if (!isEnterpriseEdition || !chatboxRef.current) {
-      e.stopPropagation();
-      if (!opened) {
-        EEref.current?.click();
-      }
-      return;
-    }
-    const element = chatboxRef.current.shadowRoot?.querySelector('#bot-button');
-    element?.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, composed: true }));
-  }, [chatboxRef.current, opened]);
 
   const chatBotTheme = {
     button: {
@@ -131,7 +122,10 @@ const AskArianeButton = () => {
           ref={chatboxRef}
           text={!navOpen ? '' : 'ASK ARIANE'}
           left={navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH}
-          onClick={(e: MouseEvent) => e.stopPropagation()}
+          onClick={(e: MouseEvent) => {
+            console.log('On filigran-chatbot click');
+            e.stopPropagation();
+          }}
           agentic-url={filigran_agentic_ai_url}
           theme={chatBotTheme}
           chatflowConfig={{
@@ -152,15 +146,13 @@ const AskArianeButton = () => {
       size="small"
       sx={{ width: '100%' }}
       gradientVariant={GradientVariant.ai}
-      title={t_i18n('Import from Hub')}
-      onClick={toggleChatbot}
+      title={t_i18n('Open chatbot')}
     >
       {chatbot}
     </GradientButton>
   ) : (
     <IconButton
       style={{ padding: 0 }}
-      onClick={toggleChatbot}
     >
       {chatbot}
     </IconButton>

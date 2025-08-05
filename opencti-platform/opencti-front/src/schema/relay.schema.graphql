@@ -1469,6 +1469,7 @@ type Settings implements InternalObject & BasicObject {
   platform_translations: String
   platform_protected_sensitive_config: PlatformProtectedSensitiveConfig!
   filigran_agentic_ai_url: String
+  filigran_agentic_ai_enabled: Boolean
   created_at: DateTime!
   updated_at: DateTime!
   activity_listeners: [Member!]
