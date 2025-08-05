@@ -12,24 +12,24 @@ import ItemIcon from '../../../../components/ItemIcon';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const emailTemplateFieldQuery = graphql`
-    query EmailTemplateFieldQuery(
-        $orderMode: OrderingMode,
-        $orderBy: EmailTemplateOrdering
-        $filters: FilterGroup
+  query EmailTemplateFieldQuery(
+    $orderMode: OrderingMode,
+    $orderBy: EmailTemplateOrdering
+    $filters: FilterGroup
+  ) {
+    emailTemplates(
+      orderMode: $orderMode
+      orderBy: $orderBy
+      filters: $filters
     ) {
-        emailTemplates(
-            orderMode: $orderMode
-            orderBy: $orderBy
-            filters: $filters
-        ) {
-            edges {
-                node {
-                    id
-                    name
-                }
-            }
+      edges {
+        node {
+          id
+          name
         }
+      }
     }
+  }
 `;
 
 export type EmailTemplate = {
