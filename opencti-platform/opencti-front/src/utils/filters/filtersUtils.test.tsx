@@ -1,11 +1,12 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
-  getEntityTypeTwoFirstLevelsFilterValues,
-  useBuildFilterKeysMapFromEntityType,
   emptyFilterGroup,
   findFiltersFromKeys,
-  serializeFilterGroupForBackend,
+  getEntityTypeTwoFirstLevelsFilterValues,
   isRegardingOfFilterWarning,
+  removeIdFromFilterGroupObject,
+  serializeFilterGroupForBackend,
+  useBuildFilterKeysMapFromEntityType,
 } from './filtersUtils';
 import { createMockUserContext, testRenderHook } from '../tests/test-render';
 import filterKeysSchema from '../tests/FilterUtilsConstants';
@@ -33,6 +34,67 @@ describe('Filters utils', () => {
         },
       );
       expect(hook.result.current).toStrictEqual(filterKeysSchema.get(stixCoreObjectKey));
+    });
+  });
+
+  describe('removeIdFromFilterGroupObject', () => {
+    it('should remove id from filters', () => {
+      expect(removeIdFromFilterGroupObject(emptyFilterGroup)).toStrictEqual(emptyFilterGroup);
+      const filters = {
+        mode: 'and',
+        filters: [
+          { id: 'id-1', key: 'objectLabel', operator: 'nil' },
+          { id: 'id-2', key: 'objectMarking', values: ['M1', 'M2'], operator: 'eq', mode: 'or' },
+          { id: 'id-3',
+            key: 'dynamicRegardingOf',
+            values: [
+              { key: 'false_key', values: ['test'] },
+              { key: 'dynamic',
+                values: [
+                  { mode: 'and', filters: [{ id: 'id-3.1', key: 'entity_type', values: ['Malware'] }], filterGroups: [] },
+                ],
+              },
+              { key: 'relationship_type', values: ['related-to'] },
+            ],
+          },
+        ],
+        filterGroups: [
+          {
+            mode: 'and',
+            filters: [
+              { id: 'id-4', key: ['creator_id'], values: ['XX'], operator: 'not_eq' },
+            ],
+            filterGroups: [],
+          },
+        ],
+      };
+      const filtersResult = {
+        mode: 'and',
+        filters: [
+          { key: 'objectLabel', operator: 'nil' },
+          { key: 'objectMarking', values: ['M1', 'M2'], operator: 'eq', mode: 'or' },
+          { key: 'dynamicRegardingOf',
+            values: [
+              { key: 'dynamic',
+                values: [
+                  { mode: 'and', filters: [{ key: 'entity_type', values: ['Malware'] }], filterGroups: [] },
+                ],
+              },
+              { key: 'relationship_type', values: ['related-to'] },
+            ],
+          },
+        ],
+        filterGroups: [
+          {
+            mode: 'and',
+            filters: [
+              { key: ['creator_id'], values: ['XX'], operator: 'not_eq' },
+            ],
+            filterGroups: [],
+          },
+        ],
+      };
+      expect(removeIdFromFilterGroupObject(filters as unknown as FilterGroup)).toStrictEqual(filtersResult);
     });
   });
 
