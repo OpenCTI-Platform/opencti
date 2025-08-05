@@ -208,16 +208,13 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
                     "Processing a new message, launching a thread...",
                     {"tag": method.delivery_tag},
                 )
-                task_future = self.execution_pool.submit(
+                self.execution_pool.submit(
                     self.api_data_handler,
                     self.pika_connection,
                     self.channel,
                     method.delivery_tag,
                     body,
                 )
-                while task_future.running():  # Loop while the thread is processing
-                    self.pika_connection.sleep(0.05)
-                self.worker_logger.info("Message processed, thread terminated")
         except Exception as e:
             self.worker_logger.error("Unhandled exception", {"exception": e})
         finally:
@@ -493,16 +490,13 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                         "Processing a new message, launching a thread...",
                         {"queue": self.queue_name, "tag": method.delivery_tag},
                     )
-                    task_future = self.execution_pool.submit(
+                    self.execution_pool.submit(
                         self.data_handler,
                         self.pika_connection,
                         self.channel,
                         method.delivery_tag,
                         data,
                     )
-                    while task_future.running():  # Loop while the thread is processing
-                        self.pika_connection.sleep(0.05)
-                    self.worker_logger.info("Message processed, thread terminated")
                 except Exception as e:
                     self.worker_logger.error(
                         "Could not process message",
