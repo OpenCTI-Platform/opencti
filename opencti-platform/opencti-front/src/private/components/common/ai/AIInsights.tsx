@@ -139,7 +139,6 @@ const AIInsights = ({
   const [containersBusId] = useState(uuid());
   const [loading, setLoading] = useState(false);
   const { enabled, configured } = useAI();
-  const isEnterpriseEdition = useEnterpriseEdition();
   const handleClose = () => {
     setLoading(false);
     setDisplay(false);
