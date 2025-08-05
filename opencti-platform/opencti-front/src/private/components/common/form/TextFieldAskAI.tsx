@@ -246,7 +246,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
         <EETooltip forAi={true} title={t_i18n('Ask AI')}>
           <IconButton
             size="small"
-            onClick={(event) => (handleOpenMenu(event))}
+            onClick={(event) => ((isEnterpriseEdition && enabled && configured) ? handleOpenMenu(event) : null)}
             disabled={disabled || currentValue.length < 10}
             style={{ color: theme.palette.ai.main }}
           >
