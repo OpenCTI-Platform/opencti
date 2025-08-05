@@ -1515,7 +1515,7 @@ const elDataConverter = (esHit) => {
 };
 // endregion
 
-export const elConvertHitsToMap = async (elements, opts) => {
+export const elConvertHitsToMap = async (elements, opts = {}) => {
   const { mapWithAllIds = false } = opts;
   const convertedHitsMap = {};
   let startProcessingTime = new Date().getTime();
