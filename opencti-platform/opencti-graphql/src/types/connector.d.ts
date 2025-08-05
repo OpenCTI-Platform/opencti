@@ -12,6 +12,8 @@ export interface ConnectorInfo {
 export interface BasicStoreEntityConnector extends StoreEntity {
   active: boolean,
   auto: boolean,
+  auto_update: boolean,
+  enrichment_resolution: string,
   only_contextual: boolean,
   connector_type: string,
   connector_scope: string,
