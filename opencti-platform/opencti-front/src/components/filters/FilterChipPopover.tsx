@@ -1,10 +1,7 @@
 import React, { Dispatch, FunctionComponent, ReactNode, SyntheticEvent, useState } from 'react';
 import Popover from '@mui/material/Popover';
-import TextField from '@mui/material/TextField';
-import Checkbox from '@mui/material/Checkbox';
-import Tooltip from '@mui/material/Tooltip';
 import FilterDate from '@components/common/lists/FilterDate';
-import { Autocomplete, MenuItem, Select } from '@mui/material';
+import { MenuItem, Select } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
 import SearchScopeElement from '@components/common/lists/SearchScopeElement';
 import Chip from '@mui/material/Chip';
@@ -25,18 +22,18 @@ import {
   useFilterDefinition,
 } from '../../utils/filters/filtersUtils';
 import { useFormatter } from '../i18n';
-import ItemIcon from '../ItemIcon';
 import { getOptionsFromEntities } from '../../utils/filters/SearchEntitiesUtil';
 import { FilterDefinition } from '../../utils/hooks/useAuth';
 import { FilterRepresentative } from './FiltersModel';
 import useSearchEntities from '../../utils/filters/useSearchEntities';
-import { Filter, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
+import { Filter, FilterValue, FilterGroup, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
 import useAttributes from '../../utils/hooks/useAttributes';
 import BasicFilterInput from './BasicFilterInput';
 import QuickRelativeDateFiltersButtons from './QuickRelativeDateFiltersButtons';
 import DateRangeFilter from './DateRangeFilter';
 // eslint-disable-next-line import/no-cycle
 import FilterFiltersInput from './FilterFiltersInput';
+import FilterAutocompleteSimple from './FilterAutocompleteSimple';
 import stopEvent from '../../utils/domEvent';
 
 interface FilterChipMenuProps {
@@ -141,10 +138,14 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     isSubKey?: boolean,
   ) => Record<string, FilterOptionValue[]>,
   ];
+  const isStructuredFilterValue = (val: FilterValue): val is { key: string; values: string[] } => {
+    return val !== null && typeof val === 'object' && 'key' in val && 'values' in val;
+  };
+
   const handleChange = (checked: boolean, value: string | null, childKey?: string) => {
     if (childKey) {
-      const childFilters = filter?.values.filter((val) => val.key === childKey) as Filter[];
-      const childFilter = childFilters && childFilters.length > 0 ? childFilters[0] : undefined;
+      const structuredValues = filter?.values.filter(isStructuredFilterValue) ?? [];
+      const childFilter = structuredValues.find((val) => val.key === childKey);
       const alreadySelectedValues = childFilter?.values ?? [];
       let representationToAdd;
       if (checked) {
@@ -229,7 +230,9 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
 
   const buildAutocompleteFilter = (fKey: string, fLabel?: string, subKey?: string, disabled = false): ReactNode => {
     const getEntitiesOptions = getOptionsFromEntities(entities, searchScope, fKey);
-    const optionsValues = subKey ? (filterValues.find((f) => f.key === subKey)?.values ?? []) : filterValues;
+    const optionsValues = subKey
+      ? (filterValues.filter(isStructuredFilterValue).find((f) => f.key === subKey)?.values ?? [])
+      : filterValues;
 
     const completedTypesWithFintelTemplates = typesWithFintelTemplates.concat(['Container', 'Stix-Domain-Object', 'Stix-Core-Object']);
     const shouldAddSelfId = fintelTemplatesContext
@@ -259,126 +262,29 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       return t_i18n(option?.group ? option?.group : label);
     };
 
-    // State to track the input value and highlighted option
-    const [inputValue, setInputValue] = useState('');
-    const [highlightedOption, setHighlightedOption] = useState<FilterOptionValue | null>(null);
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const handleSearchEntities = (event: React.SyntheticEvent) => {
+      searchEntities(fKey, cacheEntities, setCacheEntities, event, !!subKey);
+    };
 
     return (
-      <Autocomplete
-        multiple
+      <FilterAutocompleteSimple
         key={fKey}
-        value={selectedOptions}
-        getOptionLabel={(option) => option.label ?? ''}
-        noOptionsText={t_i18n('No available options')}
+        fLabel={fLabel}
+        selectedOptions={selectedOptions}
         options={options}
-        inputValue={inputValue}
+        handleChange={handleChange}
+        searchEntities={handleSearchEntities}
+        renderSearchScope={isStixObjectTypes.includes(fKey) ? renderSearchScopeSelection(fKey) : undefined}
         groupBy={(option) => groupByEntities(option, fLabel)}
-        onOpen={() => setIsDropdownOpen(true)}
-        onClose={() => setIsDropdownOpen(false)}
-        onInputChange={(event, newInputValue, reason) => {
-          // Update input value state
-          setInputValue(newInputValue);
-          // Keep the existing search functionality
-          if (reason !== 'reset') {
-            searchEntities(fKey, cacheEntities, setCacheEntities, event, !!subKey);
-          }
-        }}
-        // Track which option is currently highlighted
-        onHighlightChange={(event, option) => {
-          setHighlightedOption(option);
-        }}
-        // Handle Enter key press
-        onKeyDown={(event) => {
-          if (event.key === 'Enter' && event.ctrlKey === false && event.shiftKey === false) {
-            stopEvent(event);
-
-            if (!isDropdownOpen) {
-              handleClose();
-              return;
-            }
-
-            if (highlightedOption) {
-              const actualFilterValues = subKey
-                ? filterValues.filter((fVal) => fVal && fVal.key === subKey).at(0)?.values ?? []
-                : filterValues;
-              const isChecked = actualFilterValues.includes(highlightedOption.value);
-              const isDisabledOption = disabled && isChecked && actualFilterValues.length === 1;
-
-              if (!isDisabledOption) {
-                handleChange(!isChecked, highlightedOption.value, subKey);
-              }
-            }
-          }
-        }}
-        renderInput={(paramsInput) => (
-          <TextField
-            {...paramsInput}
-            slotProps={{
-              input: {
-                ...paramsInput.InputProps,
-                endAdornment: isStixObjectTypes.includes(fKey)
-                  ? renderSearchScopeSelection(fKey)
-                  : paramsInput.InputProps.endAdornment,
-              },
-            }}
-            label={t_i18n(fLabel)}
-            variant="outlined"
-            size="small"
-            fullWidth={true}
-            autoFocus={true}
-            onFocus={(event) => searchEntities(
-              fKey,
-              cacheEntities,
-              setCacheEntities,
-              event,
-              !!subKey,
-            )
-            }
-          />
-        )}
-        renderOption={(props, option) => {
-          const actualFilterValues = subKey ? filterValues.filter((fVal) => fVal && fVal.key === subKey).at(0)?.values ?? [] : filterValues;
-          const checked = actualFilterValues.includes(option.value);
-          const disabledOptions = disabled && checked && actualFilterValues.length === 1;
-
-          // Extract key from props to avoid React warning
-          const { key, ...otherProps } = props;
-
-          // Create a unique key combining multiple properties to avoid duplicates
-          const tooltipKey = [key, option.value, option.type, option.group].filter(Boolean).join('-');
-          return (
-            <Tooltip title={option.label} key={tooltipKey} followCursor>
-              <li
-                {...otherProps}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.stopPropagation();
-                  }
-                }}
-                onClick={() => (disabledOptions ? {} : handleChange(!checked, option.value, subKey))}
-                style={{
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  padding: 0,
-                  margin: 0,
-                }}
-              >
-                <Checkbox checked={checked} disabled={disabledOptions} />
-                <ItemIcon type={option.type} color={option.color} />
-                <span style={{ padding: '0 4px 0 4px' }}>
-                  {option.label}
-                </span>
-              </li>
-            </Tooltip>
-          );
-        }}
+        subKey={subKey}
+        disabled={disabled}
       />
     );
   };
   const getSpecificFilter = (fDefinition?: FilterDefinition, subKey?: string, disabled = false): ReactNode => {
-    const computedValues = filterValues.find((f) => f.key === fDefinition?.filterKey)?.values ?? filterValues;
+    const computedValues = subKey && filterValues.length > 0 && isStructuredFilterValue(filterValues[0])
+      ? (filterValues.filter(isStructuredFilterValue).find((f) => f.key === subKey)?.values ?? [])
+      : filterValues;
     if (fDefinition?.type === 'date') {
       if (filterOperator === 'within') {
         const values = computedValues.length > 0 ? computedValues : DEFAULT_WITHIN_FILTER_VALUES;
@@ -394,7 +300,10 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       return <BasicFilterDate value={computedValues.length > 0 ? computedValues[0] : undefined} />;
     }
     if (fDefinition?.type === 'filters') {
-      const finalComputedValues = computedValues.filter((v: object) => 'filters' in v); // we keep values of type FilterGroup
+      const isFilterGroup = (v: unknown): v is FilterGroup => {
+        return v !== null && typeof v === 'object' && 'filters' in v;
+      };
+      const finalComputedValues = computedValues.filter(isFilterGroup);
       const values = finalComputedValues.length > 0 ? finalComputedValues[0] : emptyFilterGroup;
       return (
         <FilterFiltersInput
@@ -416,6 +325,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
           helpers={helpers}
           label={filterLabel}
           type={'number'}
+          handleClose={handleClose}
         />
       );
     }
@@ -427,6 +337,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
           filterValues={filterValues}
           helpers={helpers}
           label={filterLabel}
+          handleClose={handleClose}
         />
       );
     }
@@ -485,13 +396,13 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   if (filterDefinition?.subFilters
     && filterDefinition.subFilters.length > 1
     && filterDefinition?.subFilters[1].filterKey === 'dynamic'
-    && filter?.values.filter((f) => f.key === 'relationship_type').length === 0
+    && filter?.values.filter((f) => isStructuredFilterValue(f) && f.key === 'relationship_type').length === 0
   ) {
     disableSubfilter2 = true;
   } else if (filterDefinition?.subFilters
     && filterDefinition.subFilters.length > 1
     && filterDefinition?.subFilters[1].filterKey === 'dynamic'
-    && (filter?.values.filter((f) => f.key === 'dynamic')?.length ?? 0) > 0) {
+    && (filter?.values.filter((f) => isStructuredFilterValue(f) && f.key === 'dynamic')?.length ?? 0) > 0) {
     disableSubfilter1 = true;
   }
   return (
@@ -564,7 +475,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
             </div>
           }
         </div>
-      }
+        }
     </Popover>
   );
 };
