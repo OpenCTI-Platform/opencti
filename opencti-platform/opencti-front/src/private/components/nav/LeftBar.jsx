@@ -217,7 +217,7 @@ const LeftBar = () => {
     me: { submenu_auto_collapse, submenu_show_icons, draftContext },
   } = useAuth();
   const navigate = useNavigate();
-  const { isFeatureEnable, isAgenticAiEnabled } = useHelper();
+  const { isFeatureEnable } = useHelper();
   const isEnterpriseEdition = useEnterpriseEdition();
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
   const isGrantedToImport = useGranted([KNOWLEDGE_KNASKIMPORT]);
@@ -1058,9 +1058,7 @@ const LeftBar = () => {
               paddingRight: navOpen ? theme.spacing(1.25) : undefined,
             }}
           >
-            {isAgenticAiEnabled() && (
             <AskArianeButton />
-            )}
           </MenuItem>
           <MenuItem
             dense={true}

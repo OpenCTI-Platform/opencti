@@ -13,19 +13,17 @@ import { fileUri, MESSAGING$ } from '../../../relay/environment';
 import { DARK_BLUE } from '../../../utils/htmlToPdf/utils/constants';
 import { toBase64 } from '../../../utils/String';
 import embleme from '../../../static/images/embleme_filigran_white.png';
+import useHelper from '../../../utils/hooks/useHelper';
 
 const AskArianeButton = () => {
   const { t_i18n } = useFormatter();
+  const { isAgenticAiEnabled } = useHelper();
   const theme = useTheme<Theme>();
   const isEnterpriseEdition = useEnterpriseEdition();
   const {
     me: { api_token },
     settings: { platform_url, filigran_agentic_ai_url, platform_enterprise_edition },
   } = useAuth();
-
-  console.log(`filigran_agentic_ai_url:${filigran_agentic_ai_url}`);
-  console.log(`platform_url:${platform_url}`);
-  console.log(`isEnterpriseEdition:${isEnterpriseEdition}`);
 
   // navopen
   const [navOpen, setNavOpen] = useState(
@@ -115,7 +113,7 @@ const AskArianeButton = () => {
       <AutoAwesomeOutlined
         style={{ color: theme.palette.ai.main }}
       />
-      {isEnterpriseEdition ? (
+      {isEnterpriseEdition && isAgenticAiEnabled() ? (
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         <filigran-chatbot
@@ -123,7 +121,6 @@ const AskArianeButton = () => {
           text={!navOpen ? '' : 'ASK ARIANE'}
           left={navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH}
           onClick={(e: MouseEvent) => {
-            console.log('On filigran-chatbot click');
             e.stopPropagation();
           }}
           agentic-url={filigran_agentic_ai_url}
@@ -132,12 +129,14 @@ const AskArianeButton = () => {
             vars,
           }}
         />
-      ) : (
+      ) : <></>}
+
+      {!isEnterpriseEdition ? (
         <>
           Ask Ariane
           <EEChip ref={EEref} />
         </>
-      )}
+      ) : <></>}
     </>
   );
 
