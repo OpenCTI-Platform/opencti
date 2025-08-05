@@ -8,6 +8,7 @@ import Paper from '@mui/material/Paper';
 import { IngestionConnector } from '@components/data/IngestionCatalog/IngestionCatalogCard';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
+import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
 const IngestionCatalogConnectorOverview = ({ connector }: { connector: IngestionConnector }) => {
   const { t_i18n } = useFormatter();
@@ -22,7 +23,7 @@ const IngestionCatalogConnectorOverview = ({ connector }: { connector: Ingestion
           style={{ marginTop: theme.spacing(1), padding: '15px', borderRadius: 4 }}
           variant="outlined"
         >
-          {connector.description}
+          <MarkdownDisplay content={connector.description} />
         </Paper>
       </Grid>
 

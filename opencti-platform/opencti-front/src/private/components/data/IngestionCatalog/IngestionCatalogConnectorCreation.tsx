@@ -89,7 +89,7 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
       catalog_id: catalogId,
       user_id: typeof values.user_id === 'string' ? values.user_id : values.user_id?.value,
       automatic_user: values.automatic_user ?? true,
-      ...((values.automatic_user !== false) && { confidence_level: values.confidence_level }),
+      ...((values.automatic_user !== false) && { confidence_level: values.confidence_level?.toString() }),
       manager_contract_image: connector.container_image,
       manager_contract_configuration: Object.entries(values.contractValues).map(([key, value]) => ({ key, value: [value.toString()] })),
     };
