@@ -27,6 +27,14 @@ const styles = (theme) => ({
     padding: '15px',
     borderRadius: 4,
   },
+  chip: {
+    fontSize: 12,
+    lineHeight: '12px',
+    backgroundColor: theme.palette.background.accent,
+    borderRadius: 4,
+    color: theme.palette.text.primary,
+    margin: '0 5px 5px 0',
+  },
 });
 
 class AttackPatternDetailsComponent extends Component {
@@ -54,10 +62,8 @@ class AttackPatternDetailsComponent extends Component {
               </Typography>
               <FieldOrEmpty source={attackPattern.x_mitre_id}>
                 <Chip
-                  size="small"
                   label={attackPattern.x_mitre_id}
-                  color="primary"
-                  style={{ borderRadius: 4 }}
+                  classes={{ root: classes.chip }}
                 />
               </FieldOrEmpty>
               <Typography
