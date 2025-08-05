@@ -896,7 +896,7 @@
   "Dependencies": "Dipendenze",
   "Depending on the selected CSV mapper configurations, marking definition levels can be set in the dedicated field.": "A seconda delle configurazioni del mapper CSV selezionate, i livelli di definizione del marking possono essere impostati nel campo dedicato.",
   "Depending on the selected JSON mapper configurations, marking definition levels can be set in the dedicated field.": "A seconda delle configurazioni del mappatore JSON selezionate, i livelli di definizione della marcatura possono essere impostati nel campo dedicato.",
-  "deploy in one-click Threats Intelligence Resources": "distribuire in un solo clic le risorse di intelligence sulle minacce",
+  "deploy in one-click Threat Intelligence Resources": "distribuire in un solo clic Risorse di intelligence sulle minacce",
   "Desc": "Desc",
   "Description": "Descrizione",
   "description": "descrizione",
