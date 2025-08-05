@@ -25,7 +25,6 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import useAI from '../../../../utils/hooks/useAI';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
