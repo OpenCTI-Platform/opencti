@@ -7,6 +7,7 @@ import { SYSTEM_USER } from '../../../src/utils/access';
 import { storeLoadById } from '../../../src/database/middleware-loader';
 import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import type { BasicStoreEntity } from '../../../src/types/store';
+import { disableEE, enableEE } from '../../utils/testQueryHelper';
 
 const LIST_QUERY = gql`
   query pirs(
@@ -169,6 +170,14 @@ describe('PIR resolver standard behavior', () => {
     expect(queryResult.data?.pirs.edges.length).toEqual(1);
   });
 
+  it('should not list pirs if not Enterprise Edition', async () => {
+    await disableEE();
+    const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
+    expect(queryResult.errors?.length).toBe(1);
+    expect(queryResult.errors?.[0].message).toEqual('Enterprise edition is not enabled');
+    await enableEE();
+  });
+
   it('should update a pir', async () => {
     const UPDATE_QUERY = gql`
       mutation PirUpdate($id: ID!, $input: [EditInput!]!) {
@@ -281,7 +290,7 @@ describe('PIR resolver standard behavior', () => {
     expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_explanations.length).toEqual(2);
   });
 
-  it('should update a pir meta rel by removing a dependency', async () => {
+  it('should update a pir meta rel by removing an explanation', async () => {
     const UNFLAG_QUERY = gql`
       mutation pirUnflagElement($id: ID!, $input: PirUnflagElementInput!) {
         pirUnflagElement(id: $id, input: $input)
@@ -292,7 +301,7 @@ describe('PIR resolver standard behavior', () => {
       query: UNFLAG_QUERY,
       variables: { id: pirInternalId, input: { relationshipId, sourceId: flaggedElementId } },
     });
-    // Verify the ref has been updated
+    // Verify the in-pir ref has been updated
     const queryResult = await queryAsAdmin({
       query: LIST_RELS_QUERY,
       variables: { relationship_type: [RELATION_IN_PIR] },
@@ -336,7 +345,14 @@ describe('PIR resolver standard behavior', () => {
       query: DELETE_QUERY,
       variables: { id: pirInternalId },
     });
-    // Verify is no longer found
+    // Verify in-pir rels have been deleted
+    const refQueryResult = await queryAsAdmin({
+      query: LIST_RELS_QUERY,
+      variables: { relationship_type: [RELATION_IN_PIR] },
+    });
+    expect(refQueryResult).not.toBeNull();
+    expect(refQueryResult.data?.stixRefRelationships.edges.length).toEqual(0);
+    // Verify the PIR is no longer found
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: pirInternalId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data?.pir).toBeNull();
