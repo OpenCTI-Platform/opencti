@@ -40,7 +40,7 @@
     "date-fns": "4.1.0",
     "dompurify": "3.2.6",
     "extract-files": "13.0.0",
-    "filigran-chatbot": "https://github.com/FiligranHQ/filigran-chatbot.git",
+    "filigran-chatbot": "git@github.com:FiligranHQ/filigran-chatbot.git#71d144bb91422f95d6d4de976be538425e59d4fc",
     "filigran-icon": "0.14.1",
     "filigran-ui": "0.32.1",
     "formik": "2.4.6",
