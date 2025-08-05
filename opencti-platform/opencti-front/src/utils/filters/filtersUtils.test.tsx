@@ -4,6 +4,7 @@ import {
   findFiltersFromKeys,
   getEntityTypeTwoFirstLevelsFilterValues,
   isRegardingOfFilterWarning,
+  removeIdAndIncorrectKeysFromFilterGroupObject,
   removeIdFromFilterGroupObject,
   serializeFilterGroupForBackend,
   useBuildFilterKeysMapFromEntityType,
@@ -43,7 +44,7 @@ describe('Filters utils', () => {
       const filters = {
         mode: 'and',
         filters: [
-          { id: 'id-1', key: 'objectLabel', operator: 'nil' },
+          { id: 'id-1', key: 'objectLabel', values: [], operator: 'nil' },
           { id: 'id-2', key: 'objectMarking', values: ['M1', 'M2'], operator: 'eq', mode: 'or' },
           { id: 'id-3',
             key: 'dynamicRegardingOf',
@@ -71,7 +72,7 @@ describe('Filters utils', () => {
       const filtersResult = {
         mode: 'and',
         filters: [
-          { key: 'objectLabel', operator: 'nil' },
+          { key: 'objectLabel', values: [], operator: 'nil' },
           { key: 'objectMarking', values: ['M1', 'M2'], operator: 'eq', mode: 'or' },
           { key: 'dynamicRegardingOf',
             values: [
@@ -95,6 +96,68 @@ describe('Filters utils', () => {
         ],
       };
       expect(removeIdFromFilterGroupObject(filters as unknown as FilterGroup)).toStrictEqual(filtersResult);
+    });
+  });
+
+  describe('removeIdAndIncorrectKeysFromFilterGroupObject', () => {
+    it('should remove id and incorrect filter keys from filters', () => {
+      const availableFilterKeys = ['objectLabel', 'objectMarking', 'creator_id', 'entity_type', 'dynamicRegardingOf', 'published'];
+      const filters = {
+        mode: 'and',
+        filters: [
+          { id: 'id-1', key: 'objectLabel', values: [], operator: 'nil' }, // id to remove
+          { id: 'id-2', key: 'ids', values: ['i1', 'i2'], operator: 'eq', mode: 'or' }, // id to remove, key to keep because 'ids' is a not cleanable key
+          { id: 'id-3', // id to remove
+            key: 'dynamicRegardingOf',
+            values: [
+              { key: 'false_key', values: ['test'] }, // to remove because not authorized in dynamicRegardingOf filter
+              { key: 'dynamic',
+                values: [
+                  { mode: 'and', filters: [{ id: 'id-3.1', key: 'entity_type', values: ['Malware'] }], filterGroups: [] },
+                ],
+              },
+              { key: 'relationship_type', values: ['related-to'] },
+            ],
+          },
+        ],
+        filterGroups: [
+          {
+            mode: 'and',
+            filters: [
+              { id: 'id-4', key: 'creator_id', values: ['XX'], operator: 'not_eq' }, // id to remove
+              { id: 'id-5', key: 'false_key', values: ['YY'] }, // to remove because key not in availableFilterKeys
+            ],
+            filterGroups: [],
+          },
+        ],
+      };
+      const filtersResult = {
+        mode: 'and',
+        filters: [
+          { key: 'objectLabel', values: [], operator: 'nil' },
+          { key: 'ids', values: ['i1', 'i2'], operator: 'eq', mode: 'or' },
+          { key: 'dynamicRegardingOf',
+            values: [
+              { key: 'dynamic',
+                values: [
+                  { mode: 'and', filters: [{ key: 'entity_type', values: ['Malware'] }], filterGroups: [] },
+                ],
+              },
+              { key: 'relationship_type', values: ['related-to'] },
+            ],
+          },
+        ],
+        filterGroups: [
+          {
+            mode: 'and',
+            filters: [
+              { key: 'creator_id', values: ['XX'], operator: 'not_eq' },
+            ],
+            filterGroups: [],
+          },
+        ],
+      };
+      expect(removeIdAndIncorrectKeysFromFilterGroupObject(filters as unknown as FilterGroup, availableFilterKeys)).toStrictEqual(filtersResult);
     });
   });
 
