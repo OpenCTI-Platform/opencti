@@ -11,7 +11,7 @@ import MarkdownField from '../../../../components/fields/MarkdownField';
 
 export interface EmailTemplateFormInputs {
   name: string;
-  description: string | null | undefined;
+  description: string | null;
   email_object: string;
   sender_email: string;
   template_body: string;
@@ -24,7 +24,6 @@ interface EmailTemplateFormProps {
   onSubmit: (values: EmailTemplateFormInputs, helpers: FormikHelpers<EmailTemplateFormInputs>) => void;
   onSubmitField?: (field: EmailTemplateFormInputKeys, value: string) => void;
   defaultValues?: EmailTemplateFormInputs;
-  isEdition?: boolean
 }
 
 const EmailTemplateForm: FunctionComponent<EmailTemplateFormProps> = ({
@@ -32,10 +31,11 @@ const EmailTemplateForm: FunctionComponent<EmailTemplateFormProps> = ({
   onSubmit,
   onSubmitField,
   defaultValues,
-  isEdition = false,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
+
+  const isEdition = !!defaultValues;
 
   const validation = Yup.object().shape({
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
