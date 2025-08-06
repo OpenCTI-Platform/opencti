@@ -43,6 +43,11 @@ const sortHeaderStyle: Record<string, CSSProperties> = {
     fontSize: 12,
     fontWeight: '700',
   },
+  is_managed: {
+    float: 'left',
+    fontSize: 12,
+    fontWeight: '700',
+  },
 };
 
 interface SortConnectorsHeaderProps {
