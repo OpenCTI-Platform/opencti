@@ -34,6 +34,7 @@ const CaseTaskOverviewFragment = graphql`
       definition
       definition_type
       id
+      x_opencti_color
     }
     objectLabel {
       id
