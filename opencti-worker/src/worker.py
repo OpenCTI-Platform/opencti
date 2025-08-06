@@ -58,10 +58,6 @@ class MessageQueueConsumer:  # pylint: disable=too-many-instance-attributes
         self.should_stop = False
         self.pika_connection = pika.BlockingConnection(self.pika_parameters)
         self.channel = self.pika_connection.channel()
-        try:
-            self.channel.confirm_delivery()
-        except Exception as err:  # pylint: disable=broad-except
-            self.logger.warning(str(err))
         self.channel.basic_qos(prefetch_count=1)
         self.thread = Thread(target=self.consume_queue, name=self.queue_name)
         self.thread.start()
