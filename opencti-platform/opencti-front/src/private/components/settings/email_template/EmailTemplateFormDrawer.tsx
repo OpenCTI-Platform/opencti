@@ -85,7 +85,6 @@ const FintelTemplateFormDrawer = ({
           onClose={onClose}
           onSubmit={onAdd}
           onSubmitField={onEdit}
-          isEdition={!!template}
           defaultValues={template}
         />
       </Drawer>
