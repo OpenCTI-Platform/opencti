@@ -316,17 +316,28 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
         imported_items = []
         start_processing = datetime.datetime.now()
         try:
+            api = OpenCTIApiClient(
+                url=self.opencti_url,
+                token=self.opencti_token,
+                log_level=self.log_level,
+                ssl_verify=self.ssl_verify,
+                json_logging=self.json_logging,
+                perform_health_check=False,
+            )
+            api.logger_class("worker")
+
             # Set the API headers
-            self.api.set_applicant_id_header(data.get("applicant_id"))
-            self.api.set_playbook_id_header(data.get("playbook_id"))
-            self.api.set_event_id(data.get("event_id"))
-            self.api.set_draft_id(data.get("draft_id"))
+            api.set_applicant_id_header(data.get("applicant_id"))
+            api.set_playbook_id_header(data.get("playbook_id"))
+            api.set_event_id(data.get("event_id"))
+            api.set_draft_id(data.get("draft_id"))
             work_id = data["work_id"] if "work_id" in data else None
             no_split = data["no_split"] if "no_split" in data else False
             synchronized = data["synchronized"] if "synchronized" in data else False
-            self.api.set_synchronized_upsert_header(synchronized)
+            api.set_synchronized_upsert_header(synchronized)
             previous_standard = data.get("previous_standard")
-            self.api.set_previous_standard_header(previous_standard)
+            api.set_previous_standard_header(previous_standard)
+
             # Execute the import
             event_type = data["type"] if "type" in data else "bundle"
             types = (
@@ -343,7 +354,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                     raise ValueError("JSON data type is not a STIX2 bundle")
                 if len(content_json["objects"]) == 1 or no_split:
                     update = data["update"] if "update" in data else False
-                    imported_items = self.api.stix2.import_bundle_from_json(
+                    imported_items = api.stix2.import_bundle_from_json(
                         content, update, types, work_id
                     )
                 else:
@@ -369,7 +380,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                     )
                     # Add expectations to the work
                     if work_id is not None:
-                        self.api.work.add_expectations(work_id, expectations)
+                        api.work.add_expectations(work_id, expectations)
                     # For each split bundle, send it to the same queue
                     for bundle in bundles:
                         text_bundle = json.dumps(bundle)
@@ -400,7 +411,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                             "type": "bundle",
                             "objects": [event_content["data"]],
                         }
-                        imported_items = self.api.stix2.import_bundle(
+                        imported_items = api.stix2.import_bundle(
                             bundle, True, types, work_id
                         )
                     # Specific knowledge merge
@@ -421,7 +432,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                             "type": "bundle",
                             "objects": [merge_object],
                         }
-                        imported_items = self.api.stix2.import_bundle(
+                        imported_items = api.stix2.import_bundle(
                             bundle, True, types, work_id
                         )
                     # All standard operations
@@ -444,7 +455,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                             "type": "bundle",
                             "objects": [data_object],
                         }
-                        imported_items = self.api.stix2.import_bundle(
+                        imported_items = api.stix2.import_bundle(
                             bundle, True, types, work_id
                         )
                     case _:
