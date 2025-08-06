@@ -17,8 +17,8 @@ import React from 'react';
 import LocationField from '@components/common/form/LocationField';
 import SectorField from '@components/common/form/SectorField';
 import ConfidenceField from '@components/common/form/ConfidenceField';
-import { useFormatter } from '../../../components/i18n';
-import { fieldSpacingContainerStyle } from '../../../utils/field';
+import { useFormatter } from '../../../../components/i18n';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const PirCreationFormCriteria = () => {
   const { t_i18n } = useFormatter();
