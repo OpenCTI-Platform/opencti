@@ -13,7 +13,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import type { FieldOption } from '../../../utils/field';
+import type { FieldOption } from '../../../../utils/field';
 import { PirAddInput } from './__generated__/PirCreationMutation.graphql';
 
 export interface PirEditionFormData {
