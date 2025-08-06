@@ -17,11 +17,11 @@ const ProcessInstructions: FunctionComponent<ProcessInstructionsProps> = ({
     <Box
       sx={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}
     >
-      <p style={{ whiteSpace: 'pre-line', textAlign: 'center' }}>
+      <p style={{ whiteSpace: 'pre-line', width: '100%' }}>
         {t_i18n(instructionKey)}
       </p>
-      <div>
-        <Button variant="contained" onClick={onContinue}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+        <Button onClick={onContinue}>
           {t_i18n('Continue')}
         </Button>
       </div>

@@ -1,5 +1,5 @@
 import { graphql } from 'react-relay';
-import React, { useCallback, useContext, useState } from 'react';
+import React, { useCallback, useContext, useMemo, useState } from 'react';
 import { Button } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import GradientButton from '../../../../components/GradientButton';
@@ -61,7 +61,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ enrollmentStatus }) => {
     xtmHubTabSettingsFieldPatchMutation,
     undefined,
     {
-      successMessage: t_i18n('Your OpenCTI platform is successfully enrolled'),
+      successMessage: t_i18n('Your OpenCTI platform is successfully registered'),
     },
   );
 
@@ -70,7 +70,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ enrollmentStatus }) => {
     undefined,
     {
       successMessage: t_i18n(
-        'Your OpenCTI platform is successfully unenrolled',
+        'Your OpenCTI platform is successfully unregistered',
       ),
     },
   );
@@ -88,7 +88,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ enrollmentStatus }) => {
   ).toString();
 
   const enrollmentUrl = `${enrollmentHubUrl}/redirect/enroll-octi?${queryParamsOCTIInformations}`;
-  const unenrollmentUrl = `${enrollmentHubUrl}/unenroll/octi?platform_id=${settings?.id ?? ''}`;
+  const unenrollmentUrl = `${enrollmentHubUrl}/redirect/unenroll-octi?platform_id=${settings?.id ?? ''}`;
 
   const handleClosingTab = () => {
     setProcessStep(ProcessSteps.CANCELED);
@@ -197,44 +197,43 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ enrollmentStatus }) => {
     setProcessStep(ProcessSteps.WAITING_HUB);
   };
 
-  const getProcessConfig = () => {
+  const config = useMemo(() => {
     const isUnenroll = operationType === OperationType.UNENROLL;
     return {
       dialogTitle: t_i18n(
         isUnenroll
-          ? 'Unenrolling your platform...'
-          : 'Enrolling your platform...',
+          ? 'Unregistering your platform...'
+          : 'Registering your platform...',
       ),
       errorMessage: t_i18n('Sorry, we have an issue, please retry'),
       canceledMessage: t_i18n(
         isUnenroll
-          ? 'You have canceled the unenrollment process'
-          : 'You have canceled the enrollment process',
+          ? 'You have canceled the unregistration process'
+          : 'You have canceled the registration process',
       ),
       loaderButtonText: t_i18n(
-        isUnenroll ? 'Continue to unenroll' : 'Continue to enroll',
+        isUnenroll ? 'Continue to unregister' : 'Continue to register',
       ),
       confirmationTitle: t_i18n(
         isUnenroll
-          ? 'Close unenrollment process?'
-          : 'Close enrollment process?',
+          ? 'Close unregistration process?'
+          : 'Close registration process?',
       ),
       confirmationMessage: t_i18n(
         isUnenroll
-          ? 'unenrollment_confirmation_dialog'
-          : 'enrollment_confirmation_dialog',
+          ? 'unregistration_confirmation_dialog'
+          : 'registration_confirmation_dialog',
       ),
       continueButtonText: t_i18n(
-        isUnenroll ? 'Continue unenrollment' : 'Continue enrollment',
+        isUnenroll ? 'Continue unregistration' : 'Continue registration',
       ),
       instructionKey: isUnenroll
-        ? 'unenrollment_instruction_paragraph'
-        : 'enrollment_instruction_paragraph',
+        ? 'unregistration_instruction_paragraph'
+        : 'registration_instruction_paragraph',
     };
-  };
+  }, [operationType, t_i18n]);
 
   const renderDialogContent = () => {
-    const config = getProcessConfig();
     const PROCESS_RENDERERS = new Map([
       [
         ProcessSteps.INSTRUCTIONS,
@@ -263,16 +262,16 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ enrollmentStatus }) => {
 
   const getButtonText = () => {
     if (isEnrolled) {
-      return t_i18n('Unenroll from XTM Hub');
+      return t_i18n('Unregister from XTM Hub');
     }
-    return t_i18n('Enroll in XTM Hub');
+    return t_i18n('Register in XTM Hub');
   };
 
   if (isEnrolled) {
     return (
       <>
         <Button
-          variant="outlined"
+          variant="contained"
           size="small"
           color="error"
           sx={{
@@ -287,7 +286,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ enrollmentStatus }) => {
 
         <ProcessDialog
           open={isDialogOpen}
-          title={getProcessConfig().dialogTitle}
+          title={config.dialogTitle}
           onClose={handleAttemptClose}
         >
           {renderDialogContent()}
@@ -295,10 +294,10 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ enrollmentStatus }) => {
 
         <ConfirmationDialog
           open={showConfirmation}
-          title={getProcessConfig().confirmationTitle}
-          message={getProcessConfig().confirmationMessage}
+          title={config.confirmationTitle}
+          message={config.confirmationMessage}
           confirmButtonText={t_i18n('Yes, close')}
-          cancelButtonText={getProcessConfig().continueButtonText}
+          cancelButtonText={config.continueButtonText}
           onConfirm={handleCloseDialog}
           onCancel={handleCancelClose}
         />
@@ -323,7 +322,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ enrollmentStatus }) => {
 
       <ProcessDialog
         open={isDialogOpen}
-        title={getProcessConfig().dialogTitle}
+        title={config.dialogTitle}
         onClose={handleAttemptClose}
       >
         {renderDialogContent()}
@@ -331,10 +330,10 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ enrollmentStatus }) => {
 
       <ConfirmationDialog
         open={showConfirmation}
-        title={getProcessConfig().confirmationTitle}
-        message={getProcessConfig().confirmationMessage}
+        title={config.confirmationTitle}
+        message={config.confirmationMessage}
         confirmButtonText={t_i18n('Yes, close')}
-        cancelButtonText={getProcessConfig().continueButtonText}
+        cancelButtonText={config.continueButtonText}
         onConfirm={handleCloseDialog}
         onCancel={handleCancelClose}
       />

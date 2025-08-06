@@ -5,11 +5,10 @@ import { Grid2, List, ListItem, ListItemText, Typography } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
 import Box from '@mui/material/Box';
+import XtmHubTab from '@components/settings/xtm-hub/XtmHubTab';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
-import XtmHubTab from './XtmHubTab';
 import { XtmHubSettingsQuery } from './__generated__/XtmHubSettingsQuery.graphql';
-import { dateFormat } from '../../../../utils/Time';
 import ItemBoolean from '../../../../components/ItemBoolean';
 
 export const xtmHubSettingsQuery = graphql`
@@ -27,14 +26,12 @@ export const xtmHubSettingsQuery = graphql`
 `;
 
 const XtmHubSettings = () => {
-  const { t_i18n } = useFormatter();
+  const { t_i18n, fd } = useFormatter();
   const theme = useTheme<Theme>();
   const { settings: xtmHubSettings } = useLazyLoadQuery<XtmHubSettingsQuery>(
     xtmHubSettingsQuery,
     {},
   );
-
-  const isEnrolled = xtmHubSettings.xtm_hub_enrollment_status === 'enrolled';
 
   return (
     <section>
@@ -45,23 +42,10 @@ const XtmHubSettings = () => {
         ]}
       />
       <Grid2 container spacing={3}>
-        <Grid2 size={6}>
+        <Grid2 size={7}>
           <Typography variant="h4" gutterBottom={true}>
-            {t_i18n('XTM Hub Enrollment')}
+            {t_i18n('XTM Hub Registration')}
           </Typography>
-          <div
-            style={{
-              float: 'right',
-              marginTop: theme.spacing(-4.5),
-              position: 'relative',
-            }}
-          >
-            <XtmHubTab
-              enrollmentStatus={
-                xtmHubSettings.xtm_hub_enrollment_status || undefined
-              }
-            />
-          </div>
           <div className="clearfix" />
           <Paper
             className="paper-for-grid"
@@ -81,62 +65,98 @@ const XtmHubSettings = () => {
                 marginBottom: 2,
               }}
             >
-              <Typography variant="h6" sx={{ marginBottom: 1 }}>
-                {t_i18n(
-                  'XTM Hub is the focal point to find every Services and Products.',
-                )}
-              </Typography>
-              {t_i18n("By enrolling your OpenCTI instance, you'll be able to:")}
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1em' }}>
+                <Typography variant="h6">
+                  {t_i18n(
+                    'XTM Hub is the focal point to find every Services and Products.',
+                  )}
+                </Typography>
+                <XtmHubTab
+                  enrollmentStatus={
+                    xtmHubSettings.xtm_hub_enrollment_status || undefined
+                  }
+                />
+              </div>
+              {t_i18n("By registering your OpenCTI platform, you'll be able to:")}
               <List sx={{ listStyleType: 'disc', marginLeft: 4, marginTop: 1 }}>
                 <li>
                   {t_i18n(
-                    'deploy in one-click Threats intelligence ressources',
+                    'deploy in one-click Threat Intelligence Resources',
                   )}
                 </li>
-                <li>{t_i18n('see metrics on your instance')}</li>
+                <li>{t_i18n('see metrics on your platform')}</li>
               </List>
             </Box>
             <List style={{ marginTop: -10 }}>
-              {isEnrolled && (
-                <>
+              {
+                xtmHubSettings.xtm_hub_enrollment_status === 'enrolled' && (
+                  <>
+                    <ListItem divider={true}>
+                      <ListItemText primary={t_i18n('Registration status')} />
+                      <ItemBoolean
+                        variant="xlarge"
+                        label={t_i18n('Registered')}
+                        status={true}
+                      />
+                    </ListItem>
+                    <ListItem divider={true}>
+                      <ListItemText primary={t_i18n('Registration date')} />
+                      <ItemBoolean
+                        variant="xlarge"
+                        neutralLabel={fd(
+                          xtmHubSettings.xtm_hub_enrollment_date,
+                        )}
+                        status={null}
+                      />
+                    </ListItem>
+                    <ListItem divider={true}>
+                      <ListItemText primary={t_i18n('Registered by')} />
+                      <ItemBoolean
+                        variant="xlarge"
+                        neutralLabel={xtmHubSettings.xtm_hub_enrollment_user_name}
+                        status={null}
+                      />
+                    </ListItem>
+                  </>
+                )
+              }
+              {
+                xtmHubSettings.xtm_hub_enrollment_status === 'lost_connectivity' && (
+                  <>
+                    <ListItem divider={true}>
+                      <ListItemText primary={t_i18n('Registration status')} />
+                      <ItemBoolean
+                        variant="xlarge"
+                        label={t_i18n('Connectivity lost')}
+                        status={false}
+                      />
+                    </ListItem>
+
+                    <ListItem divider={true}>
+                      <ListItemText primary={t_i18n('Last successful check')} />
+                      <ItemBoolean
+                        variant="xlarge"
+                        neutralLabel={fd(
+                          xtmHubSettings.xtm_hub_last_connectivity_check,
+                        )}
+                        status={null}
+                      />
+                    </ListItem>
+                  </>
+                )
+              }
+              {
+                xtmHubSettings.xtm_hub_enrollment_status === 'unenrolled' && (
                   <ListItem divider={true}>
-                    <ListItemText primary={t_i18n('Enrollment status')} />
+                    <ListItemText primary={t_i18n('Registration status')} />
                     <ItemBoolean
-                      variant="large"
-                      label={t_i18n('Enrolled')}
-                      status={true}
+                      variant="xlarge"
+                      label={t_i18n('Not registered')}
+                      status={false}
                     />
                   </ListItem>
-                  <ListItem divider={true}>
-                    <ListItemText primary={t_i18n('Enrollment date')} />
-                    <ItemBoolean
-                      variant="large"
-                      neutralLabel={dateFormat(
-                        xtmHubSettings.xtm_hub_enrollment_date,
-                      )}
-                      status={null}
-                    />
-                  </ListItem>
-                  <ListItem divider={true}>
-                    <ListItemText primary={t_i18n('Enrolled by')} />
-                    <ItemBoolean
-                      variant="large"
-                      neutralLabel={xtmHubSettings.xtm_hub_enrollment_user_name}
-                      status={null}
-                    />
-                  </ListItem>
-                </>
-              )}
-              {!isEnrolled && (
-                <ListItem divider={true}>
-                  <ListItemText primary={t_i18n('Enrollment status')} />
-                  <ItemBoolean
-                    variant="large"
-                    label={t_i18n('Not enrolled')}
-                    status={false}
-                  />
-                </ListItem>
-              )}
+                )
+              }
             </List>
           </Paper>
         </Grid2>

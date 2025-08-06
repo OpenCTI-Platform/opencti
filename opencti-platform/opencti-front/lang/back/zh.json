@@ -394,6 +394,7 @@
   "Height measure date": "身高测量日期",
   "Hidden": "隐藏",
   "Holder name": "持有人姓名",
+  "HUB_REGISTRATION_MANAGER": "枢纽注册管理员",
   "IBAN": "IBAN",
   "Id": "用户名",
   "Identity class": "身份类别",
@@ -898,10 +899,11 @@
   "Workspace graph data": "工作区图表数据",
   "Workspace type": "工作区类型",
   "X_Aliases": "X_别名",
-  "XTM Hub enrollment date": "XTM Hub 注册日期",
-  "XTM Hub enrollment status": "XTM Hub 注册状态",
-  "XTM Hub enrollment User ID": "XTM 中枢注册用户 ID",
-  "XTM Hub enrollment User name": "XTM Hub 注册 用户名",
   "XTM Hub last connectivity check": "XTM 中枢最后连接检查",
+  "XTM Hub registration date": "XTM Hub 注册日期",
+  "XTM Hub registration manager": "XTM Hub 注册管理器",
+  "XTM Hub registration status": "XTM Hub 注册状态",
+  "XTM Hub registration User ID": "XTM Hub 注册用户 ID",
+  "XTM Hub registration User name": "XTM Hub 注册用户名",
   "XTM Hub Token": "XTM 中枢令牌"
 }

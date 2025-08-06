@@ -232,7 +232,12 @@
     "openrm_token": "",
     "openmtd_url": "",
     "openmtd_token": "",
-    "xtmhub_url": "https://hub.filigran.io"
+    "hub": {
+      "backend_url": "https://hub.filigran.io",
+      "to_email": ""
+    },
+    "xtmhub_url": "https://hub.filigran.io",
+    "xtmhub_to_email": "no-reply@filigran.io"
   },
   "data_sharing": {
     "max_csv_feed_result": 5000
@@ -288,6 +293,11 @@
     "lock_cron_key": "playbook_cron_manager_lock",
     "interval": 60000,
     "cron_max_size": 500
+  },
+  "hub_registration_manager": {
+    "enabled": true,
+    "lock_key": "hub_registration_manager_lock",
+    "interval": 3600000
   },
   "indicator_decay_manager": {
     "enabled": true,
@@ -410,7 +420,8 @@
     "reject_unauthorized": false,
     "port": 25,
     "username": "",
-    "password": ""
+    "password": "",
+    "email_max_cc_size": 500
   },
   "providers": {
     "local": {
