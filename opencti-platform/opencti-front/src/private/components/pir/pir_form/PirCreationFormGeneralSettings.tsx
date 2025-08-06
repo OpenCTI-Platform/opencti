@@ -16,11 +16,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import { Field } from 'formik';
 import React from 'react';
 import MenuItem from '@mui/material/MenuItem';
-import MarkdownField from '../../../components/fields/MarkdownField';
-import { useFormatter } from '../../../components/i18n';
-import { fieldSpacingContainerStyle } from '../../../utils/field';
-import TextField from '../../../components/TextField';
-import SelectField from '../../../components/fields/SelectField';
+import MarkdownField from '../../../../components/fields/MarkdownField';
+import { useFormatter } from '../../../../components/i18n';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import TextField from '../../../../components/TextField';
+import SelectField from '../../../../components/fields/SelectField';
 
 const PirCreationFormGeneralSettings = () => {
   const { t_i18n } = useFormatter();
