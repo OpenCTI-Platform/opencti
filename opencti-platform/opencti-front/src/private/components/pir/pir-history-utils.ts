@@ -74,7 +74,7 @@ export const pirLogRedirectUri = (
     readonly message: string
   } | null | undefined,
 ) => {
-  const isAddInPir = /adds .+ in `In PIR`/.test(context?.message ?? '');
+  const isAddInPir = /added to Pir/.test(context?.message ?? '');
   let redirectURI = `/dashboard/id/${context?.entity_id}`;
   if (isAddInPir && context?.entity_id) {
     const filter = encodeURIComponent(JSON.stringify(sanitizeFilterGroupKeysForFrontend({
