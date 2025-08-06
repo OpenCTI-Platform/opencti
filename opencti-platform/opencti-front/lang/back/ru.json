@@ -394,6 +394,7 @@
   "Height measure date": "Дата измерения высоты",
   "Hidden": "Скрытый",
   "Holder name": "Имя владельца",
+  "HUB_REGISTRATION_MANAGER": "Менеджер по регистрации хаба",
   "IBAN": "IBAN",
   "Id": "Id",
   "Identity class": "Класс идентичности",
@@ -909,10 +910,11 @@
   "Workspace graph data": "Данные графиков рабочей области",
   "Workspace type": "Тип рабочего пространства",
   "X_Aliases": "X_Aliases",
-  "XTM Hub enrollment date": "Дата регистрации в XTM Hub",
-  "XTM Hub enrollment status": "Статус регистрации в центре XTM",
-  "XTM Hub enrollment User ID": "Идентификатор пользователя XTM Hub",
-  "XTM Hub enrollment User name": "XTM Hub регистрация Имя пользователя",
   "XTM Hub last connectivity check": "Последняя проверка подключения концентратора XTM",
+  "XTM Hub registration date": "Дата регистрации XTM Hub",
+  "XTM Hub registration manager": "Менеджер по регистрации XTM Hub",
+  "XTM Hub registration status": "Статус регистрации XTM Hub",
+  "XTM Hub registration User ID": "Идентификатор пользователя при регистрации концентратора XTM",
+  "XTM Hub registration User name": "Регистрация концентратора XTM Имя пользователя",
   "XTM Hub Token": "Токен концентратора XTM"
 }

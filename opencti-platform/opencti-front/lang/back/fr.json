@@ -394,6 +394,7 @@
   "Height measure date": "Date de mesure de la taille",
   "Hidden": "Caché",
   "Holder name": "Nom du titulaire",
+  "HUB_REGISTRATION_MANAGER": "Manager d'enregistrement du Hub",
   "IBAN": "IBAN",
   "Id": "Id",
   "Identity class": "Classe d'identité",
@@ -909,10 +910,11 @@
   "Workspace graph data": "Données du graphique de l'espace de travail",
   "Workspace type": "Type d'espace de travail",
   "X_Aliases": "X_Aliases",
-  "XTM Hub enrollment date": "Date d'inscription au XTM Hub",
-  "XTM Hub enrollment status": "Statut de l'inscription au XTM Hub",
-  "XTM Hub enrollment User ID": "ID de l'utilisateur pour l'inscription au XTM Hub",
-  "XTM Hub enrollment User name": "XTM Hub enrollment Nom d'utilisateur",
   "XTM Hub last connectivity check": "Dernier contrôle de connectivité du XTM Hub",
+  "XTM Hub registration date": "Date d'inscription au XTM Hub",
+  "XTM Hub registration manager": "Manager d'enregistrement XTM Hub",
+  "XTM Hub registration status": "Statut de l'inscription au XTM Hub",
+  "XTM Hub registration User ID": "ID de l'utilisateur de l'enregistrement du XTM Hub",
+  "XTM Hub registration User name": "Nom de l'utilisateur pour l'enregistrement du XTM Hub",
   "XTM Hub Token": "Token XTM Hub"
 }
