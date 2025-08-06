@@ -27,12 +27,19 @@ export interface PirCreationFormData {
   description: string
   pir_rescan_days: number
   confidence: number | null
-  // TODO PIR should have different defs depending of type
+  // Properties for "THREAT_LANDSCAPE" PIR
   locations: FieldOption[]
   sectors: FieldOption[]
 }
 
-const optionsToFilters = (options: FieldOption[], relType: string): PirAddInput['pir_criteria'] => {
+/**
+ * Helper function to convert a list of entities to a PIR criteria.
+ *
+ * @param options List of entities to filter.
+ * @param relType Type of the relation linked to the entities.
+ * @returns An array of criteria for PIR.
+ */
+const formOptionsToPirCriteria = (options: FieldOption[], relType: string): PirAddInput['pir_criteria'] => {
   return options.map((option) => ({
     weight: 1,
     filters: {
@@ -46,20 +53,36 @@ const optionsToFilters = (options: FieldOption[], relType: string): PirAddInput[
   }));
 };
 
+/**
+ * Transforms data of PIR creation form to API input.
+ *
+ * @param data Form data to convert.
+ * @returns Object compatible with API format.
+ */
 export const pirFormDataToMutationInput = (data: PirCreationFormData): PirAddInput => {
+  let criteria: PirAddInput['pir_criteria'] = [];
+  if (data.pir_type === 'THREAT_LANDSCAPE') {
+    criteria = [
+      ...formOptionsToPirCriteria(data.locations, 'targets'),
+      ...formOptionsToPirCriteria(data.sectors, 'targets'),
+    ];
+  }
+
   return {
     name: data.name,
     pir_type: data.pir_type,
-    description: data.description ?? undefined,
+    description: data.description || undefined,
     pir_rescan_days: Number(data.pir_rescan_days),
+    pir_criteria: criteria,
     pir_filters: {
       mode: 'and',
       filterGroups: [],
-      filters: [{ key: ['confidence'], values: [`${data.confidence}`], operator: 'gte', mode: 'or' }],
+      filters: [{
+        key: ['confidence'],
+        values: [`${data.confidence ?? 0}`],
+        operator: 'gte',
+        mode: 'or',
+      }],
     },
-    pir_criteria: [
-      ...optionsToFilters(data.locations, 'targets'),
-      ...optionsToFilters(data.sectors, 'targets'),
-    ],
   };
 };
