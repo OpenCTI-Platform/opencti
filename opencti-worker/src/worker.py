@@ -1,41 +1,32 @@
 # coding: utf-8
 
-import base64
-import datetime
 import functools
-import json
 import os
-import random
 import signal
 import threading
-import time
-import traceback
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from threading import Thread
-from typing import Any, Dict, List, Union, Callable, Literal
+from typing import Any, Dict, List, Callable, Literal
 
 import pika
-import requests
 import yaml
 from opentelemetry import metrics
 from opentelemetry.exporter.prometheus import PrometheusMetricReader
 from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from prometheus_client import start_http_server
-from pycti import OpenCTIApiClient, OpenCTIStix2Splitter, __version__
+from pycti import OpenCTIApiClient
 from pycti.connector.opencti_connector_helper import (
     create_mq_ssl_context,
     get_config_variable,
 )
-from requests import RequestException, Timeout
 
-ERROR_TYPE_BAD_GATEWAY = "Bad Gateway"
-ERROR_TYPE_TIMEOUT = "Request timed out"
+from listen_handler import ListenHandler
+from push_handler import PushHandler
 
 # Telemetry variables definition
 meter = metrics.get_meter(__name__)
-resource = Resource(attributes={SERVICE_NAME: "opencti-worker"})
 bundles_global_counter = meter.create_counter(
     name="opencti_bundles_global_counter",
     description="number of bundles processed",
@@ -155,248 +146,6 @@ class MessageQueueConsumer:  # pylint: disable=too-many-instance-attributes
 
 
 @dataclass(unsafe_hash=True)
-class ApiDataHandler:
-    logger: Any
-    connector_token: str
-    callback_uri: str
-    listen_api_ssl_verify: bool
-    listen_api_http_proxy: str
-    listen_api_https_proxy: str
-
-    def handle_message(self, body: str) -> Literal["ack", "nack", "requeue"]:
-        try:
-            response = requests.post(
-                self.callback_uri,
-                data=body,
-                headers={
-                    "User-Agent": f"pycti/{__version__}",
-                    "Authorization": f"Bearer {self.connector_token}",
-                },
-                verify=self.listen_api_ssl_verify,
-                proxies={
-                    "http": self.listen_api_http_proxy,
-                    "https": self.listen_api_https_proxy,
-                },
-                timeout=300,
-            )
-            if response.status_code != 202:
-                raise RequestException(response.status_code, response.text)
-
-            return "ack"
-        except (RequestException, Timeout):
-            self.logger.error(
-                "Error executing listen handling, a connection error or timeout occurred"
-            )
-            # Platform is under heavy load: wait for unlock & retry almost indefinitely.
-            sleep_jitter = round(random.uniform(10, 30), 2)
-            time.sleep(sleep_jitter)
-
-            return "requeue"
-        except Exception as ex:
-            # Technical unmanaged exception
-            self.logger.error(
-                "Error executing listen handling", {"reason": str(ex)}
-            )
-            error_msg = traceback.format_exc()
-            if ERROR_TYPE_BAD_GATEWAY in error_msg or ERROR_TYPE_TIMEOUT in error_msg:
-                # Nack the message and requeue
-                return "requeue"
-            else:
-                # Technical error, log and continue, Reject the message
-                return "nack"
-
-
-@dataclass(unsafe_hash=True)
-class PushHandler:  # pylint: disable=too-many-instance-attributes
-    logger: Any
-    log_level: str
-    json_logging: bool
-    opencti_url: str
-    opencti_token: str
-    ssl_verify: Union[bool, str]
-    push_exchange: str
-    push_routing: str
-    pika_parameters: pika.ConnectionParameters
-
-    def __post_init__(self) -> None:
-        self.api = OpenCTIApiClient(
-            url=self.opencti_url,
-            token=self.opencti_token,
-            log_level=self.log_level,
-            json_logging=self.json_logging,
-            ssl_verify=self.ssl_verify,
-        )
-
-    def handle_message(
-            self,
-            body: str,
-    ) -> Literal["ack", "nack", "requeue"]:
-        try:
-            data: Dict[str, Any] = json.loads(body)
-        except Exception as e:
-            self.logger.error(
-                "Could not process message",
-                {"body": body, "exception": e},
-            )
-            # Nack message, no requeue for this unprocessed message
-            return "nack"
-
-        imported_items = []
-        start_processing = datetime.datetime.now()
-        try:
-            # Set the API headers
-            self.api.set_applicant_id_header(data.get("applicant_id"))
-            self.api.set_playbook_id_header(data.get("playbook_id"))
-            self.api.set_event_id(data.get("event_id"))
-            self.api.set_draft_id(data.get("draft_id"))
-            work_id = data["work_id"] if "work_id" in data else None
-            no_split = data["no_split"] if "no_split" in data else False
-            synchronized = data["synchronized"] if "synchronized" in data else False
-            self.api.set_synchronized_upsert_header(synchronized)
-            previous_standard = data.get("previous_standard")
-            self.api.set_previous_standard_header(previous_standard)
-            # Execute the import
-            event_type = data["type"] if "type" in data else "bundle"
-            types = (
-                data["entities_types"]
-                if "entities_types" in data and len(data["entities_types"]) > 0
-                else None
-            )
-            if event_type == "bundle":
-                # Event type bundle
-                # Standard event with STIX information
-                content = base64.b64decode(data["content"]).decode("utf-8")
-                content_json = json.loads(content)
-                if "objects" not in content_json or len(content_json["objects"]) == 0:
-                    raise ValueError("JSON data type is not a STIX2 bundle")
-                if len(content_json["objects"]) == 1 or no_split:
-                    update = data["update"] if "update" in data else False
-                    imported_items = self.api.stix2.import_bundle_from_json(
-                        content, update, types, work_id
-                    )
-                else:
-                    # As bundle is received as complete, split and requeue
-                    # Create a specific channel to push the split bundles
-                    push_pika_connection = pika.BlockingConnection(self.pika_parameters)
-                    push_channel = push_pika_connection.channel()
-                    try:
-                        push_channel.confirm_delivery()
-                    except Exception as err:  # pylint: disable=broad-except
-                        self.logger.warning(str(err))
-                    # Instance spliter and split the big bundle
-                    event_version = (
-                        content_json["x_opencti_event_version"]
-                        if "x_opencti_event_version" in content_json
-                        else None
-                    )
-                    stix2_splitter = OpenCTIStix2Splitter()
-                    expectations, _, bundles = (
-                        stix2_splitter.split_bundle_with_expectations(
-                            content_json, False, event_version
-                        )
-                    )
-                    # Add expectations to the work
-                    if work_id is not None:
-                        self.api.work.add_expectations(work_id, expectations)
-                    # For each split bundle, send it to the same queue
-                    for bundle in bundles:
-                        text_bundle = json.dumps(bundle)
-                        data["content"] = base64.b64encode(
-                            text_bundle.encode("utf-8", "escape")
-                        ).decode("utf-8")
-                        push_channel.basic_publish(
-                            exchange=self.push_exchange,
-                            routing_key=self.push_routing,
-                            body=json.dumps(data),
-                            properties=pika.BasicProperties(
-                                delivery_mode=2,
-                                content_encoding="utf-8",  # make message persistent
-                            ),
-                        )
-                    push_channel.close()
-                    push_pika_connection.close()
-            # Event type event
-            # Specific OpenCTI event operation with specific operation
-            elif event_type == "event":
-                event = base64.b64decode(data["content"]).decode("utf-8")
-                event_content = json.loads(event)
-                event_type = event_content["type"]
-                match event_type:
-                    # Standard knowledge
-                    case "create" | "update":
-                        bundle = {
-                            "type": "bundle",
-                            "objects": [event_content["data"]],
-                        }
-                        imported_items = self.api.stix2.import_bundle(
-                            bundle, True, types, work_id
-                        )
-                    # Specific knowledge merge
-                    case "merge":
-                        # Start with a merge
-                        target_id = event_content["data"]["id"]
-                        source_ids = list(
-                            map(
-                                lambda source: source["id"],
-                                event_content["context"]["sources"],
-                            )
-                        )
-                        merge_object = event_content["data"]
-                        merge_object["opencti_operation"] = event_type
-                        merge_object["merge_target_id"] = target_id
-                        merge_object["merge_source_ids"] = source_ids
-                        bundle = {
-                            "type": "bundle",
-                            "objects": [merge_object],
-                        }
-                        imported_items = self.api.stix2.import_bundle(
-                            bundle, True, types, work_id
-                        )
-                    # All standard operations
-                    case (
-                    "delete"  # Standard delete
-                    | "restore"  # Restore an operation from trash
-                    | "delete_force"  # Delete with no trash
-                    | "share"  # Share an element
-                    | "unshare"  # Unshare an element
-                    | "rule_apply"  # Applying a rule (start engine)
-                    | "rule_clear"  # Clearing a rule (stop engine)
-                    | "rules_rescan"  # Rescan a rule (massive operation in UI)
-                    | "enrichment"  # Ask for enrichment (massive operation in UI)
-                    | "clear_access_restriction"  # Clear access members (massive operation in UI)
-                    | "revert_draft"  # Cancel draft modification (massive operation in UI)
-                    ):
-                        data_object = event_content["data"]
-                        data_object["opencti_operation"] = event_type
-                        bundle = {
-                            "type": "bundle",
-                            "objects": [data_object],
-                        }
-                        imported_items = self.api.stix2.import_bundle(
-                            bundle, True, types, work_id
-                        )
-                    case _:
-                        raise ValueError(
-                            "Unsupported operation type", {"event_type": event_type}
-                        )
-            else:
-                raise ValueError("Unsupported event type", {"event_type": event_type})
-
-            return "ack"
-        except Exception as ex:
-            # Technical unmanaged exception
-            self.logger.error(
-                "Error executing data handling", {"reason": str(ex)}
-            )
-            # Nack message and discard
-            return "nack"
-        finally:
-            bundles_global_counter.add(len(imported_items))
-            processing_delta = datetime.datetime.now() - start_processing
-            bundles_processing_time_gauge.record(processing_delta.seconds)
-
-
-@dataclass(unsafe_hash=True)
 class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attributes
     consumers: Dict[str, MessageQueueConsumer] = field(default_factory=dict, hash=False)
 
@@ -500,7 +249,8 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                 port=self.telemetry_prometheus_port, addr=self.telemetry_prometheus_host
             )
             provider = MeterProvider(
-                resource=resource, metric_readers=[PrometheusMetricReader()]
+                resource=Resource(attributes={SERVICE_NAME: "opencti-worker"}),
+                metric_readers=[PrometheusMetricReader()]
             )
             metrics.set_meter_provider(provider)
 
@@ -588,6 +338,8 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             connector_config["push_exchange"],
                             connector_config["push_routing"],
                             pika_parameters,
+                            bundles_global_counter,
+                            bundles_processing_time_gauge
                         )
                         self.consumers[push_queue] = MessageQueueConsumer(
                             self.worker_logger,
@@ -605,7 +357,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                         queues.append(listen_queue)
                         listen_consumer = self.consumers.get(listen_queue)
                         if listen_consumer is None or not listen_consumer.is_alive():
-                            api_data_handler = ApiDataHandler(
+                            listen_handler = ListenHandler(
                                 self.worker_logger,
                                 connector["connector_user"]["api_token"],
                                 listen_callback_uri,
@@ -619,7 +371,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                                 listen_queue,
                                 self.build_pika_parameters(connector_config),
                                 listen_execution_pool,
-                                api_data_handler.handle_message,
+                                listen_handler.handle_message,
                             )
 
                 # Check if some consumer must be stopped
