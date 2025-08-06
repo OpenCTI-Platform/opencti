@@ -115,6 +115,70 @@ const updateRequestedStatus = graphql`
   }
 `;
 
+// Component for ConnectorWorks sections
+interface ConnectorWorksSectionProps {
+  connectorId: string;
+}
+
+const ConnectorWorksSection: FunctionComponent<ConnectorWorksSectionProps> = ({ connectorId }) => {
+  const optionsInProgress: ConnectorWorksQuery$variables = {
+    count: 50,
+    orderMode: 'asc',
+    filters: {
+      mode: 'and',
+      filters: [
+        { key: ['connector_id'], values: [connectorId] },
+        { key: ['status'], values: ['wait', 'progress'] },
+      ],
+      filterGroups: [],
+    },
+  };
+
+  const optionsFinished: ConnectorWorksQuery$variables = {
+    count: 50,
+    filters: {
+      mode: 'and',
+      filters: [
+        { key: ['connector_id'], values: [connectorId] },
+        { key: ['status'], values: ['complete'] },
+      ],
+      filterGroups: [],
+    },
+  };
+
+  return (
+    <>
+      <QueryRenderer
+        key="connector-works-in-progress"
+        query={connectorWorksQuery}
+        variables={optionsInProgress}
+        fetchPolicy="cache-and-network"
+        render={({ props }: { props: ConnectorWorksQuery$data | null }) => {
+          if (props) {
+            return <ConnectorWorks data={props} options={[optionsInProgress]} inProgress={true} />;
+          }
+          return <Loader variant={LoaderVariant.inElement} />;
+        }}
+      />
+
+      <QueryRenderer
+        key="connector-works-finished"
+        query={connectorWorksQuery}
+        variables={optionsFinished}
+        fetchPolicy="cache-and-network"
+        render={({ props }: { props: ConnectorWorksQuery$data | null }) => {
+          if (props) {
+            return <ConnectorWorks data={props} options={[optionsFinished]} />;
+          }
+          return <Loader variant={LoaderVariant.inElement} />;
+        }}
+      />
+    </>
+  );
+};
+
+ConnectorWorksSection.displayName = 'ConnectorWorksSection';
+
 interface ConnectorComponentProps {
   connector: Connector_connector$data;
   relay: RelayRefetchProp;
@@ -255,29 +319,6 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
     });
   };
 
-  const optionsInProgress: ConnectorWorksQuery$variables = {
-    count: 50,
-    orderMode: 'asc',
-    filters: {
-      mode: 'and',
-      filters: [
-        { key: ['connector_id'], values: [connector.id] },
-        { key: ['status'], values: ['wait', 'progress'] },
-      ],
-      filterGroups: [],
-    },
-  };
-  const optionsFinished: ConnectorWorksQuery$variables = {
-    count: 50,
-    filters: {
-      mode: 'and',
-      filters: [
-        { key: ['connector_id'], values: [connector.id] },
-        { key: ['status'], values: ['complete'] },
-      ],
-      filterGroups: [],
-    },
-  };
   const filtersSearchContext = { entityTypes: connectorFiltersScope, connectorsScope: true };
 
   const userHasSettingsCapability = useGranted([SETTINGS_SETACCESSES]);
@@ -298,7 +339,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
     setTabValue(newValue);
   };
 
-  // Component for Overview content
+  // Component for Overview content (without ConnectorWorks)
   const ConnectorOverview = () => (
     <>
       <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
@@ -689,33 +730,6 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
           </Paper>
         </Grid>
       </Grid>
-      <QueryRenderer
-        query={connectorWorksQuery}
-        variables={optionsInProgress}
-        render={({ props }: { props: ConnectorWorksQuery$data | null }) => (
-          <>
-            {props ? (
-              <ConnectorWorks data={props} options={[optionsInProgress]} inProgress={true} />
-            ) : (
-              <Loader variant={LoaderVariant.inElement} />
-            )}
-          </>
-        )}
-      />
-
-      <QueryRenderer
-        query={connectorWorksQuery}
-        variables={optionsFinished}
-        render={({ props }: { props: ConnectorWorksQuery$data | null }) => (
-          <>
-            {props ? (
-              <ConnectorWorks data={props} options={[optionsFinished]} />
-            ) : (
-              <Loader variant={LoaderVariant.inElement} />
-            )}
-          </>
-        )}
-      />
     </>
   );
 
@@ -893,12 +907,20 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
             </Tabs>
           </Box>
           <Box>
-            {tabValue === 0 && <ConnectorOverview />}
+            {tabValue === 0 && (
+              <>
+                <ConnectorOverview />
+                <ConnectorWorksSection connectorId={connector.id} />
+              </>
+            )}
             {tabValue === 1 && <ConnectorLogs />}
           </Box>
         </>
       ) : (
-        <ConnectorOverview />
+        <>
+          <ConnectorOverview />
+          <ConnectorWorksSection connectorId={connector.id} />
+        </>
       )}
       <DeleteDialog
         deletion={deletion}
