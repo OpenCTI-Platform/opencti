@@ -54,6 +54,23 @@ const extractRefererPathFromReq = (req) => {
   return undefined;
 };
 
+// Helper function to validate redirect paths to prevent Open Redirect vulnerabilities
+const isValidRedirectPath = (redirectPath) => {
+  if (!redirectPath || typeof redirectPath !== 'string') return false;
+  // Only accept relative paths that start with / but not //
+  // This prevents redirects to external domains
+  return redirectPath.startsWith('/') && !redirectPath.startsWith('//');
+};
+
+// Sanitize redirect path to ensure it's safe
+const sanitizeRedirectPath = (redirectPath) => {
+  if (isValidRedirectPath(redirectPath)) {
+    return redirectPath;
+  }
+  // If path is invalid, return null
+  return null;
+};
+
 const publishFileDownload = async (executeContext, auth, file) => {
   const { filename, entity_id } = file.metaData;
   const entity = entity_id ? await internalLoadById(executeContext, auth, entity_id) : undefined;
@@ -473,7 +490,9 @@ const createApp = async (app) => {
       logApp.error('Error auth provider callback', { cause: e, provider });
       setCookieError(res, 'Invalid authentication, please ask your administrator');
     } finally {
-      res.redirect(referer ?? (basePath || '/'));
+      // Sanitize the referer to prevent Open Redirect vulnerabilities
+      const safeRedirect = sanitizeRedirectPath(referer) ?? (basePath || '/');
+      res.redirect(safeRedirect);
     }
   });
 
