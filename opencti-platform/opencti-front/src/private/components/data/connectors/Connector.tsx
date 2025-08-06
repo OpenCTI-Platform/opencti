@@ -58,12 +58,18 @@ import useDeletion from '../../../../utils/hooks/useDeletion';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import useHelper from '../../../../utils/hooks/useHelper';
 import type { Theme } from '../../../../components/Theme';
 import { Connector_connector$data } from './__generated__/Connector_connector.graphql';
 import { ConnectorUpdateTriggerMutation, EditInput } from './__generated__/ConnectorUpdateTriggerMutation.graphql';
 import { ConnectorUpdateStatusMutation } from './__generated__/ConnectorUpdateStatusMutation.graphql';
 import { ConnectorWorksQuery$variables, ConnectorWorksQuery$data } from './__generated__/ConnectorWorksQuery.graphql';
+
+// Type extension for organization node with authorized_authorities
+interface OrganizationNodeWithAuthorities {
+  id: string;
+  name: string;
+  authorized_authorities?: ReadonlyArray<string>;
+}
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -118,9 +124,6 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
   const { t_i18n, nsdt } = useFormatter();
   const navigate = useNavigate();
   const theme = useTheme<Theme>();
-
-  const { isFeatureEnable } = useHelper();
-  const isComposerEnable = isFeatureEnable('COMPOSER');
 
   // Helper function to create connector configuration
   const getConnectorConfig = () => ({
@@ -528,7 +531,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                                 <ItemIcon
                                   type="Organization"
                                   color={
-                                  (organizationEdge.node.authorized_authorities ?? []).includes(connector.connector_user?.id ?? '')
+                                  ((organizationEdge.node as OrganizationNodeWithAuthorities).authorized_authorities ?? []).includes(connector.connector_user?.id ?? '')
                                     ? theme.palette.dangerZone
                                     : theme.palette.primary.main
                                 }
@@ -875,7 +878,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
       {editionOpen
           && (<ManagedConnectorEdition connector={connector} onClose={() => setEditionOpen(false)} />)}
 
-      {isComposerEnable ? (
+      {connector.is_managed ? (
         <>
           <Box
             sx={{
