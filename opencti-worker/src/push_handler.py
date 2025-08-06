@@ -53,30 +53,28 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
             self.api.set_playbook_id_header(data.get("playbook_id"))
             self.api.set_event_id(data.get("event_id"))
             self.api.set_draft_id(data.get("draft_id"))
-            work_id = data["work_id"] if "work_id" in data else None
-            no_split = data["no_split"] if "no_split" in data else False
-            synchronized = data["synchronized"] if "synchronized" in data else False
-            self.api.set_synchronized_upsert_header(synchronized)
-            previous_standard = data.get("previous_standard")
-            self.api.set_previous_standard_header(previous_standard)
+            self.api.set_synchronized_upsert_header(data.get("synchronized", False))
+            self.api.set_previous_standard_header(data.get("previous_standard"))
+
             # Execute the import
-            event_type = data["type"] if "type" in data else "bundle"
+            work_id = data.get("work_id")
             types = (
                 data["entities_types"]
                 if "entities_types" in data and len(data["entities_types"]) > 0
                 else None
             )
+            raw_content = base64.b64decode(data["content"]).decode("utf-8")
+            content = json.loads(raw_content)
+            event_type = data.get("type", "bundle")
             if event_type == "bundle":
                 # Event type bundle
                 # Standard event with STIX information
-                content = base64.b64decode(data["content"]).decode("utf-8")
-                content_json = json.loads(content)
-                if "objects" not in content_json or len(content_json["objects"]) == 0:
+                if "objects" not in content or len(content["objects"]) == 0:
                     raise ValueError("JSON data type is not a STIX2 bundle")
-                if len(content_json["objects"]) == 1 or no_split:
-                    update = data["update"] if "update" in data else False
+                if len(content["objects"]) == 1 or data.get("no_split", False):
+                    update = data.get("update", False)
                     imported_items = self.api.stix2.import_bundle_from_json(
-                        content, update, types, work_id
+                        raw_content, update, types, work_id
                     )
                 else:
                     # As bundle is received as complete, split and requeue
@@ -88,15 +86,11 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                     except Exception as err:  # pylint: disable=broad-except
                         self.logger.warning(str(err))
                     # Instance spliter and split the big bundle
-                    event_version = (
-                        content_json["x_opencti_event_version"]
-                        if "x_opencti_event_version" in content_json
-                        else None
-                    )
+                    event_version = content.get("x_opencti_event_version")
                     stix2_splitter = OpenCTIStix2Splitter()
                     expectations, _, bundles = (
                         stix2_splitter.split_bundle_with_expectations(
-                            content_json, False, event_version
+                            content, False, event_version
                         )
                     )
                     # Add expectations to the work
@@ -122,15 +116,12 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
             # Event type event
             # Specific OpenCTI event operation with specific operation
             elif event_type == "event":
-                event = base64.b64decode(data["content"]).decode("utf-8")
-                event_content = json.loads(event)
-                event_type = event_content["type"]
-                match event_type:
+                match content["type"]:
                     # Standard knowledge
                     case "create" | "update":
                         bundle = {
                             "type": "bundle",
-                            "objects": [event_content["data"]],
+                            "objects": [content["data"]],
                         }
                         imported_items = self.api.stix2.import_bundle(
                             bundle, True, types, work_id
@@ -138,14 +129,14 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                     # Specific knowledge merge
                     case "merge":
                         # Start with a merge
-                        target_id = event_content["data"]["id"]
+                        target_id = content["data"]["id"]
                         source_ids = list(
                             map(
                                 lambda source: source["id"],
-                                event_content["context"]["sources"],
+                                content["context"]["sources"],
                             )
                         )
-                        merge_object = event_content["data"]
+                        merge_object = content["data"]
                         merge_object["opencti_operation"] = event_type
                         merge_object["merge_target_id"] = target_id
                         merge_object["merge_source_ids"] = source_ids
@@ -170,7 +161,7 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                     | "clear_access_restriction"  # Clear access members (massive operation in UI)
                     | "revert_draft"  # Cancel draft modification (massive operation in UI)
                     ):
-                        data_object = event_content["data"]
+                        data_object = content["data"]
                         data_object["opencti_operation"] = event_type
                         bundle = {
                             "type": "bundle",
