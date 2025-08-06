@@ -241,7 +241,7 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
     // Second call with exact same parameters
     await expect(async () => {
       await addIngestionCsv(currentTestContext, ingestionUser, ingestionCsvInput);
-    }).rejects.toThrowError('This service account already exists. Change the feed\'s name to change the automatically created service account name');
+    }).rejects.toThrowError('This service account already exists. Change the instance name to change the automatically created service account name');
 
     // Delete just created user
     const createdUser = await findUserById(currentTestContext, SYSTEM_USER, firstIngestionCreated.user_id);
