@@ -180,7 +180,7 @@ export const convertVulnerabilityToStix = (instance: StoreEntity, type: string):
     x_opencti_cvss_vector_string: instance.x_opencti_cvss_vector_string,
     x_opencti_cvss_base_score: instance.x_opencti_cvss_base_score,
     x_opencti_cvss_base_severity: instance.x_opencti_cvss_base_severity,
-    x_opencti_cvss_attack_vector_string: instance.x_opencti_cvss_attack_vector,
+    x_opencti_cvss_attack_vector: instance.x_opencti_cvss_attack_vector,
     x_opencti_cvss_attack_complexity: instance.x_opencti_cvss_attack_complexity,
     x_opencti_cvss_privileges_required: instance.x_opencti_cvss_privileges_required,
     x_opencti_cvss_user_interaction: instance.x_opencti_cvss_user_interaction,
@@ -195,7 +195,7 @@ export const convertVulnerabilityToStix = (instance: StoreEntity, type: string):
     // CVSS2
     x_opencti_cvss_v2_vector_string: instance.x_opencti_cvss_v2_vector_string,
     x_opencti_cvss_v2_base_score: instance.x_opencti_cvss_v2_base_score,
-    x_opencti_cvss_v2_access_vector_string: instance.x_opencti_cvss_v2_access_vector,
+    x_opencti_cvss_v2_access_vector: instance.x_opencti_cvss_v2_access_vector,
     x_opencti_cvss_v2_access_complexity: instance.x_opencti_cvss_v2_access_complexity,
     x_opencti_cvss_v2_authentication: instance.x_opencti_cvss_v2_authentication,
     x_opencti_cvss_v2_confidentiality_impact: instance.x_opencti_cvss_v2_confidentiality_impact,
