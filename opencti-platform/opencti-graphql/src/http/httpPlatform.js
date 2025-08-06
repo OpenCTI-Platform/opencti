@@ -327,7 +327,7 @@ const createApp = async (app) => {
   app.get(`${basePath}/auth/cert`, (req, res) => {
     try {
       const context = executionContext('cert_strategy');
-      const redirect = extractRefererPathFromReq(req) ?? '/';
+      const redirect = extractRefererPathFromReq(req) ?? (basePath || '/');
       const isActivated = isStrategyActivated(STRATEGY_CERT);
       if (!isActivated) {
         setCookieError(res, 'Cert authentication is not available');
@@ -366,7 +366,7 @@ const createApp = async (app) => {
   // Logout
   app.get(`${basePath}/logout`, async (req, res) => {
     try {
-      const referer = extractRefererPathFromReq(req) ?? '/';
+      const referer = extractRefererPathFromReq(req) ?? (basePath || '/');
       const provider = req.session.session_provider;
       const { user } = req.session;
       if (user) {
@@ -415,6 +415,9 @@ const createApp = async (app) => {
             }
           }
         });
+      } else {
+        // If no user in session, redirect to base path
+        res.redirect(basePath || '/');
       }
     } catch (e) {
       setCookieError(res, e.message);
@@ -470,7 +473,7 @@ const createApp = async (app) => {
       logApp.error('Error auth provider callback', { cause: e, provider });
       setCookieError(res, 'Invalid authentication, please ask your administrator');
     } finally {
-      res.redirect(referer ?? '/');
+      res.redirect(referer ?? (basePath || '/'));
     }
   });
 

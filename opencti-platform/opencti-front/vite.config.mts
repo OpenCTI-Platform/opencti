@@ -180,7 +180,14 @@ logger.error = (msg, options) => {
   loggerError(msg, options)
 };
 
-const basePath = "";
+// Read base path from environment variable
+const getBasePath = () => {
+  const basePath = process.env.APP__BASE_PATH || '';
+  // Normalize the base path
+  return basePath.startsWith('/') ? basePath : basePath ? `/${basePath}` : '';
+};
+
+const basePath = getBasePath();
 
 const backProxy = (ws = false) => ({
   target: process.env.BACK_END_URL ?? 'http://localhost:4000',
@@ -190,6 +197,7 @@ const backProxy = (ws = false) => ({
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: basePath || '/',
   build: {
     target: ['chrome58'],
   },
@@ -240,15 +248,15 @@ export default defineConfig({
       clientFiles: ['./lang/front/*', './src/static/*', './src/app.tsx', './src/front.tsx', './src/util/hooks/*']
     },
     proxy: {
-      '/logout': backProxy(),
-      '/stream': backProxy(),
-      '/storage': backProxy(),
-      '^/.*/embedded/.*': backProxy(),
-      '/taxii2': backProxy(),
-      '/feeds': backProxy(),
-      '/graphql': backProxy(true),
-      '/auth': backProxy(),
-      '/static/flags': backProxy(),
+      [`${basePath}/logout`]: backProxy(),
+      [`${basePath}/stream`]: backProxy(),
+      [`${basePath}/storage`]: backProxy(),
+      [`^${basePath}/.*/embedded/.*`]: backProxy(),
+      [`${basePath}/taxii2`]: backProxy(),
+      [`${basePath}/feeds`]: backProxy(),
+      [`${basePath}/graphql`]: backProxy(true),
+      [`${basePath}/auth`]: backProxy(),
+      [`${basePath}/static/flags`]: backProxy(),
     },
   },
 });
