@@ -31,7 +31,7 @@ export const createOnTheFlyUser = async (context: AuthContext, user: AuthUser, i
   }
   const isUserAlreadyExisting = await userAlreadyExists(context, input.userName);
   if (isUserAlreadyExisting) {
-    throw FunctionalError('This service account already exists. Change the feed\'s name to change the automatically created service account name', {});
+    throw FunctionalError('This service account already exists. Change the instance name to change the automatically created service account name', {});
   }
   let userInput: UserAddInput;
   userInput = {

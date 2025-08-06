@@ -179,6 +179,14 @@ export const managedConnectorAdd = async (
   user:AuthUser,
   input: AddManagedConnectorInput
 ) => {
+  // Get contract
+  const contractsMap = getSupportedContractsByImage();
+  const targetContract: any = contractsMap.get(input.manager_contract_image);
+  if (isEmptyField(targetContract)) {
+    throw UnsupportedError('Target contract not found');
+  }
+  const contractConfigurations = computeConnectorTargetContract(input.manager_contract_configuration, targetContract);
+  // Get user
   if (input.user_id.length < 2) {
     throw FunctionalError('You have not chosen a user responsible for data creation', {});
   }
@@ -187,17 +195,11 @@ export const managedConnectorAdd = async (
     const onTheFlyCreatedUser = await createOnTheFlyUser(context, user, { userName: input.user_id, confidenceLevel: input.confidence_level });
     finalUserId = onTheFlyCreatedUser.id;
   }
-
   const connectorUser = await storeLoadById(context, user, finalUserId, ENTITY_TYPE_USER);
   if (isEmptyField(connectorUser)) {
     throw UnsupportedError('Connector user not found');
   }
-  const contractsMap = getSupportedContractsByImage();
-  const targetContract: any = contractsMap.get(input.manager_contract_image);
-  if (isEmptyField(targetContract)) {
-    throw UnsupportedError('Target contract not found');
-  }
-  const contractConfigurations = computeConnectorTargetContract(input.manager_contract_configuration, targetContract);
+  // Create connector
   const connectorToCreate: any = {
     name: input.name,
     connector_type: targetContract.container_type,
@@ -210,6 +212,7 @@ export const managedConnectorAdd = async (
     built_in: false
   };
   const createdConnector: any = await createEntity(context, user, connectorToCreate, ENTITY_TYPE_CONNECTOR);
+  // Publish
   await publishUserAction({
     user,
     event_type: 'mutation',
