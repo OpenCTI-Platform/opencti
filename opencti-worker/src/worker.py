@@ -324,7 +324,6 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                 json_logging=self.json_logging,
                 perform_health_check=False,
             )
-            api.logger_class("worker")
 
             # Set the API headers
             api.set_applicant_id_header(data.get("applicant_id"))
