@@ -35,7 +35,7 @@ export interface StixVulnerability extends StixDomainObject {
   x_opencti_cvss_vector_string: string;
   x_opencti_cvss_base_score: number;
   x_opencti_cvss_base_severity: string;
-  x_opencti_cvss_attack_vector_string: string;
+  x_opencti_cvss_attack_vector: string;
   x_opencti_cvss_attack_complexity: string;
   x_opencti_cvss_privileges_required: string;
   x_opencti_cvss_user_interaction: string;
@@ -50,7 +50,7 @@ export interface StixVulnerability extends StixDomainObject {
   // CVSS2
   x_opencti_cvss_v2_vector_string: string;
   x_opencti_cvss_v2_base_score: number;
-  x_opencti_cvss_v2_access_vector_string: string;
+  x_opencti_cvss_v2_access_vector: string;
   x_opencti_cvss_v2_access_complexity: string;
   x_opencti_cvss_v2_authentication: string;
   x_opencti_cvss_v2_confidentiality_impact: string;
