@@ -8,6 +8,7 @@ import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, 
 
 describe('StixRefRelationship', () => {
   let stixRefRelationshipInternalId;
+  let stixRefRelationshipCreatedAt;
   it('should StixRefRelationship created', async () => {
     const CREATE_QUERY = gql`
             mutation StixDomainRelationAdd($input: StixRefRelationshipAddInput!) {
@@ -43,6 +44,7 @@ describe('StixRefRelationship', () => {
     expect(stixRefRelationship.data.stixRefRelationshipAdd.spec_version).toEqual('2.1');
     expect(stixRefRelationship.data.stixRefRelationshipAdd.from.x_opencti_stix_ids[0]).toEqual('malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88');
     stixRefRelationshipInternalId = stixRefRelationship.data.stixRefRelationshipAdd.id;
+    stixRefRelationshipCreatedAt = stixRefRelationship.data.stixRefRelationshipAdd.created_at;
   });
   it('should StixRefRelationship updated', async () => {
     const UPDATE_QUERY = gql`
@@ -64,13 +66,13 @@ describe('StixRefRelationship', () => {
       query: UPDATE_QUERY,
       variables: { id: stixRefRelationshipInternalId, input: editInput },
     });
-    const editionStopDatetime = now();
 
     expect(stixRefRelationship.data.stixRefRelationshipEdit.fieldPatch).not.toBeNull();
     // should modify confidence
     expect(stixRefRelationship.data.stixRefRelationshipEdit.fieldPatch.confidence).toEqual(50);
     // should modify updated_at
-    expect(editionStartDatetime < stixRefRelationship.data.stixRefRelationshipEdit.fieldPatch.updated_at < editionStopDatetime).toBeTruthy();
+    expect(editionStartDatetime < stixRefRelationship.data.stixRefRelationshipEdit.fieldPatch.updated_at).toBeTruthy();
+    expect(stixRefRelationshipCreatedAt < stixRefRelationship.data.stixRefRelationshipEdit.fieldPatch.updated_at).toBeTruthy();
   });
   it('should stixRefRelationship deleted', async () => {
     const READ_QUERY = gql`
