@@ -19,12 +19,16 @@ import AISummaryContainers from '@components/common/ai/AISummaryContainers';
 import AISummaryHistory from '@components/common/ai/AISummaryHistory';
 import AISummaryForecast from '@components/common/ai/AISummaryForecast';
 import { v4 as uuid } from 'uuid';
+import FeedbackCreation from '@components/cases/feedbacks/FeedbackCreation';
+import EnterpriseEditionAgreement from '@components/common/entreprise_edition/EnterpriseEditionAgreement';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import useAuth from '../../../../utils/hooks/useAuth';
 import useAI from '../../../../utils/hooks/useAI';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useGranted';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -128,16 +132,19 @@ const AIInsights = ({
   onlyIcon = false,
   isContainer = false,
 }: AIInsightProps) => {
-  const { bannerSettings: { bannerHeightNumber } } = useAuth();
+  const { bannerSettings: { bannerHeightNumber }, settings: { id: settingsId } } = useAuth();
   const classes = useStyles({ bannerHeightNumber });
-  const { fullyActive } = useAI();
+  const isEnterpriseEdition = useEnterpriseEdition();
   const { t_i18n } = useFormatter();
   const [display, setDisplay] = useState(false);
+  const [displayEEDialog, setDisplayEEDialog] = useState(false);
   const [displayAIDialog, setDisplayAIDialog] = useState(false);
   const [currentTab, setCurrentTab] = useState(defaultTab);
   const [containersBusId] = useState(uuid());
   const [loading, setLoading] = useState(false);
-  const { enabled, configured } = useAI();
+  const isAdmin = useGranted([SETTINGS_SETPARAMETERS]);
+
+  const { fullyActive, enabled } = useAI();
   const handleClose = () => {
     setLoading(false);
     setDisplay(false);
@@ -167,9 +174,48 @@ const AIInsights = ({
   };
   // TODO make the filter "objects" readonly?
   const [containersFilters, containersFiltersHelpers] = useFiltersState(initialContainersFilters);
-  const isAIConfigured = enabled && configured;
-
-  if (!isAIConfigured) return null;
+  if (!isEnterpriseEdition && enabled) {
+    return (
+      <>
+        <Tooltip title={t_i18n('AI Insights')}>
+          {onlyIcon ? (
+            <IconButton
+              size="small"
+              onClick={() => setDisplayEEDialog(true)}
+              className={floating ? classes.chipFloating : classes.chip}
+            >
+              <AutoAwesomeOutlined style={{ fontSize: 14 }} />
+            </IconButton>
+          ) : (
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => setDisplayEEDialog(true)}
+              className={floating ? classes.chipFloating : classes.chip}
+              startIcon={<AutoAwesomeOutlined style={{ fontSize: 14 }} />}
+            >
+              {t_i18n('AI Insights')}
+            </Button>
+          )}
+        </Tooltip>
+        {isAdmin ? (
+          <EnterpriseEditionAgreement
+            open={displayEEDialog}
+            onClose={() => setDisplayEEDialog(false)}
+            settingsId={settingsId}
+          />
+        ) : (
+          <FeedbackCreation
+            openDrawer={displayEEDialog}
+            handleCloseDrawer={() => setDisplayEEDialog(false)}
+            initialValue={{
+              description: t_i18n('I would like to use a EE feature AI Summary but I don\'t have EE activated.\nI would like to discuss with you about activating EE.'),
+            }}
+          />
+        )}
+      </>
+    );
+  }
   if (!fullyActive) {
     return (
       <>

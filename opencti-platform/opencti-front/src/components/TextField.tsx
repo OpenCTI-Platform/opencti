@@ -28,8 +28,7 @@ const TextField = (props: TextFieldProps) => {
     onSubmit,
     onKeyDown,
   } = props;
-  const { configured, enabled } = useAI();
-  const isAIConfigured = enabled && configured;
+  const { fullyActive } = useAI();
 
   const internalOnChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
@@ -124,7 +123,7 @@ const TextField = (props: TextFieldProps) => {
       slotProps={{
         input: {
           startAdornment,
-          endAdornment: askAi && (isAIConfigured) && (
+          endAdornment: askAi && (fullyActive) && (
             <TextFieldAskAI
               currentValue={value as string ?? ''}
               setFieldValue={(val) => {

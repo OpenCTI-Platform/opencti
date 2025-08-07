@@ -87,7 +87,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { enabled, configured } = useAI();
+  const { fullyActive } = useAI();
   const [content, setContent] = useState('');
   const [disableResponse, setDisableResponse] = useState(false);
   const [openToneOptions, setOpenToneOptions] = useState(false);
@@ -96,7 +96,6 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
   const [menuOpen, setMenuOpen] = useState<{ open: boolean; anchorEl: HTMLButtonElement | null; }>({ open: false, anchorEl: null });
   const [busId, setBusId] = useState<string | null>(null);
   const [displayAskAI, setDisplayAskAI] = useState(false);
-  const isAIConfigured = enabled && configured;
   const handleOpenMenu = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     if (isEnterpriseEdition) {
       event.preventDefault();
@@ -240,13 +239,12 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
   };
 
   const renderButton = () => {
-    if (!isAIConfigured) return null;
     return (
       <>
         <EETooltip forAi={true} title={t_i18n('Ask AI')}>
           <IconButton
             size="small"
-            onClick={(event) => ((isEnterpriseEdition && enabled && configured) ? handleOpenMenu(event) : null)}
+            onClick={(event) => ((isEnterpriseEdition && fullyActive) ? handleOpenMenu(event) : null)}
             disabled={disabled || currentValue.length < 10}
             style={{ color: theme.palette.ai.main }}
           >
@@ -340,21 +338,21 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
   if (variant === 'markdown') {
     return (
       <div style={style || { position: 'absolute', top: 17, right: 0, paddingTop: 4 }}>
-        {renderButton()}
+        {fullyActive && renderButton()}
       </div>
     );
   }
   if (variant === 'html') {
     return (
       <div style={style || { position: 'absolute', top: -12, right: 30, paddingTop: 4 }}>
-        {renderButton()}
+        {fullyActive && renderButton()}
       </div>
     );
   }
 
   return (
     <InputAdornment position="end" style={{ position: 'absolute', right: 0 }}>
-      {renderButton()}
+      {fullyActive && renderButton()}
     </InputAdornment>
   );
 };

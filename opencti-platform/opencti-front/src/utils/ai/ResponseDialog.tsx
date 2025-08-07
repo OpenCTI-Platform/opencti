@@ -70,8 +70,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
   const markdownFieldRef = useRef<HTMLTextAreaElement>(null);
   const { t_i18n } = useFormatter();
   const [markdownSelectedTab, setMarkdownSelectedTab] = useState<'write' | 'preview' | undefined>('write');
-  const { configured, enabled } = useAI();
-  const isAIConfigured = enabled && configured;
+  const { fullyActive } = useAI();
 
   const handleResponse = (response: ResponseDialogAskAISubscription$data | null | undefined) => {
     const newContent = response ? (response as ResponseDialogAskAISubscription$data).aiBus?.content : null;
@@ -132,7 +131,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
                 fullWidth={true}
                 slotProps={{
                   input: {
-                    endAdornment: (isAIConfigured) && (
+                    endAdornment: (fullyActive) && (
                       <TextFieldAskAI
                         currentValue={content ?? ''}
                         setFieldValue={(val) => {

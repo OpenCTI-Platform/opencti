@@ -28,8 +28,7 @@ const MarkdownField = (props) => {
   const { t_i18n } = useFormatter();
   const [selectedTab, setSelectedTab] = useState('write');
   const [field, meta] = useField(name);
-  const { configured, enabled } = useAI();
-  const isAIConfigured = enabled && configured;
+  const { fullyActive } = useAI();
   const internalOnFocus = (event) => {
     const { nodeName } = event.relatedTarget || {};
     if (nodeName === 'INPUT' || nodeName === undefined) {
@@ -105,7 +104,7 @@ const MarkdownField = (props) => {
       {showError && (
         <FormHelperText error={true}>{showError}</FormHelperText>
       )}
-      {askAi && (isAIConfigured) && (
+      {askAi && (fullyActive) && (
         <TextFieldAskAI
           currentValue={field.value ?? ''}
           setFieldValue={(val) => {
