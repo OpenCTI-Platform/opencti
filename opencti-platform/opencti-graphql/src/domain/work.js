@@ -13,6 +13,7 @@ import { addFilter } from '../utils/filtering/filtering-utils';
 import { IMPORT_CSV_CONNECTOR, IMPORT_CSV_CONNECTOR_ID } from '../connector/importCsv/importCsv';
 import { RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { DRAFT_VALIDATION_CONNECTOR, DRAFT_VALIDATION_CONNECTOR_ID } from '../modules/draftWorkspace/draftWorkspace-connector';
+import { logApp } from '../config/conf';
 
 export const workToExportFile = (work) => {
   const lastModifiedSinceMin = sinceNowInMinutes(work.updated_at);
@@ -266,11 +267,15 @@ export const reportExpectation = async (context, user, workId, errorData) => {
  */
 export const updateExpectationsNumber = async (context, user, workId, expectations) => {
   const currentWork = await loadWorkById(context, user, workId);
-  const params = { updated_at: now(), import_expected_number: expectations };
-  let source = 'ctx._source.updated_at = params.updated_at;';
-  source += 'ctx._source["import_expected_number"] = ctx._source["import_expected_number"] + params.import_expected_number;';
-  await elUpdate(currentWork._index, workId, { script: { source, lang: 'painless', params } });
-  return redisUpdateActionExpectation(user, workId, expectations);
+  if (currentWork && currentWork._index) {
+    const params = { updated_at: now(), import_expected_number: expectations };
+    let source = 'ctx._source.updated_at = params.updated_at;';
+    source += 'ctx._source["import_expected_number"] = ctx._source["import_expected_number"] + params.import_expected_number;';
+    await elUpdate(currentWork._index, workId, { script: { source, lang: 'painless', params } });
+    return redisUpdateActionExpectation(user, workId, expectations);
+  }
+  logApp.error(`The work ${workId} cannot be found in database, expectation cannot be updated.`, { expectations });
+  return workId;
 };
 
 /**
