@@ -8,8 +8,10 @@ import { listEntities, storeLoadById } from '../../../src/database/middleware-lo
 import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import type { BasicStoreEntity } from '../../../src/types/store';
 import { UNSUPPORTED_ERROR } from '../../../src/config/errors';
-import { ENTITY_TYPE_CONNECTOR } from '../../../src/schema/internalObject';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_HISTORY } from '../../../src/schema/internalObject';
 import { addFilter } from '../../../src/utils/filtering/filtering-utils';
+import { elPaginate } from '../../../src/database/engine';
+import { READ_INDEX_HISTORY, wait } from '../../../src/database/utils';
 
 const LIST_QUERY = gql`
   query pirs(
@@ -272,6 +274,19 @@ describe('PIR resolver standard behavior', () => {
     expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_explanations[0].dependencies[0].element_id).toEqual(relationshipId);
   });
 
+  it('should have correct context_data in in-pir rel creation historic event', async () => {
+    await wait(50); // wait for historic event creation
+    const args = { connectionFormat: false, types: [ENTITY_TYPE_HISTORY], filters: addFilter(undefined, 'context_data.pir_ids', [pirInternalId]) };
+    const logs = await elPaginate(testContext, ADMIN_USER, READ_INDEX_HISTORY, args);
+    expect(logs.length).toEqual(1);
+    expect(logs[0].event_scope).toEqual('create');
+    expect(logs[0].context_data.entity_type).toEqual(RELATION_IN_PIR);
+    expect(logs[0].context_data.from_id).toEqual(flaggedElementId);
+    expect(logs[0].context_data.to_id).toEqual(pirInternalId);
+    expect(logs[0].context_data.pir_ids[0]).toEqual(pirInternalId);
+    expect(logs[0].context_data.pir_score).toEqual(67);
+  });
+
   it('should update a pir meta rel by adding a new explanation', async () => {
     const FLAG_QUERY = gql`
       mutation pirFlagElement($id: ID!, $input: PirFlagElementInput!) {
@@ -376,6 +391,10 @@ describe('PIR resolver standard behavior', () => {
       { connectionFormat: false, filters: addFilter(undefined, 'connector_type', ['INTERNAL_INGESTION_PIR']) }
     );
     expect(pirConnectors.length).toEqual(0);
+    // Verify pir_ids have been removed from historic events
+    const args = { connectionFormat: false, types: [ENTITY_TYPE_HISTORY], filters: addFilter(undefined, 'context_data.pir_ids', [pirInternalId]) };
+    const logs = await elPaginate(testContext, ADMIN_USER, READ_INDEX_HISTORY, args);
+    expect(logs.length).toEqual(0);
     // Verify the PIR is no longer found
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: pirInternalId } });
     expect(queryResult).not.toBeNull();
