@@ -75,7 +75,10 @@ import {
   RELATION_SUBTECHNIQUE_OF,
   RELATION_TARGETS,
   RELATION_USES,
-  RELATION_VARIANT_OF
+  RELATION_VARIANT_OF,
+  RELATION_TECHNOLOGY,
+  RELATION_TECHNOLOGY_TO,
+  RELATION_DEMONSTRATES,
 } from '../schema/stixCoreRelationship';
 import { isStixRefRelationship } from '../schema/stixRefRelationship';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ENTITY_TYPE_THREAT_ACTOR } from '../schema/general';
@@ -546,6 +549,8 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_INFRASTRUCTURE}_${ENTITY_SOFTWARE}`]: [
     { name: RELATION_CONSISTS_OF, type: REL_EXTENDED },
     { name: RELATION_HOSTS, type: REL_EXTENDED },
+    { name: RELATION_TECHNOLOGY, type: REL_EXTENDED },
+    { name: RELATION_TECHNOLOGY_TO, type: REL_EXTENDED },
   ],
   [`${ENTITY_TYPE_INFRASTRUCTURE}_${ENTITY_TYPE_ATTACK_PATTERN}`]: [
     { name: RELATION_DETECTS, type: REL_NEW }
@@ -1158,7 +1163,8 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
     { name: RELATION_COMMUNICATES_WITH, type: REL_EXTENDED }
   ],
   [`${ENTITY_HASHED_OBSERVABLE_STIX_FILE}_${ENTITY_TYPE_VULNERABILITY}`]: [
-    { name: RELATION_TARGETS, type: REL_EXTENDED }
+    { name: RELATION_TARGETS, type: REL_EXTENDED },
+    { name: RELATION_DEMONSTRATES, type: REL_EXTENDED }
   ],
   // endregion
   // region SOFTWARE
