@@ -9,7 +9,7 @@ import { GenericContext } from '@components/common/model/GenericContextModel';
 import OpenVocabField from '@components/common/form/OpenVocabField';
 import EEField from '@components/common/entreprise_edition/EEField';
 import { useFormatter } from '../../../../components/i18n';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField/MarkdownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';

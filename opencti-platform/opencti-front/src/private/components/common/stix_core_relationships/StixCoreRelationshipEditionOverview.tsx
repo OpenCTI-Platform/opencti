@@ -10,7 +10,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { buildDate, formatDate } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField/MarkdownField';
 import { SubscriptionAvatars, SubscriptionFocus } from '../../../../components/Subscription';
 import KillChainPhasesField from '../form/KillChainPhasesField';
 import ObjectMarkingField from '../form/ObjectMarkingField';

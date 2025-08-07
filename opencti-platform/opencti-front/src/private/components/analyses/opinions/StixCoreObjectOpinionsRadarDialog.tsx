@@ -16,7 +16,7 @@ import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
 import useGranted, { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { opinionCreationMutation, opinionCreationUserMutation } from './OpinionCreation';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField/MarkdownField';
 import { adaptFieldValue } from '../../../../utils/String';
 import { opinionMutationFieldPatch } from './OpinionEditionOverview';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';

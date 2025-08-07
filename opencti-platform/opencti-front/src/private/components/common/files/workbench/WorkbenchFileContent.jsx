@@ -32,7 +32,7 @@ import DateTimePickerField from '../../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../../components/i18n';
 import ItemBoolean from '../../../../../components/ItemBoolean';
 import ItemIcon from '../../../../../components/ItemIcon';
-import MarkdownField from '../../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../../components/fields/MarkdownField/MarkdownField';
 import SelectField from '../../../../../components/fields/SelectField';
 import StixItemLabels from '../../../../../components/StixItemLabels';
 import StixItemMarkings from '../../../../../components/StixItemMarkings';

@@ -7,7 +7,7 @@ import Button from '@mui/material/Button';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import TextField from '../../../../components/TextField';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField/MarkdownField';
 import { parseEmailList } from '../../../../utils/email';
 import { MESSAGING$ } from '../../../../relay/environment';
 

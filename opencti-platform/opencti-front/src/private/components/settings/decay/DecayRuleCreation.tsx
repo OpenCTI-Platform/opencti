@@ -14,7 +14,7 @@ import Box from '@mui/material/Box';
 import { InformationOutline } from 'mdi-material-ui';
 import ObservableTypesField from '@components/common/form/ObservableTypesField';
 import { useFormatter } from '../../../../components/i18n';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField/MarkdownField';
 import TextField from '../../../../components/TextField';
 import type { Theme } from '../../../../components/Theme';
 import SwitchField from '../../../../components/fields/SwitchField';

@@ -24,7 +24,7 @@ import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../ut
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField/MarkdownField';
 
 const securityPlatformMutationFieldPatch = graphql`
   mutation SecurityPlatformEditionOverviewFieldPatchMutation(

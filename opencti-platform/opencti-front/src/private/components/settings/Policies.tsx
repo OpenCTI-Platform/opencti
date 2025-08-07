@@ -29,7 +29,7 @@ import { useFormatter } from '../../../components/i18n';
 import SwitchField from '../../../components/fields/SwitchField';
 import TextField from '../../../components/TextField';
 import { Policies$key } from './__generated__/Policies.graphql';
-import MarkdownField from '../../../components/fields/MarkdownField';
+import MarkdownField from '../../../components/fields/MarkdownField/MarkdownField';
 import { PoliciesQuery } from './__generated__/PoliciesQuery.graphql';
 import SelectField from '../../../components/fields/SelectField';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';

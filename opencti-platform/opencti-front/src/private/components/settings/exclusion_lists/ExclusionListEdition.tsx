@@ -15,7 +15,7 @@ import { availableEntityTypes, exclusionListUpdateValidator } from '@components/
 import { APP_BASE_PATH, handleErrorInForm } from '../../../../relay/environment'; import AutocompleteField from '../../../../components/AutocompleteField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField/MarkdownField';
 import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
 import useSchema from '../../../../utils/hooks/useSchema';

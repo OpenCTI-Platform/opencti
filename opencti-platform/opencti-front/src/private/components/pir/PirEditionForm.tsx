@@ -20,7 +20,7 @@ import { PirEditionFormData } from './pir-form-utils';
 import { useFormatter } from '../../../components/i18n';
 import { PirEditionFragment$data } from './__generated__/PirEditionFragment.graphql';
 import TextField from '../../../components/TextField';
-import MarkdownField from '../../../components/fields/MarkdownField';
+import MarkdownField from '../../../components/fields/MarkdownField/MarkdownField';
 import { fieldSpacingContainerStyle } from '../../../utils/field';
 
 export type PirEditionFormInputKeys = keyof PirEditionFormData;

@@ -16,7 +16,7 @@ import CreateEntityControlledDial from '../../../../components/CreateEntityContr
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField/MarkdownField';
 import { resolveLink } from '../../../../utils/Entity';
 import type { Theme } from '../../../../components/Theme';
 

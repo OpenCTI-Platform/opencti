@@ -6,7 +6,7 @@ import * as Yup from 'yup';
 import { useTheme } from '@mui/styles';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
 import { RoleEditionOverview_role$data } from './__generated__/RoleEditionOverview_role.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
