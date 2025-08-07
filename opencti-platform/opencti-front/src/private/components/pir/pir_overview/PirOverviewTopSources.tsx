@@ -56,7 +56,7 @@ const PirOverviewTopSources = ({ data }: PirOverviewTopSourcesProps) => {
     },
   ];
 
-  const relationshipsTopSourcesDataSelection = [ // TODO PIR not working
+  const relationshipsTopSourcesDataSelection = [
     {
       attribute: 'pir_explanations.dependencies.author_id',
       isTo: false,
