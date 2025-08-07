@@ -23,7 +23,7 @@ import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import BulkTextModal from '../../../../components/fields/BulkTextField/BulkTextModal';
 import ProgressBar from '../../../../components/ProgressBar';
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField/MarkdownField';
 import { useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 
 interface SecurityPlatformCreationFormData {

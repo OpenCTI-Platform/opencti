@@ -18,7 +18,7 @@ import { Box } from '@mui/material';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../components/i18n';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField/MarkdownField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import TextField from '../../../../components/TextField';
 import type { Theme } from '../../../../components/Theme';

@@ -17,7 +17,7 @@ import { useFormatter } from '../../../../components/i18n';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField/MarkdownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import TextField from '../../../../components/TextField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';

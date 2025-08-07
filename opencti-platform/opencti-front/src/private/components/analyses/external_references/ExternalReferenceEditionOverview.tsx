@@ -5,7 +5,7 @@ import { pick } from 'ramda';
 import * as Yup from 'yup';
 import { GenericContext } from '@components/common/model/GenericContextModel';
 import { useFormatter } from '../../../../components/i18n';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField/MarkdownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
 import { ExternalReferenceEditionOverview_externalReference$data } from './__generated__/ExternalReferenceEditionOverview_externalReference.graphql';

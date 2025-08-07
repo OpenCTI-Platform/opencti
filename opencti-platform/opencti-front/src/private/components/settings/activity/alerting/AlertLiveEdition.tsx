@@ -9,7 +9,7 @@ import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-r
 import Box from '@mui/material/Box';
 import FilterIconButton from '../../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../../components/i18n';
-import MarkdownField from '../../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../../components/fields/MarkdownField/MarkdownField';
 import TextField from '../../../../../components/TextField';
 import type { Theme } from '../../../../../components/Theme';
 import { convertNotifiers } from '../../../../../utils/edition';

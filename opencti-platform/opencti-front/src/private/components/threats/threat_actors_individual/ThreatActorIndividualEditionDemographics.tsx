@@ -13,7 +13,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField/MarkdownField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { buildDate } from '../../../../utils/Time';
 import { ThreatActorIndividualEditionDemographics_ThreatActorIndividual$key } from './__generated__/ThreatActorIndividualEditionDemographics_ThreatActorIndividual.graphql';

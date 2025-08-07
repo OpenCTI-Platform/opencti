@@ -9,7 +9,7 @@ import { useTheme } from '@mui/styles';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import { useFormatter } from '../../../../components/i18n';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField/MarkdownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import SwitchField from '../../../../components/fields/SwitchField';
 import TextField from '../../../../components/TextField';

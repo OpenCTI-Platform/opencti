@@ -8,7 +8,7 @@ import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField/MarkdownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';

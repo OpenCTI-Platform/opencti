@@ -13,7 +13,7 @@ import { FormikConfig } from 'formik/dist/types';
 import ObservableTypesField from '@components/common/form/ObservableTypesField';
 import decayRuleValidator from './DecayRuleValidator';
 import { useFormatter } from '../../../../components/i18n';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField/MarkdownField';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';

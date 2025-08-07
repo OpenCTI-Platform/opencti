@@ -10,7 +10,7 @@ import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import { TasksLinesPaginationQuery$variables } from '@components/cases/__generated__/TasksLinesPaginationQuery.graphql';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField/MarkdownField';
 import TextField from '../../../../components/TextField';
 import type { Theme } from '../../../../components/Theme';
 import { handleErrorInForm } from '../../../../relay/environment';

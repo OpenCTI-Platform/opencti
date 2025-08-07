@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import { FunctionComponent, useEffect, useState } from 'react';
 import Paper from '@mui/material/Paper';
 import { Field, Form, Formik } from 'formik';
 import CommitMessage from '@components/common/form/CommitMessage';
@@ -11,7 +11,7 @@ import { ContainerMappingContent_container$data } from '@components/common/conta
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { createStyles } from '@mui/styles';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField/MarkdownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import RichTextField from '../../../../components/fields/RichTextField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
