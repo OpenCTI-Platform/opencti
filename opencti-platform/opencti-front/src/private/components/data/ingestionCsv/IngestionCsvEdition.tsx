@@ -1,9 +1,9 @@
-import {graphql, useFragment} from 'react-relay';
-import React, {FunctionComponent, useMemo, useState} from 'react';
+import { graphql, useFragment } from 'react-relay';
+import React, { FunctionComponent, useMemo, useState } from 'react';
 import * as Yup from 'yup';
-import {FormikConfig} from 'formik/dist/types';
-import {ExternalReferencesValues} from '@components/common/form/ExternalReferencesField';
-import {Field, Form, Formik, FormikErrors} from 'formik';
+import { FormikConfig } from 'formik/dist/types';
+import { ExternalReferencesValues } from '@components/common/form/ExternalReferencesField';
+import { Field, Form, Formik, FormikErrors } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
@@ -13,32 +13,32 @@ import {
   IngestionCsvEditionFragment_ingestionCsv$data,
   IngestionCsvEditionFragment_ingestionCsv$key,
 } from '@components/data/ingestionCsv/__generated__/IngestionCsvEditionFragment_ingestionCsv.graphql';
-import CsvMapperField, {CsvMapperFieldOption, csvMapperQuery} from '@components/common/form/CsvMapperField';
+import CsvMapperField, { CsvMapperFieldOption, csvMapperQuery } from '@components/common/form/CsvMapperField';
 import Button from '@mui/material/Button';
 import IngestionCsvFeedTestDialog from '@components/data/ingestionCsv/IngestionCsvFeedTestDialog';
-import {CsvMapperFieldSearchQuery} from '@components/common/form/__generated__/CsvMapperFieldSearchQuery.graphql';
+import { CsvMapperFieldSearchQuery } from '@components/common/form/__generated__/CsvMapperFieldSearchQuery.graphql';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import IngestionSchedulingField from '@components/data/IngestionSchedulingField';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import IngestionCsvInlineMapperForm from '@components/data/ingestionCsv/IngestionCsvInlineMapperForm';
-import {CsvMapperAddInput} from '@components/data/csvMapper/CsvMapperUtils';
+import { CsvMapperAddInput } from '@components/data/csvMapper/CsvMapperUtils';
 import IngestionCsvEditionUserHandling from '@components/data/ingestionCsv/IngestionCsvEditionUserHandling';
-import {useTheme} from '@mui/styles';
-import {convertMapper, convertUser} from '../../../../utils/edition';
-import {useFormatter} from '../../../../components/i18n';
-import {useSchemaEditionValidation} from '../../../../utils/hooks/useEntitySettings';
-import {adaptFieldValue} from '../../../../utils/String';
+import { useTheme } from '@mui/styles';
+import { convertMapper, convertUser } from '../../../../utils/edition';
+import { useFormatter } from '../../../../components/i18n';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { adaptFieldValue } from '../../../../utils/String';
 import TextField from '../../../../components/TextField';
-import {FieldOption, fieldSpacingContainerStyle} from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import SelectField from '../../../../components/fields/SelectField';
-import type {Theme} from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import Loader, {LoaderVariant} from '../../../../components/Loader';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useAuth from '../../../../utils/hooks/useAuth';
-import useGranted, {SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN} from '../../../../utils/hooks/useGranted';
-import {USER_CHOICE_MARKING_CONFIG} from '../../../../utils/csvMapperUtils';
+import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
+import { USER_CHOICE_MARKING_CONFIG } from '../../../../utils/csvMapperUtils';
 import {
   BASIC_AUTH,
   BEARER_AUTH,
@@ -53,7 +53,7 @@ import {
 } from '../../../../utils/ingestionAuthentificationUtils';
 import PasswordTextField from '../../../../components/PasswordTextField';
 import SwitchField from '../../../../components/fields/SwitchField';
-import {RootMe_data$data} from '../../../__generated__/RootMe_data.graphql';
+import { RootMe_data$data } from '../../../__generated__/RootMe_data.graphql';
 import IngestionCsvInlineWrapper from './IngestionCsvInlineWrapper';
 
 export const initIngestionValue = (ingestionCsvData: IngestionCsvEditionFragment_ingestionCsv$data, me : RootMe_data$data) => {
@@ -340,7 +340,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
     const isExistingCsvMappers = value === 'true';
 
     // Handle authentication fields -- If you change something here, please have a look at IngestionTaxiiEdition
-    const {username, password, token, cert, key, ca} = formValues || {};
+    const { username, password, token, cert, key, ca } = formValues || {};
 
     if (name === 'token') {
       finalName = 'authentication_value';
@@ -670,12 +670,12 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                 </Alert>
               </Box>
             </Box>
-            <div style={{marginTop: 20, textAlign: 'right'}}>
+            <div style={{ marginTop: 20, textAlign: 'right' }}>
               <Button
                 variant="contained"
                 color="secondary"
                 onClick={() => setOpen(true)}
-                style={{marginLeft: theme.spacing(2)}}
+                style={{ marginLeft: theme.spacing(2) }}
                 disabled={!(values.uri && (values.csv_mapper_id || values.csv_mapper))}
               >
                 {t_i18n('Verify')}
