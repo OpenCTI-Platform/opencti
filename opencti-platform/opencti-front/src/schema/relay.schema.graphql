@@ -133,7 +133,7 @@ enum FilterOperator {
 }
 
 enum XTMHubRegistrationStatus {
-  enrolled
+  registered
   unregistered
   lost_connectivity
 }

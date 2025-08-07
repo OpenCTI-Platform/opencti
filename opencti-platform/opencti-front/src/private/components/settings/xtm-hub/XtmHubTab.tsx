@@ -20,8 +20,8 @@ enum ProcessSteps {
 }
 
 enum OperationType {
-  ENROLL = 'enroll',
-  UNENROLL = 'unenroll',
+  REGISTER = 'register',
+  UNREGISTER = 'unregister',
 }
 
 const xtmHubTabSettingsFieldPatchMutation = graphql`
@@ -75,7 +75,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
     },
   );
 
-  const isEnrolled = registrationStatus === 'enrolled';
+  const isRegistered = registrationStatus === 'registered';
 
   const OCTIInformations = {
     platform_url: window.location.origin,
@@ -87,8 +87,8 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
     OCTIInformations,
   ).toString();
 
-  const registrationUrl = `${registrationHubUrl}/redirect/enroll-octi?${queryParamsOCTIInformations}`;
-  const unregistrationUrl = `${registrationHubUrl}/redirect/unenroll-octi?platform_id=${settings?.id ?? ''}`;
+  const registrationUrl = `${registrationHubUrl}/redirect/register-opencti?${queryParamsOCTIInformations}`;
+  const unregistrationUrl = `${registrationHubUrl}/redirect/unregister-opencti?platform_id=${settings?.id ?? ''}`;
 
   const handleClosingTab = () => {
     setProcessStep(ProcessSteps.CANCELED);
@@ -100,7 +100,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
         id: settings?.id ?? '',
         input: [
           { key: 'xtm_hub_token', value: token },
-          { key: 'xtm_hub_registration_status', value: 'enrolled' },
+          { key: 'xtm_hub_registration_status', value: 'registered' },
         ],
       },
       onCompleted: () => {
@@ -142,11 +142,11 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
       const eventData = event.data;
       const { action, token } = eventData;
 
-      if (action === 'enroll') {
-        setOperationType(OperationType.ENROLL);
+      if (action === 'register') {
+        setOperationType(OperationType.REGISTER);
         handleRegistration(token);
-      } else if (action === 'unenroll') {
-        setOperationType(OperationType.UNENROLL);
+      } else if (action === 'unregister') {
+        setOperationType(OperationType.UNREGISTER);
         handleUnregistration();
       } else if (action === 'cancel') {
         setProcessStep(ProcessSteps.CANCELED);
@@ -158,15 +158,15 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
   );
 
   const { openTab, closeTab, focusTab } = useExternalTab({
-    url: isEnrolled ? unregistrationUrl : registrationUrl,
-    tabName: isEnrolled ? 'xtmhub-unregistration' : 'xtmhub-registration',
+    url: isRegistered ? unregistrationUrl : registrationUrl,
+    tabName: isRegistered ? 'xtmhub-unregistration' : 'xtmhub-registration',
     onMessage: handleTabMessage,
     onClosingTab: handleClosingTab,
   });
 
   const handleOpenDialog = () => {
     setOperationType(
-      isEnrolled ? OperationType.UNENROLL : OperationType.ENROLL,
+      isRegistered ? OperationType.UNREGISTER : OperationType.REGISTER,
     );
     setIsDialogOpen(true);
   };
@@ -198,36 +198,36 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
   };
 
   const config = useMemo(() => {
-    const isUnenroll = operationType === OperationType.UNENROLL;
+    const isUnregister = operationType === OperationType.UNREGISTER;
     return {
       dialogTitle: t_i18n(
-        isUnenroll
+        isUnregister
           ? 'Unregistering your platform...'
           : 'Registering your platform...',
       ),
       errorMessage: t_i18n('Sorry, we have an issue, please retry'),
       canceledMessage: t_i18n(
-        isUnenroll
+        isUnregister
           ? 'You have canceled the unregistration process'
           : 'You have canceled the registration process',
       ),
       loaderButtonText: t_i18n(
-        isUnenroll ? 'Continue to unregister' : 'Continue to register',
+        isUnregister ? 'Continue to unregister' : 'Continue to register',
       ),
       confirmationTitle: t_i18n(
-        isUnenroll
+        isUnregister
           ? 'Close unregistration process?'
           : 'Close registration process?',
       ),
       confirmationMessage: t_i18n(
-        isUnenroll
+        isUnregister
           ? 'unregistration_confirmation_dialog'
           : 'registration_confirmation_dialog',
       ),
       continueButtonText: t_i18n(
-        isUnenroll ? 'Continue unregistration' : 'Continue registration',
+        isUnregister ? 'Continue unregistration' : 'Continue registration',
       ),
-      instructionKey: isUnenroll
+      instructionKey: isUnregister
         ? 'unregistration_instruction_paragraph'
         : 'registration_instruction_paragraph',
     };
@@ -261,13 +261,13 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
   };
 
   const getButtonText = () => {
-    if (isEnrolled) {
+    if (isRegistered) {
       return t_i18n('Unregister from XTM Hub');
     }
     return t_i18n('Register in XTM Hub');
   };
 
-  if (isEnrolled) {
+  if (isRegistered) {
     return (
       <>
         <Button

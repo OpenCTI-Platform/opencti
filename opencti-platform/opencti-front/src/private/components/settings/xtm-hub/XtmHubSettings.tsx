@@ -89,7 +89,7 @@ const XtmHubSettings = () => {
             </Box>
             <List style={{ marginTop: -10 }}>
               {
-                xtmHubSettings.xtm_hub_registration_status === 'enrolled' && (
+                xtmHubSettings.xtm_hub_registration_status === 'registered' && (
                   <>
                     <ListItem divider={true}>
                       <ListItemText primary={t_i18n('Registration status')} />
