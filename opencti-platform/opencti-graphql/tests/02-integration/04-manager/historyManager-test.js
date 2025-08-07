@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { INDEX_HISTORY } from '../../../src/database/utils';
-import { buildHistoryElementsFromEvents, generatePirIdsFromHistoryEvent, resolveGrantedRefsIds } from '../../../src/manager/historyManager';
+import { buildHistoryElementsFromEvents, generatePirContextData, resolveGrantedRefsIds } from '../../../src/manager/historyManager';
 import { ENTITY_TYPE_HISTORY } from '../../../src/schema/internalObject';
 import { testContext } from '../../utils/testQuery';
 
@@ -262,9 +262,10 @@ describe('history manager test buildHistoryElementsFromEvents', () => {
   });
 });
 
-describe('History manager test generatePirIdsFromHistoryEvent', () => {
+describe('History manager test generatePirContextData', () => {
   const pirId1 = '36d9bdf2-6639-4995-ab75-a5e9575594cd';
   const pirId2 = '445023c8-0827-42a0-b8aa-3865cf99cf18';
+
   it('should return pir ids to flag a relationship event', async () => {
     const relationshipEventWithSourceFlagged = {
       id: '1748415773588-0',
@@ -310,8 +311,9 @@ describe('History manager test generatePirIdsFromHistoryEvent', () => {
         }
       }
     };
-    expect(generatePirIdsFromHistoryEvent(relationshipEventWithSourceFlagged)).toEqual([pirId1]);
+    expect(generatePirContextData(relationshipEventWithSourceFlagged).pir_ids).toEqual([pirId1]);
   });
+
   it('should return pir ids to flag a relationship event', async () => {
     const updateEventAddFlaggedEntityInContainer = {
       id: '1748416417346-0',
@@ -347,6 +349,6 @@ describe('History manager test generatePirIdsFromHistoryEvent', () => {
         }
       }
     };
-    expect(generatePirIdsFromHistoryEvent(updateEventAddFlaggedEntityInContainer)).toEqual([pirId1, pirId2]);
+    expect(generatePirContextData(updateEventAddFlaggedEntityInContainer).pir_ids).toEqual([pirId1, pirId2]);
   });
 });
