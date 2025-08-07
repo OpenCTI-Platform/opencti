@@ -185,7 +185,7 @@ export const managedConnectorAdd = async (
   if (isEmptyField(targetContract)) {
     throw UnsupportedError('Target contract not found');
   }
-  if (targetContract.manager_supported) {
+  if (!targetContract.manager_supported) {
     throw FunctionalError('You have not chosen a connector supported by the manager');
   }
   const contractConfigurations = computeConnectorTargetContract(input.manager_contract_configuration, targetContract);
