@@ -214,7 +214,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'xtm_hub_registration_user_name', label: 'XTM Hub registration User name', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag: 'OCTI_ENROLLMENT' },
     { name: 'xtm_hub_last_connectivity_check', label: 'XTM Hub last connectivity check', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag: 'OCTI_ENROLLMENT' },
     { name: 'xtm_hub_registration_date', label: 'XTM Hub registration date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag: 'OCTI_ENROLLMENT' },
-    { name: 'xtm_hub_registration_status', label: 'XTM Hub registration status', type: 'string', format: 'enum', values: ['enrolled', 'unenrolled', 'lost_connectivity'], editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: false, featureFlag: 'OCTI_ENROLLMENT' },
+    { name: 'xtm_hub_registration_status', label: 'XTM Hub registration status', type: 'string', format: 'enum', values: ['enrolled', 'unregistered', 'lost_connectivity'], editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: false, featureFlag: 'OCTI_ENROLLMENT' },
   ],
   [ENTITY_TYPE_MIGRATION_STATUS]: [
     { name: 'lastRun', label: 'Last run', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },

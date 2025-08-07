@@ -146,7 +146,7 @@ const XtmHubSettings = () => {
                 )
               }
               {
-                xtmHubSettings.xtm_hub_registration_status === 'unenrolled' && (
+                xtmHubSettings.xtm_hub_registration_status === 'unregistered' && (
                   <ListItem divider={true}>
                     <ListItemText primary={t_i18n('Registration status')} />
                     <ItemBoolean

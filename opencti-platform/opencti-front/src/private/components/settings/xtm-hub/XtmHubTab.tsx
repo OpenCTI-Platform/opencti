@@ -122,7 +122,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
         input: [
           { key: 'xtm_hub_token', value: '' },
           { key: 'xtm_hub_registration_date', value: '' },
-          { key: 'xtm_hub_registration_status', value: 'unenrolled' },
+          { key: 'xtm_hub_registration_status', value: 'unregistered' },
         ],
       },
       onCompleted: () => {

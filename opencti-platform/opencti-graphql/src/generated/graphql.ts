@@ -32680,7 +32680,7 @@ export type X509CertificateAddInput = {
 export enum XtmHubEnrollmentStatus {
   Enrolled = 'enrolled',
   LostConnectivity = 'lost_connectivity',
-  Unenrolled = 'unenrolled'
+  Unregistered = 'unregistered'
 }
 
 export type WithIndex<TObject> = TObject & Record<string, any>;
