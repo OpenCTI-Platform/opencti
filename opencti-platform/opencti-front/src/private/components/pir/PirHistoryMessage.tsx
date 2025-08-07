@@ -22,9 +22,11 @@ import { useFormatter } from '../../../components/i18n';
 export interface PirLog {
   readonly context_data: {
     readonly entity_id: string | null | undefined;
+    readonly from_id: string | null | undefined;
     readonly entity_name: string | null | undefined;
     readonly entity_type: string | null | undefined;
     readonly message: string;
+    readonly pir_score: number | null | undefined;
   } | null | undefined;
   readonly entity_type: string | null | undefined;
   readonly event_scope: string | null | undefined;

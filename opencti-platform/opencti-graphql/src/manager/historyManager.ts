@@ -97,6 +97,7 @@ export const generatePirContextData = (event: SseEvent<StreamDataEvent>): Partia
   if (eventData.type === 'relationship') {
     const relationEvent = eventData as StixRelation;
     const extensions = relationEvent.extensions[STIX_EXT_OCTI];
+    from_id = extensions.source_ref;
     // 1. detect stix core relationships
     if (isStixCoreRelationship(relationEvent.relationship_type)) {
       if ((extensions.source_ref_pir_refs ?? []).length > 0) {
@@ -107,7 +108,6 @@ export const generatePirContextData = (event: SseEvent<StreamDataEvent>): Partia
     // 2. detect in-pir rels
     } else if (eventData.extensions[STIX_EXT_OCTI].type === RELATION_IN_PIR) {
       pir_ids = [extensions.target_ref];
-      from_id = extensions.source_ref;
       pir_score = extensions.pir_score;
     }
   } else if (event.event === 'update' && (event.data as UpdateEvent).context.patch) {
