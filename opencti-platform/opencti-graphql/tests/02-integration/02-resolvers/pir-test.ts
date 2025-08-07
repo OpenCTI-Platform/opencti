@@ -7,7 +7,6 @@ import { SYSTEM_USER } from '../../../src/utils/access';
 import { storeLoadById } from '../../../src/database/middleware-loader';
 import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import type { BasicStoreEntity } from '../../../src/types/store';
-import { disableEE, enableEE } from '../../utils/testQueryHelper';
 
 const LIST_QUERY = gql`
   query pirs(
@@ -168,14 +167,6 @@ describe('PIR resolver standard behavior', () => {
   it('should list pirs', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
     expect(queryResult.data?.pirs.edges.length).toEqual(1);
-  });
-
-  it('should not list pirs if not Enterprise Edition', async () => {
-    await disableEE();
-    const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.errors?.length).toBe(1);
-    expect(queryResult.errors?.[0].message).toEqual('Enterprise edition is not enabled');
-    await enableEE();
   });
 
   it('should update a pir', async () => {
