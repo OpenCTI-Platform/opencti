@@ -174,6 +174,7 @@ const AIInsights = ({
   };
   // TODO make the filter "objects" readonly?
   const [containersFilters, containersFiltersHelpers] = useFiltersState(initialContainersFilters);
+  if (!enabled) return null;
   if (!isEnterpriseEdition && enabled) {
     return (
       <>
@@ -216,7 +217,7 @@ const AIInsights = ({
       </>
     );
   }
-  if (!fullyActive) {
+  if (isEnterpriseEdition && !fullyActive) {
     return (
       <>
         <Tooltip title={t_i18n('AI Insights')}>
