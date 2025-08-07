@@ -6,16 +6,21 @@ import type { AuthContext, AuthUser } from '../../../src/types/user';
 import { addNotification, addTrigger, myNotificationsFind, triggerGet } from '../../../src/modules/notification/notification-domain';
 import type { MemberAccessInput, TriggerLiveAddInput, UserAddInput, WorkspaceAddInput } from '../../../src/generated/graphql';
 import { TriggerEventType, TriggerType } from '../../../src/generated/graphql';
-import { addUser, assignGroupToUser, findById, findById as findUserById, isUserTheLastAdmin, userDelete } from '../../../src/domain/user';
+import { addUser, assignGroupToUser, findById, findById as findUserById, isUserTheLastAdmin, userAddRelation, userDelete } from '../../../src/domain/user';
 import { addWorkspace, findById as findWorkspaceById, workspaceEditAuthorizedMembers } from '../../../src/modules/workspace/workspace-domain';
 import type { NotificationAddInput } from '../../../src/modules/notification/notification-types';
 import { getFakeAuthUser, getGroupEntity, getOrganizationEntity } from '../../utils/domainQueryHelper';
 import { deleteElementById } from '../../../src/database/middleware';
 import { enableCEAndUnSetOrganization, enableEEAndSetOrganization } from '../../utils/testQueryHelper';
-import { type BasicStoreEntityOrganization } from '../../../src/modules/organization/organization-types';
+import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { SETTINGS_SET_ACCESSES } from '../../../src/utils/access';
 import type { Group } from '../../../src/types/group';
 import { storeLoadById } from '../../../src/database/middleware-loader';
+import { addOrganization } from '../../../src/modules/organization/organization-domain';
+import { addSector } from '../../../src/domain/sector';
+import { RELATION_PARTICIPATE_TO } from '../../../src/schema/internalRelationship';
+import type { BasicStoreEntity } from '../../../src/types/store';
+import { ENTITY_TYPE_IDENTITY_SECTOR } from '../../../src/schema/stixDomainObject';
 
 /**
  * Create a new user in elastic for this test purpose using domain APIs only.
@@ -287,5 +292,31 @@ describe('Service account with platform organization coverage', async () => {
     expect(userCreated.password).toBeUndefined();
 
     await deleteElementById(testContext, authUser, userAddResult.id, ENTITY_TYPE_USER);
+  });
+});
+
+describe('Testing buildCompleteUser', () => {
+  it('should user organization list be composed of organizations entity only', async () => {
+    const testOrgCustom = await addOrganization(testContext, ADMIN_USER, { name: 'CompleteUserOrg' });
+    const testSector = await addSector(testContext, ADMIN_USER, { name: 'CompleteUserSector' });
+
+    const userInput: UserAddInput = {
+      name: `User for buildCompleteUser ${Date.now()}`,
+      password: 'buildCompleteUser',
+      user_email: 'user.buildCompleteUser@opencti.invalid',
+      objectOrganization: [testOrgCustom.id],
+    };
+    const userInOrgCustom: AuthUser = await addUser(testContext, ADMIN_USER, userInput);
+    const wrongRelationInput = { relationship_type: RELATION_PARTICIPATE_TO, toId: testSector.id };
+    await userAddRelation(testContext, ADMIN_USER, userInOrgCustom.id, wrongRelationInput);
+    const userAuth = await findUserById(testContext, ADMIN_USER, userInOrgCustom.id);
+    expect(userAuth.organizations.filter((org: BasicStoreEntity) => org.id === testOrgCustom.id).length).toBe(1); // Actual Organization
+    expect(userAuth.organizations.filter((org: BasicStoreEntity) => org.id === testSector.id).length).toBe(0); // Sector should not be there
+    expect(userAuth.organizations.length).toBe(1);
+
+    // Cleanup
+    await userDelete(testContext, ADMIN_USER, userInOrgCustom.id);
+    await deleteElementById(testContext, ADMIN_USER, testOrgCustom.id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+    await deleteElementById(testContext, ADMIN_USER, testSector.id, ENTITY_TYPE_IDENTITY_SECTOR);
   });
 });
