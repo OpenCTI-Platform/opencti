@@ -549,6 +549,7 @@
   "Copy": "Copy",
   "copy": "copy",
   "Copy attribute name to clipboard": "Copy attribute name to clipboard",
+  "Copy confidence level to OpenCTI scores for indicators": "Copy confidence level to OpenCTI scores for indicators",
   "Copy disabled: too many selected elements (maximum number of elements for a copy: ": "Copy disabled: too many selected elements (maximum number of elements for a copy: ",
   "Copy link": "Copy link",
   "Copy OpenCTI scores to confidence level for indicators": "Copy OpenCTI scores to confidence level for indicators",

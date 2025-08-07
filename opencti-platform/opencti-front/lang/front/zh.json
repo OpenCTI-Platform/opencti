@@ -549,6 +549,7 @@
   "Copy": "复制",
   "copy": "复制",
   "Copy attribute name to clipboard": "复制属性名到剪贴板",
+  "Copy confidence level to OpenCTI scores for indicators": "将置信度复制到 OpenCTI 指标得分",
   "Copy disabled: too many selected elements (maximum number of elements for a copy: ": "复制已关闭：选取元素过多（复制的最大元素数：",
   "Copy link": "复制链接",
   "Copy OpenCTI scores to confidence level for indicators": "将 OpenCTI 分数复制到指标的置信水平",
