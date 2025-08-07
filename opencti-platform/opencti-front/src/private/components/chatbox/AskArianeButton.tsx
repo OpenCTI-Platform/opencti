@@ -17,12 +17,12 @@ import useHelper from '../../../utils/hooks/useHelper';
 
 const AskArianeButton = () => {
   const { t_i18n } = useFormatter();
-  const { isAgenticAiEnabled } = useHelper();
+  const { isChatbotAiEnabled } = useHelper();
   const theme = useTheme<Theme>();
   const isEnterpriseEdition = useEnterpriseEdition();
   const {
     me: { api_token },
-    settings: { platform_url, filigran_agentic_ai_url, platform_enterprise_edition },
+    settings: { platform_url, filigran_chatbot_ai_url, platform_enterprise_edition },
   } = useAuth();
 
   // navopen
@@ -113,7 +113,7 @@ const AskArianeButton = () => {
       <AutoAwesomeOutlined
         style={{ color: theme.palette.ai.main }}
       />
-      {isEnterpriseEdition && isAgenticAiEnabled() ? (
+      {isEnterpriseEdition && isChatbotAiEnabled() ? (
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         <filigran-chatbot
@@ -123,7 +123,7 @@ const AskArianeButton = () => {
           onClick={(e: MouseEvent) => {
             e.stopPropagation();
           }}
-          agentic-url={filigran_agentic_ai_url}
+          agentic-url={filigran_chatbot_ai_url}
           theme={chatBotTheme}
           chatflowConfig={{
             vars,

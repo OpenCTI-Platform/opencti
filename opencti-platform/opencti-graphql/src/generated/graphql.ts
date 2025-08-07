@@ -25330,8 +25330,8 @@ export type Settings = BasicObject & InternalObject & {
   created_at: Scalars['DateTime']['output'];
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
-  filigran_agentic_ai_enabled?: Maybe<Scalars['Boolean']['output']>;
-  filigran_agentic_ai_url?: Maybe<Scalars['String']['output']>;
+  filigran_chatbot_ai_enabled?: Maybe<Scalars['Boolean']['output']>;
+  filigran_chatbot_ai_url?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   messages_administration?: Maybe<Array<SettingsMessage>>;
   otp_mandatory?: Maybe<Scalars['Boolean']['output']>;
@@ -42356,8 +42356,8 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  filigran_agentic_ai_enabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  filigran_agentic_ai_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  filigran_chatbot_ai_enabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  filigran_chatbot_ai_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   messages_administration?: Resolver<Maybe<Array<ResolversTypes['SettingsMessage']>>, ParentType, ContextType>;
   otp_mandatory?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;

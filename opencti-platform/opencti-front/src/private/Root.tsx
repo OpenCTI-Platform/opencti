@@ -68,8 +68,8 @@ const rootSettingsFragment = graphql`
       running
       warning
     }
-    filigran_agentic_ai_enabled
-    filigran_agentic_ai_url
+    filigran_chatbot_ai_enabled
+    filigran_chatbot_ai_url
     platform_enterprise_edition {
       license_validated
       license_expired
