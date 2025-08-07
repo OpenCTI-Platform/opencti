@@ -169,7 +169,8 @@ export const readCsvFromFileStream = async (filePath: string, fileName: string) 
 };
 
 /**
- * Enable Enterprise edition
+ * Enable Enterprise edition for test
+ * @deprecated This function is useless: api-test are always run under EE with an env variable that take priority over settings
  */
 export const enableEE = async () => {
   const platformSettings: any = await getSettings(testContext);
@@ -182,7 +183,8 @@ export const enableEE = async () => {
 };
 
 /**
- * Go back to community edition.
+ * Go back to community edition
+ * @deprecated This function is useless: api-test are always run under EE with an env variable that take priority over settings
  */
 export const disableEE = async () => {
   const platformSettings: any = await getSettings(testContext);

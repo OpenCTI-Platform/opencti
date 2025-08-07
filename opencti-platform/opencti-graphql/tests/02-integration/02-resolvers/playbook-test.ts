@@ -4,7 +4,6 @@ import { adminQueryWithError, adminQueryWithSuccess } from '../../utils/testQuer
 import type { PlaybookAddNodeInput } from '../../../src/generated/graphql';
 import { PLAYBOOK_INTERNAL_DATA_CRON, PLAYBOOK_MATCHING_COMPONENT } from '../../../src/modules/playbook/playbook-components';
 import { UNSUPPORTED_ERROR } from '../../../src/config/errors';
-import { adminQuery } from '../../utils/testQuery';
 
 const LIST_PLAYBOOKS = gql`
   query playbooks(
