@@ -3,7 +3,16 @@ import { authenticator } from 'otplib';
 import * as R from 'ramda';
 import { uniq } from 'ramda';
 import { v4 as uuid } from 'uuid';
-import { ACCOUNT_STATUS_ACTIVE, ACCOUNT_STATUS_EXPIRED, ACCOUNT_STATUSES, BUS_TOPICS, DEFAULT_ACCOUNT_STATUS, ENABLED_DEMO_MODE, logApp } from '../config/conf';
+import {
+  ACCOUNT_STATUS_ACTIVE,
+  ACCOUNT_STATUS_EXPIRED,
+  ACCOUNT_STATUSES,
+  BUS_TOPICS,
+  DEFAULT_ACCOUNT_STATUS,
+  ENABLED_DEMO_MODE,
+  getRequestAuditHeaders,
+  logApp
+} from '../config/conf';
 import { AuthenticationFailure, DatabaseError, DraftLockedError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { elLoadBy, elRawDeleteByQuery } from '../database/engine';
@@ -103,7 +112,6 @@ const ME_USER_MODIFIABLE_ATTRIBUTES = [
   'draft_context',
 ];
 const AVAILABLE_LANGUAGES = ['auto', 'es-es', 'fr-fr', 'ja-jp', 'zh-cn', 'en-us', 'de-de', 'ko-kr', 'ru-ru', 'it-it'];
-
 const computeImpactedUsers = async (context, user, roleId) => {
   // Get all groups that have this role
   const groupsRoles = await listAllRelations(context, user, RELATION_HAS_ROLE, { toId: roleId, fromTypes: [ENTITY_TYPE_GROUP] });
@@ -125,15 +133,19 @@ export const userWithOrigin = (req, user) => {
   // - In audit logs to identify the user
   // - In stream message to also identifier the user
   // - In logging system to know the level of the error message
-  const headers_metadata = R.mergeAll((user.headers_audit ?? [])
+
+  // Additional header from "authentication with header" authentication mode
+  const sso_headers_metadata = R.mergeAll((user.headers_audit ?? [])
     .map((header) => ({ [header]: req.header(header) })));
+  const tracing_headers_metadata = getRequestAuditHeaders(req);
+
   const origin = {
     socket: 'query',
     ip: req?.ip,
     user_id: user.id,
     group_ids: user.groups?.map((g) => g.internal_id) ?? [],
     organization_ids: user.organizations?.map((o) => o.internal_id) ?? [],
-    user_metadata: { ...headers_metadata },
+    user_metadata: { ...sso_headers_metadata, ...tracing_headers_metadata },
     referer: req?.headers.referer,
     applicant_id: req?.headers['opencti-applicant-id'],
     call_retry_number: req?.headers['opencti-retry-number'],
@@ -1501,7 +1513,7 @@ export const authenticateUserByTokenOrUserId = async (context, req, tokenOrId) =
     validateUser(authenticatedUser, settings);
     return userWithOrigin(req, authenticatedUser);
   }
-  throw FunctionalError(`Cant identify with ${tokenOrId}`);
+  throw FunctionalError(`Cant identify with ${tokenOrId}`, { user_metadata: getRequestAuditHeaders(req) });
 };
 
 export const userRenewToken = async (context, user, userId) => {
@@ -1616,7 +1628,7 @@ export const authenticateUserFromRequest = async (context, req) => {
     try {
       return await authenticateUserByTokenOrUserId(context, req, tokenUUID);
     } catch (err) {
-      logApp.error('Error resolving user by token', { cause: err });
+      logApp.error('Error resolving user by token', { cause: err, user_metadata: getRequestAuditHeaders(req) });
     }
   }
   // endregion

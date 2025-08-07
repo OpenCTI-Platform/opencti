@@ -220,6 +220,17 @@ const appLogger = winston.createLogger({
 // Setup audit log logApp
 const auditLogFileTransport = booleanConf('app:audit_logs:logs_files', true);
 const auditLogConsoleTransport = booleanConf('app:audit_logs:logs_console', true);
+export const auditRequestHeaderToKeep = nconf.get('app:audit_logs:trace_request_headers') ?? ['user-agent', 'x-forwarded-for'];
+
+// Gather all request header that are configured to be added to audit or activity logs.
+export const getRequestAuditHeaders = (req) => {
+  if (!isFeatureEnabled('AUDIT_USER_AGENT')) return undefined;
+  const sourceIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+  const requestIp = req.ip;
+  const allHeadersRequested = R.mergeAll((auditRequestHeaderToKeep).map((header) => ({ [header]: req.header(header) })));
+  return { ...allHeadersRequested, sourceIp, requestIp };
+};
+
 export const auditLogTypes = nconf.get('app:audit_logs:logs_in_transports') ?? ['administration'];
 const auditLogTransports = [];
 if (auditLogFileTransport) {
