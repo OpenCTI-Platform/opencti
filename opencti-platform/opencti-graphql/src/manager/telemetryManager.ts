@@ -50,7 +50,7 @@ export const TELEMETRY_GAUGE_DRAFT_VALIDATION = 'draftValidationCount';
 export const TELEMETRY_GAUGE_WORKBENCH_UPLOAD = 'workbenchUploadCount';
 export const TELEMETRY_GAUGE_WORKBENCH_DRAFT_CONVERTION = 'workbenchDraftConvertionCount';
 export const TELEMETRY_GAUGE_WORKBENCH_VALIDATION = 'workbenchValidationCount';
-export const TELEMETRY_GAUGE_EMAIL_SEND = 'emailSendCount';
+export const TELEMETRY_GAUGE_USER_EMAIL_SEND = 'userEmailSendCount';
 export const TELEMETRY_GAUGE_ONBOARDING_EMAIL_SEND = 'onboardingEmailSendCount';
 export const TELEMETRY_BACKGROUND_TASK_USER = 'userBackgroundTaskCount';
 export const TELEMETRY_EMAIL_TEMPLATE_CREATED = 'emailTemplateCreatedCount';
@@ -81,7 +81,7 @@ export const addWorkbenchValidationCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_WORKBENCH_VALIDATION, 1);
 };
 export const addUserEmailSendCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_GAUGE_EMAIL_SEND, 1);
+  await redisSetTelemetryAdd(TELEMETRY_GAUGE_USER_EMAIL_SEND, 1);
 };
 export const addOnboardingEmailSendCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_ONBOARDING_EMAIL_SEND, 1);
@@ -220,7 +220,7 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setWorkbenchDraftConvertionCount(workbenchDraftConvertionCountInRedis);
     const workbenchValidationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_WORKBENCH_VALIDATION);
     manager.setWorkbenchValidationCount(workbenchValidationCountInRedis);
-    const emailSendCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_EMAIL_SEND);
+    const emailSendCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_USER_EMAIL_SEND);
     manager.setEmailSendCount(emailSendCountInRedis);
     const onboardingEmailSendCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_ONBOARDING_EMAIL_SEND);
     manager.setOnboardingEmailSendCount(onboardingEmailSendCountInRedis);

@@ -557,22 +557,14 @@ export const sendEmailToUser = async (context, user, input) => {
   await checkEnterpriseEdition(context);
   const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
 
-  const targetUser = await internalLoadById(context, user, input.target_user_id);
+  const users = await getEntitiesListFromCache(context, user, ENTITY_TYPE_USER);
+  const targetUser = users.find((usr) => input.target_user_id === usr.id);
+
   if (!targetUser) {
     throw UnsupportedError('Target user not found', { id: input.target_user_id });
   }
 
-  const organizationIds = targetUser['participate-to'] || [];
-  let organizationNames = [];
-  if (organizationIds.length > 0) {
-    const organizations = await Promise.all(
-      organizationIds.map((orgId) => internalLoadById(context, user, orgId))
-    );
-    organizationNames = organizations
-      .filter((org) => !!org)
-      .map((org) => org.name)
-      .filter((name) => !!name);
-  }
+  const organizationNames = (targetUser.organizations ?? []).map((org) => org.name);
 
   const emailTemplate = await internalLoadById(context, user, input.email_template_id);
   if (!emailTemplate || emailTemplate.entity_type !== ENTITY_TYPE_EMAIL_TEMPLATE) {
