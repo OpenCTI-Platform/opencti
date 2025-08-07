@@ -28,7 +28,7 @@ import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { getEnterpriseEditionInfo, getEnterpriseEditionInfoFromPem, LICENSE_OPTION_TRIAL } from '../modules/settings/licensing';
 import { getClusterInformation } from '../database/cluster-module';
-import { completeXTMHubDataForEnrollment } from '../utils/settings.helper';
+import { completeXTMHubDataForRegistration } from '../utils/settings.helper';
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
@@ -175,11 +175,11 @@ const ACCESS_SETTINGS_RESTRICTED_KEYS = [
 
 const ACCESS_SETTINGS_MANAGE_XTMHUB_KEYS = [
   'xtm_hub_token',
-  'xtm_hub_enrollment_user_id',
+  'xtm_hub_registration_user_id',
   'xtm_hub_last_connectivity_check',
-  'xtm_hub_enrollment_date',
-  'xtm_hub_enrollment_user_name',
-  'xtm_hub_enrollment_status'
+  'xtm_hub_registration_date',
+  'xtm_hub_registration_user_name',
+  'xtm_hub_registration_status'
 ];
 
 export const settingsEditField = async (context, user, settingsId, input) => {
@@ -194,7 +194,7 @@ export const settingsEditField = async (context, user, settingsId, input) => {
     ? input
     : input.filter((i) => !keysUserCannotModify.includes(i.key));
 
-  const data = hasSetXTMHubCapability && isFeatureEnabled('OCTI_ENROLLMENT') ? completeXTMHubDataForEnrollment(user, dataWithRestrictKeys) : dataWithRestrictKeys;
+  const data = hasSetXTMHubCapability && isFeatureEnabled('OCTI_ENROLLMENT') ? completeXTMHubDataForRegistration(user, dataWithRestrictKeys) : dataWithRestrictKeys;
 
   const settings = await getSettings(context);
   const enterpriseLicense = data.find((inputData) => inputData.key === 'enterprise_license');

@@ -29,10 +29,10 @@ const xtmHubTabSettingsFieldPatchMutation = graphql`
     settingsEdit(id: $id) {
       fieldPatch(input: $input) {
         id
-        xtm_hub_enrollment_date
-        xtm_hub_enrollment_status
-        xtm_hub_enrollment_user_id
-        xtm_hub_enrollment_user_name
+        xtm_hub_registration_date
+        xtm_hub_registration_status
+        xtm_hub_registration_user_id
+        xtm_hub_registration_user_name
         xtm_hub_last_connectivity_check
         xtm_hub_token
       }
@@ -41,23 +41,23 @@ const xtmHubTabSettingsFieldPatchMutation = graphql`
 `;
 
 interface XtmHubTabProps {
-  enrollmentStatus?: string;
+  registrationStatus?: string;
 }
 
-const XtmHubTab: React.FC<XtmHubTabProps> = ({ enrollmentStatus }) => {
+const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
   const { t_i18n } = useFormatter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const { settings } = useContext(UserContext);
   const isEnterpriseEdition = useEnterpriseEdition();
-  const enrollmentHubUrl = settings?.platform_xtmhub_url ?? 'https://hub.filigran.io/app';
+  const registrationHubUrl = settings?.platform_xtmhub_url ?? 'https://hub.filigran.io/app';
   const [processStep, setProcessStep] = useState<ProcessSteps>(
     ProcessSteps.INSTRUCTIONS,
   );
   const [operationType, setOperationType] = useState<OperationType | null>(
     null,
   );
-  const [commitEnrollment] = useApiMutation(
+  const [commitRegistration] = useApiMutation(
     xtmHubTabSettingsFieldPatchMutation,
     undefined,
     {
@@ -65,7 +65,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ enrollmentStatus }) => {
     },
   );
 
-  const [commitUnenrollment] = useApiMutation(
+  const [commitUnregistration] = useApiMutation(
     xtmHubTabSettingsFieldPatchMutation,
     undefined,
     {
@@ -75,7 +75,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ enrollmentStatus }) => {
     },
   );
 
-  const isEnrolled = enrollmentStatus === 'enrolled';
+  const isEnrolled = registrationStatus === 'enrolled';
 
   const OCTIInformations = {
     platform_url: window.location.origin,
@@ -87,20 +87,20 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ enrollmentStatus }) => {
     OCTIInformations,
   ).toString();
 
-  const enrollmentUrl = `${enrollmentHubUrl}/redirect/enroll-octi?${queryParamsOCTIInformations}`;
-  const unenrollmentUrl = `${enrollmentHubUrl}/redirect/unenroll-octi?platform_id=${settings?.id ?? ''}`;
+  const registrationUrl = `${registrationHubUrl}/redirect/enroll-octi?${queryParamsOCTIInformations}`;
+  const unregistrationUrl = `${registrationHubUrl}/redirect/unenroll-octi?platform_id=${settings?.id ?? ''}`;
 
   const handleClosingTab = () => {
     setProcessStep(ProcessSteps.CANCELED);
   };
 
-  const handleEnrollment = (token: string) => {
-    commitEnrollment({
+  const handleRegistration = (token: string) => {
+    commitRegistration({
       variables: {
         id: settings?.id ?? '',
         input: [
           { key: 'xtm_hub_token', value: token },
-          { key: 'xtm_hub_enrollment_status', value: 'enrolled' },
+          { key: 'xtm_hub_registration_status', value: 'enrolled' },
         ],
       },
       onCompleted: () => {
@@ -115,14 +115,14 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ enrollmentStatus }) => {
     });
   };
 
-  const handleUnenrollment = () => {
-    commitUnenrollment({
+  const handleUnregistration = () => {
+    commitUnregistration({
       variables: {
         id: settings?.id ?? '',
         input: [
           { key: 'xtm_hub_token', value: '' },
-          { key: 'xtm_hub_enrollment_date', value: '' },
-          { key: 'xtm_hub_enrollment_status', value: 'unenrolled' },
+          { key: 'xtm_hub_registration_date', value: '' },
+          { key: 'xtm_hub_registration_status', value: 'unenrolled' },
         ],
       },
       onCompleted: () => {
@@ -144,22 +144,22 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ enrollmentStatus }) => {
 
       if (action === 'enroll') {
         setOperationType(OperationType.ENROLL);
-        handleEnrollment(token);
+        handleRegistration(token);
       } else if (action === 'unenroll') {
         setOperationType(OperationType.UNENROLL);
-        handleUnenrollment();
+        handleUnregistration();
       } else if (action === 'cancel') {
         setProcessStep(ProcessSteps.CANCELED);
       } else {
         setProcessStep(ProcessSteps.ERROR);
       }
     },
-    [commitEnrollment, commitUnenrollment, settings?.id],
+    [commitRegistration, commitUnregistration, settings?.id],
   );
 
   const { openTab, closeTab, focusTab } = useExternalTab({
-    url: isEnrolled ? unenrollmentUrl : enrollmentUrl,
-    tabName: isEnrolled ? 'xtmhub-unenrollment' : 'xtmhub-enrollment',
+    url: isEnrolled ? unregistrationUrl : registrationUrl,
+    tabName: isEnrolled ? 'xtmhub-unregistration' : 'xtmhub-registration',
     onMessage: handleTabMessage,
     onClosingTab: handleClosingTab,
   });

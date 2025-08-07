@@ -123,7 +123,7 @@ enum FilterOperator {
   within
 }
 
-enum XTMHubEnrollmentStatus {
+enum XTMHubRegistrationStatus {
   enrolled
   unenrolled
   lost_connectivity
@@ -1407,11 +1407,11 @@ type Settings implements InternalObject & BasicObject {
   editContext: [EditUserContext!] @auth(for: [SETTINGS_SETPARAMETERS])
   # XTM Hub
   xtm_hub_token: String @auth
-  xtm_hub_enrollment_user_id: String @auth
-  xtm_hub_enrollment_user_name: ID @auth
+  xtm_hub_registration_user_id: String @auth
+  xtm_hub_registration_user_name: ID @auth
   xtm_hub_last_connectivity_check: DateTime @auth
-  xtm_hub_enrollment_date: DateTime @auth
-  xtm_hub_enrollment_status: XTMHubEnrollmentStatus @auth
+  xtm_hub_registration_date: DateTime @auth
+  xtm_hub_registration_status: XTMHubRegistrationStatus @auth
 }
 
 ############## Groups
