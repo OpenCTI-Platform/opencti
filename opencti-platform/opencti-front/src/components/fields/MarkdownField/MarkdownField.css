@@ -1,0 +1,9 @@
+.octi-markdown-field {
+  .wmde-markdown-var[data-color-mode="dark"] {
+    --color-canvas-default: transparent;
+
+    .wmde-markdown {
+      --color-canvas-default: transparent;
+    }
+  }
+}
