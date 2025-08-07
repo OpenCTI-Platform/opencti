@@ -11,7 +11,7 @@ import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { SseEvent, StreamDataEvent, UpdateEvent } from '../types/event';
 import { utcDate } from '../utils/format';
 import { elIndexElements } from '../database/engine';
-import type { RelationExtension, StixRelation, StixSighting } from '../types/stix-2-1-sro';
+import type { StixRelation, StixSighting } from '../types/stix-2-1-sro';
 import { internalFindByIds, listEntities } from '../database/middleware-loader';
 import type { BasicRuleEntity, BasicStoreEntity } from '../types/store';
 import { BASE_TYPE_ENTITY, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
@@ -45,6 +45,7 @@ interface HistoryContext {
   created_by_ref_id?: string;
   marking_definitions?: Array<string>;
   pir_ids?: Array<string>;
+  pir_score?: number
 }
 
 export interface HistoryData extends BasicStoreEntity {
@@ -87,33 +88,41 @@ export const resolveGrantedRefsIds = async (context: AuthContext, events: Array<
   return organizationByIdsMap;
 };
 
-export const generatePirIdsFromHistoryEvent = (event: SseEvent<StreamDataEvent>) => {
+export const generatePirContextData = (event: SseEvent<StreamDataEvent>): Partial<HistoryContext> => {
+  let pir_ids: string[] = [];
+  let from_id: string | undefined;
+  let pir_score: number | undefined;
   // Listened events: stix core relationships, pir meta rels creation, 'contains' flagged entities
   const eventData = event.data.data;
   if (eventData.type === 'relationship') {
+    const relationEvent = eventData as StixRelation;
+    const extensions = relationEvent.extensions[STIX_EXT_OCTI];
     // 1. detect stix core relationships
-    if (isStixCoreRelationship((eventData as StixRelation).relationship_type)) {
-      const extensions = (eventData as StixRelation).extensions[STIX_EXT_OCTI];
+    if (isStixCoreRelationship(relationEvent.relationship_type)) {
       if ((extensions.source_ref_pir_refs ?? []).length > 0) {
-        return extensions.source_ref_pir_refs;
-      } if ((extensions.target_ref_pir_refs ?? []).length > 0) {
-        return extensions.target_ref_pir_refs;
+        pir_ids = extensions.source_ref_pir_refs;
+      } else if ((extensions.target_ref_pir_refs ?? []).length > 0) {
+        pir_ids = extensions.target_ref_pir_refs;
       }
-    }
     // 2. detect in-pir rels
-    if (eventData.extensions[STIX_EXT_OCTI].type === RELATION_IN_PIR) {
-      return [(eventData.extensions[STIX_EXT_OCTI] as RelationExtension).target_ref];
+    } else if (eventData.extensions[STIX_EXT_OCTI].type === RELATION_IN_PIR) {
+      pir_ids = [extensions.target_ref];
+      from_id = extensions.source_ref;
+      pir_score = extensions.pir_score;
     }
-  }
-  if (event.event === 'update' && (event.data as UpdateEvent).context.patch) {
+  } else if (event.event === 'update' && (event.data as UpdateEvent).context.patch) {
     const updateEvent: UpdateEvent = event.data as UpdateEvent;
     // 3. detect 'contains' rel
     const pirIds = updateEvent.context.pir_ids ?? [];
     if (pirIds.length > 0) {
-      return pirIds;
+      pir_ids = pirIds;
     }
   }
-  return [];
+  return {
+    pir_ids,
+    from_id,
+    pir_score
+  };
 };
 
 export const buildHistoryElementsFromEvents = async (context:AuthContext, events: Array<SseEvent<StreamDataEvent>>) => {
@@ -136,7 +145,7 @@ export const buildHistoryElementsFromEvents = async (context:AuthContext, events
         .map((stixId) => grantedRefsResolved.get(stixId))
         .filter((o) => isNotEmptyField(o));
     }
-    const contextData: HistoryContext = {
+    let contextData: HistoryContext = {
       id: stix.extensions[STIX_EXT_OCTI].id,
       message: event.data.message,
       entity_type: stix.extensions[STIX_EXT_OCTI].type,
@@ -183,7 +192,10 @@ export const buildHistoryElementsFromEvents = async (context:AuthContext, events
     const activityDate = utcDate(eventDate).toDate();
     const standardId = generateStandardId(ENTITY_TYPE_HISTORY, { internal_id: event.id }) as StixId;
     if (isFeatureEnabled('Pir')) {
-      contextData.pir_ids = generatePirIdsFromHistoryEvent(event);
+      contextData = {
+        ...contextData,
+        ...generatePirContextData(event)
+      };
     }
     return {
       _index: INDEX_HISTORY,
