@@ -16,6 +16,7 @@ permissions:
   actions: read
   contents: read
   security-events: write
+  test: test
 
 jobs:
   analyze:
