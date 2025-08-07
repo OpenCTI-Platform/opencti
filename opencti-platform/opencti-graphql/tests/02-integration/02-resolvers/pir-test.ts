@@ -1,13 +1,15 @@
 import gql from 'graphql-tag';
 import { describe, expect, it, vi } from 'vitest';
-import { queryAsAdmin, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
 import { FilterMode, FilterOperator, PirType } from '../../../src/generated/graphql';
 import { RELATION_IN_PIR } from '../../../src/schema/stixRefRelationship';
 import { SYSTEM_USER } from '../../../src/utils/access';
-import { storeLoadById } from '../../../src/database/middleware-loader';
+import { listEntities, storeLoadById } from '../../../src/database/middleware-loader';
 import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import type { BasicStoreEntity } from '../../../src/types/store';
 import { UNSUPPORTED_ERROR } from '../../../src/config/errors';
+import { ENTITY_TYPE_CONNECTOR } from '../../../src/schema/internalObject';
+import { addFilter } from '../../../src/utils/filtering/filtering-utils';
 
 const LIST_QUERY = gql`
   query pirs(
@@ -185,6 +187,13 @@ describe('PIR resolver standard behavior', () => {
     vi.restoreAllMocks();
   });
 
+  it('should exist associated pir connector queue', async () => {
+    const filters = addFilter(undefined, 'connector_type', ['INTERNAL_INGESTION_PIR']);
+    const pirConnectors = await listEntities<BasicStoreEntity>(testContext, ADMIN_USER, [ENTITY_TYPE_CONNECTOR], { connectionFormat: false, filters });
+    expect(pirConnectors.length).toEqual(1);
+    expect(pirConnectors[0].name).toEqual('[PIR] MyPir');
+  });
+
   it('should update a pir', async () => {
     const UPDATE_QUERY = gql`
       mutation PirUpdate($id: ID!, $input: [EditInput!]!) {
@@ -359,6 +368,14 @@ describe('PIR resolver standard behavior', () => {
     });
     expect(refQueryResult).not.toBeNull();
     expect(refQueryResult.data?.stixRefRelationships.edges.length).toEqual(0);
+    // Verify the associated connector queue is no longer found
+    const pirConnectors = await listEntities<BasicStoreEntity>(
+      testContext,
+      ADMIN_USER,
+      [ENTITY_TYPE_CONNECTOR],
+      { connectionFormat: false, filters: addFilter(undefined, 'connector_type', ['INTERNAL_INGESTION_PIR']) }
+    );
+    expect(pirConnectors.length).toEqual(0);
     // Verify the PIR is no longer found
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: pirInternalId } });
     expect(queryResult).not.toBeNull();
