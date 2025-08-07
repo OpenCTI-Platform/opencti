@@ -65,23 +65,31 @@ export const pirHistoryFilterGroup = (pirId: string): GqlFilterGroup => {
   };
 };
 
+/**
+ * Build URI for redirect in news feed or history table.
+ * If log is "Entity added in Pir" then redirect to knowledge overview,
+ * otherwise redirect to entity page.
+ *
+ * @param pirId ID of the PIR.
+ * @param context Data of the log to generate URI.
+ * @returns URI.
+ */
 export const pirLogRedirectUri = (
   pirId: string,
   context: {
     readonly entity_id: string | null | undefined
-    readonly entity_name: string | null | undefined
-    readonly entity_type: string | null | undefined
+    readonly from_id: string | null | undefined
     readonly message: string
   } | null | undefined,
 ) => {
   const isAddInPir = /added to Pir/.test(context?.message ?? '');
-  let redirectURI = `/dashboard/id/${context?.entity_id}`;
-  if (isAddInPir && context?.entity_id) {
+  let redirectURI = `/dashboard/id/${context?.from_id ?? context?.entity_id}`;
+  if (isAddInPir && context?.from_id) {
     const filter = encodeURIComponent(JSON.stringify(sanitizeFilterGroupKeysForFrontend({
       mode: 'and',
       filters: [{
         key: ['fromId'],
-        values: [context.entity_id],
+        values: [context.from_id],
       }],
       filterGroups: [],
     })));
