@@ -38,13 +38,15 @@ import { RELATION_IN_PIR, RELATION_OBJECT } from '../../schema/stixRefRelationsh
 import { createPirRel, serializePir, updatePirExplanations } from './pir-utils';
 import { ForbiddenAccess, FunctionalError } from '../../config/errors';
 import { ABSTRACT_STIX_REF_RELATIONSHIP, ENTITY_TYPE_CONTAINER } from '../../schema/general';
-import { elRawUpdateByQuery } from '../../database/engine';
-import { READ_INDEX_HISTORY } from '../../database/utils';
+import { elCount, elRawUpdateByQuery } from '../../database/engine';
+import { READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { extractFilterKeyValues } from '../../utils/filtering/filtering-utils';
 import { INSTANCE_DYNAMIC_REGARDING_OF, INSTANCE_REGARDING_OF, OBJECT_CONTAINS_FILTER, RELATION_TO_FILTER, RELATION_TYPE_FILTER } from '../../utils/filtering/filtering-constants';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
 import { isBypassUser, MEMBER_ACCESS_ALL, MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_VIEW } from '../../utils/access';
+import type { BasicStoreEntityDraftWorkspace } from '../draftWorkspace/draftWorkspace-types';
+import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_WORK } from '../../schema/internalObject';
 
 export const findById = async (context: AuthContext, user: AuthUser, id: string) => {
   await checkEnterpriseEdition(context);
@@ -291,4 +293,31 @@ export const pirEditAuthorizedMembers = async (
   };
   // @ts-expect-error TODO improve busTopicKey types to avoid this
   return editAuthorizedMembers(context, user, args);
+};
+
+export const getProcessingCount = async (context: AuthContext, user: AuthUser, pir: BasicStoreEntityPir) => {
+  const worksFilter = {
+    filterGroups: [],
+    filters: [ // TODO PIR put connector id
+      {
+        key: 'connector_id',
+        mode: 'or',
+        operator: 'eq',
+        values: ['57198a2f-0fb8-5a35-af7a-6bdc7c4959a0'] // TODO PIR fetch connector associated to pir
+      },
+      {
+        key: 'status',
+        mode: 'or',
+        operator: 'eq',
+        values: ['wait', 'progress']
+      }
+    ],
+    mode: 'and'
+  };
+  const worksOpts = {
+    types: [ENTITY_TYPE_WORK],
+    filters: worksFilter,
+  };
+  const draftIncompleteWorksCount = await elCount(context, user, READ_INDEX_HISTORY, worksOpts);
+  return draftIncompleteWorksCount;
 };
