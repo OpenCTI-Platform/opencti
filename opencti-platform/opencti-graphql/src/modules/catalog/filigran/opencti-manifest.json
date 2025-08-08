@@ -5,6 +5,73 @@
   "version": "6.7.0",
   "contracts": [
     {
+      "$id": "https://www.filigran.io/alienvault.schema.json",
+      "title": "AlienVault OTX",
+      "slug": "alienvault",
+      "description": "AlienVault OTX provides open access to a global community of threat researchers and security professionals, delivering community-generated threat data that enhances collaborative research. It automates the process of updating security infrastructure with threat data from various sources, thereby empowering the security community to discuss, research, and share the latest threat data, trends, and techniques. This collaborative approach strengthens your defenses while simultaneously aiding others in the community.\n\nThe integration of AlienVault OTX with OpenCTI enables the ingestion of threat knowledge from the Alien Labs Open Threat Exchange (OTX) platform. Utilizing the OTX DirectConnect API, the connector retrieves threat data from subscribed pulses and imports it into OpenCTI.",
+      "short_description": "AlienVault OTX provides open access to a global community of threat researchers and security professionals, delivering community-generated threat data that enhances collaborative research",
+      "use_cases": [
+        "Open Source Threat Intel"
+      ],
+      "max_confidence_level": 50,
+      "manager_supported": false,
+      "container_version": "6.7.0",
+      "container_image": "opencti/connector-alienvault",
+      "container_type": "EXTERNAL_IMPORT",
+      "verified": true,
+      "last_verified_date": "",
+      "playbook_supported": false,
+      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
+      "support_version": ">= 6.5.1",
+      "subscription_link": "https://levelblue.com/open-threat-exchange",
+      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/alienvault"
+    },
+    {
+      "$id": "https://www.filigran.io/cisa-kev.schema.json",
+      "title": "CISA Known Exploited Vulnerabilities (KEV)",
+      "slug": "cisa-kev",
+      "description": "CISA KEV (Known Exploited Vulnerabilities) is a catalog maintained by the Cybersecurity and Infrastructure Security Agency that lists vulnerabilities actively exploited in the wild. It serves as an authoritative resource for organizations to prioritize vulnerability remediation and enhance their security resilience.\n\nThe integration of the CISA KEV source with OpenCTI enables the ingestion of vulnerabilities known to be actively exploited. This process involves parsing out Identity, Infrastructure, and Vulnerability STIX Objects, which are then imported into OpenCTI.",
+      "short_description": "CISA KEV (Known Exploited Vulnerabilities) is a catalog maintained by the Cybersecurity and Infrastructure Security Agency that lists vulnerabilities actively exploited in the wild",
+      "use_cases": [
+        "Open Source Threat Intel",
+        "Vulnerability Management"
+      ],
+      "max_confidence_level": 80,
+      "manager_supported": false,
+      "container_version": "6.7.0",
+      "container_image": "opencti/connector-cisa-known-exploited-vulnerabilities",
+      "container_type": "EXTERNAL_IMPORT",
+      "verified": true,
+      "last_verified_date": "",
+      "playbook_supported": false,
+      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
+      "support_version": ">= 6.5.1",
+      "subscription_link": "",
+      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/cisa-known-exploited-vulnerabilities"
+    },
+    {
+      "$id": "https://www.filigran.io/crowdstrike-falcon-intel.schema.json",
+      "title": "CrowdStrike Falcon Intelligence",
+      "slug": "crowdstrike-falcon-intel",
+      "description": "CrowdStrike Falcon Intelligence is an integral threat intelligence module within the Falcon platform, crafted to enhance the speed and effectiveness of threat detection, investigation, and response. It equips SOC teams to work more swiftly and intelligently, leveraging automation, enrichment, and high-fidelity data to optimize their cybersecurity operations. \n\nThe OpenCTI CrowdStrike connector facilitates the import of intelligence from the CrowdStrike Falcon platform. By utilizing the Intel APIs, this connector accesses CrowdStrike\u2019s comprehensive intelligence, including data on threat actors, indicators, reports, and YARA rules, thus enhancing the threat intelligence capabilities within OpenCTI.",
+      "short_description": "CrowdStrike Falcon Intelligence is an integral threat intelligence module within the Falcon platform, crafted to enhance the speed and effectiveness of threat detection, investigation, and response.",
+      "use_cases": [
+        "Commercial Threat Intel"
+      ],
+      "max_confidence_level": 60,
+      "manager_supported": false,
+      "container_version": "6.7.0",
+      "container_image": "opencti/connector-crowdstrike",
+      "container_type": "EXTERNAL_IMPORT",
+      "verified": true,
+      "last_verified_date": "",
+      "playbook_supported": false,
+      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
+      "support_version": ">= 6.5.1",
+      "subscription_link": "",
+      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/crowdstrike"
+    },
+    {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "$id": "https://www.filigran.io/cve.schema.json",
       "title": "CVE - Common Vulnerabilities and Exposures",
@@ -127,6 +194,322 @@
           "description": "API Key for the CVE API."
         }
       }
+    },
+    {
+      "$id": "https://www.filigran.io/dragos.schema.json",
+      "title": "Dragos",
+      "slug": "dragos",
+      "description": "Dragos is a cybersecurity company specializing in industrial control systems (ICS) and operational technology (OT) security. Their platform provides threat intelligence, incident response, and vulnerability management tailored to ICS/OT environments.\n\nThe OpenCTI Dragos connector enables the ingestion of Dragos Threat Intelligence. It is designed to be straightforward to configure and supports a range of data types and formats.",
+      "short_description": "Dragos is a cybersecurity company specializing in industrial control systems (ICS) and operational technology (OT) security. Their platform provides threat intelligence, incident response, and vulnerability management tailored to ICS/OT environments.",
+      "use_cases": [
+        "Commercial Threat Intel"
+      ],
+      "max_confidence_level": 50,
+      "manager_supported": false,
+      "container_version": "6.7.0",
+      "container_image": "opencti/connector-dragos",
+      "container_type": "EXTERNAL_IMPORT",
+      "verified": true,
+      "last_verified_date": "2025-04-22",
+      "playbook_supported": false,
+      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
+      "support_version": ">= 6.5.1",
+      "subscription_link": "",
+      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/dragos"
+    },
+    {
+      "$id": "https://www.filigran.io/email-intel-imap.schema.json",
+      "title": "Email Intel IMAP",
+      "slug": "email-intel-imap",
+      "description": "The Email Intel IMAP Connector enables the ingestion of cyber threat intelligence reports received via email into the OpenCTI platform using the IMAP protocol. This connector allows organizations to automate the collection of intelligence shared through email by regularly polling a mailbox and transforming each message into an OpenCTI report.\n\nThis connector is designed to connect to an IMAP-compatible email inbox, extract email content and attachments, and convert the data into structured CTI reports within OpenCTI. The connector is suitable for any threat intel flow that relies on email as a delivery method and is compatible with standard IMAP servers.\n\nThe connector is also compatible with Google Workspace mailboxes.",
+      "short_description": "The Email Intel IMAP Connector enables the ingestion of cyber threat intelligence reports received via email into the OpenCTI platform using the IMAP protocol.",
+      "use_cases": [
+        "Email",
+        "Threat Intelligence"
+      ],
+      "max_confidence_level": 50,
+      "manager_supported": false,
+      "container_version": "6.7.0",
+      "container_image": "opencti/connector-email-intel-imap",
+      "container_type": "EXTERNAL_IMPORT",
+      "verified": true,
+      "last_verified_date": "",
+      "playbook_supported": false,
+      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
+      "support_version": ">= 6.5.1",
+      "subscription_link": "",
+      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/email-intel-imap"
+    },
+    {
+      "$id": "https://www.filigran.io/email-intel-microsoft.schema.json",
+      "title": "Email Intel Microsoft",
+      "slug": "email-intel-microsoft",
+      "description": "The Email Intel Microsoft Connector enables the ingestion of cyber threat intelligence reports received via email into the OpenCTI platform.\n\nThis connector allows organizations to automate the collection of intelligence shared through email by regularly polling a mailbox and transforming each message into an OpenCTI report.\n\nUsing the Microsoft Graph API,the connector polls a dedicated Microsoft 365/Exchange Online mailbox, transforms every message (plus accepted attachments) into an OpenCTI Report, and tags it with the chosen TLP.",
+      "short_description": "The Email Intel Microsoft Connector allows for the ingestion of cyber threat intelligence reports received via email in a Microsoft 365/Exchange Online mailbox.",
+      "use_cases": [
+        "Email",
+        "Threat Intelligence"
+      ],
+      "max_confidence_level": 50,
+      "manager_supported": false,
+      "container_version": "6.7.0",
+      "container_image": "opencti/connector-email-intel-microsoft",
+      "container_type": "EXTERNAL_IMPORT",
+      "verified": true,
+      "last_verified_date": "2025-05-09",
+      "playbook_supported": false,
+      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
+      "support_version": ">= 6.5.1",
+      "subscription_link": "",
+      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/oob/connector_manager/external-import/email-intel-microsoft"
+    },
+    {
+      "$id": "https://www.filigran.io/flashpoint.schema.json",
+      "title": "Flashpoint",
+      "slug": "flashpoint-imap-connector",
+      "description": "The Email Intel IMAP Connector enables the ingestion of cyber threat intelligence reports received via email into the OpenCTI platform using the IMAP protocol. This connector allows organizations to automate the collection of intelligence shared through email by regularly polling a mailbox and transforming each message into an OpenCTI report.\n\nThis connector is designed to connect to an IMAP-compatible email inbox, extract email content and attachments, and convert the data into structured CTI reports within OpenCTI. The connector is suitable for any threat intel flow that relies on email as a delivery method and is compatible with standard IMAP servers.\n\nThe connector is also compatible with Google Workspace mailboxes.",
+      "short_description": "Flashpoint Ignite consolidates team-tailored intelligence across various groups into a single workspace, enabling security teams to connect, collaborate, and remediate risk more efficiently with timely and active intelligence. It provides visibility into intelligence landscapes, covering cyber threats, vulnerabilities, physical security, and national security. By offering a comprehensive view of risk in one place, security experts can effectively close the gap between data, intelligence, and action.\n\nThe integration with OpenCTI allows for the import of threat intelligence data from Flashpoint, mapping it to relevant entities within the OpenCTI ecosystem. This integration includes alerts, indicators, malware reports, vulnerabilities, and other intelligence, significantly enhancing threat detection and response capabilities.",
+      "use_cases": [
+        "Commercial Threat Intel"
+      ],
+      "max_confidence_level": 55,
+      "manager_supported": false,
+      "container_version": "6.7.0",
+      "container_image": "opencti/connector-flashpoint",
+      "container_type": "EXTERNAL_IMPORT",
+      "verified": true,
+      "last_verified_date": "",
+      "playbook_supported": false,
+      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
+      "support_version": ">= 6.5.1",
+      "subscription_link": "",
+      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/flashpoint"
+    },
+    {
+      "$id": "https://www.filigran.io/google-ti-feeds.schema.json",
+      "title": "Google Threat Intelligence",
+      "slug": "google-ti-feeds",
+      "description": "Google Threat Intelligence provides unparalleled visibility into threats, enabling the delivery of detailed and timely intelligence to security teams worldwide. By protecting billions of users, detecting millions of phishing attempts, and dedicating extensive resources to incident investigation, Google has a comprehensive view of the threat landscape, ensuring that critical organizations, including yours, remain secure.\n\nThe integration of Google Threat Intelligence with OpenCTI enables the ingestion of threat data from the Google Threat Intel API directly into the OpenCTI platform. The connector imports key data types such as reports, locations, sectors, malware, intrusion sets, attack patterns, vulnerabilities, and raw IOCs, providing structured intelligence in a comprehensible format within OpenCTI.",
+      "short_description": "Google Threat Intelligence provides unparalleled visibility into threats, enabling the delivery of detailed and timely intelligence to security teams worldwide.",
+      "use_cases": [
+        "Commercial Threat Intel"
+      ],
+      "max_confidence_level": 50,
+      "manager_supported": false,
+      "container_version": "6.7.0",
+      "container_image": "opencti/connector-google-ti-feeds",
+      "container_type": "EXTERNAL_IMPORT",
+      "verified": true,
+      "last_verified_date": "2025-06-20",
+      "playbook_supported": false,
+      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
+      "support_version": ">= 6.5.1",
+      "subscription_link": "",
+      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/google-ti-feeds"
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "https://www.filigran.io/mitre.schema.json",
+      "title": "MITRE ATT&CK",
+      "slug": "mitre",
+      "description": "MITRE ATT&CK is a globally-accessible knowledge base of adversary tactics and techniques based on real-world observations. The ATT&CK knowledge base is used as a foundation for the development of specific threat models and methodologies in the private sector, in government, and in the cybersecurity product and service community. The integration of MITRE ATT&CK with OpenCTI allows for the ingestion of data from MITRE datasets, facilitating the pre-population of your OpenCTI instance. This includes importing information on tools, malware, campaigns, intrusion sets, attack patterns, courses of action, alongside MITRE-specific frameworks such as x-mitre-matrix, x-mitre-tactic, x-mitre-collection, x-mitre-data-source, and x-mitre-data-component. The connector supports the ingestion of data from MITRE Enterprise, MITRE Mobile, and MITRE ICS matrices.",
+      "short_description": "MITRE ATT&CK is a globally-accessible knowledge base of adversary tactics and techniques based on real-world observations. The ATT&CK knowledge base is used as a foundation for the development of specific threat models and methodologies in the private sector, in government, and in the cybersecurity product and service community.",
+      "use_cases": [
+        "Open Source Threat Intel"
+      ],
+      "max_confidence_level": 50,
+      "manager_supported": true,
+      "container_version": "6.7.0",
+      "container_image": "opencti/connector-mitre",
+      "container_type": "EXTERNAL_IMPORT",
+      "verified": true,
+      "last_verified_date": "01-01-2025",
+      "playbook_supported": false,
+      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
+      "support_version": ">= 6.7.0",
+      "subscription_link": "https://www.mitre.org/who-we-are/work-with-us",
+      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/mitre",
+      "type": "object",
+      "default": {
+        "CONNECTOR_ID": "mitre--c9dacf68-b0e6-476d-a24f-4269b1b9cd25",
+        "CONNECTOR_NAME": "Mitre Att&ck",
+        "CONNECTOR_SCOPE": "tool,report,malware,identity,campaign,intrusion-set,attack-pattern,course-of-action,x-mitre-data-source,x-mitre-data-component,x-mitre-matrix,x-mitre-tactic,x-mitre-collection",
+        "CONNECTOR_LOG_LEVEL": "error",
+        "CONNECTOR_DURATION_PERIOD": "PT24H",
+        "MITRE_REMOVE_STATEMENT_MARKING": false,
+        "MITRE_INTERVAL": 7,
+        "MITRE_ENTERPRISE_FILE_URL": "https://raw.githubusercontent.com/mitre-attack/attack-stix-data/master/enterprise-attack/enterprise-attack.json",
+        "MITRE_MOBILE_ATTACK_FILE_URL": "https://raw.githubusercontent.com/mitre-attack/attack-stix-data/master/mobile-attack/mobile-attack.json",
+        "MITRE_ICS_ATTACK_FILE_URL": "https://raw.githubusercontent.com/mitre-attack/attack-stix-data/master/ics-attack/ics-attack.json",
+        "MITRE_CAPEC_FILE_URL": "https://raw.githubusercontent.com/mitre/cti/master/capec/2.1/stix-capec.json"
+      },
+      "required": [],
+      "properties": {
+        "CONNECTOR_ID": {
+          "type": "string",
+          "description": "A unique UUIDv4 identifier for this connector instance."
+        },
+        "CONNECTOR_NAME": {
+          "type": "string",
+          "description": "Name of the connector."
+        },
+        "CONNECTOR_SCOPE": {
+          "type": "string",
+          "description": "The scope or type of data the connector is importing, either a MIME type or Stix Object (for information only)."
+        },
+        "CONNECTOR_LOG_LEVEL": {
+          "description": "Determines the verbosity of the logs.",
+          "enum": [
+            "debug",
+            "info",
+            "warn",
+            "error"
+          ],
+          "type": "string"
+        },
+        "CONNECTOR_DURATION_PERIOD": {
+          "description": "Duration between two scheduled runs of the connector (ISO 8601 format).",
+          "format": "duration",
+          "type": "string"
+        },
+        "CONNECTOR_QUEUE_THRESHOLD": {
+          "description": "Connector queue max size in Mbytes. Default to 500.",
+          "type": "integer"
+        },
+        "CONNECTOR_RUN_AND_TERMINATE": {
+          "description": "Connector run-and-terminate flag.",
+          "type": "boolean"
+        },
+        "CONNECTOR_SEND_TO_QUEUE": {
+          "description": "Connector send-to-queue flag.",
+          "type": "boolean"
+        },
+        "CONNECTOR_SEND_TO_DIRECTORY": {
+          "description": "Connector send-to-directory flag.",
+          "type": "boolean"
+        },
+        "CONNECTOR_SEND_TO_DIRECTORY_PATH": {
+          "description": "Connector send-to-directory path.",
+          "type": "string"
+        },
+        "CONNECTOR_SEND_TO_DIRECTORY_RETENTION": {
+          "description": "Connector send-to-directory retention in days.",
+          "type": "integer"
+        },
+        "MITRE_REMOVE_STATEMENT_MARKING": {
+          "description": "Whether to remove statement markings from the ingested MITRE data. Useful when marking metadata is unnecessary or interferes with processing.",
+          "type": "boolean"
+        },
+        "MITRE_INTERVAL": {
+          "description": "Polling interval in days for fetching and refreshing MITRE data. Determines how often the system checks for updates to ATT&CK datasets.",
+          "type": "integer"
+        },
+        "MITRE_ENTERPRISE_FILE_URL": {
+          "description": "URL to the MITRE ATT&CK Enterprise JSON file. This dataset includes tactics, techniques, and procedures (TTPs) for enterprise IT environments.",
+          "type": "string"
+        },
+        "MITRE_MOBILE_ATTACK_FILE_URL": {
+          "description": "URL to the MITRE Mobile ATT&CK JSON file. Contains mobile-specific attack techniques and mappings.",
+          "type": "string"
+        },
+        "MITRE_ICS_ATTACK_FILE_URL": {
+          "description": "URL to the MITRE ICS ATT&CK JSON file. Pertains to attack techniques targeting industrial control systems.",
+          "type": "string"
+        },
+        "MITRE_CAPEC_FILE_URL": {
+          "description": "URL to the CAPEC (Common Attack Pattern Enumeration and Classification) JSON file. Provides a comprehensive dictionary of known attack patterns used by adversaries.",
+          "type": "string"
+        }
+      }
+    },
+    {
+      "$id": "https://www.filigran.io/phishunt.schema.json",
+      "title": "Phishunt",
+      "slug": "phishunt",
+      "description": "Phishunt is a service dedicated to tracking and analyzing phishing threats. By collecting and disseminating information on phishing attacks, Phishunt helps organizations detect and mitigate potential email-based threats, safeguarding sensitive information and preventing financial loss resulting from such attacks.\n\nThe integration of Phishunt with OpenCTI allows for the automated import of phishing-related threat intelligence into the platform, enriching it with up-to-date data on phishing campaigns and tactics. This integration empowers security teams to more effectively identify and respond to phishing threats, enhancing their email security measures and reducing the risk of falling victim to phishing scams.",
+      "short_description": "Phishunt tracks and analyzes phishing threats, helping organizations detect and mitigate email-based attacks. Integration with OpenCTI automates the import of up-to-date phishing intelligence, enhancing the ability to identify and respond to phishing threats.",
+      "use_cases": [
+        "Open Source Threat Intel",
+        "Phishing"
+      ],
+      "max_confidence_level": 50,
+      "manager_supported": false,
+      "container_version": "6.7.0",
+      "container_image": "opencti/connector-phishunt",
+      "container_type": "EXTERNAL_IMPORT",
+      "verified": true,
+      "last_verified_date": "",
+      "playbook_supported": false,
+      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
+      "support_version": ">= 6.5.1",
+      "subscription_link": "",
+      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/phishunt"
+    },
+    {
+      "$id": "https://www.filigran.io/ransomwarelive.schema.json",
+      "title": "Ransomware.live",
+      "slug": "ransomware-live",
+      "description": "Ransomware.live is a specialized threat intelligence service focused on monitoring and reporting ransomware activities and incidents. By providing real-time data on ransomware campaigns, including attack vectors and ransom demands, RansomwareLive aids organizations in understanding and defending against this pervasive threat.\n\nIntegrating Ransomware.live with OpenCTI allows for the modeling of various attacks and ransomware group claims, as well as their victims, enabling tracking and alerts. This enhances the threat intelligence platform's capabilities with timely and detailed insights into the latest ransomware threats.",
+      "short_description": "Ransomware.live is a threat intelligence service focused on ransomware activities, providing real-time insights into ransomware campaigns.",
+      "use_cases": [
+        "Open Source Threat Intel"
+      ],
+      "max_confidence_level": 55,
+      "manager_supported": false,
+      "container_version": "6.7.0",
+      "container_image": "opencti/connector-ransomwarelive",
+      "container_type": "EXTERNAL_IMPORT",
+      "verified": true,
+      "last_verified_date": "2025-07-25",
+      "playbook_supported": false,
+      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
+      "support_version": ">= 6.7.5",
+      "subscription_link": "https://www.ransomware.live",
+      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/oob/connector_manager/external-import/ransomwarelive"
+    },
+    {
+      "$id": "https://www.filigran.io/recorded-future.schema.json",
+      "title": "Recorded Future",
+      "slug": "recorded-future",
+      "description": "Recorded Future is a cybersecurity company that specializes in providing real-time threat intelligence to help organizations anticipate, identify, and mitigate cyber threats. By aggregating and analyzing data from diverse sources, Recorded Future can identify patterns, trends, and indicators of compromise (IoCs) that help organizations understand and mitigate cyber threats more effectively.\n\nThis connector imports Recorded Future Analyst Notes, the Risk Lists (IP, URL, Domain Name and Hash), Malware and Threat Actors from Threats Maps, converts to STIX2 and imports them into OpenCTI at regular intervals.\n\nHave a look at this connector and its extensive configuration to precisely select the data you need to import based on your use case.",
+      "short_description": "Recorded Future is a cybersecurity company that specializes in providing real-time threat intelligence to help organizations anticipate, identify, and mitigate cyber threats.",
+      "use_cases": [
+        "Commercial Threat Intel"
+      ],
+      "max_confidence_level": 55,
+      "manager_supported": false,
+      "container_version": "6.7.0",
+      "container_image": "opencti/connector-recorded-future",
+      "container_type": "EXTERNAL_IMPORT",
+      "verified": true,
+      "last_verified_date": "",
+      "playbook_supported": false,
+      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
+      "support_version": ">= 6.5.1",
+      "subscription_link": "https://www.recordedfuture.com/get-started",
+      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/recorded-future"
+    },
+    {
+      "$id": "https://www.filigran.io/sekoia.schema.json",
+      "title": "Sekoia.io",
+      "slug": "sekoia",
+      "description": "Sekoia.io Cyber Threat Intelligence provides assimilable and relevant reports on the evolving threat landscape, accessible to a broader audience. Sekoia.io's threat intelligence is contextual, actionable, and precise. Sekoia.io Intelligence (CTI) consists of exclusive data produced by Sekoia.io, sourced from C2 trackers, VirusTotal trackers, honeypots, and more, as well as refined data from open sources.\n\nThe integration of Sekoia.io with OpenCTI facilitates the collection of Sekoia.io CTI data within an existing OpenCTI instance, supporting various operational purposes like CTI aggregation, dissemination, and threat hunting.",
+      "short_description": "Sekoia.io Cyber Threat Intelligence provides assimilable and relevant reports on the evolving threat landscape, accessible to a broader audience.",
+      "use_cases": [
+        "Commercial Threat Intel"
+      ],
+      "max_confidence_level": 70,
+      "manager_supported": false,
+      "container_version": "6.7.0",
+      "container_image": "opencti/connector-sekoia",
+      "container_type": "EXTERNAL_IMPORT",
+      "verified": true,
+      "last_verified_date": "",
+      "playbook_supported": false,
+      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
+      "support_version": ">= 6.5.1",
+      "subscription_link": "https://www.sekoia.io/en/product/cti/",
+      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/sekoia"
     },
     {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -307,388 +690,6 @@
       }
     },
     {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$id": "https://www.filigran.io/ipinfo.schema.json",
-      "title": "IpInfo",
-      "slug": "ipinfo",
-      "description": "Accurate IP address data that keeps pace with secure, specific, and forward-looking use cases",
-      "short_description": "IpInfo enrichment connector",
-      "use_cases": [
-        "Incident Response & Ticketing",
-        "Enrichment"
-      ],
-      "max_confidence_level": 75,
-      "manager_supported": true,
-      "container_image": "opencti/connector-ipinfo",
-      "container_version": "6.7.0",
-      "container_type": "INTERNAL_ENRICHMENT",
-      "verified": true,
-      "last_verified_date": "15-06-2025",
-      "playbook_supported": true,
-      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
-      "support_version": ">= 6.5.1",
-      "subscription_link": "https://ipinfo.io/support",
-      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/internal-enrichment/ipinfo",
-      "type": "object",
-      "default": {
-        "CONNECTOR_ID": "ipinfo--43cf861c-72a7-4e45-864a-b19e32e6a8bc",
-        "CONNECTOR_NAME": "IP Info",
-        "CONNECTOR_SCOPE": "IPv4-Addr,IPv6-Addr",
-        "CONNECTOR_LOG_LEVEL": "error",
-        "CONNECTOR_AUTO": true,
-        "IPINFO_MAX_TLP": "amber",
-        "IPINFO_USE_ASN_NAME": true
-      },
-      "required": [
-        "IPINFO_TOKEN"
-      ],
-      "properties": {
-        "CONNECTOR_ID": {
-          "type": "string",
-          "description": "A unique UUIDv4 identifier for this connector instance."
-        },
-        "CONNECTOR_NAME": {
-          "type": "string",
-          "description": "Name of the connector."
-        },
-        "CONNECTOR_SCOPE": {
-          "type": "string",
-          "description": "The scope or type of data the connector is importing, either a MIME type or Stix Object (for information only)."
-        },
-        "CONNECTOR_LOG_LEVEL": {
-          "description": "Determines the verbosity of the logs.",
-          "enum": [
-            "debug",
-            "info",
-            "warn",
-            "error"
-          ],
-          "type": "string"
-        },
-        "CONNECTOR_AUTO": {
-          "description": "Enables or disables automatic enrichment of observables for OpenCTI.",
-          "type": "boolean"
-        },
-        "CONNECTOR_LISTEN_PROTOCOL": {
-          "description": "Protocol used for listening.",
-          "type": "string"
-        },
-        "CONNECTOR_LISTEN_PROTOCOL_API_PORT": {
-          "description": "Port used for API listening.",
-          "type": "integer"
-        },
-        "CONNECTOR_LISTEN_PROTOCOL_API_PATH": {
-          "description": "API path for callback.",
-          "type": "string"
-        },
-        "CONNECTOR_LISTEN_PROTOCOL_API_URI": {
-          "description": "Full URI for API listening.",
-          "type": "string"
-        },
-        "CONNECTOR_LISTEN_PROTOCOL_API_SSL": {
-          "description": "Enable SSL for API listening.",
-          "type": "boolean"
-        },
-        "CONNECTOR_LISTEN_PROTOCOL_API_SSL_KEY": {
-          "description": "SSL key file path.",
-          "type": "string"
-        },
-        "CONNECTOR_LISTEN_PROTOCOL_API_SSL_CERT": {
-          "description": "SSL certificate file path.",
-          "type": "string"
-        },
-        "IPINFO_MAX_TLP": {
-          "description": "Traffic Light Protocol (TLP) level to apply on objects imported into OpenCTI.",
-          "enum": [
-            "clear",
-            "green",
-            "amber",
-            "amber+strict",
-            "red"
-          ],
-          "type": "string"
-        },
-        "IPINFO_USE_ASN_NAME": {
-          "description": "If enabled, uses the ASN name instead of the ASN number in enrichment results.",
-          "type": "boolean"
-        },
-        "IPINFO_TOKEN": {
-          "type": "string",
-          "writeOnly": true,
-          "format": "password",
-          "description": "API token used to authenticate requests to the IPInfo service."
-        }
-      }
-    },
-    {
-      "$id": "https://www.filigran.io/alienvault.schema.json",
-      "title": "AlienVault OTX",
-      "slug": "alienvault",
-      "description": "AlienVault OTX provides open access to a global community of threat researchers and security professionals, delivering community-generated threat data that enhances collaborative research. It automates the process of updating security infrastructure with threat data from various sources, thereby empowering the security community to discuss, research, and share the latest threat data, trends, and techniques. This collaborative approach strengthens your defenses while simultaneously aiding others in the community.\n\nThe integration of AlienVault OTX with OpenCTI enables the ingestion of threat knowledge from the Alien Labs Open Threat Exchange (OTX) platform. Utilizing the OTX DirectConnect API, the connector retrieves threat data from subscribed pulses and imports it into OpenCTI.",
-      "short_description": "AlienVault OTX provides open access to a global community of threat researchers and security professionals, delivering community-generated threat data that enhances collaborative research",
-      "use_cases": [
-        "Open Source Threat Intel"
-      ],
-      "max_confidence_level": 50,
-      "manager_supported": false,
-      "container_version": "6.7.0",
-      "container_image": "opencti/connector-alienvault",
-      "container_type": "EXTERNAL_IMPORT",
-      "verified": true,
-      "last_verified_date": "",
-      "playbook_supported": false,
-      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
-      "support_version": ">= 6.5.1",
-      "subscription_link": "https://levelblue.com/open-threat-exchange",
-      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/alienvault"
-    },
-    {
-      "$id": "https://www.filigran.io/cisa-kev.schema.json",
-      "title": "CISA Known Exploited Vulnerabilities (KEV)",
-      "slug": "cisa-kev",
-      "description": "CISA KEV (Known Exploited Vulnerabilities) is a catalog maintained by the Cybersecurity and Infrastructure Security Agency that lists vulnerabilities actively exploited in the wild. It serves as an authoritative resource for organizations to prioritize vulnerability remediation and enhance their security resilience.\n\nThe integration of the CISA KEV source with OpenCTI enables the ingestion of vulnerabilities known to be actively exploited. This process involves parsing out Identity, Infrastructure, and Vulnerability STIX Objects, which are then imported into OpenCTI.",
-      "short_description": "CISA KEV (Known Exploited Vulnerabilities) is a catalog maintained by the Cybersecurity and Infrastructure Security Agency that lists vulnerabilities actively exploited in the wild",
-      "use_cases": [
-        "Open Source Threat Intel",
-        "Vulnerability Management"
-      ],
-      "max_confidence_level": 80,
-      "manager_supported": false,
-      "container_version": "6.7.0",
-      "container_image": "opencti/connector-cisa-known-exploited-vulnerabilities",
-      "container_type": "EXTERNAL_IMPORT",
-      "verified": true,
-      "last_verified_date": "",
-      "playbook_supported": false,
-      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
-      "support_version": ">= 6.5.1",
-      "subscription_link": "",
-      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/cisa-known-exploited-vulnerabilities"
-    },
-    {
-      "$id": "https://www.filigran.io/crowdstrike-falcon-intel.schema.json",
-      "title": "CrowdStrike Falcon Intelligence",
-      "slug": "crowdstrike-falcon-intel",
-      "description": "CrowdStrike Falcon Intelligence is an integral threat intelligence module within the Falcon platform, crafted to enhance the speed and effectiveness of threat detection, investigation, and response. It equips SOC teams to work more swiftly and intelligently, leveraging automation, enrichment, and high-fidelity data to optimize their cybersecurity operations. \n\nThe OpenCTI CrowdStrike connector facilitates the import of intelligence from the CrowdStrike Falcon platform. By utilizing the Intel APIs, this connector accesses CrowdStrike\u2019s comprehensive intelligence, including data on threat actors, indicators, reports, and YARA rules, thus enhancing the threat intelligence capabilities within OpenCTI.",
-      "short_description": "CrowdStrike Falcon Intelligence is an integral threat intelligence module within the Falcon platform, crafted to enhance the speed and effectiveness of threat detection, investigation, and response.",
-      "use_cases": [
-        "Commercial Threat Intel"
-      ],
-      "max_confidence_level": 60,
-      "manager_supported": false,
-      "container_version": "6.7.0",
-      "container_image": "opencti/connector-crowdstrike",
-      "container_type": "EXTERNAL_IMPORT",
-      "verified": true,
-      "last_verified_date": "",
-      "playbook_supported": false,
-      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
-      "support_version": ">= 6.5.1",
-      "subscription_link": "",
-      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/crowdstrike"
-    },
-    {
-      "$id": "https://www.filigran.io/dragos.schema.json",
-      "title": "Dragos",
-      "slug": "dragos",
-      "description": "Dragos is a cybersecurity company specializing in industrial control systems (ICS) and operational technology (OT) security. Their platform provides threat intelligence, incident response, and vulnerability management tailored to ICS/OT environments.\n\nThe OpenCTI Dragos connector enables the ingestion of Dragos Threat Intelligence. It is designed to be straightforward to configure and supports a range of data types and formats.",
-      "short_description": "Dragos is a cybersecurity company specializing in industrial control systems (ICS) and operational technology (OT) security. Their platform provides threat intelligence, incident response, and vulnerability management tailored to ICS/OT environments.",
-      "use_cases": [
-        "Commercial Threat Intel"
-      ],
-      "max_confidence_level": 50,
-      "manager_supported": false,
-      "container_version": "6.7.0",
-      "container_image": "opencti/connector-dragos",
-      "container_type": "EXTERNAL_IMPORT",
-      "verified": true,
-      "last_verified_date": "2025-04-22",
-      "playbook_supported": false,
-      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
-      "support_version": ">= 6.5.1",
-      "subscription_link": "",
-      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/dragos"
-    },
-    {
-      "$id": "https://www.filigran.io/email-intel-imap.schema.json",
-      "title": "Email Intel IMAP",
-      "slug": "email-intel-imap",
-      "description": "The Email Intel IMAP Connector enables the ingestion of cyber threat intelligence reports received via email into the OpenCTI platform using the IMAP protocol. This connector allows organizations to automate the collection of intelligence shared through email by regularly polling a mailbox and transforming each message into an OpenCTI report.\n\nThis connector is designed to connect to an IMAP-compatible email inbox, extract email content and attachments, and convert the data into structured CTI reports within OpenCTI. The connector is suitable for any threat intel flow that relies on email as a delivery method and is compatible with standard IMAP servers.\n\nThe connector is also compatible with Google Workspace mailboxes.",
-      "short_description": "The Email Intel IMAP Connector enables the ingestion of cyber threat intelligence reports received via email into the OpenCTI platform using the IMAP protocol.",
-      "use_cases": [
-        "Email",
-        "Threat Intelligence"
-      ],
-      "max_confidence_level": 50,
-      "manager_supported": false,
-      "container_version": "6.7.0",
-      "container_image": "opencti/connector-email-intel-imap",
-      "container_type": "EXTERNAL_IMPORT",
-      "verified": true,
-      "last_verified_date": "",
-      "playbook_supported": false,
-      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
-      "support_version": ">= 6.5.1",
-      "subscription_link": "",
-      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/email-intel-imap"
-    },
-    {
-      "$id": "https://www.filigran.io/email-intel-microsoft.schema.json",
-      "title": "Email Intel Microsoft",
-      "slug": "email-intel-microsoft",
-      "description": "The Email Intel Microsoft Connector enables the ingestion of cyber threat intelligence reports received via email into the OpenCTI platform.\n\nThis connector allows organizations to automate the collection of intelligence shared through email by regularly polling a mailbox and transforming each message into an OpenCTI report.\n\nUsing the Microsoft Graph API,the connector polls a dedicated Microsoft 365/Exchange Online mailbox, transforms every message (plus accepted attachments) into an OpenCTI Report, and tags it with the chosen TLP.",
-      "short_description": "The Email Intel Microsoft Connector allows for the ingestion of cyber threat intelligence reports received via email in a Microsoft 365/Exchange Online mailbox.",
-      "use_cases": [
-        "Email",
-        "Threat Intelligence"
-      ],
-      "max_confidence_level": 50,
-      "manager_supported": false,
-      "container_version": "6.7.0",
-      "container_image": "opencti/connector-email-intel-microsoft",
-      "container_type": "EXTERNAL_IMPORT",
-      "verified": true,
-      "last_verified_date": "2025-05-09",
-      "playbook_supported": false,
-      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
-      "support_version": ">= 6.5.1",
-      "subscription_link": "",
-      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/oob/connector_manager/external-import/email-intel-microsoft"
-    },
-    {
-      "$id": "https://www.filigran.io/flashpoint.schema.json",
-      "title": "Flashpoint",
-      "slug": "flashpoint-imap-connector",
-      "description": "The Email Intel IMAP Connector enables the ingestion of cyber threat intelligence reports received via email into the OpenCTI platform using the IMAP protocol. This connector allows organizations to automate the collection of intelligence shared through email by regularly polling a mailbox and transforming each message into an OpenCTI report.\n\nThis connector is designed to connect to an IMAP-compatible email inbox, extract email content and attachments, and convert the data into structured CTI reports within OpenCTI. The connector is suitable for any threat intel flow that relies on email as a delivery method and is compatible with standard IMAP servers.\n\nThe connector is also compatible with Google Workspace mailboxes.",
-      "short_description": "Flashpoint Ignite consolidates team-tailored intelligence across various groups into a single workspace, enabling security teams to connect, collaborate, and remediate risk more efficiently with timely and active intelligence. It provides visibility into intelligence landscapes, covering cyber threats, vulnerabilities, physical security, and national security. By offering a comprehensive view of risk in one place, security experts can effectively close the gap between data, intelligence, and action.\n\nThe integration with OpenCTI allows for the import of threat intelligence data from Flashpoint, mapping it to relevant entities within the OpenCTI ecosystem. This integration includes alerts, indicators, malware reports, vulnerabilities, and other intelligence, significantly enhancing threat detection and response capabilities.",
-      "use_cases": [
-        "Commercial Threat Intel"
-      ],
-      "max_confidence_level": 55,
-      "manager_supported": false,
-      "container_version": "6.7.0",
-      "container_image": "opencti/connector-flashpoint",
-      "container_type": "EXTERNAL_IMPORT",
-      "verified": true,
-      "last_verified_date": "",
-      "playbook_supported": false,
-      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
-      "support_version": ">= 6.5.1",
-      "subscription_link": "",
-      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/flashpoint"
-    },
-    {
-      "$id": "https://www.filigran.io/google-ti-feeds.schema.json",
-      "title": "Google Threat Intelligence",
-      "slug": "google-ti-feeds",
-      "description": "Google Threat Intelligence provides unparalleled visibility into threats, enabling the delivery of detailed and timely intelligence to security teams worldwide. By protecting billions of users, detecting millions of phishing attempts, and dedicating extensive resources to incident investigation, Google has a comprehensive view of the threat landscape, ensuring that critical organizations, including yours, remain secure.\n\nThe integration of Google Threat Intelligence with OpenCTI enables the ingestion of threat data from the Google Threat Intel API directly into the OpenCTI platform. The connector imports key data types such as reports, locations, sectors, malware, intrusion sets, attack patterns, vulnerabilities, and raw IOCs, providing structured intelligence in a comprehensible format within OpenCTI.",
-      "short_description": "Google Threat Intelligence provides unparalleled visibility into threats, enabling the delivery of detailed and timely intelligence to security teams worldwide.",
-      "use_cases": [
-        "Commercial Threat Intel"
-      ],
-      "max_confidence_level": 50,
-      "manager_supported": false,
-      "container_version": "6.7.0",
-      "container_image": "opencti/connector-google-ti-feeds",
-      "container_type": "EXTERNAL_IMPORT",
-      "verified": true,
-      "last_verified_date": "2025-06-20",
-      "playbook_supported": false,
-      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
-      "support_version": ">= 6.5.1",
-      "subscription_link": "",
-      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/google-ti-feeds"
-    },
-    {
-      "$id": "https://www.filigran.io/phishunt.schema.json",
-      "title": "Phishunt",
-      "slug": "phishunt",
-      "description": "Phishunt is a service dedicated to tracking and analyzing phishing threats. By collecting and disseminating information on phishing attacks, Phishunt helps organizations detect and mitigate potential email-based threats, safeguarding sensitive information and preventing financial loss resulting from such attacks.\n\nThe integration of Phishunt with OpenCTI allows for the automated import of phishing-related threat intelligence into the platform, enriching it with up-to-date data on phishing campaigns and tactics. This integration empowers security teams to more effectively identify and respond to phishing threats, enhancing their email security measures and reducing the risk of falling victim to phishing scams.",
-      "short_description": "Phishunt tracks and analyzes phishing threats, helping organizations detect and mitigate email-based attacks. Integration with OpenCTI automates the import of up-to-date phishing intelligence, enhancing the ability to identify and respond to phishing threats.",
-      "use_cases": [
-        "Open Source Threat Intel",
-        "Phishing"
-      ],
-      "max_confidence_level": 50,
-      "manager_supported": false,
-      "container_version": "6.7.0",
-      "container_image": "opencti/connector-phishunt",
-      "container_type": "EXTERNAL_IMPORT",
-      "verified": true,
-      "last_verified_date": "",
-      "playbook_supported": false,
-      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
-      "support_version": ">= 6.5.1",
-      "subscription_link": "",
-      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/phishunt"
-    },
-    {
-      "$id": "https://www.filigran.io/ransomwarelive.schema.json",
-      "title": "Ransomware.live",
-      "slug": "ransomware-live",
-      "description": "Ransomware.live is a specialized threat intelligence service focused on monitoring and reporting ransomware activities and incidents. By providing real-time data on ransomware campaigns, including attack vectors and ransom demands, RansomwareLive aids organizations in understanding and defending against this pervasive threat.\n\nIntegrating Ransomware.live with OpenCTI allows for the modeling of various attacks and ransomware group claims, as well as their victims, enabling tracking and alerts. This enhances the threat intelligence platform's capabilities with timely and detailed insights into the latest ransomware threats.",
-      "short_description": "Ransomware.live is a threat intelligence service focused on ransomware activities, providing real-time insights into ransomware campaigns.",
-      "use_cases": [
-        "Open Source Threat Intel"
-      ],
-      "max_confidence_level": 55,
-      "manager_supported": false,
-      "container_version": "6.7.0",
-      "container_image": "opencti/connector-ransomwarelive",
-      "container_type": "EXTERNAL_IMPORT",
-      "verified": true,
-      "last_verified_date": "2025-07-25",
-      "playbook_supported": false,
-      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
-      "support_version": ">= 6.7.5",
-      "subscription_link": "https://www.ransomware.live",
-      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/oob/connector_manager/external-import/ransomwarelive"
-    },
-    {
-      "$id": "https://www.filigran.io/recorded-future.schema.json",
-      "title": "Recorded Future",
-      "slug": "recorded-future",
-      "description": "Recorded Future is a cybersecurity company that specializes in providing real-time threat intelligence to help organizations anticipate, identify, and mitigate cyber threats. By aggregating and analyzing data from diverse sources, Recorded Future can identify patterns, trends, and indicators of compromise (IoCs) that help organizations understand and mitigate cyber threats more effectively.\n\nThis connector imports Recorded Future Analyst Notes, the Risk Lists (IP, URL, Domain Name and Hash), Malware and Threat Actors from Threats Maps, converts to STIX2 and imports them into OpenCTI at regular intervals.\n\nHave a look at this connector and its extensive configuration to precisely select the data you need to import based on your use case.",
-      "short_description": "Recorded Future is a cybersecurity company that specializes in providing real-time threat intelligence to help organizations anticipate, identify, and mitigate cyber threats.",
-      "use_cases": [
-        "Commercial Threat Intel"
-      ],
-      "max_confidence_level": 55,
-      "manager_supported": false,
-      "container_version": "6.7.0",
-      "container_image": "opencti/connector-recorded-future",
-      "container_type": "EXTERNAL_IMPORT",
-      "verified": true,
-      "last_verified_date": "",
-      "playbook_supported": false,
-      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
-      "support_version": ">= 6.5.1",
-      "subscription_link": "https://www.recordedfuture.com/get-started",
-      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/recorded-future"
-    },
-    {
-      "$id": "https://www.filigran.io/sekoia.schema.json",
-      "title": "Sekoia.io",
-      "slug": "sekoia",
-      "description": "Sekoia.io Cyber Threat Intelligence provides assimilable and relevant reports on the evolving threat landscape, accessible to a broader audience. Sekoia.io's threat intelligence is contextual, actionable, and precise. Sekoia.io Intelligence (CTI) consists of exclusive data produced by Sekoia.io, sourced from C2 trackers, VirusTotal trackers, honeypots, and more, as well as refined data from open sources.\n\nThe integration of Sekoia.io with OpenCTI facilitates the collection of Sekoia.io CTI data within an existing OpenCTI instance, supporting various operational purposes like CTI aggregation, dissemination, and threat hunting.",
-      "short_description": "Sekoia.io Cyber Threat Intelligence provides assimilable and relevant reports on the evolving threat landscape, accessible to a broader audience.",
-      "use_cases": [
-        "Commercial Threat Intel"
-      ],
-      "max_confidence_level": 70,
-      "manager_supported": false,
-      "container_version": "6.7.0",
-      "container_image": "opencti/connector-sekoia",
-      "container_type": "EXTERNAL_IMPORT",
-      "verified": true,
-      "last_verified_date": "",
-      "playbook_supported": false,
-      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
-      "support_version": ">= 6.5.1",
-      "subscription_link": "https://www.sekoia.io/en/product/cti/",
-      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/sekoia"
-    },
-    {
       "$id": "https://www.filigran.io/tenable-vuln-management.schema.json",
       "title": "Tenable Vulnerability Management",
       "slug": "tenable-vuln-management",
@@ -821,6 +822,120 @@
       "support_version": ">= 6.5.1",
       "subscription_link": "https://urlscan.io",
       "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/oob/connector_manager/internal-enrichment/google-dns"
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "https://www.filigran.io/ipinfo.schema.json",
+      "title": "IpInfo",
+      "slug": "ipinfo",
+      "description": "Accurate IP address data that keeps pace with secure, specific, and forward-looking use cases",
+      "short_description": "IpInfo enrichment connector",
+      "use_cases": [
+        "Incident Response & Ticketing",
+        "Enrichment"
+      ],
+      "max_confidence_level": 75,
+      "manager_supported": true,
+      "container_image": "opencti/connector-ipinfo",
+      "container_version": "6.7.0",
+      "container_type": "INTERNAL_ENRICHMENT",
+      "verified": true,
+      "last_verified_date": "15-06-2025",
+      "playbook_supported": true,
+      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
+      "support_version": ">= 6.5.1",
+      "subscription_link": "https://ipinfo.io/support",
+      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/internal-enrichment/ipinfo",
+      "type": "object",
+      "default": {
+        "CONNECTOR_ID": "ipinfo--43cf861c-72a7-4e45-864a-b19e32e6a8bc",
+        "CONNECTOR_NAME": "IP Info",
+        "CONNECTOR_SCOPE": "IPv4-Addr,IPv6-Addr",
+        "CONNECTOR_LOG_LEVEL": "error",
+        "CONNECTOR_AUTO": true,
+        "IPINFO_MAX_TLP": "amber",
+        "IPINFO_USE_ASN_NAME": true
+      },
+      "required": [
+        "IPINFO_TOKEN"
+      ],
+      "properties": {
+        "CONNECTOR_ID": {
+          "type": "string",
+          "description": "A unique UUIDv4 identifier for this connector instance."
+        },
+        "CONNECTOR_NAME": {
+          "type": "string",
+          "description": "Name of the connector."
+        },
+        "CONNECTOR_SCOPE": {
+          "type": "string",
+          "description": "The scope or type of data the connector is importing, either a MIME type or Stix Object (for information only)."
+        },
+        "CONNECTOR_LOG_LEVEL": {
+          "description": "Determines the verbosity of the logs.",
+          "enum": [
+            "debug",
+            "info",
+            "warn",
+            "error"
+          ],
+          "type": "string"
+        },
+        "CONNECTOR_AUTO": {
+          "description": "Enables or disables automatic enrichment of observables for OpenCTI.",
+          "type": "boolean"
+        },
+        "CONNECTOR_LISTEN_PROTOCOL": {
+          "description": "Protocol used for listening.",
+          "type": "string"
+        },
+        "CONNECTOR_LISTEN_PROTOCOL_API_PORT": {
+          "description": "Port used for API listening.",
+          "type": "integer"
+        },
+        "CONNECTOR_LISTEN_PROTOCOL_API_PATH": {
+          "description": "API path for callback.",
+          "type": "string"
+        },
+        "CONNECTOR_LISTEN_PROTOCOL_API_URI": {
+          "description": "Full URI for API listening.",
+          "type": "string"
+        },
+        "CONNECTOR_LISTEN_PROTOCOL_API_SSL": {
+          "description": "Enable SSL for API listening.",
+          "type": "boolean"
+        },
+        "CONNECTOR_LISTEN_PROTOCOL_API_SSL_KEY": {
+          "description": "SSL key file path.",
+          "type": "string"
+        },
+        "CONNECTOR_LISTEN_PROTOCOL_API_SSL_CERT": {
+          "description": "SSL certificate file path.",
+          "type": "string"
+        },
+        "IPINFO_MAX_TLP": {
+          "description": "Traffic Light Protocol (TLP) level to apply on objects imported into OpenCTI.",
+          "enum": [
+            "clear",
+            "green",
+            "amber",
+            "amber+strict",
+            "red"
+          ],
+          "type": "string"
+        },
+        "IPINFO_USE_ASN_NAME": {
+          "description": "If enabled, uses the ASN name instead of the ASN number in enrichment results.",
+          "type": "boolean"
+        },
+        "IPINFO_TOKEN": {
+          "type": "string",
+          "writeOnly": true,
+          "format": "password",
+          "description": "API token used to authenticate requests to the IPInfo service."
+        }
+      }
     },
     {
       "$id": "https://www.filigran.io/urlscan-enrichment.json",

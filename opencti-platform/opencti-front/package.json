@@ -55,7 +55,6 @@
     "is-svg": "6.1.0",
     "js-base64": "3.7.7",
     "js-file-download": "0.4.12",
-    "json-schema-to-typescript": "^15.0.4",
     "json5": "2.2.3",
     "leaflet": "1.9.4",
     "lodash": "4.17.21",
@@ -188,8 +187,7 @@
     "test:e2e:ui": "E2E_TEST=true yarn playwright test --ui --workers=1",
     "generate-test-e2e": "npx playwright codegen http://localhost:3000/",
     "test:e2e:coverage": "E2E_TEST=true E2E_COVERAGE=true yarn playwright test && yarn show-report-e2e",
-    "show-report-e2e": "start \"\" test-results/report.html && start \"\" test-results/coverage/index.html",
-    "get-connectors-config": "node script/get-connectors-config.js"
+    "show-report-e2e": "start \"\" test-results/report.html && start \"\" test-results/coverage/index.html"
   },
   "resolutions": {
     "cookie": "1.0.2",

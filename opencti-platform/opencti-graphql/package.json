@@ -15,13 +15,13 @@
     "backend:stack:analysis": "node builder/dev/stack.js && node --env-file=.env build/script-stack-analysis back",
     "frontend:stack:analysis": "node builder/dev/stack.js && node --env-file=.env build/script-stack-analysis front",
     "lint": "cross-env DEBUG=eslint:cli-engine TIMING=1 eslint --max-warnings 0 --cache -c .eslintrc.js src",
-    "build": "yarn install:python && yarn build:prod",
+    "build": "yarn install:python && yarn get-connectors-manifest && yarn build:prod",
     "start": "NODE_ENV=dev yarn build:dev && node --enable-source-maps build/back.js",
     "start:e2e": "NODE_ENV=dev yarn build:dev && APP__ENABLED_DEV_FEATURES='[\"*\"]' EXPIRATION_SCHEDULER__ENABLED=false REDIS__NAMESPACE=e2e-start RABBITMQ__QUEUE_PREFIX=e2e MINIO__BUCKET_NAME=e2e-start-bucket ELASTICSEARCH__INDEX_PREFIX=e2e-start node build/back.js",
     "start:light": "NODE_ENV=dev node build/back.js",
     "start:cluster": "NODE_ENV=cluster node build/back.js",
     "serv": "node build/back.js",
-    "insert:dev": "node build/script-insert-dataset.js --datasets=DATA-TEST-STIX2_v2,poisonivy",
+    "insert:dev": "node build/script-insert-dataset.js --datasets=DATA-TEST-STIX2_v2,poisonivy && yarn get-connectors-manifest",
     "insert:dev:e2e": "ELASTICSEARCH__INDEX_PREFIX=e2e-start node build/script-insert-dataset.js --datasets=DATA-TEST-STIX2_v2,data-test-stix-e2e,poisonivy",
     "test:dev:init": "INIT_TEST_PLATFORM=true vitest run --config vitest.config.dev.ts --testNamePattern=\"Should import creation succeed\" tests/02-integration/00-inject/loader-test.ts",
     "test:dev:resume": "SKIP_CLEANUP_PLATFORM=true vitest run --config vitest.config.dev.ts",
@@ -30,7 +30,8 @@
     "test:watch": "vitest watch --config vitest.config.dev.ts",
     "test": "vitest --silent --bail 1 run --config vitest.config.test.ts --coverage",
     "verify-licenses": "npx license-checker-rseidelsohn --summary --onlyAllow 'MIT;Apache-2.0;GPL-2.0-or-later;OFL-1.1;BSD-3-Clause;ISC;BSD-2-Clause;Python-2.0;MPL-2.0;CC-BY-4.0;CC-BY-3.0;BlueOak-1.0.0;CC0-1.0;UNLICENSED;0BSD;Unlicense;WTFPL' --excludePackagesStartingWith  'eslint;opencti'",
-    "wait-api": "node build/script-wait-for-api.js"
+    "wait-api": "node build/script-wait-for-api.js",
+    "get-connectors-manifest": "node script/get-connectors-manifest.js"
   },
   "pkg": {
     "scripts": "dist/**/*.js",
