@@ -262,7 +262,7 @@ const cvss2OutputKeyCase: Record<string, string> = {
 
 // --- Helpers ---
 
-const getFullValue = (
+export const getFullValue = (
   metric: string | undefined,
   value: string | null,
   config: CvssConfig
@@ -289,7 +289,7 @@ const getFullValue = (
   return value;
 };
 
-const getCodeValue = (
+export const getCodeValue = (
   metric: string,
   value: string,
   config: CvssConfig
