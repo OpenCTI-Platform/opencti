@@ -28,7 +28,7 @@ steps:
       - git log -n 1
 
   - name: backend-verify-licenses
-    image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
+    image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
     commands:
       - apk add build-base git libffi-dev cargo
       - pip3 install --upgrade setuptools
@@ -38,6 +38,8 @@ steps:
       - cd "$DRONE_WORKSPACE/opencti-platform/opencti-graphql"
       - yarn install
       - yarn verify-licenses
+    depends_on:
+      - dependencies-checkout
 
   - name: frontend-verify-licenses
     image: node:22.14.0
@@ -45,6 +47,8 @@ steps:
       - cd ./opencti-platform/opencti-front
       - yarn install
       - yarn verify-licenses
+    depends_on:
+      - dependencies-checkout
 
   - name: generate-licenses
     image: node:22.14.0
