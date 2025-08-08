@@ -15,7 +15,6 @@ import useGranted, {
   SETTINGS_SETMANAGEXTMHUB,
 } from '../../../utils/hooks/useGranted';
 import Loader from '../../../components/Loader';
-import useHelper from '../../../utils/hooks/useHelper';
 
 const Security = lazy(() => import('../../../utils/Security'));
 const CaseTemplates = lazy(() => import('./case_templates/CaseTemplates'));
@@ -56,7 +55,6 @@ const FintelDesign = lazy(() => import('./fintel_design/FintelDesign'));
 const XtmHubSettings = lazy(() => import('./xtm-hub/XtmHubSettings'));
 const Root = () => {
   const adminOrga = isOnlyOrganizationAdmin();
-  const { isFeatureEnable } = useHelper();
 
   const urlWithCapabilities = () => {
     const isGrantedToParameters = useGranted([SETTINGS_SETPARAMETERS]);
@@ -113,22 +111,19 @@ const Root = () => {
               </Security>
             }
           />
-          {
-            isFeatureEnable('OCTI_ENROLLMENT')
-            && <Route
-              path="/xtm-hub"
-              element={
-                <Security
-                  needs={[SETTINGS_SETMANAGEXTMHUB]}
-                  placeholder={
-                    <Navigate to={urlWithCapabilities()} />
-                  }
-                >
-                  <XtmHubSettings />
-                </Security>
-              }
-               />
-          }
+          <Route
+            path="/xtm-hub"
+            element={
+              <Security
+                needs={[SETTINGS_SETMANAGEXTMHUB]}
+                placeholder={
+                  <Navigate to={urlWithCapabilities()} />
+                }
+              >
+                <XtmHubSettings />
+              </Security>
+            }
+          />
 
           <Route
             path="/accesses/users"
