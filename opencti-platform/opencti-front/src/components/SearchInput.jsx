@@ -7,9 +7,9 @@ import { Link, useLocation } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
 import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/styles';
+import useEnterpriseEdition from '../utils/hooks/useEnterpriseEdition';
 import EETooltip from '../private/components/common/entreprise_edition/EETooltip';
 import { useFormatter } from './i18n';
-import useEnterpriseEdition from '../utils/hooks/useEnterpriseEdition';
 import useGranted, { SETTINGS_SETPARAMETERS } from '../utils/hooks/useGranted';
 import useAuth from '../utils/hooks/useAuth';
 import EnterpriseEditionAgreement from '../private/components/common/entreprise_edition/EnterpriseEditionAgreement';
@@ -72,7 +72,7 @@ const SearchInput = (props) => {
   const classes = useStyles();
   const location = useLocation();
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { enabled, configured } = useAI();
+  const { enabled, configured, fullyActive } = useAI();
   const theme = useTheme();
   const { t_i18n } = useFormatter();
   const {
@@ -206,6 +206,7 @@ const SearchInput = (props) => {
                 <ContentPasteSearchOutlined fontSize="medium"/>
               </IconButton>
             </Tooltip>
+            {fullyActive && (
             <EETooltip forAi={true} title={t_i18n('Ask AI')}>
               <IconButton
                 size="medium"
@@ -215,6 +216,7 @@ const SearchInput = (props) => {
                 <AutoAwesomeOutlined fontSize='medium'/>
               </IconButton>
             </EETooltip>
+            )}
           </InputAdornment>
           ),
           classes: {
@@ -236,7 +238,7 @@ const SearchInput = (props) => {
           openDrawer={displayEEDialog}
           handleCloseDrawer={() => setDisplayEEDialog(false)}
           initialValue={{
-            description: t_i18n('I would like to use a EE feature AI Summary but I don\'t have EE activated.\nI would like to discuss with you about activating EE.'),
+            description: t_i18n('To use this AI feature in the enterprise edition, please add a token.'),
           }}
         />
       )}

@@ -3615,7 +3615,7 @@
   "To prevent people seeing all the data...": "To prevent people seeing all the data in the public dashboard, select a marking definition to restrict the shared data.",
   "to terminate your session.": "to terminate your session.",
   "To type": "To type",
-  "To use AI, please enable it in the configuration of your platform.": "To use AI, please enable it in the configuration of your platform.",
+  "To use this AI feature in the enterprise edition, please add a token.": "To use this AI feature in the enterprise edition, please add a token.",
   "To use this feature, your platform administrator must enable the according manager in the config.": "To use this feature, your platform administrator must enable the according manager in configuration.",
   "To use this feature, your platform administrator must enable the subscription manager in the config.": "To use this feature, your platform administrator must enable the subscription manager in configuration.",
   "toCreatedAt": "Ingested",

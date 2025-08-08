@@ -5,13 +5,13 @@ import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import Button from '@mui/material/Button';
 import DialogActions from '@mui/material/DialogActions';
-import FeedbackCreation from '../../cases/feedbacks/FeedbackCreation';
-import EnterpriseEditionAgreement from './EnterpriseEditionAgreement';
 import { useFormatter } from '../../../../components/i18n';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import FeedbackCreation from '../../cases/feedbacks/FeedbackCreation';
+import EnterpriseEditionAgreement from './EnterpriseEditionAgreement';
+import useAI from '../../../../utils/hooks/useAI';
 import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useGranted';
 import useAuth from '../../../../utils/hooks/useAuth';
-import useAI from '../../../../utils/hooks/useAI';
 
 const EETooltip = ({
   children,
@@ -24,7 +24,6 @@ const EETooltip = ({
 }) => {
   const { t_i18n } = useFormatter();
   const [feedbackCreation, setFeedbackCreation] = useState(false);
-  const [openEnableAI, setOpenEnableAI] = useState(false);
   const [openConfigAI, setOpenConfigAI] = useState(false);
   const isAdmin = useGranted([SETTINGS_SETPARAMETERS]);
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -34,39 +33,6 @@ const EETooltip = ({
   } = useAuth();
   if (isEnterpriseEdition && (!forAi || (forAi && enabled && configured))) {
     return <Tooltip title={title ? t_i18n(title) : undefined}>{children}</Tooltip>;
-  }
-  if (isEnterpriseEdition && forAi && !enabled) {
-    return (
-      <>
-        <Tooltip title={title ? t_i18n(title) : undefined}>
-          <span onClick={(e) => {
-            setOpenEnableAI(true);
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-          >
-            {children}
-          </span>
-        </Tooltip>
-        <Dialog
-          slotProps={{ paper: { elevation: 1 } }}
-          open={openEnableAI}
-          onClose={() => setOpenEnableAI(false)}
-          fullWidth={true}
-          maxWidth="sm"
-        >
-          <DialogTitle>
-            {t_i18n('Enable AI powered platform')}
-          </DialogTitle>
-          <DialogContent>
-            {t_i18n('To use AI, please enable it in the configuration of your platform.')}
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setOpenEnableAI(false)}>{t_i18n('Close')}</Button>
-          </DialogActions>
-        </Dialog>
-      </>
-    );
   }
   if (isEnterpriseEdition && forAi && !configured) {
     return (
