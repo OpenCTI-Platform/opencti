@@ -104,7 +104,7 @@ const MarkdownField = (props) => {
       {showError && (
         <FormHelperText error={true}>{showError}</FormHelperText>
       )}
-      {askAi && (fullyActive) && (
+      {askAi && fullyActive && (
         <TextFieldAskAI
           currentValue={field.value ?? ''}
           setFieldValue={(val) => {

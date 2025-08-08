@@ -123,7 +123,7 @@ const TextField = (props: TextFieldProps) => {
       slotProps={{
         input: {
           startAdornment,
-          endAdornment: askAi && (fullyActive) && (
+          endAdornment: askAi && fullyActive && (
             <TextFieldAskAI
               currentValue={value as string ?? ''}
               setFieldValue={(val) => {

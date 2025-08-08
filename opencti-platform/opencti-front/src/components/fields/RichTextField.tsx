@@ -106,7 +106,7 @@ const RichTextField = ({
               <span>{t_i18n('You have unsaved changes')}</span>
             )}
           </div>
-          {askAi && (fullyActive) && (
+          {askAi && fullyActive && (
             <TextFieldAskAI
               currentValue={value ?? ''}
               setFieldValue={(val) => {

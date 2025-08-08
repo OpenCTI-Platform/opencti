@@ -311,7 +311,7 @@ const StixCoreObjectFileExportForm = ({
                       </Card>
                     </Grid>
                   ))}
-                  {isContainer && (fullyActive) && (
+                  {isContainer && fullyActive && (
                     <Grid item xs={4}>
                       <Card
                         variant="outlined"
