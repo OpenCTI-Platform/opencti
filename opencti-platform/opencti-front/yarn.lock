@@ -12293,7 +12293,7 @@ __metadata:
     prettier: "npm:3.1.0"
     solid-element: "npm:1.9.1"
     solid-js: "npm:1.9.7"
-  checksum: 10/698831b50bdd1fcd11ffefde4cf9b1c5d3fc23af5ff00c3ff17fcc306f14ff5b904c30271afc94aac6083a3a1f8e09c7d1ad1ae320f107a4e19b1ab9f10b2fab
+  checksum: 10/57c1ab5465e6d67b7d95a3f1cab2fbef092a4a6519419885bbf1d76af763ec40dc105abd470a1438b29e95f77550754061709732fde184afbcc7389593ebbed9
   languageName: node
   linkType: hard
 
