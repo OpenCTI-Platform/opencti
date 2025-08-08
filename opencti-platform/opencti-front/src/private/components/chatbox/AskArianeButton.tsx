@@ -124,7 +124,7 @@ const AskArianeButton = () => {
             e.stopPropagation();
           }}
           agentic-url={filigran_chatbot_ai_url}
-          theme={chatBotTheme}
+          theme={JSON.stringify(chatBotTheme)}
           chatflowConfig={{
             vars,
           }}
