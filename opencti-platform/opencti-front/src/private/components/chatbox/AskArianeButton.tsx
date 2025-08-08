@@ -131,7 +131,7 @@ const AskArianeButton = () => {
         />
       ) : <></>}
 
-      {navOpen ? (
+      {!isEnterpriseEdition && navOpen ? (
         <>
           Ask Ariane
           <EEChip ref={EEref} />
