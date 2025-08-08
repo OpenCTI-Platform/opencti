@@ -74,7 +74,7 @@ const TaskDetails: FunctionComponent<TasksDetailsProps> = ({ tasksData }) => {
     tasksData,
   );
   return (
-    <div style={{ height: '100%' }}>
+    <div style={{ height: '100%' }} data-testid="task-details-page">
       <Typography variant="h4" gutterBottom={true}>
         {t_i18n('Details')}
       </Typography>

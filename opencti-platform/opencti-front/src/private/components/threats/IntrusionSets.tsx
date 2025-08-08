@@ -185,10 +185,10 @@ const IntrusionSets = () => {
   };
 
   return (
-    <>
+    <div data-testid="instrusion-set-page">
       <Breadcrumbs elements={[{ label: t_i18n('Threats') }, { label: t_i18n('Intrusion sets'), current: true }]} />
       {viewStorage.view !== 'lines' ? renderCards() : renderList()}
-    </>
+    </div>
   );
 };
 

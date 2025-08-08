@@ -72,7 +72,7 @@ const Narrative: React.FC<NarrativeProps> = ({ narrativeData }) => {
   const overviewLayoutCustomization = useOverviewLayoutCustomization(narrative.entity_type);
 
   return (
-    <>
+    <div data-testid="narrative-details">
       <Grid
         container={true}
         spacing={3}
@@ -141,7 +141,7 @@ const Narrative: React.FC<NarrativeProps> = ({ narrativeData }) => {
           })
         }
       </Grid>
-    </>
+    </div>
   );
 };
 

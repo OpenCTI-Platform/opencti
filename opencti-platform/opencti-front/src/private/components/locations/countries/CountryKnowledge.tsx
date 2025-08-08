@@ -36,7 +36,7 @@ const CountryKnowledgeComponent = ({
   const { schema } = useAuth();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(country.entity_type, schema);
   return (
-    <>
+    <div data-testid="country-knowledge">
       <Routes>
         <Route
           path="/relations/:relationId"
@@ -297,7 +297,7 @@ const CountryKnowledgeComponent = ({
           }
         />
       </Routes>
-    </>
+    </div>
   );
 };
 
