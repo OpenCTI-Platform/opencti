@@ -12,7 +12,7 @@ import { useFormatter } from '../../../components/i18n';
 interface PirProcessingStatusProps {
   pirId: string;
   processingCount: number;
-  forceRefetch: () => void;
+  forceRefetch: () => void; // TODO PIR implement work refetch
 }
 
 const PirProcessingStatus: FunctionComponent<PirProcessingStatusProps> = ({ pirId, processingCount, forceRefetch }) => {
@@ -58,8 +58,8 @@ const PirProcessingStatus: FunctionComponent<PirProcessingStatusProps> = ({ pirI
             <Tab label={t_i18n('Works')} value="Works" />
             <Tab label={t_i18n('Tasks')} value="Tasks" />
           </Tabs>
-          {/*{tabValue === 'Works' && (<PirWorks draftId={pirId}/>)}*/}
-          {/*{tabValue === 'Tasks' && (<PirTasks draftId={pirId}/>)}*/}
+          {/*{tabValue === 'Works' && (<PirWorks draftId={pirId}/>)}*/} // TODO PIR implement
+          {/*{tabValue === 'Tasks' && (<PirTasks draftId={pirId}/>)}*/} // TODO PIR remove
         </>
       </Drawer>
     </div>
