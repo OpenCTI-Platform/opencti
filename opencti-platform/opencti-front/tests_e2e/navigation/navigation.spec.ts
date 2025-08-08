@@ -18,6 +18,7 @@ import SectorPage from 'tests_e2e/model/sector.pageModel';
 import OrganizationPage from 'tests_e2e/model/organization.pageModel';
 import OrganizationDetailsPage from 'tests_e2e/model/organizationDetails.pageModel';
 import SecurityPlatformDetailsPage from 'tests_e2e/model/securityPlatformDetails.pageModel';
+import DataRelationshipsPage from 'tests_e2e/model/dataRelationships.pageModel';
 import { expect, test } from '../fixtures/baseFixtures';
 import LeftBarPage from '../model/menu/leftBar.pageModel';
 import ReportPage from '../model/report.pageModel';
@@ -86,6 +87,9 @@ import CityPage from '../model/city.pageModel';
 import CityDetailsPage from '../model/cityDetails.pageModel';
 import PositionPage from '../model/position.pageModel';
 import PositionDetailsPage from '../model/positionDetails.pageModel';
+import DataEntitiesPage from '../model/DataEntities.pageModel';
+import DataManagementPage from '../model/dataManagement.pageModel';
+import TrashPage from '../model/trash.pageModel';
 
 /**
  * Goal: validate that everything is opening without errors in Analyses > Note.
@@ -1529,6 +1533,30 @@ const navigatePosition = async (page: Page) => {
   await expect(historyTab.getPage()).toBeVisible();
 };
 
+const navigateDataEntities = async (page: Page) => {
+  const dataEntitiesPage = new DataEntitiesPage(page);
+  await dataEntitiesPage.navigateFromMenu();
+  await expect(dataEntitiesPage.getPage()).toBeVisible();
+};
+
+const navigateDataRelationships = async (page: Page) => {
+  const dataRelationshipsPage = new DataRelationshipsPage(page);
+  await dataRelationshipsPage.navigateFromMenu();
+  await expect(dataRelationshipsPage.getPage()).toBeVisible();
+};
+
+const navigateDataManagement = async (page: Page) => {
+  const dataManagementPage = new DataManagementPage(page);
+  await dataManagementPage.navigateFromMenu();
+  await expect(dataManagementPage.getPage()).toBeVisible();
+};
+
+const navigateTrash = async (page: Page) => {
+  const trashPage = new TrashPage(page);
+  await trashPage.navigateFromMenu();
+  await expect(trashPage.getPage()).toBeVisible();
+};
+
 const navigateAllMenu = async (page: Page) => {
   const leftBarPage = new LeftBarPage(page);
 
@@ -1717,4 +1745,8 @@ test('Check navigation on all pages', { tag: ['@navigation'] }, async ({ page })
   await navigateAdministrativeArea(page);
   await navigateCity(page);
   await navigatePosition(page);
+  await navigateDataEntities(page);
+  await navigateDataRelationships(page);
+  await navigateDataManagement(page);
+  await navigateTrash(page);
 });
