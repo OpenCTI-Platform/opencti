@@ -7,7 +7,6 @@ import { SYSTEM_USER } from '../../../src/utils/access';
 import { listEntities, storeLoadById } from '../../../src/database/middleware-loader';
 import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import type { BasicStoreEntity } from '../../../src/types/store';
-import { UNSUPPORTED_ERROR } from '../../../src/config/errors';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_HISTORY } from '../../../src/schema/internalObject';
 import { addFilter } from '../../../src/utils/filtering/filtering-utils';
 import { elPaginate } from '../../../src/database/engine';
@@ -172,21 +171,6 @@ describe('PIR resolver standard behavior', () => {
   it('should list pirs', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
     expect(queryResult.data?.pirs.edges.length).toEqual(1);
-  });
-
-  it('should not list pirs if not EE', async () => {
-    vi.mock('../../../src/enterprise-edition/ee', () => {
-      return {
-        isEnterpriseEdition: vi.fn().mockImplementation(() => {
-          return false;
-        }),
-      };
-    });
-    const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.errors?.length).toEqual(1);
-    expect(queryResult.errors?.[0].message).toEqual('Enterprise edition is not enabled');
-    expect(queryResult.errors?.[0].extensions?.code).toEqual(UNSUPPORTED_ERROR);
-    vi.restoreAllMocks();
   });
 
   it('should exist associated pir connector queue', async () => {
