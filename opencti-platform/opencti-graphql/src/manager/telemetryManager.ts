@@ -23,6 +23,7 @@ import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { FilterMode } from '../generated/graphql';
 import { redisClearTelemetry, redisGetTelemetry, redisSetTelemetryAdd } from '../database/redis';
 import type { AuthUser } from '../types/user';
+import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 
 const TELEMETRY_MANAGER_KEY = conf.get('telemetry_manager:lock_key');
 const TELEMETRY_CONSOLE_DEBUG = conf.get('telemetry_manager:console_debug') ?? false;
@@ -160,27 +161,33 @@ const telemetryInitializer = async (): Promise<HandlerInput> => {
 export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
   try {
     const context = executionContext('telemetry_manager');
+
     // region Settings information
     const settings = await getEntityFromCache<BasicStoreSettings>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_SETTINGS);
     manager.setIsEEActivated(settings.valid_enterprise_edition === true ? 1 : 0);
     // endregion
+
     // region Cluster information
     const clusterInfo = await getClusterInformation();
     manager.setInstancesCount(clusterInfo.info.instances_number);
     // endregion
+
     // region Users information
     const users = await getEntitiesListFromCache(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_USER) as AuthUser[];
     manager.setUsersCount(users.length);
     // endregion
+
     // region Connectors information
     const connectors = await getEntitiesListFromCache<BasicStoreEntityConnector>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_CONNECTOR);
     const activeConnectors = connectors.filter((c) => c.active);
     manager.setActiveConnectorsCount(activeConnectors.length);
     // endregion
+
     // region Draft information
     const draftWorkspaces = await getEntitiesListFromCache(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_DRAFT_WORKSPACE);
     manager.setDraftCount(draftWorkspaces.length);
     // endregion
+
     // region Workbenches information
     const pendingFileFilter = {
       mode: FilterMode.And,
@@ -189,6 +196,11 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     };
     const workbenchesCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, { filters: pendingFileFilter, types: [ENTITY_TYPE_INTERNAL_FILE] });
     manager.setWorkbenchCount(workbenchesCount);
+    // endregion
+
+    // region PIR information
+    const pirs = await getEntitiesListFromCache(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_PIR);
+    manager.setPirCount(pirs.length);
     // endregion
 
     // region Telemetry user events
@@ -213,6 +225,7 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     const serviceAccountIntoUserCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_SERVICE_ACCOUNT_INTO_USER);
     manager.setServiceAccountIntoUserCount(serviceAccountIntoUserCountInRedis);
     // end region Telemetry user events
+
     logApp.debug('[TELEMETRY] Fetching telemetry data successfully');
   } catch (e) {
     logApp.error('[TELEMETRY] Error fetching platform information', { cause: e });
