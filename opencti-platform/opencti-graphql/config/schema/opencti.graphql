@@ -1039,6 +1039,7 @@ enum BackgroundTaskActionType {
   REMOVE_ORGANIZATIONS
   ADD_GROUPS
   REMOVE_GROUPS
+  SEND_EMAIL
 }
 enum BackgroundTaskContextType {
   ATTRIBUTE
@@ -1758,6 +1759,12 @@ input UserAddInput {
   groups: [ID!]
   user_confidence_level: ConfidenceLevelInput
   prevent_default_groups: Boolean
+  email_template_id: String
+}
+
+input SendUserMailInput {
+  target_user_id: ID!
+  email_template_id: ID!
 }
 
 input ConfidenceLevelInput {
@@ -14718,6 +14725,7 @@ type Mutation {
   meEdit(input: [EditInput]!, password: String): MeUser @auth
   bookmarkAdd(id: ID!, type: String!): StixDomainObject @auth(for: [KNOWLEDGE])
   bookmarkDelete(id: ID!): ID @auth(for: [KNOWLEDGE])
+  sendUserMail(input: SendUserMailInput!): Boolean @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   logout: ID @auth
   roleAdd(input: RoleAddInput!): Role @auth(for: [SETTINGS_SETACCESSES])
   sessionKill(id: ID!): ID @auth(for: [SETTINGS_SETACCESSES])

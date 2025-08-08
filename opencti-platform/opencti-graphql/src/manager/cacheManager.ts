@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { logApp, TOPIC_PREFIX } from '../config/conf';
+import { getBaseUrl, logApp, TOPIC_PREFIX } from '../config/conf';
 import { addCacheForEntity, refreshCacheForEntity, removeCacheForEntity, writeCacheForEntity } from '../database/cache';
 import type { AuthContext, AuthUser } from '../types/user';
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
@@ -233,7 +233,8 @@ const platformSettings = (context: AuthContext) => {
         const auditListenerIds = s.activity_listeners_ids ?? [];
         const ee_info = getEnterpriseEditionInfoFromPem(s.internal_id, s.enterprise_license);
         const activity_listeners_users = auditListenerIds.map((id: string) => membersGroupMap.get(id) ?? membersOrganizationMap.get(id) ?? [id]).flat();
-        return { ...s, valid_enterprise_edition: ee_info.license_validated, activity_listeners_users };
+        const platform_url = getBaseUrl(context.req);
+        return { ...s, valid_enterprise_edition: ee_info.license_validated, activity_listeners_users, platform_url };
       });
     });
   };

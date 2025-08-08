@@ -70,6 +70,7 @@ import './savedFilter/savedFilter';
 import './pir/pir';
 import './fintelDesign/fintelDesign';
 import './securityPlatform/securityPlatform';
+import './emailTemplate/emailTemplate';
 
 // incomplete modules
 import './report/report';
@@ -139,4 +140,5 @@ import './pir/pir-graphql';
 import './fintelDesign/fintelDesign-graphql';
 import './securityPlatform/securityPlatform-graphql';
 import './auth/auth-graphql';
+import './emailTemplate/emailTemplate-graphql';
 // endregion
