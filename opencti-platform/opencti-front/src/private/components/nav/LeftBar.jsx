@@ -218,6 +218,7 @@ const LeftBar = () => {
   } = useAuth();
   const navigate = useNavigate();
   const { isFeatureEnable } = useHelper();
+  const isChatbotFeatureFlag = isFeatureEnable('CHATBOT_AI');
   const isEnterpriseEdition = useEnterpriseEdition();
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
   const isGrantedToImport = useGranted([KNOWLEDGE_KNASKIMPORT]);
@@ -1050,6 +1051,7 @@ const LeftBar = () => {
         }}
       >
         <MenuList>
+          {isChatbotFeatureFlag && (
           <MenuItem
             style={{
               color: theme.palette.ai.main,
@@ -1060,6 +1062,7 @@ const LeftBar = () => {
           >
             <AskArianeButton />
           </MenuItem>
+          )}
           <MenuItem
             dense={true}
             style={{ marginBottom: bannerHeightNumber }}
