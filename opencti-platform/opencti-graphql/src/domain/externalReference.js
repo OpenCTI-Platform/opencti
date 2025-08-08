@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, listThings, paginateAllThings, updateAttribute } from '../database/middleware';
-import { internalLoadById, listEntities, storeLoadById } from '../database/middleware-loader';
+import { internalLoadById, listEntitiesPaginated, storeLoadById } from '../database/middleware-loader';
 import conf, { BUS_TOPICS } from '../config/conf';
 import { FunctionalError, ValidationError } from '../config/errors';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
@@ -17,7 +17,7 @@ export const findById = (context, user, externalReferenceId) => {
 };
 
 export const findAll = (context, user, args) => {
-  return listEntities(context, user, [ENTITY_TYPE_EXTERNAL_REFERENCE], args);
+  return listEntitiesPaginated(context, user, [ENTITY_TYPE_EXTERNAL_REFERENCE], args);
 };
 
 export const references = async (context, user, externalReferenceId, args) => {

@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { createEntity, deleteElementById, updateAttribute } from '../database/middleware';
-import { internalFindByIds, listAllEntities, listAllRelations, listEntities, storeLoadById } from '../database/middleware-loader';
+import { internalFindByIds, listAllEntities, listAllRelations, listEntities, listEntitiesPaginated, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../schema/internalObject';
@@ -16,7 +16,7 @@ export const findById = (context, user, markingDefinitionId) => {
 
 export const findAll = (context, user, args) => {
   // Force looking with prefix wildcard for markings
-  return listEntities(context, user, [ENTITY_TYPE_MARKING_DEFINITION], { ...args, useWildcardPrefix: true });
+  return listEntitiesPaginated(context, user, [ENTITY_TYPE_MARKING_DEFINITION], { ...args, useWildcardPrefix: true });
 };
 
 const notifyMembersOfNewMarking = async (context, user, newMarking) => {
@@ -58,7 +58,7 @@ const updateGroupsAfterAddingMarking = async (context, markingCreated) => {
     filters: [{ key: 'auto_new_marking', values: [true] }],
     filterGroups: [],
   };
-  const groupsWithAutoNewMarking = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_GROUP], { filters, connectionFormat: false });
+  const groupsWithAutoNewMarking = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_GROUP], { filters });
   if (groupsWithAutoNewMarking && groupsWithAutoNewMarking.length > 0) {
     const markingId = markingCreated.id;
     const markingType = markingCreated.definition_type;

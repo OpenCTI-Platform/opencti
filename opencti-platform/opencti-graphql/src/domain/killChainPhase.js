@@ -1,7 +1,7 @@
 import { pipe, assoc } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { createEntity, createRelation, deleteElementById, updateAttribute } from '../database/middleware';
-import { listEntities, storeLoadById } from '../database/middleware-loader';
+import { listEntitiesPaginated, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../schema/stixMetaObject';
 import { RELATION_KILL_CHAIN_PHASE } from '../schema/stixRefRelationship';
@@ -11,7 +11,7 @@ export const findById = (context, user, killChainPhaseId) => {
 };
 
 export const findAll = (context, user, args) => {
-  return listEntities(context, user, [ENTITY_TYPE_KILL_CHAIN_PHASE], args);
+  return listEntitiesPaginated(context, user, [ENTITY_TYPE_KILL_CHAIN_PHASE], args);
 };
 
 export const addKillChainPhase = async (context, user, killChainPhase) => {

@@ -48,6 +48,7 @@ import {
 import type { UserReadActionContextData } from '../listener/UserActionListener';
 import { completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from './entity-representative';
+import { asyncMap } from '../utils/data-processing';
 
 export interface FiltersWithNested extends Filter {
   nested?: Array<{
@@ -76,9 +77,6 @@ export interface ListFilter<T extends BasicStoreCommon> {
   noFiltersChecking?: boolean
   callback?: (result: Array<T>) => Promise<boolean | void>
 }
-
-type InternalListEntities = <T extends BasicStoreCommon>
-(context: AuthContext, user: AuthUser, entityTypes: Array<string>, args: EntityOptions<T>) => Promise<Array<T>>;
 
 // entities
 interface EntityFilters<T extends BasicStoreCommon> extends ListFilter<T> {
@@ -360,12 +358,6 @@ export const listAllEntitiesForFilter = async (context: AuthContext, user: AuthU
   return buildPagination(0, null, nodeElements, nodeElements.length);
 };
 
-export const listEntities: InternalListEntities = async (context, user, entityTypes, args = {}) => {
-  const { indices } = args;
-  const computedIndices = computeQueryIndices(indices, entityTypes);
-  const paginateArgs = buildEntityFilters(entityTypes, args);
-  return elPaginate(context, user, computedIndices, paginateArgs);
-};
 export const listAllEntities = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, entityTypes: Array<string>,
   args: EntityOptions<T> = {}): Promise<Array<T>> => {
   const { indices } = args;
@@ -467,7 +459,7 @@ export const listEntitiesPaginated = async <T extends BasicStoreEntity>(context:
     throw UnsupportedError('List connection require connectionFormat option to true');
   }
   const computedIndices = computeQueryIndices(indices, entityTypes);
-  const paginateArgs = { ...buildEntityFilters(entityTypes, args), listAllRelationsFn: listAllRelations, withResultMeta: true };
+  const paginateArgs = { ...buildEntityFilters(entityTypes, args), withResultMeta: true };
   let pagination = await elPaginate(context, user, computedIndices, paginateArgs);
   const { edges } = pagination.elements;
   let { pageInfo } = pagination.elements;
@@ -482,6 +474,11 @@ export const listEntitiesPaginated = async <T extends BasicStoreEntity>(context:
     pageInfo.globalCount -= pagination.filterCount;
   }
   return { edges, pageInfo };
+};
+
+export const listEntities = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, entityTypes: string[], args: EntityOptions<T> = {}) => {
+  const data = await listEntitiesPaginated(context, user, entityTypes, args);
+  return asyncMap(data.edges, (edge) => edge.node);
 };
 
 export const listEntitiesThroughRelationsPaginated = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, connectedEntityId: string,

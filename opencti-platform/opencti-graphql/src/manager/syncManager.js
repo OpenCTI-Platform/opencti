@@ -177,7 +177,7 @@ const initSyncManager = () => {
   const processStep = async () => {
     // Get syncs definition
     const context = executionContext('sync_manager');
-    const syncs = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_SYNC], { connectionFormat: false });
+    const syncs = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_SYNC]);
     // region Handle management of existing synchronizer
     for (let index = 0; index < syncs.length; index += 1) {
       const { id, running } = syncs[index];

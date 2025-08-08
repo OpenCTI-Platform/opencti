@@ -51,17 +51,7 @@ import {
   WRITE_PLATFORM_INDICES
 } from './utils';
 import conf, { booleanConf, extendedErrors, loadCert, logApp, logMigration } from '../config/conf';
-import {
-  ComplexSearchError,
-  ConfigurationError,
-  DatabaseError,
-  EngineShardsError,
-  FunctionalError,
-  LockTimeoutError,
-  TYPE_LOCK_ERROR,
-  UnknownError,
-  UnsupportedError
-} from '../config/errors';
+import { ComplexSearchError, ConfigurationError, DatabaseError, EngineShardsError, FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import {
   isStixRefRelationship,
   RELATION_BORN_IN,
@@ -3626,10 +3616,10 @@ export const elList = async (context, user, indexName, opts = {}) => {
   };
   while (continueProcess && hasNextPage) {
     // Force options to prevent connection format and manage search after
-    const paginateOpts = { ...opts, first, after: searchAfter, connectionFormat: false };
-    const elements = await elPaginate(context, user, indexName, paginateOpts);
+    const paginateOpts = { ...opts, first, after: searchAfter, connectionFormat: false, withResultMeta: true };
+    const { elements, filterCount, endCursor } = await elPaginate(context, user, indexName, paginateOpts);
     emitSize += elements.length;
-    const noMoreElements = elements.length === 0 || elements.length < first;
+    const noMoreElements = elements.length === 0 || (elements.length + filterCount) < first;
     const moreThanMax = maxSize ? emitSize >= maxSize : false;
     if (noMoreElements || moreThanMax) {
       batch += 1;
@@ -3641,8 +3631,7 @@ export const elList = async (context, user, indexName, opts = {}) => {
       }
       hasNextPage = false;
     } else if (elements.length > 0) {
-      const { sort } = elements[elements.length - 1];
-      searchAfter = offsetToCursor(sort);
+      searchAfter = endCursor;
       await publish(elements);
     }
   }
@@ -3709,14 +3698,12 @@ const regardingOfFiltering = async (context, user, elements, elementIds, opts) =
   let filterCount = 0;
   const lastElement = R.last(elements);
   const endCursor = lastElement.sort ? offsetToCursor(lastElement.sort) : null;
+  // First check if there is an "in regards of" filter
+  // If its case we need to ensure elements are filtered according to denormalization rights.
   if (isNotEmptyField(filters)) {
     const availableKeys = extractFilterKeys(filters);
     const isRegardingFilter = availableKeys.includes(INSTANCE_REGARDING_OF) || availableKeys.includes(INSTANCE_DYNAMIC_REGARDING_OF);
     if (isRegardingFilter) {
-      const isRelationsFnAvailable = isNotEmptyField(opts.listAllRelationsFn);
-      if (!isRelationsFnAvailable) {
-        throw UnknownError('Regarding of filter require internal resolution function');
-      }
       const extractedFilters = extractFiltersFromGroup(filters, [INSTANCE_REGARDING_OF, INSTANCE_DYNAMIC_REGARDING_OF]);
       const targetValidatedIds = new Set();
       const sideIdManualInferred = new Map();
@@ -3727,11 +3714,40 @@ const regardingOfFiltering = async (context, user, elements, elementIds, opts) =
         const directionForced = R.head(values.filter((v) => v.key === INSTANCE_REGARDING_OF_DIRECTION_FORCED).map((f) => f.values).flat()) ?? false;
         const directionReverse = R.head(values.filter((v) => v.key === INSTANCE_REGARDING_OF_DIRECTION_REVERSE).map((f) => f.values).flat()) ?? false;
         // resolve all relationships that target the id values, forcing the type is available
-        const sideIds = [...ids, ...elementIds];
-        const args = directionForced
-          ? { fromId: directionReverse ? elementIds : ids, toId: directionReverse ? ids : elementIds, baseData: true }
-          : { fromId: sideIds, toId: sideIds, baseData: true };
-        const relationships = await opts.listAllRelationsFn(context, user, types, args);
+        const paginateArgs = { baseData: true, types };
+        if (directionForced) {
+          // If a direction is forced, build the filter in the correct direction
+          paginateArgs.filters = {
+            mode: 'and',
+            filters: [
+              { key: ['fromId'], values: directionReverse ? elementIds : ids },
+              { key: ['toId'], values: directionReverse ? ids : elementIds }
+            ],
+            filterGroups: []
+          };
+        } else {
+          // If no direction is setup, create the filter group for both directions
+          paginateArgs.filters = {
+            mode: 'or',
+            filters: [],
+            filterGroups: [{
+              mode: 'and',
+              filterGroups: [],
+              filters: [
+                { key: ['fromId'], values: elementIds },
+                { key: ['toId'], values: ids }
+              ],
+            }, {
+              mode: 'and',
+              filterGroups: [],
+              filters: [
+                { key: ['fromId'], values: ids },
+                { key: ['toId'], values: elementIds }
+              ],
+            }]
+          };
+        }
+        const relationships = await elList(context, user, READ_RELATIONSHIPS_INDICES, paginateArgs);
         // compute side ids
         const addTypeSide = (sideId, sideType) => {
           targetValidatedIds.add(sideId);
