@@ -49,10 +49,10 @@ const AskArianeButton = () => {
       showTooltip: false,
     },
     customCSS: `
-          * {
-            font-family: "IBM Plex Sans" !important;
-          }
-        `,
+      * {
+        font-family: "IBM Plex Sans" !important;
+      }
+    `,
     chatWindow: {
       showTitle: true,
       showAgentMessages: false,
