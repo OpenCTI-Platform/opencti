@@ -1,8 +1,8 @@
 import { Page } from '@playwright/test';
 import LeftBarPage from './menu/leftBar.pageModel';
 
-export default class DataEntitiesPage {
-  pageUrl = '/dashboard/data/entities';
+export default class DataRelationshipsPage {
+  pageUrl = '/dashboard/data/relationships';
 
   constructor(private page: Page) {
   }
@@ -14,8 +14,7 @@ export default class DataEntitiesPage {
   async navigateFromMenu() {
     const leftBarPage = new LeftBarPage(this.page);
     await leftBarPage.open();
-    await leftBarPage.clickOnMenu('Data');
-    await leftBarPage.getSubItem('Entities');
+    await leftBarPage.clickOnMenu('Data', 'Relationships');
   }
 
   getItemFromList(name: string) {
@@ -23,6 +22,6 @@ export default class DataEntitiesPage {
   }
 
   getPage() {
-    return this.page.getByTestId('data-entities-page');
+    return this.page.getByTestId('data-relationships-page');
   }
 }
