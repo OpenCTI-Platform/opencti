@@ -14,6 +14,7 @@ import { IMPORT_CSV_CONNECTOR, IMPORT_CSV_CONNECTOR_ID } from '../connector/impo
 import { RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { DRAFT_VALIDATION_CONNECTOR, DRAFT_VALIDATION_CONNECTOR_ID } from '../modules/draftWorkspace/draftWorkspace-connector';
 import { logApp } from '../config/conf';
+import { connectorIdFromIngestId } from './connector';
 
 export const workToExportFile = (work) => {
   const lastModifiedSinceMin = sinceNowInMinutes(work.updated_at);
@@ -84,6 +85,31 @@ export const worksForDraft = async (context, user, draftId, args = {}) => {
     orderMode: 'desc',
     first,
     filters: worksForDraftFilter,
+  });
+};
+
+export const worksForPir = async (context, user, pirId, args = {}) => {
+  const { first = ES_MINIMUM_FIXED_PAGINATION } = args;
+  const connectorId = connectorIdFromIngestId(pirId);
+  const worksForPirFilter = {
+    mode: 'and',
+    filters: [
+      {
+        key: 'connector_id',
+        values: [connectorId],
+        operator: 'eq',
+        mode: 'or'
+      },
+    ],
+    filterGroups: [],
+  };
+  return elPaginate(context, user, READ_INDEX_HISTORY, {
+    type: ENTITY_TYPE_WORK,
+    connectionFormat: false,
+    orderBy: 'timestamp',
+    orderMode: 'desc',
+    first,
+    filters: worksForPirFilter,
   });
 };
 
