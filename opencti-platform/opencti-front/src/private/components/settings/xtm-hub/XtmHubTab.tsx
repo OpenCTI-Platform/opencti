@@ -79,7 +79,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
 
   const OCTIInformations = {
     platform_url: window.location.origin,
-    platform_title: 'Open CTI Instance',
+    platform_title: settings?.platform_title ?? 'OpenCTI Platform',
     platform_id: settings?.id ?? '',
     platform_contract: isEnterpriseEdition ? 'EE' : 'CE',
   };

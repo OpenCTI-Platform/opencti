@@ -68,13 +68,17 @@ const ChipMarking = ({
         case 'DR':
         case 'DR-SF':
         case 'TLP:RED':
+        case 'PAP:RED':
           color = '#c62828';
           break;
         case 'TLP:AMBER':
+        case 'TLP:AMBER+STRICT':
+        case 'PAP:AMBER':
           color = '#d84315';
           break;
         case 'NP':
         case 'TLP:GREEN':
+        case 'PAP:GREEN':
           color = '#2e7d32';
           break;
         case 'SF':
