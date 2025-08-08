@@ -15,10 +15,10 @@ export const xtmHubSettingsQuery = graphql`
   query XtmHubSettingsQuery {
     settings {
       id
-      xtm_hub_enrollment_date
-      xtm_hub_enrollment_status
-      xtm_hub_enrollment_user_id
-      xtm_hub_enrollment_user_name
+      xtm_hub_registration_date
+      xtm_hub_registration_status
+      xtm_hub_registration_user_id
+      xtm_hub_registration_user_name
       xtm_hub_last_connectivity_check
       xtm_hub_token
     }
@@ -72,8 +72,8 @@ const XtmHubSettings = () => {
                   )}
                 </Typography>
                 <XtmHubTab
-                  enrollmentStatus={
-                    xtmHubSettings.xtm_hub_enrollment_status || undefined
+                  registrationStatus={
+                    xtmHubSettings.xtm_hub_registration_status || undefined
                   }
                 />
               </div>
@@ -89,7 +89,7 @@ const XtmHubSettings = () => {
             </Box>
             <List style={{ marginTop: -10 }}>
               {
-                xtmHubSettings.xtm_hub_enrollment_status === 'enrolled' && (
+                xtmHubSettings.xtm_hub_registration_status === 'registered' && (
                   <>
                     <ListItem divider={true}>
                       <ListItemText primary={t_i18n('Registration status')} />
@@ -104,7 +104,7 @@ const XtmHubSettings = () => {
                       <ItemBoolean
                         variant="xlarge"
                         neutralLabel={fd(
-                          xtmHubSettings.xtm_hub_enrollment_date,
+                          xtmHubSettings.xtm_hub_registration_date,
                         )}
                         status={null}
                       />
@@ -113,7 +113,7 @@ const XtmHubSettings = () => {
                       <ListItemText primary={t_i18n('Registered by')} />
                       <ItemBoolean
                         variant="xlarge"
-                        neutralLabel={xtmHubSettings.xtm_hub_enrollment_user_name}
+                        neutralLabel={xtmHubSettings.xtm_hub_registration_user_name}
                         status={null}
                       />
                     </ListItem>
@@ -121,7 +121,7 @@ const XtmHubSettings = () => {
                 )
               }
               {
-                xtmHubSettings.xtm_hub_enrollment_status === 'lost_connectivity' && (
+                xtmHubSettings.xtm_hub_registration_status === 'lost_connectivity' && (
                   <>
                     <ListItem divider={true}>
                       <ListItemText primary={t_i18n('Registration status')} />
@@ -146,7 +146,7 @@ const XtmHubSettings = () => {
                 )
               }
               {
-                xtmHubSettings.xtm_hub_enrollment_status === 'unenrolled' && (
+                xtmHubSettings.xtm_hub_registration_status === 'unregistered' && (
                   <ListItem divider={true}>
                     <ListItemText primary={t_i18n('Registration status')} />
                     <ItemBoolean

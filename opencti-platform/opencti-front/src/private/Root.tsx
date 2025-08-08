@@ -124,7 +124,7 @@ const rootSettingsFragment = graphql`
       }
     }
     xtm_hub_token
-    xtm_hub_enrollment_status
+    xtm_hub_registration_status
   }
 `;
 
