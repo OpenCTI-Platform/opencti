@@ -1,7 +1,7 @@
 import { Page } from '@playwright/test';
 import LeftBarPage from './menu/leftBar.pageModel';
 
-export default class TrashPage {
+export default class DataManagementPage {
   constructor(private page: Page) {}
 
   getItemFromList(name: string) {
@@ -9,12 +9,12 @@ export default class TrashPage {
   }
 
   getPage() {
-    return this.page.getByTestId('trash-page');
+    return this.page.getByTestId('data-management-page');
   }
 
   async navigateFromMenu() {
     const leftBarPage = new LeftBarPage(this.page);
     await leftBarPage.open();
-    await leftBarPage.clickOnMenu('Trash');
+    await leftBarPage.clickOnMenu('Data', 'Restriction');
   }
 }
