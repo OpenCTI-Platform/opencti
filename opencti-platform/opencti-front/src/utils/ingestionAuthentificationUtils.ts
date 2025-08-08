@@ -1,3 +1,7 @@
+import { FormikErrors } from 'formik';
+import { IngestionCsvEditionForm } from '@components/data/ingestionCsv/IngestionCsvEdition';
+import { IngestionJsonEditionForm } from '@components/data/ingestionJson/IngestionJsonEdition';
+
 export const BASIC_AUTH = 'basic';
 export const CERT_AUTH = 'certificate';
 export const BEARER_AUTH = 'bearer';
@@ -76,4 +80,21 @@ export const extractCA = (authentication_value: string | null | undefined) => {
 // For bearer auth (tokens)
 export const extractToken = (authentication_value: string | null | undefined) => {
   return extractAuthPart(authentication_value, 0, 'bearer', 'token');
+};
+
+export const updateAuthenticationFields = async (
+  setFieldValue: (field: string, value: string) => Promise<void | FormikErrors<IngestionJsonEditionForm | IngestionCsvEditionForm>>,
+  value: string,
+) => {
+  // Reset every authentication values on type change
+  await Promise.all([
+    setFieldValue('authentication_type', value),
+    setFieldValue('authentication_value', ''),
+    setFieldValue('token', ''),
+    setFieldValue('username', ''),
+    setFieldValue('password', ''),
+    setFieldValue('cert', ''),
+    setFieldValue('key', ''),
+    setFieldValue('ca', ''),
+  ]);
 };

@@ -549,6 +549,7 @@
   "Copy": "복사",
   "copy": "복사",
   "Copy attribute name to clipboard": "속성 이름을 클립보드에 복사했습니다",
+  "Copy confidence level to OpenCTI scores for indicators": "지표에 대한 신뢰 수준을 OpenCTI 점수로 복사합니다",
   "Copy disabled: too many selected elements (maximum number of elements for a copy: ": "복사 불가: 선택된 요소가 너무 많습니다 (복사 가능한 최대 요소 수: ",
   "Copy link": "링크 복사",
   "Copy OpenCTI scores to confidence level for indicators": "OpenCTI 점수를 지표의 신뢰 수준에 복사합니다",

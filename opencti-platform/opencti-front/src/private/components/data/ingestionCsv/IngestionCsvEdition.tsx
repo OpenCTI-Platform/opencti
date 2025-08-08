@@ -16,7 +16,6 @@ import {
 import CsvMapperField, { CsvMapperFieldOption, csvMapperQuery } from '@components/common/form/CsvMapperField';
 import Button from '@mui/material/Button';
 import IngestionCsvFeedTestDialog from '@components/data/ingestionCsv/IngestionCsvFeedTestDialog';
-import makeStyles from '@mui/styles/makeStyles';
 import { CsvMapperFieldSearchQuery } from '@components/common/form/__generated__/CsvMapperFieldSearchQuery.graphql';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import IngestionSchedulingField from '@components/data/IngestionSchedulingField';
@@ -25,6 +24,7 @@ import Tab from '@mui/material/Tab';
 import IngestionCsvInlineMapperForm from '@components/data/ingestionCsv/IngestionCsvInlineMapperForm';
 import { CsvMapperAddInput } from '@components/data/csvMapper/CsvMapperUtils';
 import IngestionCsvEditionUserHandling from '@components/data/ingestionCsv/IngestionCsvEditionUserHandling';
+import { useTheme } from '@mui/styles';
 import { convertMapper, convertUser } from '../../../../utils/edition';
 import { useFormatter } from '../../../../components/i18n';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
@@ -49,23 +49,12 @@ import {
   extractPassword,
   extractToken,
   extractUsername,
+  updateAuthenticationFields,
 } from '../../../../utils/ingestionAuthentificationUtils';
 import PasswordTextField from '../../../../components/PasswordTextField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { RootMe_data$data } from '../../../__generated__/RootMe_data.graphql';
 import IngestionCsvInlineWrapper from './IngestionCsvInlineWrapper';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-}));
 
 export const initIngestionValue = (ingestionCsvData: IngestionCsvEditionFragment_ingestionCsv$data, me : RootMe_data$data) => {
   return {
@@ -226,7 +215,7 @@ interface IngestionCsvEditionProps {
   enableReferences?: boolean
 }
 
-interface IngestionCsvEditionForm {
+export interface IngestionCsvEditionForm {
   message?: string | null
   references?: ExternalReferencesValues
   name: string,
@@ -276,7 +265,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
   enableReferences = false,
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
+  const theme = useTheme<Theme>();
   const [open, setOpen] = useState(false);
   const ingestionCsvData = useFragment(ingestionCsvEditionFragment, ingestionCsv);
   const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = useState(ingestionCsvData.csvMapper.representations.some(
@@ -351,38 +340,35 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
     const isExistingCsvMappers = value === 'true';
 
     // Handle authentication fields -- If you change something here, please have a look at IngestionTaxiiEdition
-    const backendAuthValue = formValues?.authentication_value;
+    const { username, password, token, cert, key, ca } = formValues || {};
 
     if (name === 'token') {
       finalName = 'authentication_value';
-      finalValue = extractToken(backendAuthValue);
+      finalValue = token;
     }
 
     // re-compose username:password
     if (name === 'username') {
       finalName = 'authentication_value';
-      finalValue = `${value}:${extractPassword(backendAuthValue)}`;
+      finalValue = `${value}:${password}`;
     }
-
     if (name === 'password') {
       finalName = 'authentication_value';
-      finalValue = `${extractUsername(backendAuthValue)}:${value}`;
+      finalValue = `${username}:${value}`;
     }
 
     // re-compose cert:key:ca
     if (name === 'cert') {
       finalName = 'authentication_value';
-      finalValue = `${value}:${extractKey(backendAuthValue)}:${extractCA(backendAuthValue)}`;
+      finalValue = `${value}:${key}:${ca}`;
     }
-
     if (name === 'key') {
       finalName = 'authentication_value';
-      finalValue = `${extractCert(backendAuthValue)}:${value}:${extractCA(backendAuthValue)}`;
+      finalValue = `${cert}:${value}:${ca}`;
     }
-
     if (name === 'ca') {
       finalName = 'authentication_value';
-      finalValue = `${extractCert(backendAuthValue)}:${extractKey(backendAuthValue)}:${value}`;
+      finalValue = `${cert}:${key}:${value}`;
     }
 
     if (name === 'csv_mapper_type') {
@@ -432,12 +418,14 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
   const [tempStateInlineCsv, setTempStateInlineCsv] = useState(initialValues.csv_mapper);
   const queryRef = useQueryLoading<CsvMapperFieldSearchQuery>(csvMapperQuery);
   const defaultMarkingOptions = (me.default_marking?.flatMap(({ values }) => (values ?? [{ id: '', definition: '' }])?.map(({ id, definition }) => ({ label: definition, value: id }))) ?? []) as FieldOption[];
+
   const updateCsvMapper = async (
     setFieldValue: (field: string, option: FieldOption, shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionCsvEditionForm>>,
     option: CsvMapperFieldOption,
   ) => {
     await setFieldValue('csv_mapper_id', option);
   };
+
   const updateObjectMarkingField = async (
     setFieldValue: (field: string, value: FieldOption[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionCsvEditionForm>>,
     values: IngestionCsvEditionForm,
@@ -447,6 +435,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
     await setFieldValue('markings', markings);
     handleSubmitField('markings', markings.map(({ value }: FieldOption) => value));
   };
+
   return (
     <Formik<IngestionCsvEditionForm>
       enableReinitialize={true}
@@ -590,6 +579,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                 variant="standard"
                 name="authentication_type"
                 label={t_i18n('Authentication type')}
+                onChange={(_: string, value: string) => updateAuthenticationFields(setFieldValue, value)}
                 onSubmit={handleSubmitField}
                 fullWidth={true}
                 containerstyle={{
@@ -680,12 +670,12 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                 </Alert>
               </Box>
             </Box>
-            <div className={classes.buttons}>
+            <div style={{ marginTop: 20, textAlign: 'right' }}>
               <Button
                 variant="contained"
                 color="secondary"
                 onClick={() => setOpen(true)}
-                classes={{ root: classes.button }}
+                style={{ marginLeft: theme.spacing(2) }}
                 disabled={!(values.uri && (values.csv_mapper_id || values.csv_mapper))}
               >
                 {t_i18n('Verify')}

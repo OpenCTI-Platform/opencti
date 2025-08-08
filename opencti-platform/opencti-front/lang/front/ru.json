@@ -549,6 +549,7 @@
   "Copy": "Копировать",
   "copy": "копия",
   "Copy attribute name to clipboard": "Копирование имени атрибута в буфер обмена",
+  "Copy confidence level to OpenCTI scores for indicators": "Копирование уровня доверия к показателям OpenCTI",
   "Copy disabled: too many selected elements (maximum number of elements for a copy: ": "Копирование отключено: слишком много выбранных элементов (максимальное количество элементов для копирования:",
   "Copy link": "Копировать ссылку",
   "Copy OpenCTI scores to confidence level for indicators": "Скопируйте оценки OpenCTI в уровень доверия для индикаторов",

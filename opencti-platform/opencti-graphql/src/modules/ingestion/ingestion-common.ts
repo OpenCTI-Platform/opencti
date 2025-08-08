@@ -13,18 +13,19 @@ export const verifyIngestionAuthenticationContent = (authenticationType: string,
   }
 };
 
-export const removeAuthenticationCredentials = (authentication_type: IngestionAuthType, authentication_value: string | undefined | null) => {
-  if (!authentication_value) {
+export const removeAuthenticationCredentials = (authentication_type: IngestionAuthType | undefined | null, authentication_value: string | undefined | null) => {
+  if (!authentication_value || !authentication_type) {
     return authentication_value;
   }
   if (authentication_type === IngestionAuthType.Bearer) {
     return 'undefined';
   }
+  const authenticationValueSplit = authentication_value.split(':');
   if (authentication_type === IngestionAuthType.Basic) {
-    return [authentication_value.split(':')[0], 'undefined'].join(':');
+    return [authenticationValueSplit[0], 'undefined'].join(':');
   }
   if (authentication_type === IngestionAuthType.Certificate) {
-    return [authentication_value.split(':')[0], 'undefined', authentication_value.split(':')[2]].join(':');
+    return [authenticationValueSplit[0], 'undefined', authenticationValueSplit[2]].join(':');
   }
   return authentication_value;
 };

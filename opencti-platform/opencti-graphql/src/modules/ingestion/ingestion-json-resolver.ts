@@ -29,7 +29,7 @@ import { connectorIdFromIngestId } from '../../domain/connector';
 
 const ingestionJsonResolvers: Resolvers = {
   Query: {
-    ingestionJson: (_, { id }, context) => findById(context, context.user, id),
+    ingestionJson: (_, { id }, context) => findById(context, context.user, id, true),
     ingestionJsons: (_, args, context) => findAllPaginated(context, context.user, args),
   },
   IngestionJson: {

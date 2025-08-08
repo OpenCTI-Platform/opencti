@@ -549,6 +549,7 @@
   "Copy": "写し",
   "copy": "コピー",
   "Copy attribute name to clipboard": "属性名をクリップボードにコピー",
+  "Copy confidence level to OpenCTI scores for indicators": "指標の信頼度をOpenCTIのスコアにコピーする",
   "Copy disabled: too many selected elements (maximum number of elements for a copy: ": "コピー無効:選択した要素が多すぎます(コピーの要素の最大数:",
   "Copy link": "リンクをコピー",
   "Copy OpenCTI scores to confidence level for indicators": "OpenCTIのスコアを指標の信頼度にコピーする。",
