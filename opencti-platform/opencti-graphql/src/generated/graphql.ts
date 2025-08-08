@@ -25314,11 +25314,11 @@ export type Settings = BasicObject & InternalObject & {
   request_access_enabled: Scalars['Boolean']['output'];
   standard_id: Scalars['String']['output'];
   updated_at: Scalars['DateTime']['output'];
-  xtm_hub_enrollment_date?: Maybe<Scalars['DateTime']['output']>;
-  xtm_hub_enrollment_status?: Maybe<XtmHubEnrollmentStatus>;
-  xtm_hub_enrollment_user_id?: Maybe<Scalars['String']['output']>;
-  xtm_hub_enrollment_user_name?: Maybe<Scalars['ID']['output']>;
   xtm_hub_last_connectivity_check?: Maybe<Scalars['DateTime']['output']>;
+  xtm_hub_registration_date?: Maybe<Scalars['DateTime']['output']>;
+  xtm_hub_registration_status?: Maybe<XtmHubRegistrationStatus>;
+  xtm_hub_registration_user_id?: Maybe<Scalars['String']['output']>;
+  xtm_hub_registration_user_name?: Maybe<Scalars['ID']['output']>;
   xtm_hub_token?: Maybe<Scalars['String']['output']>;
 };
 
@@ -32677,10 +32677,10 @@ export type X509CertificateAddInput = {
   version?: InputMaybe<Scalars['String']['input']>;
 };
 
-export enum XtmHubEnrollmentStatus {
-  Enrolled = 'enrolled',
+export enum XtmHubRegistrationStatus {
   LostConnectivity = 'lost_connectivity',
-  Unenrolled = 'unenrolled'
+  Registered = 'registered',
+  Unregistered = 'unregistered'
 }
 
 export type WithIndex<TObject> = TObject & Record<string, any>;
@@ -33756,7 +33756,7 @@ export type ResolversTypes = ResolversObject<{
   WorkspacesOrdering: WorkspacesOrdering;
   X509Certificate: ResolverTypeWrapper<Omit<X509Certificate, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   X509CertificateAddInput: X509CertificateAddInput;
-  XTMHubEnrollmentStatus: XtmHubEnrollmentStatus;
+  XTMHubRegistrationStatus: XtmHubRegistrationStatus;
 }>;
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -42276,11 +42276,11 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   request_access_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  xtm_hub_enrollment_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  xtm_hub_enrollment_status?: Resolver<Maybe<ResolversTypes['XTMHubEnrollmentStatus']>, ParentType, ContextType>;
-  xtm_hub_enrollment_user_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  xtm_hub_enrollment_user_name?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   xtm_hub_last_connectivity_check?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  xtm_hub_registration_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  xtm_hub_registration_status?: Resolver<Maybe<ResolversTypes['XTMHubRegistrationStatus']>, ParentType, ContextType>;
+  xtm_hub_registration_user_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  xtm_hub_registration_user_name?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   xtm_hub_token?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;

@@ -2,7 +2,6 @@ import ejs from 'ejs';
 import { type ManagerDefinition, registerManager } from './managerModule';
 import conf, { booleanConf, BUS_TOPICS, getBaseUrl, isFeatureEnabled, logApp } from '../config/conf';
 import { BYPASS, executionContext, HUB_REGISTRATION_MANAGER_USER, SETTINGS_SETMANAGEXTMHUB } from '../utils/access';
-import { XtmHubEnrollmentStatus } from '../generated/graphql';
 import { getEntityFromCache } from '../database/cache';
 import type { BasicStoreSettings } from '../types/settings';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
@@ -15,6 +14,7 @@ import { sendMail } from '../database/smtp';
 import { updateAttribute } from '../database/middleware';
 import { notify } from '../database/redis';
 import { getSettings } from '../domain/settings';
+import { XtmHubRegistrationStatus } from '../generated/graphql';
 
 const HUB_REGISTRATION_MANAGER_ENABLED = booleanConf('hub_registration_manager:enabled', true);
 const HUB_REGISTRATION_MANAGER_KEY = conf.get('hub_registration_manager:lock_key') || 'hub_registration_manager_lock';
@@ -75,10 +75,10 @@ export const hubRegistrationManager = async () => {
     const attributeUpdates: { key: string, value: unknown[] }[] = [{
       key: 'xtm_hub_last_connectivity_check', value: [new Date()]
     }];
-    if (settings.xtm_hub_enrollment_status !== XtmHubEnrollmentStatus.Enrolled) {
+    if (settings.xtm_hub_registration_status !== XtmHubRegistrationStatus.Registered) {
       attributeUpdates.push({
-        key: 'xtm_hub_enrollment_status',
-        value: [XtmHubEnrollmentStatus.Enrolled]
+        key: 'xtm_hub_registration_status',
+        value: [XtmHubRegistrationStatus.Registered]
       });
     }
     await updateAttribute(
@@ -89,11 +89,7 @@ export const hubRegistrationManager = async () => {
       attributeUpdates
     );
   } else {
-    if (settings.xtm_hub_enrollment_status === XtmHubEnrollmentStatus.Enrolled) {
-      await sendAdministratorsLostConnectivityEmail(context, settings);
-    }
-
-    if (settings.xtm_hub_enrollment_status !== XtmHubEnrollmentStatus.LostConnectivity) {
+    if (settings.xtm_hub_registration_status !== XtmHubRegistrationStatus.LostConnectivity) {
       await updateAttribute(
         context,
         HUB_REGISTRATION_MANAGER_USER,
@@ -101,11 +97,15 @@ export const hubRegistrationManager = async () => {
         ENTITY_TYPE_SETTINGS,
         [
           {
-            key: 'xtm_hub_enrollment_status',
-            value: [XtmHubEnrollmentStatus.LostConnectivity]
+            key: 'xtm_hub_registration_status',
+            value: [XtmHubRegistrationStatus.LostConnectivity]
           }
         ]
       );
+    }
+
+    if (settings.xtm_hub_registration_status === XtmHubRegistrationStatus.Registered) {
+      await sendAdministratorsLostConnectivityEmail(context, settings);
     }
   }
 

@@ -45,7 +45,7 @@ const useExternalTab = ({
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       if (event.source === tabRef.current) {
-        const closingTabEvent = ['cancel', 'enroll', 'unenroll'];
+        const closingTabEvent = ['cancel', 'register', 'unregister'];
         if (closingTabEvent.includes(event.data.action)) {
           closeTab();
         }
