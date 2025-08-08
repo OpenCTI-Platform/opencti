@@ -26,8 +26,8 @@ import IngestionSchedulingField from '@components/data/IngestionSchedulingField'
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import IngestionCsvInlineMapperForm from '@components/data/ingestionCsv/IngestionCsvInlineMapperForm';
-import IngestionCsvCreationUserHandling from '@components/data/ingestionCsv/IngestionCsvCreationUserHandling';
 import { IngestionCsvCreationUsersQuery$data } from '@components/data/ingestionCsv/__generated__/IngestionCsvCreationUsersQuery.graphql';
+import IngestionCreationUserHandling, { BasicUserHandlingValues } from '@components/data/IngestionCreationUserHandling';
 import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -118,7 +118,7 @@ interface IngestionCsvCreationContainerProps extends IngestionCsvCreationProps {
 
 }
 
-export interface IngestionCsvAddInput {
+export interface IngestionCsvAddInput extends BasicUserHandlingValues {
   name: string
   message?: string | null
   references?: ExternalReferencesValues
@@ -372,7 +372,10 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
               />
-              <IngestionCsvCreationUserHandling/>
+              <IngestionCreationUserHandling
+                confidence_level={50}
+                labelTag="F"
+              />
               <Box sx={{
                 marginTop: 2,
               }}

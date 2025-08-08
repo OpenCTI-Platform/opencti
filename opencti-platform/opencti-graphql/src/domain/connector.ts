@@ -47,6 +47,7 @@ import { addWorkbenchDraftConvertionCount, addWorkbenchValidationCount } from '.
 import { computeConnectorTargetContract, getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { removeAuthenticationCredentials } from '../modules/ingestion/ingestion-common';
+import { createOnTheFlyUser } from '../modules/user/user-domain';
 
 // region connectors
 export const connectorForWork = async (context: AuthContext, user: AuthUser, id: string) => {
@@ -178,21 +179,35 @@ export const managedConnectorAdd = async (
   user:AuthUser,
   input: AddManagedConnectorInput
 ) => {
-  const connectorUser: any = await storeLoadById(context, user, input.connector_user_id, ENTITY_TYPE_USER);
-  if (isEmptyField(connectorUser)) {
-    throw UnsupportedError('Connector user not found');
-  }
+  // Get contract
   const contractsMap = getSupportedContractsByImage();
   const targetContract: any = contractsMap.get(input.manager_contract_image);
   if (isEmptyField(targetContract)) {
     throw UnsupportedError('Target contract not found');
   }
+  if (!targetContract.manager_supported) {
+    throw FunctionalError('You have not chosen a connector supported by the manager');
+  }
   const contractConfigurations = computeConnectorTargetContract(input.manager_contract_configuration, targetContract);
+  // Get user
+  if (input.user_id.length < 2) {
+    throw FunctionalError('You have not chosen a user responsible for data creation', {});
+  }
+  let finalUserId = input.user_id;
+  if (input.automatic_user) {
+    const onTheFlyCreatedUser = await createOnTheFlyUser(context, user, { userName: input.user_id, confidenceLevel: input.confidence_level });
+    finalUserId = onTheFlyCreatedUser.id;
+  }
+  const connectorUser = await storeLoadById(context, user, finalUserId, ENTITY_TYPE_USER);
+  if (isEmptyField(connectorUser)) {
+    throw UnsupportedError('Connector user not found');
+  }
+  // Create connector
   const connectorToCreate: any = {
     name: input.name,
     connector_type: targetContract.container_type,
     catalog_id: input.catalog_id,
-    connector_user_id: input.connector_user_id,
+    connector_user_id: connectorUser.id,
     manager_contract_image: input.manager_contract_image,
     manager_contract_configuration: contractConfigurations,
     manager_requested_status: 'stopped',
@@ -200,6 +215,7 @@ export const managedConnectorAdd = async (
     built_in: false
   };
   const createdConnector: any = await createEntity(context, user, connectorToCreate, ENTITY_TYPE_CONNECTOR);
+  // Publish
   await publishUserAction({
     user,
     event_type: 'mutation',

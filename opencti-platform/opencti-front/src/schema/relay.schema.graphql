@@ -2021,8 +2021,10 @@ input EditManagedConnectorInput {
 
 input AddManagedConnectorInput {
   name: String!
-  connector_user_id: ID!
+  user_id: ID!
   catalog_id: ID!
+  automatic_user: Boolean
+  confidence_level: String
   manager_contract_image: String!
   manager_contract_configuration: [ContractConfigInput!]!
 }
@@ -8349,6 +8351,7 @@ type Query {
   channels(first: Int, after: ID, orderBy: ChannelsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): ChannelConnection
   catalog(id: String!): Catalog
   catalogs: [Catalog!]!
+  contract(slug: String!): ExtendedContract
   language(id: String!): Language
   languages(first: Int, after: ID, orderBy: LanguagesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): LanguageConnection
   event(id: String!): Event
@@ -9504,6 +9507,11 @@ type Catalog implements InternalObject & BasicObject {
   name: String!
   description: String!
   contracts: [String!]!
+}
+
+type ExtendedContract {
+  catalog_id: String!
+  contract: String!
 }
 
 enum CatalogsOrdering {

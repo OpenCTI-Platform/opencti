@@ -93,6 +93,7 @@ class ListCardsContent extends Component {
     const {
       classes,
       dataList,
+      dataListId,
       bookmarkList,
       CardComponent,
       DummyCardComponent,
@@ -123,7 +124,7 @@ class ListCardsContent extends Component {
         </div>
       );
     }
-    const { node } = edge;
+    const node = edge.node ?? edge;
     return (
       <div className={className} key={`${rowIndex}-${key}-${node.__id}`} style={finalStyle}>
         {/* TODO remove this when all components are pure function without compose() */}
@@ -132,6 +133,7 @@ class ListCardsContent extends Component {
             node={node}
             bookmarksIds={bookmarksIds}
             onLabelClick={onLabelClick}
+            dataListId={dataListId}
           />
         ) : (
           React.cloneElement(CardComponent, {
@@ -225,6 +227,7 @@ ListCardsContent.propTypes = {
   hasMore: PropTypes.func,
   isLoading: PropTypes.func,
   dataList: PropTypes.array,
+  dataListId: PropTypes.string,
   bookmarkList: PropTypes.array,
   globalCount: PropTypes.number,
   CardComponent: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),

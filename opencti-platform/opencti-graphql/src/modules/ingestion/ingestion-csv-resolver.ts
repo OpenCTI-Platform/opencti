@@ -13,8 +13,8 @@ import {
   ingestionCsvEditField,
   ingestionCsvResetState,
   testCsvIngestionMapping,
-  userAlreadyExists
 } from './ingestion-csv-domain';
+import { userAlreadyExists } from '../user/user-domain';
 
 const ingestionCsvResolvers: Resolvers = {
   Query: {
