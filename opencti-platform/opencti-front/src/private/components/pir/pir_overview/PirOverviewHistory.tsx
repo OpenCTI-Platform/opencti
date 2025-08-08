@@ -60,6 +60,8 @@ const pirHistoryFragment = graphql`
             entity_type
             entity_name
             message
+            pir_score
+            from_id
           }
         }
       }

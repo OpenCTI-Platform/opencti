@@ -17,12 +17,13 @@ import { graphql, useFragment } from 'react-relay';
 import React, { useState } from 'react';
 import { Box, Button, Typography } from '@mui/material';
 import FormAuthorizedMembersDialog from '@components/common/form/FormAuthorizedMembersDialog';
+import PirProcessingStatus from '@components/pir/PirProcessingStatus';
 import PirPopover from './PirPopover';
-import PirEdition from './PirEdition';
+import PirEdition from './pir_form/PirEdition';
 import { PirHeaderFragment$key } from './__generated__/PirHeaderFragment.graphql';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
-import { PirEditionFragment$key } from './__generated__/PirEditionFragment.graphql';
+import { PirEditionFragment$key } from './pir_form/__generated__/PirEditionFragment.graphql';
 import { authorizedMembersToOptions, useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
 import { PIRAPI_PIRUPDATE, SETTINGS_SETACCESSES } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
@@ -31,6 +32,7 @@ const headerFragment = graphql`
   fragment PirHeaderFragment on Pir {
     id
     name
+    processingCount
     creators {
       id
       name
@@ -89,7 +91,13 @@ const PirHeader = ({ data, editionData }: PirHeaderProps) => {
 
         <Security needs={[PIRAPI_PIRUPDATE]} hasAccess={canEdit}>
           <>
-            <div>
+            <PirProcessingStatus
+              pirId={id}
+              processingCount={pir.processingCount}
+              forceRefetch={() => {}}
+            />
+
+            <div style={{ marginLeft: 10 }}>
               <Security matchAll needs={[PIRAPI_PIRUPDATE, SETTINGS_SETACCESSES]} hasAccess={canManage}>
                 <FormAuthorizedMembersDialog
                   id={id}

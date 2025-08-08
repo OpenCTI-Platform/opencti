@@ -15,12 +15,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import React from 'react';
 import { graphql } from 'react-relay';
-import { PirsListQuery, PirsListQuery$variables } from '@components/pir/__generated__/PirsListQuery.graphql';
-import { Pirs_PirsFragment$data } from '@components/pir/__generated__/Pirs_PirsFragment.graphql';
-import { Pirs_PirFragment$data } from '@components/pir/__generated__/Pirs_PirFragment.graphql';
 import { useTheme } from '@mui/material/styles';
-import PirCreation from '@components/pir/PirCreation';
-import PirFiltersDisplay from '@components/pir/PirFiltersDisplay';
+import { PirsListQuery, PirsListQuery$variables } from './__generated__/PirsListQuery.graphql';
+import { Pirs_PirsFragment$data } from './__generated__/Pirs_PirsFragment.graphql';
+import { Pirs_PirFragment$data } from './__generated__/Pirs_PirFragment.graphql';
+import PirCreation from './pir_form/PirCreation';
+import PirFiltersDisplay from './PirFiltersDisplay';
 import { useFormatter } from '../../../components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
