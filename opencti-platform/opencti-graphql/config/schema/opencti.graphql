@@ -1299,6 +1299,7 @@ type PlatformEE {
   license_platform_match: Boolean!
   license_creator: String!
   license_global: Boolean!
+  license_raw_pem: String
 }
 
 enum PlatformCriticalAlertType {
@@ -1390,6 +1391,8 @@ type Settings implements InternalObject & BasicObject {
   platform_trash_enabled: Boolean!
   platform_translations: String
   platform_protected_sensitive_config: PlatformProtectedSensitiveConfig! @auth
+  filigran_chatbot_ai_url: String @auth
+  filigran_chatbot_ai_enabled: Boolean
   created_at: DateTime! @auth
   updated_at: DateTime! @auth
   activity_listeners: [Member!] @auth(for: [SETTINGS_SECURITYACTIVITY])

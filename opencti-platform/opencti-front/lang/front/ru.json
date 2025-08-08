@@ -2514,6 +2514,7 @@
   "Only letters, numbers and special chars _ and - are allowed": "Разрешены только буквы, цифры и специальные символы _ и -.",
   "Only successful tests allow the ingestion creation.": "Только успешные тесты позволяют создать впуск.",
   "Only successful tests allow the ingestion edition.": "Только успешно пройденные тесты дают право на включение издания.",
+  "Open chatbot": "Открытый чатбот",
   "Open correlation details": "Детали открытой корреляции",
   "Open export panel": "Откройте панель экспорта",
   "Open last execution traces": "Открыть следы последнего выполнения",

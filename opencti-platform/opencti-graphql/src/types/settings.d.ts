@@ -20,6 +20,8 @@ export interface BasicStoreSettings extends BasicStoreEntity {
   activity_listeners_ids?: string[]
   activity_listeners_users?: string[]
   messages?: BasicStoreSettingsMessage[]
+  filigran_chatbot_ai_url?: string
+  filigran_agentic_ai_url?: string
   xtm_hub_token?: string
   xtm_hub_registration_status?: XtmHubRegistrationStatus
   xtm_hub_registration_user_id?: string

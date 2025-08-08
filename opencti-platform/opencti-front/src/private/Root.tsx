@@ -17,6 +17,7 @@ import generateAnalyticsConfig from './Analytics';
 import { RootMe_data$key } from './__generated__/RootMe_data.graphql';
 import { RootPrivateQuery } from './__generated__/RootPrivateQuery.graphql';
 import { RootSettings$data, RootSettings$key } from './__generated__/RootSettings.graphql';
+import 'filigran-chatbot/dist/web'; // allows to use <filigran-chatbot /> element
 
 const rootSettingsFragment = graphql`
   fragment RootSettings on Settings {
@@ -25,6 +26,7 @@ const rootSettingsFragment = graphql`
     platform_demo
     platform_banner_text
     request_access_enabled
+    platform_url
     platform_user_statuses {
       status
       message
@@ -66,6 +68,8 @@ const rootSettingsFragment = graphql`
       running
       warning
     }
+    filigran_chatbot_ai_enabled
+    filigran_chatbot_ai_url
     platform_enterprise_edition {
       license_validated
       license_expired
@@ -78,6 +82,7 @@ const rootSettingsFragment = graphql`
       license_platform
       license_platform_match
       license_type
+      license_raw_pem
     }
     ...AppThemeProvider_settings
     ...AppIntlProvider_settings
@@ -134,6 +139,7 @@ const meUserFragment = graphql`
     name
     entity_type
     lastname
+    api_token
     language
     theme
     user_email
