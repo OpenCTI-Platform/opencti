@@ -13,9 +13,9 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import type { BasicStoreEntity, BasicStoreRelation, StoreEntity } from '../../types/store';
+import type { BasicStoreEntity, BasicStoreRelation, StoreEntity, StoreRelation } from '../../types/store';
 import type { StixInternal } from '../../types/stix-2-1-common';
-import { PirType, type FilterGroup } from '../../generated/graphql';
+import { type FilterGroup, PirType } from '../../generated/graphql';
 import type { AuthorizedMember } from '../../utils/access';
 
 export const ENTITY_TYPE_PIR = 'Pir';
@@ -83,4 +83,8 @@ export interface PirExplanation {
 
 export interface BasicStoreRelationPir extends BasicStoreRelation {
   pir_explanations: PirExplanation[],
+  pir_score: number,
+}
+
+export interface StoreRelationPir extends StoreRelation, BasicStoreRelationPir {
 }
