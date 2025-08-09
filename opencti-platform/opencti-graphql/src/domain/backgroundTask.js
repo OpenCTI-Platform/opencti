@@ -54,8 +54,12 @@ export const findById = async (context, user, taskId) => {
   return storeLoadById(context, user, taskId, ENTITY_TYPE_BACKGROUND_TASK);
 };
 
-export const findAll = (context, user, args) => {
+export const findAllPaginated = (context, user, args) => {
   return listEntitiesPaginated(context, user, [ENTITY_TYPE_BACKGROUND_TASK], args);
+};
+
+export const findAll = (context, user, args) => {
+  return listEntities(context, user, [ENTITY_TYPE_BACKGROUND_TASK], args);
 };
 
 export const buildQueryFilters = async (context, user, filters, search, taskPosition, scope, orderMode, excludedIds) => {
