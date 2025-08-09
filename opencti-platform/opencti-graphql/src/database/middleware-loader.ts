@@ -306,13 +306,10 @@ export const listRelations = async <T extends StoreProxyRelation>(context: AuthC
 
 export const listRelationsPaginated = async <T extends BasicStoreRelation>(context: AuthContext, user: AuthUser, type: string | Array<string>,
   args: RelationOptions<T> = {}): Promise<StoreRelationConnection<T>> => {
-  const { indices, connectionFormat } = args;
+  const { indices } = args;
   const computedIndices = computeQueryIndices(indices, type);
-  if (connectionFormat === false) {
-    throw UnsupportedError('List connection require connectionFormat option to true');
-  }
   const paginateArgs = buildRelationsFilter(type, args);
-  return elPaginate(context, user, computedIndices, paginateArgs);
+  return elPaginate(context, user, computedIndices, { ...paginateArgs, connectionFormat: true });
 };
 
 export const listAllRelations = async <T extends StoreProxyRelation>(context: AuthContext, user: AuthUser, type: string | Array<string>,
@@ -454,12 +451,9 @@ export const listAllFromEntitiesThroughRelations = async <T extends BasicStoreEn
 
 export const listEntitiesPaginated = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, entityTypes: Array<string>,
   args: EntityOptions<T> = {}): Promise<StoreEntityConnection<T>> => {
-  const { indices, connectionFormat } = args;
-  if (connectionFormat === false) {
-    throw UnsupportedError('List connection require connectionFormat option to true');
-  }
+  const { indices } = args;
   const computedIndices = computeQueryIndices(indices, entityTypes);
-  const paginateArgs = { ...buildEntityFilters(entityTypes, args), withResultMeta: true };
+  const paginateArgs = { ...buildEntityFilters(entityTypes, args), withResultMeta: true, connectionFormat: true };
   let pagination = await elPaginate(context, user, computedIndices, paginateArgs);
   const { edges } = pagination.elements;
   let { pageInfo } = pagination.elements;
