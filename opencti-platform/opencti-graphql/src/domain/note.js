@@ -1,6 +1,6 @@
 import { assoc, dissoc, pipe } from 'ramda';
 import { createEntity, distributionEntities, timeSeriesEntities } from '../database/middleware';
-import { internalLoadById, listEntities, storeLoadById } from '../database/middleware-loader';
+import { internalLoadById, listEntitiesPaginated, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_CONTAINER_NOTE } from '../schema/stixDomainObject';
@@ -17,7 +17,7 @@ export const findById = (context, user, noteId) => {
 };
 
 export const findAll = async (context, user, args) => {
-  return listEntities(context, user, [ENTITY_TYPE_CONTAINER_NOTE], args);
+  return listEntitiesPaginated(context, user, [ENTITY_TYPE_CONTAINER_NOTE], args);
 };
 
 // region mutations

@@ -4,7 +4,7 @@ import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_IDENTITY } from '../schema/general';
 import { ENTITY_TYPE_IDENTITY_SECTOR, isStixDomainObjectIdentity } from '../schema/stixDomainObject';
-import { type EntityOptions, listEntities, storeLoadById } from '../database/middleware-loader';
+import { type EntityOptions, listEntitiesPaginated, storeLoadById } from '../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreCommon } from '../types/store';
 import type { IdentityAddInput } from '../generated/graphql';
@@ -21,7 +21,7 @@ export const findAll = async (context: AuthContext, user: AuthUser, args: Entity
   if (types.length === 0) {
     types.push(ENTITY_TYPE_IDENTITY);
   }
-  return listEntities(context, user, types, args);
+  return listEntitiesPaginated(context, user, types, args);
 };
 
 export const addIdentity = async (context: AuthContext, user: AuthUser, identity: IdentityAddInput) => {

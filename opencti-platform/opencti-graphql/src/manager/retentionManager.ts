@@ -1,6 +1,6 @@
 import moment, { type Moment } from 'moment';
 import * as R from 'ramda';
-import { findAll as findRetentionRulesToExecute } from '../domain/retentionRule';
+import { listRules as findRetentionRulesToExecute } from '../domain/retentionRule';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { deleteElementById, patchAttribute } from '../database/middleware';
 import { executionContext, RETENTION_MANAGER_USER } from '../utils/access';
@@ -129,7 +129,7 @@ const executeProcessing = async (context: AuthContext, retentionRule: RetentionR
 
 const retentionHandler = async (lock: { signal: AbortSignal, extend: () => Promise<void>, unlock: () => Promise<void> }) => {
   const context = executionContext('retention_manager');
-  const retentionRules = await findRetentionRulesToExecute(context, RETENTION_MANAGER_USER, { connectionFormat: false });
+  const retentionRules = await findRetentionRulesToExecute(context, RETENTION_MANAGER_USER);
   logApp.debug(`[OPENCTI] Retention manager execution for ${retentionRules.length} rules`);
   // Execution of retention rules
   if (retentionRules.length > 0) {

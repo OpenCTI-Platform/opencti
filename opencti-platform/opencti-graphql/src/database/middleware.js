@@ -316,8 +316,7 @@ export const paginateAllThings = async (context, user, thingsTypes, args = {}) =
   return buildPagination(0, null, nodeResult, nodeResult.length);
 };
 export const loadEntity = async (context, user, entityTypes, args = {}) => {
-  const opts = { ...args, connectionFormat: false };
-  const entities = await listEntities(context, user, entityTypes, opts);
+  const entities = await listEntities(context, user, entityTypes, args);
   if (entities.length > 1) {
     throw DatabaseError('Expect only one response', { entityTypes, args });
   }
@@ -1136,7 +1135,6 @@ const listEntitiesByHashes = async (context, user, type, hashes) => {
       filterGroups: [],
     },
     noFiltersChecking: true,
-    connectionFormat: false,
   });
 };
 export const hashMergeValidation = (instances) => {
@@ -2327,7 +2325,6 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
           filterGroups: [],
         },
         noFiltersChecking: true,
-        connectionFormat: false
       };
       const individuals = await listEntities(context, user, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], args);
       if (individuals.length > 0) {

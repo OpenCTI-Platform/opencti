@@ -22,7 +22,7 @@ import { FilterMode } from '../../generated/graphql';
 import { now } from '../../utils/format';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import type { BasicStoreEntityCase } from '../case/case-types';
-import type { BasicStoreCommon } from '../../types/store';
+import type { BasicStoreEntity } from '../../types/store';
 import { TEMPLATE_TASK_RELATION } from '../case/case-template/case-template-types';
 import { type BasicStoreEntityTaskTemplate, ENTITY_TYPE_TASK_TEMPLATE } from './task-template/task-template-types';
 
@@ -46,7 +46,7 @@ export const findAllByCaseTemplateId = async (context: AuthContext, user: AuthUs
   return listAllEntities<BasicStoreEntityTaskTemplate>(context, user, [ENTITY_TYPE_TASK_TEMPLATE], opts);
 };
 
-export const caseTasksPaginated = async <T extends BasicStoreCommon> (context: AuthContext, user: AuthUser, caseId: string, opts: EntityOptions<T>) => {
+export const caseTasksPaginated = async <T extends BasicStoreEntity> (context: AuthContext, user: AuthUser, caseId: string, opts: EntityOptions<T>) => {
   return listEntitiesThroughRelationsPaginated<T>(context, user, caseId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_TASK, true, opts);
 };
 
