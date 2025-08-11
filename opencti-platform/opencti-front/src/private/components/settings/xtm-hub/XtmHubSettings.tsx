@@ -84,7 +84,7 @@ const XtmHubSettings = () => {
                     'deploy in one-click Threat Intelligence Resources',
                   )}
                 </li>
-                <li>{t_i18n('see metrics on your platform')}</li>
+                <li>{t_i18n('see metrics on your platform (coming soon)')}</li>
               </List>
             </Box>
             <List style={{ marginTop: -10 }}>
