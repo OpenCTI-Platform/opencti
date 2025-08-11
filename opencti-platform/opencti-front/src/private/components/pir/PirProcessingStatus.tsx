@@ -7,6 +7,7 @@ import Tooltip from '@mui/material/Tooltip';
 import CircularProgress from '@mui/material/CircularProgress';
 import { Badge } from '@mui/material';
 import { CheckCircleOutlined } from '@mui/icons-material';
+import PirWorks from './PirWorks';
 import { useFormatter } from '../../../components/i18n';
 
 interface PirProcessingStatusProps {
@@ -58,8 +59,7 @@ const PirProcessingStatus: FunctionComponent<PirProcessingStatusProps> = ({ pirI
             <Tab label={t_i18n('Works')} value="Works" />
             <Tab label={t_i18n('Tasks')} value="Tasks" />
           </Tabs>
-          {/*{tabValue === 'Works' && (<PirWorks draftId={pirId}/>)}*/} // TODO PIR implement
-          {/*{tabValue === 'Tasks' && (<PirTasks draftId={pirId}/>)}*/} // TODO PIR remove
+          {tabValue === 'Works' && (<PirWorks pirId={pirId}/>)}
         </>
       </Drawer>
     </div>

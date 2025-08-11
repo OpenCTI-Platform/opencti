@@ -46,6 +46,7 @@ type Pir implements InternalObject & BasicObject {
         search: String
     ): ContainerConnection
     processingCount: Int!
+    works(first: Int): [Work!]
 }
 
 # Ordering

@@ -19712,6 +19712,7 @@ export type Pir = BasicObject & InternalObject & {
   processingCount: Scalars['Int']['output'];
   standard_id: Scalars['String']['output'];
   updated_at: Scalars['DateTime']['output'];
+  works?: Maybe<Array<Work>>;
 };
 
 
@@ -19722,6 +19723,11 @@ export type PirPirContainersArgs = {
   orderBy?: InputMaybe<ContainersOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type PirWorksArgs = {
+  first?: InputMaybe<Scalars['Int']['input']>;
 };
 
 export type PirAddInput = {
@@ -41015,6 +41021,7 @@ export type PirResolvers<ContextType = any, ParentType extends ResolversParentTy
   processingCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  works?: Resolver<Maybe<Array<ResolversTypes['Work']>>, ParentType, ContextType, Partial<PirWorksArgs>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

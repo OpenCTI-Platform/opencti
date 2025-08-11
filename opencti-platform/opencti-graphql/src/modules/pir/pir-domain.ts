@@ -32,21 +32,20 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS, logApp } from '../../config/conf';
 import { deleteInternalObject } from '../../domain/internalObject';
-import { registerConnectorForPir, unregisterConnectorForIngestion } from '../../domain/connector';
+import { connectorIdFromIngestId, registerConnectorForPir, unregisterConnectorForIngestion } from '../../domain/connector';
 import type { BasicStoreCommon, BasicStoreObject } from '../../types/store';
 import { RELATION_IN_PIR, RELATION_OBJECT } from '../../schema/stixRefRelationship';
 import { createPirRel, serializePir, updatePirExplanations } from './pir-utils';
 import { ForbiddenAccess, FunctionalError } from '../../config/errors';
 import { ABSTRACT_STIX_REF_RELATIONSHIP, ENTITY_TYPE_CONTAINER } from '../../schema/general';
 import { elCount, elRawUpdateByQuery } from '../../database/engine';
-import { READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
+import { READ_INDEX_HISTORY } from '../../database/utils';
 import { extractFilterKeyValues } from '../../utils/filtering/filtering-utils';
 import { INSTANCE_DYNAMIC_REGARDING_OF, INSTANCE_REGARDING_OF, OBJECT_CONTAINS_FILTER, RELATION_TO_FILTER, RELATION_TYPE_FILTER } from '../../utils/filtering/filtering-constants';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
 import { isBypassUser, MEMBER_ACCESS_ALL, MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_VIEW } from '../../utils/access';
-import type { BasicStoreEntityDraftWorkspace } from '../draftWorkspace/draftWorkspace-types';
-import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_WORK } from '../../schema/internalObject';
+import { ENTITY_TYPE_WORK } from '../../schema/internalObject';
 
 export const findById = async (context: AuthContext, user: AuthUser, id: string) => {
   await checkEnterpriseEdition(context);
@@ -295,15 +294,16 @@ export const pirEditAuthorizedMembers = async (
   return editAuthorizedMembers(context, user, args);
 };
 
-export const getProcessingCount = async (context: AuthContext, user: AuthUser, pir: BasicStoreEntityPir) => {
+export const getProcessingCount = async (context: AuthContext, user: AuthUser, pirId: string) => {
+  const connectorId = connectorIdFromIngestId(pirId);
   const worksFilter = {
     filterGroups: [],
-    filters: [ // TODO PIR put connector id
+    filters: [
       {
         key: 'connector_id',
         mode: 'or',
         operator: 'eq',
-        values: ['57198a2f-0fb8-5a35-af7a-6bdc7c4959a0'] // TODO PIR fetch connector associated to pir
+        values: [connectorId]
       },
       {
         key: 'status',
