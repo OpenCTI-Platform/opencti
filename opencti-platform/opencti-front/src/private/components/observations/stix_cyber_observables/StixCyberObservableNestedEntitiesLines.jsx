@@ -131,8 +131,8 @@ class StixCyberObservableNestedEntitiesLinesComponent extends Component {
                             className={classes.bodyItem}
                             style={{ width: '12%' }}
                           >
-                            <FieldOrEmpty source={stixCoreObject.creators}>
-                              {(stixCoreObject.creators ?? [])
+                            <FieldOrEmpty source={stixNestedRefRelationship.creators}>
+                              {(stixNestedRefRelationship.creators ?? [])
                                 .map((c) => c?.name)
                                 .join(', ')}
                             </FieldOrEmpty>
