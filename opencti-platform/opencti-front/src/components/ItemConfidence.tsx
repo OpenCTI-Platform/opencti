@@ -4,6 +4,7 @@ import Chip from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
 import { useLevel } from '../utils/hooks/useScale';
 import { hexToRGB } from '../utils/Colors';
+import { chipInListBasicStyle } from '../utils/chipStyle';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -15,10 +16,7 @@ const useStyles = makeStyles(() => ({
     width: 120,
   },
   chipInList: {
-    fontSize: 12,
-    height: 20,
-    float: 'left',
-    borderRadius: 4,
+    ...chipInListBasicStyle,
     width: 80,
   },
   label: {

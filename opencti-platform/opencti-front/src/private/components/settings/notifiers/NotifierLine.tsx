@@ -12,6 +12,7 @@ import type { Theme } from '../../../../components/Theme';
 import { NotifierLine_node$key, NotifierLine_node$data } from './__generated__/NotifierLine_node.graphql';
 import { NotifiersLinesPaginationQuery$variables } from './__generated__/NotifiersLinesPaginationQuery.graphql';
 import NotifierPopover from './NotifierPopover';
+import { chipInListBasicStyle } from '../../../../utils/chipStyle';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -40,9 +41,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     color: theme.palette.grey?.[700],
   },
   chipInList: {
-    fontSize: 12,
-    height: 20,
-    float: 'left',
+    ...chipInListBasicStyle,
     width: 120,
   },
 }));

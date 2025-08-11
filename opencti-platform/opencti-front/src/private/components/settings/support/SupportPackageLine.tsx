@@ -21,6 +21,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { minutesBetweenDates, now } from '../../../../utils/Time';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
+import { chipInListBasicStyle } from '../../../../utils/chipStyle';
 
 const styles = {
   bodyItem: {
@@ -38,10 +39,7 @@ const styles = {
     cursor: 'default',
   },
   chipInList: {
-    fontSize: 12,
-    height: 20,
-    float: 'left' as 'left' | 'right' | 'none' | undefined,
-    borderRadius: 4,
+    ...chipInListBasicStyle,
     width: 120,
   },
   label: {
