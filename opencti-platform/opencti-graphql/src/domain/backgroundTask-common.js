@@ -32,6 +32,7 @@ import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { TYPE_FILTER, USER_ID_FILTER } from '../utils/filtering/filtering-constants';
 import { createWork } from './work';
 import { getBestBackgroundConnectorId } from '../database/rabbitmq';
+import { ACTION_TYPE_REPLACE } from "./backgroundTask";
 
 export const TASK_TYPE_QUERY = 'QUERY';
 export const TASK_TYPE_RULE = 'RULE';
@@ -60,9 +61,13 @@ const areParentTypesKnowledge = (parentTypes) => parentTypes && parentTypes.flat
 export const checkActionValidity = async (context, user, input, scope, taskType) => {
   const { actions, filters: baseFilterString, ids } = input;
   // check actions validity
-  const actionsFields = actions.map((a) => a.field).filter(Boolean);
-  if (actionsFields.length !== uniq(actionsFields).length) {
-    throw FunctionalError('A single task cannot perform several actions on the same field.', { data: actionsFields });
+  const replaceActionsFields = actions
+    .filter((a) => !a.type || a.type === ACTION_TYPE_REPLACE)
+    .map((a) => a.field).filter(Boolean);
+  const severalReplaceOnSameKey = replaceActionsFields.length !== uniq(replaceActionsFields).length;
+  const replaceAndOtherActionOnSameKey = actions.filter((a) => a.type && a.type !== ACTION_TYPE_REPLACE && replaceActionsFields.includes(a.field)).length > 0;
+  if (severalReplaceOnSameKey || replaceAndOtherActionOnSameKey) {
+    throw FunctionalError('A single task cannot perform several actions on the same field if one action is a replace.', { data: replaceActionsFields });
   }
   // check rights
   const baseFilterObject = baseFilterString ? JSON.parse(baseFilterString) : undefined;
