@@ -29,6 +29,7 @@ const draftContextBannerFragment = graphql`
   fragment DraftContextBanner_data on DraftWorkspace {
     id
     name
+    entity_id
     draft_status
     processingCount
     objectsCount {
@@ -87,7 +88,7 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
     return (<ErrorNotFound />);
   }
 
-  const { name, processingCount, objectsCount } = useFragment<DraftContextBanner_data$key>(draftContextBannerFragment, draftWorkspace);
+  const { name, processingCount, objectsCount, entity_id } = useFragment<DraftContextBanner_data$key>(draftContextBannerFragment, draftWorkspace);
   const currentlyProcessing = processingCount > 0;
 
   const handleExitDraft = () => {
@@ -96,6 +97,9 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
         input: { key: 'draft_context', value: '' },
       },
       onCompleted: () => {
+        if (entity_id) {
+          navigate(`/dashboard/id/${entity_id}`);
+        }
         navigate('/dashboard/data/import/draft');
       },
     });
@@ -116,6 +120,9 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
             onCompleted: () => {
               setApproving(false);
               MESSAGING$.notifySuccess('Draft validation in progress');
+              if (entity_id) {
+                navigate(`/dashboard/id/${entity_id}`);
+              }
               navigate('/dashboard/data/import/draft');
             },
           });
