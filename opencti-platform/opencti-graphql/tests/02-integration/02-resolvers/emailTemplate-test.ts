@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { elLoadById } from 'src/database/engine';
 import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
+import { elLoadById } from '../../../src/database/engine';
 
 const READ_TEMPLATE_QUERY = gql`
   query emailTemplate($id: ID!) {
@@ -57,7 +57,7 @@ const generateEmailTemplateToCreate = (value: number) => ({
 });
 
 describe('Email template resolver standard behavior', () => {
-  const emailTemplateIds = [];
+  const emailTemplateIds: string[] = [];
   describe('Email template creation', () => {
     it('should create email template', async () => {
       const emailTemplate = await queryAsAdmin({
