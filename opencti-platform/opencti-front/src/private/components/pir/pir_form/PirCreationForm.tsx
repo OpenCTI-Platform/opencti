@@ -21,7 +21,7 @@ import { PirCreationFormData } from './pir-form-utils';
 import PirCreationFormGeneralSettings from './PirCreationFormGeneralSettings';
 import PirCreationFormType from './PirCreationFormType';
 import PirCreationFormStepper from './PirCreationFormStepper';
-import { useFormatter } from '../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import PirCreationFormCriteria from './PirCreationFormCriteria';
 
 interface PirCreationFormProps {

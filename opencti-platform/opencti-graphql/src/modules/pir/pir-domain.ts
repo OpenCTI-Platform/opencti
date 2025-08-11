@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { now } from 'moment';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { type EntityOptions, internalLoadById, listEntitiesPaginated, listRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
+import { type EntityOptions, internalLoadById, listEntitiesPaginated, listRelations, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityPir, ENTITY_TYPE_PIR, type PirExplanation } from './pir-types';
 import {
   type EditInput,
@@ -38,13 +38,15 @@ import { RELATION_IN_PIR, RELATION_OBJECT } from '../../schema/stixRefRelationsh
 import { createPirRel, serializePir, updatePirExplanations } from './pir-utils';
 import { ForbiddenAccess, FunctionalError } from '../../config/errors';
 import { ABSTRACT_STIX_REF_RELATIONSHIP, ENTITY_TYPE_CONTAINER } from '../../schema/general';
-import { elRawUpdateByQuery } from '../../database/engine';
-import { READ_INDEX_HISTORY } from '../../database/utils';
+import { elCount, elRawUpdateByQuery } from '../../database/engine';
+import { READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { extractFilterKeyValues } from '../../utils/filtering/filtering-utils';
-import { INSTANCE_DYNAMIC_REGARDING_OF, INSTANCE_REGARDING_OF, OBJECT_CONTAINS_FILTER, RELATION_TO_FILTER } from '../../utils/filtering/filtering-constants';
+import { INSTANCE_DYNAMIC_REGARDING_OF, INSTANCE_REGARDING_OF, OBJECT_CONTAINS_FILTER, RELATION_TO_FILTER, RELATION_TYPE_FILTER } from '../../utils/filtering/filtering-constants';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
-import { isBypassUser, MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_VIEW } from '../../utils/access';
+import { isBypassUser, MEMBER_ACCESS_ALL, MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_VIEW } from '../../utils/access';
+import type { BasicStoreEntityDraftWorkspace } from '../draftWorkspace/draftWorkspace-types';
+import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_WORK } from '../../schema/internalObject';
 
 export const findById = async (context: AuthContext, user: AuthUser, id: string) => {
   await checkEnterpriseEdition(context);
@@ -72,7 +74,7 @@ export const findPirContainers = async (
     filters: [{
       key: [INSTANCE_REGARDING_OF],
       values: [
-        { key: 'relationship_type', values: [RELATION_IN_PIR] },
+        { key: RELATION_TYPE_FILTER, values: [RELATION_IN_PIR] },
         { key: 'id', values: [pir.id] },
       ],
     }],
@@ -88,7 +90,7 @@ export const findPirContainers = async (
       {
         key: [INSTANCE_DYNAMIC_REGARDING_OF],
         values: [
-          { key: 'relationship_type', values: [RELATION_OBJECT] },
+          { key: RELATION_TYPE_FILTER, values: [RELATION_OBJECT] },
           { key: 'dynamic', values: [flaggedEntitiesFilter] },
         ],
       }
@@ -115,7 +117,7 @@ export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAdd
       access_right: MEMBER_ACCESS_RIGHT_ADMIN,
     },
     {
-      id: 'ALL',
+      id: MEMBER_ACCESS_ALL,
       access_right: MEMBER_ACCESS_RIGHT_VIEW,
     }
   ];
@@ -153,7 +155,7 @@ export const deletePir = async (context: AuthContext, user: AuthUser, pirId: str
   } catch (e) {
     logApp.error('[OPENCTI] Error while unregistering Pir connector', { cause: e });
   }
-  // remove pir id from historic events
+  // remove pir_ids from historic events
   const source = `
     def pirIdIndex = ctx._source.context_data.pir_ids.indexOf(params.pirId);
     if (pirIdIndex >=0 ) {
@@ -255,11 +257,11 @@ export const pirUnflagElement = async (
     throw FunctionalError('No PIR found');
   }
   const { relationshipId, sourceId } = input;
-  // fetch rel between object and pir
-  const rels = await listRelationsPaginated(context, user, RELATION_IN_PIR, { fromId: sourceId, toId: pir.id }); // TODO PIR don't use pagination
+  // fetch in-pir rels between the entity and the pir
+  const rels = await listRelations(context, user, RELATION_IN_PIR, { fromId: sourceId, toId: pir.id, connectionFormat: false });
   // eslint-disable-next-line no-restricted-syntax
-  for (const rel of rels.edges) {
-    const relDependencies = (rel as any).node.pir_explanations as PirExplanation[];
+  for (const rel of rels) {
+    const relDependencies = (rel as any).pir_explanations as PirExplanation[];
     // fetch dependencies not concerning the relationship
     const newRelDependencies = relDependencies.filter((dep) => !dep.dependencies
       .map((d) => d.element_id)
@@ -270,7 +272,7 @@ export const pirUnflagElement = async (
     } else if (newRelDependencies.length < relDependencies.length) {
       // update dependencies
       await updatePirExplanations(context, user, sourceId, pir.id, newRelDependencies);
-    } // nothing to do
+    }
   }
   return pir.id;
 };
@@ -291,4 +293,31 @@ export const pirEditAuthorizedMembers = async (
   };
   // @ts-expect-error TODO improve busTopicKey types to avoid this
   return editAuthorizedMembers(context, user, args);
+};
+
+export const getProcessingCount = async (context: AuthContext, user: AuthUser, pir: BasicStoreEntityPir) => {
+  const worksFilter = {
+    filterGroups: [],
+    filters: [ // TODO PIR put connector id
+      {
+        key: 'connector_id',
+        mode: 'or',
+        operator: 'eq',
+        values: ['57198a2f-0fb8-5a35-af7a-6bdc7c4959a0'] // TODO PIR fetch connector associated to pir
+      },
+      {
+        key: 'status',
+        mode: 'or',
+        operator: 'eq',
+        values: ['wait', 'progress']
+      }
+    ],
+    mode: 'and'
+  };
+  const worksOpts = {
+    types: [ENTITY_TYPE_WORK],
+    filters: worksFilter,
+  };
+  const draftIncompleteWorksCount = await elCount(context, user, READ_INDEX_HISTORY, worksOpts);
+  return draftIncompleteWorksCount;
 };

@@ -17,15 +17,15 @@ import React, { useState } from 'react';
 import { Dialog } from '@mui/material';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import { PirsListQuery$variables } from './__generated__/PirsListQuery.graphql';
+import { PirsListQuery$variables } from '../__generated__/PirsListQuery.graphql';
 import { PirCreationFormData, pirFormDataToMutationInput } from './pir-form-utils';
 import { PirCreationMutation } from './__generated__/PirCreationMutation.graphql';
-import CreateEntityControlledDial from '../../../components/CreateEntityControlledDial';
-import Transition from '../../../components/Transition';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import Transition from '../../../../components/Transition';
 import PirCreationForm from './PirCreationForm';
-import useApiMutation from '../../../utils/hooks/useApiMutation';
-import { useFormatter } from '../../../components/i18n';
-import { insertNode } from '../../../utils/store';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { useFormatter } from '../../../../components/i18n';
+import { insertNode } from '../../../../utils/store';
 
 const pirCreateMutation = graphql`
   mutation PirCreationMutation($input: PirAddInput!) {
