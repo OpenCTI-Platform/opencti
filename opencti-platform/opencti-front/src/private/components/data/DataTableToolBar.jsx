@@ -999,13 +999,13 @@ class DataTableToolBar extends Component {
           sortedOptions.map(
             (n) => {
               // disable some fields to prevent making several actions on the same key if one of them is a replace
-              const disabled = (replaceSelectedFields.includes(n.value) && actionsInputs[i]?.field !== n.value)
+              const disableField = (replaceSelectedFields.includes(n.value) && actionsInputs[i]?.field !== n.value)
                 || (selectedFields.includes(n.value) && actionsInputs[i]?.type === 'REPLACE');
               return (
                 <MenuItem
                   key={n.value}
                   value={n.value}
-                  disabled={disabled}
+                  disabled={disableField}
                 >
                   {n.label}
                 </MenuItem>

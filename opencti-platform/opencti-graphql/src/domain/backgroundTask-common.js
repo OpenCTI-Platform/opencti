@@ -32,14 +32,19 @@ import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { TYPE_FILTER, USER_ID_FILTER } from '../utils/filtering/filtering-constants';
 import { createWork } from './work';
 import { getBestBackgroundConnectorId } from '../database/rabbitmq';
-import { ACTION_TYPE_REPLACE } from "./backgroundTask";
 
 export const TASK_TYPE_QUERY = 'QUERY';
 export const TASK_TYPE_RULE = 'RULE';
 export const TASK_TYPE_LIST = 'LIST';
 
+export const ACTION_TYPE_ADD = 'ADD';
 export const ACTION_TYPE_DELETE = 'DELETE';
+export const ACTION_TYPE_REMOVE = 'REMOVE';
+export const ACTION_TYPE_REPLACE = 'REPLACE';
 export const ACTION_TYPE_RESTORE = 'RESTORE';
+export const ACTION_TYPE_MERGE = 'MERGE';
+export const ACTION_TYPE_PROMOTE = 'PROMOTE';
+export const ACTION_TYPE_ENRICHMENT = 'ENRICHMENT';
 export const ACTION_TYPE_COMPLETE_DELETE = 'COMPLETE_DELETE';
 export const ACTION_TYPE_SHARE = 'SHARE';
 export const ACTION_TYPE_UNSHARE = 'UNSHARE';
@@ -51,6 +56,9 @@ export const ACTION_TYPE_ADD_ORGANIZATIONS = 'ADD_ORGANIZATIONS';
 export const ACTION_TYPE_REMOVE_ORGANIZATIONS = 'REMOVE_ORGANIZATIONS';
 export const ACTION_TYPE_ADD_GROUPS = 'ADD_GROUPS';
 export const ACTION_TYPE_REMOVE_GROUPS = 'REMOVE_GROUPS';
+export const ACTION_TYPE_RULE_APPLY = 'RULE_APPLY';
+export const ACTION_TYPE_RULE_CLEAR = 'RULE_CLEAR';
+export const ACTION_TYPE_RULE_ELEMENT_RESCAN = 'RULE_ELEMENT_RESCAN';
 
 const isDeleteRestrictedAction = ({ type }) => {
   return type === ACTION_TYPE_DELETE || type === ACTION_TYPE_RESTORE || type === ACTION_TYPE_COMPLETE_DELETE;

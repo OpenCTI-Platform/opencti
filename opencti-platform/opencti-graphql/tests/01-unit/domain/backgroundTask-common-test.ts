@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { ACTION_TYPE_DELETE, checkActionValidity, TASK_TYPE_QUERY } from '../../../src/domain/backgroundTask-common';
+import { ACTION_TYPE_ADD, ACTION_TYPE_REPLACE, ACTION_TYPE_DELETE, checkActionValidity, TASK_TYPE_QUERY } from '../../../src/domain/backgroundTask-common';
 import { buildStandardUser, testContext } from '../../utils/testQuery';
-import { ACTION_TYPE_ADD, ACTION_TYPE_REPLACE } from '../../../src/domain/backgroundTask';
 import { ENTITY_TYPE_VOCABULARY } from '../../../src/modules/vocabulary/vocabulary-types';
 import { ENTITY_TYPE_WORKSPACE } from '../../../src/modules/workspace/workspace-types';
 import { ENTITY_TYPE_NOTIFICATION } from '../../../src/modules/notification/notification-types';
