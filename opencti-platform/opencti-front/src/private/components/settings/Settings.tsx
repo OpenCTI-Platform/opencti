@@ -238,7 +238,7 @@ const Settings = (queryRef: PreloadedQuery<SettingsQuery>) => {
   }
 
   return (
-    <>
+    <div data-testid="setting-page">
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Parameters'), current: true }]} />
       <Grid container={true} spacing={3}>
         <Grid item xs={6}>
@@ -550,7 +550,7 @@ const Settings = (queryRef: PreloadedQuery<SettingsQuery>) => {
           </Paper>
         </Grid>
       </Grid>
-    </>
+    </div>
   );
 };
 
