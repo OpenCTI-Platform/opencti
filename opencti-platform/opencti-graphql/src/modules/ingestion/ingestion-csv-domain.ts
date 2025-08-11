@@ -87,7 +87,7 @@ export const userAlreadyExists = async (context: AuthContext, name: string) => {
   return users.length > 0;
 };
 
-export const createOnTheFlyUser = async (context: AuthContext, user: AuthUser, input: { userName: string, confidenceLevel: string | null | undefined }) => {
+export const createOnTheFlyUser = async (context: AuthContext, user: AuthUser, input: { userName: string, confidenceLevel: number | null | undefined }) => {
   const defaultIngestionGroups: BasicGroupEntity[] = await findDefaultIngestionGroups(context, user) as BasicGroupEntity[];
   if (defaultIngestionGroups.length < 1) {
     throw FunctionalError('You have not defined a default group for ingestion users', {});
@@ -108,7 +108,7 @@ export const createOnTheFlyUser = async (context: AuthContext, user: AuthUser, i
   };
 
   if (input.confidenceLevel) {
-    const userConfidence = parseFloat(input.confidenceLevel);
+    const userConfidence = input.confidenceLevel;
     if (userConfidence < 0 || userConfidence > 100 || !Number.isInteger(userConfidence)) {
       throw ValidationError('The confidence_level should be an integer between 0 and 100', 'confidence_level');
     }
@@ -123,7 +123,7 @@ export const addIngestionCsv = async (context: AuthContext, user: AuthUser, inpu
     verifyIngestionAuthenticationContent(input.authentication_type, input.authentication_value);
   }
   if (input.user_id.length < 2) {
-    throw FunctionalError('You have not choosen a user responsible for data creation', {});
+    throw FunctionalError('You have not chosen a user responsible for data creation', {});
   }
 
   let onTheFlyCreatedUser;

@@ -96,13 +96,13 @@ input IngestionCsvAddInput {
     ingestion_running: Boolean
     user_id: String!
     automatic_user: Boolean
-    confidence_level: String
+    confidence_level: Int
     markings: [String!]
 }
 
 input IngestionCsvAddAutoUserInput {
     user_name: String!
-    confidence_level: String!
+    confidence_level: Int!
 }
 
 type Mutation {
