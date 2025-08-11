@@ -1016,12 +1016,7 @@ const LeftBar = () => {
               {generateSubMenu(
                 'settings',
                 [
-                  ...isFeatureEnable('OCTI_ENROLLMENT') ? [{
-                    granted: isGrantedToManageXTMHub,
-                    link: '/dashboard/settings/xtm-hub',
-                    label: 'XTM Hub',
-                    exact: true,
-                  }] : [],
+                  { granted: isGrantedToManageXTMHub, link: '/dashboard/settings/xtm-hub', label: 'XTM Hub', exact: true },
                   { granted: isGrantedToParameters, link: '/dashboard/settings', label: 'Parameters', exact: true },
                   { granted: isGrantedToSecurity || isOrganizationAdmin, link: '/dashboard/settings/accesses', label: 'Security' },
                   { granted: isGrantedToCustomization, link: '/dashboard/settings/customization', label: 'Customization' },

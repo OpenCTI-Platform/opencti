@@ -1,7 +1,7 @@
 // Admin user initialization
 import { v4 as uuidv4 } from 'uuid';
 import semver from 'semver';
-import { ENABLED_FEATURE_FLAGS, isFeatureEnabled, logApp, PLATFORM_VERSION } from './config/conf';
+import { ENABLED_FEATURE_FLAGS, logApp, PLATFORM_VERSION } from './config/conf';
 import { elUpdateIndicesMappings, ES_INIT_MAPPING_MIGRATION, ES_IS_INIT_MIGRATION, initializeSchema, searchEngineInit } from './database/engine';
 import { initializeAdminUser } from './config/providers';
 import { initializeBucket, storageInit } from './database/file-storage';
@@ -129,21 +129,19 @@ const platformInit = async (withMarkings = true) => {
       await initCreateEntitySettings(context, SYSTEM_USER);
       await initManagerConfigurations(context, SYSTEM_USER);
       await initDecayRules(context, SYSTEM_USER);
-      if (isFeatureEnabled('OCTI_ENROLLMENT')) {
-        const isCapabilityExist = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_CAPABILITY], {
-          filters: {
-            mode: 'and',
-            filters: [{ key: 'name', values: ['SETTINGS_SETMANAGEXTMHUB'] }],
-            filterGroups: [],
-          }
-        });
-        if (!isCapabilityExist) {
-          await addCapability(context, SYSTEM_USER, {
-            name: 'SETTINGS_SETMANAGEXTMHUB',
-            description: 'Manage XTM Hub',
-            attribute_order: 3050
-          });
+      const isCapabilityExist = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_CAPABILITY], {
+        filters: {
+          mode: 'and',
+          filters: [{ key: 'name', values: ['SETTINGS_SETMANAGEXTMHUB'] }],
+          filterGroups: [],
         }
+      });
+      if (!isCapabilityExist) {
+        await addCapability(context, SYSTEM_USER, {
+          name: 'SETTINGS_SETMANAGEXTMHUB',
+          description: 'Manage XTM Hub',
+          attribute_order: 3050
+        });
       }
     }
     await initExclusionListCache();
