@@ -52,7 +52,7 @@ const IngestionTaxiiCollections = () => {
     },
   };
   return (
-    <div className={classes.container}>
+    <div className={classes.container} data-testid="taxii-push-page">
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('TAXII push'), current: true }]} />
       <IngestionMenu/>
       <ListLines
