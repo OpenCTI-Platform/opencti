@@ -1,6 +1,6 @@
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import { Git } from 'mdi-material-ui';
+import { Git, Launch } from 'mdi-material-ui';
 import React from 'react';
 import { useTheme } from '@mui/styles';
 import Grid from '@mui/material/Grid';
@@ -35,6 +35,17 @@ const IngestionCatalogConnectorOverview = ({ connector }: { connector: Ingestion
         >
           <Grid item xs={12}>
             <Button
+              variant="outlined"
+              startIcon={<Launch />}
+              href={connector.subscription_link}
+              target="blank"
+              rel="noopener noreferrer"
+            >
+              {t_i18n('', { id: 'Test ... with OpenCTI', values: { connectorName: connector.title } })}
+            </Button>
+          </Grid>
+          <Grid item xs={12} style={{ marginTop: 20 }}>
+            <Button
               size="large"
               startIcon={<Git />}
               href={connector.source_code}
@@ -44,8 +55,8 @@ const IngestionCatalogConnectorOverview = ({ connector }: { connector: Ingestion
               {connector.title}
             </Button>
           </Grid>
-          <Grid item xs={12}>
-            <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}>{t_i18n('Last update')}</Typography>
+          <Grid item xs={12} style={{ marginTop: 20 }}>
+            <Typography variant="h3" gutterBottom={true}>{t_i18n('Last update')}</Typography>
             {connector.last_verified_date}
           </Grid>
         </Paper>

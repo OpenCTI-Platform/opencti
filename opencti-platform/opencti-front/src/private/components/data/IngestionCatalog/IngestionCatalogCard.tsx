@@ -5,7 +5,7 @@ import CardContent from '@mui/material/CardContent';
 import { Badge, CardActions, Grid } from '@mui/material';
 import Button from '@mui/material/Button';
 import { VerifiedOutlined } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import IngestionCatalogChip from '@components/data/IngestionCatalog/IngestionCatalogUseCaseChip';
 import { useTheme } from '@mui/styles';
 import IngestionCatalogConnectorCreation from '@components/data/IngestionCatalog/IngestionCatalogConnectorCreation';
@@ -44,7 +44,6 @@ export const ingestionConnectorTypeMetadata: Record<IngestionConnectorType, { la
 
 const IngestionCatalogCard = ({ node: connector, dataListId }: IngestionCatalogCardProps) => {
   const { t_i18n } = useFormatter();
-  const navigate = useNavigate();
   const theme = useTheme<Theme>();
   const [openCreation, setOpenCreation] = useState(false);
   const link = `/dashboard/data/ingestion/catalog/${connector.slug}`;
@@ -119,7 +118,7 @@ const IngestionCatalogCard = ({ node: connector, dataListId }: IngestionCatalogC
         </CardContent>
 
         <CardActions style={{ alignSelf: 'end' }}>
-          <Button variant="outlined" size="small" onClick={() => navigate(link)}>{t_i18n('Details')}</Button>
+          <Button variant="outlined" size="small" component={Link} to={link}>{t_i18n('Details')}</Button>
           <Security needs={[INGESTION_SETINGESTIONS]}>
             <Button variant="contained" onClick={() => setOpenCreation(true)} size="small">{t_i18n('Deploy')}</Button>
           </Security>
