@@ -81,7 +81,14 @@ const EmailTemplateHeader = ({ data }: EmailTemplateHeaderProps) => {
 
       <EmailTemplateFormDrawer
         isOpen={isFormOpen}
-        template={template}
+        template={{
+          id: template.id,
+          name: template.name,
+          description: template.description ?? null,
+          email_object: template.email_object,
+          sender_email: template.sender_email,
+          template_body: template.template_body,
+        }}
         onClose={() => setFormOpen(false)}
       />
     </>
