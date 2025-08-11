@@ -100,7 +100,7 @@ const Root = () => {
                 </Security>
               )}
             >
-              <Navigate to={isConnectorReader ? '/dashboard/data/ingestion/connectors' : '/dashboard/data/ingestion/sync'} />
+              <Navigate to={isConnectorReader ? '/dashboard/data/ingestion/connectors' : '/dashboard/data/ingestion/catalog'} />
             </Security>
           }
         />
