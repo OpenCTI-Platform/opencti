@@ -19709,6 +19709,7 @@ export type Pir = BasicObject & InternalObject & {
   pir_filters: Scalars['String']['output'];
   pir_rescan_days: Scalars['Int']['output'];
   pir_type: PirType;
+  processingCount: Scalars['Int']['output'];
   standard_id: Scalars['String']['output'];
   updated_at: Scalars['DateTime']['output'];
 };
@@ -41011,6 +41012,7 @@ export type PirResolvers<ContextType = any, ParentType extends ResolversParentTy
   pir_filters?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   pir_rescan_days?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   pir_type?: Resolver<ResolversTypes['PirType'], ParentType, ContextType>;
+  processingCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
