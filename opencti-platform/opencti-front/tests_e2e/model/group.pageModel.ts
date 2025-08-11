@@ -7,4 +7,8 @@ export default class GroupPage {
   getEditButton() {
     return this.page.getByLabel('Update');
   }
+
+  getPage() {
+    return this.page.getByTestId('group-details-page');
+  }
 }

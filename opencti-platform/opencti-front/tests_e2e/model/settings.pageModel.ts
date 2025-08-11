@@ -1,9 +1,20 @@
 import { Page } from '@playwright/test';
+import LeftBarPage from './menu/leftBar.pageModel';
 
 export default class SettingsPage {
-  constructor(private page: Page) {}
+  pageUrl = '/dashboard/settings';
 
-  getSettingsPage() {
-    return this.page.getByTestId('settings-page');
+  constructor(private page: Page) {
+  }
+
+  async navigateFromMenu() {
+    const leftBarPage = new LeftBarPage(this.page);
+    await leftBarPage.open();
+    await leftBarPage.clickOnMenu('Settings');
+    await leftBarPage.getSubItem('Parameters');
+  }
+
+  getPage() {
+    return this.page.getByTestId('setting-page');
   }
 }

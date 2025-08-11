@@ -8,6 +8,10 @@ export default class RolesSettingsPage {
     return this.page.getByTestId('roles-settings-page');
   }
 
+  getDetailsPage() {
+    return this.page.getByTestId('role-details-page');
+  }
+
   getAddRoleButton() {
     return this.page.getByRole('button', { name: 'Create Role' });
   }
