@@ -247,7 +247,6 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
       authenticationValue = `${values.cert}:${values.key}:${values.ca}`;
     }
     const markings = values.markings?.map((option) => option.value);
-    console.log('values', values);
     const input = {
       name: values.name,
       description: values.description,
