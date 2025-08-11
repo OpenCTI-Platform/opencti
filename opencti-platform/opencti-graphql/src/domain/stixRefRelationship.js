@@ -1,10 +1,5 @@
 import { dissoc, uniq } from 'ramda';
-import {
-  createRelation,
-  storeLoadByIdWithRefs,
-  updateAttribute,
-  updateAttributeFromLoadedWithRefs
-} from '../database/middleware';
+import { createRelation, storeLoadByIdWithRefs, updateAttribute, updateAttributeFromLoadedWithRefs } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import {
