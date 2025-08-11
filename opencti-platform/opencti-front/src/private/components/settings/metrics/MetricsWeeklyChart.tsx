@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { FunctionComponent } from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
