@@ -84,7 +84,7 @@ const IngestionTaxii = () => {
     );
   }
   return (
-    <div className={classes.container}>
+    <div className={classes.container} data-testid="taxii-feeds-page">
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('TAXII feeds'), current: true }]} />
       <IngestionMenu/>
       <ListLines

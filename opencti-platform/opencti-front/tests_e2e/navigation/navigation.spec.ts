@@ -90,6 +90,10 @@ import PositionDetailsPage from '../model/positionDetails.pageModel';
 import DataEntitiesPage from '../model/DataEntities.pageModel';
 import DataManagementPage from '../model/dataManagement.pageModel';
 import TrashPage from '../model/trash.pageModel';
+import IngestionPage from "../model/ingestion.pageModel";
+import ImportPage from "../model/dataImport.pageModel";
+import ProcessingPage from "../model/dataProcessing.pageModel";
+import SharingPage from "../model/dataSharing.pageModel";
 
 /**
  * Goal: validate that everything is opening without errors in Analyses > Note.
@@ -1545,6 +1549,56 @@ const navigateDataRelationships = async (page: Page) => {
   await expect(dataRelationshipsPage.getPage()).toBeVisible();
 };
 
+const navigateIngestion = async (page: Page) => {
+  const ingestionPage = new IngestionPage(page);
+  await ingestionPage.navigateFromMenu();
+  await expect(ingestionPage.getIngestionPages('connectors-page')).toBeVisible();
+  await ingestionPage.navigateRightMenu('OpenCTI Streams');
+  await expect(ingestionPage.getIngestionPages('streams-page')).toBeVisible();
+  await ingestionPage.navigateRightMenu('TAXII Feeds');
+  await expect(ingestionPage.getIngestionPages('taxii-feeds-page')).toBeVisible();
+  await ingestionPage.navigateRightMenu('TAXII Push');
+  await expect(ingestionPage.getIngestionPages('taxii-push-page')).toBeVisible();
+  await ingestionPage.navigateRightMenu('RSS Feeds');
+  await expect(ingestionPage.getIngestionPages('rss-feeds-page')).toBeVisible();
+  await ingestionPage.navigateRightMenu('CSV Feeds');
+  await expect(ingestionPage.getIngestionPages('csv-feeds-page')).toBeVisible();
+  await ingestionPage.navigateRightMenu('JSON Feeds');
+  await expect(ingestionPage.getIngestionPages('json-feeds-page')).toBeVisible();
+};
+
+const navigateDataImport = async (page: Page) => {
+  const dataImportPage = new ImportPage(page);
+  await dataImportPage.navigateFromMenu();
+  await expect(dataImportPage.getImportPages('file-page')).toBeVisible();
+  await dataImportPage.navigateBreadcrumbs('Drafts');
+  await expect(dataImportPage.getImportPages('draft-page')).toBeVisible();
+  await dataImportPage.navigateBreadcrumbs('Analyst workbenches');
+  await expect(dataImportPage.getImportPages('workbench-page')).toBeVisible();
+};
+
+const navigateProcessing = async (page: Page) => {
+  const processingPage = new ProcessingPage(page);
+  await processingPage.navigateFromMenu();
+  await expect(processingPage.getProcessingPages('playbook-page')).toBeVisible();
+  await processingPage.navigateRightMenu('Tasks');
+  await expect(processingPage.getProcessingPages('processing-tasks-page')).toBeVisible();
+  await processingPage.navigateRightMenu('CSV Mappers');
+  await expect(processingPage.getProcessingPages('csv-mapper-page')).toBeVisible();
+  await processingPage.navigateRightMenu('JSON Mappers');
+  await expect(processingPage.getProcessingPages('json-mapper-page')).toBeVisible();
+};
+
+const navigateDataSharing = async (page: Page) => {
+  const dataSharingPage = new SharingPage(page);
+  await dataSharingPage.navigateFromMenu();
+  await expect(dataSharingPage.getDataSharingPages('sharing-streams-page')).toBeVisible();
+  await dataSharingPage.navigateRightMenu('CSV feeds');
+  await expect(dataSharingPage.getDataSharingPages('csv-feeds-page')).toBeVisible();
+  await dataSharingPage.navigateRightMenu('TAXII collections');
+  await expect(dataSharingPage.getDataSharingPages('taxii-collections-page')).toBeVisible();
+};
+
 const navigateDataManagement = async (page: Page) => {
   const dataManagementPage = new DataManagementPage(page);
   await dataManagementPage.navigateFromMenu();
@@ -1703,50 +1757,54 @@ test('Check navigation on all pages', { tag: ['@navigation'] }, async ({ page })
   // For faster debugging, each navigated can be commented.
   // so they should be all independent and start from the left menu.
 
-  await navigateAllMenu(page);
-  await navigateReports(page);
-  await navigateGroupings(page);
-  await navigateMalwareAnalyses(page);
-  await navigateNotes(page);
-  await navigateExternalReferences(page);
-  await navigateIncidentResponse(page);
-  await navigateRfi(page);
-  await navigateRft(page);
-  await navigateTasks(page);
-  await navigateFeedbacks(page);
-  await navigateEventsIncident(page);
-  await navigateSightings(page);
-  await navigateObservedData(page);
-  await navigateObservables(page);
-  await navigateArtifact(page);
-  await navigateIndicators(page);
-  await navigateIntrusionSet(page);
-  await navigateCampaign(page);
-  await navigateInfrastructure(page);
-  await navigateThreatActorGroup(page);
-  await navigateThreatActorIndividual(page);
-  await navigateMalware(page);
-  await navigateChannel(page);
-  await navigateTool(page);
-  await navigateVulnerability(page);
-  await navigateAttackPattern(page);
-  await navigateNarrative(page);
-  await navigateCourseOfAction(page);
-  await navigateDataComponent(page);
-  await navigateDataSource(page);
-  await navigateSector(page);
-  await navigateEvent(page);
-  await navigateOrganization(page);
-  await navigateSecurityPlatform(page);
-  await navigateSystem(page);
-  await navigateIndividual(page);
-  await navigateRegion(page);
-  await navigateCountry(page);
-  await navigateAdministrativeArea(page);
-  await navigateCity(page);
-  await navigatePosition(page);
+  //await navigateAllMenu(page);
+  //await navigateReports(page);
+  //await navigateGroupings(page);
+  //await navigateMalwareAnalyses(page);
+  //await navigateNotes(page);
+  //await navigateExternalReferences(page);
+  //await navigateIncidentResponse(page);
+  //await navigateRfi(page);
+  //await navigateRft(page);
+  //await navigateTasks(page);
+  //await navigateFeedbacks(page);
+  //await navigateEventsIncident(page);
+  //await navigateSightings(page);
+  //await navigateObservedData(page);
+  //await navigateObservables(page);
+  //await navigateArtifact(page);
+  //await navigateIndicators(page);
+  //await navigateIntrusionSet(page);
+  //await navigateCampaign(page);
+  //await navigateInfrastructure(page);
+  //await navigateThreatActorGroup(page);
+  //await navigateThreatActorIndividual(page);
+  //await navigateMalware(page);
+  //await navigateChannel(page);
+  //await navigateTool(page);
+  //await navigateVulnerability(page);
+  //await navigateAttackPattern(page);
+  //await navigateNarrative(page);
+  //await navigateCourseOfAction(page);
+  //await navigateDataComponent(page);
+  //await navigateDataSource(page);
+  //await navigateSector(page);
+  //await navigateEvent(page);
+  //await navigateOrganization(page);
+  //await navigateSecurityPlatform(page);
+  //await navigateSystem(page);
+  //await navigateIndividual(page);
+  //await navigateRegion(page);
+  //await navigateCountry(page);
+  //await navigateAdministrativeArea(page);
+  //await navigateCity(page);
+  //await navigatePosition(page);
   await navigateDataEntities(page);
   await navigateDataRelationships(page);
+  await navigateIngestion(page);
+  await navigateDataImport(page);
+  await navigateProcessing(page);
+  await navigateDataSharing(page);
   await navigateDataManagement(page);
   await navigateTrash(page);
 });

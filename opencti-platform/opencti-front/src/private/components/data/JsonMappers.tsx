@@ -115,7 +115,7 @@ const JsonMappers = () => {
     && (
       <Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
         <JsonMappersProvider mappersQueryRef={queryRefMappers} schemaAttributesQueryRef={queryRefSchemaAttributes}>
-          <div className={classes.container}>
+          <div className={classes.container} data-testid="json-mapper-page">
             <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Processing') }, { label: t_i18n('JSON mappers'), current: true }]} />
             <ProcessingMenu />
             <ListLines
