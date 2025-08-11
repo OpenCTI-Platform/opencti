@@ -17,7 +17,7 @@ import { schemaTypesDefinition } from '../schema/schema-types';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { findById as findStixObjectOrStixRelationshipById } from './stixObjectOrStixRelationship';
 import { elCount } from '../database/engine';
-import { READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS, READ_INDEX_STIX_META_RELATIONSHIPS, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
+import { READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS, READ_INDEX_STIX_META_RELATIONSHIPS, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { findAll as findSubTypes } from './subType';
 
 // Query
@@ -50,6 +50,7 @@ export const schemaRefRelationships = async (context, user, id, toType) => {
       return { entity, from, to };
     });
 };
+
 // return the possible types with which an entity type can have a nested relation ref
 export const schemaRefRelationshipsPossibleTypes = async (context, user, entityType) => {
   const registeredTypes = schemaRelationsRefDefinition.getRegisteredTypes();
@@ -101,7 +102,7 @@ export const addStixRefRelationship = async (context, user, stixRefRelationship)
       to_missing: !to
     });
   }
-  await createRelation(context, user, stixRefRelationship);
+  return createRelation(context, user, stixRefRelationship);
 };
 export const stixRefRelationshipEditField = async (context, user, stixRefRelationshipId, input) => {
   // Not use ABSTRACT_STIX_REF_RELATIONSHIP to have compatibility on parent type with ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP type
