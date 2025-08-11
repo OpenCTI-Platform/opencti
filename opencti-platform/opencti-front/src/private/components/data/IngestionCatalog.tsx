@@ -82,7 +82,7 @@ const IngestionCatalogComponent = ({
       catalog.contracts.forEach((contract) => {
         try {
           const parsedContract = JSON.parse(contract);
-          finalContracts.push(parsedContract);
+          if (parsedContract.manager_supported) finalContracts.push(parsedContract);
         } catch (e) {
           MESSAGING$.notifyError(t_i18n('Failed to parse a contract'));
         }

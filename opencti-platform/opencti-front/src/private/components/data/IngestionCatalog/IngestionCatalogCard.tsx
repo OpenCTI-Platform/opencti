@@ -86,7 +86,7 @@ const IngestionCatalogCard = ({ node: connector, dataListId }: IngestionCatalogC
     );
   };
 
-  return connector.manager_supported && (
+  return (
     <>
       <Card
         variant="outlined"
