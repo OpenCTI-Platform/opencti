@@ -138,7 +138,7 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
 
     await expect(async () => {
       await addIngestionCsv(currentTestContext, ingestionUser, ingestionCsvInput);
-    }).rejects.toThrowError('You have not choosen a user responsible for data creation');
+    }).rejects.toThrowError('You have not chosen a user responsible for data creation');
   });
 
   it('should create a CSV Feed with existing user, confidence should be ignored', async () => {
