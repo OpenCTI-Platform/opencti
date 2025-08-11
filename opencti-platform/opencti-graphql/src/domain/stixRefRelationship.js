@@ -1,5 +1,10 @@
 import { dissoc, uniq } from 'ramda';
-import { storeLoadByIdWithRefs, updateAttribute, updateAttributeFromLoadedWithRefs } from '../database/middleware';
+import {
+  createRelation,
+  storeLoadByIdWithRefs,
+  updateAttribute,
+  updateAttributeFromLoadedWithRefs
+} from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import {
@@ -101,19 +106,7 @@ export const addStixRefRelationship = async (context, user, stixRefRelationship)
       to_missing: !to
     });
   }
-  const refInputName = schemaRelationsRefDefinition.convertDatabaseNameToInputName(from.entity_type, stixRefRelationship.relationship_type);
-  const inputs = [{ key: refInputName, value: [stixRefRelationship.toId], operation: UPDATE_OPERATION_ADD }];
-  await updateAttributeFromLoadedWithRefs(context, user, from, inputs);
-  const opts = {
-    first: 1,
-    connectionFormat: false,
-    fromId: from.internal_id,
-    toId: to.internal_id,
-    orderBy: 'created_at',
-    orderMode: 'desc'
-  };
-  const lastCreatedRef = await listRelations(context, user, stixRefRelationship.relationship_type, opts);
-  return notify(BUS_TOPICS[ABSTRACT_STIX_REF_RELATIONSHIP].ADDED_TOPIC, lastCreatedRef[0], user);
+  await createRelation(context, user, stixRefRelationship);
 };
 export const stixRefRelationshipEditField = async (context, user, stixRefRelationshipId, input) => {
   // Not use ABSTRACT_STIX_REF_RELATIONSHIP to have compatibility on parent type with ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP type

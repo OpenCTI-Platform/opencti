@@ -18,6 +18,7 @@ import { getMainRepresentative } from '../../../../utils/defaultRepresentatives'
 import { TEN_SECONDS } from '../../../../utils/Time';
 import { stixCyberObservableEntitiesLinesQuery } from './StixCyberObservableEntitiesLines';
 import ItemEntityType from '../../../../components/ItemEntityType';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -130,9 +131,11 @@ class StixCyberObservableNestedEntitiesLinesComponent extends Component {
                             className={classes.bodyItem}
                             style={{ width: '12%' }}
                           >
-                            {(stixCoreObject.creators ?? [])
-                              .map((c) => c?.name)
-                              .join(', ')}
+                            <FieldOrEmpty source={stixCoreObject.creators}>
+                              {(stixCoreObject.creators ?? [])
+                                .map((c) => c?.name)
+                                .join(', ')}
+                            </FieldOrEmpty>
                           </div>
                           <div
                             className={classes.bodyItem}
