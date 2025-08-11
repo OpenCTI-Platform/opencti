@@ -210,6 +210,7 @@ const ThemeLight = (
       primary: hexToRGB((primary || THEME_LIGHT_DEFAULT_PRIMARY), 0.3),
       secondary: hexToRGB((secondary || THEME_LIGHT_DEFAULT_SECONDARY), 0.3),
       pagination: hexToRGB('#000000', 0.5),
+      paper: hexToRGB('#000000', 0.12),
     },
     pagination: {
       main: '#000000',

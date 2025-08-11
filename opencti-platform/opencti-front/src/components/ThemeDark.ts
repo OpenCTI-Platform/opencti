@@ -209,6 +209,7 @@ const ThemeDark = (
       primary: hexToRGB((primary || THEME_DARK_DEFAULT_PRIMARY), 0.3),
       secondary: hexToRGB((secondary || THEME_DARK_DEFAULT_SECONDARY), 0.3),
       pagination: hexToRGB('#ffffff', 0.5),
+      paper: hexToRGB('#ffffff', 0.12),
     },
     pagination: {
       main: '#ffffff',
