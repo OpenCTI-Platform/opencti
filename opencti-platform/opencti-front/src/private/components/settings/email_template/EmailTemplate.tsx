@@ -6,7 +6,6 @@ import { EmailTemplateProvider } from '@components/settings/email_template/Email
 import EmailTemplateHeader from '@components/settings/email_template/EmailTemplateHeader';
 import EmailTemplateTabs from '@components/settings/email_template/EmailTemplateTabs';
 import EmailTemplateContentEditor from '@components/settings/email_template/EmailTemplateContentEditor';
-import EmailTemplatePreview from '@components/settings/email_template/EmailTemplatePreview';
 import EmailTemplateAttributesSidebar, { EMAIL_TEMPLATE_SIDEBAR_WIDTH } from '@components/settings/email_template/EmailTemplateAttributesSidebar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -44,9 +43,6 @@ const EmailTemplateComponent = ({ queryRef }: EmailTemplateProps) => {
             <>
               <div role="tabpanel" hidden={index !== 0}>
                 <EmailTemplateContentEditor data={emailTemplate} />
-              </div>
-              <div role="tabpanel" hidden={index !== 1}>
-                <EmailTemplatePreview />
               </div>
             </>
           )}
