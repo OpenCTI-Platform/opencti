@@ -221,7 +221,7 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     const workbenchValidationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_WORKBENCH_VALIDATION);
     manager.setWorkbenchValidationCount(workbenchValidationCountInRedis);
     const emailSendCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_USER_EMAIL_SEND);
-    manager.setEmailSendCount(emailSendCountInRedis);
+    manager.setUserEmailSendCount(emailSendCountInRedis);
     const onboardingEmailSendCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_ONBOARDING_EMAIL_SEND);
     manager.setOnboardingEmailSendCount(onboardingEmailSendCountInRedis);
     const userBackgroundTaskCountInRedis = await redisGetTelemetry(TELEMETRY_BACKGROUND_TASK_USER);

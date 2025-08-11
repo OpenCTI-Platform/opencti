@@ -44,7 +44,7 @@ export class TelemetryMeterManager {
   requestAccessCreationCount = 0;
 
   // Number of email sent
-  emailSendCount = 0;
+  userEmailSendCount = 0;
 
   onboardingEmailSendCount = 0;
 
@@ -121,8 +121,8 @@ export class TelemetryMeterManager {
     this.requestAccessCreationCount = n;
   }
 
-  setEmailSendCount(n: number) {
-    this.emailSendCount = n;
+  setUserEmailSendCount(n: number) {
+    this.userEmailSendCount = n;
   }
 
   setOnboardingEmailSendCount(n: number) {
@@ -169,7 +169,7 @@ export class TelemetryMeterManager {
     this.registerGauge('workbench_validation_count', 'number of workbench validation', 'workbenchValidationCount');
     this.registerGauge('call_nlq', 'NLQ feature usage', 'nlqQueryCount');
     this.registerGauge('request_access_creation_count', 'Number of RFI of request access type that are created', 'requestAccessCreationCount');
-    this.registerGauge('email_send_count', 'Number of emails sent from the platform', 'emailSendCount');
+    this.registerGauge('user_email_send_count', 'Number of emails sent from the platform', 'userEmailSendCount');
     this.registerGauge('onboarding_email_send_count', 'Number of onboarding emails sent', 'onboardingEmailSendCount');
     this.registerGauge('user_background_task_count', 'Number of background tasks on User scope', 'userBackgroundTaskCount');
     this.registerGauge('email_template_created_count', 'Number of email templates created', 'emailTemplateCreatedCount');
