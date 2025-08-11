@@ -3483,7 +3483,7 @@
   "The code is not correct.": "コードが正しくない。",
   "The color must be written in hexadecimal. Example: #ff9800": "色は 16 進数で記述する必要があります。例: #ff9800",
   "The connector has been cleared": "コネクタを削除しました",
-  "The connector has been created": "コネクタが作成された",
+  "The connector instance has been deployed": "コネクタインスタンスがデプロイされました",
   "The connector state has been reset": "コネクタの状態を初期化しました",
   "The CSV file has been generated with the parameters of the view and is ready for download.": "指定されたパラメータでCSVが生成され、ダウンロードできるようになりました。",
   "The dashboard has been duplicated. You can manage it": "ダッシュボードが複製されました。管理できるよ",

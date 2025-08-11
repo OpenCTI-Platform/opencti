@@ -106,7 +106,7 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
       },
       onError: () => setSubmitting?.(false),
       onCompleted: (response: IngestionCatalogConnectorCreationMutation$data) => {
-        MESSAGING$.notifySuccess(<span><Link to={`/dashboard/data/ingestion/connectors/${response.managedConnectorAdd?.id}`}>{t_i18n('The connector has been created')}</Link></span>);
+        MESSAGING$.notifySuccess(<span><Link to={`/dashboard/data/ingestion/connectors/${response.managedConnectorAdd?.id}`}>{t_i18n('The connector instance has been deployed')}</Link></span>);
         setSubmitting?.(false);
         resetForm?.();
         onClose();

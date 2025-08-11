@@ -3483,7 +3483,7 @@
   "The code is not correct.": "코드가 올바르지 않습니다.",
   "The color must be written in hexadecimal. Example: #ff9800": "색상은 16진수로 작성되어야 합니다. 예: #ff9800",
   "The connector has been cleared": "커넥터가 정리되었습니다",
-  "The connector has been created": "커넥터가 생성되었습니다",
+  "The connector instance has been deployed": "커넥터 인스턴스가 배포되었습니다",
   "The connector state has been reset": "커넥터 상태가 재설정되었습니다",
   "The CSV file has been generated with the parameters of the view and is ready for download.": "CSV 파일이 뷰의 매개변수로 생성되었으며 다운로드할 준비가 되었습니다.",
   "The dashboard has been duplicated. You can manage it": "대시보드가 복제되었습니다. 관리할 수 있습니다",

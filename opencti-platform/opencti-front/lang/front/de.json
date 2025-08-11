@@ -3483,7 +3483,7 @@
   "The code is not correct.": "Der Code ist nicht korrekt.",
   "The color must be written in hexadecimal. Example: #ff9800": "Die Farbe muss in hexadezimaler Form angegeben werden. Beispiel: #ff9800",
   "The connector has been cleared": "Der Verbinder wurde gelöscht",
-  "The connector has been created": "Der Konnektor wurde erstellt",
+  "The connector instance has been deployed": "Die Konnektorinstanz wurde bereitgestellt",
   "The connector state has been reset": "Der Zustand des Verbinders wurde zurückgesetzt",
   "The CSV file has been generated with the parameters of the view and is ready for download.": "Die CSV-Datei wurde mit den Parametern der Ansicht erstellt und steht zum Download bereit.",
   "The dashboard has been duplicated. You can manage it": "Das Dashboard wurde dupliziert. Sie können es verwalten",

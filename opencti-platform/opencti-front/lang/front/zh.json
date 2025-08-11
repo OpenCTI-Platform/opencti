@@ -3483,7 +3483,7 @@
   "The code is not correct.": "代码不正确。",
   "The color must be written in hexadecimal. Example: #ff9800": "颜色必须以十六进制书写。示例：#ff9800",
   "The connector has been cleared": "连接器已清理",
-  "The connector has been created": "连接器已创建",
+  "The connector instance has been deployed": "已部署连接器实例",
   "The connector state has been reset": "连接器状态已重置",
   "The CSV file has been generated with the parameters of the view and is ready for download.": "CSV文件已使用视图的参数生成，并已准备好下载。",
   "The dashboard has been duplicated. You can manage it": "仪表板已被复制。你可以管理它",

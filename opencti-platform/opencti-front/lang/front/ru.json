@@ -3483,7 +3483,7 @@
   "The code is not correct.": "Код некорректен.",
   "The color must be written in hexadecimal. Example: #ff9800": "Цвет должен быть записан в шестнадцатеричном виде. Пример: #ff9800",
   "The connector has been cleared": "Коннектор был очищен",
-  "The connector has been created": "Коннектор создан",
+  "The connector instance has been deployed": "Экземпляр коннектора был развернут",
   "The connector state has been reset": "Состояние коннектора было сброшено",
   "The CSV file has been generated with the parameters of the view and is ready for download.": "CSV-файл был создан с параметрами представления и готов к загрузке.",
   "The dashboard has been duplicated. You can manage it": "Дашборд был продублирован. Вы можете управлять ею",

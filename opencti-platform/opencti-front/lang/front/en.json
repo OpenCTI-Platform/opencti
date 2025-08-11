@@ -3483,7 +3483,7 @@
   "The code is not correct.": "The code is not correct.",
   "The color must be written in hexadecimal. Example: #ff9800": "The color must be written in hexadecimal. Example: #ff9800",
   "The connector has been cleared": "The connector has been cleared",
-  "The connector has been created": "The connector has been created",
+  "The connector instance has been deployed": "The connector instance has been deployed",
   "The connector state has been reset": "The connector state has been reset",
   "The CSV file has been generated with the parameters of the view and is ready for download.": "The CSV file has been generated with the parameters of the view and is ready for download.",
   "The dashboard has been duplicated. You can manage it": "The dashboard has been duplicated. You can manage it",
