@@ -50,7 +50,7 @@ export const ingestionCsvEditionUserHandlingPatch = graphql`
 
 export interface EditionCsvAddAutoUserInput {
   user_name: string
-  confidence_level: string
+  confidence_level: number
 }
 
 interface IngestionCsvEditionUserHandlingProps {
@@ -71,7 +71,7 @@ const IngestionCsvEditionUserHandling: FunctionComponent<IngestionCsvEditionUser
 
   const initialValues: EditionCsvAddAutoUserInput = {
     user_name: `[F] ${feedName}`,
-    confidence_level: '50',
+    confidence_level: 50,
   };
 
   const onSubmit: FormikConfig<EditionCsvAddAutoUserInput>['onSubmit'] = async (

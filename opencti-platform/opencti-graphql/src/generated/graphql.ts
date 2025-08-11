@@ -11349,7 +11349,7 @@ export type IngestionCsv = BasicObject & InternalObject & {
 };
 
 export type IngestionCsvAddAutoUserInput = {
-  confidence_level: Scalars['String']['input'];
+  confidence_level: Scalars['Int']['input'];
   user_name: Scalars['String']['input'];
 };
 
@@ -11357,7 +11357,7 @@ export type IngestionCsvAddInput = {
   authentication_type: IngestionAuthType;
   authentication_value?: InputMaybe<Scalars['String']['input']>;
   automatic_user?: InputMaybe<Scalars['Boolean']['input']>;
-  confidence_level?: InputMaybe<Scalars['String']['input']>;
+  confidence_level?: InputMaybe<Scalars['Int']['input']>;
   csv_mapper?: InputMaybe<Scalars['String']['input']>;
   csv_mapper_id?: InputMaybe<Scalars['String']['input']>;
   csv_mapper_type?: InputMaybe<IngestionCsvMapperType>;
