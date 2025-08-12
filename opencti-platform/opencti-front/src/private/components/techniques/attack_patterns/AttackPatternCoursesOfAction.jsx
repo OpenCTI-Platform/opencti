@@ -17,23 +17,6 @@ import { commitMutation } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
-const styles = (theme) => ({
-  avatar: {
-    width: 24,
-    height: 24,
-    backgroundColor: theme.palette.primary.main,
-  },
-  avatarDisabled: {
-    width: 24,
-    height: 24,
-  },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey[700],
-  },
-});
-
 const AttackPatternCoursesOfActionComponent = ({ attackPattern }) => {
   const { t_i18n } = useFormatter();
 
