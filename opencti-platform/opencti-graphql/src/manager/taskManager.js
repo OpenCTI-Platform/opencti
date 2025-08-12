@@ -319,19 +319,19 @@ export const buildContainersElementsBundle = async (context, user, containers, e
     const element = elements[index];
     elementIds.add(element.internal_id);
     elementStandardIds.add(element.standard_id);
-    if (withNeighbours) {
-      if (element.fromId) elementIds.add(element.fromId);
-      if (element.toId) elementIds.add(element.toId);
-      const callback = (relations) => {
-        relations.forEach((relation) => {
-          elementIds.add(relation.fromId);
-          elementIds.add(relation.toId);
-          elementIds.add(relation.id);
-        });
-      };
-      const args = { fromOrToId: Array.from(elementIds), baseData: true, callback };
-      await listAllRelations(context, user, ABSTRACT_STIX_CORE_RELATIONSHIP, args);
-    }
+    if (element.fromId) elementIds.add(element.fromId);
+    if (element.toId) elementIds.add(element.toId);
+  }
+  if (withNeighbours) {
+    const callback = (relations) => {
+      relations.forEach((relation) => {
+        elementIds.add(relation.fromId);
+        elementIds.add(relation.toId);
+        elementIds.add(relation.id);
+      });
+    };
+    const args = { fromOrToId: Array.from(elementIds), baseData: true, callback };
+    await listAllRelations(context, user, ABSTRACT_STIX_CORE_RELATIONSHIP, args);
   }
   // Build limited stix object to limit memory footprint
   const containerOperations = [{
