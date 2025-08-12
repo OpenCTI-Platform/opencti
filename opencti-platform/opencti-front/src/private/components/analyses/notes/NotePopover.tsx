@@ -14,7 +14,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import { noteEditionQuery } from './NoteEdition';
 import NoteEditionContainer from './NoteEditionContainer';
 import Security, { CollaborativeSecurity } from '../../../../utils/Security';
-import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE_KNDELETE, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import { StixCoreObjectOrStixCoreRelationshipNoteCard_node$data } from './__generated__/StixCoreObjectOrStixCoreRelationshipNoteCard_node.graphql';
 import { NoteEditionContainerQuery$data } from './__generated__/NoteEditionContainerQuery.graphql';
 import { deleteNode } from '../../../../utils/store';
@@ -130,7 +130,8 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
         <StixCoreObjectMenuItemUnderEE
           setOpen={handleOpenEnroll}
           title={t_i18n('Enroll in playbook')}
-          needs={[KNOWLEDGE_KNENRICHMENT]}
+          needs={[KNOWLEDGE_KNENRICHMENT, SETTINGS_SETACCESSES]}
+          matchAll
         />
         <CollaborativeSecurity
           data={note}
