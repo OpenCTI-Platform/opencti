@@ -199,7 +199,7 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
                       style={{ position: 'relative' }}
                     >
                       <JsonForms
-                        data={connector.default}
+                        data={values}
                         schema={connectorWithRequired as JsonSchema}
                         renderers={materialRenderers}
                         validationMode={'NoValidation'}
@@ -216,7 +216,7 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
                         </AccordionSummary>
                         <AccordionDetails>
                           <JsonForms
-                            data={connector.default}
+                            data={values}
                             schema={connectorWithOptional as JsonSchema}
                             renderers={materialRenderers}
                             validationMode={'NoValidation'}
