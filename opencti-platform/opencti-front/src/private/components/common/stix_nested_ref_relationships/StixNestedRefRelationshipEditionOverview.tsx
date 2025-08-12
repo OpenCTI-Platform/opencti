@@ -26,6 +26,10 @@ const StixNestedRefRelationshipEditionFragment = graphql`
     start_time
     stop_time
     relationship_type
+    creators {
+      id
+      name
+    }
     editContext {
       name
       focusOn
