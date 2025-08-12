@@ -122,9 +122,22 @@ The widget configuration will be saved as a JSON file, with the title formatted 
 Dashboards can be imported from the custom dashboards list:
 
 1. Click on the `Import dashboard` button in the right top corner
+   ![Import dashboard option](assets/import-dashboard-new.png)
 2. Select your file.
 
-![Import dashboard option](assets/import_dashboard.png)
+You can select custom dashboards from the XTM Hub by clicking the ```Import from Hub``` button
+
+_Connect to the XTM Hub to download a JSON file that can be easily imported into OpenCTI using the following process._
+
+#### One-click dashboard deployment
+From the XTM Hub, you can effortlessly deploy your desired dashboard with just a single click.
+To get started, simply enroll your OpenCTI platform following the instructions in our [OpenCTI registration documentation](/administration/hub/).
+Next, navigate to your preferred dashboard and click the ```Deploy in OpenCTI``` button located in the top right corner.
+If you have multiple OpenCTI platforms registered, choose the platform where you wish to deploy the dashboard.
+You will then be redirected to the OpenCTI platform, where the process will proceed automatically.
+Within a few seconds, you'll be directed to your newly created custom dashboard.
+
+![Import dashboard option](assets/one-click-deploy.png)
 
 To import a widget from a dashboard view,
 1- Hover over the Add button (+) in the right bottom corner.
