@@ -372,7 +372,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                 style={fieldSpacingContainerStyle}
               />
               <IngestionCreationUserHandling
-                confidence_level={50}
+                default_confidence_level={50}
                 labelTag="F"
               />
               <Box sx={{

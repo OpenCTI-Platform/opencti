@@ -33,7 +33,6 @@ interface ConfidenceFieldProps {
   containerStyle?: Record<string, string | number>;
   entityType?: string;
   disabled?: boolean;
-  maxConfidenceLevel?: number;
 }
 
 const ConfidenceField: FunctionComponent<ConfidenceFieldProps> = ({
@@ -47,13 +46,12 @@ const ConfidenceField: FunctionComponent<ConfidenceFieldProps> = ({
   containerStyle,
   entityType,
   disabled,
-  maxConfidenceLevel,
 }) => {
   const { t_i18n } = useFormatter();
   const finalLabel = label || t_i18n('Confidence level');
   const classes = useStyles();
   const { getEffectiveConfidenceLevel } = useConfidenceLevel();
-  const effectiveMaxConfidence = getEffectiveConfidenceLevel(entityType, maxConfidenceLevel);
+  const userEffectiveMaxConfidence = getEffectiveConfidenceLevel(entityType);
   return (
     <>{showAlert ? (<Alert
       classes={{ root: classes.alert, message: classes.message }}
@@ -76,7 +74,7 @@ const ConfidenceField: FunctionComponent<ConfidenceFieldProps> = ({
         onSubmit={onSubmit}
         editContext={editContext}
         disabled={disabled}
-        maxLimit={effectiveMaxConfidence}
+        maxLimit={userEffectiveMaxConfidence}
       />
     </Alert>) : (<Field
       component={InputSliderField}
@@ -91,7 +89,7 @@ const ConfidenceField: FunctionComponent<ConfidenceFieldProps> = ({
       onSubmit={onSubmit}
       editContext={editContext}
       disabled={disabled}
-      maxLimit={effectiveMaxConfidence}
+      maxLimit={userEffectiveMaxConfidence}
                  />)
 }</>
   );

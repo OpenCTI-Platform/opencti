@@ -9,12 +9,16 @@ import ConfidenceField from '@components/common/form/ConfidenceField';
 import {
   IngestionCreationUserHandlingDefaultGroupForIngestionUsersQuery,
 } from '@components/data/__generated__/IngestionCreationUserHandlingDefaultGroupForIngestionUsersQuery.graphql';
+import Switch from '@mui/material/Switch';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import DangerZoneChip from '@components/common/danger_zone/DangerZoneChip';
 import { type FieldOption, fieldSpacingContainerStyle } from '../../../utils/field';
 import SwitchField from '../../../components/fields/SwitchField';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../utils/hooks/useGranted';
 import { useFormatter } from '../../../components/i18n';
 import Loader from '../../../components/Loader';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import useConfidenceLevel from '../../../utils/hooks/useConfidenceLevel';
 
 const ingestionCreationUserHandlingDefaultGroupForIngestionUsersQuery = graphql`
   query IngestionCreationUserHandlingDefaultGroupForIngestionUsersQuery {
@@ -23,9 +27,9 @@ const ingestionCreationUserHandlingDefaultGroupForIngestionUsersQuery = graphql`
 `;
 
 interface IngestionCreationUserHandlingProps {
-  confidence_level: number;
-  max_confidence_level?: number;
+  default_confidence_level: number;
   labelTag: 'C' | 'F'; // C: Connector, F: Feed
+  isSensitive?: boolean;
 }
 
 interface IngestionCreationUserHandlingComponentProps extends IngestionCreationUserHandlingProps {
@@ -39,12 +43,16 @@ export interface BasicUserHandlingValues {
   confidence_level?: string;
 }
 
-const IngestionCreationUserHandlingComponent = ({ queryRef, confidence_level, max_confidence_level, labelTag }: IngestionCreationUserHandlingComponentProps) => {
+const IngestionCreationUserHandlingComponent = ({ queryRef, default_confidence_level, labelTag, isSensitive }: IngestionCreationUserHandlingComponentProps) => {
   const { t_i18n } = useFormatter();
   const setAccess = useGranted([SETTINGS_SETACCESSES]);
   const { values, setFieldValue } = useFormikContext<BasicUserHandlingValues>();
   const [displayDefaultGroupWarning, setDisplayDefaultGroupWarning] = useState<boolean>(false);
+  const [isConfidenceLevelEditable, setIsConfidenceLevelEditable] = React.useState(!isSensitive);
   const data = usePreloadedQuery(ingestionCreationUserHandlingDefaultGroupForIngestionUsersQuery, queryRef);
+  const entityType = 'User';
+  const { getEffectiveConfidenceLevel } = useConfidenceLevel();
+  const userEffectiveMaxConfidence = getEffectiveConfidenceLevel(entityType) ?? 100;
   useEffect(() => {
     setFieldValue(
       'user_id',
@@ -56,7 +64,7 @@ const IngestionCreationUserHandlingComponent = ({ queryRef, confidence_level, ma
   useEffect(() => {
     setFieldValue(
       'confidence_level',
-      confidence_level,
+      Math.min(default_confidence_level, userEffectiveMaxConfidence),
     );
     if (values.automatic_user !== false && data.defaultIngestionGroupCount === 0) {
       setDisplayDefaultGroupWarning(true);
@@ -64,6 +72,10 @@ const IngestionCreationUserHandlingComponent = ({ queryRef, confidence_level, ma
       setDisplayDefaultGroupWarning(false);
     }
   }, [values.automatic_user]);
+
+  const handleEditConfidence = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIsConfidenceLevelEditable(event.target.checked);
+  };
 
   return (
     <>
@@ -97,11 +109,22 @@ const IngestionCreationUserHandlingComponent = ({ queryRef, confidence_level, ma
       />
       {values.automatic_user !== false && (
         <Box style={fieldSpacingContainerStyle}>
+          {isSensitive && (
+            <FormControlLabel
+              control={<Switch onChange={handleEditConfidence} />}
+              label={
+                <>
+                  {t_i18n('Edit confidence level')}
+                  <DangerZoneChip />
+                </>
+              }
+            />
+          )}
           <ConfidenceField
             name="confidence_level"
-            entityType={max_confidence_level ? undefined : 'User'}
-            showAlert={false}
-            maxConfidenceLevel={max_confidence_level}
+            entityType={entityType}
+            showAlert={true}
+            disabled={!isConfidenceLevelEditable}
           />
         </Box>
       )}
@@ -109,7 +132,7 @@ const IngestionCreationUserHandlingComponent = ({ queryRef, confidence_level, ma
   );
 };
 
-const IngestionCreationUserHandling = ({ confidence_level, max_confidence_level, labelTag }: IngestionCreationUserHandlingProps) => {
+const IngestionCreationUserHandling = ({ default_confidence_level, labelTag, isSensitive = false }: IngestionCreationUserHandlingProps) => {
   const queryRef = useQueryLoading<IngestionCreationUserHandlingDefaultGroupForIngestionUsersQuery>(
     ingestionCreationUserHandlingDefaultGroupForIngestionUsersQuery,
   );
@@ -118,9 +141,9 @@ const IngestionCreationUserHandling = ({ confidence_level, max_confidence_level,
       {queryRef && (
         <IngestionCreationUserHandlingComponent
           queryRef={queryRef}
-          confidence_level={confidence_level}
-          max_confidence_level={max_confidence_level}
+          default_confidence_level={default_confidence_level}
           labelTag={labelTag}
+          isSensitive={isSensitive}
         />
       )}
     </Suspense>
