@@ -1,7 +1,5 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose, filter } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
+import React from 'react';
+import { filter } from 'ramda';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -16,7 +14,7 @@ import { ListItemButton } from '@mui/material';
 import AddCoursesOfAction from './AddCoursesOfAction';
 import { addCoursesOfActionMutationRelationDelete } from './AddCoursesOfActionLines';
 import { commitMutation } from '../../../../relay/environment';
-import inject18n, { useFormatter } from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 const styles = (theme) => ({
