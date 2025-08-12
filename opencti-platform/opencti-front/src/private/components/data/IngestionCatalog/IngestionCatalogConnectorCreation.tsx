@@ -183,42 +183,51 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
                 fullWidth={true}
               />
               <IngestionCreationUserHandling
-                confidence_level={connector.max_confidence_level}
-                max_confidence_level={connector.max_confidence_level}
+                default_confidence_level={connector.max_confidence_level}
                 labelTag="C"
+                isSensitive={true}
               />
-              <div style={fieldSpacingContainerStyle}>{t_i18n('Configuration')}</div>
-              <Alert
-                classes={{ root: classes.alert, message: classes.message }}
-                severity="info"
-                icon={false}
-                variant="outlined"
-                style={{ position: 'relative' }}
-              >
-                <JsonForms
-                  data={connector.default}
-                  schema={connectorWithRequired as JsonSchema}
-                  renderers={materialRenderers}
-                  validationMode={'NoValidation'}
-                  onChange={({ data }) => setValues({ ...values, ...data })}
-                />
-              </Alert>
-              <div style={fieldSpacingContainerStyle}>
-                <Accordion>
-                  <AccordionSummary id="accordion-panel">
-                    <Typography>{t_i18n('Advanced options')}</Typography>
-                  </AccordionSummary>
-                  <AccordionDetails>
-                    <JsonForms
-                      data={connector.default}
-                      schema={connectorWithOptional as JsonSchema}
-                      renderers={materialRenderers}
-                      validationMode={'NoValidation'}
-                      onChange={({ data }) => setValues({ ...values, ...data })}
-                    />
-                  </AccordionDetails>
-                </Accordion>
-              </div>
+              {(requiredProperties.length > 0 || optionalProperties.length > 0) && (
+                <>
+                  <div style={fieldSpacingContainerStyle}>{t_i18n('Configuration')}</div>
+                  {requiredProperties.length > 0 && (
+                    <Alert
+                      classes={{ root: classes.alert, message: classes.message }}
+                      severity="info"
+                      icon={false}
+                      variant="outlined"
+                      style={{ position: 'relative' }}
+                    >
+                      <JsonForms
+                        data={connector.default}
+                        schema={connectorWithRequired as JsonSchema}
+                        renderers={materialRenderers}
+                        validationMode={'NoValidation'}
+                        onChange={({ data }) => setValues({ ...values, ...data })}
+                      />
+                    </Alert>
+
+                  )}
+                  {optionalProperties.length > 0 && (
+                    <div style={fieldSpacingContainerStyle}>
+                      <Accordion>
+                        <AccordionSummary id="accordion-panel">
+                          <Typography>{t_i18n('Advanced options')}</Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                          <JsonForms
+                            data={connector.default}
+                            schema={connectorWithOptional as JsonSchema}
+                            renderers={materialRenderers}
+                            validationMode={'NoValidation'}
+                            onChange={({ data }) => setValues({ ...values, ...data })}
+                          />
+                        </AccordionDetails>
+                      </Accordion>
+                    </div>
+                  )}
+                </>
+              )}
               <div style={{ textAlign: 'right', marginTop: theme.spacing(2) }}>
                 <Button
                   variant="contained"
