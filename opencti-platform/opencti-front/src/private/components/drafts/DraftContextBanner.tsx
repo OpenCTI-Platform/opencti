@@ -99,8 +99,9 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
       onCompleted: () => {
         if (entity_id) {
           navigate(`/dashboard/id/${entity_id}`);
+        } else {
+          navigate('/dashboard/data/import/draft');
         }
-        navigate('/dashboard/data/import/draft');
       },
     });
   };
@@ -122,8 +123,9 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
               MESSAGING$.notifySuccess('Draft validation in progress');
               if (entity_id) {
                 navigate(`/dashboard/id/${entity_id}`);
+              } else {
+                navigate('/dashboard/data/import/draft');
               }
-              navigate('/dashboard/data/import/draft');
             },
           });
         },
