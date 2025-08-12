@@ -21,6 +21,8 @@ import {
 } from '@components/data/IngestionCatalog/__generated__/IngestionCatalogConnectorCreationMutation.graphql';
 import IngestionCreationUserHandling, { BasicUserHandlingValues } from '@components/data/IngestionCreationUserHandling';
 import { IngestionConnector } from '@components/data/IngestionCatalog';
+import { Git, Launch } from 'mdi-material-ui';
+import IconButton from '@mui/material/IconButton';
 import { MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
@@ -126,6 +128,30 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
       title={t_i18n('Deploy a new connector')}
       open={open}
       onClose={onClose}
+      header={
+        <div style={{ position: 'absolute', right: theme.spacing(1) }}>
+          <Button
+            size="large"
+            variant="contained"
+            startIcon={<Launch />}
+            href={connector.subscription_link}
+            target="blank"
+            rel="noopener noreferrer"
+            style={{ marginRight: theme.spacing(1) }}
+          >
+            {t_i18n('Vendor contact')}
+          </Button>
+          <IconButton
+            aria-label="Go to"
+            component={Link}
+            to={connector.source_code}
+            target="blank"
+            rel="noopener noreferrer"
+          >
+            <Git />
+          </IconButton>
+        </div>
+      }
     >
       <Formik<ManagedConnectorValues>
         onReset={onClose}
