@@ -199,7 +199,7 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
                       style={{ position: 'relative' }}
                     >
                       <JsonForms
-                        data={values}
+                        data={connector.default}
                         schema={connectorWithRequired as JsonSchema}
                         renderers={materialRenderers}
                         validationMode={'NoValidation'}
@@ -210,13 +210,13 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
                   )}
                   {optionalProperties.length > 0 && (
                     <div style={fieldSpacingContainerStyle}>
-                      <Accordion>
+                      <Accordion slotProps={{ transition: { unmountOnExit: false } }}>
                         <AccordionSummary id="accordion-panel">
                           <Typography>{t_i18n('Advanced options')}</Typography>
                         </AccordionSummary>
                         <AccordionDetails>
                           <JsonForms
-                            data={values}
+                            data={connector.default}
                             schema={connectorWithOptional as JsonSchema}
                             renderers={materialRenderers}
                             validationMode={'NoValidation'}

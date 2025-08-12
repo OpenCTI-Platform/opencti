@@ -1208,6 +1208,7 @@
   "Dynamic target filters": "Filtres dynamiques cibles",
   "Each line must contain a valid email address": "Chaque ligne doit contenir une adresse électronique valide",
   "Each tick value must be between min and max value": "Chaque valeur de marqueur doit être comprise entre la valeur min et max",
+  "Edit confidence level": "Modifier le niveau de confiance",
   "Edit the selected item": "Editer l'élément sélectionné",
   "Edition": "Edition",
   "Effective Max Confidence Level:": "Niveau de confiance maximum effectif :",

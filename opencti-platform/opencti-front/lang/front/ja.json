@@ -1208,6 +1208,7 @@
   "Dynamic target filters": "動的ターゲットフィルタ",
   "Each line must contain a valid email address": "各行には有効なEメールアドレスを記載すること",
   "Each tick value must be between min and max value": "各マーカー値は最小値と最大値の間にある必要があります",
+  "Edit confidence level": "信頼レベルの編集",
   "Edit the selected item": "選択したアイテムを編集する",
   "Edition": "エディション",
   "Effective Max Confidence Level:": "有効な最大信頼度です：",

@@ -1208,6 +1208,7 @@
   "Dynamic target filters": "Динамические целевые фильтры",
   "Each line must contain a valid email address": "Каждая строка должна содержать действительный адрес электронной почты",
   "Each tick value must be between min and max value": "Каждое значение тика должно находиться между минимальным и максимальным значением",
+  "Edit confidence level": "Редактировать уровень доверия",
   "Edit the selected item": "Редактирование выбранного элемента",
   "Edition": "Издание",
   "Effective Max Confidence Level:": "Эффективный максимальный уровень доверия:",

@@ -1208,6 +1208,7 @@
   "Dynamic target filters": "동적 대상 필터",
   "Each line must contain a valid email address": "각 줄에는 유효한 이메일 주소가 포함되어야 합니다",
   "Each tick value must be between min and max value": "각 틱 값은 최소값과 최대값 사이여야 합니다",
+  "Edit confidence level": "신뢰 수준 편집",
   "Edit the selected item": "선택한 항목 편집",
   "Edition": "판",
   "Effective Max Confidence Level:": "실효 최대 신뢰 수준:",
