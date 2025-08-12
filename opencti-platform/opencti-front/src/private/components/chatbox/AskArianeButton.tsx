@@ -70,8 +70,6 @@ const AskArianeButton = () => {
       botMessage: {
         backgroundColor: theme.palette.background.default,
         textColor: theme.palette.text?.primary,
-        showAvatar: true,
-        avatarSrc: fileUri(embleme),
       },
       userMessage: {
         backgroundColor: DARK_BLUE,
@@ -83,7 +81,7 @@ const AskArianeButton = () => {
         backgroundColor: theme.palette.background.paper,
         textColor: theme.palette.text?.primary,
         sendButtonColor: DARK_BLUE,
-        maxChars: 100,
+        maxChars: 256,
         maxCharsWarningMessage: 'You exceeded the characters limit. Please input less than 50 characters.',
         autoFocus: true,
         sendMessageSound: false,
