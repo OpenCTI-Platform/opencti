@@ -51,6 +51,7 @@ test('Pir CRUD', { tag: ['@pir', '@mutation'] }, async ({ page, request }) => {
   await pirForm.getCreateButton().click();
 
   await pirPage.getItemFromList(pirName).click();
+  await pirDetails.toggleDetails();
   await expect(pirDetails.getTitle(pirName)).toBeVisible();
   await expect(pirDetails.getDescription('e2e PIR description')).toBeVisible();
 
