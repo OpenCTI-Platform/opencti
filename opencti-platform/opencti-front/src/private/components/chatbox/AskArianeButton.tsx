@@ -14,8 +14,6 @@ import { DARK_BLUE } from '../../../utils/htmlToPdf/utils/constants';
 import { toBase64 } from '../../../utils/String';
 import embleme from '../../../static/images/embleme_filigran_white.png';
 import useHelper from '../../../utils/hooks/useHelper';
-import ThemeDark, { THEME_DARK_DEFAULT_BACKGROUND } from '../../../components/ThemeDark';
-import themeLight from '../../../components/ThemeLight';
 
 const AskArianeButton = () => {
   const { t_i18n } = useFormatter();
@@ -82,7 +80,7 @@ const AskArianeButton = () => {
         placeholder: 'Ask a question...',
         backgroundColor: theme.palette.background.paper,
         textColor: theme.palette.text?.primary,
-        sendButtonColor: theme.palette.common?.white,
+        sendButtonColor: theme.palette.primary.main,
         maxChars: 256,
         maxCharsWarningMessage: 'You exceeded the characters limit. Please input less than 50 characters.',
         autoFocus: true,
