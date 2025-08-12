@@ -5,6 +5,7 @@ import Chip from '@mui/material/Chip';
 import { compose } from 'ramda';
 import inject18n from './i18n';
 import { hexToRGB } from '../utils/Colors';
+import { chipInListBasicStyle } from '../utils/chipStyle';
 
 const styles = () => ({
   chip: {
@@ -17,12 +18,9 @@ const styles = () => ({
     width: 100,
   },
   chipInList: {
-    fontSize: 12,
+    ...chipInListBasicStyle,
     lineHeight: '12px',
-    height: 20,
-    float: 'left',
     textTransform: 'uppercase',
-    borderRadius: 4,
     width: 80,
   },
   chipInline: {

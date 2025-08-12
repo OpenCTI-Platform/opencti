@@ -4,15 +4,13 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
 import type { Theme } from './Theme';
 import { useFormatter } from './i18n';
+import { chipInListBasicStyle } from '../utils/chipStyle';
 
 const useStyles = makeStyles(() => ({
   chipInList: {
-    fontSize: 12,
+    ...chipInListBasicStyle,
     lineHeight: '12px',
-    height: 20,
-    float: 'left',
     marginRight: 7,
-    borderRadius: 4,
     width: 90,
     textTransform: 'uppercase',
   },

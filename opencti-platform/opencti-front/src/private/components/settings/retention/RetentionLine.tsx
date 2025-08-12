@@ -19,6 +19,7 @@ import RetentionPopover from './RetentionPopover';
 import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { DataColumns } from '../../../../components/list_lines';
+import { chipInListBasicStyle } from '../../../../utils/chipStyle';
 
 const Transition = React.forwardRef((props: SlideProps, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -46,12 +47,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
     color: theme.palette.grey[700],
   },
   chipInList: {
-    fontSize: 12,
-    height: 20,
-    float: 'left',
+    ...chipInListBasicStyle,
     width: 100,
     textTransform: 'uppercase',
-    borderRadius: 4,
   },
 }));
 

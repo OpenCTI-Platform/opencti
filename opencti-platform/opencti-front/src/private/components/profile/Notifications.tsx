@@ -33,6 +33,7 @@ import { deleteNode } from '../../../utils/store';
 import { isNotEmptyField } from '../../../utils/utils';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 import { colors, getFirstOperation, iconSelector } from './notifications/notificationUtils';
+import { chipInListBasicStyle } from '../../../utils/chipStyle';
 
 export const LOCAL_STORAGE_KEY = 'notifiers';
 
@@ -301,26 +302,26 @@ const Notifications: FunctionComponent = () => {
       isSortable: isRuntimeSort,
       render: ({ notification_type, name }, { storageHelpers: { handleAddFilter } }) => {
         return (
-          <div style={{ height: 20,
+          <div style={{
+            height: 20,
             fontSize: 13,
             float: 'left',
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
-            paddingRight: 10 }}
+            paddingRight: 10,
+          }}
           >
             <Tooltip title={name ?? '-'}>
               <Chip
-                style={{ fontSize: 12,
-                  height: 20,
-                  float: 'left',
+                style={{
+                  ...chipInListBasicStyle,
                   width: 100,
-                  marginRight: 10 }}
-                color={
-                notification_type === 'live'
+                  marginRight: 10,
+                }}
+                color={notification_type === 'live'
                   ? 'warning'
-                  : 'secondary'
-              }
+                  : 'secondary'}
                 variant="outlined"
                 label={name ?? '-'}
                 onClick={(e) => {
