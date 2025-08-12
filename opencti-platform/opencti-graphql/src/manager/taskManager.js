@@ -289,6 +289,7 @@ const buildBundleElement = (element, actionType, operations) => {
 };
 
 const standardOperationCallback = async (context, user, task, actionType, operations) => {
+  let totalProcessed = task.task_processed_number;
   return async (elements) => {
     // Build limited stix object to limit memory footprint
     const objects = [];
@@ -308,7 +309,8 @@ const standardOperationCallback = async (context, user, task, actionType, operat
     // Send actions to queue
     await sendResultToQueue(context, user, task, objects);
     // Update task
-    await updateTask(context, task.id, { task_processed_number: task.task_processed_number + elements.length });
+    totalProcessed += elements.length;
+    await updateTask(context, task.id, { task_processed_number: totalProcessed });
   };
 };
 
@@ -363,16 +365,19 @@ export const buildContainersElementsBundle = async (context, user, containers, e
 const containerOperationCallback = async (context, user, task, containers, operations) => {
   const withNeighbours = operations[0].context.options?.includeNeighbours;
   const operationType = operations[0].type;
+  let totalProcessed = task.task_processed_number;
   return async (elements) => {
     const objects = await buildContainersElementsBundle(context, user, containers, elements, withNeighbours, operationType);
     // Send actions to queue
     await sendResultToQueue(context, user, task, objects);
     // Update task
-    await updateTask(context, task.id, { task_processed_number: task.task_processed_number + elements.length });
+    totalProcessed += elements.length;
+    await updateTask(context, task.id, { task_processed_number: totalProcessed });
   };
 };
 
 const promoteOperationCallback = async (context, user, task, container) => {
+  let totalProcessed = task.task_processed_number;
   return async (elements) => {
     const objects = [];
     const ids = elements.map((e) => e.internal_id);
@@ -473,11 +478,13 @@ const promoteOperationCallback = async (context, user, task, container) => {
     }
 
     // Update task
-    await updateTask(context, task.id, { task_processed_number: task.task_processed_number + elements.length });
+    totalProcessed += elements.length;
+    await updateTask(context, task.id, { task_processed_number: totalProcessed });
   };
 };
 
 const sharingOperationCallback = async (context, user, task, actionType, operations) => {
+  let totalProcessed = task.task_processed_number;
   return async (elements) => {
     const objects = [];
     for (let index = 0; index < elements.length; index += 1) {
@@ -518,7 +525,8 @@ const sharingOperationCallback = async (context, user, task, actionType, operati
       await sendResultToQueue(context, user, task, objects);
     }
     // Update task
-    await updateTask(context, task.id, { task_processed_number: task.task_processed_number + elements.length });
+    totalProcessed += elements.length;
+    await updateTask(context, task.id, { task_processed_number: totalProcessed });
   };
 };
 
