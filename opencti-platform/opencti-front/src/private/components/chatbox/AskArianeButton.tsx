@@ -68,7 +68,7 @@ const AskArianeButton = () => {
       renderHTML: true,
       boxShadow: `${theme.palette.background.shadow} 0px 5px 40px`,
       botMessage: {
-        backgroundColor: theme.palette.background.default,
+        backgroundColor: theme.palette.background.accent,
         textColor: theme.palette.text?.primary,
       },
       userMessage: {
