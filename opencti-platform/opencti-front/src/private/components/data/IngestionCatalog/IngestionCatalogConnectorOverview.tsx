@@ -34,17 +34,7 @@ const IngestionCatalogConnectorOverview = ({ connector }: { connector: Ingestion
           variant="outlined"
         >
           <Grid item xs={12}>
-            <Button
-              variant="outlined"
-              startIcon={<Launch />}
-              href={connector.subscription_link}
-              target="blank"
-              rel="noopener noreferrer"
-            >
-              {t_i18n('', { id: 'Test ... with OpenCTI', values: { connectorName: connector.title } })}
-            </Button>
-          </Grid>
-          <Grid item xs={12} style={{ marginTop: 20 }}>
+            <Typography variant="h3" gutterBottom={true}>{t_i18n('Integration documentation and code')}</Typography>
             <Button
               size="large"
               startIcon={<Git />}
@@ -53,6 +43,18 @@ const IngestionCatalogConnectorOverview = ({ connector }: { connector: Ingestion
               rel="noopener noreferrer"
             >
               {connector.title}
+            </Button>
+          </Grid>
+          <Grid item xs={12} style={{ marginTop: 20 }}>
+            <Typography variant="h3" gutterBottom={true}>{t_i18n('Visit the vendor\'s page to learn more and get in touch')}</Typography>
+            <Button
+              size="large"
+              startIcon={<Launch />}
+              href={connector.subscription_link}
+              target="blank"
+              rel="noopener noreferrer"
+            >
+              {t_i18n('Vendor contact')}
             </Button>
           </Grid>
           <Grid item xs={12} style={{ marginTop: 20 }}>
