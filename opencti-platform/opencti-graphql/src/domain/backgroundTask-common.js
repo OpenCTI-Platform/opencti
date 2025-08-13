@@ -37,8 +37,14 @@ export const TASK_TYPE_QUERY = 'QUERY';
 export const TASK_TYPE_RULE = 'RULE';
 export const TASK_TYPE_LIST = 'LIST';
 
+export const ACTION_TYPE_ADD = 'ADD';
 export const ACTION_TYPE_DELETE = 'DELETE';
+export const ACTION_TYPE_REMOVE = 'REMOVE';
+export const ACTION_TYPE_REPLACE = 'REPLACE';
 export const ACTION_TYPE_RESTORE = 'RESTORE';
+export const ACTION_TYPE_MERGE = 'MERGE';
+export const ACTION_TYPE_PROMOTE = 'PROMOTE';
+export const ACTION_TYPE_ENRICHMENT = 'ENRICHMENT';
 export const ACTION_TYPE_COMPLETE_DELETE = 'COMPLETE_DELETE';
 export const ACTION_TYPE_SHARE = 'SHARE';
 export const ACTION_TYPE_UNSHARE = 'UNSHARE';
@@ -50,6 +56,9 @@ export const ACTION_TYPE_ADD_ORGANIZATIONS = 'ADD_ORGANIZATIONS';
 export const ACTION_TYPE_REMOVE_ORGANIZATIONS = 'REMOVE_ORGANIZATIONS';
 export const ACTION_TYPE_ADD_GROUPS = 'ADD_GROUPS';
 export const ACTION_TYPE_REMOVE_GROUPS = 'REMOVE_GROUPS';
+export const ACTION_TYPE_RULE_APPLY = 'RULE_APPLY';
+export const ACTION_TYPE_RULE_CLEAR = 'RULE_CLEAR';
+export const ACTION_TYPE_RULE_ELEMENT_RESCAN = 'RULE_ELEMENT_RESCAN';
 
 const isDeleteRestrictedAction = ({ type }) => {
   return type === ACTION_TYPE_DELETE || type === ACTION_TYPE_RESTORE || type === ACTION_TYPE_COMPLETE_DELETE;
@@ -60,9 +69,13 @@ const areParentTypesKnowledge = (parentTypes) => parentTypes && parentTypes.flat
 export const checkActionValidity = async (context, user, input, scope, taskType) => {
   const { actions, filters: baseFilterString, ids } = input;
   // check actions validity
-  const actionsFields = actions.map((a) => a.field).filter(Boolean);
-  if (actionsFields.length !== uniq(actionsFields).length) {
-    throw FunctionalError('A single task cannot perform several actions on the same field.', { data: actionsFields });
+  const replaceActionsFields = actions
+    .filter((a) => !a.type || a.type === ACTION_TYPE_REPLACE)
+    .map((a) => a.field).filter(Boolean);
+  const severalReplaceOnSameKey = replaceActionsFields.length !== uniq(replaceActionsFields).length;
+  const replaceAndOtherActionOnSameKey = actions.filter((a) => a.type && a.type !== ACTION_TYPE_REPLACE && replaceActionsFields.includes(a.field)).length > 0;
+  if (severalReplaceOnSameKey || replaceAndOtherActionOnSameKey) {
+    throw FunctionalError('A single task cannot perform several actions on the same field if one action is a replace.', { data: replaceActionsFields });
   }
   // check rights
   const baseFilterObject = baseFilterString ? JSON.parse(baseFilterString) : undefined;

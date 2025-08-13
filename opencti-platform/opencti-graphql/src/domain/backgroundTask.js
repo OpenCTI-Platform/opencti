@@ -40,16 +40,6 @@ export const DEFAULT_ALLOWED_TASK_ENTITY_TYPES = [
 
 export const MAX_TASK_ELEMENTS = 500;
 
-export const ACTION_TYPE_ADD = 'ADD';
-export const ACTION_TYPE_REMOVE = 'REMOVE';
-export const ACTION_TYPE_REPLACE = 'REPLACE';
-export const ACTION_TYPE_MERGE = 'MERGE';
-export const ACTION_TYPE_PROMOTE = 'PROMOTE';
-export const ACTION_TYPE_ENRICHMENT = 'ENRICHMENT';
-export const ACTION_TYPE_RULE_APPLY = 'RULE_APPLY';
-export const ACTION_TYPE_RULE_CLEAR = 'RULE_CLEAR';
-export const ACTION_TYPE_RULE_ELEMENT_RESCAN = 'RULE_ELEMENT_RESCAN';
-
 export const findById = async (context, user, taskId) => {
   return storeLoadById(context, user, taskId, ENTITY_TYPE_BACKGROUND_TASK);
 };
