@@ -184,7 +184,10 @@ const ListFilters = ({
                 required={required}
               />
             )}
-            renderOption={(props, option) => <li {...props}>{option.label}</li>}
+            renderOption={(props, option) => {
+              const { key, ...otherProps } = props;
+              return <li key={key} {...otherProps}>{option.label}</li>;
+            }}
           />
           {isDatatable && variant === 'default' && (
             <SavedFilters
