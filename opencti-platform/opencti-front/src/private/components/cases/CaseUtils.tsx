@@ -211,7 +211,6 @@ export const caseFragment = graphql`
     ...FeedbackDetails_case
     ...CaseRftDetails_case
     ...CaseRfiDetails_case
-    ...CaseRfi_caseRfi
     ...ContainerHeader_container
     ...ContainerStixObjectsOrStixRelationships_container
   }

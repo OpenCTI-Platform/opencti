@@ -1,10 +1,11 @@
 import Grid from '@mui/material/Grid';
-import makeStyles from '@mui/styles/makeStyles';
 import React, { useRef } from 'react';
-import { graphql, useFragment } from 'react-relay';
+import { useFragment } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
-import { CaseRfi_caseRfi$key } from '@components/cases/case_rfis/__generated__/CaseRfi_caseRfi.graphql';
+import { caseFragment } from '@components/cases/CaseUtils';
+import { useTheme } from '@mui/material/styles';
+import { CaseUtils_case$key } from '../__generated__/CaseUtils_case.graphql';
 import { convertMarkings } from '../../../../utils/edition';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
@@ -23,106 +24,17 @@ import { CaseTasksLineDummy } from '../tasks/CaseTasksLine';
 import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
-import type { Theme } from '../../../../components/Theme';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: 0,
-    borderRadius: 4,
-  },
-}));
 
 interface CaseRfiProps {
-  caseRfiData: CaseRfi_caseRfi$key;
+  caseRfiData: CaseUtils_case$key;
   enableReferences: boolean;
 }
 
-const caseRfiFragment = graphql`
-  fragment CaseRfi_caseRfi on CaseRfi {
-    id
-    name
-    standard_id
-    description
-    created
-    information_types
-    priority
-    severity
-    entity_type
-    createdBy {
-      id
-      name
-    }
-    draftVersion {
-      draft_id
-      draft_operation
-    }
-    objectAssignee {
-      entity_type
-      id
-      name
-    }
-    objectParticipant {
-      id
-      name
-      entity_type
-    }
-    objectMarking {
-      id
-      definition_type
-      definition
-      x_opencti_order
-      x_opencti_color
-    }
-    objectLabel {
-      id
-      value
-      color
-    }
-    creators {
-      id
-      name
-    }
-    status {
-      id
-      order
-      template {
-        name
-        color
-      }
-    }
-    workflowEnabled
-    revoked
-    x_opencti_request_access
-    requestAccessConfiguration {
-      isUserCanAction
-      configuration {
-        approved_status {
-          id
-          template {
-            color
-          }
-        }
-        declined_status {
-          id
-          template {
-            color
-          }
-        }
-      }
-    }
-    ...CaseRfiDetails_case
-    ...ContainerStixObjectsOrStixRelationships_container
-  }
-`;
-
 const CaseRfi: React.FC<CaseRfiProps> = ({ caseRfiData, enableReferences }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const theme = useTheme();
   const ref = useRef(null);
-  const caseRfi = useFragment(caseRfiFragment, caseRfiData);
+  const caseRfi = useFragment(caseFragment, caseRfiData);
   const overviewLayoutCustomization = useOverviewLayoutCustomization(caseRfi.entity_type);
 
   const LOCAL_STORAGE_KEY = `cases-${caseRfi.id}-caseTask`;
@@ -195,7 +107,14 @@ const CaseRfi: React.FC<CaseRfiProps> = ({ caseRfiData, enableReferences }) => {
                             >
                               {t_i18n('Tasks')}
                             </Typography>
-                            <Paper classes={{ root: classes.paper }} variant="outlined">
+                            <Paper
+                              style={{
+                                marginTop: theme.spacing(1),
+                                padding: 0,
+                                borderRadius: 4,
+                              }}
+                              variant="outlined"
+                            >
                               <ListLines
                                 helpers={helpers}
                                 sortBy={sortBy}
