@@ -4391,7 +4391,7 @@ export const copyLiveElementToDraft = async (context, user, element, draftOperat
 // Gets the version of the element in current draft context if it exists
 // If it doesn't exist, creates a copy of live element to draft context then returns it
 const draftCopyLockPrefix = 'draft_copy';
-const loadDraftElement = async (context, user, element) => {
+export const loadDraftElement = async (context, user, element) => {
   if (isDraftIndex(element._index) || !isDraftSupportedEntity(element)) return element;
 
   let lock;
