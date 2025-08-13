@@ -15,6 +15,12 @@ The second way drafts can be created is when files are imported in the platform.
 
 In addition, files can be manually imported. When that is the case, an option is available to decide the validation mode to use. When the draft validation mode is selected, a draft will be automatically created and the result of the file import will be available in it.
 
+!!! warning "Import data without update"
+
+    When importing data that already exists in the platform, if this data is not updated by the import, the data contained in the file will not be updated.
+    As an example: 
+    - importing an email "test@test.com" and validate your draft, then re-importing the same email "test@test.com" will not appear in the newly created draft since it is not edited. However, if another user imports it, the email "test@test.com" will be in your draft, given the "creator" will be updated with the new user who whas imported it.
+
 For more detailed information on file import, see the import documentation page here: [Import from files](import-files.md).
 
 To quickly move into the draft and see the result of a file import, a Navigate to draft icon is available.
