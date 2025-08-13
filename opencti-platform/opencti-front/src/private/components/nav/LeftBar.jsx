@@ -1043,15 +1043,9 @@ const LeftBar = () => {
           )}
         </Security>
       </div>
-      <div
-        style={{
-          marginTop: 'auto',
-          position: 'fixed',
-          bottom: 0,
-        }}
-      >
-        <MenuList>
-          {isChatbotFeatureFlag && (
+      <Divider />
+      {isChatbotFeatureFlag && (
+        <MenuList component="nav">
           <MenuItem
             style={{
               color: theme.palette.ai.main,
@@ -1062,7 +1056,16 @@ const LeftBar = () => {
           >
             <AskArianeButton />
           </MenuItem>
-          )}
+        </MenuList>
+      )}
+      <div
+        style={{
+          marginTop: 'auto',
+          position: 'fixed',
+          bottom: 0,
+        }}
+      >
+        <MenuList>
           <MenuItem
             dense={true}
             style={{ marginBottom: bannerHeightNumber }}
