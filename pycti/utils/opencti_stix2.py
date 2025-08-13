@@ -2651,6 +2651,8 @@ class OpenCTIStix2:
         force_delete = operation == "delete_force"
         if item["type"] == "relationship":
             self.opencti.stix_core_relationship.delete(id=item["id"])
+        elif item["type"] == "external-reference":
+            self.opencti.external_reference.delete(item["id"])
         elif item["type"] == "sighting":
             self.opencti.stix_sighting_relationship.delete(id=item["id"])
         elif item["type"] in STIX_META_OBJECTS:
