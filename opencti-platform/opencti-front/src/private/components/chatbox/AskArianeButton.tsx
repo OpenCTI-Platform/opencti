@@ -141,7 +141,7 @@ const AskArianeButton = () => {
   return navOpen ? (
     <GradientButton
       size="small"
-      sx={{ width: '100%' }}
+      sx={{ width: '100%', textAlign: 'start' }}
       gradientVariant={GradientVariant.ai}
       title={t_i18n('Open chatbot')}
     >
