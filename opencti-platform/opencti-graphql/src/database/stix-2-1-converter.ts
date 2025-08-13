@@ -34,6 +34,7 @@ import {
   INPUT_SRC,
   INPUT_SRC_PAYLOAD,
   INPUT_VALUES,
+  isStoreRelationPir,
   RELATION_GRANTED_TO,
   RELATION_IN_PIR,
   RELATION_OBJECT_MARKING
@@ -124,10 +125,6 @@ import { isInternalObject } from '../schema/internalObject';
 import { isInternalId, isStixId } from '../schema/schemaUtils';
 import { assertType, cleanObject, convertToStixDate } from './stix-converter-utils';
 import { type StoreRelationPir } from '../modules/pir/pir-types';
-
-export const isStoreRelationPir = (instance: StoreCommon): instance is StoreRelationPir => {
-  return (instance as StoreRelationPir).entity_type === RELATION_IN_PIR;
-};
 
 export const isTrustedStixId = (stixId: string): boolean => {
   const segments = stixId.split('--');
