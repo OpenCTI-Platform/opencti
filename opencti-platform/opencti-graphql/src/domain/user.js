@@ -718,14 +718,19 @@ export const addUser = async (context, user, newUser) => {
     });
   }
 
+  await notify(BUS_TOPICS[ENTITY_TYPE_USER].ADDED_TOPIC, element, user);
   if (newUser.email_template_id) {
     const input = {
       target_user_id: element.id,
       email_template_id: newUser.email_template_id,
     };
-    await sendEmailToUser(context, user, input);
+    try {
+      await sendEmailToUser(context, user, input);
+    } catch (err) {
+      logApp.error('Error sending email on user creation', { createdUserID: user.id, emailTemplateId: newUser.email_template_id });
+    }
   }
-  return notify(BUS_TOPICS[ENTITY_TYPE_USER].ADDED_TOPIC, element, user);
+  return element;
 };
 
 export const roleEditField = async (context, user, roleId, input) => {
