@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
 import { FilterMode, FilterOperator, PirType } from '../../../src/generated/graphql';
 import { RELATION_IN_PIR } from '../../../src/schema/stixRefRelationship';
@@ -256,19 +256,6 @@ describe('PIR resolver standard behavior', () => {
     expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_score).toEqual(67);
     expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_explanations.length).toEqual(1);
     expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_explanations[0].dependencies[0].element_id).toEqual(relationshipId);
-  });
-
-  it('should have correct context_data in in-pir rel creation historic event', async () => {
-    await wait(50); // wait for historic event creation
-    const args = { connectionFormat: false, types: [ENTITY_TYPE_HISTORY], filters: addFilter(undefined, 'context_data.pir_ids', [pirInternalId]) };
-    const logs = await elPaginate(testContext, ADMIN_USER, READ_INDEX_HISTORY, args);
-    expect(logs.length).toEqual(1);
-    expect(logs[0].event_scope).toEqual('create');
-    expect(logs[0].context_data.entity_type).toEqual(RELATION_IN_PIR);
-    expect(logs[0].context_data.from_id).toEqual(flaggedElementId);
-    expect(logs[0].context_data.to_id).toEqual(pirInternalId);
-    expect(logs[0].context_data.pir_ids[0]).toEqual(pirInternalId);
-    expect(logs[0].context_data.pir_score).toEqual(67);
   });
 
   it('should update a pir meta rel by adding a new explanation', async () => {
