@@ -220,9 +220,35 @@ export const findParticipants = (context, user, args) => {
   return listAllEntitiesForFilter(context, user, PARTICIPANT_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes });
 };
 
-export const findAllMembers = (context, user, args) => {
+export const findAllMembers = async (context, user, args) => {
   const { entityTypes = null } = args;
   const types = entityTypes || MEMBERS_ENTITY_TYPES;
+
+  const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const platformOrgId = settings.platform_organization;
+
+  const userInPlatformOrg = (user.organizations || []).some((org) => org.id === platformOrgId);
+  const userCapabilities = (user.capabilities || []).map((c) => c.name);
+  const userBypass = userCapabilities.includes(BYPASS);
+
+  if (platformOrgId && !userInPlatformOrg && !userBypass) {
+    const userOrgIds = (user.organizations || []).map((org) => org.id);
+    const filters = {
+      mode: 'and',
+      filters: [
+        {
+          key: ['participate-to'],
+          values: userOrgIds,
+          operator: 'eq',
+        },
+      ],
+      filterGroups: [],
+    };
+    return listEntities(context, user, types, {
+      ...args,
+      filters
+    });
+  }
   return listEntities(context, user, types, args);
 };
 
