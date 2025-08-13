@@ -4188,7 +4188,7 @@ export const prepareElementForIndexing = async (element) => {
         }
         // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
         if (new Date().getTime() - innerProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
-          // If we extends the preparation 5 times, log an error
+          // If we extends the preparation 5 times, log a warn
           // It will help to understand what kind of key have so much elements
           if (extendLoopSplit === 5) {
             logApp.warn('[ENGINE] Element preparation too many values', { id: element.id, key, size: value.length });
