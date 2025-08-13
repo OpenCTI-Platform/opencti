@@ -131,7 +131,7 @@
     "@types/relay-runtime": "19.0.2",
     "@types/relay-test-utils": "19.0.0",
     "@vitejs/plugin-react": "4.7.0",
-    "babel-plugin-relay": "20.0.0",
+    "babel-plugin-relay": "20.1.1",
     "chokidar": "4.0.3",
     "compression": "1.8.0",
     "cross-env": "7.0.3",
