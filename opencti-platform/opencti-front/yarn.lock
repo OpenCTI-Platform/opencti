@@ -35,32 +35,32 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@analytics/cookie-utils@npm:^0.2.12":
-  version: 0.2.12
-  resolution: "@analytics/cookie-utils@npm:0.2.12"
+"@analytics/cookie-utils@npm:^0.2.14":
+  version: 0.2.14
+  resolution: "@analytics/cookie-utils@npm:0.2.14"
   dependencies:
-    "@analytics/global-storage-utils": "npm:^0.1.7"
-  checksum: 10/0c9c7602f4b20624e654081b7cd16afa6aecc2f8d1eb7fc68ba2739040e062b0bc5c53284d27fc02aabf36d0a2d11048c62a7b17bc2fd0886d9d96f5135bfc19
+    "@analytics/global-storage-utils": "npm:^0.1.9"
+  checksum: 10/7da80fae0985754333075d91fb849bd83bbf731f78ccdedd5994c652c0aeab011a7eea2dd3d5d6f693045e67ea6283a608668dad6f4f8a1e430ca2116428903e
   languageName: node
   linkType: hard
 
-"@analytics/core@npm:^0.12.17":
-  version: 0.12.17
-  resolution: "@analytics/core@npm:0.12.17"
+"@analytics/core@npm:^0.13.2":
+  version: 0.13.2
+  resolution: "@analytics/core@npm:0.13.2"
   dependencies:
-    "@analytics/global-storage-utils": "npm:^0.1.7"
-    "@analytics/type-utils": "npm:^0.6.2"
-    analytics-utils: "npm:^1.0.14"
-  checksum: 10/7e8026ffd225269c1bfeb0ff67e979234c264bdc01d84a460b74ce3b8b27663877499064098ed9008ea05071f901fde54d4aeca97d4d67e30b251857c10f6300
+    "@analytics/global-storage-utils": "npm:^0.1.9"
+    "@analytics/type-utils": "npm:^0.6.4"
+    analytics-utils: "npm:^1.1.1"
+  checksum: 10/19e36ea83b1b3540d8cfbe016c7dec3feaafc69bae295350f57eba6676bcf3069ded64c86e16c4e15d06a27e5e99a1dc2cd8bf07a9f3ee0564ea060d5e23cdf1
   languageName: node
   linkType: hard
 
-"@analytics/global-storage-utils@npm:^0.1.7":
-  version: 0.1.7
-  resolution: "@analytics/global-storage-utils@npm:0.1.7"
+"@analytics/global-storage-utils@npm:^0.1.9":
+  version: 0.1.9
+  resolution: "@analytics/global-storage-utils@npm:0.1.9"
   dependencies:
-    "@analytics/type-utils": "npm:^0.6.2"
-  checksum: 10/3aa9e255296342c39dfeeaa9ef9625293ec5d55b57fa51c4e0a217724911e6ace657c4f58503a3f5d66cfb7b6ca36d1834d8b763258f8273d52cf413789c4c27
+    "@analytics/type-utils": "npm:^0.6.4"
+  checksum: 10/af66176e65a0bc2a1ab20be33a8787b1bc6d29d2856f7ab2934d15f1258a2f2797cc925c5e97a9a825a9d1ae6c11d99cd09f16a817513fc7dd81a47a9b57d59c
   languageName: node
   linkType: hard
 
@@ -71,41 +71,41 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@analytics/localstorage-utils@npm:^0.1.10":
-  version: 0.1.10
-  resolution: "@analytics/localstorage-utils@npm:0.1.10"
+"@analytics/localstorage-utils@npm:^0.1.12":
+  version: 0.1.12
+  resolution: "@analytics/localstorage-utils@npm:0.1.12"
   dependencies:
-    "@analytics/global-storage-utils": "npm:^0.1.7"
-  checksum: 10/6a7912bbf294b65b7134e13ac08f12495fd6cefc3ea388bbe88cdbf9b1a1d28d8f41a2b45aebb202da59f554f135840a3f9b5235e19095735134a54580294dae
+    "@analytics/global-storage-utils": "npm:^0.1.9"
+  checksum: 10/818605264c6492c23d20e8bf16395eef2c5d0164f575813b30493276acdea5dc21cbb3c326af20490a2ad235caa4668a34d8d24cfdbd94fe4e6809fd0d685a4c
   languageName: node
   linkType: hard
 
-"@analytics/session-storage-utils@npm:^0.0.7":
-  version: 0.0.7
-  resolution: "@analytics/session-storage-utils@npm:0.0.7"
+"@analytics/session-storage-utils@npm:^0.0.9":
+  version: 0.0.9
+  resolution: "@analytics/session-storage-utils@npm:0.0.9"
   dependencies:
-    "@analytics/global-storage-utils": "npm:^0.1.7"
-  checksum: 10/7c0a4eccbb71adbd4c0234ad4ea5f9910b465b976ada1f03567d6bec0d2b08f3eebe3200effb317cf17a6ce5e31b91b00f5cd037f865bc74cd434c55dc363207
+    "@analytics/global-storage-utils": "npm:^0.1.9"
+  checksum: 10/b143d2838d78a6e6a836d111589d747cb7851390bb5f0a04c573c77985db8420fe26db62b42bbfb93a15c50b37e40e5b6b3d5c9b9aca1e35da1f0abe491d6d3e
   languageName: node
   linkType: hard
 
-"@analytics/storage-utils@npm:^0.4.2":
-  version: 0.4.2
-  resolution: "@analytics/storage-utils@npm:0.4.2"
+"@analytics/storage-utils@npm:^0.4.4":
+  version: 0.4.4
+  resolution: "@analytics/storage-utils@npm:0.4.4"
   dependencies:
-    "@analytics/cookie-utils": "npm:^0.2.12"
-    "@analytics/global-storage-utils": "npm:^0.1.7"
-    "@analytics/localstorage-utils": "npm:^0.1.10"
-    "@analytics/session-storage-utils": "npm:^0.0.7"
-    "@analytics/type-utils": "npm:^0.6.2"
-  checksum: 10/6776463b954a8302284dc170b798cc6c594317f03c3999d38d2fe20c0e1a4eca2cce4219bc520ede5cd0702b5991eac9d337aa170aa82b554136241af148824e
+    "@analytics/cookie-utils": "npm:^0.2.14"
+    "@analytics/global-storage-utils": "npm:^0.1.9"
+    "@analytics/localstorage-utils": "npm:^0.1.12"
+    "@analytics/session-storage-utils": "npm:^0.0.9"
+    "@analytics/type-utils": "npm:^0.6.4"
+  checksum: 10/020676359d6fa25b95aac6f72d2cf73b337b2744c9df5ea209ef4a365ccb3ddd0b8fc08478d3040084a8dd9a43d631a68e91670cd5b7db01b84d78ee57e6cfc8
   languageName: node
   linkType: hard
 
-"@analytics/type-utils@npm:^0.6.2":
-  version: 0.6.2
-  resolution: "@analytics/type-utils@npm:0.6.2"
-  checksum: 10/778242e4e8c22fe40354dd099f754bf708b081263210cac48f4f406e529f83c7d1ec52e7bf59bcbe8e7d10ce08a01945c1a6e8c2dd7db8c051de03aad8982e39
+"@analytics/type-utils@npm:^0.6.4":
+  version: 0.6.4
+  resolution: "@analytics/type-utils@npm:0.6.4"
+  checksum: 10/f520a4affdc640d1de2a21869005fd36cc5f0e69c0ee5ff5488295098f540b46b4276efe39c3bcb7de2ebd3a90d8f1dc6ba586820de04520857c40319110f4c9
   languageName: node
   linkType: hard
 
@@ -9071,25 +9071,25 @@ __metadata:
   languageName: node
   linkType: hard
 
-"analytics-utils@npm:^1.0.14":
-  version: 1.0.14
-  resolution: "analytics-utils@npm:1.0.14"
+"analytics-utils@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "analytics-utils@npm:1.1.1"
   dependencies:
-    "@analytics/type-utils": "npm:^0.6.2"
+    "@analytics/type-utils": "npm:^0.6.4"
     dlv: "npm:^1.1.3"
   peerDependencies:
     "@types/dlv": ^1.0.0
-  checksum: 10/0c07c18b680aca86bb871fe1ef81f4166e9c462a9db104828113f93892e6f38ae00f9ce4005a48b6dfa6ebfe87ffca0f0b7557306db06547873f9c9a5c0f07f4
+  checksum: 10/3f2fc811e342219036b19c6ad42a47fcd9743a9d6ff71ec562e536430136a618c04246c6509cc212bfca59a0a0149e474e36b094469f4a42f115b04dde0eb2c2
   languageName: node
   linkType: hard
 
-"analytics@npm:0.8.16":
-  version: 0.8.16
-  resolution: "analytics@npm:0.8.16"
+"analytics@npm:0.8.19":
+  version: 0.8.19
+  resolution: "analytics@npm:0.8.19"
   dependencies:
-    "@analytics/core": "npm:^0.12.17"
-    "@analytics/storage-utils": "npm:^0.4.2"
-  checksum: 10/855ddec523e650fe2bc365a2d1b1627c3e64bbd9585ea97c0d639353f139ec5009efd07c487d9eaaab89171e222490381f0994a5f37fdfdc52c59b47d19cca1a
+    "@analytics/core": "npm:^0.13.2"
+    "@analytics/storage-utils": "npm:^0.4.4"
+  checksum: 10/164f23d72e8752affeff4d96973934eb6d0c67567e79d91cc75f37e54eed23000eb6d493f9bdf7b9ea72c8fc438ef918abf07347ce0f44a0b149ab9f826d579c
   languageName: node
   linkType: hard
 
@@ -18202,7 +18202,7 @@ __metadata:
     "@types/relay-runtime": "npm:19.0.2"
     "@types/relay-test-utils": "npm:19.0.0"
     "@vitejs/plugin-react": "npm:4.7.0"
-    analytics: "npm:0.8.16"
+    analytics: "npm:0.8.19"
     apexcharts: "npm:4.4.0"
     axios: "npm:1.11.0"
     babel-plugin-relay: "npm:20.0.0"
