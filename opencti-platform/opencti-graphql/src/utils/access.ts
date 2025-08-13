@@ -854,3 +854,19 @@ export const isUserInPlatformOrganization = (user: AuthUser, settings: BasicStor
   const userOrganizationIds = (user.organizations ?? []).map((organization) => organization.internal_id);
   return settings.platform_organization ? userOrganizationIds.includes(settings.platform_organization) : true;
 };
+
+export const filterMembersWithUsersOrgs = async (context: AuthContext, user: AuthUser, members) => {
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const userInPlatformOrg = isUserInPlatformOrganization(user, settings);
+
+  if (!userInPlatformOrg) {
+    const userOrgIds = (user.organizations || []).map((org) => org.id);
+    const reducedMembers = members.filter((member) => {
+      const memberOrgIds = (member.organizations || []).map((org) => org.id);
+      return memberOrgIds.some((id) => userOrgIds.includes(id));
+    });
+
+    return reducedMembers;
+  }
+  return members;
+};
