@@ -9,7 +9,7 @@ import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { FROM_START_STR, truncate, UNTIL_END_STR } from '../utils/format';
 import { authorizedMembers, creators as creatorsAttribute } from '../schema/attribute-definition';
 import { X_WORKFLOW_ID } from '../schema/identifier';
-import { isStoreRelationPir } from './stix-2-1-converter';
+import { isStoreRelationPir } from '../schema/stixRefRelationship';
 
 export const generateMergeMessage = (instance, sources) => {
   const name = extractEntityRepresentativeName(instance);
