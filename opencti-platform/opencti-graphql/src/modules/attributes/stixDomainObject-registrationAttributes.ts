@@ -42,6 +42,7 @@ import {
   ENTITY_TYPE_VULNERABILITY
 } from '../../schema/stixDomainObject';
 import { CVSS_SEVERITY_VALUES } from '../../domain/vulnerability';
+import { ENTITY_TYPE_PIR } from '../pir/pir-types';
 
 const stixDomainObjectAttributes: Array<AttributeDefinition> = [
   created,
@@ -51,7 +52,22 @@ const stixDomainObjectAttributes: Array<AttributeDefinition> = [
   revoked,
   files,
   { name: 'x_opencti_graph_data', label: 'Graph data', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-  { name: 'x_opencti_workflow_id', label: 'Workflow status', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false }
+  { name: 'x_opencti_workflow_id', label: 'Workflow status', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
+  {
+    name: 'pir_scores',
+    label: 'PIR scores',
+    type: 'object',
+    format: 'nested',
+    editDefault: false,
+    mandatoryType: 'internal',
+    multiple: true,
+    upsert: false,
+    isFilterable: true,
+    mappings: [
+      { name: 'pir_id', label: 'PIR ID', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_PIR], editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true, featureFlag: 'Pir' },
+      { name: 'pir_score', label: 'PIR Score', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true, featureFlag: 'Pir' },
+    ]
+  },
 ];
 schemaAttributesDefinition.registerAttributes(ABSTRACT_STIX_DOMAIN_OBJECT, stixDomainObjectAttributes);
 

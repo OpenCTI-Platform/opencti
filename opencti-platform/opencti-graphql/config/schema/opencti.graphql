@@ -2852,6 +2852,7 @@ interface StixDomainObject {
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pir_scores: [PirScore!]
 }
 input StixDomainObjectAddInput {
   stix_id: StixId
@@ -3056,6 +3057,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pir_scores: [PirScore!]
 }
 input AttackPatternAddInput {
   stix_id: StixId
