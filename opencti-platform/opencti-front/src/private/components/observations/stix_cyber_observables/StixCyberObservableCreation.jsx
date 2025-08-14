@@ -538,9 +538,13 @@ const StixCyberObservableCreation = ({
                 const ibanregex = /^[A-Z]{2}[0-9]{2}[A-Z0-9]{1,30}$/i;
                 extraFieldsToValidate = {
                   bic: Yup.string()
-                    .matches(bicregex, t_i18n('bic values can only include A-Z and 0-9, 8 or 11 characters')).required(t_i18n('This field is required')),
-                  iban: Yup.string()
-                    .matches(ibanregex, t_i18n('iban values must begin with a country code and can only include A-Z and 0-9, 34 characters')).required(t_i18n('This field is required')),
+                    .matches(bicregex, t_i18n('bic values can only include A-Z and 0-9, 8 or 11 characters')),
+                  iban: Yup.mixed().when([], {
+                    is: () => status.type === 'Bank-Account',
+                    then: () => Yup.string().matches(ibanregex, t_i18n('iban values must begin with a country code and can only include A-Z and 0-9, 34 characters')).required(t_i18n('This field is required')),
+                    otherwise: () => Yup.string().matches(ibanregex, t_i18n('iban values must begin with a country code and can only include A-Z and 0-9, 34 characters')),
+                  }),
+
                 };
               } else if (attribute.value === 'hashes') {
                 initialValues.hashes_MD5 = '';
@@ -611,43 +615,53 @@ const StixCyberObservableCreation = ({
                 requiredOneOfFields = [
                   [attribute.value],
                 ];
-              } else if (attribute.value === 'number') {
+              } else if (status.type === 'Autonomous-System') {
                 extraFieldsToValidate = {
-                  [attribute.value]: Yup.string().required(t_i18n('This field is required')),
+                  number: Yup.string().required(t_i18n('This field is required')),
                 };
-              } else if (attribute.value === 'path') {
+              } else if (status.type === 'Directory') {
                 extraFieldsToValidate = {
-                  [attribute.value]: Yup.string().required(t_i18n('This field is required')),
+                  path: Yup.string().required(t_i18n('This field is required')),
                 };
-              } else if (attribute.value === 'subject') {
+              } else if (status.type === 'Email-Message') {
                 extraFieldsToValidate = {
-                  [attribute.value]: Yup.string().required(t_i18n('This field is required')),
+                  subject: Yup.string().required(t_i18n('This field is required')),
                 };
-              } else if (attribute.value === 'body') {
+              } else if (status.type === 'Media-Content') {
                 extraFieldsToValidate = {
-                  [attribute.value]: Yup.string().required(t_i18n('This field is required')),
+                  url: Yup.string().required(t_i18n('This field is required')),
                 };
-              } else if (attribute.value === 'url') {
+              } else if (status.type === 'Mutex') {
                 extraFieldsToValidate = {
-                  [attribute.value]: Yup.string().required(t_i18n('This field is required')),
-                };
-              } else if (attribute.value === 'name') {
-                extraFieldsToValidate = {
-                  [attribute.value]: Yup.string().required(t_i18n('This field is required')),
+                  name: Yup.string().required(t_i18n('This field is required')),
                 };
               } else if (attribute.value === 'src_port') {
                 extraFieldsToValidate = {
                   [attribute.value]: Yup.string().required(t_i18n('This field is required')),
                 };
-              } else if (attribute.value === 'card_number') {
+              } else if (status.type === 'Payment-Card') {
+                extraFieldsToValidate = {
+                  card_number: Yup.string().required(t_i18n('This field is required')),
+                  expiration_date: Yup.mixed().when([], {
+                    is: () => attribute.value === 'expiration_date',
+                    then: () => Yup.date().required(t_i18n('This field is required')),
+                    otherwise: () => Yup.mixed().nonNullable(),
+                  }),
+                };
+              } else if (status.type === 'Persona') {
+                extraFieldsToValidate = {
+                  persona_type: Yup.mixed().when([], {
+                    is: () => attribute.value === 'persona_type',
+                    then: () => Yup.mixed().required(t_i18n('This field is required')),
+                    otherwise: () => Yup.mixed().nonNullable(),
+                  }),
+                  persona_name: Yup.mixed().required(t_i18n('This field is required')),
+                };
+              } else if (attribute.value === 'command_line') {
                 extraFieldsToValidate = {
                   [attribute.value]: Yup.string().required(t_i18n('This field is required')),
                 };
-              } else if (attribute.value === 'persona_type') {
-                extraFieldsToValidate = {
-                  [attribute.value]: Yup.string().required(t_i18n('This field is required')),
-                };
-              } else if (attribute.value === 'persona_name') {
+              } else if (attribute.value === 'pid') {
                 extraFieldsToValidate = {
                   [attribute.value]: Yup.string().required(t_i18n('This field is required')),
                 };
