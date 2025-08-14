@@ -1,11 +1,10 @@
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import React from 'react';
 import Paper from '@mui/material/Paper';
-import { Icon, List, ListItem, ListItemText, Typography } from '@mui/material';
+import { List, ListItem, ListItemText, Typography } from '@mui/material';
 import { Theme } from '@mui/material/styles/createTheme';
 import XtmHubTab from '@components/settings/xtm-hub/XtmHubTab';
 import makeStyles from '@mui/styles/makeStyles';
-import Button from '@mui/material/Button';
 import { useFormatter } from '../../../../components/i18n';
 import { XtmHubSettingsQuery } from './__generated__/XtmHubSettingsQuery.graphql';
 import ItemBoolean from '../../../../components/ItemBoolean';

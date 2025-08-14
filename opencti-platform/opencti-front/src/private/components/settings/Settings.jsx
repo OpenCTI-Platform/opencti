@@ -217,6 +217,7 @@ const settingsValidation = (t) => Yup.object().shape({
   platform_banner_text: Yup.string().nullable(),
   platform_banner_level: Yup.string().nullable(),
   analytics_google_analytics_v4: Yup.string().nullable(),
+  enterprise_license: Yup.string().nullable(),
 });
 
 const Settings = () => {
@@ -317,6 +318,7 @@ const Settings = () => {
             const { version, dependencies } = about;
             const isEnterpriseEditionActivated = settings.platform_enterprise_edition.license_enterprise;
             const isEnterpriseEditionValid = settings.platform_enterprise_edition.license_validated;
+            const isEnterpriseEditionByConfig = settings.platform_enterprise_edition.license_by_configuration;
             return (
               <>
                 <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Parameters'), current: true }]} />
@@ -439,11 +441,11 @@ const Settings = () => {
                     <Typography variant="h4" gutterBottom={true} stye={{ float: 'left' }}>
                       {t_i18n('OpenCTI platform')}
                     </Typography>
-                    <div style={{ float: 'right', marginTop: theme.spacing(-4.5), position: 'relative' }}>
-                      {!isEnterpriseEditionActivated && (
+                    {(!isEnterpriseEditionActivated || (isEnterpriseEditionActivated && !isEnterpriseEditionByConfig)) && (
+                      <div style={{ float: 'right', marginTop: theme.spacing(-4.5) }}>
                         <EnterpriseEditionButton inLine={true} />
-                      )}
-                    </div>
+                      </div>
+                    )}
                     <div className="clearfix"/>
                     <Paper
                       classes={{ root: classes.paper }}
