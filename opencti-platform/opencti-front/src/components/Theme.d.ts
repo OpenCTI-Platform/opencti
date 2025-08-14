@@ -68,6 +68,7 @@ interface ExtendedPaletteOptions extends PaletteOptions {
     secondary: string
     pagination: string
     lightBackground?: string
+    paper?: string
   }
   dangerZone: Partial<ExtendedColor>
   primary: Partial<ExtendedColor>

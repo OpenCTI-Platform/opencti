@@ -62,18 +62,20 @@ const PirOverview = ({
 
   return (
     <Grid container spacing={3}>
-      <Grid size={{ xs: 6 }} container direction='column' spacing={3}>
-        <PirOverviewCounts data={dataPir} />
-        {threatMapQueryRef && <PirThreatMap queryRef={threatMapQueryRef} />}
-        <PirOverviewTopSources data={dataPir} />
-        <PirOverviewCountFlagged data={dataPir} />
+      <Grid size={{ xs: 12 }} container direction='column' spacing={3}>
         <PirOverviewDetails data={dataPir} />
+        <PirOverviewCounts data={dataPir} />
       </Grid>
       <Grid size={{ xs: 6 }} container direction='column' spacing={3}>
         <PirOverviewHistory
           dataHistory={dataHistory}
           dataPir={dataPir}
         />
+        <PirOverviewCountFlagged data={dataPir} />
+      </Grid>
+      <Grid size={{ xs: 6 }} container direction='column' spacing={3}>
+        {threatMapQueryRef && <PirThreatMap queryRef={threatMapQueryRef} />}
+        <PirOverviewTopSources data={dataPir} />
       </Grid>
     </Grid>
   );

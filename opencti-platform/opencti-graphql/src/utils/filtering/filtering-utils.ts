@@ -244,7 +244,7 @@ export const addFilter = (filterGroup: FilterGroup | undefined | null, newKey: s
         mode: localMode
       },
     ],
-    filterGroups: filterGroup ? [filterGroup] : [],
+    filterGroups: filterGroup && isFilterGroupNotEmpty(filterGroup) ? [filterGroup] : [],
   } as FilterGroup;
 };
 

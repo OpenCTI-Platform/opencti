@@ -22,6 +22,10 @@ export default class PirDetailsPageModel {
     return this.page.getByRole('dialog').getByRole('button', { name: 'Confirm' }).click();
   }
 
+  toggleDetails() {
+    return this.page.getByText('Rescan period (days)').click();
+  }
+
   getEntityTypeCount(label: string) {
     return this.page.getByTestId(`pir-overview-count-${label}`);
   }

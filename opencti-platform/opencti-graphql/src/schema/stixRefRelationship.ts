@@ -53,8 +53,9 @@ import {
   ENTITY_WINDOWS_REGISTRY_VALUE_TYPE
 } from './stixCyberObservable';
 import { ATTRIBUTE_SAMPLE } from '../modules/malwareAnalysis/malwareAnalysis-types';
-import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
+import { ENTITY_TYPE_PIR, type StoreRelationPir } from '../modules/pir/pir-types';
 import { isFeatureEnabled } from '../config/conf';
+import type { StoreCommon } from '../types/store';
 
 export const ABSTRACT_STIX_NESTED_REF_RELATIONSHIP = 'stix-nested-ref-relationship'; // Only for front usage
 
@@ -947,6 +948,10 @@ schemaTypesDefinition.register(
 );
 
 export const isStixRefRelationship = (type: string) => schemaTypesDefinition.isTypeIncludedIn(type, ABSTRACT_STIX_REF_RELATIONSHIP) || type === ABSTRACT_STIX_REF_RELATIONSHIP;
+
+export const isStoreRelationPir = (instance: StoreCommon): instance is StoreRelationPir => {
+  return (instance as StoreRelationPir).entity_type === RELATION_IN_PIR;
+};
 
 export const buildRelationRef = (relationRef: Omit<RefAttribute, 'isRefExistingForTypes'>, isRefExistingForTypes: Checker): RefAttribute => {
   return {

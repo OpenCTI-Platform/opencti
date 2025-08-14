@@ -1,33 +1,13 @@
-import React, { ReactNode } from 'react';
-import { PaperProps as MuiPaperProps, Typography, Paper as MuiPaper } from '@mui/material';
+import React from 'react';
+import { PaperProps as MuiPaperProps, Paper as MuiPaper } from '@mui/material';
+import PaperHeader, { PaperHeaderProps } from './PaperHeader';
 
-interface PaperProps extends Omit<MuiPaperProps, 'title'> {
-  title?: ReactNode
-  actions?: ReactNode
-}
+interface PaperProps extends PaperHeaderProps, Omit<MuiPaperProps, 'title'> {}
 
 const Paper = ({ title, actions, children, ...muiProps }: PaperProps) => {
   return (
     <div>
-      {(title || actions) && (
-        <div style={{
-          display: 'flex',
-          alignItems: 'flex-start',
-          height: 19,
-        }}
-        >
-          {title && (
-          <Typography
-            variant="h4"
-            gutterBottom
-            sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
-          >
-            {title}
-          </Typography>
-          )}
-          {actions}
-        </div>
-      )}
+      <PaperHeader title={title} actions={actions} />
       <MuiPaper
         variant="outlined"
         className="paper-for-grid"

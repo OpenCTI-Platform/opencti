@@ -36,10 +36,10 @@ const PirOverviewCountsDummy = () => {
   };
   return (
     <>
-      <Grid size={{ xs: 6 }} style={dummyStyle}></Grid>
-      <Grid size={{ xs: 6 }} style={dummyStyle}></Grid>
-      <Grid size={{ xs: 6 }} style={dummyStyle}></Grid>
-      <Grid size={{ xs: 6 }} style={dummyStyle}></Grid>
+      <Grid size={{ xs: 3 }} style={dummyStyle}></Grid>
+      <Grid size={{ xs: 3 }} style={dummyStyle}></Grid>
+      <Grid size={{ xs: 3 }} style={dummyStyle}></Grid>
+      <Grid size={{ xs: 3 }} style={dummyStyle}></Grid>
     </>
   );
 };
@@ -75,7 +75,7 @@ const PirOverviewCount = ({ label, value, value24h }: PirOverviewCountProps) => 
   const { t_i18n, n } = useFormatter();
 
   return (
-    <Grid key={label} size={{ xs: 6 }}>
+    <Grid key={label} size={{ xs: 3 }}>
       <Paper style={{ padding: theme.spacing(1.5), paddingTop: theme.spacing(1) }}>
         <div style={{ display: 'flex', alignItems: 'start' }}>
           <Typography

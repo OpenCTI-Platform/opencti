@@ -494,6 +494,8 @@ type ContextData {
   commit: String
   external_references: [ExternalReference!]
   workspace_type: String
+  pir_ids: [String!]
+  pir_score: Int
 }
 type Log {
   id: ID!
