@@ -7,11 +7,13 @@ import { MESSAGING$ } from '../../../relay/environment';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import Loader from '../../../components/Loader';
 import { UserContext } from '../../../utils/hooks/useAuth';
+import useXtmHubUserPlatformToken from '../../../utils/hooks/useXtmHubUserPlatformToken';
 
 const DeployCustomDashboard = () => {
   const navigate = useNavigate();
   const { settings } = useContext(UserContext);
   const { serviceInstanceId, fileId } = useParams();
+  const { token } = useXtmHubUserPlatformToken();
   const [commitImportMutation] = useApiMutation<WorkspaceCreationImportMutation>(importMutation);
   const sendImportToBack = (importedFile: File) => {
     commitImportMutation({
@@ -24,18 +26,25 @@ const DeployCustomDashboard = () => {
       },
       onError: () => {
         navigate('/dashboard');
-        MESSAGING$.notifyError('An error occured while importing dashboard');
+        MESSAGING$.notifyError('An error occurred while importing dashboard');
       },
     });
   };
   useEffect(() => {
+    if (!token) {
+      return;
+    }
+
     const fetchData = async () => {
       try {
         const response = await fetch(
           `${settings?.platform_xtmhub_url}/document/get/${serviceInstanceId}/${fileId}`,
           {
             method: 'GET',
-            credentials: 'include',
+            credentials: 'omit',
+            headers: {
+              'XTM-Hub-User-Platform-Token': token,
+            },
           },
         );
 
@@ -47,11 +56,12 @@ const DeployCustomDashboard = () => {
         sendImportToBack(file);
       } catch (e) {
         navigate('/dashboard');
-        MESSAGING$.notifyError('An error occured while importing dashboard. You have been redirected to home page.');
+        MESSAGING$.notifyError('An error occurred while importing dashboard. You have been redirected to home page.');
       }
     };
+
     fetchData();
-  }, [serviceInstanceId, fileId]);
+  }, [serviceInstanceId, fileId, token]);
 
   return <Loader />;
 };
