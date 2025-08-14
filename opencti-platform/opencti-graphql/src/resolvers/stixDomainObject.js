@@ -11,7 +11,7 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
   stixDomainObjectExportAsk,
-  stixDomainObjectFileEdit,
+  stixDomainObjectFileEdit, stixDomainObjectPirScore,
   stixDomainObjectsDelete,
   stixDomainObjectsDistributionByEntity,
   stixDomainObjectsExportAsk,
@@ -65,6 +65,7 @@ const stixDomainObjectResolvers = {
       const statusesType = await findByType(context, context.user, stixDomainObject.entity_type);
       return statusesType.length > 0;
     },
+    pirScore: (stixDomainObject, { pirId }, context) => stixDomainObjectPirScore(context, context.user, stixDomainObject.id, pirId),
   },
   Mutation: {
     stixDomainObjectEdit: (_, { id }, context) => ({

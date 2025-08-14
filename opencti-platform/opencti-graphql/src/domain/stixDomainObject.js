@@ -39,6 +39,8 @@ import { entityLocationType, identityClass, xOpenctiType } from '../schema/attri
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { validateMarking } from '../utils/access';
+import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
+import { checkEnterpriseEdition } from '../enterprise-edition/ee';
 
 export const findAll = async (context, user, args) => {
   let types = [];
@@ -95,6 +97,25 @@ export const stixDomainObjectsDistributionByEntity = async (context, user, args)
 export const stixDomainObjectAvatar = (stixDomainObject) => {
   const files = stixDomainObject.x_opencti_files ?? [];
   return files.sort((a, b) => (a.order || 0) - (b.order || 0)).find((n) => n.mime_type.includes('image/') && !!n.inCarousel);
+};
+
+export const stixDomainObjectPirScore = async (context, user, stixDomainObjectId, pirId) => {
+  // check EE
+  await checkEnterpriseEdition();
+  // check user has access to the PIR
+  const pir = await storeLoadById(context, user, pirId, ENTITY_TYPE_PIR);
+  if (!pir) {
+    throw FunctionalError('No PIR found');
+  }
+  // fetch stix domain object pir scores
+  const stixDomainObject = await storeLoadById(context, user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
+  const pirScores = (stixDomainObject.pir_scores ?? []).filter((s) => s.pir_id === pirId);
+  if (pirScores.length > 1) {
+    throw FunctionalError('An entity can only have one score by Pir');
+  } else if (pirScores.length === 0) {
+    return 0;
+  }
+  return pirScores[0].pir_score;
 };
 // endregion
 

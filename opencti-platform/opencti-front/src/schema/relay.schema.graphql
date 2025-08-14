@@ -2754,6 +2754,7 @@ interface StixDomainObject {
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirScore(pirId: ID!): Int
 }
 
 input StixDomainObjectAddInput {
@@ -2865,7 +2866,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pir_scores: [PirScore!]
+  pirScore(pirId: ID!): Int
 }
 
 input AttackPatternAddInput {
@@ -3004,6 +3005,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirScore(pirId: ID!): Int
 }
 
 input CampaignAddInput {
@@ -3193,6 +3195,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirScore(pirId: ID!): Int
 }
 
 input NoteAddInput {
@@ -3327,6 +3330,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirScore(pirId: ID!): Int
 }
 
 input ObservedDataAddInput {
@@ -3436,6 +3440,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirScore(pirId: ID!): Int
 }
 
 input OpinionAddInput {
@@ -3571,6 +3576,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   status: Status
   workflowEnabled: Boolean
   deleteWithElementsCount: Int
+  pirScore(pirId: ID!): Int
 }
 
 input ReportAddInput {
@@ -3682,6 +3688,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirScore(pirId: ID!): Int
 }
 
 input CourseOfActionAddInput {
@@ -3896,6 +3903,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   status: Status
   workflowEnabled: Boolean
   isUser: Boolean
+  pirScore(pirId: ID!): Int
 }
 
 input IndividualAddInput {
@@ -4008,6 +4016,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirScore(pirId: ID!): Int
 }
 
 input SectorAddInput {
@@ -4114,6 +4123,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirScore(pirId: ID!): Int
 }
 
 input SystemAddInput {
@@ -4227,6 +4237,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirScore(pirId: ID!): Int
 }
 
 input InfrastructureAddInput {
@@ -4339,6 +4350,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirScore(pirId: ID!): Int
 }
 
 input IntrusionSetAddInput {
@@ -4554,6 +4566,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirScore(pirId: ID!): Int
 }
 
 input PositionAddInput {
@@ -4663,6 +4676,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirScore(pirId: ID!): Int
 }
 
 input CityAddInput {
@@ -4767,6 +4781,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirScore(pirId: ID!): Int
 }
 
 input CountryAddInput {
@@ -4872,6 +4887,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirScore(pirId: ID!): Int
 }
 
 input RegionAddInput {
@@ -4987,6 +5003,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirScore(pirId: ID!): Int
 }
 
 input MalwareAddInput {
@@ -5111,6 +5128,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirScore(pirId: ID!): Int
 }
 
 type ThreatActorEdge {
@@ -5188,6 +5206,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirScore(pirId: ID!): Int
 }
 
 input ThreatActorGroupAddInput {
@@ -5300,6 +5319,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirScore(pirId: ID!): Int
 }
 
 input ToolAddInput {
@@ -5454,6 +5474,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirScore(pirId: ID!): Int
 }
 
 input VulnerabilityAddInput {
@@ -5614,6 +5635,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirScore(pirId: ID!): Int
 }
 
 input IncidentAddInput {
@@ -9468,6 +9490,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirScore(pirId: ID!): Int
 }
 
 enum ChannelsOrdering {
@@ -9599,6 +9622,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirScore(pirId: ID!): Int
 }
 
 enum LanguagesOrdering {
@@ -9699,6 +9723,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirScore(pirId: ID!): Int
 }
 
 enum EventsOrdering {
@@ -9813,6 +9838,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirScore(pirId: ID!): Int
 }
 
 enum GroupingsOrdering {
@@ -9923,6 +9949,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirScore(pirId: ID!): Int
 }
 
 enum NarrativesOrdering {
@@ -10182,6 +10209,7 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirScore(pirId: ID!): Int
   name: String!
   description: String
   aliases: [String]
@@ -10283,6 +10311,7 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirScore(pirId: ID!): Int
   name: String!
   description: String
   aliases: [String]
@@ -10513,6 +10542,7 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirScore(pirId: ID!): Int
 }
 
 enum AdministrativeAreasOrdering {
@@ -10618,6 +10648,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirScore(pirId: ID!): Int
   name: String!
   description: String
   due_date: DateTime
@@ -10761,6 +10792,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirScore(pirId: ID!): Int
   name: String!
   description: String
   content: String
@@ -10886,6 +10918,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirScore(pirId: ID!): Int
   name: String!
   description: String
   content: String
@@ -11001,6 +11034,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
+  pirScore(pirId: ID!): Int
   authorized_members: [MemberAccess!]
   authorized_members_activation_date: DateTime
   currentUserAccessRight: String
@@ -11130,6 +11164,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
+  pirScore(pirId: ID!): Int
   authorized_members: [MemberAccess!]
   authorized_members_activation_date: DateTime
   currentUserAccessRight: String
@@ -11273,6 +11308,7 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirScore(pirId: ID!): Int
   name: String!
   description: String
   content: String
@@ -11525,6 +11561,7 @@ type MalwareAnalysis implements BasicObject & StixCoreObject & StixDomainObject 
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirScore(pirId: ID!): Int
   product: String!
   version: String
   hostVm: Software
@@ -11761,6 +11798,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirScore(pirId: ID!): Int
 }
 
 enum ThreatActorsIndividualOrdering {
@@ -12398,6 +12436,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirScore(pirId: ID!): Int
 }
 
 input IndicatorAddInput {
@@ -12554,6 +12593,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirScore(pirId: ID!): Int
 }
 
 enum OrganizationsOrdering {
@@ -13622,6 +13662,7 @@ type SecurityPlatform implements BasicObject & StixObject & StixCoreObject & Sti
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirScore(pirId: ID!): Int
 }
 
 enum SecurityPlatformOrdering {

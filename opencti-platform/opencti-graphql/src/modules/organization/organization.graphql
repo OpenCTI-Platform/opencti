@@ -148,6 +148,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirScore(pirId: ID!): Int @auth(for: [PIRAPI])
 }
 
 # Ordering
