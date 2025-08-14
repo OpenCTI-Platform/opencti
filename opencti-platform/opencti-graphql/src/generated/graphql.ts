@@ -17426,6 +17426,7 @@ export type NetworkTraffic = BasicObject & StixCoreObject & StixCyberObservable 
   dst_byte_count?: Maybe<Scalars['Int']['output']>;
   dst_packets?: Maybe<Scalars['Int']['output']>;
   dst_port?: Maybe<Scalars['Int']['output']>;
+  dst_ref?: Maybe<Scalars['Int']['output']>;
   editContext?: Maybe<Array<EditUserContext>>;
   end?: Maybe<Scalars['DateTime']['output']>;
   entity_type: Scalars['String']['output'];
@@ -17457,6 +17458,7 @@ export type NetworkTraffic = BasicObject & StixCoreObject & StixCyberObservable 
   src_byte_count?: Maybe<Scalars['Int']['output']>;
   src_packets?: Maybe<Scalars['Int']['output']>;
   src_port?: Maybe<Scalars['Int']['output']>;
+  src_ref?: Maybe<Scalars['Int']['output']>;
   standard_id: Scalars['String']['output'];
   start?: Maybe<Scalars['DateTime']['output']>;
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -40280,6 +40282,7 @@ export type NetworkTrafficResolvers<ContextType = any, ParentType extends Resolv
   dst_byte_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   dst_packets?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   dst_port?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  dst_ref?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   end?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -40311,6 +40314,7 @@ export type NetworkTrafficResolvers<ContextType = any, ParentType extends Resolv
   src_byte_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   src_packets?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   src_port?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  src_ref?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   start?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<NetworkTrafficStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
