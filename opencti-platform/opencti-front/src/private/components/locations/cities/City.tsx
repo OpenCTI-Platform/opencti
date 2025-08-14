@@ -78,7 +78,7 @@ const City = ({ cityData }: { cityData: City_city$key }) => {
   const classes = useStyles();
   const city = useFragment<City_city$key>(cityFragment, cityData);
   return (
-    <>
+    <div data-testid="city-details-page">
       <Grid
         container={true}
         spacing={3}
@@ -125,7 +125,7 @@ const City = ({ cityData }: { cityData: City_city$key }) => {
         stixCoreObjectOrStixCoreRelationshipId={city.id}
         defaultMarkings={city.objectMarking ?? []}
       />
-    </>
+    </div>
   );
 };
 

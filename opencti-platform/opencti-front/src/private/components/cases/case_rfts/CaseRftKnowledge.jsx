@@ -157,6 +157,7 @@ class CaseRftKnowledgeComponent extends Component {
           padding: 0,
         }}
         id={location.pathname.includes('matrix') ? 'parent' : 'container'}
+        data-testid="case-rft-knowledge"
       >
         {mode !== 'graph' && (
         <ContainerHeader

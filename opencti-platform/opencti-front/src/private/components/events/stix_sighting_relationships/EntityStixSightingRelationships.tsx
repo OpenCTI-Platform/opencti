@@ -178,7 +178,7 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
       },
     };
     return (
-      <>
+      <div data-testid="sightings-overview">
         <ListLines
           helpers={helpers}
           sortBy={sortBy}
@@ -244,7 +244,7 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
           </React.Suspense>
           )}
         </ListLines>
-      </>
+      </div>
     );
   };
 

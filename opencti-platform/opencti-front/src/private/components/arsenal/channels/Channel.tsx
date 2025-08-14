@@ -72,7 +72,7 @@ const Channel: React.FC<ChannelProps> = ({ channelData }) => {
   const overviewLayoutCustomization = useOverviewLayoutCustomization(channel.entity_type);
 
   return (
-    <>
+    <div data-testid="channel-overview">
       <Grid
         container={true}
         spacing={3}
@@ -141,7 +141,7 @@ const Channel: React.FC<ChannelProps> = ({ channelData }) => {
           })
         }
       </Grid>
-    </>
+    </div>
   );
 };
 

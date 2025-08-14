@@ -32,7 +32,7 @@ const Sessions = () => {
     {},
   );
   return (
-    <div className={classes.container}>
+    <div className={classes.container} data-testid="session-settings-page">
       <AccessesMenu />
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Sessions'), current: true }]} />
       <div className={classes.parameters}>
