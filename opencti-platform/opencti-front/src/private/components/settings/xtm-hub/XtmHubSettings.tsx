@@ -1,5 +1,5 @@
 import { graphql, useLazyLoadQuery } from 'react-relay';
-import React from 'react';
+import React, { useContext } from 'react';
 import Paper from '@mui/material/Paper';
 import { List, ListItem, ListItemText, Typography } from '@mui/material';
 import { Theme } from '@mui/material/styles/createTheme';
@@ -10,6 +10,8 @@ import { XtmHubSettingsQuery } from './__generated__/XtmHubSettingsQuery.graphql
 import ItemBoolean from '../../../../components/ItemBoolean';
 import useGranted, { SETTINGS_SETMANAGEXTMHUB } from '../../../../utils/hooks/useGranted';
 import GradientButton from '../../../../components/GradientButton';
+import useNetworkCheck from '../../../../utils/hooks/useCheckNetwork';
+import { UserContext } from '../../../../utils/hooks/useAuth';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
@@ -41,6 +43,7 @@ const XtmHubSettings = () => {
     {},
   );
   const isGrantedToXtmHub = useGranted([SETTINGS_SETMANAGEXTMHUB]);
+
   return (
     <>
       <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
