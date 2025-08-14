@@ -22,6 +22,7 @@ import { extractIdsFromStoreObject, isNotEmptyField, REDACTED_INFORMATION } from
 import { isStixObject } from '../schema/stixCoreObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import type { UpdateEvent } from '../types/event';
+import { RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
 
 export const DEFAULT_INVALID_CONF_VALUE = 'ChangeMe';
 
@@ -855,18 +856,16 @@ export const isUserInPlatformOrganization = (user: AuthUser, settings: BasicStor
   return settings.platform_organization ? userOrganizationIds.includes(settings.platform_organization) : true;
 };
 
-export const filterMembersWithUsersOrgs = async (context: AuthContext, user: AuthUser, members) => {
+export const filterMembersWithUsersOrgs = async (context: AuthContext, user: AuthUser, members: { [RELATION_PARTICIPATE_TO]: string[] }[]) => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const userInPlatformOrg = isUserInPlatformOrganization(user, settings);
 
   if (!userInPlatformOrg) {
     const userOrgIds = (user.organizations || []).map((org) => org.id);
-    const reducedMembers = members.filter((member) => {
-      const memberOrgIds = (member.organizations || []).map((org) => org.id);
+    return members.filter((member) => {
+      const memberOrgIds = member[RELATION_PARTICIPATE_TO] || [];
       return memberOrgIds.some((id) => userOrgIds.includes(id));
     });
-
-    return reducedMembers;
   }
   return members;
 };
