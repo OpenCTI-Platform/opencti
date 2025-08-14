@@ -26,8 +26,7 @@ const incidentResolvers = {
   Incident: {
     objectParticipant: async (container, _, context) => {
       const participants = await loadThroughDenormalized(context, context.user, container, INPUT_PARTICIPANT, { sortBy: 'user_email' });
-      const visibleParticipants = await filterMembersWithUsersOrgs(context, context.user, participants);
-      return visibleParticipants;
+      return filterMembersWithUsersOrgs(context, context.user, participants);
     }
   },
   IncidentsOrdering: {
