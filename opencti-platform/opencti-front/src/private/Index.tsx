@@ -39,7 +39,7 @@ const RootWorkspaces = lazy(() => import('./components/workspaces/Root'));
 const RootSettings = lazy(() => import('./components/settings/Root'));
 const RootAudit = lazy(() => import('./components/settings/activity/audit/Root'));
 const RootPir = lazy(() => import('./components/pir/Root'));
-const RootXTMHub = lazy(() => import('./components/xtm-hub/Root'));
+const RootXTMHub = lazy(() => import('@components/xtm_hub/Root'));
 
 interface IndexProps {
   settings: RootSettings$data
