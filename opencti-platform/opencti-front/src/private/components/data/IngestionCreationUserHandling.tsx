@@ -115,7 +115,6 @@ const IngestionCreationUserHandlingComponent = ({ queryRef, default_confidence_l
               label={
                 <>
                   {t_i18n('Edit confidence level')}
-                  <DangerZoneChip />
                 </>
               }
             />
