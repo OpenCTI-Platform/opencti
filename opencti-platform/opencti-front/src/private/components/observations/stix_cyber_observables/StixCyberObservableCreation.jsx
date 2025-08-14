@@ -635,9 +635,9 @@ const StixCyberObservableCreation = ({
                 extraFieldsToValidate = {
                   name: Yup.string().required(t_i18n('This field is required')),
                 };
-              } else if (attribute.value === 'src_port') {
+              } else if (status.type === 'Network-Traffic') {
                 extraFieldsToValidate = {
-                  [attribute.value]: Yup.string().required(t_i18n('This field is required')),
+                  src_port: Yup.string().required(t_i18n('This field is required')),
                 };
               } else if (status.type === 'Payment-Card') {
                 extraFieldsToValidate = {
@@ -657,13 +657,20 @@ const StixCyberObservableCreation = ({
                   }),
                   persona_name: Yup.mixed().required(t_i18n('This field is required')),
                 };
-              } else if (attribute.value === 'command_line') {
+              } else if (status.type === 'Process') {
                 extraFieldsToValidate = {
-                  [attribute.value]: Yup.string().required(t_i18n('This field is required')),
+                  pid: Yup.mixed().required(t_i18n('This field is required')),
+                  command_line: Yup.string().required(t_i18n('This field is required')),
                 };
-              } else if (attribute.value === 'pid') {
+              } else if (status.type === 'User-Account') {
                 extraFieldsToValidate = {
-                  [attribute.value]: Yup.string().required(t_i18n('This field is required')),
+                  account_type: Yup.mixed().required(t_i18n('This field is required')),
+                  user_id: Yup.string().required(t_i18n('This field is required')),
+                  account_login: Yup.string().required(t_i18n('This field is required')),
+                };
+              } else if (status.type === 'Windows-Registry-Key') {
+                extraFieldsToValidate = {
+                  attribute_key: Yup.mixed().required(t_i18n('This field is required')),
                 };
               } else {
                 initialValues[attribute.value] = '';
