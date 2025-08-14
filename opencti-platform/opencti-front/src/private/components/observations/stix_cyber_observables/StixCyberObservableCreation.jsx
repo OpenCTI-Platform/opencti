@@ -523,6 +523,8 @@ const StixCyberObservableCreation = ({
             let extraFieldsToValidate = null;
             let requiredOneOfFields = [];
             for (const attribute of attributes) {
+              console.log('attribute.value ', attribute);
+
               if (isVocabularyField(status.type, attribute.value)) {
                 initialValues[attribute.value] = null;
               } else if (includes(attribute.value, dateAttributes)) {
@@ -536,9 +538,9 @@ const StixCyberObservableCreation = ({
                 const ibanregex = /^[A-Z]{2}[0-9]{2}[A-Z0-9]{1,30}$/i;
                 extraFieldsToValidate = {
                   bic: Yup.string()
-                    .matches(bicregex, t_i18n('bic values can only include A-Z and 0-9, 8 or 11 characters')),
+                    .matches(bicregex, t_i18n('bic values can only include A-Z and 0-9, 8 or 11 characters')).required(t_i18n('This field is required')),
                   iban: Yup.string()
-                    .matches(ibanregex, t_i18n('iban values must begin with a country code and can only include A-Z and 0-9, 34 characters')),
+                    .matches(ibanregex, t_i18n('iban values must begin with a country code and can only include A-Z and 0-9, 34 characters')).required(t_i18n('This field is required')),
                 };
               } else if (attribute.value === 'hashes') {
                 initialValues.hashes_MD5 = '';
@@ -609,11 +611,50 @@ const StixCyberObservableCreation = ({
                 requiredOneOfFields = [
                   [attribute.value],
                 ];
+              } else if (attribute.value === 'number') {
+                extraFieldsToValidate = {
+                  [attribute.value]: Yup.string().required(t_i18n('This field is required')),
+                };
+              } else if (attribute.value === 'path') {
+                extraFieldsToValidate = {
+                  [attribute.value]: Yup.string().required(t_i18n('This field is required')),
+                };
+              } else if (attribute.value === 'subject') {
+                extraFieldsToValidate = {
+                  [attribute.value]: Yup.string().required(t_i18n('This field is required')),
+                };
+              } else if (attribute.value === 'body') {
+                extraFieldsToValidate = {
+                  [attribute.value]: Yup.string().required(t_i18n('This field is required')),
+                };
+              } else if (attribute.value === 'url') {
+                extraFieldsToValidate = {
+                  [attribute.value]: Yup.string().required(t_i18n('This field is required')),
+                };
+              } else if (attribute.value === 'name') {
+                extraFieldsToValidate = {
+                  [attribute.value]: Yup.string().required(t_i18n('This field is required')),
+                };
+              } else if (attribute.value === 'src_port') {
+                extraFieldsToValidate = {
+                  [attribute.value]: Yup.string().required(t_i18n('This field is required')),
+                };
+              } else if (attribute.value === 'card_number') {
+                extraFieldsToValidate = {
+                  [attribute.value]: Yup.string().required(t_i18n('This field is required')),
+                };
+              } else if (attribute.value === 'persona_type') {
+                extraFieldsToValidate = {
+                  [attribute.value]: Yup.string().required(t_i18n('This field is required')),
+                };
+              } else if (attribute.value === 'persona_name') {
+                extraFieldsToValidate = {
+                  [attribute.value]: Yup.string().required(t_i18n('This field is required')),
+                };
               } else {
                 initialValues[attribute.value] = '';
               }
             }
-
             const stixCyberObservableValidation = () => Yup.object().shape({
               x_opencti_score: Yup.number().integer(t_i18n('The value must be an integer'))
                 .nullable()
