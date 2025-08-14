@@ -25,6 +25,39 @@ import { ValidationError } from '../config/errors';
 const DEFAULT_TRUNCATE_LIMIT = 64;
 
 //----------------------------------------------------------------------------------------------------------------------
+// Scheduling period formatting
+export const schedulingPeriodToMs = (scheduling_period) => {
+  let schedulingPeriod;
+  switch (scheduling_period) {
+    case 'PT1D':
+      schedulingPeriod = 86400000;
+      break;
+    case 'PT12H':
+      schedulingPeriod = 43200000;
+      break;
+    case 'PT6H':
+      schedulingPeriod = 21600000;
+      break;
+    case 'PT1H':
+      schedulingPeriod = 3600000;
+      break;
+    case 'PT30M':
+      schedulingPeriod = 1800000;
+      break;
+    case 'PT15M':
+      schedulingPeriod = 900000;
+      break;
+    case 'PT5M':
+      schedulingPeriod = 300000;
+      break;
+    default:
+      schedulingPeriod = 0;
+      break;
+  }
+  return schedulingPeriod;
+};
+
+//----------------------------------------------------------------------------------------------------------------------
 // Date formatting
 
 const moment = extendMoment(Moment);
