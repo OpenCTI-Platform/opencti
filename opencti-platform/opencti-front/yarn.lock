@@ -8281,12 +8281,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-dom@npm:19.0.0":
-  version: 19.0.0
-  resolution: "@types/react-dom@npm:19.0.0"
-  dependencies:
-    "@types/react": "npm:*"
-  checksum: 10/86945c4d4c4cd82e993acdd380c3d9d8e8ca297228aa72c0fa6af4620abb145e7b12235c9165d569f1b25b5f72d1dbe4b4e3f2419432248de9838b22e94295a2
+"@types/react-dom@npm:19.1.7":
+  version: 19.1.7
+  resolution: "@types/react-dom@npm:19.1.7"
+  peerDependencies:
+    "@types/react": ^19.0.0
+  checksum: 10/a99465e5a17d40725dedb3708357f8998c57caab768cee0992b4bb7822ce7ed2ec697a5f426cb98d3397b020756a6e4b0986dc5f6f4254e13b3536afb38538e6
   languageName: node
   linkType: hard
 
@@ -8386,12 +8386,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:19.0.0":
-  version: 19.0.0
-  resolution: "@types/react@npm:19.0.0"
+"@types/react@npm:19.1.10":
+  version: 19.1.10
+  resolution: "@types/react@npm:19.1.10"
   dependencies:
     csstype: "npm:^3.0.2"
-  checksum: 10/5596d9a2c9c982d5e86add54f5d9b115153c4d47073dd3f8f8369a5e5b7f3088d614a935f85a2cf26eb6631d7ebebc7b913c5d22bf880847370070f2e60e63e6
+  checksum: 10/2c2f98e4a36144cddc9300483d0b14a0721dbb3b2fc2242e3841391589570dd344cde0c901eb291dba597a8efdb70543b0dbbae6cc2bef2061eb185c4ca55522
   languageName: node
   linkType: hard
 
@@ -18179,9 +18179,9 @@ __metadata:
     "@types/node": "npm:22.17.0"
     "@types/qrcode": "npm:1.5.5"
     "@types/ramda": "npm:0.31.0"
-    "@types/react": "npm:19.0.0"
+    "@types/react": "npm:19.1.10"
     "@types/react-csv": "npm:1.1.10"
-    "@types/react-dom": "npm:19.0.0"
+    "@types/react-dom": "npm:19.1.7"
     "@types/react-grid-layout": "npm:1.3.5"
     "@types/react-jsonschema-form": "npm:1"
     "@types/react-relay": "npm:18.2.1"
@@ -18254,13 +18254,13 @@ __metadata:
     prop-types: "npm:15.8.1"
     qrcode: "npm:1.5.4"
     ramda: "npm:0.31.3"
-    react: "npm:19.0.0"
+    react: "npm:19.1.1"
     react-apexcharts: "npm:1.7.0"
     react-color: "npm:2.19.3"
     react-compound-slider: "npm:3.4.0"
     react-cookie: "npm:7.2.2"
     react-csv: "npm:2.2.2"
-    react-dom: "npm:19.0.0"
+    react-dom: "npm:19.1.1"
     react-draggable: "npm:4.5.0"
     react-force-graph-2d: "npm:1.28.0"
     react-force-graph-3d: "npm:1.24.4"
@@ -19099,14 +19099,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-dom@npm:19.0.0":
-  version: 19.0.0
-  resolution: "react-dom@npm:19.0.0"
+"react-dom@npm:19.1.1":
+  version: 19.1.1
+  resolution: "react-dom@npm:19.1.1"
   dependencies:
-    scheduler: "npm:^0.25.0"
+    scheduler: "npm:^0.26.0"
   peerDependencies:
-    react: ^19.0.0
-  checksum: 10/aa64a2f1991042f516260e8b0eca0ae777b6c8f1aa2b5ae096e80bbb6ac9b005aef2bca697969841d34f7e1819556263476bdfea36c35092e8d9aefde3de2d9a
+    react: ^19.1.1
+  checksum: 10/9005415d2175b1f1eb4a544ad04afb29691bb7b6dd43bbdaa09932146b310b73bd4552bc772ad78fa481f409eada1560cf887606c83c1a53a922c1e30f1b3a34
   languageName: node
   linkType: hard
 
@@ -19712,10 +19712,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react@npm:19.0.0":
-  version: 19.0.0
-  resolution: "react@npm:19.0.0"
-  checksum: 10/2490969c503f644703c88990d20e4011fa6119ddeca451e9de48f6d7ab058d670d2852a5fcd3aa3cd90a923ab2815d532637bd4a814add402ae5c0d4f129ee71
+"react@npm:19.1.1":
+  version: 19.1.1
+  resolution: "react@npm:19.1.1"
+  checksum: 10/9801530fdc939e1a7a499422e930515b2400809cb39c2872984e99f832d233f61659a693871183dac3155c2f9b2c9dcf4440a56bd18983277ae92860e38c3a61
   languageName: node
   linkType: hard
 
@@ -20533,10 +20533,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"scheduler@npm:^0.25.0":
-  version: 0.25.0
-  resolution: "scheduler@npm:0.25.0"
-  checksum: 10/e661e38503ab29a153429a99203fefa764f28b35c079719eb5efdd2c1c1086522f6653d8ffce388209682c23891a6d1d32fa6badf53c35fb5b9cd0c55ace42de
+"scheduler@npm:^0.26.0":
+  version: 0.26.0
+  resolution: "scheduler@npm:0.26.0"
+  checksum: 10/1ecf2e5d7de1a7a132796834afe14a2d589ba7e437615bd8c06f3e0786a3ac3434655e67aac8755d9b14e05754c177e49c064261de2673aaa3c926bc98caa002
   languageName: node
   linkType: hard
 
