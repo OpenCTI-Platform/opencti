@@ -23,6 +23,7 @@ import { isStixObject } from '../schema/stixCoreObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import type { UpdateEvent } from '../types/event';
 import { RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
+import type { Participant } from '../generated/graphql';
 
 export const DEFAULT_INVALID_CONF_VALUE = 'ChangeMe';
 
@@ -856,7 +857,15 @@ export const isUserInPlatformOrganization = (user: AuthUser, settings: BasicStor
   return settings.platform_organization ? userOrganizationIds.includes(settings.platform_organization) : true;
 };
 
-export const filterMembersWithUsersOrgs = async (context: AuthContext, user: AuthUser, members: { [RELATION_PARTICIPATE_TO]: string[] }[]) => {
+type ParticipantWithOrgIds = Participant & {
+  [RELATION_PARTICIPATE_TO]?: string[];
+};
+
+export const filterMembersWithUsersOrgs = async (
+  context: AuthContext,
+  user: AuthUser,
+  members: ParticipantWithOrgIds[]
+): Promise<ParticipantWithOrgIds[]> => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const userInPlatformOrg = isUserInPlatformOrganization(user, settings);
 
