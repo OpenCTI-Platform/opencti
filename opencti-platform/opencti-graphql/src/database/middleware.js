@@ -3613,7 +3613,6 @@ export const deleteRelationsByFromAndTo = async (context, user, fromId, toId, re
     for (let i = 0; i < relationsToDelete.length; i += 1) {
       const r = relationsToDelete[i];
       await deleteElementById(context, user, r.internal_id, r.entity_type, opts);
-      // TODO PIR remove the pir score on the entity
     }
   };
   const relationsToDelete = await listAllRelations(context, user, relationshipType, {

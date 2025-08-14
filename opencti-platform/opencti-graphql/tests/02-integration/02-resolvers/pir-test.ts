@@ -10,7 +10,7 @@ import type { BasicStoreEntity } from '../../../src/types/store';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_HISTORY } from '../../../src/schema/internalObject';
 import { addFilter } from '../../../src/utils/filtering/filtering-utils';
 import { elPaginate } from '../../../src/database/engine';
-import { READ_INDEX_HISTORY, wait } from '../../../src/database/utils';
+import { READ_INDEX_HISTORY } from '../../../src/database/utils';
 
 const LIST_QUERY = gql`
   query pirs(

@@ -2865,6 +2865,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pir_scores: [PirScore!]
 }
 
 input AttackPatternAddInput {
@@ -13429,6 +13430,11 @@ input RequestAccessConfigureInput {
 type PirCriterion {
   filters: String!
   weight: Int!
+}
+
+type PirScore {
+  pir_id: ID!
+  pir_score: Int!
 }
 
 enum PirType {

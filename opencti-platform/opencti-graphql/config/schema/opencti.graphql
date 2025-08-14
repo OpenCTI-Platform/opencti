@@ -2852,7 +2852,7 @@ interface StixDomainObject {
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pir_scores: [PirScore!]
+  ## pirScore(pirId: ID!): Int @auth(for: [PIRAPI]) ## TODO PIR resolver for pirScore (checks: PIR access, EE, rights)
 }
 input StixDomainObjectAddInput {
   stix_id: StixId

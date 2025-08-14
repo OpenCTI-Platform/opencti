@@ -35,7 +35,7 @@ import { deleteInternalObject } from '../../domain/internalObject';
 import { registerConnectorForPir, unregisterConnectorForIngestion } from '../../domain/connector';
 import type { BasicStoreCommon, BasicStoreObject } from '../../types/store';
 import { RELATION_IN_PIR, RELATION_OBJECT } from '../../schema/stixRefRelationship';
-import { createPirRel, serializePir, updatePirExplanations } from './pir-utils';
+import { createPirRel, serializePir, updatePirExplanations, updatePirScoreOnEntity } from './pir-utils';
 import { ForbiddenAccess, FunctionalError } from '../../config/errors';
 import { ABSTRACT_STIX_REF_RELATIONSHIP, ENTITY_TYPE_CONTAINER } from '../../schema/general';
 import { elRawUpdateByQuery } from '../../database/engine';
@@ -193,20 +193,20 @@ export const updatePir = async (context: AuthContext, user: AuthUser, pirId: str
  *
  * @param context To be able to call engine.
  * @param user User making the request.
- * @param pirId The ID of the PIR matched by the relationship.
+ * @param pirStandardId The standard ID of the PIR matched by the relationship.
  * @param input The data needed to create the dependency.
  */
 export const pirFlagElement = async (
   context: AuthContext,
   user: AuthUser,
-  pirId: string,
+  pirStandardId: string,
   input: PirFlagElementInput,
 ) => {
   if (!isBypassUser(user)) {
     throw ForbiddenAccess();
   }
   await checkEnterpriseEdition(context);
-  const pir = await storeLoadById<BasicStoreEntityPir>(context, user, pirId, ENTITY_TYPE_PIR);
+  const pir = await storeLoadById<BasicStoreEntityPir>(context, user, pirStandardId, ENTITY_TYPE_PIR);
   if (!pir) {
     throw FunctionalError('No PIR found');
   }
@@ -237,20 +237,20 @@ export const pirFlagElement = async (
  *
  * @param context To be able to call engine.
  * @param user User making the request.
- * @param pirId The ID of the PIR matched by the relationship.
+ * @param pirStandardId The standard ID of the PIR matched by the relationship.
  * @param input Relationship id and source id.
  */
 export const pirUnflagElement = async (
   context: AuthContext,
   user: AuthUser,
-  pirId: string,
+  pirStandardId: string,
   input: PirUnflagElementInput,
 ) => {
   if (!isBypassUser(user)) {
     throw ForbiddenAccess();
   }
   await checkEnterpriseEdition(context);
-  const pir = await storeLoadById<BasicStoreEntityPir>(context, user, pirId, ENTITY_TYPE_PIR);
+  const pir = await storeLoadById<BasicStoreEntityPir>(context, user, pirStandardId, ENTITY_TYPE_PIR);
   if (!pir) {
     throw FunctionalError('No PIR found');
   }
@@ -267,6 +267,8 @@ export const pirUnflagElement = async (
     if (newRelDependencies.length === 0) {
       // delete the rel between source and PIR
       await deleteRelationsByFromAndTo(context, user, sourceId, pir.id, RELATION_IN_PIR, ABSTRACT_STIX_REF_RELATIONSHIP);
+      // remove pir score on the entity
+      await updatePirScoreOnEntity(context, user, sourceId, pir.id, 0);
     } else if (newRelDependencies.length < relDependencies.length) {
       // update dependencies
       await updatePirExplanations(context, user, sourceId, pir.id, newRelDependencies);

@@ -702,6 +702,7 @@ export type AttackPattern = BasicObject & StixCoreObject & StixDomainObject & St
   parentAttackPatterns?: Maybe<AttackPatternConnection>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
+  pir_scores?: Maybe<Array<PirScore>>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
@@ -19873,6 +19874,12 @@ export enum PirOrdering {
   UpdatedAt = 'updated_at'
 }
 
+export type PirScore = {
+  __typename?: 'PirScore';
+  pir_id: Scalars['ID']['output'];
+  pir_score: Scalars['Int']['output'];
+};
+
 export enum PirType {
   ThreatCustom = 'THREAT_CUSTOM',
   ThreatLandscape = 'THREAT_LANDSCAPE',
@@ -33635,6 +33642,7 @@ export type ResolversTypes = ResolversObject<{
   PirExplanationInput: PirExplanationInput;
   PirFlagElementInput: PirFlagElementInput;
   PirOrdering: PirOrdering;
+  PirScore: ResolverTypeWrapper<PirScore>;
   PirType: PirType;
   PirUnflagElementInput: PirUnflagElementInput;
   Platform: Platform;
@@ -34535,6 +34543,7 @@ export type ResolversParentTypes = ResolversObject<{
   PirExplanation: PirExplanation;
   PirExplanationInput: PirExplanationInput;
   PirFlagElementInput: PirFlagElementInput;
+  PirScore: PirScore;
   PirUnflagElementInput: PirUnflagElementInput;
   PlatformCriticalAlert: Omit<PlatformCriticalAlert, 'details'> & { details?: Maybe<ResolversParentTypes['PlatformCriticalAlertDetails']> };
   PlatformCriticalAlertDetails: Omit<PlatformCriticalAlertDetails, 'groups'> & { groups: Array<ResolversParentTypes['Group']> };
@@ -35144,6 +35153,7 @@ export type AttackPatternResolvers<ContextType = any, ParentType extends Resolve
   parentAttackPatterns?: Resolver<Maybe<ResolversTypes['AttackPatternConnection']>, ParentType, ContextType, Partial<AttackPatternParentAttackPatternsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<AttackPatternPendingFilesArgs>>;
+  pir_scores?: Resolver<Maybe<Array<ResolversTypes['PirScore']>>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<AttackPatternReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -41209,6 +41219,12 @@ export type PirExplanationResolvers<ContextType = any, ParentType extends Resolv
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type PirScoreResolvers<ContextType = any, ParentType extends ResolversParentTypes['PirScore'] = ResolversParentTypes['PirScore']> = ResolversObject<{
+  pir_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  pir_score?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type PlatformCriticalAlertResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlatformCriticalAlert'] = ResolversParentTypes['PlatformCriticalAlert']> = ResolversObject<{
   details?: Resolver<Maybe<ResolversTypes['PlatformCriticalAlertDetails']>, ParentType, ContextType>;
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -45456,6 +45472,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   PirDependency?: PirDependencyResolvers<ContextType>;
   PirEdge?: PirEdgeResolvers<ContextType>;
   PirExplanation?: PirExplanationResolvers<ContextType>;
+  PirScore?: PirScoreResolvers<ContextType>;
   PlatformCriticalAlert?: PlatformCriticalAlertResolvers<ContextType>;
   PlatformCriticalAlertDetails?: PlatformCriticalAlertDetailsResolvers<ContextType>;
   PlatformEE?: PlatformEeResolvers<ContextType>;
