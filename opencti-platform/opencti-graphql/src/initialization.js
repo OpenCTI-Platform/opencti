@@ -9,7 +9,7 @@ import { enforceQueuesConsistency, initializeInternalQueues, rabbitMQIsAlive } f
 import { initDefaultNotifiers } from './modules/notifier/notifier-domain';
 import { checkPythonAvailability } from './python/pythonBridge';
 import { redisInit } from './database/redis';
-import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_MIGRATION_STATUS } from './schema/internalObject';
+import { ENTITY_TYPE_MIGRATION_STATUS } from './schema/internalObject';
 import { applyMigration, lastAvailableMigrationTime } from './database/migration';
 import { createEntity, loadEntity } from './database/middleware';
 import { ConfigurationError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from './config/errors';
@@ -22,7 +22,6 @@ import { initializeData, patchPlatformId } from './database/data-initialization'
 import { initExclusionListCache } from './database/exclusionListCache';
 import { initFintelTemplates } from './modules/fintelTemplate/fintelTemplate-domain';
 import { lockResources } from './lock/master-lock';
-import { addCapability } from './domain/grant';
 
 // region Platform constants
 const PLATFORM_LOCK_ID = 'platform_init_lock';
