@@ -207,6 +207,7 @@ export const buildHistoryElementsFromEvents = async (context:AuthContext, events
       group_ids: event.data.origin?.group_ids ?? [],
       organization_ids: event.data.origin?.organization_ids ?? [],
       applicant_id: event.data.origin?.applicant_id,
+      user_metadata: event.data.origin?.user_metadata,
       timestamp: eventDate,
       context_data: contextData,
       restricted_members: stix.extensions[STIX_EXT_OCTI].authorized_members,
