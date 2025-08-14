@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
-import * as R from 'ramda';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
@@ -17,7 +16,7 @@ import { Add, BrushOutlined, Delete } from '@mui/icons-material';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import { Formik } from 'formik';
-import makeStyles from '@mui/styles/makeStyles';
+import { useTheme } from '@mui/material/styles';
 import ProcessingStatusOverview from '../../cases/case_rfis/ProcessingStatusOverview';
 import ObjectAssigneeField from '../form/ObjectAssigneeField';
 import ObjectParticipantField from '../form/ObjectParticipantField';
@@ -42,26 +41,6 @@ import ItemParticipants from '../../../../components/ItemParticipants';
 import Transition from '../../../../components/Transition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: '15px',
-    borderRadius: 4,
-  },
-  standard_id: {
-    padding: '5px 5px 5px 10px',
-    fontFamily: 'Consolas, monaco, monospace',
-    fontSize: 11,
-    backgroundColor:
-      theme.palette.mode === 'light'
-        ? 'rgba(0, 0, 0, 0.02)'
-        : 'rgba(255, 255, 255, 0.02)',
-    lineHeight: '18px',
-  },
-}));
-
 const StixDomainObjectOverview = ({
   stixDomainObject,
   withoutMarking = false,
@@ -72,7 +51,7 @@ const StixDomainObjectOverview = ({
   displayReliability = true,
   displayOpinions = true,
 }) => {
-  const classes = useStyles();
+  const theme = useTheme();
   const { t_i18n, fldt } = useFormatter();
   const [openStixIds, setOpenStixIds] = useState(false);
   const [openAddAssignee, setOpenAddAssignee] = useState(false);
@@ -134,10 +113,7 @@ const StixDomainObjectOverview = ({
 
   const deleteStixId = (stixId) => {
     const otherStixIds = stixDomainObject.x_opencti_stix_ids || [];
-    const stixIds = R.filter(
-      (n) => n !== stixDomainObject.standard_id && n !== stixId,
-      otherStixIds,
-    );
+    const stixIds = otherStixIds.filter((n) => n !== stixDomainObject.standard_id && n !== stixId);
     commitMutation({
       mutation: stixDomainObjectMutation,
       variables: {
@@ -152,10 +128,7 @@ const StixDomainObjectOverview = ({
   };
 
   const otherStixIds = stixDomainObject.x_opencti_stix_ids || [];
-  const stixIds = R.filter(
-    (n) => n !== stixDomainObject.standard_id,
-    otherStixIds,
-  );
+  const stixIds = otherStixIds.filter((n) => n !== stixDomainObject.standard_id);
   const isReliabilityOfSource = !stixDomainObject.x_opencti_reliability;
   const reliability = isReliabilityOfSource
     ? stixDomainObject.createdBy?.x_opencti_reliability
@@ -168,7 +141,15 @@ const StixDomainObjectOverview = ({
       <Typography variant="h4">
         {t_i18n('Basic information')}
       </Typography>
-      <Paper classes={{ root: classes.paper }} className='paper-for-grid' variant="outlined">
+      <Paper
+        style={{
+          marginTop: theme.spacing(1),
+          padding: '15px',
+          borderRadius: 4,
+        }}
+        className='paper-for-grid'
+        variant="outlined"
+      >
         <Grid container={false} spacing={3}>
           {isRequestAccessRFI && (
             <ProcessingStatusOverview data={stixDomainObject}/>
@@ -201,7 +182,7 @@ const StixDomainObjectOverview = ({
                 {t_i18n('Author')}
               </Typography>
               <ItemAuthor
-                createdBy={R.propOr(null, 'createdBy', stixDomainObject)}
+                createdBy={stixDomainObject.createdBy ?? null}
               />
             </div>
             {(displayConfidence || displayReliability) && (
@@ -408,7 +389,17 @@ const StixDomainObjectOverview = ({
                 </div>
               </Security>
               <div className="clearfix" />
-              <div className={classes.standard_id}>
+              <div style={{
+                padding: '5px 5px 5px 10px',
+                fontFamily: 'Consolas, monaco, monospace',
+                fontSize: 11,
+                backgroundColor:
+                  theme.palette.mode === 'light'
+                    ? 'rgba(0, 0, 0, 0.02)'
+                    : 'rgba(255, 255, 255, 0.02)',
+                lineHeight: '18px',
+              }}
+              >
                 <ItemCopy content={stixDomainObject.standard_id} />
               </div>
             </div>

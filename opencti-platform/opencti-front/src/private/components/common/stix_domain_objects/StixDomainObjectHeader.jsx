@@ -43,6 +43,7 @@ import useGranted, {
   KNOWLEDGE_KNUPDATE,
   KNOWLEDGE_KNUPDATE_KNDELETE,
   KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
+  SETTINGS_SETACCESSES,
 } from '../../../../utils/hooks/useGranted';
 import CommitMessage from '../form/CommitMessage';
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
@@ -662,7 +663,8 @@ const StixDomainObjectHeader = (props) => {
                         title={t_i18n('Enroll in playbook')}
                         setOpen={setEnrollPlaybookOpen}
                         handleCloseMenu={closeMenu}
-                        needs={[KNOWLEDGE_KNENRICHMENT]}
+                        needs={[KNOWLEDGE_KNENRICHMENT, SETTINGS_SETACCESSES]}
+                        matchAll
                       />
                     )}
                     {isKnowledgeDeleter && (

@@ -986,6 +986,7 @@ class DataTableToolBar extends Component {
     const sortedOptions = options.sort((a, b) => a.label.localeCompare(b.label));
 
     const selectedFields = actionsInputs.map((a) => a.field).filter(Boolean);
+    const replaceSelectedFields = actionsInputs.filter((a) => a.type === 'REPLACE').map((a) => a.field).filter(Boolean);
 
     return (
       <Select
@@ -996,16 +997,20 @@ class DataTableToolBar extends Component {
       >
         {sortedOptions.length > 0 ? (
           sortedOptions.map(
-            (n) => (
-              <MenuItem
-                key={n.value}
-                value={n.value}
-                disabled={selectedFields.includes(n.value)
-                  && actionsInputs[i]?.field !== n.value} // disable already selected fields to prevent making several actions on the same key
-              >
-                {n.label}
-              </MenuItem>
-            ),
+            (n) => {
+              // disable some fields to prevent making several actions on the same key if one of them is a replace
+              const disableField = (replaceSelectedFields.includes(n.value) && actionsInputs[i]?.field !== n.value)
+                || (selectedFields.includes(n.value) && actionsInputs[i]?.type === 'REPLACE');
+              return (
+                <MenuItem
+                  key={n.value}
+                  value={n.value}
+                  disabled={disableField}
+                >
+                  {n.label}
+                </MenuItem>
+              );
+            },
           )
         ) : (
           <MenuItem value="none">{t('None')}</MenuItem>

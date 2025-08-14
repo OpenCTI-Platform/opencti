@@ -11,6 +11,7 @@ declare module '@mui/material/IconButton' {
 declare module '@mui/material/Button' {
   interface ButtonPropsColorOverrides {
     ee: true
+    dangerZone: true
     pagination: true
   }
 }

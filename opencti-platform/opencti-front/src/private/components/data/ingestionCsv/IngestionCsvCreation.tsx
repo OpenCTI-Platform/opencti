@@ -74,7 +74,7 @@ const initCSVCreateForm: IngestionCsvAddInput = {
   authentication_value: '',
   user_id: '',
   automatic_user: true,
-  confidence_level: '50',
+  confidence_level: 50,
   username: '',
   password: '',
   cert: '',
@@ -133,7 +133,7 @@ export interface IngestionCsvAddInput extends BasicUserHandlingValues {
   ingestion_running?: boolean | null
   user_id: string | FieldOption
   automatic_user?: boolean
-  confidence_level?: string
+  confidence_level?: number
   username?: string
   password?: string
   cert?: string
@@ -214,7 +214,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
     ca: Yup.string().nullable(),
     user_id: Yup.object(),
     automatic_user: Yup.boolean(),
-    confidence_level: Yup.string().nullable(),
+    confidence_level: Yup.number().nullable(),
   });
 
   const [commit] = useApiMutation(ingestionCsvCreationMutation);
@@ -247,7 +247,6 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
       authenticationValue = `${values.cert}:${values.key}:${values.ca}`;
     }
     const markings = values.markings?.map((option) => option.value);
-
     const input = {
       name: values.name,
       description: values.description,
@@ -260,7 +259,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
       authentication_value: authenticationValue,
       user_id: typeof values.user_id === 'string' ? values.user_id : values.user_id?.value,
       automatic_user: values.automatic_user ?? true,
-      ...((values.automatic_user !== false) && { confidence_level: values.confidence_level }),
+      ...((values.automatic_user !== false) && { confidence_level: Number(values.confidence_level) }),
       markings: markings ?? [],
     };
     commit({

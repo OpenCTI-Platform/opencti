@@ -246,15 +246,15 @@ describe('CSV ingestion resolver standard behavior', () => {
     expect(stopSingleColumnCsvFeedsIngesterQueryResult?.data?.ingestionCsvFieldPatch?.name).toBe('Single column CSV feed ingester');
   });
 
-  it('should add auto user and update CSV feeds ingester with it', async () =>  {
+  it('should add auto user and update CSV feeds ingester with it', async () => {
     const CSV_FEED_AUTO_USER_UPDATE = {
       id: singleColumnCsvFeedIngesterId,
       input: {
         user_name: 'AutoUser',
-        confidence_level: '86'
+        confidence_level: 86
       }
     };
-    const updateCsvFeedWithAutoUserResult = await queryAsAdmin({
+    const updateCsvFeedWithAutoUserResult = await queryAsAdminWithSuccess({
       query: gql`
           mutation updateCsvFeedWithAutoUser($id: ID!, $input: IngestionCsvAddAutoUserInput!) {
               ingestionCsvAddAutoUser(id: $id, input: $input){
@@ -278,8 +278,7 @@ describe('CSV ingestion resolver standard behavior', () => {
     const queryResult = await adminQuery({ query: READ_USER_QUERY, variables: { id: updateCsvFeedWithAutoUserResult?.data?.ingestionCsvAddAutoUser?.user?.id } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.user).toBeNull();
-
-  })
+  });
 
   it('should reset state of CSV feeds ingester', async () => {
     // shortcut to set a hash that is defined

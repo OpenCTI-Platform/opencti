@@ -226,10 +226,9 @@ const LeftBar = () => {
   const isGrantedToSharing = useGranted([TAXIIAPI]);
   const isGrantedToManage = useGranted([BYPASS]);
   const isGrantedToParameters = useGranted([SETTINGS_SETPARAMETERS]);
-  const isGrantedToManageXTMHub = useGranted([SETTINGS_SETMANAGEXTMHUB]);
   const isGrantedToTaxonomies = useGranted([SETTINGS_SETLABELS]);
   const isGrantedToFileIndexing = useGranted([SETTINGS_FILEINDEXING]);
-  const isGrantedToSupport = useGranted([SETTINGS_SUPPORT]);
+  const isGrantedToExperience = useGranted([SETTINGS_SETPARAMETERS, SETTINGS_SUPPORT, SETTINGS_SETMANAGEXTMHUB]);
   const isGrantedToIngestion = useGranted([MODULES, INGESTION, INGESTION_SETINGESTIONS]);
   const isOrganizationAdmin = useGranted([VIRTUAL_ORGANIZATION_ADMIN]);
   const isGrantedToCustomization = useGranted([SETTINGS_SETCUSTOMIZATION]);
@@ -1024,19 +1023,13 @@ const LeftBar = () => {
               {generateSubMenu(
                 'settings',
                 [
-                  ...isFeatureEnable('OCTI_ENROLLMENT') ? [{
-                    granted: isGrantedToManageXTMHub,
-                    link: '/dashboard/settings/xtm-hub',
-                    label: 'XTM Hub',
-                    exact: true,
-                  }] : [],
                   { granted: isGrantedToParameters, link: '/dashboard/settings', label: 'Parameters', exact: true },
                   { granted: isGrantedToSecurity || isOrganizationAdmin, link: '/dashboard/settings/accesses', label: 'Security' },
                   { granted: isGrantedToCustomization, link: '/dashboard/settings/customization', label: 'Customization' },
                   { granted: isGrantedToTaxonomies, link: '/dashboard/settings/vocabularies', label: 'Taxonomies' },
                   { granted: isGrantedToAudit, link: '/dashboard/settings/activity', label: 'Activity' },
                   { granted: isGrantedToFileIndexing, link: '/dashboard/settings/file_indexing', label: 'File indexing' },
-                  { granted: isGrantedToSupport, link: '/dashboard/settings/support', label: 'Support' },
+                  { granted: isGrantedToExperience, link: '/dashboard/settings/experience', label: 'Filigran Experience' },
                 ],
               )}
             </MenuList>

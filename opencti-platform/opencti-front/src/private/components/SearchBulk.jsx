@@ -32,6 +32,7 @@ import ItemMarkings from '../../components/ItemMarkings';
 import { export_max_size } from '../../utils/utils';
 import Breadcrumbs from '../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../utils/hooks/useConnectedDocumentModifier';
+import { chipInListBasicStyle } from '../../utils/chipStyle';
 
 const SEARCH$ = new Subject().pipe(debounce(() => timer(500)));
 
@@ -90,12 +91,9 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: 4,
   },
   chipInList: {
-    fontSize: 12,
-    height: 20,
-    float: 'left',
+    ...chipInListBasicStyle,
     width: 120,
     textTransform: 'uppercase',
-    borderRadius: 4,
   },
 }));
 

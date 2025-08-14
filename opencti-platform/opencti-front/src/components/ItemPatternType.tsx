@@ -4,6 +4,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/material';
 import ThemeDark from './ThemeDark';
 import ThemeLight from './ThemeLight';
+import { chipInListBasicStyle } from '../utils/chipStyle';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -17,12 +18,9 @@ const useStyles = makeStyles(() => ({
     width: 130,
   },
   chipInList: {
-    fontSize: 12,
+    ...chipInListBasicStyle,
     lineHeight: '12px',
-    height: 20,
-    float: 'left',
     marginRight: 7,
-    borderRadius: 4,
     width: 80,
   },
 }));

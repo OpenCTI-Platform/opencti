@@ -1,6 +1,6 @@
 {
   "name": "opencti-front",
-  "version": "6.7.9",
+  "version": "6.7.11",
   "private": true,
   "main": "src/front.tsx",
   "dependencies": {
@@ -26,7 +26,7 @@
     "@rjsf/mui": "5.24.12",
     "@rjsf/utils": "5.24.12",
     "@rjsf/validator-ajv8": "5.24.12",
-    "analytics": "0.8.16",
+    "analytics": "0.8.19",
     "apexcharts": "4.4.0",
     "axios": "1.11.0",
     "buffer": "6.0.3",
@@ -110,8 +110,8 @@
   "devDependencies": {
     "@playwright/test": "1.51.1",
     "@rollup/plugin-graphql": "2.0.5",
-    "@testing-library/dom": "10.4.0",
-    "@testing-library/jest-dom": "6.6.3",
+    "@testing-library/dom": "10.4.1",
+    "@testing-library/jest-dom": "6.6.4",
     "@testing-library/react": "16.3.0",
     "@testing-library/user-event": "14.6.1",
     "@types/d3-scale": "4.0.9",
