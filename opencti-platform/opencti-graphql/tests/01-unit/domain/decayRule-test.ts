@@ -1,6 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import moment from 'moment';
-import { computeIndicatorDecayPatch, computeLivePoints, computeLiveScore, type IndicatorPatch } from '../../../src/modules/indicator/indicator-domain';
+import {
+  computeIndicatorDecayHistory,
+  computeIndicatorDecayPatch,
+  computeLivePoints,
+  computeLiveScore,
+  type IndicatorPatch,
+  MAX_DECAY_HISTORY_POINTS
+} from '../../../src/modules/indicator/indicator-domain';
 import type { BasicStoreEntityIndicator, IndicatorDecayRule } from '../../../src/modules/indicator/indicator-types';
 import {
   type DecayRuleConfiguration,
@@ -323,6 +330,25 @@ describe('Decay update testing', () => {
 
     // THEN
     expect(patchResult, 'No database operation should be done.').toBeNull();
+  });
+});
+
+describe('Decay history trimming testing', () => {
+  it('should only keep MAX_DECAY_HISTORY_POINTS entries in decay history', () => {
+    const currentDecayHistory = [];
+    const nowDate = new Date();
+    for (let i = 0; i < 1000; i += 1) {
+      const decayHistoryPoint = { updated_at: nowDate, score: i };
+      currentDecayHistory.push(decayHistoryPoint);
+    }
+    const newDecayHistoryPoint = { updated_at: nowDate, score: -1 };
+    const trimmedDecayHistory = computeIndicatorDecayHistory(currentDecayHistory, newDecayHistoryPoint);
+
+    expect(trimmedDecayHistory.length).toBe(MAX_DECAY_HISTORY_POINTS);
+    const firstDecayPoint = trimmedDecayHistory[0];
+    expect(firstDecayPoint.score).toBe(0);
+    const lastTrimmedDecayHistoryPoint = trimmedDecayHistory[trimmedDecayHistory.length - 1];
+    expect(lastTrimmedDecayHistoryPoint.score).toBe(-1);
   });
 });
 

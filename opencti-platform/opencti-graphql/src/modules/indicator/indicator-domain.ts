@@ -344,6 +344,22 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
+export const MAX_DECAY_HISTORY_POINTS = 50;
+export const computeIndicatorDecayHistory = (currentHistory: DecayHistory[], newHistoryPoint: DecayHistory) => {
+  const newHistory = currentHistory;
+  newHistory.push(newHistoryPoint);
+  // If decay history length is too large, we need to trim it to keep it at a manageable size in ES
+  // we want to keep part of the start of the history, and part of the end of the history
+  if (newHistory.length > MAX_DECAY_HISTORY_POINTS) {
+    const startPointsToKeep = MAX_DECAY_HISTORY_POINTS / 2;
+    const endPointsToKeep = MAX_DECAY_HISTORY_POINTS - startPointsToKeep;
+    const startPoints = newHistory.slice(0, startPointsToKeep);
+    const endPoints = newHistory.slice(-endPointsToKeep);
+    return [...startPoints, ...endPoints];
+  }
+  return newHistory;
+};
+
 /**
  * Compute decay data when it's needed from indicator updates.
  * Return keys for 'decay_history', 'decay_next_reaction_date', 'valid_until'
@@ -357,11 +373,8 @@ export const restartDecayComputationOnEdit = (fromScore: number, indicatorBefore
   const updateDate = utcDate();
   inputToAdd.push({ key: 'decay_base_score', value: [fromScore] });
   inputToAdd.push({ key: 'decay_base_score_date', value: [updateDate.toISOString()] });
-  const decayHistory: DecayHistory[] = [...(indicatorBeforeUpdate.decay_history ?? [])];
-  decayHistory.push({
-    updated_at: nowDate,
-    score: fromScore,
-  });
+  const newDecayHistoryPoint = { updated_at: nowDate, score: fromScore };
+  const decayHistory = computeIndicatorDecayHistory([...(indicatorBeforeUpdate.decay_history ?? [])], newDecayHistoryPoint);
   inputToAdd.push({ key: 'decay_history', value: decayHistory });
   const nextScoreReactionDate = computeNextScoreReactionDate(fromScore, fromScore, indicatorDecayRule, updateDate);
   if (nextScoreReactionDate) {
@@ -450,11 +463,8 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
         finalInput.push({ key: X_DETECTION, value: [false] });
         finalInput.push({ key: VALID_UNTIL, value: [nowDate.toISOString()] });
 
-        const decayHistory: DecayHistory[] = [...(indicatorBeforeUpdate.decay_history ?? [])];
-        decayHistory.push({
-          updated_at: nowDate,
-          score: revokeScore,
-        });
+        const newDecayHistoryPoint = { updated_at: nowDate, score: revokeScore };
+        const decayHistory = computeIndicatorDecayHistory([...(indicatorBeforeUpdate.decay_history ?? [])], newDecayHistoryPoint);
         finalInput.push({ key: 'decay_history', value: decayHistory });
       }
 
@@ -519,11 +529,8 @@ export const computeIndicatorDecayPatch = (indicator: BasicStoreEntityIndicator)
   }
   const newStableScore = model.decay_points.find((p) => (p || indicator.x_opencti_score) < indicator.x_opencti_score) || model.decay_revoke_score;
   if (newStableScore) {
-    const decayHistory: DecayHistory[] = [...(indicator.decay_history ?? [])];
-    decayHistory.push({
-      updated_at: new Date(),
-      score: newStableScore,
-    });
+    const newDecayHistoryPoint = { updated_at: new Date(), score: newStableScore };
+    const decayHistory = computeIndicatorDecayHistory([...(indicator.decay_history ?? [])], newDecayHistoryPoint);
     patch = {
       x_opencti_score: newStableScore,
       decay_history: decayHistory,
