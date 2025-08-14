@@ -388,6 +388,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
             }
           });
           openIDStrategy.logout_remote = options.logout_remote;
+          logApp.debug('[OPENID] logout remote options', options);
           openIDStrategy.logout = (_, callback) => {
             const isSpecificUri = isNotEmptyField(config.logout_callback_url);
             const endpointUri = issuer.end_session_endpoint ? issuer.end_session_endpoint : `${config.issuer}/oidc/logout`;

@@ -351,6 +351,7 @@ const createApp = async (app) => {
           const strategy = passport._strategy(provider);
           if (strategy) {
             if (strategy.logout_remote === true) {
+              logApp.debug('[LOGOUT] Looking for logout_remote parameters: ', strategy.logout_remote);
               if (strategy.logout) {
                 logApp.debug('[LOGOUT] requesting remote logout using authentication strategy parameters.');
                 req.user = user; // Needed for passport
