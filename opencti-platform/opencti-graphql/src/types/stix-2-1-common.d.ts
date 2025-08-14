@@ -59,6 +59,7 @@ interface StixOpenctiExtension {
   created_by_ref_id: string
   converter_csv?: string | undefined
   opencti_operation?: string
+  opencti_field_patch?: EditInput[]
 }
 
 interface StixOpenctiExtensionSDO extends StixOpenctiExtension {
