@@ -558,7 +558,7 @@ export const sendEmailToUser = async (context, user, input) => {
   const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
 
   const users = await getEntitiesListFromCache(context, user, ENTITY_TYPE_USER);
-  const targetUser = users.find((usr) => input.target_user_id === usr.id);
+  const targetUser = users.find((usr) => input.target_user_id === usr.id || input.target_user_id === usr.standard_id);
 
   if (!targetUser) {
     throw UnsupportedError('Target user not found', { id: input.target_user_id });
