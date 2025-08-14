@@ -1,7 +1,6 @@
 import Typography from '@mui/material/Typography';
 import { VerifiedOutlined } from '@mui/icons-material';
 import Button from '@mui/material/Button';
-import { Launch } from 'mdi-material-ui';
 import React, { useState } from 'react';
 import { useTheme } from '@mui/styles';
 import { ingestionConnectorTypeMetadata } from '@components/data/IngestionCatalog/IngestionCatalogCard';
@@ -51,15 +50,6 @@ const IngestionCatalogConnectorHeader = ({ connector, catalogId }: { connector: 
       </div>
 
       <div>
-        <Button
-          variant="outlined"
-          startIcon={<Launch />}
-          href={connector.subscription_link}
-          target="blank"
-          rel="noopener noreferrer"
-        >
-          {t_i18n('', { id: 'Test ... with OpenCTI', values: { connectorName: connector.title } })}
-        </Button>
         <Security needs={[INGESTION_SETINGESTIONS]}>
           <Button variant="contained" onClick={() => setOpenCreation(true)} style={{ marginLeft: theme.spacing(1) }}>{t_i18n('Deploy')}</Button>
         </Security>

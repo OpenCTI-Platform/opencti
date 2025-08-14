@@ -21,6 +21,8 @@ import {
 } from '@components/data/IngestionCatalog/__generated__/IngestionCatalogConnectorCreationMutation.graphql';
 import IngestionCreationUserHandling, { BasicUserHandlingValues } from '@components/data/IngestionCreationUserHandling';
 import { IngestionConnector } from '@components/data/IngestionCatalog';
+import { Git, Launch } from 'mdi-material-ui';
+import IconButton from '@mui/material/IconButton';
 import { MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
@@ -106,7 +108,7 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
       },
       onError: () => setSubmitting?.(false),
       onCompleted: (response: IngestionCatalogConnectorCreationMutation$data) => {
-        MESSAGING$.notifySuccess(<span><Link to={`/dashboard/data/ingestion/connectors/${response.managedConnectorAdd?.id}`}>{t_i18n('The connector has been created')}</Link></span>);
+        MESSAGING$.notifySuccess(<span><Link to={`/dashboard/data/ingestion/connectors/${response.managedConnectorAdd?.id}`}>{t_i18n('The connector instance has been deployed')}</Link></span>);
         setSubmitting?.(false);
         resetForm?.();
         onClose();
@@ -126,6 +128,30 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
       title={t_i18n('Deploy a new connector')}
       open={open}
       onClose={onClose}
+      header={
+        <div style={{ position: 'absolute', right: theme.spacing(1) }}>
+          <Button
+            size="large"
+            variant="contained"
+            startIcon={<Launch />}
+            href={connector.subscription_link}
+            target="blank"
+            rel="noopener noreferrer"
+            style={{ marginRight: theme.spacing(1) }}
+          >
+            {t_i18n('Vendor contact')}
+          </Button>
+          <IconButton
+            aria-label="Go to"
+            component={Link}
+            to={connector.source_code}
+            target="blank"
+            rel="noopener noreferrer"
+          >
+            <Git />
+          </IconButton>
+        </div>
+      }
     >
       <Formik<ManagedConnectorValues>
         onReset={onClose}
@@ -157,42 +183,51 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
                 fullWidth={true}
               />
               <IngestionCreationUserHandling
-                confidence_level={connector.max_confidence_level}
-                max_confidence_level={connector.max_confidence_level}
+                default_confidence_level={connector.max_confidence_level}
                 labelTag="C"
+                isSensitive={true}
               />
-              <div style={fieldSpacingContainerStyle}>{t_i18n('Configuration')}</div>
-              <Alert
-                classes={{ root: classes.alert, message: classes.message }}
-                severity="info"
-                icon={false}
-                variant="outlined"
-                style={{ position: 'relative' }}
-              >
-                <JsonForms
-                  data={connector.default}
-                  schema={connectorWithRequired as JsonSchema}
-                  renderers={materialRenderers}
-                  validationMode={'NoValidation'}
-                  onChange={({ data }) => setValues({ ...values, ...data })}
-                />
-              </Alert>
-              <div style={fieldSpacingContainerStyle}>
-                <Accordion>
-                  <AccordionSummary id="accordion-panel">
-                    <Typography>{t_i18n('Advanced options')}</Typography>
-                  </AccordionSummary>
-                  <AccordionDetails>
-                    <JsonForms
-                      data={connector.default}
-                      schema={connectorWithOptional as JsonSchema}
-                      renderers={materialRenderers}
-                      validationMode={'NoValidation'}
-                      onChange={({ data }) => setValues({ ...values, ...data })}
-                    />
-                  </AccordionDetails>
-                </Accordion>
-              </div>
+              {(requiredProperties.length > 0 || optionalProperties.length > 0) && (
+                <>
+                  <div style={fieldSpacingContainerStyle}>{t_i18n('Configuration')}</div>
+                  {requiredProperties.length > 0 && (
+                    <Alert
+                      classes={{ root: classes.alert, message: classes.message }}
+                      severity="info"
+                      icon={false}
+                      variant="outlined"
+                      style={{ position: 'relative' }}
+                    >
+                      <JsonForms
+                        data={connector.default}
+                        schema={connectorWithRequired as JsonSchema}
+                        renderers={materialRenderers}
+                        validationMode={'NoValidation'}
+                        onChange={({ data }) => setValues({ ...values, ...data })}
+                      />
+                    </Alert>
+
+                  )}
+                  {optionalProperties.length > 0 && (
+                    <div style={fieldSpacingContainerStyle}>
+                      <Accordion slotProps={{ transition: { unmountOnExit: false } }}>
+                        <AccordionSummary id="accordion-panel">
+                          <Typography>{t_i18n('Advanced options')}</Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                          <JsonForms
+                            data={connector.default}
+                            schema={connectorWithOptional as JsonSchema}
+                            renderers={materialRenderers}
+                            validationMode={'NoValidation'}
+                            onChange={({ data }) => setValues({ ...values, ...data })}
+                          />
+                        </AccordionDetails>
+                      </Accordion>
+                    </div>
+                  )}
+                </>
+              )}
               <div style={{ textAlign: 'right', marginTop: theme.spacing(2) }}>
                 <Button
                   variant="contained"
