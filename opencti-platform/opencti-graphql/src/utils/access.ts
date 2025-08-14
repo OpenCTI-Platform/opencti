@@ -858,6 +858,10 @@ export const isUserInPlatformOrganization = (user: AuthUser, settings: BasicStor
 };
 
 type ParticipantWithOrgIds = Participant & {
+  representative?: {
+    main: string,
+    secondary: string
+  }
   [RELATION_PARTICIPATE_TO]?: string[];
 };
 
@@ -878,7 +882,10 @@ export const filterMembersWithUsersOrgs = async (
           ...member,
           name: REDACTED_USER.name,
           user_email: REDACTED_USER.user_email,
-          id: uuidv4()
+          representative: {
+            main: REDACTED_USER.name,
+            secondary: REDACTED_USER.name
+          }
         };
       }
       return member;
