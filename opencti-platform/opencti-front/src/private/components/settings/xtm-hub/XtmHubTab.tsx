@@ -1,6 +1,7 @@
 import { graphql } from 'react-relay';
 import React, { useCallback, useContext, useMemo, useState } from 'react';
 import { Button } from '@mui/material';
+import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
 import GradientButton from '../../../../components/GradientButton';
 import ConfirmationDialog from './ConfirmationDialog';
@@ -11,6 +12,7 @@ import useExternalTab from './useExternalTab';
 import ProcessInstructions from './ProcessInstructions';
 import ProcessLoader from './ProcessLoader';
 import ProcessDialog from './ProcessDialog';
+import type { Theme } from '../../../../components/Theme';
 
 enum ProcessSteps {
   INSTRUCTIONS = 'INSTRUCTIONS',
@@ -46,6 +48,7 @@ interface XtmHubTabProps {
 
 const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const { settings } = useContext(UserContext);
@@ -141,7 +144,6 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
     (event: MessageEvent) => {
       const eventData = event.data;
       const { action, token } = eventData;
-
       if (action === 'register') {
         setOperationType(OperationType.REGISTER);
         handleRegistration(token);
@@ -200,37 +202,14 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
   const config = useMemo(() => {
     const isUnregister = operationType === OperationType.UNREGISTER;
     return {
-      dialogTitle: t_i18n(
-        isUnregister
-          ? 'Unregistering your platform...'
-          : 'Registering your platform...',
-      ),
+      dialogTitle: t_i18n(isUnregister ? 'Unregistering your platform...' : 'Registering your platform...'),
       errorMessage: t_i18n('Sorry, we have an issue, please retry'),
-      canceledMessage: t_i18n(
-        isUnregister
-          ? 'You have canceled the unregistration process'
-          : 'You have canceled the registration process',
-      ),
-      loaderButtonText: t_i18n(
-        isUnregister ? 'Continue to unregister' : 'Continue to register',
-      ),
-      confirmationTitle: t_i18n(
-        isUnregister
-          ? 'Close unregistration process?'
-          : 'Close registration process?',
-      ),
-      confirmationMessage: t_i18n(
-        isUnregister
-          ? 'unregistration_confirmation_dialog'
-          : 'registration_confirmation_dialog',
-      ),
-      continueButtonText: t_i18n(
-        isUnregister ? 'Continue unregistration' : 'Continue registration',
-      ),
-      instructionKey: isUnregister
-        ? 'unregistration_instruction_paragraph'
-        : 'registration_instruction_paragraph',
-    };
+      canceledMessage: t_i18n(isUnregister ? 'You have canceled the unregistration process' : 'You have canceled the registration process'),
+      loaderButtonText: t_i18n(isUnregister ? 'Continue to unregister' : 'Continue to register'),
+      confirmationTitle: t_i18n(isUnregister ? 'Close unregistration process?' : 'Close registration process?'),
+      confirmationMessage: t_i18n(isUnregister ? 'unregistration_confirmation_dialog' : 'registration_confirmation_dialog'),
+      continueButtonText: t_i18n(isUnregister ? 'Continue unregistration' : 'Continue registration'),
+      instructionKey: isUnregister ? 'unregistration_instruction_paragraph' : 'registration_instruction_paragraph' };
   }, [operationType, t_i18n]);
 
   const renderDialogContent = () => {
@@ -270,20 +249,16 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
   if (isRegistered) {
     return (
       <>
-        <Button
-          variant="contained"
-          size="small"
-          color="error"
-          sx={{
-            marginLeft: 1,
-            flex: '0 0 auto',
-            height: 'fit-content',
-          }}
-          onClick={handleOpenDialog}
-        >
-          {getButtonText()}
-        </Button>
-
+        <div style={{ float: 'right', marginTop: theme.spacing(-2), position: 'relative' }}>
+          <Button
+            variant="contained"
+            size="small"
+            color="error"
+            onClick={handleOpenDialog}
+          >
+            {getButtonText()}
+          </Button>
+        </div>
         <ProcessDialog
           open={isDialogOpen}
           title={config.dialogTitle}
@@ -291,7 +266,6 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
         >
           {renderDialogContent()}
         </ProcessDialog>
-
         <ConfirmationDialog
           open={showConfirmation}
           title={config.confirmationTitle}
@@ -307,19 +281,15 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
 
   return (
     <>
-      <GradientButton
-        size="small"
-        sx={{
-          marginLeft: 1,
-          flex: '0 0 auto',
-          height: 'fit-content',
-        }}
-        title={getButtonText()}
-        onClick={handleOpenDialog}
-      >
-        {getButtonText()}
-      </GradientButton>
-
+      <div style={{ float: 'right', marginTop: theme.spacing(-2), position: 'relative' }}>
+        <GradientButton
+          size="small"
+          title={getButtonText()}
+          onClick={handleOpenDialog}
+        >
+          {getButtonText()}
+        </GradientButton>
+      </div>
       <ProcessDialog
         open={isDialogOpen}
         title={config.dialogTitle}
@@ -327,7 +297,6 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
       >
         {renderDialogContent()}
       </ProcessDialog>
-
       <ConfirmationDialog
         open={showConfirmation}
         title={config.confirmationTitle}

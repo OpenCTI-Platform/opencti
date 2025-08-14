@@ -129,20 +129,6 @@ const platformInit = async (withMarkings = true) => {
       await initCreateEntitySettings(context, SYSTEM_USER);
       await initManagerConfigurations(context, SYSTEM_USER);
       await initDecayRules(context, SYSTEM_USER);
-      const isCapabilityExist = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_CAPABILITY], {
-        filters: {
-          mode: 'and',
-          filters: [{ key: 'name', values: ['SETTINGS_SETMANAGEXTMHUB'] }],
-          filterGroups: [],
-        }
-      });
-      if (!isCapabilityExist) {
-        await addCapability(context, SYSTEM_USER, {
-          name: 'SETTINGS_SETMANAGEXTMHUB',
-          description: 'Manage XTM Hub',
-          attribute_order: 3050
-        });
-      }
     }
     await initExclusionListCache();
   } catch (e) {
