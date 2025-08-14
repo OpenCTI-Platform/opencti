@@ -81,7 +81,6 @@ import { useFormatter } from '../../../components/i18n';
 import Security from '../../../utils/Security';
 import useGranted, {
   BYPASS,
-  PIRAPI,
   CSVMAPPERS,
   EXPLORE,
   INGESTION,
@@ -92,6 +91,7 @@ import useGranted, {
   KNOWLEDGE_KNUPDATE,
   KNOWLEDGE_KNUPDATE_KNDELETE,
   MODULES,
+  PIRAPI,
   SETTINGS_FILEINDEXING,
   SETTINGS_SECURITYACTIVITY,
   SETTINGS_SETACCESSES,
@@ -1055,6 +1055,7 @@ const LeftBar = () => {
                   paddingLeft: navOpen ? theme.spacing(1.25) : undefined,
                   paddingRight: navOpen ? theme.spacing(1.25) : undefined,
                 }}
+                onKeyDown={(event) => event.stopPropagation()}
               >
                 <AskArianeButton/>
               </MenuItem>
