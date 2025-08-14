@@ -11,14 +11,12 @@ import {
 } from '@components/data/__generated__/IngestionCreationUserHandlingDefaultGroupForIngestionUsersQuery.graphql';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import DangerZoneChip from '@components/common/danger_zone/DangerZoneChip';
 import { type FieldOption, fieldSpacingContainerStyle } from '../../../utils/field';
 import SwitchField from '../../../components/fields/SwitchField';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../utils/hooks/useGranted';
 import { useFormatter } from '../../../components/i18n';
 import Loader from '../../../components/Loader';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import useConfidenceLevel from '../../../utils/hooks/useConfidenceLevel';
 
 const ingestionCreationUserHandlingDefaultGroupForIngestionUsersQuery = graphql`
   query IngestionCreationUserHandlingDefaultGroupForIngestionUsersQuery {
@@ -50,9 +48,7 @@ const IngestionCreationUserHandlingComponent = ({ queryRef, default_confidence_l
   const [displayDefaultGroupWarning, setDisplayDefaultGroupWarning] = useState<boolean>(false);
   const [isConfidenceLevelEditable, setIsConfidenceLevelEditable] = React.useState(!isSensitive);
   const data = usePreloadedQuery(ingestionCreationUserHandlingDefaultGroupForIngestionUsersQuery, queryRef);
-  const entityType = 'User';
-  const { getEffectiveConfidenceLevel } = useConfidenceLevel();
-  const userEffectiveMaxConfidence = getEffectiveConfidenceLevel(entityType) ?? 100;
+
   useEffect(() => {
     setFieldValue(
       'user_id',
@@ -64,7 +60,7 @@ const IngestionCreationUserHandlingComponent = ({ queryRef, default_confidence_l
   useEffect(() => {
     setFieldValue(
       'confidence_level',
-      Math.min(default_confidence_level, userEffectiveMaxConfidence),
+      default_confidence_level,
     );
     if (values.automatic_user !== false && data.defaultIngestionGroupCount === 0) {
       setDisplayDefaultGroupWarning(true);
@@ -121,9 +117,9 @@ const IngestionCreationUserHandlingComponent = ({ queryRef, default_confidence_l
           )}
           <ConfidenceField
             name="confidence_level"
-            entityType={entityType}
             showAlert={true}
             disabled={!isConfidenceLevelEditable}
+            custom_max_level={100}
           />
         </Box>
       )}
