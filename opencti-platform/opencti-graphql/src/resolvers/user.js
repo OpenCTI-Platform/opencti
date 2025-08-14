@@ -52,7 +52,6 @@ import {
   userRenewToken,
   userWithOrigin,
   userRoles,
-  getCreator
   sendEmailToUser
 } from '../domain/user';
 import { subscribeToInstanceEvents, subscribeToUserEvents } from '../graphql/subscriptionWrapper';

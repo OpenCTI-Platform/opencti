@@ -5,7 +5,16 @@ import { uniq } from 'ramda';
 import { v4 as uuid } from 'uuid';
 import ejs from 'ejs';
 import { DateTime } from 'luxon';
-import { getRequestAuditHeaders, ACCOUNT_STATUS_ACTIVE, ACCOUNT_STATUS_EXPIRED, ACCOUNT_STATUSES, BUS_TOPICS, DEFAULT_ACCOUNT_STATUS, ENABLED_DEMO_MODE, logApp } from '../config/conf';
+import {
+  getRequestAuditHeaders,
+  ACCOUNT_STATUS_ACTIVE,
+  ACCOUNT_STATUS_EXPIRED,
+  ACCOUNT_STATUSES,
+  BUS_TOPICS,
+  DEFAULT_ACCOUNT_STATUS,
+  ENABLED_DEMO_MODE,
+  logApp
+} from '../config/conf';
 import { AuthenticationFailure, DatabaseError, DraftLockedError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { elLoadBy, elRawDeleteByQuery } from '../database/engine';
@@ -77,10 +86,9 @@ import { cleanMarkings } from '../utils/markingDefinition-utils';
 import { UnitSystem } from '../generated/graphql';
 import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
-import { addServiceAccountIntoUserCount, addUserIntoServiceAccountCount } from '../manager/telemetryManager';
+import { addServiceAccountIntoUserCount, addUserIntoServiceAccountCount, addUserEmailSendCount } from '../manager/telemetryManager';
 import { sendMail } from '../database/smtp';
 import { checkEnterpriseEdition } from '../enterprise-edition/ee';
-import { addUserEmailSendCount } from '../manager/telemetryManager';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
 
 const BEARER = 'Bearer ';
@@ -131,7 +139,6 @@ export const userWithOrigin = (req, user) => {
   // - In audit logs to identify the user
   // - In stream message to also identifier the user
   // - In logging system to know the level of the error message
-  const headers_metadata = R.mergeAll((user.headers_audit ?? [])
 
   // Additional header from "authentication with header" authentication mode
   const sso_headers_metadata = R.mergeAll((user.headers_audit ?? [])
@@ -144,7 +151,6 @@ export const userWithOrigin = (req, user) => {
     user_id: user.id,
     group_ids: user.groups?.map((g) => g.internal_id) ?? [],
     organization_ids: user.organizations?.map((o) => o.internal_id) ?? [],
-    user_metadata: { ...headers_metadata },
     user_metadata: { ...sso_headers_metadata, ...tracing_headers_metadata },
     referer: req?.headers.referer,
     applicant_id: req?.headers['opencti-applicant-id'],
@@ -673,7 +679,7 @@ export const addUser = async (context, user, newUser) => {
   // Create the user
   let userPassword = newUser.password;
   // If user is external and password is not specified, associate a random password
-  if (newUser.external === true && isEmptyField(userPassword) || userServiceAccount) {
+  if ((newUser.external === true && isEmptyField(userPassword)) || userServiceAccount) {
     userPassword = uuid();
   } else { // If local user, check the password policy
     await checkPasswordFromPolicy(context, userPassword);
@@ -841,6 +847,7 @@ export const userEditField = async (context, user, userId, rawInputs) => {
       throw ForbiddenAccess();
     }
   }
+  let skipThisInput = false;
   for (let index = 0; index < rawInputs.length; index += 1) {
     const input = rawInputs[index];
     if (input.key === 'password') {
