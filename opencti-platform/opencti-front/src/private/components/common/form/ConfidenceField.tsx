@@ -33,6 +33,7 @@ interface ConfidenceFieldProps {
   containerStyle?: Record<string, string | number>;
   entityType?: string;
   disabled?: boolean;
+  custom_max_level?: number;
 }
 
 const ConfidenceField: FunctionComponent<ConfidenceFieldProps> = ({
@@ -46,12 +47,13 @@ const ConfidenceField: FunctionComponent<ConfidenceFieldProps> = ({
   containerStyle,
   entityType,
   disabled,
+  custom_max_level,
 }) => {
   const { t_i18n } = useFormatter();
   const finalLabel = label || t_i18n('Confidence level');
   const classes = useStyles();
   const { getEffectiveConfidenceLevel } = useConfidenceLevel();
-  const userEffectiveMaxConfidence = getEffectiveConfidenceLevel(entityType);
+  const userEffectiveMaxConfidence = custom_max_level ?? getEffectiveConfidenceLevel(entityType);
   return (
     <>{showAlert ? (<Alert
       classes={{ root: classes.alert, message: classes.message }}
