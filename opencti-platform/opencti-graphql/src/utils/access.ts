@@ -876,7 +876,8 @@ export const filterMembersWithUsersOrgs = async (
       if (!sameOrg) {
         return {
           ...member,
-          name: 'Restricted'
+          name: REDACTED_USER.name,
+          user_email: REDACTED_USER.user_email
         };
       }
       return member;
