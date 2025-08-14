@@ -32,6 +32,7 @@ import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { TYPE_FILTER, USER_ID_FILTER } from '../utils/filtering/filtering-constants';
 import { createWork } from './work';
 import { getBestBackgroundConnectorId } from '../database/rabbitmq';
+import { addUserBackgroundTaskCount } from '../manager/telemetryManager';
 
 export const TASK_TYPE_QUERY = 'QUERY';
 export const TASK_TYPE_RULE = 'RULE';
@@ -48,6 +49,7 @@ export const ACTION_TYPE_ENRICHMENT = 'ENRICHMENT';
 export const ACTION_TYPE_COMPLETE_DELETE = 'COMPLETE_DELETE';
 export const ACTION_TYPE_SHARE = 'SHARE';
 export const ACTION_TYPE_UNSHARE = 'UNSHARE';
+export const ACTION_TYPE_SEND_EMAIL = 'SEND_EMAIL';
 export const ACTION_TYPE_SHARE_MULTIPLE = 'SHARE_MULTIPLE';
 export const ACTION_TYPE_UNSHARE_MULTIPLE = 'UNSHARE_MULTIPLE';
 export const ACTION_TYPE_REMOVE_AUTH_MEMBERS = 'REMOVE_AUTH_MEMBERS';
@@ -344,6 +346,10 @@ export const createDefaultTask = async (context, user, input, taskType, taskExpe
       restricted_members: authorizedMembersForTask(user, scope),
       authorized_authorities: authorizedAuthoritiesForTask(scope),
     };
+  }
+
+  if (scope === BackgroundTaskScope.User) {
+    await addUserBackgroundTaskCount();
   }
   return task;
 };

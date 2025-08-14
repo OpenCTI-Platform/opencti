@@ -1,3 +1,4 @@
+import type Express from 'express';
 import type { BasicStoreCommon, BasicStoreIdentifier, StoreMarkingDefinition } from './store';
 import type { Group } from './group';
 import type { ConfidenceLevel } from '../generated/graphql';
@@ -63,4 +64,5 @@ interface AuthContext {
   user_inside_platform_organization: boolean
   user_otp_validated?: boolean
   user_with_session?: boolean
+  req?: Express.Request
 }

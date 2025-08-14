@@ -30,7 +30,7 @@ import type { ActivityStreamEvent } from '../types/event';
 const INTERNAL_READ_ENTITIES = [ENTITY_TYPE_WORKSPACE];
 const LOGS_SENSITIVE_FIELDS = conf.get('app:app_logs:logs_redacted_inputs') ?? [];
 const UNSUPPORTED_INTPUT_PROPS = ['_id', 'sort', 'i_attributes', 'i_relation']; // add 'objectOrganization' ?
-export const EVENT_SCOPE_VALUES = ['create', 'update', 'delete', 'read', 'search', 'enrich', 'download', 'import', 'export', 'login', 'logout', 'unauthorized', 'disseminate', 'forgot'];
+export const EVENT_SCOPE_VALUES = ['create', 'update', 'delete', 'read', 'search', 'enrich', 'download', 'import', 'export', 'send', 'login', 'logout', 'unauthorized', 'disseminate', 'forgot'];
 export const EVENT_TYPE_VALUES = ['authentication', 'read', 'mutation', 'file', 'command'];
 export const EVENT_ACCESS_VALUES = ['extended', 'administration'];
 export const EVENT_STATUS_VALUES = ['error', 'success'];
@@ -209,6 +209,12 @@ const initActivityManager = () => {
         if (action.event_scope === 'export') {
           const { format, entity_name } = action.context_data;
           const message = `asks for \`${format}\` export in \`${entity_name}\``;
+          await activityLogger(action, message);
+        }
+        if (action.event_scope === 'send') {
+          const { entity_name, entity_type, input } = action.context_data;
+          // @ts-expect-error input type unknown
+          const message = `send an email about \`${entity_name}\` (${entity_type}) to \`${input.to}\``;
           await activityLogger(action, message);
         }
         if (action.event_scope === 'import') {
