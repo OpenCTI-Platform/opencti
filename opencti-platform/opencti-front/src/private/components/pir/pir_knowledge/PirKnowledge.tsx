@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { graphql, useFragment } from 'react-relay';
 import React from 'react';
-import PirKnowledgeRelationships from './PirKnowledgeRelationships';
+import PirKnowledgeEntities from '@components/pir/pir_knowledge/PirKnowledgeEntities';
 import { PirKnowledgeFragment$key } from './__generated__/PirKnowledgeFragment.graphql';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
@@ -38,7 +38,7 @@ const PirKnowledge = ({ data }: PirKnowledgeProps) => {
   const initialValues = {
     filters: emptyFilterGroup,
     searchTerm: '',
-    sortBy: 'pir_score',
+    sortBy: 'created', // TODO PIR order by score
     orderAsc: false,
     openExports: false,
     view: 'relationships',
@@ -51,10 +51,11 @@ const PirKnowledge = ({ data }: PirKnowledgeProps) => {
 
   return (
     <div>
-      <PirKnowledgeRelationships
+      <PirKnowledgeEntities
         pirId={pir.id}
         localStorage={localStorage}
         initialValues={initialValues}
+        additionalHeaderButtons={[]} // TODO PIR add export button
       />
     </div>
   );
