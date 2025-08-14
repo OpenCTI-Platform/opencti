@@ -94,22 +94,25 @@ export const generatePirContextData = (event: SseEvent<StreamDataEvent>): Partia
   let pir_score: number | undefined;
   // Listened events: stix core relationships, pir meta rels creation, 'contains' flagged entities
   const eventData = event.data.data;
+  // 1. detect stix core relationships
   if (eventData.type === 'relationship') {
     const relationEvent = eventData as StixRelation;
-    const extensions = relationEvent.extensions[STIX_EXT_OCTI];
-    from_id = extensions.source_ref;
-    // 1. detect stix core relationships
     if (isStixCoreRelationship(relationEvent.relationship_type)) {
+      const extensions = relationEvent.extensions[STIX_EXT_OCTI];
+      from_id = extensions.source_ref;
       if ((extensions.source_ref_pir_refs ?? []).length > 0) {
         pir_ids = extensions.source_ref_pir_refs;
       } else if ((extensions.target_ref_pir_refs ?? []).length > 0) {
         pir_ids = extensions.target_ref_pir_refs;
       }
-    // 2. detect in-pir rels
-    } else if (eventData.extensions[STIX_EXT_OCTI].type === RELATION_IN_PIR) {
-      pir_ids = [extensions.target_ref];
-      pir_score = extensions.pir_score;
     }
+  } else if (eventData.type === 'internal-relationship'
+    && eventData.extensions[STIX_EXT_OCTI].type === RELATION_IN_PIR
+  ) { // 2. detect in-pir rels
+    const relationEvent = eventData as StixRelation;
+    const extensions = relationEvent.extensions[STIX_EXT_OCTI];
+    pir_ids = [extensions.target_ref];
+    pir_score = extensions.pir_score;
   } else if (event.event === 'update' && (event.data as UpdateEvent).context.patch) {
     const updateEvent: UpdateEvent = event.data as UpdateEvent;
     // 3. detect 'contains' rel
