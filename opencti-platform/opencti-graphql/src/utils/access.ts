@@ -877,7 +877,8 @@ export const filterMembersWithUsersOrgs = async (
         return {
           ...member,
           name: REDACTED_USER.name,
-          user_email: REDACTED_USER.user_email
+          user_email: REDACTED_USER.user_email,
+          id: uuidv4()
         };
       }
       return member;
