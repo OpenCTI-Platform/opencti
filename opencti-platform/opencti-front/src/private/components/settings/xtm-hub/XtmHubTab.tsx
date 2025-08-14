@@ -251,9 +251,9 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
       <>
         <div style={{ float: 'right', marginTop: theme.spacing(-2), position: 'relative' }}>
           <Button
-            variant="contained"
+            variant="outlined"
             size="small"
-            color="error"
+            color="dangerZone"
             onClick={handleOpenDialog}
           >
             {getButtonText()}
