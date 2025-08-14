@@ -55,7 +55,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@analytics/global-storage-utils@npm:^0.1.9, @analytics/global-storage-utils@npm:^0.1.9":
+"@analytics/global-storage-utils@npm:^0.1.9":
   version: 0.1.9
   resolution: "@analytics/global-storage-utils@npm:0.1.9"
   dependencies:
@@ -102,7 +102,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@analytics/type-utils@npm:^0.6.4, @analytics/type-utils@npm:^0.6.4":
+"@analytics/type-utils@npm:^0.6.4":
   version: 0.6.4
   resolution: "@analytics/type-utils@npm:0.6.4"
   checksum: 10/f520a4affdc640d1de2a21869005fd36cc5f0e69c0ee5ff5488295098f540b46b4276efe39c3bcb7de2ebd3a90d8f1dc6ba586820de04520857c40319110f4c9
@@ -9425,17 +9425,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chalk@npm:4.1.2, chalk@npm:^4.0.0, chalk@npm:^4.1.0":
-  version: 4.1.2
-  resolution: "chalk@npm:4.1.2"
-  dependencies:
-    ansi-styles: "npm:^4.1.0"
-    supports-color: "npm:^7.1.0"
-  checksum: 10/cb3f3e594913d63b1814d7ca7c9bafbf895f75fbf93b92991980610dfd7b48500af4e3a5d4e3a8f337990a96b168d7eb84ee55efdce965e2ee8efc20f8c8f139
-  languageName: node
-  linkType: hard
-
-"chalk@npm:^4.0.0":
+"chalk@npm:4.1.2, chalk@npm:^4.0.0":
   version: 4.1.2
   resolution: "chalk@npm:4.1.2"
   dependencies:
@@ -12281,8 +12271,8 @@ __metadata:
   linkType: hard
 
 "filigran-chatbot@https://github.com/FiligranHQ/filigran-chatbot.git":
-  version: 1.0.0
-  resolution: "filigran-chatbot@https://github.com/FiligranHQ/filigran-chatbot.git#commit=71d144bb91422f95d6d4de976be538425e59d4fc"
+  version: 0.0.6
+  resolution: "filigran-chatbot@https://github.com/FiligranHQ/filigran-chatbot.git#commit=681ab88fe6e31dca938dde6ad9f51f929fbee51f"
   dependencies:
     "@babel/core": "npm:7.23.0"
     "@microsoft/fetch-event-source": "npm:2.0.1"
@@ -12293,7 +12283,7 @@ __metadata:
     prettier: "npm:3.1.0"
     solid-element: "npm:1.9.1"
     solid-js: "npm:1.9.7"
-  checksum: 10/57c1ab5465e6d67b7d95a3f1cab2fbef092a4a6519419885bbf1d76af763ec40dc105abd470a1438b29e95f77550754061709732fde184afbcc7389593ebbed9
+  checksum: 10/b5cf33dd460fe541624561f8077fd6934eb002926cc1a4f6a9691480db8737283b6702a550c282973091746ecdaefc51f9c078234808260841089b91496a8e1e
   languageName: node
   linkType: hard
 
@@ -17139,24 +17129,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"picocolors@npm:1.1.1, picocolors@npm:^1.1.1":
+"picocolors@npm:1.1.1, picocolors@npm:^1.0.0, picocolors@npm:^1.1.1":
   version: 1.1.1
   resolution: "picocolors@npm:1.1.1"
   checksum: 10/e1cf46bf84886c79055fdfa9dcb3e4711ad259949e3565154b004b260cd356c5d54b31a1437ce9782624bf766272fe6b0154f5f0c744fb7af5d454d2b60db045
-  languageName: node
-  linkType: hard
-
-"picocolors@npm:^1.0.0, picocolors@npm:^1.1.1":
-  version: 1.1.1
-  resolution: "picocolors@npm:1.1.1"
-  checksum: 10/e1cf46bf84886c79055fdfa9dcb3e4711ad259949e3565154b004b260cd356c5d54b31a1437ce9782624bf766272fe6b0154f5f0c744fb7af5d454d2b60db045
-  languageName: node
-  linkType: hard
-
-"picocolors@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "picocolors@npm:1.1.0"
-  checksum: 10/a2ad60d94d185c30f2a140b19c512547713fb89b920d32cc6cf658fa786d63a37ba7b8451872c3d9fc34883971fb6e5878e07a20b60506e0bb2554dce9169ccb
   languageName: node
   linkType: hard
 

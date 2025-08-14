@@ -74,7 +74,7 @@ const initCSVCreateForm: IngestionCsvAddInput = {
   authentication_value: '',
   user_id: '',
   automatic_user: true,
-  confidence_level: 50,
+  confidence_level: '50',
   username: '',
   password: '',
   cert: '',
@@ -133,7 +133,7 @@ export interface IngestionCsvAddInput extends BasicUserHandlingValues {
   ingestion_running?: boolean | null
   user_id: string | FieldOption
   automatic_user?: boolean
-  confidence_level?: number
+  confidence_level?: string
   username?: string
   password?: string
   cert?: string

@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useRefetchableFragment } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import Grid from '@mui/material/Grid';
-import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import MenuItem from '@mui/material/MenuItem';
@@ -12,13 +11,6 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import { useTheme } from '@mui/styles';
 import Switch from '@mui/material/Switch';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import Alert from '@mui/material/Alert';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DangerZoneBlock from '../common/danger_zone/DangerZoneBlock';
 import EEChip from '../common/entreprise_edition/EEChip';
 import EnterpriseEditionButton from '../common/entreprise_edition/EnterpriseEditionButton';
 import { SubscriptionFocus } from '../../../components/Subscription';
@@ -33,8 +25,6 @@ import SettingsAnalytics from './settings_analytics/SettingsAnalytics';
 import ItemBoolean from '../../../components/ItemBoolean';
 import { availableLanguage } from '../../../components/AppIntlProvider';
 import Breadcrumbs from '../../../components/Breadcrumbs';
-import useSensitiveModifications from '../../../utils/hooks/useSensitiveModifications';
-import Transition from '../../../components/Transition';
 import ItemCopy from '../../../components/ItemCopy';
 import Loader from '../../../components/Loader';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
@@ -170,11 +160,7 @@ const settingsValidation = (t: (s: string) => string) => Yup.object().shape({
 
 const Settings = (queryRef: PreloadedQuery<SettingsQuery>) => {
   const theme = useTheme<Theme>();
-
-  const { isAllowed } = useSensitiveModifications('ce_ee_toggle');
-  const [openEEChanges, setOpenEEChanges] = useState(false);
   const [commit] = useApiMutation(settingsMutationFieldPatch);
-
   const data = usePreloadedQuery<SettingsQuery>(settingsQuery, queryRef);
   const [{ themes }, refetch] = useRefetchableFragment<
   SettingsQuery,
@@ -184,7 +170,7 @@ const Settings = (queryRef: PreloadedQuery<SettingsQuery>) => {
     data,
   );
 
-  const { t_i18n, fldt } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Parameters | Settings'));
   const handleChangeFocus = (id: string, name: string) => {
@@ -254,183 +240,6 @@ const Settings = (queryRef: PreloadedQuery<SettingsQuery>) => {
   return (
     <>
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Parameters'), current: true }]} />
-      {isEnterpriseEditionActivated && (
-        <Grid container={true} spacing={3} style={{ marginBottom: 23 }}>
-          <Grid item xs={6}>
-            <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-              {t_i18n('Enterprise Edition')}
-            </Typography>
-            {!isEnterpriseEditionByConfig && (
-              <div style={{ float: 'right', marginTop: theme.spacing(-2.6), position: 'relative' }}>
-                <DangerZoneBlock
-                  type='ce_ee_toggle'
-                  sx={{
-                    root: { border: 'none', padding: 0, margin: 0 },
-                    title: { position: 'absolute', zIndex: 2, left: 4, top: 9, fontSize: 8 },
-                  }}
-                >
-                  {({ disabled }) => (
-                    <>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        color='warning'
-                        onClick={() => setOpenEEChanges(true)}
-                        disabled={disabled}
-                        style={{
-                          color: isAllowed ? theme.palette.dangerZone.text?.primary : theme.palette.dangerZone.text?.disabled,
-                          borderColor: theme.palette.dangerZone.main,
-                        }}
-                      >
-                        {t_i18n('Disable Enterprise Edition')}
-                      </Button>
-                      <Dialog
-                        PaperProps={{ elevation: 1 }}
-                        open={openEEChanges}
-                        keepMounted
-                        TransitionComponent={Transition}
-                        onClose={() => setOpenEEChanges(false)}
-                      >
-                        <DialogTitle>{t_i18n('Disable Enterprise Edition')}</DialogTitle>
-                        <DialogContent>
-                          <DialogContentText>
-                            <Alert
-                              severity="warning"
-                              variant="outlined"
-                              color="dangerZone"
-                              style={{ borderColor: theme.palette.dangerZone.main }}
-                            >
-                              {t_i18n('You are about to disable the "Enterprise Edition" mode. Please note that this action will disable access to certain advanced features (organization segregation, automation, file indexing etc.).')}
-                              <br /><br />
-                              <strong>{t_i18n('However, your existing data will remain intact and will not be lost.')}</strong>
-                            </Alert>
-                          </DialogContentText>
-                        </DialogContent>
-                        <DialogActions>
-                          <Button
-                            onClick={() => {
-                              setOpenEEChanges(false);
-                            }}
-                          >
-                            {t_i18n('Cancel')}
-                          </Button>
-                          <Button
-                            color="secondary"
-                            onClick={() => {
-                              setOpenEEChanges(false);
-                              handleSubmitField(id, 'enterprise_license', '');
-                            }}
-                          >
-                            {t_i18n('Validate')}
-                          </Button>
-                        </DialogActions>
-                      </Dialog>
-                    </>
-                  )}
-                </DangerZoneBlock>
-              </div>
-            )}
-            <div className="clearfix" />
-            <Paper
-              variant="outlined"
-              className='paper-for-grid'
-              style={{
-                marginTop: theme.spacing(1),
-                padding: 20,
-                borderRadius: 4,
-              }}
-            >
-              <List style={{ marginTop: -20 }}>
-                <ListItem divider={true}>
-                  <ListItemText primary={t_i18n('Organization')} />
-                  <ItemBoolean
-                    variant="large"
-                    neutralLabel={settings.platform_enterprise_edition.license_customer}
-                    status={null}
-                  />
-                </ListItem>
-                <ListItem divider={true}>
-                  <ListItemText primary={t_i18n('Creator')} />
-                  <ItemBoolean
-                    variant="large"
-                    neutralLabel={settings.platform_enterprise_edition.license_creator}
-                    status={null}
-                  />
-                </ListItem>
-                <ListItem divider={true}>
-                  <ListItemText primary={t_i18n('Scope')} />
-                  <ItemBoolean
-                    variant="large"
-                    neutralLabel={settings.platform_enterprise_edition.license_global ? t_i18n('Global') : t_i18n('Current instance')}
-                    status={null}
-                  />
-                </ListItem>
-              </List>
-            </Paper>
-          </Grid>
-          <Grid item xs={6}>
-            <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-              {t_i18n('License')}
-            </Typography>
-            {!isEnterpriseEditionByConfig && (
-              <div style={{ float: 'right', marginTop: theme.spacing(-1.8), position: 'relative' }}>
-                <EnterpriseEditionButton inLine={true} />
-              </div>
-            )}
-            <div className="clearfix"/>
-            <Paper
-              variant="outlined"
-              className='paper-for-grid'
-              style={{
-                marginTop: theme.spacing(1),
-                padding: 20,
-                borderRadius: 4,
-              }}
-            >
-              <List style={{ marginTop: -20 }}>
-                {!settings.platform_enterprise_edition.license_expired && settings.platform_enterprise_edition.license_expiration_prevention && (
-                  <ListItem divider={false}>
-                    <Alert severity="warning" variant="outlined" style={{ width: '100%' }}>
-                      {t_i18n('Your Enterprise Edition license will expire in less than 3 months.')}
-                    </Alert>
-                  </ListItem>
-                )}
-                {!settings.platform_enterprise_edition.license_validated && settings.platform_enterprise_edition.license_valid_cert && (
-                  <ListItem divider={false}>
-                    <Alert severity="error" variant="outlined" style={{ width: '100%' }}>
-                      {t_i18n('Your Enterprise Edition license is expired. Please contact your Filigran representative.')}
-                    </Alert>
-                  </ListItem>
-                )}
-                <ListItem divider={true}>
-                  <ListItemText primary={t_i18n('Start date')}/>
-                  <ItemBoolean
-                    variant="xlarge"
-                    label={fldt(settings.platform_enterprise_edition.license_start_date)}
-                    status={!settings.platform_enterprise_edition.license_expired}
-                  />
-                </ListItem>
-                <ListItem divider={true}>
-                  <ListItemText primary={t_i18n('Expiration date')}/>
-                  <ItemBoolean
-                    variant="xlarge"
-                    label={fldt(settings.platform_enterprise_edition.license_expiration_date)}
-                    status={!settings.platform_enterprise_edition.license_expired}
-                  />
-                </ListItem>
-                <ListItem divider={!settings.platform_enterprise_edition.license_expiration_prevention}>
-                  <ListItemText primary={t_i18n('License type')}/>
-                  <ItemBoolean
-                    variant="large"
-                    neutralLabel={settings.platform_enterprise_edition.license_type}
-                    status={null}
-                  />
-                </ListItem>
-              </List>
-            </Paper>
-          </Grid>
-        </Grid>
-      )}
       <Grid container={true} spacing={3}>
         <Grid item xs={6}>
           <Typography variant="h4" gutterBottom={true}>
@@ -561,17 +370,17 @@ const Settings = (queryRef: PreloadedQuery<SettingsQuery>) => {
           <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
             {t_i18n('OpenCTI platform')}
           </Typography>
-          <div style={{ float: 'right', marginTop: theme.spacing(-4.5), position: 'relative' }}>
-            {!isEnterpriseEditionActivated && (
+          {(!isEnterpriseEditionActivated || (isEnterpriseEditionActivated && !isEnterpriseEditionByConfig)) && (
+            <div style={{ float: 'right', marginTop: theme.spacing(-2) }}>
               <EnterpriseEditionButton inLine={true} />
-            )}
-          </div>
+            </div>
+          )}
           <div className="clearfix"/>
           <Paper
             className='paper-for-grid'
             variant="outlined"
             style={{
-              marginTop: theme.spacing(1),
+              marginTop: theme.spacing(0.5),
               padding: 20,
               borderRadius: 4,
             }}
