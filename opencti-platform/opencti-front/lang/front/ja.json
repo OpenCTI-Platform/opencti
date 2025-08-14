@@ -940,6 +940,8 @@
   "Disabled": "無効",
   "Disabled dashboard...": "無効化された公開ダッシュボードは閲覧できません。このブール値はいつでも変更できます。",
   "Disconnected": "切断中",
+  "Discover OpenCTI EE": "OpenCTI EEを発見する",
+  "Discover the Hub": "ハブの発見",
   "Dismiss": "解散",
   "Dismissible": "無視可能",
   "Display as": "表示: ",
