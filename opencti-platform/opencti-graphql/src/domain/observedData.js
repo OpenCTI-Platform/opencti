@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { createEntity, distributionEntities, timeSeriesEntities, } from '../database/middleware';
-import { internalLoadById, listEntities, listRelations, storeLoadById } from '../database/middleware-loader';
+import { internalLoadById, listEntitiesPaginated, listRelations, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA } from '../schema/stixDomainObject';
@@ -18,7 +18,7 @@ export const findById = (context, user, observedDataId) => {
 };
 
 export const findAll = async (context, user, args) => {
-  return listEntities(context, user, [ENTITY_TYPE_CONTAINER_OBSERVED_DATA], args);
+  return listEntitiesPaginated(context, user, [ENTITY_TYPE_CONTAINER_OBSERVED_DATA], args);
 };
 
 export const resolveName = async (context, user, observedData) => {

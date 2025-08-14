@@ -13,7 +13,7 @@ import { isEmptyField, READ_INDEX_HISTORY } from '../database/utils';
 import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE, OPENCTI_NAMESPACE } from '../schema/general';
 import { isUserHasCapability, PIR_MANAGER_USER, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import { delEditContext, notify, redisGetWork, redisSetConnectorLogs, setEditContext } from '../database/redis';
-import { internalLoadById, listEntities, storeLoadById } from '../database/middleware-loader';
+import { internalLoadById, listEntitiesPaginated, storeLoadById } from '../database/middleware-loader';
 import { completeContextDataForEntity, publishUserAction, type UserImportActionContextData } from '../listener/UserActionListener';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreEntityConnector, ConnectorInfo } from '../types/connector';
@@ -403,7 +403,7 @@ export const findSyncById = (context: AuthContext, user: AuthUser, syncId: strin
   return storeLoadById(context, user, syncId, ENTITY_TYPE_SYNC);
 };
 export const findAllSync = async (context: AuthContext, user: AuthUser, opts = {}) => {
-  return listEntities(context, SYSTEM_USER, [ENTITY_TYPE_SYNC], opts);
+  return listEntitiesPaginated(context, SYSTEM_USER, [ENTITY_TYPE_SYNC], opts);
 };
 
 export const testSync = async (context: AuthContext, user: AuthUser, sync: MutationSynchronizerTestArgs) => {

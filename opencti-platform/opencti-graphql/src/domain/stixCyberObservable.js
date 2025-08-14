@@ -12,7 +12,7 @@ import { delEditContext, notify, setEditContext } from '../database/redis';
 import { createEntity, deleteElementById, distributionEntities, storeLoadByIdWithRefs, timeSeriesEntities, updateAttribute } from '../database/middleware';
 import {
   listAllFromEntitiesThroughRelations,
-  listEntities,
+  listEntitiesPaginated,
   listEntitiesThroughRelationsPaginated,
   loadEntityThroughRelationsPaginated,
   storeLoadById
@@ -58,7 +58,7 @@ export const findAll = async (context, user, args) => {
   if (types.length === 0) {
     types.push(ABSTRACT_STIX_CYBER_OBSERVABLE);
   }
-  return listEntities(context, user, types, args);
+  return listEntitiesPaginated(context, user, types, args);
 };
 
 // region by elastic
