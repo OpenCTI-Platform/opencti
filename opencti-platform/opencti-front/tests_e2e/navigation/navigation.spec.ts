@@ -310,8 +310,8 @@ const navigateAllMenu = async (page: Page) => {
   await leftBarPage.expectBreadcrumb('Settings', 'Taxonomies');
   await leftBarPage.clickOnMenu('Settings', 'File indexing');
   await leftBarPage.expectBreadcrumb('Settings', 'File indexing');
-  await leftBarPage.clickOnMenu('Settings', 'Support');
-  await leftBarPage.expectBreadcrumb('Settings', 'Support');
+  await leftBarPage.clickOnMenu('Settings', 'Filigran Experience');
+  await leftBarPage.expectBreadcrumb('Settings', 'Filigran Experience');
 
   // Other
   await leftBarPage.clickOnMenu('Investigations');

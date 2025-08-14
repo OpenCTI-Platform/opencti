@@ -69,6 +69,54 @@ export const defaultIngestionGroupsCount = async (context: AuthContext) => {
   return defaultGroupLength.length ?? 0;
 };
 
+export const userAlreadyExists = async (context: AuthContext, name: string) => {
+  // We use SYSTEM_USER because manage ingestion should be enough to create an ingestion Feed
+  const users = await findAllUser(context, SYSTEM_USER, {
+    filters: {
+      mode: 'and',
+      filters: [
+        {
+          key: ['name'],
+          values: [name],
+        },
+      ],
+      filterGroups: [],
+    },
+    connectionFormat: false }) as BasicStoreCommon[];
+  return users.length > 0;
+};
+
+export const createOnTheFlyUser = async (context: AuthContext, user: AuthUser, input: { userName: string, confidenceLevel: number | null | undefined }) => {
+  const defaultIngestionGroups: BasicGroupEntity[] = await findDefaultIngestionGroups(context, user) as BasicGroupEntity[];
+  if (defaultIngestionGroups.length < 1) {
+    throw FunctionalError('You have not defined a default group for ingestion users', {});
+  }
+  const isUserAlreadyExisting = await userAlreadyExists(context, input.userName);
+  if (isUserAlreadyExisting) {
+    throw FunctionalError('This user already exists. Change the feed\'s name to change the automatically created user\'s name', {});
+  }
+  const { platform_organization } = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+
+  let userInput: UserAddInput = {
+    password: uuid(),
+    user_email: `automatic+${uuid()}@opencti.invalid`,
+    name: input.userName,
+    prevent_default_groups: true,
+    groups: [defaultIngestionGroups[0].id],
+    objectOrganization: platform_organization ? [platform_organization] : []
+  };
+
+  if (input.confidenceLevel) {
+    const userConfidence = input.confidenceLevel;
+    if (userConfidence < 0 || userConfidence > 100 || !Number.isInteger(userConfidence)) {
+      throw ValidationError('The confidence_level should be an integer between 0 and 100', 'confidence_level');
+    }
+    userInput = { ...userInput, user_confidence_level: { max_confidence: userConfidence, overrides: [] } };
+  }
+  const newlyCreatedUser = await addUser(context, user, userInput);
+  return newlyCreatedUser;
+};
+
 export const addIngestionCsv = async (context: AuthContext, user: AuthUser, input: IngestionCsvAddInput) => {
   if (input.authentication_value) {
     verifyIngestionAuthenticationContent(input.authentication_type, input.authentication_value);

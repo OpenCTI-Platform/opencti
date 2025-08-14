@@ -8,6 +8,7 @@ import ThemeLight from './ThemeLight';
 import ThemeDark from './ThemeDark';
 import ItemIcon from './ItemIcon';
 import { truncate } from '../utils/String';
+import { chipInListBasicStyle } from '../utils/chipStyle';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -21,12 +22,9 @@ const useStyles = makeStyles(() => ({
     width: 120,
   },
   chipInList: {
-    fontSize: 12,
-    height: 20,
-    float: 'left',
+    ...chipInListBasicStyle,
     width: 120,
     textTransform: 'uppercase',
-    borderRadius: 4,
   },
 }));
 

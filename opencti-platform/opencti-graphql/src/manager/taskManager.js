@@ -4,20 +4,7 @@ import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/dynamic
 import * as R from 'ramda';
 import { Promise as BluePromise } from 'bluebird';
 import { lockResources } from '../lock/master-lock';
-import {
-  ACTION_TYPE_ADD,
-  ACTION_TYPE_ENRICHMENT,
-  ACTION_TYPE_MERGE,
-  ACTION_TYPE_PROMOTE,
-  ACTION_TYPE_REMOVE,
-  ACTION_TYPE_REPLACE,
-  ACTION_TYPE_RULE_APPLY,
-  ACTION_TYPE_RULE_CLEAR,
-  ACTION_TYPE_RULE_ELEMENT_RESCAN,
-  buildQueryFilters,
-  findAll,
-  updateTask
-} from '../domain/backgroundTask';
+import { buildQueryFilters, findAll, updateTask } from '../domain/backgroundTask';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { resolveUserByIdFromCache } from '../domain/user';
 import { storeLoadByIdsWithRefs } from '../database/middleware';
@@ -33,15 +20,24 @@ import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { generateIndicatorFromObservable } from '../domain/stixCyberObservable';
 import {
+  ACTION_TYPE_ADD,
   ACTION_TYPE_ADD_GROUPS,
   ACTION_TYPE_ADD_ORGANIZATIONS,
   ACTION_TYPE_COMPLETE_DELETE,
   ACTION_TYPE_DELETE,
+  ACTION_TYPE_ENRICHMENT,
+  ACTION_TYPE_MERGE,
+  ACTION_TYPE_PROMOTE,
+  ACTION_TYPE_REMOVE,
   ACTION_TYPE_REMOVE_AUTH_MEMBERS,
   ACTION_TYPE_REMOVE_FROM_DRAFT,
   ACTION_TYPE_REMOVE_GROUPS,
   ACTION_TYPE_REMOVE_ORGANIZATIONS,
+  ACTION_TYPE_REPLACE,
   ACTION_TYPE_RESTORE,
+  ACTION_TYPE_RULE_APPLY,
+  ACTION_TYPE_RULE_CLEAR,
+  ACTION_TYPE_RULE_ELEMENT_RESCAN,
   ACTION_TYPE_SHARE,
   ACTION_TYPE_SHARE_MULTIPLE,
   ACTION_TYPE_UNSHARE,
@@ -319,19 +315,19 @@ export const buildContainersElementsBundle = async (context, user, containers, e
     const element = elements[index];
     elementIds.add(element.internal_id);
     elementStandardIds.add(element.standard_id);
-    if (withNeighbours) {
-      if (element.fromId) elementIds.add(element.fromId);
-      if (element.toId) elementIds.add(element.toId);
-      const callback = (relations) => {
-        relations.forEach((relation) => {
-          elementIds.add(relation.fromId);
-          elementIds.add(relation.toId);
-          elementIds.add(relation.id);
-        });
-      };
-      const args = { fromOrToId: Array.from(elementIds), baseData: true, callback };
-      await listAllRelations(context, user, ABSTRACT_STIX_CORE_RELATIONSHIP, args);
-    }
+    if (element.fromId) elementIds.add(element.fromId);
+    if (element.toId) elementIds.add(element.toId);
+  }
+  if (withNeighbours) {
+    const callback = (relations) => {
+      relations.forEach((relation) => {
+        elementIds.add(relation.fromId);
+        elementIds.add(relation.toId);
+        elementIds.add(relation.id);
+      });
+    };
+    const args = { fromOrToId: Array.from(elementIds), baseData: true, callback };
+    await listAllRelations(context, user, ABSTRACT_STIX_CORE_RELATIONSHIP, args);
   }
   // Build limited stix object to limit memory footprint
   const containerOperations = [{

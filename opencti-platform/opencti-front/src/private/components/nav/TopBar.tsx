@@ -25,7 +25,7 @@ import { APP_BASE_PATH, fileUri, MESSAGING$ } from '../../../relay/environment';
 import Security from '../../../utils/Security';
 import FeedbackCreation from '../cases/feedbacks/FeedbackCreation';
 import type { Theme } from '../../../components/Theme';
-import useGranted, { KNOWLEDGE, KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, SETTINGS_SETMANAGEXTMHUB } from '../../../utils/hooks/useGranted';
 import { TopBarQuery } from './__generated__/TopBarQuery.graphql';
 import { TopBarNotificationNumberSubscription$data } from './__generated__/TopBarNotificationNumberSubscription.graphql';
 import useAuth from '../../../utils/hooks/useAuth';
@@ -168,10 +168,11 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const { t_i18n } = useFormatter();
   const {
     bannerSettings: { bannerHeightNumber },
-    settings: { platform_openbas_url: openBASUrl, platform_enterprise_edition: ee, platform_xtmhub_url: xtmhubUrl },
+    settings: { platform_openbas_url: openBASUrl, platform_enterprise_edition: ee, platform_xtmhub_url: xtmhubUrl, xtm_hub_registration_status: xtmhubStatus },
   } = useAuth();
   const draftContext = useDraftContext();
   const hasKnowledgeAccess = useGranted([KNOWLEDGE]);
+  const hasXtmHubAccess = useGranted([SETTINGS_SETMANAGEXTMHUB]);
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const [notificationsNumber, setNotificationsNumber] = useState<null | number>(
     null,
@@ -412,15 +413,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
               <Box sx={{ width: '300px', padding: '15px', textAlign: 'center' }}>
                 <div className={classes.subtitle}>{t_i18n('Filigran eXtended Threat Management')}</div>
                 <Grid container={true} spacing={3}>
-                  <Grid item xs={12}>
-                    <Tooltip title="XTM Hub">
-                      <a className={classes.xtmItem} href={isNotEmptyField(xtmhubUrl) ? xtmhubUrl : 'https://xtmhub.filigran.io'} target="_blank" rel="noreferrer" onClick={handleCloseXtm}>
-                        <Badge variant="dot" color="success">
-                          <img style={{ width: '100%', paddingRight: 8, paddingLeft: 8 }} src={fileUri(theme.palette.mode === 'dark' ? xtmhubDark : xtmhubLight)} alt="XTM Hub" />
-                        </Badge>
-                      </a>
-                    </Tooltip>
-                  </Grid>
                   <Grid item xs={6}>
                     <Tooltip title={t_i18n('Current platform')}>
                       <a className={classes.xtmItemCurrent}>
@@ -440,6 +432,21 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                         <div className={classes.product}>OpenBAS</div>
                       </a>
                     </Tooltip>
+                  </Grid>
+                  <Grid item xs={12}>
+                    {(xtmhubStatus === 'registered' || !hasXtmHubAccess) ? (
+                      <a className={classes.xtmItem} href={isNotEmptyField(xtmhubUrl) ? xtmhubUrl : 'https://hub.filigran.io'} target="_blank" rel="noreferrer" onClick={handleCloseXtm}>
+                        <Badge variant="dot" color={xtmhubStatus === 'registered' ? 'success' : 'warning'}>
+                          <img style={{ width: 200, paddingRight: 8, paddingLeft: 8 }} src={fileUri(theme.palette.mode === 'dark' ? xtmhubDark : xtmhubLight)} alt="XTM Hub" />
+                        </Badge>
+                      </a>
+                    ) : (
+                      <Link className={classes.xtmItem} to='/dashboard/settings/experience' onClick={handleCloseXtm}>
+                        <Badge variant="dot" color='warning'>
+                          <img style={{ width: 200, paddingRight: 8, paddingLeft: 8 }} src={fileUri(theme.palette.mode === 'dark' ? xtmhubDark : xtmhubLight)} alt="XTM Hub" />
+                        </Badge>
+                      </Link>
+                    )}
                   </Grid>
                 </Grid>
               </Box>

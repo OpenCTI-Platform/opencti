@@ -1,6 +1,6 @@
 import ejs from 'ejs';
 import { type ManagerDefinition, registerManager } from './managerModule';
-import conf, { booleanConf, BUS_TOPICS, getBaseUrl, isFeatureEnabled, logApp } from '../config/conf';
+import conf, { booleanConf, BUS_TOPICS, getBaseUrl, logApp } from '../config/conf';
 import { BYPASS, executionContext, HUB_REGISTRATION_MANAGER_USER, SETTINGS_SETMANAGEXTMHUB } from '../utils/access';
 import { getEntityFromCache } from '../database/cache';
 import type { BasicStoreSettings } from '../types/settings';
@@ -131,6 +131,4 @@ const HUB_REGISTRATION_MANAGER_DEFINITION: ManagerDefinition = {
   }
 };
 
-if (isFeatureEnabled('OCTI_ENROLLMENT')) {
-  registerManager(HUB_REGISTRATION_MANAGER_DEFINITION);
-}
+registerManager(HUB_REGISTRATION_MANAGER_DEFINITION);

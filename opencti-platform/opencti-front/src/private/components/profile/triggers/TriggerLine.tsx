@@ -17,6 +17,7 @@ import TriggerPopover from './TriggerPopover';
 import { dayStartDate, formatTimeForToday } from '../../../../utils/Time';
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
 import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
+import { chipInListBasicStyle } from '../../../../utils/chipStyle';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -50,27 +51,18 @@ const useStyles = makeStyles<Theme>((theme) => ({
     color: theme.palette.grey?.[700],
   },
   chipInList: {
-    fontSize: 12,
-    height: 20,
-    float: 'left',
+    ...chipInListBasicStyle,
     width: 100,
     marginRight: 10,
-    borderRadius: 4,
   },
   chipInList2: {
-    fontSize: 12,
-    height: 20,
-    float: 'left',
-    width: 140,
+    ...chipInListBasicStyle,
     textTransform: 'uppercase',
-    borderRadius: 4,
   },
   chipInList3: {
-    fontSize: 12,
-    height: 20,
-    float: 'left',
+    ...chipInListBasicStyle,
+    width: undefined,
     marginRight: 10,
-    borderRadius: 4,
   },
 }));
 

@@ -1,17 +1,7 @@
 import { getHeapStatistics } from 'node:v8';
 import nconf from 'nconf';
 import { createEntity, listAllThings, loadEntity, patchAttribute, updateAttribute } from '../database/middleware';
-import conf, {
-  ACCOUNT_STATUSES,
-  booleanConf,
-  BUS_TOPICS,
-  ENABLED_DEMO_MODE,
-  ENABLED_FEATURE_FLAGS,
-  getBaseUrl,
-  isFeatureEnabled,
-  PLATFORM_VERSION,
-  PLAYGROUND_ENABLED
-} from '../config/conf';
+import conf, { ACCOUNT_STATUSES, booleanConf, BUS_TOPICS, ENABLED_DEMO_MODE, ENABLED_FEATURE_FLAGS, getBaseUrl, PLATFORM_VERSION, PLAYGROUND_ENABLED } from '../config/conf';
 import { delEditContext, getRedisVersion, notify, setEditContext } from '../database/redis';
 import { isRuntimeSortEnable, searchEngineVersion } from '../database/engine';
 import { getRabbitMQVersion } from '../database/rabbitmq';
@@ -190,14 +180,14 @@ export const settingsEditField = async (context, user, settingsId, input) => {
   const hasSetXTMHubCapability = isUserHasCapability(user, SETTINGS_SETMANAGEXTMHUB);
   const keysUserCannotModify = [
     ...(hasSetAccessCapability ? [] : ACCESS_SETTINGS_RESTRICTED_KEYS),
-    ...(hasSetXTMHubCapability || !isFeatureEnabled('OCTI_ENROLLMENT') ? [] : ACCESS_SETTINGS_MANAGE_XTMHUB_KEYS),
+    ...(hasSetXTMHubCapability ? [] : ACCESS_SETTINGS_MANAGE_XTMHUB_KEYS),
   ];
 
   const dataWithRestrictKeys = keysUserCannotModify.length === 0
     ? input
     : input.filter((i) => !keysUserCannotModify.includes(i.key));
 
-  const data = hasSetXTMHubCapability && isFeatureEnabled('OCTI_ENROLLMENT') ? completeXTMHubDataForRegistration(user, dataWithRestrictKeys) : dataWithRestrictKeys;
+  const data = hasSetXTMHubCapability ? completeXTMHubDataForRegistration(user, dataWithRestrictKeys) : dataWithRestrictKeys;
 
   const settings = await getSettings(context);
   const enterpriseLicense = data.find((inputData) => inputData.key === 'enterprise_license');

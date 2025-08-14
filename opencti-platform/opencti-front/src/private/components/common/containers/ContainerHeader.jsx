@@ -33,6 +33,7 @@ import useGranted, {
   KNOWLEDGE_KNUPDATE_KNDELETE,
   KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS,
   KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
+  SETTINGS_SETACCESSES,
 } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObjectQuickSubscription';
 import StixCoreObjectFileExport from '../stix_core_objects/StixCoreObjectFileExport';
@@ -768,7 +769,8 @@ const ContainerHeader = (props) => {
                         title={t_i18n('Enroll in playbook')}
                         setOpen={setOpenEnrollPlaybook}
                         handleCloseMenu={closeMenu}
-                        needs={[KNOWLEDGE_KNENRICHMENT]}
+                        needs={[KNOWLEDGE_KNENRICHMENT, SETTINGS_SETACCESSES]}
+                        matchAll
                       />
                       )}
                       {canDelete && (

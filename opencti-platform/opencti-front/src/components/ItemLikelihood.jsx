@@ -5,6 +5,7 @@ import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
 import Chip from '@mui/material/Chip';
 import inject18n from './i18n';
+import { chipInListBasicStyle } from '../utils/chipStyle';
 
 const styles = () => ({
   chip: {
@@ -14,10 +15,7 @@ const styles = () => ({
     width: 120,
   },
   chipInList: {
-    fontSize: 12,
-    height: 20,
-    float: 'left',
-    borderRadius: 4,
+    ...chipInListBasicStyle,
     width: 80,
   },
 });

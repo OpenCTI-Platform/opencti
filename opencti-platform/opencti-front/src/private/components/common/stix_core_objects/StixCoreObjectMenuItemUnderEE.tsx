@@ -12,6 +12,7 @@ interface StixCoreObjectMenuItemUnderEEProps {
   title: string,
   isDisabled?: boolean,
   needs?: string[]
+  matchAll?: boolean
 }
 
 const StixCoreObjectMenuItemUnderEE: FunctionComponent<StixCoreObjectMenuItemUnderEEProps> = ({
@@ -19,6 +20,7 @@ const StixCoreObjectMenuItemUnderEE: FunctionComponent<StixCoreObjectMenuItemUnd
   handleCloseMenu,
   title,
   needs,
+  matchAll,
   isDisabled = false,
 }) => {
   const { t_i18n } = useFormatter();
@@ -36,7 +38,7 @@ const StixCoreObjectMenuItemUnderEE: FunctionComponent<StixCoreObjectMenuItemUnd
   }
 
   return (
-    <Security needs={needs ?? []}>
+    <Security needs={needs ?? []} matchAll={matchAll}>
       <EETooltip title={tooltipContent}>
         <span>
           <MenuItem

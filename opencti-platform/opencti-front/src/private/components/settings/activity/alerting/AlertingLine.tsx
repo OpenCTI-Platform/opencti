@@ -18,6 +18,7 @@ import { AlertingLine_node$key } from './__generated__/AlertingLine_node.graphql
 import { AlertingPaginationQuery$variables } from './__generated__/AlertingPaginationQuery.graphql';
 import AlertingPopover from './AlertingPopover';
 import { deserializeFilterGroupForFrontend } from '../../../../../utils/filters/filtersUtils';
+import { chipInListBasicStyle } from '../../../../../utils/chipStyle';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -53,12 +54,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
     marginRight: 10,
   },
   chipInList2: {
-    fontSize: 12,
-    height: 20,
-    float: 'left',
-    width: 140,
+    ...chipInListBasicStyle,
     textTransform: 'uppercase',
-    borderRadius: 4,
   },
   chipInList3: {
     fontSize: 12,

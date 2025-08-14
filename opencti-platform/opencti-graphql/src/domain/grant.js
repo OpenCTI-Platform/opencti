@@ -1,6 +1,6 @@
 import { assoc, dissoc, pipe, uniq } from 'ramda';
 import nconf from 'nconf';
-import { createEntity, createRelation } from '../database/middleware';
+import { createEntity, createRelation, updateAttribute } from '../database/middleware';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE } from '../schema/internalObject';
 import { RELATION_HAS_CAPABILITY } from '../schema/internalRelationship';
 import { generateStandardId } from '../schema/identifier';
@@ -8,6 +8,11 @@ import { publishUserAction } from '../listener/UserActionListener';
 
 export const addCapability = async (context, user, capability) => {
   return createEntity(context, user, capability, ENTITY_TYPE_CAPABILITY);
+};
+
+export const updateCapability = async (context, user, capabilityId, input) => {
+  const { element: updatedElem } = await updateAttribute(context, user, capabilityId, ENTITY_TYPE_CAPABILITY, input);
+  return updatedElem;
 };
 
 export const addRole = async (context, user, role) => {

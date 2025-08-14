@@ -1,9 +1,9 @@
 import Grid from '@mui/material/Grid';
-import makeStyles from '@mui/styles/makeStyles';
 import React, { useRef } from 'react';
 import { useFragment } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
+import { useTheme } from '@mui/material/styles';
 import { convertMarkings } from '../../../../utils/edition';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
@@ -24,17 +24,6 @@ import { CaseTasksLineDummy } from '../tasks/CaseTasksLine';
 import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
-import type { Theme } from '../../../../components/Theme';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: 0,
-    borderRadius: 4,
-  },
-}));
 
 interface CaseRftProps {
   caseRftData: CaseUtils_case$key;
@@ -42,7 +31,7 @@ interface CaseRftProps {
 }
 
 const CaseRft: React.FC<CaseRftProps> = ({ caseRftData, enableReferences }) => {
-  const classes = useStyles();
+  const theme = useTheme();
   const { t_i18n } = useFormatter();
   const ref = useRef(null);
   const caseRft = useFragment(caseFragment, caseRftData);
@@ -115,7 +104,14 @@ const CaseRft: React.FC<CaseRftProps> = ({ caseRftData, enableReferences }) => {
                             >
                               {t_i18n('Tasks')}
                             </Typography>
-                            <Paper classes={{ root: classes.paper }} variant="outlined">
+                            <Paper
+                              style={{
+                                marginTop: theme.spacing(1),
+                                padding: 0,
+                                borderRadius: 4,
+                              }}
+                              variant="outlined"
+                            >
                               <ListLines
                                 helpers={helpers}
                                 sortBy={sortBy}

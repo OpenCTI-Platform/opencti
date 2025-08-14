@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { ACTION_TYPE_DELETE, checkActionValidity, TASK_TYPE_QUERY } from '../../../src/domain/backgroundTask-common';
+import { ACTION_TYPE_ADD, ACTION_TYPE_REPLACE, ACTION_TYPE_DELETE, checkActionValidity, TASK_TYPE_QUERY } from '../../../src/domain/backgroundTask-common';
 import { buildStandardUser, testContext } from '../../utils/testQuery';
-import { ACTION_TYPE_ADD } from '../../../src/domain/backgroundTask';
 import { ENTITY_TYPE_VOCABULARY } from '../../../src/modules/vocabulary/vocabulary-types';
 import { ENTITY_TYPE_WORKSPACE } from '../../../src/modules/workspace/workspace-types';
 import { ENTITY_TYPE_NOTIFICATION } from '../../../src/modules/notification/notification-types';
@@ -56,19 +55,49 @@ describe('Background task validity check (checkActionValidity)', () => {
     { name: 'INVESTIGATION_INUPDATE_INDELETE' },
   ]);
 
-  it('should throw an error if there are several actions on the same field', async () => {
+  describe('Check actions validity', () => {
     const user = userEditor;
     const type = TASK_TYPE_QUERY;
-    const input = {
-      actions: [
-        { type: ACTION_TYPE_ADD, field: 'object-label', value: ['label1'] },
-        { type: ACTION_TYPE_ADD, field: 'object-label', value: ['label2'] }
-      ],
-      filters: filterEntityType(ENTITY_TYPE_CONTAINER_REPORT)
-    };
-    await expect(async () => {
-      await checkActionValidity(testContext, user, input, BackgroundTaskScope.Knowledge, type);
-    }).rejects.toThrowError('A single task cannot perform several actions on the same field.');
+
+    it('should not throw an error if there are several actions on the same field and none of these actions is a replace', async () => {
+      const input = {
+        actions: [
+          { type: ACTION_TYPE_ADD, field: 'object-label', value: ['label1'] },
+          { type: ACTION_TYPE_ADD, field: 'object-label', value: ['label2'] },
+          { type: ACTION_TYPE_REPLACE, field: 'object-marking', value: ['markingA'] }
+        ],
+        filters: filterEntityType(ENTITY_TYPE_CONTAINER_REPORT)
+      };
+      expect(async () => {
+        await checkActionValidity(testContext, user, input, BackgroundTaskScope.Knowledge, type);
+      }).not.toThrowError();
+    });
+
+    it('should throw an error if there are several actions on the same field and one action is a replace', async () => {
+      const input = {
+        actions: [
+          { type: ACTION_TYPE_ADD, field: 'object-label', value: ['label1'] },
+          { type: ACTION_TYPE_REPLACE, field: 'object-label', value: ['label2'] }
+        ],
+        filters: filterEntityType(ENTITY_TYPE_CONTAINER_REPORT)
+      };
+      await expect(async () => {
+        await checkActionValidity(testContext, user, input, BackgroundTaskScope.Knowledge, type);
+      }).rejects.toThrowError('A single task cannot perform several actions on the same field if one action is a replace.');
+    });
+
+    it('should throw an error if there are several replace actions on the same field', async () => {
+      const input = {
+        actions: [
+          { type: ACTION_TYPE_REPLACE, field: 'object-label', value: ['label1'] },
+          { type: ACTION_TYPE_REPLACE, field: 'object-label', value: ['label2'] }
+        ],
+        filters: filterEntityType(ENTITY_TYPE_CONTAINER_REPORT)
+      };
+      await expect(async () => {
+        await checkActionValidity(testContext, user, input, BackgroundTaskScope.Knowledge, type);
+      }).rejects.toThrowError('A single task cannot perform several actions on the same field if one action is a replace.');
+    });
   });
 
   describe('Scope SETTINGS', () => {
