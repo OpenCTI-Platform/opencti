@@ -868,12 +868,18 @@ export const filterMembersWithUsersOrgs = async (
 ): Promise<ParticipantWithOrgIds[]> => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const userInPlatformOrg = isUserInPlatformOrganization(user, settings);
-
   if (!userInPlatformOrg) {
     const userOrgIds = (user.organizations || []).map((org) => org.id);
-    return members.filter((member) => {
-      const memberOrgIds = member[RELATION_PARTICIPATE_TO] || [];
-      return memberOrgIds.some((id) => userOrgIds.includes(id));
+    return members.map((member) => {
+      const memberOrgIds = member[RELATION_PARTICIPATE_TO] ?? [];
+      const sameOrg = memberOrgIds.some((id) => userOrgIds.includes(id));
+      if (!sameOrg) {
+        return {
+          ...member,
+          name: 'Restricted'
+        };
+      }
+      return member;
     });
   }
   return members;
