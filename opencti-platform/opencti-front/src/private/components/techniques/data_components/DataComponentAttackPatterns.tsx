@@ -77,6 +77,7 @@ const DataComponentAttackPatternsComponent: FunctionComponent<{
                   key={attackPattern.id}
                   dense={true}
                   divider={true}
+                  disablePadding={true}
                   secondaryAction={
                     <IconButton
                       aria-label="Remove"

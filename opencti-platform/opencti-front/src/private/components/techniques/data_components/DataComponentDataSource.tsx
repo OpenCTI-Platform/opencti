@@ -79,6 +79,7 @@ DataComponentDataSourcesProps
             key={data.dataSource?.id}
             dense={true}
             divider={true}
+            disablePadding={true}
             secondaryAction={
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <IconButton
