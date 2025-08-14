@@ -376,6 +376,7 @@ class ListenQueue(threading.Thread):
                         e
                         for e in stix_objects
                         if e["id"] == opencti_entity["standard_id"]
+                        or e["id"] == "x-opencti-" + opencti_entity["standard_id"]
                     ][0]
                     event_data["stix_objects"] = stix_objects
                     event_data["stix_entity"] = stix_entity
