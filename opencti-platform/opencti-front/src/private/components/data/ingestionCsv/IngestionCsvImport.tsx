@@ -12,6 +12,7 @@ import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { RelayError } from '../../../../relay/relayTypes';
 import { UserContext } from '../../../../utils/hooks/useAuth';
+import useXtmHubUserPlatformToken from '../../../../utils/hooks/useXtmHubUserPlatformToken';
 
 export const csvFeedImportQuery = graphql`
   query IngestionCsvImportQuery($file: Upload!) {
@@ -70,6 +71,7 @@ const IngestionCsvImport: FunctionComponent<IngestionCsvImportProps> = ({ pagina
   const params = useParams();
   const navigate = useNavigate();
   const { settings } = useContext(UserContext);
+  const { token } = useXtmHubUserPlatformToken();
 
   const inputFileRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState<boolean>(false);
@@ -101,7 +103,7 @@ const IngestionCsvImport: FunctionComponent<IngestionCsvImportProps> = ({ pagina
   };
 
   useEffect(() => {
-    if (!params.fileId || !params.serviceInstanceId) {
+    if (!params.fileId || !params.serviceInstanceId || !token) {
       return;
     }
     const fetchData = async () => {
@@ -110,7 +112,10 @@ const IngestionCsvImport: FunctionComponent<IngestionCsvImportProps> = ({ pagina
           `${settings?.platform_xtmhub_url}/document/get/${params.serviceInstanceId}/${params.fileId}`,
           {
             method: 'GET',
-            credentials: 'include',
+            credentials: 'omit',
+            headers: {
+              'XTM-Hub-User-Platform-Token': token,
+            },
           },
         );
 
@@ -122,11 +127,11 @@ const IngestionCsvImport: FunctionComponent<IngestionCsvImportProps> = ({ pagina
         handleFileImport(file);
       } catch (e) {
         navigate('/dashboard/data/ingestion/csv');
-        MESSAGING$.notifyError('An error occured while importing CSV Feed configuration.');
+        MESSAGING$.notifyError('An error occurred while importing CSV Feed configuration.');
       }
     };
     fetchData();
-  }, [params]);
+  }, [settings, params, token]);
 
   return <>
     <ToggleButton
