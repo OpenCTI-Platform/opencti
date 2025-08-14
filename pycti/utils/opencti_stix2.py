@@ -2646,6 +2646,18 @@ class OpenCTIStix2:
                 {"type": item["type"]},
             )
 
+    def send_email(self, item):
+        template_id = self.opencti.get_attribute_in_extension("template_id", item)
+        if template_id is None:
+            template_id = item["template_id"]
+        if item["type"] == "user":
+            self.opencti.user.send_mail(id=item["id"], template_id=template_id[0])
+        else:
+            raise ValueError(
+                "Not supported opencti_operation for this type",
+                {"type": item["type"]},
+            )
+
     def element_operation_delete(self, item, operation):
         # If data is stix, just use the generic stix function for deletion
         force_delete = operation == "delete_force"
@@ -2738,6 +2750,8 @@ class OpenCTIStix2:
             self.element_add_groups(item)
         elif operation == "remove_groups":
             self.element_remove_groups(item)
+        elif operation == "send_email":
+            self.send_email(item=item)
         else:
             raise ValueError(
                 "Not supported opencti_operation",

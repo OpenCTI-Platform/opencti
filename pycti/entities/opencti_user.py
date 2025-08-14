@@ -785,6 +785,28 @@ class User:
             result["data"]["userEdit"]["tokenRenew"]
         )
 
+    def send_mail(self, **kwargs):
+        id = kwargs.get("id", None)
+        template_id = kwargs.get("template_id", None)
+        if id is None or template_id is None:
+            self.opencti.admin_logger.error(
+                "[opencti_user] Missing parameters: id and template_id"
+            )
+
+        self.opencti.admin_logger.info(
+            "Send email to user", {"id": id, "template_id": template_id}
+        )
+        input = {
+            "target_user_id": id,
+            "email_template_id": template_id,
+        }
+        query = """
+                mutation SendUserMail($input: SendUserMailInput!) {
+                    sendUserMail(input: $input)
+                }
+            """
+        self.opencti.query(query, {"input": input})
+
     def process_multiple_fields(self, data):
         if "roles" in data:
             data["roles"] = self.opencti.process_multiple(data["roles"])
