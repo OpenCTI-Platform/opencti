@@ -68,10 +68,8 @@ const AskArianeButton = () => {
       renderHTML: true,
       boxShadow: `${theme.palette.background.shadow} 0px 5px 40px`,
       botMessage: {
-        backgroundColor: theme.palette.background.default,
+        backgroundColor: theme.palette.background.accent,
         textColor: theme.palette.text?.primary,
-        showAvatar: true,
-        avatarSrc: fileUri(embleme),
       },
       userMessage: {
         backgroundColor: DARK_BLUE,
@@ -82,8 +80,8 @@ const AskArianeButton = () => {
         placeholder: 'Ask a question...',
         backgroundColor: theme.palette.background.paper,
         textColor: theme.palette.text?.primary,
-        sendButtonColor: DARK_BLUE,
-        maxChars: 100,
+        sendButtonColor: theme.palette.primary.main,
+        maxChars: 256,
         maxCharsWarningMessage: 'You exceeded the characters limit. Please input less than 50 characters.',
         autoFocus: true,
         sendMessageSound: false,
@@ -143,7 +141,7 @@ const AskArianeButton = () => {
   return navOpen ? (
     <GradientButton
       size="small"
-      sx={{ width: '100%' }}
+      sx={{ width: '100%', textAlign: 'start' }}
       gradientVariant={GradientVariant.ai}
       title={t_i18n('Open chatbot')}
     >
