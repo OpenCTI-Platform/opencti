@@ -195,7 +195,11 @@ export const managedConnectorAdd = async (
   }
   let finalUserId = input.user_id;
   if (input.automatic_user) {
-    const onTheFlyCreatedUser = await createOnTheFlyUser(context, user, { userName: input.user_id, confidenceLevel: input.confidence_level });
+    const onTheFlyCreatedUser = await createOnTheFlyUser(
+      context,
+      user,
+      { userName: input.user_id, serviceAccount: true, confidenceLevel: input.confidence_level ? parseInt(input.confidence_level, 10) : null }
+    );
     finalUserId = onTheFlyCreatedUser.id;
   }
   const connectorUser = await storeLoadById(context, user, finalUserId, ENTITY_TYPE_USER);
