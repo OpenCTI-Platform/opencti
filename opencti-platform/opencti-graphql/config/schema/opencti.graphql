@@ -1042,6 +1042,7 @@ enum BackgroundTaskActionType {
   REMOVE_ORGANIZATIONS
   ADD_GROUPS
   REMOVE_GROUPS
+  SEND_EMAIL
 }
 enum BackgroundTaskContextType {
   ATTRIBUTE
@@ -1748,9 +1749,9 @@ type UserSession {
   sessions: [SessionDetail]
 }
 input UserAddInput {
-  user_email: String @constraint(minLength: 5, format: "email")
+  user_email: String! @constraint(minLength: 5, format: "email")
   name: String! @constraint(minLength: 2, format: "not-blank")
-  password: String
+  password: String!
   firstname: String
   lastname: String
   description: String
@@ -1767,6 +1768,12 @@ input UserAddInput {
   user_confidence_level: ConfidenceLevelInput
   prevent_default_groups: Boolean
   user_service_account: Boolean
+  email_template_id: String
+}
+
+input SendUserMailInput {
+  target_user_id: ID!
+  email_template_id: ID!
 }
 
 input ConfidenceLevelInput {
@@ -1948,6 +1955,7 @@ input EditManagedConnectorInput {
 
 input AddManagedConnectorInput {
   name: String! @constraint(minLength:2, format: "not-blank")
+  connector_user_id: ID!
   user_id: ID!
   catalog_id: ID!
   automatic_user: Boolean
@@ -12447,7 +12455,6 @@ union StixObjectOrStixRelationship =
   | CsvMapper
   | PublicDashboard
   | Pir
-  | Theme
 union StixCoreObjectOrStixCoreRelationship =
 #### Stix Core Objects
 ## Stix Domain Objects
@@ -14733,6 +14740,7 @@ type Mutation {
   meEdit(input: [EditInput]!, password: String): MeUser @auth
   bookmarkAdd(id: ID!, type: String!): StixDomainObject @auth(for: [KNOWLEDGE])
   bookmarkDelete(id: ID!): ID @auth(for: [KNOWLEDGE])
+  sendUserMail(input: SendUserMailInput!): Boolean @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   logout: ID @auth
   roleAdd(input: RoleAddInput!): Role @auth(for: [SETTINGS_SETACCESSES])
   sessionKill(id: ID!): ID @auth(for: [SETTINGS_SETACCESSES])

@@ -53,6 +53,7 @@ import {
   userWithOrigin,
   userRoles,
   getCreator
+  sendEmailToUser
 } from '../domain/user';
 import { subscribeToInstanceEvents, subscribeToUserEvents } from '../graphql/subscriptionWrapper';
 import { publishUserAction } from '../listener/UserActionListener';
@@ -88,7 +89,6 @@ const userResolvers = {
     sessions: (current) => findUserSessions(current.id),
     effective_confidence_level: (current, _, context) => context.batch.userEffectiveConfidenceBatchLoader.load(current),
     personal_notifiers: (current, _, context) => getNotifiers(context, context.user, current.personal_notifiers),
-    creator: (current, _, context) => getCreator(context, context.user, current.id),
   },
   Member: {
     name: (current, _, context) => {
@@ -241,6 +241,9 @@ const userResolvers = {
     userAdd: (_, { input }, context) => addUser(context, context.user, input),
     bookmarkAdd: (_, { id, type }, context) => addBookmark(context, context.user, id, type),
     bookmarkDelete: (_, { id }, context) => deleteBookmark(context, context.user, id),
+    sendUserMail: (_, { input }, context) => {
+      return sendEmailToUser(context, context.user, input);
+    }
   },
   Subscription: {
     me: {

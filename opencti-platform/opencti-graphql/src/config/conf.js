@@ -40,6 +40,7 @@ import { ENTITY_TYPE_DISSEMINATION_LIST } from '../modules/disseminationList/dis
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { ENTITY_TYPE_FINTEL_DESIGN } from '../modules/fintelDesign/fintelDesign-types';
+import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
 
 // https://golang.org/src/crypto/x509/root_linux.go
 const LINUX_CERTFILES = [
@@ -720,6 +721,11 @@ export const BUS_TOPICS = {
     EDIT_TOPIC: `${TOPIC_PREFIX}DESIGN_EDIT_TOPIC`,
     ADDED_TOPIC: `${TOPIC_PREFIX}DESIGN_EDIT_TOPIC`,
     DELETE_TOPIC: `${TOPIC_PREFIX}DESIGN_EDIT_TOPIC`,
+  },
+  [ENTITY_TYPE_EMAIL_TEMPLATE]: {
+    EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_EMAIL_TEMPLATE_EDIT_TOPIC`,
+    DELETE_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_EMAIL_TEMPLATE_DELETE_TOPIC`,
+    ADDED_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_EMAIL_TEMPLATE_ADDED_TOPIC`,
   },
 };
 

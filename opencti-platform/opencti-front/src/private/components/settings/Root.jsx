@@ -49,6 +49,8 @@ const DecayRules = lazy(() => import('./decay/DecayRules'));
 const DecayRule = lazy(() => import('./decay/DecayRule'));
 const ExclusionLists = lazy(() => import('./exclusion_lists/ExclusionLists'));
 const DisseminationLists = lazy(() => import('./dissemination_lists/DisseminationLists'));
+const EmailTemplates = lazy(() => import('./email_template/EmailTemplates'));
+const EmailTemplate = lazy(() => import('./email_template/EmailTemplate'));
 const FintelDesigns = lazy(() => import('./fintel_design/FintelDesigns'));
 const FintelDesign = lazy(() => import('./fintel_design/FintelDesign'));
 const Experience = lazy(() => import('./Experience'));
@@ -237,6 +239,25 @@ const Root = () => {
                 placeholder={<Navigate to={urlWithCapabilities()} />}
               >
                 <DisseminationLists />
+              </Security>
+            }
+          />
+          <Route
+            path="/accesses/email_templates"
+            element={
+              <Security
+                needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
+                placeholder={<Navigate to={urlWithCapabilities()} />}
+              >
+                <EmailTemplates />
+              </Security>
+            }
+          />
+          <Route
+            path="/accesses/email_templates/:emailTemplateId/*"
+            element={
+              <Security needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]} placeholder={<Navigate to={urlWithCapabilities()} />}>
+                <EmailTemplate />
               </Security>
             }
           />

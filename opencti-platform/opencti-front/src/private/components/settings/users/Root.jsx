@@ -13,6 +13,7 @@ import { useTheme } from '@mui/styles';
 import ConvertUser from './ConvertUser';
 import useHelper from '../../../../utils/hooks/useHelper';
 import UserDeletionDialog from './UserDeletionDialog';
+import UserEmailSend from './UserEmailSend';
 import AccessesMenu from '../AccessesMenu';
 import Security from '../../../../utils/Security';
 import useGranted, { VIRTUAL_ORGANIZATION_ADMIN, SETTINGS_SETACCESSES, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
@@ -151,6 +152,7 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
               <div className="clearfix"/>
             </div>
             <div style={{ display: 'flex', alignItems: 'center' }}>
+              <UserEmailSend outlined userId={userId} />
               <div style={{ display: 'flex' }}>
                 <div style={{ marginRight: theme.spacing(1.5) }}>
                   {canDelete && (

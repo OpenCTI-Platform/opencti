@@ -81,23 +81,23 @@ const FintelTemplateHeader = ({ entitySettingId, data }: FintelTemplateHeaderPro
             label={template.start_date ? t_i18n('Published') : t_i18n('Not published')}
           />
         </div>
-
-        <Button
-          variant="outlined"
-          onClick={onSubmit}
-          style={{ marginLeft: 'auto' }}
-          disabled={editorValue === template.template_content || editOnGoing}
-        >
-          {t_i18n('Save template')}
-        </Button>
-
-        <FintelTemplatePopover
-          onUpdate={() => setFormOpen(true)}
-          entitySettingId={entitySettingId}
-          templateId={template.id}
-          inline={false}
-          onDeleteComplete={() => navigate(subTypeLink)}
-        />
+        <div style={{ display: 'flex', alignItems: 'center', marginLeft: 'auto', gap: theme.spacing(1) }}>
+          <FintelTemplatePopover
+            onUpdate={() => setFormOpen(true)}
+            entitySettingId={entitySettingId}
+            templateId={template.id}
+            inline={false}
+            onDeleteComplete={() => navigate(subTypeLink)}
+          />
+          <Button
+            variant="contained"
+            onClick={onSubmit}
+            style={{ marginLeft: 'auto' }}
+            disabled={editorValue === template.template_content || editOnGoing}
+          >
+            {t_i18n('Save template')}
+          </Button>
+        </div>
       </div>
 
       <FintelTemplateFormDrawer

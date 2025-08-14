@@ -49,6 +49,20 @@ export class TelemetryMeterManager {
   // Number of Service Account turned into Service
   serviceAccountIntoUserCount = 0;
 
+  // Number of email sent
+  userEmailSendCount = 0;
+
+  onboardingEmailSendCount = 0;
+
+  // Number of background task with scope User
+  userBackgroundTaskCount = 0;
+
+  // Number of email templates created
+  emailTemplateCreatedCount = 0;
+
+  // Number of clicks on Forgot Password
+  forgotPasswordCount = 0;
+
   constructor(meterProvider: MeterProvider) {
     this.meterProvider = meterProvider;
   }
@@ -121,6 +135,26 @@ export class TelemetryMeterManager {
     this.serviceAccountIntoUserCount = n;
   }
 
+  setUserEmailSendCount(n: number) {
+    this.userEmailSendCount = n;
+  }
+
+  setOnboardingEmailSendCount(n: number) {
+    this.onboardingEmailSendCount = n;
+  }
+
+  setUserBackgroundTaskCount(n: number) {
+    this.userBackgroundTaskCount = n;
+  }
+
+  setEmailTemplateCreatedCount(n: number) {
+    this.emailTemplateCreatedCount = n;
+  }
+
+  setForgotPasswordCount(n: number) {
+    this.forgotPasswordCount = n;
+  }
+
   registerGauge(name: string, description: string, observer: string, opts: { unit?: string, valueType?: ValueType } = {}) {
     const meter = this.meterProvider.getMeter(TELEMETRY_SERVICE_NAME);
     const gaugeOptions = { description, unit: opts.unit ?? 'count', valueType: opts.valueType ?? ValueType.INT };
@@ -151,5 +185,10 @@ export class TelemetryMeterManager {
     this.registerGauge('request_access_creation_count', 'Number of RFI of request access type that are created', 'requestAccessCreationCount');
     this.registerGauge('user_into_service_account_count', 'Number of User turned into Service Account', 'userIntoServiceAccountCount');
     this.registerGauge('service_account_into_user_count', 'Number of Service Account turned into User', 'serviceAccountIntoUserCount');
+    this.registerGauge('user_email_send_count', 'Number of emails sent from the platform', 'userEmailSendCount');
+    this.registerGauge('onboarding_email_send_count', 'Number of onboarding emails sent', 'onboardingEmailSendCount');
+    this.registerGauge('user_background_task_count', 'Number of background tasks on User scope', 'userBackgroundTaskCount');
+    this.registerGauge('email_template_created_count', 'Number of email templates created', 'emailTemplateCreatedCount');
+    this.registerGauge('forgot_password_count', 'Number of clicks on Forgot Password', 'forgotPasswordCount');
   }
 }

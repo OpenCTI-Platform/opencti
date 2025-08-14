@@ -8,6 +8,7 @@ import Alert from '@mui/material/Alert';
 import MenuItem from '@mui/material/MenuItem';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
+import EmailTemplateField from '../../common/form/EmailTemplateField';
 import GroupField, { groupsQuery } from '../../common/form/GroupField';
 import UserConfidenceLevelField from './edition/UserConfidenceLevelField';
 import Drawer from '../../common/drawer/Drawer';
@@ -88,11 +89,12 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
   const { groups: defaultGroups } = usePreloadedQuery(groupsQuery, defaultGroupsQueryRef);
 
   const onSubmit = (values, { setSubmitting, resetForm }) => {
-    const { objectOrganization, groups, user_confidence_level, ...rest } = values;
+    const { objectOrganization, groups, user_confidence_level, email_template_id, ...rest } = values;
     const finalValues = {
       ...rest,
       objectOrganization: objectOrganization.map((n) => n.value),
       groups: groups.map((n) => n.value),
+      email_template_id: email_template_id?.value?.id ?? null,
       user_confidence_level: user_confidence_level
         ? {
           max_confidence: parseInt(user_confidence_level, 10),
@@ -292,6 +294,10 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                     variant: 'standard',
                     fullWidth: true,
                   }}
+                />
+                <EmailTemplateField
+                  name="email_template_id"
+                  label={t_i18n('Email template')}
                 />
                 {hasSetAccess && (
                   <UserConfidenceLevelField

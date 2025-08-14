@@ -63,6 +63,7 @@ generates:
         FintelDesign: ../modules/fintelDesign/fintelDesign-types#BasicStoreEntityFintelDesign
         Pir: ../modules/pir/pir-types#BasicStoreEntityPir
         SecurityPlatform: ../modules/securityPlatform/securityPlatform-types#BasicStoreEntitySecurityPlatform
+        EmailTemplate: ../modules/emailTemplate/emailTemplate-types#BasicStoreEntityEmailTemplate
 
   ./graphql.schema.json:
     plugins:
