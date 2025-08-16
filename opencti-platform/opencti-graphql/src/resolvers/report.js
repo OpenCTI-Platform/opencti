@@ -25,6 +25,7 @@ import { distributionEntities } from '../database/middleware';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 import { loadThroughDenormalized } from './stix';
 import { INPUT_PARTICIPANT } from '../schema/general';
+import { filterMembersWithUsersOrgs } from '../utils/access';
 
 const reportResolvers = {
   Query: {
@@ -60,7 +61,10 @@ const reportResolvers = {
   },
   Report: {
     deleteWithElementsCount: (report, _, context) => reportDeleteElementsCount(context, context.user, report.id),
-    objectParticipant: (container, _, context) => loadThroughDenormalized(context, context.user, container, INPUT_PARTICIPANT, { sortBy: 'user_email' }),
+    objectParticipant: async (container, _, context) => {
+      const participants = await loadThroughDenormalized(context, context.user, container, INPUT_PARTICIPANT, { sortBy: 'user_email' });
+      return filterMembersWithUsersOrgs(context, context.user, participants);
+    }
   },
   Mutation: {
     reportEdit: (_, { id }, context) => ({

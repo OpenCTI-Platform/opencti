@@ -57,6 +57,7 @@ import {
   isBypassUser,
   isOnlyOrgaAdmin,
   isUserHasCapability,
+  isUserInPlatformOrganization,
   REDACTED_USER,
   SETTINGS_SET_ACCESSES,
   SYSTEM_USER,
@@ -74,7 +75,7 @@ import { testFilterGroup, testStringFilter } from '../utils/filtering/boolean-lo
 import { computeUserEffectiveConfidenceLevel } from '../utils/confidence-level';
 import { STATIC_NOTIFIER_EMAIL, STATIC_NOTIFIER_UI } from '../modules/notifier/notifier-statics';
 import { cleanMarkings } from '../utils/markingDefinition-utils';
-import { UnitSystem } from '../generated/graphql';
+import { FilterMode, UnitSystem } from '../generated/graphql';
 import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { sendMail } from '../database/smtp';
@@ -220,9 +221,31 @@ export const findParticipants = (context, user, args) => {
   return listAllEntitiesForFilter(context, user, PARTICIPANT_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes });
 };
 
-export const findAllMembers = (context, user, args) => {
-  const { entityTypes = null } = args;
+export const findAllMembers = async (context, user, args) => {
+  const { filters: argsFilters, entityTypes = null } = args;
   const types = entityTypes || MEMBERS_ENTITY_TYPES;
+
+  const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+
+  const userInPlatformOrg = isUserInPlatformOrganization(user, settings);
+
+  if (!userInPlatformOrg) {
+    const userOrgIds = (user.organizations || []).map((org) => org.id);
+    const membersFilters = {
+      key: ['participate-to'],
+      values: userOrgIds,
+      operator: 'eq',
+    };
+    const filters = {
+      mode: FilterMode.And,
+      filters: [membersFilters],
+      filterGroups: argsFilters ? [argsFilters] : [],
+    };
+    return listEntities(context, user, types, {
+      ...args,
+      filters
+    });
+  }
   return listEntities(context, user, types, args);
 };
 

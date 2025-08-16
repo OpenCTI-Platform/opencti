@@ -6,6 +6,7 @@ import { caseTasksPaginated } from '../task/task-domain';
 import type { BasicStoreEntityTask } from '../task/task-types';
 import { loadThroughDenormalized } from '../../resolvers/stix';
 import { INPUT_PARTICIPANT } from '../../schema/general';
+import { filterMembersWithUsersOrgs } from '../../utils/access';
 
 const caseResolvers: Resolvers = {
   Query: {
@@ -22,7 +23,10 @@ const caseResolvers: Resolvers = {
       return 'Unknown';
     },
     tasks: (current, args, context) => caseTasksPaginated<BasicStoreEntityTask>(context, context.user, current.id, args),
-    objectParticipant: (container, _, context) => loadThroughDenormalized(context, context.user, container, INPUT_PARTICIPANT, { sortBy: 'user_email' }),
+    objectParticipant: async (container, _, context) => {
+      const participants = await loadThroughDenormalized(context, context.user, container, INPUT_PARTICIPANT, { sortBy: 'user_email' });
+      return filterMembersWithUsersOrgs(context, context.user, participants);
+    }
   },
   CasesOrdering: {
     creator: 'creator_id',

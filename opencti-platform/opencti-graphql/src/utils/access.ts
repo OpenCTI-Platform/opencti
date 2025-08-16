@@ -22,6 +22,8 @@ import { extractIdsFromStoreObject, isNotEmptyField, REDACTED_INFORMATION } from
 import { isStixObject } from '../schema/stixCoreObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import type { UpdateEvent } from '../types/event';
+import { RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
+import type { Participant } from '../generated/graphql';
 
 export const DEFAULT_INVALID_CONF_VALUE = 'ChangeMe';
 
@@ -853,4 +855,41 @@ export const isUserInPlatformOrganization = (user: AuthUser, settings: BasicStor
   }
   const userOrganizationIds = (user.organizations ?? []).map((organization) => organization.internal_id);
   return settings.platform_organization ? userOrganizationIds.includes(settings.platform_organization) : true;
+};
+
+type ParticipantWithOrgIds = Participant & {
+  representative?: {
+    main: string,
+    secondary: string
+  }
+  [RELATION_PARTICIPATE_TO]?: string[];
+};
+
+export const filterMembersWithUsersOrgs = async (
+  context: AuthContext,
+  user: AuthUser,
+  members: ParticipantWithOrgIds[]
+): Promise<ParticipantWithOrgIds[]> => {
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const userInPlatformOrg = isUserInPlatformOrganization(user, settings);
+  if (!userInPlatformOrg) {
+    const userOrgIds = (user.organizations || []).map((org) => org.id);
+    return members.map((member) => {
+      const memberOrgIds = member[RELATION_PARTICIPATE_TO] ?? [];
+      const sameOrg = memberOrgIds.some((id) => userOrgIds.includes(id));
+      if (!sameOrg) {
+        return {
+          ...member,
+          name: REDACTED_USER.name,
+          user_email: REDACTED_USER.user_email,
+          representative: {
+            main: REDACTED_USER.name,
+            secondary: REDACTED_USER.name
+          }
+        };
+      }
+      return member;
+    });
+  }
+  return members;
 };
