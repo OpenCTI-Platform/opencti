@@ -25,7 +25,6 @@ const AskArianeButton = () => {
     settings: { platform_url, filigran_chatbot_ai_url, platform_enterprise_edition },
   } = useAuth();
 
-  // navopen
   const [navOpen, setNavOpen] = useState(
     localStorage.getItem('navOpen') === 'true',
   );
@@ -38,8 +37,32 @@ const AskArianeButton = () => {
     };
   });
 
-  const chatboxRef = useRef<HTMLDivElement>(null);
-  const EEref = useRef<HTMLDivElement>(null);
+  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
+  const chatbotRef = useRef<{ onClose:() => void }>(null);
+  const EERef = useRef<HTMLDivElement>(null);
+
+  const openChatbot = () => {
+    setIsChatbotOpen(true);
+  };
+
+  const closeChatbot = () => {
+    setIsChatbotOpen(false);
+  };
+
+  const toggleChatbot = () => {
+    if (isChatbotOpen) {
+      closeChatbot();
+    } else {
+      openChatbot();
+    }
+  };
+
+  // Handle the close event from the chatbot component
+  useEffect(() => {
+    if (chatbotRef.current) {
+      chatbotRef.current.onClose = closeChatbot;
+    }
+  }, [isChatbotOpen]);
 
   const chatBotTheme = {
     button: {
@@ -106,53 +129,44 @@ const AskArianeButton = () => {
     OPENCTI_CERTIFICATE: toBase64(platform_enterprise_edition.license_raw_pem),
   };
 
-  const chatbot = (
+  return (
     <>
-      <AutoAwesomeOutlined
-        style={{ color: theme.palette.ai.main }}
-      />
       {isEnterpriseEdition && isChatbotAiEnabled() ? (
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         <filigran-chatbot
-          ref={chatboxRef}
-          text={!navOpen ? '' : 'ASK ARIANE'}
+          ref={chatbotRef}
+          open={isChatbotOpen}
           left={navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH}
-          onClick={(e: MouseEvent) => {
-            e.stopPropagation();
-          }}
           agentic-url={filigran_chatbot_ai_url}
           theme={JSON.stringify(chatBotTheme)}
-          chatflowConfig={{
-            vars,
-          }}
+          chatflowConfig={{ vars }}
         />
-      ) : <></>}
-
+      ) : null}
       {!isEnterpriseEdition && navOpen ? (
         <>
           Ask Ariane
-          <EEChip ref={EEref} />
+          <EEChip ref={EERef}/>
         </>
-      ) : <></>}
-    </>
-  );
+      ) : null}
 
-  return navOpen ? (
-    <GradientButton
-      size="small"
-      sx={{ width: '100%', textAlign: 'start' }}
-      gradientVariant={GradientVariant.ai}
-      title={t_i18n('Open chatbot')}
-    >
-      {chatbot}
-    </GradientButton>
-  ) : (
-    <IconButton
-      style={{ padding: 0 }}
-    >
-      {chatbot}
-    </IconButton>
+      {navOpen ? (
+        <GradientButton
+          size="small"
+          sx={{ width: '100%', textAlign: 'start' }}
+          gradientVariant={GradientVariant.ai}
+          title={t_i18n('Open chatbot')}
+          onClick={toggleChatbot}
+        >
+          <AutoAwesomeOutlined style={{ color: theme.palette.ai.main }}/>
+          <span style={{ marginLeft: 5 }}>ASK ARIANE</span>
+        </GradientButton>
+      ) : (
+        <IconButton style={{ padding: 0 }} onClick={toggleChatbot}>
+          <AutoAwesomeOutlined style={{ color: theme.palette.ai.main }}/>
+        </IconButton>
+      )}
+    </>
   );
 };
 
