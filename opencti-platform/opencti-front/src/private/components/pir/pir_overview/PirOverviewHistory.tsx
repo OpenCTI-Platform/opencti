@@ -60,6 +60,8 @@ const pirHistoryFragment = graphql`
             entity_type
             entity_name
             message
+            pir_score
+            from_id
           }
         }
       }
@@ -83,7 +85,7 @@ const PirOverviewHistory = ({ dataHistory, dataPir }: PirOverviewHistoryProps) =
   return (
     <Paper
       title={t_i18n('News feed')}
-      style={{ maxHeight: '90vh', overflow: 'auto' }}
+      style={{ maxHeight: '564px', overflow: 'auto' }}
     >
       <div style={{ display: 'flex', gap: theme.spacing(0.5), flexDirection: 'column' }}>
         {history.length === 0 && (

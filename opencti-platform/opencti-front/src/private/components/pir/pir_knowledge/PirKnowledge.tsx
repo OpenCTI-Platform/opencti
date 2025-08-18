@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { graphql, useFragment } from 'react-relay';
 import React from 'react';
-import PirKnowledgeRelationships from '@components/pir/pir_knowledge/PirKnowledgeRelationships';
+import PirKnowledgeRelationships from './PirKnowledgeRelationships';
 import { PirKnowledgeFragment$key } from './__generated__/PirKnowledgeFragment.graphql';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';

@@ -18,9 +18,9 @@ import { graphql, useFragment } from 'react-relay';
 import Drawer from '@components/common/drawer/Drawer';
 import { PirEditionMutation } from './__generated__/PirEditionMutation.graphql';
 import { PirEditionFragment$key } from './__generated__/PirEditionFragment.graphql';
-import { useFormatter } from '../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import PirEditionForm, { PirEditionFormInputKeys } from './PirEditionForm';
-import useApiMutation from '../../../utils/hooks/useApiMutation';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const pirEditMutation = graphql`
   mutation PirEditionMutation($id: ID!, $input: [EditInput!]!) {
