@@ -23,7 +23,7 @@ import { isStixObject } from '../schema/stixCoreObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import type { UpdateEvent } from '../types/event';
 import { RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
-import type { Creator, Participant } from '../generated/graphql';
+import { type Creator, type FilterGroup, FilterMode, type Participant } from '../generated/graphql';
 
 export const DEFAULT_INVALID_CONF_VALUE = 'ChangeMe';
 
@@ -895,4 +895,39 @@ export const filterMembersWithUsersOrgs = async (
     });
   }
   return members;
+};
+
+interface ListArgs {
+  filters?: FilterGroup;
+  entityTypes?: string[] | null;
+  [key: string]: any;
+}
+
+export const applyOrganizationRestriction = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: ListArgs,
+) => {
+  const { filters: argsFilters } = args;
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const userInPlatformOrg = isUserInPlatformOrganization(user, settings);
+
+  if (!userInPlatformOrg) {
+    const userOrgIds = (user.organizations || []).map((org) => org.id);
+    const membersFilters = {
+      key: ['participate-to'],
+      values: userOrgIds,
+      operator: 'eq',
+    };
+    const filters = {
+      mode: FilterMode.And,
+      filters: [membersFilters],
+      filterGroups: argsFilters ? [argsFilters] : [],
+    };
+    return {
+      ...args,
+      filters,
+    };
+  }
+  return args;
 };
