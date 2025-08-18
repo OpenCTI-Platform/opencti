@@ -1822,9 +1822,9 @@ type UserSession {
 }
 
 input UserAddInput {
-  user_email: String!
+  user_email: String
   name: String!
-  password: String!
+  password: String
   firstname: String
   lastname: String
   description: String

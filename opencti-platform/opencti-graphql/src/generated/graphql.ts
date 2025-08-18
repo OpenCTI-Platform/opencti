@@ -31184,14 +31184,14 @@ export type UserAddInput = {
   monochrome_labels?: InputMaybe<Scalars['Boolean']['input']>;
   name: Scalars['String']['input'];
   objectOrganization?: InputMaybe<Array<Scalars['ID']['input']>>;
-  password: Scalars['String']['input'];
+  password?: InputMaybe<Scalars['String']['input']>;
   prevent_default_groups?: InputMaybe<Scalars['Boolean']['input']>;
   submenu_auto_collapse?: InputMaybe<Scalars['Boolean']['input']>;
   submenu_show_icons?: InputMaybe<Scalars['Boolean']['input']>;
   theme?: InputMaybe<Scalars['String']['input']>;
   unit_system?: InputMaybe<Scalars['String']['input']>;
   user_confidence_level?: InputMaybe<ConfidenceLevelInput>;
-  user_email: Scalars['String']['input'];
+  user_email?: InputMaybe<Scalars['String']['input']>;
   user_service_account?: InputMaybe<Scalars['Boolean']['input']>;
 };
 

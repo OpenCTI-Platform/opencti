@@ -3,7 +3,6 @@ import { graphql } from 'react-relay';
 import { UsersLinesPaginationQuery, UsersLinesPaginationQuery$variables } from '@components/settings/__generated__/UsersLinesPaginationQuery.graphql';
 import { UsersLine_node$data } from '@components/settings/__generated__/UsersLine_node.graphql';
 import { AccountCircleOutlined, ManageAccountsOutlined, PersonOutlined } from '@mui/icons-material';
-import { AccountCircleOutlined, PersonOutlined } from '@mui/icons-material';
 import SettingsOrganizationUserCreation from './users/SettingsOrganizationUserCreation';
 import EnterpriseEdition from '../common/entreprise_edition/EnterpriseEdition';
 import UserCreation from './users/UserCreation';
