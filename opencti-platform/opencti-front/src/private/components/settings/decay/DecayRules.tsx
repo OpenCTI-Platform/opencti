@@ -156,7 +156,7 @@ const DecayRules = () => {
   };
 
   return (
-    <div className={classes.container}>
+    <div className={classes.container} data-testid="decay-rules-page">
       <CustomizationMenu />
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Decay rules'), current: true }]} />
       {renderLines()}
