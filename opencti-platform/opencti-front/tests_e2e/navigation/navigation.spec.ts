@@ -19,6 +19,7 @@ import OrganizationPage from 'tests_e2e/model/organization.pageModel';
 import OrganizationDetailsPage from 'tests_e2e/model/organizationDetails.pageModel';
 import SecurityPlatformDetailsPage from 'tests_e2e/model/securityPlatformDetails.pageModel';
 import DataRelationshipsPage from 'tests_e2e/model/dataRelationships.pageModel';
+import SettingsActivityPage from 'tests_e2e/model/settingsActivity.pageModel';
 import { expect, test } from '../fixtures/baseFixtures';
 import LeftBarPage from '../model/menu/leftBar.pageModel';
 import ReportPage from '../model/report.pageModel';
@@ -98,6 +99,8 @@ import SettingsPage from '../model/settings.pageModel';
 import SettingsSecurityPage from '../model/settingsSecurity.pageModel';
 import SettingsCustomizationPage from '../model/settingsCustomization.pageModel';
 import SettingsTaxonomiesPage from '../model/settingsTaxonomies.pageModel';
+import SettingsFileIndexingPage from '../model/settingsFileIndexing.pageModel';
+import SettingsFiligranExperiencePage from '../model/settingsFiligranExperience.pageModel';
 
 /**
  * Goal: validate that everything is opening without errors in Analyses > Note.
@@ -1675,6 +1678,28 @@ const navigateTaxonomies = async (page: Page) => {
   await expect(taxonomiesPage.getTaxonomiesPages('case-template-page')).toBeVisible();
 };
 
+const navigateActivity = async (page: Page) => {
+  const activityPage = new SettingsActivityPage(page);
+  await activityPage.navigateFromMenu();
+  await expect(activityPage.getActivityPages('audit-page')).toBeVisible();
+  await activityPage.navigateRightMenu('Configuration');
+  await expect(activityPage.getActivityPages('configuration-page')).toBeVisible();
+  await activityPage.navigateRightMenu('Alerting');
+  await expect(activityPage.getActivityPages('alerting-page')).toBeVisible();
+};
+
+const navigateFileIndexing = async (page: Page) => {
+  const fileIndexingPage = new SettingsFileIndexingPage(page);
+  await fileIndexingPage.navigateFromMenu();
+  await expect(fileIndexingPage.getPage('file-indexing-page')).toBeVisible();
+};
+
+const navigateExperience = async (page: Page) => {
+  const filigranExperiencePage = new SettingsFiligranExperiencePage(page);
+  await filigranExperiencePage.navigateFromMenu();
+  await expect(filigranExperiencePage.getPage('experience-page')).toBeVisible();
+};
+
 const navigateAllMenu = async (page: Page) => {
   const leftBarPage = new LeftBarPage(page);
 
@@ -1821,58 +1846,61 @@ test('Check navigation on all pages', { tag: ['@navigation'] }, async ({ page })
   // For faster debugging, each navigated can be commented.
   // so they should be all independent and start from the left menu.
 
-  // await navigateAllMenu(page);
-  // await navigateReports(page);
-  // await navigateGroupings(page);
-  // await navigateMalwareAnalyses(page);
-  // await navigateNotes(page);
-  // await navigateExternalReferences(page);
-  // await navigateIncidentResponse(page);
-  // await navigateRfi(page);
-  // await navigateRft(page);
-  // await navigateTasks(page);
-  // await navigateFeedbacks(page);
-  // await navigateEventsIncident(page);
-  // await navigateSightings(page);
-  // await navigateObservedData(page);
-  // await navigateObservables(page);
-  // await navigateArtifact(page);
-  // await navigateIndicators(page);
-  // await navigateIntrusionSet(page);
-  // await navigateCampaign(page);
-  // await navigateInfrastructure(page);
-  // await navigateThreatActorGroup(page);
-  // await navigateThreatActorIndividual(page);
-  // await navigateMalware(page);
-  // await navigateChannel(page);
-  // await navigateTool(page);
-  // await navigateVulnerability(page);
-  // await navigateAttackPattern(page);
-  // await navigateNarrative(page);
-  // await navigateCourseOfAction(page);
-  // await navigateDataComponent(page);
-  // await navigateDataSource(page);
-  // await navigateSector(page);
-  // await navigateEvent(page);
-  // await navigateOrganization(page);
-  // await navigateSecurityPlatform(page);
-  // await navigateSystem(page);
-  // await navigateIndividual(page);
-  // await navigateRegion(page);
-  // await navigateCountry(page);
-  // await navigateAdministrativeArea(page);
-  // await navigateCity(page);
-  // await navigatePosition(page);
-  // await navigateDataEntities(page);
-  // await navigateDataRelationships(page);
-  // await navigateIngestion(page);
-  // await navigateDataImport(page);
-  // await navigateProcessing(page);
-  // await navigateDataSharing(page);
-  // await navigateDataManagement(page);
-  // await navigateTrash(page);
-  // await navigateSettings(page);
-  // await navigateSecurity(page);
-  // await navigateCustomization(page);
+  await navigateAllMenu(page);
+  await navigateReports(page);
+  await navigateGroupings(page);
+  await navigateMalwareAnalyses(page);
+  await navigateNotes(page);
+  await navigateExternalReferences(page);
+  await navigateIncidentResponse(page);
+  await navigateRfi(page);
+  await navigateRft(page);
+  await navigateTasks(page);
+  await navigateFeedbacks(page);
+  await navigateEventsIncident(page);
+  await navigateSightings(page);
+  await navigateObservedData(page);
+  await navigateObservables(page);
+  await navigateArtifact(page);
+  await navigateIndicators(page);
+  await navigateIntrusionSet(page);
+  await navigateCampaign(page);
+  await navigateInfrastructure(page);
+  await navigateThreatActorGroup(page);
+  await navigateThreatActorIndividual(page);
+  await navigateMalware(page);
+  await navigateChannel(page);
+  await navigateTool(page);
+  await navigateVulnerability(page);
+  await navigateAttackPattern(page);
+  await navigateNarrative(page);
+  await navigateCourseOfAction(page);
+  await navigateDataComponent(page);
+  await navigateDataSource(page);
+  await navigateSector(page);
+  await navigateEvent(page);
+  await navigateOrganization(page);
+  await navigateSecurityPlatform(page);
+  await navigateSystem(page);
+  await navigateIndividual(page);
+  await navigateRegion(page);
+  await navigateCountry(page);
+  await navigateAdministrativeArea(page);
+  await navigateCity(page);
+  await navigatePosition(page);
+  await navigateDataEntities(page);
+  await navigateDataRelationships(page);
+  await navigateIngestion(page);
+  await navigateDataImport(page);
+  await navigateProcessing(page);
+  await navigateDataSharing(page);
+  await navigateDataManagement(page);
+  await navigateTrash(page);
+  await navigateSettings(page);
+  await navigateSecurity(page);
+  await navigateCustomization(page);
   await navigateTaxonomies(page);
+  await navigateActivity(page);
+  await navigateFileIndexing(page);
+  await navigateExperience(page);
 });

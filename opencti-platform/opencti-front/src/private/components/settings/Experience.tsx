@@ -127,7 +127,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
   };
 
   return (
-    <div className={classes.container}>
+    <div className={classes.container} data-testid="experience-page">
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Filigran Experience'), current: true }]} />
       <Grid container={true} spacing={3} style={{ marginBottom: 23 }}>
         {isEnterpriseEditionActivated ? (

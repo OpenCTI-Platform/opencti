@@ -220,7 +220,7 @@ const Audit = () => {
     </div>
   ) : <></>;
   return (
-    <div className={classes.container}>
+    <div className={classes.container} data-testid="audit-page">
       <ActivityMenu/>
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Activity') }, {
         label: t_i18n('Events'),
