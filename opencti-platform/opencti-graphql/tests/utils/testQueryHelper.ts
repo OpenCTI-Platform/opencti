@@ -194,7 +194,6 @@ export const disableEE = async () => {
   const settingsResult = await settingsEditField(testContext, ADMIN_USER, platformSettings.id, input);
   // EE cant be disabled as setup by configuration
   expect(settingsResult.platform_enterprise_edition.license_validated).toBeTruthy();
-  resetCacheForEntity(ENTITY_TYPE_SETTINGS);
 };
 
 export const createUploadFromTestDataFile = async (filePathRelativeFromData: string, fileName: string, mimetype: string, encoding?: string) => {
