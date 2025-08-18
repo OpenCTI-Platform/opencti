@@ -100,7 +100,7 @@ import { findAllByCaseTemplateId } from '../task/task-domain';
 import type { BasicStoreEntityTaskTemplate } from '../task/task-template/task-template-types';
 import type { BasicStoreSettings } from '../../types/settings';
 
-import { convertStoreToStix } from '../../database/stix-common-converter';
+import { convertStoreToStix_2_1 } from '../../database/stix-2-1-converter';
 
 const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixObject => {
   const baseData = bundle.objects.find((o) => o.id === instanceId);
@@ -473,7 +473,7 @@ export const buildStixTaskFromTaskTemplate = (taskTemplate: BasicStoreEntityTask
     parent_types: getParentTypes(ENTITY_TYPE_CONTAINER_TASK),
     ...taskData,
   } as StoreEntityTask;
-  const task = convertStoreToStix(storeTask) as StixTask;
+  const task = convertStoreToStix_2_1(storeTask) as StixTask;
   task.object_refs = [container.id];
   task.object_marking_refs = container.object_marking_refs;
   return task;
@@ -542,7 +542,7 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
         parent_types: getParentTypes(container_type),
         ...containerData
       } as StoreCommon;
-      const container = convertStoreToStix(storeContainer) as StixContainer;
+      const container = convertStoreToStix_2_1(storeContainer) as StixContainer;
       // add all objects in the container if requested in the playbook config
       if (all) {
         container.object_refs = bundle.objects.map((o: StixObject) => o.id);
@@ -1155,7 +1155,7 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndicatorConf
             parent_types: getParentTypes(ENTITY_TYPE_INDICATOR),
             ...indicatorData
           } as StoreCommon;
-          const indicator = convertStoreToStix(storeIndicator) as StixIndicator;
+          const indicator = convertStoreToStix_2_1(storeIndicator) as StixIndicator;
           if (observable.object_marking_refs) {
             indicator.object_marking_refs = observable.object_marking_refs;
           }
@@ -1368,7 +1368,7 @@ const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObservableCo
             parent_types: getParentTypes(observable.type),
             ...observableData
           } as StoreCommon;
-          const stixObservable = convertStoreToStix(storeObservable) as StixCyberObject;
+          const stixObservable = convertStoreToStix_2_1(storeObservable) as StixCyberObject;
           if (indicator.object_marking_refs) {
             stixObservable.object_marking_refs = indicator.object_marking_refs;
           }
