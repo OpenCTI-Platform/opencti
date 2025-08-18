@@ -107,7 +107,7 @@ const CaseTemplates = () => {
   };
 
   return (
-    <div className={classes.container}>
+    <div className={classes.container} data-testid="case-template-page">
       <LabelsVocabulariesMenu />
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Taxonomies') }, { label: t_i18n('Case templates'), current: true }]} />
       {renderLines()}
