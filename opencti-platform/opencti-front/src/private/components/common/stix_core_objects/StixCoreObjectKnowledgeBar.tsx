@@ -42,6 +42,8 @@ const stixCoreObjectKnowledgeBarFragment = graphql`
         "located-at"
         "variant-of"
         "belongs-to"
+        "technology"
+        "technology-to"
       ]
     ) {
       label

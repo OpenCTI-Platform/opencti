@@ -4,7 +4,6 @@ import Drawer, { DrawerControlledDialType } from '@components/common/drawer/Draw
 import { useFormatter } from '../../../../components/i18n';
 import { ExternalReferenceEditionContainer_externalReference$data } from './__generated__/ExternalReferenceEditionContainer_externalReference.graphql';
 import ExternalReferenceEditionOverview from './ExternalReferenceEditionOverview';
-import ExternalReferenceDeletion from './ExternalReferenceDeletion';
 
 interface ExternalReferenceEditionContainerProps {
   handleClose: () => void
@@ -35,10 +34,6 @@ const ExternalReferenceEditionContainer: FunctionComponent<ExternalReferenceEdit
         <ExternalReferenceEditionOverview
           externalReference={externalReference}
           context={editContext}
-        />
-        <ExternalReferenceDeletion
-          id={externalReference.id}
-          handleRemove={undefined}
         />
       </>
     </Drawer>

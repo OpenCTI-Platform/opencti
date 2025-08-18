@@ -65,7 +65,7 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
       uri: 'http://fakefeed.invalid',
       user_id: '[F] CSV Feed to test auto user creation without platform org',
       automatic_user: true,
-      confidence_level: '42'
+      confidence_level: 42
     };
     const ingestionCreated = await addIngestionCsv(currentTestContext, ingestionUser, ingestionCsvInput);
     expect(ingestionCreated.name).toBe('CSV Feed to test auto user creation without platform org');
@@ -101,7 +101,7 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
       uri: 'http://fakefeed.invalid',
       user_id: '[F] CSV Feed to test auto user creation with platform org',
       automatic_user: true,
-      confidence_level: '81'
+      confidence_level: 81
     };
     const ingestionCreated = await addIngestionCsv(currentTestContext, ingestionUser, ingestionCsvInput);
     expect(ingestionCreated.name).toBe('CSV Feed to test auto user creation with platform org');
@@ -138,7 +138,7 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
 
     await expect(async () => {
       await addIngestionCsv(currentTestContext, ingestionUser, ingestionCsvInput);
-    }).rejects.toThrowError('You have not choosen a user responsible for data creation');
+    }).rejects.toThrowError('You have not chosen a user responsible for data creation');
   });
 
   it('should create a CSV Feed with existing user, confidence should be ignored', async () => {
@@ -147,7 +147,7 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
       name: 'CSV Feed to test existing user setup',
       uri: 'http://fakefeed.invalid',
       user_id: USER_EDITOR.id,
-      confidence_level: '88'
+      confidence_level: 88
     };
     const ingestionCreated = await addIngestionCsv(currentTestContext, ingestionUser, ingestionCsvInput);
     expect(ingestionCreated.name).toBe('CSV Feed to test existing user setup');
@@ -263,7 +263,7 @@ describe('Ingestion CSV domain - ingestionCsvAddAutoUser', async () => {
       uri: 'http://fakefeed.invalid',
       user_id: '[F] CSV Feed to test with auto user',
       automatic_user: true,
-      confidence_level: '32'
+      confidence_level: 32
     };
     ingestionCreated = await addIngestionCsv(currentTestContext, ingestionUser, ingestionCsvInput);
   });
@@ -288,7 +288,7 @@ describe('Ingestion CSV domain - ingestionCsvAddAutoUser', async () => {
   it('should create an automatic user and associate it to the ingestion feed', async () => {
     const ingestionCsvAddAutoUserInput: IngestionCsvAddAutoUserInput = {
       user_name: '[F] shoud create automatic user',
-      confidence_level: '63'
+      confidence_level: 63
     };
     const ingestionModified = await ingestionCsvAddAutoUser(currentTestContext, ingestionUser, ingestionCreated.id, ingestionCsvAddAutoUserInput);
 

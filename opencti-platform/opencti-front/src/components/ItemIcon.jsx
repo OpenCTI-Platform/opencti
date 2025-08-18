@@ -68,8 +68,9 @@ import {
   PlayCircleOutlined,
   ArchitectureOutlined,
   PlaylistRemoveOutlined,
-  AttachEmailOutlined,
   DrawOutlined,
+  AlternateEmailOutlined,
+  EmailOutlined,
 } from '@mui/icons-material';
 import {
   AutoFix,
@@ -484,6 +485,9 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'beacons-to':
     case 'characterizes':
     case 'consists-of':
+    case 'technology-to':
+    case 'technology':
+    case 'demonstrates':
     case 'controls':
     case 'cooperates-with':
     case 'derived-from':
@@ -550,7 +554,9 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'exclusion-list':
       return <PlaylistRemoveOutlined style={style} fontSize={fontSize} role="img" />;
     case 'dissemination-list':
-      return <AttachEmailOutlined style={style} fontSize={fontSize} role="img" />;
+      return <AlternateEmailOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'email-templates':
+      return <EmailOutlined style={style} fontSize={fontSize} role="img" />;
     case 'fintel-design':
       return <DrawOutlined style={style} fontSize={fontSize} role="img" />;
     case 'securityplatform':

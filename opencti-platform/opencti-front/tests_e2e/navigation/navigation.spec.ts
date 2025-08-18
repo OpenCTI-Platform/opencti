@@ -15,7 +15,7 @@ import ObservablesPage from '../model/observable.pageModel';
 import ObservableDetailsPage from '../model/observableDetails.pageModel';
 
 /**
- * Goal: validate that everything is opening wihtout errors in Analyses > Malware analyses.
+ * Goal: validate that everything is opening without errors in Analyses > Malware analyses.
  * @param page
  */
 const navigateMalwareAnalyses = async (page: Page) => {
@@ -36,7 +36,7 @@ const navigateMalwareAnalyses = async (page: Page) => {
   await page.getByLabel('relationships', { exact: true }).click();
   await expect(page.getByRole('link', { name: 'related to Malware Spelevo EK' })).toBeVisible();
   await page.getByLabel('entities', { exact: true }).click();
-  await expect(page.getByRole('link', { name: 'Malware Spelevo EK admin ryuk' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Malware Spelevo EK admin covid-19' })).toBeVisible();
 
   // -- Content
   await malwareAnalysesDetailsPage.tabs.goToContentTab();
@@ -310,8 +310,8 @@ const navigateAllMenu = async (page: Page) => {
   await leftBarPage.expectBreadcrumb('Settings', 'Taxonomies');
   await leftBarPage.clickOnMenu('Settings', 'File indexing');
   await leftBarPage.expectBreadcrumb('Settings', 'File indexing');
-  await leftBarPage.clickOnMenu('Settings', 'Support');
-  await leftBarPage.expectBreadcrumb('Settings', 'Support');
+  await leftBarPage.clickOnMenu('Settings', 'Filigran Experience');
+  await leftBarPage.expectBreadcrumb('Settings', 'Filigran Experience');
 
   // Other
   await leftBarPage.clickOnMenu('Investigations');

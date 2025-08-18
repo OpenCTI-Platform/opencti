@@ -2,30 +2,38 @@ import React, { useState } from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import MoreVert from '@mui/icons-material/MoreVert';
-import { Dashboard_workspace$data } from '@components/workspaces/dashboards/__generated__/Dashboard_workspace.graphql';
-import { InvestigationGraph_fragment$data } from '@components/workspaces/investigations/__generated__/InvestigationGraph_fragment.graphql';
 import ToggleButton from '@mui/material/ToggleButton';
+import { useNavigate } from 'react-router-dom';
+import { graphql, useFragment } from 'react-relay';
 import WorkspaceManageAccessDialog from '@components/workspaces/WorkspaceManageAccessDialog';
 import WorkspaceTurnToContainerDialog from '@components/workspaces/WorkspaceTurnToContainerDialog';
 import WorkspaceDuplicationDialog from '@components/workspaces/WorkspaceDuplicationDialog';
 import Drawer from '@components/common/drawer/Drawer';
 import PublicDashboardCreationForm from '@components/workspaces/dashboards/public_dashboards/PublicDashboardCreationForm';
-import { useNavigate } from 'react-router-dom';
-import { RecordSourceSelectorProxy } from 'relay-runtime';
+import WorkspaceDeletion from '@components/workspaces/WorkspaceDeletion';
+import { WorkspaceKebabMenuFragment$key } from './__generated__/WorkspaceKebabMenuFragment.graphql';
 import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
 import Security from '../../../utils/Security';
-import useGranted, { EXPLORE_EXUPDATE, EXPLORE_EXUPDATE_PUBLISH, INVESTIGATION_INUPDATE } from '../../../utils/hooks/useGranted';
+import useGranted, { EXPLORE_EXUPDATE, EXPLORE_EXUPDATE_EXDELETE, EXPLORE_EXUPDATE_PUBLISH, INVESTIGATION_INUPDATE } from '../../../utils/hooks/useGranted';
 import { useFormatter } from '../../../components/i18n';
-import { insertNode } from '../../../utils/store';
+
+const kebabMenuFragment = graphql`
+  fragment WorkspaceKebabMenuFragment on Workspace {
+    id
+    type
+    owner {
+      id
+      name
+      entity_type
+    }
+    currentUserAccessRight
+    ...WorkspaceDuplicationDialogFragment
+    ...WorkspaceManageAccessDialog_authorizedMembers
+  }
+`;
 
 interface WorkspaceKebabMenuProps {
-  workspace: Dashboard_workspace$data | InvestigationGraph_fragment$data;
-  paginationOptions?: {
-    search: string;
-    orderBy: string;
-    orderMode: string;
-    filters: Array<{ key: string; values: Array<string> }>;
-  };
+  data: WorkspaceKebabMenuFragment$key;
 }
 
 const noop = () => {};
@@ -71,7 +79,19 @@ const useAddToContainer = (onAddToContainer = noop) => {
   return { isAddToContainerDialogOpen, handleOpenTurnToReportOrCaseContainer, handleCloseTurnToReportOrCaseContainer };
 };
 
-const WorkspaceKebabMenu = ({ workspace, paginationOptions }: WorkspaceKebabMenuProps) => {
+const useDelete = (onDelete = noop) => {
+  const [openDelete, setOpenDelete] = useState(false);
+  const handleCloseDeletion = () => setOpenDelete(false);
+  const handleOpenDeletion = () => {
+    onDelete();
+    setOpenDelete(true);
+  };
+
+  return { openDelete, handleOpenDeletion, handleCloseDeletion };
+};
+
+const WorkspaceKebabMenu = ({ data }: WorkspaceKebabMenuProps) => {
+  const workspace = useFragment(kebabMenuFragment, data);
   const variant = workspace.type;
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
@@ -95,12 +115,7 @@ const WorkspaceKebabMenu = ({ workspace, paginationOptions }: WorkspaceKebabMenu
   } = useDuplicate(isGrantedToUpdateDashboard, handleClose);
   const { displayManageAccess, handleOpenManageAccess, handleCloseManageAccess } = useManageAccess(handleClose);
   const { isAddToContainerDialogOpen, handleOpenTurnToReportOrCaseContainer, handleCloseTurnToReportOrCaseContainer } = useAddToContainer(handleClose);
-
-  const updater = (store: RecordSourceSelectorProxy) => {
-    if (paginationOptions) {
-      insertNode(store, 'Pagination_workspaces', paginationOptions, 'workspaceDuplicate');
-    }
-  };
+  const { openDelete, handleOpenDeletion, handleCloseDeletion } = useDelete(handleClose);
 
   const goToPublicDashboards = () => {
     const filter = {
@@ -131,7 +146,7 @@ const WorkspaceKebabMenu = ({ workspace, paginationOptions }: WorkspaceKebabMenu
   return (
     <div>
       <ToggleButton
-        aria-label={t_i18n('Popover of actions')}
+        aria-label={t_i18n('Popover of actions workspace')}
         value="popover"
         size="small"
         color="primary"
@@ -184,6 +199,9 @@ const WorkspaceKebabMenu = ({ workspace, paginationOptions }: WorkspaceKebabMenu
             </Security>
           </>
         )}
+        <Security needs={[EXPLORE_EXUPDATE_EXDELETE]} hasAccess={canEdit}>
+          <MenuItem onClick={handleOpenDeletion}>{t_i18n('Delete')}</MenuItem>
+        </Security>
       </Menu>
 
       <WorkspaceManageAccessDialog
@@ -192,6 +210,12 @@ const WorkspaceKebabMenu = ({ workspace, paginationOptions }: WorkspaceKebabMenu
         authorizedMembersData={workspace}
         owner={workspace.owner}
         handleClose={handleCloseManageAccess}
+      />
+      <WorkspaceDeletion
+        id={workspace.id}
+        isOpen={openDelete}
+        handleClose={handleCloseDeletion}
+        workspaceType={workspace.type}
       />
       {variant === 'investigation' && (
         <WorkspaceTurnToContainerDialog
@@ -202,7 +226,7 @@ const WorkspaceKebabMenu = ({ workspace, paginationOptions }: WorkspaceKebabMenu
       )}
       {variant === 'dashboard' && (
         <WorkspaceDuplicationDialog
-          workspace={workspace}
+          data={workspace}
           displayDuplicate={displayDuplicate}
           handleCloseDuplicate={handleCloseDuplicate}
           duplicating={duplicating}
@@ -223,13 +247,11 @@ const WorkspaceKebabMenu = ({ workspace, paginationOptions }: WorkspaceKebabMenu
         )}
       </Drawer>
       <WorkspaceDuplicationDialog
-        workspace={workspace}
+        data={workspace}
         displayDuplicate={displayDuplicate}
         handleCloseDuplicate={handleCloseDuplicate}
         duplicating={duplicating}
         setDuplicating={setDuplicating}
-        updater={updater}
-        paginationOptions={paginationOptions}
       />
     </div>
   );

@@ -15,7 +15,6 @@ import useGranted, {
   SETTINGS_SETMANAGEXTMHUB,
 } from '../../../utils/hooks/useGranted';
 import Loader from '../../../components/Loader';
-import useHelper from '../../../utils/hooks/useHelper';
 
 const Security = lazy(() => import('../../../utils/Security'));
 const CaseTemplates = lazy(() => import('./case_templates/CaseTemplates'));
@@ -48,16 +47,16 @@ const Configuration = lazy(() => import('./activity/configuration/Configuration'
 const Alerting = lazy(() => import('./activity/alerting/Alerting'));
 const DecayRules = lazy(() => import('./decay/DecayRules'));
 const DecayRule = lazy(() => import('./decay/DecayRule'));
-const SupportPackage = lazy(() => import('./support/SupportPackages'));
 const ExclusionLists = lazy(() => import('./exclusion_lists/ExclusionLists'));
 const DisseminationLists = lazy(() => import('./dissemination_lists/DisseminationLists'));
+const EmailTemplates = lazy(() => import('./email_template/EmailTemplates'));
+const EmailTemplate = lazy(() => import('./email_template/EmailTemplate'));
 const FintelDesigns = lazy(() => import('./fintel_design/FintelDesigns'));
 const FintelDesign = lazy(() => import('./fintel_design/FintelDesign'));
-const XtmHubSettings = lazy(() => import('./xtm-hub/XtmHubSettings'));
+const Experience = lazy(() => import('./Experience'));
+
 const Root = () => {
   const adminOrga = isOnlyOrganizationAdmin();
-  const { isFeatureEnable } = useHelper();
-
   const urlWithCapabilities = () => {
     const isGrantedToParameters = useGranted([SETTINGS_SETPARAMETERS]);
     const isGrantedToSecurity = useGranted([SETTINGS_SETMARKINGS, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]);
@@ -65,16 +64,14 @@ const Root = () => {
     const isGrantedToTaxonomies = useGranted([SETTINGS_SETLABELS]);
     const isGrantedToActivity = useGranted([SETTINGS_SECURITYACTIVITY]);
     const isGrantedToFileIndexing = useGranted([SETTINGS_FILEINDEXING]);
-    const isGrantedToSupport = useGranted([SETTINGS_SUPPORT]);
-    const isGrantedToXtmHubSettings = useGranted([SETTINGS_SETMANAGEXTMHUB]);
+    const isGrantedToExperience = useGranted([SETTINGS_SUPPORT, SETTINGS_SETMANAGEXTMHUB]);
     if (isGrantedToParameters) return '/dashboard/settings';
     if (isGrantedToSecurity) return '/dashboard/settings/accesses';
     if (isGrantedToCustomization) return '/dashboard/settings/customization';
     if (isGrantedToTaxonomies) return '/dashboard/settings/vocabularies';
     if (isGrantedToActivity) return '/dashboard/settings/activity';
     if (isGrantedToFileIndexing) return '/dashboard/settings/file_indexing';
-    if (isGrantedToSupport) return '/dashboard/settings/support';
-    if (isGrantedToXtmHubSettings) return '/dashboard/settings/xtm-g=hub';
+    if (isGrantedToExperience) return '/dashboard/settings/experience';
     return '/dashboard';
   };
 
@@ -113,23 +110,6 @@ const Root = () => {
               </Security>
             }
           />
-          {
-            isFeatureEnable('OCTI_ENROLLMENT')
-            && <Route
-              path="/xtm-hub"
-              element={
-                <Security
-                  needs={[SETTINGS_SETMANAGEXTMHUB]}
-                  placeholder={
-                    <Navigate to={urlWithCapabilities()} />
-                  }
-                >
-                  <XtmHubSettings />
-                </Security>
-              }
-               />
-          }
-
           <Route
             path="/accesses/users"
             element={
@@ -263,6 +243,25 @@ const Root = () => {
             }
           />
           <Route
+            path="/accesses/email_templates"
+            element={
+              <Security
+                needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
+                placeholder={<Navigate to={urlWithCapabilities()} />}
+              >
+                <EmailTemplates />
+              </Security>
+            }
+          />
+          <Route
+            path="/accesses/email_templates/:emailTemplateId/*"
+            element={
+              <Security needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]} placeholder={<Navigate to={urlWithCapabilities()} />}>
+                <EmailTemplate />
+              </Security>
+            }
+          />
+          <Route
             path="/activity"
             element={
               <Security needs={[SETTINGS_SECURITYACTIVITY]} placeholder={<Navigate to={urlWithCapabilities()} />}>
@@ -303,10 +302,10 @@ const Root = () => {
             }
           />
           <Route
-            path="/support"
+            path="/experience"
             element={
-              <Security needs={[SETTINGS_SUPPORT]} placeholder={<Navigate to={urlWithCapabilities()} />}>
-                <SupportPackage />
+              <Security needs={[SETTINGS_SUPPORT, SETTINGS_SETMANAGEXTMHUB]} placeholder={<Navigate to={urlWithCapabilities()} />}>
+                <Experience />
               </Security>
             }
           />

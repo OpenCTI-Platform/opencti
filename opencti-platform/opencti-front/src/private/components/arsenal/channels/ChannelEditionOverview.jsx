@@ -20,7 +20,6 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-import ChannelDeletion from './ChannelDeletion';
 
 const channelMutationFieldPatch = graphql`
   mutation ChannelEditionOverviewFieldPatchMutation(
@@ -273,9 +272,6 @@ const ChannelEditionOverviewComponent = (props) => {
             onChange={editor.changeMarking}
           />
           <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
-            <ChannelDeletion
-              id={channel.id}
-            />
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}

@@ -23,8 +23,9 @@ import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import { RootToolQuery } from './__generated__/RootToolQuery.graphql';
 import { RootToolSubscription } from './__generated__/RootToolSubscription.graphql';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import ToolKnowledge from './ToolKnowledge';
+import ToolDeletion from './ToolDeletion';
 
 const subscription = graphql`
   subscription RootToolSubscription($id: ID!) {
@@ -140,6 +141,11 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <ToolEdition toolId={tool.id} />
+                </Security>
+              )}
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+                <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                  <ToolDeletion id={tool.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
               )}
               enableEnricher={true}

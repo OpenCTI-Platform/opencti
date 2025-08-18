@@ -182,7 +182,6 @@ const FintelTemplatesGrid = ({ data }: FintelTemplatesGridProps) => {
             setDrawerOpen(false);
             setTemplateToEdit(undefined);
           }}
-          onDeleteComplete={() => setDrawerOpen(false)}
         />
       )}
     </>

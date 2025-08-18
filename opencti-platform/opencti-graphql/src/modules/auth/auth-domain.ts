@@ -10,7 +10,6 @@ import type { AskSendOtpInput, ChangePasswordInput, VerifyMfaInput, VerifyOtpInp
 import { getEntityFromCache } from '../../database/cache';
 import type { BasicStoreSettings } from '../../types/settings';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
-import { ADMIN_USER } from '../../../tests/utils/testQuery';
 import { OCTI_EMAIL_TEMPLATE } from '../../utils/emailTemplates/octiEmailTemplate';
 import { OTP_TTL, redisDelForgotPassword, redisGetForgotPasswordOtp, redisGetForgotPasswordOtpPointer, redisSetForgotPasswordOtp } from '../../database/redis';
 import { publishUserAction } from '../../listener/UserActionListener';
@@ -18,6 +17,7 @@ import { SYSTEM_USER } from '../../utils/access';
 import { killUserSessions } from '../../database/session';
 import { logApp } from '../../config/conf';
 import type { SendMailArgs } from '../../types/smtp';
+import { addForgotPasswordCount } from '../../manager/telemetryManager';
 
 export const getLocalProviderUser = async (email: string) => {
   const user: any = await getUserByEmail(email);
@@ -31,7 +31,7 @@ export const generateOtp = () => {
 };
 
 export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) => {
-  const settings = await getEntityFromCache<BasicStoreSettings>(context, ADMIN_USER, ENTITY_TYPE_SETTINGS);
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const resetOtp = generateOtp();
   const hashedOtp = bcrypt.hashSync(resetOtp);
   const transactionId = uuid();
@@ -99,6 +99,7 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
       message: `Failed to send password reset code to ${input.email}`,
     });
   }
+  await addForgotPasswordCount();
 
   // In all cases, return the transaction ID
   return transactionId;
@@ -142,7 +143,7 @@ export const verifyOtp = async (input: VerifyOtpInput) => {
 
 export const verifyMfa = async (context: AuthContext, input: VerifyMfaInput) => {
   const { hashedOtp, email, mfa_activated, ttl, userId } = await redisGetForgotPasswordOtp(input.transactionId);
-  const { otp_secret: mfa_secret } = await findById(context, ADMIN_USER, userId);
+  const { otp_secret: mfa_secret } = await findById(context, SYSTEM_USER, userId);
   if (!mfa_activated || !mfa_secret) {
     throw AuthenticationFailure();
   }
@@ -156,7 +157,7 @@ export const verifyMfa = async (context: AuthContext, input: VerifyMfaInput) => 
 };
 
 export const changePassword = async (context: AuthContext, input: ChangePasswordInput) => {
-  const settings = await getEntityFromCache<BasicStoreSettings>(context, ADMIN_USER, ENTITY_TYPE_SETTINGS);
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const { hashedOtp, email, mfa_activated, mfa_validated, userId } = await redisGetForgotPasswordOtp(input.transactionId);
   const isMatch = bcrypt.compareSync(input.otp, hashedOtp);
   const isStateMfaValid = !mfa_activated || (mfa_activated && mfa_validated);
@@ -172,7 +173,7 @@ export const changePassword = async (context: AuthContext, input: ChangePassword
     throw UnsupportedError('Invalid password reset code. Please check the code and try again.');
   }
   try {
-    const authUser = await findById(context, ADMIN_USER, userId);
+    const authUser = await findById(context, SYSTEM_USER, userId);
     await userEditField(context, SYSTEM_USER, authUser.id, [
       { key: 'password', value: [input.newPassword] }
     ]);

@@ -1,5 +1,5 @@
 import { uniq } from 'ramda';
-import { buildRefRelationKey, RULE_PREFIX } from '../../schema/general';
+import { buildRefRelationKey, REL_INDEX_PREFIX, RULE_PREFIX } from '../../schema/general';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import { type Filter, type FilterGroup, FilterMode, FilterOperator } from '../../generated/graphql';
@@ -35,6 +35,7 @@ import { isInternalId, isValidDate } from '../../schema/schemaUtils';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreObject } from '../../types/store';
 import { idLabel } from '../../schema/schema-labels';
+import { INTERNAL_RELATIONSHIPS } from '../../schema/internalRelationship';
 
 export const emptyFilterGroup: FilterGroup = {
   mode: FilterMode.And,
@@ -312,6 +313,7 @@ export const convertRelationRefsFilterKeys = (filterGroup: FilterGroup): FilterG
       const convertedFilterKeys = filterKeys
         .map((key) => specialFilterKeysConvertor.get(key) ?? key) //  convert special keys
         .map((key) => (STIX_CORE_RELATIONSHIPS.includes(key) ? buildRefRelationKey(key, '*') : key)) // convert relation keys -> rel_X or keep key
+        .map((key) => (INTERNAL_RELATIONSHIPS.includes(key) ? buildRefRelationKey(key, '*') : key)) // convert internal relation keys -> rel_X or keep key
         .map((key) => [key, schemaRelationsRefDefinition.getDatabaseName(key) ?? '']) // fetch eventual ref database names
         .map(([key, name]) => (name ? buildRefRelationKey(name, '*') : key)); // convert databaseName if exists or keep initial key if not
       newFiltersContent.push({ ...f, key: convertedFilterKeys });
@@ -329,8 +331,8 @@ export const convertRelationRefsFilterKeys = (filterGroup: FilterGroup): FilterG
 // input: an array of relations names
 // return an array of the converted names in the rel_'database_name' format
 const getConvertedRelationsNames = (relationNames: string[]) => {
-  const convertedRelationsNames = relationNames.map((relationName) => `rel_${relationName}`);
-  convertedRelationsNames.push('rel_*'); // means 'all the relations'
+  const convertedRelationsNames = relationNames.map((relationName) => `${REL_INDEX_PREFIX}${relationName}`);
+  convertedRelationsNames.push(`${REL_INDEX_PREFIX}*`); // means 'all the relations'
   return convertedRelationsNames;
 };
 
@@ -384,33 +386,38 @@ export const replaceEnrichValuesInFilters = (filterGroup: FilterGroup, userId: s
   return filtersResult;
 };
 
-/**
- * Check the filter keys exist in the schema
- */
-const checkFilterKeys = (filterGroup: FilterGroup) => {
-  // TODO improvement: check filters keys correspond to the entity types if types is given
-  const keys = extractFilterKeys(filterGroup)
-    .map((k) => k.split('.')[0]); // keep only the first part of the key to handle composed keys
-  if (keys.length > 0) {
-    let incorrectKeys = keys;
+let availableKeysCache: Set<string>;
+const getAvailableKeys = () => {
+  if (!availableKeysCache) {
     const availableAttributes = schemaAttributesDefinition.getAllAttributesNames();
     const availableRefRelations = schemaRelationsRefDefinition.getAllInputNames();
     const availableConvertedRefRelations = getConvertedRelationsNames(schemaRelationsRefDefinition.getAllDatabaseName());
     const availableConvertedStixCoreRelationships = getConvertedRelationsNames(STIX_CORE_RELATIONSHIPS);
+    const availableConvertedInternalRelations = getConvertedRelationsNames(INTERNAL_RELATIONSHIPS);
     const availableKeys = availableAttributes
       .concat(availableRefRelations)
       .concat(availableConvertedRefRelations)
       .concat(STIX_CORE_RELATIONSHIPS)
       .concat(availableConvertedStixCoreRelationships)
+      .concat(INTERNAL_RELATIONSHIPS)
+      .concat(availableConvertedInternalRelations)
       .concat(specialFilterKeys);
-    keys.forEach((k) => {
-      if (availableKeys.includes(k) || k.startsWith(RULE_PREFIX)) {
-        incorrectKeys = incorrectKeys.filter((n) => n !== k);
-      }
-    });
-    if (incorrectKeys.length > 0) {
-      throw UnsupportedError('incorrect filter keys not existing in any schema definition', { keys: incorrectKeys });
-    }
+    availableKeysCache = new Set(availableKeys);
+  }
+  return availableKeysCache;
+};
+
+/**
+ * Check the filter keys exist in the schema
+ */
+const checkFilterKeys = (filterGroup: FilterGroup) => {
+  // TODO improvement: check filters keys correspond to the entity types if types is given
+  const incorrectKeys = extractFilterKeys(filterGroup)
+    .map((k) => k.split('.')[0]) // keep only the first part of the key to handle composed keys
+    .filter((k) => !(getAvailableKeys().has(k) || k.startsWith(RULE_PREFIX)));
+
+  if (incorrectKeys.length > 0) {
+    throw UnsupportedError('incorrect filter keys not existing in any schema definition', { keys: incorrectKeys });
   }
 };
 

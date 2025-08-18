@@ -27,7 +27,7 @@ export const SimpleError = () => {
             '',
             {
               id: 'An unknown error occurred. Please provide a support package to your administrator or OpenCTI maintainers',
-              values: { link_support_package: <Link to="/dashboard/settings/support">{t_i18n('support package')}</Link> },
+              values: { link_support_package: <Link to="/dashboard/settings/experience">{t_i18n('support package')}</Link> },
             },
           )}
         </span>

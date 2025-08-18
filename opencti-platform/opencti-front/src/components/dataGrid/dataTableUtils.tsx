@@ -6,6 +6,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { Link } from 'react-router-dom';
 import { useTheme } from '@mui/styles';
 import { DraftChip } from '@components/common/draft/DraftChip';
+import { HorizontalRule, Security } from '@mui/icons-material';
 import ItemCvssScore from '../ItemCvssScore';
 import type { DataTableColumn } from './dataTableTypes';
 import { DataTableProps, DataTableVariant } from './dataTableTypes';
@@ -332,6 +333,13 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       />
     ),
   },
+  effective_confidence_level: {
+    id: 'effective_confidence_level',
+    label: 'Max Confidence',
+    percentWidth: 10,
+    isSortable: false,
+    render: ({ effective_confidence_level }) => defaultRender(effective_confidence_level?.max_confidence),
+  },
   entity_type: {
     id: 'entity_type',
     label: 'Type',
@@ -440,6 +448,13 @@ const defaultColumns: DataTableProps['dataColumns'] = {
         </Tooltip>
       );
     },
+  },
+  firstname: {
+    id: 'firstname',
+    label: 'Firstname',
+    percentWidth: 10,
+    isSortable: true,
+    render: ({ firstname }) => defaultRender(firstname),
   },
   first_observed: {
     id: 'first_observed',
@@ -657,7 +672,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
   },
   isShared: {
     id: 'isShared',
-    label: 'Shared',
+    label: 'Publicly shared',
     percentWidth: 8,
     isSortable: false,
     render: ({ isShared }, { t_i18n }) => (
@@ -685,6 +700,13 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 40,
     isSortable: true,
     render: ({ kill_chain_name }) => defaultRender(kill_chain_name),
+  },
+  lastname: {
+    id: 'lastname',
+    label: 'Lastname',
+    percentWidth: 10,
+    isSortable: true,
+    render: ({ lastname }) => defaultRender(lastname),
   },
   last_observed: {
     id: 'last_observed',
@@ -889,6 +911,21 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: true,
     render: ({ order }, { n }) => defaultRender(n(order)),
+  },
+  otp: {
+    id: 'otp',
+    label: '2FA',
+    percentWidth: 5,
+    isSortable: false,
+    render: (user) => (
+      <>
+        {user.otp_activated ? (
+          <Security fontSize="small" color="secondary" />
+        ) : (
+          <HorizontalRule fontSize="small" color="primary" />
+        )}
+      </>
+    ),
   },
   owner: {
     id: 'owner',
@@ -1283,6 +1320,15 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       return <ItemCvssScore score={value} />;
     },
   },
+  x_opencti_cvss_v4_base_score: {
+    id: 'x_opencti_cvss_v4_base_score',
+    label: 'CVSS4 - Score',
+    percentWidth: 15,
+    render: ({ x_opencti_cvss_v4_base_score }) => {
+      const value = x_opencti_cvss_v4_base_score ? Math.trunc(x_opencti_cvss_v4_base_score * 10) / 10 : null;
+      return <ItemCvssScore score={value} />;
+    },
+  },
   x_opencti_cisa_kev: {
     id: 'x_opencti_cisa_kev',
     label: 'CISA KEV',
@@ -1321,6 +1367,18 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       <ItemSeverity
         severity={x_opencti_cvss_base_severity}
         label={x_opencti_cvss_base_severity || t_i18n('Unknown')}
+      />
+    ),
+  },
+  x_opencti_cvss_v4_base_severity: {
+    id: 'x_opencti_cvss_v4_base_severity',
+    label: 'CVSS4 - Severity',
+    percentWidth: 15,
+    isSortable: true,
+    render: ({ x_opencti_cvss_v4_base_severity }, { t_i18n }) => (
+      <ItemSeverity
+        severity={x_opencti_cvss_v4_base_severity}
+        label={x_opencti_cvss_v4_base_severity || t_i18n('Unknown')}
       />
     ),
   },

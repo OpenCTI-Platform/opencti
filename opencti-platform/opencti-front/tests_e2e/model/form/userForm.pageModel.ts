@@ -5,7 +5,7 @@ export default class UserFormPage {
   constructor(private page: Page) {}
 
   getNameInput() {
-    return this.page.getByLabel('Name', { exact: true });
+    return this.page.getByRole('textbox', { name: 'Name', exact: true });
   }
 
   async fillNameInput(name: string) {
@@ -14,7 +14,7 @@ export default class UserFormPage {
   }
 
   getEmailInput() {
-    return this.page.getByLabel('Email address');
+    return this.page.getByRole('textbox', { name: 'Email address' });
   }
 
   async fillEmailInput(email: string) {
@@ -23,7 +23,7 @@ export default class UserFormPage {
   }
 
   getPasswordInput() {
-    return this.page.getByLabel('Password');
+    return this.page.getByRole('textbox', { name: 'Password' });
   }
 
   async fillPasswordInput(password: string) {
@@ -32,7 +32,7 @@ export default class UserFormPage {
   }
 
   getPasswordConfirmationInput() {
-    return this.page.getByLabel('Confirmation');
+    return this.page.getByRole('textbox', { name: 'Confirmation' });
   }
 
   async fillPasswordConfirmationInput(passwordConfirmation: string) {

@@ -14,9 +14,10 @@ import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObject
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
-import { CollaborativeSecurity } from '../../../../utils/Security';
+import Security, { CollaborativeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import NoteEdition from './NoteEdition';
+import NoteDeletion from './NoteDeletion';
 
 const subscription = graphql`
     subscription RootNoteSubscription($id: ID!) {
@@ -97,6 +98,11 @@ const RootNote = () => {
                             <NoteEdition noteId={note.id}/>
                           </CollaborativeSecurity>
                         }
+                        DeleteComponent={({ isOpen, onClose }) => (
+                          <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                            <NoteDeletion id={note.id} isOpen={isOpen} handleClose={onClose} />
+                          </Security>
+                        )}
                         redirectToContent={false}
                         disableAuthorizedMembers={true}
                         enableEnricher={true}
@@ -111,6 +117,11 @@ const RootNote = () => {
                           <NoteEdition noteId={note.id}/>
                         </CollaborativeSecurity>
                       }
+                      DeleteComponent={({ isOpen, onClose }) => (
+                        <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                          <NoteDeletion id={note.id} isOpen={isOpen} handleClose={onClose} />
+                        </Security>
+                      )}
                       redirectToContent={false}
                       disableAuthorizedMembers={true}
                       enableEnricher={true}

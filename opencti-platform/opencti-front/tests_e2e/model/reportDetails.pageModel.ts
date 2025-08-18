@@ -50,10 +50,8 @@ export default class ReportDetailsPage {
   }
 
   async delete() {
-    await this.page.getByRole('button', { name: 'Update' })
-    .filter({ hasText: 'Update' })
-    .click();
-    await this.page.getByRole('button', { name: 'Delete' }).click();
+    await this.page.getByRole('button', { name: 'Popover of actions' }).click();
+    await this.page.getByRole('menuitem', { name: 'Delete' }).click();
     return this.page.getByRole('dialog').getByRole('button', { name: 'Confirm' }).click();
   }
 }

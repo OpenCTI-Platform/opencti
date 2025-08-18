@@ -123,6 +123,12 @@ enum FilterOperator {
   within
 }
 
+enum XTMHubRegistrationStatus {
+  registered
+  unregistered
+  lost_connectivity
+}
+
 # noinspection GraphQLSchemaValidation
 input FilterGroup {
   mode: FilterMode!
@@ -1004,6 +1010,7 @@ type BackgroundTaskError {
 enum BackgroundTaskScope {
   KNOWLEDGE
   USER
+  USER_NOTIFICATION
   SETTINGS
   IMPORT
   DASHBOARD
@@ -1028,6 +1035,11 @@ enum BackgroundTaskActionType {
   UNSHARE_MULTIPLE
   REMOVE_AUTH_MEMBERS
   REMOVE_FROM_DRAFT
+  ADD_ORGANIZATIONS
+  REMOVE_ORGANIZATIONS
+  ADD_GROUPS
+  REMOVE_GROUPS
+  SEND_EMAIL
 }
 enum BackgroundTaskContextType {
   ATTRIBUTE
@@ -1394,6 +1406,13 @@ type Settings implements InternalObject & BasicObject {
   request_access_enabled: Boolean! @auth
   # Technical
   editContext: [EditUserContext!] @auth(for: [SETTINGS_SETPARAMETERS])
+  # XTM Hub
+  xtm_hub_token: String @auth
+  xtm_hub_registration_user_id: String @auth
+  xtm_hub_registration_user_name: ID @auth
+  xtm_hub_last_connectivity_check: DateTime @auth
+  xtm_hub_registration_date: DateTime @auth
+  xtm_hub_registration_status: XTMHubRegistrationStatus @auth
 }
 
 ############## Groups
@@ -1740,6 +1759,12 @@ input UserAddInput {
   groups: [ID!]
   user_confidence_level: ConfidenceLevelInput
   prevent_default_groups: Boolean
+  email_template_id: String
+}
+
+input SendUserMailInput {
+  target_user_id: ID!
+  email_template_id: ID!
 }
 
 input ConfidenceLevelInput {
@@ -14126,6 +14151,9 @@ type Query {
     id: String
     toType: String
   ): DefinitionRefRelationship @auth(for: [KNOWLEDGE])
+  stixSchemaRefRelationshipsPossibleTypes(
+    type: String!
+  ): [String!]! @auth(for: [KNOWLEDGE])
   stixRefRelationshipsDistribution(
     field: String!
     operation: StatsOperation!
@@ -14697,6 +14725,7 @@ type Mutation {
   meEdit(input: [EditInput]!, password: String): MeUser @auth
   bookmarkAdd(id: ID!, type: String!): StixDomainObject @auth(for: [KNOWLEDGE])
   bookmarkDelete(id: ID!): ID @auth(for: [KNOWLEDGE])
+  sendUserMail(input: SendUserMailInput!): Boolean @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   logout: ID @auth
   roleAdd(input: RoleAddInput!): Role @auth(for: [SETTINGS_SETACCESSES])
   sessionKill(id: ID!): ID @auth(for: [SETTINGS_SETACCESSES])

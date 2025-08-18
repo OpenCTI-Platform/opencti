@@ -3,6 +3,8 @@ import { authenticator } from 'otplib';
 import * as R from 'ramda';
 import { uniq } from 'ramda';
 import { v4 as uuid } from 'uuid';
+import ejs from 'ejs';
+import { DateTime } from 'luxon';
 import { ACCOUNT_STATUS_ACTIVE, ACCOUNT_STATUS_EXPIRED, ACCOUNT_STATUSES, BUS_TOPICS, DEFAULT_ACCOUNT_STATUS, ENABLED_DEMO_MODE, logApp } from '../config/conf';
 import { AuthenticationFailure, DatabaseError, DraftLockedError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
@@ -75,6 +77,10 @@ import { cleanMarkings } from '../utils/markingDefinition-utils';
 import { UnitSystem } from '../generated/graphql';
 import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
+import { sendMail } from '../database/smtp';
+import { checkEnterpriseEdition } from '../enterprise-edition/ee';
+import { addUserEmailSendCount } from '../manager/telemetryManager';
+import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -101,7 +107,7 @@ const ME_USER_MODIFIABLE_ATTRIBUTES = [
   'password',
   'draft_context',
 ];
-const AVAILABLE_LANGUAGES = ['auto', 'es-es', 'fr-fr', 'ja-jp', 'zh-cn', 'en-us', 'de-de', 'ko-kr', 'ru-ru'];
+const AVAILABLE_LANGUAGES = ['auto', 'es-es', 'fr-fr', 'ja-jp', 'zh-cn', 'en-us', 'de-de', 'ko-kr', 'ru-ru', 'it-it'];
 
 const computeImpactedUsers = async (context, user, roleId) => {
   // Get all groups that have this role
@@ -220,6 +226,11 @@ export const findAllMembers = (context, user, args) => {
   return listEntities(context, user, types, args);
 };
 
+export const findUserWithCapabilities = async (context, user, capabilities) => {
+  const users = await getEntitiesListFromCache(context, user, ENTITY_TYPE_USER);
+  return users.filter((u) => u.capabilities.some((userCapability) => capabilities.some((capability) => capability === userCapability.name)));
+};
+
 export const findAllSystemMembers = () => {
   const members = R.values(INTERNAL_USERS_WITHOUT_REDACTED);
   return buildPagination(0, null, members.map((r) => ({ node: r })), members.length);
@@ -256,6 +267,19 @@ export const userOrganizationsPaginatedWithoutInferences = async (context, user,
 
 export const userOrganizationsPaginated = async (context, user, userId, opts) => {
   return listEntitiesThroughRelationsPaginated(context, user, userId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION, false, opts);
+};
+
+export const userRoles = async (context, _user, userId, opts) => {
+  const { orderBy, orderMode } = opts;
+  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const userLoaded = platformUsers.get(userId);
+  if (orderBy) {
+    if (orderMode === 'desc') {
+      return R.sortWith([R.descend(R.prop(orderBy))])(userLoaded.roles);
+    }
+    return R.sortWith([R.ascend(R.prop(orderBy))])(userLoaded.roles);
+  }
+  return userLoaded.roles;
 };
 
 export const userGroupsPaginated = async (context, user, userId, opts) => {
@@ -441,7 +465,7 @@ export const assignOrganizationToUser = async (context, user, userId, organizati
     event_scope: 'update',
     event_access: 'administration',
     message: `adds ${created.toType} \`${extractEntityRepresentativeName(created.to)}\` to user \`${actionEmail}\``,
-    context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input }
+    context_data: { id: targetUser.id, entity_type: ENTITY_TYPE_USER, input }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user);
 };
@@ -529,6 +553,78 @@ export const checkPasswordFromPolicy = async (context, password) => {
   }
 };
 
+export const sendEmailToUser = async (context, user, input) => {
+  await checkEnterpriseEdition(context);
+  const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
+
+  const users = await getEntitiesListFromCache(context, user, ENTITY_TYPE_USER);
+  const targetUser = users.find((usr) => input.target_user_id === usr.id || input.target_user_id === usr.standard_id);
+
+  if (!targetUser) {
+    throw UnsupportedError('Target user not found', { id: input.target_user_id });
+  }
+
+  const organizationNames = (targetUser.organizations ?? []).map((org) => org.name);
+
+  const emailTemplate = await internalLoadById(context, user, input.email_template_id);
+  if (!emailTemplate || emailTemplate.entity_type !== ENTITY_TYPE_EMAIL_TEMPLATE) {
+    throw UnsupportedError('Invalid email template', { id: input.email_template_id });
+  }
+
+  const preprocessedTemplate = emailTemplate.template_body
+    .replace(/\$user\.firstname/g, '<%= user.firstname %>')
+    .replace(/\$user\.lastname/g, '<%= user.lastname %>')
+    .replace(/\$user\.name/g, '<%= user.name %>')
+    .replace(/\$user\.user_email/g, '<%= user.user_email %>')
+    .replace(/\$user\.api_token/g, '<%= user.api_token %>')
+    .replace(/\$user\.account_status/g, '<%= user.account_status %>')
+    .replace(/\$user\.objectOrganization/g, '<%= organizationNames.join(", ") %>')
+    .replace(/\$user\.account_lock_after_date/g, '<%= user.account_lock_after_date %>')
+    .replace(/\$settings\.platform_url/g, '<%= platformUrl %>');
+
+  const platformUrl = settings.platform_url;
+
+  const renderedHtml = ejs.render(preprocessedTemplate, {
+    platformUrl,
+    user: {
+      ...targetUser,
+      account_lock_after_date: targetUser.account_lock_after_date
+        ? DateTime.fromISO(targetUser.account_lock_after_date).toFormat('yyyy-MM-dd')
+        : ''
+    },
+    organizationNames,
+  });
+
+  const sendMailArgs = {
+    from: `${emailTemplate.sender_email} <${settings.platform_email}>`,
+    to: targetUser.user_email,
+    subject: emailTemplate.email_object,
+    html: renderedHtml,
+  };
+
+  await sendMail(sendMailArgs, {
+    identifier: `user-${targetUser.id}`,
+    category: 'user-notification',
+  });
+  await addUserEmailSendCount();
+  await publishUserAction({
+    user,
+    event_type: 'command',
+    event_scope: 'send',
+    event_access: 'administration',
+    context_data: {
+      id: targetUser.id,
+      entity_type: ENTITY_TYPE_USER,
+      entity_name: targetUser.name,
+      input: {
+        ...input,
+        to: targetUser.user_email
+      }
+    }
+  });
+  return true;
+};
+
 export const addUser = async (context, user, newUser) => {
   const userEmail = newUser.user_email.toLowerCase();
   const existingUser = await elLoadBy(context, SYSTEM_USER, 'user_email', userEmail, ENTITY_TYPE_USER);
@@ -570,7 +666,8 @@ export const addUser = async (context, user, newUser) => {
     R.assoc('personal_notifiers', [STATIC_NOTIFIER_UI, STATIC_NOTIFIER_EMAIL]),
     R.dissoc('roles'),
     R.dissoc('groups'),
-    R.dissoc('prevent_default_groups')
+    R.dissoc('prevent_default_groups'),
+    R.dissoc('email_template_id'),
   )(newUser);
   const { element, isCreation } = await createEntity(context, user, userToCreate, ENTITY_TYPE_USER, { complete: true });
   // Link to organizations
@@ -620,7 +717,20 @@ export const addUser = async (context, user, newUser) => {
       context_data: { id: element.id, entity_type: ENTITY_TYPE_USER, input: newUser }
     });
   }
-  return notify(BUS_TOPICS[ENTITY_TYPE_USER].ADDED_TOPIC, element, user);
+
+  await notify(BUS_TOPICS[ENTITY_TYPE_USER].ADDED_TOPIC, element, user);
+  if (newUser.email_template_id) {
+    const input = {
+      target_user_id: element.id,
+      email_template_id: newUser.email_template_id,
+    };
+    try {
+      await sendEmailToUser(context, user, input);
+    } catch (err) {
+      logApp.error('Error sending email on user creation', { createdUserID: user.id, emailTemplateId: newUser.email_template_id });
+    }
+  }
+  return element;
 };
 
 export const roleEditField = async (context, user, roleId, input) => {
@@ -989,7 +1099,7 @@ export const userAddRelation = async (context, user, userId, input) => {
     event_scope: 'update',
     event_access: 'administration',
     message: `adds ${relationData.toType} \`${extractEntityRepresentativeName(relationData.to)}\` for user \`${actionEmail}\``,
-    context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input: finalInput }
+    context_data: { id: userData.id, entity_type: ENTITY_TYPE_USER, input: finalInput }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userData, user).then(() => relationData);
 };
@@ -1052,7 +1162,7 @@ export const userDeleteOrganizationRelation = async (context, user, userId, toId
     event_scope: 'update',
     event_access: 'administration',
     message: `removes ${to.entity_type} \`${extractEntityRepresentativeName(to)}\` for user \`${actionEmail}\``,
-    context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input }
+    context_data: { id: targetUser.id, entity_type: ENTITY_TYPE_USER, input }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user);
 };
@@ -1356,7 +1466,7 @@ export const buildCompleteUsers = async (context, clients) => {
     }
     const isByPass = R.find((s) => s.name === BYPASS, capabilities) !== undefined;
     const organizations = (user?.organizationIds ?? []).map((organizationId) => resolvedObject[organizationId])
-      .filter((e) => isNotEmptyField(e));
+      .filter((e) => isNotEmptyField(e) && e.entity_type === ENTITY_TYPE_IDENTITY_ORGANIZATION);
     const defaultHiddenTypesGroups = getDefaultHiddenTypes(groups);
     const defaultHiddenTypesOrgs = getDefaultHiddenTypes(organizations);
     const default_hidden_types = uniq(defaultHiddenTypesGroups.concat(defaultHiddenTypesOrgs));

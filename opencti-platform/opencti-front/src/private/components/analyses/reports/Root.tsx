@@ -27,9 +27,10 @@ import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCo
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import useGranted, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import ReportEdition from './ReportEdition';
+import ReportDeletion from './ReportDeletion';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 
 const subscription = graphql`
@@ -116,6 +117,11 @@ const RootReport = () => {
                     EditComponent={(
                       <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={currentAccessRight.canEdit}>
                         <ReportEdition reportId={report.id} />
+                      </Security>
+                    )}
+                    DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+                      <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                        <ReportDeletion reportId={report.id} isOpen={isOpen} handleClose={onClose} />
                       </Security>
                     )}
                     enableQuickSubscription={true}

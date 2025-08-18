@@ -262,7 +262,7 @@ const cvss2OutputKeyCase: Record<string, string> = {
 
 // --- Helpers ---
 
-const getFullValue = (
+export const getFullValue = (
   metric: string | undefined,
   value: string | null,
   config: CvssConfig
@@ -289,7 +289,7 @@ const getFullValue = (
   return value;
 };
 
-const getCodeValue = (
+export const getCodeValue = (
   metric: string,
   value: string,
   config: CvssConfig
@@ -297,22 +297,38 @@ const getCodeValue = (
   const map = config.fullToCode[metric];
   if (!map) return value;
 
+  let processedValue = value;
+
+  // Special handling for Attack Vector (AV) with variations of "Adjacent Network"
+  if (metric === 'AV') {
+    // Match "adjacent" followed by optional space, underscore, or hyphen, then "network"
+    const adjacentNetworkRegex = /^adjacent[\s_-]?network$/i;
+    if (adjacentNetworkRegex.test(value)) {
+      // Determine the correct value based on CVSS version
+      if (map['Adjacent Network']) {
+        processedValue = 'Adjacent Network'; // CVSS2
+      } else if (map.Adjacent) {
+        processedValue = 'Adjacent'; // CVSS3/4
+      }
+    }
+  }
+
   // Direct match (case-sensitive)
-  if (map[value]) return map[value];
+  if (map[processedValue]) return map[processedValue];
 
   // Case-insensitive full label match
   const found = Object.entries(map).find(
-    ([full]) => full.toLowerCase() === value.toLowerCase()
+    ([full]) => full.toLowerCase() === processedValue.toLowerCase()
   );
   if (found) return found[1];
 
   // Also, code input in lowercase? ("n" instead of "N")
   const codeFromLower = Object.entries(map).find(
-    ([, code]) => code.toLowerCase() === value.toLowerCase()
+    ([, code]) => code.toLowerCase() === processedValue.toLowerCase()
   );
   if (codeFromLower) return codeFromLower[1];
 
-  return value;
+  return processedValue;
 };
 
 // --- CVSS Criticity ---

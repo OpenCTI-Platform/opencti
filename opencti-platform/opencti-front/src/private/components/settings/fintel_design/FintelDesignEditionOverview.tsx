@@ -2,14 +2,12 @@ import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
-import { Stack } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { FieldOption } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { FintelDesignEditionOverview_fintelDesign$key } from './__generated__/FintelDesignEditionOverview_fintelDesign.graphql';
-import FintelDesignDeletion from './FintelDesignDeletion';
 
 const fintelDesignEditionPatchMutation = graphql`
   mutation FintelDesignEditionOverviewFieldPatchMutation($id: ID!, $input: [EditInput!]) {
@@ -93,11 +91,6 @@ FintelDesignEditionOverviewProps
             style={{ marginTop: 20 }}
             onSubmit={handleSubmitField}
           />
-          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
-            <FintelDesignDeletion
-              id={fintelDesign.id}
-            />
-          </Stack>
         </Form>
       )}
     </Formik>

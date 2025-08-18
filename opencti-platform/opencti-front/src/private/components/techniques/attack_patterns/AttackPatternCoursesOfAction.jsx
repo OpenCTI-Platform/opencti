@@ -1,7 +1,5 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose, filter } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
+import React from 'react';
+import { filter } from 'ramda';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -12,40 +10,26 @@ import IconButton from '@mui/material/IconButton';
 import { LinkOff } from '@mui/icons-material';
 import { ProgressWrench } from 'mdi-material-ui';
 import { createFragmentContainer, graphql } from 'react-relay';
+import { ListItemButton } from '@mui/material';
 import AddCoursesOfAction from './AddCoursesOfAction';
 import { addCoursesOfActionMutationRelationDelete } from './AddCoursesOfActionLines';
 import { commitMutation } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
-const styles = (theme) => ({
-  avatar: {
-    width: 24,
-    height: 24,
-    backgroundColor: theme.palette.primary.main,
-  },
-  avatarDisabled: {
-    width: 24,
-    height: 24,
-  },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey[700],
-  },
-});
+const AttackPatternCoursesOfActionComponent = ({ attackPattern }) => {
+  const { t_i18n } = useFormatter();
 
-class AttackPatternCoursesOfActionComponent extends Component {
-  removeCourseOfAction(courseOfActionEdge) {
+  const removeCourseOfAction = (courseOfActionEdge) => {
     commitMutation({
       mutation: addCoursesOfActionMutationRelationDelete,
       variables: {
         fromId: courseOfActionEdge.node.id,
-        toId: this.props.attackPattern.id,
+        toId: attackPattern.id,
         relationship_type: 'mitigates',
       },
       updater: (store) => {
-        const node = store.get(this.props.attackPattern.id);
+        const node = store.get(attackPattern.id);
         const coursesOfAction = node.getLinkedRecord('coursesOfAction');
         const edges = coursesOfAction.getLinkedRecords('edges');
         const newEdges = filter(
@@ -56,45 +40,43 @@ class AttackPatternCoursesOfActionComponent extends Component {
         coursesOfAction.setLinkedRecords(newEdges, 'edges');
       },
     });
-  }
+  };
 
-  render() {
-    const { t, attackPattern } = this.props;
-    return (
-      <div style={{ marginTop: 20 }}>
-        <div style={{ display: 'flex', flexDirection: 'row' }}>
-          <Typography variant="h3" gutterBottom={true}>
-            {t('Courses of action')}
-          </Typography>
-          <AddCoursesOfAction
-            attackPattern={attackPattern}
-            attackPatternCoursesOfAction={attackPattern.coursesOfAction.edges}
-          />
-        </div>
-        <div className="clearfix" />
-        <List style={{ marginTop: -10, paddingTop: 0 }}>
-          <FieldOrEmpty source={attackPattern.coursesOfAction.edges}>
-            {attackPattern.coursesOfAction.edges.map((courseOfActionEdge) => {
-              const courseOfAction = courseOfActionEdge.node;
-              return (
-                <ListItem
-                  key={courseOfAction.id}
-                  dense={true}
-                  divider={true}
+  return (
+    <div style={{ marginTop: 20 }}>
+      <div style={{ display: 'flex', flexDirection: 'row' }}>
+        <Typography variant="h3" gutterBottom={true}>
+          {t_i18n('Courses of action')}
+        </Typography>
+        <AddCoursesOfAction
+          attackPattern={attackPattern}
+          attackPatternCoursesOfAction={attackPattern.coursesOfAction.edges}
+        />
+      </div>
+      <div className="clearfix" />
+      <List style={{ marginTop: -10 }}>
+        <FieldOrEmpty source={attackPattern.coursesOfAction.edges}>
+          {attackPattern.coursesOfAction.edges.map((courseOfActionEdge) => {
+            const courseOfAction = courseOfActionEdge.node;
+            return (
+              <ListItem
+                key={courseOfAction.id}
+                dense={true}
+                divider={true}
+                disablePadding={true}
+                secondaryAction={
+                  <IconButton
+                    aria-label="Remove"
+                    onClick={() => removeCourseOfAction(courseOfActionEdge)}
+                    size="large"
+                  >
+                    <LinkOff/>
+                  </IconButton>
+                  }
+              >
+                <ListItemButton
                   component={Link}
                   to={`/dashboard/techniques/courses_of_action/${courseOfAction.id}`}
-                  secondaryAction={
-                    <IconButton
-                      aria-label="Remove"
-                      onClick={this.removeCourseOfAction.bind(
-                        this,
-                        courseOfActionEdge,
-                      )}
-                      size="large"
-                    >
-                      <LinkOff/>
-                    </IconButton>
-                  }
                 >
                   <ListItemIcon>
                     <ListItemIcon>
@@ -102,21 +84,14 @@ class AttackPatternCoursesOfActionComponent extends Component {
                     </ListItemIcon>
                   </ListItemIcon>
                   <ListItemText primary={courseOfAction.name}/>
-                </ListItem>
-              );
-            })}
-          </FieldOrEmpty>
-        </List>
-      </div>
-    );
-  }
-}
-
-AttackPatternCoursesOfActionComponent.propTypes = {
-  classes: PropTypes.object,
-  t: PropTypes.func,
-  fld: PropTypes.func,
-  attackPattern: PropTypes.object,
+                </ListItemButton>
+              </ListItem>
+            );
+          })}
+        </FieldOrEmpty>
+      </List>
+    </div>
+  );
 };
 
 const AttackPatternCoursesOfAction = createFragmentContainer(
@@ -143,7 +118,4 @@ const AttackPatternCoursesOfAction = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(AttackPatternCoursesOfAction);
+export default AttackPatternCoursesOfAction;

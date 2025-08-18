@@ -2,6 +2,7 @@ import React from 'react';
 import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from './i18n';
+import { chipInListBasicStyle } from '../utils/chipStyle';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -10,11 +11,8 @@ const useStyles = makeStyles(() => ({
     borderRadius: 4,
   },
   chipInList: {
-    fontSize: 12,
-    height: 20,
-    float: 'left',
+    ...chipInListBasicStyle,
     width: 120,
-    borderRadius: 4,
   },
 }));
 

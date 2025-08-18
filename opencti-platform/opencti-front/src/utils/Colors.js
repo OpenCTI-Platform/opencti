@@ -290,6 +290,9 @@ export const itemColor = (type, dark = false, reversed = false) => {
     case 'uses':
     case 'located-at':
     case 'related-to':
+    case 'technology-to':
+    case 'technology':
+    case 'demonstrates':
     case 'mitigates':
     case 'impersonates':
     case 'indicates':

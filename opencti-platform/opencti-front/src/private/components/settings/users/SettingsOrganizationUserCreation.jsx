@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
-import * as R from 'ramda';
-import { omit } from 'ramda';
 import * as Yup from 'yup';
 import { makeStyles } from '@mui/styles';
 import { graphql } from 'react-relay';
 import MenuItem from '@mui/material/MenuItem';
 import { Add } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
+import EmailTemplateField from '../../common/form/EmailTemplateField';
 import Drawer from '../../common/drawer/Drawer';
 import GroupField from '../../common/form/GroupField';
 import { convertGrantableGroups } from '../organizations/SettingsOrganizationEdition';
@@ -45,12 +44,16 @@ const userMutation = graphql`
   mutation SettingsOrganizationUserCreationMutation($input: UserAddInput!) {
     userAdd(input: $input) {
       id
+      entity_type
       name
       user_email
       firstname
       external
       lastname
       otp_activated
+        effective_confidence_level {
+          max_confidence
+        }
       created_at
     }
   }
@@ -92,17 +95,16 @@ const SettingsOrganizationUserCreation = ({
   const [openAddUser, setOpenAddUser] = useState(false);
   const onReset = () => setOpenAddUser(false);
   const onSubmit = (values, { setSubmitting, resetForm }) => {
-    const finalValues = R.pipe(
-      omit(['confirmation']),
-      R.assoc(
-        'objectOrganization',
-        (values.objectOrganization ?? []).map((o) => o.value),
-      ),
-      R.assoc(
-        'groups',
-        (values.groups ?? []).map((g) => g.value),
-      ),
-    )(values);
+    const finalValues = {
+      ...values,
+      objectOrganization: (values.objectOrganization ?? []).map((o) => o.value),
+      groups: (values.groups ?? []).map((o) => o.value),
+      email_template_id: values.email_template_id?.value?.id ?? null,
+    };
+
+    // remove technical fields
+    delete finalValues.confirmation;
+
     commitMutation({
       mutation: userMutation,
       variables: {
@@ -173,6 +175,7 @@ const SettingsOrganizationUserCreation = ({
               : [],
             account_status: 'Active',
             account_lock_after_date: null,
+            email_template_id: null,
           }}
           validationSchema={userValidation(t_i18n)}
           onSubmit={onSubmit}
@@ -249,14 +252,16 @@ const SettingsOrganizationUserCreation = ({
                 label="Organizations"
                 style={fieldSpacingContainerStyle}
               />
-              { organization && <GroupField
-                name="groups"
-                label={t_i18n('Add a group')}
-                multiple={true}
-                containerStyle={{ width: '100%' }}
-                predefinedGroups={convertGrantableGroups(organization)}
-                style={fieldSpacingContainerStyle}
-                                /> }
+              {organization && (
+                <GroupField
+                  name="groups"
+                  label={t_i18n('Add a group')}
+                  multiple={true}
+                  containerStyle={{ width: '100%' }}
+                  predefinedGroups={convertGrantableGroups(organization)}
+                  style={fieldSpacingContainerStyle}
+                />
+              )}
               <Field
                 component={SelectField}
                 variant="standard"
@@ -282,6 +287,10 @@ const SettingsOrganizationUserCreation = ({
                   variant: 'standard',
                   fullWidth: true,
                 }}
+              />
+              <EmailTemplateField
+                name="email_template_id"
+                label={t_i18n('Email template')}
               />
               <div className={classes.buttons}>
                 <Button

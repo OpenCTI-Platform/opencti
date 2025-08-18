@@ -8,6 +8,7 @@ import { isStixMetaObject } from './stixMetaObject';
 import { isStixDomainObject } from './stixDomainObject';
 import type { StixArtifact, StixFile, StixX509Certificate } from '../types/stix-2-1-sco';
 import type { HashInput } from '../generated/graphql';
+import { isStixRefRelationship } from './stixRefRelationship';
 
 export const SENSITIVE_HASHES = ['SSDEEP', 'SDHASH'];
 export const FUZZY_HASH_ALGORITHMS = ['SSDEEP', 'SDHASH', 'TLSH', 'LZJD'];
@@ -52,6 +53,7 @@ export const isUpdatedAtObject = (type: string): boolean => {
     || isStixCoreObject(type)
     || isStixCoreRelationship(type)
     || isStixSightingRelationship(type)
+    || isStixRefRelationship(type)
   );
 };
 

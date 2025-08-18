@@ -2,11 +2,20 @@ import { uniq } from 'ramda';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
-import { ENTITY_TYPE_BACKGROUND_TASK } from '../schema/internalObject';
+import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { now } from '../utils/format';
-import { isUserHasCapability, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE, MEMBER_ACCESS_RIGHT_ADMIN, SETTINGS_SET_ACCESSES, SETTINGS_SETLABELS, SYSTEM_USER } from '../utils/access';
+import {
+  isOnlyOrgaAdmin,
+  isUserHasCapability,
+  KNOWLEDGE_KNASKIMPORT,
+  KNOWLEDGE_KNUPDATE,
+  MEMBER_ACCESS_RIGHT_ADMIN,
+  SETTINGS_SET_ACCESSES,
+  SETTINGS_SETLABELS,
+  SYSTEM_USER
+} from '../utils/access';
 import { isKnowledge, KNOWLEDGE_DELETE, KNOWLEDGE_UPDATE } from '../schema/general';
-import { ForbiddenAccess, UnsupportedError } from '../config/errors';
+import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
 import { elIndex } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { ENTITY_TYPE_NOTIFICATION } from '../modules/notification/notification-types';
@@ -23,20 +32,35 @@ import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { TYPE_FILTER, USER_ID_FILTER } from '../utils/filtering/filtering-constants';
 import { createWork } from './work';
 import { getBestBackgroundConnectorId } from '../database/rabbitmq';
+import { addUserBackgroundTaskCount } from '../manager/telemetryManager';
 
 export const TASK_TYPE_QUERY = 'QUERY';
 export const TASK_TYPE_RULE = 'RULE';
 export const TASK_TYPE_LIST = 'LIST';
 
+export const ACTION_TYPE_ADD = 'ADD';
 export const ACTION_TYPE_DELETE = 'DELETE';
+export const ACTION_TYPE_REMOVE = 'REMOVE';
+export const ACTION_TYPE_REPLACE = 'REPLACE';
 export const ACTION_TYPE_RESTORE = 'RESTORE';
+export const ACTION_TYPE_MERGE = 'MERGE';
+export const ACTION_TYPE_PROMOTE = 'PROMOTE';
+export const ACTION_TYPE_ENRICHMENT = 'ENRICHMENT';
 export const ACTION_TYPE_COMPLETE_DELETE = 'COMPLETE_DELETE';
 export const ACTION_TYPE_SHARE = 'SHARE';
 export const ACTION_TYPE_UNSHARE = 'UNSHARE';
+export const ACTION_TYPE_SEND_EMAIL = 'SEND_EMAIL';
 export const ACTION_TYPE_SHARE_MULTIPLE = 'SHARE_MULTIPLE';
 export const ACTION_TYPE_UNSHARE_MULTIPLE = 'UNSHARE_MULTIPLE';
 export const ACTION_TYPE_REMOVE_AUTH_MEMBERS = 'REMOVE_AUTH_MEMBERS';
 export const ACTION_TYPE_REMOVE_FROM_DRAFT = 'REMOVE_FROM_DRAFT';
+export const ACTION_TYPE_ADD_ORGANIZATIONS = 'ADD_ORGANIZATIONS';
+export const ACTION_TYPE_REMOVE_ORGANIZATIONS = 'REMOVE_ORGANIZATIONS';
+export const ACTION_TYPE_ADD_GROUPS = 'ADD_GROUPS';
+export const ACTION_TYPE_REMOVE_GROUPS = 'REMOVE_GROUPS';
+export const ACTION_TYPE_RULE_APPLY = 'RULE_APPLY';
+export const ACTION_TYPE_RULE_CLEAR = 'RULE_CLEAR';
+export const ACTION_TYPE_RULE_ELEMENT_RESCAN = 'RULE_ELEMENT_RESCAN';
 
 const isDeleteRestrictedAction = ({ type }) => {
   return type === ACTION_TYPE_DELETE || type === ACTION_TYPE_RESTORE || type === ACTION_TYPE_COMPLETE_DELETE;
@@ -46,6 +70,16 @@ const areParentTypesKnowledge = (parentTypes) => parentTypes && parentTypes.flat
 // check a user has the right to create a list or a query background task
 export const checkActionValidity = async (context, user, input, scope, taskType) => {
   const { actions, filters: baseFilterString, ids } = input;
+  // check actions validity
+  const replaceActionsFields = actions
+    .filter((a) => !a.type || a.type === ACTION_TYPE_REPLACE)
+    .map((a) => a.field).filter(Boolean);
+  const severalReplaceOnSameKey = replaceActionsFields.length !== uniq(replaceActionsFields).length;
+  const replaceAndOtherActionOnSameKey = actions.filter((a) => a.type && a.type !== ACTION_TYPE_REPLACE && replaceActionsFields.includes(a.field)).length > 0;
+  if (severalReplaceOnSameKey || replaceAndOtherActionOnSameKey) {
+    throw FunctionalError('A single task cannot perform several actions on the same field if one action is a replace.', { data: replaceActionsFields });
+  }
+  // check rights
   const baseFilterObject = baseFilterString ? JSON.parse(baseFilterString) : undefined;
   const filters = isFilterGroupNotEmpty(baseFilterObject)
     ? (baseFilterObject?.filters ?? [])
@@ -91,7 +125,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
     } else {
       throw UnsupportedError('A background task should be of type query or list.');
     }
-  } else if (scope === BackgroundTaskScope.User) { // 03. Background task of scope User (i.e. on Notifications)
+  } else if (scope === BackgroundTaskScope.UserNotification) { // 03. Background task of scope UserNotification (i.e. on Notifications)
     // Check the targeted entities are Notifications
     // and the user has the right to modify them (= notifications are the ones of the user OR the user has SET_ACCESS capability)
     if (taskType === TASK_TYPE_QUERY) {
@@ -124,7 +158,30 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
     } else {
       throw UnsupportedError('A background task should be of type query or list.');
     }
-  } else if (scope === BackgroundTaskScope.Import) { // 04. Background task of scope Import (i.e. on files and workbenches in Data/import)
+  } else if (scope === BackgroundTaskScope.User) { // 04. Background task of scope User
+    // 2.1. The user should have the capability SETTINGS_SET_ACCESSES
+    const isAuthorized = isUserHasCapability(user, SETTINGS_SET_ACCESSES) || isOnlyOrgaAdmin(user);
+    if (!isAuthorized) {
+      throw ForbiddenAccess();
+    }
+    // Check the targeted entities are User
+    if (taskType === TASK_TYPE_QUERY) {
+      const isUsers = entityTypeFilters.length === 1
+          && entityTypeFilters[0].values.length === 1
+          && entityTypeFilters[0].values[0] === 'User';
+      if (!isUsers) {
+        throw ForbiddenAccess('The targeted ids are not users.');
+      }
+    } else if (taskType === TASK_TYPE_LIST) {
+      const objects = await Promise.all(ids.map((id) => storeLoadById(context, user, id, ENTITY_TYPE_USER)));
+      const isNotUsers = objects.includes(undefined);
+      if (isNotUsers) {
+        throw ForbiddenAccess('The targeted ids are not users.');
+      }
+    } else {
+      throw UnsupportedError('A background task should be of type query or list.');
+    }
+  } else if (scope === BackgroundTaskScope.Import) { // 05. Background task of scope Import (i.e. on files and workbenches in Data/import)
     // The user should have the capability KNOWLEDGE_KNASKIMPORT
     const isAuthorized = isUserHasCapability(user, KNOWLEDGE_KNASKIMPORT);
     if (!isAuthorized) {
@@ -290,6 +347,10 @@ export const createDefaultTask = async (context, user, input, taskType, taskExpe
       authorized_authorities: authorizedAuthoritiesForTask(scope),
     };
   }
+
+  if (scope === BackgroundTaskScope.User) {
+    await addUserBackgroundTaskCount();
+  }
   return task;
 };
 
@@ -300,6 +361,7 @@ const authorizedAuthoritiesForTask = (scope) => {
     case 'KNOWLEDGE':
       return [KNOWLEDGE_KNUPDATE];
     case 'USER':
+    case 'USER_NOTIFICATION':
       return [SETTINGS_SET_ACCESSES];
     case 'IMPORT':
       return [KNOWLEDGE_KNASKIMPORT];

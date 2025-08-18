@@ -10,7 +10,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import inject18n from '../../../../components/i18n';
-import StixNestedRefRelationCreationFromEntity from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipCreationFromEntity';
+import StixNestedRefRelationshipCreationFromEntityContainer from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipCreationFromEntityContainer';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import SearchInput from '../../../../components/SearchInput';
@@ -174,20 +174,6 @@ class StixCyberObservableNestedEntities extends Component {
     );
   }
 
-  getTargetStixCoreObjectTypes() {
-    const { entityType } = this.props;
-
-    if (entityType === 'Network-Traffic') {
-      return [
-        'IPv4-Addr',
-        'IPv6-Addr',
-        'Domain-Name',
-        'Mac-Addr',
-      ];
-    }
-    return undefined;
-  }
-
   render() {
     const { searchTerm, sortBy, orderAsc } = this.state;
     const { entityId, t, entityType, classes } = this.props;
@@ -198,8 +184,6 @@ class StixCyberObservableNestedEntities extends Component {
       orderMode: orderAsc ? 'asc' : 'desc',
     };
 
-    const targetStixCoreObjectTypes = this.getTargetStixCoreObjectTypes();
-
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
@@ -209,12 +193,11 @@ class StixCyberObservableNestedEntities extends Component {
           needs={[KNOWLEDGE_KNUPDATE]}
           placeholder={<div style={{ height: 29 }} />}
         >
-          <StixNestedRefRelationCreationFromEntity
+          <StixNestedRefRelationshipCreationFromEntityContainer
             paginationOptions={paginationOptions}
             entityId={entityId}
             variant="inLine"
             entityType={entityType}
-            targetStixCoreObjectTypes={targetStixCoreObjectTypes}
           />
         </Security>
         <div style={{ float: 'right', marginTop: -10 }}>

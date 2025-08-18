@@ -141,9 +141,9 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
           </Slide>
 
           <Dialog
-            PaperProps={{ elevation: 1 }}
+            slotProps={{ paper: { elevation: 1 } }}
             open={isTagDialogOpen}
-            TransitionComponent={Transition}
+            slots={{ transition: Transition }}
             onClose={toggleTagDialog}
             fullWidth
           >

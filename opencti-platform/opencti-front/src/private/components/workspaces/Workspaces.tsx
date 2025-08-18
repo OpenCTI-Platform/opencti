@@ -33,6 +33,7 @@ const workspaceLineFragment = graphql`
       entity_type
     }
     currentUserAccessRight
+    ...WorkspacePopoverFragment
   }
 `;
 
@@ -211,7 +212,7 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
           actions={(row) => (
             <Security needs={row.type === 'dashboard' ? [EXPLORE] : [INVESTIGATION_INUPDATE]}>
               <WorkspacePopover
-                workspace={row}
+                data={row}
                 paginationOptions={workspacePaginationOptions}
               />
             </Security>

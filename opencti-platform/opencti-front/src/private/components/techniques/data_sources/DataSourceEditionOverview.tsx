@@ -3,7 +3,6 @@ import { graphql, useFragment } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
-import { Stack } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -22,7 +21,6 @@ import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeCon
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { dataComponentEditionOverviewFocus } from '../data_components/DataComponentEditionOverview';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-import DataSourceDeletion from './DataSourceDeletion';
 
 const dataSourceMutationFieldPatch = graphql`
   mutation DataSourceEditionOverviewFieldPatchMutation(
@@ -359,21 +357,16 @@ DataSourceEditionOverviewProps
             multiple={true}
             editContext={context}
           />
-          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
-            <DataSourceDeletion
+          {enableReferences && (
+            <CommitMessage
+              submitForm={submitForm}
+              disabled={isSubmitting || !isValid || !dirty}
+              setFieldValue={setFieldValue}
+              open={false}
+              values={values.references}
               id={dataSource.id}
             />
-            {enableReferences && (
-              <CommitMessage
-                submitForm={submitForm}
-                disabled={isSubmitting || !isValid || !dirty}
-                setFieldValue={setFieldValue}
-                open={false}
-                values={values.references}
-                id={dataSource.id}
-              />
-            )}
-          </Stack>
+          )}
         </Form>
       )}
     </Formik>

@@ -37,6 +37,7 @@ import QuickRelativeDateFiltersButtons from './QuickRelativeDateFiltersButtons';
 import DateRangeFilter from './DateRangeFilter';
 // eslint-disable-next-line import/no-cycle
 import FilterFiltersInput from './FilterFiltersInput';
+import stopEvent from '../../utils/domEvent';
 
 interface FilterChipMenuProps {
   handleClose: () => void;
@@ -296,10 +297,14 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
           const actualFilterValues = subKey ? filterValues.filter((fVal) => fVal && fVal.key === subKey).at(0)?.values ?? [] : filterValues;
           const checked = actualFilterValues.includes(option.value);
           const disabledOptions = disabled && checked && actualFilterValues.length === 1;
+
+          // Extract key from props to avoid React warning
+          const { key, ...otherProps } = props;
+
           return (
-            <Tooltip title={option.label} key={option.label} followCursor>
+            <Tooltip title={option.label} key={key || option.value} followCursor>
               <li
-                {...props}
+                {...otherProps}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     e.stopPropagation();
@@ -396,6 +401,22 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
           onChange={(event) => handleChangeOperator(event, finalFilterDefinition)}
           style={{ marginBottom: 15 }}
           disabled={disabled}
+          MenuProps={{
+            // Force MUI to use a backdrop
+            hideBackdrop: false,
+            BackdropProps: {
+              style: {
+                // Make the backdrop invisible because we already have one
+                backgroundColor: 'rgba(0, 0, 0, 0)',
+              },
+              // Prevent clicks from going through
+              onClick: (e) => {
+                stopEvent(e);
+                handleClose();
+              },
+              onMouseDown: stopEvent,
+            },
+          }}
         >
           {availableOperators.map((value) => (
             <MenuItem key={value} value={value}>
@@ -416,15 +437,15 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   let disableSubfilter1 = false;
   let disableSubfilter2 = false;
   if (filterDefinition?.subFilters
-      && filterDefinition.subFilters.length > 1
-      && filterDefinition?.subFilters[1].filterKey === 'dynamic'
-      && filter?.values.filter((f) => f.key === 'relationship_type').length === 0
+    && filterDefinition.subFilters.length > 1
+    && filterDefinition?.subFilters[1].filterKey === 'dynamic'
+    && filter?.values.filter((f) => f.key === 'relationship_type').length === 0
   ) {
     disableSubfilter2 = true;
   } else if (filterDefinition?.subFilters
-      && filterDefinition.subFilters.length > 1
-      && filterDefinition?.subFilters[1].filterKey === 'dynamic'
-      && (filter?.values.filter((f) => f.key === 'dynamic')?.length ?? 0) > 0) {
+    && filterDefinition.subFilters.length > 1
+    && filterDefinition?.subFilters[1].filterKey === 'dynamic'
+    && (filter?.values.filter((f) => f.key === 'dynamic')?.length ?? 0) > 0) {
     disableSubfilter1 = true;
   }
   return (
@@ -436,7 +457,26 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
         vertical: 'bottom',
         horizontal: 'left',
       }}
-      slotProps={{ paper: { elevation: 1, style: { marginTop: 10 } } }}
+      // Force MUI to use a backdrop
+      hideBackdrop={false}
+      slotProps={{
+        paper: {
+          elevation: 1,
+          style: { marginTop: 10 },
+        },
+        backdrop: {
+          style: {
+            // Make the backdrop invisible because we already have one
+            backgroundColor: 'rgba(0, 0, 0, 0)',
+          },
+          // Prevent clicks from going through
+          onClick: (e) => {
+            stopEvent(e);
+            handleClose();
+          },
+          onMouseDown: stopEvent,
+        },
+      }}
     >
       {filterDefinition?.subFilters && filterDefinition.subFilters.length > 1
         ? <div

@@ -7,6 +7,7 @@ import { compose } from 'ramda';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useTheme } from '@mui/styles';
 import inject18n from './i18n';
+import { chipInListBasicStyle } from '../utils/chipStyle';
 
 const styles = () => ({
   chip: {
@@ -46,12 +47,9 @@ const styles = () => ({
     width: 150,
   },
   chipInList: {
-    fontSize: 12,
+    ...chipInListBasicStyle,
     lineHeight: '12px',
-    height: 20,
-    float: 'left',
     textTransform: 'uppercase',
-    borderRadius: 4,
     width: 100,
   },
 });

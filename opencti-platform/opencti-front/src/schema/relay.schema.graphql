@@ -132,6 +132,12 @@ enum FilterOperator {
   within
 }
 
+enum XTMHubRegistrationStatus {
+  registered
+  unregistered
+  lost_connectivity
+}
+
 input FilterGroup {
   mode: FilterMode!
   filters: [Filter!]!
@@ -1066,6 +1072,7 @@ type BackgroundTaskError {
 enum BackgroundTaskScope {
   KNOWLEDGE
   USER
+  USER_NOTIFICATION
   SETTINGS
   IMPORT
   DASHBOARD
@@ -1091,6 +1098,11 @@ enum BackgroundTaskActionType {
   UNSHARE_MULTIPLE
   REMOVE_AUTH_MEMBERS
   REMOVE_FROM_DRAFT
+  ADD_ORGANIZATIONS
+  REMOVE_ORGANIZATIONS
+  ADD_GROUPS
+  REMOVE_GROUPS
+  SEND_EMAIL
 }
 
 enum BackgroundTaskContextType {
@@ -1470,6 +1482,12 @@ type Settings implements InternalObject & BasicObject {
   playground_enabled: Boolean!
   request_access_enabled: Boolean!
   editContext: [EditUserContext!]
+  xtm_hub_token: String
+  xtm_hub_registration_user_id: String
+  xtm_hub_registration_user_name: ID
+  xtm_hub_last_connectivity_check: DateTime
+  xtm_hub_registration_date: DateTime
+  xtm_hub_registration_status: XTMHubRegistrationStatus
 }
 
 enum GroupsOrdering {
@@ -1814,6 +1832,12 @@ input UserAddInput {
   groups: [ID!]
   user_confidence_level: ConfidenceLevelInput
   prevent_default_groups: Boolean
+  email_template_id: String
+}
+
+input SendUserMailInput {
+  target_user_id: ID!
+  email_template_id: ID!
 }
 
 input ConfidenceLevelInput {
@@ -8312,6 +8336,7 @@ type Query {
   stixRefRelationships(first: Int, after: ID, orderBy: StixRefRelationshipsOrdering, orderMode: OrderingMode, fromOrToId: String, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: [String], startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, search: String, filters: FilterGroup, toStix: Boolean): StixRefRelationshipConnection
   stixNestedRefRelationships(first: Int, after: ID, orderBy: StixRefRelationshipsOrdering, orderMode: OrderingMode, fromOrToId: String, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: [String], startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, search: String, filters: FilterGroup, toStix: Boolean): StixRefRelationshipConnection
   stixSchemaRefRelationships(id: String, toType: String): DefinitionRefRelationship
+  stixSchemaRefRelationshipsPossibleTypes(type: String!): [String!]!
   stixRefRelationshipsDistribution(field: String!, operation: StatsOperation!, relationship_type: [String], isTo: Boolean, toRole: String, toTypes: [String], startDate: DateTime, endDate: DateTime, dateAttribute: String, limit: Int, order: String): [Distribution]
   stixRefRelationshipsNumber(types: [String!], fromId: StixRef, endDate: DateTime): Number
   stixObjectOrStixRelationship(id: String!): StixObjectOrStixRelationship
@@ -8458,6 +8483,8 @@ type Query {
   fintelDesigns(first: Int, after: ID, orderBy: FintelDesignOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): FintelDesignConnection
   securityPlatform(id: String!): SecurityPlatform
   securityPlatforms(first: Int, after: ID, orderBy: SecurityPlatformOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): SecurityPlatformConnection
+  emailTemplate(id: ID!): EmailTemplate
+  emailTemplates(first: Int, after: ID, orderBy: EmailTemplateOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): EmailTemplateConnection
 }
 
 type Subscription {
@@ -8996,6 +9023,7 @@ type Mutation {
   meEdit(input: [EditInput]!, password: String): MeUser
   bookmarkAdd(id: ID!, type: String!): StixDomainObject
   bookmarkDelete(id: ID!): ID
+  sendUserMail(input: SendUserMailInput!): Boolean
   logout: ID
   roleAdd(input: RoleAddInput!): Role
   sessionKill(id: ID!): ID
@@ -9357,6 +9385,10 @@ type Mutation {
   verifyOtp(input: VerifyOtpInput!): VerifyOtp
   verifyMfa(input: VerifyMfaInput!): Boolean
   changePassword(input: ChangePasswordInput!): Boolean
+  emailTemplateAdd(input: EmailTemplateAddInput!): EmailTemplate
+  emailTemplateDelete(id: ID!): ID
+  emailTemplateFieldPatch(id: ID!, input: [EditInput!]!): EmailTemplate
+  emailTemplateTestSend(id: ID!): Boolean
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -12099,13 +12131,13 @@ input IngestionCsvAddInput {
   ingestion_running: Boolean
   user_id: String!
   automatic_user: Boolean
-  confidence_level: String
+  confidence_level: Int
   markings: [String!]
 }
 
 input IngestionCsvAddAutoUserInput {
   user_name: String!
-  confidence_level: String!
+  confidence_level: Int!
 }
 
 type IngestionHeader {
@@ -13574,4 +13606,39 @@ input ChangePasswordInput {
 
 type VerifyOtp {
   mfa_activated: Boolean!
+}
+
+type EmailTemplate implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  name: String!
+  description: String
+  email_object: String!
+  sender_email: String!
+  template_body: String!
+}
+
+type EmailTemplateConnection {
+  pageInfo: PageInfo!
+  edges: [EmailTemplateEdge!]!
+}
+
+type EmailTemplateEdge {
+  cursor: String!
+  node: EmailTemplate!
+}
+
+enum EmailTemplateOrdering {
+  name
+  _score
+}
+
+input EmailTemplateAddInput {
+  name: String!
+  description: String
+  email_object: String!
+  sender_email: String!
+  template_body: String!
 }

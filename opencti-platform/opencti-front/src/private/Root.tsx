@@ -48,6 +48,7 @@ const rootSettingsFragment = graphql`
     platform_openerm_url
     platform_openmtd_url
     platform_xtmhub_url
+    xtm_hub_registration_status
     platform_theme
     platform_whitemark
     platform_organization {
@@ -123,6 +124,8 @@ const rootSettingsFragment = graphql`
         protected_ids
       }
     }
+    xtm_hub_token
+    xtm_hub_registration_status
   }
 `;
 

@@ -2,11 +2,10 @@ import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { MoreVertOutlined } from '@mui/icons-material';
 import MenuItem from '@mui/material/MenuItem';
 import { graphql, PreloadedQuery } from 'react-relay';
-import Menu from '@mui/material/Menu';
-import IconButton from '@mui/material/IconButton';
+import { Box, styled } from '@mui/material';
+import { useTheme } from '@mui/styles';
 import ListLines from '../../../../components/list_lines/ListLines';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
@@ -19,7 +18,6 @@ import CaseTemplateTasksLines, { tasksLinesQuery } from './CaseTemplateTasksLine
 import { CaseTemplateEditionQuery } from './__generated__/CaseTemplateEditionQuery.graphql';
 import CaseTemplateEdition, { caseTemplateQuery } from './CaseTemplateEdition';
 import { useFormatter } from '../../../../components/i18n';
-import { commitMutation } from '../../../../relay/environment';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import { CaseTemplateLine_node$key } from './__generated__/CaseTemplateLine_node.graphql';
 import { CaseTemplateLineFragment } from './CaseTemplateLine';
@@ -27,6 +25,9 @@ import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
+import type { Theme } from '../../../../components/Theme';
+import PopoverMenu from '../../../../components/PopoverMenu';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -37,10 +38,6 @@ const useStyles = makeStyles(() => ({
   },
   title: {
     float: 'left',
-  },
-  popover: {
-    float: 'left',
-    marginTop: '-13px',
   },
 }));
 
@@ -64,23 +61,27 @@ const CaseHeaderMenu: FunctionComponent<CaseHeaderMenuProps> = ({
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
-  const [anchorEl, setAnchorEl] = useState<Element | null>(null);
+  const theme = useTheme<Theme>();
   const [openEdition, setOpenEdition] = useState(false);
-  const handleMenuOpen = (event: React.SyntheticEvent) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-  const onUpdateClick = () => {
-    setOpenEdition(true);
-    handleMenuClose();
-  };
-  const deletion = useDeletion({ handleClose: handleMenuClose });
-  const { handleOpenDelete, handleCloseDelete } = deletion;
+  const [openDelete, setOpenDelete] = useState(false);
+  const handleClose = () => {};
+
+  const handleOpenDelete = () => setOpenDelete(true);
+  const handleCloseDelete = () => setOpenDelete(false);
+
+  const deleteSuccessMessage = t_i18n('', {
+    id: '... successfully deleted',
+    values: { entity_type: t_i18n('CaseTemplate') },
+  });
+  const [commitDeleteMutation] = useApiMutation(
+    caseTemplateTasksDeletionMutation,
+    undefined,
+    { successMessage: deleteSuccessMessage },
+  );
+
+  const deletion = useDeletion({ handleClose });
   const submitDelete = () => {
-    commitMutation({
-      mutation: caseTemplateTasksDeletionMutation,
+    commitDeleteMutation({
       variables: {
         id: caseTemplateId,
       },
@@ -92,7 +93,6 @@ const CaseHeaderMenu: FunctionComponent<CaseHeaderMenuProps> = ({
       optimisticUpdater: undefined,
       optimisticResponse: undefined,
       onError: undefined,
-      setSubmitting: undefined,
     });
   };
   const caseTemplate = usePreloadedFragment<
@@ -104,48 +104,57 @@ const CaseHeaderMenu: FunctionComponent<CaseHeaderMenuProps> = ({
     queryDef: caseTemplateQuery,
     nodePath: 'caseTemplate',
   });
+
+  const CaseTemplateHeader = styled('div')({
+    display: 'flex',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+  });
+
   return (
-    <>
-      <Typography
-        variant="h1"
-        gutterBottom={true}
-        classes={{ root: classes.title }}
-      >
-        {caseTemplate.name}
-      </Typography>
-      <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <CaseTemplateEdition
-          caseTemplate={caseTemplate}
-          paginationOptions={paginationOptions}
-          openPanel={openEdition}
-          setOpenPanel={setOpenEdition}
-        />
-      </React.Suspense>
-      <div className={classes.popover}>
-        <IconButton
-          onClick={handleMenuOpen}
-          aria-haspopup="true"
-          style={{ marginTop: 3 }}
-          size="large"
-          color="primary"
+    <CaseTemplateHeader>
+      <div>
+        <Typography
+          variant="h1"
+          gutterBottom={true}
+          classes={{ root: classes.title }}
         >
-          <MoreVertOutlined />
-        </IconButton>
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={handleMenuClose}
-        >
-          <MenuItem onClick={onUpdateClick}>{t_i18n('Update')}</MenuItem>
-          <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
-        </Menu>
+          {caseTemplate.name}
+        </Typography>
       </div>
-      <DeleteDialog
-        deletion={deletion}
-        submitDelete={submitDelete}
-        message={t_i18n('Do you want to delete this template?')}
-      />
-    </>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <div style={{ display: 'flex' }}>
+          <div style={{ marginRight: theme.spacing(0.5) }}>
+            <PopoverMenu>
+              {({ closeMenu }) => (
+                <Box>
+                  <MenuItem onClick={() => {
+                    handleOpenDelete();
+                    closeMenu();
+                  }}
+                  >
+                    {t_i18n('Delete')}
+                  </MenuItem>
+                </Box>
+              )}
+            </PopoverMenu>
+            <CaseTemplateEdition
+              caseTemplate={caseTemplate}
+              paginationOptions={paginationOptions}
+              openPanel={openEdition}
+              setOpenPanel={setOpenEdition}
+            />
+            <DeleteDialog
+              deletion={deletion}
+              isOpen={openDelete}
+              onClose={handleCloseDelete}
+              submitDelete={submitDelete}
+              message={t_i18n('Do you want to delete this template?')}
+            />
+          </div>
+        </div>
+      </div>
+    </CaseTemplateHeader>
   );
 };
 

@@ -47,6 +47,7 @@ import { ENTITY_TYPE_MALWARE_ANALYSIS } from '../modules/malwareAnalysis/malware
 import { isBasicRelationship, isStixRelationship, isStixRelationshipExceptRef } from '../schema/stixRelationship';
 import { ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
+import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
 
 export type FilterDefinition = {
   filterKey: string
@@ -384,6 +385,25 @@ const completeFilterDefinitionMapWithSpecialKeys = (
       multiple: true,
       subEntityTypes,
       elementsForFilterValuesSearch: [ENTITY_TYPE_IDENTITY_ORGANIZATION],
+    });
+  }
+  if (type === ENTITY_TYPE_USER) {
+    // add context filters
+    filterDefinitionsMap.set(RELATION_MEMBER_OF, {
+      filterKey: RELATION_MEMBER_OF,
+      type: 'id',
+      label: 'Organizations',
+      multiple: true,
+      subEntityTypes,
+      elementsForFilterValuesSearch: [ENTITY_TYPE_IDENTITY_ORGANIZATION],
+    });
+    filterDefinitionsMap.set(RELATION_PARTICIPATE_TO, {
+      filterKey: RELATION_PARTICIPATE_TO,
+      type: 'id',
+      label: 'Groups',
+      multiple: true,
+      subEntityTypes,
+      elementsForFilterValuesSearch: [ENTITY_TYPE_GROUP],
     });
   }
   if (isStixRelationshipExceptRef(type)) {

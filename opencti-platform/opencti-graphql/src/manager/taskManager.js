@@ -4,27 +4,14 @@ import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/dynamic
 import * as R from 'ramda';
 import { Promise as BluePromise } from 'bluebird';
 import { lockResources } from '../lock/master-lock';
-import {
-  ACTION_TYPE_ADD,
-  ACTION_TYPE_ENRICHMENT,
-  ACTION_TYPE_MERGE,
-  ACTION_TYPE_PROMOTE,
-  ACTION_TYPE_REMOVE,
-  ACTION_TYPE_REPLACE,
-  ACTION_TYPE_RULE_APPLY,
-  ACTION_TYPE_RULE_CLEAR,
-  ACTION_TYPE_RULE_ELEMENT_RESCAN,
-  buildQueryFilters,
-  findAll,
-  updateTask
-} from '../domain/backgroundTask';
+import { buildQueryFilters, findAll, updateTask } from '../domain/backgroundTask';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { resolveUserByIdFromCache } from '../domain/user';
 import { storeLoadByIdsWithRefs } from '../database/middleware';
 import { now } from '../utils/format';
 import { isEmptyField, MAX_EVENT_LOOP_PROCESSING_TIME, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED } from '../database/utils';
 import { elList } from '../database/engine';
-import { FunctionalError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
+import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, INPUT_OBJECTS, RULE_PREFIX } from '../schema/general';
 import { executionContext, isUserInPlatformOrganization, RULE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
 import { buildEntityFilters, internalFindByIds, internalLoadById, listAllRelations } from '../database/middleware-loader';
@@ -33,11 +20,25 @@ import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { generateIndicatorFromObservable } from '../domain/stixCyberObservable';
 import {
+  ACTION_TYPE_ADD,
+  ACTION_TYPE_ADD_GROUPS,
+  ACTION_TYPE_ADD_ORGANIZATIONS,
   ACTION_TYPE_COMPLETE_DELETE,
   ACTION_TYPE_DELETE,
+  ACTION_TYPE_ENRICHMENT,
+  ACTION_TYPE_MERGE,
+  ACTION_TYPE_PROMOTE,
+  ACTION_TYPE_REMOVE,
   ACTION_TYPE_REMOVE_AUTH_MEMBERS,
   ACTION_TYPE_REMOVE_FROM_DRAFT,
+  ACTION_TYPE_REMOVE_GROUPS,
+  ACTION_TYPE_REMOVE_ORGANIZATIONS,
+  ACTION_TYPE_REPLACE,
   ACTION_TYPE_RESTORE,
+  ACTION_TYPE_RULE_APPLY,
+  ACTION_TYPE_RULE_CLEAR,
+  ACTION_TYPE_RULE_ELEMENT_RESCAN,
+  ACTION_TYPE_SEND_EMAIL,
   ACTION_TYPE_SHARE,
   ACTION_TYPE_SHARE_MULTIPLE,
   ACTION_TYPE_UNSHARE,
@@ -50,7 +51,6 @@ import {
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { BackgroundTaskScope } from '../generated/graphql';
 import { getDraftContext } from '../utils/draftContext';
-import { addFilter } from '../utils/filtering/filtering-utils';
 import { getBestBackgroundConnectorId, pushToWorkerForConnector } from '../database/rabbitmq';
 import { updateExpectationsNumber, updateProcessedTime } from '../domain/work';
 import { convertStoreToStix, convertTypeToStixType } from '../database/stix-2-1-converter';
@@ -113,10 +113,7 @@ export const taskRule = async (context, user, task, callback) => {
 
 export const taskQuery = async (context, user, task, callback) => {
   const { task_position, task_filters, task_search = null, task_excluded_ids = [], scope, task_order_mode } = task;
-  const options = await buildQueryFilters(context, user, task_filters, task_search, task_position, scope, task_order_mode);
-  if (task_excluded_ids.length > 0) {
-    options.filters = addFilter(options.filters, 'id', task_excluded_ids, 'not_eq');
-  }
+  const options = await buildQueryFilters(context, user, task_filters, task_search, task_position, scope, task_order_mode, task_excluded_ids);
   const finalOpts = { ...options, connectionFormat: false, baseData: true, callback };
   await elList(context, user, READ_DATA_INDICES, finalOpts);
 };
@@ -150,7 +147,8 @@ const throwErrorInDraftContext = (context, user, actionType) => {
       || actionType === ACTION_TYPE_SHARE
       || actionType === ACTION_TYPE_UNSHARE
       || actionType === ACTION_TYPE_SHARE_MULTIPLE
-      || actionType === ACTION_TYPE_UNSHARE_MULTIPLE) {
+      || actionType === ACTION_TYPE_UNSHARE_MULTIPLE
+      || actionType === ACTION_TYPE_SEND_EMAIL) {
     throw FunctionalError('Cannot execute this task type in draft', { actionType });
   }
 };
@@ -225,6 +223,28 @@ const baseOperationBuilder = (actionType, operations, element) => {
   // Access management
   if (actionType === ACTION_TYPE_REMOVE_AUTH_MEMBERS) {
     baseOperationObject.opencti_operation = 'clear_access_restriction';
+  }
+  // User orga management
+  if (actionType === ACTION_TYPE_ADD_ORGANIZATIONS) {
+    baseOperationObject.opencti_operation = 'add_organizations';
+    baseOperationObject.organization_ids = operations[0].context.values;
+  }
+  if (actionType === ACTION_TYPE_REMOVE_ORGANIZATIONS) {
+    baseOperationObject.opencti_operation = 'remove_organizations';
+    baseOperationObject.organization_ids = operations[0].context.values;
+  }
+  // User group management
+  if (actionType === ACTION_TYPE_ADD_GROUPS) {
+    baseOperationObject.opencti_operation = 'add_groups';
+    baseOperationObject.group_ids = operations[0].context.values;
+  }
+  if (actionType === ACTION_TYPE_REMOVE_GROUPS) {
+    baseOperationObject.opencti_operation = 'remove_groups';
+    baseOperationObject.group_ids = operations[0].context.values;
+  }
+  if (actionType === ACTION_TYPE_SEND_EMAIL) {
+    baseOperationObject.opencti_operation = 'send_email';
+    baseOperationObject.template_id = operations[0].context.values;
   }
   return baseOperationObject;
 };
@@ -301,19 +321,19 @@ export const buildContainersElementsBundle = async (context, user, containers, e
     const element = elements[index];
     elementIds.add(element.internal_id);
     elementStandardIds.add(element.standard_id);
-    if (withNeighbours) {
-      if (element.fromId) elementIds.add(element.fromId);
-      if (element.toId) elementIds.add(element.toId);
-      const callback = (relations) => {
-        relations.forEach((relation) => {
-          elementIds.add(relation.fromId);
-          elementIds.add(relation.toId);
-          elementIds.add(relation.id);
-        });
-      };
-      const args = { fromOrToId: Array.from(elementIds), baseData: true, callback };
-      await listAllRelations(context, user, ABSTRACT_STIX_CORE_RELATIONSHIP, args);
-    }
+    if (element.fromId) elementIds.add(element.fromId);
+    if (element.toId) elementIds.add(element.toId);
+  }
+  if (withNeighbours) {
+    const callback = (relations) => {
+      relations.forEach((relation) => {
+        elementIds.add(relation.fromId);
+        elementIds.add(relation.toId);
+        elementIds.add(relation.id);
+      });
+    };
+    const args = { fromOrToId: Array.from(elementIds), baseData: true, callback };
+    await listAllRelations(context, user, ABSTRACT_STIX_CORE_RELATIONSHIP, args);
   }
   // Build limited stix object to limit memory footprint
   const containerOperations = [{
@@ -612,14 +632,13 @@ const taskHandlerGenerator = (context) => {
       // No need for transformation
       return action.type;
     }, task.actions);
-    const nbTypeOfActions = Object.keys(actionsGroup).length;
-    const [actionType, operations] = Object.entries(actionsGroup)[0];
-    if (nbTypeOfActions === 1) {
-      throwErrorInDraftContext(context, user, actionType);
+    const typeOfActions = Object.keys(actionsGroup);
+    for (let typeOfActionIndex = 0; typeOfActionIndex < typeOfActions.length; typeOfActionIndex += 1) {
+      const typeOfAction = typeOfActions[typeOfActionIndex];
+      throwErrorInDraftContext(context, user, typeOfAction);
+      const operations = actionsGroup[typeOfAction];
       logApp.info('[TASK-MANAGER] Executing job through distributed workers');
-      await workerTaskHandler(fullContext, user, task, actionType, operations);
-    } else {
-      throw UnsupportedError('Multiple types of action inside the same background task', { actions: Object.keys(actionsGroup) });
+      await workerTaskHandler(fullContext, user, task, typeOfAction, operations);
     }
   };
 };

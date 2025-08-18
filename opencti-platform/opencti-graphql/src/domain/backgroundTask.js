@@ -2,7 +2,7 @@ import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
 import { elIndex, elPaginate } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS, READ_DATA_INDICES } from '../database/utils';
-import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_INTERNAL_FILE } from '../schema/internalObject';
+import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { deleteElementById, patchAttribute } from '../database/middleware';
 import { getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../utils/access';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, RULE_PREFIX } from '../schema/general';
@@ -35,19 +35,10 @@ export const DEFAULT_ALLOWED_TASK_ENTITY_TYPES = [
   ENTITY_TYPE_EXTERNAL_REFERENCE,
   ENTITY_TYPE_INTERNAL_FILE,
   ENTITY_TYPE_DRAFT_WORKSPACE,
+  ENTITY_TYPE_USER,
 ];
 
 export const MAX_TASK_ELEMENTS = 500;
-
-export const ACTION_TYPE_ADD = 'ADD';
-export const ACTION_TYPE_REMOVE = 'REMOVE';
-export const ACTION_TYPE_REPLACE = 'REPLACE';
-export const ACTION_TYPE_MERGE = 'MERGE';
-export const ACTION_TYPE_PROMOTE = 'PROMOTE';
-export const ACTION_TYPE_ENRICHMENT = 'ENRICHMENT';
-export const ACTION_TYPE_RULE_APPLY = 'RULE_APPLY';
-export const ACTION_TYPE_RULE_CLEAR = 'RULE_CLEAR';
-export const ACTION_TYPE_RULE_ELEMENT_RESCAN = 'RULE_ELEMENT_RESCAN';
 
 export const findById = async (context, user, taskId) => {
   return storeLoadById(context, user, taskId, ENTITY_TYPE_BACKGROUND_TASK);
@@ -57,7 +48,7 @@ export const findAll = (context, user, args) => {
   return listEntities(context, user, [ENTITY_TYPE_BACKGROUND_TASK], args);
 };
 
-export const buildQueryFilters = async (context, user, filters, search, taskPosition, scope, orderMode) => {
+export const buildQueryFilters = async (context, user, filters, search, taskPosition, scope, orderMode, excludedIds) => {
   let inputFilters = filters ? JSON.parse(filters) : undefined;
   if (scope === BackgroundTaskScope.Import) {
     const entityIdFilters = inputFilters.filters.findIndex(({ key }) => key.includes('entity_id'));
@@ -95,6 +86,10 @@ export const buildQueryFilters = async (context, user, filters, search, taskPosi
     types = [ENTITY_TYPE_WORKSPACE];
   } else if (scope === BackgroundTaskScope.Playbook) {
     types = [ENTITY_TYPE_PLAYBOOK];
+  }
+  // Remove eventual excluded ids
+  if (excludedIds.length > 0) {
+    inputFilters = addFilter(inputFilters, 'internal_id', excludedIds, 'not_eq', 'and');
   }
   // Construct filters
   return {

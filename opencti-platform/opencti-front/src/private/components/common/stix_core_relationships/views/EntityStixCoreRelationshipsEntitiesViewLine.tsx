@@ -175,6 +175,9 @@ const entityStixCoreRelationshipsEntitiesFragment = graphql`
     ... on CaseRft {
         name
     }
+    ... on SecurityPlatform{
+        name
+    }
     ... on StixCyberObservable {
       observable_value
     }

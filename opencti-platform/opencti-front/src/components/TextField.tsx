@@ -1,4 +1,4 @@
-import React, { ChangeEvent, ClipboardEvent, FocusEvent, ReactNode, useCallback } from 'react';
+import React, { ChangeEvent, ClipboardEvent, FocusEvent, KeyboardEvent, ReactNode, useCallback } from 'react';
 import { TextField as MuiTextField, TextFieldProps as MuiTextFieldProps } from '@mui/material';
 import { fieldToTextField } from 'formik-mui';
 import { FieldProps, useField } from 'formik';
@@ -13,6 +13,7 @@ export type TextFieldProps = FieldProps<string> & MuiTextFieldProps & {
   onFocus?: (name: string) => void
   onChange?: (name: string, value: string) => void
   onSubmit?: (name: string, value: string) => void
+  onKeyDown?: (key: string) => void
   onBeforePaste?: (value: string) => string
 };
 
@@ -24,6 +25,7 @@ const TextField = (props: TextFieldProps) => {
     onChange,
     onFocus,
     onSubmit,
+    onKeyDown,
   } = props;
 
   const internalOnChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
@@ -75,6 +77,19 @@ const TextField = (props: TextFieldProps) => {
     }
   }, [onBeforePaste, setFieldValue, name]);
 
+  const internalOnKeyDown = useCallback((event: KeyboardEvent<HTMLInputElement>) => {
+    const { key } = event;
+    if (onKeyDown) {
+      onKeyDown(key);
+      return;
+    }
+
+    if (key === 'Enter' && onSubmit) {
+      const { value } = props.field;
+      onSubmit(name, value ?? '');
+    }
+  }, [onKeyDown, onSubmit, name]);
+
   const [, meta] = useField(name);
   const { value, ...otherProps } = fieldToTextField(htmlProps);
 
@@ -102,6 +117,7 @@ const TextField = (props: TextFieldProps) => {
       onFocus={internalOnFocus}
       onBlur={internalOnBlur}
       onPaste={internalOnPaste}
+      onKeyDown={internalOnKeyDown}
       slotProps={{
         input: {
           startAdornment,

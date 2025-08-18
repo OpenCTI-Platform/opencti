@@ -656,7 +656,7 @@ const ConnectorComponent = ({ connector, relay }) => {
                 <Grid item xs={12}>
                   <Alert severity="warning" icon={<UpdateIcon color={theme.palette.warning.main} />} style={{ alignItems: 'center' }}>
                     <strong>{t_i18n('Buffering: ')}</strong>
-                    {t_i18n('Server ingestion is paused until the size of messages is reduced under max capacity')}
+                    {t_i18n('Server ingestion is not accepting new work, waiting for current messages in ingestion to be processed until message count go back under threshold')}
                   </Alert>
                 </Grid>
               )}

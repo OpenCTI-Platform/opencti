@@ -1,8 +1,9 @@
 import { afterAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { type EditInput, type StixFileAddInput } from '../../../src/generated/graphql';
+import { type EditInput, EditOperation, type StixFileAddInput } from '../../../src/generated/graphql';
 import { queryAsAdmin } from '../../utils/testQuery';
 import { generateStandardId } from '../../../src/schema/identifier';
+import { IDS_STIX } from '../../../src/schema/general';
 
 const CREATE_STIX_FILE_QUERY = gql`
   mutation CreateStixFile($input: StixFileAddInput) {
@@ -108,6 +109,7 @@ describe('Observables with hashes: management of other stix ids', () => {
   const file3StandardIdByMd5 = generateStandardId('StixFile', { hashes: { MD5: FILE3.md5 } });
 
   let file4Id: string;
+  let file4StixIds: string[];
   const file4StandardIdBySha1 = generateStandardId('StixFile', { hashes: { 'SHA-1': FILE4.sha1 } });
   const file4StandardIdBySha256 = generateStandardId('StixFile', { hashes: { 'SHA-256': FILE4.sha256 } });
   const file4StandardIdByMd5 = generateStandardId('StixFile', { hashes: { MD5: FILE4.md5 } });
@@ -400,6 +402,7 @@ describe('Observables with hashes: management of other stix ids', () => {
     const file4WithMd5Sha1NameSha256 = file4WithMd5Sha1NameSha256Result?.data?.stixCyberObservableEdit?.fieldPatch;
     expect(file4WithMd5Sha1NameSha256?.standard_id).toEqual(file4StandardIdByMd5);
     expect(file4WithMd5Sha1NameSha256?.x_opencti_stix_ids).toEqual([file4StandardIdBySha1, file4StandardIdBySha256]);
+    file4StixIds = [file4StandardIdBySha1, file4StandardIdBySha256];
     // Verify there is only one file in elastic
     const fileBySha1 = await queryAsAdmin({
       query: FIND_BY_ID_QUERY,
@@ -592,5 +595,75 @@ describe('Observables with hashes: management of other stix ids', () => {
       variables: { id: file2StandardIdBySha256 },
     });
     expect(file2?.data?.stixCyberObservable.standard_id).toEqual(file2StandardIdBySha256);
+  });
+
+  it('should update correctly with ADD operation (with hashes changes)', async () => {
+    const input: EditInput[] = [
+      {
+        key: 'hashes',
+        object_path: '/hashes/MD5',
+        value: ['4fd8ed3f6d0d460e38fde11a12f45240']
+      },
+      {
+        key: IDS_STIX,
+        operation: EditOperation.Add,
+        value: [
+          'test--f7484d13-b10c-4ea3-a9a9-6c0f20076157',
+          'test--3013fc4a-edfd-455b-92e6-aa359e633e48',
+        ]
+      }
+    ];
+    const result = await queryAsAdmin({
+      query: EDIT_STIX_FILE_QUERY,
+      variables: { id: file4Id, input }
+    });
+    const data = result.data?.stixCyberObservableEdit?.fieldPatch;
+    expect(data.x_opencti_stix_ids).toEqual([
+      'test--f7484d13-b10c-4ea3-a9a9-6c0f20076157',
+      'test--3013fc4a-edfd-455b-92e6-aa359e633e48',
+      ...file4StixIds
+    ]);
+  });
+
+  it('should update correctly with REPLACE operation (with hashes changes)', async () => {
+    const input: EditInput[] = [
+      {
+        key: 'hashes',
+        object_path: '/hashes/MD5',
+        value: ['9d03f4c2dae07ef9153d4b31328c110d']
+      },
+      {
+        key: IDS_STIX,
+        operation: EditOperation.Replace,
+        value: ['test--3343c3cb-9102-4ff9-a391-881b0297a58d']
+      }
+    ];
+    const result = await queryAsAdmin({
+      query: EDIT_STIX_FILE_QUERY,
+      variables: { id: file4Id, input }
+    });
+    const data = result.data?.stixCyberObservableEdit?.fieldPatch;
+    expect(data.x_opencti_stix_ids).toEqual(['test--3343c3cb-9102-4ff9-a391-881b0297a58d', ...file4StixIds]);
+  });
+
+  it('should update correctly with REMOVE operation (with hashes changes)', async () => {
+    const input: EditInput[] = [
+      {
+        key: 'hashes',
+        object_path: '/hashes/MD5',
+        value: ['7736ca3dc45dfb553f655bd36bab1773']
+      },
+      {
+        key: IDS_STIX,
+        operation: EditOperation.Remove,
+        value: ['test--3343c3cb-9102-4ff9-a391-881b0297a58d']
+      }
+    ];
+    const result = await queryAsAdmin({
+      query: EDIT_STIX_FILE_QUERY,
+      variables: { id: file4Id, input }
+    });
+    const data = result.data?.stixCyberObservableEdit?.fieldPatch;
+    expect(data.x_opencti_stix_ids).toEqual(file4StixIds);
   });
 });

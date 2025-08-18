@@ -20,8 +20,9 @@ import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import CourseOfActionEdition from './CourseOfActionEdition';
+import CourseOfActionDeletion from './CouseOfActionDeletion';
 
 const subscription = graphql`
   subscription RootCoursesOfActionSubscription($id: ID!) {
@@ -114,6 +115,11 @@ class RootCourseOfAction extends Component {
                       EditComponent={(
                         <Security needs={[KNOWLEDGE_KNUPDATE]}>
                           <CourseOfActionEdition courseOfActionId={courseOfAction.id} />
+                        </Security>
+                      )}
+                      DeleteComponent={({ isOpen, onClose }) => (
+                        <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                          <CourseOfActionDeletion id={courseOfAction.id} isOpen={isOpen} handleClose={onClose} />
                         </Security>
                       )}
                       isOpenctiAlias={true}

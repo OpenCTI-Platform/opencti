@@ -17,6 +17,8 @@ import {
   ViewListOutline,
 } from 'mdi-material-ui';
 import React from 'react';
+// eslint-disable-next-line import/extensions
+import type { WidgetDataSelection } from './widget';
 
 const widgetVisualizationTypes = [
   {
@@ -268,4 +270,21 @@ export const renderWidgetIcon = (key: string, fontSize: 'large' | 'small' | 'med
     default:
       return <div />;
   }
+};
+
+export const isDataSelectionNumberValid = (type: string, dataSelection: WidgetDataSelection[]) => {
+  if (type === 'list'
+    || type === 'distribution-list'
+    || type === 'timeline'
+    || type === 'donut'
+    || type === 'horizontal-bar'
+    || type === 'radar'
+    || type === 'polar-area'
+    || type === 'tree'
+    || type === 'map'
+    || type === 'wordcloud'
+  ) {
+    return dataSelection.every((selection) => !selection.number || selection.number <= 100);
+  }
+  return true;
 };

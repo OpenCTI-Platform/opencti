@@ -54,7 +54,9 @@ import conf, { booleanConf, extendedErrors, loadCert, logApp, logMigration } fro
 import { ComplexSearchError, ConfigurationError, DatabaseError, EngineShardsError, FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import {
   isStixRefRelationship,
+  RELATION_BORN_IN,
   RELATION_CREATED_BY,
+  RELATION_ETHNICITY,
   RELATION_GRANTED_TO,
   RELATION_IN_PIR,
   RELATION_KILL_CHAIN_PHASE,
@@ -164,6 +166,9 @@ import {
   booleanMapping,
   dateMapping,
   iAliasedIds,
+  id as idAttribute,
+  baseType,
+  entityType as entityTypeAttribute,
   internalId,
   longStringFormats,
   numericMapping,
@@ -173,6 +178,7 @@ import {
   textMapping,
   xOpenctiStixIds
 } from '../schema/attribute-definition';
+import { connections as connectionsAttribute } from '../modules/attributes/basicRelationship-registrationAttributes';
 import { schemaTypesDefinition } from '../schema/schema-types';
 import { INTERNAL_RELATIONSHIPS, isInternalRelationship } from '../schema/internalRelationship';
 import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
@@ -188,6 +194,7 @@ import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWork
 import { ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, isStixCyberObservable } from '../schema/stixCyberObservable';
 import { lockResources } from '../lock/master-lock';
 import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_UPDATE_LINKED } from '../modules/draftWorkspace/draftOperations';
+import { RELATION_SAMPLE } from '../modules/malwareAnalysis/malwareAnalysis-types';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -326,7 +333,7 @@ export const searchEngineInit = async () => {
       apiKey: conf.get('elasticsearch:api_key') || null,
     },
     maxRetries: conf.get('elasticsearch:max_retries') || 3,
-    requestTimeout: conf.get('elasticsearch:request_timeout') || 30000,
+    requestTimeout: conf.get('elasticsearch:request_timeout') || 3600000,
     sniffOnStart: booleanConf('elasticsearch:sniff_on_start', false),
     ssl: { // For Opensearch 2+ and Elastic 7
       ca,
@@ -1466,7 +1473,7 @@ export const elRebuildRelation = (concept) => {
   }
   return concept;
 };
-const elDataConverter = (esHit, withoutRels = false) => {
+const elDataConverter = (esHit) => {
   const elementData = esHit._source;
   const data = {
     _index: esHit._index,
@@ -1474,6 +1481,7 @@ const elDataConverter = (esHit, withoutRels = false) => {
     id: elementData.internal_id,
     sort: esHit.sort,
     ...elRebuildRelation(elementData),
+    ...(isNotEmptyField(esHit.fields) ? esHit.fields : {})
   };
   const entries = Object.entries(data);
   const ruleInferences = [];
@@ -1490,13 +1498,9 @@ const elDataConverter = (esHit, withoutRels = false) => {
       data[key] = val;
     } else if (key.startsWith(REL_INDEX_PREFIX)) {
       // Rebuild rel to stix attributes
-      if (withoutRels) {
-        delete data[key];
-      } else {
-        const rel = key.substring(REL_INDEX_PREFIX.length);
-        const [relType] = rel.split('.');
-        data[relType] = isSingleRelationsRef(data.entity_type, relType) ? R.head(val) : [...(data[relType] ?? []), ...val];
-      }
+      const rel = key.substring(REL_INDEX_PREFIX.length);
+      const [relType] = rel.split('.');
+      data[relType] = isSingleRelationsRef(data.entity_type, relType) ? R.head(val) : [...(data[relType] ?? []), ...val];
     } else {
       data[key] = val;
     }
@@ -1539,13 +1543,12 @@ export const elConvertHitsToMap = async (elements, opts) => {
   return convertedHitsMap;
 };
 
-export const elConvertHits = async (data, opts = {}) => {
-  const { withoutRels = false } = opts;
+export const elConvertHits = async (data) => {
   const convertedHits = [];
   let startProcessingTime = new Date().getTime();
   for (let n = 0; n < data.length; n += 1) {
     const hit = data[n];
-    const element = elDataConverter(hit, withoutRels);
+    const element = elDataConverter(hit);
     convertedHits.push(element);
     // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
     if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
@@ -1632,11 +1635,53 @@ export const computeQueryIndices = (indices, typeOrTypes, withInferences = true)
   return indices;
 };
 
+// Default fetch used by loadThroughDenormalized
+// This rel_ must be low volume
+// DO NOT ADD Anything here if you are not sure about that you doing
+const REL_DEFAULT_SUFFIX = '*.keyword';
+const REL_DEFAULT_FETCH = [
+  // SECURITY
+  `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}${REL_DEFAULT_SUFFIX}`,
+  `${REL_INDEX_PREFIX}${RELATION_GRANTED_TO}${REL_DEFAULT_SUFFIX}`,
+  // DEFAULT (LOW VOLUME)
+  `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}${REL_DEFAULT_SUFFIX}`,
+  `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}${REL_DEFAULT_SUFFIX}`,
+  `${REL_INDEX_PREFIX}${RELATION_OBJECT_PARTICIPANT}${REL_DEFAULT_SUFFIX}`,
+  `${REL_INDEX_PREFIX}${RELATION_OBJECT_ASSIGNEE}${REL_DEFAULT_SUFFIX}`,
+  `${REL_INDEX_PREFIX}${RELATION_KILL_CHAIN_PHASE}${REL_DEFAULT_SUFFIX}`,
+  `${REL_INDEX_PREFIX}${RELATION_BORN_IN}${REL_DEFAULT_SUFFIX}`,
+  `${REL_INDEX_PREFIX}${RELATION_ETHNICITY}${REL_DEFAULT_SUFFIX}`,
+  `${REL_INDEX_PREFIX}${RELATION_SAMPLE}${REL_DEFAULT_SUFFIX}`,
+];
+
+const REL_COUNT_SCRIPT_FIELD = {
+  script: {
+    lang: 'painless',
+    source: `
+          int totalElements = 0;
+          for (String fieldName : params['_source'].keySet()) {
+            if (fieldName.startsWith('rel_')) {
+              def fieldValue = params['_source'].get(fieldName);
+              if (fieldValue != null) {
+                if (fieldValue instanceof List) {
+                  totalElements += ((List) fieldValue).size();
+                } else {
+                  totalElements++;
+                }
+              }
+            }
+          }
+          return totalElements;
+        `
+  }
+};
+
 // elFindByIds is not defined to use ordering or sorting (ordering is forced by creation date)
 // It's a way to load a bunch of ids and use in list or map
 export const elFindByIds = async (context, user, ids, opts = {}) => {
-  const { indices, baseData = false, baseFields = BASE_FIELDS } = opts;
-  const { withoutRels = false, toMap = false, mapWithAllIds = false, type = null } = opts;
+  const { indices, baseData = false, baseFields = [] } = opts;
+  const { withoutRels = true, toMap = false, mapWithAllIds = false, type = null } = opts;
+  const { relCount = false } = opts;
   const { orderBy = 'created_at', orderMode = 'asc' } = opts;
   const idsArray = Array.isArray(ids) ? ids : [ids];
   const types = (Array.isArray(type) || isEmptyField(type)) ? type : [type];
@@ -1692,29 +1737,43 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
         },
       },
     };
+    if (relCount) {
+      body.script_fields = {
+        script_field_denormalization_count: REL_COUNT_SCRIPT_FIELD
+      };
+    }
+    if (isNotEmptyField(orderBy)) {
+      body.sort = [{ [orderBy]: orderMode }];
+    }
     let searchAfter;
     let hasNextPage = true;
     while (hasNextPage) {
       if (searchAfter) {
         body.search_after = searchAfter;
       }
+      const _source = { excludes: [] };
+      if (withoutRels) _source.excludes.push(`${REL_INDEX_PREFIX}*`);
+      if (baseData) _source.includes = [...BASE_FIELDS, ...baseFields];
       const query = {
         index: computedIndices,
         size: ES_MAX_PAGINATION,
-        _source: baseData ? baseFields : true,
+        _source,
         body,
       };
+      if (withoutRels) { // Force denorm rel security
+        query.docvalue_fields = REL_DEFAULT_FETCH;
+      }
       logApp.debug('[SEARCH] elInternalLoadById', { query });
       const searchType = `${ids} (${types ? types.join(', ') : 'Any'})`;
       const data = await elRawSearch(context, user, searchType, query).catch((err) => {
-        throw DatabaseError('Find direct ids fail', { cause: err, query });
+        throw DatabaseError('Find direct ids fail', { cause: err, query, searchType });
       });
       const elements = data.hits.hits;
       if (elements.length > workingIds.length) {
         logApp.warn('Search query returned more elements than expected', { ids: workingIds });
       }
       if (elements.length > 0) {
-        const convertedHits = await elConvertHits(elements, { withoutRels });
+        const convertedHits = await elConvertHits(elements);
         hits.push(...convertedHits);
         if (elements.length < ES_MAX_PAGINATION) {
           hasNextPage = false;
@@ -1734,7 +1793,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
   return hits;
 };
 export const elLoadById = async (context, user, id, opts = {}) => {
-  const hits = await elFindByIds(context, user, id, opts);
+  const hits = await elFindByIds(context, user, id, { ...opts, withoutRels: false });
   //* v8 ignore if */
   if (hits.length > 1) {
     throw DatabaseError('Id loading expect only one response', { id, hits: hits.length });
@@ -1745,6 +1804,13 @@ export const elBatchIds = async (context, user, elements) => {
   const ids = elements.map((e) => e.id);
   const types = elements.map((e) => e.type);
   const hits = await elFindByIds(context, user, ids, { type: types, includeDeletedInDraft: true });
+  return ids.map((id) => R.find((h) => h.internal_id === id, hits));
+};
+export const elBatchIdsWithRelCount = async (context, user, elements) => {
+  const ids = elements.map((e) => e.id);
+  const types = elements.map((e) => e.type);
+  const opts = { type: types, includeDeletedInDraft: true, relCount: true, baseData: true };
+  const hits = await elFindByIds(context, user, ids, opts);
   return ids.map((id) => R.find((h) => h.internal_id === id, hits));
 };
 
@@ -1992,8 +2058,8 @@ export const elGenerateFieldTextSearchShould = (search, arrayKeys, args = {}) =>
   return shouldSearch;
 };
 
-const BASE_FIELDS = ['_index', 'internal_id', 'standard_id', 'sort', 'base_type', 'entity_type',
-  'connections', 'first_seen', 'last_seen', 'start_time', 'stop_time'];
+const BASE_FIELDS = ['_index', idAttribute.name, internalId.name, standardId.name, 'sort', baseType.name, entityTypeAttribute.name,
+  connectionsAttribute.name, 'first_seen', 'last_seen', 'start_time', 'stop_time', authorizedMembers.name];
 
 const RANGE_OPERATORS = ['gt', 'gte', 'lt', 'lte'];
 
@@ -2870,7 +2936,8 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         }
         const types = type?.values;
         if (isEmptyField(ids)) {
-          const keys = isEmptyField(types) ? buildRefRelationKey('*', '*')
+          const keys = isEmptyField(types)
+            ? buildRefRelationKey('*', '*')
             : types.map((t) => buildRefRelationKey(t, '*'));
           keys.forEach((relKey) => {
             regardingFilters.push({ key: [relKey], operator, values: ['EXISTS'] });
@@ -2881,7 +2948,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
           regardingFilters.push({ key: keys, operator, values: ids });
         }
         finalFilterGroups.push({
-          mode: filter.mode,
+          mode: filter.mode ?? FilterMode.Or,
           filters: regardingFilters,
           filterGroups: []
         });
@@ -3037,6 +3104,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
 const elQueryBodyBuilder = async (context, user, options) => {
   // eslint-disable-next-line no-use-before-define
   const { ids = [], after, orderBy = null, orderMode = 'asc', noSize = false, noSort = false, intervalInclude = false } = options;
+  const { relCount = false } = options;
   const first = options.first ?? ES_DEFAULT_PAGINATION;
   const { types = null, search = null } = options;
   const filters = await checkAndConvertFilters(context, user, options.filters, user.id, elFindByIds, { noFiltersChecking: options.noFiltersChecking });
@@ -3137,6 +3205,11 @@ const elQueryBodyBuilder = async (context, user, options) => {
       },
     },
   };
+  if (relCount) {
+    body.script_fields = {
+      script_field_denormalization_count: REL_COUNT_SCRIPT_FIELD
+    };
+  }
   if (!noSize) {
     body.size = first;
   }
@@ -3483,20 +3556,26 @@ export const elAggregationsList = async (context, user, indexName, aggregations,
 
 export const elPaginate = async (context, user, indexName, options = {}) => {
   // eslint-disable-next-line no-use-before-define
-  const { baseData = false, baseFields = BASE_FIELDS, bypassSizeLimit = false } = options;
+  const { baseData = false, baseFields = [], bypassSizeLimit = false } = options;
   const first = options.first ?? ES_DEFAULT_PAGINATION;
-  const { types = null, connectionFormat = true } = options;
-  const body = await elQueryBodyBuilder(context, user, options);
+  const { withoutRels = true, types = null, connectionFormat = true } = options;
+  const body = await elQueryBodyBuilder(context, user, { ...options });
   if (body.size > ES_MAX_PAGINATION && !bypassSizeLimit) {
     logApp.info('[SEARCH] Pagination limited to max result config', { size: body.size, max: ES_MAX_PAGINATION });
     body.size = ES_MAX_PAGINATION;
   }
+  const _source = { excludes: [] };
+  if (withoutRels) _source.excludes.push(`${REL_INDEX_PREFIX}*`);
+  if (baseData) _source.includes = [...BASE_FIELDS, ...baseFields];
   const query = {
     index: getIndicesToQuery(context, user, indexName),
     track_total_hits: true,
-    _source: baseData ? baseFields : true,
+    _source,
     body,
   };
+  if (withoutRels) { // Force denorm rel security
+    query.docvalue_fields = REL_DEFAULT_FETCH;
+  }
   logApp.debug('[SEARCH] paginate', { query });
   return elRawSearch(context, user, types !== null ? types : 'Any', query)
     .then((data) => {
@@ -4109,10 +4188,10 @@ export const prepareElementForIndexing = async (element) => {
         }
         // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
         if (new Date().getTime() - innerProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
-          // If we extends the preparation 5 times, log an error
+          // If we extends the preparation 5 times, log a warn
           // It will help to understand what kind of key have so much elements
           if (extendLoopSplit === 5) {
-            logApp.error('[ENGINE] Element preparation too many values', { id: element.id, key, size: value.length });
+            logApp.warn('[ENGINE] Element preparation too many values', { id: element.id, key, size: value.length });
           }
           extendLoopSplit += 1;
           innerProcessingTime = new Date().getTime();

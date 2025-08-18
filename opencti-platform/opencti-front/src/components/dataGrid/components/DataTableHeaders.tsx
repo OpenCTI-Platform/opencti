@@ -32,8 +32,8 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
     removeSelectAll,
     startsWithAction,
     startsWithIcon,
-    startColumnWidth,
     endsWithAction,
+    startColumnWidth,
     useDataTablePaginationLocalStorage: {
       viewStorage: { sortBy, orderAsc },
     },
@@ -64,7 +64,7 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
     background: hasSelectedElements && !removeSelectAll
       ? theme.palette.background.accent
       : 'transparent',
-    minWidth: startColumnWidth,
+    minWidth: hasSelectedElements ? 0 : startColumnWidth,
   };
 
   const showToolbar = numberOfSelectedElements > 0 && !disableToolBar;

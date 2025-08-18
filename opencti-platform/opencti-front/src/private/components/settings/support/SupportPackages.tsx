@@ -1,7 +1,6 @@
 import React from 'react';
 import Button from '@mui/material/Button';
 import { graphql } from 'react-relay';
-import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import {
@@ -11,17 +10,14 @@ import {
 import SupportPackageLines, { supportPackageLinesQuery } from '@components/settings/support/SupportPackageLines';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import Alert from '@mui/material/Alert';
+import Tooltip from '@mui/material/Tooltip';
 import { useFormatter } from '../../../../components/i18n';
-import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { handleError, MESSAGING$ } from '../../../../relay/environment';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import ListLines from '../../../../components/list_lines/ListLines';
 import { insertNode } from '../../../../utils/store';
-import { SETTINGS_SUPPORT } from '../../../../utils/hooks/useGranted';
-import Security from '../../../../utils/Security';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY = 'support-packages';
 
@@ -40,8 +36,6 @@ export const supportPackageAddMutation = graphql`
 
 const SupportPackages = () => {
   const { t_i18n, nsdt } = useFormatter();
-  const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Support Packages | Settings'));
   const [commitSupportPackageAdd] = useApiMutation(supportPackageAddMutation);
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<SupportPackageLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
@@ -51,7 +45,6 @@ const SupportPackages = () => {
       orderAsc: false,
     },
   );
-
   const generateSupportPackage = () => {
     const supportPackageName = `support-package-${nsdt(new Date())}`;
     commitSupportPackageAdd({
@@ -126,49 +119,42 @@ const SupportPackages = () => {
   };
 
   return (
-    <Security needs={[SETTINGS_SUPPORT]} placeholder={<>{t_i18n('You do not have any access to the knowledge of this OpenCTI instance.')}</>}>
-      <div>
-        <Breadcrumbs
-          elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Support packages'), current: true }]}
-        />
-        <Grid container={true} spacing={4}>
-          <Grid item xs={12} style={{ paddingTop: '24px' }}>
-            <div>
-              <Typography variant="h4" gutterBottom={true} style={{ marginBottom: '10px' }}>
-                {t_i18n('Generated Support Package')}
-              </Typography>
-              <Button
-                style={{ float: 'right', marginTop: '-40px' }}
-                onClick={generateSupportPackage}
-                size="small"
-                variant="outlined"
-                color="primary"
-              >
-                {t_i18n('Generate Support Package')}
-              </Button>
-              <div className="clearfix"/>
-              <Alert
-                severity="warning"
-                variant="outlined"
-                style={{ position: 'relative', marginTop: 20, marginBottom: 20 }}
-              >
-                {t_i18n('Even if we do our best to prevent logging any data, the support package may contains some sensitive information that you may not want to share with everyone.')}<br/>
-                {t_i18n('Before creating a ticket with your support package takes some time to check if you can safely share the content depending of your security policy.')}
-              </Alert>
-              <Paper variant="outlined" style={{
-                height: '100%',
-                minHeight: '100%',
-                padding: '10px 15px 10px 15px',
-                borderRadius: 4,
-              }}
-              >
-                {renderLines()}
-              </Paper>
-            </div>
-          </Grid>
-        </Grid>
-      </div>
-    </Security>
+    <>
+      <Typography variant="h4" gutterBottom={true}>
+        {t_i18n('Support packages')}
+      </Typography>
+      <Tooltip title={
+        <Alert
+          severity="warning"
+          variant="outlined"
+          style={{ position: 'relative', marginTop: 20, marginBottom: 20 }}
+        >
+          {t_i18n('We are doing our best to remove any sensitive information from support packages but we encourage you to check the content before sharing a support package depending on your security policy.')}
+        </Alert>
+        }
+      >
+        <Button
+          style={{ float: 'right', marginTop: '-34px' }}
+          onClick={generateSupportPackage}
+          size="small"
+          variant="outlined"
+          color="primary"
+        >
+          {t_i18n('Generate Support Package')}
+        </Button>
+      </Tooltip>
+      <div className="clearfix"/>
+      <Paper className="paper-for-grid" variant="outlined" sx={{
+        height: '100%',
+        minHeight: '100%',
+        margin: '10px 0 0 0',
+        padding: '0 15px 0 15px',
+        borderRadius: 1,
+      }}
+      >
+        {renderLines()}
+      </Paper>
+    </>
   );
 };
 

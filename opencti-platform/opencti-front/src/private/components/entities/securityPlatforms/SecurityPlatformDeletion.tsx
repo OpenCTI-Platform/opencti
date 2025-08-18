@@ -1,14 +1,11 @@
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
-import Button from '@mui/material/Button';
 import React from 'react';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { RelayError } from '../../../../relay/relayTypes';
 import { MESSAGING$ } from '../../../../relay/environment';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import DeleteDialog from '../../../../components/DeleteDialog';
 
 const securityPlatformDeletionMutation = graphql`
@@ -17,12 +14,11 @@ mutation SecurityPlatformDeletionMutation($id: ID!) {
 }
 `;
 
-const SecurityPlatformDeletion = ({ id }: { id: string }) => {
+const SecurityPlatformDeletion = ({ id, isOpen, handleClose }: { id: string, isOpen: boolean, handleClose: () => void }) => {
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
-  const handleClose = () => {};
   const deletion = useDeletion({ handleClose });
-  const { setDeleting, handleOpenDelete, deleting } = deletion;
+  const { setDeleting } = deletion;
 
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
@@ -53,24 +49,13 @@ const SecurityPlatformDeletion = ({ id }: { id: string }) => {
     });
   };
   return (
-    <>
-      <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-        <Button
-          color="error"
-          variant="contained"
-          onClick={handleOpenDelete}
-          disabled={deleting}
-          sx={{ marginTop: 2 }}
-        >
-          {t_i18n('Delete')}
-        </Button>
-      </Security>
-      <DeleteDialog
-        deletion={deletion}
-        submitDelete={submitDelete}
-        message={t_i18n('Do you want to delete this security platform?')}
-      />
-    </>
+    <DeleteDialog
+      deletion={deletion}
+      submitDelete={submitDelete}
+      isOpen={isOpen}
+      onClose={handleClose}
+      message={t_i18n('Do you want to delete this security platform?')}
+    />
   );
 };
 

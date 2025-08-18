@@ -238,6 +238,7 @@ const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({ jsonMapper, on
                           component={JsonMapperRepresentationForm}
                           name={`relationship_representations[${idx}]`}
                           index={idx}
+                          attributes={attributes}
                           availableTypes={availableRelationshipTypes}
                           handleRepresentationErrors={handleRepresentationErrors}
                           prefixLabel="relationship_"

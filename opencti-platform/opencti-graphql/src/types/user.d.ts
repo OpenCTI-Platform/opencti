@@ -1,3 +1,4 @@
+import type Express from 'express';
 import type { BasicStoreCommon, BasicStoreIdentifier, StoreMarkingDefinition } from './store';
 import type { Group } from './group';
 import type { ConfidenceLevel } from '../generated/graphql';
@@ -57,8 +58,11 @@ interface AuthContext {
   tracing: TracingContext
   user: AuthUser | undefined
   draft_context?: string | undefined
+  batch?: Record<string, any>
+  changeDraftContext?: (draftId: string) => void
   eventId?: string | undefined
   user_inside_platform_organization: boolean
   user_otp_validated?: boolean
   user_with_session?: boolean
+  req?: Express.Request
 }
