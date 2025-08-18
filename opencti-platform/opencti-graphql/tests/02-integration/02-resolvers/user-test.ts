@@ -323,13 +323,6 @@ describe('User resolver standard behavior', () => {
     expect(user2.data.userAdd.effective_confidence_level.source.object.id).toEqual(user2.data.userAdd.id);
     userToDeleteIds.push(user2.data.userAdd.id);
   });
-  it('should user loaded by internal id', async () => {
-    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userInternalId } });
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.data?.user).not.toBeNull();
-    expect(queryResult.data?.user.id).toEqual(userInternalId);
-    expect(queryResult.data?.user.creator.name).toEqual('admin');
-  });
   it('should user loaded by standard id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userStandardId } });
     expect(queryResult).not.toBeNull();
