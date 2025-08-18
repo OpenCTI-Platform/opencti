@@ -175,7 +175,7 @@ import {
 import { isRuleUser, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules-utils';
 import { instanceMetaRefsExtractor, isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
 import { createEntityAutoEnrichment } from '../domain/enrichment';
-import { convertExternalReferenceToStix } from './stix-2-1-converter';
+import { convertExternalReferenceToStix, convertStoreToStix_2_1 } from './stix-2-1-converter';
 import {
   buildAggregationRelationFilter,
   buildEntityFilters,
@@ -526,7 +526,7 @@ export const stixLoadById = async (context, user, id, opts = {}) => {
   return instance ? convertStoreToStix(instance, version) : undefined;
 };
 const convertStoreToStixWithResolvedFiles = async (instance) => {
-  const instanceInStix = convertStoreToStix(instance);
+  const instanceInStix = convertStoreToStix_2_1(instance);
   const nonResolvedFiles = instanceInStix.extensions[STIX_EXT_OCTI].files;
   if (nonResolvedFiles) {
     for (let i = 0; i < nonResolvedFiles.length; i += 1) {
@@ -553,7 +553,7 @@ export const stixLoadByIds = async (context, user, ids, opts = {}) => {
   }
   return ids.map((id) => loadedInstancesMap.get(id))
     .filter((i) => isNotEmptyField(i))
-    .map((e) => (convertStoreToStix(e)));
+    .map((e) => (convertStoreToStix_2_1(e)));
 };
 export const stixLoadByIdStringify = async (context, user, id, version) => {
   const opts = { version };
@@ -562,7 +562,7 @@ export const stixLoadByIdStringify = async (context, user, id, version) => {
 };
 export const stixLoadByFilters = async (context, user, types, args) => {
   const elements = await loadByFiltersWithDependencies(context, user, types, args);
-  return elements ? elements.map((element) => convertStoreToStix(element)) : [];
+  return elements ? elements.map((element) => convertStoreToStix_2_1(element)) : [];
 };
 // endregion
 
