@@ -1749,9 +1749,9 @@ type UserSession {
   sessions: [SessionDetail]
 }
 input UserAddInput {
-  user_email: String! @constraint(minLength: 5, format: "email")
+  user_email: String @constraint(minLength: 5, format: "email")
   name: String! @constraint(minLength: 2, format: "not-blank")
-  password: String!
+  password: String
   firstname: String
   lastname: String
   description: String
@@ -1955,7 +1955,7 @@ input EditManagedConnectorInput {
 
 input AddManagedConnectorInput {
   name: String! @constraint(minLength:2, format: "not-blank")
-  connector_user_id: ID!
+  connector_user_id: ID
   user_id: ID!
   catalog_id: ID!
   automatic_user: Boolean
