@@ -66,7 +66,9 @@ export const computeConnectorTargetContract = (configurations: any, targetContra
     const propKey = keys[i];
     const currentConfig: any = configurations.find((config: any) => config.key === propKey);
     if (!currentConfig) {
-      contractConfigurations.push(({ key: propKey, value: targetContract.default[propKey] }));
+      if (targetContract.default[propKey]) {
+        contractConfigurations.push(({ key: propKey, value: targetContract.default[propKey] }));
+      }
     } else if (targetContract.properties[propKey].type !== 'array') {
       contractConfigurations.push(({ key: propKey, value: currentConfig.value[0] }));
     } else {
