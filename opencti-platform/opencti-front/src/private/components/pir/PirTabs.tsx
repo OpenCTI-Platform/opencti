@@ -38,7 +38,7 @@ const PirTabs = ({ data }: PirTabsProps) => {
   let index = 0;
   if (pathname.endsWith('threats')) index = 1;
   if (pathname.endsWith('analyses')) index = 2;
-  if (pathname.endsWith('history')) index = 3;
+  if (pathname.endsWith('activities')) index = 3;
 
   return (
     <Box sx={{
@@ -68,8 +68,8 @@ const PirTabs = ({ data }: PirTabsProps) => {
         />
         <Tab
           component={Link}
-          label={t_i18n('History')}
-          to={`/dashboard/pirs/${id}/history`}
+          label={t_i18n('Activities')}
+          to={`/dashboard/pirs/${id}/activities`}
         />
       </Tabs>
     </Box>

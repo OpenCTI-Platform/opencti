@@ -38,7 +38,6 @@ const pirQuery = graphql`
       ...PirHeaderFragment
       ...PirHistoryFragment
       ...PirKnowledgeFragment
-      ...PirOverviewFragment
       ...PirOverviewCountsFragment
       ...PirOverviewCountFlaggedFragment
       ...PirOverviewDetailsFragment
@@ -94,7 +93,7 @@ const PirComponent = ({
           element={<PirKnowledge data={pir} />}
         />
         <Route
-          path="/history"
+          path="/activities"
           element={<PirHistory data={pir} />}
         />
         <Route
