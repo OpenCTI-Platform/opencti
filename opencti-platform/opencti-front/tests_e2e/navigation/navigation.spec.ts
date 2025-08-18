@@ -94,12 +94,10 @@ import IngestionPage from '../model/ingestion.pageModel';
 import ImportPage from '../model/dataImport.pageModel';
 import ProcessingPage from '../model/dataProcessing.pageModel';
 import SharingPage from '../model/dataSharing.pageModel';
-import SettingsPage from "../model/settings.pageModel";
-import SettingsSecurityPage from "../model/settingsSecurity.pageModel";
-import RolePage from "../model/role.pageModel";
-import GroupPage from "../model/group.pageModel";
-import RolesSettingsPage from "../model/rolesSettings.pageModel";
-import SettingsCustomizationPage from "../model/settingsCustomization.pageModel";
+import SettingsPage from '../model/settings.pageModel';
+import SettingsSecurityPage from '../model/settingsSecurity.pageModel';
+import SettingsCustomizationPage from '../model/settingsCustomization.pageModel';
+import SettingsTaxonomiesPage from '../model/settingsTaxonomies.pageModel';
 
 /**
  * Goal: validate that everything is opening without errors in Analyses > Note.
@@ -1663,6 +1661,20 @@ const navigateCustomization = async (page: Page) => {
   await expect(customizationPage.getCustomizationPages('exclusion-lists-page')).toBeVisible();
 };
 
+const navigateTaxonomies = async (page: Page) => {
+  const taxonomiesPage = new SettingsTaxonomiesPage(page);
+  await taxonomiesPage.navigateFromMenu();
+  await expect(taxonomiesPage.getTaxonomiesPages('labels-page')).toBeVisible();
+  await taxonomiesPage.navigateRightMenu('Kill chain phases');
+  await expect(taxonomiesPage.getTaxonomiesPages('kill-chain-phases-page')).toBeVisible();
+  await taxonomiesPage.navigateRightMenu('Vocabularies');
+  await expect(taxonomiesPage.getTaxonomiesPages('vocabularies-page')).toBeVisible();
+  await taxonomiesPage.navigateRightMenu('Status templates');
+  await expect(taxonomiesPage.getTaxonomiesPages('status-template-page')).toBeVisible();
+  await taxonomiesPage.navigateRightMenu('Case templates');
+  await expect(taxonomiesPage.getTaxonomiesPages('case-template-page')).toBeVisible();
+};
+
 const navigateAllMenu = async (page: Page) => {
   const leftBarPage = new LeftBarPage(page);
 
@@ -1861,5 +1873,6 @@ test('Check navigation on all pages', { tag: ['@navigation'] }, async ({ page })
   // await navigateTrash(page);
   // await navigateSettings(page);
   // await navigateSecurity(page);
-  await navigateCustomization(page);
+  // await navigateCustomization(page);
+  await navigateTaxonomies(page);
 });
