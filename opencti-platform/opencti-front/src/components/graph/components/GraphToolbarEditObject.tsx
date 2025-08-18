@@ -27,7 +27,7 @@ const GraphToolbarEditObject = ({
   relationshipRefetchQuery,
 }: GraphToolbarEditObjectProps) => {
   const { t_i18n } = useFormatter();
-  const { addNode, addLink } = useGraphInteractions();
+  const { updateNode, addLink } = useGraphInteractions();
 
   const {
     graphState: {
@@ -67,7 +67,7 @@ const GraphToolbarEditObject = ({
       if (category === 'domainObject' || category === 'observable') {
         const data = await fetchQuery(stixCoreObjectRefetchQuery, { id: objectToEdit.id })
           .toPromise() as { stixCoreObject: ObjectToParse };
-        addNode(data.stixCoreObject);
+        updateNode(data.stixCoreObject);
       } else {
         const data = await fetchQuery(relationshipRefetchQuery, { id: objectToEdit.id })
           .toPromise() as { stixRelationship: ObjectToParse };
