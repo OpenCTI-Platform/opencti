@@ -46,7 +46,7 @@ import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-f
 import { STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
 import { createAuthenticatedContext } from '../http/httpAuthenticatedContext';
 
-import { convertStoreToStix } from '../database/stix-common-converter';
+import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 
 const broadcastClients = {};
 const queryIndices = [...READ_STIX_INDICES, READ_INDEX_STIX_META_OBJECTS];
@@ -208,7 +208,7 @@ const createSseMiddleware = () => {
       const resolvedStoreElements = await storeLoadByIdsWithRefs(context, user, refsToResolve);
       missingElements.push(...resolvedStoreElements);
       const resolvedMissingIds = await asyncMap(missingElements, (elem) => extractIdsFromStoreObject(elem), undefined, { flat: true });
-      const allRefs = await uniqAsyncMap(resolvedStoreElements, (r) => stixRefsExtractor(convertStoreToStix(r)), undefined, { flat: true });
+      const allRefs = await uniqAsyncMap(resolvedStoreElements, (r) => stixRefsExtractor(convertStoreToStix_2_1(r)), undefined, { flat: true });
       const parentRefs = await asyncFilter(allRefs, (parentId) => !resolvedMissingIds.includes(parentId));
       if (parentRefs.length > 0) {
         const newMissing = await resolveMissingReferences(context, user, parentRefs, cache);
@@ -373,7 +373,7 @@ const createSseMiddleware = () => {
     for (let missingIndex = 0; missingIndex < missingInstances.length; missingIndex += 1) {
       const missingInstance = missingInstances[missingIndex];
       if (!cache.has(missingInstance.standard_id) && channel.connected()) {
-        const missingData = convertStoreToStix(missingInstance);
+        const missingData = convertStoreToStix_2_1(missingInstance);
         const message = generateCreateMessage(missingInstance);
         const origin = { referer: EVENT_TYPE_DEPENDENCIES };
         const content = { data: missingData, message, origin, version: EVENT_CURRENT_VERSION };
@@ -396,7 +396,7 @@ const createSseMiddleware = () => {
         for (let relIndex = 0; relIndex < missingRelations.length; relIndex += 1) {
           const missingRelation = missingRelations[relIndex];
           if (channel.connected()) {
-            const stixRelation = convertStoreToStix(missingRelation);
+            const stixRelation = convertStoreToStix_2_1(missingRelation);
             // Resolve refs
             await resolveAndPublishMissingRefs(context, cache, channel, req, eventId, stixRelation);
             // Publish relations
@@ -660,7 +660,7 @@ const createSseMiddleware = () => {
           const instances = await storeLoadByIdsWithRefs(context, user, workingElementsIds);
           for (let index = 0; index < instances.length; index += 1) {
             const instance = instances[index];
-            const stixData = convertStoreToStix(instance);
+            const stixData = convertStoreToStix_2_1(instance);
             const stixUpdatedAt = stixData.extensions[STIX_EXT_OCTI].updated_at;
             const eventId = streamEventId(stixUpdatedAt);
             if (channel.connected()) {

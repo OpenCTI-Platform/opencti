@@ -47,7 +47,7 @@ import { logApp } from '../config/conf';
 import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import type { AuthContext, AuthUser } from '../types/user';
 
-import { convertStoreToStix } from '../database/stix-common-converter';
+import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 
 const format = (value: string | string[], def: AttributeDefinition, attribute: SimpleAttributePath | ComplexAttributePath | undefined) => {
   if (Array.isArray(value)) {
@@ -438,7 +438,7 @@ const jsonMappingExecution = async (context: AuthContext, user: AuthUser, data: 
   const objects = Array.from(results.values()).flat();
   const stixObjects = objects.map((e) => {
     try {
-      return convertStoreToStix(e as unknown as StoreCommon);
+      return convertStoreToStix_2_1(e as unknown as StoreCommon);
     } catch (err) {
       logApp.error('JSON mapper convert error', { cause: e });
     }
