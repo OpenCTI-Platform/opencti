@@ -55,7 +55,8 @@ testCreatedCounter.vulnerability = 7;
 
 export const testUpdatedCounter: Record<string, number> = {};
 testUpdatedCounter['marking-definition'] = 2;
-testUpdatedCounter.relationship = 10;
+testUpdatedCounter.relationship = 8;
+testUpdatedCounter['internal-relationship'] = 2;
 testUpdatedCounter.campaign = 7;
 testUpdatedCounter.identity = 25;
 testUpdatedCounter.malware = 20;
