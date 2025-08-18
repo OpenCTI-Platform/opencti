@@ -523,8 +523,6 @@ const StixCyberObservableCreation = ({
             let extraFieldsToValidate = null;
             let requiredOneOfFields = [];
             for (const attribute of attributes) {
-              console.log('attribute.value ', attribute);
-
               if (isVocabularyField(status.type, attribute.value)) {
                 initialValues[attribute.value] = null;
               } else if (includes(attribute.value, dateAttributes)) {
