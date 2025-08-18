@@ -1042,28 +1042,29 @@ const LeftBar = () => {
           marginTop: 'auto',
           position: 'fixed',
           bottom: 0,
+          borderRight: '1px solid rgba(255, 255, 255, 0.12)',
+          background: theme.palette.background.paper,
+          width: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
         }}
       >
         <Divider/>
-        <div style={{ marginBottom: 0 }}>
-          {isChatbotFeatureFlag && (
-            <MenuList>
-              <MenuItem
-                style={{
-                  color: theme.palette.ai.main,
-                  paddingBottom: navOpen ? undefined : '10px',
-                  paddingLeft: navOpen ? theme.spacing(1.25) : undefined,
-                  paddingRight: navOpen ? theme.spacing(1.25) : undefined,
-                }}
-                onKeyDown={(event) => event.stopPropagation()}
-              >
-                <AskArianeButton/>
-              </MenuItem>
-            </MenuList>
-          )}
-        </div>
-        <Divider/>
         <MenuList>
+          {isChatbotFeatureFlag && (
+            <MenuItem
+              style={{
+                color: theme.palette.ai.main,
+                paddingBlock: navOpen ? undefined : '10px',
+                paddingInline: navOpen ? theme.spacing(1.25) : undefined,
+              }}
+              onKeyDown={(e) => {
+                if (['a', 'A', 'c', 'C'].includes(e.key)) {
+                  e.stopPropagation();
+                }
+              }}
+            >
+              <AskArianeButton/>
+            </MenuItem>
+          )}
           <MenuItem
             dense={true}
             style={{ marginBottom: bannerHeightNumber }}
