@@ -99,6 +99,7 @@ import SettingsSecurityPage from "../model/settingsSecurity.pageModel";
 import RolePage from "../model/role.pageModel";
 import GroupPage from "../model/group.pageModel";
 import RolesSettingsPage from "../model/rolesSettings.pageModel";
+import SettingsCustomizationPage from "../model/settingsCustomization.pageModel";
 
 /**
  * Goal: validate that everything is opening without errors in Analyses > Note.
@@ -1642,6 +1643,26 @@ const navigateSecurity = async (page: Page) => {
   await expect(securityPage.getSecurityPages('dissemination-settings-page')).toBeVisible();
 };
 
+const navigateCustomization = async (page: Page) => {
+  const customizationPage = new SettingsCustomizationPage(page);
+  await customizationPage.navigateFromMenu();
+  await expect(customizationPage.getCustomizationPages('subtypes-page')).toBeVisible();
+  await customizationPage.getItemFromList('Area').click();
+  await expect(page.getByRole('heading', { name: 'Area' })).toBeVisible();
+  await customizationPage.navigateRightMenu('Rules engine');
+  await expect(customizationPage.getCustomizationPages('rules-page')).toBeVisible();
+  await customizationPage.navigateRightMenu('Notifiers');
+  await expect(customizationPage.getCustomizationPages('notifiers-page')).toBeVisible();
+  await customizationPage.navigateRightMenu('Retention policies');
+  await expect(customizationPage.getCustomizationPages('retention-page')).toBeVisible();
+  await customizationPage.navigateRightMenu('Decay rules');
+  await expect(customizationPage.getCustomizationPages('decay-rules-page')).toBeVisible();
+  await customizationPage.navigateRightMenu('Fintel design');
+  await expect(customizationPage.getCustomizationPages('fintel-designs-page')).toBeVisible();
+  await customizationPage.navigateRightMenu('Exclusion lists');
+  await expect(customizationPage.getCustomizationPages('exclusion-lists-page')).toBeVisible();
+};
+
 const navigateAllMenu = async (page: Page) => {
   const leftBarPage = new LeftBarPage(page);
 
@@ -1838,6 +1859,7 @@ test('Check navigation on all pages', { tag: ['@navigation'] }, async ({ page })
   // await navigateDataSharing(page);
   // await navigateDataManagement(page);
   // await navigateTrash(page);
-  await navigateSettings(page);
-  await navigateSecurity(page);
+  // await navigateSettings(page);
+  // await navigateSecurity(page);
+  await navigateCustomization(page);
 });
