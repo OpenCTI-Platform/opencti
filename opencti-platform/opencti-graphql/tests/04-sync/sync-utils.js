@@ -7,7 +7,7 @@ import { checkInstanceDiff } from '../utils/testStream';
 import { logApp } from '../../src/config/conf';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../../src/modules/deleteOperation/deleteOperation-types';
 
-import { convertStoreToStix } from '../../src/database/stix-common-converter';
+import { convertStoreToStix_2_1 } from '../../src/database/stix-2-1-converter';
 
 const STAT_QUERY = `query stats {
       about {
@@ -95,7 +95,7 @@ export const checkPreSyncContent = async () => {
   expect(relMap.get('Uses')).toEqual(28);
   // Report content
   const initReport = await storeLoadByIdWithRefs(testContext, ADMIN_USER, 'report--f2b63e80-b523-4747-a069-35c002c690db');
-  const initStixReport = convertStoreToStix(initReport);
+  const initStixReport = convertStoreToStix_2_1(initReport);
   return { objectMap, relMap, initStixReport };
 };
 export const checkMapConsistency = (before, after) => {
