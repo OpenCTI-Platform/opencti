@@ -96,7 +96,7 @@ const internalGenerateBundles = async (
           // Transform entity to stix
           const csvData = record.join(csvMapper.separator);
           const stixObjects = withoutInlineInputs.map((input) => {
-            return convertStoreToStix_2_1(input as unknown as StoreCommon) as unknown as StixObject;
+            return convertStoreToStix_2_1(input as unknown as StoreCommon);
           });
 
           // Add to bundle or else send current bundle content and move to next bundle.
@@ -269,7 +269,7 @@ export const bundleProcess = async (
           const withoutInlineInputs = inputs.filter((input) => !inlineEntityTypes.includes(input.entity_type as string));
           // Transform entity to stix
           const stixObjects = withoutInlineInputs.map((input) => {
-            return convertStoreToStix_2_1(input as unknown as StoreCommon) as unknown as StixObject;
+            return convertStoreToStix_2_1(input as unknown as StoreCommon);
           });
           // Add to bundle
           const csvData = record.join(sanitizedMapper.separator);
@@ -283,7 +283,7 @@ export const bundleProcess = async (
   // Handle container
   if (entity && isStixDomainObjectContainer(entity.entity_type)) {
     const refs = bundleBuilder.ids();
-    const stixEntity = { ...convertStoreToStix_2_1(entity) as unknown as StixObject, [objects.stixName]: refs };
+    const stixEntity = { ...convertStoreToStix_2_1(entity), [objects.stixName]: refs };
     bundleBuilder.addObject(stixEntity, '');
   }
   // Build and return the result
