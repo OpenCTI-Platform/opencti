@@ -79,8 +79,8 @@ Below, you will find external resources which may be useful along your OpenCTI j
 [**:material-package-variant-closed:{ .middle } OpenCTI Ecosystem**](https://filigran.notion.site/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76)<br />
 List of available connectors and integrations to expand platform usage.
 
-[**:material-school-outline:{ .middle } Training Courses**](https://training.filigran.io)<br />
-Training courses for analysts and administrators in the Filigran training center.
+[**:material-school-outline:{ .middle } Training Courses**](https://academy.filigran.io)<br />
+Training courses for analysts and administrators in the Filigran Academy.
 
 [**:material-youtube:{ .middle } Video materials**](https://www.youtube.com/@Filigran/videos)<br />
 Set of video illustrating the implementation of use cases and platform capabilities.
