@@ -63,6 +63,9 @@ const stixDomainObjectResolvers = {
     status: (stixDomainObject, _, context) => (stixDomainObject.x_opencti_workflow_id ? findStatusById(context, context.user, stixDomainObject.x_opencti_workflow_id) : null),
     objectAssignee: async (stixDomainObject, args, context) => {
       const assignees = await loadThroughDenormalized(context, context.user, stixDomainObject, INPUT_ASSIGNEE, { sortBy: 'user_email' });
+      if (!assignees) {
+        return [];
+      }
       return filterMembersWithUsersOrgs(context, context.user, assignees);
     },
     workflowEnabled: async (stixDomainObject, _, context) => {

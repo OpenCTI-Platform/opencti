@@ -25,6 +25,9 @@ const caseResolvers: Resolvers = {
     tasks: (current, args, context) => caseTasksPaginated<BasicStoreEntityTask>(context, context.user, current.id, args),
     objectParticipant: async (container, _, context) => {
       const participants = await loadThroughDenormalized(context, context.user, container, INPUT_PARTICIPANT, { sortBy: 'user_email' });
+      if (!participants) {
+        return [];
+      }
       return filterMembersWithUsersOrgs(context, context.user, participants);
     }
   },

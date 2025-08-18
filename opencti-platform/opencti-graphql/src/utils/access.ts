@@ -875,6 +875,9 @@ export const filterMembersWithUsersOrgs = async (
   if (!userInPlatformOrg) {
     const userOrgIds = (user.organizations || []).map((org) => org.id);
     return members.map((member) => {
+      if (member.id === user.id) {
+        return member;
+      }
       const memberOrgIds = member[RELATION_PARTICIPATE_TO] ?? [];
       const sameOrg = memberOrgIds.some((id) => userOrgIds.includes(id));
       if (!sameOrg) {
