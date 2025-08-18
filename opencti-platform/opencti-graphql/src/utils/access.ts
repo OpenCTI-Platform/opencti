@@ -23,7 +23,7 @@ import { isStixObject } from '../schema/stixCoreObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import type { UpdateEvent } from '../types/event';
 import { RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
-import type { Participant } from '../generated/graphql';
+import type { Creator, Participant } from '../generated/graphql';
 
 export const DEFAULT_INVALID_CONF_VALUE = 'ChangeMe';
 
@@ -857,7 +857,7 @@ export const isUserInPlatformOrganization = (user: AuthUser, settings: BasicStor
   return settings.platform_organization ? userOrganizationIds.includes(settings.platform_organization) : true;
 };
 
-type ParticipantWithOrgIds = Participant & {
+type ParticipantWithOrgIds = Participant & Creator & {
   representative?: {
     main: string,
     secondary: string
