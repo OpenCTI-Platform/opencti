@@ -84,7 +84,7 @@ export type AddManagedConnectorInput = {
   automatic_user?: InputMaybe<Scalars['Boolean']['input']>;
   catalog_id: Scalars['ID']['input'];
   confidence_level?: InputMaybe<Scalars['String']['input']>;
-  connector_user_id: Scalars['ID']['input'];
+  connector_user_id?: InputMaybe<Scalars['ID']['input']>;
   manager_contract_configuration: Array<ContractConfigInput>;
   manager_contract_image: Scalars['String']['input'];
   name: Scalars['String']['input'];
