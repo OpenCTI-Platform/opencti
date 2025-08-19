@@ -189,7 +189,7 @@ const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHe
                 {/*    filterGroup={JSON.parse(e.criterion.filters)} */}
                 {/*    size='small' */}
                 {/*  /> */}
-                {/* ))} */} ## TODO PIR add explanations at entity level?
+                {/* ))} */} ## TODO PIR add explanations on hover
               </div>
             )}
           >
@@ -200,12 +200,12 @@ const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHe
         );
       },
     },
-    entity_type: { percentWidth: 13 },
+    entity_type: { percentWidth: 12 },
     name: {},
     createdBy: { isSortable: isRuntimeSort },
     creator: { isSortable: isRuntimeSort },
-    objectLabel: {},
-    created_at: {},
+    objectLabel: { percentWidth: 12 },
+    created_at: { percentWidth: 13 },
     objectMarking: { isSortable: isRuntimeSort },
   };
 
