@@ -246,6 +246,7 @@ const StixDomainObjectHeader = (props) => {
     isOpenctiAlias,
     EditComponent,
     DeleteComponent,
+    RelateComponent,
     viewAs,
     onViewAs,
     disableSharing,
@@ -681,6 +682,7 @@ const StixDomainObjectHeader = (props) => {
               </PopoverMenu>
             ) : null}
             {EditComponent}
+            {RelateComponent}
             <DeleteComponent isOpen={openDelete} onClose={handleCloseDelete} />
           </div>
         </div>
