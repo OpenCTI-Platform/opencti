@@ -927,7 +927,7 @@ export const applyOrganizationRestriction = async (
     const userMembersFilter = {
       mode: FilterMode.Or,
       filters: [membersFilters, userTypeFilters],
-      filterGroup: [],
+      filterGroups: [],
     };
     const filters = {
       mode: FilterMode.And,
