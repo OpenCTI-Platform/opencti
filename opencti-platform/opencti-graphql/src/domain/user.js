@@ -207,17 +207,16 @@ export const findAll = async (context, user, args) => {
   return listEntities(context, user, [ENTITY_TYPE_USER], args);
 };
 
-export const findCreators = async (context, user, args) => {
+export const findCreators = (context, user, args) => {
   const { entityTypes = [] } = args;
   return listAllEntitiesForFilter(context, user, CREATOR_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes });
 };
 
-export const findAssignees = async (context, user, args) => {
+export const findAssignees = (context, user, args) => {
   const { entityTypes = [] } = args;
   return listAllEntitiesForFilter(context, user, ASSIGNEE_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes });
 };
-
-export const findParticipants = async (context, user, args) => {
+export const findParticipants = (context, user, args) => {
   const { entityTypes = [] } = args;
   return listAllEntitiesForFilter(context, user, PARTICIPANT_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes });
 };
