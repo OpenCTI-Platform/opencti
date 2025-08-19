@@ -17,7 +17,6 @@ import { graphql, useFragment } from 'react-relay';
 import React, { useState } from 'react';
 import { Chip, Tooltip, Alert } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { HistoryOutlined } from '@mui/icons-material';
 import { PirAnalysesContainersListQuery, PirAnalysesContainersListQuery$variables } from './__generated__/PirAnalysesContainersListQuery.graphql';
 import { PirAnalyses_ContainersFragment$data } from './__generated__/PirAnalyses_ContainersFragment.graphql';
 import { emptyFilterGroup, getFilterKeyValues, sanitizeFilterGroupKeysForBackend, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
