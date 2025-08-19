@@ -38,7 +38,9 @@ type IngestionCatalogParsed = {
 
 type IngestionTypeMap = {
   string: string;
-  number: number;
+  integer: number;
+  dict: object;
+  array: string[];
   boolean: boolean;
 };
 

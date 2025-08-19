@@ -4,7 +4,9 @@ export type IngestionConnectorType = 'INTERNAL_ENRICHMENT' | 'EXTERNAL_IMPORT' |
 
 type TypeMap = {
   string: string;
-  number: number;
+  integer: number;
+  dict: object;
+  array: string[];
   boolean: boolean;
 };
 
