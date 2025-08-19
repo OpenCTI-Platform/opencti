@@ -1,7 +1,6 @@
-import { uniq } from 'ramda';
 import React from 'react';
 import { ConnectorsStatus_data$data } from '@components/data/connectors/__generated__/ConnectorsStatus_data.graphql';
-import { stixFilters, useBuildFilterKeysMapFromEntityType } from './filters/filtersUtils';
+import { stixFilters, useAvailableFilterKeysForEntityTypes } from './filters/filtersUtils';
 import ItemBoolean from '../components/ItemBoolean';
 import { useFormatter } from '../components/i18n';
 import useSchema from './hooks/useSchema';
@@ -61,8 +60,7 @@ export const useGetConnectorAvailableFilterKeys = (connector: Connector): string
     return []; // only for enrichment
   }
   const entityTypes = useGetConnectorFilterEntityTypes(connector);
-  const filterKeysMap = useBuildFilterKeysMapFromEntityType(entityTypes);
-  let availableFilterKeys = uniq(Array.from(filterKeysMap.keys() ?? []));
+  let availableFilterKeys = useAvailableFilterKeysForEntityTypes(entityTypes);
   // filter to keep only stixFilters
   availableFilterKeys = availableFilterKeys.filter((key) => stixFilters.includes(key));
   return availableFilterKeys;
