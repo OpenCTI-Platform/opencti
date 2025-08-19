@@ -145,7 +145,14 @@ const AI_PROVIDERS: Record<string, AIProviderInit> = {
       apiKey: AI_TOKEN,
     });
     let nlq: ChatMistralAI | ChatOpenAI;
-    if (AI_ENDPOINT.includes('https://api.mistral.ai')) {
+    let isMistralApi = false;
+    try {
+      const url = new URL(AI_ENDPOINT);
+      isMistralApi = url.hostname === 'api.mistral.ai';
+    } catch {
+      isMistralApi = false;
+    }
+    if (isMistralApi) {
       nlq = new ChatMistralAI({
         model: AI_MODEL,
         apiKey: AI_TOKEN,
