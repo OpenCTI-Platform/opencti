@@ -2675,6 +2675,7 @@
   "Pie chart": "Kreisdiagramm",
   "Pipe": "Rohrleitung",
   "PIR": "PIR",
+  "Pir analyses disclaimer...": "Bitte beachten Sie, dass aufgrund technischer Beschränkungen nur die ersten 5000 markierten Einheiten zum Abrufen von Containern verwendet werden. Im Falle eines konsequenten PIR können also einige Container fehlen.",
   "PIR Details": "PIR-Details",
   "PIR Rescan period (days)": "PIR-Rescan-Zeitraum (Tage)",
   "PIR_MANAGER": "PIR-Manager",

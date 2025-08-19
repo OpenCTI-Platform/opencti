@@ -2675,6 +2675,7 @@
   "Pie chart": "円グラフ",
   "Pipe": "パイプ",
   "PIR": "PIR",
+  "Pir analyses disclaimer...": "技術的な制限により、フラグを立てた最初の 5000 エンティティのみがコンテナの検索に使用され ることに注意。そのため、PIRの結果、いくつかのコンテナを見逃してしまう可能性がある。",
   "PIR Details": "PIR 詳細",
   "PIR Rescan period (days)": "PIR再スキャン期間（日）",
   "PIR_MANAGER": "PIRマネージャー",

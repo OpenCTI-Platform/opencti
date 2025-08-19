@@ -2675,6 +2675,7 @@
   "Pie chart": "Pie chart",
   "Pipe": "Pipe",
   "PIR": "PIR",
+  "Pir analyses disclaimer...": "Be aware that due to technical limitation, only the first 5000 flagged entities are used to retrieve Containers. So in case of consequent PIR, it may miss some Containers.",
   "PIR Details": "PIR Details",
   "PIR Rescan period (days)": "PIR Rescan period (days)",
   "PIR_MANAGER": "PIR manager",

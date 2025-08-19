@@ -15,8 +15,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { graphql, useFragment } from 'react-relay';
 import React, { useState } from 'react';
-import { Chip, Tooltip } from '@mui/material';
+import { Chip, Tooltip, Alert } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import { HistoryOutlined } from '@mui/icons-material';
 import { PirAnalysesContainersListQuery, PirAnalysesContainersListQuery$variables } from './__generated__/PirAnalysesContainersListQuery.graphql';
 import { PirAnalyses_ContainersFragment$data } from './__generated__/PirAnalyses_ContainersFragment.graphql';
 import { emptyFilterGroup, getFilterKeyValues, sanitizeFilterGroupKeysForBackend, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
@@ -294,31 +295,42 @@ const PirAnalyses = ({ data }: PirAnalysesProps) => {
     },
   };
 
-  return queryRef && (
-    <div style={{ height: 'calc(100vh - 250px)' }} ref={(r) => setRef(r)}>
-      <DataTable
-        rootRef={ref ?? undefined}
-        removeSelectAll
-        disableLineSelection
-        dataColumns={dataColumns}
-        storageKey={LOCAL_STORAGE_KEY}
-        initialValues={initialValues}
-        toolbarFilters={filters}
-        lineFragment={pirAnalysesContainerFragment}
-        entityTypes={['Container']}
-        searchContextFinal={{ entityTypes: ['Container'] }}
-        resolvePath={(d: PirAnalyses_ContainersFragment$data) => {
-          return d.pir?.pirContainers?.edges?.map((e) => e?.node);
-        }}
-        preloadedPaginationProps={{
-          linesQuery: pirAnalysesContainersListQuery,
-          linesFragment: pirAnalysesContainersFragment,
-          queryRef,
-          nodePath: ['pir', 'pirContainers', 'pageInfo', 'globalCount'],
-          setNumberOfElements: helpers.handleSetNumberOfElements,
-        }}
-      />
-    </div>
+  return (
+    <>
+      <Alert
+        severity="info"
+        variant="outlined"
+        sx={{ marginBottom: 3 }}
+      >
+        {t_i18n('Pir analyses disclaimer...')}
+      </Alert>
+      {queryRef && (
+        <div style={{ height: 'calc(100vh - 250px)' }} ref={(r) => setRef(r)}>
+          <DataTable
+            rootRef={ref ?? undefined}
+            removeSelectAll
+            disableLineSelection
+            dataColumns={dataColumns}
+            storageKey={LOCAL_STORAGE_KEY}
+            initialValues={initialValues}
+            toolbarFilters={filters}
+            lineFragment={pirAnalysesContainerFragment}
+            entityTypes={['Container']}
+            searchContextFinal={{ entityTypes: ['Container'] }}
+            resolvePath={(d: PirAnalyses_ContainersFragment$data) => {
+              return d.pir?.pirContainers?.edges?.map((e) => e?.node);
+            }}
+            preloadedPaginationProps={{
+              linesQuery: pirAnalysesContainersListQuery,
+              linesFragment: pirAnalysesContainersFragment,
+              queryRef,
+              nodePath: ['pir', 'pirContainers', 'pageInfo', 'globalCount'],
+              setNumberOfElements: helpers.handleSetNumberOfElements,
+            }}
+          />
+        </div>
+      )}
+    </>
   );
 };
 

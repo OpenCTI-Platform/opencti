@@ -2675,6 +2675,7 @@
   "Pie chart": "Camembert",
   "Pipe": "Tuyaux",
   "PIR": "PIR",
+  "Pir analyses disclaimer...": "Il faut savoir qu'en raison de limitations techniques, seules les 5 000 premières entités signalées sont utilisées pour récupérer les conteneurs. Par conséquent, dans le cas d'un PIR conséquent, il se peut que certains conteneurs ne soient pas récupérés.",
   "PIR Details": "Détails du PIR",
   "PIR Rescan period (days)": "Période d'analyse PIR (jours)",
   "PIR_MANAGER": "Responsable PIR",

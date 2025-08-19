@@ -2675,6 +2675,7 @@
   "Pie chart": "원형 차트",
   "Pipe": "파이프",
   "PIR": "PIR",
+  "Pir analyses disclaimer...": "기술적 제한으로 인해 처음 5000개의 플래그가 지정된 엔티티만 컨테이너를 검색하는 데 사용된다는 점에 유의하세요. 따라서 결과적인 PIR의 경우 일부 컨테이너가 누락될 수 있습니다.",
   "PIR Details": "PIR 세부 정보",
   "PIR Rescan period (days)": "PIR 재검사 기간(일)",
   "PIR_MANAGER": "PIR 관리자",

@@ -2675,6 +2675,7 @@
   "Pie chart": "Gráfico de quesos",
   "Pipe": "Tubería",
   "PIR": "PIR",
+  "Pir analyses disclaimer...": "Tenga en cuenta que, debido a limitaciones técnicas, sólo se utilizan las 5.000 primeras entidades marcadas para recuperar los contenedores. Por lo tanto, en el caso de un PIR consecuente, es posible que se pierdan algunos contenedores.",
   "PIR Details": "Detalles PIR",
   "PIR Rescan period (days)": "Periodo de reexploración PIR (días)",
   "PIR_MANAGER": "Gestor PIR",

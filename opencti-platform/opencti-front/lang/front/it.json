@@ -2675,6 +2675,7 @@
   "Pie chart": "Grafico a torta",
   "Pipe": "Pipe",
   "PIR": "PIR",
+  "Pir analyses disclaimer...": "Tenere presente che, a causa di una limitazione tecnica, solo le prime 5000 entità segnalate vengono utilizzate per recuperare i Contenitori. Pertanto, in caso di PIR conseguente, potrebbero sfuggire alcuni contenitori.",
   "PIR Details": "Dettagli PIR",
   "PIR Rescan period (days)": "Periodo di rescan PIR (giorni)",
   "PIR_MANAGER": "Responsabile PIR",

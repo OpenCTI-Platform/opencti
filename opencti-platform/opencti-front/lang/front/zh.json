@@ -2675,6 +2675,7 @@
   "Pie chart": "饼图",
   "Pipe": "管道",
   "PIR": "PIR",
+  "Pir analyses disclaimer...": "请注意，由于技术限制，只有前 5000 个标记的实体才会被用于检索容器。因此，在随后的 PIR 中，可能会遗漏一些容器。",
   "PIR Details": "PIR 详情",
   "PIR Rescan period (days)": "PIR 重新扫描周期（天）",
   "PIR_MANAGER": "PIR 管理员",
