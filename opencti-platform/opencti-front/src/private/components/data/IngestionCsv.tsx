@@ -35,7 +35,7 @@ const IngestionCsv = () => {
   const classes = useStyles();
   const { settings } = useContext(UserContext);
   const importFromHubUrl = isNotEmptyField(settings?.platform_xtmhub_url)
-    ? `${settings.platform_xtmhub_url}/redirect/octi_integration_feeds?octi_instance_id=${settings.id}`
+    ? `${settings.platform_xtmhub_url}/redirect/octi_integration_feeds?opencti_platform_id=${settings.id}`
     : '';
 
   const { t_i18n } = useFormatter();
