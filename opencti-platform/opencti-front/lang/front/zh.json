@@ -2296,6 +2296,7 @@
   "MinIO": "MinIO",
   "minute": "分钟",
   "minutes": "分钟",
+  "Minutes behind stream": "{minutes}分钟落后于直播流",
   "minutes left": "还剩几分钟",
   "Missing token": "丢失的令牌",
   "Mitigated attack patterns": "缓解的攻击模式",

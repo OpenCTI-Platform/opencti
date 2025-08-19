@@ -18,12 +18,13 @@ import { graphql, useFragment } from 'react-relay';
 import { Grid2 as Grid, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import Chip from '@mui/material/Chip';
+import { PirOverviewDetailsRedisFragment$key } from '@components/pir/pir_overview/__generated__/PirOverviewDetailsRedisFragment.graphql';
 import { PirOverviewDetailsFragment$key } from './__generated__/PirOverviewDetailsFragment.graphql';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import ItemCreators from '../../../../components/ItemCreators';
 import FilterIconButton from '../../../../components/FilterIconButton';
-import { parse } from '../../../../utils/Time';
+import { minutesBetweenDates, streamEventIdToDate } from '../../../../utils/Time';
 import PirCriteriaDisplay from '../PirCriteriaDisplay';
 import type { Theme } from '../../../../components/Theme';
 import PaperAccordion from '../../../../components/PaperAccordion';
@@ -47,16 +48,29 @@ const detailsFragment = graphql`
   }
 `;
 
+const detailsRedisFragment = graphql`
+  fragment PirOverviewDetailsRedisFragment on Query {
+    redisStreamInfo {
+      lastEventId
+    }
+  }
+`;
+
 interface PirOverviewDetailsProps {
   data: PirOverviewDetailsFragment$key
+  dataStream: PirOverviewDetailsRedisFragment$key
 }
 
-const PirOverviewDetails = ({ data }: PirOverviewDetailsProps) => {
+const PirOverviewDetails = ({ data, dataStream }: PirOverviewDetailsProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n, fldt } = useFormatter();
   const pir = useFragment(detailsFragment, data);
+  const { redisStreamInfo } = useFragment(detailsRedisFragment, dataStream);
 
-  const lastEventDate = parse(parseInt((pir.lastEventId || '-').split('-')[0], 10));
+  const lastEventDate = streamEventIdToDate(pir.lastEventId);
+  const lastStreamEventDate = streamEventIdToDate(redisStreamInfo?.lastEventId);
+  const diffInMinutes = minutesBetweenDates(lastEventDate, lastStreamEventDate);
+
   const criteria: FilterGroup[] = pir.pir_criteria.map((c) => JSON.parse(c.filters));
 
   return (
@@ -76,7 +90,9 @@ const PirOverviewDetails = ({ data }: PirOverviewDetailsProps) => {
               <Typography variant="h3" gutterBottom>
                 {t_i18n('Rescan period (days)')}
               </Typography>
-              {pir.pir_rescan_days}
+              <Typography variant="body2" gutterBottom>
+                {pir.pir_rescan_days}
+              </Typography>
             </div>
             <div>
               <Typography variant="h3" gutterBottom>
@@ -89,11 +105,20 @@ const PirOverviewDetails = ({ data }: PirOverviewDetailsProps) => {
                 styleNumber={1}
               />
             </div>
-            <div>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
               <Typography variant="h3" gutterBottom>
                 {t_i18n('Last event processed')}
               </Typography>
-              {fldt(lastEventDate)}
+              <Typography variant="body2" gutterBottom>
+                {fldt(lastEventDate)}
+              </Typography>
+              {diffInMinutes > 1 && (
+                <Typography variant="body2" gutterBottom sx={{ color: theme.palette.warn.main }}>
+                  {t_i18n('Minutes behind stream', {
+                    values: { minutes: diffInMinutes },
+                  })}
+                </Typography>
+              )}
             </div>
             <div>
               <Typography variant="h3" gutterBottom>

@@ -2296,6 +2296,7 @@
   "MinIO": "MinIO",
   "minute": "минута",
   "minutes": "минут",
+  "Minutes behind stream": "{minutes} минут отставания от прямого эфира",
   "minutes left": "оставшиеся минуты",
   "Missing token": "Отсутствующий маркер",
   "Mitigated attack patterns": "Смягченные модели атак",

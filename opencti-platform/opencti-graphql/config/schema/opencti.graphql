@@ -677,6 +677,10 @@ enum StreamCollectionOrdering {
   stream_live
   _score
 }
+type RedisStreamInfo {
+  lastEventId: String!
+  firstEventId: String!
+}
 
 ############## SubTypes
 enum SubTypesOrdering {
@@ -13179,6 +13183,7 @@ type Query {
     search: String
     filters: FilterGroup
   ): StreamCollectionConnection! @public # Code protected
+  redisStreamInfo: RedisStreamInfo @auth
   statusTemplate(id: String!): StatusTemplate @auth
   statusTemplates(
     first: Int

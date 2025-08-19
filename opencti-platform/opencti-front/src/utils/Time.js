@@ -146,3 +146,7 @@ export const computerRelativeDate = (relativeDate) => {
   }
   return null;
 };
+
+export const streamEventIdToDate = (streamEventId) => {
+  return parse(parseInt((streamEventId || '-').split('-')[0], 10));
+};

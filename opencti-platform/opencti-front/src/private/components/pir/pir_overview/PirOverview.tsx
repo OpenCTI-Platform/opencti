@@ -22,20 +22,23 @@ import PirOverviewDetails from './PirOverviewDetails';
 import PirOverviewHistory from './PirOverviewHistory';
 import { PirQuery$data } from '../__generated__/PirQuery.graphql';
 import { PirOverviewHistoryFragment$key } from './__generated__/PirOverviewHistoryFragment.graphql';
+import { PirOverviewDetailsRedisFragment$key } from './__generated__/PirOverviewDetailsRedisFragment.graphql';
 
 interface PirOverviewProps {
   dataHistory: PirOverviewHistoryFragment$key
   dataPir: NonNullable<PirQuery$data['pir']>
+  dataRedis: PirOverviewDetailsRedisFragment$key
 }
 
 const PirOverview = ({
   dataHistory,
   dataPir,
+  dataRedis,
 }: PirOverviewProps) => {
   return (
     <Grid container spacing={3}>
       <Grid size={{ xs: 12 }} container direction='column' spacing={3}>
-        <PirOverviewDetails data={dataPir} />
+        <PirOverviewDetails data={dataPir} dataStream={dataRedis} />
         <PirOverviewCounts data={dataPir} />
       </Grid>
       <Grid size={{ xs: 6 }} container direction='column' spacing={3}>

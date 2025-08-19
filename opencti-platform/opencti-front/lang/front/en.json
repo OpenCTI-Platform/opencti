@@ -2296,6 +2296,7 @@
   "MinIO": "MinIO",
   "minute": "minute",
   "minutes": "minutes",
+  "Minutes behind stream": "{minutes} minutes behind live stream",
   "minutes left": "minutes left",
   "Missing token": "Missing token",
   "Mitigated attack patterns": "Mitigated attack patterns",

@@ -21055,6 +21055,7 @@ export type Query = {
   publicStixRelationshipsMultiTimeSeries?: Maybe<Array<Maybe<MultiTimeSeries>>>;
   publicStixRelationshipsNumber?: Maybe<Number>;
   rabbitMQMetrics?: Maybe<RabbitMqMetrics>;
+  redisStreamInfo?: Maybe<RedisStreamInfo>;
   region?: Maybe<Region>;
   regions?: Maybe<RegionConnection>;
   report?: Maybe<Report>;
@@ -24117,6 +24118,12 @@ export type RabbitMqMetrics = {
   consumers?: Maybe<Scalars['String']['output']>;
   overview?: Maybe<OverviewMetrics>;
   queues?: Maybe<Array<Maybe<QueueMetrics>>>;
+};
+
+export type RedisStreamInfo = {
+  __typename?: 'RedisStreamInfo';
+  firstEventId: Scalars['String']['output'];
+  lastEventId: Scalars['String']['output'];
 };
 
 export type Region = BasicObject & Location & StixCoreObject & StixDomainObject & StixObject & {
@@ -33940,6 +33947,7 @@ export type ResolversTypes = ResolversObject<{
   QueueTotals: ResolverTypeWrapper<QueueTotals>;
   RabbitMQConnection: ResolverTypeWrapper<RabbitMqConnection>;
   RabbitMQMetrics: ResolverTypeWrapper<RabbitMqMetrics>;
+  RedisStreamInfo: ResolverTypeWrapper<RedisStreamInfo>;
   Region: ResolverTypeWrapper<Omit<Region, 'avatar' | 'cases' | 'connectors' | 'containers' | 'countries' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'parentRegions' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'subRegions' | 'x_opencti_inferences'> & { avatar?: Maybe<ResolversTypes['OpenCtiFile']>, cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, countries?: Maybe<ResolversTypes['CountryConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, parentRegions?: Maybe<ResolversTypes['RegionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, status?: Maybe<ResolversTypes['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, subRegions?: Maybe<ResolversTypes['RegionConnection']>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   RegionAddInput: RegionAddInput;
   RegionConnection: ResolverTypeWrapper<Omit<RegionConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['RegionEdge']>>> }>;
@@ -34835,6 +34843,7 @@ export type ResolversParentTypes = ResolversObject<{
   QueueTotals: QueueTotals;
   RabbitMQConnection: RabbitMqConnection;
   RabbitMQMetrics: RabbitMqMetrics;
+  RedisStreamInfo: RedisStreamInfo;
   Region: Omit<Region, 'avatar' | 'cases' | 'connectors' | 'containers' | 'countries' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'parentRegions' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'subRegions' | 'x_opencti_inferences'> & { avatar?: Maybe<ResolversParentTypes['OpenCtiFile']>, cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, countries?: Maybe<ResolversParentTypes['CountryConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, parentRegions?: Maybe<ResolversParentTypes['RegionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, status?: Maybe<ResolversParentTypes['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, subRegions?: Maybe<ResolversParentTypes['RegionConnection']>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   RegionAddInput: RegionAddInput;
   RegionConnection: Omit<RegionConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['RegionEdge']>>> };
@@ -42057,6 +42066,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   publicStixRelationshipsMultiTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['MultiTimeSeries']>>>, ParentType, ContextType, RequireFields<QueryPublicStixRelationshipsMultiTimeSeriesArgs, 'uriKey' | 'widgetId'>>;
   publicStixRelationshipsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, RequireFields<QueryPublicStixRelationshipsNumberArgs, 'uriKey' | 'widgetId'>>;
   rabbitMQMetrics?: Resolver<Maybe<ResolversTypes['RabbitMQMetrics']>, ParentType, ContextType, Partial<QueryRabbitMqMetricsArgs>>;
+  redisStreamInfo?: Resolver<Maybe<ResolversTypes['RedisStreamInfo']>, ParentType, ContextType>;
   region?: Resolver<Maybe<ResolversTypes['Region']>, ParentType, ContextType, RequireFields<QueryRegionArgs, 'id'>>;
   regions?: Resolver<Maybe<ResolversTypes['RegionConnection']>, ParentType, ContextType, Partial<QueryRegionsArgs>>;
   report?: Resolver<Maybe<ResolversTypes['Report']>, ParentType, ContextType, Partial<QueryReportArgs>>;
@@ -42256,6 +42266,12 @@ export type RabbitMqMetricsResolvers<ContextType = any, ParentType extends Resol
   consumers?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   overview?: Resolver<Maybe<ResolversTypes['OverviewMetrics']>, ParentType, ContextType>;
   queues?: Resolver<Maybe<Array<Maybe<ResolversTypes['QueueMetrics']>>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type RedisStreamInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['RedisStreamInfo'] = ResolversParentTypes['RedisStreamInfo']> = ResolversObject<{
+  firstEventId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  lastEventId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -45795,6 +45811,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   QueueTotals?: QueueTotalsResolvers<ContextType>;
   RabbitMQConnection?: RabbitMqConnectionResolvers<ContextType>;
   RabbitMQMetrics?: RabbitMqMetricsResolvers<ContextType>;
+  RedisStreamInfo?: RedisStreamInfoResolvers<ContextType>;
   Region?: RegionResolvers<ContextType>;
   RegionConnection?: RegionConnectionResolvers<ContextType>;
   RegionEdge?: RegionEdgeResolvers<ContextType>;

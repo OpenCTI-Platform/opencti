@@ -715,6 +715,11 @@ enum StreamCollectionOrdering {
   _score
 }
 
+type RedisStreamInfo {
+  lastEventId: String!
+  firstEventId: String!
+}
+
 enum SubTypesOrdering {
   label
   _score
@@ -8220,6 +8225,7 @@ type Query {
   feed(id: String!): Feed
   feeds(first: Int, after: ID, orderBy: FeedOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FeedConnection
   streamCollections(first: Int, after: ID, orderBy: StreamCollectionOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): StreamCollectionConnection!
+  redisStreamInfo: RedisStreamInfo
   statusTemplate(id: String!): StatusTemplate
   statusTemplates(first: Int, after: ID, orderBy: StatusTemplateOrdering, orderMode: OrderingMode, search: String): StatusTemplateConnection
   statusTemplatesByStatusScope(search: String, scope: StatusScope): [StatusTemplate]
