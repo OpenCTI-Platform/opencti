@@ -51,16 +51,7 @@ import {
   WRITE_PLATFORM_INDICES
 } from './utils';
 import conf, { booleanConf, extendedErrors, isFeatureEnabled, loadCert, logApp, logMigration } from '../config/conf';
-import {
-  ComplexSearchError,
-  ConfigurationError,
-  DatabaseError,
-  EngineShardsError,
-  FunctionalError,
-  LockTimeoutError,
-  TYPE_LOCK_ERROR,
-  UnsupportedError
-} from '../config/errors';
+import { ComplexSearchError, ConfigurationError, DatabaseError, EngineShardsError, FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import {
   isStixRefRelationship,
   RELATION_BORN_IN,
@@ -113,14 +104,7 @@ import {
 } from '../schema/stixDomainObject';
 import { isBasicObject, isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationship } from '../schema/stixRelationship';
-import {
-  isStixCoreRelationship,
-  RELATION_INDICATES,
-  RELATION_LOCATED_AT,
-  RELATION_PUBLISHES,
-  RELATION_RELATED_TO,
-  STIX_CORE_RELATIONSHIPS
-} from '../schema/stixCoreRelationship';
+import { isStixCoreRelationship, RELATION_INDICATES, RELATION_LOCATED_AT, RELATION_PUBLISHES, RELATION_RELATED_TO, STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
 import { generateInternalId, INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import {
   BYPASS,
@@ -135,20 +119,10 @@ import {
 } from '../utils/access';
 import { isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
 import { now, runtimeFieldObservableValueScript } from '../utils/format';
-import {
-  ENTITY_TYPE_KILL_CHAIN_PHASE,
-  ENTITY_TYPE_MARKING_DEFINITION,
-  isStixMetaObject
-} from '../schema/stixMetaObject';
+import { ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../schema/stixMetaObject';
 import { getEntitiesListFromCache, getEntityFromCache } from './cache';
 import { refang } from '../utils/refang';
-import {
-  ENTITY_TYPE_MIGRATION_STATUS,
-  ENTITY_TYPE_SETTINGS,
-  ENTITY_TYPE_STATUS,
-  ENTITY_TYPE_USER,
-  isInternalObject
-} from '../schema/internalObject';
+import { ENTITY_TYPE_MIGRATION_STATUS, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
 import { meterManager, telemetry } from '../config/tracing';
 import {
   isBooleanAttribute,
@@ -221,15 +195,10 @@ import { enrichWithRemoteCredentials } from '../config/credentials';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, isStixCyberObservable } from '../schema/stixCyberObservable';
 import { lockResources } from '../lock/master-lock';
-import {
-  DRAFT_OPERATION_CREATE,
-  DRAFT_OPERATION_DELETE,
-  DRAFT_OPERATION_DELETE_LINKED,
-  DRAFT_OPERATION_UPDATE_LINKED
-} from '../modules/draftWorkspace/draftOperations';
+import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_UPDATE_LINKED } from '../modules/draftWorkspace/draftOperations';
 import { RELATION_SAMPLE } from '../modules/malwareAnalysis/malwareAnalysis-types';
-import { storeLoadById } from "./middleware-loader";
-import { ENTITY_TYPE_PIR } from "../modules/pir/pir-types";
+import { storeLoadById } from './middleware-loader';
+import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { checkEnterpriseEdition } from '../enterprise-edition/ee';
 
 const ELK_ENGINE = 'elk';
