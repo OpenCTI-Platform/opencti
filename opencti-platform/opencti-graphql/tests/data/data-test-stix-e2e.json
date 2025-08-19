@@ -1348,6 +1348,22 @@
       "type": "identity"
     },
     {
+      "id": "identity--f8bb44a4-f9e5-5c91-b5b5-fed0f2f7765c",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2025-01-01T00:00:00.000Z",
+      "modified": "2025-06-18T07:44:44.067Z",
+      "identity_class": "individual",
+      "name": "Duncan Macleod",
+      "labels": [
+        "e2e"
+      ],
+      "x_opencti_id": "21d17163-54d4-42a1-87c4-d623dd4bd552",
+      "x_opencti_type": "Individual",
+      "type": "identity"
+    },
+    {
       "id": "location--7e13827c-720f-5725-978b-907dc66a6f6f",
       "spec_version": "2.1",
       "revoked": false,
