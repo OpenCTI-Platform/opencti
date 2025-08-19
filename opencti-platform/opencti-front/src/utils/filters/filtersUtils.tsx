@@ -759,7 +759,8 @@ export const useBuildFilterKeysMapFromEntityType = (entityTypes = ['Stix-Core-Ob
       filterKeysMap.set(key, valueToSet);
     });
   });
-  if (entityTypes.length > 0) { // add entity_type filter if several types are given (entity_type filter already present for abstract types)
+  // add entity_type filter if several types are given (entity_type filter already present for abstract types)
+  if (entityTypes.length > 0) {
     filterKeysMap.set('entity_type', {
       filterKey: 'entity_type',
       type: 'string',
@@ -779,15 +780,20 @@ export const useAvailableFilterKeysForEntityTypes = (entityTypes: string[]) => {
 
 const notCleanableFilterKeys = ['entity_type', 'authorized_members.id', 'user_id', 'internal_id', 'entity_id', 'ids'];
 
+const isFilterKeyAvailable = (key: string, availableFilterKeys: string[]) => {
+  const completedAvailableFilterKeys = availableFilterKeys.concat(notCleanableFilterKeys);
+  return completedAvailableFilterKeys.includes(key) || key.startsWith('pir_score');
+};
+
 export const useRemoveIdAndIncorrectKeysFromFilterGroupObject = (filters?: FilterGroup | null, entityTypes = ['Stix-Core-Object']): FilterGroup | undefined => {
-  const availableFilterKeys = useAvailableFilterKeysForEntityTypes(entityTypes).concat(notCleanableFilterKeys);
+  const availableFilterKeys = useAvailableFilterKeysForEntityTypes(entityTypes);
   if (!filters) {
     return undefined;
   }
   return {
     mode: filters.mode,
     filters: filters.filters
-      .filter((f) => availableFilterKeys.includes(f.key))
+      .filter((f) => isFilterKeyAvailable(f.key, availableFilterKeys))
       .filter((f) => ['nil', 'not_nil'].includes(f.operator ?? 'eq') || f.values.length > 0)
       .map((f) => {
         const newFilter = { ...f };
@@ -820,18 +826,17 @@ export const removeIdAndIncorrectKeysFromFilterGroupObject = (filters: FilterGro
   if (!filters) {
     return undefined;
   }
-  const fullAvailableFilterKeys = availableFilterKeys.concat(notCleanableFilterKeys);
   return {
     mode: filters.mode,
     filters: filters.filters
-      .filter((f) => fullAvailableFilterKeys.includes(f.key))
+      .filter((f) => isFilterKeyAvailable(f.key, availableFilterKeys))
       .filter((f) => ['nil', 'not_nil'].includes(f.operator ?? 'eq') || f.values.length > 0)
       .map((f) => {
         const newFilter = { ...f };
         delete newFilter.id;
         return newFilter;
       }),
-    filterGroups: filters.filterGroups.map((group) => removeIdAndIncorrectKeysFromFilterGroupObject(group, fullAvailableFilterKeys)) as FilterGroup[],
+    filterGroups: filters.filterGroups.map((group) => removeIdAndIncorrectKeysFromFilterGroupObject(group, availableFilterKeys)) as FilterGroup[],
   };
 };
 
@@ -857,7 +862,40 @@ export const useBuildEntityTypeBasedFilterContext = (
   };
 };
 
-export const useFilterDefinition = (filterKey: string, entityTypes = ['Stix-Core-Object', 'stix-core-relationship'], subKey?: string): FilterDefinition | undefined => {
+export const getFilterDefinitionFromFilterKeysMap = (
+  filterKey: string,
+  filterKeysMap: Map<string, FilterDefinition>,
+): FilterDefinition | undefined => {
+  if (filterKey.startsWith('pir_score')) {
+    return {
+      filterKey,
+      label: 'PIR Score',
+      multiple: false,
+      type: 'integer',
+      subFilters: [],
+      subEntityTypes: [],
+      elementsForFilterValuesSearch: [],
+    };
+  }
+  return filterKeysMap.get(filterKey);
+};
+
+export const useFilterDefinition = (
+  filterKey: string,
+  entityTypes = ['Stix-Core-Object', 'stix-core-relationship'],
+  subKey?: string,
+): FilterDefinition | undefined => {
+  if (filterKey.startsWith('pir_score')) {
+    return {
+      filterKey,
+      label: 'PIR Score',
+      multiple: false,
+      type: 'integer',
+      subFilters: [],
+      subEntityTypes: [],
+      elementsForFilterValuesSearch: [],
+    };
+  }
   const filterDefinition = useBuildFilterKeysMapFromEntityType(entityTypes).get(filterKey);
   if (subKey) {
     const subFilterDefinition = filterDefinition?.subFilters
