@@ -2658,7 +2658,7 @@
   "PDF viewer": "PDF viewer",
   "Pending": "Pending",
   "Period": "Period",
-  "Period of events on which a rescan is done to flag elements at PIR creation": "Period of events on which a rescan is done to flag elements at PIR creation",
+  "Period on which a rescan is done to flag elements from the past at PIR creation": "Period on which a rescan is done to flag elements from the past at PIR creation. Note that stream history could be shorter than selected period, in that case the period will start at stream beginning",
   "Period: ": "Period: ",
   "Periodicity": "Periodicity",
   "Permissions": "Permissions",

@@ -2658,7 +2658,7 @@
   "PDF viewer": "Visualiseur PDF",
   "Pending": "En attente",
   "Period": "Période",
-  "Period of events on which a rescan is done to flag elements at PIR creation": "Période d'événements au cours de laquelle un rescan est effectué pour signaler les éléments à la création du PIR",
+  "Period on which a rescan is done to flag elements from the past at PIR creation": "Période au cours de laquelle un nouveau balayage est effectué pour marquer les éléments du passé lors de la création du PIR. Notez que l'historique du flux peut être plus court que la période sélectionnée, dans ce cas la période commencera au début du flux",
   "Period: ": "Période :",
   "Periodicity": "Périodicité",
   "Permissions": "Permissions",

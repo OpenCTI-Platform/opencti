@@ -2658,7 +2658,7 @@
   "PDF viewer": "PDFビューアー",
   "Pending": "保留中",
   "Period": "時代",
-  "Period of events on which a rescan is done to flag elements at PIR creation": "PIR作成時の要素にフラグを立てるために再スキャンが行われるイベントの期間",
+  "Period on which a rescan is done to flag elements from the past at PIR creation": "PIR作成時に、過去の要素にフラグを立てるために再スキャンを行う期間。ストリームの履歴は、選択した期間よりも短い可能性があることに注意。",
   "Period: ": "期間",
   "Periodicity": "周期",
   "Permissions": "パーミッション",

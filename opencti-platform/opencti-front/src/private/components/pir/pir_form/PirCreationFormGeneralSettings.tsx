@@ -50,7 +50,7 @@ const PirCreationFormGeneralSettings = () => {
         label={t_i18n('Rescan period (days)')}
         fullWidth={true}
         containerstyle={{ marginTop: 20, width: '100%' }}
-        helpertext={t_i18n('Period of events on which a rescan is done to flag elements at PIR creation')}
+        helpertext={t_i18n('Period on which a rescan is done to flag elements from the past at PIR creation')}
       >
         <MenuItem value={0}>{t_i18n('No rescan')}</MenuItem>
         <MenuItem value={1}>{t_i18n('1 day')}</MenuItem>

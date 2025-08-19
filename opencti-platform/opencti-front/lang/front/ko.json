@@ -2658,7 +2658,7 @@
   "PDF viewer": "PDF 뷰어",
   "Pending": "보류 중",
   "Period": "기간",
-  "Period of events on which a rescan is done to flag elements at PIR creation": "PIR 생성 시 요소에 플래그를 지정하기 위해 재검사가 수행되는 이벤트 주기",
+  "Period on which a rescan is done to flag elements from the past at PIR creation": "PIR 생성 시 과거의 요소를 플래그 지정하기 위해 재검색이 수행되는 기간입니다. 스트림 기록이 선택한 기간보다 짧을 수 있으며, 이 경우 기간은 스트림 시작부터 시작됩니다",
   "Period: ": "기간: ",
   "Periodicity": "주기",
   "Permissions": "권한",

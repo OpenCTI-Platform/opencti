@@ -2658,7 +2658,7 @@
   "PDF viewer": "PDF查看器",
   "Pending": "待定",
   "Period": "周期",
-  "Period of events on which a rescan is done to flag elements at PIR creation": "重新扫描以标记 PIR 创建元素的事件周期",
+  "Period on which a rescan is done to flag elements from the past at PIR creation": "在创建 PIR 时重新扫描以标记过去元素的周期。请注意，数据流历史可能短于所选时间段，在这种情况下，时间段将从数据流开始时算起。",
   "Period: ": "周期",
   "Periodicity": "周期性",
   "Permissions": "权限",

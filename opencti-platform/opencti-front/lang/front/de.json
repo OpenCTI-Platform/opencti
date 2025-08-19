@@ -2658,7 +2658,7 @@
   "PDF viewer": "PDF-Betrachter",
   "Pending": "Ausstehend",
   "Period": "Zeitraum",
-  "Period of events on which a rescan is done to flag elements at PIR creation": "Zeitraum der Ereignisse, bei denen ein Rescan durchgeführt wird, um Elemente bei der PIR-Erstellung zu kennzeichnen",
+  "Period on which a rescan is done to flag elements from the past at PIR creation": "Zeitraum, in dem ein Rescan durchgeführt wird, um Elemente aus der Vergangenheit bei der PIR-Erstellung zu markieren. Beachten Sie, dass die Stream-Historie kürzer als der ausgewählte Zeitraum sein kann; in diesem Fall beginnt der Zeitraum mit dem Beginn des Streams",
   "Period: ": "Zeitraum:",
   "Periodicity": "Periodizität",
   "Permissions": "Berechtigungen",
