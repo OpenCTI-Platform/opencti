@@ -44,7 +44,7 @@ const IngestionCatalogConnectorComponent = ({
         { label: t_i18n('Data') },
         { label: t_i18n('Ingestion') },
         { label: t_i18n('Catalog'), link: '/dashboard/data/ingestion/catalog' },
-        { label: connector.default.CONNECTOR_NAME, current: true },
+        { label: connector.title, current: true },
       ]}
       />
       <IngestionCatalogConnectorHeader connector={connector} catalogId={contract.catalog_id} />

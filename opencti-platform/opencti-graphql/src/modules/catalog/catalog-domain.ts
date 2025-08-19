@@ -3,7 +3,7 @@ import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import * as R from 'ramda';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { type CatalogDefinition, type CatalogType } from './catalog-types';
+import { type CatalogContract, type CatalogDefinition, type CatalogType } from './catalog-types';
 import conf from '../../config/conf';
 import { isEmptyField } from '../../database/utils';
 import { UnsupportedError } from '../../config/errors';
@@ -31,10 +31,10 @@ const getCatalogs = () => {
         throw UnsupportedError('Contract must defined container_type field');
       }
       const jsonValidation = {
-        type: contract.type,
-        properties: contract.properties,
-        required: contract.required,
-        additionalProperties: contract.additionalProperties
+        type: contract.config_schema.type,
+        properties: contract.config_schema.properties,
+        required: contract.config_schema.required,
+        additionalProperties: contract.config_schema.additionalProperties
       };
       try {
         ajv.compile(jsonValidation);
@@ -58,18 +58,19 @@ const getCatalogs = () => {
   return catalogMap;
 };
 
-export const computeConnectorTargetContract = (configurations: any, targetContract: any) => {
+export const computeConnectorTargetContract = (configurations: any, targetContract: CatalogContract) => {
+  const targetConfig = targetContract.config_schema;
   // Rework configuration for default an array support
   const contractConfigurations = [];
-  const keys = Object.keys(targetContract.properties);
+  const keys = Object.keys(targetConfig.properties);
   for (let i = 0; i < keys.length; i += 1) {
     const propKey = keys[i];
     const currentConfig: any = configurations.find((config: any) => config.key === propKey);
     if (!currentConfig) {
-      if (targetContract.default[propKey]) {
-        contractConfigurations.push(({ key: propKey, value: targetContract.default[propKey] }));
+      if (targetConfig.properties[propKey].default) {
+        contractConfigurations.push(({ key: propKey, value: targetConfig.properties[propKey].default }));
       }
-    } else if (targetContract.properties[propKey].type !== 'array') {
+    } else if (targetConfig.properties[propKey].type !== 'array') {
       contractConfigurations.push(({ key: propKey, value: currentConfig.value[0] }));
     } else {
       contractConfigurations.push(currentConfig);
@@ -79,10 +80,10 @@ export const computeConnectorTargetContract = (configurations: any, targetContra
   const contractObject: any = R.mergeAll(contractConfigurations.map((config: any) => ({ [config.key]: config.value })));
   // Validate the contract
   const jsonValidation = {
-    type: targetContract.type,
-    properties: targetContract.properties,
-    required: targetContract.required,
-    additionalProperties: targetContract.additionalProperties
+    type: targetConfig.type,
+    properties: targetConfig.properties,
+    required: targetConfig.required,
+    additionalProperties: targetConfig.additionalProperties
   };
   const validate = ajv.compile(jsonValidation);
   const validContractObject = validate(contractObject);
