@@ -88,7 +88,9 @@ export const MEMBERS_ORGANIZATION_FILTER = 'members_organization';
 export const ALIAS_FILTER = 'alias'; // handle both 'aliases' and 'x_opencti_aliases' attributes
 export const IS_INFERRED_FILTER = 'is_inferred'; // if an entity or relationship is inferred
 
-export const complexConversionFilterKeys = [
+export const PIR_SCORE_FILTER_PREFIX = 'pir_score';
+
+const COMPLEX_CONVERSION_FILTER_KEYS = [
   IDS_FILTER, // values should match any id (internal_id, standard_id, or stix_id)
   TYPE_FILTER, // values should match any parent_types
   RELATION_TYPE_FILTER, // values should match any parent_types
@@ -104,7 +106,7 @@ export const complexConversionFilterKeys = [
   INSTANCE_RELATION_TYPES_FILTER, // nested relation for the from or to type of a relationship
   RELATION_FROM_FILTER, // nested relation for the from of a relationship
   RELATION_TO_FILTER, // nested relation for the to of a relationship
-  RELATION_TO_SIGHTING_FILTER, // nested sigthing relation for the to of a sighting
+  RELATION_TO_SIGHTING_FILTER, // nested sighting relation for the to of a sighting
   RELATION_FROM_TYPES_FILTER, // nested relation for the from type of a relationship
   RELATION_TO_TYPES_FILTER, // nested relation for the to type of a relationship
   RELATION_FROM_ROLE_FILTER, // nested relation for the from role of a relationship
@@ -116,9 +118,13 @@ export const complexConversionFilterKeys = [
   'restricted_members.id', // nested filter on restricted members
 ];
 
+export const isComplexConversionFilterKey = (filterKey: string) => {
+  return COMPLEX_CONVERSION_FILTER_KEYS.includes(filterKey) || filterKey.startsWith(PIR_SCORE_FILTER_PREFIX);
+};
+
 // list of the special filtering keys
 // (= key with a complex behavior, not belonging to the schema ref definition or the attribute definitions)
-export const specialFilterKeys = [
+export const SPECIAL_FILTER_KEYS = [
   SIGHTED_BY_FILTER, // relation between elements linked by a stix sighting relationship
   CONNECTIONS_FILTER, // for nested filters
   `rel_${RELATION_OBJECT}`,
@@ -138,7 +144,7 @@ export const specialFilterKeys = [
   MEMBERS_GROUP_FILTER,
   MEMBERS_ORGANIZATION_FILTER,
   RULE_FILTER, // for inference engine rules
-  ...complexConversionFilterKeys
+  ...COMPLEX_CONVERSION_FILTER_KEYS
 ];
 
 // list of filter keys that are not relation refs keys but whose values need to be resolved (= values point an entity with an id)

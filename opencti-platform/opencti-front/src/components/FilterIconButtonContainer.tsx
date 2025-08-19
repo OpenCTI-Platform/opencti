@@ -272,6 +272,7 @@ FilterIconButtonContainerProps
     }
   }
 
+  console.log('displayed', displayedFilters);
   return (
     <Box sx={boxStyle}>
       {displayedFilters.map((currentFilter, index) => {

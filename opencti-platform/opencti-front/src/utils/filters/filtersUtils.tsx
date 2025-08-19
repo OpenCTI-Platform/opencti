@@ -112,6 +112,10 @@ export const stixFilters = [
 //----------------------------------------------------------------------------------------------------------------------
 // utilities
 
+const getStringFilterKey = (key: string | string[]): string => {
+  return Array.isArray(key) ? key[0] : key;
+};
+
 export const isFilterGroupNotEmpty = (filterGroup?: FilterGroup | null) => {
   return !!(
     filterGroup
@@ -863,9 +867,10 @@ export const useBuildEntityTypeBasedFilterContext = (
 };
 
 export const getFilterDefinitionFromFilterKeysMap = (
-  filterKey: string,
+  key: string | string[],
   filterKeysMap: Map<string, FilterDefinition>,
 ): FilterDefinition | undefined => {
+  const filterKey = getStringFilterKey(key);
   if (filterKey.startsWith('pir_score')) {
     return {
       filterKey,
@@ -881,10 +886,11 @@ export const getFilterDefinitionFromFilterKeysMap = (
 };
 
 export const useFilterDefinition = (
-  filterKey: string,
+  key: string | string[],
   entityTypes = ['Stix-Core-Object', 'stix-core-relationship'],
   subKey?: string,
 ): FilterDefinition | undefined => {
+  const filterKey = getStringFilterKey(key);
   if (filterKey.startsWith('pir_score')) {
     return {
       filterKey,

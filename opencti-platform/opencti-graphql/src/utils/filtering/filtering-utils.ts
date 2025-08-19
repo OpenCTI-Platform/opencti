@@ -22,10 +22,11 @@ import {
   OPINIONS_METRICS_MEAN_FILTER,
   OPINIONS_METRICS_MIN_FILTER,
   OPINIONS_METRICS_TOTAL_FILTER,
+  PIR_SCORE_FILTER_PREFIX,
   RELATION_DYNAMIC_FROM_FILTER,
   RELATION_DYNAMIC_TO_FILTER,
   SIGHTED_BY_FILTER,
-  specialFilterKeys
+  SPECIAL_FILTER_KEYS
 } from './filtering-constants';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
@@ -407,9 +408,9 @@ const checkFilterKeys = (filterGroup: FilterGroup) => {
       .concat(availableConvertedStixCoreRelationships)
       .concat(INTERNAL_RELATIONSHIPS)
       .concat(availableConvertedInternalRelations)
-      .concat(specialFilterKeys);
+      .concat(SPECIAL_FILTER_KEYS);
     keys.forEach((k) => {
-      if (availableKeys.includes(k) || k.startsWith(RULE_PREFIX)) {
+      if (availableKeys.includes(k) || k.startsWith(RULE_PREFIX) || k.startsWith(PIR_SCORE_FILTER_PREFIX)) {
         incorrectKeys = incorrectKeys.filter((n) => n !== k);
       }
     });
