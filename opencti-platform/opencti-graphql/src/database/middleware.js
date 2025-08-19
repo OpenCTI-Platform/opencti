@@ -3156,10 +3156,6 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
   const input = { ...rawInput };
   const { confidenceLevelToApply } = controlCreateInputWithUserConfidence(user, input, type);
   input.confidence = confidenceLevelToApply; // confidence of new entity will be capped to user's confidence
-  // StixCyberObservables use x_opencti_score versus having a confidence value field. Creates will not
-  // default populate this field, unless x_opencti_score is set. Connectors cannot set this value based on
-  // default user it is running due to PR#3526 in OpenCTI Connectors removed the passing of these settings.
-  input.x_opencti_score = confidenceLevelToApply; // x_opencti_score of new entity will be capped to user's confidence
   // authorized_members renaming
   if (input.authorized_members?.length > 0) {
     input.restricted_members = input.authorized_members;
