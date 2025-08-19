@@ -24,9 +24,10 @@ import { useFormatter } from '../../../../components/i18n';
 import ItemCreators from '../../../../components/ItemCreators';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { parse } from '../../../../utils/Time';
-import PirFiltersDisplay from '../PirFiltersDisplay';
+import PirCriteriaDisplay from '../PirCriteriaDisplay';
 import type { Theme } from '../../../../components/Theme';
 import PaperAccordion from '../../../../components/PaperAccordion';
+import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 
 const detailsFragment = graphql`
   fragment PirOverviewDetailsFragment on Pir {
@@ -56,6 +57,7 @@ const PirOverviewDetails = ({ data }: PirOverviewDetailsProps) => {
   const pir = useFragment(detailsFragment, data);
 
   const lastEventDate = parse(parseInt((pir.lastEventId || '-').split('-')[0], 10));
+  const criteria: FilterGroup[] = pir.pir_criteria.map((c) => JSON.parse(c.filters));
 
   return (
     <Grid size={{ xs: 12 }}>
@@ -121,14 +123,7 @@ const PirOverviewDetails = ({ data }: PirOverviewDetailsProps) => {
             <Typography variant="h3" gutterBottom>
               {t_i18n('Criteria')}
             </Typography>
-            <div style={{ display: 'flex', gap: theme.spacing(1), flexFlow: 'row wrap' }}>
-              {pir.pir_criteria.map((c, i) => (
-                <PirFiltersDisplay
-                  key={i}
-                  filterGroup={JSON.parse(c.filters)}
-                />
-              ))}
-            </div>
+            <PirCriteriaDisplay criteria={criteria} full />
           </div>
           <div>
             <Typography variant="h3" gutterBottom>

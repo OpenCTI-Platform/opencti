@@ -14,11 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import { graphql } from 'react-relay';
-import Tooltip from '@mui/material/Tooltip';
 import React, { useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import PirRadialScore from './PirRadialScore';
-import PirFiltersDisplay from '../PirFiltersDisplay';
 import {
   PirKnowledgeRelationshipsSourcesFlaggedListQuery,
   PirKnowledgeRelationshipsSourcesFlaggedListQuery$variables,
@@ -181,26 +179,8 @@ const PirKnowledgeRelationships = ({
       label: 'Score',
       percentWidth: 6,
       isSortable: true,
-      render: ({ pir_score, pir_explanations }) => {
-        return (
-          <Tooltip
-            title={(
-              <div style={{ display: 'flex', gap: theme.spacing(1), flexWrap: 'wrap' }}>
-                {pir_explanations.map((e: { criterion: { filters: string } }, i: number) => (
-                  <PirFiltersDisplay
-                    key={i}
-                    filterGroup={JSON.parse(e.criterion.filters)}
-                    size='small'
-                  />
-                ))}
-              </div>
-          )}
-          >
-            <div>
-              <PirRadialScore value={pir_score}/>
-            </div>
-          </Tooltip>
-        );
+      render: ({ pir_score }) => {
+        return <PirRadialScore value={pir_score}/>;
       },
     },
     fromType: {

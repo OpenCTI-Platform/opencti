@@ -28,17 +28,20 @@ const PirCreationFormCriteria = () => {
       <LocationField
         name="locations"
         label={t_i18n('Targeted locations')}
+        helperText="TODO ADD EXPLANATION FOR THE FIELD"
       />
       <SectorField
         name="sectors"
         label={t_i18n('Targeted industries')}
         containerStyle={fieldSpacingContainerStyle}
+        helperText="TODO ADD EXPLANATION FOR THE FIELD"
       />
       <div style={{ overflow: 'hidden' }}>
         <ConfidenceField
           name="confidence"
           label={t_i18n('Minimum confidence of the relationship')}
           containerStyle={fieldSpacingContainerStyle}
+          helperText="TODO ADD EXPLANATION FOR THE FIELD"
         />
       </div>
     </>
