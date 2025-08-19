@@ -209,20 +209,17 @@ export const findAll = async (context, user, args) => {
 
 export const findCreators = async (context, user, args) => {
   const { entityTypes = [] } = args;
-  const restrictedArgs = await applyOrganizationRestriction(context, user, args);
-  return listAllEntitiesForFilter(context, user, CREATOR_FILTER, ENTITY_TYPE_USER, { ...restrictedArgs, types: entityTypes });
+  return listAllEntitiesForFilter(context, user, CREATOR_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes });
 };
 
 export const findAssignees = async (context, user, args) => {
   const { entityTypes = [] } = args;
-  const restrictedArgs = await applyOrganizationRestriction(context, user, args);
-  return listAllEntitiesForFilter(context, user, ASSIGNEE_FILTER, ENTITY_TYPE_USER, { ...restrictedArgs, types: entityTypes });
+  return listAllEntitiesForFilter(context, user, ASSIGNEE_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes });
 };
 
 export const findParticipants = async (context, user, args) => {
   const { entityTypes = [] } = args;
-  const restrictedArgs = await applyOrganizationRestriction(context, user, args);
-  return listAllEntitiesForFilter(context, user, PARTICIPANT_FILTER, ENTITY_TYPE_USER, { ...restrictedArgs, types: entityTypes });
+  return listAllEntitiesForFilter(context, user, PARTICIPANT_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes });
 };
 
 export const findAllMembers = async (context, user, args) => {
