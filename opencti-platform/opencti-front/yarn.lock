@@ -10260,7 +10260,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chokidar@npm:^3.5.3":
+"chokidar@npm:^3.6.0":
   version: 3.6.0
   resolution: "chokidar@npm:3.6.0"
   dependencies:
@@ -13307,7 +13307,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-glob@npm:^3.2.11, fast-glob@npm:^3.2.9":
+"fast-glob@npm:^3.2.9":
   version: 3.3.2
   resolution: "fast-glob@npm:3.3.2"
   dependencies:
@@ -13826,14 +13826,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fs-extra@npm:^11.1.0":
-  version: 11.2.0
-  resolution: "fs-extra@npm:11.2.0"
+"fs-extra@npm:^11.3.0":
+  version: 11.3.1
+  resolution: "fs-extra@npm:11.3.1"
   dependencies:
     graceful-fs: "npm:^4.2.0"
     jsonfile: "npm:^6.0.1"
     universalify: "npm:^2.0.0"
-  checksum: 10/0579bf6726a4cd054d4aa308f10b483f52478bb16284f32cf60b4ce0542063d551fca1a08a2af365e35db21a3fa5a06cf2a6ed614004b4368982bc754cb816b3
+  checksum: 10/2b893213411b1da11f9b061ccb0bcff4d6dd66fe90aa8f5b1616219a5e7ca659da869f454ebd8e94aa21c58342730fb43a2e5c98b5c6c5124f0c54a4633f64b0
   languageName: node
   linkType: hard
 
@@ -18295,7 +18295,7 @@ __metadata:
     uuid: "npm:11.1.0"
     vite: "npm:6.3.5"
     vite-plugin-relay: "npm:2.1.0"
-    vite-plugin-static-copy: "npm:2.3.1"
+    vite-plugin-static-copy: "npm:3.1.1"
     vitest: "npm:2.0.5"
     yup: "npm:1.6.1"
   languageName: unknown
@@ -21666,6 +21666,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tinyglobby@npm:^0.2.14":
+  version: 0.2.14
+  resolution: "tinyglobby@npm:0.2.14"
+  dependencies:
+    fdir: "npm:^6.4.4"
+    picomatch: "npm:^4.0.2"
+  checksum: 10/3d306d319718b7cc9d79fb3f29d8655237aa6a1f280860a217f93417039d0614891aee6fc47c5db315f4fcc6ac8d55eb8e23e2de73b2c51a431b42456d9e5764
+  languageName: node
+  linkType: hard
+
 "tinypool@npm:^1.0.0":
   version: 1.0.1
   resolution: "tinypool@npm:1.0.1"
@@ -22709,18 +22719,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-plugin-static-copy@npm:2.3.1":
-  version: 2.3.1
-  resolution: "vite-plugin-static-copy@npm:2.3.1"
+"vite-plugin-static-copy@npm:3.1.1":
+  version: 3.1.1
+  resolution: "vite-plugin-static-copy@npm:3.1.1"
   dependencies:
-    chokidar: "npm:^3.5.3"
-    fast-glob: "npm:^3.2.11"
-    fs-extra: "npm:^11.1.0"
+    chokidar: "npm:^3.6.0"
+    fs-extra: "npm:^11.3.0"
     p-map: "npm:^7.0.3"
-    picocolors: "npm:^1.0.0"
+    picocolors: "npm:^1.1.1"
+    tinyglobby: "npm:^0.2.14"
   peerDependencies:
-    vite: ^5.0.0 || ^6.0.0
-  checksum: 10/2b4ad57c6f14533986d5cbf0021b8ec5cec2f7539005049c5e2842157deaac6cfe02a023d8e09e69c824b3e4a1a1145c2e1ae90c4eb824ec3afef9dd18b0c69a
+    vite: ^5.0.0 || ^6.0.0 || ^7.0.0
+  checksum: 10/e44d8f5ec21d7e5d9bc76f881f537d260dba0e0dad0757a86cabfc7be086c84368e956b9a2a56a55d8566e1fe9e90be96ded11b16a129b3aec5ac8f1f8474a9a
   languageName: node
   linkType: hard
 
