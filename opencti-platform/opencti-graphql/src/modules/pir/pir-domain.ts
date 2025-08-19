@@ -39,7 +39,7 @@ import { createPirRel, serializePir, updatePirExplanations, updatePirScoreOnEnti
 import { ForbiddenAccess, FunctionalError } from '../../config/errors';
 import { ABSTRACT_STIX_REF_RELATIONSHIP, ENTITY_TYPE_CONTAINER } from '../../schema/general';
 import { elRawUpdateByQuery } from '../../database/engine';
-import { READ_INDEX_HISTORY } from '../../database/utils';
+import { READ_INDEX_HISTORY, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
 import { extractFilterKeyValues } from '../../utils/filtering/filtering-utils';
 import { INSTANCE_DYNAMIC_REGARDING_OF, INSTANCE_REGARDING_OF, OBJECT_CONTAINS_FILTER, RELATION_TO_FILTER, RELATION_TYPE_FILTER } from '../../utils/filtering/filtering-constants';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
@@ -153,8 +153,26 @@ export const deletePir = async (context: AuthContext, user: AuthUser, pirId: str
   } catch (e) {
     logApp.error('[OPENCTI] Error while unregistering Pir connector', { cause: e });
   }
+  // remove pir_scores of pir from entities
+  const sourceScores = `
+    def pirIdIndex = ctx._source.pir_scores.pir_id.indexOf(params.pirId);
+    if (pirIdIndex >=0 ) {
+       ctx._source.pir_scores.remove(pirIdIndex);
+    }  
+  `;
+  await elRawUpdateByQuery({
+    index: READ_INDEX_STIX_DOMAIN_OBJECTS,
+    body: {
+      script: { source: sourceScores, params: { pirId } },
+      query: {
+        term: {
+          'pir_scores.pir_id.keyword': pirId
+        }
+      },
+    },
+  });
   // remove pir_ids from historic events
-  const source = `
+  const sourceHistory = `
     def pirIdIndex = ctx._source.context_data.pir_ids.indexOf(params.pirId);
     if (pirIdIndex >=0 ) {
        ctx._source.context_data.pir_ids.remove(pirIdIndex);
@@ -163,7 +181,7 @@ export const deletePir = async (context: AuthContext, user: AuthUser, pirId: str
   await elRawUpdateByQuery({
     index: READ_INDEX_HISTORY,
     body: {
-      script: { source, params: { pirId } },
+      script: { source: sourceHistory, params: { pirId } },
       query: {
         term: {
           'context_data.pir_ids.keyword': pirId

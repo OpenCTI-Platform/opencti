@@ -256,6 +256,16 @@ describe('PIR resolver standard behavior', () => {
     expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_score).toEqual(67);
     expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_explanations.length).toEqual(1);
     expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_explanations[0].dependencies[0].element_id).toEqual(relationshipId);
+    // Verify the entity pir_score of the PIR has been updated
+    const malwareAfterFlag = await storeLoadById<BasicStoreEntity>(
+      testContext,
+      SYSTEM_USER,
+      'malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88',
+      ENTITY_TYPE_MALWARE
+    );
+    expect(malwareAfterFlag.pir_scores.length).toEqual(1);
+    expect(malwareAfterFlag.pir_scores.filter((s) => s.pir_id === pirInternalId).length).toEqual(1);
+    expect(malwareAfterFlag.pir_scores.filter((s) => s.pir_id === pirInternalId)[0].pir_score).toEqual(67);
   });
 
   it('should update a pir meta rel by adding a new explanation', async () => {
@@ -290,6 +300,16 @@ describe('PIR resolver standard behavior', () => {
     expect(queryResult.data?.stixRefRelationships.edges[0].node.to.id).toEqual(pirInternalId);
     expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_score).toEqual(100);
     expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_explanations.length).toEqual(2);
+    // Verify the entity pir_score of the PIR has been updated
+    const malwareAfterFlag = await storeLoadById<BasicStoreEntity>(
+      testContext,
+      SYSTEM_USER,
+      'malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88',
+      ENTITY_TYPE_MALWARE
+    );
+    expect(malwareAfterFlag.pir_scores.length).toEqual(1);
+    expect(malwareAfterFlag.pir_scores.filter((s) => s.pir_id === pirInternalId).length).toEqual(1);
+    expect(malwareAfterFlag.pir_scores.filter((s) => s.pir_id === pirInternalId)[0].pir_score).toEqual(100);
   });
 
   it('should update a pir meta rel by removing an explanation', async () => {
@@ -354,6 +374,14 @@ describe('PIR resolver standard behavior', () => {
     });
     expect(refQueryResult).not.toBeNull();
     expect(refQueryResult.data?.stixRefRelationships.edges.length).toEqual(0);
+    // Verify the entity pir_score has been removed for the PIR
+    const malwareAfterFlag = await storeLoadById<BasicStoreEntity>(
+      testContext,
+      SYSTEM_USER,
+      'malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88',
+      ENTITY_TYPE_MALWARE
+    );
+    expect(malwareAfterFlag.pir_scores.length).toEqual(0);
     // Verify the associated connector queue is no longer found
     const pirConnectors = await listEntities<BasicStoreEntity>(
       testContext,
