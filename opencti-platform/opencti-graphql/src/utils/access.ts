@@ -6,7 +6,7 @@ import { context as telemetryContext, trace } from '@opentelemetry/api';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
-import { ENTITY_TYPE_SETTINGS, isInternalObject } from '../schema/internalObject';
+import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { AuthContext, AuthUser, UserRole } from '../types/user';
 import type { BasicStoreCommon } from '../types/store';
@@ -919,10 +919,20 @@ export const applyOrganizationRestriction = async (
       values: userOrgIds,
       operator: 'eq',
     };
+    const userTypeFilters = {
+      key: ['entity_type'],
+      values: [ENTITY_TYPE_USER],
+      operator: 'not_eq',
+    };
+    const userMembersFilter = {
+      mode: FilterMode.Or,
+      filters: [membersFilters, userTypeFilters],
+      filterGroup: [],
+    };
     const filters = {
       mode: FilterMode.And,
-      filters: [membersFilters],
-      filterGroups: argsFilters ? [argsFilters] : [],
+      filters: [],
+      filterGroups: argsFilters ? [argsFilters, userMembersFilter] : [userMembersFilter],
     };
     return {
       ...args,
