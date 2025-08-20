@@ -13,7 +13,7 @@ const SCHEDULE_TIME = conf.get('hub_registration_manager:interval') || 60 * 60 *
  */
 export const hubRegistrationManager = async () => {
   const context = executionContext('hub_registration_manager');
-  await checkXTMHubConnectivity(context, HUB_REGISTRATION_MANAGER_USER, { mustSendEmail: true });
+  await checkXTMHubConnectivity(context, HUB_REGISTRATION_MANAGER_USER);
 };
 
 const HUB_REGISTRATION_MANAGER_DEFINITION: ManagerDefinition = {

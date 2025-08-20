@@ -55,51 +55,44 @@ const sendAdministratorsLostConnectivityEmail = async (context: AuthContext, set
   await sendMail(sendMailArgs, { category: 'hub-registration' });
 };
 
-export const checkXTMHubConnectivity = async (context: AuthContext, user: AuthUser, { mustSendEmail }: { mustSendEmail: boolean }) => {
+export const checkXTMHubConnectivity = async (context: AuthContext, user: AuthUser): Promise<{
+  status: XtmHubRegistrationStatus
+}> => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
   if (!settings.xtm_hub_token) {
-    return;
+    return { status: XtmHubRegistrationStatus.Unregistered };
   }
 
   const status = await xtmHubClient.loadRegistrationStatus({ platformId: settings.id, token: settings.xtm_hub_token });
-  if (status === 'active') {
-    const attributeUpdates: { key: string, value: unknown[] }[] = [{
-      key: 'xtm_hub_last_connectivity_check', value: [new Date()]
-    }];
-    if (settings.xtm_hub_registration_status !== XtmHubRegistrationStatus.Registered) {
-      attributeUpdates.push({
-        key: 'xtm_hub_registration_status',
-        value: [XtmHubRegistrationStatus.Registered]
-      });
-    }
-    await updateAttribute(
-      context,
-      user,
-      settings.id,
-      ENTITY_TYPE_SETTINGS,
-      attributeUpdates
-    );
-  } else {
-    if (settings.xtm_hub_registration_status !== XtmHubRegistrationStatus.LostConnectivity) {
-      await updateAttribute(
-        context,
-        user,
-        settings.id,
-        ENTITY_TYPE_SETTINGS,
-        [
-          {
-            key: 'xtm_hub_registration_status',
-            value: [XtmHubRegistrationStatus.LostConnectivity]
-          }
-        ]
-      );
-    }
+  const newRegistrationStatus: XtmHubRegistrationStatus = status === 'active' ? XtmHubRegistrationStatus.Registered : XtmHubRegistrationStatus.LostConnectivity;
+  const attributeUpdates: { key: string, value: unknown[] }[] = [];
+  if (newRegistrationStatus !== settings.xtm_hub_registration_status) {
+    attributeUpdates.push({
+      key: 'xtm_hub_registration_status',
+      value: [newRegistrationStatus]
+    });
+  }
+  if (newRegistrationStatus === XtmHubRegistrationStatus.Registered) {
+    attributeUpdates.push({ key: 'xtm_hub_last_connectivity_check', value: [new Date()] });
+  }
 
-    if (settings.xtm_hub_registration_status === XtmHubRegistrationStatus.Registered && mustSendEmail) {
-      await sendAdministratorsLostConnectivityEmail(context, settings);
-    }
+  await updateAttribute(
+    context,
+    user,
+    settings.id,
+    ENTITY_TYPE_SETTINGS,
+    attributeUpdates
+  );
+
+  if (
+    settings.xtm_hub_registration_status === XtmHubRegistrationStatus.Registered
+    && newRegistrationStatus === XtmHubRegistrationStatus.LostConnectivity
+  ) {
+    await sendAdministratorsLostConnectivityEmail(context, settings);
   }
 
   const updatedSettings = await getSettings(context);
   await notify(BUS_TOPICS.Settings.EDIT_TOPIC, updatedSettings, HUB_REGISTRATION_MANAGER_USER);
+
+  return { status: newRegistrationStatus };
 };
