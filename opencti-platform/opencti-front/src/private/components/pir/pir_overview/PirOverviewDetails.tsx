@@ -17,7 +17,6 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Grid2 as Grid, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import Chip from '@mui/material/Chip';
 import { PirOverviewDetailsRedisFragment$key } from '@components/pir/pir_overview/__generated__/PirOverviewDetailsRedisFragment.graphql';
 import { PirOverviewDetailsFragment$key } from './__generated__/PirOverviewDetailsFragment.graphql';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
@@ -33,7 +32,6 @@ import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 const detailsFragment = graphql`
   fragment PirOverviewDetailsFragment on Pir {
     description
-    pir_type
     pir_rescan_days
     created_at
     lastEventId
@@ -122,17 +120,9 @@ const PirOverviewDetails = ({ data, dataStream }: PirOverviewDetailsProps) => {
             </div>
             <div>
               <Typography variant="h3" gutterBottom>
-                {t_i18n('Type')}
+                {t_i18n('Creation date')}
               </Typography>
-              <Chip
-                style={{
-                  textTransform: 'uppercase',
-                  borderRadius: 4,
-                }}
-                color="primary"
-                variant="outlined"
-                label={t_i18n(pir.pir_type)}
-              />
+              {fldt(pir.created_at)}
             </div>
           </div>
         )}
@@ -149,12 +139,6 @@ const PirOverviewDetails = ({ data, dataStream }: PirOverviewDetailsProps) => {
               {t_i18n('Criteria')}
             </Typography>
             <PirCriteriaDisplay criteria={criteria} full />
-          </div>
-          <div>
-            <Typography variant="h3" gutterBottom>
-              {t_i18n('Creation date')}
-            </Typography>
-            {fldt(pir.created_at)}
           </div>
           <div>
             <Typography variant="h3" gutterBottom>
