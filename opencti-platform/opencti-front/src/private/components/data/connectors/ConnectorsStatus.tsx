@@ -22,7 +22,6 @@ import { ListItemButton } from '@mui/material';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/styles';
-import Catalogs from '@components/data/connectors/Catalogs';
 import Transition from '../../../../components/Transition';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
@@ -364,7 +363,6 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
           </Button>
         </DialogActions>
       </Dialog>
-      <Catalogs catalogs={catalogs} managers={managers} />
       <div>
         <Typography
           variant="h4"
