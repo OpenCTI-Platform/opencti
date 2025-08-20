@@ -119,7 +119,7 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
           valueLabelFormat={() => currentLevel.level.label}
           disabled={finalDisabled}
         />
-        <FormHelperText sx={{ marginBottom: 1 }}>{helperText}</FormHelperText>
+        {helperText && <FormHelperText sx={{ marginBottom: 1 }}>{helperText}</FormHelperText>}
       </>
     );
   }
@@ -170,7 +170,7 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
         valueLabelFormat={() => currentLevel.level.label}
         disabled={disabled}
       />
-      <FormHelperText sx={{ marginBottom: 1 }}>{helperText}</FormHelperText>
+      {helperText && <FormHelperText sx={{ marginBottom: 1 }}>{helperText}</FormHelperText>}
     </>
   );
 };
