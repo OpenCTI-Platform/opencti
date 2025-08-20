@@ -37,13 +37,7 @@ import { fetchQuery } from '../../relay/environment';
 import { useSearchEntitiesSchemaSCOSearchQuery$data } from './__generated__/useSearchEntitiesSchemaSCOSearchQuery.graphql';
 import type { Theme } from '../../components/Theme';
 import useAttributes, { containerTypes } from '../hooks/useAttributes';
-import {
-  contextFilters,
-  entityTypesFilters,
-  FilterSearchContext,
-  getFilterDefinitionFromFilterKeysMap,
-  ME_FILTER_VALUE
-} from './filtersUtils';
+import { contextFilters, entityTypesFilters, FilterSearchContext, getFilterDefinitionFromFilterKeysMap, ME_FILTER_VALUE } from './filtersUtils';
 import { useSearchEntitiesDashboardsQuery$data } from './__generated__/useSearchEntitiesDashboardsQuery.graphql';
 import { convertMarking } from '../edition';
 import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../hooks/useGranted';

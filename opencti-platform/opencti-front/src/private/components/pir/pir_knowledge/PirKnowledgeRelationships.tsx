@@ -15,7 +15,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { graphql } from 'react-relay';
 import React, { useState } from 'react';
-import { useTheme } from '@mui/material/styles';
 import PirRadialScore from './PirRadialScore';
 import {
   PirKnowledgeRelationshipsSourcesFlaggedListQuery,
@@ -31,7 +30,6 @@ import DataTable from '../../../../components/dataGrid/DataTable';
 import { computeLink } from '../../../../utils/Entity';
 import { PaginationOptions } from '../../../../components/list_lines';
 import { LocalStorage } from '../../../../utils/hooks/useLocalStorageModel';
-import type { Theme } from '../../../../components/Theme';
 
 const sourceFlaggedFragment = graphql`
   fragment PirKnowledgeRelationships_SourceFlaggedFragment on StixRefRelationship {
@@ -145,7 +143,6 @@ const PirKnowledgeRelationships = ({
   localStorage,
   initialValues,
 }: PirKnowledgeRelationshipsProps) => {
-  const theme = useTheme<Theme>();
   const [ref, setRef] = useState<HTMLDivElement | null>(null);
 
   const {
