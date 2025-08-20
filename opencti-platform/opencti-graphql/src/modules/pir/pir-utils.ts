@@ -112,7 +112,7 @@ export const updatePirInformationOnEntity = async (context: AuthContext, user: A
   const initialInformation = stixDomainObject.pir_information ?? [];
   const newInformation = initialInformation.filter((s) => s.pir_id !== pirId);
   if (score > 0) {
-    newInformation.push({ pir_id: pirId, pir_score: score });
+    newInformation.push({ pir_id: pirId, pir_score: score, last_pir_score_date: new Date() });
   }
   const params = { pir_information: newInformation };
   const source = 'ctx._source.pir_information = params.pir_information;';
