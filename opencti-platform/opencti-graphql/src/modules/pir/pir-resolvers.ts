@@ -14,9 +14,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import type { Resolvers } from '../../generated/graphql';
-import { pirFlagElement, deletePir, findAll, findById, pirAdd, pirUnflagElement, updatePir, findPirContainers, pirEditAuthorizedMembers } from './pir-domain';
+import { deletePir, findAll, findById, findPirContainers, getProcessingCount, pirAdd, pirEditAuthorizedMembers, pirFlagElement, pirUnflagElement, updatePir } from './pir-domain';
 import { getAuthorizedMembers } from '../../utils/authorizedMembers';
 import { getUserAccessRight } from '../../utils/access';
+import { worksForPir } from '../../domain/work';
 
 const pirResolvers: Resolvers = {
   Query: {
@@ -29,7 +30,9 @@ const pirResolvers: Resolvers = {
     // @ts-ignore
     pirContainers: (pir, args, context) => findPirContainers(context, context.user, pir, args),
     authorizedMembers: (pir, _, context) => getAuthorizedMembers(context, context.user, pir),
-    currentUserAccessRight: (pir, _, context) => getUserAccessRight(context.user, pir)
+    currentUserAccessRight: (pir, _, context) => getUserAccessRight(context.user, pir),
+    processingCount: (pir, _, context) => getProcessingCount(context, context.user, pir.id),
+    works: (pir, args, context) => worksForPir(context, context.user, pir.id, args),
   },
   Mutation: {
     pirAdd: (_, { input }, context) => pirAdd(context, context.user, input),
