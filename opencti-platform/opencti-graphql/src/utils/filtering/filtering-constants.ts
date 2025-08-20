@@ -149,7 +149,7 @@ export const SPECIAL_FILTER_KEYS = [
 
 // list of filter keys that are not relation refs keys but whose values need to be resolved (= values point an entity with an id)
 // used in findFiltersRepresentatives
-export const specialFilterKeysWhoseValueToResolve = [
+export const SPECIAL_FILTER_KEYS_WHOSE_VALUE_TO_RESOLVE = [
   SIGHTED_BY_FILTER, // relation between elements linked by a stix sighting relationship
   INSTANCE_REGARDING_OF,
   INSTANCE_DYNAMIC_REGARDING_OF,
@@ -179,7 +179,7 @@ export const specialFilterKeysWhoseValueToResolve = [
 
 // special filter values
 export const ME_FILTER_VALUE = '@me';
-export const filterKeysWithMeValue = [
+export const FILTER_KEYS_WITH_ME_VALUE = [
   ASSIGNEE_FILTER,
   PARTICIPANT_FILTER,
   CONTEXT_CREATOR_FILTER,

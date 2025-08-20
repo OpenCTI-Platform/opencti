@@ -10,7 +10,7 @@ import {
   CONTEXT_ENTITY_TYPE_FILTER,
   CONTEXT_OBJECT_LABEL_FILTER,
   CONTEXT_OBJECT_MARKING_FILTER,
-  filterKeysWithMeValue,
+  FILTER_KEYS_WITH_ME_VALUE,
   INSTANCE_DYNAMIC_REGARDING_OF,
   INSTANCE_REGARDING_OF,
   LABEL_FILTER,
@@ -362,7 +362,7 @@ export const replaceEnrichValuesInFilters = (filterGroup: FilterGroup, userId: s
   filtersResult.filters.forEach((filter) => {
     const { key } = filter;
     const arrayKeys = Array.isArray(key) ? key : [key];
-    if (arrayKeys.some((filterKey) => filterKeysWithMeValue.includes(filterKey))) {
+    if (arrayKeys.some((filterKey) => FILTER_KEYS_WITH_ME_VALUE.includes(filterKey))) {
       // replace ME_FILTER_VALUE with the id of the user
       if (filter.values.includes(ME_FILTER_VALUE)) {
         // eslint-disable-next-line no-param-reassign
