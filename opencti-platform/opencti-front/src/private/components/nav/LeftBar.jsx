@@ -81,7 +81,6 @@ import { useFormatter } from '../../../components/i18n';
 import Security from '../../../utils/Security';
 import useGranted, {
   BYPASS,
-  PIRAPI,
   CSVMAPPERS,
   EXPLORE,
   INGESTION,
@@ -92,6 +91,7 @@ import useGranted, {
   KNOWLEDGE_KNUPDATE,
   KNOWLEDGE_KNUPDATE_KNDELETE,
   MODULES,
+  PIRAPI,
   SETTINGS_FILEINDEXING,
   SETTINGS_SECURITYACTIVITY,
   SETTINGS_SETACCESSES,
@@ -1041,7 +1041,9 @@ const LeftBar = () => {
           marginTop: 'auto',
           position: 'fixed',
           bottom: 0,
-          borderRight: '1px solid rgba(255, 255, 255, 0.12)',
+          borderRight: theme.palette.mode === 'dark'
+            ? '1px solid rgba(255, 255, 255, 0.12)'
+            : '1px solid rgba(0, 0, 0, 0.12)',
           background: theme.palette.background.paper,
           width: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
         }}
