@@ -39,7 +39,7 @@ const ENTITY_PIR_DEFINITION: ModuleDefinition<StoreEntityPir, StixPir> = {
     creators,
     lastEventId,
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'pir_type', label: 'PIR Type', type: 'string', format: 'enum', values: PIR_TYPES, mandatoryType: 'internal', editDefault: false, multiple: false, upsert: true, isFilterable: true, featureFlag: 'Pir' },
+    { name: 'pir_type', label: 'PIR Type', type: 'string', format: 'enum', values: PIR_TYPES, mandatoryType: 'internal', editDefault: false, multiple: false, upsert: true, isFilterable: false, featureFlag: 'Pir' },
     { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'pir_rescan_days', label: 'PIR Rescan in days', type: 'numeric', precision: 'integer', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'pir_criteria', label: 'PIR Criteria', type: 'object', format: 'flat', mandatoryType: 'internal', editDefault: false, multiple: true, upsert: false, isFilterable: false },
