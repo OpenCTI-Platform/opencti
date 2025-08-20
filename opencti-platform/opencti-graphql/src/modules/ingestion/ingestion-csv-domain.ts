@@ -41,7 +41,7 @@ import { SYSTEM_USER } from '../../utils/access';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import type { BasicStoreSettings } from '../../types/settings';
 import { findDefaultIngestionGroups } from '../../domain/group';
-import type { BasicGroupEntity, BasicStoreCommon } from '../../types/store';
+import type { BasicGroupEntity } from '../../types/store';
 import { regenerateCsvMapperUUID } from './ingestion-converter';
 
 const MINIMAL_CSV_FEED_COMPATIBLE_VERSION = '6.6.0';
@@ -82,9 +82,9 @@ export const userAlreadyExists = async (context: AuthContext, name: string) => {
         },
       ],
       filterGroups: [],
-    },
-    connectionFormat: false }) as BasicStoreCommon[];
-  return users.length > 0;
+    }
+  });
+  return users.edges.length > 0;
 };
 
 export const createOnTheFlyUser = async (context: AuthContext, user: AuthUser, input: { userName: string, confidenceLevel: number | null | undefined }) => {

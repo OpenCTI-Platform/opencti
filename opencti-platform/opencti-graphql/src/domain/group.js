@@ -4,8 +4,9 @@ import {
   listAllFromEntitiesThroughRelations,
   listAllToEntitiesThroughRelations,
   listEntities,
+  listEntitiesPaginated,
   listEntitiesThroughRelationsPaginated,
-  storeLoadById,
+  storeLoadById
 } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
@@ -34,13 +35,13 @@ export const findById = (context, user, groupId) => {
 export const findAll = async (context, user, args) => {
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
     const groupsIds = R.uniq((user.administrated_organizations ?? []).map((orga) => (orga.grantable_groups ?? [])).flat());
-    return listEntities(context, user, [ENTITY_TYPE_GROUP], { ...args, ids: groupsIds });
+    return listEntitiesPaginated(context, user, [ENTITY_TYPE_GROUP], { ...args, ids: groupsIds });
   }
-  return listEntities(context, user, [ENTITY_TYPE_GROUP], args);
+  return listEntitiesPaginated(context, user, [ENTITY_TYPE_GROUP], args);
 };
 
 export const findDefaultIngestionGroups = async (context, user) => {
-  return findAll(context, user, {
+  return listEntities(context, user, [ENTITY_TYPE_GROUP], {
     filters: {
       mode: 'and',
       filters: [
@@ -52,8 +53,7 @@ export const findDefaultIngestionGroups = async (context, user) => {
         },
       ],
       filterGroups: [],
-    },
-    connectionFormat: false,
+    }
   });
 };
 

@@ -1,5 +1,5 @@
 import { createEntity } from '../database/middleware';
-import { listEntities, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
+import { listEntitiesPaginated, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION } from '../schema/stixDomainObject';
@@ -11,7 +11,7 @@ export const findById = (context, user, courseOfActionId) => {
 };
 
 export const findAll = (context, user, args) => {
-  return listEntities(context, user, [ENTITY_TYPE_COURSE_OF_ACTION], args);
+  return listEntitiesPaginated(context, user, [ENTITY_TYPE_COURSE_OF_ACTION], args);
 };
 
 export const addCourseOfAction = async (context, user, courseOfAction) => {

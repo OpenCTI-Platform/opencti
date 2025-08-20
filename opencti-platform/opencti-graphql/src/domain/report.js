@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { createEntity, distributionEntities, internalDeleteElementById, listAllThings, timeSeriesEntities } from '../database/middleware';
-import { countAllThings, internalLoadById, listEntities, storeLoadById } from '../database/middleware-loader';
+import { countAllThings, internalLoadById, listEntitiesPaginated, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
@@ -18,7 +18,7 @@ export const findById = (context, user, reportId) => {
 };
 
 export const findAll = async (context, user, args) => {
-  return listEntities(context, user, [ENTITY_TYPE_CONTAINER_REPORT], args);
+  return listEntitiesPaginated(context, user, [ENTITY_TYPE_CONTAINER_REPORT], args);
 };
 
 // Entities tab

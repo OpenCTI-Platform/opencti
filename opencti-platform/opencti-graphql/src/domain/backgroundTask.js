@@ -6,7 +6,7 @@ import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_USE
 import { deleteElementById, patchAttribute } from '../database/middleware';
 import { getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../utils/access';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, RULE_PREFIX } from '../schema/general';
-import { buildEntityFilters, countAllThings, listEntities, storeLoadById } from '../database/middleware-loader';
+import { buildEntityFilters, countAllThings, listEntities, listEntitiesPaginated, storeLoadById } from '../database/middleware-loader';
 import { checkActionValidity, createDefaultTask, TASK_TYPE_QUERY, TASK_TYPE_RULE } from './backgroundTask-common';
 import { publishUserAction } from '../listener/UserActionListener';
 import { ForbiddenAccess } from '../config/errors';
@@ -42,6 +42,10 @@ export const MAX_TASK_ELEMENTS = 500;
 
 export const findById = async (context, user, taskId) => {
   return storeLoadById(context, user, taskId, ENTITY_TYPE_BACKGROUND_TASK);
+};
+
+export const findAllPaginated = (context, user, args) => {
+  return listEntitiesPaginated(context, user, [ENTITY_TYPE_BACKGROUND_TASK], args);
 };
 
 export const findAll = (context, user, args) => {
@@ -156,7 +160,7 @@ export const deleteRuleTasks = async (context, user, ruleId) => {
     filters: [{ key: 'type', values: ['RULE'] }, { key: 'rule', values: [ruleId] }],
     filterGroups: [],
   };
-  const args = { filters: tasksFilters, connectionFormat: false };
+  const args = { filters: tasksFilters };
   const tasks = await listEntities(context, user, [ENTITY_TYPE_BACKGROUND_TASK], args);
   await Promise.all(tasks.map((t) => deleteElementById(context, user, t.internal_id, ENTITY_TYPE_BACKGROUND_TASK)));
 };

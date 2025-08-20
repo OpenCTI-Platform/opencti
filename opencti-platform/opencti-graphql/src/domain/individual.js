@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { createEntity } from '../database/middleware';
-import { listEntities, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
+import { listEntitiesPaginated, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { isIndividualAssociatedToUser } from '../database/data-consistency';
 import { notify } from '../database/redis';
@@ -14,7 +14,7 @@ export const findById = (context, user, individualId) => {
 };
 
 export const findAll = (context, user, args) => {
-  return listEntities(context, user, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], args);
+  return listEntitiesPaginated(context, user, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], args);
 };
 
 export const addIndividual = async (context, user, individual, opts = {}) => {
