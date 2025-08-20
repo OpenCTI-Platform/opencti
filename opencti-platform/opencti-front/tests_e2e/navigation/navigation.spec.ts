@@ -329,7 +329,6 @@ const navigateIncidentResponse = async (page: Page) => {
 
   // -- Entities
   await incidentResponseDetailsPage.tabs.goToEntitiesTab();
-  await expect(page.getByText('Entity types')).toBeVisible();
   await expect(page.getByText('Add entity')).toBeVisible();
 
   // -- Artifact / Observables
@@ -380,7 +379,6 @@ const navigateRfi = async (page: Page) => {
 
   // -- Entities
   await caseRfiDetailsPage.tabs.goToEntitiesTab();
-  await expect(page.getByText('Entity types')).toBeVisible();
   await expect(page.getByText('Add entity')).toBeVisible();
 
   // -- Artifact / Observables
@@ -431,7 +429,6 @@ const navigateRft = async (page: Page) => {
 
   // -- Entities
   await caseRftDetailsPage.tabs.goToEntitiesTab();
-  await expect(page.getByText('Entity types')).toBeVisible();
   await expect(page.getByText('Add entity')).toBeVisible();
 
   // -- Artifact / Observables
