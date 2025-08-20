@@ -1777,7 +1777,7 @@
   "hour": "час",
   "hours": "часы",
   "How do you want to download this file?": "Как вы хотите загрузить этот файл?",
-  "How far back to rescan at PIR creation. If the stream has less history than this period, we’ll rescan from the stream’s start": "Насколько далеко назад нужно сканировать при создании PIR. Если история потока меньше, чем этот период, мы повторим сканирование с начала потока",
+  "How far back to rescan at creation. If the PIR engine has less history than this period, only the history period will be taken": "Насколько далеко назад нужно сканировать при создании. Если у PIR-движка история меньше этого периода, будет взят только период истории",
   "However, your existing data will remain intact and will not be lost.": "Однако существующие данные останутся нетронутыми и не будут потеряны.",
   "HTML": "HTML",
   "HTML content files to PDF": "Файлы с содержанием HTML в PDF",

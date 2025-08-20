@@ -50,7 +50,7 @@ const PirCreationFormGeneralSettings = () => {
         label={t_i18n('Rescan period (days)')}
         fullWidth={true}
         containerstyle={{ marginTop: 20, width: '100%' }}
-        helpertext={t_i18n('How far back to rescan at PIR creation. If the stream has less history than this period, we’ll rescan from the stream’s start')}
+        helpertext={t_i18n('How far back to rescan at creation. If the PIR engine has less history than this period, only the history period will be taken')}
       >
         <MenuItem value={0}>{t_i18n('No rescan')}</MenuItem>
         <MenuItem value={1}>{t_i18n('1 day')}</MenuItem>

@@ -81,7 +81,7 @@ const PirCreation = ({ paginationOptions }: PirCreationProps) => {
         slotProps={{
           paper: {
             elevation: 1,
-            style: { minWidth: '900px' },
+            style: { minWidth: '950px' },
           },
         }}
       >

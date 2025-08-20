@@ -1777,7 +1777,7 @@
   "hour": "heure",
   "hours": "heures",
   "How do you want to download this file?": "Comment voulez-vous télécharger ce fichier ?",
-  "How far back to rescan at PIR creation. If the stream has less history than this period, we’ll rescan from the stream’s start": "Jusqu'où remonter pour effectuer une nouvelle analyse lors de la création du PIR. Si l'historique du flux est inférieur à cette période, nous effectuerons un nouveau balayage à partir du début du flux",
+  "How far back to rescan at creation. If the PIR engine has less history than this period, only the history period will be taken": "Jusqu'où remonter lors de la création d'un nouveau balayage. Si le moteur PIR a moins d'historique que cette période, seule la période d'historique sera prise en compte",
   "However, your existing data will remain intact and will not be lost.": "Cependant, vos données existantes resteront intactes et ne seront pas perdues.",
   "HTML": "HTML",
   "HTML content files to PDF": "Fichiers de contenu HTML vers PDF",

@@ -1777,7 +1777,7 @@
   "hour": "hour",
   "hours": "hours",
   "How do you want to download this file?": "How do you want to download this file?",
-  "How far back to rescan at PIR creation. If the stream has less history than this period, we’ll rescan from the stream’s start": "How far back to rescan at PIR creation. If the stream has less history than this period, we’ll rescan from the stream’s start",
+  "How far back to rescan at creation. If the PIR engine has less history than this period, only the history period will be taken": "How far back to rescan at creation. If the PIR engine has less history than this period, only the history period will be taken",
   "However, your existing data will remain intact and will not be lost.": "However, your existing data will remain intact and will not be lost.",
   "HTML": "HTML",
   "HTML content files to PDF": "HTML content files to PDF",

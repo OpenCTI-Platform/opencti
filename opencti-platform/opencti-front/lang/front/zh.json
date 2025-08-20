@@ -1777,7 +1777,7 @@
   "hour": "时间",
   "hours": "小时",
   "How do you want to download this file?": "您想如何下载此文件？",
-  "How far back to rescan at PIR creation. If the stream has less history than this period, we’ll rescan from the stream’s start": "在 PIR 创建时重新扫描的时间段。如果数据流的历史记录少于这个时间段，我们将从数据流的起点重新扫描",
+  "How far back to rescan at creation. If the PIR engine has less history than this period, only the history period will be taken": "创建时重新扫描的时间段。如果 PIR 引擎的历史记录少于此时间段，则只扫描历史记录时间段。",
   "However, your existing data will remain intact and will not be lost.": "但是，您的现有数据将保持不变，不会丢失。",
   "HTML": "HTML",
   "HTML content files to PDF": "将 HTML 内容文件转换为 PDF",
