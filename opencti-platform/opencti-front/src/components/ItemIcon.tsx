@@ -508,6 +508,7 @@ const iconSelector = (
     case 'technology-from':
     case 'technology-to':
     case 'technology':
+    case 'transferred-to':
     case 'demonstrates':
     case 'controls':
     case 'cooperates-with':
