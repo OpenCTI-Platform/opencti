@@ -36,7 +36,7 @@ export default class ExternalReferencePage {
   }
 
   getCreateExternalReferenceButton() {
-    return this.page.getByRole('button', { name: 'Create' });
+    return this.page.getByRole('button', { name: 'Create External reference' });
   }
 
   getItemFromList(name: string) {
