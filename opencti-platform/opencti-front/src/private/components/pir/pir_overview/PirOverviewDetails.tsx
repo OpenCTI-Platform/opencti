@@ -124,6 +124,12 @@ const PirOverviewDetails = ({ data, dataStream }: PirOverviewDetailsProps) => {
               </Typography>
               {fldt(pir.created_at)}
             </div>
+            <div>
+              <Typography variant="h3" gutterBottom>
+                {t_i18n('Creators')}
+              </Typography>
+              <ItemCreators creators={pir.creators ?? []}/>
+            </div>
           </div>
         )}
       >
@@ -139,12 +145,6 @@ const PirOverviewDetails = ({ data, dataStream }: PirOverviewDetailsProps) => {
               {t_i18n('Criteria')}
             </Typography>
             <PirCriteriaDisplay criteria={criteria} full />
-          </div>
-          <div>
-            <Typography variant="h3" gutterBottom>
-              {t_i18n('Creators')}
-            </Typography>
-            <ItemCreators creators={pir.creators ?? []}/>
           </div>
         </div>
       </PaperAccordion>
