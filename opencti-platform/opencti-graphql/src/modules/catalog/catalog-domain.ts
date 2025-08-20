@@ -59,7 +59,17 @@ const getCatalogs = () => {
           standard_id: idGenFromData('catalog', { id: catalog.id }),
           name: catalog.name,
           description: catalog.description,
-          contracts: catalog.contracts.map((c) => JSON.stringify(c))
+          contracts: catalog.contracts.map((c) => {
+            const finalContract = c;
+            if (finalContract.manager_supported) {
+              const EXCLUDED_CONFIG_VARS = ['OPENCTI_TOKEN', 'OPENCTI_URL', 'CONNECTOR_TYPE', 'CONNECTOR_RUN_AND_TERMINATE'];
+              EXCLUDED_CONFIG_VARS.forEach((property) => {
+                delete finalContract.config_schema.properties[property];
+              });
+              finalContract.config_schema.required = c.config_schema.required.filter((item) => !EXCLUDED_CONFIG_VARS.includes(item));
+            }
+            return JSON.stringify(finalContract);
+          })
         }
       };
     }
