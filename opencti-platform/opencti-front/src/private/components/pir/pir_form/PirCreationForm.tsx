@@ -99,7 +99,7 @@ const PirCreationForm = ({ onCancel, onSubmit }: PirCreationFormProps) => {
               <Button onClick={onCancel}>
                 {t_i18n('Cancel')}
               </Button>
-              {step !== 2 && (
+              {step !== 1 && (
                 <Button
                   onClick={() => setStep(step + 1)}
                   color="secondary"
@@ -108,7 +108,7 @@ const PirCreationForm = ({ onCancel, onSubmit }: PirCreationFormProps) => {
                   {t_i18n('Next')}
                 </Button>
               )}
-              {step === 2 && (
+              {step === 1 && (
                 <Button
                   onClick={submitForm}
                   color="secondary"
