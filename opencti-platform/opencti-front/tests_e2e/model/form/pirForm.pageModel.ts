@@ -30,8 +30,4 @@ export default class PirFormPageModel {
   getCancelButton() {
     return this.page.getByRole('button', { name: 'Cancel' });
   }
-
-  selectType(type: 'threat landscape') {
-    return this.formLocator.getByText(type).click();
-  }
 }
