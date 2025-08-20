@@ -26,7 +26,7 @@ import {
   isStixDomainObjectThreatActor
 } from '../schema/stixDomainObject';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey, INPUT_CREATED_BY, INPUT_MARKINGS } from '../schema/general';
-import { RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE, } from '../schema/stixRefRelationship';
+import { RELATION_CREATED_BY, RELATION_IN_PIR, RELATION_OBJECT_ASSIGNEE, } from '../schema/stixRefRelationship';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { checkScore, now, utcDate } from '../utils/format';
@@ -41,6 +41,7 @@ import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { validateMarking } from '../utils/access';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { checkEnterpriseEdition } from '../enterprise-edition/ee';
+import { findAll as findRelationships } from './stixRelationship';
 
 export const findAll = async (context, user, args) => {
   let types = [];
@@ -98,7 +99,9 @@ export const stixDomainObjectAvatar = (stixDomainObject) => {
   const files = stixDomainObject.x_opencti_files ?? [];
   return files.sort((a, b) => (a.order || 0) - (b.order || 0)).find((n) => n.mime_type.includes('image/') && !!n.inCarousel);
 };
+// endregion
 
+// region PIR
 export const stixDomainObjectPirScore = async (context, user, stixDomainObject, pirId) => {
   // check EE
   await checkEnterpriseEdition(context);
@@ -111,6 +114,24 @@ export const stixDomainObjectPirScore = async (context, user, stixDomainObject, 
   const pirScore = (stixDomainObject.pir_scores ?? []).find((s) => s.pir_id === pirId);
   if (!pirScore) return 0;
   return pirScore.pir_score;
+};
+
+export const stixDomainObjectsPirExplanations = async (context, user, stixDomainObject, pirId) => {
+  // check EE
+  await checkEnterpriseEdition(context);
+  // check user has access to the PIR
+  const pir = await storeLoadById(context, user, pirId, ENTITY_TYPE_PIR);
+  if (!pir) {
+    throw FunctionalError('No PIR found');
+  }
+  // retrieve in-pir relationship
+  const { edges, pageInfo } = await findRelationships(context, user, {
+    fromId: stixDomainObject.id,
+    toId: pirId,
+    relationship_type: RELATION_IN_PIR
+  });
+  if (pageInfo.globalCount !== 1) return null;
+  return edges[0].node.pir_explanations;
 };
 // endregion
 

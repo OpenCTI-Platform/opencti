@@ -13,7 +13,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React from 'react';
+import React, { PropsWithChildren } from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Chip, { ChipProps } from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
@@ -26,7 +26,7 @@ import { GqlFilterGroup, removeIdFromFilterGroupObject } from '../../../utils/fi
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
 
-interface PirFiltersDisplayComponentProps {
+interface PirFiltersDisplayComponentProps extends PropsWithChildren {
   size?: ChipProps['size']
   full?: boolean
   criteria: FilterGroup[]
@@ -38,6 +38,7 @@ const PirCriteriaDisplayComponent = ({
   criteria,
   full = false,
   size = 'medium',
+  children,
 }: PirFiltersDisplayComponentProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
@@ -76,11 +77,13 @@ const PirCriteriaDisplayComponent = ({
               },
             }}
           >
-            <Chip
-              size={size}
-              sx={{ textTransform: 'capitalize', borderRadius: 1, whiteSpace: 'wrap' }}
-              label={full ? fullTargetsStr : shortTargetsStr}
-            />
+            {children ? <div>{children}</div> : (
+              <Chip
+                size={size}
+                sx={{ textTransform: 'capitalize', borderRadius: 1, whiteSpace: 'wrap' }}
+                label={full ? fullTargetsStr : shortTargetsStr}
+              />
+            )}
           </Tooltip>
         );
       })}

@@ -17,6 +17,7 @@ import {
   stixDomainObjectsDistributionByEntity,
   stixDomainObjectsExportAsk,
   stixDomainObjectsNumber,
+  stixDomainObjectsPirExplanations,
   stixDomainObjectsTimeSeries,
   stixDomainObjectsTimeSeriesByAuthor
 } from '../domain/stixDomainObject';
@@ -67,6 +68,7 @@ const stixDomainObjectResolvers = {
       return statusesType.length > 0;
     },
     pirScore: (stixDomainObject, { pirId }, context) => stixDomainObjectPirScore(context, context.user, stixDomainObject, pirId),
+    pirExplanations: (stixDomainObject, { pirId }, context) => stixDomainObjectsPirExplanations(context, context.user, stixDomainObject, pirId),
   },
   Mutation: {
     stixDomainObjectEdit: (_, { id }, context) => ({

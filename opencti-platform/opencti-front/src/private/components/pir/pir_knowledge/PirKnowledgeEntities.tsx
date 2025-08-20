@@ -15,9 +15,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { graphql } from 'react-relay';
 import React, { ReactNode } from 'react';
-import Tooltip from '@mui/material/Tooltip';
 import PirRadialScore from '@components/pir/pir_knowledge/PirRadialScore';
-import { useTheme } from '@mui/material/styles';
+import PirCriteriaDisplay from '@components/pir/PirCriteriaDisplay';
 import { PirKnowledgeEntities_SourcesFlaggedFragment$data } from './__generated__/PirKnowledgeEntities_SourcesFlaggedFragment.graphql';
 import {
   PirKnowledgeEntitiesSourcesFlaggedListQuery,
@@ -34,7 +33,6 @@ import { PaginationOptions } from '../../../../components/list_lines';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { LocalStorage } from '../../../../utils/hooks/useLocalStorageModel';
-import type { Theme } from '../../../../components/Theme';
 
 const sourceFlaggedFragment = graphql`
   fragment PirKnowledgeEntities_SourceFlaggedFragment on StixDomainObject
@@ -57,6 +55,11 @@ const sourceFlaggedFragment = graphql`
       name
     }
     pirScore(pirId: $pirId)
+    pirExplanations(pirId: $pirId) {
+      criterion {
+        filters
+      }
+    }
   }
 `;
 
@@ -128,6 +131,8 @@ interface PirKnowledgeEntitiesProps {
   additionalHeaderButtons: ReactNode[];
 }
 
+type PirExplanation = NonNullable<PirKnowledgeEntities_SourceFlaggedFragment$data['pirExplanations']>[number];
+
 const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHeaderButtons }: PirKnowledgeEntitiesProps) => {
   const {
     viewStorage,
@@ -135,8 +140,6 @@ const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHe
     localStorageKey,
     paginationOptions,
   } = localStorage;
-
-  const theme = useTheme<Theme>();
 
   const filters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(viewStorage.filters, ['Stix-Domain-Object']);
 
@@ -178,25 +181,14 @@ const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHe
       label: 'Score',
       percentWidth: 6,
       isSortable: true,
-      render: ({ pirScore }) => {
+      render: ({ pirScore, pirExplanations }) => {
+        const criteria: FilterGroup[] = pirExplanations.map(
+          (e: PirExplanation) => JSON.parse(e.criterion.filters),
+        );
         return (
-          <Tooltip
-            title={(
-              <div style={{ display: 'flex', gap: theme.spacing(1), flexWrap: 'wrap' }}>
-                {/* {pir_explanations.map((e: { criterion: { filters: string } }, i: number) => ( */}
-                {/*  <PirFiltersDisplay */}
-                {/*    key={i} */}
-                {/*    filterGroup={JSON.parse(e.criterion.filters)} */}
-                {/*    size='small' */}
-                {/*  /> */}
-                {/* ))} */} ## TODO PIR add explanations on hover
-              </div>
-            )}
-          >
-            <div>
-              <PirRadialScore value={pirScore}/>
-            </div>
-          </Tooltip>
+          <PirCriteriaDisplay criteria={criteria}>
+            <PirRadialScore value={pirScore}/>
+          </PirCriteriaDisplay>
         );
       },
     },

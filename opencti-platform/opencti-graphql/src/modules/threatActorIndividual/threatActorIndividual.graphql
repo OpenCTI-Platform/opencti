@@ -159,6 +159,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   status: Status
   workflowEnabled: Boolean
   pirScore(pirId: ID!): Int @auth(for: [PIRAPI])
+  pirExplanations(pirId: ID!): [PirExplanation!] @auth(for: [PIRAPI])
 }
 
 enum ThreatActorsIndividualOrdering {
