@@ -66,7 +66,7 @@ const stixDomainObjectResolvers = {
       const statusesType = await findByType(context, context.user, stixDomainObject.entity_type);
       return statusesType.length > 0;
     },
-    pirScore: (stixDomainObject, { pirId }, context) => stixDomainObjectPirScore(context, context.user, stixDomainObject.id, pirId),
+    pirScore: (stixDomainObject, { pirId }, context) => stixDomainObjectPirScore(context, context.user, stixDomainObject, pirId),
   },
   Mutation: {
     stixDomainObjectEdit: (_, { id }, context) => ({

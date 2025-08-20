@@ -99,23 +99,18 @@ export const stixDomainObjectAvatar = (stixDomainObject) => {
   return files.sort((a, b) => (a.order || 0) - (b.order || 0)).find((n) => n.mime_type.includes('image/') && !!n.inCarousel);
 };
 
-export const stixDomainObjectPirScore = async (context, user, stixDomainObjectId, pirId) => {
+export const stixDomainObjectPirScore = async (context, user, stixDomainObject, pirId) => {
   // check EE
-  await checkEnterpriseEdition();
+  await checkEnterpriseEdition(context);
   // check user has access to the PIR
   const pir = await storeLoadById(context, user, pirId, ENTITY_TYPE_PIR);
   if (!pir) {
     throw FunctionalError('No PIR found');
   }
-  // fetch stix domain object pir scores
-  const stixDomainObject = await storeLoadById(context, user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
-  const pirScores = (stixDomainObject.pir_scores ?? []).filter((s) => s.pir_id === pirId);
-  if (pirScores.length > 1) {
-    throw FunctionalError('An entity can only have one score by Pir');
-  } else if (pirScores.length === 0) {
-    return 0;
-  }
-  return pirScores[0].pir_score;
+  // fetch stix domain object pir score
+  const pirScore = (stixDomainObject.pir_scores ?? []).find((s) => s.pir_id === pirId);
+  if (!pirScore) return 0;
+  return pirScore.pir_score;
 };
 // endregion
 
