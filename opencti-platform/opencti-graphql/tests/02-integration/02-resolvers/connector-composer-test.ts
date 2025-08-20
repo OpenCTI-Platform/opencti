@@ -2,11 +2,12 @@ import { expect, it, describe, afterAll, beforeAll } from 'vitest';
 import gql from 'graphql-tag';
 import { v4 as uuidv4 } from 'uuid';
 import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
-import { USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
+import { ADMIN_USER, USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
 import { wait } from '../../../src/database/utils';
 import { XTMComposerMock } from '../../utils/XTMComposerMock';
 import type { ApiConnector } from '../../utils/XTMComposerMock';
 import { catalogHelper } from '../../utils/catalogHelper';
+import { getBaseUrl } from '../../../src/config/conf';
 
 const TEST_COMPOSER_ID = uuidv4();
 const TEST_USER_CONNECTOR_ID: string = USER_CONNECTOR.id; // Initialize with default value
@@ -120,6 +121,18 @@ const CONNECTOR_LOGS_QUERY = gql`
         }
     }
 `;
+
+const ipinfoProperties = {
+  CONNECTOR_LISTEN_PROTOCOL_API_PORT: 0,
+  CONNECTOR_LISTEN_PROTOCOL_API_SSL: false
+};
+
+const ipinfoListProperties = [
+  { key: 'CONNECTOR_LISTEN_PROTOCOL_API_PORT', value: ['0'] },
+  { key: 'CONNECTOR_LISTEN_PROTOCOL_API_SSL', value: ['false'] }
+];
+
+
 
 describe('Connector Composer and Managed Connectors', () => {
   // Track all created resources
@@ -237,7 +250,8 @@ describe('Connector Composer and Managed Connectors', () => {
         catalog_id: catalogId,
         manager_contract_image: testConnector.container_image,
         manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
-          IPINFO_TOKEN: 'deployment-test-token'
+          IPINFO_TOKEN: 'deployment-test-token',
+          ...ipinfoProperties
         })
       };
 
@@ -463,7 +477,8 @@ describe('Connector Composer and Managed Connectors', () => {
         manager_contract_image: testConnector.container_image,
         manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
           IPINFO_TOKEN: 'log-level-test-token',
-          CONNECTOR_LOG_LEVEL: 'info' // Initial log level
+          CONNECTOR_LOG_LEVEL: 'info', // Initial log level
+          ...ipinfoProperties
         })
       };
 
@@ -517,7 +532,8 @@ describe('Connector Composer and Managed Connectors', () => {
         connector_user_id: TEST_USER_CONNECTOR_ID,
         manager_contract_configuration: [
           { key: 'IPINFO_TOKEN', value: ['log-level-test-token'] },
-          { key: 'CONNECTOR_LOG_LEVEL', value: ['debug'] } // Changed from 'info' to 'debug'
+          { key: 'CONNECTOR_LOG_LEVEL', value: ['debug'] }, // Changed from 'info' to 'debug'
+          ...ipinfoListProperties
         ]
       };
 
@@ -569,7 +585,8 @@ describe('Connector Composer and Managed Connectors', () => {
         connector_user_id: TEST_USER_CONNECTOR_ID,
         manager_contract_configuration: [
           { key: 'IPINFO_TOKEN', value: ['log-level-test-token'] },
-          { key: 'CONNECTOR_LOG_LEVEL', value: ['error'] } // Changed from 'debug' to 'error'
+          { key: 'CONNECTOR_LOG_LEVEL', value: ['error'] }, // Changed from 'debug' to 'error'
+          ...ipinfoListProperties
         ]
       };
 
@@ -605,7 +622,8 @@ describe('Connector Composer and Managed Connectors', () => {
         connector_user_id: TEST_USER_CONNECTOR_ID,
         manager_contract_configuration: [
           { key: 'IPINFO_TOKEN', value: ['log-level-test-token'] },
-          { key: 'CONNECTOR_LOG_LEVEL', value: ['error'] } // Same log level as before
+          { key: 'CONNECTOR_LOG_LEVEL', value: ['error'] }, // Same log level as before
+          ...ipinfoListProperties
         ]
       };
 
@@ -702,7 +720,8 @@ describe('Connector Composer and Managed Connectors', () => {
         catalog_id: catalogId,
         manager_contract_image: testConnector.container_image,
         manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
-          IPINFO_TOKEN: 'xtm-test-token'
+          IPINFO_TOKEN: 'xtm-test-token',
+          ...ipinfoProperties
         })
       };
 
@@ -801,7 +820,8 @@ describe('Connector Composer and Managed Connectors', () => {
           catalog_id: catalogId,
           manager_contract_image: testConnector.container_image,
           manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
-            IPINFO_TOKEN: `concurrent-token-${i}`
+            IPINFO_TOKEN: `concurrent-token-${i}`,
+            ...ipinfoProperties
           })
         };
 
@@ -891,7 +911,8 @@ describe('Connector Composer and Managed Connectors', () => {
         catalog_id: catalogId,
         manager_contract_image: testConnector.container_image,
         manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
-          IPINFO_TOKEN: 'test-token-123'
+          IPINFO_TOKEN: 'test-token-123',
+          ...ipinfoProperties
         })
       };
 
@@ -920,7 +941,8 @@ describe('Connector Composer and Managed Connectors', () => {
         manager_contract_configuration: [
           { key: 'IPINFO_TOKEN', value: ['updated-token-456'] },
           { key: 'CONNECTOR_AUTO', value: ['false'] },
-          { key: 'CONNECTOR_LOG_LEVEL', value: ['debug'] }
+          { key: 'CONNECTOR_LOG_LEVEL', value: ['debug'] },
+          ...ipinfoListProperties
         ]
       };
 
@@ -978,7 +1000,8 @@ describe('Connector Composer and Managed Connectors', () => {
         catalog_id: catalogId,
         manager_contract_image: testConnector.container_image,
         manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
-          IPINFO_TOKEN: 'permission-test-token'
+          IPINFO_TOKEN: 'permission-test-token',
+          ...ipinfoProperties
         })
       };
 
@@ -1022,7 +1045,8 @@ describe('Connector Composer and Managed Connectors', () => {
         catalog_id: catalogId,
         manager_contract_image: testConnector.container_image,
         manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
-          IPINFO_TOKEN: 'permission-test-token'
+          IPINFO_TOKEN: 'permission-test-token',
+          ...ipinfoProperties
         })
       };
 
@@ -1062,7 +1086,8 @@ describe('Connector Composer and Managed Connectors', () => {
         catalog_id: catalogId,
         manager_contract_image: testConnector.container_image,
         manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
-          IPINFO_TOKEN: 'lifecycle-test-token'
+          IPINFO_TOKEN: 'lifecycle-test-token',
+          ...ipinfoProperties
         })
       };
 
@@ -1122,7 +1147,8 @@ describe('Connector Composer and Managed Connectors', () => {
         catalog_id: catalogId,
         manager_contract_image: testConnector.container_image,
         manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
-          IPINFO_TOKEN: 'error-test-token'
+          IPINFO_TOKEN: 'error-test-token',
+          ...ipinfoProperties
         })
       };
 

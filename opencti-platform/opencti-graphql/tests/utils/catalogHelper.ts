@@ -1,30 +1,51 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-interface ConnectorContract {
-  $schema: string;
-  $id: string;
-  title: string;
-  slug: string;
+
+export type ConnectorType = 'INTERNAL_ENRICHMENT' | 'EXTERNAL_IMPORT' | 'INTERNAL_EXPORT_FILE' | 'INTERNAL_IMPORT_FILE';
+
+type ConnectorTypeMap = {
+  string: string;
+  integer: number;
+  dict: object;
+  array: string[];
+  boolean: boolean;
+};
+
+type ConnectorTypedProperty<K extends keyof ConnectorTypeMap = keyof ConnectorTypeMap> = {
+  type: K;
+  default: ConnectorTypeMap[K];
   description: string;
-  short_description: string;
-  use_cases: string[];
-  max_confidence_level: number;
-  manager_supported: boolean;
-  container_version: string;
-  container_image: string;
-  container_type: string;
-  verified: boolean;
-  last_verified_date: string;
-  playbook_supported: boolean;
-  logo: string;
-  support_version: string;
-  subscription_link: string;
-  source_code: string;
-  type: string;
-  default?: Record<string, any>;
-  required?: string[];
-  properties?: Record<string, any>;
+};
+
+interface ConnectorContract {
+  title: string,
+  slug: string,
+  description: string,
+  short_description: string,
+  logo: string,
+  use_cases: string[],
+  verified: boolean,
+  last_verified_date: string,
+  playbook_supported: boolean,
+  max_confidence_level: number,
+  support_version: string,
+  subscription_link: string,
+  source_code: string,
+  manager_supported: boolean,
+  container_version: string,
+  container_image: string,
+  container_type: ConnectorType,
+  config_schema: {
+    $schema: string,
+    $id: string,
+    type: string,
+    properties: {
+      [key: string]: ConnectorTypedProperty
+    },
+    required: string[],
+    additionalProperties: boolean,
+  }
 }
 
 interface Catalog {
@@ -70,8 +91,16 @@ class CatalogHelper {
     const config: Array<{ key: string; value: string[] }> = [];
 
     // Start with default values
-    if (connector.default) {
-      Object.entries(connector.default).forEach(([key, value]) => {
+    const propertiesArray = Object.entries(connector.config_schema.properties);
+    const defaultValuesArray = propertiesArray.map((property) => {
+      const key = property[0];
+      const value = property[1];
+      return [key, value.default];
+    });
+    const defaultValues = Object.fromEntries(defaultValuesArray);
+
+    if (defaultValuesArray) {
+      Object.entries(defaultValues).forEach(([key, value]) => {
         // Skip if this is an override
         if (key in overrides) return;
 
@@ -88,8 +117,8 @@ class CatalogHelper {
     });
 
     // Ensure all required fields are present
-    if (connector.required) {
-      connector.required.forEach((requiredKey) => {
+    if (connector.config_schema.required) {
+      connector.config_schema.required.forEach((requiredKey) => {
         const exists = config.some((c) => c.key === requiredKey);
         if (!exists && !overrides[requiredKey]) {
           throw new Error(`Required field ${requiredKey} is missing for connector ${connector.slug}`);
@@ -102,7 +131,7 @@ class CatalogHelper {
 
   // eslint-disable-next-line class-methods-use-this
   getRequiredFields(connector: ConnectorContract): string[] {
-    return connector.required || [];
+    return connector.config_schema.required || [];
   }
 
   // eslint-disable-next-line class-methods-use-this

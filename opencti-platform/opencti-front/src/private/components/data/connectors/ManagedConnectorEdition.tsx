@@ -58,7 +58,7 @@ const ManagedConnectorEdition = ({
   const theme = useTheme<Theme>();
   const contract = JSON.parse(connector.manager_contract_definition ?? '{}');
   const contractValues: Record<string, string | boolean> = {};
-  Object.keys(contract.properties).forEach((key) => {
+  Object.keys(contract.config_schema.properties).forEach((key) => {
     const { value } = connector.manager_contract_configuration?.find((a) => a.key === key) ?? {};
     if (!value) {
       return;
@@ -166,7 +166,7 @@ const ManagedConnectorEdition = ({
                   )}
                   <JsonForms
                     data={values.contractValues}
-                    schema={contract}
+                    schema={contract.config_schema}
                     renderers={materialRenderers}
                     validationMode={'NoValidation'}
                     onChange={({ data }) => setFieldValue('contractValues', data)}

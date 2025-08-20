@@ -20,7 +20,9 @@ import {
   IngestionCatalogConnectorCreationMutation$data,
 } from '@components/data/IngestionCatalog/__generated__/IngestionCatalogConnectorCreationMutation.graphql';
 import IngestionCreationUserHandling, { BasicUserHandlingValues } from '@components/data/IngestionCreationUserHandling';
-import { IngestionConnector } from '@components/data/IngestionCatalog';
+import { IngestionConnector, IngestionTypedProperty } from '@components/data/IngestionCatalog';
+import { Git, Launch } from 'mdi-material-ui';
+import IconButton from '@mui/material/IconButton';
 import { MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
@@ -106,7 +108,7 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
       },
       onError: () => setSubmitting?.(false),
       onCompleted: (response: IngestionCatalogConnectorCreationMutation$data) => {
-        MESSAGING$.notifySuccess(<span><Link to={`/dashboard/data/ingestion/connectors/${response.managedConnectorAdd?.id}`}>{t_i18n('The connector has been created')}</Link></span>);
+        MESSAGING$.notifySuccess(<span><Link to={`/dashboard/data/ingestion/connectors/${response.managedConnectorAdd?.id}`}>{t_i18n('The connector instance has been deployed')}</Link></span>);
         setSubmitting?.(false);
         resetForm?.();
         onClose();
@@ -114,18 +116,56 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
     });
   };
 
-  // Filter required and optional properties to use into JsonForms
-  const propertiesArray = Object.entries(connector.properties);
-  const requiredProperties = propertiesArray.filter((property) => connector.required.includes(property[0]));
-  const optionalProperties = propertiesArray.filter((property) => !connector.required.includes(property[0]));
-  const connectorWithRequired = { ...connector, properties: Object.fromEntries(requiredProperties) };
-  const connectorWithOptional = { ...connector, required: [], properties: Object.fromEntries(optionalProperties) };
+  // Get default values, required and optional properties to use into JsonForms
+  type Properties = [string, IngestionTypedProperty][];
+  const propertiesArray: Properties = Object.entries(connector.config_schema.properties);
+  const requiredPropertiesArray: Properties = [];
+  const optionalPropertiesArray: Properties = [];
+  const defaultValuesArray: [string, string | number | object | string[] | boolean][] = [];
+  propertiesArray.forEach((property) => {
+    const key = property[0];
+    const value = property[1];
+    const isRequired = connector.config_schema.required.includes(key);
+    if (isRequired) {
+      requiredPropertiesArray.push(property);
+    } else {
+      optionalPropertiesArray.push(property);
+    }
+    if (value.default) defaultValuesArray.push([key, value.default]);
+  });
+  const requiredProperties: JsonSchema = { properties: Object.fromEntries(requiredPropertiesArray), required: connector.config_schema.required };
+  const optionalProperties: JsonSchema = { properties: Object.fromEntries(optionalPropertiesArray) };
+  const defaultValues = Object.fromEntries(defaultValuesArray);
 
   return (
     <Drawer
       title={t_i18n('Deploy a new connector')}
       open={open}
       onClose={onClose}
+      header={
+        <div style={{ position: 'absolute', right: theme.spacing(1) }}>
+          <Button
+            size="large"
+            variant="contained"
+            startIcon={<Launch />}
+            href={connector.subscription_link}
+            target="blank"
+            rel="noopener noreferrer"
+            style={{ marginRight: theme.spacing(1) }}
+          >
+            {t_i18n('Vendor contact')}
+          </Button>
+          <IconButton
+            aria-label="Go to"
+            component={Link}
+            to={connector.source_code}
+            target="blank"
+            rel="noopener noreferrer"
+          >
+            <Git />
+          </IconButton>
+        </div>
+      }
     >
       <Formik<ManagedConnectorValues>
         onReset={onClose}
@@ -138,7 +178,7 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
           confidence_level: connector.max_confidence_level.toString(),
           user_id: '',
           automatic_user: true,
-          ...connector.default,
+          ...defaultValues,
         }}
         onSubmit={() => {
         }}
@@ -157,42 +197,50 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
                 fullWidth={true}
               />
               <IngestionCreationUserHandling
-                confidence_level={connector.max_confidence_level}
-                max_confidence_level={connector.max_confidence_level}
+                default_confidence_level={connector.max_confidence_level}
                 labelTag="C"
+                isSensitive={true}
               />
-              <div style={fieldSpacingContainerStyle}>{t_i18n('Configuration')}</div>
-              <Alert
-                classes={{ root: classes.alert, message: classes.message }}
-                severity="info"
-                icon={false}
-                variant="outlined"
-                style={{ position: 'relative' }}
-              >
-                <JsonForms
-                  data={connector.default}
-                  schema={connectorWithRequired as JsonSchema}
-                  renderers={materialRenderers}
-                  validationMode={'NoValidation'}
-                  onChange={({ data }) => setValues({ ...values, ...data })}
-                />
-              </Alert>
-              <div style={fieldSpacingContainerStyle}>
-                <Accordion>
-                  <AccordionSummary id="accordion-panel">
-                    <Typography>{t_i18n('Advanced options')}</Typography>
-                  </AccordionSummary>
-                  <AccordionDetails>
-                    <JsonForms
-                      data={connector.default}
-                      schema={connectorWithOptional as JsonSchema}
-                      renderers={materialRenderers}
-                      validationMode={'NoValidation'}
-                      onChange={({ data }) => setValues({ ...values, ...data })}
-                    />
-                  </AccordionDetails>
-                </Accordion>
-              </div>
+              {(requiredPropertiesArray.length > 0 || optionalPropertiesArray.length > 0) && (
+                <>
+                  <div style={fieldSpacingContainerStyle}>{t_i18n('Configuration')}</div>
+                  {requiredPropertiesArray.length > 0 && (
+                    <Alert
+                      classes={{ root: classes.alert, message: classes.message }}
+                      severity="info"
+                      icon={false}
+                      variant="outlined"
+                      style={{ position: 'relative' }}
+                    >
+                      <JsonForms
+                        data={defaultValues}
+                        schema={requiredProperties}
+                        renderers={materialRenderers}
+                        validationMode={'NoValidation'}
+                        onChange={({ data }) => setValues({ ...values, ...data })}
+                      />
+                    </Alert>
+                  )}
+                  {optionalPropertiesArray.length > 0 && (
+                    <div style={fieldSpacingContainerStyle}>
+                      <Accordion slotProps={{ transition: { unmountOnExit: false } }}>
+                        <AccordionSummary id="accordion-panel">
+                          <Typography>{t_i18n('Advanced options')}</Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                          <JsonForms
+                            data={defaultValues}
+                            schema={optionalProperties}
+                            renderers={materialRenderers}
+                            validationMode={'NoValidation'}
+                            onChange={({ data }) => setValues({ ...values, ...data })}
+                          />
+                        </AccordionDetails>
+                      </Accordion>
+                    </div>
+                  )}
+                </>
+              )}
               <div style={{ textAlign: 'right', marginTop: theme.spacing(2) }}>
                 <Button
                   variant="contained"

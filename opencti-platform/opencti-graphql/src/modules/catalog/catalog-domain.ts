@@ -3,71 +3,93 @@ import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import * as R from 'ramda';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { type CatalogDefinition, type CatalogType } from './catalog-types';
-import conf from '../../config/conf';
+import { type CatalogContract, type CatalogDefinition, type CatalogType } from './catalog-types';
 import { isEmptyField } from '../../database/utils';
 import { UnsupportedError } from '../../config/errors';
 import { idGenFromData } from '../../schema/identifier';
 import filigranCatalog from './filigran/opencti-manifest.json';
+import conf from '../../config/conf';
 
 const CUSTOM_CATALOGS: string[] = conf.get('app:custom_catalogs') ?? [];
 const ajv = new Ajv({ coerceTypes: true });
-addFormats(ajv, ['password', 'uri', 'duration']);
+addFormats(ajv, ['password', 'uri', 'duration', 'email', 'date-time']);
 
+// Cache of catalog to read on disk and parse only once
+let catalogMap: Record<string, CatalogType>;
 const getCatalogs = () => {
-  const catalogMap: Record<string, CatalogType> = {};
-  const catalogs = CUSTOM_CATALOGS.map((custom) => fs.readFileSync(custom, { encoding: 'utf8', flag: 'r' }));
-  catalogs.push(JSON.stringify(filigranCatalog));
-  for (let index = 0; index < catalogs.length; index += 1) {
-    const catalogRaw = catalogs[index];
-    const catalog = JSON.parse(catalogRaw) as CatalogDefinition;
-    // Validate each contract
-    for (let contractIndex = 0; contractIndex < catalog.contracts.length; contractIndex += 1) {
-      const contract = catalog.contracts[contractIndex];
-      if (isEmptyField(contract.container_image)) {
-        throw UnsupportedError('Contract must defined container_image field');
+  if (!catalogMap) {
+    catalogMap = {};
+    const catalogs = CUSTOM_CATALOGS.map((custom) => fs.readFileSync(custom, { encoding: 'utf8', flag: 'r' }));
+    catalogs.push(JSON.stringify(filigranCatalog));
+    for (let index = 0; index < catalogs.length; index += 1) {
+      const catalogRaw = catalogs[index];
+      const catalog = JSON.parse(catalogRaw) as CatalogDefinition;
+      // Validate each contract
+      for (let contractIndex = 0; contractIndex < catalog.contracts.length; contractIndex += 1) {
+        const contract = catalog.contracts[contractIndex];
+        if (contract.manager_supported) {
+          if (isEmptyField(contract.container_image)) {
+            throw UnsupportedError('Contract must defined container_image field');
+          }
+          if (isEmptyField(contract.container_type)) {
+            throw UnsupportedError('Contract must defined container_type field');
+          }
+
+          if (contract.config_schema) {
+            const jsonValidation = {
+              type: contract.config_schema.type,
+              properties: contract.config_schema.properties,
+              required: contract.config_schema.required,
+              additionalProperties: contract.config_schema.additionalProperties
+            };
+            try {
+              ajv.compile(jsonValidation);
+            } catch (err) {
+              throw UnsupportedError('Contract must be a valid json schema definition', { cause: err });
+            }
+          }
+        }
       }
-      if (isEmptyField(contract.container_type)) {
-        throw UnsupportedError('Contract must defined container_type field');
-      }
-      const jsonValidation = {
-        type: contract.type,
-        properties: contract.properties,
-        required: contract.required,
-        additionalProperties: contract.additionalProperties
+      catalogMap[catalog.id] = {
+        definition: catalog,
+        graphql: {
+          id: catalog.id,
+          entity_type: 'Catalog',
+          parent_types: ['Internal'],
+          standard_id: idGenFromData('catalog', { id: catalog.id }),
+          name: catalog.name,
+          description: catalog.description,
+          contracts: catalog.contracts.map((c) => {
+            const finalContract = c;
+            if (finalContract.manager_supported) {
+              const EXCLUDED_CONFIG_VARS = ['OPENCTI_TOKEN', 'OPENCTI_URL', 'CONNECTOR_TYPE', 'CONNECTOR_RUN_AND_TERMINATE'];
+              EXCLUDED_CONFIG_VARS.forEach((property) => {
+                delete finalContract.config_schema.properties[property];
+              });
+              finalContract.config_schema.required = c.config_schema.required.filter((item) => !EXCLUDED_CONFIG_VARS.includes(item));
+            }
+            return JSON.stringify(finalContract);
+          })
+        }
       };
-      try {
-        ajv.compile(jsonValidation);
-      } catch (err) {
-        throw UnsupportedError('Contract must be a valid json schema definition', { cause: err });
-      }
     }
-    catalogMap[catalog.id] = {
-      definition: catalog,
-      graphql: {
-        id: catalog.id,
-        entity_type: 'Catalog',
-        parent_types: ['Internal'],
-        standard_id: idGenFromData('catalog', { id: catalog.id }),
-        name: catalog.name,
-        description: catalog.description,
-        contracts: catalog.contracts.map((c) => JSON.stringify(c))
-      }
-    };
   }
   return catalogMap;
 };
 
-export const computeConnectorTargetContract = (configurations: any, targetContract: any) => {
+export const computeConnectorTargetContract = (configurations: any, targetContract: CatalogContract) => {
+  const targetConfig = targetContract.config_schema;
   // Rework configuration for default an array support
   const contractConfigurations = [];
-  const keys = Object.keys(targetContract.properties);
+  const keys = Object.keys(targetConfig.properties);
   for (let i = 0; i < keys.length; i += 1) {
     const propKey = keys[i];
     const currentConfig: any = configurations.find((config: any) => config.key === propKey);
     if (!currentConfig) {
-      contractConfigurations.push(({ key: propKey, value: targetContract.default[propKey] }));
-    } else if (targetContract.properties[propKey].type !== 'array') {
+      if (targetConfig.properties[propKey].default) {
+        contractConfigurations.push(({ key: propKey, value: targetConfig.properties[propKey].default }));
+      }
+    } else if (targetConfig.properties[propKey].type !== 'array') {
       contractConfigurations.push(({ key: propKey, value: currentConfig.value[0] }));
     } else {
       contractConfigurations.push(currentConfig);
@@ -77,15 +99,15 @@ export const computeConnectorTargetContract = (configurations: any, targetContra
   const contractObject: any = R.mergeAll(contractConfigurations.map((config: any) => ({ [config.key]: config.value })));
   // Validate the contract
   const jsonValidation = {
-    type: targetContract.type,
-    properties: targetContract.properties,
-    required: targetContract.required,
-    additionalProperties: targetContract.additionalProperties
+    type: targetConfig.type,
+    properties: targetConfig.properties,
+    required: targetConfig.required,
+    additionalProperties: targetConfig.additionalProperties
   };
   const validate = ajv.compile(jsonValidation);
   const validContractObject = validate(contractObject);
   if (!validContractObject) {
-    throw UnsupportedError('Invalid contract definition');
+    throw UnsupportedError(`Invalid contract definition for ${targetContract.title}`, { errors: validate.errors });
   }
   return contractConfigurations;
 };
