@@ -98,24 +98,24 @@ export const computePirScore = async (context: AuthContext, user: AuthUser, pirI
 };
 
 /**
- * Update directly pir_scores on a stix domain object via an elastic query
+ * Update directly pir_information on a stix domain object via an elastic query
  *
  * @param context
  * @param user
  * @param entityId ID of the stix domain object
  * @param pirId ID of the PIR whose score should be updated
- * @param score The new score of the entity for the PIR
- * @return a Promise object  the score of a PIR on an entity
+ * @param score The new information of the entity for the PIR
+ * @return a Promise object with PIR information on an entity
  */
-export const updatePirScoreOnEntity = async (context: AuthContext, user: AuthUser, entityId: string, pirId: string, score: number) => {
+export const updatePirInformationOnEntity = async (context: AuthContext, user: AuthUser, entityId: string, pirId: string, score: number) => {
   const stixDomainObject = await storeLoadById<BasicStoreEntity>(context, user, entityId, ABSTRACT_STIX_DOMAIN_OBJECT);
-  const initialScores = stixDomainObject.pir_scores ?? [];
-  const newScores = initialScores.filter((s) => s.pir_id !== pirId);
+  const initialInformation = stixDomainObject.pir_information ?? [];
+  const newInformation = initialInformation.filter((s) => s.pir_id !== pirId);
   if (score > 0) {
-    newScores.push({ pir_id: pirId, pir_score: score });
+    newInformation.push({ pir_id: pirId, pir_score: score });
   }
-  const params = { pir_scores: newScores };
-  const source = 'ctx._source.pir_scores = params.pir_scores;';
+  const params = { pir_information: newInformation };
+  const source = 'ctx._source.pir_information = params.pir_information;';
   // call elUpdate directly to avoid generating stream events and modifying the updated_at of the entity
   return elUpdate(INDEX_STIX_DOMAIN_OBJECTS, entityId, { script: { source, lang: 'painless', params } });
 };
@@ -225,7 +225,7 @@ export const updatePirExplanations = async (
   // replace pir_explanations
   await patchAttribute(context, user, pirMetaRel.id, RELATION_IN_PIR, { pir_explanations: explanations, pir_score });
   // update pir score on the entity
-  await updatePirScoreOnEntity(context, user, sourceId, pirId, pir_score);
+  await updatePirInformationOnEntity(context, user, sourceId, pirId, pir_score);
 };
 
 /**
@@ -257,5 +257,5 @@ export const createPirRel = async (
   };
   await createRelation(context, user, addRefInput);
   // add pir score on the entity
-  await updatePirScoreOnEntity(context, user, sourceId, pirId, pir_score);
+  await updatePirInformationOnEntity(context, user, sourceId, pirId, pir_score);
 };

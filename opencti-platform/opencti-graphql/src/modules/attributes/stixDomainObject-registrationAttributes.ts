@@ -54,8 +54,8 @@ const stixDomainObjectAttributes: Array<AttributeDefinition> = [
   { name: 'x_opencti_graph_data', label: 'Graph data', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   { name: 'x_opencti_workflow_id', label: 'Workflow status', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
   {
-    name: 'pir_scores',
-    label: 'PIR scores',
+    name: 'pir_information',
+    label: 'PIR information',
     type: 'object',
     format: 'nested',
     editDefault: false,

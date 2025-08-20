@@ -35,7 +35,7 @@ import { deleteInternalObject } from '../../domain/internalObject';
 import { registerConnectorForPir, unregisterConnectorForIngestion } from '../../domain/connector';
 import type { BasicStoreCommon, BasicStoreObject } from '../../types/store';
 import { RELATION_IN_PIR, RELATION_OBJECT } from '../../schema/stixRefRelationship';
-import { createPirRel, serializePir, updatePirExplanations, updatePirScoreOnEntity } from './pir-utils';
+import { createPirRel, serializePir, updatePirExplanations, updatePirInformationOnEntity } from './pir-utils';
 import { ForbiddenAccess, FunctionalError } from '../../config/errors';
 import { ABSTRACT_STIX_REF_RELATIONSHIP, ENTITY_TYPE_CONTAINER } from '../../schema/general';
 import { elRawUpdateByQuery } from '../../database/engine';
@@ -153,11 +153,11 @@ export const deletePir = async (context: AuthContext, user: AuthUser, pirId: str
   } catch (e) {
     logApp.error('[OPENCTI] Error while unregistering Pir connector', { cause: e });
   }
-  // remove pir_scores of pir from entities
+  // remove pir_information of pir from entities
   const sourceScores = `
-    def pirIdIndex = ctx._source.pir_scores.pir_id.indexOf(params.pirId);
+    def pirIdIndex = ctx._source.pir_information.pir_id.indexOf(params.pirId);
     if (pirIdIndex >=0 ) {
-       ctx._source.pir_scores.remove(pirIdIndex);
+       ctx._source.pir_information.remove(pirIdIndex);
     }  
   `;
   await elRawUpdateByQuery({
@@ -166,7 +166,7 @@ export const deletePir = async (context: AuthContext, user: AuthUser, pirId: str
       script: { source: sourceScores, params: { pirId } },
       query: {
         term: {
-          'pir_scores.pir_id.keyword': pirId
+          'pir_information.pir_id.keyword': pirId
         }
       },
     },
@@ -286,7 +286,7 @@ export const pirUnflagElement = async (
       // delete the rel between source and PIR
       await deleteRelationsByFromAndTo(context, user, sourceId, pir.id, RELATION_IN_PIR, ABSTRACT_STIX_REF_RELATIONSHIP);
       // remove pir score on the entity
-      await updatePirScoreOnEntity(context, user, sourceId, pir.id, 0);
+      await updatePirInformationOnEntity(context, user, sourceId, pir.id, 0);
     } else if (newRelDependencies.length < relDependencies.length) {
       // update dependencies
       await updatePirExplanations(context, user, sourceId, pir.id, newRelDependencies);

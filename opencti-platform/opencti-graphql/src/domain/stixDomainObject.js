@@ -111,9 +111,9 @@ export const stixDomainObjectPirScore = async (context, user, stixDomainObject, 
     throw FunctionalError('No PIR found');
   }
   // fetch stix domain object pir score
-  const pirScore = (stixDomainObject.pir_scores ?? []).find((s) => s.pir_id === pirId);
-  if (!pirScore) return 0;
-  return pirScore.pir_score;
+  const pirInformation = (stixDomainObject.pir_information ?? []).find((s) => s.pir_id === pirId);
+  if (!pirInformation) return 0;
+  return pirInformation.pir_score;
 };
 
 export const stixDomainObjectsPirExplanations = async (context, user, stixDomainObject, pirId) => {

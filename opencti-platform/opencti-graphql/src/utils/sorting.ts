@@ -13,14 +13,14 @@ export const buildElasticSortingForAttributeCriteria = (orderCriteria: string, o
     }
     const pirId = splittedCriteria[1];
     // return nested pir_score order criteria associated to the given PIR ID
-    return { 'pir_scores.pir_score': {
+    return { 'pir_information.pir_score': {
       order: orderMode,
       missing: '_last',
       nested: {
-        path: 'pir_scores',
+        path: 'pir_information',
         filter: {
           term: {
-            'pir_scores.pir_id.keyword': pirId,
+            'pir_information.pir_id.keyword': pirId,
           },
         }
       }

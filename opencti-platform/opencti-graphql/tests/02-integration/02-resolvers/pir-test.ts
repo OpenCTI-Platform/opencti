@@ -265,9 +265,9 @@ describe('PIR resolver standard behavior', () => {
       'malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88',
       ENTITY_TYPE_MALWARE
     );
-    expect(malwareAfterFlag.pir_scores.length).toEqual(1);
-    expect(malwareAfterFlag.pir_scores.filter((s) => s.pir_id === pirInternalId).length).toEqual(1);
-    expect(malwareAfterFlag.pir_scores.filter((s) => s.pir_id === pirInternalId)[0].pir_score).toEqual(67);
+    expect(malwareAfterFlag.pir_information.length).toEqual(1);
+    expect(malwareAfterFlag.pir_information.filter((s) => s.pir_id === pirInternalId).length).toEqual(1);
+    expect(malwareAfterFlag.pir_information.filter((s) => s.pir_id === pirInternalId)[0].pir_score).toEqual(67);
   });
 
   it('should filter entities by a pir score', async () => {
@@ -331,9 +331,9 @@ describe('PIR resolver standard behavior', () => {
       'malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88',
       ENTITY_TYPE_MALWARE
     );
-    expect(malwareAfterFlag.pir_scores.length).toEqual(1);
-    expect(malwareAfterFlag.pir_scores.filter((s) => s.pir_id === pirInternalId).length).toEqual(1);
-    expect(malwareAfterFlag.pir_scores.filter((s) => s.pir_id === pirInternalId)[0].pir_score).toEqual(100);
+    expect(malwareAfterFlag.pir_information.length).toEqual(1);
+    expect(malwareAfterFlag.pir_information.filter((s) => s.pir_id === pirInternalId).length).toEqual(1);
+    expect(malwareAfterFlag.pir_information.filter((s) => s.pir_id === pirInternalId)[0].pir_score).toEqual(100);
   });
 
   it('should update a pir meta rel by removing an explanation', async () => {
@@ -405,7 +405,7 @@ describe('PIR resolver standard behavior', () => {
       'malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88',
       ENTITY_TYPE_MALWARE
     );
-    expect(malwareAfterFlag.pir_scores.length).toEqual(0);
+    expect(malwareAfterFlag.pir_information.length).toEqual(0);
     // Verify the associated connector queue is no longer found
     const pirConnectors = await listEntities<BasicStoreEntity>(
       testContext,
