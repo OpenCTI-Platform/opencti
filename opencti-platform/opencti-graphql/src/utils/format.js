@@ -212,7 +212,7 @@ export const observableValue = (stixCyberObservable) => {
 export const checkScore = (newScore) => {
   if (newScore) {
     const parsedScore = parseFloat(newScore);
-    if (parsedScore < 0 || parsedScore > 100 || !Number.isInteger(parsedScore)) {
+    if (!Number.isInteger(parsedScore) || parsedScore < 0 || parsedScore > 100) {
       throw ValidationError('The score should be an integer between 0 and 100', 'x_opencti_score');
     }
   }
