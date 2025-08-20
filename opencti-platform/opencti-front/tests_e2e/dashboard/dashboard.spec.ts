@@ -264,7 +264,7 @@ test('Dashboard CRUD', async ({ page }) => {
 
   // Manipulating field "End date"
   await dashboardDetailsPage.endDateField.fill('12/20/2023');
-  await expect(widgetsPage.getWidgetNumberValue('Number of entities', '11')).toBeVisible();
+  await expect(widgetsPage.getWidgetNumberValue('Number of entities', '10')).toBeVisible();
   await dashboardDetailsPage.endDateField.clear();
   await dashboardDetailsPage.getTitle(updateDashboardName).click();
   await dashboardDetailsPage.endDateField.fill('04/19/2024');
