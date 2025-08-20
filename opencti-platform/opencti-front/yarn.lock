@@ -18281,7 +18281,7 @@ __metadata:
     react-virtualized: "npm:9.22.6"
     react-wordcloud: "npm:1.2.7"
     reactflow: "npm:11.11.4"
-    recharts: "npm:3.1.1"
+    recharts: "npm:3.1.2"
     relay-compiler: "npm:20.1.1"
     relay-runtime: "npm:20.1.1"
     relay-test-utils: "npm:20.1.1"
@@ -19771,9 +19771,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"recharts@npm:3.1.1":
-  version: 3.1.1
-  resolution: "recharts@npm:3.1.1"
+"recharts@npm:3.1.2":
+  version: 3.1.2
+  resolution: "recharts@npm:3.1.2"
   dependencies:
     "@reduxjs/toolkit": "npm:1.x.x || 2.x.x"
     clsx: "npm:^2.1.1"
@@ -19790,7 +19790,7 @@ __metadata:
     react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
     react-dom: ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
     react-is: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10/60d4c412e3c49cae488fc9bac2415050241585827ba387d403188155922866649746becd8c75d4669691a2437660d7422b3545f3e66a50d8a608dea101b197db
+  checksum: 10/8727e8388a519a1b8fc775f5bf6d82362b18dad245a645f3450a9e22d16e7249ea76f6588cb14520cc5b75ca1b3f87942c72e6bdcdce1b7a7be8db790cf4d5df
   languageName: node
   linkType: hard
 
