@@ -503,7 +503,7 @@ export const ENABLED_PLAYBOOK_MANAGER = booleanConf('playbook_manager:enabled', 
 // Default Accounts management
 export const ACCOUNT_STATUS_ACTIVE = 'Active';
 export const ACCOUNT_STATUS_EXPIRED = 'Expired';
-const computeAccountStatusChoices = () => {
+export const computeAccountStatusChoices = () => {
   const statusesDefinition = nconf.get('app:locked_account_statuses');
   return {
     [ACCOUNT_STATUS_ACTIVE]: 'All good folks',
