@@ -277,8 +277,6 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
   };
 
   const queues = data.rabbitMQMetrics?.queues ?? [];
-  const catalogs = data.catalogs ?? [];
-  const managers = data.connectorManagers ?? [];
   const connectorsWithMessages = data.connectors?.map((connector) => {
     const queueName = connector.connector_type === 'INTERNAL_ENRICHMENT'
       ? `listen_${connector.id}`
