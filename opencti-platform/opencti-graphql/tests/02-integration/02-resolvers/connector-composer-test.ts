@@ -2,11 +2,12 @@ import { expect, it, describe, afterAll, beforeAll } from 'vitest';
 import gql from 'graphql-tag';
 import { v4 as uuidv4 } from 'uuid';
 import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
-import { USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
+import { ADMIN_USER, USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
 import { wait } from '../../../src/database/utils';
 import { XTMComposerMock } from '../../utils/XTMComposerMock';
 import type { ApiConnector } from '../../utils/XTMComposerMock';
 import { catalogHelper } from '../../utils/catalogHelper';
+import { getBaseUrl } from '../../../src/config/conf';
 
 const TEST_COMPOSER_ID = uuidv4();
 const TEST_USER_CONNECTOR_ID: string = USER_CONNECTOR.id; // Initialize with default value
@@ -237,7 +238,11 @@ describe('Connector Composer and Managed Connectors', () => {
         catalog_id: catalogId,
         manager_contract_image: testConnector.container_image,
         manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
-          IPINFO_TOKEN: 'deployment-test-token'
+          IPINFO_TOKEN: 'deployment-test-token',
+          OPENCTI_URL: getBaseUrl(),
+          OPENCTI_TOKEN: ADMIN_USER.api_token,
+          CONNECTOR_LISTEN_PROTOCOL_API_PORT: 0,
+          CONNECTOR_LISTEN_PROTOCOL_API_SSL: false,
         })
       };
 

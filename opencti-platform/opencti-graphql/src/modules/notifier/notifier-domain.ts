@@ -79,7 +79,7 @@ const validateNotifier = (notifier: { notifier_connector_id: string, notifier_co
   const validate = ajv.compile(JSON.parse(notifierConnector.connector_schema ?? '{}'));
   const isValidConfiguration = validate(JSON.parse(notifier.notifier_configuration));
   if (!isValidConfiguration) {
-    throw UnsupportedError('This configuration is invalid', { configuration: notifier.notifier_configuration });
+    throw UnsupportedError('This configuration is invalid', { configuration: notifier.notifier_configuration, errors: validate.errors });
   }
 };
 
