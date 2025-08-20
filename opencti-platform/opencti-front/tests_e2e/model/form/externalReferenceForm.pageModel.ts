@@ -3,7 +3,7 @@ import TextFieldPageModel from '../field/TextField.pageModel';
 import FileFieldPageModel from '../field/FileField.pageModel';
 
 export default class ExternalReferenceFormPageModel {
-  private readonly formLocator = this.page.getByRole('heading', { name: 'Create External reference' }).locator('../..');
+  private readonly formLocator = this.page.getByRole('heading', { name: 'Create an external reference' }).locator('../..');
 
   sourceNameField = new TextFieldPageModel(this.page, 'Source name', 'text-no-label', this.formLocator);
   externalIdField = new TextFieldPageModel(this.page, 'External ID', 'text', this.formLocator);
