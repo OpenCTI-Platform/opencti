@@ -79,16 +79,16 @@ const AskArianeButton = () => {
     chatWindow: {
       showTitle: true,
       showAgentMessages: false,
-      title: 'Ask Ariane',
+      title: t_i18n('Ask Ariane'),
       titleAvatarSrc: fileUri(embleme),
       titleBackgroundColor: theme.palette.ai.dark,
-      welcomeMessage: 'Hi there 👋 You\'re speaking with an AI Agent. I\'m here to answer your questions, so what brings you here today?',
-      errorMessage: 'Sorry, an error has occurred, please try again later.',
+      welcomeMessage: t_i18n('Hi there 👋 You\'re speaking with an AI Agent. I\'m here to answer your questions, so what brings you here today?'),
+      errorMessage: t_i18n('Sorry, an error has occurred, please try again later.'),
       backgroundColor: theme.palette.background.paper,
       fontSize: 14,
       starterPromptFontSize: 13,
       clearChatOnReload: false,
-      sourceDocsTitle: 'Sources:',
+      sourceDocsTitle: t_i18n('Sources:'),
       renderHTML: true,
       boxShadow: `${theme.palette.background.shadow} 0px 5px 40px`,
       botMessage: {
@@ -101,12 +101,12 @@ const AskArianeButton = () => {
         showAvatar: false,
       },
       textInput: {
-        placeholder: 'Ask a question...',
+        placeholder: t_i18n('Ask a question...'),
         backgroundColor: theme.palette.background.paper,
         textColor: theme.palette.text?.primary,
         sendButtonColor: theme.palette.ai.main,
         maxChars: 256,
-        maxCharsWarningMessage: 'You exceeded the characters limit. Please input less than 50 characters.',
+        maxCharsWarningMessage: t_i18n('You exceeded the characters limit. Please input less than 50 characters.'),
         autoFocus: true,
         sendMessageSound: false,
         receiveMessageSound: false,
@@ -117,7 +117,7 @@ const AskArianeButton = () => {
       },
       footer: {
         textColor: theme.palette.text?.disabled,
-        text: 'Powered by',
+        text: t_i18n('Powered by'),
         company: 'Filigran XTM One',
         companyLink: 'https://filigran.io',
       },
@@ -146,7 +146,7 @@ const AskArianeButton = () => {
       ) : null}
       {!isEnterpriseEdition && navOpen ? (
         <>
-          Ask Ariane
+          {t_i18n('Ask Ariane')}
           <EEChip ref={EERef}/>
         </>
       ) : null}
@@ -160,7 +160,7 @@ const AskArianeButton = () => {
           onClick={toggleChatbot}
         >
           <AutoAwesomeOutlined style={{ color: theme.palette.ai.main }}/>
-          <span style={{ marginLeft: 5 }}>ASK ARIANE</span>
+          <span style={{ marginLeft: 5 }}>{t_i18n('ASK ARIANE')}</span>
         </GradientButton>
       ) : (
         <IconButton style={{ padding: 0 }} onClick={toggleChatbot}>
