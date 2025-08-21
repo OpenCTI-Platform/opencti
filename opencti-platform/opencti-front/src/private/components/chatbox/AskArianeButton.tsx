@@ -25,7 +25,6 @@ const AskArianeButton = () => {
     settings: { platform_url, filigran_chatbot_ai_url, platform_enterprise_edition },
   } = useAuth();
 
-  // navopen
   const [navOpen, setNavOpen] = useState(
     localStorage.getItem('navOpen') === 'true',
   );
@@ -38,8 +37,32 @@ const AskArianeButton = () => {
     };
   });
 
-  const chatboxRef = useRef<HTMLDivElement>(null);
-  const EEref = useRef<HTMLDivElement>(null);
+  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
+  const chatbotRef = useRef<{ onClose:() => void }>(null);
+  const EERef = useRef<HTMLDivElement>(null);
+
+  const openChatbot = () => {
+    setIsChatbotOpen(true);
+  };
+
+  const closeChatbot = () => {
+    setIsChatbotOpen(false);
+  };
+
+  const toggleChatbot = () => {
+    if (isChatbotOpen) {
+      closeChatbot();
+    } else {
+      openChatbot();
+    }
+  };
+
+  // Handle the close event from the chatbot component
+  useEffect(() => {
+    if (chatbotRef.current) {
+      chatbotRef.current.onClose = closeChatbot;
+    }
+  }, [isChatbotOpen]);
 
   const chatBotTheme = {
     button: {
@@ -56,35 +79,34 @@ const AskArianeButton = () => {
     chatWindow: {
       showTitle: true,
       showAgentMessages: false,
-      title: 'Ask Ariane',
+      title: t_i18n('Ask Ariane'),
       titleAvatarSrc: fileUri(embleme),
-      welcomeMessage: 'Hi there 👋 You\'re speaking with an AI Agent. I\'m here to answer your questions, so what brings you here today?',
-      errorMessage: 'Sorry, an error has occurred, please try again later.',
+      titleBackgroundColor: theme.palette.ai.dark,
+      welcomeMessage: t_i18n('Hi there 👋 You\'re speaking with an AI Agent. I\'m here to answer your questions, so what brings you here today?'),
+      errorMessage: t_i18n('Sorry, an error has occurred, please try again later.'),
       backgroundColor: theme.palette.background.paper,
       fontSize: 14,
       starterPromptFontSize: 13,
       clearChatOnReload: false,
-      sourceDocsTitle: 'Sources:',
+      sourceDocsTitle: t_i18n('Sources:'),
       renderHTML: true,
       boxShadow: `${theme.palette.background.shadow} 0px 5px 40px`,
       botMessage: {
-        backgroundColor: theme.palette.background.default,
+        backgroundColor: theme.palette.background.accent,
         textColor: theme.palette.text?.primary,
-        showAvatar: true,
-        avatarSrc: fileUri(embleme),
       },
       userMessage: {
-        backgroundColor: DARK_BLUE,
+        backgroundColor: theme.palette.ai.dark,
         textColor: theme.palette.common?.white,
         showAvatar: false,
       },
       textInput: {
-        placeholder: 'Ask a question...',
+        placeholder: t_i18n('Ask a question...'),
         backgroundColor: theme.palette.background.paper,
         textColor: theme.palette.text?.primary,
-        sendButtonColor: DARK_BLUE,
-        maxChars: 100,
-        maxCharsWarningMessage: 'You exceeded the characters limit. Please input less than 50 characters.',
+        sendButtonColor: theme.palette.ai.main,
+        maxChars: 256,
+        maxCharsWarningMessage: t_i18n('You exceeded the characters limit. Please input less than 50 characters.'),
         autoFocus: true,
         sendMessageSound: false,
         receiveMessageSound: false,
@@ -95,8 +117,8 @@ const AskArianeButton = () => {
       },
       footer: {
         textColor: theme.palette.text?.disabled,
-        text: 'Powered by',
-        company: 'Filigran Ariane AI',
+        text: t_i18n('Powered by'),
+        company: 'Filigran XTM One',
         companyLink: 'https://filigran.io',
       },
     },
@@ -108,53 +130,44 @@ const AskArianeButton = () => {
     OPENCTI_CERTIFICATE: toBase64(platform_enterprise_edition.license_raw_pem),
   };
 
-  const chatbot = (
+  return (
     <>
-      <AutoAwesomeOutlined
-        style={{ color: theme.palette.ai.main }}
-      />
       {isEnterpriseEdition && isChatbotAiEnabled() ? (
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         <filigran-chatbot
-          ref={chatboxRef}
-          text={!navOpen ? '' : 'ASK ARIANE'}
+          ref={chatbotRef}
+          open={isChatbotOpen}
           left={navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH}
-          onClick={(e: MouseEvent) => {
-            e.stopPropagation();
-          }}
           agentic-url={filigran_chatbot_ai_url}
           theme={JSON.stringify(chatBotTheme)}
-          chatflowConfig={{
-            vars,
-          }}
+          chatflowConfig={{ vars }}
         />
-      ) : <></>}
-
+      ) : null}
       {!isEnterpriseEdition && navOpen ? (
         <>
-          Ask Ariane
-          <EEChip ref={EEref} />
+          {t_i18n('Ask Ariane')}
+          <EEChip ref={EERef}/>
         </>
-      ) : <></>}
-    </>
-  );
+      ) : null}
 
-  return navOpen ? (
-    <GradientButton
-      size="small"
-      sx={{ width: '100%' }}
-      gradientVariant={GradientVariant.ai}
-      title={t_i18n('Open chatbot')}
-    >
-      {chatbot}
-    </GradientButton>
-  ) : (
-    <IconButton
-      style={{ padding: 0 }}
-    >
-      {chatbot}
-    </IconButton>
+      {navOpen ? (
+        <GradientButton
+          size="small"
+          sx={{ width: '100%', textAlign: 'start' }}
+          gradientVariant={GradientVariant.ai}
+          title={t_i18n('Open chatbot')}
+          onClick={toggleChatbot}
+        >
+          <AutoAwesomeOutlined style={{ color: theme.palette.ai.main }}/>
+          <span style={{ marginLeft: 5 }}>{t_i18n('ASK ARIANE')}</span>
+        </GradientButton>
+      ) : (
+        <IconButton style={{ padding: 0 }} onClick={toggleChatbot}>
+          <AutoAwesomeOutlined style={{ color: theme.palette.ai.main }}/>
+        </IconButton>
+      )}
+    </>
   );
 };
 
