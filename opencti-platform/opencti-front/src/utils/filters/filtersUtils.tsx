@@ -48,6 +48,28 @@ export const FiltersVariant = {
   dialog: 'dialog',
 };
 
+const NOT_CLEANABLE_FILTER_KEYS = ['entity_type', 'authorized_members.id', 'user_id', 'internal_id', 'entity_id', 'ids'];
+
+const PIR_SCORE_FILTER_DEFINITION = {
+  filterKey: 'pir_score',
+  label: 'PIR Score',
+  multiple: false,
+  type: 'integer',
+  subFilters: [],
+  subEntityTypes: [],
+  elementsForFilterValuesSearch: [],
+};
+
+const LAST_PIR_SCORE_DATE_FILTER_DEFINITION = {
+  filterKey: 'last_pir_score_date',
+  label: 'Last PIR Score date',
+  multiple: false,
+  type: 'date',
+  subFilters: [],
+  subEntityTypes: [],
+  elementsForFilterValuesSearch: [],
+};
+
 // filters which possible values are entity types or relationship types
 export const entityTypesFilters = [
   'entity_type',
@@ -134,7 +156,7 @@ export const isUniqFilter = (key: string, filterKeysSchema: Map<string, Map<stri
 };
 
 // basic text filters are filters of type string or text that are not entity types filters
-// i.e. filters whose values are not pickable from a list but should be enter
+// i.e. filters whose values are not pickable from a list and should be entered manually
 export const isBasicTextFilter = (
   filterDefinition: FilterDefinition | undefined,
 ) => {
@@ -782,11 +804,9 @@ export const useAvailableFilterKeysForEntityTypes = (entityTypes: string[]) => {
   return uniqueArray(filterKeysMap.keys() ?? []);
 };
 
-const notCleanableFilterKeys = ['entity_type', 'authorized_members.id', 'user_id', 'internal_id', 'entity_id', 'ids'];
-
 const isFilterKeyAvailable = (key: string, availableFilterKeys: string[]) => {
-  const completedAvailableFilterKeys = availableFilterKeys.concat(notCleanableFilterKeys);
-  return completedAvailableFilterKeys.includes(key) || key.startsWith('pir_score');
+  const completedAvailableFilterKeys = availableFilterKeys.concat(NOT_CLEANABLE_FILTER_KEYS);
+  return completedAvailableFilterKeys.includes(key) || key.startsWith('pir_score') || key.startsWith('last_pir_score_date');
 };
 
 export const useRemoveIdAndIncorrectKeysFromFilterGroupObject = (filters?: FilterGroup | null, entityTypes = ['Stix-Core-Object']): FilterGroup | undefined => {
@@ -872,15 +892,10 @@ export const getFilterDefinitionFromFilterKeysMap = (
 ): FilterDefinition | undefined => {
   const filterKey = getStringFilterKey(key);
   if (filterKey.startsWith('pir_score')) {
-    return {
-      filterKey,
-      label: 'PIR Score',
-      multiple: false,
-      type: 'integer',
-      subFilters: [],
-      subEntityTypes: [],
-      elementsForFilterValuesSearch: [],
-    };
+    return PIR_SCORE_FILTER_DEFINITION;
+  }
+  if (filterKey.startsWith('last_pir_score_date')) {
+    return LAST_PIR_SCORE_DATE_FILTER_DEFINITION;
   }
   return filterKeysMap.get(filterKey);
 };
@@ -892,15 +907,10 @@ export const useFilterDefinition = (
 ): FilterDefinition | undefined => {
   const filterKey = getStringFilterKey(key);
   if (filterKey.startsWith('pir_score')) {
-    return {
-      filterKey,
-      label: 'PIR Score',
-      multiple: false,
-      type: 'integer',
-      subFilters: [],
-      subEntityTypes: [],
-      elementsForFilterValuesSearch: [],
-    };
+    return PIR_SCORE_FILTER_DEFINITION;
+  }
+  if (filterKey.startsWith('last_pir_score_date')) {
+    return LAST_PIR_SCORE_DATE_FILTER_DEFINITION;
   }
   const filterDefinition = useBuildFilterKeysMapFromEntityType(entityTypes).get(filterKey);
   if (subKey) {

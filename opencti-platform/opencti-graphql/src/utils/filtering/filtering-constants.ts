@@ -90,6 +90,7 @@ export const ALIAS_FILTER = 'alias'; // handle both 'aliases' and 'x_opencti_ali
 export const IS_INFERRED_FILTER = 'is_inferred'; // if an entity or relationship is inferred
 
 export const PIR_SCORE_FILTER_PREFIX = 'pir_score';
+export const LAST_PIR_SCORE_DATE_FILTER_PREFIX = 'last_pir_score_date';
 
 // for users
 export const USER_SERVICE_ACCOUNT_FILTER = 'user_service_account';
@@ -124,7 +125,9 @@ const COMPLEX_CONVERSION_FILTER_KEYS = [
 ];
 
 export const isComplexConversionFilterKey = (filterKey: string) => {
-  return COMPLEX_CONVERSION_FILTER_KEYS.includes(filterKey) || filterKey.startsWith(PIR_SCORE_FILTER_PREFIX);
+  return COMPLEX_CONVERSION_FILTER_KEYS.includes(filterKey)
+    || filterKey.startsWith(PIR_SCORE_FILTER_PREFIX)
+    || filterKey.startsWith(LAST_PIR_SCORE_DATE_FILTER_PREFIX);
 };
 
 // list of the special filtering keys
