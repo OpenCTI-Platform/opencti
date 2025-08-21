@@ -146,7 +146,8 @@ const SupportPackages = () => {
       <div className="clearfix"/>
       <Paper className="paper-for-grid" variant="outlined" sx={{
         height: '100%',
-        minHeight: '100%',
+        maxHeight: '600px',
+        overflowY: 'auto',
         margin: '10px 0 0 0',
         padding: '0 15px 0 15px',
         borderRadius: 1,
