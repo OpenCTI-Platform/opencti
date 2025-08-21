@@ -3,11 +3,15 @@ import { MARKING_TLP_AMBER, MARKING_TLP_AMBER_STRICT, MARKING_TLP_CLEAR, MARKING
 import { getEntitiesMapFromCache } from '../../database/cache';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { IndicatorAddInput } from '../../generated/graphql';
 import type { BasicStoreEntity } from '../../types/store';
 import { isEmptyField, isNotEmptyField } from '../../database/utils';
 import { utcDate } from '../../utils/format';
 import { ValidationError } from '../../config/errors';
+import type { IndicatorAddInput } from '../../generated/graphql';
+import type { DecayHistory } from '../decayRule/decayRule-domain';
+import { isModuleActivated } from '../../database/cluster-module';
+
+export const INDICATOR_DEFAULT_SCORE: number = 50;
 
 interface TTL_DEFINITION {
   target: Array<string>;
@@ -45,6 +49,10 @@ const INDICATOR_TTL_DEFINITION: Array<TTL_DEFINITION> = [
   },
 ];
 
+export const isDecayEnabled = async () => {
+  return isModuleActivated('INDICATOR_DECAY_MANAGER');
+};
+
 export const computeValidTTL = async (context: AuthContext, user: AuthUser, indicator: IndicatorAddInput) => {
   const observableType = indicator.x_opencti_main_observable_type;
   if (observableType) {
@@ -69,7 +77,7 @@ export const computeValidTTL = async (context: AuthContext, user: AuthUser, indi
   return DEFAULT_INDICATOR_TTL;
 };
 
-const computeValidFrom = (indicator: IndicatorAddInput): Moment => {
+export const computeValidFrom = (indicator: IndicatorAddInput): Moment => {
   if (isNotEmptyField(indicator.valid_from)) {
     return utcDate(indicator.valid_from);
   }
@@ -79,7 +87,7 @@ const computeValidFrom = (indicator: IndicatorAddInput): Moment => {
   return utcDate();
 };
 
-const computeValidUntil = (indicator: IndicatorAddInput, validFrom: Moment, lifetimeInDays: number): Moment => {
+export const computeValidUntil = (indicator: IndicatorAddInput, validFrom: Moment, lifetimeInDays: number): Moment => {
   let validUntil: Moment;
   if (indicator.revoked && isEmptyField(indicator.valid_until)) {
     // If indicator is explicitly revoked and not valid_until is specified
@@ -113,4 +121,11 @@ export const computeValidPeriod = async (indicator: IndicatorAddInput, lifetimeI
     revoked: validUntil.isSameOrBefore(utcDate()),
     validPeriod: validFrom.isBefore(validUntil),
   };
+};
+
+export const hasSameSourceAlreadyUpdateThisScore = (sourceId: string, score: number, decay_history: DecayHistory[]) => {
+  if (score && decay_history && sourceId) {
+    return decay_history.find((decayPoint) => decayPoint.updated_by === sourceId && decayPoint.score === score) !== undefined;
+  }
+  return false;
 };

@@ -4,7 +4,6 @@ import { STIX_EXT_MITRE, STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { DecayHistory } from '../decayRule/decayRule-domain';
 
-export const INDICATOR_DECAY_FEATURE_FLAG = 'INDICATOR_DECAY';
 export const ENTITY_TYPE_INDICATOR = 'Indicator';
 
 interface ObservableValues {
