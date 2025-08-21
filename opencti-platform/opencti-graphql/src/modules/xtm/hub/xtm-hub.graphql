@@ -1,0 +1,8 @@
+
+type CheckXTMHubConnectivityResponse {
+  status: XTMHubRegistrationStatus
+}
+
+type Mutation {
+  checkXTMHubConnectivity: CheckXTMHubConnectivityResponse! @auth
+}
