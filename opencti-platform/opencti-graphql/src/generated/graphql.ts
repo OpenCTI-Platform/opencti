@@ -4010,6 +4010,7 @@ export type ConnectorConfiguration = {
 
 export type ConnectorContractConfiguration = {
   __typename?: 'ConnectorContractConfiguration';
+  encrypted?: Maybe<Scalars['Boolean']['output']>;
   key: Scalars['String']['output'];
   value?: Maybe<Scalars['String']['output']>;
 };
@@ -24613,6 +24614,7 @@ export type RegisterConnectorInput = {
 export type RegisterConnectorsManagerInput = {
   id: Scalars['ID']['input'];
   name: Scalars['String']['input'];
+  public_key: Scalars['String']['input'];
 };
 
 export type RemoteStreamCollection = {
@@ -36709,6 +36711,7 @@ export type ConnectorConfigurationResolvers<ContextType = any, ParentType extend
 }>;
 
 export type ConnectorContractConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectorContractConfiguration'] = ResolversParentTypes['ConnectorContractConfiguration']> = ResolversObject<{
+  encrypted?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
