@@ -37,7 +37,7 @@ import { fetchQuery } from '../../relay/environment';
 import { useSearchEntitiesSchemaSCOSearchQuery$data } from './__generated__/useSearchEntitiesSchemaSCOSearchQuery.graphql';
 import type { Theme } from '../../components/Theme';
 import useAttributes, { containerTypes } from '../hooks/useAttributes';
-import { contextFilters, entityTypesFilters, FilterSearchContext, ME_FILTER_VALUE } from './filtersUtils';
+import { contextFilters, entityTypesFilters, FilterSearchContext, getFilterDefinitionFromFilterKeysMap, ME_FILTER_VALUE } from './filtersUtils';
 import { useSearchEntitiesDashboardsQuery$data } from './__generated__/useSearchEntitiesDashboardsQuery.graphql';
 import { convertMarking } from '../edition';
 import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../hooks/useGranted';
@@ -1017,7 +1017,7 @@ const useSearchEntities = ({
     } else {
       // case 2: build according to the filter type
       // depending on the filter type, fetch the right data and build the options list
-      const filterDefinition: FilterDefinition | undefined = filterKeysMap.get(filterKey) ?? undefined;
+      const filterDefinition: FilterDefinition | undefined = getFilterDefinitionFromFilterKeysMap(filterKey, filterKeysMap);
       const filterType = filterDefinition?.type ?? 'undefined';
       switch (filterType) {
         case 'vocabulary':

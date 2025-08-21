@@ -4,13 +4,15 @@ import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
 import { FilterMode, FilterOperator, PirType } from '../../../src/generated/graphql';
 import { RELATION_IN_PIR } from '../../../src/schema/stixRefRelationship';
 import { SYSTEM_USER } from '../../../src/utils/access';
-import { listEntities, storeLoadById } from '../../../src/database/middleware-loader';
+import { listEntities, listEntitiesPaginated, storeLoadById } from '../../../src/database/middleware-loader';
 import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import type { BasicStoreEntity } from '../../../src/types/store';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_HISTORY } from '../../../src/schema/internalObject';
 import { addFilter } from '../../../src/utils/filtering/filtering-utils';
 import { elPaginate } from '../../../src/database/engine';
-import { READ_INDEX_HISTORY, wait } from '../../../src/database/utils';
+import { READ_INDEX_HISTORY } from '../../../src/database/utils';
+import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../../src/schema/general';
+import { PIR_SCORE_FILTER_PREFIX } from '../../../src/utils/filtering/filtering-constants';
 
 const LIST_QUERY = gql`
   query pirs(
@@ -256,6 +258,38 @@ describe('PIR resolver standard behavior', () => {
     expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_score).toEqual(67);
     expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_explanations.length).toEqual(1);
     expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_explanations[0].dependencies[0].element_id).toEqual(relationshipId);
+    // Verify the entity pir_score of the PIR has been updated
+    const malwareAfterFlag = await storeLoadById<BasicStoreEntity>(
+      testContext,
+      SYSTEM_USER,
+      'malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88',
+      ENTITY_TYPE_MALWARE
+    );
+    expect(malwareAfterFlag.pir_information.length).toEqual(1);
+    expect(malwareAfterFlag.pir_information.filter((s) => s.pir_id === pirInternalId).length).toEqual(1);
+    expect(malwareAfterFlag.pir_information.filter((s) => s.pir_id === pirInternalId)[0].pir_score).toEqual(67);
+  });
+
+  it('should filter entities by a pir score', async () => {
+    // fetch entities with a score > 50 for a given PIR
+    const filtersWithGtOperator = addFilter(undefined, `${PIR_SCORE_FILTER_PREFIX}.${pirInternalId}`, ['50'], 'gt');
+    const stixDomainObjects1 = await listEntitiesPaginated(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithGtOperator });
+    expect(stixDomainObjects1.edges.length).toEqual(1);
+    expect(stixDomainObjects1.edges[0].node.internal_id).toEqual(flaggedElementId);
+    // fetch entities with a score < 50 for a given PIR
+    const filtersWithLtOperator = addFilter(undefined, `${PIR_SCORE_FILTER_PREFIX}.${pirInternalId}`, ['50'], 'lt');
+    const stixDomainObjects2 = await listEntitiesPaginated(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithLtOperator });
+    expect(stixDomainObjects2.edges.length).toEqual(0);
+    // return no entities with a filter on pir_score if the pir id matches no PIR
+    const filtersWithFakePirId = addFilter(undefined, `${PIR_SCORE_FILTER_PREFIX}.fakeId}`, ['50'], 'gt');
+    const stixDomainObjects3 = await listEntitiesPaginated(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithFakePirId });
+    expect(stixDomainObjects3.edges.length).toEqual(0);
+    // return error if the pir_score filter key is not in a correct format
+    const filtersInIncorrectFormat = addFilter(undefined, PIR_SCORE_FILTER_PREFIX, ['50'], 'gt');
+    await expect(async () => {
+      await listEntitiesPaginated(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersInIncorrectFormat });
+    })
+      .rejects.toThrowError('The pir_score filter key should be followed by a dot and the pir ID');
   });
 
   it('should update a pir meta rel by adding a new explanation', async () => {
@@ -290,6 +324,16 @@ describe('PIR resolver standard behavior', () => {
     expect(queryResult.data?.stixRefRelationships.edges[0].node.to.id).toEqual(pirInternalId);
     expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_score).toEqual(100);
     expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_explanations.length).toEqual(2);
+    // Verify the entity pir_score of the PIR has been updated
+    const malwareAfterFlag = await storeLoadById<BasicStoreEntity>(
+      testContext,
+      SYSTEM_USER,
+      'malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88',
+      ENTITY_TYPE_MALWARE
+    );
+    expect(malwareAfterFlag.pir_information.length).toEqual(1);
+    expect(malwareAfterFlag.pir_information.filter((s) => s.pir_id === pirInternalId).length).toEqual(1);
+    expect(malwareAfterFlag.pir_information.filter((s) => s.pir_id === pirInternalId)[0].pir_score).toEqual(100);
   });
 
   it('should update a pir meta rel by removing an explanation', async () => {
@@ -354,6 +398,14 @@ describe('PIR resolver standard behavior', () => {
     });
     expect(refQueryResult).not.toBeNull();
     expect(refQueryResult.data?.stixRefRelationships.edges.length).toEqual(0);
+    // Verify the entity pir_score has been removed for the PIR
+    const malwareAfterFlag = await storeLoadById<BasicStoreEntity>(
+      testContext,
+      SYSTEM_USER,
+      'malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88',
+      ENTITY_TYPE_MALWARE
+    );
+    expect(malwareAfterFlag.pir_information.length).toEqual(0);
     // Verify the associated connector queue is no longer found
     const pirConnectors = await listEntities<BasicStoreEntity>(
       testContext,

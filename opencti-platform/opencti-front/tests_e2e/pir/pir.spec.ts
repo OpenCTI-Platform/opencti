@@ -33,9 +33,6 @@ test('Pir CRUD', { tag: ['@pir', '@mutation'] }, async ({ page, request }) => {
   await expect(pirForm.getCreateTitle()).toBeVisible();
   // Step 1
   const pirName = `PIR - ${uuid()}`;
-  await pirForm.selectType('threat landscape');
-  await pirForm.getNextButton().click();
-  // Step 2
   await pirForm.nameField.fill('');
   await expect(pirForm.getNextButton()).toBeDisabled();
   await pirForm.nameField.fill(pirName);
@@ -43,7 +40,7 @@ test('Pir CRUD', { tag: ['@pir', '@mutation'] }, async ({ page, request }) => {
   await pirForm.descriptionField.fill('e2e PIR description');
   await pirForm.rescanPeriodField.selectOption('No rescan');
   await pirForm.getNextButton().click();
-  // Step 3
+  // Step 2
   await expect(pirForm.getCreateButton()).toBeDisabled();
   await pirForm.locationsField.selectOption('France');
   await expect(pirForm.getCreateButton()).toBeEnabled();
@@ -63,7 +60,7 @@ test('Pir CRUD', { tag: ['@pir', '@mutation'] }, async ({ page, request }) => {
 
   await pirDetails.tabs.goToThreatsTab();
   await pirDetails.tabs.goToAnalysesTab();
-  await pirDetails.tabs.goToHistoryTab();
+  await pirDetails.tabs.goToActivitiesTab();
   await pirDetails.tabs.goToOverviewTab();
 
   // ---------
@@ -122,7 +119,7 @@ test('Pir CRUD', { tag: ['@pir', '@mutation'] }, async ({ page, request }) => {
   // region Control tab History after flagging
   // -----------------------------------------
 
-  await pirDetails.tabs.goToHistoryTab();
+  await pirDetails.tabs.goToActivitiesTab();
   await expect(pirDetails.dataTable.container.getByText(historyItemName)).toBeVisible();
 
   // ---------

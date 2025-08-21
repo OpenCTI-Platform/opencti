@@ -22,6 +22,7 @@ import PirHeader from './PirHeader';
 import PirTabs from './PirTabs';
 import PirKnowledge from './pir_knowledge/PirKnowledge';
 import { PirHistoryQuery } from './__generated__/PirHistoryQuery.graphql';
+import { PirRedisStreamQuery } from './__generated__/PirRedisStreamQuery.graphql';
 import PirOverview from './pir_overview/PirOverview';
 import ErrorNotFound from '../../../components/ErrorNotFound';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -38,7 +39,6 @@ const pirQuery = graphql`
       ...PirHeaderFragment
       ...PirHistoryFragment
       ...PirKnowledgeFragment
-      ...PirOverviewFragment
       ...PirOverviewCountsFragment
       ...PirOverviewCountFlaggedFragment
       ...PirOverviewDetailsFragment
@@ -46,6 +46,12 @@ const pirQuery = graphql`
       ...PirOverviewTopSourcesFragment
       ...PirTabsFragment
     }
+  }
+`;
+
+const redisStreamQuery = graphql`
+  query PirRedisStreamQuery {
+    ...PirOverviewDetailsRedisFragment
   }
 `;
 
@@ -64,14 +70,17 @@ const pirHistoryQuery = graphql`
 interface PirComponentProps {
   pirQueryRef: PreloadedQuery<PirQuery>
   pirHistoryQueryRef: PreloadedQuery<PirHistoryQuery>
+  redisStreamQueryRef: PreloadedQuery<PirRedisStreamQuery>
 }
 
 const PirComponent = ({
   pirQueryRef,
   pirHistoryQueryRef,
+  redisStreamQueryRef,
 }: PirComponentProps) => {
   const { pir } = usePreloadedQuery(pirQuery, pirQueryRef);
   const history = usePreloadedQuery(pirHistoryQuery, pirHistoryQueryRef);
+  const redisStream = usePreloadedQuery(redisStreamQuery, redisStreamQueryRef);
 
   if (!pir) return <ErrorNotFound/>;
 
@@ -86,6 +95,7 @@ const PirComponent = ({
             <PirOverview
               dataHistory={history}
               dataPir={pir}
+              dataRedis={redisStream}
             />
           )}
         />
@@ -94,7 +104,7 @@ const PirComponent = ({
           element={<PirKnowledge data={pir} />}
         />
         <Route
-          path="/history"
+          path="/activities"
           element={<PirHistory data={pir} />}
         />
         <Route
@@ -110,6 +120,7 @@ const Pir = () => {
   const { pirId } = useParams() as { pirId?: string };
   if (!pirId) return <ErrorNotFound/>;
 
+  const redisQueryRef = useQueryLoading<PirRedisStreamQuery>(redisStreamQuery);
   const pirQueryRef = useQueryLoading<PirQuery>(pirQuery, { id: pirId });
   const pirHistoryQueryRef = useQueryLoading<PirHistoryQuery>(pirHistoryQuery, {
     first: 20,
@@ -120,10 +131,11 @@ const Pir = () => {
 
   return (
     <Suspense fallback={<Loader />}>
-      {pirQueryRef && pirHistoryQueryRef && (
+      {pirQueryRef && pirHistoryQueryRef && redisQueryRef && (
         <PirComponent
           pirQueryRef={pirQueryRef}
           pirHistoryQueryRef={pirHistoryQueryRef}
+          redisStreamQueryRef={redisQueryRef}
         />
       )}
     </Suspense>

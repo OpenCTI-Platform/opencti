@@ -452,6 +452,8 @@ interface BasicStoreEntity extends BasicStoreCommon {
   x_opencti_cvss_v2_temporal_score: number;
   // CVSS4
   x_opencti_cvss_v4_base_score: number;
+  // PIR
+  pir_information: Array<{ pir_id: string, pir_score: number }>;
 }
 
 interface StoreEntity extends BasicStoreEntity, StoreCommon {

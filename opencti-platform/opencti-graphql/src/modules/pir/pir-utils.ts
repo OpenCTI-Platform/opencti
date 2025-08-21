@@ -22,8 +22,11 @@ import { createRelation, patchAttribute } from '../../database/middleware';
 import { type FilterGroup, type PirAddInput, PirType } from '../../generated/graphql';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE } from '../../schema/stixDomainObject';
-import { ENTITY_TYPE_THREAT_ACTOR } from '../../schema/general';
+import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_THREAT_ACTOR } from '../../schema/general';
 import { RELATION_FROM_TYPES_FILTER } from '../../utils/filtering/filtering-constants';
+import { elUpdate } from '../../database/engine';
+import { INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
+import type { BasicStoreEntity } from '../../types/store';
 
 /**
  * Helper function to parse filters that are saved as string in elastic.
@@ -92,6 +95,29 @@ export const computePirScore = async (context: AuthContext, user: AuthUser, pirI
   const depScore = explanations.reduce((acc, val) => acc + val.criterion.weight, 0);
   if (maxScore <= 0) return 0;
   return Math.round((depScore / maxScore) * 100);
+};
+
+/**
+ * Update directly pir_information on a stix domain object via an elastic query
+ *
+ * @param context
+ * @param user
+ * @param entityId ID of the stix domain object
+ * @param pirId ID of the PIR whose score should be updated
+ * @param score The new information of the entity for the PIR
+ * @return a Promise object with PIR information on an entity
+ */
+export const updatePirInformationOnEntity = async (context: AuthContext, user: AuthUser, entityId: string, pirId: string, score: number) => {
+  const stixDomainObject = await storeLoadById<BasicStoreEntity>(context, user, entityId, ABSTRACT_STIX_DOMAIN_OBJECT);
+  const initialInformation = stixDomainObject.pir_information ?? [];
+  const newInformation = initialInformation.filter((s) => s.pir_id !== pirId);
+  if (score > 0) {
+    newInformation.push({ pir_id: pirId, pir_score: score });
+  }
+  const params = { pir_information: newInformation };
+  const source = 'ctx._source.pir_information = params.pir_information;';
+  // call elUpdate directly to avoid generating stream events and modifying the updated_at of the entity
+  return elUpdate(INDEX_STIX_DOMAIN_OBJECTS, entityId, { script: { source, lang: 'painless', params } });
 };
 
 /**
@@ -194,10 +220,12 @@ export const updatePirExplanations = async (
     explanations = updatePirExplanationsArray(pirMetaRel.pir_explanations, newExplanations);
   }
 
-  // region compute score
+  // compute score
   const pir_score = await computePirScore(context, user, pirId, explanations);
   // replace pir_explanations
   await patchAttribute(context, user, pirMetaRel.id, RELATION_IN_PIR, { pir_explanations: explanations, pir_score });
+  // update pir score on the entity
+  await updatePirInformationOnEntity(context, user, sourceId, pirId, pir_score);
 };
 
 /**
@@ -217,12 +245,17 @@ export const createPirRel = async (
   pirId: string,
   pirDependencies: PirExplanation[],
 ) => {
+  // compute score
+  const pir_score = await computePirScore(context, user, pirId, pirDependencies);
+  // create the in-pir meta rel
   const addRefInput = {
     relationship_type: RELATION_IN_PIR,
     fromId: sourceId,
     toId: pirId,
     pir_explanations: pirDependencies,
-    pir_score: await computePirScore(context, user, pirId, pirDependencies),
+    pir_score,
   };
   await createRelation(context, user, addRefInput);
+  // add pir score on the entity
+  await updatePirInformationOnEntity(context, user, sourceId, pirId, pir_score);
 };

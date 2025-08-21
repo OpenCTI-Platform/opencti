@@ -15,9 +15,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { graphql, useFragment } from 'react-relay';
 import React from 'react';
-import PirKnowledgeRelationships from './PirKnowledgeRelationships';
+import PirKnowledgeEntities from '@components/pir/pir_knowledge/PirKnowledgeEntities';
 import { PirKnowledgeFragment$key } from './__generated__/PirKnowledgeFragment.graphql';
-import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, useGetDefaultFilterObject } from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { PaginationOptions } from '../../../../components/list_lines';
 
@@ -33,12 +33,16 @@ interface PirKnowledgeProps {
 
 const PirKnowledge = ({ data }: PirKnowledgeProps) => {
   const pir = useFragment(knowledgeFragment, data);
-  const LOCAL_STORAGE_KEY = `PirSourcesFlaggedList-${pir.id}`;
+  const pirId = pir.id;
+  const LOCAL_STORAGE_KEY = `PirSourcesFlaggedList-${pirId}`;
 
   const initialValues = {
-    filters: emptyFilterGroup,
+    filters: {
+      ...emptyFilterGroup,
+      filters: useGetDefaultFilterObject([`pir_score.${pirId}`], ['Notification']),
+    },
     searchTerm: '',
-    sortBy: 'pir_score',
+    sortBy: 'created', // TODO PIR order by score
     orderAsc: false,
     openExports: false,
     view: 'relationships',
@@ -51,10 +55,11 @@ const PirKnowledge = ({ data }: PirKnowledgeProps) => {
 
   return (
     <div>
-      <PirKnowledgeRelationships
-        pirId={pir.id}
+      <PirKnowledgeEntities
+        pirId={pirId}
         localStorage={localStorage}
         initialValues={initialValues}
+        additionalHeaderButtons={[]} // TODO PIR add export button
       />
     </div>
   );

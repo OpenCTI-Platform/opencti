@@ -3,6 +3,11 @@ type PirCriterion {
     weight: Int!
 }
 
+type PirScore {
+    pir_id: ID!
+    pir_score: Int!
+}
+
 # Used in StixRefRelationship
 enum PirType {
     THREAT_LANDSCAPE

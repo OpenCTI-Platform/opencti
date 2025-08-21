@@ -156,6 +156,8 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirScore(pirId: ID!): Int @auth(for: [PIRAPI])
+  pirExplanations(pirId: ID!): [PirExplanation!] @auth(for: [PIRAPI])
   # Cases
   name: String!
   description: String

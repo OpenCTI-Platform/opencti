@@ -15,6 +15,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { graphql } from 'react-relay';
 import React, { ReactNode } from 'react';
+import PirRadialScore from '@components/pir/pir_knowledge/PirRadialScore';
+import PirCriteriaDisplay from '@components/pir/PirCriteriaDisplay';
 import { PirKnowledgeEntities_SourcesFlaggedFragment$data } from './__generated__/PirKnowledgeEntities_SourcesFlaggedFragment.graphql';
 import {
   PirKnowledgeEntitiesSourcesFlaggedListQuery,
@@ -33,7 +35,10 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import { LocalStorage } from '../../../../utils/hooks/useLocalStorageModel';
 
 const sourceFlaggedFragment = graphql`
-  fragment PirKnowledgeEntities_SourceFlaggedFragment on StixCoreObject {
+  fragment PirKnowledgeEntities_SourceFlaggedFragment on StixDomainObject
+  @argumentDefinitions(
+    pirId: { type: "ID!"}
+  ) {
     id
     entity_type
     created_at
@@ -49,32 +54,42 @@ const sourceFlaggedFragment = graphql`
       id
       name
     }
+    pirScore(pirId: $pirId)
+    pirExplanations(pirId: $pirId) {
+      criterion {
+        filters
+      }
+    }
   }
 `;
 
 const sourcesFlaggedFragment = graphql`
   fragment PirKnowledgeEntities_SourcesFlaggedFragment on Query
   @argumentDefinitions(
+    pirId: { type: "ID!"}
     search: { type: "String" }
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
-    orderBy: { type: "StixCoreObjectsOrdering", defaultValue: created }
+    orderBy: { type: "StixDomainObjectsOrdering", defaultValue: created }
     orderMode: { type: "OrderingMode", defaultValue: asc }
     filters: { type: "FilterGroup" }
   )
   @refetchable(queryName: "PirsKnowledgeEntities_SourcesFlaggedRefetchQuery") {
-    stixCoreObjects(
+    stixDomainObjects(
       search: $search
       first: $count
       after: $cursor
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
-    ) @connection(key: "PaginationPirKnowledgeEntities_stixCoreObjects") {
+    ) @connection(key: "PaginationPirKnowledgeEntities_stixDomainObjects") {
       edges {
         node {
           id
           ...PirKnowledgeEntities_SourceFlaggedFragment
+          @arguments(
+            pirId: $pirId
+          )
         }
       }
       pageInfo {
@@ -88,15 +103,17 @@ const sourcesFlaggedFragment = graphql`
 
 const sourcesFlaggedListQuery = graphql`
   query PirKnowledgeEntitiesSourcesFlaggedListQuery(
+    $pirId: ID!
     $search: String
     $count: Int!
     $cursor: ID
-    $orderBy: StixCoreObjectsOrdering
+    $orderBy: StixDomainObjectsOrdering
     $orderMode: OrderingMode
     $filters: FilterGroup
   ) {
     ...PirKnowledgeEntities_SourcesFlaggedFragment
     @arguments(
+      pirId: $pirId
       search: $search
       count: $count
       cursor: $cursor
@@ -114,6 +131,8 @@ interface PirKnowledgeEntitiesProps {
   additionalHeaderButtons: ReactNode[];
 }
 
+type PirExplanation = NonNullable<PirKnowledgeEntities_SourceFlaggedFragment$data['pirExplanations']>[number];
+
 const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHeaderButtons }: PirKnowledgeEntitiesProps) => {
   const {
     viewStorage,
@@ -122,7 +141,7 @@ const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHe
     paginationOptions,
   } = localStorage;
 
-  const filters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(viewStorage.filters, ['Stix-Core-Object']);
+  const filters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(viewStorage.filters, ['Stix-Domain-Object']);
 
   const contextFilters: FilterGroup = {
     mode: 'and',
@@ -142,6 +161,7 @@ const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHe
   };
   const queryPaginationOptions = {
     ...paginationOptions,
+    pirId,
     filters: contextFilters,
   } as unknown as PirKnowledgeEntitiesSourcesFlaggedListQuery$variables;
 
@@ -156,12 +176,28 @@ const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHe
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
 
   const dataColumns: DataTableProps['dataColumns'] = {
-    entity_type: { percentWidth: 13 },
+    pirScore: {
+      id: 'pir_score',
+      label: 'Score',
+      percentWidth: 6,
+      isSortable: true,
+      render: ({ pirScore, pirExplanations }) => {
+        const criteria: FilterGroup[] = pirExplanations.map(
+          (e: PirExplanation) => JSON.parse(e.criterion.filters),
+        );
+        return (
+          <PirCriteriaDisplay criteria={criteria}>
+            <PirRadialScore value={pirScore}/>
+          </PirCriteriaDisplay>
+        );
+      },
+    },
+    entity_type: { percentWidth: 12 },
     name: {},
     createdBy: { isSortable: isRuntimeSort },
     creator: { isSortable: isRuntimeSort },
-    objectLabel: {},
-    created_at: {},
+    objectLabel: { percentWidth: 12 },
+    created_at: { percentWidth: 13 },
     objectMarking: { isSortable: isRuntimeSort },
   };
 
@@ -173,7 +209,7 @@ const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHe
           disableLineSelection
           dataColumns={dataColumns}
           resolvePath={(d: PirKnowledgeEntities_SourcesFlaggedFragment$data) => {
-            return d.stixCoreObjects?.edges?.map((e) => e?.node);
+            return d.stixDomainObjects?.edges?.map((e) => e?.node);
           }}
           storageKey={localStorageKey}
           initialValues={initialValues}
@@ -182,18 +218,19 @@ const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHe
             linesQuery: sourcesFlaggedListQuery,
             linesFragment: sourcesFlaggedFragment,
             queryRef,
-            nodePath: ['stixCoreObjects', 'pageInfo', 'globalCount'],
+            nodePath: ['stixDomainObjects', 'pageInfo', 'globalCount'],
             setNumberOfElements: helpers.handleSetNumberOfElements,
           }}
           lineFragment={sourceFlaggedFragment}
-          entityTypes={['Stix-Core-Object']}
-          searchContextFinal={{ entityTypes: ['Stix-Core-Object'] }}
+          entityTypes={['Stix-Domain-Object']}
+          searchContextFinal={{ entityTypes: ['Stix-Domain-Object'] }}
           currentView={viewStorage.view}
           useComputeLink={(e: PirKnowledgeEntities_SourceFlaggedFragment$data) => {
             if (!e.entity_type) return '';
             return computeLink(e);
           }}
           additionalHeaderButtons={additionalHeaderButtons}
+          additionalFilterKeys={[`pir_score.${pirId}`]}
         />
       )}
     </>

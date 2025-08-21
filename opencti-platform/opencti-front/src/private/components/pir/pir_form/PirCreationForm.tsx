@@ -19,7 +19,6 @@ import { Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { PirCreationFormData } from './pir-form-utils';
 import PirCreationFormGeneralSettings from './PirCreationFormGeneralSettings';
-import PirCreationFormType from './PirCreationFormType';
 import PirCreationFormStepper from './PirCreationFormStepper';
 import { useFormatter } from '../../../../components/i18n';
 import PirCreationFormCriteria from './PirCreationFormCriteria';
@@ -68,18 +67,14 @@ const PirCreationForm = ({ onCancel, onSubmit }: PirCreationFormProps) => {
       onSubmit={onSubmit}
     >
       {({ values, errors, isValid, submitForm }) => {
-        const step0Valid = !!values.pir_type && !errors.pir_type;
-        const step1Valid = (!!values.name && !errors.name)
+        const step0Valid = (!!values.name && !errors.name)
           && (!errors.description)
           && ((!!values.pir_rescan_days || values.pir_rescan_days === 0) && !errors.pir_rescan_days);
 
-        const isStepValid = (step === 0 && step0Valid)
-          || (step === 1 && step1Valid)
-          || (step === 2 && isValid);
+        const isStepValid = (step === 0 && step0Valid) || (step === 1 && isValid);
 
         const accessibleSteps = [0];
         if (step0Valid) accessibleSteps.push(1);
-        if (step1Valid) accessibleSteps.push(2);
 
         return (
           <>
@@ -95,9 +90,8 @@ const PirCreationForm = ({ onCancel, onSubmit }: PirCreationFormProps) => {
               />
 
               <Form>
-                {step === 0 && <PirCreationFormType />}
-                {step === 1 && <PirCreationFormGeneralSettings />}
-                {step === 2 && <PirCreationFormCriteria />}
+                {step === 0 && <PirCreationFormGeneralSettings />}
+                {step === 1 && <PirCreationFormCriteria />}
               </Form>
             </DialogContent>
 
@@ -105,7 +99,7 @@ const PirCreationForm = ({ onCancel, onSubmit }: PirCreationFormProps) => {
               <Button onClick={onCancel}>
                 {t_i18n('Cancel')}
               </Button>
-              {step !== 2 && (
+              {step !== 1 && (
                 <Button
                   onClick={() => setStep(step + 1)}
                   color="secondary"
@@ -114,7 +108,7 @@ const PirCreationForm = ({ onCancel, onSubmit }: PirCreationFormProps) => {
                   {t_i18n('Next')}
                 </Button>
               )}
-              {step === 2 && (
+              {step === 1 && (
                 <Button
                   onClick={submitForm}
                   color="secondary"

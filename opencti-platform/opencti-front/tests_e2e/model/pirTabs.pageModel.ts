@@ -15,7 +15,7 @@ export default class PirTabsPage {
     return this.page.getByRole('tab', { name: 'Analyses' }).click();
   }
 
-  goToHistoryTab() {
-    return this.page.getByRole('tab', { name: 'History' }).click();
+  goToActivitiesTab() {
+    return this.page.getByRole('tab', { name: 'Activities' }).click();
   }
 }

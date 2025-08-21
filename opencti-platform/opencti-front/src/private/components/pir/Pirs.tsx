@@ -20,7 +20,7 @@ import { PirsListQuery, PirsListQuery$variables } from './__generated__/PirsList
 import { Pirs_PirsFragment$data } from './__generated__/Pirs_PirsFragment.graphql';
 import { Pirs_PirFragment$data } from './__generated__/Pirs_PirFragment.graphql';
 import PirCreation from './pir_form/PirCreation';
-import PirFiltersDisplay from './PirFiltersDisplay';
+import PirCriteriaDisplay from './PirCriteriaDisplay';
 import { useFormatter } from '../../../components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
@@ -33,6 +33,7 @@ import FilterIconButton from '../../../components/FilterIconButton';
 import type { Theme } from '../../../components/Theme';
 import Security from '../../../utils/Security';
 import { PIRAPI_PIRUPDATE } from '../../../utils/hooks/useGranted';
+import { FilterGroup } from '../../../utils/filters/filtersHelpers-types';
 
 const pirFragment = graphql`
   fragment Pirs_PirFragment on Pir {
@@ -175,17 +176,10 @@ const Pirs = () => {
       id: 'criteria',
       label: 'Criteria',
       percentWidth: 33,
-      render: ({ pir_criteria }: Pirs_PirFragment$data) => (
-        <div style={{ display: 'flex', gap: theme.spacing(1) }}>
-          {pir_criteria.map((c, i) => (
-            <PirFiltersDisplay
-              key={i}
-              filterGroup={JSON.parse(c.filters)}
-              size='small'
-            />
-          ))}
-        </div>
-      ),
+      render: ({ pir_criteria }: Pirs_PirFragment$data) => {
+        const criteria: FilterGroup[] = pir_criteria.map((c) => JSON.parse(c.filters));
+        return <PirCriteriaDisplay criteria={criteria} size='small' />;
+      },
     },
     creator: {
       percentWidth: 9,

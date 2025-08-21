@@ -96,6 +96,8 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
+  pirScore(pirId: ID!): Int @auth(for: [PIRAPI])
+  pirExplanations(pirId: ID!): [PirExplanation!] @auth(for: [PIRAPI])
   # Container
   authorized_members: [MemberAccess!]
   authorized_members_activation_date: DateTime

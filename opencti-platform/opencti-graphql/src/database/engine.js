@@ -140,7 +140,6 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organ
 import { addFilter, checkAndConvertFilters, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import {
   ALIAS_FILTER,
-  complexConversionFilterKeys,
   COMPUTED_RELIABILITY_FILTER,
   IDS_FILTER,
   INSTANCE_DYNAMIC_REGARDING_OF,
@@ -148,6 +147,8 @@ import {
   INSTANCE_RELATION_FILTER,
   INSTANCE_RELATION_TYPES_FILTER,
   IS_INFERRED_FILTER,
+  isComplexConversionFilterKey,
+  PIR_SCORE_FILTER_PREFIX,
   RELATION_FROM_FILTER,
   RELATION_FROM_ROLE_FILTER,
   RELATION_FROM_TYPES_FILTER,
@@ -161,15 +162,15 @@ import {
   WORKFLOW_FILTER,
   X_OPENCTI_WORKFLOW_ID
 } from '../utils/filtering/filtering-constants';
-import { FilterMode } from '../generated/graphql';
+import { FilterMode, FilterOperator } from '../generated/graphql';
 import {
   authorizedMembers,
+  baseType,
   booleanMapping,
   dateMapping,
+  entityType as entityTypeAttribute,
   iAliasedIds,
   id as idAttribute,
-  baseType,
-  entityType as entityTypeAttribute,
   internalId,
   longStringFormats,
   numericMapping,
@@ -239,6 +240,7 @@ export const UNIMPACTED_ENTITIES_ROLE = [
   `${RELATION_OBJECT_LABEL}_${ROLE_TO}`,
   `${RELATION_KILL_CHAIN_PHASE}_${ROLE_TO}`,
   `${RELATION_PUBLISHES}_${ROLE_FROM}`,
+  `${RELATION_IN_PIR}_${ROLE_TO}`,
   // RELATION_OBJECT
   // RELATION_EXTERNAL_REFERENCE
   `${RELATION_INDICATES}_${ROLE_TO}`,
@@ -2904,7 +2906,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
     const filter = filters[index];
     const { key } = filter;
     const arrayKeys = Array.isArray(key) ? key : [key];
-    if (arrayKeys.some((filterKey) => complexConversionFilterKeys.includes(filterKey))) {
+    if (arrayKeys.some((filterKey) => isComplexConversionFilterKey(filterKey))) {
       if (arrayKeys.length > 1) {
         throw UnsupportedError('A filter with these multiple keys is not supported}', { keys: arrayKeys });
       }
@@ -3080,6 +3082,23 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
             filterGroups: [],
           });
         }
+      }
+      if (filterKey.startsWith(PIR_SCORE_FILTER_PREFIX)) {
+        // the key should be of format: pir_score.PIR_ID
+        const splittedKey = filterKey.split('.');
+        if (splittedKey.length !== 2) {
+          throw FunctionalError('The pir_score filter key should be followed by a dot and the pir ID', { filterKey });
+        }
+        const pirId = splittedKey[1];
+        // push the nested pir_score filter associated to the given PIR ID
+        finalFilters.push({
+          key: ['pir_information'],
+          values: [],
+          nested: [
+            { ...filter, key: 'pir_score' },
+            { key: 'pir_id', values: [pirId], operator: FilterOperator.Eq },
+          ]
+        });
       }
     } else if (arrayKeys.some((filterKey) => isObjectAttribute(filterKey)) && !arrayKeys.some((filterKey) => filterKey === 'connections')) {
       if (arrayKeys.length > 1) {
