@@ -237,6 +237,7 @@ import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetti
 import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
 import { generateVulnerabilitiesUpdates } from '../utils/vulnerabilities';
 import { idLabel } from '../schema/schema-labels';
+import { INDICATOR_DEFAULT_SCORE } from '../modules/indicator/indicator-utils';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -2729,7 +2730,6 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
     // if the element was revoked, we need to update the score to reactivate the indicator
     if (!resolvedElement.revoked && updatePatch.decay_applied_rule
       && (updatePatch.decay_base_score === resolvedElement.decay_base_score && updatePatch.decay_base_score === resolvedElement.x_opencti_score)) {
-      logApp.debug('UPSERT INDICATOR -- no decay reset because no score change', { resolvedElement, basePatch });
       // don't reset score, valid_from & valid_until
       updatePatch.x_opencti_score = resolvedElement.x_opencti_score; // don't change the score
       updatePatch.valid_from = resolvedElement.valid_from;
@@ -2744,6 +2744,17 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
     } else {
       // As base_score as change, decay will be reset by upsert
       logApp.debug('UPSERT INDICATOR -- Decay is reset', { resolvedElement, basePatch });
+    }
+
+    // When revoke is updated to true => false, we need to reset score to a valid score
+    if (resolvedElement.revoked === true && basePatch.revoked === false) {
+      if (resolvedElement.decay_applied_rule) {
+        updatePatch.x_opencti_score = resolvedElement.decay_base_score > INDICATOR_DEFAULT_SCORE ?? INDICATOR_DEFAULT_SCORE;
+        // updatePatch.revoked = false;
+      } else {
+        updatePatch.x_opencti_score = INDICATOR_DEFAULT_SCORE;
+        // updatePatch.revoked = false;
+      }
     }
   }
   // Upsert relations with times extensions

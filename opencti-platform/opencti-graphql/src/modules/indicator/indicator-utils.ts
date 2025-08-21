@@ -9,6 +9,8 @@ import { isEmptyField, isNotEmptyField } from '../../database/utils';
 import { utcDate } from '../../utils/format';
 import { ValidationError } from '../../config/errors';
 
+export const INDICATOR_DEFAULT_SCORE: number = 50;
+
 interface TTL_DEFINITION {
   target: Array<string>;
   definition?: Record<string, number>;
@@ -69,7 +71,7 @@ export const computeValidTTL = async (context: AuthContext, user: AuthUser, indi
   return DEFAULT_INDICATOR_TTL;
 };
 
-const computeValidFrom = (indicator: IndicatorAddInput): Moment => {
+export const computeValidFrom = (indicator: IndicatorAddInput): Moment => {
   if (isNotEmptyField(indicator.valid_from)) {
     return utcDate(indicator.valid_from);
   }
@@ -79,7 +81,7 @@ const computeValidFrom = (indicator: IndicatorAddInput): Moment => {
   return utcDate();
 };
 
-const computeValidUntil = (indicator: IndicatorAddInput, validFrom: Moment, lifetimeInDays: number): Moment => {
+export const computeValidUntil = (indicator: IndicatorAddInput, validFrom: Moment, lifetimeInDays: number): Moment => {
   let validUntil: Moment;
   if (indicator.revoked && isEmptyField(indicator.valid_until)) {
     // If indicator is explicitly revoked and not valid_until is specified
