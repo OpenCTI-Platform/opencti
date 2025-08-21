@@ -33,6 +33,8 @@ import { PaginationOptions } from '../../../../components/list_lines';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { LocalStorage } from '../../../../utils/hooks/useLocalStorageModel';
+import { defaultRender } from '../../../../components/dataGrid/dataTableUtils';
+import { useFormatter } from '../../../../components/i18n';
 
 const sourceFlaggedFragment = graphql`
   fragment PirKnowledgeEntities_SourceFlaggedFragment on StixDomainObject
@@ -55,6 +57,7 @@ const sourceFlaggedFragment = graphql`
       name
     }
     pirScore(pirId: $pirId)
+    pirLastScoreDate(pirId: $pirId)
     pirExplanations(pirId: $pirId) {
       criterion {
         filters
@@ -134,6 +137,8 @@ interface PirKnowledgeEntitiesProps {
 type PirExplanation = NonNullable<PirKnowledgeEntities_SourceFlaggedFragment$data['pirExplanations']>[number];
 
 const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHeaderButtons }: PirKnowledgeEntitiesProps) => {
+  const { fd } = useFormatter();
+
   const {
     viewStorage,
     helpers,
@@ -192,12 +197,19 @@ const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHe
         );
       },
     },
-    entity_type: { percentWidth: 12 },
-    name: {},
+    pirLastScoreDate: {
+      id: 'pirLastScoreDate',
+      label: 'Last score date',
+      percentWidth: 11,
+      isSortable: false,
+      render: ({ pirLastScoreDate }) => defaultRender(fd(pirLastScoreDate)),
+    },
+    entity_type: { percentWidth: 10 },
+    name: { percentWidth: 20 },
     createdBy: { isSortable: isRuntimeSort },
     creator: { isSortable: isRuntimeSort },
-    objectLabel: { percentWidth: 12 },
-    created_at: { percentWidth: 13 },
+    objectLabel: { percentWidth: 10 },
+    created_at: { percentWidth: 11 },
     objectMarking: { isSortable: isRuntimeSort },
   };
 
