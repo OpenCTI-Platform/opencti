@@ -2725,6 +2725,7 @@ enum StixDomainObjectsOrdering {
   result_name
   operatingSystem
   x_opencti_cvss_base_severity
+  pir_score
 }
 type StixDomainObjectConnection {
   pageInfo: PageInfo!
@@ -13433,6 +13434,7 @@ type Query {
     after: ID
     types: [String]
     orderBy: StixDomainObjectsOrdering
+    orderByPir: ID
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
@@ -14875,6 +14877,7 @@ type Mutation {
     exportContext: ExportContext
     relationship_type: [String]
     orderBy: StixDomainObjectsOrdering
+    orderByPir: ID
     orderMode: OrderingMode
     filters: FilterGroup
     selectedIds: [String]

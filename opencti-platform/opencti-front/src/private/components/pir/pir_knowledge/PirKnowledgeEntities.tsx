@@ -83,6 +83,7 @@ const sourcesFlaggedFragment = graphql`
       first: $count
       after: $cursor
       orderBy: $orderBy
+      orderByPir: $pirId
       orderMode: $orderMode
       filters: $filters
     ) @connection(key: "PaginationPirKnowledgeEntities_stixDomainObjects") {
