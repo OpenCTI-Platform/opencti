@@ -14,6 +14,7 @@ type TypedProperty<K extends keyof TypeMap = keyof TypeMap> = {
   type: K;
   default: TypeMap[K];
   description: string;
+  format?: string;
 };
 
 export interface CatalogContract {
