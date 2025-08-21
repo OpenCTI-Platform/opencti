@@ -42,7 +42,7 @@ const PirKnowledge = ({ data }: PirKnowledgeProps) => {
       filters: useGetDefaultFilterObject([`pir_score.${pirId}`], ['Notification']),
     },
     searchTerm: '',
-    sortBy: 'created', // TODO PIR order by score
+    sortBy: 'pir_score',
     orderAsc: false,
     openExports: false,
     view: 'relationships',

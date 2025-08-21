@@ -16982,6 +16982,7 @@ export type MutationStixDomainObjectsExportAskArgs = {
   filters?: InputMaybe<FilterGroup>;
   format: Scalars['String']['input'];
   orderBy?: InputMaybe<StixDomainObjectsOrdering>;
+  orderByPir?: InputMaybe<Scalars['ID']['input']>;
   orderMode?: InputMaybe<OrderingMode>;
   relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   search?: InputMaybe<Scalars['String']['input']>;
@@ -23717,6 +23718,7 @@ export type QueryStixDomainObjectsArgs = {
   filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<StixDomainObjectsOrdering>;
+  orderByPir?: InputMaybe<Scalars['ID']['input']>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -27854,6 +27856,7 @@ export enum StixDomainObjectsOrdering {
   OperatingSystem = 'operatingSystem',
   Opinion = 'opinion',
   PatternType = 'pattern_type',
+  PirScore = 'pir_score',
   Priority = 'priority',
   Product = 'product',
   Published = 'published',
