@@ -105,14 +105,14 @@ export const computeConnectorTargetContract = (configurations: any, targetContra
         contractConfigurations.push(({ key: propKey, value: targetConfig.properties[propKey].default }));
       }
     } else if (targetConfig.properties[propKey].type !== 'array') {
-        const rawValue = currentConfig.value[0];
-        const isPassword = targetConfig.properties[propKey].type === 'password';
-        const finalValue = isPassword ? encryptValue(publicKey, rawValue) : rawValue;
-        contractConfigurations.push({
+      const rawValue = currentConfig.value[0];
+      const isPassword = targetConfig.properties[propKey].format === 'password';
+      const finalValue = isPassword ? encryptValue(publicKey, rawValue) : rawValue;
+      contractConfigurations.push({
         key: propKey,
-            value: finalValue,
-            ...(isPassword && { encrypted: true }),
-        });
+        value: finalValue,
+        ...(isPassword && { encrypted: true }),
+      });
     } else {
       contractConfigurations.push(currentConfig);
     }
