@@ -38,7 +38,7 @@ describe('ParticipateToPartsRule tests', () => {
     }
   });
 
-  it.only('should sector not be added as organisation on users', async () => {
+  it('should sector not be added as organisation on users', async () => {
     // ----------------
     // GIVEN an Organization A that has relation "part of" with a sector
     // GIVEN an Organization A that has relation "part of" with an organization B
