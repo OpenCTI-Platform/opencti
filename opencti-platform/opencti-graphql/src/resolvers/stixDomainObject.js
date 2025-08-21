@@ -14,6 +14,7 @@ import {
   stixDomainObjectExportAsk,
   stixDomainObjectFileEdit,
   stixDomainObjectPirScore,
+  stixDomainObjectLastPirScoreDate,
   stixDomainObjectsDelete,
   stixDomainObjectsDistributionByEntity,
   stixDomainObjectsExportAsk,
@@ -76,6 +77,7 @@ const stixDomainObjectResolvers = {
       return statusesType.length > 0;
     },
     pirScore: (stixDomainObject, { pirId }, context) => stixDomainObjectPirScore(context, context.user, stixDomainObject, pirId),
+    pirLastScoreDate: (stixDomainObject, { pirId }, context) => stixDomainObjectLastPirScoreDate(context, context.user, stixDomainObject, pirId),
     pirExplanations: (stixDomainObject, { pirId }, context) => stixDomainObjectsPirExplanations(context, context.user, stixDomainObject, pirId),
   },
   Mutation: {
