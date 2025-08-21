@@ -75,7 +75,9 @@ export const checkXTMHubConnectivity = async (context: AuthContext, user: AuthUs
   if (newRegistrationStatus === XtmHubRegistrationStatus.Registered) {
     attributeUpdates.push({ key: 'xtm_hub_last_connectivity_check', value: [new Date()] });
   }
-
+  if (attributeUpdates.length === 0) {
+    return { status: newRegistrationStatus };
+  }
   await updateAttribute(
     context,
     user,
