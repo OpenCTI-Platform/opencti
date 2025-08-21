@@ -27847,6 +27847,7 @@ export enum StixDomainObjectsOrdering {
   IncidentType = 'incident_type',
   IndicatorPattern = 'indicator_pattern',
   LastObserved = 'last_observed',
+  LastPirScoreDate = 'last_pir_score_date',
   LastSeen = 'last_seen',
   Modified = 'modified',
   Name = 'name',

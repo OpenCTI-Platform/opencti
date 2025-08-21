@@ -2725,6 +2725,7 @@ enum StixDomainObjectsOrdering {
   operatingSystem
   x_opencti_cvss_base_severity
   pir_score
+  last_pir_score_date
 }
 type StixDomainObjectConnection {
   pageInfo: PageInfo!
