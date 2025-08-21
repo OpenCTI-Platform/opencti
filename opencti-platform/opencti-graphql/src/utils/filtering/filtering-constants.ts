@@ -1,5 +1,6 @@
 import { INPUT_LABELS } from '../../schema/general';
 import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
+import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../../schema/internalRelationship';
 
 // Resolved-Filters
 // These require special handling when comparing to a stix object as they need to be resolved before comparison
@@ -168,7 +169,9 @@ export const specialFilterKeysWhoseValueToResolve = [
   WORKFLOW_FILTER,
   INSTANCE_RELATION_FILTER,
   RELATION_FROM_FILTER,
-  RELATION_TO_FILTER
+  RELATION_TO_FILTER,
+  RELATION_MEMBER_OF,
+  RELATION_PARTICIPATE_TO,
 ];
 
 // special filter values
