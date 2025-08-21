@@ -58,7 +58,7 @@ const PirKnowledge = ({ data }: PirKnowledgeProps) => {
         pirId={pirId}
         localStorage={localStorage}
         initialValues={initialValues}
-        additionalHeaderButtons={[]} // TODO PIR add export button
+        additionalHeaderButtons={[]}
       />
     </div>
   );
