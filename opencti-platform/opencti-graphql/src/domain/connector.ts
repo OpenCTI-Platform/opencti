@@ -152,7 +152,8 @@ export const updateConnectorManagerStatus = async (context: AuthContext, user:Au
 export const managedConnectorEdit = async (
   context: AuthContext,
   user:AuthUser,
-  input: EditManagedConnectorInput
+  input: EditManagedConnectorInput,
+  publicKey: string,
 ) => {
   const conn: any = await storeLoadById(context, user, input.id, ENTITY_TYPE_CONNECTOR);
   if (isEmptyField(conn)) {
@@ -163,7 +164,7 @@ export const managedConnectorEdit = async (
   if (isEmptyField(targetContract)) {
     throw UnsupportedError('Target contract not found');
   }
-  const contractConfigurations = computeConnectorTargetContract(input.manager_contract_configuration, targetContract);
+  const contractConfigurations = computeConnectorTargetContract(input.manager_contract_configuration, targetContract, publicKey);
   const patch: any = {
     name: input.name,
     connector_type: targetContract.container_type,
@@ -177,7 +178,8 @@ export const managedConnectorEdit = async (
 export const managedConnectorAdd = async (
   context: AuthContext,
   user:AuthUser,
-  input: AddManagedConnectorInput
+  input: AddManagedConnectorInput,
+  publicKey: string,
 ) => {
   // Get contract
   const contractsMap = getSupportedContractsByImage();
@@ -188,7 +190,7 @@ export const managedConnectorAdd = async (
   if (!targetContract.manager_supported) {
     throw FunctionalError('You have not chosen a connector supported by the manager');
   }
-  const contractConfigurations = computeConnectorTargetContract(input.manager_contract_configuration, targetContract);
+  const contractConfigurations = computeConnectorTargetContract(input.manager_contract_configuration, targetContract, publicKey);
   // Get user
   if (input.user_id.length < 2) {
     throw FunctionalError('You have not chosen a user responsible for data creation', {});
