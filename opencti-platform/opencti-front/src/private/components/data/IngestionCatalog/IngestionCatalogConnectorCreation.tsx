@@ -197,7 +197,7 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
                       style={{
                         position: 'relative',
                         width: '100%',
-                        marginTop: 8
+                        marginTop: 8,
                       }}
                       slotProps={{
                         message: {

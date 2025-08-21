@@ -9,21 +9,19 @@ import { graphql } from 'react-relay';
 import { FormikHelpers } from 'formik/dist/types';
 import { ConnectorsStatus_data$data } from '@components/data/connectors/__generated__/ConnectorsStatus_data.graphql';
 import Alert from '@mui/material/Alert';
-import AlertTitle from '@mui/material/AlertTitle';
-import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { JsonForms } from '@jsonforms/react';
 import { materialRenderers } from '@jsonforms/material-renderers';
 import { Validator } from '@cfworker/json-schema';
+import { IngestionConnector, IngestionTypedProperty } from '@components/data/IngestionCatalog';
+import { JsonSchema } from '@jsonforms/core';
+import AccordionDetails from '@mui/material/AccordionDetails';
 import TextField from '../../../../components/TextField';
 import { type FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
-import { IngestionConnector, IngestionTypedProperty } from '@components/data/IngestionCatalog';
-import { JsonSchema } from '@jsonforms/core';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
-import AccordionDetails from '@mui/material/AccordionDetails';
 
 const updateManagedConnector = graphql`
   mutation ManagedConnectorEditionMutation($input: EditManagedConnectorInput) {
@@ -107,7 +105,6 @@ const ManagedConnectorEdition = ({
   const optionalPropertiesArray: Properties = [];
   propertiesArray.forEach((property) => {
     const key = property[0];
-    const value = property[1];
     const isRequired = contract.config_schema.required.includes(key);
     if (isRequired) {
       requiredPropertiesArray.push(property);
