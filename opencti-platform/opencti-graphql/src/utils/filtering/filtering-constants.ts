@@ -91,6 +91,9 @@ export const IS_INFERRED_FILTER = 'is_inferred'; // if an entity or relationship
 
 export const PIR_SCORE_FILTER_PREFIX = 'pir_score';
 
+// for users
+export const USER_SERVICE_ACCOUNT_FILTER = 'user_service_account';
+
 const COMPLEX_CONVERSION_FILTER_KEYS = [
   IDS_FILTER, // values should match any id (internal_id, standard_id, or stix_id)
   TYPE_FILTER, // values should match any parent_types
@@ -114,6 +117,7 @@ const COMPLEX_CONVERSION_FILTER_KEYS = [
   RELATION_TO_ROLE_FILTER, // nested relation for the to role of a relationship
   ALIAS_FILTER, // key that target both the 'aliases' and 'x_opencti_aliases' attributes
   IS_INFERRED_FILTER, // if an entity or relationship is inferred
+  USER_SERVICE_ACCOUNT_FILTER, // if the user is technical or not
   'authorized_members', // nested filter on restricted members => kept for retro compatibility (TODO remove after renaming)
   'authorized_members.id', // nested filter on restricted members => kept for retro compatibility (TODO remove after renaming)
   'restricted_members.id', // nested filter on restricted members

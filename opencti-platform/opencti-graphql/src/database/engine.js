@@ -159,6 +159,7 @@ import {
   RELATION_TYPE_FILTER,
   SOURCE_RELIABILITY_FILTER,
   TYPE_FILTER,
+  USER_SERVICE_ACCOUNT_FILTER,
   WORKFLOW_FILTER,
   X_OPENCTI_WORKFLOW_ID
 } from '../utils/filtering/filtering-constants';
@@ -3099,6 +3100,23 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
             { key: 'pir_id', values: [pirId], operator: FilterOperator.Eq },
           ]
         });
+      }
+      if (filterKey === USER_SERVICE_ACCOUNT_FILTER) {
+        // key USER_SERVICE_ACCOUNT_FILTER === nul also filtered
+        if ((filter.values.includes('false') && filter.operator === FilterOperator.Eq)
+        || (filter.values.includes('true') && filter.operator === FilterOperator.NotEq)) {
+          const newFilterGroup = {
+            mode: 'or',
+            filters: [{
+              key: USER_SERVICE_ACCOUNT_FILTER,
+              values: [],
+              operator: FilterOperator.Nil,
+            },
+            filter],
+            filterGroups: [],
+          };
+          finalFilterGroups.push(newFilterGroup);
+        }
       }
     } else if (arrayKeys.some((filterKey) => isObjectAttribute(filterKey)) && !arrayKeys.some((filterKey) => filterKey === 'connections')) {
       if (arrayKeys.length > 1) {
