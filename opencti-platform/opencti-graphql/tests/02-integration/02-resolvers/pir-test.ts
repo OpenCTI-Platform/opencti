@@ -1,5 +1,6 @@
 import gql from 'graphql-tag';
 import { describe, expect, it } from 'vitest';
+import { now } from 'moment';
 import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
 import { FilterMode, FilterOperator, PirType } from '../../../src/generated/graphql';
 import { RELATION_IN_PIR } from '../../../src/schema/stixRefRelationship';
@@ -12,7 +13,7 @@ import { addFilter } from '../../../src/utils/filtering/filtering-utils';
 import { elPaginate } from '../../../src/database/engine';
 import { READ_INDEX_HISTORY } from '../../../src/database/utils';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../../src/schema/general';
-import { PIR_SCORE_FILTER_PREFIX } from '../../../src/utils/filtering/filtering-constants';
+import { LAST_PIR_SCORE_DATE_FILTER_PREFIX, PIR_SCORE_FILTER_PREFIX } from '../../../src/utils/filtering/filtering-constants';
 
 const LIST_QUERY = gql`
   query pirs(
@@ -280,16 +281,38 @@ describe('PIR resolver standard behavior', () => {
     const filtersWithLtOperator = addFilter(undefined, `${PIR_SCORE_FILTER_PREFIX}.${pirInternalId}`, ['50'], 'lt');
     const stixDomainObjects2 = await listEntitiesPaginated(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithLtOperator });
     expect(stixDomainObjects2.edges.length).toEqual(0);
-    // return no entities with a filter on pir_score if the pir id matches no PIR
+    // return no entities if the pir id matches no PIR
     const filtersWithFakePirId = addFilter(undefined, `${PIR_SCORE_FILTER_PREFIX}.fakeId}`, ['50'], 'gt');
     const stixDomainObjects3 = await listEntitiesPaginated(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithFakePirId });
     expect(stixDomainObjects3.edges.length).toEqual(0);
-    // return error if the pir_score filter key is not in a correct format
+    // return error if the filter key is not in a correct format
     const filtersInIncorrectFormat = addFilter(undefined, PIR_SCORE_FILTER_PREFIX, ['50'], 'gt');
     await expect(async () => {
       await listEntitiesPaginated(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersInIncorrectFormat });
     })
-      .rejects.toThrowError('The pir_score filter key should be followed by a dot and the pir ID');
+      .rejects.toThrowError('The filter key should be followed by a dot and the Pir ID');
+  });
+
+  it('should filter entities by last pir score date', async () => {
+    // fetch entities scored before now for the pir
+    const filtersWithGtOperator = addFilter(undefined, `${LAST_PIR_SCORE_DATE_FILTER_PREFIX}.${pirInternalId}`, [now().toString()], 'lt');
+    const stixDomainObjects1 = await listEntitiesPaginated(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithGtOperator });
+    expect(stixDomainObjects1.edges.length).toEqual(1);
+    expect(stixDomainObjects1.edges[0].node.internal_id).toEqual(flaggedElementId);
+    // fetch entities scored after now for the pir
+    const filtersWithLtOperator = addFilter(undefined, `${LAST_PIR_SCORE_DATE_FILTER_PREFIX}.${pirInternalId}`, [now().toString()], 'gt');
+    const stixDomainObjects2 = await listEntitiesPaginated(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithLtOperator });
+    expect(stixDomainObjects2.edges.length).toEqual(0);
+    // return no entities if the pir id matches no PIR
+    const filtersWithFakePirId = addFilter(undefined, `${LAST_PIR_SCORE_DATE_FILTER_PREFIX}.fakeId}`, [now().toString()], 'lt');
+    const stixDomainObjects3 = await listEntitiesPaginated(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithFakePirId });
+    expect(stixDomainObjects3.edges.length).toEqual(0);
+    // return error if the filter key is not in a correct format
+    const filtersInIncorrectFormat = addFilter(undefined, LAST_PIR_SCORE_DATE_FILTER_PREFIX, [now().toString()], 'lt');
+    await expect(async () => {
+      await listEntitiesPaginated(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersInIncorrectFormat });
+    })
+      .rejects.toThrowError('The filter key should be followed by a dot and the Pir ID');
   });
 
   it('should update a pir meta rel by adding a new explanation', async () => {

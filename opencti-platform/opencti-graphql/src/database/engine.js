@@ -147,7 +147,8 @@ import {
   INSTANCE_RELATION_FILTER,
   INSTANCE_RELATION_TYPES_FILTER,
   IS_INFERRED_FILTER,
-  isComplexConversionFilterKey, LAST_PIR_SCORE_DATE_FILTER_PREFIX,
+  isComplexConversionFilterKey,
+  LAST_PIR_SCORE_DATE_FILTER_PREFIX,
   PIR_SCORE_FILTER_PREFIX,
   RELATION_FROM_FILTER,
   RELATION_FROM_ROLE_FILTER,
@@ -3089,7 +3090,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         // the key should be of format: pir_score.PIR_ID
         const splittedKey = filterKey.split('.');
         if (splittedKey.length !== 2) {
-          throw FunctionalError('The pir_score filter key should be followed by a dot and the pir ID', { filterKey });
+          throw FunctionalError('The filter key should be followed by a dot and the Pir ID', { filterKey });
         }
         const pirKey = splittedKey[0];
         const pirId = splittedKey[1];
