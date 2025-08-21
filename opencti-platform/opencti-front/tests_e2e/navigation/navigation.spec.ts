@@ -880,7 +880,7 @@ const navigateMalware = async (page: Page) => {
 };
 
 const navigateChannel = async (page: Page) => {
-  const channelInitData = 'Channel e2e';
+  const channelInitData = 'channel e2e';
   const channelPage = new ChannelPage(page);
   await channelPage.navigateFromMenu();
   await expect(channelPage.getPage()).toBeVisible();
