@@ -1,7 +1,7 @@
 import { isDateNumericOrBooleanAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 
-const PIR_SCORE_ORDERING_CRITERIA = 'pir_score';
+const PIR_ORDERING_CRITERIA = ['pir_score', 'last_pir_score_date'];
 
 export const buildElasticSortingForAttributeCriteria = (
   orderCriteria: string,
@@ -9,13 +9,13 @@ export const buildElasticSortingForAttributeCriteria = (
   pirId?: string,
 ) => {
   let definition;
-  if (orderCriteria === PIR_SCORE_ORDERING_CRITERIA) {
+  if (PIR_ORDERING_CRITERIA.includes(orderCriteria)) {
     // the pir id should be specified
     if (!pirId) {
       throw FunctionalError('You should provide a PIR ID to order by pir_score.');
     }
-    // return nested pir_score order criteria associated to the given PIR ID
-    return { 'pir_information.pir_score': {
+    // return nested order criteria associated to the given PIR ID
+    return { [`pir_information.${orderCriteria}`]: {
       order: orderMode,
       missing: '_last',
       nested: {
