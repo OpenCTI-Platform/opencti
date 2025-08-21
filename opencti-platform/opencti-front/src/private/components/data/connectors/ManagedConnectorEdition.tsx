@@ -20,6 +20,10 @@ import { type FieldOption, fieldSpacingContainerStyle } from '../../../../utils/
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
+import { IngestionConnector, IngestionTypedProperty } from '@components/data/IngestionCatalog';
+import { JsonSchema } from '@jsonforms/core';
+import { Accordion, AccordionSummary } from '../../../../components/Accordion';
+import AccordionDetails from '@mui/material/AccordionDetails';
 
 const updateManagedConnector = graphql`
   mutation ManagedConnectorEditionMutation($input: EditManagedConnectorInput) {
@@ -44,7 +48,6 @@ const deleteManagedConnector = graphql`
 interface ManagedConnectorValues {
   name: string
   creator?: FieldOption
-  contractValues: Record<string, string | boolean>
 }
 
 const ManagedConnectorEdition = ({
@@ -56,7 +59,7 @@ const ManagedConnectorEdition = ({
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const contract = JSON.parse(connector.manager_contract_definition ?? '{}');
+  const contract: IngestionConnector = JSON.parse(connector.manager_contract_definition ?? '{}');
   const contractValues: Record<string, string | boolean> = {};
   Object.keys(contract.config_schema.properties).forEach((key) => {
     const { value } = connector.manager_contract_configuration?.find((a) => a.key === key) ?? {};
@@ -80,7 +83,7 @@ const ManagedConnectorEdition = ({
       id: connector.id,
       name: values.name,
       connector_user_id: values.creator?.value,
-      manager_contract_configuration: Object.entries(values.contractValues).map(([key, value]) => ({ key, value: value.toString() })),
+      manager_contract_configuration: Object.entries(values).map(([key, value]) => ({ key, value: value.toString() })),
     };
     commitUpdate({
       variables: {
@@ -96,6 +99,27 @@ const ManagedConnectorEdition = ({
   };
 
   const compiledValidator = new Validator(contract);
+
+  // Get required and optional properties to use into JsonForms
+  type Properties = [string, IngestionTypedProperty][];
+  const propertiesArray: Properties = Object.entries(contract.config_schema.properties);
+  const requiredPropertiesArray: Properties = [];
+  const optionalPropertiesArray: Properties = [];
+  propertiesArray.forEach((property) => {
+    const key = property[0];
+    const value = property[1];
+    const isRequired = contract.config_schema.required.includes(key);
+    if (isRequired) {
+      requiredPropertiesArray.push(property);
+    } else {
+      optionalPropertiesArray.push(property);
+    }
+  });
+  const requiredProperties: JsonSchema = { properties: Object.fromEntries(requiredPropertiesArray), required: contract.config_schema.required };
+  const optionalProperties: JsonSchema = { properties: Object.fromEntries(optionalPropertiesArray) };
+  const defaultValuesArray = connector.manager_contract_configuration?.map(({ key, value }) => [key, value]) ?? [];
+  const defaultValues = Object.fromEntries(defaultValuesArray);
+
   return (
     <Drawer
       title={t_i18n('Update a connector')}
@@ -107,18 +131,17 @@ const ManagedConnectorEdition = ({
         validationSchema={Yup.object().shape({
           name: Yup.string().required().min(2),
           creator: Yup.object().required(),
-          contractValues: Yup.object().required(),
         })}
         initialValues={{
-          contractValues,
+          ...defaultValues,
           creator: connector.connector_user ? { value: connector.connector_user.id, label: connector.connector_user.name } : undefined,
           name: connector.name,
         }}
         onSubmit={() => {
         }}
       >
-        {({ values, setFieldValue, isSubmitting, setSubmitting, resetForm, isValid }) => {
-          const errors = compiledValidator?.validate(values.contractValues)?.errors;
+        {({ values, setFieldValue, isSubmitting, setSubmitting, resetForm, isValid, setValues }) => {
+          const errors = compiledValidator?.validate(values)?.errors;
           return (
             <Form>
               <Field
@@ -138,41 +161,57 @@ const ManagedConnectorEdition = ({
                 name="creator"
                 required
               />
-              <Alert
-                icon={false}
-                severity={errors?.[0] ? 'error' : 'success'}
-                variant="outlined"
-                slotProps={{
-                  message: {
-                    style: {
-                      width: '100%',
-                      overflow: 'hidden',
-                    },
-                  },
-                }}
-                style={{ position: 'relative', marginTop: theme.spacing(2) }}
-              >
-                <AlertTitle>{t_i18n('Connector configuration')}</AlertTitle>
-                <Box
-                  sx={{ color: theme.palette.text?.primary }}
-                >
-                  {errors?.[0] && (
-                    <Typography
-                      variant="subtitle2"
-                      color="error"
+              {(requiredPropertiesArray.length > 0 || optionalPropertiesArray.length > 0) && (
+                <>
+                  <div style={fieldSpacingContainerStyle}>{t_i18n('Configuration')}</div>
+                  {requiredPropertiesArray.length > 0 && (
+                    <Alert
+                      severity="info"
+                      icon={false}
+                      variant="outlined"
+                      style={{
+                        position: 'relative',
+                        width: '100%',
+                        marginTop: 8,
+                      }}
+                      slotProps={{
+                        message: {
+                          style: {
+                            width: '100%',
+                            overflow: 'visible',
+                          },
+                        },
+                      }}
                     >
-                      {errors?.[0].error}
-                    </Typography>
+                      <JsonForms
+                        data={defaultValues}
+                        schema={requiredProperties}
+                        renderers={materialRenderers}
+                        validationMode={'NoValidation'}
+                        onChange={({ data }) => setValues({ ...values, ...data })}
+                      />
+                    </Alert>
                   )}
-                  <JsonForms
-                    data={values.contractValues}
-                    schema={contract.config_schema}
-                    renderers={materialRenderers}
-                    validationMode={'NoValidation'}
-                    onChange={({ data }) => setFieldValue('contractValues', data)}
-                  />
-                </Box>
-              </Alert>
+                  {optionalPropertiesArray.length > 0 && (
+                    <div style={fieldSpacingContainerStyle}>
+                      <Accordion slotProps={{ transition: { unmountOnExit: false } }}>
+                        <AccordionSummary id="accordion-panel">
+                          <Typography>{t_i18n('Advanced options')}</Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                          <JsonForms
+                            data={defaultValues}
+                            schema={optionalProperties}
+                            renderers={materialRenderers}
+                            validationMode={'NoValidation'}
+                            onChange={({ data }) => setValues({ ...values, ...data })}
+                          />
+                        </AccordionDetails>
+                      </Accordion>
+                    </div>
+                  )}
+                </>
+              )}
               <div style={{ marginTop: theme.spacing(2), gap: theme.spacing(1), display: 'flex', justifyContent: 'space-between' }}>
                 <Button
                   variant="outlined"
