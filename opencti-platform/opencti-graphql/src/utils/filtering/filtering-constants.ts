@@ -89,6 +89,7 @@ export const MEMBERS_ORGANIZATION_FILTER = 'members_organization';
 export const ALIAS_FILTER = 'alias'; // handle both 'aliases' and 'x_opencti_aliases' attributes
 export const IS_INFERRED_FILTER = 'is_inferred'; // if an entity or relationship is inferred
 
+// for PIR
 export const PIR_SCORE_FILTER_PREFIX = 'pir_score';
 export const LAST_PIR_SCORE_DATE_FILTER_PREFIX = 'last_pir_score_date';
 
