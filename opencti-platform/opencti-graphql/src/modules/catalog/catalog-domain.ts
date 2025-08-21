@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import * as R from 'ramda';
+import crypto from 'crypto';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type CatalogContract, type CatalogDefinition, type CatalogType } from './catalog-types';
 import { isEmptyField } from '../../database/utils';
@@ -77,7 +78,20 @@ const getCatalogs = () => {
   return catalogMap;
 };
 
-export const computeConnectorTargetContract = (configurations: any, targetContract: CatalogContract) => {
+const encryptValue = (publicKey: string, value: string) => {
+  const buffer = Buffer.from(value, 'utf8');
+  const encrypted = crypto.publicEncrypt(
+    {
+      key: publicKey,
+      padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+      oaepHash: 'sha256',
+    },
+    buffer
+  );
+  return encrypted.toString('base64');
+};
+
+export const computeConnectorTargetContract = (configurations: any, targetContract: CatalogContract, publicKey: string) => {
   const targetConfig = targetContract.config_schema;
   // Rework configuration for default an array support
   const contractConfigurations = [];
@@ -85,12 +99,20 @@ export const computeConnectorTargetContract = (configurations: any, targetContra
   for (let i = 0; i < keys.length; i += 1) {
     const propKey = keys[i];
     const currentConfig: any = configurations.find((config: any) => config.key === propKey);
+
     if (!currentConfig) {
       if (targetConfig.properties[propKey].default) {
         contractConfigurations.push(({ key: propKey, value: targetConfig.properties[propKey].default }));
       }
     } else if (targetConfig.properties[propKey].type !== 'array') {
-      contractConfigurations.push(({ key: propKey, value: currentConfig.value[0] }));
+        const rawValue = currentConfig.value[0];
+        const isPassword = targetConfig.properties[propKey].type === 'password';
+        const finalValue = isPassword ? encryptValue(publicKey, rawValue) : rawValue;
+        contractConfigurations.push({
+        key: propKey,
+            value: finalValue,
+            ...(isPassword && { encrypted: true }),
+        });
     } else {
       contractConfigurations.push(currentConfig);
     }
