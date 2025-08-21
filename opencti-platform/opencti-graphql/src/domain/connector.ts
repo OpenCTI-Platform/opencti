@@ -13,10 +13,10 @@ import { isEmptyField, READ_INDEX_HISTORY } from '../database/utils';
 import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE, OPENCTI_NAMESPACE } from '../schema/general';
 import { isUserHasCapability, PIR_MANAGER_USER, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import { delEditContext, notify, redisGetWork, redisSetConnectorLogs, setEditContext } from '../database/redis';
-import { internalLoadById, listEntities, storeLoadById } from '../database/middleware-loader';
+import { internalLoadById, listAllEntities, listEntities, storeLoadById } from '../database/middleware-loader';
 import { completeContextDataForEntity, publishUserAction, type UserImportActionContextData } from '../listener/UserActionListener';
 import type { AuthContext, AuthUser } from '../types/user';
-import type { BasicStoreEntityConnector, BasicStoreEntitySynchronizer, ConnectorInfo } from '../types/connector';
+import type { BasicStoreEntityConnector, BasicStoreEntityConnectorManager, BasicStoreEntitySynchronizer, ConnectorInfo } from '../types/connector';
 import {
   type AddManagedConnectorInput,
   ConnectorType,
@@ -134,7 +134,7 @@ interface RegisterOptions {
 
 export const registerConnectorsManager = async (context: AuthContext, user: AuthUser, input: RegisterConnectorsManagerInput) => {
   const manager = await storeLoadById(context, user, input.id, ENTITY_TYPE_CONNECTOR_MANAGER);
-  const patch = { name: input.name, last_sync_execution: now() };
+  const patch = { name: input.name, last_sync_execution: now(), public_key: input.public_key };
   if (manager) {
     const { element } = await patchAttribute(context, user, input.id, ENTITY_TYPE_CONNECTOR_MANAGER, patch);
     return element;
@@ -152,8 +152,7 @@ export const updateConnectorManagerStatus = async (context: AuthContext, user:Au
 export const managedConnectorEdit = async (
   context: AuthContext,
   user:AuthUser,
-  input: EditManagedConnectorInput,
-  publicKey: string,
+  input: EditManagedConnectorInput
 ) => {
   const conn: any = await storeLoadById(context, user, input.id, ENTITY_TYPE_CONNECTOR);
   if (isEmptyField(conn)) {
@@ -164,7 +163,12 @@ export const managedConnectorEdit = async (
   if (isEmptyField(targetContract)) {
     throw UnsupportedError('Target contract not found');
   }
-  const contractConfigurations = computeConnectorTargetContract(input.manager_contract_configuration, targetContract, publicKey);
+  const connectorManagers = await listAllEntities<BasicStoreEntityConnectorManager>(context, user, [ENTITY_TYPE_CONNECTOR_MANAGER], { connectionFormat: false });
+  if (connectorManagers?.length < 1) {
+    throw FunctionalError('There is no connector manager configured');
+  }
+  const currentManager = connectorManagers[0];
+  const contractConfigurations = computeConnectorTargetContract(input.manager_contract_configuration, targetContract, currentManager.public_key);
   const patch: any = {
     name: input.name,
     connector_type: targetContract.container_type,
@@ -178,8 +182,7 @@ export const managedConnectorEdit = async (
 export const managedConnectorAdd = async (
   context: AuthContext,
   user:AuthUser,
-  input: AddManagedConnectorInput,
-  publicKey: string,
+  input: AddManagedConnectorInput
 ) => {
   // Get contract
   const contractsMap = getSupportedContractsByImage();
@@ -190,7 +193,12 @@ export const managedConnectorAdd = async (
   if (!targetContract.manager_supported) {
     throw FunctionalError('You have not chosen a connector supported by the manager');
   }
-  const contractConfigurations = computeConnectorTargetContract(input.manager_contract_configuration, targetContract, publicKey);
+  const connectorManagers = await listAllEntities<BasicStoreEntityConnectorManager>(context, user, [ENTITY_TYPE_CONNECTOR_MANAGER], { connectionFormat: false });
+  if (connectorManagers?.length < 1) {
+    throw FunctionalError('There is no connector manager configured');
+  }
+  const currentManager = connectorManagers[0];
+  const contractConfigurations = computeConnectorTargetContract(input.manager_contract_configuration, targetContract, currentManager.public_key);
   // Get user
   if (input.user_id.length < 2) {
     throw FunctionalError('You have not chosen a user responsible for data creation', {});

@@ -22,6 +22,9 @@ export interface BasicStoreEntityConnector extends StoreEntity {
   connector_info: ConnectorInfo,
   playbook_compatible: boolean,
 }
+export interface BasicStoreEntityConnectorManager extends BasicStoreEntity {
+  public_key: string,
+}
 
 export interface BasicStoreEntitySynchronizer extends BasicStoreEntity {
   name: string,
