@@ -243,7 +243,7 @@ const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHe
             return computeLink(e);
           }}
           additionalHeaderButtons={additionalHeaderButtons}
-          additionalFilterKeys={[`pir_score.${pirId}`]}
+          additionalFilterKeys={[`pir_score.${pirId}`, `last_pir_score_date.${pirId}`]}
         />
       )}
     </>

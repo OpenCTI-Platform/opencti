@@ -147,7 +147,7 @@ import {
   INSTANCE_RELATION_FILTER,
   INSTANCE_RELATION_TYPES_FILTER,
   IS_INFERRED_FILTER,
-  isComplexConversionFilterKey,
+  isComplexConversionFilterKey, LAST_PIR_SCORE_DATE_FILTER_PREFIX,
   PIR_SCORE_FILTER_PREFIX,
   RELATION_FROM_FILTER,
   RELATION_FROM_ROLE_FILTER,
@@ -3085,19 +3085,20 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
           });
         }
       }
-      if (filterKey.startsWith(PIR_SCORE_FILTER_PREFIX)) {
+      if (filterKey.startsWith(PIR_SCORE_FILTER_PREFIX) || filterKey.startsWith(LAST_PIR_SCORE_DATE_FILTER_PREFIX)) {
         // the key should be of format: pir_score.PIR_ID
         const splittedKey = filterKey.split('.');
         if (splittedKey.length !== 2) {
           throw FunctionalError('The pir_score filter key should be followed by a dot and the pir ID', { filterKey });
         }
+        const pirKey = splittedKey[0];
         const pirId = splittedKey[1];
         // push the nested pir_score filter associated to the given PIR ID
         finalFilters.push({
           key: ['pir_information'],
           values: [],
           nested: [
-            { ...filter, key: 'pir_score' },
+            { ...filter, key: pirKey },
             { key: 'pir_id', values: [pirId], operator: FilterOperator.Eq },
           ]
         });
