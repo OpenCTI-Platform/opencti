@@ -2141,6 +2141,12 @@ const buildLocalMustFilter = async (validFilter) => {
               field: nestedFieldKey
             }
           });
+        } else if (nestedOperator === FilterOperator.Within) {
+          nestedShould.push({
+            range: {
+              [nestedFieldKey]: { gte: nestedValues[0], lte: nestedValues[1] }
+            }
+          });
         } else {
           for (let i = 0; i < nestedValues.length; i += 1) {
             const nestedSearchValue = nestedValues[i].toString();
@@ -2154,7 +2160,11 @@ const buildLocalMustFilter = async (validFilter) => {
                 }
               });
             } else if (RANGE_OPERATORS.includes(nestedOperator)) {
-              nestedShould.push({ range: { [nestedFieldKey]: { [nestedOperator]: nestedSearchValue } } });
+              nestedShould.push({
+                range: {
+                  [nestedFieldKey]: { [nestedOperator]: nestedSearchValue }
+                }
+              });
             } else { // nestedOperator = 'eq'
               nestedShould.push({
                 multi_match: {
@@ -2409,7 +2419,11 @@ const buildLocalMustFilter = async (validFilter) => {
             if (arrayKeys.length > 1) {
               throw UnsupportedError('Range filter must have only one field', { keys: arrayKeys });
             }
-            valuesFiltering.push({ range: { [headKey]: { [operator]: values[i] } } });
+            valuesFiltering.push({
+              range: {
+                [headKey]: { [operator]: values[i] }
+              }
+            });
           }
         }
       }
@@ -2599,7 +2613,7 @@ const adaptFilterToIdsFilterKey = (filter) => {
     };
   }
 
-  // depending on the operator, only one of new Filter and newFilterGroup is defined
+  // depending on the operator, only one of newFilter and newFilterGroup is defined
   return { newFilter, newFilterGroup };
 };
 const adaptFilterToSourceReliabilityFilterKey = async (context, user, filter) => {

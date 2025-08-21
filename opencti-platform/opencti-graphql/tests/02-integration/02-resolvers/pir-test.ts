@@ -313,6 +313,15 @@ describe('PIR resolver standard behavior', () => {
       await listEntitiesPaginated(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersInIncorrectFormat });
     })
       .rejects.toThrowError('The filter key should be followed by a dot and the Pir ID');
+    // fetch entities scored today
+    const filtersWithinToday = addFilter(undefined, `${LAST_PIR_SCORE_DATE_FILTER_PREFIX}.${pirInternalId}`, ['now-1d', 'now'], 'within');
+    const stixDomainObjects4 = await listEntitiesPaginated(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithinToday });
+    expect(stixDomainObjects1.edges.length).toEqual(1);
+    expect(stixDomainObjects4.edges[0].node.internal_id).toEqual(flaggedElementId);
+    // fetch entities scored tomorrow
+    const filtersWithinTomorrow = addFilter(undefined, `${LAST_PIR_SCORE_DATE_FILTER_PREFIX}.${pirInternalId}`, ['now', 'now+1d'], 'within');
+    const stixDomainObjects5 = await listEntitiesPaginated(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithinTomorrow });
+    expect(stixDomainObjects5.edges.length).toEqual(0);
   });
 
   it('should update a pir meta rel by adding a new explanation', async () => {
