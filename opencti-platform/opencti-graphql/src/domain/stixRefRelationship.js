@@ -1,5 +1,5 @@
 import { dissoc, uniq } from 'ramda';
-import { createRelation, storeLoadByIdWithRefs, updateAttribute, updateAttributeFromLoadedWithRefs } from '../database/middleware';
+import { createRelation, deleteElementById, storeLoadByIdWithRefs, updateAttribute } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import {
@@ -17,7 +17,7 @@ import { schemaTypesDefinition } from '../schema/schema-types';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { findById as findStixObjectOrStixRelationshipById } from './stixObjectOrStixRelationship';
 import { elCount } from '../database/engine';
-import { READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS, READ_INDEX_STIX_META_RELATIONSHIPS, UPDATE_OPERATION_REMOVE } from '../database/utils';
+import { READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS, READ_INDEX_STIX_META_RELATIONSHIPS } from '../database/utils';
 import { findAll as findSubTypes } from './subType';
 
 // Query
@@ -114,27 +114,7 @@ export const stixRefRelationshipEditField = async (context, user, stixRefRelatio
   return notify(BUS_TOPICS[ABSTRACT_STIX_REF_RELATIONSHIP].EDIT_TOPIC, element, user);
 };
 export const stixRefRelationshipDelete = async (context, user, stixRefRelationshipId) => {
-  // Not use storeLoadById to have compatibility on parent type with ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP type
-  const stixRefRelation = await storeLoadById(context, user, stixRefRelationshipId, ABSTRACT_STIX_RELATIONSHIP);
-  if (!stixRefRelation) {
-    throw FunctionalError('Cannot delete the relation, Stix-Ref-Relation cannot be found.');
-  }
-  const fromPromise = storeLoadByIdWithRefs(context, user, stixRefRelation.fromId);
-  const toPromise = internalLoadById(context, user, stixRefRelation.toId);
-  const [from, to] = await Promise.all([fromPromise, toPromise]);
-  if (!from || !to) {
-    throw FunctionalError('MISSING_ELEMENTS', {
-      from: stixRefRelation.fromId,
-      from_missing: !from,
-      to: stixRefRelation.toId,
-      to_missing: !to
-    });
-  }
-  const refInputName = schemaRelationsRefDefinition.convertDatabaseNameToInputName(from.entity_type, stixRefRelation.relationship_type);
-  const inputs = [{ key: refInputName, value: [stixRefRelation.toId], operation: UPDATE_OPERATION_REMOVE }];
-  await updateAttributeFromLoadedWithRefs(context, user, from, inputs);
-
-  await notify(BUS_TOPICS[ABSTRACT_STIX_REF_RELATIONSHIP].DELETE_TOPIC, stixRefRelation, user);
+  await deleteElementById(context, user, stixRefRelationshipId, ABSTRACT_STIX_REF_RELATIONSHIP);
   return stixRefRelationshipId;
 };
 
