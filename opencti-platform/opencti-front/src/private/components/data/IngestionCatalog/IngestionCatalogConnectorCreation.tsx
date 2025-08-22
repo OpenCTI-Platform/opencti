@@ -12,7 +12,6 @@ import { Schema, Validator } from '@cfworker/json-schema';
 import { Link } from 'react-router-dom';
 import { JsonSchema } from '@jsonforms/core';
 import { Alert } from '@mui/material';
-import makeStyles from '@mui/styles/makeStyles';
 import Typography from '@mui/material/Typography';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import {
@@ -30,19 +29,6 @@ import { useFormatter } from '../../../../components/i18n';
 import { type FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import TextField from '../../../../components/TextField';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  alert: {
-    width: '100%',
-    marginTop: 8,
-  },
-  message: {
-    width: '100%',
-    overflow: 'visible',
-  },
-}));
 
 const ingestionCatalogConnectorCreationMutation = graphql`
   mutation IngestionCatalogConnectorCreationMutation($input: AddManagedConnectorInput) {
@@ -77,7 +63,6 @@ export interface ManagedConnectorValues extends BasicUserHandlingValues {
 const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId }: IngestionCatalogConnectorCreationProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const classes = useStyles();
   const [compiledValidator, setCompiledValidator] = useState<Validator | undefined>(undefined);
   const [commitRegister] = useApiMutation<IngestionCatalogConnectorCreationMutation>(ingestionCatalogConnectorCreationMutation);
 
@@ -206,11 +191,22 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
                   <div style={fieldSpacingContainerStyle}>{t_i18n('Configuration')}</div>
                   {requiredPropertiesArray.length > 0 && (
                     <Alert
-                      classes={{ root: classes.alert, message: classes.message }}
                       severity="info"
                       icon={false}
                       variant="outlined"
-                      style={{ position: 'relative' }}
+                      style={{
+                        position: 'relative',
+                        width: '100%',
+                        marginTop: 8,
+                      }}
+                      slotProps={{
+                        message: {
+                          style: {
+                            width: '100%',
+                            overflow: 'visible',
+                          },
+                        },
+                      }}
                     >
                       <JsonForms
                         data={defaultValues}
