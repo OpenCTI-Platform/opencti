@@ -3102,9 +3102,26 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         });
       }
       if (filterKey === USER_SERVICE_ACCOUNT_FILTER) {
-        // key USER_SERVICE_ACCOUNT_FILTER === nul also filtered
-        if ((filter.values.includes('false') && filter.operator === FilterOperator.Eq)
-        || (filter.values.includes('true') && filter.operator === FilterOperator.NotEq)) {
+        const { operator, mode, values } = filter;
+        if (values.includes('false') && values.includes('true') && mode === FilterMode.And) {
+          if (operator === FilterOperator.Eq) {
+            finalFilters.push(filter); // nothing to modify
+          } else if (operator === FilterOperator.NotEq) {
+            const newFilterGroup = {
+              mode: 'and',
+              filters: [{
+                key: USER_SERVICE_ACCOUNT_FILTER,
+                values: [],
+                operator: FilterOperator.NotNil,
+              },
+              filter],
+              filterGroups: [],
+            };
+            finalFilterGroups.push(newFilterGroup);
+          }
+        } else if ((values.includes('false') && operator === FilterOperator.Eq)
+        || (values.includes('true') && operator === FilterOperator.NotEq)) {
+          // if user_service_account = false, return also users with with null user_service_account
           const newFilterGroup = {
             mode: 'or',
             filters: [{
@@ -3116,6 +3133,8 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
             filterGroups: [],
           };
           finalFilterGroups.push(newFilterGroup);
+        } else {
+          finalFilters.push(filter); // nothing to modify
         }
       }
     } else if (arrayKeys.some((filterKey) => isObjectAttribute(filterKey)) && !arrayKeys.some((filterKey) => filterKey === 'connections')) {
