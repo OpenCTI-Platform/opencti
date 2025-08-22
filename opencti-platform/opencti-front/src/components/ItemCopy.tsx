@@ -1,6 +1,7 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useRef, useState, useEffect } from 'react';
 import { ContentCopyOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
+import Tooltip from '@mui/material/Tooltip';
 import { useFormatter } from './i18n';
 import { copyToClipboard } from '../utils/utils';
 import type { Theme } from './Theme';
@@ -67,15 +68,27 @@ const ItemCopy: FunctionComponent<ItemCopyProps> = ({
   const classes = useStyles();
   const textToCopy = value || content;
 
+  const textRef = useRef<HTMLDivElement>(null);
+  const [isTruncated, setIsTruncated] = useState(false);
+
+  useEffect(() => {
+    const textElement = textRef.current;
+    if (textElement) {
+      setIsTruncated(textElement.scrollWidth > textElement.clientWidth);
+    }
+  }, [content]);
+
   const classNameVariant = () => {
     if (variant === 'inLine') return classes.containerInline;
     if (variant === 'wrap') return classes.containerWrap;
     return classes.container;
   };
 
-  return (
-    <div className={classNameVariant()}>
-      {limit ? truncate(content, limit) : content}
+  const textToShow = limit ? truncate(content, limit) : content;
+
+  const textElement = (
+    <div ref={textRef} className={classNameVariant()}>
+      {textToShow}
       <span
         className={variant === 'inLine' ? classes.iconInline : classes.icon}
         onClick={(event) => {
@@ -91,5 +104,14 @@ const ItemCopy: FunctionComponent<ItemCopyProps> = ({
       </span>
     </div>
   );
+
+  return isTruncated || limit ? (
+    <Tooltip title={content} placement="bottom-start">
+      {textElement}
+    </Tooltip>
+  ) : (
+    textElement
+  );
 };
+
 export default ItemCopy;
