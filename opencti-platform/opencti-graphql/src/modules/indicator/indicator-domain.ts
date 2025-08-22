@@ -21,7 +21,7 @@ import {
 import { elCount } from '../../database/engine';
 import { isEmptyField, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
 import { cleanupIndicatorPattern, extractObservablesFromIndicatorPattern, extractValidObservablesFromIndicatorPattern } from '../../utils/syntax';
-import { computeValidPeriod, INDICATOR_DEFAULT_SCORE } from './indicator-utils';
+import { computeValidPeriod, hasSameSourceAlreadyUpdateThisScore, INDICATOR_DEFAULT_SCORE } from './indicator-utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type BasicStoreEntityIndicator, ENTITY_TYPE_INDICATOR, type StoreEntityIndicator } from './indicator-types';
@@ -456,9 +456,7 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
     if (scoreEditInput && !scoreEditInput.value.includes(baseScore) && !validUntilEditInput) {
       const newScore = scoreEditInput.value[0];
       // First check if the same update by the same source exists
-      const history = indicatorBeforeUpdate.decay_history;
-      const sameSourceSameScoreExists = history.find((decayPoint) => decayPoint.updated_by === user.id && decayPoint.score === newScore) !== undefined;
-      if (!sameSourceSameScoreExists) {
+      if (!hasSameSourceAlreadyUpdateThisScore(user.id, newScore, indicatorBeforeUpdate.decay_history)) {
         const allChanges = restartDecayComputationOnEdit(newScore, indicatorBeforeUpdate, user.id);
         finalInput.push(...allChanges);
         finalInput.push({ key: X_SCORE, value: [newScore] });

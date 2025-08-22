@@ -3,11 +3,12 @@ import { MARKING_TLP_AMBER, MARKING_TLP_AMBER_STRICT, MARKING_TLP_CLEAR, MARKING
 import { getEntitiesMapFromCache } from '../../database/cache';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { IndicatorAddInput } from '../../generated/graphql';
 import type { BasicStoreEntity } from '../../types/store';
 import { isEmptyField, isNotEmptyField } from '../../database/utils';
 import { utcDate } from '../../utils/format';
 import { ValidationError } from '../../config/errors';
+import type { IndicatorAddInput } from '../../generated/graphql';
+import type { DecayHistory } from '../decayRule/decayRule-domain';
 
 export const INDICATOR_DEFAULT_SCORE: number = 50;
 
@@ -115,4 +116,11 @@ export const computeValidPeriod = async (indicator: IndicatorAddInput, lifetimeI
     revoked: validUntil.isSameOrBefore(utcDate()),
     validPeriod: validFrom.isBefore(validUntil),
   };
+};
+
+export const hasSameSourceAlreadyUpdateThisScore = (sourceId: string, score: number, decay_history: DecayHistory[]) => {
+  if (score && decay_history && sourceId) {
+    return decay_history.find((decayPoint) => decayPoint.updated_by === sourceId && decayPoint.score === score) !== undefined;
+  }
+  return false;
 };

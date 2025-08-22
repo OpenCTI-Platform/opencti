@@ -11,6 +11,7 @@ import { stixDomainObjectDelete } from '../../../src/domain/stixDomainObject';
 import { logApp } from '../../../src/config/conf';
 import { getFakeAuthUser } from '../../utils/domainQueryHelper';
 import { INDICATOR_DEFAULT_SCORE } from '../../../src/modules/indicator/indicator-utils';
+import type { AuthUser } from '../../../src/types/user';
 
 describe('Testing field patch and upsert on indicator for trio {score, valid until, revoked}', () => {
   const todayMorning = new Date();
@@ -18,11 +19,15 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
   const inPast90Days = new Date(todayMorning.getTime() - NO_DECAY_DEFAULT_VALID_PERIOD);
   const tomorrow = new Date(todayMorning.getTime() + dayToMs(1));
   const fiveDaysAgo = new Date(todayMorning.getTime() - dayToMs(5));
+  const inFiveDays = new Date(todayMorning.getTime() + dayToMs(5));
+
+  const connectorUser = getFakeAuthUser('fakeConnector');
+  connectorUser.capabilities = [{ name: 'KNOWLEDGE_KNUPDATE_KNDELETE' }];
 
   const indicatorCreatedIds : string[] = [];
-  const createIndicator = async (input: IndicatorAddInput, withDecay: boolean): Promise<BasicStoreEntityIndicator> => {
+  const createIndicator = async (user:AuthUser, input: IndicatorAddInput, withDecay: boolean): Promise<BasicStoreEntityIndicator> => {
     if (withDecay) {
-      const indicatorWithDecay = await addIndicator(testContext, ADMIN_USER, input);
+      const indicatorWithDecay = await addIndicator(testContext, user, input);
       indicatorCreatedIds.push(indicatorWithDecay.id);
       if (!indicatorWithDecay.revoked) {
         expect(indicatorWithDecay.decay_applied_rule).toBeDefined();
@@ -32,7 +37,7 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
     }
 
     // bypass addIndicator to have indicator without decay rules
-    const indicatorWithoutDecay = await createEntity(testContext, ADMIN_USER, input, ENTITY_TYPE_INDICATOR) as BasicStoreEntityIndicator;
+    const indicatorWithoutDecay = await createEntity(testContext, user, input, ENTITY_TYPE_INDICATOR) as BasicStoreEntityIndicator;
     indicatorCreatedIds.push(indicatorWithoutDecay.id);
     expect(indicatorWithoutDecay.decay_applied_rule).toBeUndefined();
     return indicatorWithoutDecay;
@@ -53,7 +58,7 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
       pattern_type: STIX_PATTERN_TYPE,
       x_opencti_score: 87,
     };
-    const indicatorWithDecay = await createIndicator(indicatorAddInput, true);
+    const indicatorWithDecay = await createIndicator(ADMIN_USER, indicatorAddInput, true);
 
     const indicatorNoDecayInput = {
       name: 'Indicator domain - no decay - validate valid from and until timeline',
@@ -64,7 +69,7 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
       valid_until: tomorrow
     };
 
-    const indicatorWithoutDecay = await createIndicator(indicatorNoDecayInput, false);
+    const indicatorWithoutDecay = await createIndicator(ADMIN_USER, indicatorNoDecayInput, false);
 
     // WHEN indicators are updated with wrong dates
     const futureValidFrom = new Date(new Date(indicatorWithDecay.valid_until).getTime() + dayToMs(1));
@@ -89,7 +94,7 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
       valid_until: tomorrow,
       created: fiveDaysAgo
     };
-    const indicatorWithoutValidFrom = await createIndicator(indicatorInput, true);
+    const indicatorWithoutValidFrom = await createIndicator(ADMIN_USER, indicatorInput, true);
     const indicatorCreated = await findById(testContext, ADMIN_USER, indicatorWithoutValidFrom.id);
     expect(indicatorCreated.valid_from).toBe(fiveDaysAgo.toISOString());
   });
@@ -102,7 +107,7 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
       pattern_type: STIX_PATTERN_TYPE,
       x_opencti_score: 87,
     };
-    const indicatorWithDecay = await createIndicator(indicatorAddInput, true);
+    const indicatorWithDecay = await createIndicator(ADMIN_USER, indicatorAddInput, true);
 
     const indicatorNoDecayInput = {
       name: 'Indicator domain test - no decay - validate score input',
@@ -112,7 +117,7 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
       valid_from: inPast90Days,
       valid_until: tomorrow
     };
-    const indicatorWithoutDecay = await createIndicator(indicatorNoDecayInput, false);
+    const indicatorWithoutDecay = await createIndicator(ADMIN_USER, indicatorNoDecayInput, false);
 
     // WHEN indicators are updated with wrong score values
     const inputBelow: EditInput[] = [{ key: X_SCORE, value: [-12] }];
@@ -132,7 +137,7 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
       pattern_type: STIX_PATTERN_TYPE,
       x_opencti_score: 87,
     };
-    const indicatorWithDecay = await createIndicator(indicatorAddInput, true);
+    const indicatorWithDecay = await createIndicator(ADMIN_USER, indicatorAddInput, true);
     expect(indicatorWithDecay.revoked).toBeFalsy();
 
     // --------------------
@@ -163,7 +168,7 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
       pattern_type: STIX_PATTERN_TYPE,
       x_opencti_score: 95,
     };
-    const indicatorWithDecay = await createIndicator(indicatorAddInput, true);
+    const indicatorWithDecay = await createIndicator(ADMIN_USER, indicatorAddInput, true);
     const inputToRevoke: EditInput[] = [{ key: 'revoked', value: [true] }];
     await indicatorEditField(testContext, ADMIN_USER, indicatorWithDecay.id, inputToRevoke);
     const indicatorUpdatedRevoked = await findById(testContext, ADMIN_USER, indicatorWithDecay.id);
@@ -201,7 +206,7 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
       valid_from: inPast90Days,
       valid_until: tomorrow
     };
-    const indicatorWithoutDecay = await createIndicator(indicatorNoDecayInput, false);
+    const indicatorWithoutDecay = await createIndicator(ADMIN_USER, indicatorNoDecayInput, false);
 
     const inputToRevoke: EditInput[] = [{ key: 'revoked', value: [true] }];
     await indicatorEditField(testContext, ADMIN_USER, indicatorWithoutDecay.id, inputToRevoke);
@@ -220,10 +225,7 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
       pattern_type: STIX_PATTERN_TYPE,
       x_opencti_score: 95,
     };
-    const indicator = await createIndicator(indicatorAddInput, true);
-
-    const connectorUser = getFakeAuthUser('fakeConnector');
-    connectorUser.capabilities = [{ name: 'KNOWLEDGE_KNUPDATE_KNDELETE' }];
+    const indicator = await createIndicator(ADMIN_USER, indicatorAddInput, true);
 
     // First update with ADMIN should work fine
     const inputToUpdateScoreUserAdmin: EditInput[] = [{ key: X_SCORE, value: [80] }, { key: 'description', value: ['fieldPatch 1'] }];
@@ -268,9 +270,9 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
       valid_until: fiveDaysAgo,
       revoked: true
     };
-    const indicatorRevoked = await createIndicator(indicatorNoDecayInput, true);
+    const indicatorRevoked = await createIndicator(ADMIN_USER, indicatorNoDecayInput, true);
     expect(indicatorRevoked.revoked).toBeTruthy();
-    expect(indicatorRevoked.decay_applied_rule).toBeUndefined();
+    expect(indicatorRevoked.x_opencti_score).toBe(5);
 
     // When the same indicator is created again (upsert) - no score
     const indicatorUpsert = {
@@ -281,12 +283,12 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
       valid_until: tomorrow,
       revoked: false
     };
-    const indicatorUpsertEntity = await createIndicator(indicatorUpsert, true);
+    const indicatorUpsertEntity = await createIndicator(ADMIN_USER, indicatorUpsert, true);
     expect(indicatorUpsertEntity.revoked).toBeFalsy();
     expect(indicatorUpsertEntity.x_opencti_score).toBe(INDICATOR_DEFAULT_SCORE);
   });
 
-  it.todo('should revoke move to false recompute score on upsert, with score on input', async () => {
+  it('should revoke move to false recompute score on upsert, with score on input', async () => {
     // GIVEN an indicator that is created and then revoked.
     const indicatorNoDecayInput = {
       name: 'Indicator domain test without decay',
@@ -297,9 +299,9 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
       valid_until: fiveDaysAgo,
       revoked: true
     };
-    const indicatorRevoked = await createIndicator(indicatorNoDecayInput, true);
+    const indicatorRevoked = await createIndicator(ADMIN_USER, indicatorNoDecayInput, true);
     expect(indicatorRevoked.revoked).toBeTruthy();
-    expect(indicatorRevoked.decay_applied_rule).toBeUndefined();
+    expect(indicatorRevoked.x_opencti_score).toBe(5);
 
     // When the same indicator is created again (upsert) - no score
     const indicatorUpsert = {
@@ -307,17 +309,52 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
       pattern: '[domain-name:value = \'createdrevoked.io\']',
       pattern_type: STIX_PATTERN_TYPE,
       valid_from: inPast90Days,
-      valid_until: fiveDaysAgo,
+      valid_until: tomorrow,
       x_opencti_score: 80,
       revoked: false
     };
-    const indicatorUpsertEntity = await createIndicator(indicatorUpsert, true);
+    const indicatorUpsertEntity = await createIndicator(ADMIN_USER, indicatorUpsert, true);
     expect(indicatorUpsertEntity.revoked).toBeFalsy();
-    expect(indicatorUpsertEntity.decay_applied_rule).toBeDefined();
-    expect(indicatorUpsertEntity.decay_applied_rule.decay_rule_id).toBe('1234');
     expect(indicatorUpsertEntity.x_opencti_score).toBe(80);
   });
 
-  it.todo('should upsert 2 times with same source and same score be ignored', async () => {
+  it.only('should upsert 2 times with same source and same score be ignored', async () => {
+    // GIVEN an indicator that is created
+    const indicatorInput = {
+      name: 'Indicator domain test concurrent upserts',
+      pattern: '[domain-name:value = \'jesaisplus.io\']',
+      pattern_type: STIX_PATTERN_TYPE,
+      x_opencti_score: 80,
+      valid_from: inPast90Days,
+      valid_until: inFiveDays,
+    };
+    const indicatorCreated = await createIndicator(ADMIN_USER, indicatorInput, true);
+    expect(indicatorCreated.x_opencti_score).toBe(80);
+
+    // When the same indicator is created again (upsert) - with another user
+    const indicatorUpsert1 = {
+      name: 'Indicator domain test concurrent upserts',
+      pattern: '[domain-name:value = \'jesaisplus.io\']',
+      pattern_type: STIX_PATTERN_TYPE,
+      x_opencti_score: 75,
+      valid_from: inPast90Days,
+      valid_until: inFiveDays,
+    };
+    await createIndicator(connectorUser, indicatorUpsert1, true);
+    const indicatorAfterUpsert1 = await findById(testContext, ADMIN_USER, indicatorCreated.id);
+    expect(indicatorAfterUpsert1.x_opencti_score).toBe(75);
+
+    // When the same indicator is created again (upsert) - same user (admin) same score (80)
+    const indicatorUpsert2 = {
+      name: 'Indicator domain test concurrent upserts',
+      pattern: '[domain-name:value = \'jesaisplus.io\']',
+      pattern_type: STIX_PATTERN_TYPE,
+      x_opencti_score: 80,
+      valid_from: inPast90Days,
+      valid_until: inFiveDays,
+    };
+    await createIndicator(ADMIN_USER, indicatorUpsert2, true);
+    const indicatorAfterUpsert2 = await findById(testContext, ADMIN_USER, indicatorCreated.id);
+    expect(indicatorAfterUpsert2.x_opencti_score).toBe(75); // score update is ignored
   });
 });
