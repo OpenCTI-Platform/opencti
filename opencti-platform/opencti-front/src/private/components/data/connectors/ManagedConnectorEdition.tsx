@@ -37,12 +37,6 @@ const updateManagedConnector = graphql`
   }
 `;
 
-const deleteManagedConnector = graphql`
-  mutation ManagedConnectorEditionDeleteMutation($id: ID!){
-    deleteConnector(id: $id)
-  }
-`;
-
 interface ManagedConnectorValues {
   name: string
   creator?: FieldOption
@@ -72,7 +66,6 @@ const ManagedConnectorEdition = ({
   });
 
   const [commitUpdate] = useApiMutation(updateManagedConnector);
-  const [commitDelete] = useApiMutation(deleteManagedConnector);
   const submitConnectorManagementCreation = (values: ManagedConnectorValues, {
     setSubmitting,
     resetForm,
@@ -209,16 +202,7 @@ const ManagedConnectorEdition = ({
                   )}
                 </>
               )}
-              <div style={{ marginTop: theme.spacing(2), gap: theme.spacing(1), display: 'flex', justifyContent: 'space-between' }}>
-                <Button
-                  variant="outlined"
-                  color="error"
-                  onClick={() => {
-                    commitDelete({ variables: { id: connector.id }, onCompleted: onClose });
-                  }}
-                >
-                  {t_i18n('Delete')}
-                </Button>
+              <div style={{ marginTop: theme.spacing(2), gap: theme.spacing(1), display: 'flex', justifyContent: 'flex-end' }}>
                 <div style={{ display: 'flex', gap: theme.spacing(1) }}>
                   <Button
                     variant="outlined"
