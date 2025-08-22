@@ -9,13 +9,8 @@ import Chip from '@mui/material/Chip';
 import { interval } from 'rxjs';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
-import { DeleteOutlined, DeleteSweepOutlined, PlaylistRemoveOutlined } from '@mui/icons-material';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
 import { useTheme } from '@mui/styles';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import { ListItemButton } from '@mui/material';
@@ -23,13 +18,9 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Alert from '@mui/material/Alert';
 import UpdateIcon from '@mui/icons-material/Update';
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import DialogTitle from '@mui/material/DialogTitle';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import ManagedConnectorEdition from './ManagedConnectorEdition';
-import DangerZoneBlock from '../../common/danger_zone/DangerZoneBlock';
+import ConnectorPopover from '@components/data/connectors/ConnectorPopover';
 import Filters from '../../common/lists/Filters';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { useFormatter } from '../../../../components/i18n';
@@ -50,19 +41,14 @@ import ConnectorWorks, { connectorWorksQuery } from './ConnectorWorks';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import ItemCopy from '../../../../components/ItemCopy';
-import Transition from '../../../../components/Transition';
 import ItemIcon from '../../../../components/ItemIcon';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
-import DeleteDialog from '../../../../components/DeleteDialog';
-import useDeletion from '../../../../utils/hooks/useDeletion';
-import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
-import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
 import { Connector_connector$data } from './__generated__/Connector_connector.graphql';
 import { ConnectorUpdateTriggerMutation, EditInput } from './__generated__/ConnectorUpdateTriggerMutation.graphql';
 import { ConnectorUpdateStatusMutation } from './__generated__/ConnectorUpdateStatusMutation.graphql';
-import { ConnectorWorksQuery$variables, ConnectorWorksQuery$data } from './__generated__/ConnectorWorksQuery.graphql';
+import { ConnectorWorksQuery$data, ConnectorWorksQuery$variables } from './__generated__/ConnectorWorksQuery.graphql';
 
 // Type extension for organization node with authorized_authorities
 interface OrganizationNodeWithAuthorities {
@@ -186,7 +172,6 @@ interface ConnectorComponentProps {
 
 const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connector, relay }) => {
   const { t_i18n, nsdt } = useFormatter();
-  const navigate = useNavigate();
   const theme = useTheme<Theme>();
 
   // Helper function to create connector configuration
@@ -211,19 +196,10 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
   const connectorFiltersScope = useGetConnectorFilterEntityTypes(connectorConfig);
   const connectorAvailableFilterKeys = useGetConnectorAvailableFilterKeys(connectorConfig);
   const [filters, helpers] = useFiltersState(connectorFilters);
-
-  const [displayResetState, setDisplayResetState] = useState(false);
-  const [resetting, setResetting] = useState(false);
-  const [displayClearWorks, setDisplayClearWorks] = useState(false);
-  const [clearing, setClearing] = useState(false);
-  const [editionOpen, setEditionOpen] = useState(false);
   const [tabValue, setTabValue] = useState(0);
 
   // API mutations - defined early to avoid use-before-define errors
   const [commitUpdateStatus] = useApiMutation<ConnectorUpdateStatusMutation>(updateRequestedStatus);
-  const [commitResetState] = useApiMutation(connectorResetStateMutation);
-  const [commitDeleteConnector] = useApiMutation(connectorDeletionMutation);
-  const [commitClearWorks] = useApiMutation(connectorWorkDeleteMutation);
   const [commitUpdateConnectorTrigger] = useApiMutation<ConnectorUpdateTriggerMutation>(connectorUpdateTriggerMutation);
 
   useEffect(() => {
@@ -260,65 +236,6 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
     }
   }, [filters, connector.id, connector.connector_trigger_filters, connectorFiltersEnabled]);
 
-  const handleOpenResetState = () => {
-    setDisplayResetState(true);
-  };
-
-  const handleCloseResetState = () => {
-    setDisplayResetState(false);
-  };
-
-  const handleOpenClearWorks = () => {
-    setDisplayClearWorks(true);
-  };
-
-  const handleCloseClearWorks = () => {
-    setDisplayClearWorks(false);
-  };
-
-  const submitResetState = () => {
-    setResetting(true);
-    commitResetState({
-      variables: {
-        id: connector.id,
-      },
-      onCompleted: () => {
-        MESSAGING$.notifySuccess('The connector state has been reset and messages queue has been purged');
-        setResetting(false);
-        setDisplayResetState(false);
-      },
-    });
-  };
-
-  const submitClearWorks = () => {
-    setClearing(true);
-    commitClearWorks({
-      variables: {
-        connectorId: connector.id,
-      },
-      onCompleted: () => {
-        MESSAGING$.notifySuccess('The connector works have been cleared');
-        setClearing(false);
-        setDisplayClearWorks(false);
-      },
-    });
-  };
-
-  const deletion = useDeletion({});
-  const { setDeleting, handleOpenDelete, handleCloseDelete } = deletion;
-  const submitDelete = () => {
-    setDeleting(true);
-    commitDeleteConnector({
-      variables: {
-        id: connector.id,
-      },
-      onCompleted: () => {
-        handleCloseDelete();
-        navigate('/dashboard/data/ingestion/connectors');
-      },
-    });
-  };
-
   const filtersSearchContext = { entityTypes: connectorFiltersScope, connectorsScope: true };
 
   const userHasSettingsCapability = useGranted([SETTINGS_SETACCESSES]);
@@ -330,8 +247,6 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
   const isBuffering = () => {
     return connector.connector_info ? connector.connector_info.queue_messages_size > connector.connector_info.queue_threshold : false;
   };
-
-  const { isSensitive } = useSensitiveModifications('connector_reset');
 
   const computeConnectorStatus = useComputeConnectorStatus();
 
@@ -787,110 +702,30 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
         >
           <Security needs={[MODULES_MODMANAGE]}>
             <>
+              <ConnectorPopover
+                connector={connector}
+              />
               {connector.is_managed && (
-              <Button
-                variant="contained"
-                disabled={computeConnectorStatus(connector).processing}
-                color={connector.manager_current_status === 'started' ? 'error' : 'primary'}
-                onClick={() => commitUpdateStatus({
-                  variables: {
-                    input: {
-                      id: connector.id,
-                      status: connector.manager_current_status === 'started' ? 'stopping' : 'starting',
+                <Button
+                  variant="contained"
+                  disabled={computeConnectorStatus(connector).processing}
+                  color={connector.manager_current_status === 'started' ? 'error' : 'primary'}
+                  onClick={() => commitUpdateStatus({
+                    variables: {
+                      input: {
+                        id: connector.id,
+                        status: connector.manager_current_status === 'started' ? 'stopping' : 'starting',
+                      },
                     },
-                  },
-                })}
-              >
-                {t_i18n(connector.manager_current_status === 'started' ? 'Stop' : 'Start')}
-              </Button>
-              )}
-              {isSensitive && (
-                <div style={{ position: 'relative', display: 'inline-block' }}>
-                  <DangerZoneBlock
-                    type="connector_reset"
-                    sx={{
-                      root: { border: 'none', padding: 0, margin: 0 },
-                      title: { position: 'absolute', zIndex: 1, left: 4, top: 9, fontSize: 8 },
-                    }}
-                  >
-                    {({ disabled = false }: { disabled?: boolean }) => (
-                      <Button
-                        color="error"
-                        variant="outlined"
-                        disabled={disabled || !!connector.built_in}
-                        onClick={handleOpenResetState}
-                        style={{
-                          minWidth: '6rem',
-                        }}
-                      >
-                        <span style={{ zIndex: 2 }}>
-                          {t_i18n('Reset')}
-                        </span>
-                      </Button>
-                    )}
-                  </DangerZoneBlock>
-                </div>
-              )}
-              <ToggleButtonGroup
-                size="small"
-              >
-                {!isSensitive && (
-                  <Tooltip title={t_i18n('Reset the connector state')}>
-                    <span>
-                      <ToggleButton
-                        onClick={handleOpenResetState}
-                        aria-haspopup="true"
-                        disabled={!!connector.built_in}
-                        value={t_i18n('Reset')}
-                      >
-                        <PlaylistRemoveOutlined
-                          color="primary"
-                        />
-                      </ToggleButton>
-                    </span>
-                  </Tooltip>
-                )}
-                <Tooltip title={t_i18n('Clear all works')}>
-                  <span>
-                    <ToggleButton
-                      onClick={handleOpenClearWorks}
-                      aria-haspopup="true"
-                      value={t_i18n('Clear')}
-                    >
-                      <DeleteSweepOutlined
-                        color="primary"
-                      />
-                    </ToggleButton>
-                  </span>
-                </Tooltip>
-                <Tooltip title={t_i18n('Clear this connector')}>
-                  <span>
-                    <ToggleButton
-                      onClick={handleOpenDelete}
-                      aria-haspopup="true"
-                      disabled={!!connector.active || !!connector.built_in}
-                      value={t_i18n('Delete')}
-                    >
-                      <DeleteOutlined
-                        color="primary"
-                      />
-                    </ToggleButton>
-                  </span>
-                </Tooltip>
-              </ToggleButtonGroup>
-              {connector.is_managed && (
-                <EditEntityControlledDial
-                  onOpen={() => setEditionOpen(true)}
-                  variant='outlined'
-                  style={{}}
-                />
+                  })}
+                >
+                  {t_i18n(connector.manager_current_status === 'started' ? 'Stop' : 'Start')}
+                </Button>
               )}
             </>
           </Security>
         </div>
       </div>
-      {editionOpen
-          && (<ManagedConnectorEdition connector={connector} onClose={() => setEditionOpen(false)} />)}
 
       {connector.is_managed ? (
         <>
@@ -922,87 +757,6 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
           <ConnectorWorksSection connectorId={connector.id} />
         </>
       )}
-      <DeleteDialog
-        deletion={deletion}
-        submitDelete={submitDelete}
-        message={t_i18n('Do you want to delete this connector?')}
-      />
-      <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
-        open={displayResetState}
-        keepMounted={true}
-        slots={{ transition: Transition }}
-        onClose={handleCloseResetState}
-      >
-        <DialogTitle>
-          {t_i18n('Are you sure?')}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText component="div">
-            <Alert
-              severity={isSensitive ? 'warning' : 'info'}
-              variant="outlined"
-              color={isSensitive ? 'dangerZone' : undefined}
-              style={isSensitive ? {
-                borderColor: theme.palette.dangerZone.main,
-              } : {}}
-            >
-              <div>
-                {t_i18n('Do you want to reset the state and purge messages queue of this connector?')}
-                <br />
-                {t_i18n('Number of messages: ') + connector.connector_queue_details.messages_number}
-              </div>
-            </Alert>
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={handleCloseResetState}
-            disabled={resetting}
-          >
-            {t_i18n('Cancel')}
-          </Button>
-          <Button
-            onClick={submitResetState}
-            color={isSensitive ? 'error' : 'secondary'}
-            disabled={resetting}
-          >
-            {t_i18n('Confirm')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
-        open={displayClearWorks}
-        keepMounted={true}
-        slots={{ transition: Transition }}
-        onClose={handleCloseClearWorks}
-      >
-        <DialogTitle>
-          {t_i18n('Are you sure?')}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to clear the works of this connector?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={handleCloseClearWorks}
-            disabled={clearing}
-          >
-            {t_i18n('Cancel')}
-          </Button>
-          <Button
-            onClick={submitClearWorks}
-            color="secondary"
-            disabled={clearing}
-          >
-            {t_i18n('Confirm')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
     </>
   );
 };
