@@ -116,6 +116,7 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
     } else {
       optionalPropertiesArray.push(property);
     }
+    if (key === 'CONNECTOR_NAME') defaultValuesArray.push(['name', value.default]);
     if (value.default) defaultValuesArray.push([key, value.default]);
   });
   const requiredProperties: JsonSchema = { properties: Object.fromEntries(requiredPropertiesArray), required: connector.config_schema.required };

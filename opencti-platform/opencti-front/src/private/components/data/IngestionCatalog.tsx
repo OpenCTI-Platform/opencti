@@ -11,6 +11,8 @@ import Loader, { LoaderVariant } from '../../../components/Loader';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import ListCardsContent from '../../../components/list_cards/ListCardsContent';
 import { MESSAGING$ } from '../../../relay/environment';
+import GradientButton from '../../../components/GradientButton';
+import SearchInput from '../../../components/SearchInput';
 
 export const ingestionCatalogQuery = graphql`
   query IngestionCatalogQuery {
@@ -114,6 +116,19 @@ const IngestionCatalogComponent = ({
       <IngestionMenu />
       <PageContainer withRightMenu withGap>
         <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('Catalog'), current: true }]} />
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <SearchInput disabled />
+          <GradientButton
+            size="small"
+            sx={{ marginLeft: 1 }}
+            href={'https://filigran.notion.site/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76'}
+            target="_blank"
+            title={t_i18n('Browse more')}
+          >
+            {t_i18n('Browse more').toUpperCase()}
+          </GradientButton>
+
+        </div>
         {catalogsParsed.map((catalog) => {
           return catalog.contracts.length > 0 && (
             <ListCardsContent
