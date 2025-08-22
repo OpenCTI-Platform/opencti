@@ -16982,8 +16982,8 @@ export type MutationStixDomainObjectsExportAskArgs = {
   filters?: InputMaybe<FilterGroup>;
   format: Scalars['String']['input'];
   orderBy?: InputMaybe<StixDomainObjectsOrdering>;
-  orderByPir?: InputMaybe<Scalars['ID']['input']>;
   orderMode?: InputMaybe<OrderingMode>;
+  pirId?: InputMaybe<Scalars['ID']['input']>;
   relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   search?: InputMaybe<Scalars['String']['input']>;
   selectedIds?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -23718,8 +23718,8 @@ export type QueryStixDomainObjectsArgs = {
   filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<StixDomainObjectsOrdering>;
-  orderByPir?: InputMaybe<Scalars['ID']['input']>;
   orderMode?: InputMaybe<OrderingMode>;
+  pirId?: InputMaybe<Scalars['ID']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };

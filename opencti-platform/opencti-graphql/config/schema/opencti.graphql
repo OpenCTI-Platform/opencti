@@ -13436,7 +13436,7 @@ type Query {
     after: ID
     types: [String]
     orderBy: StixDomainObjectsOrdering
-    orderByPir: ID
+    pirId: ID
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
@@ -14880,7 +14880,7 @@ type Mutation {
     exportContext: ExportContext
     relationship_type: [String]
     orderBy: StixDomainObjectsOrdering
-    orderByPir: ID
+    pirId: ID
     orderMode: OrderingMode
     filters: FilterGroup
     selectedIds: [String]

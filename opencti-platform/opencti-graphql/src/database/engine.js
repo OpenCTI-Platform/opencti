@@ -3187,7 +3187,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
 };
 const elQueryBodyBuilder = async (context, user, options) => {
   // eslint-disable-next-line no-use-before-define
-  const { ids = [], after, orderBy = null, orderByPir = null, orderMode = 'asc', noSize = false, noSort = false, intervalInclude = false } = options;
+  const { ids = [], after, orderBy = null, pirId = null, orderMode = 'asc', noSize = false, noSort = false, intervalInclude = false } = options;
   const { relCount = false } = options;
   const first = options.first ?? ES_DEFAULT_PAGINATION;
   const { types = null, search = null } = options;
@@ -3257,7 +3257,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
       if (orderCriteria === '_score') {
         ordering = R.append({ [orderCriteria]: scoreSearchOrder }, ordering);
       } else {
-        const sortingForCriteria = buildElasticSortingForAttributeCriteria(orderCriteria, orderMode, orderByPir);
+        const sortingForCriteria = buildElasticSortingForAttributeCriteria(orderCriteria, orderMode, pirId);
         ordering = R.append(sortingForCriteria, ordering);
       }
     }
