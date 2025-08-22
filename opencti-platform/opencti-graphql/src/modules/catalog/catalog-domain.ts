@@ -12,7 +12,7 @@ import conf from '../../config/conf';
 
 const CUSTOM_CATALOGS: string[] = conf.get('app:custom_catalogs') ?? [];
 const ajv = new Ajv({ coerceTypes: true });
-addFormats(ajv, ['password', 'uri', 'duration', 'email', 'date-time']);
+addFormats(ajv, ['password', 'uri', 'duration', 'email', 'date-time', 'date']);
 
 // Cache of catalog to read on disk and parse only once
 let catalogMap: Record<string, CatalogType>;

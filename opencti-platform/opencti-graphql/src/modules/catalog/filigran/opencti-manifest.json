@@ -2,7 +2,7 @@
   "id": "filigran-catalog-id",
   "name": "OpenCTI Connectors contracts",
   "description": "",
-  "version": "6.7.9",
+  "version": "rolling",
   "contracts": [
     {
       "title": "AlienVault OTX",
@@ -21,7 +21,7 @@
       "subscription_link": "https://levelblue.com/open-threat-exchange",
       "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/alienvault",
       "manager_supported": false,
-      "container_version": "6.7.0",
+      "container_version": "rolling",
       "container_image": "opencti/connector-alienvault",
       "container_type": "EXTERNAL_IMPORT"
     },
@@ -43,7 +43,7 @@
       "subscription_link": "",
       "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/cisa-known-exploited-vulnerabilities",
       "manager_supported": false,
-      "container_version": "6.7.0",
+      "container_version": "rolling",
       "container_image": "opencti/connector-cisa-known-exploited-vulnerabilities",
       "container_type": "EXTERNAL_IMPORT"
     },
@@ -64,7 +64,7 @@
       "subscription_link": "",
       "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/crowdstrike",
       "manager_supported": false,
-      "container_version": "6.7.0",
+      "container_version": "rolling",
       "container_image": "opencti/connector-crowdstrike",
       "container_type": "EXTERNAL_IMPORT"
     },
@@ -86,7 +86,7 @@
       "subscription_link": "https://nvd.nist.gov/contact",
       "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/cve",
       "manager_supported": true,
-      "container_version": "6.7.0",
+      "container_version": "rolling",
       "container_image": "opencti/connector-cve",
       "container_type": "EXTERNAL_IMPORT",
       "config_schema": {
@@ -239,7 +239,7 @@
       "subscription_link": "",
       "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/dragos",
       "manager_supported": false,
-      "container_version": "6.7.0",
+      "container_version": "rolling",
       "container_image": "opencti/connector-dragos",
       "container_type": "EXTERNAL_IMPORT"
     },
@@ -261,9 +261,180 @@
       "subscription_link": "",
       "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/email-intel-imap",
       "manager_supported": false,
-      "container_version": "6.7.0",
+      "container_version": "rolling",
       "container_image": "opencti/connector-email-intel-imap",
-      "container_type": "EXTERNAL_IMPORT"
+      "container_type": "EXTERNAL_IMPORT",
+      "config_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "https://www.filigran.io/connectors/email-intel-imap_config.schema.json",
+        "type": "object",
+        "properties": {
+          "OPENCTI_URL": {
+            "format": "uri",
+            "maxLength": 2083,
+            "minLength": 1,
+            "type": "string"
+          },
+          "OPENCTI_TOKEN": {
+            "type": "string"
+          },
+          "OPENCTI_JSON_LOGGING": {
+            "default": true,
+            "type": "boolean"
+          },
+          "OPENCTI_SSL_VERIFY": {
+            "default": false,
+            "type": "boolean"
+          },
+          "CONNECTOR_ID": {
+            "type": "string"
+          },
+          "CONNECTOR_NAME": {
+            "default": "Email Intel IMAP",
+            "type": "string"
+          },
+          "CONNECTOR_TYPE": {
+            "const": "EXTERNAL_IMPORT",
+            "default": "EXTERNAL_IMPORT",
+            "type": "string"
+          },
+          "CONNECTOR_SCOPE": {
+            "default": [
+              "email-intel-imap"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "CONNECTOR_DURATION_PERIOD": {
+            "default": "PT1H",
+            "format": "duration",
+            "type": "string"
+          },
+          "CONNECTOR_LOG_LEVEL": {
+            "enum": [
+              "debug",
+              "info",
+              "warning",
+              "error",
+              "critical"
+            ],
+            "type": "string"
+          },
+          "CONNECTOR_AUTO": {
+            "default": false,
+            "type": "boolean"
+          },
+          "CONNECTOR_EXPOSE_METRICS": {
+            "default": false,
+            "type": "boolean"
+          },
+          "CONNECTOR_METRICS_PORT": {
+            "default": 9095,
+            "type": "integer"
+          },
+          "CONNECTOR_ONLY_CONTEXTUAL": {
+            "default": false,
+            "type": "boolean"
+          },
+          "CONNECTOR_RUN_AND_TERMINATE": {
+            "default": false,
+            "type": "boolean"
+          },
+          "CONNECTOR_VALIDATE_BEFORE_IMPORT": {
+            "default": false,
+            "type": "boolean"
+          },
+          "CONNECTOR_QUEUE_PROTOCOL": {
+            "default": "amqp",
+            "type": "string"
+          },
+          "CONNECTOR_QUEUE_THRESHOLD": {
+            "default": 500,
+            "type": "integer"
+          },
+          "CONNECTOR_SEND_TO_QUEUE": {
+            "default": true,
+            "type": "boolean"
+          },
+          "CONNECTOR_SEND_TO_DIRECTORY": {
+            "default": false,
+            "type": "boolean"
+          },
+          "CONNECTOR_SEND_TO_DIRECTORY_PATH": {
+            "default": null,
+            "type": "string"
+          },
+          "CONNECTOR_SEND_TO_DIRECTORY_RETENTION": {
+            "default": 7,
+            "type": "integer"
+          },
+          "EMAIL_INTEL_IMAP_TLP_LEVEL": {
+            "default": "amber+strict",
+            "enum": [
+              "white",
+              "clear",
+              "green",
+              "amber",
+              "amber+strict",
+              "red"
+            ],
+            "type": "string"
+          },
+          "EMAIL_INTEL_IMAP_RELATIVE_IMPORT_START_DATE": {
+            "default": "P30D",
+            "format": "duration",
+            "type": "string"
+          },
+          "EMAIL_INTEL_IMAP_HOST": {
+            "type": "string"
+          },
+          "EMAIL_INTEL_IMAP_PORT": {
+            "default": 993,
+            "type": "integer"
+          },
+          "EMAIL_INTEL_IMAP_USERNAME": {
+            "type": "string"
+          },
+          "EMAIL_INTEL_IMAP_PASSWORD": {
+            "default": null,
+            "format": "password",
+            "type": "string",
+            "writeOnly": true
+          },
+          "EMAIL_INTEL_IMAP_GOOGLE_TOKEN_JSON": {
+            "default": null,
+            "description": "Content of the token.json file from Google API",
+            "format": "password",
+            "type": "string",
+            "writeOnly": true
+          },
+          "EMAIL_INTEL_IMAP_MAILBOX": {
+            "default": "INBOX",
+            "type": "string"
+          },
+          "EMAIL_INTEL_IMAP_ATTACHMENTS_MIME_TYPES": {
+            "default": [
+              "application/pdf",
+              "text/csv",
+              "text/plain"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "OPENCTI_URL",
+          "OPENCTI_TOKEN",
+          "CONNECTOR_ID",
+          "EMAIL_INTEL_IMAP_HOST",
+          "EMAIL_INTEL_IMAP_USERNAME"
+        ],
+        "additionalProperties": false
+      }
     },
     {
       "title": "Email Intel Microsoft",
@@ -283,7 +454,7 @@
       "subscription_link": "",
       "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/oob/connector_manager/external-import/email-intel-microsoft",
       "manager_supported": false,
-      "container_version": "6.7.0",
+      "container_version": "rolling",
       "container_image": "opencti/connector-email-intel-microsoft",
       "container_type": "EXTERNAL_IMPORT",
       "config_schema": {
@@ -467,7 +638,7 @@
       "subscription_link": "",
       "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/flashpoint",
       "manager_supported": false,
-      "container_version": "6.7.0",
+      "container_version": "rolling",
       "container_image": "opencti/connector-flashpoint",
       "container_type": "EXTERNAL_IMPORT",
       "config_schema": {
@@ -684,9 +855,215 @@
       "subscription_link": "",
       "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/google-ti-feeds",
       "manager_supported": false,
-      "container_version": "6.7.0",
+      "container_version": "rolling",
       "container_image": "opencti/connector-google-ti-feeds",
       "container_type": "EXTERNAL_IMPORT"
+    },
+    {
+      "title": "GreyNoise Feed",
+      "slug": "greynoise-feed",
+      "description": "CHANGEME",
+      "short_description": "CHANGEME",
+      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
+      "use_cases": [
+        "CHANGEME"
+      ],
+      "verified": false,
+      "last_verified_date": "YYYY-MM-DD",
+      "playbook_supported": false,
+      "max_confidence_level": 50,
+      "support_version": ">= 6.5.1",
+      "subscription_link": "CHANGEME or null",
+      "source_code": "CHANGEME",
+      "manager_supported": true,
+      "container_version": "rolling",
+      "container_image": "opencti/connector-greynoise-feed",
+      "container_type": "EXTERNAL_IMPORT",
+      "config_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "https://www.filigran.io/connectors/greynoise-feed_config.schema.json",
+        "type": "object",
+        "properties": {
+          "OPENCTI_URL": {
+            "description": "The base URL of the OpenCTI instance.",
+            "format": "uri",
+            "maxLength": 2083,
+            "minLength": 1,
+            "type": "string"
+          },
+          "OPENCTI_TOKEN": {
+            "description": "The API token to connect to OpenCTI.",
+            "type": "string"
+          },
+          "OPENCTI_JSON_LOGGING": {
+            "default": true,
+            "description": "Whether to format logs as JSON or not.",
+            "type": "boolean"
+          },
+          "OPENCTI_SSL_VERIFY": {
+            "default": false,
+            "description": "Whether to check SSL certificate or not.",
+            "type": "boolean"
+          },
+          "CONNECTOR_TYPE": {
+            "const": "EXTERNAL_IMPORT",
+            "default": "EXTERNAL_IMPORT",
+            "type": "string"
+          },
+          "CONNECTOR_ID": {
+            "description": "A UUID v4 to identify the connector in OpenCTI.",
+            "type": "string"
+          },
+          "CONNECTOR_NAME": {
+            "default": "GreyNoise Feed",
+            "description": "The name of the connector.",
+            "type": "string"
+          },
+          "CONNECTOR_SCOPE": {
+            "default": [
+              "greynoisefeed"
+            ],
+            "description": "The scope of the connector, e.g. 'greynoise'.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "CONNECTOR_DURATION_PERIOD": {
+            "default": "P1D",
+            "description": "The period of time to await between two runs of the connector.",
+            "format": "duration",
+            "type": "string"
+          },
+          "CONNECTOR_LOG_LEVEL": {
+            "default": "error",
+            "description": "The minimum level of logs to display.",
+            "enum": [
+              "debug",
+              "info",
+              "warn",
+              "error"
+            ],
+            "type": "string"
+          },
+          "CONNECTOR_EXPOSE_METRICS": {
+            "default": false,
+            "description": "Whether to expose metrics or not.",
+            "type": "boolean"
+          },
+          "CONNECTOR_METRICS_PORT": {
+            "default": 9095,
+            "description": "The port to expose metrics.",
+            "type": "integer"
+          },
+          "CONNECTOR_ONLY_CONTEXTUAL": {
+            "default": false,
+            "description": "Whether to expose metrics or not.",
+            "type": "boolean"
+          },
+          "CONNECTOR_RUN_AND_TERMINATE": {
+            "default": false,
+            "description": "Connector run-and-terminate flag.",
+            "type": "boolean"
+          },
+          "CONNECTOR_VALIDATE_BEFORE_IMPORT": {
+            "default": false,
+            "description": "Whether to validate data before import or not.",
+            "type": "boolean"
+          },
+          "CONNECTOR_QUEUE_PROTOCOL": {
+            "default": "amqp",
+            "description": "The queue protocol to use.",
+            "type": "string"
+          },
+          "CONNECTOR_QUEUE_THRESHOLD": {
+            "default": 500,
+            "description": "Connector queue max size in Mbytes. Default to pycti value.",
+            "type": "integer"
+          },
+          "CONNECTOR_SEND_TO_QUEUE": {
+            "default": true,
+            "description": "Connector send-to-queue flag. Default to True.",
+            "type": "boolean"
+          },
+          "CONNECTOR_SEND_TO_DIRECTORY": {
+            "default": false,
+            "description": "Connector send-to-directory flag.",
+            "type": "boolean"
+          },
+          "CONNECTOR_SEND_TO_DIRECTORY_PATH": {
+            "default": null,
+            "description": "Connector send-to-directory path.",
+            "type": "string"
+          },
+          "CONNECTOR_SEND_TO_DIRECTORY_RETENTION": {
+            "default": 7,
+            "description": "Connector send-to-directory retention.",
+            "type": "integer"
+          },
+          "GREYNOISE_FEED_API_KEY": {
+            "description": "The API key to connect to Greynoise.",
+            "type": "string"
+          },
+          "GREYNOISE_FEED_FEED_TYPE": {
+            "default": "malicious",
+            "description": "Type of feed to import.",
+            "enum": [
+              "benign",
+              "malicious",
+              "suspicious",
+              "benign+malicious",
+              "malicious+suspicious",
+              "benign+suspicious+malicious",
+              "all"
+            ],
+            "type": "string"
+          },
+          "GREYNOISE_FEED_LIMIT": {
+            "default": 10000,
+            "description": "Max number of indicators to ingest.",
+            "type": "integer"
+          },
+          "GREYNOISE_FEED_IMPORT_METADATA": {
+            "default": false,
+            "description": "Import metadata (cities, sightings, etc.). \u26a0\ufe0f Can generate a lot of data.",
+            "type": "boolean"
+          },
+          "GREYNOISE_FEED_IMPORT_DESTINATION_SIGHTINGS": {
+            "default": false,
+            "description": "Import indicator's countries (from metadata) as a Sighting.",
+            "type": "boolean"
+          },
+          "GREYNOISE_FEED_INDICATOR_SCORE_MALICIOUS": {
+            "default": 75,
+            "description": "Default indicator score for malicious indicators.",
+            "maximum": 100,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "GREYNOISE_FEED_INDICATOR_SCORE_SUSPICIOUS": {
+            "default": 50,
+            "description": "Default indicator score for suspicious indicators.",
+            "maximum": 100,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "GREYNOISE_FEED_INDICATOR_SCORE_BENIGN": {
+            "default": 20,
+            "description": "Default indicator score for benign indicators.",
+            "maximum": 100,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "OPENCTI_URL",
+          "OPENCTI_TOKEN",
+          "CONNECTOR_ID",
+          "GREYNOISE_FEED_API_KEY"
+        ],
+        "additionalProperties": true
+      }
     },
     {
       "title": "MITRE ATT&CK",
@@ -705,7 +1082,7 @@
       "subscription_link": "https://www.mitre.org/who-we-are/work-with-us",
       "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/mitre",
       "manager_supported": true,
-      "container_version": "6.7.0",
+      "container_version": "rolling",
       "container_image": "opencti/connector-mitre",
       "container_type": "EXTERNAL_IMPORT",
       "config_schema": {
@@ -850,7 +1227,7 @@
       "subscription_link": "",
       "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/phishunt",
       "manager_supported": false,
-      "container_version": "6.7.0",
+      "container_version": "rolling",
       "container_image": "opencti/connector-phishunt",
       "container_type": "EXTERNAL_IMPORT"
     },
@@ -871,7 +1248,7 @@
       "subscription_link": "https://www.ransomware.live",
       "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/oob/connector_manager/external-import/ransomwarelive",
       "manager_supported": false,
-      "container_version": "6.7.0",
+      "container_version": "rolling",
       "container_image": "opencti/connector-ransomwarelive",
       "container_type": "EXTERNAL_IMPORT",
       "config_schema": {
@@ -1020,7 +1397,7 @@
       "subscription_link": "https://www.recordedfuture.com/get-started",
       "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/recorded-future",
       "manager_supported": false,
-      "container_version": "6.7.0",
+      "container_version": "rolling",
       "container_image": "opencti/connector-recorded-future",
       "container_type": "EXTERNAL_IMPORT"
     },
@@ -1041,9 +1418,245 @@
       "subscription_link": "https://www.sekoia.io/en/product/cti/",
       "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/sekoia",
       "manager_supported": false,
-      "container_version": "6.7.0",
+      "container_version": "rolling",
       "container_image": "opencti/connector-sekoia",
       "container_type": "EXTERNAL_IMPORT"
+    },
+    {
+      "title": "ServiceNow",
+      "slug": "servicenow",
+      "description": "ServiceNow provides Security Incident Response and Security Incident Tasks module handled by this connector which collects SIR and SIT and related entities.",
+      "short_description": "Ingestion of SIR and SIT as Case Incident and Tasks.",
+      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
+      "use_cases": [
+        "Incident Response & Ticketing"
+      ],
+      "verified": true,
+      "last_verified_date": "15-06-2025",
+      "playbook_supported": false,
+      "max_confidence_level": 50,
+      "support_version": ">= 6.5.1",
+      "subscription_link": "https://www.servicenow.com/contact-us.html",
+      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/servicenow",
+      "manager_supported": true,
+      "container_version": "rolling",
+      "container_image": "opencti/connector-servicenow",
+      "container_type": "EXTERNAL_IMPORT",
+      "config_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "https://www.filigran.io/connectors/servicenow_config.schema.json",
+        "type": "object",
+        "properties": {
+          "OPENCTI_URL": {
+            "description": "The OpenCTI platform URL.",
+            "format": "uri",
+            "maxLength": 2083,
+            "minLength": 1,
+            "type": "string"
+          },
+          "OPENCTI_TOKEN": {
+            "description": "The token of the user who represents the connector in the OpenCTI platform.",
+            "type": "string"
+          },
+          "CONNECTOR_ID": {
+            "description": "A unique UUIDv4 identifier for this connector instance.",
+            "type": "string"
+          },
+          "CONNECTOR_TYPE": {
+            "default": "EXTERNAL_IMPORT",
+            "description": "Should always be set to EXTERNAL_IMPORT for this connector.",
+            "type": "string"
+          },
+          "CONNECTOR_NAME": {
+            "default": "ServiceNow",
+            "description": "Name of the connector.",
+            "type": "string"
+          },
+          "CONNECTOR_SCOPE": {
+            "default": "ServiceNow",
+            "description": "The scope or type of data the connector is importing, either a MIME type or Stix Object (for information only).",
+            "type": "string"
+          },
+          "CONNECTOR_LOG_LEVEL": {
+            "default": "error",
+            "description": "Determines the verbosity of the logs.",
+            "enum": [
+              "debug",
+              "info",
+              "warn",
+              "error"
+            ],
+            "type": "string"
+          },
+          "CONNECTOR_DURATION_PERIOD": {
+            "default": "PT24H",
+            "description": "Duration between two scheduled runs of the connector (ISO 8601 format).",
+            "format": "duration",
+            "type": "string"
+          },
+          "CONNECTOR_QUEUE_THRESHOLD": {
+            "default": null,
+            "description": "Connector queue max size in Mbytes. Default to 500.",
+            "exclusiveMinimum": 0,
+            "type": "integer"
+          },
+          "CONNECTOR_RUN_AND_TERMINATE": {
+            "default": null,
+            "description": "Connector run-and-terminate flag.",
+            "type": "boolean"
+          },
+          "CONNECTOR_SEND_TO_QUEUE": {
+            "default": null,
+            "description": "Connector send-to-queue flag.",
+            "type": "boolean"
+          },
+          "CONNECTOR_SEND_TO_DIRECTORY": {
+            "default": null,
+            "description": "Connector send-to-directory flag.",
+            "type": "boolean"
+          },
+          "CONNECTOR_SEND_TO_DIRECTORY_PATH": {
+            "default": null,
+            "description": "Connector send-to-directory path.",
+            "type": "string"
+          },
+          "CONNECTOR_SEND_TO_DIRECTORY_RETENTION": {
+            "default": null,
+            "description": "Connector send-to-directory retention in days.",
+            "exclusiveMinimum": 0,
+            "type": "integer"
+          },
+          "SERVICENOW_INSTANCE_NAME": {
+            "description": "Corresponds to server instance name (will be used for API requests).",
+            "type": "string"
+          },
+          "SERVICENOW_API_KEY": {
+            "description": "Secure identifier used to validate access to ServiceNow APIs.",
+            "format": "password",
+            "type": "string",
+            "writeOnly": true
+          },
+          "SERVICENOW_API_VERSION": {
+            "default": "v2",
+            "description": "ServiceNow API version used for REST requests.",
+            "enum": [
+              "v1",
+              "v2"
+            ],
+            "type": "string"
+          },
+          "SERVICENOW_API_LEAKY_BUCKET_RATE": {
+            "default": 10,
+            "description": "Bucket refill rate (in tokens per second). Controls the rate at which API calls are allowed. For example, a rate of 10 means that 10 calls can be made per second, if the bucket is not empty.",
+            "exclusiveMinimum": 0,
+            "type": "integer"
+          },
+          "SERVICENOW_API_LEAKY_BUCKET_CAPACITY": {
+            "default": 10,
+            "description": "Maximum bucket capacity (in tokens). Defines the number of calls that can be made immediately in a burst. Once the bucket is empty, it refills at the rate defined by 'api_leaky_bucket_rate'.",
+            "exclusiveMinimum": 0,
+            "type": "integer"
+          },
+          "SERVICENOW_API_RETRY": {
+            "default": 5,
+            "description": "Maximum number of retry attempts in case of API failure.",
+            "exclusiveMinimum": 0,
+            "type": "integer"
+          },
+          "SERVICENOW_API_BACKOFF": {
+            "default": "PT30S",
+            "description": "Exponential backoff duration between API retries (ISO 8601 duration format).",
+            "format": "duration",
+            "type": "string"
+          },
+          "SERVICENOW_IMPORT_START_DATE": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "format": "duration",
+                "type": "string"
+              }
+            ],
+            "default": "P30D",
+            "description": "Start date of first import (ISO date format)."
+          },
+          "SERVICENOW_STATE_TO_EXCLUDE": {
+            "default": null,
+            "description": "List of security incident states to exclude from import.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "SERVICENOW_SEVERITY_TO_EXCLUDE": {
+            "default": null,
+            "description": "List of security incident severities to exclude from import.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "SERVICENOW_PRIORITY_TO_EXCLUDE": {
+            "default": null,
+            "description": "List of security incident priorities to exclude from import.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "SERVICENOW_COMMENT_TO_EXCLUDE": {
+            "default": null,
+            "description": "List of comment types to exclude: private, public, auto",
+            "items": {
+              "enum": [
+                "private",
+                "public",
+                "auto"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "SERVICENOW_TLP_LEVEL": {
+            "default": "red",
+            "description": "Traffic Light Protocol (TLP) level to apply on objects imported into OpenCTI.",
+            "enum": [
+              "clear",
+              "green",
+              "amber",
+              "amber+strict",
+              "red"
+            ],
+            "type": "string"
+          },
+          "SERVICENOW_OBSERVABLES_DEFAULT_SCORE": {
+            "default": 50,
+            "description": "Allows you to define a default score for observables and indicators when the 'promote_observables_as_indicators' variable is set to True.",
+            "exclusiveMinimum": 0,
+            "type": "integer"
+          },
+          "SERVICENOW_PROMOTE_OBSERVABLES_AS_INDICATORS": {
+            "default": true,
+            "description": "Boolean to promote observables into indicators.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "OPENCTI_URL",
+          "OPENCTI_TOKEN",
+          "CONNECTOR_ID",
+          "SERVICENOW_INSTANCE_NAME",
+          "SERVICENOW_API_KEY"
+        ],
+        "additionalProperties": true
+      }
     },
     {
       "title": "Tenable Vulnerability Management",
@@ -1062,7 +1675,7 @@
       "subscription_link": "",
       "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/tenable-vuln-management",
       "manager_supported": false,
-      "container_version": "6.7.0",
+      "container_version": "rolling",
       "container_image": "opencti/connector-tenable-vuln-management",
       "container_type": "EXTERNAL_IMPORT"
     },
@@ -1083,7 +1696,7 @@
       "subscription_link": "",
       "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/oob/connector_manager/external-import/threatfox",
       "manager_supported": false,
-      "container_version": "6.7.0",
+      "container_version": "rolling",
       "container_image": "opencti/connector-threatfox",
       "container_type": "EXTERNAL_IMPORT"
     },
@@ -1104,7 +1717,7 @@
       "subscription_link": "",
       "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/oob/connector_manager/external-import/urlhaus",
       "manager_supported": false,
-      "container_version": "6.7.0",
+      "container_version": "rolling",
       "container_image": "opencti/connector-urlhaus",
       "container_type": "EXTERNAL_IMPORT"
     },
@@ -1126,7 +1739,7 @@
       "subscription_link": "https://www.vulncheck.com/",
       "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/oob/connector_manager/external-import/vulncheck",
       "manager_supported": false,
-      "container_version": "6.7.0",
+      "container_version": "rolling",
       "container_image": "opencti/connector-vulncheck",
       "container_type": "EXTERNAL_IMPORT"
     },
@@ -1148,7 +1761,7 @@
       "subscription_link": "https://www.first.org/epss/",
       "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/oob/connector_manager/internal-enrichment/first-epss",
       "manager_supported": false,
-      "container_version": "6.7.0",
+      "container_version": "rolling",
       "container_image": "opencti/connector-first-epss",
       "container_type": "INTERNAL_ENRICHMENT"
     },
@@ -1169,7 +1782,7 @@
       "subscription_link": "https://urlscan.io",
       "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/oob/connector_manager/internal-enrichment/google-dns",
       "manager_supported": false,
-      "container_version": "6.7.0",
+      "container_version": "rolling",
       "container_image": "opencti/connector-google-dns",
       "container_type": "INTERNAL_ENRICHMENT"
     },
@@ -1191,7 +1804,7 @@
       "subscription_link": "https://ipinfo.io/support",
       "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/internal-enrichment/ipinfo",
       "manager_supported": true,
-      "container_version": "6.7.0",
+      "container_version": "rolling",
       "container_image": "opencti/connector-ipinfo",
       "container_type": "INTERNAL_ENRICHMENT",
       "config_schema": {
@@ -1288,14 +1901,14 @@
             "writeOnly": true
           },
           "IPINFO_MAX_TLP": {
-            "default": "amber",
+            "default": "TLP:AMBER",
             "description": "Traffic Light Protocol (TLP) level to apply on objects imported into OpenCTI.",
             "enum": [
-              "clear",
-              "green",
-              "amber",
-              "amber+strict",
-              "red"
+              "TLP:CLEAR",
+              "TLP:GREEN",
+              "TLP:AMBER",
+              "TLP:AMBER+STRICT",
+              "TLP:RED"
             ],
             "type": "string"
           },
@@ -1330,7 +1943,7 @@
       "subscription_link": "https://urlscan.io",
       "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/oob/connector_manager/internal-enrichment/urlscan-enrichment",
       "manager_supported": false,
-      "container_version": "6.7.0",
+      "container_version": "rolling",
       "container_image": "opencti/connector-urlscan-enrichment",
       "container_type": "INTERNAL_ENRICHMENT"
     },
@@ -1351,7 +1964,7 @@
       "subscription_link": "",
       "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/oob/connector_manager/stream/google-secops-siem",
       "manager_supported": false,
-      "container_version": "6.7.0",
+      "container_version": "rolling",
       "container_image": "opencti/connector-google-secops-siem",
       "container_type": "STREAM"
     }
