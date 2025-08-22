@@ -26,6 +26,7 @@ const REGISTER_CONNECTORS_MANAGER_MUTATION = gql`
     mutation RegisterConnectorsManager($input: RegisterConnectorsManagerInput!) {
         registerConnectorsManager(input: $input) {
             id
+            public_key
             name
             last_sync_execution
             active
@@ -38,6 +39,7 @@ const UPDATE_CONNECTOR_MANAGER_STATUS_MUTATION = gql`
     mutation UpdateConnectorManagerStatus($input: UpdateConnectorManagerStatusInput!) {
         updateConnectorManagerStatus(input: $input) {
             id
+            public_key
             last_sync_execution
         }
     }
@@ -101,6 +103,7 @@ const CONNECTOR_MANAGER_QUERY = gql`
         connectorManager(managerId: $managerId) {
             id
             name
+            public_key
             last_sync_execution
             active
         }
@@ -112,6 +115,7 @@ const CONNECTOR_MANAGERS_QUERY = gql`
         connectorManagers {
             id
             name
+            public_key
             active
         }
     }
