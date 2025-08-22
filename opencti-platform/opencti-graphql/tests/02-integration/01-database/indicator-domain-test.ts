@@ -8,10 +8,10 @@ import { VALID_FROM, VALID_UNTIL, X_SCORE } from '../../../src/schema/identifier
 import { createEntity } from '../../../src/database/middleware';
 import { dayToMs } from '../../../src/modules/decayRule/decayRule-domain';
 import { stixDomainObjectDelete } from '../../../src/domain/stixDomainObject';
-import { logApp } from '../../../src/config/conf';
 import { getFakeAuthUser } from '../../utils/domainQueryHelper';
 import { INDICATOR_DEFAULT_SCORE } from '../../../src/modules/indicator/indicator-utils';
 import type { AuthUser } from '../../../src/types/user';
+import { logApp } from '../../../src/config/conf';
 
 describe('Testing field patch and upsert on indicator for trio {score, valid until, revoked}', () => {
   const todayMorning = new Date();
@@ -44,8 +44,9 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
   };
 
   afterAll(async () => {
-    for (let i = 0; i < indicatorCreatedIds.length; i += 1) {
-      await stixDomainObjectDelete(testContext, ADMIN_USER, indicatorCreatedIds[i]);
+    const uniqueIds = [...new Set(indicatorCreatedIds)];
+    for (let i = 0; i < uniqueIds.length; i += 1) {
+      await stixDomainObjectDelete(testContext, ADMIN_USER, uniqueIds[i]);
     }
     logApp.info(`${indicatorCreatedIds.length} indicators created and deleted.`);
   });
@@ -318,9 +319,21 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
     expect(indicatorUpsertEntity.x_opencti_score).toBe(80);
   });
 
-  it.only('should upsert 2 times with same source and same score be ignored', async () => {
+  it('should upsert 2 times with same source and same score be ignored', async () => {
     // GIVEN an indicator that is created
     const indicatorInput = {
+      name: 'Indicator domain test concurrent upserts',
+      pattern: '[domain-name:value = \'jesaisplus.io\']',
+      pattern_type: STIX_PATTERN_TYPE,
+      x_opencti_score: 100,
+      valid_from: inPast90Days,
+      valid_until: inFiveDays,
+    };
+    const indicatorCreated = await createIndicator(ADMIN_USER, indicatorInput, true);
+    expect(indicatorCreated.x_opencti_score).toBe(100);
+
+    // Same user decrease score => should be taken
+    const indicatorInput2 = {
       name: 'Indicator domain test concurrent upserts',
       pattern: '[domain-name:value = \'jesaisplus.io\']',
       pattern_type: STIX_PATTERN_TYPE,
@@ -328,10 +341,11 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
       valid_from: inPast90Days,
       valid_until: inFiveDays,
     };
-    const indicatorCreated = await createIndicator(ADMIN_USER, indicatorInput, true);
-    expect(indicatorCreated.x_opencti_score).toBe(80);
+    await createIndicator(ADMIN_USER, indicatorInput2, true);
+    const indicatorCreated2 = await findById(testContext, ADMIN_USER, indicatorCreated.id);
+    expect(indicatorCreated2.x_opencti_score).toBe(80);
 
-    // When the same indicator is created again (upsert) - with another user
+    // When the same indicator is created again (upsert) - with another user => should be taken
     const indicatorUpsert1 = {
       name: 'Indicator domain test concurrent upserts',
       pattern: '[domain-name:value = \'jesaisplus.io\']',
@@ -344,7 +358,7 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
     const indicatorAfterUpsert1 = await findById(testContext, ADMIN_USER, indicatorCreated.id);
     expect(indicatorAfterUpsert1.x_opencti_score).toBe(75);
 
-    // When the same indicator is created again (upsert) - same user (admin) same score (80)
+    // When the same indicator is created again (upsert) - same user (ADMIN_USER) same score (80) => should be skipped
     const indicatorUpsert2 = {
       name: 'Indicator domain test concurrent upserts',
       pattern: '[domain-name:value = \'jesaisplus.io\']',
