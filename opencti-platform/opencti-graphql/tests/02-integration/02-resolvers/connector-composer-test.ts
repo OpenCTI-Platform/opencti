@@ -974,7 +974,8 @@ describe('Connector Composer and Managed Connectors', () => {
     it('should deny non-admin users from registering connector composer', async () => {
       const input = {
         id: uuidv4(),
-        name: 'Unauthorized Composer'
+        name: 'Unauthorized Composer',
+        public_key: 'Unauthorized Composer',
       };
 
       await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
