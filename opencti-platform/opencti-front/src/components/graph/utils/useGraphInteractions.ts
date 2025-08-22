@@ -396,10 +396,18 @@ const useGraphInteractions = () => {
     applyForces();
   };
 
+  const updateNode = (data: ObjectToParse) => {
+    const nodes = rawObjects.filter((o) => o.id !== data.id);
+    if (rawObjects.length === nodes.length) return;
+    const newNodes = [...nodes, data];
+    rebuildGraphData(newNodes);
+  };
+
   const addNode = (data: ObjectToParse) => {
-    if (!rawObjects.find((o) => o.id === data.id)) {
-      setRawObjects((old) => ([...old, data]));
+    if (rawObjects.find((o) => o.id === data.id)) {
+      return;
     }
+    setRawObjects((old) => ([...old, data]));
     const node = buildNode(data, rawPositions);
     setGraphData((oldData) => {
       const withoutExisting = (oldData?.nodes ?? []).filter((n) => n.id !== node.id);
@@ -518,6 +526,7 @@ const useGraphInteractions = () => {
     setLoadingCurrent,
     setZoom,
     setIsExpandOpen,
+    updateNode,
   };
 };
 
