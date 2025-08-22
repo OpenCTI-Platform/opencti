@@ -151,11 +151,10 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
               </Typography>
               <div className="clearfix"/>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <UserEmailSend outlined userId={userId} />
-              <div style={{ display: 'flex' }}>
-                <div style={{ marginRight: theme.spacing(1.5) }}>
-                  {canDelete && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }} >
+              <div style={{ display: 'flex', gap: theme.spacing(0.5) }}>
+                <UserEmailSend outlined userId={userId}/>
+                {canDelete && (
                   <PopoverMenu>
                     {({ closeMenu }) => (
                       <Box>
@@ -169,25 +168,22 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
                       </Box>
                     )}
                   </PopoverMenu>
-                  )}
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  < ConvertUser
-                    userId={data.id}
-                    userServiceAccount={data.user_service_account}
-                  />
-                  <UserDeletionDialog
-                    userId={data.id}
-                    isOpen={openDelete}
-                    handleClose={handleCloseDelete}
-                  />
-                  <UserEdition userEditionData={userEditionData} />
-                </div>
+                )}
               </div>
+              <ConvertUser
+                userId={data.id}
+                userServiceAccount={data.user_service_account}
+              />
+              <UserDeletionDialog
+                userId={data.id}
+                isOpen={openDelete}
+                handleClose={handleCloseDelete}
+              />
+              <UserEdition userEditionData={userEditionData}/>
             </div>
           </UserHeader>
 
-          <div className="clearfix" />
+          <div className="clearfix"/>
           <Box
             sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 4 }}
           >
