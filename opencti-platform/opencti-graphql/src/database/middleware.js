@@ -2732,7 +2732,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
       // or when the same score update has already been done
       if ((!resolvedElement.revoked && isScoreInUpsertSameAsBaseScore)
           || (hasSameSourceAlreadyUpdateThisScore(user.id, updatePatch.x_opencti_score, resolvedElement.decay_history))) {
-        logApp.info(`UPSERT INDICATOR -- SKIP DECAY, do not change score, keep:${resolvedElement.x_opencti_score}`);
+        logApp.debug(`UPSERT INDICATOR -- SKIP DECAY, do not change score, keep:${resolvedElement.x_opencti_score}`);
         // don't reset score, valid_from & valid_until
         updatePatch.x_opencti_score = resolvedElement.x_opencti_score; // don't change the score
         updatePatch.valid_from = resolvedElement.valid_from;
@@ -2746,7 +2746,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
         updatePatch.decay_next_reaction_date = resolvedElement.decay_next_reaction_date;
       } else {
         // As base_score as change, decay will be reset by upsert
-        logApp.info('UPSERT INDICATOR -- Decay is restarted', { resolvedElement, basePatch });
+        logApp.debug('UPSERT INDICATOR -- Decay is restarted', { resolvedElement, basePatch });
       }
     }
 
@@ -2754,7 +2754,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
     if (resolvedElement.revoked === true && basePatch.revoked === false) {
       if (!updatePatch.x_opencti_score) {
         if (resolvedElement.decay_applied_rule) {
-          updatePatch.x_opencti_score = resolvedElement.decay_base_score > INDICATOR_DEFAULT_SCORE ?? INDICATOR_DEFAULT_SCORE;
+          updatePatch.x_opencti_score = resolvedElement.decay_base_score > INDICATOR_DEFAULT_SCORE ? resolvedElement.decay_base_score : INDICATOR_DEFAULT_SCORE;
         } else {
           updatePatch.x_opencti_score = INDICATOR_DEFAULT_SCORE;
         }
