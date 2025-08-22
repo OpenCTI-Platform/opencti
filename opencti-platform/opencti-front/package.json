@@ -157,7 +157,7 @@
     "typescript": "5.9.2",
     "vite": "6.3.5",
     "vite-plugin-relay": "2.1.0",
-    "vite-plugin-static-copy": "2.3.1",
+    "vite-plugin-static-copy": "2.3.2",
     "vitest": "2.0.5"
   },
   "engines": {
