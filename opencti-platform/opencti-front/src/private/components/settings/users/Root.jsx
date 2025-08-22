@@ -11,7 +11,6 @@ import { styled } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
 import { useTheme } from '@mui/styles';
 import ConvertUser from './ConvertUser';
-import useHelper from '../../../../utils/hooks/useHelper';
 import UserDeletionDialog from './UserDeletionDialog';
 import UserEmailSend from './UserEmailSend';
 import AccessesMenu from '../AccessesMenu';
@@ -116,8 +115,6 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
     userEditionQuery,
     { id: userId },
   );
-  const { isFeatureEnable } = useHelper();
-  const isUserHistoryTab = isFeatureEnable('USER_HISTORY_TAB');
   const [openDelete, setOpenDelete] = useState(false);
   const handleOpenDelete = () => setOpenDelete(true);
   const handleCloseDelete = () => setOpenDelete(false);
@@ -204,12 +201,12 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
                 value={`/dashboard/settings/accesses/users/${data.id}/analytics`}
                 label={t_i18n('Analytics')}
               />
-              {isUserHistoryTab && <Tab
+              <Tab
                 component={Link}
                 to={`/dashboard/settings/accesses/users/${data.id}/history`}
                 value={`/dashboard/settings/accesses/users/${data.id}/history`}
                 label={t_i18n('History')}
-                                   />}
+              />
             </Tabs>
           </Box>
           <Routes>
