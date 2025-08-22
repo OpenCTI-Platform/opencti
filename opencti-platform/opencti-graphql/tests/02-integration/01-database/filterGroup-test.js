@@ -103,7 +103,7 @@ const READ_MARKING_QUERY = gql`
     }
 `;
 
-describe.skip('Complex filters combinations for elastic queries', () => {
+describe('Complex filters combinations for elastic queries', () => {
   let report1InternalId;
   let report2InternalId;
   let report3InternalId;
