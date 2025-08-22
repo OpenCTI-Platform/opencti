@@ -1,8 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
 import { addAllowedMarkingDefinition } from '../../../src/domain/markingDefinition';
-import { distributionRelations } from '../../../src/database/middleware';
+import { deleteElementById, distributionRelations } from '../../../src/database/middleware';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
 import { RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
 import { ABSTRACT_INTERNAL_OBJECT, ABSTRACT_STIX_CORE_OBJECT, ENTITY_TYPE_CONTAINER, ENTITY_TYPE_LOCATION, ID_INTERNAL } from '../../../src/schema/general';
@@ -17,6 +17,10 @@ import {
   SOURCE_RELIABILITY_FILTER
 } from '../../../src/utils/filtering/filtering-constants';
 import { storeLoadById } from '../../../src/database/middleware-loader';
+import { addUser, findById } from '../../../src/domain/user';
+import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
+import { getFakeAuthUser } from '../../utils/domainQueryHelper';
+import { SETTINGS_SET_ACCESSES } from '../../../src/utils/access';
 
 // test queries involving dynamic filters
 
@@ -2231,5 +2235,167 @@ describe('Complex filters combinations for elastic queries', () => {
     queryResult = await queryAsAdmin({ query: READ_MARKING_QUERY, variables: { id: marking2StixId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.markingDefinition).toBeNull();
+  });
+});
+
+describe('User filter tests', () => {
+  const LIST_USERS_QUERY = gql`
+    query users(
+      $first: Int
+      $after: ID
+      $orderBy: UsersOrdering
+      $orderMode: OrderingMode
+      $filters: FilterGroup
+      $search: String
+    ) {
+      users(
+        first: $first
+        after: $after
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+        search: $search
+      ) {
+        edges {
+          node {
+            id
+            name
+            user_service_account
+          }
+        }
+      }
+    }
+  `;
+  const authUser = getFakeAuthUser('Platform administrator');
+  authUser.capabilities = [{ name: SETTINGS_SET_ACCESSES }];
+  const createdUsers = [];
+
+  beforeAll(async () => {
+    const serviceAccountUser = {
+      user_email: 'serviceAccountUser@opencti',
+      name: 'Service account',
+      user_service_account: true,
+      groups: [],
+      objectOrganization: [],
+    };
+    const serviceAccountUserAddResult = await addUser(testContext, authUser, serviceAccountUser);
+    const serviceAccountUserCreated = await findById(testContext, authUser, serviceAccountUserAddResult.id);
+    createdUsers.push(serviceAccountUserCreated);
+
+    const user = {
+      user_email: 'user@opencti',
+      name: 'user',
+      user_service_account: false,
+      groups: [],
+      objectOrganization: [],
+      password: 'password1',
+    };
+    const userAddResult = await addUser(testContext, authUser, user);
+    const userCreated = await findById(testContext, authUser, userAddResult.id);
+    createdUsers.push(userCreated);
+
+    const userBeforeServiceAccount = {
+      user_email: 'userBeforeServiceAccount@opencti',
+      name: 'userBeforeServiceAccount',
+      groups: [],
+      objectOrganization: [],
+      password: 'password2',
+    };
+    const userBeforeServiceAccountAddResult = await addUser(testContext, authUser, userBeforeServiceAccount);
+    const userBeforeServiceAccountCreated = await findById(testContext, authUser, userBeforeServiceAccountAddResult.id);
+    createdUsers.push(userBeforeServiceAccountCreated);
+  });
+
+  afterAll(async () => {
+    for (let i = 0; i < createdUsers.length; i += 1) {
+      const userId = createdUsers[i].id;
+      // Delete Users
+      await deleteElementById(testContext, authUser, userId, ENTITY_TYPE_USER);
+    }
+  });
+  it('should list one User service account', async () => {
+    const queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY,
+      variables: {
+        first: 25,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'user_service_account',
+            values: ['true'],
+            operator: 'eq',
+            mode: 'or'
+          }],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.users.edges.length).toEqual(1);
+  });
+  it('should list Users with no service account', async () => {
+    const queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY,
+      variables: {
+        first: 25,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'user_service_account',
+            values: ['false'],
+            operator: 'eq',
+            mode: 'or'
+          }],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.users.edges.length).toEqual(9); // 7 + 2 created above
+  });
+  it('should list Users with no service account', async () => {
+    const queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY,
+      variables: {
+        first: 25,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'user_service_account',
+            values: ['true'],
+            operator: 'not_eq',
+            mode: 'or'
+          }],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.users.edges.length).toEqual(9); // 7 + 2 created above
+  });
+  it('should list Users with or without service account === all Users', async () => {
+    const queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY,
+      variables: {
+        first: 25,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'user_service_account',
+            values: ['true', 'false'],
+            operator: 'eq',
+            mode: 'or'
+          }],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.users.edges.length).toEqual(10); // 7 + 3 created above
+  });
+  it('should list Users with and without service account === No User', async () => {
+    const queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY,
+      variables: {
+        first: 25,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'user_service_account',
+            values: ['true', 'false'],
+            operator: 'eq',
+            mode: 'and'
+          }],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.users.edges.length).toEqual(0);
   });
 });
