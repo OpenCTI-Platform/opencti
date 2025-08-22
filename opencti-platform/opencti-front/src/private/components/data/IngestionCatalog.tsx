@@ -115,7 +115,9 @@ const IngestionCatalogComponent = ({
     <>
       <IngestionMenu />
       <PageContainer withRightMenu withGap>
+
         <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('Catalog'), current: true }]} />
+
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <SearchInput disabled />
           <GradientButton
@@ -127,8 +129,8 @@ const IngestionCatalogComponent = ({
           >
             {t_i18n('Browse more').toUpperCase()}
           </GradientButton>
-
         </div>
+
         {catalogsParsed.map((catalog) => {
           return catalog.contracts.length > 0 && (
             <ListCardsContent
@@ -143,6 +145,7 @@ const IngestionCatalogComponent = ({
             />
           );
         })}
+        
       </PageContainer>
     </>
   );
