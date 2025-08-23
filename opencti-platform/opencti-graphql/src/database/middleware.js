@@ -2436,14 +2436,9 @@ export const updateAttributeFromLoadedWithRefs = async (context, user, initial, 
   return updateAttributeMetaResolved(context, user, initial, revolvedInputs, opts);
 };
 
-const triggerEntityUpdateAutoEnrichment = async (context, user, element) => {
+const triggerEntityUpdateAutoEnrichment = async (context, user, element, loaders) => {
   // If element really updated, try to enrich if needed
-  const elementType = element.entity_type;
-  const loaders = {
-    loadById: () => stixLoadByIdStringify(context, user, element.internal_id),
-    bundleById: () => stixBundleByIdStringify(context, user, elementType, element.internal_id),
-  };
-  await updateEntityAutoEnrichment(context, user, element, elementType, loaders);
+  await updateEntityAutoEnrichment(context, user, element, element.entity_type, loaders);
 };
 
 export const updateAttribute = async (context, user, id, type, inputs, opts = {}) => {
@@ -3426,10 +3421,14 @@ export const createEntity = async (context, user, input, type, opts = {}) => {
   // volumes of objects relationships must be controlled
   const data = await createEntityRaw(context, user, input, type, opts);
   // In case of creation, start an enrichment
+  const loaders = {
+    loadById: () => stixLoadByIdStringify(context, user, data.element.internal_id),
+    bundleById: () => stixBundleByIdStringify(context, user, data.element.entity_type, data.element.internal_id),
+  };
   if (data.isCreation) {
-    await createEntityAutoEnrichment(context, user, data.element, type);
+    await createEntityAutoEnrichment(context, user, data.element, type, loaders);
   } else { // upsert
-    await triggerEntityUpdateAutoEnrichment(context, user, data.element);
+    await triggerEntityUpdateAutoEnrichment(context, user, data.element, loaders);
   }
   return isCompleteResult ? data : data.element;
 };
