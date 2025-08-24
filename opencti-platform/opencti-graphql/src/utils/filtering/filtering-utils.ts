@@ -387,15 +387,9 @@ export const replaceEnrichValuesInFilters = (filterGroup: FilterGroup, userId: s
   return filtersResult;
 };
 
-/**
- * Check the filter keys exist in the schema
- */
-const checkFilterKeys = (filterGroup: FilterGroup) => {
-  // TODO improvement: check filters keys correspond to the entity types if types is given
-  const keys = extractFilterKeys(filterGroup)
-    .map((k) => k.split('.')[0]); // keep only the first part of the key to handle composed keys
-  if (keys.length > 0) {
-    let incorrectKeys = keys;
+let availableKeysCache: Set<string>;
+const getAvailableKeys = () => {
+  if (!availableKeysCache) {
     const availableAttributes = schemaAttributesDefinition.getAllAttributesNames();
     const availableRefRelations = schemaRelationsRefDefinition.getAllInputNames();
     const availableConvertedRefRelations = getConvertedRelationsNames(schemaRelationsRefDefinition.getAllDatabaseName());
@@ -409,15 +403,23 @@ const checkFilterKeys = (filterGroup: FilterGroup) => {
       .concat(INTERNAL_RELATIONSHIPS)
       .concat(availableConvertedInternalRelations)
       .concat(SPECIAL_FILTER_KEYS);
-    keys.forEach((k) => {
-      if (availableKeys.includes(k) || k.startsWith(RULE_PREFIX) || k.startsWith(PIR_SCORE_FILTER_PREFIX)) {
-        incorrectKeys = incorrectKeys.filter((n) => n !== k);
-      }
-    });
-    if (incorrectKeys.length > 0) {
-      throw UnsupportedError('incorrect filter keys not existing in any schema definition', { keys: incorrectKeys });
-    }
+    availableKeysCache = new Set(availableKeys);
   }
+  return availableKeysCache;
+};
+
+/**
+ * Check the filter keys exist in the schema
+ */
+const checkFilterKeys = (filterGroup: FilterGroup) => {
+    // TODO improvement: check filters keys correspond to the entity types if types is given
+    const incorrectKeys = extractFilterKeys(filterGroup)
+        .map((k) => k.split('.')[0]) // keep only the first part of the key to handle composed keys
+        .filter((k) => !(getAvailableKeys().has(k) || k.startsWith(RULE_PREFIX)));
+
+    if (incorrectKeys.length > 0) {
+        throw UnsupportedError('incorrect filter keys not existing in any schema definition', { keys: incorrectKeys });
+    }
 };
 
 export const checkFiltersValidity = (filterGroup: FilterGroup, noFiltersChecking = false) => {

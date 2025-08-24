@@ -3608,6 +3608,11 @@ export enum ChannelsOrdering {
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
+export type CheckXtmHubConnectivityResponse = {
+  __typename?: 'CheckXTMHubConnectivityResponse';
+  status?: Maybe<XtmHubRegistrationStatus>;
+};
+
 export enum CitiesOrdering {
   Score = '_score',
   Aliases = 'aliases',
@@ -14517,6 +14522,7 @@ export type Mutation = {
   channelFieldPatch?: Maybe<Channel>;
   channelRelationAdd?: Maybe<StixRefRelationship>;
   channelRelationDelete?: Maybe<Channel>;
+  checkXTMHubConnectivity: CheckXtmHubConnectivityResponse;
   cityAdd?: Maybe<City>;
   cityEdit?: Maybe<CityEditMutations>;
   containerEdit?: Maybe<ContainerEditMutations>;
@@ -33649,6 +33655,7 @@ export type ResolversTypes = ResolversObject<{
   ChannelConnection: ResolverTypeWrapper<Omit<ChannelConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['ChannelEdge']>>> }>;
   ChannelEdge: ResolverTypeWrapper<Omit<ChannelEdge, 'node'> & { node: ResolversTypes['Channel'] }>;
   ChannelsOrdering: ChannelsOrdering;
+  CheckXTMHubConnectivityResponse: ResolverTypeWrapper<CheckXtmHubConnectivityResponse>;
   CitiesOrdering: CitiesOrdering;
   City: ResolverTypeWrapper<Omit<City, 'administrativeArea' | 'avatar' | 'cases' | 'connectors' | 'containers' | 'country' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { administrativeArea?: Maybe<ResolversTypes['AdministrativeArea']>, avatar?: Maybe<ResolversTypes['OpenCtiFile']>, cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, country?: Maybe<ResolversTypes['Country']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, status?: Maybe<ResolversTypes['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   CityAddInput: CityAddInput;
@@ -34623,6 +34630,7 @@ export type ResolversParentTypes = ResolversObject<{
   ChannelAddInput: ChannelAddInput;
   ChannelConnection: Omit<ChannelConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['ChannelEdge']>>> };
   ChannelEdge: Omit<ChannelEdge, 'node'> & { node: ResolversParentTypes['Channel'] };
+  CheckXTMHubConnectivityResponse: CheckXtmHubConnectivityResponse;
   City: Omit<City, 'administrativeArea' | 'avatar' | 'cases' | 'connectors' | 'containers' | 'country' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { administrativeArea?: Maybe<ResolversParentTypes['AdministrativeArea']>, avatar?: Maybe<ResolversParentTypes['OpenCtiFile']>, cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, country?: Maybe<ResolversParentTypes['Country']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, status?: Maybe<ResolversParentTypes['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   CityAddInput: CityAddInput;
   CityConnection: Omit<CityConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['CityEdge']>>> };
@@ -36531,6 +36539,11 @@ export type ChannelConnectionResolvers<ContextType = any, ParentType extends Res
 export type ChannelEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['ChannelEdge'] = ResolversParentTypes['ChannelEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Channel'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type CheckXtmHubConnectivityResponseResolvers<ContextType = any, ParentType extends ResolversParentTypes['CheckXTMHubConnectivityResponse'] = ResolversParentTypes['CheckXTMHubConnectivityResponse']> = ResolversObject<{
+  status?: Resolver<Maybe<ResolversTypes['XTMHubRegistrationStatus']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -40513,6 +40526,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   channelFieldPatch?: Resolver<Maybe<ResolversTypes['Channel']>, ParentType, ContextType, RequireFields<MutationChannelFieldPatchArgs, 'id' | 'input'>>;
   channelRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationChannelRelationAddArgs, 'id' | 'input'>>;
   channelRelationDelete?: Resolver<Maybe<ResolversTypes['Channel']>, ParentType, ContextType, RequireFields<MutationChannelRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
+  checkXTMHubConnectivity?: Resolver<ResolversTypes['CheckXTMHubConnectivityResponse'], ParentType, ContextType>;
   cityAdd?: Resolver<Maybe<ResolversTypes['City']>, ParentType, ContextType, RequireFields<MutationCityAddArgs, 'input'>>;
   cityEdit?: Resolver<Maybe<ResolversTypes['CityEditMutations']>, ParentType, ContextType, RequireFields<MutationCityEditArgs, 'id'>>;
   containerEdit?: Resolver<Maybe<ResolversTypes['ContainerEditMutations']>, ParentType, ContextType, RequireFields<MutationContainerEditArgs, 'id'>>;
@@ -45751,6 +45765,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Channel?: ChannelResolvers<ContextType>;
   ChannelConnection?: ChannelConnectionResolvers<ContextType>;
   ChannelEdge?: ChannelEdgeResolvers<ContextType>;
+  CheckXTMHubConnectivityResponse?: CheckXtmHubConnectivityResponseResolvers<ContextType>;
   City?: CityResolvers<ContextType>;
   CityConnection?: CityConnectionResolvers<ContextType>;
   CityEdge?: CityEdgeResolvers<ContextType>;

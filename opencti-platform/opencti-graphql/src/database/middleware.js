@@ -3264,7 +3264,7 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
         // If a STIX ID has been passed in the creation
         if (resolvedInput.stix_id) {
           // Find the entity corresponding to this STIX ID
-          const stixIdFinder = (e) => e.standard_id === resolvedInput.stix_id || e.x_opencti_stix_ids.includes(resolvedInput.stix_id);
+          const stixIdFinder = (e) => e.standard_id === resolvedInput.stix_id || (e.x_opencti_stix_ids ?? []).includes(resolvedInput.stix_id);
           const existingByGivenStixId = R.find(stixIdFinder, filteredEntities);
           // If the entity exists by the stix id and not the same as the previously founded.
           if (existingByGivenStixId && existingByGivenStixId.internal_id !== existingByStandard.internal_id) {
@@ -3292,7 +3292,7 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
         const normedStixIds = R.uniq(concurrentStixIds);
         const filteredStixIds = R.filter(
           (i) => isNotEmptyField(i) && !normedStixIds.includes(i) && i !== existingByStandard.standard_id,
-          [...resolvedInput.x_opencti_stix_ids || [], resolvedInput.stix_id]
+          [...(resolvedInput.x_opencti_stix_ids ?? []), resolvedInput.stix_id]
         );
         const finalEntity = { ...resolvedInput, [key]: filteredAliases, x_opencti_stix_ids: filteredStixIds };
         return upsertElement(context, user, existingByStandard, type, finalEntity, { ...opts, locks: participantIds });

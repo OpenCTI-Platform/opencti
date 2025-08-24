@@ -143,4 +143,5 @@ import './fintelDesign/fintelDesign-graphql';
 import './securityPlatform/securityPlatform-graphql';
 import './auth/auth-graphql';
 import './emailTemplate/emailTemplate-graphql';
+import './xtm/hub/xtm-hub-graphql';
 // endregion

@@ -24,7 +24,13 @@ const pirResolvers: Resolvers = {
     pirs: (_, args, context) => findAll(context, context.user, args),
   },
   Pir: {
-    creators: (pir, _, context) => context.batch.creatorsBatchLoader.load(pir.creator_id),
+    creators: async (pir, _, context) => {
+      const creators = await context.batch.creatorsBatchLoader.load(pir.creator_id);
+      if (!creators) {
+        return [];
+      }
+      return filterMembersWithUsersOrgs(context, context.user, creators);
+    },
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     pirContainers: (pir, args, context) => findPirContainers(context, context.user, pir, args),

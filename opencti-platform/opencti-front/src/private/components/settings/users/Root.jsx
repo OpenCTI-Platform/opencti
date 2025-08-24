@@ -1,12 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import * as PropTypes from 'prop-types';
-import { Link, Route, Routes, useParams, useLocation } from 'react-router-dom';
+import { Link, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { graphql, useLazyLoadQuery, usePreloadedQuery, useQueryLoader, useSubscription } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import makeStyles from '@mui/styles/makeStyles';
 import { styled } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
 import { useTheme } from '@mui/styles';
@@ -16,7 +15,7 @@ import UserDeletionDialog from './UserDeletionDialog';
 import UserEmailSend from './UserEmailSend';
 import AccessesMenu from '../AccessesMenu';
 import Security from '../../../../utils/Security';
-import useGranted, { VIRTUAL_ORGANIZATION_ADMIN, SETTINGS_SETACCESSES, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNUPDATE_KNDELETE, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import User from './User';
@@ -34,14 +33,6 @@ const userEditionQuery = graphql`
     }
   }
 `;
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  title: {
-    float: 'left',
-  },
-}));
 
 const subscription = graphql`
   subscription RootUsersSubscription(
@@ -105,7 +96,6 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
     [userId],
   );
   const location = useLocation();
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const canDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]);
   const theme = useTheme();
@@ -125,7 +115,7 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
   const UserHeader = styled('div')({
     display: 'flex',
     justifyContent: 'space-between',
-    marginBottom: 24,
+    marginBottom: 8,
   });
 
   return (
@@ -145,7 +135,7 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
               <Typography
                 variant="h1"
                 gutterBottom={true}
-                classes={{ root: classes.title }}
+                style={{ float: 'left' }}
               >
                 {data.name}
               </Typography>
@@ -189,7 +179,7 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
 
           <div className="clearfix" />
           <Box
-            sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 4 }}
+            sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 3 }}
           >
             <Tabs value={location.pathname}>
               <Tab

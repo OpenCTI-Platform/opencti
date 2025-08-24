@@ -59,6 +59,7 @@ import {
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import {
+  applyOrganizationRestriction,
   BYPASS,
   executionContext,
   INTERNAL_USERS,
@@ -233,10 +234,11 @@ export const findParticipants = (context, user, args) => {
   return listAllEntitiesForFilter(context, user, PARTICIPANT_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes });
 };
 
-export const findAllMembers = (context, user, args) => {
+export const findAllMembers = async (context, user, args) => {
   const { entityTypes = null } = args;
   const types = entityTypes || MEMBERS_ENTITY_TYPES;
-  return listEntities(context, user, types, args);
+  const restrictedArgs = await applyOrganizationRestriction(context, user, args);
+  return listEntities(context, user, types, restrictedArgs);
 };
 
 export const findUserWithCapabilities = async (context, user, capabilities) => {

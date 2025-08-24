@@ -425,22 +425,24 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
               />
             </ListItem>
 
-            {sortedConnectors && sortedConnectors.map((connector) => {
-              let ConnectorIcon = ExtensionOutlined;
-              if (connector.is_managed) {
-                ConnectorIcon = HubOutlined;
-              } else if (connector.built_in) {
-                ConnectorIcon = DeveloperBoardOutlined;
-              }
-              return (
-                <ListItem
-                  key={connector.id}
-                  divider={true}
-                  disablePadding
-                  secondaryAction={
-                    <Security needs={[MODULES_MODMANAGE]}>
-                      <>
-                        {!isSensitive && (
+            {sortedConnectors && sortedConnectors
+              .filter((connector) => connector.connector_type !== 'internal')
+              .map((connector) => {
+                let ConnectorIcon = ExtensionOutlined;
+                if (connector.is_managed) {
+                  ConnectorIcon = HubOutlined;
+                } else if (connector.built_in) {
+                  ConnectorIcon = DeveloperBoardOutlined;
+                }
+                return (
+                  <ListItem
+                    key={connector.id}
+                    divider={true}
+                    disablePadding
+                    secondaryAction={
+                      <Security needs={[MODULES_MODMANAGE]}>
+                        <>
+                          {!isSensitive && (
                           <Tooltip title={t_i18n('Reset the connector state')}>
                             <IconButton
                               onClick={() => {
@@ -455,75 +457,75 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                               <PlaylistRemoveOutlined />
                             </IconButton>
                           </Tooltip>
-                        )}
-                        <Tooltip title={t_i18n('Clear this connector')}>
-                          <IconButton
-                            onClick={() => {
-                              if (connector.id) handleDelete(connector.id);
-                            }}
-                            aria-haspopup="true"
-                            color="primary"
-                            disabled={!!connector.active || !!connector.built_in}
-                            size="large"
-                          >
-                            <DeleteOutlined />
-                          </IconButton>
-                        </Tooltip>
-                      </>
-                    </Security>
+                          )}
+                          <Tooltip title={t_i18n('Clear this connector')}>
+                            <IconButton
+                              onClick={() => {
+                                if (connector.id) handleDelete(connector.id);
+                              }}
+                              aria-haspopup="true"
+                              color="primary"
+                              disabled={!!connector.active || !!connector.built_in}
+                              size="large"
+                            >
+                              <DeleteOutlined />
+                            </IconButton>
+                          </Tooltip>
+                        </>
+                      </Security>
                   }
-                >
-                  <ListItemButton
-                    component={Link}
-                    classes={{ root: classes.item }}
-                    to={`/dashboard/data/ingestion/connectors/${connector.id}`}
                   >
-                    <ListItemIcon>
-                      <ConnectorIcon />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={
-                        <div>
-                          <div
-                            className={classes.bodyItem}
-                            style={inlineStyles.name}
-                          >
-                            {connector.name}
-                          </div>
-                          <div
-                            className={classes.bodyItem}
-                            style={inlineStyles.connector_type}
-                          >
-                            {t_i18n(connector.connector_type)}
-                          </div>
-                          <div
-                            className={classes.bodyItem}
-                            style={inlineStyles.auto}
-                          >
-                            <ItemBoolean
-                              label={connector.connectorTriggerStatus.label}
-                              status={connector.connectorTriggerStatus.status}
-                              variant="inList"
-                            />
-                          </div>
-                          <div
-                            className={classes.bodyItem}
-                            style={inlineStyles.messages}
-                          >
-                            {n(connector.messages)}
-                          </div>
-                          <div
-                            className={classes.bodyItem}
-                            style={inlineStyles.active}
-                          >
-                            {computeConnectorStatus(connector).render}
-                          </div>
-                          <div
-                            className={classes.bodyItem}
-                            style={inlineStyles.updated_at}
-                          >
-                            {nsdt(connector.updated_at)}
-                          </div>
+                    <ListItemButton
+                      component={Link}
+                      classes={{ root: classes.item }}
+                      to={`/dashboard/data/ingestion/connectors/${connector.id}`}
+                    >
+                      <ListItemIcon>
+                        <ConnectorIcon />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={
+                          <div>
+                            <div
+                              className={classes.bodyItem}
+                              style={inlineStyles.name}
+                            >
+                              {connector.name}
+                            </div>
+                            <div
+                              className={classes.bodyItem}
+                              style={inlineStyles.connector_type}
+                            >
+                              {t_i18n(connector.connector_type)}
+                            </div>
+                            <div
+                              className={classes.bodyItem}
+                              style={inlineStyles.auto}
+                            >
+                              <ItemBoolean
+                                label={connector.connectorTriggerStatus.label}
+                                status={connector.connectorTriggerStatus.status}
+                                variant="inList"
+                              />
+                            </div>
+                            <div
+                              className={classes.bodyItem}
+                              style={inlineStyles.messages}
+                            >
+                              {n(connector.messages)}
+                            </div>
+                            <div
+                              className={classes.bodyItem}
+                              style={inlineStyles.active}
+                            >
+                              {computeConnectorStatus(connector).render}
+                            </div>
+                            <div
+                              className={classes.bodyItem}
+                              style={inlineStyles.updated_at}
+                            >
+                              {nsdt(connector.updated_at)}
+                            </div>
                           <div
                             className={classes.bodyItem}
                             style={inlineStyles.manager_deployment}
@@ -536,11 +538,11 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                           </div>
                         </div>
                       }
-                    />
-                  </ListItemButton>
-                </ListItem>
-              );
-            })}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                );
+              })}
           </List>
         </Paper>
       </div>

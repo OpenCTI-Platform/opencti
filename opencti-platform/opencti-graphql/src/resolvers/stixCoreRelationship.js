@@ -37,6 +37,7 @@ import {
 import { numberOfContainersForObject } from '../domain/container';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { loadThroughDenormalized } from './stix';
+import { filterMembersWithUsersOrgs } from '../utils/access';
 
 const stixCoreRelationshipResolvers = {
   Query: {
@@ -70,7 +71,13 @@ const stixCoreRelationshipResolvers = {
     objectOrganization: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_GRANTED_REFS, { sortBy: 'name' }),
     objectLabel: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_LABELS, { sortBy: 'value' }),
     killChainPhases: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_KILLCHAIN, { sortBy: 'phase_name' }),
-    creators: (rel, _, context) => context.batch.creatorsBatchLoader.load(rel.creator_id),
+    creators: async (rel, _, context) => {
+      const creators = await context.batch.creatorsBatchLoader.load(rel.creator_id);
+      if (!creators) {
+        return [];
+      }
+      return filterMembersWithUsersOrgs(context, context.user, creators);
+    },
     objectMarking: (rel, _, context) => context.batch.markingsBatchLoader.load(rel),
     // endregion
     // region inner listing - cant be batch loaded

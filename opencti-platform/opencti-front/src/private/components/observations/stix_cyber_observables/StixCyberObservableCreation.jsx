@@ -537,8 +537,12 @@ const StixCyberObservableCreation = ({
                 extraFieldsToValidate = {
                   bic: Yup.string()
                     .matches(bicregex, t_i18n('bic values can only include A-Z and 0-9, 8 or 11 characters')),
-                  iban: Yup.string()
-                    .matches(ibanregex, t_i18n('iban values must begin with a country code and can only include A-Z and 0-9, 34 characters')),
+                  iban: Yup.mixed().when([], {
+                    is: () => status.type === 'Bank-Account',
+                    then: () => Yup.string().matches(ibanregex, t_i18n('iban values must begin with a country code and can only include A-Z and 0-9, 34 characters')).required(t_i18n('This field is required')),
+                    otherwise: () => Yup.string().matches(ibanregex, t_i18n('iban values must begin with a country code and can only include A-Z and 0-9, 34 characters')),
+                  }),
+
                 };
               } else if (attribute.value === 'hashes') {
                 initialValues.hashes_MD5 = '';
@@ -609,11 +613,67 @@ const StixCyberObservableCreation = ({
                 requiredOneOfFields = [
                   [attribute.value],
                 ];
+              } else if (status.type === 'Autonomous-System') {
+                extraFieldsToValidate = {
+                  number: Yup.string().required(t_i18n('This field is required')),
+                };
+              } else if (status.type === 'Directory') {
+                extraFieldsToValidate = {
+                  path: Yup.string().required(t_i18n('This field is required')),
+                };
+              } else if (status.type === 'Email-Message') {
+                extraFieldsToValidate = {
+                  subject: Yup.string().required(t_i18n('This field is required')),
+                };
+              } else if (status.type === 'Media-Content') {
+                extraFieldsToValidate = {
+                  url: Yup.string().required(t_i18n('This field is required')),
+                };
+              } else if (status.type === 'Mutex') {
+                extraFieldsToValidate = {
+                  name: Yup.string().required(t_i18n('This field is required')),
+                };
+              } else if (status.type === 'Network-Traffic') {
+                extraFieldsToValidate = {
+                  src_port: Yup.string().required(t_i18n('This field is required')),
+                };
+              } else if (status.type === 'Payment-Card') {
+                extraFieldsToValidate = {
+                  card_number: Yup.string().required(t_i18n('This field is required')),
+                  expiration_date: Yup.mixed().when([], {
+                    is: () => attribute.value === 'expiration_date',
+                    then: () => Yup.date().required(t_i18n('This field is required')),
+                    otherwise: () => Yup.mixed().nonNullable(),
+                  }),
+                };
+              } else if (status.type === 'Persona') {
+                extraFieldsToValidate = {
+                  persona_type: Yup.mixed().when([], {
+                    is: () => attribute.value === 'persona_type',
+                    then: () => Yup.mixed().required(t_i18n('This field is required')),
+                    otherwise: () => Yup.mixed().nonNullable(),
+                  }),
+                  persona_name: Yup.mixed().required(t_i18n('This field is required')),
+                };
+              } else if (status.type === 'Process') {
+                extraFieldsToValidate = {
+                  pid: Yup.mixed().required(t_i18n('This field is required')),
+                  command_line: Yup.string().required(t_i18n('This field is required')),
+                };
+              } else if (status.type === 'User-Account') {
+                extraFieldsToValidate = {
+                  account_type: Yup.mixed().required(t_i18n('This field is required')),
+                  user_id: Yup.string().required(t_i18n('This field is required')),
+                  account_login: Yup.string().required(t_i18n('This field is required')),
+                };
+              } else if (status.type === 'Windows-Registry-Key') {
+                extraFieldsToValidate = {
+                  attribute_key: Yup.mixed().required(t_i18n('This field is required')),
+                };
               } else {
                 initialValues[attribute.value] = '';
               }
             }
-
             const stixCyberObservableValidation = () => Yup.object().shape({
               x_opencti_score: Yup.number().integer(t_i18n('The value must be an integer'))
                 .nullable()

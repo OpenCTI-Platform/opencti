@@ -1,6 +1,6 @@
 {
   "name": "opencti-graphql",
-  "version": "6.7.11",
+  "version": "6.7.14",
   "main": "src/back.js",
   "scripts": {
     "check-ts": "tsc --noEmit",
@@ -164,7 +164,7 @@
     "showdown": "2.1.0",
     "source-map": "0.7.4",
     "tough-cookie": "5.1.2",
-    "trino-client": "0.2.7",
+    "trino-client": "0.2.8",
     "turndown": "7.2.0",
     "unzipper": "0.12.3",
     "uuid": "11.1.0",
@@ -172,7 +172,7 @@
     "validator": "13.15.15",
     "winston": "3.17.0",
     "winston-daily-rotate-file": "5.0.0",
-    "ws": "8.18.2",
+    "ws": "8.18.3",
     "xml2js": "0.6.2",
     "zod": "4.0.14"
   },

@@ -6,7 +6,7 @@ import { context as telemetryContext, trace } from '@opentelemetry/api';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
-import { ENTITY_TYPE_SETTINGS, isInternalObject } from '../schema/internalObject';
+import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { AuthContext, AuthUser, UserRole } from '../types/user';
 import type { BasicStoreCommon } from '../types/store';
@@ -22,6 +22,8 @@ import { extractIdsFromStoreObject, isNotEmptyField, REDACTED_INFORMATION } from
 import { isStixObject } from '../schema/stixCoreObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import type { UpdateEvent } from '../types/event';
+import { RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
+import { type Creator, type FilterGroup, FilterMode, type Participant } from '../generated/graphql';
 
 export const DEFAULT_INVALID_CONF_VALUE = 'ChangeMe';
 
@@ -856,4 +858,89 @@ export const isUserInPlatformOrganization = (user: AuthUser, settings: BasicStor
   }
   const userOrganizationIds = (user.organizations ?? []).map((organization) => organization.internal_id);
   return settings.platform_organization ? userOrganizationIds.includes(settings.platform_organization) : true;
+};
+
+type ParticipantWithOrgIds = Participant & Creator & {
+  representative?: {
+    main: string,
+    secondary: string
+  }
+  [RELATION_PARTICIPATE_TO]?: string[];
+};
+
+export const filterMembersWithUsersOrgs = async (
+  context: AuthContext,
+  user: AuthUser,
+  members: ParticipantWithOrgIds[]
+): Promise<ParticipantWithOrgIds[]> => {
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const userInPlatformOrg = isUserInPlatformOrganization(user, settings);
+  if (!userInPlatformOrg) {
+    const userOrgIds = (user.organizations || []).map((org) => org.id);
+    return members.map((member) => {
+      if (member.id === user.id) {
+        return member;
+      }
+      const memberOrgIds = member[RELATION_PARTICIPATE_TO] ?? [];
+      const sameOrg = memberOrgIds.some((id) => userOrgIds.includes(id));
+      if (!sameOrg) {
+        return {
+          ...member,
+          name: REDACTED_USER.name,
+          user_email: REDACTED_USER.user_email,
+          representative: {
+            main: REDACTED_USER.name,
+            secondary: REDACTED_USER.name
+          }
+        };
+      }
+      return member;
+    });
+  }
+  return members;
+};
+
+interface ListArgs {
+  filters?: FilterGroup;
+  entityTypes?: string[] | null;
+  [key: string]: any;
+}
+
+export const applyOrganizationRestriction = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: ListArgs,
+) => {
+  const { filters: argsFilters } = args;
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const userInPlatformOrg = isUserInPlatformOrganization(user, settings);
+
+  if (!userInPlatformOrg) {
+    const userOrgIds = (user.organizations || []).map((org) => org.id);
+    const membersFilters = {
+      key: ['participate-to'],
+      values: userOrgIds,
+      operator: 'eq',
+    };
+    const userTypeFilters = {
+      key: ['entity_type'],
+      values: [ENTITY_TYPE_USER],
+      operator: 'not_eq',
+    };
+    const userMembersFilter = {
+      mode: FilterMode.Or,
+      filters: [membersFilters, userTypeFilters],
+      filterGroups: [],
+    };
+    const filters = {
+      mode: FilterMode.And,
+      filters: [],
+      filterGroups: argsFilters ? [argsFilters, userMembersFilter] : [userMembersFilter],
+    };
+    return {
+      ...args,
+      filters,
+    };
+  }
+  return args;
 };

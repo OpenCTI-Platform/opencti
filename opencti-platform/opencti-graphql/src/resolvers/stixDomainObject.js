@@ -28,6 +28,7 @@ import { stixDomainObjectOptions as StixDomainObjectsOptions } from '../schema/s
 import { stixCoreObjectExportPush, stixCoreObjectImportPush, stixCoreObjectsExportPush } from '../domain/stixCoreObject';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { loadThroughDenormalized } from './stix';
+import { filterMembersWithUsersOrgs } from '../utils/access';
 
 const stixDomainObjectResolvers = {
   Query: {
@@ -62,7 +63,13 @@ const stixDomainObjectResolvers = {
     },
     avatar: (stixDomainObject) => stixDomainObjectAvatar(stixDomainObject),
     status: (stixDomainObject, _, context) => (stixDomainObject.x_opencti_workflow_id ? findStatusById(context, context.user, stixDomainObject.x_opencti_workflow_id) : null),
-    objectAssignee: (stixDomainObject, args, context) => loadThroughDenormalized(context, context.user, stixDomainObject, INPUT_ASSIGNEE, { sortBy: 'user_email' }),
+    objectAssignee: async (stixDomainObject, args, context) => {
+      const assignees = await loadThroughDenormalized(context, context.user, stixDomainObject, INPUT_ASSIGNEE, { sortBy: 'user_email' });
+      if (!assignees) {
+        return [];
+      }
+      return filterMembersWithUsersOrgs(context, context.user, assignees);
+    },
     workflowEnabled: async (stixDomainObject, _, context) => {
       const statusesType = await findByType(context, context.user, stixDomainObject.entity_type);
       return statusesType.length > 0;

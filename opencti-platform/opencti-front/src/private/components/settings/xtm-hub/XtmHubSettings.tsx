@@ -1,15 +1,17 @@
 import { graphql, useLazyLoadQuery } from 'react-relay';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Paper from '@mui/material/Paper';
 import { List, ListItem, ListItemText, Typography } from '@mui/material';
 import { Theme } from '@mui/material/styles/createTheme';
 import XtmHubTab from '@components/settings/xtm-hub/XtmHubTab';
 import makeStyles from '@mui/styles/makeStyles';
+import Skeleton from '@mui/material/Skeleton';
 import { useFormatter } from '../../../../components/i18n';
 import { XtmHubSettingsQuery } from './__generated__/XtmHubSettingsQuery.graphql';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import useGranted, { SETTINGS_SETMANAGEXTMHUB } from '../../../../utils/hooks/useGranted';
 import GradientButton from '../../../../components/GradientButton';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
@@ -33,7 +35,15 @@ export const xtmHubSettingsQuery = graphql`
   }
 `;
 
-const XtmHubSettings = () => {
+export const checkHubConnectivity = graphql`
+  mutation XtmHubSettingsCheckConnectivityMutation {
+    checkXTMHubConnectivity {
+      status
+    }
+  }
+`;
+
+const XtmHubSettingsComponent = () => {
   const { t_i18n, fd } = useFormatter();
   const classes = useStyles();
   const { settings: xtmHubSettings } = useLazyLoadQuery<XtmHubSettingsQuery>(
@@ -123,6 +133,29 @@ const XtmHubSettings = () => {
       </Paper>
     </>
   );
+};
+
+const XtmHubSettings: React.FC = () => {
+  const [commitCheckConnectivity] = useApiMutation(checkHubConnectivity);
+  const [isCheckDone, setIsCheckDone] = useState(false);
+
+  useEffect(() => {
+    commitCheckConnectivity({ variables: {},
+      onCompleted: () => {
+        setIsCheckDone(true);
+      } });
+  }, []);
+
+  if (!isCheckDone) {
+    return <Skeleton
+      animation="wave"
+      variant="rectangular"
+      width="100%"
+      height="100%"
+           />;
+  }
+
+  return <XtmHubSettingsComponent />;
 };
 
 export default XtmHubSettings;

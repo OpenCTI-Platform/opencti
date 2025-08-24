@@ -9463,6 +9463,7 @@ type Mutation {
   emailTemplateDelete(id: ID!): ID
   emailTemplateFieldPatch(id: ID!, input: [EditInput!]!): EmailTemplate
   emailTemplateTestSend(id: ID!): Boolean
+  checkXTMHubConnectivity: CheckXTMHubConnectivityResponse!
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -13809,4 +13810,8 @@ input EmailTemplateAddInput {
   email_object: String!
   sender_email: String!
   template_body: String!
+}
+
+type CheckXTMHubConnectivityResponse {
+  status: XTMHubRegistrationStatus
 }
