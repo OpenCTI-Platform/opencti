@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React, { FunctionComponent } from 'react';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetVerticalBars from '../../../../components/dashboard/WidgetVerticalBars';
-import { FilterGroup as RelayFilterGroup, Filter as RelayFilter, MetricsMonthlyQuery } from './__generated__/MetricsMonthlyQuery.graphql';
+import { FilterGroup as RelayFilterGroup, MetricsMonthlyQuery } from './__generated__/MetricsMonthlyQuery.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { mauDataQuery } from './MetricsMonthly';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -15,7 +14,7 @@ import { useFormatter } from '../../../../components/i18n';
  * number of months. Defaults to a 6-month rolling range.
  */
 
-type auditsDistributionParameters = {
+type AuditsDistributionParameters = {
   field: string,
   startDate: string,
   endDate: string,
@@ -24,7 +23,7 @@ type auditsDistributionParameters = {
 
 interface MetricsMonthlyChartComponentProps {
   queryRef: PreloadedQuery<MetricsMonthlyQuery>,
-  dateRanges: auditsDistributionParameters[],
+  dateRanges: AuditsDistributionParameters[],
 }
 
 interface MetricsMonthlyChartProps {
@@ -39,16 +38,29 @@ interface MetricsMonthlyChartProps {
   }[];
 }
 
-function convertToRelayFilterGroup(input?: any): RelayFilterGroup | undefined {
+type InputRelayFilter = {
+  key: string | string[];
+  values: string[];
+};
+
+type InputRelayFilterGroup = {
+  mode: 'and' | 'or';
+  filters: InputRelayFilter[];
+  filterGroups?: InputRelayFilterGroup[];
+};
+
+function convertToRelayFilterGroup(input?: InputRelayFilterGroup): RelayFilterGroup | undefined {
   if (!input) return undefined;
   return {
     mode: input.mode,
-    filters: input.filters.map((f: { key: any; values: any; }) => ({
+    filters: input.filters?.map((f) => ({
       ...f,
       key: Array.isArray(f.key) ? f.key : [f.key],
       values: f.values,
-    })) as readonly RelayFilter[],
-    filterGroups: input.filterGroups ?? [],
+    })),
+    filterGroups: input.filterGroups
+      ?.map(convertToRelayFilterGroup)
+      .filter((g): g is RelayFilterGroup => g !== undefined) ?? [],
   };
 }
 
@@ -99,8 +111,10 @@ const MetricsMonthlyChart: React.FC<MetricsMonthlyChartProps> = ({
   const months = 6;
   now.setHours(23, 59, 59, 999);
 
-  const distributionParameters: auditsDistributionParameters[] = [];
-  const filters = convertToRelayFilterGroup(dataSelection?.[0]?.filters);
+  const distributionParameters: AuditsDistributionParameters[] = [];
+  const filters = convertToRelayFilterGroup(
+    dataSelection?.[0]?.filters as InputRelayFilterGroup | undefined,
+  );
 
   if (startDate && endDate) {
     const start = new Date(startDate);

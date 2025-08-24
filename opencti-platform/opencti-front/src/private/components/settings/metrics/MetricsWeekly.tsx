@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
@@ -7,12 +6,12 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import WidgetDifference from '../../../../components/dashboard/WidgetDifference';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { FilterGroup as RelayFilterGroup, Filter as RelayFilter, MetricsWeeklyQuery } from './__generated__/MetricsWeeklyQuery.graphql';
-import { metricsGraphqlQueryUser } from './metrics.d';
+import { FilterGroup as RelayFilterGroup, MetricsWeeklyQuery } from './__generated__/MetricsWeeklyQuery.graphql';
+import { MetricsGraphqlQueryUser } from './metrics.d';
 
 export const wauDataQuery = graphql`
   query MetricsWeeklyQuery (
-    $distributionParameters: [auditsDistributionParameters]
+    $distributionParameters: [AuditsDistributionParameters]
   ) {
     auditsMultiDistribution(
       dateAttribute: ""
@@ -43,16 +42,29 @@ interface MetricsWeeklyProps {
   }[];
 }
 
-function convertToRelayFilterGroup(input?: any): RelayFilterGroup | undefined {
+type InputRelayFilter = {
+  key: string | string[];
+  values: string[];
+};
+
+type InputRelayFilterGroup = {
+  mode: 'and' | 'or';
+  filters: InputRelayFilter[];
+  filterGroups?: InputRelayFilterGroup[];
+};
+
+function convertToRelayFilterGroup(input?: InputRelayFilterGroup): RelayFilterGroup | undefined {
   if (!input) return undefined;
   return {
     mode: input.mode,
-    filters: input.filters.map((f: { key: any; values: any; }) => ({
+    filters: input.filters?.map((f) => ({
       ...f,
       key: Array.isArray(f.key) ? f.key : [f.key],
       values: f.values,
-    })) as readonly RelayFilter[],
-    filterGroups: input.filterGroups ?? [],
+    })),
+    filterGroups: input.filterGroups
+      ?.map(convertToRelayFilterGroup)
+      .filter((g): g is RelayFilterGroup => g !== undefined) ?? [],
   };
 }
 
@@ -65,12 +77,12 @@ const MetricsWeeklyComponent: FunctionComponent<MetricsWeeklyComponentProps> = (
   ); if (data) {
     // Previous period users, filtered to non-null users
     const previousData = data.auditsMultiDistribution
-      ?.[0]?.data?.filter((user: metricsGraphqlQueryUser) => !!user) ?? [];
+      ?.[0]?.data?.filter((user: MetricsGraphqlQueryUser) => !!user) ?? [];
     // Current period users, filtered to non-null users
     const currentData = data.auditsMultiDistribution
-      ?.[1]?.data?.filter((user: metricsGraphqlQueryUser) => !!user) ?? [];
-    const previousCount = new Set(previousData.map((user: metricsGraphqlQueryUser) => user?.label)).size;
-    const currentCount = new Set(currentData.map((user: metricsGraphqlQueryUser) => user?.label)).size;
+      ?.[1]?.data?.filter((user: MetricsGraphqlQueryUser) => !!user) ?? [];
+    const previousCount = new Set(previousData.map((user: MetricsGraphqlQueryUser) => user?.label)).size;
+    const currentCount = new Set(currentData.map((user: MetricsGraphqlQueryUser) => user?.label)).size;
 
     return (
       <WidgetDifference
@@ -92,7 +104,9 @@ const MetricsWeekly: React.FC<MetricsWeeklyProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const height = 300;
-  const filters = convertToRelayFilterGroup(dataSelection?.[0]?.filters);
+  const filters = convertToRelayFilterGroup(
+    dataSelection?.[0]?.filters as InputRelayFilterGroup | undefined,
+  );
 
   let start = startDate ? new Date(startDate) : null;
   let end = endDate ? new Date(endDate) : null;

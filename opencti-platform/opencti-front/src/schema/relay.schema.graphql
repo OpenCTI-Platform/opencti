@@ -364,7 +364,7 @@ input AuditsTimeSeriesParameters {
   search: String
 }
 
-input auditsDistributionParameters {
+input AuditsDistributionParameters {
   field: String!
   startDate: DateTime
   endDate: DateTime
@@ -8207,7 +8207,7 @@ type Query {
   auditsTimeSeries(field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, types: [String], filters: FilterGroup, search: String): [TimeSeries]
   auditsMultiTimeSeries(operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, timeSeriesParameters: [AuditsTimeSeriesParameters]): [MultiTimeSeries]
   auditsDistribution(field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
-  auditsMultiDistribution(dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], distributionParameters: [auditsDistributionParameters]): [MultiDistribution]
+  auditsMultiDistribution(dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], distributionParameters: [AuditsDistributionParameters]): [MultiDistribution]
   subType(id: String!): SubType
   subTypes(first: Int, after: ID, orderBy: SubTypesOrdering, orderMode: OrderingMode, type: String, includeParents: Boolean, search: String): SubTypeConnection!
   file(id: String!): File

@@ -1,10 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { FunctionComponent } from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetVerticalBars from '../../../../components/dashboard/WidgetVerticalBars';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import { FilterGroup as RelayFilterGroup, Filter as RelayFilter, MetricsWeeklyQuery } from './__generated__/MetricsWeeklyQuery.graphql';
+import { FilterGroup as RelayFilterGroup, MetricsWeeklyQuery } from './__generated__/MetricsWeeklyQuery.graphql';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { wauDataQuery } from './MetricsWeekly';
@@ -14,7 +13,7 @@ import { useFormatter } from '../../../../components/i18n';
  * number of weeks. Defaults to a 12-week rolling range, monday start-of-week.
  */
 
-type auditsDistributionParameters = {
+type AuditsDistributionParameters = {
   field: string,
   startDate: string,
   endDate: string,
@@ -23,7 +22,7 @@ type auditsDistributionParameters = {
 
 interface MetricsWeeklyChartComponentProps {
   queryRef: PreloadedQuery<MetricsWeeklyQuery>,
-  dateRanges: auditsDistributionParameters[]
+  dateRanges: AuditsDistributionParameters[]
 }
 
 interface MetricsWeeklyChartProps {
@@ -38,16 +37,29 @@ interface MetricsWeeklyChartProps {
   }[];
 }
 
-function convertToRelayFilterGroup(input?: any): RelayFilterGroup | undefined {
+type InputRelayFilter = {
+  key: string | string[];
+  values: string[];
+};
+
+type InputRelayFilterGroup = {
+  mode: 'and' | 'or';
+  filters: InputRelayFilter[];
+  filterGroups?: InputRelayFilterGroup[];
+};
+
+function convertToRelayFilterGroup(input?: InputRelayFilterGroup): RelayFilterGroup | undefined {
   if (!input) return undefined;
   return {
     mode: input.mode,
-    filters: input.filters.map((f: { key: any; values: any; }) => ({
+    filters: input.filters?.map((f) => ({
       ...f,
       key: Array.isArray(f.key) ? f.key : [f.key],
       values: f.values,
-    })) as readonly RelayFilter[],
-    filterGroups: input.filterGroups ?? [],
+    })),
+    filterGroups: input.filterGroups
+      ?.map(convertToRelayFilterGroup)
+      .filter((g): g is RelayFilterGroup => g !== undefined) ?? [],
   };
 }
 
@@ -95,8 +107,10 @@ const MetricsWeeklyChart: React.FC<MetricsWeeklyChartProps> = ({
   const weeks = 12;
   now.setHours(23, 59, 59, 999);
 
-  const distributionParameters: auditsDistributionParameters[] = [];
-  const filters = convertToRelayFilterGroup(dataSelection?.[0]?.filters);
+  const distributionParameters: AuditsDistributionParameters[] = [];
+  const filters = convertToRelayFilterGroup(
+    dataSelection?.[0]?.filters as InputRelayFilterGroup | undefined,
+  );
 
   if (startDate && endDate) {
     const start = new Date(startDate);

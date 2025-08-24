@@ -1,3 +1,3 @@
-export type metricsGraphqlQueryUser = {
+export type MetricsGraphqlQueryUser = {
   readonly label: string
 } | null | undefined;
