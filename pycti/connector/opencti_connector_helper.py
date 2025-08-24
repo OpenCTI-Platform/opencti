@@ -783,9 +783,10 @@ class ListenStream(threading.Thread):
                         # state can be None if reset from the UI
                         # In this case, default parameters will be used but SSE Client needs to be restarted
                         if state is None:
-                            self.exit = True
-                        state["start_from"] = str(msg.id)
-                        self.helper.set_state(state)
+                            self.exit_event.set()
+                        else:
+                            state["start_from"] = str(msg.id)
+                            self.helper.set_state(state)
         except Exception as ex:
             self.helper.connector_logger.error(
                 "Error in ListenStream loop, exit.", {"reason": str(ex)}
