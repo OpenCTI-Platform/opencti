@@ -348,7 +348,7 @@ input AuditsTimeSeriesParameters {
   filters: FilterGroup
   search: String
 }
-input auditsDistributionParameters {
+input AuditsDistributionParameters {
   field: String!
   startDate: DateTime
   endDate: DateTime
@@ -13081,17 +13081,12 @@ type Query {
     search: String
   ): [Distribution] @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
   auditsMultiDistribution(
-    # field: String!
-    # startDate: DateTime
-    # endDate: DateTime
     dateAttribute: String
     operation: StatsOperation!
     limit: Int
     order: String
     types: [String]
-    # filters: FilterGroup
-    # search: String
-    distributionParameters: [auditsDistributionParameters]
+    distributionParameters: [AuditsDistributionParameters]
   ): [MultiDistribution] @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
   subType(id: String!): SubType @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
   subTypes(
