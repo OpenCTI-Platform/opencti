@@ -526,17 +526,17 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                             >
                               {nsdt(connector.updated_at)}
                             </div>
-                          <div
-                            className={classes.bodyItem}
-                            style={inlineStyles.manager_deployment}
-                          >
-                            <ItemBoolean
-                              label={connector.is_managed ? 'TRUE' : 'FALSE'}
-                              status={connector.is_managed}
-                              variant="inList"
-                            />
+                            <div
+                              className={classes.bodyItem}
+                              style={inlineStyles.manager_deployment}
+                            >
+                              <ItemBoolean
+                                label={connector.is_managed ? 'TRUE' : 'FALSE'}
+                                status={connector.is_managed}
+                                variant="inList"
+                              />
+                            </div>
                           </div>
-                        </div>
                       }
                       />
                     </ListItemButton>

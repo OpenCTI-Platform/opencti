@@ -412,14 +412,14 @@ const getAvailableKeys = () => {
  * Check the filter keys exist in the schema
  */
 const checkFilterKeys = (filterGroup: FilterGroup) => {
-    // TODO improvement: check filters keys correspond to the entity types if types is given
-    const incorrectKeys = extractFilterKeys(filterGroup)
-        .map((k) => k.split('.')[0]) // keep only the first part of the key to handle composed keys
-        .filter((k) => !(getAvailableKeys().has(k) || k.startsWith(RULE_PREFIX)));
+  // TODO improvement: check filters keys correspond to the entity types if types is given
+  const incorrectKeys = extractFilterKeys(filterGroup)
+    .map((k) => k.split('.')[0]) // keep only the first part of the key to handle composed keys
+    .filter((k) => !(getAvailableKeys().has(k) || k.startsWith(RULE_PREFIX) || k.startsWith(PIR_SCORE_FILTER_PREFIX)));
 
-    if (incorrectKeys.length > 0) {
-        throw UnsupportedError('incorrect filter keys not existing in any schema definition', { keys: incorrectKeys });
-    }
+  if (incorrectKeys.length > 0) {
+    throw UnsupportedError('incorrect filter keys not existing in any schema definition', { keys: incorrectKeys });
+  }
 };
 
 export const checkFiltersValidity = (filterGroup: FilterGroup, noFiltersChecking = false) => {
