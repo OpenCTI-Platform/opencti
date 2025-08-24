@@ -14,6 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import { v4 as uuidv4 } from 'uuid';
+import type { FileHandle } from 'fs/promises';
 import { BUS_TOPICS, logApp } from '../../config/conf';
 import { createEntity, deleteElementById, patchAttribute, stixLoadById, updateAttribute } from '../../database/middleware';
 import { type EntityOptions, internalFindByIds, listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
@@ -33,7 +34,7 @@ import {
 import type { BasicStoreEntityPlaybook, ComponentDefinition, LinkDefinition, NodeDefinition } from './playbook-types';
 import { ENTITY_TYPE_PLAYBOOK } from './playbook-types';
 import { PLAYBOOK_COMPONENTS, PLAYBOOK_INTERNAL_DATA_CRON, type SharingConfiguration, type StreamConfiguration } from './playbook-components';
-import { UnsupportedError } from '../../config/errors';
+import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { isStixMatchFilterGroup, validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
 import { registerConnectorQueues, unregisterConnector } from '../../database/rabbitmq';
@@ -42,6 +43,12 @@ import { SYSTEM_USER } from '../../utils/access';
 import { findFiltersFromKey, checkAndConvertFilters } from '../../utils/filtering/filtering-utils';
 import { elFindByIds } from '../../database/engine';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
+import pjson from '../../../package.json';
+import { extractContentFrom } from '../../utils/fileToContent';
+import { publishUserAction } from '../../listener/UserActionListener';
+import { isCompatibleVersionWithMinimal } from '../../utils/version';
+
+const MINIMAL_COMPATIBLE_VERSION = '6.7.14';
 
 export const findById: DomainFindById<BasicStoreEntityPlaybook> = async (context: AuthContext, user: AuthUser, playbookId: string) => {
   await checkEnterpriseEdition(context);
@@ -456,4 +463,81 @@ export const playbookEdit = async (context: AuthContext, user: AuthUser, id: str
   await checkEnterpriseEdition(context);
   const { element: updatedElem } = await updateAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, input);
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user);
+};
+
+export const playbookExport = async (context: AuthContext, user: AuthUser, playbook: BasicStoreEntityPlaybook) => {
+  const { name, description, playbook_mode, playbook_definition } = playbook;
+  return JSON.stringify({
+    openCTI_version: pjson.version,
+    type: 'playbook',
+    configuration: {
+      name,
+      description,
+      playbook_mode,
+      playbook_definition,
+    }
+  });
+};
+
+export const playbookImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
+  const parsedData = await extractContentFrom(file);
+  // check platform version compatibility
+  if (!isCompatibleVersionWithMinimal(parsedData.openCTI_version, MINIMAL_COMPATIBLE_VERSION)) {
+    throw FunctionalError(
+      `Invalid version of the platform. Please upgrade your OpenCTI. Minimal version required: ${MINIMAL_COMPATIBLE_VERSION}`,
+      { reason: parsedData.openCTI_version },
+    );
+  }
+  if (parsedData.type !== 'playbook') {
+    throw FunctionalError('Invalid import type, must be playbook');
+  }
+  const config = parsedData.configuration;
+  const importData = {
+    name: config.name,
+    description: config.description,
+    playbook_running: false,
+    playbook_mode: config.playbook_mode,
+    playbook_definition: config.playbook_definition,
+  };
+  const importPlaybook = await createEntity(context, user, importData, ENTITY_TYPE_PLAYBOOK);
+  const importPlaybookId = importPlaybook.id;
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'create',
+    event_access: 'extended',
+    message: `import ${importPlaybook.name} playbook`,
+    context_data: {
+      id: importPlaybookId,
+      entity_type: ENTITY_TYPE_PLAYBOOK,
+      input: importPlaybook,
+    },
+  });
+  return importPlaybookId;
+};
+
+export const playbookDuplicate = async (context: AuthContext, user: AuthUser, id: string) => {
+  const playbook = await findById(context, user, id);
+  const newPlaybook = {
+    name: playbook.name,
+    description: playbook.description,
+    playbook_running: false,
+    playbook_mode: playbook.playbook_mode,
+    playbook_definition: playbook.playbook_definition,
+  };
+  const importPlaybook = await createEntity(context, user, newPlaybook, ENTITY_TYPE_PLAYBOOK);
+  const importPlaybookId = importPlaybook.id;
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'create',
+    event_access: 'extended',
+    message: `duplicate ${importPlaybook.name} playbook`,
+    context_data: {
+      id: importPlaybookId,
+      entity_type: ENTITY_TYPE_PLAYBOOK,
+      input: importPlaybook,
+    },
+  });
+  return importPlaybookId;
 };

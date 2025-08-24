@@ -8,6 +8,7 @@
   "- you will not pertain to the main platform organisation anymore unless you have been specifically granted access to the organisation.": "- vous ne ferez plus partie de l'organisation de la plate-forme principale, à moins que l'accès à l'organisation ne vous ait été spécifiquement accordé.",
   "- your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "- votre utilisateur appartiendra à l'organisation principale de la plate-forme en plus de toute organisation à laquelle l'utilisateur actuel appartient",
   "... successfully deleted": "{entity_type} supprimé(e) avec succès",
+  "... successfully duplicated": "{entity_type} dupliqué avec succès",
   "{count} days": "{count} jours",
   "{count} email address(es) extracted from pasted text": "{count} adresse(s) électronique(s) extraite(s) du texte collé",
   "{entityType} `{entityName}` added to `{pirName}`": "{entityType} `{entityName}` ajouté à `{pirName}`",

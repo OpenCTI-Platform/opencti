@@ -8,6 +8,7 @@
   "- you will not pertain to the main platform organisation anymore unless you have been specifically granted access to the organisation.": "- 조직에 대한 액세스 권한이 특별히 부여되지 않는 한 더 이상 기본 플랫폼 조직과 관련이 없습니다.",
   "- your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "- 사용자는 현재 사용자가 소속된 조직 외에 기본 플랫폼 조직과도 관련됩니다",
   "... successfully deleted": "{entity_type} 성공적으로 삭제되었습니다",
+  "... successfully duplicated": "{entity_type} 복제에 성공했습니다",
   "{count} days": "{count} 일",
   "{count} email address(es) extracted from pasted text": "붙여넣은 텍스트에서 추출한 {count} 이메일 주소",
   "{entityType} `{entityName}` added to `{pirName}`": "{entityType} `{entityName}`이 `{pirName}`에 추가되었습니다",
