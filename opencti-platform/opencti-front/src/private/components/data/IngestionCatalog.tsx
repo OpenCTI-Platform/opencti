@@ -6,6 +6,7 @@ import IngestionCatalogCard, { IngestionConnectorType } from '@components/data/I
 import { useSearchParams } from 'react-router-dom';
 import useIngestionCatalogFilters from '@components/data/IngestionCatalog/hooks/useIngestionCatalogFilters';
 import { Stack } from '@mui/material';
+import { Search } from '@mui/icons-material';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
@@ -15,6 +16,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import ListCardsContent from '../../../components/list_cards/ListCardsContent';
 import GradientButton from '../../../components/GradientButton';
 import IngestionCatalogFilters from './IngestionCatalog/IngestionCatalogFilters';
+import GradientCard from '../../../components/GradientCard';
 
 export const ingestionCatalogQuery = graphql`
   query IngestionCatalogQuery {
@@ -76,6 +78,55 @@ export interface IngestionConnector {
   }
 }
 
+const BrowseMoreButton = () => {
+  const { t_i18n } = useFormatter();
+
+  return (
+    <GradientButton
+      size="small"
+      sx={{ marginLeft: 1 }}
+      href={'https://filigran.notion.site/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76'}
+      target="_blank"
+      title={t_i18n('Browse more')}
+    >
+      {t_i18n('Browse more').toUpperCase()}
+    </GradientButton>
+  );
+};
+
+const CatalogsEmptyState = () => {
+  const { t_i18n } = useFormatter();
+  return (
+    <Stack
+      justifyContent="center"
+      alignItems="center"
+      sx={{
+        minHeight: '50vh',
+      }}
+    >
+      <GradientCard sx={{
+        px: 10,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 4,
+      }}
+      >
+        <Stack flexDirection="row" alignItems="flex-start" gap={1}>
+          <GradientCard.Icon icon={Search} size="large" />
+
+          <Stack>
+            <GradientCard.Text sx={{ whiteSpace: 'pre' }}>{t_i18n('Sorry, we couldn\'t find any results for your search.')}</GradientCard.Text>
+            <GradientCard.Text sx={{ whiteSpace: 'pre' }}>{t_i18n('For more results, you can search in the XTM Hub.')}</GradientCard.Text>
+          </Stack>
+        </Stack>
+
+        <BrowseMoreButton />
+      </GradientCard>
+    </Stack>
+  );
+};
+
 const IngestionCatalogComponent = ({
   queryRef,
 }: IngestionCatalogComponentProps) => {
@@ -123,15 +174,7 @@ const IngestionCatalogComponent = ({
             onFiltersChange={setFilters}
           />
 
-          <GradientButton
-            size="small"
-            sx={{ marginLeft: 1 }}
-            href={'https://filigran.notion.site/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76'}
-            target="_blank"
-            title={t_i18n('Browse more')}
-          >
-            {t_i18n('Browse more').toUpperCase()}
-          </GradientButton>
+          <BrowseMoreButton />
         </Stack>
 
         {filteredCatalogs.map((catalog) => (
@@ -146,6 +189,10 @@ const IngestionCatalogComponent = ({
             rowHeight={350}
           />
         ))}
+
+        {filteredCatalogs.length === 0 && (
+          <CatalogsEmptyState />
+        )}
       </PageContainer>
     </>
   );
