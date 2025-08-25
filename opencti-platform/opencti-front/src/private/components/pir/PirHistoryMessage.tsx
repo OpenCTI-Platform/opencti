@@ -49,6 +49,9 @@ const PirHistoryMessage = ({ log }: PirHistoryMessageProps) => {
     const entityType = t_i18n(displayEntityTypeForTranslation(context_data?.entity_type ?? ''));
 
     if (context_data?.entity_type === 'in-pir') {
+      if (event_scope === 'update') {
+        return `Update PIR dependencies for \`${context_data?.entity_name}\` (new score: ${context_data?.pir_score})`;
+      }
       return message;
     }
 
