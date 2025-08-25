@@ -133,141 +133,143 @@ ConfigurationComponentProps
     return <EnterpriseEdition feature={t_i18n('Activity')} />;
   }
   return (
-    <Security needs={[SETTINGS_SECURITYACTIVITY]} placeholder={<span>{t_i18n(
-      'You do not have any access to the audit activity of this OpenCTI instance.',
-    )}</span>}
-    >
-      <div className={classes.container}>
-        <ActivityMenu />
-        <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Activity') }, { label: t_i18n('Configuration'), current: true }]} />
-        <Grid container={true} spacing={3}>
-          <Grid item xs={12}>
-            <Typography variant="h4" gutterBottom={true}>
-              {t_i18n('Extended activity logging')}
-            </Typography>
-            <Paper classes={{ root: classes.paper }} variant="outlined">
-              <Alert
-                icon={false}
-                classes={{ root: classes.alert, message: classes.message }}
-                severity="info"
-                variant="outlined"
-                style={{ position: 'relative' }}
-              >
-                {t_i18n(
-                  'Extended activity logging can be enabled on users, groups and organizations to log their actions like reading, uploading, downloading, etc.',
-                )}
-              </Alert>
-              <div>
-                <Formik
-                  onSubmit={() => {}}
-                  enableReinitialize={true}
-                  initialValues={{ users: '', groups: '', organizations: '' }}
+    <div data-testid="configuration-page">
+      <Security needs={[SETTINGS_SECURITYACTIVITY]} placeholder={<span>{t_i18n(
+        'You do not have any access to the audit activity of this OpenCTI instance.',
+      )}</span>}
+      >
+        <div className={classes.container}>
+          <ActivityMenu />
+          <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Activity') }, { label: t_i18n('Configuration'), current: true }]} />
+          <Grid container={true} spacing={3}>
+            <Grid item xs={12}>
+              <Typography variant="h4" gutterBottom={true}>
+                {t_i18n('Extended activity logging')}
+              </Typography>
+              <Paper classes={{ root: classes.paper }} variant="outlined">
+                <Alert
+                  icon={false}
+                  classes={{ root: classes.alert, message: classes.message }}
+                  severity="info"
+                  variant="outlined"
+                  style={{ position: 'relative' }}
                 >
-                  {({ resetForm }) => {
+                  {t_i18n(
+                    'Extended activity logging can be enabled on users, groups and organizations to log their actions like reading, uploading, downloading, etc.',
+                  )}
+                </Alert>
+                <div>
+                  <Formik
+                    onSubmit={() => {}}
+                    enableReinitialize={true}
+                    initialValues={{ users: '', groups: '', organizations: '' }}
+                  >
+                    {({ resetForm }) => {
+                      return (
+                        <Form style={{ margin: `${theme.spacing(1)} 0` }}>
+                          <Grid container={true} spacing={0}>
+                            <Grid
+                              key="users"
+                              item
+                              xs={4}
+                              style={{ padding: 4 }}
+                            >
+                              <CreatorField
+                                name="users"
+                                label={t_i18n('Add a user')}
+                                onChange={onChangeData(resetForm)}
+                                containerStyle={{ width: '100%' }}
+                              />
+                            </Grid>
+                            <Grid
+                              key="groups"
+                              item
+                              xs={4}
+                              style={{ padding: 4 }}
+                            >
+                              <GroupField
+                                name="groups"
+                                label={t_i18n('Add a group')}
+                                multiple={false}
+                                onChange={onChangeData(resetForm)}
+                              />
+                            </Grid>
+                            <Grid
+                              key="organizations"
+                              item
+                              xs={4}
+                              style={{ padding: 4 }}
+                            >
+                              <ObjectOrganizationField
+                                alert={false}
+                                name="organizations"
+                                label={t_i18n('Add an organization')}
+                                multiple={false}
+                                onChange={onChangeData(resetForm)}
+                                style={{ width: '100' }}
+                              />
+                            </Grid>
+                          </Grid>
+                        </Form>
+                      );
+                    }}
+                  </Formik>
+                </div>
+                <List
+                  component="nav"
+                  aria-labelledby="nested-list-subheader"
+                  className={classes.root}
+                >
+                  {(settings.activity_listeners ?? []).map((listener) => {
                     return (
-                      <Form style={{ margin: `${theme.spacing(1)} 0` }}>
-                        <Grid container={true} spacing={0}>
-                          <Grid
-                            key="users"
-                            item
-                            xs={4}
-                            style={{ padding: 4 }}
-                          >
-                            <CreatorField
-                              name="users"
-                              label={t_i18n('Add a user')}
-                              onChange={onChangeData(resetForm)}
-                              containerStyle={{ width: '100%' }}
-                            />
-                          </Grid>
-                          <Grid
-                            key="groups"
-                            item
-                            xs={4}
-                            style={{ padding: 4 }}
-                          >
-                            <GroupField
-                              name="groups"
-                              label={t_i18n('Add a group')}
-                              multiple={false}
-                              onChange={onChangeData(resetForm)}
-                            />
-                          </Grid>
-                          <Grid
-                            key="organizations"
-                            item
-                            xs={4}
-                            style={{ padding: 4 }}
-                          >
-                            <ObjectOrganizationField
-                              alert={false}
-                              name="organizations"
-                              label={t_i18n('Add an organization')}
-                              multiple={false}
-                              onChange={onChangeData(resetForm)}
-                              style={{ width: '100' }}
-                            />
-                          </Grid>
-                        </Grid>
-                      </Form>
-                    );
-                  }}
-                </Formik>
-              </div>
-              <List
-                component="nav"
-                aria-labelledby="nested-list-subheader"
-                className={classes.root}
-              >
-                {(settings.activity_listeners ?? []).map((listener) => {
-                  return (
-                    <React.Fragment key={listener.id}>
-                      <ListItem
-                        divider={true}
-                        secondaryAction={
-                          <IconButton
-                            aria-label="Kill"
-                            onClick={() => {
-                              const value = currentListeners.filter(
-                                (c) => c !== listener.id,
-                              );
-                              commit({
-                                variables: {
-                                  id: settings?.id,
-                                  input: { key: 'activity_listeners_ids', value },
-                                },
-                              });
-                            }}
-                            size="large"
-                          >
-                            <Delete />
-                          </IconButton>
+                      <React.Fragment key={listener.id}>
+                        <ListItem
+                          divider={true}
+                          secondaryAction={
+                            <IconButton
+                              aria-label="Kill"
+                              onClick={() => {
+                                const value = currentListeners.filter(
+                                  (c) => c !== listener.id,
+                                );
+                                commit({
+                                  variables: {
+                                    id: settings?.id,
+                                    input: { key: 'activity_listeners_ids', value },
+                                  },
+                                });
+                              }}
+                              size="large"
+                            >
+                              <Delete />
+                            </IconButton>
                         }
-                      >
-                        <ListItemButton
-                          classes={{ root: classes.item }}
                         >
-                          <ListItemIcon classes={{ root: classes.itemIcon }}>
-                            <ItemIcon type={listener.entity_type} />
-                          </ListItemIcon>
-                          <ListItemText
-                            primary={
-                              <div>
-                                <div className={classes.name}>{listener.name}</div>
-                              </div>
+                          <ListItemButton
+                            classes={{ root: classes.item }}
+                          >
+                            <ListItemIcon classes={{ root: classes.itemIcon }}>
+                              <ItemIcon type={listener.entity_type} />
+                            </ListItemIcon>
+                            <ListItemText
+                              primary={
+                                <div>
+                                  <div className={classes.name}>{listener.name}</div>
+                                </div>
                         }
-                          />
-                        </ListItemButton>
-                      </ListItem>
-                    </React.Fragment>
-                  );
-                })}
-              </List>
-            </Paper>
+                            />
+                          </ListItemButton>
+                        </ListItem>
+                      </React.Fragment>
+                    );
+                  })}
+                </List>
+              </Paper>
+            </Grid>
           </Grid>
-        </Grid>
-      </div>
-    </Security>
+        </div>
+      </Security>
+    </div>
   );
 };
 

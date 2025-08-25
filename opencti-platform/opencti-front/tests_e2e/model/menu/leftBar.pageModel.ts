@@ -27,6 +27,10 @@ export default class LeftBarPage {
     }
   }
 
+  async getSubItem(subMenuItem: string) {
+    await this.page.getByLabel(subMenuItem, { exact: true }).click();
+  }
+
   async expectBreadcrumb(...items: string[]) {
     return expect(this.page.getByTestId('navigation').getByText(items.join('/'))).toBeVisible();
   }

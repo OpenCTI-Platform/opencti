@@ -160,7 +160,7 @@ const Vulnerabilities = () => {
   } as UsePreloadedPaginationFragment<VulnerabilitiesLinesPaginationQuery>;
 
   return (
-    <>
+    <div data-testid="vulnerability-page">
       <Breadcrumbs elements={[{ label: t_i18n('Arsenal') }, { label: t_i18n('Vulnerabilities'), current: true }]} />
       {queryRef && (
         <DataTable
@@ -179,7 +179,7 @@ const Vulnerabilities = () => {
           )}
         />
       )}
-    </>
+    </div>
   );
 };
 

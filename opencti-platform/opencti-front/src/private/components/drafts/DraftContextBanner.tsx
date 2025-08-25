@@ -90,7 +90,6 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
 
   const { name, processingCount, objectsCount, entity_id } = useFragment<DraftContextBanner_data$key>(draftContextBannerFragment, draftWorkspace);
   const currentlyProcessing = processingCount > 0;
-
   const handleExitDraft = () => {
     commitExitDraft({
       variables: {

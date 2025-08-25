@@ -185,7 +185,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
   };
   const authProviders = settings.platform_providers;
   return (
-    <div className={classes.container}>
+    <div className={classes.container} data-testid="policies-settings-page">
       <AccessesMenu />
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Policies'), current: true }]} />
       <Grid container={true} spacing={3}>

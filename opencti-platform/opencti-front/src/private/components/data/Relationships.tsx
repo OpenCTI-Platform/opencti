@@ -321,7 +321,7 @@ const Relationships = () => {
   } as UsePreloadedPaginationFragment<RelationshipsStixCoreRelationshipsLinesPaginationQuery>;
 
   return (
-    <>
+    <div data-testid="data-relationships-page">
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Relationships'), current: true }]} />
       {queryRef && (
         <DataTable
@@ -335,7 +335,7 @@ const Relationships = () => {
           exportContext={{ entity_type: 'stix-core-relationship' }}
         />
       )}
-    </>
+    </div>
   );
 };
 

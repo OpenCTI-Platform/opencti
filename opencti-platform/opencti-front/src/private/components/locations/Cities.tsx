@@ -112,10 +112,10 @@ const Cities: FunctionComponent = () => {
     );
   };
   return (
-    <>
+    <div data-testid="city-page">
       <Breadcrumbs elements={[{ label: t_i18n('Locations') }, { label: t_i18n('Cities'), current: true }]} />
       {renderLines()}
-    </>
+    </div>
   );
 };
 

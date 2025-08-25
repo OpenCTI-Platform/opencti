@@ -127,7 +127,7 @@ const Tasks = () => {
   } as UsePreloadedPaginationFragment<TasksLinesPaginationQuery>;
 
   return (
-    <>
+    <span data-testid="task-page">
       <Breadcrumbs elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Tasks'), current: true }]} />
       {queryRef && (
         <DataTable
@@ -145,7 +145,7 @@ const Tasks = () => {
            <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <TaskCreation paginationOptions={paginationOptions} />
         </Security> */}
-    </>
+    </span>
   );
 };
 
