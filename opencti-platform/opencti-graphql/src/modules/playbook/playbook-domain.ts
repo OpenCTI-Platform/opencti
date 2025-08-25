@@ -465,8 +465,8 @@ export const playbookEdit = async (context: AuthContext, user: AuthUser, id: str
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user);
 };
 
-export const playbookExport = async (context: AuthContext, user: AuthUser, playbook: BasicStoreEntityPlaybook) => {
-  const { name, description, playbook_mode, playbook_definition } = playbook;
+export const playbookExport = async (playbook: BasicStoreEntityPlaybook) => {
+  const { name, description, playbook_mode, playbook_start, playbook_definition } = playbook;
   return JSON.stringify({
     openCTI_version: pjson.version,
     type: 'playbook',
@@ -474,6 +474,7 @@ export const playbookExport = async (context: AuthContext, user: AuthUser, playb
       name,
       description,
       playbook_mode,
+      playbook_start,
       playbook_definition,
     }
   });
@@ -495,6 +496,7 @@ export const playbookImport = async (context: AuthContext, user: AuthUser, file:
   const importData = {
     name: config.name,
     description: config.description,
+    playbook_start: config.playbook_start,
     playbook_running: false,
     playbook_mode: config.playbook_mode,
     playbook_definition: config.playbook_definition,
@@ -522,6 +524,7 @@ export const playbookDuplicate = async (context: AuthContext, user: AuthUser, id
     name: `${playbook.name} - copy`,
     description: playbook.description,
     playbook_running: false,
+    playbook_start: playbook.playbook_start,
     playbook_mode: playbook.playbook_mode,
     playbook_definition: playbook.playbook_definition,
   };

@@ -51,7 +51,7 @@ const playbookResolvers: Resolvers = {
     playbook_definition: async (current, _, context) => getPlaybookDefinition(context, current),
     last_executions: async (current) => getLastPlaybookExecutions(current.id),
     queue_messages: async (current, _, context) => getConnectorQueueSize(context, context.user, current.id),
-    toConfigurationExport: (playbook, _, context) => playbookExport(context, context.user, playbook),
+    toConfigurationExport: (playbook, _, __) => playbookExport(playbook),
   },
   PlaybookComponent: {
     configuration_schema: async (current) => {
