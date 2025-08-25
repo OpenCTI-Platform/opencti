@@ -519,7 +519,7 @@ export const playbookImport = async (context: AuthContext, user: AuthUser, file:
 export const playbookDuplicate = async (context: AuthContext, user: AuthUser, id: string) => {
   const playbook = await findById(context, user, id);
   const newPlaybook = {
-    name: playbook.name,
+    name: `${playbook.name} - copy`,
     description: playbook.description,
     playbook_running: false,
     playbook_mode: playbook.playbook_mode,
