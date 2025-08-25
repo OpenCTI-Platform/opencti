@@ -1,8 +1,11 @@
-import React, { Suspense, useEffect, useState } from 'react';
+import React, { Suspense } from 'react';
 import IngestionMenu from '@components/data/IngestionMenu';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { IngestionCatalogQuery } from '@components/data/__generated__/IngestionCatalogQuery.graphql';
 import IngestionCatalogCard, { IngestionConnectorType } from '@components/data/IngestionCatalog/IngestionCatalogCard';
+import { useSearchParams } from 'react-router-dom';
+import useIngestionCatalogFilters from '@components/data/IngestionCatalog/hooks/useIngestionCatalogFilters';
+import { Stack } from '@mui/material';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
@@ -10,9 +13,8 @@ import PageContainer from '../../../components/PageContainer';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import ListCardsContent from '../../../components/list_cards/ListCardsContent';
-import { MESSAGING$ } from '../../../relay/environment';
 import GradientButton from '../../../components/GradientButton';
-import SearchInput from '../../../components/SearchInput';
+import IngestionCatalogFilters from './IngestionCatalog/IngestionCatalogFilters';
 
 export const ingestionCatalogQuery = graphql`
   query IngestionCatalogQuery {
@@ -29,14 +31,6 @@ export const ingestionCatalogQuery = graphql`
 interface IngestionCatalogComponentProps {
   queryRef: PreloadedQuery<IngestionCatalogQuery>;
 }
-
-type IngestionCatalogParsed = {
-  contracts: IngestionConnector[];
-  description: string;
-  entity_type: string;
-  id: string;
-  name: string;
-};
 
 type IngestionTypeMap = {
   string: string;
@@ -87,37 +81,33 @@ const IngestionCatalogComponent = ({
 }: IngestionCatalogComponentProps) => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
+  const [searchParams] = useSearchParams();
+
   setTitle(t_i18n('Catalog | Ingestion | Data'));
-  const [catalogsParsed, setCatalogsParsed] = useState<IngestionCatalogParsed[]>([]);
 
   const { catalogs } = usePreloadedQuery(
     ingestionCatalogQuery,
     queryRef,
   );
 
-  useEffect(() => {
-    catalogs.forEach((catalog) => {
-      const finalContracts: IngestionConnector[] = [];
-      catalog.contracts.forEach((contract) => {
-        try {
-          const parsedContract = JSON.parse(contract);
-          if (parsedContract.manager_supported) finalContracts.push(parsedContract);
-        } catch (e) {
-          MESSAGING$.notifyError(t_i18n('Failed to parse a contract'));
-        }
-        const finalCatalog = { ...catalog, contracts: finalContracts };
-        setCatalogsParsed([...catalogsParsed, finalCatalog]);
-      });
-    });
-  }, [catalogs]);
+  const { filteredCatalogs, getAllContracts, filters, setFilters } = useIngestionCatalogFilters({
+    catalogs,
+    searchParams,
+  });
 
   return (
     <>
       <IngestionMenu />
       <PageContainer withRightMenu withGap>
         <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('Catalog'), current: true }]} />
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <SearchInput disabled />
+
+        <Stack flexDirection="row">
+          <IngestionCatalogFilters
+            contracts={getAllContracts()}
+            filters={filters}
+            onFiltersChange={setFilters}
+          />
+
           <GradientButton
             size="small"
             sx={{ marginLeft: 1 }}
@@ -127,21 +117,20 @@ const IngestionCatalogComponent = ({
           >
             {t_i18n('Browse more').toUpperCase()}
           </GradientButton>
-        </div>
-        {catalogsParsed.map((catalog) => {
-          return catalog.contracts.length > 0 && (
-            <ListCardsContent
-              key={catalog.id}
-              hasMore={() => false}
-              isLoading={() => false}
-              dataList={catalog.contracts}
-              dataListId={catalog.id}
-              globalCount={catalog.contracts.length}
-              CardComponent={IngestionCatalogCard}
-              rowHeight={350}
-            />
-          );
-        })}
+        </Stack>
+
+        {filteredCatalogs.map((catalog) => (
+          <ListCardsContent
+            key={catalog.id}
+            hasMore={() => false}
+            isLoading={() => false}
+            dataList={catalog.contracts}
+            dataListId={catalog.id}
+            globalCount={catalog.contracts.length}
+            CardComponent={IngestionCatalogCard}
+            rowHeight={350}
+          />
+        ))}
       </PageContainer>
     </>
   );
