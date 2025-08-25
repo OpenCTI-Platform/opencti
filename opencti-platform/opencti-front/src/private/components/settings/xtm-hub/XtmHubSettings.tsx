@@ -51,6 +51,7 @@ const XtmHubSettingsComponent = () => {
     {},
   );
   const isGrantedToXtmHub = useGranted([SETTINGS_SETMANAGEXTMHUB]);
+
   return (
     <>
       <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
