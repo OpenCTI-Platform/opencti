@@ -7775,6 +7775,23 @@ input InternalRelationshipAddInput {
   relationship_type: String!
   fromId: ID
   toId: ID
+  pir_explanations: [PirExplanationInput!]
+}
+
+type InPirRelationship implements BasicRelationship {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  fromRole: String
+  toRole: String
+  created_at: DateTime!
+  updated_at: DateTime!
+  from: InternalObject
+  to: InternalObject
+  creators: [Creator!]
+  pir_explanations: [PirExplanation!]
+  pir_score: Int
 }
 
 enum StixObjectOrStixRelationshipsOrdering {
@@ -8173,8 +8190,6 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   groupings(first: Int): GroupingConnection
   cases(first: Int): CaseConnection
   toStix: String
-  pir_explanations: [PirExplanation!]
-  pir_score: Int
   creators: [Creator!]
   editContext: [EditUserContext!]
 }
@@ -8202,7 +8217,6 @@ input StixRefRelationshipAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
-  pir_explanations: [PirExplanationInput!]
 }
 
 input StixRefRelationshipsAddInput {
