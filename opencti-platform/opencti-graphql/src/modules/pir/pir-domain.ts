@@ -35,11 +35,11 @@ import { deleteInternalObject } from '../../domain/internalObject';
 import { registerConnectorForPir, unregisterConnectorForIngestion } from '../../domain/connector';
 import type { BasicStoreCommon, BasicStoreObject } from '../../types/store';
 import { RELATION_IN_PIR, RELATION_OBJECT } from '../../schema/stixRefRelationship';
-import { createPirRel, serializePir, updatePirExplanations, updatePirInformationOnEntity } from './pir-utils';
+import { createPirRel, serializePir, updatePirExplanations } from './pir-utils';
 import { ForbiddenAccess, FunctionalError } from '../../config/errors';
 import { ABSTRACT_STIX_REF_RELATIONSHIP, ENTITY_TYPE_CONTAINER } from '../../schema/general';
 import { elRawUpdateByQuery } from '../../database/engine';
-import { READ_INDEX_HISTORY, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
+import { READ_INDEX_HISTORY } from '../../database/utils';
 import { extractFilterKeyValues } from '../../utils/filtering/filtering-utils';
 import { INSTANCE_DYNAMIC_REGARDING_OF, INSTANCE_REGARDING_OF, OBJECT_CONTAINS_FILTER, RELATION_TO_FILTER, RELATION_TYPE_FILTER } from '../../utils/filtering/filtering-constants';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
@@ -153,24 +153,6 @@ export const deletePir = async (context: AuthContext, user: AuthUser, pirId: str
   } catch (e) {
     logApp.error('[OPENCTI] Error while unregistering Pir connector', { cause: e });
   }
-  // remove pir_information of pir from entities
-  const sourceScores = `
-    def pirIdIndex = ctx._source.pir_information.pir_id.indexOf(params.pirId);
-    if (pirIdIndex >=0 ) {
-       ctx._source.pir_information.remove(pirIdIndex);
-    }  
-  `;
-  await elRawUpdateByQuery({
-    index: READ_INDEX_STIX_DOMAIN_OBJECTS,
-    body: {
-      script: { source: sourceScores, params: { pirId } },
-      query: {
-        term: {
-          'pir_information.pir_id.keyword': pirId
-        }
-      },
-    },
-  });
   // remove pir_ids from historic events
   const sourceHistory = `
     def pirIdIndex = ctx._source.context_data.pir_ids.indexOf(params.pirId);

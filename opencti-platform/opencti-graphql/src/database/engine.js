@@ -3993,9 +3993,12 @@ export const elRemoveRelationConnection = async (context, user, elementsImpact, 
               source += 'ctx._source[\'modified\'] = params.updated_at;';
             }
           }
-          // Remove the pir information concerning the PIR in case of in-pir rel deletion
+          // Remove the pir information concerning the Pir in case of in-pir rel deletion
           if (relationType === RELATION_IN_PIR && entityPirInformation) {
             pir_information = entityPirInformation.filter((pirInfo) => !cleanupIds.includes(pirInfo.pir_id));
+            if (pir_information.length === 0) {
+              pir_information = undefined;
+            }
             source += 'ctx._source[\'pir_information\'] = params.pir_information;';
           }
           // if (isStixRelationship(relationType)) {
