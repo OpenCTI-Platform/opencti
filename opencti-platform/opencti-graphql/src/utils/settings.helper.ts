@@ -23,6 +23,10 @@ export const completeXTMHubDataForRegistration = (user: AuthUser, input: InputSe
       {
         key: 'xtm_hub_last_connectivity_check',
         value: [new Date()]
+      },
+      {
+        key: 'xtm_hub_should_send_connectivity_email',
+        value: [true]
       }
     ];
   }
