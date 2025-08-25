@@ -14735,8 +14735,10 @@ export type Mutation = {
   playbookDelete?: Maybe<Scalars['ID']['output']>;
   playbookDeleteLink?: Maybe<Playbook>;
   playbookDeleteNode?: Maybe<Playbook>;
+  playbookDuplicate: Scalars['String']['output'];
   playbookExecute?: Maybe<Scalars['Boolean']['output']>;
   playbookFieldPatch?: Maybe<Playbook>;
+  playbookImport: Scalars['String']['output'];
   playbookInsertNode: PlaybookInsertResult;
   playbookReplaceNode: Scalars['String']['output'];
   playbookStepExecution?: Maybe<Scalars['Boolean']['output']>;
@@ -16390,6 +16392,11 @@ export type MutationPlaybookDeleteNodeArgs = {
 };
 
 
+export type MutationPlaybookDuplicateArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
 export type MutationPlaybookExecuteArgs = {
   entityId: Scalars['String']['input'];
   id: Scalars['ID']['input'];
@@ -16401,6 +16408,11 @@ export type MutationPlaybookFieldPatchArgs = {
   id: Scalars['ID']['input'];
   input: Array<EditInput>;
   references?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type MutationPlaybookImportArgs = {
+  file: Scalars['Upload']['input'];
 };
 
 
@@ -20336,6 +20348,7 @@ export type Playbook = BasicObject & InternalObject & {
   playbook_running?: Maybe<Scalars['Boolean']['output']>;
   queue_messages: Scalars['Int']['output'];
   standard_id: Scalars['String']['output'];
+  toConfigurationExport: Scalars['String']['output'];
 };
 
 export type PlaybookAddInput = {
@@ -40736,8 +40749,10 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   playbookDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationPlaybookDeleteArgs, 'id'>>;
   playbookDeleteLink?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<MutationPlaybookDeleteLinkArgs, 'id' | 'linkId'>>;
   playbookDeleteNode?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<MutationPlaybookDeleteNodeArgs, 'id' | 'nodeId'>>;
+  playbookDuplicate?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationPlaybookDuplicateArgs, 'id'>>;
   playbookExecute?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationPlaybookExecuteArgs, 'entityId' | 'id'>>;
   playbookFieldPatch?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<MutationPlaybookFieldPatchArgs, 'id' | 'input'>>;
+  playbookImport?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationPlaybookImportArgs, 'file'>>;
   playbookInsertNode?: Resolver<ResolversTypes['PlaybookInsertResult'], ParentType, ContextType, RequireFields<MutationPlaybookInsertNodeArgs, 'childNodeId' | 'id' | 'input' | 'parentNodeId' | 'parentPortId'>>;
   playbookReplaceNode?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationPlaybookReplaceNodeArgs, 'id' | 'input' | 'nodeId'>>;
   playbookStepExecution?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationPlaybookStepExecutionArgs, 'bundle' | 'data_instance_id' | 'event_id' | 'execution_id' | 'execution_start' | 'playbook_id' | 'previous_bundle' | 'previous_step_id' | 'step_id'>>;
@@ -41889,6 +41904,7 @@ export type PlaybookResolvers<ContextType = any, ParentType extends ResolversPar
   playbook_running?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   queue_messages?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  toConfigurationExport?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

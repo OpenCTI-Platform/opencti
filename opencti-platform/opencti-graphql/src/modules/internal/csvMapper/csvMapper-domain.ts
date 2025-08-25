@@ -32,8 +32,9 @@ import { extractContentFrom } from '../../../utils/fileToContent';
 import { isCompatibleVersionWithMinimal } from '../../../utils/version';
 import { convertRepresentationsIds } from '../mapper-utils';
 
-// -- UTILS --
+const MINIMAL_COMPATIBLE_VERSION = '6.6.0';
 
+// -- UTILS --
 export const csvMapperTest = async (context: AuthContext, user: AuthUser, configuration: string, fileUpload: Promise<FileUploadData>) => {
   let parsedConfiguration;
   try {
@@ -127,8 +128,6 @@ export const csvMapperExport = async (context: AuthContext, user: AuthUser, csvM
   });
 };
 
-const MINIMAL_COMPATIBLE_VERSION = '6.6.0';
-
 export const transformCsvMapperConfig = async (configuration: CsvMapperParsed, context: AuthContext, user: AuthUser): Promise<CsvMapperResolved> => {
   const { representations } = configuration;
   await convertRepresentationsIds(context, user, representations, 'stix');
@@ -146,15 +145,13 @@ export const transformCsvMapperConfig = async (configuration: CsvMapperParsed, c
 
 export const csvMapperAddInputFromImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
   const parsedData = await extractContentFrom(file);
-
   // check platform version compatibility
   if (!isCompatibleVersionWithMinimal(parsedData.openCTI_version, MINIMAL_COMPATIBLE_VERSION)) {
-    // throw FunctionalError(
-    //   `Invalid version of the platform. Please upgrade your OpenCTI. Minimal version required: ${MINIMAL_COMPATIBLE_VERSION}`,
-    //   { reason: parsedData.openCTI_version },
-    // );
+    throw FunctionalError(
+      `Invalid version of the platform. Please upgrade your OpenCTI. Minimal version required: ${MINIMAL_COMPATIBLE_VERSION}`,
+      { reason: parsedData.openCTI_version },
+    );
   }
-
   // convert default values ids in representations
   return transformCsvMapperConfig(parsedData.configuration, context, user);
 };

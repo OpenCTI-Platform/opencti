@@ -29,7 +29,10 @@ import {
   playbookDeleteLink,
   playbookUpdatePositions,
   findPlaybooksForEntity,
-  getPlaybookDefinition
+  getPlaybookDefinition,
+  playbookExport,
+  playbookImport,
+  playbookDuplicate
 } from './playbook-domain';
 import { executePlaybookOnEntity, playbookStepExecution } from '../../manager/playbookManager';
 import { getLastPlaybookExecutions } from '../../database/redis';
@@ -47,7 +50,8 @@ const playbookResolvers: Resolvers = {
   Playbook: {
     playbook_definition: async (current, _, context) => getPlaybookDefinition(context, current),
     last_executions: async (current) => getLastPlaybookExecutions(current.id),
-    queue_messages: async (current, _, context) => getConnectorQueueSize(context, context.user, current.id)
+    queue_messages: async (current, _, context) => getConnectorQueueSize(context, context.user, current.id),
+    toConfigurationExport: (playbook, _, context) => playbookExport(context, context.user, playbook),
   },
   PlaybookComponent: {
     configuration_schema: async (current) => {
@@ -72,6 +76,8 @@ const playbookResolvers: Resolvers = {
     playbookFieldPatch: (_, { id, input }, context) => playbookEdit(context, context.user, id, input),
     playbookStepExecution: (_, args, context) => playbookStepExecution(context, context.user, args),
     playbookExecute: (_, { id, entityId }, context) => executePlaybookOnEntity(context, id, entityId),
+    playbookImport: (_, { file }, context) => playbookImport(context, context.user, file),
+    playbookDuplicate: (_, { id }, context) => playbookDuplicate(context, context.user, id),
   },
 };
 
