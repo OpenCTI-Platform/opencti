@@ -17,6 +17,7 @@ import ListCardsContent from '../../../components/list_cards/ListCardsContent';
 import GradientButton from '../../../components/GradientButton';
 import IngestionCatalogFilters from './IngestionCatalog/IngestionCatalogFilters';
 import GradientCard from '../../../components/GradientCard';
+import { MESSAGING$ } from '../../../relay/environment';
 
 export const ingestionCatalogQuery = graphql`
   query IngestionCatalogQuery {
@@ -156,7 +157,7 @@ const IngestionCatalogComponent = ({
           allContracts.push(parsedContract);
         }
       } catch (e) {
-        // let this comment to avoid empty block ts error
+        MESSAGING$.notifyError(t_i18n('Failed to parse a contract'));
       }
     }
   }
