@@ -16,7 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import { type BasicStoreEntityPir, type BasicStoreRelationPir, ENTITY_TYPE_PIR, type ParsedPir, type PirExplanation } from './pir-types';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { listRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
-import { RELATION_IN_PIR } from '../../schema/stixRefRelationship';
+import { RELATION_IN_PIR } from '../../schema/internalRelationship';
 import { FunctionalError } from '../../config/errors';
 import { createRelation, patchAttribute } from '../../database/middleware';
 import { type FilterGroup, type PirAddInput, PirType } from '../../generated/graphql';

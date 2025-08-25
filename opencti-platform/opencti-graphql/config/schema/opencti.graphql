@@ -12320,6 +12320,27 @@ input InternalRelationshipAddInput {
   relationship_type: String! # Will be checked by code
   fromId: ID
   toId: ID
+  # in-pir rel
+  pir_explanations: [PirExplanationInput!]
+}
+
+type InPirRelationship implements BasicRelationship {
+  # BasicRelationship
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  fromRole: String
+  toRole: String
+  created_at: DateTime!
+  updated_at: DateTime!
+  # InternalRelationship
+  from: InternalObject
+  to: InternalObject
+  creators: [Creator!]
+  # in-pir relationship
+  pir_explanations: [PirExplanation!]
+  pir_score: Int
 }
 
 ######## STIX RELATIONSHIPS
@@ -12991,8 +13012,6 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   groupings(first: Int): GroupingConnection
   cases(first: Int): CaseConnection
   toStix: String
-  pir_explanations: [PirExplanation!]
-  pir_score: Int
   # Technical
   creators: [Creator!]
   editContext: [EditUserContext!]
@@ -13022,7 +13041,6 @@ input StixRefRelationshipAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
-  pir_explanations: [PirExplanationInput!]
 }
 input StixRefRelationshipsAddInput {
   relationship_type: String!

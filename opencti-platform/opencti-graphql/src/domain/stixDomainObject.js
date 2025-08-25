@@ -26,8 +26,9 @@ import {
   isStixDomainObjectThreatActor
 } from '../schema/stixDomainObject';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey, INPUT_CREATED_BY, INPUT_MARKINGS } from '../schema/general';
-import { RELATION_CREATED_BY, RELATION_IN_PIR, RELATION_OBJECT_ASSIGNEE, } from '../schema/stixRefRelationship';
+import { RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE, } from '../schema/stixRefRelationship';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
+import { RELATION_IN_PIR } from '../schema/internalRelationship';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { checkScore, now, utcDate } from '../utils/format';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
@@ -142,7 +143,7 @@ export const stixDomainObjectsPirExplanations = async (context, user, stixDomain
   const { edges, pageInfo } = await findRelationships(context, user, {
     fromId: stixDomainObject.id,
     toId: pirId,
-    relationship_type: RELATION_IN_PIR
+    relationship_type: RELATION_IN_PIR,
   });
   if (pageInfo.globalCount !== 1) return null;
   return edges[0].node.pir_explanations;

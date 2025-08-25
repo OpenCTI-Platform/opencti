@@ -58,7 +58,6 @@ import {
   RELATION_CREATED_BY,
   RELATION_ETHNICITY,
   RELATION_GRANTED_TO,
-  RELATION_IN_PIR,
   RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT_ASSIGNEE,
   RELATION_OBJECT_LABEL,
@@ -184,7 +183,7 @@ import {
 } from '../schema/attribute-definition';
 import { connections as connectionsAttribute } from '../modules/attributes/basicRelationship-registrationAttributes';
 import { schemaTypesDefinition } from '../schema/schema-types';
-import { INTERNAL_RELATIONSHIPS, isInternalRelationship, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
+import { INTERNAL_RELATIONSHIPS, isInternalRelationship, RELATION_PARTICIPATE_TO, RELATION_IN_PIR } from '../schema/internalRelationship';
 import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { rule_definitions } from '../rules/rules-definition';
 import { buildElasticSortingForAttributeCriteria } from '../utils/sorting';

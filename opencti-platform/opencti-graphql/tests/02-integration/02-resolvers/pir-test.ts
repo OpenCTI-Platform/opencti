@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { now } from 'moment';
 import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
 import { FilterMode, FilterOperator, PirType } from '../../../src/generated/graphql';
-import { RELATION_IN_PIR } from '../../../src/schema/stixRefRelationship';
+import { RELATION_IN_PIR } from '../../../src/schema/internalRelationship';
 import { SYSTEM_USER } from '../../../src/utils/access';
 import { listEntities, listEntitiesPaginated, storeLoadById } from '../../../src/database/middleware-loader';
 import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
@@ -45,11 +45,11 @@ const LIST_QUERY = gql`
 `;
 
 const LIST_RELS_QUERY = gql`
-  query stixRefRelationships(
+  query stixRelationships(
     $filters: FilterGroup
     $relationship_type: [String]
   ) {
-    stixRefRelationships(
+    stixRelationships(
       filters: $filters
       relationship_type: $relationship_type
     ) {
@@ -67,16 +67,18 @@ const LIST_RELS_QUERY = gql`
               id
             }
           }
-          pir_explanations {
-            dependencies {
-              element_id
+          ... on InPirRelationship {
+            pir_explanations {
+              dependencies {
+                element_id
+              }
+              criterion {
+                filters
+                weight
+              }
             }
-            criterion {
-              filters
-              weight
-            }
+            pir_score
           }
-          pir_score
         }
       }
     }
@@ -253,12 +255,12 @@ describe('PIR resolver standard behavior', () => {
       variables: { relationship_type: [RELATION_IN_PIR] },
     });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data?.stixRefRelationships.edges.length).toEqual(1);
-    expect(queryResult.data?.stixRefRelationships.edges[0].node.from.id).toEqual(flaggedElementId);
-    expect(queryResult.data?.stixRefRelationships.edges[0].node.to.id).toEqual(pirInternalId);
-    expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_score).toEqual(67);
-    expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_explanations.length).toEqual(1);
-    expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_explanations[0].dependencies[0].element_id).toEqual(relationshipId);
+    expect(queryResult.data?.stixRelationships.edges.length).toEqual(1);
+    expect(queryResult.data?.stixRelationships.edges[0].node.from.id).toEqual(flaggedElementId);
+    expect(queryResult.data?.stixRelationships.edges[0].node.to.id).toEqual(pirInternalId);
+    expect(queryResult.data?.stixRelationships.edges[0].node.pir_score).toEqual(67);
+    expect(queryResult.data?.stixRelationships.edges[0].node.pir_explanations.length).toEqual(1);
+    expect(queryResult.data?.stixRelationships.edges[0].node.pir_explanations[0].dependencies[0].element_id).toEqual(relationshipId);
     // Verify the entity pir_score of the PIR has been updated
     const malwareAfterFlag = await storeLoadById<BasicStoreEntity>(
       testContext,
@@ -351,11 +353,11 @@ describe('PIR resolver standard behavior', () => {
       variables: { relationship_type: [RELATION_IN_PIR] },
     });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data?.stixRefRelationships.edges.length).toEqual(1);
-    expect(queryResult.data?.stixRefRelationships.edges[0].node.from.id).toEqual(flaggedElementId);
-    expect(queryResult.data?.stixRefRelationships.edges[0].node.to.id).toEqual(pirInternalId);
-    expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_score).toEqual(100);
-    expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_explanations.length).toEqual(2);
+    expect(queryResult.data?.stixRelationships.edges.length).toEqual(1);
+    expect(queryResult.data?.stixRelationships.edges[0].node.from.id).toEqual(flaggedElementId);
+    expect(queryResult.data?.stixRelationships.edges[0].node.to.id).toEqual(pirInternalId);
+    expect(queryResult.data?.stixRelationships.edges[0].node.pir_score).toEqual(100);
+    expect(queryResult.data?.stixRelationships.edges[0].node.pir_explanations.length).toEqual(2);
     // Verify the entity pir_score of the PIR has been updated
     const malwareAfterFlag = await storeLoadById<BasicStoreEntity>(
       testContext,
@@ -385,11 +387,11 @@ describe('PIR resolver standard behavior', () => {
       variables: { relationship_type: [RELATION_IN_PIR] },
     });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data?.stixRefRelationships.edges.length).toEqual(1);
-    expect(queryResult.data?.stixRefRelationships.edges[0].node.from.id).toEqual(flaggedElementId);
-    expect(queryResult.data?.stixRefRelationships.edges[0].node.to.id).toEqual(pirInternalId);
-    expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_score).toEqual(67);
-    expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_explanations.length).toEqual(1);
+    expect(queryResult.data?.stixRelationships.edges.length).toEqual(1);
+    expect(queryResult.data?.stixRelationships.edges[0].node.from.id).toEqual(flaggedElementId);
+    expect(queryResult.data?.stixRelationships.edges[0].node.to.id).toEqual(pirInternalId);
+    expect(queryResult.data?.stixRelationships.edges[0].node.pir_score).toEqual(67);
+    expect(queryResult.data?.stixRelationships.edges[0].node.pir_explanations.length).toEqual(1);
   });
 
   it('should unflag an element', async () => {
@@ -409,7 +411,7 @@ describe('PIR resolver standard behavior', () => {
       variables: { relationship_type: [RELATION_IN_PIR] },
     });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data?.stixRefRelationships.edges.length).toEqual(0);
+    expect(queryResult.data?.stixRelationships.edges.length).toEqual(0);
   });
 
   it('should pir deleted', async () => {
@@ -429,7 +431,7 @@ describe('PIR resolver standard behavior', () => {
       variables: { relationship_type: [RELATION_IN_PIR] },
     });
     expect(refQueryResult).not.toBeNull();
-    expect(refQueryResult.data?.stixRefRelationships.edges.length).toEqual(0);
+    expect(refQueryResult.data?.stixRelationships.edges.length).toEqual(0);
     // Verify the entity pir_score has been removed for the PIR
     const malwareAfterFlag = await storeLoadById<BasicStoreEntity>(
       testContext,

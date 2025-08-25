@@ -25,7 +25,7 @@ import { FilterMode, FilterOperator, OrderingMode } from '../generated/graphql';
 import { extractStixRepresentative } from '../database/stix-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
-import { RELATION_IN_PIR } from '../schema/stixRefRelationship';
+import { RELATION_IN_PIR } from '../schema/internalRelationship';
 
 const HISTORY_ENGINE_KEY = conf.get('history_manager:lock_key');
 const HISTORY_WITH_INFERENCES = booleanConf('history_manager:include_inferences', false);
