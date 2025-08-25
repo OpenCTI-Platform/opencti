@@ -23,6 +23,8 @@ const useNetworkCheck = (url?: string | null): UseNetworkCheckResult => {
 
         await fetch(url, {
           method: 'HEAD',
+          mode: 'no-cors',
+          cache: 'no-cache',
           signal: controller.signal,
         });
 
