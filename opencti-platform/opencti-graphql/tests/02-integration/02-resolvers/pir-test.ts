@@ -249,7 +249,7 @@ describe('PIR resolver standard behavior', () => {
       query: FLAG_QUERY,
       variables: { id: pirInternalId, input: { relationshipId, sourceId: flaggedElementId, matchingCriteria } },
     });
-    // Verify the ref has been created
+    // Verify the in-pir rel has been created
     const queryResult = await queryAsAdmin({
       query: LIST_RELS_QUERY,
       variables: { relationship_type: [RELATION_IN_PIR] },
@@ -261,7 +261,7 @@ describe('PIR resolver standard behavior', () => {
     expect(queryResult.data?.stixRelationships.edges[0].node.pir_score).toEqual(67);
     expect(queryResult.data?.stixRelationships.edges[0].node.pir_explanations.length).toEqual(1);
     expect(queryResult.data?.stixRelationships.edges[0].node.pir_explanations[0].dependencies[0].element_id).toEqual(relationshipId);
-    // Verify the entity pir_score of the PIR has been updated
+    // Verify the pir information has been updated at the entity level
     const malwareAfterFlag = await storeLoadById<BasicStoreEntity>(
       testContext,
       SYSTEM_USER,
@@ -347,7 +347,7 @@ describe('PIR resolver standard behavior', () => {
       query: FLAG_QUERY,
       variables: { id: pirInternalId, input: { relationshipId, sourceId: flaggedElementId, matchingCriteria } },
     });
-    // Verify the ref has been updated
+    // Verify the in-pir rel has been updated
     const queryResult = await queryAsAdmin({
       query: LIST_RELS_QUERY,
       variables: { relationship_type: [RELATION_IN_PIR] },
@@ -358,7 +358,7 @@ describe('PIR resolver standard behavior', () => {
     expect(queryResult.data?.stixRelationships.edges[0].node.to.id).toEqual(pirInternalId);
     expect(queryResult.data?.stixRelationships.edges[0].node.pir_score).toEqual(100);
     expect(queryResult.data?.stixRelationships.edges[0].node.pir_explanations.length).toEqual(2);
-    // Verify the entity pir_score of the PIR has been updated
+    // Verify the pir information has been updated at the entity level
     const malwareAfterFlag = await storeLoadById<BasicStoreEntity>(
       testContext,
       SYSTEM_USER,
@@ -381,7 +381,7 @@ describe('PIR resolver standard behavior', () => {
       query: UNFLAG_QUERY,
       variables: { id: pirInternalId, input: { relationshipId, sourceId: flaggedElementId } },
     });
-    // Verify the in-pir ref has been updated
+    // Verify the in-pir rel has been updated
     const queryResult = await queryAsAdmin({
       query: LIST_RELS_QUERY,
       variables: { relationship_type: [RELATION_IN_PIR] },
@@ -405,7 +405,7 @@ describe('PIR resolver standard behavior', () => {
       query: UNFLAG_QUERY,
       variables: { id: pirInternalId, input: { relationshipId, sourceId: flaggedElementId } },
     });
-    // Verify the ref has been deleted
+    // Verify the in-pir rel has been deleted
     const queryResult = await queryAsAdmin({
       query: LIST_RELS_QUERY,
       variables: { relationship_type: [RELATION_IN_PIR] },
@@ -432,7 +432,7 @@ describe('PIR resolver standard behavior', () => {
     });
     expect(refQueryResult).not.toBeNull();
     expect(refQueryResult.data?.stixRelationships.edges.length).toEqual(0);
-    // Verify the entity pir_score has been removed for the PIR
+    // Verify the pir information has been removed for the PIR at entities levels
     const malwareAfterFlag = await storeLoadById<BasicStoreEntity>(
       testContext,
       SYSTEM_USER,
