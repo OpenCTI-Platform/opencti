@@ -19,7 +19,6 @@ const useIngestionCatalogFilters = ({ catalogs, searchParams }: UseIngestionCata
     useCase: searchParams.get('useCase') || '',
   });
 
-  // URL sync
   useEffect(() => {
     const params = new URLSearchParams();
     if (filters.search) params.set('search', filters.search);
@@ -37,7 +36,10 @@ const useIngestionCatalogFilters = ({ catalogs, searchParams }: UseIngestionCata
     if (!contract.manager_supported) return false;
 
     if (filters.search) {
-      const searchMatch = contract.title.toLowerCase().includes(filters.search.toLowerCase());
+      console.log('contract', JSON.stringify(contract.description, null, 2));
+      const searchMatch = contract.title.toLowerCase().includes(filters.search.toLowerCase())
+        || contract.description.toLowerCase().includes(filters.search.toLowerCase());
+
       if (!searchMatch) return false;
     }
 
@@ -72,28 +74,8 @@ const useIngestionCatalogFilters = ({ catalogs, searchParams }: UseIngestionCata
     })
     .filter((catalog) => catalog.contracts.length > 0); // Only return catalogs with contracts
 
-  const getAllContracts = () => {
-    const allContracts: IngestionConnector[] = [];
-
-    for (const catalog of catalogs) {
-      for (const contract of catalog.contracts) {
-        try {
-          const parsedContract = JSON.parse(contract);
-          if (parsedContract.manager_supported) {
-            allContracts.push(parsedContract);
-          }
-        } catch (e) {
-          // let this comment to avoid empty block ts error
-        }
-      }
-    }
-
-    return allContracts;
-  };
-
   return {
     filteredCatalogs,
-    getAllContracts,
     filters,
     setFilters,
   };
