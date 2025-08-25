@@ -417,10 +417,10 @@ const checkFilterKeys = (filterGroup: FilterGroup) => {
   const incorrectKeys = extractFilterKeys(filterGroup)
     .map((k) => k.split('.')[0]) // keep only the first part of the key to handle composed keys
     .filter((k) => !(getAvailableKeys().has(k)
-        || k.startsWith(RULE_PREFIX)
-        || k.startsWith(PIR_SCORE_FILTER_PREFIX)
-        || k.startsWith(LAST_PIR_SCORE_DATE_FILTER_PREFIX)
-      ));
+      || k.startsWith(RULE_PREFIX)
+      || k.startsWith(PIR_SCORE_FILTER_PREFIX)
+      || k.startsWith(LAST_PIR_SCORE_DATE_FILTER_PREFIX)
+    ));
 
   if (incorrectKeys.length > 0) {
     throw UnsupportedError('incorrect filter keys not existing in any schema definition', { keys: incorrectKeys });
