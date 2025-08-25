@@ -90,10 +90,25 @@ const IngestionCatalogComponent = ({
     queryRef,
   );
 
-  const { filteredCatalogs, getAllContracts, filters, setFilters } = useIngestionCatalogFilters({
+  const { filteredCatalogs, filters, setFilters } = useIngestionCatalogFilters({
     catalogs,
     searchParams,
   });
+
+  const allContracts: IngestionConnector[] = [];
+
+  for (const catalog of catalogs) {
+    for (const contract of catalog.contracts) {
+      try {
+        const parsedContract = JSON.parse(contract);
+        if (parsedContract.manager_supported) {
+          allContracts.push(parsedContract);
+        }
+      } catch (e) {
+        // let this comment to avoid empty block ts error
+      }
+    }
+  }
 
   return (
     <>
@@ -105,7 +120,7 @@ const IngestionCatalogComponent = ({
 
         <Stack flexDirection="row">
           <IngestionCatalogFilters
-            contracts={getAllContracts()}
+            contracts={allContracts}
             filters={filters}
             onFiltersChange={setFilters}
           />
