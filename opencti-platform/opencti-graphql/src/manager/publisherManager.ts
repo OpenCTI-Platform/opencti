@@ -181,7 +181,7 @@ export async function handleSimplifiedEmailNotification(
   const renderedEmail = ejs.render(SIMPLIFIED_EMAIL_TEMPLATE, finalTemplateData);
 
   const emailPayload = {
-    from: settings.platform_email,
+    from: `${settings.platform_title} <${settings.platform_email}>`,
     to: user.user_email,
     subject: renderedTitle,
     html: renderedEmail
