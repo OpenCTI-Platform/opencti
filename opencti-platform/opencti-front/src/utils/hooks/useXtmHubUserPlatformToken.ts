@@ -39,7 +39,7 @@ const useXtmHubUserPlatformToken = (): Return => {
     if (tokenFromStorage) {
       setToken(tokenFromStorage);
     } else {
-      window.opener.postMessage({ action: 'refresh-token' }, '*');
+      window.opener?.postMessage({ action: 'refresh-token' }, '*');
     }
   }, [token]);
 
