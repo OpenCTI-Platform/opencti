@@ -9,7 +9,6 @@ import { useFormatter } from '../../../../components/i18n';
 interface Contract {
   title: string;
   use_cases: string[];
-  verified: boolean;
   container_type: string;
 }
 
@@ -134,7 +133,7 @@ const IngestionCatalogFilters: React.FC<IngestionCatalogFiltersProps> = ({
         getOptionLabel={(option) => option.label}
         isOptionEqualToValue={(o, v) => o.value === v.value}
         renderInput={(params) => (
-          <TextField {...params} label="Use Case" placeholder="Select use case..." variant="outlined" />
+          <TextField {...params} label={t_i18n('Use case')} variant="outlined" />
         )}
         clearOnEscape
       />
