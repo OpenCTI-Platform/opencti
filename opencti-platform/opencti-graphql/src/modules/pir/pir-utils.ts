@@ -222,9 +222,9 @@ export const updatePirExplanations = async (
 
   // compute score
   const pir_score = await computePirScore(context, user, pirId, explanations);
-  // replace pir_explanations
+  // replace pir_explanations on in-pir rel
   await patchAttribute(context, user, pirMetaRel.id, RELATION_IN_PIR, { pir_explanations: explanations, pir_score });
-  // update pir score on the entity
+  // update pir information on the entity
   await updatePirInformationOnEntity(context, user, sourceId, pirId, pir_score);
 };
 
@@ -256,6 +256,4 @@ export const createPirRel = async (
     pir_score,
   };
   await createRelation(context, user, addRefInput);
-  // add pir score on the entity
-  await updatePirInformationOnEntity(context, user, sourceId, pirId, pir_score);
 };
