@@ -2,7 +2,6 @@ import { ABSTRACT_INTERNAL_RELATIONSHIP } from './general';
 import { schemaTypesDefinition } from './schema-types';
 import type { StoreCommon } from '../types/store';
 import type { StoreRelationPir } from '../modules/pir/pir-types';
-import { isFeatureEnabled } from '../config/conf';
 
 export const RELATION_MIGRATES = 'migrates';
 export const RELATION_MEMBER_OF = 'member-of';
@@ -21,10 +20,8 @@ export const INTERNAL_RELATIONSHIPS = [
   RELATION_HAS_CAPABILITY,
   RELATION_ACCESSES_TO,
   RELATION_PARTICIPATE_TO,
+  RELATION_IN_PIR,
 ];
-if (isFeatureEnabled('Pir')) {
-  INTERNAL_RELATIONSHIPS.push(RELATION_IN_PIR);
-}
 
 schemaTypesDefinition.register(ABSTRACT_INTERNAL_RELATIONSHIP, INTERNAL_RELATIONSHIPS);
 
