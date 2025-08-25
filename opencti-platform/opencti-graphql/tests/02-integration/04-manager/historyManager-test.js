@@ -3,7 +3,7 @@ import { INDEX_HISTORY } from '../../../src/database/utils';
 import { buildHistoryElementsFromEvents, generatePirContextData, resolveGrantedRefsIds } from '../../../src/manager/historyManager';
 import { ENTITY_TYPE_HISTORY } from '../../../src/schema/internalObject';
 import { testContext } from '../../utils/testQuery';
-import { RELATION_IN_PIR } from '../../../src/schema/stixRefRelationship';
+import { RELATION_IN_PIR } from '../../../src/schema/internalRelationship';
 import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 
 const eventWithGrantedRefIds = {

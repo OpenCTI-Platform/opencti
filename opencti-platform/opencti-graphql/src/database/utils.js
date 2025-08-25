@@ -6,12 +6,12 @@ import { isHistoryObject, isInternalObject } from '../schema/internalObject';
 import { isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixDomainObject, isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
-import { isInternalRelationship } from '../schema/internalRelationship';
+import { isInternalRelationship, RELATION_IN_PIR } from '../schema/internalRelationship';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import conf from '../config/conf';
 import { now } from '../utils/format';
-import { isStixRefRelationship, RELATION_IN_PIR, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
+import { isStixRefRelationship, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { getDraftContext } from '../utils/draftContext';
 import { INPUT_OBJECTS } from '../schema/general';
@@ -298,13 +298,14 @@ export const inferIndexFromConceptType = (conceptType, inferred = false) => {
   if (isStixMetaObject(conceptType)) return INDEX_STIX_META_OBJECTS;
   if (isStixDomainObject(conceptType)) return INDEX_STIX_DOMAIN_OBJECTS;
   if (isStixCyberObservable(conceptType)) return INDEX_STIX_CYBER_OBSERVABLES;
+
   // Relations
+  if (conceptType === RELATION_IN_PIR) return INDEX_PIR_RELATIONSHIPS;
   if (isInternalRelationship(conceptType)) return INDEX_INTERNAL_RELATIONSHIPS;
   if (isStixCoreRelationship(conceptType)) return INDEX_STIX_CORE_RELATIONSHIPS;
   if (isStixSightingRelationship(conceptType)) return INDEX_STIX_SIGHTING_RELATIONSHIPS;
 
   // Use only META Index on new ref relationship
-  if (conceptType === RELATION_IN_PIR) return INDEX_PIR_RELATIONSHIPS;
   if (isStixRefRelationship(conceptType)) return INDEX_STIX_META_RELATIONSHIPS;
 
   throw DatabaseError('Cant find index', { type: conceptType });

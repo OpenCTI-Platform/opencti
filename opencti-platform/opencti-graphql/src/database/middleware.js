@@ -119,7 +119,6 @@ import {
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
   RELATION_GRANTED_TO,
-  RELATION_IN_PIR,
   RELATION_OBJECT,
   RELATION_OBJECT_MARKING,
   STIX_REF_RELATIONSHIP_TYPES
@@ -3048,7 +3047,7 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
     let event;
     // In case on embedded relationship creation, we need to dispatch
     // an update of the from entity that host this embedded ref.
-    if (isStixRefRelationship(relationshipType) && relationshipType !== RELATION_IN_PIR) {
+    if (isStixRefRelationship(relationshipType)) {
       const referencesPromises = opts.references ? internalFindByIds(context, user, opts.references, { type: ENTITY_TYPE_EXTERNAL_REFERENCE }) : Promise.resolve([]);
       const references = await Promise.all(referencesPromises);
       if ((opts.references ?? []).length > 0 && references.length !== (opts.references ?? []).length) {
@@ -3485,15 +3484,11 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
       } : undefined;
       await elDeleteElements(context, user, [element]);
       // Publish event in the stream
-      if (element.entity_type !== RELATION_IN_PIR) {
-        const eventPromise = storeUpdateEvent(context, user, previous, instance, message, { ...opts, commit });
-        const taskPromise = createContainerSharingTask(context, ACTION_TYPE_UNSHARE, element);
-        const [, updateEvent] = await Promise.all([taskPromise, eventPromise]);
-        event = updateEvent;
-        element.from = instance; // dynamically update the from to have an up to date relation
-      } else {
-        event = await storeDeleteEvent(context, user, element, opts);
-      }
+      const eventPromise = storeUpdateEvent(context, user, previous, instance, message, { ...opts, commit });
+      const taskPromise = createContainerSharingTask(context, ACTION_TYPE_UNSHARE, element);
+      const [, updateEvent] = await Promise.all([taskPromise, eventPromise]);
+      event = updateEvent;
+      element.from = instance; // dynamically update the from to have an up to date relation
     } else {
       // Start by deleting external files
       const isTrashableElement = !isInferredIndex(element._index)
