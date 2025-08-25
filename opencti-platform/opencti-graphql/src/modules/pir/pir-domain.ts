@@ -285,8 +285,6 @@ export const pirUnflagElement = async (
     if (newRelDependencies.length === 0) {
       // delete the rel between source and PIR
       await deleteRelationsByFromAndTo(context, user, sourceId, pir.id, RELATION_IN_PIR, ABSTRACT_STIX_REF_RELATIONSHIP);
-      // remove pir score on the entity
-      await updatePirInformationOnEntity(context, user, sourceId, pir.id, 0);
     } else if (newRelDependencies.length < relDependencies.length) {
       // update dependencies
       await updatePirExplanations(context, user, sourceId, pir.id, newRelDependencies);
