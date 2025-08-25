@@ -44,7 +44,7 @@ const IngestionCatalogFilters: React.FC<IngestionCatalogFiltersProps> = ({
       if (searchInput !== filters.search) {
         onFiltersChange({ ...filters, search: searchInput });
       }
-    }, DEBOUNCE_DELAY); // 300ms debounce
+    }, DEBOUNCE_DELAY);
 
     return () => clearTimeout(handler);
   }, [searchInput]);
