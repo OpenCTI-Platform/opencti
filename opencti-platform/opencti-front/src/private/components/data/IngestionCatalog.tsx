@@ -3,6 +3,7 @@ import IngestionMenu from '@components/data/IngestionMenu';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { IngestionCatalogQuery } from '@components/data/__generated__/IngestionCatalogQuery.graphql';
 import IngestionCatalogCard, { IngestionConnectorType } from '@components/data/IngestionCatalog/IngestionCatalogCard';
+import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
@@ -30,14 +31,6 @@ export const ingestionCatalogQuery = graphql`
 interface IngestionCatalogComponentProps {
   queryRef: PreloadedQuery<IngestionCatalogQuery>;
 }
-
-type IngestionCatalogParsed = {
-  contracts: IngestionConnector[];
-  description: string;
-  entity_type: string;
-  id: string;
-  name: string;
-};
 
 type IngestionTypeMap = {
   string: string;
@@ -97,27 +90,25 @@ const IngestionCatalogComponent = ({
     queryRef,
   );
 
-  useEffect(() => {
-    catalogs.forEach((catalog) => {
-      const finalContracts: IngestionConnector[] = [];
-      catalog.contracts.forEach((contract) => {
-        try {
-          const parsedContract = JSON.parse(contract);
-          if (parsedContract.manager_supported) finalContracts.push(parsedContract);
-        } catch (e) {
-          MESSAGING$.notifyError(t_i18n('Failed to parse a contract'));
-        }
-        const finalCatalog = { ...catalog, contracts: finalContracts };
-        setCatalogsParsed([...catalogsParsed, finalCatalog]);
-      });
-    });
-  }, [catalogs]);
+  const { filteredCatalogs, getAllContracts, filters, setFilters } = useIngestionCatalogFilters({
+    catalogs,
+    searchParams,
+  });
 
   return (
     <>
       <IngestionMenu />
       <PageContainer withRightMenu withGap>
         <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('Connector catalog'), current: true }]} />
+
+        {!isEnterpriseEdition && <EnterpriseEdition />}
+
+        <Stack flexDirection="row">
+          <IngestionCatalogFilters
+            contracts={getAllContracts()}
+            filters={filters}
+            onFiltersChange={setFilters}
+          />
 
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <SearchInput disabled />
@@ -130,27 +121,25 @@ const IngestionCatalogComponent = ({
           >
             {t_i18n('Browse more').toUpperCase()}
           </GradientButton>
-        </div>
+        </Stack>
 
-        {catalogsParsed.map((catalog) => {
-          return catalog.contracts.length > 0 && (
-            <ListCardsContent
-              key={catalog.id}
-              hasMore={() => false}
-              isLoading={() => false}
-              dataList={catalog.contracts}
-              dataListId={catalog.id}
-              globalCount={catalog.contracts.length}
-              CardComponent={(props: React.ComponentProps<typeof IngestionCatalogCard>) => (
-                <IngestionCatalogCard
-                  {...props}
-                  isEnterpriseEdition={isEnterpriseEdition}
-                />
-              )}
-              rowHeight={350}
-            />
-          );
-        })}
+        {filteredCatalogs.map((catalog) => (
+          <ListCardsContent
+            key={catalog.id}
+            hasMore={() => false}
+            isLoading={() => false}
+            dataList={catalog.contracts}
+            dataListId={catalog.id}
+            globalCount={catalog.contracts.length}
+            CardComponent={(props: React.ComponentProps<typeof IngestionCatalogCard>) => (
+              <IngestionCatalogCard
+                {...props}
+                isEnterpriseEdition={isEnterpriseEdition}
+              />
+            )}
+            rowHeight={350}
+          />
+        ))}
       </PageContainer>
     </>
   );
