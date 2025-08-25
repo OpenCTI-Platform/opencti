@@ -116,6 +116,20 @@ export const stixDomainObjectPirScore = async (context, user, stixDomainObject, 
   return pirInformation.pir_score;
 };
 
+export const stixDomainObjectLastPirScoreDate = async (context, user, stixDomainObject, pirId) => {
+  // check EE
+  await checkEnterpriseEdition(context);
+  // check user has access to the PIR
+  const pir = await storeLoadById(context, user, pirId, ENTITY_TYPE_PIR);
+  if (!pir) {
+    throw FunctionalError('No PIR found');
+  }
+  // fetch stix domain object pir score
+  const pirInformation = (stixDomainObject.pir_information ?? []).find((s) => s.pir_id === pirId);
+  if (!pirInformation) return 0;
+  return pirInformation.last_pir_score_date;
+};
+
 export const stixDomainObjectsPirExplanations = async (context, user, stixDomainObject, pirId) => {
   // check EE
   await checkEnterpriseEdition(context);

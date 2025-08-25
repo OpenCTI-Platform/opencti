@@ -130,6 +130,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
     status: Status
     workflowEnabled: Boolean
     pirScore(pirId: ID!): Int @auth(for: [PIRAPI])
+  pirLastScoreDate(pirId: ID!): DateTime @auth(for: [PIRAPI])
     pirExplanations(pirId: ID!): [PirExplanation!] @auth(for: [PIRAPI])
 }
 

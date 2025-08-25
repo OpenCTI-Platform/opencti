@@ -2725,6 +2725,8 @@ enum StixDomainObjectsOrdering {
   result_name
   operatingSystem
   x_opencti_cvss_base_severity
+  pir_score
+  last_pir_score_date
 }
 type StixDomainObjectConnection {
   pageInfo: PageInfo!
@@ -2857,6 +2859,7 @@ interface StixDomainObject {
   status: Status
   workflowEnabled: Boolean
   pirScore(pirId: ID!): Int @auth(for: [PIRAPI])
+  pirLastScoreDate(pirId: ID!): DateTime @auth(for: [PIRAPI])
   pirExplanations(pirId: ID!): [PirExplanation!] @auth(for: [PIRAPI])
 }
 input StixDomainObjectAddInput {
@@ -3063,6 +3066,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   status: Status
   workflowEnabled: Boolean
   pirScore(pirId: ID!): Int @auth(for: [PIRAPI])
+  pirLastScoreDate(pirId: ID!): DateTime @auth(for: [PIRAPI])
   pirExplanations(pirId: ID!): [PirExplanation!] @auth(for: [PIRAPI])
 }
 input AttackPatternAddInput {
@@ -3270,6 +3274,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   status: Status
   workflowEnabled: Boolean
   pirScore(pirId: ID!): Int @auth(for: [PIRAPI])
+  pirLastScoreDate(pirId: ID!): DateTime @auth(for: [PIRAPI])
   pirExplanations(pirId: ID!): [PirExplanation!] @auth(for: [PIRAPI])
 }
 input CampaignAddInput {
@@ -3643,6 +3648,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   status: Status
   workflowEnabled: Boolean
   pirScore(pirId: ID!): Int @auth(for: [PIRAPI])
+  pirLastScoreDate(pirId: ID!): DateTime @auth(for: [PIRAPI])
   pirExplanations(pirId: ID!): [PirExplanation!] @auth(for: [PIRAPI])
 }
 input NoteAddInput {
@@ -3877,6 +3883,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   status: Status
   workflowEnabled: Boolean
   pirScore(pirId: ID!): Int @auth(for: [PIRAPI])
+  pirLastScoreDate(pirId: ID!): DateTime @auth(for: [PIRAPI])
   pirExplanations(pirId: ID!): [PirExplanation!] @auth(for: [PIRAPI])
 }
 input ObservedDataAddInput {
@@ -4087,6 +4094,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   status: Status
   workflowEnabled: Boolean
   pirScore(pirId: ID!): Int @auth(for: [PIRAPI])
+  pirLastScoreDate(pirId: ID!): DateTime @auth(for: [PIRAPI])
   pirExplanations(pirId: ID!): [PirExplanation!] @auth(for: [PIRAPI])
 }
 input OpinionAddInput {
@@ -4322,6 +4330,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   workflowEnabled: Boolean
   deleteWithElementsCount: Int @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   pirScore(pirId: ID!): Int @auth(for: [PIRAPI])
+  pirLastScoreDate(pirId: ID!): DateTime @auth(for: [PIRAPI])
   pirExplanations(pirId: ID!): [PirExplanation!] @auth(for: [PIRAPI])
 }
 input ReportAddInput {
@@ -4507,6 +4516,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   status: Status
   workflowEnabled: Boolean
   pirScore(pirId: ID!): Int @auth(for: [PIRAPI])
+  pirLastScoreDate(pirId: ID!): DateTime @auth(for: [PIRAPI])
   pirExplanations(pirId: ID!): [PirExplanation!] @auth(for: [PIRAPI])
 }
 input CourseOfActionAddInput {
@@ -4866,6 +4876,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   workflowEnabled: Boolean
   isUser: Boolean @auth(for: [KNOWLEDGE, EXPLORE])
   pirScore(pirId: ID!): Int @auth(for: [PIRAPI])
+  pirLastScoreDate(pirId: ID!): DateTime @auth(for: [PIRAPI])
   pirExplanations(pirId: ID!): [PirExplanation!] @auth(for: [PIRAPI])
 }
 input IndividualAddInput {
@@ -5053,6 +5064,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   status: Status
   workflowEnabled: Boolean
   pirScore(pirId: ID!): Int @auth(for: [PIRAPI])
+  pirLastScoreDate(pirId: ID!): DateTime @auth(for: [PIRAPI])
   pirExplanations(pirId: ID!): [PirExplanation!] @auth(for: [PIRAPI])
 }
 input SectorAddInput {
@@ -5234,6 +5246,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   status: Status
   workflowEnabled: Boolean
   pirScore(pirId: ID!): Int @auth(for: [PIRAPI])
+  pirLastScoreDate(pirId: ID!): DateTime @auth(for: [PIRAPI])
   pirExplanations(pirId: ID!): [PirExplanation!] @auth(for: [PIRAPI])
 }
 input SystemAddInput {
@@ -5421,6 +5434,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   status: Status
   workflowEnabled: Boolean
   pirScore(pirId: ID!): Int @auth(for: [PIRAPI])
+  pirLastScoreDate(pirId: ID!): DateTime @auth(for: [PIRAPI])
   pirExplanations(pirId: ID!): [PirExplanation!] @auth(for: [PIRAPI])
 }
 input InfrastructureAddInput {
@@ -5607,6 +5621,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   status: Status
   workflowEnabled: Boolean
   pirScore(pirId: ID!): Int @auth(for: [PIRAPI])
+  pirLastScoreDate(pirId: ID!): DateTime @auth(for: [PIRAPI])
   pirExplanations(pirId: ID!): [PirExplanation!] @auth(for: [PIRAPI])
 }
 input IntrusionSetAddInput {
@@ -5968,6 +5983,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   status: Status
   workflowEnabled: Boolean
   pirScore(pirId: ID!): Int @auth(for: [PIRAPI])
+  pirLastScoreDate(pirId: ID!): DateTime @auth(for: [PIRAPI])
   pirExplanations(pirId: ID!): [PirExplanation!] @auth(for: [PIRAPI])
 }
 input PositionAddInput {
@@ -6152,6 +6168,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   status: Status
   workflowEnabled: Boolean
   pirScore(pirId: ID!): Int @auth(for: [PIRAPI])
+  pirLastScoreDate(pirId: ID!): DateTime @auth(for: [PIRAPI])
   pirExplanations(pirId: ID!): [PirExplanation!] @auth(for: [PIRAPI])
 }
 input CityAddInput {
@@ -6330,6 +6347,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   status: Status
   workflowEnabled: Boolean
   pirScore(pirId: ID!): Int @auth(for: [PIRAPI])
+  pirLastScoreDate(pirId: ID!): DateTime @auth(for: [PIRAPI])
   pirExplanations(pirId: ID!): [PirExplanation!] @auth(for: [PIRAPI])
 }
 input CountryAddInput {
@@ -6510,6 +6528,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   status: Status
   workflowEnabled: Boolean
   pirScore(pirId: ID!): Int @auth(for: [PIRAPI])
+  pirLastScoreDate(pirId: ID!): DateTime @auth(for: [PIRAPI])
   pirExplanations(pirId: ID!): [PirExplanation!] @auth(for: [PIRAPI])
 }
 input RegionAddInput {
@@ -6699,6 +6718,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   status: Status
   workflowEnabled: Boolean
   pirScore(pirId: ID!): Int @auth(for: [PIRAPI])
+  pirLastScoreDate(pirId: ID!): DateTime @auth(for: [PIRAPI])
   pirExplanations(pirId: ID!): [PirExplanation!] @auth(for: [PIRAPI])
 }
 input MalwareAddInput {
@@ -6899,6 +6919,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   status: Status
   workflowEnabled: Boolean
   pirScore(pirId: ID!): Int @auth(for: [PIRAPI])
+  pirLastScoreDate(pirId: ID!): DateTime @auth(for: [PIRAPI])
   pirExplanations(pirId: ID!): [PirExplanation!] @auth(for: [PIRAPI])
 }
 
@@ -7053,6 +7074,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   status: Status
   workflowEnabled: Boolean
   pirScore(pirId: ID!): Int @auth(for: [PIRAPI])
+  pirLastScoreDate(pirId: ID!): DateTime @auth(for: [PIRAPI])
   pirExplanations(pirId: ID!): [PirExplanation!] @auth(for: [PIRAPI])
 }
 
@@ -7240,6 +7262,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   status: Status
   workflowEnabled: Boolean
   pirScore(pirId: ID!): Int @auth(for: [PIRAPI])
+  pirLastScoreDate(pirId: ID!): DateTime @auth(for: [PIRAPI])
   pirExplanations(pirId: ID!): [PirExplanation!] @auth(for: [PIRAPI])
 }
 input ToolAddInput {
@@ -7472,6 +7495,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   status: Status
   workflowEnabled: Boolean
   pirScore(pirId: ID!): Int @auth(for: [PIRAPI])
+  pirLastScoreDate(pirId: ID!): DateTime @auth(for: [PIRAPI])
   pirExplanations(pirId: ID!): [PirExplanation!] @auth(for: [PIRAPI])
 }
 input VulnerabilityAddInput {
@@ -7710,6 +7734,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   status: Status
   workflowEnabled: Boolean
   pirScore(pirId: ID!): Int @auth(for: [PIRAPI])
+  pirLastScoreDate(pirId: ID!): DateTime @auth(for: [PIRAPI])
   pirExplanations(pirId: ID!): [PirExplanation!] @auth(for: [PIRAPI])
 }
 input IncidentAddInput {
@@ -13410,6 +13435,7 @@ type Query {
     after: ID
     types: [String]
     orderBy: StixDomainObjectsOrdering
+    pirId: ID
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
@@ -14852,6 +14878,7 @@ type Mutation {
     exportContext: ExportContext
     relationship_type: [String]
     orderBy: StixDomainObjectsOrdering
+    pirId: ID
     orderMode: OrderingMode
     filters: FilterGroup
     selectedIds: [String]

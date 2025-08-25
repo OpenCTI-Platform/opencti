@@ -17,7 +17,6 @@ import { useDataTableContext } from './components/DataTableContext';
 import { useAvailableFilterKeysForEntityTypes } from '../../utils/filters/filtersUtils';
 
 type DataTableInternalFiltersProps = Pick<DataTableProps,
-| 'additionalFilterKeys'
 | 'additionalFilters'
 | 'entityTypes'> & {
   hideSearch?: boolean
@@ -32,7 +31,6 @@ type DataTableInternalFiltersProps = Pick<DataTableProps,
 };
 
 const DataTableInternalFilters = ({
-  additionalFilterKeys,
   additionalFilters,
   entityTypes,
   hideSearch,
@@ -99,7 +97,6 @@ const DataTableInternalFilters = ({
           availableFilterKeys={availableFilterKeys}
           availableRelationFilterTypes={availableRelationFilterTypes}
           availableEntityTypes={availableEntityTypes}
-          additionalFilterKeys={additionalFilterKeys}
           entityTypes={computedEntityTypes}
         />
       )}
@@ -254,7 +251,6 @@ const DataTable = (props: OCTIDataTableProps) => {
           <DataTableInternalFilters
             entityTypes={entityTypes}
             additionalFilters={additionalFilters}
-            additionalFilterKeys={additionalFilterKeys}
             additionalHeaderButtons={additionalHeaderButtons}
             availableEntityTypes={availableEntityTypes}
             availableRelationFilterTypes={availableRelationFilterTypes}

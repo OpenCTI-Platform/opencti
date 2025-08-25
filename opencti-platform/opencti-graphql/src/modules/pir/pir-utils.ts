@@ -112,7 +112,7 @@ export const updatePirInformationOnEntity = async (context: AuthContext, user: A
   const initialInformation = stixDomainObject.pir_information ?? [];
   const newInformation = initialInformation.filter((s) => s.pir_id !== pirId);
   if (score > 0) {
-    newInformation.push({ pir_id: pirId, pir_score: score });
+    newInformation.push({ pir_id: pirId, pir_score: score, last_pir_score_date: new Date() });
   }
   const params = { pir_information: newInformation };
   const source = 'ctx._source.pir_information = params.pir_information;';
@@ -222,9 +222,9 @@ export const updatePirExplanations = async (
 
   // compute score
   const pir_score = await computePirScore(context, user, pirId, explanations);
-  // replace pir_explanations
+  // replace pir_explanations on in-pir rel
   await patchAttribute(context, user, pirMetaRel.id, RELATION_IN_PIR, { pir_explanations: explanations, pir_score });
-  // update pir score on the entity
+  // update pir information on the entity
   await updatePirInformationOnEntity(context, user, sourceId, pirId, pir_score);
 };
 
@@ -256,6 +256,4 @@ export const createPirRel = async (
     pir_score,
   };
   await createRelation(context, user, addRefInput);
-  // add pir score on the entity
-  await updatePirInformationOnEntity(context, user, sourceId, pirId, pir_score);
 };
