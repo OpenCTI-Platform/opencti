@@ -11,7 +11,14 @@ import {
   updateAttributeFromLoadedWithRefs,
   validateCreatedBy,
 } from '../database/middleware';
-import { listAllToEntitiesThroughRelations, listEntities, listEntitiesThroughRelationsPaginated, storeLoadById, storeLoadByIds } from '../database/middleware-loader';
+import {
+  listAllToEntitiesThroughRelations,
+  listEntities,
+  listEntitiesThroughRelationsPaginated,
+  listRelations,
+  storeLoadById,
+  storeLoadByIds
+} from '../database/middleware-loader';
 import { elCount, elFindByIds } from '../database/engine';
 import { workToExportFile } from './work';
 import { FunctionalError, UnsupportedError } from '../config/errors';
@@ -40,7 +47,6 @@ import { entityLocationType, identityClass, xOpenctiType } from '../schema/attri
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { validateMarking } from '../utils/access';
-import { findAll as findRelationships } from './stixRelationship';
 import { editAuthorizedMembers } from '../utils/authorizedMembers';
 import { checkEEAndPirAccess } from '../modules/pir/pir-utils';
 
@@ -122,13 +128,19 @@ export const stixDomainObjectLastPirScoreDate = async (context, user, stixDomain
 export const stixDomainObjectsPirExplanations = async (context, user, stixDomainObject, pirId) => {
   await checkEEAndPirAccess(context, user, pirId);
   // retrieve in-pir relationship
-  const { edges, pageInfo } = await findRelationships(context, user, {
-    fromId: stixDomainObject.id,
-    toId: pirId,
-    relationship_type: RELATION_IN_PIR,
+  const inPirRelations = await listRelations(context, user, RELATION_IN_PIR, {
+    connectionFormat: false,
+    filters: {
+      mode: 'and',
+      filters: [
+        { key: 'fromId', values: [stixDomainObject.id] },
+        { key: 'toId', values: [pirId] },
+      ],
+      filterGroups: [],
+    },
   });
-  if (pageInfo.globalCount !== 1) return null;
-  return edges[0].node.pir_explanations;
+  if (inPirRelations.length !== 1) return null;
+  return inPirRelations[0].pir_explanations;
 };
 // endregion
 

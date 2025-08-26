@@ -17,7 +17,7 @@ import { type BasicStoreEntityPir, type BasicStoreRelationPir, ENTITY_TYPE_PIR, 
 import type { AuthContext, AuthUser } from '../../types/user';
 import { listRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
 import { RELATION_IN_PIR } from '../../schema/internalRelationship';
-import { FunctionalError, UnsupportedError } from '../../config/errors';
+import { FunctionalError } from '../../config/errors';
 import { createRelation, patchAttribute } from '../../database/middleware';
 import { type FilterGroup, type PirAddInput, PirType } from '../../generated/graphql';
 import { addFilter } from '../../utils/filtering/filtering-utils';
@@ -37,25 +37,9 @@ export const checkEEAndPirAccess = async (context: AuthContext, user: AuthUser, 
   // check EE
   await checkEnterpriseEdition(context);
   // check user has access to the PIR
-  const pir = await storeLoadById(context, user, pirId, ENTITY_TYPE_PIR);
+  const pir = await storeLoadById(context, user, pirId, ENTITY_TYPE_PIR); // TODO PIR fetch from cache
   if (!pir) {
     throw FunctionalError('No PIR found');
-  }
-};
-
-/**
- * Helper function to check a user has access to in-pir relationships
- */
-export const checkInPirRelationAccess = async (context: AuthContext, user: AuthUser, relationshipType: string, inputIds: string | string[]) => {
-  if (relationshipType !== RELATION_IN_PIR) {
-    throw UnsupportedError('The relationship type should be \'in-pir\'', { relationshipType });
-  } else {
-    const pirIds = Array.isArray(inputIds) ? inputIds : [inputIds];
-    if (pirIds.length !== 1) {
-      throw UnsupportedError('You should provide exactly one PIR id to fetch in-pir relationships.', { pirIds });
-    }
-    const pirId = pirIds[0];
-    await checkEEAndPirAccess(context, user, pirId);
   }
 };
 

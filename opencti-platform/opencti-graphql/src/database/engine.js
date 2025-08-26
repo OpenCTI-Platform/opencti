@@ -183,7 +183,7 @@ import {
 } from '../schema/attribute-definition';
 import { connections as connectionsAttribute } from '../modules/attributes/basicRelationship-registrationAttributes';
 import { schemaTypesDefinition } from '../schema/schema-types';
-import { INTERNAL_RELATIONSHIPS, isInternalRelationship, RELATION_PARTICIPATE_TO, RELATION_IN_PIR } from '../schema/internalRelationship';
+import { INTERNAL_RELATIONSHIPS, isInternalRelationship, RELATION_IN_PIR, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
 import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { rule_definitions } from '../rules/rules-definition';
 import { buildElasticSortingForAttributeCriteria } from '../utils/sorting';
@@ -199,6 +199,7 @@ import { lockResources } from '../lock/master-lock';
 import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_UPDATE_LINKED } from '../modules/draftWorkspace/draftOperations';
 import { RELATION_SAMPLE } from '../modules/malwareAnalysis/malwareAnalysis-types';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
+import { checkEEAndPirAccess } from '../modules/pir/pir-utils';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -1586,7 +1587,7 @@ export const computeQueryIndices = (indices, typeOrTypes, withInferences = true)
       // If defined types are abstract, try to restrict the indices as much as possible
       if (isAbstract(findType)) {
         // For objects
-        if (isBasicObject(findType)) {
+        if (isBasicObject(findType)) { // TODO PIR check index
           if (isInternalObject(findType)) {
             return withInferencesEntities([READ_INDEX_INTERNAL_OBJECTS], withInferences);
           }
@@ -4735,8 +4736,6 @@ export const elUpdateElement = async (context, user, instance) => {
   if (esData.name && isStixObject(instanceToUse.entity_type)) {
     connectionPromise = elUpdateConnectionsOfElement(instance.internal_id, { name: extractEntityRepresentativeName(esData) });
   }
-  // TODO PIR
-  // IF relationship pir --> add pir information
   return Promise.all([replacePromise, connectionPromise]);
 };
 
