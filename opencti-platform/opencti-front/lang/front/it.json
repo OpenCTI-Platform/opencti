@@ -2891,6 +2891,7 @@
   "relationship_supports": "supporta",
   "relationship_targets": "targetizza",
   "relationship_technology": "tecnologia",
+  "relationship_technology-from": "tecnologia da",
   "relationship_technology-to": "tecnologia a",
   "relationship_to": "a",
   "relationship_type": "tipo di relazione",
