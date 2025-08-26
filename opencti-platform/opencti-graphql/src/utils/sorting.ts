@@ -10,11 +10,11 @@ export const buildElasticSortingForAttributeCriteria = (
 ) => {
   let definition;
   if (PIR_ORDERING_CRITERIA.includes(orderCriteria)) {
-    // the pir id should be specified
+    // the pir id should be specified and the pir accessible
     if (!pirId) {
       throw FunctionalError('You should provide a PIR ID to order by pir_score.');
     }
-    // TODO PIR check pir exists
+    // TODO PIR await checkEEAndPirAccess(context, user, pirId);
     // return nested order criteria associated to the given PIR ID
     return { [`pir_information.${orderCriteria}`]: {
       order: orderMode,

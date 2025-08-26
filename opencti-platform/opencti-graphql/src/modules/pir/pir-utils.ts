@@ -52,7 +52,7 @@ export const checkInPirRelationAccess = async (context: AuthContext, user: AuthU
   } else {
     const pirIds = Array.isArray(inputIds) ? inputIds : [inputIds];
     if (pirIds.length !== 1) {
-      throw UnsupportedError('You should provide exactly one PIR id to fetch in-pir relationships.');
+      throw UnsupportedError('You should provide exactly one PIR id to fetch in-pir relationships.', { pirIds });
     }
     const pirId = pirIds[0];
     await checkEEAndPirAccess(context, user, pirId);
