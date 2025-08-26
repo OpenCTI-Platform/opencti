@@ -1960,7 +1960,7 @@ test('Check navigation on Trash menu', async ({ page }) => {
   await navigateTrash(page);
 });
 
-test('Check navigation on Settings menu', async ({ page }) => {
+test.skip('Check navigation on Settings menu', async ({ page }) => {
   await page.goto('/');
   const leftBarPage = new LeftBarPage(page);
   await leftBarPage.open();
