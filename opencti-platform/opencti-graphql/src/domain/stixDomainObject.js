@@ -40,10 +40,9 @@ import { entityLocationType, identityClass, xOpenctiType } from '../schema/attri
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { validateMarking } from '../utils/access';
-import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
-import { checkEnterpriseEdition } from '../enterprise-edition/ee';
 import { findAll as findRelationships } from './stixRelationship';
 import { editAuthorizedMembers } from '../utils/authorizedMembers';
+import { checkEEAndPirAccess } from '../modules/pir/pir-utils';
 
 export const findAll = async (context, user, args) => {
   let types = [];
@@ -105,13 +104,7 @@ export const stixDomainObjectAvatar = (stixDomainObject) => {
 
 // region PIR
 export const stixDomainObjectPirScore = async (context, user, stixDomainObject, pirId) => {
-  // check EE
-  await checkEnterpriseEdition(context);
-  // check user has access to the PIR
-  const pir = await storeLoadById(context, user, pirId, ENTITY_TYPE_PIR);
-  if (!pir) {
-    throw FunctionalError('No PIR found');
-  }
+  await checkEEAndPirAccess(context, user, pirId);
   // fetch stix domain object pir score
   const pirInformation = (stixDomainObject.pir_information ?? []).find((s) => s.pir_id === pirId);
   if (!pirInformation) return 0;
@@ -119,13 +112,7 @@ export const stixDomainObjectPirScore = async (context, user, stixDomainObject, 
 };
 
 export const stixDomainObjectLastPirScoreDate = async (context, user, stixDomainObject, pirId) => {
-  // check EE
-  await checkEnterpriseEdition(context);
-  // check user has access to the PIR
-  const pir = await storeLoadById(context, user, pirId, ENTITY_TYPE_PIR);
-  if (!pir) {
-    throw FunctionalError('No PIR found');
-  }
+  await checkEEAndPirAccess(context, user, pirId);
   // fetch stix domain object pir score
   const pirInformation = (stixDomainObject.pir_information ?? []).find((s) => s.pir_id === pirId);
   if (!pirInformation) return 0;
@@ -133,13 +120,7 @@ export const stixDomainObjectLastPirScoreDate = async (context, user, stixDomain
 };
 
 export const stixDomainObjectsPirExplanations = async (context, user, stixDomainObject, pirId) => {
-  // check EE
-  await checkEnterpriseEdition(context);
-  // check user has access to the PIR
-  const pir = await storeLoadById(context, user, pirId, ENTITY_TYPE_PIR);
-  if (!pir) {
-    throw FunctionalError('No PIR found');
-  }
+  await checkEEAndPirAccess(context, user, pirId);
   // retrieve in-pir relationship
   const { edges, pageInfo } = await findRelationships(context, user, {
     fromId: stixDomainObject.id,
