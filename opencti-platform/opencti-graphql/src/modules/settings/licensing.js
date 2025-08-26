@@ -81,7 +81,6 @@ export const getEnterpriseEditionInfoFromPem = (platformInstanceId, rawPem) => {
         license_platform_match,
         license_creator,
         license_global,
-        license_raw_pem: pem,
       };
     } catch {
       // Nothing to do here

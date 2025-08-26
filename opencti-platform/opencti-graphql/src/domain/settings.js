@@ -103,10 +103,7 @@ export const getProtectedSensitiveConfig = async (context, user) => {
 export const getSettings = async (context) => {
   const platformSettings = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
   const clusterInfo = await getClusterInformation();
-  const {
-    license_raw_pem: _,
-    ...eeInfo
-  } = getEnterpriseEditionInfoFromPem(platformSettings.internal_id, platformSettings.enterprise_license);
+  const eeInfo = getEnterpriseEditionInfoFromPem(platformSettings.internal_id, platformSettings.enterprise_license);
 
   return {
     ...platformSettings,
