@@ -21,7 +21,6 @@ import CreateEntityControlledDial from '../../../components/CreateEntityControll
 import { isNotEmptyField } from '../../../utils/utils';
 import GradientButton from '../../../components/GradientButton';
 import { UserContext } from '../../../utils/hooks/useAuth';
-import useNetworkCheck from '../../../utils/hooks/useCheckNetwork';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -60,11 +59,10 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
   const theme = useTheme();
   const { t_i18n } = useFormatter();
   const inputRef = useRef();
-  const { settings } = useContext(UserContext);
+  const { settings, isXTMHubAccessible } = useContext(UserContext);
   const importFromHubUrl = isNotEmptyField(settings?.platform_xtmhub_url)
     ? `${settings.platform_xtmhub_url}/redirect/octi_custom_dashboards?opencti_platform_id=${settings.id}`
     : '';
-  const { isReachable } = useNetworkCheck(settings?.platform_xtmhub_url);
 
   const [commitImportMutation] = useApiMutation(importMutation);
   const [commitCreationMutation] = useApiMutation(workspaceMutation);
@@ -127,7 +125,7 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
       >
         <FileUploadOutlined fontSize="small" color={'primary'} />
       </ToggleButton>
-      {isReachable && isNotEmptyField(importFromHubUrl) && (
+      {isXTMHubAccessible && isNotEmptyField(importFromHubUrl) && (
         <GradientButton
           size="small"
           sx={{ marginLeft: theme.spacing(1) }}

@@ -19,7 +19,6 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { isNotEmptyField } from '../../../utils/utils';
 import GradientButton from '../../../components/GradientButton';
-import useNetworkCheck from '../../../utils/hooks/useCheckNetwork';
 
 const LOCAL_STORAGE_KEY = 'ingestionCsvs';
 
@@ -34,12 +33,11 @@ const useStyles = makeStyles(() => ({
 
 const IngestionCsv = () => {
   const classes = useStyles();
-  const { settings } = useContext(UserContext);
+  const { settings, isXTMHubAccessible } = useContext(UserContext);
   const importFromHubUrl = isNotEmptyField(settings?.platform_xtmhub_url)
     ? `${settings.platform_xtmhub_url}/redirect/octi_integration_feeds?opencti_platform_id=${settings.id}`
     : '';
 
-  const { isReachable } = useNetworkCheck(settings?.platform_xtmhub_url);
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('CSV Feeds | Ingestion | Data'));
@@ -111,7 +109,7 @@ const IngestionCsv = () => {
               <IngestionCsvImport
                 paginationOptions={paginationOptions}
               />
-              {isReachable && isNotEmptyField(importFromHubUrl) && (
+              {isXTMHubAccessible && isNotEmptyField(importFromHubUrl) && (
                 <GradientButton
                   size="small"
                   sx={{ marginLeft: 1 }}
