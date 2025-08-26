@@ -2891,6 +2891,7 @@
   "relationship_supports": "unterstützt",
   "relationship_targets": "ziele",
   "relationship_technology": "technologie",
+  "relationship_technology-from": "technologie von",
   "relationship_technology-to": "technologie zu",
   "relationship_to": "auf",
   "relationship_type": "Beziehungsart",

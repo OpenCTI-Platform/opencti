@@ -78,6 +78,7 @@ import {
   RELATION_VARIANT_OF,
   RELATION_TECHNOLOGY,
   RELATION_TECHNOLOGY_TO,
+  RELATION_TECHNOLOGY_FROM,
   RELATION_DEMONSTRATES,
 } from '../schema/stixCoreRelationship';
 import { isStixRefRelationship } from '../schema/stixRefRelationship';
@@ -551,6 +552,7 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
     { name: RELATION_HOSTS, type: REL_EXTENDED },
     { name: RELATION_TECHNOLOGY, type: REL_EXTENDED },
     { name: RELATION_TECHNOLOGY_TO, type: REL_EXTENDED },
+    { name: RELATION_TECHNOLOGY_FROM, type: REL_EXTENDED },
   ],
   [`${ENTITY_TYPE_INFRASTRUCTURE}_${ENTITY_TYPE_ATTACK_PATTERN}`]: [
     { name: RELATION_DETECTS, type: REL_NEW }

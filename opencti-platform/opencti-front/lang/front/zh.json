@@ -2891,6 +2891,7 @@
   "relationship_supports": "支持",
   "relationship_targets": "目标",
   "relationship_technology": "技术",
+  "relationship_technology-from": "技术",
   "relationship_technology-to": "技术",
   "relationship_to": "到",
   "relationship_type": "关系类型",

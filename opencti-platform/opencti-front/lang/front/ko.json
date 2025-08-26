@@ -2891,6 +2891,7 @@
   "relationship_supports": "지원합니다",
   "relationship_targets": "표적",
   "relationship_technology": "기술",
+  "relationship_technology-from": "의 기술",
   "relationship_technology-to": "기술을",
   "relationship_to": "대상",
   "relationship_type": "관계 유형",
