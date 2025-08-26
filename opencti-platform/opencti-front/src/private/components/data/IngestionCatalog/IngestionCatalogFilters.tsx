@@ -1,10 +1,10 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { ChangeEvent, useMemo, useState } from 'react';
 import { Autocomplete, Stack, TextField } from '@mui/material';
-import InputAdornment from '@mui/material/InputAdornment';
-import { FilterListOffOutlined, Search } from '@mui/icons-material';
+import { FilterListOffOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import { useFormatter } from '../../../../components/i18n';
+import SearchInput from '../../../../components/SearchInput';
 
 interface Contract {
   title: string;
@@ -25,11 +25,6 @@ interface IngestionCatalogFiltersProps {
 }
 
 const INPUT_WIDTH = 200; // same as defined in ListFilters
-const DEBOUNCE_DELAY = 300;
-
-const formatTypeLabel = (type: string): string => {
-  return type.toLowerCase().replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
-};
 
 const IngestionCatalogFilters: React.FC<IngestionCatalogFiltersProps> = ({
   contracts,
@@ -38,16 +33,6 @@ const IngestionCatalogFilters: React.FC<IngestionCatalogFiltersProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const [searchInput, setSearchInput] = useState(filters.search);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      if (searchInput !== filters.search) {
-        onFiltersChange({ ...filters, search: searchInput });
-      }
-    }, DEBOUNCE_DELAY);
-
-    return () => clearTimeout(handler);
-  }, [searchInput]);
 
   const filterOptions = useMemo(() => {
     const types: string[] = [];
@@ -70,7 +55,7 @@ const IngestionCatalogFilters: React.FC<IngestionCatalogFiltersProps> = ({
     return {
       types: types.sort().map((type) => ({
         value: type,
-        label: formatTypeLabel(type),
+        label: type,
       })),
       useCases: useCases.sort().map((useCase) => ({
         value: useCase,
@@ -88,26 +73,28 @@ const IngestionCatalogFilters: React.FC<IngestionCatalogFiltersProps> = ({
     onFiltersChange({ search: '', type: '', useCase: '' });
   };
 
+  const handleSearchInputSubmit = (value: string) => {
+    setSearchInput(value);
+    onFiltersChange({ ...filters, search: value });
+  };
+
+  const handleSearchInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const { value } = event.currentTarget;
+    setSearchInput(value);
+
+    if (!value) {
+      onFiltersChange({ ...filters, search: '' });
+    }
+  };
+
   const hasActiveFilters = filters.search || filters.type || filters.useCase;
 
   return (
     <Stack flexDirection="row" gap={2} flex={1}>
-      <TextField
-        placeholder={`${t_i18n('Search these results')}...`}
-        variant="outlined"
-        size="small"
+      <SearchInput
         value={searchInput}
-        onChange={(e) => setSearchInput(e.target.value)}
-        sx={{ width: INPUT_WIDTH }}
-        slotProps={{
-          input: {
-            startAdornment: (
-              <InputAdornment position="start">
-                <Search fontSize="small" />
-              </InputAdornment>
-            ),
-          },
-        }}
+        onSubmit={handleSearchInputSubmit}
+        onChange={handleSearchInputChange}
       />
 
       <Autocomplete
@@ -116,7 +103,7 @@ const IngestionCatalogFilters: React.FC<IngestionCatalogFiltersProps> = ({
         options={filterOptions.types}
         value={filterOptions.types.find((o) => o.value === filters.type) || null}
         onChange={(event, option) => handleFilterChange('type', option?.value || '')}
-        getOptionLabel={(option) => option.label}
+        getOptionLabel={(option) => t_i18n(option.label)}
         isOptionEqualToValue={(option, value) => option.value === value.value}
         renderInput={(params) => (
           <TextField {...params} label={t_i18n('Types')} placeholder={t_i18n('Types')} variant="outlined" />
@@ -130,8 +117,8 @@ const IngestionCatalogFilters: React.FC<IngestionCatalogFiltersProps> = ({
         options={filterOptions.useCases}
         value={filterOptions.useCases.find((o) => o.value === filters.useCase) || null}
         onChange={(event, option) => handleFilterChange('useCase', option?.value || '')}
-        getOptionLabel={(option) => option.label}
-        isOptionEqualToValue={(o, v) => o.value === v.value}
+        getOptionLabel={(option) => option.label} // no translation on purpose
+        isOptionEqualToValue={(option, value) => option.value === value.value}
         renderInput={(params) => (
           <TextField {...params} label={t_i18n('Use case')} variant="outlined" />
         )}
