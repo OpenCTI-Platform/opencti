@@ -43,14 +43,14 @@ const IngestionMenu = () => {
   if (isComposerEnable) {
     entries.unshift({
       path: '/dashboard/data/ingestion/catalog',
-      label: 'Catalog',
+      label: 'Connector catalog',
       isEE: true,
     });
   }
   if (isConnectorReader) {
     entries.unshift({
       path: '/dashboard/data/ingestion/connectors',
-      label: 'Connectors',
+      label: 'Ingestion monitoring',
     });
   }
   return <NavToolbarMenu entries={entries} />;

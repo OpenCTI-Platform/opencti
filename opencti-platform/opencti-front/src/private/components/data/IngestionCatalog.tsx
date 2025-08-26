@@ -90,7 +90,7 @@ const IngestionCatalogComponent = ({
   const isEnterpriseEdition = useEnterpriseEdition();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Catalog | Ingestion | Data'));
+  setTitle(t_i18n('Connector catalog | Ingestion | Data'));
   const [catalogsParsed, setCatalogsParsed] = useState<IngestionCatalogParsed[]>([]);
 
   const { catalogs } = usePreloadedQuery(
@@ -119,10 +119,9 @@ const IngestionCatalogComponent = ({
 
       <IngestionMenu />
       <PageContainer withRightMenu withGap>
-        <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('Catalog'), current: true }]} />
+        <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('Connector catalog'), current: true }]} />
 
         {!isEnterpriseEdition && <EnterpriseEdition />}
-
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <SearchInput disabled />
           <GradientButton

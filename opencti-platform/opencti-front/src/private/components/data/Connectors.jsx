@@ -15,14 +15,14 @@ const Connectors = () => {
   const { setTitle } = useConnectedDocumentModifier();
   const { isFeatureEnable } = useHelper();
   const enableComposerFeatureFlag = isFeatureEnable('COMPOSER');
-  setTitle(t_i18n('Connectors | Ingestion | Data'));
+  setTitle(t_i18n('Ingestion monitoring | Ingestion | Data'));
   return (
     <>
       <IngestionMenu />
       <PageContainer withRightMenu withGap>
         <Breadcrumbs
           variant="list"
-          elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('Connectors'), current: true }]}
+          elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('Ingestion monitoring'), current: true }]}
           noMargin
         />
         <QueryRenderer

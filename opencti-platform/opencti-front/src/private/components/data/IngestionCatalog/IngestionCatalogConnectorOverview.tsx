@@ -1,11 +1,12 @@
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import { Git, Launch } from 'mdi-material-ui';
+import { Launch } from 'mdi-material-ui';
 import React from 'react';
 import { useTheme } from '@mui/styles';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import { IngestionConnector } from '@components/data/IngestionCatalog';
+import { LibraryBooksOutlined } from '@mui/icons-material';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
@@ -37,7 +38,7 @@ const IngestionCatalogConnectorOverview = ({ connector }: { connector: Ingestion
             <Typography variant="h3" gutterBottom={true}>{t_i18n('Integration documentation and code')}</Typography>
             <Button
               size="large"
-              startIcon={<Git />}
+              startIcon={<LibraryBooksOutlined />}
               href={connector.source_code}
               target="blank"
               rel="noopener noreferrer"
