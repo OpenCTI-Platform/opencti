@@ -67,6 +67,7 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
     listen_api_https_proxy: str
     log_level: str = "info"
     json_logging: bool = True
+    thread_busy_wait: bool = True
     _is_interrupted: bool = False
 
     def __post_init__(self) -> None:
@@ -208,13 +209,17 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
                     "Processing a new message, launching a thread...",
                     {"tag": method.delivery_tag},
                 )
-                self.execution_pool.submit(
+                task_future = self.execution_pool.submit(
                     self.api_data_handler,
                     self.pika_connection,
                     self.channel,
                     method.delivery_tag,
                     body,
                 )
+                if self.thread_busy_wait:
+                    while task_future.running():  # Loop while the thread is processing
+                        self.pika_connection.sleep(0.05)
+                    self.worker_logger.info("Message processed, thread terminated")
         except Exception as e:
             self.worker_logger.error("Unhandled exception", {"exception": e})
         finally:
@@ -233,6 +238,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
     log_level: str
     ssl_verify: Union[bool, str] = False
     json_logging: bool = True
+    thread_busy_wait: bool = True
 
     def __post_init__(self) -> None:
         super().__init__()
@@ -500,13 +506,17 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                         "Processing a new message, launching a thread...",
                         {"queue": self.queue_name, "tag": method.delivery_tag},
                     )
-                    self.execution_pool.submit(
+                    task_future = self.execution_pool.submit(
                         self.data_handler,
                         self.pika_connection,
                         self.channel,
                         method.delivery_tag,
                         data,
                     )
+                    if self.thread_busy_wait:
+                        while task_future.running():  # Loop while the thread is processing
+                            self.pika_connection.sleep(0.05)
+                        self.worker_logger.info("Message processed, thread terminated")
                 except Exception as e:
                     self.worker_logger.error(
                         "Could not process message",
@@ -622,6 +632,13 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             False,
             "0.0.0.0",
         )
+        self.worker_thread_busy_wait = get_config_variable(
+            "WORKER_THREAD_BUSY_WAIT",
+            ["worker", "thread_busy_wait"],
+            config,
+            False,
+            True,
+        )
 
         # Telemetry
         if self.telemetry_enabled:
@@ -694,6 +711,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                                 self.log_level,
                                 self.opencti_ssl_verify,
                                 self.opencti_json_logging,
+                                self.worker_thread_busy_wait,
                             )
                             self.consumer_threads[push_queue].name = push_queue
                             self.consumer_threads[push_queue].start()
@@ -707,6 +725,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             self.log_level,
                             self.opencti_ssl_verify,
                             self.opencti_json_logging,
+                            self.worker_thread_busy_wait,
                         )
                         self.consumer_threads[push_queue].name = push_queue
                         self.consumer_threads[push_queue].start()
@@ -725,6 +744,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                                     self.listen_api_https_proxy,
                                     self.log_level,
                                     self.opencti_json_logging,
+                                    self.worker_thread_busy_wait,
                                 )
                                 self.listen_api_threads[listen_queue].name = (
                                     listen_queue
@@ -740,6 +760,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                                 self.listen_api_https_proxy,
                                 self.log_level,
                                 self.opencti_json_logging,
+                                self.worker_thread_busy_wait,
                             )
                             self.listen_api_threads[listen_queue].name = listen_queue
                             self.listen_api_threads[listen_queue].start()
