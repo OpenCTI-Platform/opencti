@@ -6,7 +6,16 @@ import type { AuthContext, AuthUser } from '../../../src/types/user';
 import { addNotification, addTrigger, myNotificationsFind, triggerGet } from '../../../src/modules/notification/notification-domain';
 import type { MemberAccessInput, TriggerLiveAddInput, UserAddInput, WorkspaceAddInput } from '../../../src/generated/graphql';
 import { TriggerEventType, TriggerType } from '../../../src/generated/graphql';
-import { addUser, assignGroupToUser, findById, findById as findUserById, isUserTheLastAdmin, userAddRelation, userDelete } from '../../../src/domain/user';
+import {
+  addUser,
+  assignGroupToUser,
+  authenticateUserByTokenOrUserId,
+  findById,
+  findById as findUserById,
+  isUserTheLastAdmin,
+  userAddRelation,
+  userDelete
+} from '../../../src/domain/user';
 import { addWorkspace, findById as findWorkspaceById, workspaceEditAuthorizedMembers } from '../../../src/modules/workspace/workspace-domain';
 import type { NotificationAddInput } from '../../../src/modules/notification/notification-types';
 import { getFakeAuthUser, getGroupEntity, getOrganizationEntity } from '../../utils/domainQueryHelper';
@@ -290,6 +299,27 @@ describe('Service account with platform organization coverage', async () => {
     const userCreated: any = await storeLoadById(testContext, authUser, userAddResult.id, ENTITY_TYPE_USER);
 
     expect(userCreated.password).toBeUndefined();
+
+    await deleteElementById(testContext, authUser, userAddResult.id, ENTITY_TYPE_USER);
+  });
+  it('Service account should be able to login with token', async () => {
+    // GIVEN a service account without any org
+    // AND org segregation is activated in policy
+    const userAddInput: UserAddInput = {
+      user_email: 'token.test@opencti.fr',
+      name: 'Service account with token and org',
+      user_service_account: true,
+    };
+    const userAddResult = await addUser(testContext, authUser, userAddInput);
+    const userCreated: any = await storeLoadById(testContext, authUser, userAddResult.id, ENTITY_TYPE_USER);
+    expect(userCreated.password).toBeUndefined();
+    console.log('userCreated:', userCreated);
+
+    // WHEN user log in with token
+    const loggedInUser = await authenticateUserByTokenOrUserId(testContext, { headers: [] }, userCreated.api_token);
+
+    // THEN despite having no org it's allowed
+    console.log('loggedInUser:', loggedInUser);
 
     await deleteElementById(testContext, authUser, userAddResult.id, ENTITY_TYPE_USER);
   });
