@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { ADMIN_USER, AMBER_STRICT_GROUP, GREEN_GROUP, PLATFORM_ORGANIZATION, TEST_ORGANIZATION, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, AMBER_STRICT_GROUP, generateBasicAuth, GREEN_GROUP, PLATFORM_ORGANIZATION, TEST_ORGANIZATION, testContext } from '../../utils/testQuery';
 import { generateStandardId } from '../../../src/schema/identifier';
 import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
@@ -313,13 +313,15 @@ describe('Service account with platform organization coverage', async () => {
     const userAddResult = await addUser(testContext, authUser, userAddInput);
     const userCreated: any = await storeLoadById(testContext, authUser, userAddResult.id, ENTITY_TYPE_USER);
     expect(userCreated.password).toBeUndefined();
-    console.log('userCreated:', userCreated);
 
     // WHEN user log in with token
-    const loggedInUser = await authenticateUserByTokenOrUserId(testContext, { headers: [] }, userCreated.api_token);
-
-    // THEN despite having no org it's allowed
-    console.log('loggedInUser:', loggedInUser);
+    // TODO fix this :(
+    const loggedInUser = await authenticateUserByTokenOrUserId(testContext, { headers: [
+      { attribute: 'Content-Type', value: 'application/json' },
+      { attribute: 'X-API-Key', value: userCreated.api_token },
+      { attribute: 'Accept', value: 'application/json' },
+    ] }, userCreated.api_token);
+    expect(loggedInUser).toBeDefined();
 
     await deleteElementById(testContext, authUser, userAddResult.id, ENTITY_TYPE_USER);
   });
