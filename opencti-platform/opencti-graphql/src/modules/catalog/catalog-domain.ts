@@ -7,7 +7,7 @@ import { type CatalogContract, type CatalogDefinition, type CatalogType } from '
 import { isEmptyField } from '../../database/utils';
 import { UnsupportedError } from '../../config/errors';
 import { idGenFromData } from '../../schema/identifier';
-import filigranCatalog from './filigran/opencti-manifest.json';
+import filigranCatalog from '../../__generated__/opencti-manifest.json';
 import conf from '../../config/conf';
 
 const CUSTOM_CATALOGS: string[] = conf.get('app:custom_catalogs') ?? [];
