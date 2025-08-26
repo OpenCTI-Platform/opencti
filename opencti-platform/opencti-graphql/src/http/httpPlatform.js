@@ -13,7 +13,7 @@ import validator from 'validator';
 import archiverZipEncrypted from 'archiver-zip-encrypted';
 import rateLimit from 'express-rate-limit';
 import contentDisposition from 'content-disposition';
-import { basePath, booleanConf, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION } from '../config/conf';
+import { basePath, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION } from '../config/conf';
 import passport, { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { HEADERS_AUTHENTICATORS, loginFromProvider, sessionAuthenticateUser, userWithOrigin } from '../domain/user';
 import { downloadFile, getFileContent, isStorageAlive, loadFile } from '../database/file-storage';
@@ -30,15 +30,8 @@ import createSseMiddleware from '../graphql/sseMiddleware';
 import initTaxiiApi from './httpTaxii';
 import initHttpRollingFeeds from './httpRollingFeed';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
-
-const setCookieError = (res, message) => {
-  res.cookie('opencti_flash', message || 'Unknown error', {
-    maxAge: 10000,
-    httpOnly: false,
-    secure: booleanConf('app:https_cert:cookie_secure', false),
-    sameSite: 'strict',
-  });
-};
+import { setCookieError } from './httpUtils';
+import { getChatbotProxy } from './httpChatbotProxy';
 
 const extractRefererPathFromReq = (req) => {
   if (isNotEmptyField(req.headers.referer)) {
@@ -471,6 +464,9 @@ const createApp = async (app) => {
       res.status(503).send({ status: 'error', error: e.message });
     }
   });
+
+  // -- Chatbot Proxy
+  app.post(`${basePath}/chatbot`, getChatbotProxy);
 
   // Other routes - Render index.html
   app.get('*', async (_, res) => {

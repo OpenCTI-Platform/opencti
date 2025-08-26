@@ -6,12 +6,10 @@ import { useTheme } from '@mui/styles';
 import IconButton from '@mui/material/IconButton';
 import GradientButton, { GradientVariant } from '../../../components/GradientButton';
 import { useFormatter } from '../../../components/i18n';
-import useAuth from '../../../utils/hooks/useAuth';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import type { Theme } from '../../../components/Theme';
-import { fileUri, MESSAGING$ } from '../../../relay/environment';
+import { APP_BASE_PATH, fileUri, MESSAGING$ } from '../../../relay/environment';
 import { DARK_BLUE } from '../../../utils/htmlToPdf/utils/constants';
-import { toBase64 } from '../../../utils/String';
 import embleme from '../../../static/images/embleme_filigran_white.png';
 import useHelper from '../../../utils/hooks/useHelper';
 
@@ -20,10 +18,6 @@ const AskArianeButton = () => {
   const { isChatbotAiEnabled } = useHelper();
   const theme = useTheme<Theme>();
   const isEnterpriseEdition = useEnterpriseEdition();
-  const {
-    me: { api_token },
-    settings: { platform_url, filigran_chatbot_ai_url, platform_enterprise_edition },
-  } = useAuth();
 
   const [navOpen, setNavOpen] = useState(
     localStorage.getItem('navOpen') === 'true',
@@ -123,12 +117,7 @@ const AskArianeButton = () => {
       },
     },
   };
-
-  const vars = {
-    OPENCTI_URL: platform_url,
-    OPENCTI_TOKEN: api_token,
-    OPENCTI_CERTIFICATE: toBase64(platform_enterprise_edition.license_raw_pem),
-  };
+  const chatbotProxyUrl = `${APP_BASE_PATH}/chatbot`;
 
   return (
     <>
@@ -139,9 +128,8 @@ const AskArianeButton = () => {
           ref={chatbotRef}
           open={isChatbotOpen}
           left={navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH}
-          agentic-url={filigran_chatbot_ai_url}
+          agentic-url={chatbotProxyUrl}
           theme={JSON.stringify(chatBotTheme)}
-          chatflowConfig={{ vars }}
         />
       ) : null}
       {!isEnterpriseEdition && navOpen ? (
