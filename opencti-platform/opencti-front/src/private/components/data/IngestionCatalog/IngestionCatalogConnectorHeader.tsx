@@ -7,26 +7,36 @@ import { ingestionConnectorTypeMetadata } from '@components/data/IngestionCatalo
 import IngestionCatalogChip from '@components/data/IngestionCatalog/IngestionCatalogUseCaseChip';
 import IngestionCatalogConnectorCreation from '@components/data/IngestionCatalog/IngestionCatalogConnectorCreation';
 import { IngestionConnector } from '@components/data/IngestionCatalog';
+import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
+import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import ItemBoolean from '../../../../components/ItemBoolean';
 
-const IngestionCatalogConnectorHeader = ({ connector, catalogId }: { connector: IngestionConnector, catalogId: string }) => {
+type IngestionCatalogConnectorHeaderProps = {
+  connector: IngestionConnector,
+  catalogId: string,
+  isEnterpriseEdition: boolean,
+};
+
+const IngestionCatalogConnectorHeader = ({ connector, catalogId, isEnterpriseEdition }: IngestionCatalogConnectorHeaderProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const [openCreation, setOpenCreation] = useState(false);
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: theme.spacing(2) }}>
+    <>
+      {!isEnterpriseEdition && <EnterpriseEdition />}
 
-      <div style={{ display: 'flex', gap: 20 }}>
-        <img style={{ height: 70, width: 70, objectFit: 'cover', borderRadius: 4 }} src={connector.logo} alt={connector.title} />
-        <div>
-          <div style={{ display: 'flex', gap: 20 }}>
-            <Typography variant="h1" style={{ fontSize: 30, textTransform: 'uppercase' }}>{connector.title}</Typography>
-            {connector.verified && (
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: theme.spacing(2) }}>
+        <div style={{ display: 'flex', gap: 20 }}>
+          <img style={{ height: 70, width: 70, objectFit: 'cover', borderRadius: 4 }} src={connector.logo} alt={connector.title} />
+          <div>
+            <div style={{ display: 'flex', gap: 20 }}>
+              <Typography variant="h1" style={{ fontSize: 30, textTransform: 'uppercase' }}>{connector.title}</Typography>
+              {connector.verified && (
               <ItemBoolean
                 status={true}
                 label={
@@ -36,28 +46,35 @@ const IngestionCatalogConnectorHeader = ({ connector, catalogId }: { connector: 
                   </div>
                 }
               />
-            )}
-          </div>
-          <div style={{ display: 'flex' }}>
-            <IngestionCatalogChip
-              isInlist
-              label={t_i18n(ingestionConnectorTypeMetadata[connector.container_type].label)}
-              color={ingestionConnectorTypeMetadata[connector.container_type].color}
-            />
-            {connector.use_cases.map((useCase: string) => <IngestionCatalogChip key={useCase} label={useCase} isInlist />)}
+              )}
+            </div>
+            <div style={{ display: 'flex' }}>
+              <IngestionCatalogChip
+                isInlist
+                label={t_i18n(ingestionConnectorTypeMetadata[connector.container_type].label)}
+                color={ingestionConnectorTypeMetadata[connector.container_type].color}
+              />
+              {connector.use_cases.map((useCase: string) => <IngestionCatalogChip key={useCase} label={useCase} isInlist />)}
+            </div>
           </div>
         </div>
+
+        <div>
+          <Security needs={[INGESTION_SETINGESTIONS]}>
+            {
+              isEnterpriseEdition ? (
+                <Button variant="contained" onClick={() => setOpenCreation(true)} style={{ marginLeft: theme.spacing(1) }}>{t_i18n('Deploy')}</Button>
+              ) : (
+                <EnterpriseEditionButton title="Deploy" />
+              )
+            }
+          </Security>
+        </div>
+
+        <IngestionCatalogConnectorCreation open={openCreation} connector={connector} onClose={() => setOpenCreation(false)} catalogId={catalogId} />
+
       </div>
-
-      <div>
-        <Security needs={[INGESTION_SETINGESTIONS]}>
-          <Button variant="contained" onClick={() => setOpenCreation(true)} style={{ marginLeft: theme.spacing(1) }}>{t_i18n('Deploy')}</Button>
-        </Security>
-      </div>
-
-      <IngestionCatalogConnectorCreation open={openCreation} connector={connector} onClose={() => setOpenCreation(false)} catalogId={catalogId} />
-
-    </div>
+    </>
   );
 };
 

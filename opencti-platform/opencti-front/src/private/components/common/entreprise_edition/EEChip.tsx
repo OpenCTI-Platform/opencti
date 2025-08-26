@@ -53,6 +53,7 @@ const EEChip = React.forwardRef<HTMLDivElement, { feature?: string, clickable?: 
 
   const onClick = (e: MouseEvent<HTMLDivElement>) => {
     e.stopPropagation();
+    e.preventDefault();
     return clickable && setDisplayDialog(true);
   };
 
