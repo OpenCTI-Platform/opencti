@@ -16,8 +16,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import React from 'react';
 import Grid from '@mui/material/Grid2';
 import { graphql, useFragment } from 'react-relay';
-import StixRelationshipsDonut from '@components/common/stix_relationships/StixRelationshipsDonut';
 import StixCoreObjectsDonut from '@components/common/stix_core_objects/StixCoreObjectsDonut';
+import InPirRelationshipsDonut from '@components/pir/InPirRelationshipsDonut';
 import { PirOverviewTopSourcesFragment$key } from './__generated__/PirOverviewTopSourcesFragment.graphql';
 import Paper from '../../../../components/Paper';
 import { useFormatter } from '../../../../components/i18n';
@@ -61,7 +61,7 @@ const PirOverviewTopSources = ({ data }: PirOverviewTopSourcesProps) => {
       attribute: 'pir_explanations.dependencies.author_id',
       isTo: false,
       relationship_type: 'in-pir',
-      toId: id,
+      pirId: id,
     },
   ];
 
@@ -82,7 +82,7 @@ const PirOverviewTopSources = ({ data }: PirOverviewTopSourcesProps) => {
       </Grid>
       <Grid size={{ xs: 6 }}>
         <Paper title={t_i18n('Top authors of relationships from threats')}>
-          <StixRelationshipsDonut
+          <InPirRelationshipsDonut
             dataSelection={relationshipsTopSourcesDataSelection}
             variant="inLine"
             height={250}

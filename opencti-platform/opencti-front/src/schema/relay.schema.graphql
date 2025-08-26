@@ -8573,7 +8573,8 @@ type Query {
   savedFilters(first: Int, after: ID, orderBy: SavedFilterOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): SavedFilterConnection
   pir(id: ID!): Pir
   pirs(first: Int, after: ID, orderBy: PirOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): PirConnection
-  inPirRelationships(first: Int, after: ID, orderBy: InPirRelationshipOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, pirId: ID): InPirRelationshipConnection
+  inPirRelationships(pirId: ID!, first: Int, after: ID, orderBy: InPirRelationshipOrdering, orderMode: OrderingMode, fromOrToId: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, startDate: DateTime, endDate: DateTime, confidences: [Int], search: String, filters: FilterGroup, dynamicFrom: FilterGroup, dynamicTo: FilterGroup, stix: Boolean): InPirRelationshipConnection
+  inPirRelationshipsDistribution(pirId: ID!, field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, fromOrToId: [String], elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup, dynamicFrom: FilterGroup, dynamicTo: FilterGroup, aggregateOnConnections: Boolean): [InPirRelationshipDistribution]
   fintelDesign(id: String!): FintelDesign
   fintelDesigns(first: Int, after: ID, orderBy: FintelDesignOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): FintelDesignConnection
   securityPlatform(id: String!): SecurityPlatform
@@ -13629,6 +13630,12 @@ type InPirRelationship implements BasicRelationship {
   pir_explanations: [PirExplanation!]
   pir_score: Int
   authorized_authorities: [String]
+}
+
+type InPirRelationshipDistribution {
+  label: String!
+  entity: InPirRelationship
+  value: Int
 }
 
 enum PirOrdering {

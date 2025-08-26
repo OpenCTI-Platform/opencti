@@ -26,7 +26,8 @@ import {
   type PirAddInput,
   type PirFlagElementInput,
   type PirUnflagElementInput,
-  type QueryInPirRelationshipsArgs
+  type QueryInPirRelationshipsArgs,
+  type QueryInPirRelationshipsDistributionArgs
 } from '../../generated/graphql';
 import { createEntity, deleteRelationsByFromAndTo, distributionRelations, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
@@ -67,22 +68,21 @@ export const findAllPirRelations = async (
     throw FunctionalError('You should provide exactly 1 Pir ID since in-pir relationships can only be fetch for a given PIR.', { pirId });
   }
   await checkEEAndPirAccess(context, user, pirId);
-  return listRelationsPaginated<BasicStoreRelationPir>(context, user, RELATION_IN_PIR, { ...opts, toId: pirId });
+  return listRelationsPaginated<BasicStoreRelationPir>(context, user, RELATION_IN_PIR, { ...opts, toId: [pirId] });
 };
 
 export const pirRelationshipsDistribution = async (
   context: AuthContext,
   user: AuthUser,
-  args: any, // TODO PIR
+  args: QueryInPirRelationshipsDistributionArgs,
 ) => {
   const relationship_type = [RELATION_IN_PIR];
-  const toIds = args.toId;
-  if (toIds.length !== 1) {
-    throw FunctionalError('You should provide exactly 1 Pir ID since in-pir relationships distribution can only be fetch for a given PIR.', { toIds });
+  const { pirId } = args;
+  if (!pirId) {
+    throw FunctionalError('You should provide exactly 1 Pir ID since in-pir relationships distribution can only be fetch for a given PIR.', { pirId });
   }
-  const pirId = toIds[0];
   await checkEEAndPirAccess(context, user, pirId);
-  const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, { ...args, relationship_type });
+  const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, { ...args, relationship_type, toId: [pirId] });
   if (isEmptyDynamic) {
     return [];
   }

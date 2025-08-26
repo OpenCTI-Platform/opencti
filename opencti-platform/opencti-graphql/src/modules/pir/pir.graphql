@@ -73,6 +73,12 @@ type InPirRelationship implements BasicRelationship {
     authorized_authorities: [String]
 }
 
+type InPirRelationshipDistribution {
+    label: String!
+    entity: InPirRelationship
+    value: Int
+}
+
 # Ordering
 enum PirOrdering {
     name
@@ -119,15 +125,38 @@ type Query {
     ): PirConnection @auth(for: [PIRAPI])
     inPirRelationships(
         pirId: ID!
-        fromId: ID
         first: Int
         after: ID
         orderBy: InPirRelationshipOrdering
         orderMode: OrderingMode
-        filters: FilterGroup
+        fromOrToId: String
+        elementWithTargetTypes: [String]
+        fromId: [String]
+        fromRole: String
+        fromTypes: [String]
+        toId: [String]
+        toRole: String
+        toTypes: [String]
+        relationship_type: [String]
+        startTimeStart: DateTime
+        startTimeStop: DateTime
+        stopTimeStart: DateTime
+        stopTimeStop: DateTime
+        firstSeenStart: DateTime
+        firstSeenStop: DateTime
+        lastSeenStart: DateTime
+        lastSeenStop: DateTime
+        startDate: DateTime
+        endDate: DateTime
+        confidences: [Int]
         search: String
+        filters: FilterGroup
+        dynamicFrom: FilterGroup
+        dynamicTo: FilterGroup
+        stix: Boolean
     ): InPirRelationshipConnection @auth(for: [PIRAPI])
-    stixRelationshipsDistribution(
+    inPirRelationshipsDistribution(
+        pirId: ID!
         field: String!
         operation: StatsOperation!
         startDate: DateTime
@@ -151,7 +180,7 @@ type Query {
         dynamicFrom: FilterGroup
         dynamicTo: FilterGroup
         aggregateOnConnections: Boolean
-    ): [Distribution] @auth(for: [PIRAPI])
+    ): [InPirRelationshipDistribution] @auth(for: [PIRAPI])
 }
 
 # Mutations inputs

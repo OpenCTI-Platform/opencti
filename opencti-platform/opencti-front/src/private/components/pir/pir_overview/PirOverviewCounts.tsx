@@ -51,13 +51,13 @@ const countsFragment = graphql`
 `;
 
 const countsQuery = graphql`
-  query PirOverviewCountsQuery($toId: [String], $startDate: DateTime) {
-    stixRelationshipsDistribution(
+  query PirOverviewCountsQuery($pirId: ID!, $startDate: DateTime) {
+    inPirRelationshipsDistribution(
       field: "entity_type",
       operation: count,
       startDate: $startDate
       relationship_type: "in-pir"
-      toId: $toId
+      pirId: $pirId
     ) {
       label
       value
@@ -124,11 +124,11 @@ const PirOverviewCountsComponent = ({
   const resultAll = usePreloadedQuery(countsQuery, countsQueryRef);
   const result24h = usePreloadedQuery(countsQuery, counts24hQueryRef);
 
-  const data = resultAll.stixRelationshipsDistribution?.flatMap((distribution) => {
+  const data = resultAll.inPirRelationshipsDistribution?.flatMap((distribution) => {
     if (!distribution || distribution.label === 'Pir') return [];
     return distribution;
   });
-  const data24h = result24h.stixRelationshipsDistribution?.flatMap((distribution) => {
+  const data24h = result24h.inPirRelationshipsDistribution?.flatMap((distribution) => {
     if (!distribution || distribution.label === 'Pir') return [];
     return distribution;
   });
@@ -182,11 +182,11 @@ const PirOverviewCounts = ({ data }: PirOverviewCountsProps) => {
 
   const countsQueryRef = useQueryLoading<PirOverviewCountsQuery>(
     countsQuery,
-    { toId: [pirId] },
+    { pirId },
   );
   const counts24hQueryRef = useQueryLoading<PirOverviewCountsQuery>(
     countsQuery,
-    { toId: [pirId], startDate: dayAgo() },
+    { pirId, startDate: dayAgo() },
   );
 
   return (
