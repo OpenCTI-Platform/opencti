@@ -22,6 +22,7 @@ export const getChatbotProxy = async (req: Express.Request, res: Express.Respons
     const settings = await getEntityFromCache<BasicStoreSettings>(context, context.user, ENTITY_TYPE_SETTINGS);
     const { license_raw_pem } = getEnterpriseEditionInfo(settings);
     if (!isChatbotEnabled || !license_raw_pem) {
+      res.status(400).json({ error: 'Chatbot is not enabled' });
       return;
     }
     if (!chatbotUrl) {
@@ -41,13 +42,16 @@ export const getChatbotProxy = async (req: Express.Request, res: Express.Respons
       Accept: 'text/event-stream',
       ...vars,
     };
-
+    if (!req.body) {
+      res.status(400).json({ error: 'Chatbot request body is missing' });
+      return;
+    }
     const enhancedBody = {
       ...req.body,
       overrideConfig: {
-        ...req.body.overrideConfig,
+        ...req.body?.overrideConfig,
         vars: {
-          ...req.body.overrideConfig?.vars,
+          ...req.body?.overrideConfig?.vars,
           ...vars,
         }
       }
