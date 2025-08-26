@@ -32,7 +32,7 @@ export const getChatbotProxy = async (req: Express.Request, res: Express.Respons
     const vars = {
       OPENCTI_URL: settings.platform_url,
       OPENCTI_TOKEN: context.user?.api_token,
-      OPENCTI_CERTIFICATE: Buffer.from(license_raw_pem, 'utf-8').toString('base64'),
+      'X-API-KEY': Buffer.from(license_raw_pem, 'utf-8').toString('base64'),
     };
 
     // Enhance headers with url, token and certificate
