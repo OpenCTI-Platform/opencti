@@ -19,7 +19,7 @@ import Typography from '@mui/material/Typography';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { useTheme } from '@mui/material/styles';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { PirOverviewCountsQuery, PirOverviewCountsQuery$variables } from './__generated__/PirOverviewCountsQuery.graphql';
+import { PirOverviewCountsQuery } from './__generated__/PirOverviewCountsQuery.graphql';
 import { PirOverviewCountsFragment$key } from './__generated__/PirOverviewCountsFragment.graphql';
 import Paper from '../../../../components/Paper';
 import { useFormatter } from '../../../../components/i18n';
@@ -51,12 +51,13 @@ const countsFragment = graphql`
 `;
 
 const countsQuery = graphql`
-  query PirOverviewCountsQuery($filters: FilterGroup, $startDate: DateTime) {
+  query PirOverviewCountsQuery($toId: [String], $startDate: DateTime) {
     stixRelationshipsDistribution(
       field: "entity_type",
       operation: count,
-      filters: $filters
       startDate: $startDate
+      relationship_type: "in-pir"
+      toId: $toId
     ) {
       label
       value
@@ -177,29 +178,15 @@ interface PirOverviewCountsProps {
 
 const PirOverviewCounts = ({ data }: PirOverviewCountsProps) => {
   const { t_i18n } = useFormatter();
-  const { id } = useFragment(countsFragment, data);
+  const { id: pirId } = useFragment(countsFragment, data);
 
-  const filters: PirOverviewCountsQuery$variables['filters'] = {
-    mode: 'and',
-    filterGroups: [],
-    filters: [
-      {
-        key: ['relationship_type'],
-        values: ['in-pir'],
-      },
-      {
-        key: ['toId'],
-        values: [id],
-      },
-    ],
-  };
   const countsQueryRef = useQueryLoading<PirOverviewCountsQuery>(
     countsQuery,
-    { filters },
+    { toId: [pirId] },
   );
   const counts24hQueryRef = useQueryLoading<PirOverviewCountsQuery>(
     countsQuery,
-    { filters, startDate: dayAgo() },
+    { toId: [pirId], startDate: dayAgo() },
   );
 
   return (
