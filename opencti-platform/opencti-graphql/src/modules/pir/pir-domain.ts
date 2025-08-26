@@ -15,8 +15,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { now } from 'moment';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { type EntityOptions, internalLoadById, listEntitiesPaginated, listRelations, storeLoadById } from '../../database/middleware-loader';
-import { type BasicStoreEntityPir, ENTITY_TYPE_PIR, type PirExplanation } from './pir-types';
+import { type EntityOptions, internalLoadById, listEntitiesPaginated, listRelations, listRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
+import { type BasicStoreEntityPir, type BasicStoreRelationPir, ENTITY_TYPE_PIR, type PirExplanation } from './pir-types';
 import {
   type EditInput,
   EditOperation,
@@ -25,9 +25,10 @@ import {
   type MemberAccessInput,
   type PirAddInput,
   type PirFlagElementInput,
-  type PirUnflagElementInput
+  type PirUnflagElementInput,
+  type QueryInPirRelationshipsArgs
 } from '../../generated/graphql';
-import { createEntity, deleteRelationsByFromAndTo, updateAttribute } from '../../database/middleware';
+import { createEntity, deleteRelationsByFromAndTo, distributionRelations, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS, logApp } from '../../config/conf';
@@ -35,7 +36,7 @@ import { deleteInternalObject } from '../../domain/internalObject';
 import { registerConnectorForPir, unregisterConnectorForIngestion } from '../../domain/connector';
 import type { BasicStoreCommon, BasicStoreObject } from '../../types/store';
 import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
-import { createPirRelation, serializePir, updatePirExplanations } from './pir-utils';
+import { checkEEAndPirAccess, createPirRelation, serializePir, updatePirExplanations } from './pir-utils';
 import { ForbiddenAccess, FunctionalError } from '../../config/errors';
 import { ABSTRACT_STIX_REF_RELATIONSHIP, ENTITY_TYPE_CONTAINER } from '../../schema/general';
 import { extractFilterKeyValues } from '../../utils/filtering/filtering-utils';
@@ -44,6 +45,7 @@ import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
 import { isBypassUser, MEMBER_ACCESS_ALL, MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_VIEW, PIRAPI } from '../../utils/access';
 import { RELATION_IN_PIR } from '../../schema/internalRelationship';
+import { buildArgsFromDynamicFilters } from '../../domain/stixRelationship';
 
 export const findById = async (context: AuthContext, user: AuthUser, id: string) => {
   await checkEnterpriseEdition(context);
@@ -53,6 +55,38 @@ export const findById = async (context: AuthContext, user: AuthUser, id: string)
 export const findAll = async (context: AuthContext, user: AuthUser, opts?: EntityOptions<BasicStoreEntityPir>) => {
   await checkEnterpriseEdition(context);
   return listEntitiesPaginated<BasicStoreEntityPir>(context, user, [ENTITY_TYPE_PIR], opts);
+};
+
+export const findAllPirRelations = async (
+  context: AuthContext,
+  user: AuthUser,
+  opts: QueryInPirRelationshipsArgs,
+) => {
+  const { pirId } = opts;
+  if (!pirId) {
+    throw FunctionalError('You should provide exactly 1 Pir ID since in-pir relationships can only be fetch for a given PIR.', { pirId });
+  }
+  await checkEEAndPirAccess(context, user, pirId);
+  return listRelationsPaginated<BasicStoreRelationPir>(context, user, RELATION_IN_PIR, { ...opts, toId: pirId });
+};
+
+export const pirRelationshipsDistribution = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: any, // TODO PIR
+) => {
+  const relationship_type = [RELATION_IN_PIR];
+  const toIds = args.toId;
+  if (toIds.length !== 1) {
+    throw FunctionalError('You should provide exactly 1 Pir ID since in-pir relationships distribution can only be fetch for a given PIR.', { toIds });
+  }
+  const pirId = toIds[0];
+  await checkEEAndPirAccess(context, user, pirId);
+  const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, { ...args, relationship_type });
+  if (isEmptyDynamic) {
+    return [];
+  }
+  return distributionRelations(context, context.user, dynamicArgs);
 };
 
 export const findPirContainers = async (

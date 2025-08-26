@@ -53,12 +53,38 @@ type Pir implements InternalObject & BasicObject {
     ): ContainerConnection
 }
 
+type InPirRelationship implements BasicRelationship {
+    # BasicRelationship
+    id: ID! # internal_id
+    standard_id: String!
+    entity_type: String!
+    parent_types: [String]!
+    fromRole: String
+    toRole: String
+    created_at: DateTime!
+    updated_at: DateTime!
+    # InternalRelationship
+    from: InternalObject
+    to: InternalObject
+    creators: [Creator!]
+    # in-pir relationship
+    pir_explanations: [PirExplanation!]
+    pir_score: Int
+    authorized_authorities: [String]
+}
+
 # Ordering
 enum PirOrdering {
     name
     created_at
     updated_at
     creator
+}
+
+enum InPirRelationshipOrdering {
+    created_at
+    updated_at
+    pir_score
 }
 
 # Relay connections
@@ -69,6 +95,15 @@ type PirConnection {
 type PirEdge {
     cursor: String!
     node: Pir!
+}
+
+type InPirRelationshipConnection {
+    pageInfo: PageInfo!
+    edges: [InPirRelationshipEdge!]!
+}
+type InPirRelationshipEdge {
+    cursor: String!
+    node: InPirRelationship!
 }
 
 # Queries
@@ -82,6 +117,41 @@ type Query {
         filters: FilterGroup
         search: String
     ): PirConnection @auth(for: [PIRAPI])
+    inPirRelationships(
+        pirId: ID!
+        fromId: ID
+        first: Int
+        after: ID
+        orderBy: InPirRelationshipOrdering
+        orderMode: OrderingMode
+        filters: FilterGroup
+        search: String
+    ): InPirRelationshipConnection @auth(for: [PIRAPI])
+    stixRelationshipsDistribution(
+        field: String!
+        operation: StatsOperation!
+        startDate: DateTime
+        endDate: DateTime
+        dateAttribute: String
+        isTo: Boolean
+        limit: Int
+        order: String
+        fromOrToId: [String]
+        elementWithTargetTypes: [String]
+        fromId: [String]
+        fromRole: String
+        fromTypes: [String]
+        toId: [String]
+        toRole: String
+        toTypes: [String]
+        relationship_type: [String]
+        confidences: [Int]
+        search: String
+        filters: FilterGroup
+        dynamicFrom: FilterGroup
+        dynamicTo: FilterGroup
+        aggregateOnConnections: Boolean
+    ): [Distribution] @auth(for: [PIRAPI])
 }
 
 # Mutations inputs
