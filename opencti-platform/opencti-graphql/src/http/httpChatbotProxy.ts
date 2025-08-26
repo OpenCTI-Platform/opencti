@@ -4,7 +4,7 @@ import type Express from 'express';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
-import { getEnterpriseEditionInfo } from '../modules/settings/licensing';
+import { getEntrepriseEditionActivePem } from '../modules/settings/licensing';
 import { logApp } from '../config/conf';
 import type { BasicStoreSettings } from '../types/settings';
 import { setCookieError } from './httpUtils';
@@ -20,8 +20,8 @@ export const getChatbotProxy = async (req: Express.Request, res: Express.Respons
     const chatbotUrl = nconf.get('ai:chatbot:url');
     const isChatbotEnabled = nconf.get('ai:chatbot:enabled');
     const settings = await getEntityFromCache<BasicStoreSettings>(context, context.user, ENTITY_TYPE_SETTINGS);
-    const { license_raw_pem } = getEnterpriseEditionInfo(settings);
-    if (!isChatbotEnabled || !license_raw_pem) {
+    const license_pem = getEntrepriseEditionActivePem(settings.enterprise_license);
+    if (!isChatbotEnabled || !license_pem) {
       res.status(400).json({ error: 'Chatbot is not enabled' });
       return;
     }
@@ -33,7 +33,7 @@ export const getChatbotProxy = async (req: Express.Request, res: Express.Respons
     const vars = {
       OPENCTI_URL: settings.platform_url,
       OPENCTI_TOKEN: context.user?.api_token,
-      'X-API-KEY': Buffer.from(license_raw_pem, 'utf-8').toString('base64'),
+      'X-API-KEY': Buffer.from(license_pem, 'utf-8').toString('base64'),
     };
 
     // Enhance headers with url, token and certificate
