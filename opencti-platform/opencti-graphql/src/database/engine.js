@@ -3121,7 +3121,8 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         }
         const pirKey = splittedKey[0];
         const pirId = splittedKey[1];
-        // TODO PIR check pir accessible (elLoadById)
+        // check the user has access to the PIR
+        await checkEEAndPirAccess(context, user, pirId);
         // push the nested pir_score filter associated to the given PIR ID
         finalFilters.push({
           key: ['pir_information'],
@@ -3271,7 +3272,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
       if (orderCriteria === '_score') {
         ordering = R.append({ [orderCriteria]: scoreSearchOrder }, ordering);
       } else {
-        const sortingForCriteria = buildElasticSortingForAttributeCriteria(orderCriteria, orderMode, pirId);
+        const sortingForCriteria = await buildElasticSortingForAttributeCriteria(context, user, orderCriteria, orderMode, pirId);
         ordering = R.append(sortingForCriteria, ordering);
       }
     }
