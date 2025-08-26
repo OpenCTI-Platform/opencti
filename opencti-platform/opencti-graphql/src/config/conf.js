@@ -348,7 +348,7 @@ const baseUrl = BasePathUrl.endsWith('/') ? BasePathUrl.slice(0, -1) : BasePathU
 
 export const getBaseUrl = (req) => {
   // If base url is defined, take it in priority
-  if (baseUrl) {
+  if (baseUrl && !baseUrl.includes('localhost')) {
     // Always append base path to the uri
     return baseUrl + basePath;
   }
