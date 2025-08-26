@@ -10449,6 +10449,7 @@ export type ImportWidgetInput = {
 
 export type InPirRelationship = BasicRelationship & {
   __typename?: 'InPirRelationship';
+  authorized_authorities?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   entity_type: Scalars['String']['output'];
@@ -12100,6 +12101,7 @@ export type InternalRelationship = BasicRelationship & {
 };
 
 export type InternalRelationshipAddInput = {
+  authorized_authorities?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   fromId?: InputMaybe<Scalars['ID']['input']>;
   pir_explanations?: InputMaybe<Array<PirExplanationInput>>;
   relationship_type: Scalars['String']['input'];
@@ -20322,6 +20324,7 @@ export type PhoneNumberAddInput = {
 
 export type Pir = BasicObject & InternalObject & {
   __typename?: 'Pir';
+  authorizedAuthorities?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   authorizedMembers: Array<MemberAccess>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
@@ -39145,6 +39148,7 @@ export type IdentityEditMutationsResolvers<ContextType = any, ParentType extends
 }>;
 
 export type InPirRelationshipResolvers<ContextType = any, ParentType extends ResolversParentTypes['InPirRelationship'] = ResolversParentTypes['InPirRelationship']> = ResolversObject<{
+  authorized_authorities?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -42071,6 +42075,7 @@ export type PhoneNumberResolvers<ContextType = any, ParentType extends Resolvers
 }>;
 
 export type PirResolvers<ContextType = any, ParentType extends ResolversParentTypes['Pir'] = ResolversParentTypes['Pir']> = ResolversObject<{
+  authorizedAuthorities?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   authorizedMembers?: Resolver<Array<ResolversTypes['MemberAccess']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;

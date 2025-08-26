@@ -41,6 +41,7 @@ type Pir implements InternalObject & BasicObject {
     pir_filters: String!
     lastEventId: String!
     authorizedMembers: [MemberAccess!]!
+    authorizedAuthorities: [String]
     currentUserAccessRight: String
     pirContainers(
         first: Int
