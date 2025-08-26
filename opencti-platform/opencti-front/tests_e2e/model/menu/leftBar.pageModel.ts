@@ -23,6 +23,7 @@ export default class LeftBarPage {
 
     await this.page.getByRole('menuitem', { name: menuName, exact: true }).click();
     if (subMenuItem) {
+      expect(await this.page.getByRole('menuitem', { name: subMenuItem }).isVisible());
       await this.page.getByRole('menuitem', { name: subMenuItem }).click();
     }
   }
