@@ -952,5 +952,6 @@
   "XTM Hub registration status": "Statut de l'inscription au XTM Hub",
   "XTM Hub registration User ID": "ID de l'utilisateur de l'enregistrement du XTM Hub",
   "XTM Hub registration User name": "Nom de l'utilisateur pour l'enregistrement du XTM Hub",
+  "XTM Hub should send connectivity email": "XTM Hub doit envoyer un e-mail de connectivité",
   "XTM Hub Token": "Token XTM Hub"
 }
