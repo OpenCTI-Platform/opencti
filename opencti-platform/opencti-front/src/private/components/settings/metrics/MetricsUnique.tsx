@@ -6,11 +6,14 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import WidgetDifference from '../../../../components/dashboard/WidgetDifference';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { FilterGroup as RelayFilterGroup, MetricsWeeklyQuery } from './__generated__/MetricsWeeklyQuery.graphql';
+import { FilterGroup as RelayFilterGroup, MetricsUniqueWeeklyQuery, MetricsUniqueWeeklyQuery$variables } from './__generated__/MetricsUniqueWeeklyQuery.graphql';
+import { MetricsUniqueMonthlyQuery, MetricsUniqueMonthlyQuery$variables } from './__generated__/MetricsUniqueMonthlyQuery.graphql';
 import { MetricsGraphqlQueryUser } from './metrics.d';
 
+type TimeInterval = 'week' | 'month';
+
 export const wauDataQuery = graphql`
-  query MetricsWeeklyQuery (
+  query MetricsUniqueWeeklyQuery (
     $distributionParameters: [AuditsDistributionParameters]
   ) {
     auditsMultiDistribution(
@@ -26,17 +29,36 @@ export const wauDataQuery = graphql`
   }
 `;
 
-interface MetricsWeeklyComponentProps {
-  queryRef: PreloadedQuery<MetricsWeeklyQuery>
+export const mauDataQuery = graphql`
+  query MetricsUniqueMonthlyQuery (
+    $distributionParameters: [AuditsDistributionParameters]
+  ) {
+    auditsMultiDistribution(
+      dateAttribute: ""
+      operation: count
+      types: ["History", "Activity"]
+      distributionParameters: $distributionParameters
+    ) {
+      data {
+        label
+      }
+    }
+  }
+`;
+
+interface MetricsUniqueComponentProps {
+  queryRef: PreloadedQuery<MetricsUniqueWeeklyQuery> | PreloadedQuery<MetricsUniqueMonthlyQuery>;
+  interval: TimeInterval;
 }
 
-interface MetricsWeeklyProps {
-  variant: string,
-  endDate: string | null,
-  startDate: string | null,
+interface MetricsUniqueProps {
+  variant: string;
+  endDate: string | null;
+  startDate: string | null;
+  interval: TimeInterval;
   parameters: {
     title?: string;
-  }
+  };
   dataSelection?: {
     filters?: unknown;
   }[];
@@ -68,13 +90,16 @@ function convertToRelayFilterGroup(input?: InputRelayFilterGroup): RelayFilterGr
   };
 }
 
-const MetricsWeeklyComponent: FunctionComponent<MetricsWeeklyComponentProps> = ({
+const MetricsUniqueComponent: FunctionComponent<MetricsUniqueComponentProps> = ({
   queryRef,
+  interval,
 }) => {
-  const data = usePreloadedQuery<MetricsWeeklyQuery>(
-    wauDataQuery,
-    queryRef,
-  ); if (data) {
+  // Use appropriate query based on interval
+  const data = interval === 'week'
+    ? usePreloadedQuery<MetricsUniqueWeeklyQuery>(wauDataQuery, queryRef as PreloadedQuery<MetricsUniqueWeeklyQuery>)
+    : usePreloadedQuery<MetricsUniqueMonthlyQuery>(mauDataQuery, queryRef as PreloadedQuery<MetricsUniqueMonthlyQuery>);
+
+  if (data) {
     // Previous period users, filtered to non-null users
     const previousData = data.auditsMultiDistribution
       ?.[0]?.data?.filter((user: MetricsGraphqlQueryUser) => !!user) ?? [];
@@ -88,26 +113,18 @@ const MetricsWeeklyComponent: FunctionComponent<MetricsWeeklyComponentProps> = (
       <WidgetDifference
         count={currentCount}
         change={currentCount - previousCount}
-        interval="week"
+        interval={interval}
       />
     );
   }
   return <WidgetNoData />;
 };
 
-const MetricsWeekly: React.FC<MetricsWeeklyProps> = ({
-  parameters,
-  variant,
-  endDate,
-  startDate,
-  dataSelection,
-}) => {
-  const { t_i18n } = useFormatter();
-  const height = 300;
-  const filters = convertToRelayFilterGroup(
-    dataSelection?.[0]?.filters as InputRelayFilterGroup | undefined,
-  );
-
+function generateWeeklyDistributionParameters(
+  startDate: string | null,
+  endDate: string | null,
+  filters: RelayFilterGroup | undefined,
+): MetricsUniqueWeeklyQuery$variables['distributionParameters'] {
   let start = startDate ? new Date(startDate) : null;
   let end = endDate ? new Date(endDate) : null;
 
@@ -136,8 +153,8 @@ const MetricsWeekly: React.FC<MetricsWeeklyProps> = ({
   const mid = new Date(start);
   mid.setDate(mid.getDate() + 7);
 
-  // Get the user logins for last month and this current month
-  const distributionParameters = [
+  // Get the user logins for last week and this current week
+  return [
     {
       field: 'user_id',
       startDate: start.toISOString(),
@@ -151,21 +168,83 @@ const MetricsWeekly: React.FC<MetricsWeeklyProps> = ({
       filters,
     },
   ];
+}
 
-  const queryRef = useQueryLoading<MetricsWeeklyQuery>(
-    wauDataQuery,
-    { distributionParameters },
+function generateMonthlyDistributionParameters(
+  startDate: string | null,
+  endDate: string | null,
+  filters: RelayFilterGroup | undefined,
+): MetricsUniqueMonthlyQuery$variables['distributionParameters'] {
+  // Last period consists of two months ago to one month ago
+  // Current period consists of one month ago to now
+  const now = new Date();
+  now.setHours(23, 59, 59, 999);
+
+  const start = startDate ? new Date(startDate) : new Date(now);
+  start.setMonth(now.getMonth() - 2);
+
+  const mid = startDate && endDate
+    ? new Date(startDate)
+    : new Date(now);
+  mid.setMonth(now.getMonth() - 1);
+
+  const end = endDate ? new Date(endDate) : now;
+
+  // Get the user logins for last month and this current month
+  return [
+    {
+      field: 'user_id',
+      startDate: start.toISOString(),
+      endDate: mid.toISOString(),
+      filters,
+    },
+    {
+      field: 'user_id',
+      startDate: mid.toISOString(),
+      endDate: end.toISOString(),
+      filters,
+    },
+  ];
+}
+
+const MetricsUnique: React.FC<MetricsUniqueProps> = ({
+  parameters,
+  variant,
+  endDate,
+  startDate,
+  interval,
+  dataSelection,
+}) => {
+  const { t_i18n } = useFormatter();
+  const height = 300;
+  const filters = convertToRelayFilterGroup(
+    dataSelection?.[0]?.filters as InputRelayFilterGroup | undefined,
   );
+
+  // Generate distribution parameters based on interval
+  const distributionParameters = interval === 'week'
+    ? generateWeeklyDistributionParameters(startDate, endDate, filters)
+    : generateMonthlyDistributionParameters(startDate, endDate, filters);
+
+  // Use appropriate query based on interval
+  const queryRef = interval === 'week'
+    ? useQueryLoading<MetricsUniqueWeeklyQuery>(wauDataQuery, { distributionParameters })
+    : useQueryLoading<MetricsUniqueMonthlyQuery>(mauDataQuery, { distributionParameters });
+
+  // Generate default title based on interval
+  const defaultTitle = interval === 'week'
+    ? 'Weekly activity count'
+    : 'Monthly activity count';
 
   return (
     <WidgetContainer
       height={height}
-      title={t_i18n(parameters?.title?.trim()) ?? t_i18n('Weekly activity count')}
+      title={t_i18n(parameters?.title?.trim()) ?? t_i18n(defaultTitle)}
       variant={variant}
     >
       {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <MetricsWeeklyComponent queryRef={queryRef} />
+          <MetricsUniqueComponent queryRef={queryRef} interval={interval} />
         </React.Suspense>
       ) : (
         <Loader variant={LoaderVariant.inElement} />
@@ -174,4 +253,4 @@ const MetricsWeekly: React.FC<MetricsWeeklyProps> = ({
   );
 };
 
-export default MetricsWeekly;
+export default MetricsUnique;

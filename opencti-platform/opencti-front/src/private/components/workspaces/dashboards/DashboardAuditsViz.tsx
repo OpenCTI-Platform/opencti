@@ -12,10 +12,8 @@ import AuditsRadar from '@components/common/audits/AuditsRadar';
 import AuditsMultiHeatMap from '@components/common/audits/AuditsMultiHeatMap';
 import AuditsTreeMap from '@components/common/audits/AuditsTreeMap';
 import AuditsWordCloud from '@components/common/audits/AuditsWordCloud';
-import MetricsMonthlyChart from '@components/settings/metrics/MetricsMonthlyChart';
-import MetricsWeeklyChart from '@components/settings/metrics/MetricsWeeklyChart';
-import MetricsMonthly from '@components/settings/metrics/MetricsMonthly';
-import MetricsWeekly from '@components/settings/metrics/MetricsWeekly';
+import MetricsChart from '@components/settings/metrics/MetricsChart';
+import MetricsUnique from '@components/settings/metrics/MetricsUnique';
 import { computerRelativeDate, dayStartDate, formatDate } from '../../../../utils/Time';
 import type { Widget } from '../../../../utils/widget/widget';
 import { useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
@@ -64,8 +62,9 @@ const DashboardAuditsViz = ({
     case 'number':
       if (isUniqueUser && isWeekly) {
         return (
-          <MetricsWeekly
+          <MetricsUnique
             variant="inLine"
+            interval="week"
             endDate={endDate}
             startDate={startDate}
             dataSelection={dataSelection}
@@ -75,8 +74,9 @@ const DashboardAuditsViz = ({
       }
       if (isUniqueUser && isMonthly) {
         return (
-          <MetricsMonthly
+          <MetricsUnique
             variant="inLine"
+            interval="week"
             endDate={endDate}
             startDate={startDate}
             dataSelection={dataSelection}
@@ -119,8 +119,9 @@ const DashboardAuditsViz = ({
     case 'vertical-bar':
       if (isUniqueUser && isWeekly) {
         return (
-          <MetricsWeeklyChart
+          <MetricsChart
             variant="inLine"
+            interval="week"
             endDate={endDate}
             startDate={startDate}
             dataSelection={dataSelection}
@@ -130,8 +131,9 @@ const DashboardAuditsViz = ({
       }
       if (isUniqueUser && isMonthly) {
         return (
-          <MetricsMonthlyChart
+          <MetricsChart
             variant="inLine"
+            interval="month"
             endDate={endDate}
             startDate={startDate}
             dataSelection={dataSelection}
