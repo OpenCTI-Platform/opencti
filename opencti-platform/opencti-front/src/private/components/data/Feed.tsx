@@ -120,7 +120,7 @@ const Feed = () => {
     orderMode: feedState.orderAsc ? OrderMode.asc : OrderMode.desc,
   };
   return (
-    <div data-testid="csv-feeds-page">
+    <div data-testid="data-sharing-csv-feeds-page">
       <Box sx={{
         margin: 0,
         padding: '0 200px 50px 0',

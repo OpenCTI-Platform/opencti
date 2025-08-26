@@ -1598,7 +1598,7 @@ const navigateDataSharing = async (page: Page) => {
   await dataSharingPage.navigateFromMenu();
   await expect(dataSharingPage.getDataSharingPages('sharing-streams-page')).toBeVisible();
   await dataSharingPage.navigateRightMenu('CSV feeds');
-  await expect(dataSharingPage.getDataSharingPages('csv-feeds-page')).toBeVisible();
+  await expect(dataSharingPage.getDataSharingPages('data-sharing-csv-feeds-page')).toBeVisible();
   await dataSharingPage.navigateRightMenu('TAXII collections');
   await expect(dataSharingPage.getDataSharingPages('taxii-collections-page')).toBeVisible();
 };
