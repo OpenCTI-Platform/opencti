@@ -6,8 +6,8 @@ import type { Theme } from './Theme';
 
 type GradientVariant = 'default' | 'ai';
 
-const DEFAULT_START_COLOR = '#2196f3'
-const DEFAULT_END_COLOR = '#21cbf3'
+const DEFAULT_START_COLOR = '#2196f3';
+const DEFAULT_END_COLOR = '#21cbf3';
 
 const useGradient = (gradientVariant: GradientVariant) => {
   const theme = useTheme<Theme>();
@@ -27,10 +27,10 @@ const useGradient = (gradientVariant: GradientVariant) => {
       break;
   }
 
-  return { startColor, endColor };
+  return { startColor, endColor };
 };
 
-const createGradientStyles = ({ startColor, endColor, reverse = false }: { startColor?: string, endColor?: string, reverse?: boolean }) => {
+const createGradientStyles = ({ startColor, endColor, reverse = false }: { startColor?: string, endColor?: string, reverse?: boolean }) => {
   const color1 = reverse ? endColor : startColor;
   const color2 = reverse ? startColor : endColor;
   const gradient = `linear-gradient(99.95deg, ${color1} 0%, ${color2} 100%)`;
@@ -102,11 +102,11 @@ const GradientCardRoot = ({
   );
 };
 
-/***
-* 
+/** *
+*
 * GradientText
-* 
-***/
+*
+** */
 interface GradientTextProps extends TypographyProps {
   gradientVariant?: GradientVariant;
 }
@@ -127,11 +127,11 @@ const GradientText = ({ gradientVariant = 'default', sx, ...props }: GradientTex
   );
 };
 
-/***
-* 
+/** *
+*
 * GradientIcon
-* 
-***/
+*
+** */
 interface GradientIconProps {
   icon: OverridableComponent<SvgIconTypeMap> | React.ComponentType<SvgIconProps>;
   size?: 'small' | 'medium' | 'large';

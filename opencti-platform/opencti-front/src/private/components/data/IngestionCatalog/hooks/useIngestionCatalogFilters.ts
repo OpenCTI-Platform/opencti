@@ -36,7 +36,6 @@ const useIngestionCatalogFilters = ({ catalogs, searchParams }: UseIngestionCata
     if (!contract.manager_supported) return false;
 
     if (filters.search) {
-      console.log('contract', JSON.stringify(contract.description, null, 2));
       const searchMatch = contract.title.toLowerCase().includes(filters.search.toLowerCase())
         || contract.description.toLowerCase().includes(filters.search.toLowerCase());
 
