@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import type { AttributeDefinition } from '../../schema/attribute-definition';
+import { type AttributeDefinition, authorizedAuthorities } from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { RELATION_ALLOWED_BY, RELATION_IN_PIR, RELATION_PARTICIPATE_TO } from '../../schema/internalRelationship';
 
@@ -37,6 +37,7 @@ export const internalRelationshipsAttributes: { [k: string]: Array<AttributeDefi
       isFilterable: true,
       featureFlag: 'Pir',
     },
+    authorizedAuthorities,
   ],
 };
 R.forEachObjIndexed((value, key) => schemaAttributesDefinition.registerAttributes(key as string, value), internalRelationshipsAttributes);

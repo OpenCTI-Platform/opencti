@@ -3121,6 +3121,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         }
         const pirKey = splittedKey[0];
         const pirId = splittedKey[1];
+        // TODO PIR check pir accessible (elLoadById)
         // push the nested pir_score filter associated to the given PIR ID
         finalFilters.push({
           key: ['pir_information'],

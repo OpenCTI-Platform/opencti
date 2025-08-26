@@ -35,16 +35,14 @@ import { deleteInternalObject } from '../../domain/internalObject';
 import { registerConnectorForPir, unregisterConnectorForIngestion } from '../../domain/connector';
 import type { BasicStoreCommon, BasicStoreObject } from '../../types/store';
 import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
-import { createPirRel, serializePir, updatePirExplanations } from './pir-utils';
+import { createPirRelation, serializePir, updatePirExplanations } from './pir-utils';
 import { ForbiddenAccess, FunctionalError } from '../../config/errors';
 import { ABSTRACT_STIX_REF_RELATIONSHIP, ENTITY_TYPE_CONTAINER } from '../../schema/general';
-import { elRawUpdateByQuery } from '../../database/engine';
-import { READ_INDEX_HISTORY } from '../../database/utils';
 import { extractFilterKeyValues } from '../../utils/filtering/filtering-utils';
 import { INSTANCE_DYNAMIC_REGARDING_OF, INSTANCE_REGARDING_OF, OBJECT_CONTAINS_FILTER, RELATION_TO_FILTER, RELATION_TYPE_FILTER } from '../../utils/filtering/filtering-constants';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
-import { isBypassUser, MEMBER_ACCESS_ALL, MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_VIEW } from '../../utils/access';
+import { isBypassUser, MEMBER_ACCESS_ALL, MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_VIEW, PIRAPI } from '../../utils/access';
 import { RELATION_IN_PIR } from '../../schema/internalRelationship';
 
 export const findById = async (context: AuthContext, user: AuthUser, id: string) => {
@@ -123,7 +121,8 @@ export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAdd
   const finalInput = {
     ...serializePir(input),
     lastEventId: `${rescanStartDate}-0`,
-    authorized_members
+    authorized_members,
+    authorized_authorities: [PIRAPI],
   };
   const created: BasicStoreEntityPir = await createEntity(
     context,
@@ -154,24 +153,6 @@ export const deletePir = async (context: AuthContext, user: AuthUser, pirId: str
   } catch (e) {
     logApp.error('[OPENCTI] Error while unregistering Pir connector', { cause: e });
   }
-  // remove pir_ids from historic events
-  const sourceHistory = `
-    def pirIdIndex = ctx._source.context_data.pir_ids.indexOf(params.pirId);
-    if (pirIdIndex >=0 ) {
-       ctx._source.context_data.pir_ids.remove(pirIdIndex);
-    }  
-  `;
-  await elRawUpdateByQuery({
-    index: READ_INDEX_HISTORY,
-    body: {
-      script: { source: sourceHistory, params: { pirId } },
-      query: {
-        term: {
-          'context_data.pir_ids.keyword': pirId
-        }
-      },
-    },
-  });
   // delete the Pir
   return deleteInternalObject(context, user, pirId, ENTITY_TYPE_PIR);
 };
@@ -189,8 +170,8 @@ export const updatePir = async (context: AuthContext, user: AuthUser, pirId: str
 
 /**
  * Called when an event of create new relationship matches a Pir criteria.
- * If the source of the relationship is already flagged update its dependencies,
- * otherwise create a new meta relationship between the source and the PIR.
+ * If the source of the relationship is already flagged: update its dependencies,
+ * otherwise: create a new in-pir relationship between the source and the PIR.
  *
  * @param context To be able to call engine.
  * @param user User making the request.
@@ -227,14 +208,16 @@ export const pirFlagElement = async (
     if (sourceFlagged) {
       await updatePirExplanations(context, user, sourceId, pir.id, pirDependencies, EditOperation.Add);
     } else {
-      await createPirRel(context, user, sourceId, pir.id, pirDependencies);
+      await createPirRelation(context, user, sourceId, pir.id, pirDependencies);
     }
   }
   return pir.id;
 };
 
 /**
- * Called when an event of delete a relationship matches a PIR criteria.
+ * Called when a relationship delete event matches a PIR criteria.
+ * The in-pir relationship between the source and the PIR should be either deleted
+ * either updated (remove the corresponding dependency)
  *
  * @param context To be able to call engine.
  * @param user User making the request.
@@ -266,7 +249,7 @@ export const pirUnflagElement = async (
       .map((d) => d.element_id)
       .includes(relationshipId));
     if (newRelDependencies.length === 0) {
-      // delete the rel between source and PIR
+      // delete the in-pir relationship between source and PIR
       await deleteRelationsByFromAndTo(context, user, sourceId, pir.id, RELATION_IN_PIR, ABSTRACT_STIX_REF_RELATIONSHIP);
     } else if (newRelDependencies.length < relDependencies.length) {
       // update dependencies
