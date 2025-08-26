@@ -1940,7 +1940,7 @@ test('Check navigation on Locations menu', async ({ page }) => {
   await navigatePosition(page);
 });
 
-test.todo('Check navigation on Data menu', async ({ page }) => {
+test.skip('Check navigation on Data menu', async ({ page }) => {
   await page.goto('/');
   const leftBarPage = new LeftBarPage(page);
   await leftBarPage.open();
