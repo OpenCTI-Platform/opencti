@@ -7777,7 +7777,6 @@ input InternalRelationshipAddInput {
   fromId: ID
   toId: ID
   pir_explanations: [PirExplanationInput!]
-  authorized_authorities: [String]
 }
 
 enum StixObjectOrStixRelationshipsOrdering {
@@ -13630,7 +13629,6 @@ type PirRelationship implements BasicRelationship {
   creators: [Creator!]
   pir_explanations: [PirExplanation!]
   pir_score: Int
-  authorized_authorities: [String]
 }
 
 enum PirOrdering {

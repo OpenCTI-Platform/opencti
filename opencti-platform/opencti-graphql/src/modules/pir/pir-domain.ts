@@ -114,7 +114,7 @@ export const pirRelationshipsMultiTimeSeries = async (
     if (isEmptyDynamic) {
       return { data: fillTimeSeries(startDate, endDate, interval, []) };
     }
-    return { data: timeSeriesRelations(context, user, { ...args, relationship_type, ...dynamicArgs }) };
+    return { data: await timeSeriesRelations(context, user, { ...args, relationship_type, ...dynamicArgs }) };
   }));
 };
 

@@ -12083,7 +12083,6 @@ export type InternalRelationship = BasicRelationship & {
 };
 
 export type InternalRelationshipAddInput = {
-  authorized_authorities?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   fromId?: InputMaybe<Scalars['ID']['input']>;
   pir_explanations?: InputMaybe<Array<PirExplanationInput>>;
   relationship_type: Scalars['String']['input'];
@@ -20425,7 +20424,6 @@ export enum PirOrdering {
 
 export type PirRelationship = BasicRelationship & {
   __typename?: 'PirRelationship';
-  authorized_authorities?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   entity_type: Scalars['String']['output'];
@@ -42238,7 +42236,6 @@ export type PirExplanationResolvers<ContextType = any, ParentType extends Resolv
 }>;
 
 export type PirRelationshipResolvers<ContextType = any, ParentType extends ResolversParentTypes['PirRelationship'] = ResolversParentTypes['PirRelationship']> = ResolversObject<{
-  authorized_authorities?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
