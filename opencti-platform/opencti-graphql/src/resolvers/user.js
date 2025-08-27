@@ -14,7 +14,7 @@ import {
   bookmarks,
   buildCompleteUser,
   deleteBookmark,
-  findAll,
+  findAllPaginated,
   findAllMembersPaginated,
   findAllSystemMembers,
   findAssignees,
@@ -67,7 +67,7 @@ const userResolvers = {
     me: (_, __, context) => context.user,
     user: (_, { id }, context) => findById(context, context.user, id),
     otpGeneration: (_, __, context) => otpUserGeneration(context.user),
-    users: (_, args, context) => findAll(context, context.user, args),
+    users: (_, args, context) => findAllPaginated(context, context.user, args),
     role: (_, { id }, context) => findRoleById(context, context.user, id),
     roles: (_, args, context) => findRoles(context, context.user, args),
     creators: async (_, args, context) => {

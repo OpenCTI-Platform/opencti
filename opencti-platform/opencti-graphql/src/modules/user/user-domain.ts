@@ -1,8 +1,8 @@
 import { v4 as uuid } from 'uuid';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { addUser, findAll as findAllUser } from '../../domain/user';
+import { addUser, findAllPaginated as findAllUsersPaginated } from '../../domain/user';
 import { SYSTEM_USER } from '../../utils/access';
-import type { BasicGroupEntity, BasicStoreCommon } from '../../types/store';
+import type { BasicGroupEntity } from '../../types/store';
 import { findDefaultIngestionGroups } from '../../domain/group';
 import { FunctionalError, ValidationError } from '../../config/errors';
 import type { UserAddInput } from '../../generated/graphql';
@@ -12,7 +12,7 @@ import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 
 export const userAlreadyExists = async (context: AuthContext, name: string) => {
   // We use SYSTEM_USER because manage ingestion should be enough to create an ingestion Feed
-  const users = await findAllUser(context, SYSTEM_USER, {
+  const users = await findAllUsersPaginated(context, SYSTEM_USER, {
     filters: {
       mode: 'and',
       filters: [
@@ -22,10 +22,9 @@ export const userAlreadyExists = async (context: AuthContext, name: string) => {
         },
       ],
       filterGroups: [],
-    },
-    connectionFormat: false
-  }) as BasicStoreCommon[];
-  return users.length > 0;
+    }
+  });
+  return users.edges.length > 0;
 };
 
 export const createOnTheFlyUser = async (
