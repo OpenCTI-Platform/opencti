@@ -48,7 +48,7 @@ import { addFilter } from '../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { validateMarking } from '../utils/access';
 import { editAuthorizedMembers } from '../utils/authorizedMembers';
-import { checkEEAndPirAccess } from '../modules/pir/pir-checkPirAccess';
+import { getPirWithAccessCheck } from '../modules/pir/pir-checkPirAccess';
 
 export const findAll = async (context, user, args) => {
   let types = [];
@@ -110,7 +110,7 @@ export const stixDomainObjectAvatar = (stixDomainObject) => {
 
 // region PIR
 export const stixDomainObjectPirScore = async (context, user, stixDomainObject, pirId) => {
-  await checkEEAndPirAccess(context, user, pirId);
+  await getPirWithAccessCheck(context, user, pirId);
   // fetch stix domain object pir score
   const pirInformation = (stixDomainObject.pir_information ?? []).find((s) => s.pir_id === pirId);
   if (!pirInformation) return 0;
@@ -118,7 +118,7 @@ export const stixDomainObjectPirScore = async (context, user, stixDomainObject, 
 };
 
 export const stixDomainObjectLastPirScoreDate = async (context, user, stixDomainObject, pirId) => {
-  await checkEEAndPirAccess(context, user, pirId);
+  await getPirWithAccessCheck(context, user, pirId);
   // fetch stix domain object pir score
   const pirInformation = (stixDomainObject.pir_information ?? []).find((s) => s.pir_id === pirId);
   if (!pirInformation) return 0;
@@ -126,7 +126,7 @@ export const stixDomainObjectLastPirScoreDate = async (context, user, stixDomain
 };
 
 export const stixDomainObjectsPirExplanations = async (context, user, stixDomainObject, pirId) => {
-  await checkEEAndPirAccess(context, user, pirId);
+  await getPirWithAccessCheck(context, user, pirId);
   // retrieve in-pir relationship
   const inPirRelations = await listRelations(context, user, RELATION_IN_PIR, {
     connectionFormat: false,

@@ -198,7 +198,7 @@ import { lockResources } from '../lock/master-lock';
 import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_UPDATE_LINKED } from '../modules/draftWorkspace/draftOperations';
 import { RELATION_SAMPLE } from '../modules/malwareAnalysis/malwareAnalysis-types';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
-import { checkEEAndPirAccess } from '../modules/pir/pir-checkPirAccess';
+import { getPirWithAccessCheck } from '../modules/pir/pir-checkPirAccess';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -1203,7 +1203,7 @@ export const elConfigureAttachmentProcessor = async () => {
   }
   return success;
 };
-export const elDeleteIndex = async (indexName) => {
+export const elDeleteIndex = async (indexName) => { // TODO PIR function at level up with alias, and look for all the indexes
   try {
     const response = await engine.indices.delete({ index: indexName });
     logApp.info(`Index '${indexName}' deleted successfully.`, response);
@@ -3131,7 +3131,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         const pirKey = splittedKey[0];
         const pirId = splittedKey[1];
         // check the user has access to the PIR
-        await checkEEAndPirAccess(context, user, pirId);
+        await getPirWithAccessCheck(context, user, pirId);
         // push the nested pir_score filter associated to the given PIR ID
         finalFilters.push({
           key: ['pir_information'],

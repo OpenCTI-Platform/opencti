@@ -47,7 +47,7 @@ import { registerConnectorForPir, unregisterConnectorForIngestion } from '../../
 import type { BasicStoreCommon, BasicStoreObject } from '../../types/store';
 import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
 import { createPirRelation, serializePir, updatePirExplanations } from './pir-utils';
-import { checkEEAndPirAccess } from './pir-checkPirAccess';
+import { getPirWithAccessCheck } from './pir-checkPirAccess';
 import { ForbiddenAccess, FunctionalError } from '../../config/errors';
 import { ABSTRACT_STIX_REF_RELATIONSHIP, ENTITY_TYPE_CONTAINER } from '../../schema/general';
 import { extractFilterKeyValues } from '../../utils/filtering/filtering-utils';
@@ -78,7 +78,7 @@ export const findAllPirRelations = async (
   if (!toId || toId.length !== 1) {
     throw FunctionalError('You should provide exactly 1 Pir ID since in-pir relationships can only be fetch for a given PIR.', { toId });
   }
-  await checkEEAndPirAccess(context, user, toId[0]);
+  await getPirWithAccessCheck(context, user, toId[0]);
   return listRelationsPaginated<BasicStoreRelationPir>(context, user, RELATION_IN_PIR, opts as RelationOptions<BasicStoreRelationPir>);
 };
 
@@ -92,7 +92,7 @@ export const pirRelationshipsDistribution = async (
   if (!toId || toId.length !== 1) {
     throw FunctionalError('You should provide exactly 1 Pir ID since in-pir relationships distribution can only be fetch for a given PIR.', { toId });
   }
-  await checkEEAndPirAccess(context, user, toId[0]);
+  await getPirWithAccessCheck(context, user, toId[0]);
   const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, { ...args, relationship_type });
   if (isEmptyDynamic) {
     return [];
@@ -251,11 +251,7 @@ export const pirFlagElement = async (
   if (!isBypassUser(user)) {
     throw ForbiddenAccess();
   }
-  await checkEnterpriseEdition(context);
-  const pir = await storeLoadById<BasicStoreEntityPir>(context, user, pirStandardId, ENTITY_TYPE_PIR);
-  if (!pir) {
-    throw FunctionalError('No PIR found');
-  }
+  const pir = await getPirWithAccessCheck(context, user, pirStandardId);
 
   const { relationshipId, sourceId, matchingCriteria, relationshipAuthorId } = input;
   const source = await internalLoadById<BasicStoreCommon>(context, user, sourceId);
@@ -297,11 +293,8 @@ export const pirUnflagElement = async (
   if (!isBypassUser(user)) {
     throw ForbiddenAccess();
   }
-  await checkEnterpriseEdition(context);
-  const pir = await storeLoadById<BasicStoreEntityPir>(context, user, pirStandardId, ENTITY_TYPE_PIR);
-  if (!pir) {
-    throw FunctionalError('No PIR found');
-  }
+  const pir = await getPirWithAccessCheck(context, user, pirStandardId);
+
   const { relationshipId, sourceId } = input;
   // fetch in-pir rels between the entity and the pir
   const rels = await listRelations(context, user, RELATION_IN_PIR, { fromId: sourceId, toId: pir.id, connectionFormat: false });

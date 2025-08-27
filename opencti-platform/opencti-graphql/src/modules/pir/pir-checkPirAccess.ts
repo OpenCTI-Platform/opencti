@@ -1,21 +1,27 @@
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { ENTITY_TYPE_PIR } from './pir-types';
-import { getEntityFromIdFromCache } from '../../database/cache';
+import { type BasicStoreEntityPir, ENTITY_TYPE_PIR } from './pir-types';
+import { getEntitiesMapFromCache } from '../../database/cache';
 import { FunctionalError } from '../../config/errors';
+import { isUserCanAccessStoreElement } from '../../utils/access';
 
 /**
- * Helper function to check a user has access to a pir functionnalities
+ * Helper function to check a user has access to a pir
+ * and return the pir
  */
-export const checkEEAndPirAccess = async (context: AuthContext, user: AuthUser, pirId?: string | null) => {
+export const getPirWithAccessCheck = async (context: AuthContext, user: AuthUser, pirId?: string | null) => {
   // check EE
   await checkEnterpriseEdition(context);
   // check user has access to the PIR
   if (!pirId) {
     throw FunctionalError('No Pir ID provided');
   }
-  const pir = await getEntityFromIdFromCache(context, user, pirId, ENTITY_TYPE_PIR);
+  const pirs = await getEntitiesMapFromCache<BasicStoreEntityPir>(context, user, ENTITY_TYPE_PIR);
+  const pir = pirs.get(pirId);
   if (!pir) {
     throw FunctionalError('No PIR found', { pirId });
   }
+  console.log('pir', pir);
+  await isUserCanAccessStoreElement(context, user, pir);
+  return pir;
 };

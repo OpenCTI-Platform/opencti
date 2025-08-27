@@ -161,7 +161,7 @@ type Query {
         fromId: [String]
         fromRole: String
         fromTypes: [String]
-        toId: [String]
+        toId: [String] #TODO PIR
         toRole: String
         toTypes: [String]
         relationship_type: [String]

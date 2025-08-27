@@ -13,7 +13,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import { type BasicStoreEntityPir, type BasicStoreRelationPir, ENTITY_TYPE_PIR, type ParsedPir, type PirExplanation } from './pir-types';
+import { type BasicStoreEntityPir, type BasicStoreRelationPir, type ParsedPir, type PirExplanation } from './pir-types';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { listRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
 import { RELATION_IN_PIR } from '../../schema/internalRelationship';
@@ -27,6 +27,7 @@ import { RELATION_FROM_TYPES_FILTER } from '../../utils/filtering/filtering-cons
 import { elUpdate } from '../../database/engine';
 import { INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
 import type { BasicStoreEntity } from '../../types/store';
+import { getPirWithAccessCheck } from './pir-checkPirAccess';
 
 /**
  * Helper function to parse filters that are saved as string in elastic.
@@ -90,7 +91,7 @@ export const constructFinalPirFilters = (pirType: PirType, pirFilters: FilterGro
  * @returns An integer between 0 and 100.
  */
 export const computePirScore = async (context: AuthContext, user: AuthUser, pirId: string, explanations: PirExplanation[]) => {
-  const pir = await storeLoadById<BasicStoreEntityPir>(context, user, pirId, ENTITY_TYPE_PIR);
+  const pir = await getPirWithAccessCheck(context, user, pirId);
   const maxScore = pir.pir_criteria.reduce((acc, val) => acc + val.weight, 0);
   const depScore = explanations.reduce((acc, val) => acc + val.criterion.weight, 0);
   if (maxScore <= 0) return 0;

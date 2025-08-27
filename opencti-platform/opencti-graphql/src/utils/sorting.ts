@@ -1,6 +1,6 @@
 import { isDateNumericOrBooleanAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
 import { FunctionalError, UnsupportedError } from '../config/errors';
-import { checkEEAndPirAccess } from '../modules/pir/pir-checkPirAccess';
+import { getPirWithAccessCheck } from '../modules/pir/pir-checkPirAccess';
 import type { AuthContext, AuthUser } from '../types/user';
 
 const PIR_ORDERING_CRITERIA = ['pir_score', 'last_pir_score_date'];
@@ -19,7 +19,7 @@ export const buildElasticSortingForAttributeCriteria = async (
       throw FunctionalError('You should provide a PIR ID to order by pir_score.');
     }
     // check the user has access to the PIR
-    await checkEEAndPirAccess(context, user, pirId);
+    await getPirWithAccessCheck(context, user, pirId);
     // return nested order criteria associated to the given PIR ID
     return { [`pir_information.${orderCriteria}`]: {
       order: orderMode,
