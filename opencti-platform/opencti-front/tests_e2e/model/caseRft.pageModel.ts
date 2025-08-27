@@ -5,7 +5,7 @@ export default class CaseRftPage {
   constructor(private page: Page) {}
 
   getCaseRftFormCreate() {
-    return this.page.getByRole('button', { name: 'Create a request for takedown' });
+    return this.page.getByRole('button', { name: 'Create Request for takedown' });
   }
 
   getItemFromList(name: string) {
