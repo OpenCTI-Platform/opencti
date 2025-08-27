@@ -124,13 +124,14 @@ export const stixRelationshipsNumber = async (context, user, args) => {
   };
 };
 export const stixRelationshipsMultiTimeSeries = async (context, user, args) => {
+  const relationship_type = buildRelationshipTypes(args.relationship_type);
   return Promise.all(args.timeSeriesParameters.map(async (timeSeriesParameter) => {
     const { startDate, endDate, interval } = args;
     const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, timeSeriesParameter);
     if (isEmptyDynamic) {
       return { data: fillTimeSeries(startDate, endDate, interval, []) };
     }
-    return { data: timeSeriesRelations(context, user, { ...args, ...dynamicArgs }) };
+    return { data: timeSeriesRelations(context, user, { ...args, relationship_type, ...dynamicArgs }) };
   }));
 };
 // endregion
