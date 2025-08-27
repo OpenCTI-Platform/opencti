@@ -15,12 +15,13 @@ class MessageQueueConsumer:  # pylint: disable=too-many-instance-attributes
     pika_parameters: pika.ConnectionParameters
     execution_pool: ThreadPoolExecutor
     handle_message: Callable[[str], Literal["ack", "nack", "requeue"]]
+    queue_concurrency_enabled: bool
     should_stop: bool = field(default=False, init=False)
 
     def __post_init__(self) -> None:
         self.pika_connection = pika.BlockingConnection(self.pika_parameters)
         self.channel = self.pika_connection.channel()
-        self.channel.basic_qos(prefetch_count=1)
+        self.channel.basic_qos(prefetch_count=(self.execution_pool._max_workers + 1) if self.queue_concurrency_enabled else 1)
         self.thread = Thread(target=self.consume_queue, name=self.queue_name)
         self.thread.start()
 
@@ -83,9 +84,10 @@ class MessageQueueConsumer:  # pylint: disable=too-many-instance-attributes
                     method.delivery_tag,
                     body,
                 )
-                while task_future.running():  # Loop while the thread is processing
-                    self.pika_connection.sleep(0.05)
-                self.logger.info("Message processed, thread terminated")
+                if not self.queue_concurrency_enabled:
+                    while task_future.running():  # Loop while the thread is processing
+                        self.pika_connection.sleep(0.05)
+                    self.logger.info("Message processed, thread terminated")
         except Exception as e:
             self.logger.error("Unhandled exception", {"exception": e})
         finally:
