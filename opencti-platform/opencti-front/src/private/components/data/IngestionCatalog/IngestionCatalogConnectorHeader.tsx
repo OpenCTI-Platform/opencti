@@ -7,7 +7,6 @@ import { ingestionConnectorTypeMetadata } from '@components/data/IngestionCatalo
 import IngestionCatalogChip from '@components/data/IngestionCatalog/IngestionCatalogUseCaseChip';
 import IngestionCatalogConnectorCreation from '@components/data/IngestionCatalog/IngestionCatalogConnectorCreation';
 import { IngestionConnector } from '@components/data/IngestionCatalog';
-import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
 import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
@@ -28,8 +27,6 @@ const IngestionCatalogConnectorHeader = ({ connector, catalogId, isEnterpriseEdi
 
   return (
     <>
-      {!isEnterpriseEdition && <EnterpriseEdition />}
-
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: theme.spacing(2) }}>
         <div style={{ display: 'flex', gap: 20 }}>
           <img style={{ height: 70, width: 70, objectFit: 'cover', borderRadius: 4 }} src={connector.logo} alt={connector.title} />

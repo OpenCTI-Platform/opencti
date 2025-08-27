@@ -3,7 +3,6 @@ import IngestionMenu from '@components/data/IngestionMenu';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { IngestionCatalogQuery } from '@components/data/__generated__/IngestionCatalogQuery.graphql';
 import IngestionCatalogCard, { IngestionConnectorType } from '@components/data/IngestionCatalog/IngestionCatalogCard';
-import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
@@ -116,12 +115,10 @@ const IngestionCatalogComponent = ({
 
   return (
     <>
-
       <IngestionMenu />
       <PageContainer withRightMenu withGap>
         <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('Connector catalog'), current: true }]} />
 
-        {!isEnterpriseEdition && <EnterpriseEdition />}
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <SearchInput disabled />
           <GradientButton
@@ -134,6 +131,7 @@ const IngestionCatalogComponent = ({
             {t_i18n('Browse more').toUpperCase()}
           </GradientButton>
         </div>
+
         {catalogsParsed.map((catalog) => {
           return catalog.contracts.length > 0 && (
             <ListCardsContent
