@@ -33,15 +33,7 @@ import {
 } from '../database/middleware-loader';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { killUserSessions } from '../database/session';
-import {
-  buildPagination,
-  isEmptyField,
-  isNotEmptyField,
-  MAX_EVENT_LOOP_PROCESSING_TIME,
-  READ_INDEX_INTERNAL_OBJECTS,
-  READ_INDEX_STIX_DOMAIN_OBJECTS,
-  READ_RELATIONSHIPS_INDICES
-} from '../database/utils';
+import { buildPagination, isEmptyField, isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_RELATIONSHIPS_INDICES } from '../database/utils';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { publishUserAction } from '../listener/UserActionListener';
 import { authorizedMembers } from '../schema/attribute-definition';
@@ -91,6 +83,7 @@ import { addServiceAccountIntoUserCount, addUserIntoServiceAccountCount, addUser
 import { sendMail } from '../database/smtp';
 import { checkEnterpriseEdition } from '../enterprise-edition/ee';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
+import { doYield } from '../utils/eventloop-utils';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -1439,8 +1432,8 @@ export const buildCompleteUsers = async (context, clients) => {
   const groupsRoles = new Map();
   const groupsMarkings = new Map();
   const rolesCapabilities = new Map();
-  let startProcessingTime = new Date().getTime();
   for (let index = 0; index < relations.length; index += 1) {
+    await doYield();
     const { fromId, entity_type, toId } = relations[index];
     // group <- RELATION_ACCESSES_TO -> marking
     if (entity_type === RELATION_ACCESSES_TO) {
@@ -1502,13 +1495,6 @@ export const buildCompleteUsers = async (context, clients) => {
       } else {
         groupsRoles.set(fromId, [toId]);
       }
-    }
-    // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
-    if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
-      startProcessingTime = new Date().getTime();
-      await new Promise((resolve) => {
-        setImmediate(resolve);
-      });
     }
   }
   const ids = [...Array.from(groupIds), ...Array.from(roleIds), ...Array.from(organizationIds), ...Array.from(capabilityIds)];
