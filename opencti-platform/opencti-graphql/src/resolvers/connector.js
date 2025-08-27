@@ -92,7 +92,7 @@ const connectorResolvers = {
     manager_connector_logs: (cn) => redisGetConnectorLogs(cn.id),
     manager_contract_hash: (cn, _, context) => computeManagerContractHash(context, context.user, cn),
     manager_contract_definition: (cn, _, context) => computeManagerConnectorContract(context, context.user, cn),
-    manager_contract_configuration: (cn, _, context) => computeManagerConnectorConfiguration(context, context.user, cn),
+    manager_contract_configuration: (cn, _, context) => computeManagerConnectorConfiguration(context, context.user, cn, true),
     manager_contract_image: (cn) => computeManagerConnectorImage(cn),
   },
   ManagedConnector: {

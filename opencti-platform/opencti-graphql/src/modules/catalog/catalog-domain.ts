@@ -107,7 +107,10 @@ export const computeConnectorTargetContract = (
     const currentConnectorConfig = currentManagerContractConfiguration?.find((c) => c.key === propKey);
 
     if (!currentConfig) {
-      if (targetConfig.properties[propKey].default) {
+      // If value isn't set in input but is already set in config, keep the config value
+      if (currentConnectorConfig) {
+        contractConfigurations.push(currentConnectorConfig);
+      } else if (targetConfig.properties[propKey].default) {
         contractConfigurations.push(({ key: propKey, value: targetConfig.properties[propKey].default }));
       }
     } else if (targetConfig.properties[propKey].type !== 'array' && currentConfig.value) {
@@ -115,11 +118,7 @@ export const computeConnectorTargetContract = (
       // If value is already configured and has the same value, keep it
       // This prevents re-encrypting already encrypted values
       if (currentConfig.value[0] === currentConnectorConfig?.value) {
-        contractConfigurations.push({
-          key: propKey,
-          value: currentConnectorConfig.value,
-          ...(isPassword && { encrypted: true }),
-        });
+        contractConfigurations.push(currentConnectorConfig);
       } else {
         const rawValue = currentConfig.value[0];
         const finalValue = isPassword ? encryptValue(publicKey, rawValue) : rawValue;

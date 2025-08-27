@@ -4053,6 +4053,7 @@ export type ConnectorManager = BasicObject & InternalObject & {
   last_sync_execution?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   parent_types: Array<Maybe<Scalars['String']['output']>>;
+  public_key: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
 };
 
@@ -36772,6 +36773,7 @@ export type ConnectorManagerResolvers<ContextType = any, ParentType extends Reso
   last_sync_execution?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  public_key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
