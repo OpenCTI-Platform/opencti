@@ -73,12 +73,6 @@ type InPirRelationship implements BasicRelationship {
     authorized_authorities: [String]
 }
 
-type InPirRelationshipDistribution {
-    label: String!
-    entity: InPirRelationship
-    value: Int
-}
-
 # Ordering
 enum PirOrdering {
     name
@@ -178,7 +172,7 @@ type Query {
         dynamicFrom: FilterGroup
         dynamicTo: FilterGroup
         aggregateOnConnections: Boolean
-    ): [InPirRelationshipDistribution] @auth(for: [PIRAPI])
+    ): [Distribution] @auth(for: [PIRAPI])
 }
 
 # Mutations inputs

@@ -60,8 +60,24 @@ export const inPirRelationshipsDonutsDistributionQuery = graphql`
       label
       value
       entity {
-        id
-        entity_type
+        ... on BasicObject {
+          id
+          entity_type
+        }
+        ... on BasicRelationship {
+          id
+          entity_type
+        }
+        ... on StixObject {
+          representative {
+            main
+          }
+        }
+        ... on StixRelationship {
+          representative {
+            main
+          }
+        }
       }
     }
   }

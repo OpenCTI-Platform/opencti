@@ -10471,13 +10471,6 @@ export type InPirRelationshipConnection = {
   pageInfo: PageInfo;
 };
 
-export type InPirRelationshipDistribution = {
-  __typename?: 'InPirRelationshipDistribution';
-  entity?: Maybe<InPirRelationship>;
-  label: Scalars['String']['output'];
-  value?: Maybe<Scalars['Int']['output']>;
-};
-
 export type InPirRelationshipEdge = {
   __typename?: 'InPirRelationshipEdge';
   cursor: Scalars['String']['output'];
@@ -21381,7 +21374,7 @@ export type Query = {
   identity?: Maybe<Identity>;
   importFiles?: Maybe<FileConnection>;
   inPirRelationships?: Maybe<InPirRelationshipConnection>;
-  inPirRelationshipsDistribution?: Maybe<Array<Maybe<InPirRelationshipDistribution>>>;
+  inPirRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   incident?: Maybe<Incident>;
   incidents?: Maybe<IncidentConnection>;
   incidentsTimeSeries?: Maybe<Array<Maybe<TimeSeries>>>;
@@ -34296,7 +34289,6 @@ export type ResolversTypes = ResolversObject<{
   ImportWidgetInput: ImportWidgetInput;
   InPirRelationship: ResolverTypeWrapper<Omit<InPirRelationship, 'from' | 'to'> & { from?: Maybe<ResolversTypes['InternalObject']>, to?: Maybe<ResolversTypes['InternalObject']> }>;
   InPirRelationshipConnection: ResolverTypeWrapper<Omit<InPirRelationshipConnection, 'edges'> & { edges: Array<ResolversTypes['InPirRelationshipEdge']> }>;
-  InPirRelationshipDistribution: ResolverTypeWrapper<Omit<InPirRelationshipDistribution, 'entity'> & { entity?: Maybe<ResolversTypes['InPirRelationship']> }>;
   InPirRelationshipEdge: ResolverTypeWrapper<Omit<InPirRelationshipEdge, 'node'> & { node: ResolversTypes['InPirRelationship'] }>;
   InPirRelationshipOrdering: InPirRelationshipOrdering;
   Incident: ResolverTypeWrapper<Omit<Incident, 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { avatar?: Maybe<ResolversTypes['OpenCtiFile']>, cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, status?: Maybe<ResolversTypes['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
@@ -35238,7 +35230,6 @@ export type ResolversParentTypes = ResolversObject<{
   ImportWidgetInput: ImportWidgetInput;
   InPirRelationship: Omit<InPirRelationship, 'from' | 'to'> & { from?: Maybe<ResolversParentTypes['InternalObject']>, to?: Maybe<ResolversParentTypes['InternalObject']> };
   InPirRelationshipConnection: Omit<InPirRelationshipConnection, 'edges'> & { edges: Array<ResolversParentTypes['InPirRelationshipEdge']> };
-  InPirRelationshipDistribution: Omit<InPirRelationshipDistribution, 'entity'> & { entity?: Maybe<ResolversParentTypes['InPirRelationship']> };
   InPirRelationshipEdge: Omit<InPirRelationshipEdge, 'node'> & { node: ResolversParentTypes['InPirRelationship'] };
   Incident: Omit<Incident, 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { avatar?: Maybe<ResolversParentTypes['OpenCtiFile']>, cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, status?: Maybe<ResolversParentTypes['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   IncidentAddInput: IncidentAddInput;
@@ -39289,13 +39280,6 @@ export type InPirRelationshipConnectionResolvers<ContextType = any, ParentType e
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type InPirRelationshipDistributionResolvers<ContextType = any, ParentType extends ResolversParentTypes['InPirRelationshipDistribution'] = ResolversParentTypes['InPirRelationshipDistribution']> = ResolversObject<{
-  entity?: Resolver<Maybe<ResolversTypes['InPirRelationship']>, ParentType, ContextType>;
-  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  value?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
 export type InPirRelationshipEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['InPirRelationshipEdge'] = ResolversParentTypes['InPirRelationshipEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['InPirRelationship'], ParentType, ContextType>;
@@ -42727,7 +42711,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   identity?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType, RequireFields<QueryIdentityArgs, 'id'>>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<QueryImportFilesArgs>>;
   inPirRelationships?: Resolver<Maybe<ResolversTypes['InPirRelationshipConnection']>, ParentType, ContextType, Partial<QueryInPirRelationshipsArgs>>;
-  inPirRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['InPirRelationshipDistribution']>>>, ParentType, ContextType, RequireFields<QueryInPirRelationshipsDistributionArgs, 'field' | 'operation'>>;
+  inPirRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryInPirRelationshipsDistributionArgs, 'field' | 'operation'>>;
   incident?: Resolver<Maybe<ResolversTypes['Incident']>, ParentType, ContextType, Partial<QueryIncidentArgs>>;
   incidents?: Resolver<Maybe<ResolversTypes['IncidentConnection']>, ParentType, ContextType, Partial<QueryIncidentsArgs>>;
   incidentsTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryIncidentsTimeSeriesArgs, 'endDate' | 'field' | 'interval' | 'operation' | 'startDate'>>;
@@ -46406,7 +46390,6 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   IdentityEditMutations?: IdentityEditMutationsResolvers<ContextType>;
   InPirRelationship?: InPirRelationshipResolvers<ContextType>;
   InPirRelationshipConnection?: InPirRelationshipConnectionResolvers<ContextType>;
-  InPirRelationshipDistribution?: InPirRelationshipDistributionResolvers<ContextType>;
   InPirRelationshipEdge?: InPirRelationshipEdgeResolvers<ContextType>;
   Incident?: IncidentResolvers<ContextType>;
   IncidentConnection?: IncidentConnectionResolvers<ContextType>;
