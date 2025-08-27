@@ -14,6 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import { now } from 'moment';
+import * as R from 'ramda';
 import type { AuthContext, AuthUser } from '../../types/user';
 import {
   type EntityOptions,
@@ -74,26 +75,26 @@ export const findAllPirRelations = async (
   user: AuthUser,
   opts: QueryPirRelationshipsArgs,
 ) => {
-  const { toId } = opts;
-  if (!toId || toId.length !== 1) {
-    throw FunctionalError('You should provide exactly 1 Pir ID since in-pir relationships can only be fetch for a given PIR.', { toId });
+  const { pirId } = opts;
+  if (!pirId) {
+    throw FunctionalError('You should provide a Pir ID since in-pir relationships can only be fetch for a given PIR.', { pirId });
   }
-  await getPirWithAccessCheck(context, user, toId[0]);
-  return listRelationsPaginated<BasicStoreRelationPir>(context, user, RELATION_IN_PIR, opts as RelationOptions<BasicStoreRelationPir>);
+  await getPirWithAccessCheck(context, user, pirId);
+  return listRelationsPaginated<BasicStoreRelationPir>(context, user, RELATION_IN_PIR, { ...R.dissoc('pirId', opts), toId: [pirId] } as RelationOptions<BasicStoreRelationPir>);
 };
 
 export const pirRelationshipsDistribution = async (
   context: AuthContext,
   user: AuthUser,
-  args: QueryPirRelationshipsDistributionArgs,
+  opts: QueryPirRelationshipsDistributionArgs,
 ) => {
   const relationship_type = [RELATION_IN_PIR];
-  const { toId } = args;
-  if (!toId || toId.length !== 1) {
-    throw FunctionalError('You should provide exactly 1 Pir ID since in-pir relationships distribution can only be fetch for a given PIR.', { toId });
+  const { pirId } = opts;
+  if (!pirId) {
+    throw FunctionalError('You should provide exactly a Pir ID since in-pir relationships distribution can only be fetch for a given PIR.', { pirId });
   }
-  await getPirWithAccessCheck(context, user, toId[0]);
-  const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, { ...args, relationship_type });
+  await getPirWithAccessCheck(context, user, pirId);
+  const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, { ...R.dissoc('pirId', opts), relationship_type, toId: [pirId] });
   if (isEmptyDynamic) {
     return [];
   }
@@ -111,7 +112,9 @@ export const pirRelationshipsMultiTimeSeries = async (
   }
   return Promise.all(args.timeSeriesParameters.map(async (timeSeriesParameter) => {
     const { startDate, endDate, interval } = args;
-    const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, timeSeriesParameter);
+    const { pirId } = timeSeriesParameter;
+    await getPirWithAccessCheck(context, user, pirId);
+    const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, { ...R.dissoc('pirId', timeSeriesParameter), toId: [pirId] });
     if (isEmptyDynamic) {
       return { data: fillTimeSeries(startDate, endDate, interval, []) };
     }

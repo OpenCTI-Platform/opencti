@@ -61,7 +61,7 @@ const PirOverviewTopSources = ({ data }: PirOverviewTopSourcesProps) => {
       attribute: 'pir_explanations.dependencies.author_id',
       isTo: false,
       relationship_type: 'in-pir',
-      toId: [id],
+      pirId: id,
     },
   ];
 

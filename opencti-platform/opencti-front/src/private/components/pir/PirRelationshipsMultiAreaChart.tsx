@@ -1,3 +1,18 @@
+/*
+Copyright (c) 2021-2025 Filigran SAS
+
+This file is part of the OpenCTI Enterprise Edition ("EE") and is
+licensed under the OpenCTI Enterprise Edition License (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*/
+
 import React from 'react';
 import { graphql } from 'react-relay';
 import { PirRelationshipsMultiAreaChartTimeSeriesQuery$data } from '@components/pir/__generated__/PirRelationshipsMultiAreaChartTimeSeriesQuery.graphql';
@@ -9,7 +24,7 @@ import WidgetContainer from '../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../components/dashboard/WidgetNoData';
 import WidgetMultiAreas from '../../../components/dashboard/WidgetMultiAreas';
 import Loader, { LoaderVariant } from '../../../components/Loader';
-import type { WidgetDataSelection, WidgetParameters } from '../../../utils/widget/widget';
+import type { PirWidgetDataSelection, WidgetParameters } from '../../../utils/widget/widget';
 
 const pirRelationshipsMultiAreaChartTimeSeriesQuery = graphql`
   query PirRelationshipsMultiAreaChartTimeSeriesQuery(
@@ -18,7 +33,7 @@ const pirRelationshipsMultiAreaChartTimeSeriesQuery = graphql`
     $endDate: DateTime!
     $interval: String!
     $relationship_type: [String!]
-    $timeSeriesParameters: [StixRelationshipsTimeSeriesParameters]
+    $timeSeriesParameters: [PirRelationshipsTimeSeriesParameters]
   ) {
     pirRelationshipsMultiTimeSeries(
       operation: $operation
@@ -37,7 +52,7 @@ const pirRelationshipsMultiAreaChartTimeSeriesQuery = graphql`
 `;
 
 interface PirRelationshipsMultiAreaChartProps {
-  dataSelection: WidgetDataSelection[],
+  dataSelection: PirWidgetDataSelection[],
   parameters: WidgetParameters,
   relationshipTypes: string[],
   variant?: string,
@@ -75,6 +90,7 @@ const PirRelationshipsMultiAreaChart = ({
         filters,
         dynamicFrom: selection.dynamicFrom,
         dynamicTo: selection.dynamicTo,
+        pirId: selection.pirId,
       };
     });
 

@@ -21,7 +21,6 @@ export const getPirWithAccessCheck = async (context: AuthContext, user: AuthUser
   if (!pir) {
     throw FunctionalError('No PIR found', { pirId });
   }
-  console.log('pir', pir);
   await isUserCanAccessStoreElement(context, user, pir);
   return pir;
 };

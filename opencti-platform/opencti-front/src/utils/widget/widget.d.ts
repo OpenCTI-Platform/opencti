@@ -58,3 +58,7 @@ export interface Widget {
   parameters?: WidgetParameters | null
   layout?: WidgetLayout | null
 }
+
+interface PirWidgetDataSelection extends WidgetDataSelection {
+  pirId: string,
+}

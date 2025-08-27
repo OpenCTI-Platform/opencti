@@ -1,3 +1,18 @@
+/*
+Copyright (c) 2021-2025 Filigran SAS
+
+This file is part of the OpenCTI Enterprise Edition ("EE") and is
+licensed under the OpenCTI Enterprise Edition License (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*/
+
 import React from 'react';
 import { graphql } from 'react-relay';
 import { PirRelationshipsDonutDistributionQuery$data } from './__generated__/PirRelationshipsDonutDistributionQuery.graphql';
@@ -7,11 +22,12 @@ import Loader, { LoaderVariant } from '../../../components/Loader';
 import WidgetContainer from '../../../components/dashboard/WidgetContainer';
 import { QueryRenderer } from '../../../relay/environment';
 import { buildFiltersAndOptionsForWidgets } from '../../../utils/filters/filtersUtils';
-import type { WidgetDataSelection, WidgetParameters } from '../../../utils/widget/widget';
+import type { PirWidgetDataSelection, WidgetParameters } from '../../../utils/widget/widget';
 import { useFormatter } from '../../../components/i18n';
 
 export const pirRelationshipsDonutsDistributionQuery = graphql`
   query PirRelationshipsDonutDistributionQuery(
+    $pirId: ID!
     $field: String!
     $operation: StatsOperation!
     $startDate: DateTime
@@ -19,22 +35,15 @@ export const pirRelationshipsDonutsDistributionQuery = graphql`
     $dateAttribute: String
     $isTo: Boolean
     $limit: Int
-    $fromOrToId: [String]
-    $elementWithTargetTypes: [String]
     $fromId: [String]
-    $fromRole: String
     $fromTypes: [String]
-    $toId: [String]
-    $toRole: String
-    $toTypes: [String]
     $relationship_type: [String]
-    $confidences: [Int]
     $search: String
     $filters: FilterGroup
     $dynamicFrom: FilterGroup
-    $dynamicTo: FilterGroup
   ) {
     pirRelationshipsDistribution(
+      pirId: $pirId
       field: $field
       operation: $operation
       startDate: $startDate
@@ -42,20 +51,12 @@ export const pirRelationshipsDonutsDistributionQuery = graphql`
       dateAttribute: $dateAttribute
       isTo: $isTo
       limit: $limit
-      fromOrToId: $fromOrToId
-      elementWithTargetTypes: $elementWithTargetTypes
       fromId: $fromId
-      fromRole: $fromRole
       fromTypes: $fromTypes
-      toId: $toId
-      toRole: $toRole
-      toTypes: $toTypes
       relationship_type: $relationship_type
-      confidences: $confidences
       search: $search
       filters: $filters
       dynamicFrom: $dynamicFrom
-      dynamicTo: $dynamicTo
     ) {
       label
       value
@@ -90,7 +91,7 @@ interface PirRelationshipsDonutProps {
   field?: string,
   startDate: string | null,
   endDate: string | null,
-  dataSelection: WidgetDataSelection[],
+  dataSelection: PirWidgetDataSelection[],
   parameters?: WidgetParameters,
   withExportPopover?: boolean,
   isReadOnly?: boolean,

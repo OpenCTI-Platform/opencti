@@ -39,20 +39,7 @@ const PirOverviewCountFlagged = ({ data }: PirOverviewCountFlaggedProps) => {
   const dataSelection = [
     {
       field: 'created_at',
-      filters: {
-        mode: 'and',
-        filters: [
-          {
-            key: 'relationship_type',
-            values: ['in-pir'],
-          },
-          {
-            key: 'toId',
-            values: [id],
-          },
-        ],
-        filterGroups: [],
-      },
+      pirId: id,
     },
   ];
 

@@ -51,13 +51,13 @@ const countsFragment = graphql`
 `;
 
 const countsQuery = graphql`
-  query PirOverviewCountsQuery($toId: [String], $startDate: DateTime) {
+  query PirOverviewCountsQuery($pirId: ID!, $startDate: DateTime) {
     pirRelationshipsDistribution(
       field: "entity_type",
       operation: count,
       startDate: $startDate
       relationship_type: "in-pir"
-      toId: $toId
+      pirId: $pirId
     ) {
       label
       value
@@ -182,11 +182,11 @@ const PirOverviewCounts = ({ data }: PirOverviewCountsProps) => {
 
   const countsQueryRef = useQueryLoading<PirOverviewCountsQuery>(
     countsQuery,
-    { toId: [pirId] },
+    { pirId },
   );
   const counts24hQueryRef = useQueryLoading<PirOverviewCountsQuery>(
     countsQuery,
-    { toId: [pirId], startDate: dayAgo() },
+    { pirId, startDate: dayAgo() },
   );
 
   return (

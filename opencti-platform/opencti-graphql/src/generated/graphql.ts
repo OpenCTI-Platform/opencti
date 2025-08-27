@@ -20457,6 +20457,19 @@ export enum PirRelationshipOrdering {
   UpdatedAt = 'updated_at'
 }
 
+export type PirRelationshipsTimeSeriesParameters = {
+  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  dynamicFrom?: InputMaybe<FilterGroup>;
+  elementWithTargetTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  field: Scalars['String']['input'];
+  filters?: InputMaybe<FilterGroup>;
+  fromId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  pirId: Scalars['ID']['input'];
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type PirScore = {
   __typename?: 'PirScore';
   pir_id: Scalars['ID']['output'];
@@ -23078,7 +23091,6 @@ export type QueryPirRelationshipsArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
   confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
   dynamicFrom?: InputMaybe<FilterGroup>;
-  dynamicTo?: InputMaybe<FilterGroup>;
   elementWithTargetTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   endDate?: InputMaybe<Scalars['DateTime']['input']>;
   filters?: InputMaybe<FilterGroup>;
@@ -23093,6 +23105,7 @@ export type QueryPirRelationshipsArgs = {
   lastSeenStop?: InputMaybe<Scalars['DateTime']['input']>;
   orderBy?: InputMaybe<PirRelationshipOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
+  pirId: Scalars['ID']['input'];
   relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   search?: InputMaybe<Scalars['String']['input']>;
   startDate?: InputMaybe<Scalars['DateTime']['input']>;
@@ -23101,36 +23114,26 @@ export type QueryPirRelationshipsArgs = {
   stix?: InputMaybe<Scalars['Boolean']['input']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']['input']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']['input']>;
-  toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  toRole?: InputMaybe<Scalars['String']['input']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
 
 export type QueryPirRelationshipsDistributionArgs = {
   aggregateOnConnections?: InputMaybe<Scalars['Boolean']['input']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
   dateAttribute?: InputMaybe<Scalars['String']['input']>;
   dynamicFrom?: InputMaybe<FilterGroup>;
-  dynamicTo?: InputMaybe<FilterGroup>;
-  elementWithTargetTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   endDate?: InputMaybe<Scalars['DateTime']['input']>;
   field: Scalars['String']['input'];
   filters?: InputMaybe<FilterGroup>;
   fromId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  fromOrToId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  fromRole?: InputMaybe<Scalars['String']['input']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   isTo?: InputMaybe<Scalars['Boolean']['input']>;
   limit?: InputMaybe<Scalars['Int']['input']>;
   operation: StatsOperation;
   order?: InputMaybe<Scalars['String']['input']>;
+  pirId: Scalars['ID']['input'];
   relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   search?: InputMaybe<Scalars['String']['input']>;
   startDate?: InputMaybe<Scalars['DateTime']['input']>;
-  toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  toRole?: InputMaybe<Scalars['String']['input']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
 
@@ -23141,7 +23144,7 @@ export type QueryPirRelationshipsMultiTimeSeriesArgs = {
   operation: StatsOperation;
   relationship_type?: InputMaybe<Array<Scalars['String']['input']>>;
   startDate: Scalars['DateTime']['input'];
-  timeSeriesParameters?: InputMaybe<Array<InputMaybe<StixRelationshipsTimeSeriesParameters>>>;
+  timeSeriesParameters?: InputMaybe<Array<InputMaybe<PirRelationshipsTimeSeriesParameters>>>;
 };
 
 
@@ -34551,6 +34554,7 @@ export type ResolversTypes = ResolversObject<{
   PirRelationshipConnection: ResolverTypeWrapper<Omit<PirRelationshipConnection, 'edges'> & { edges: Array<ResolversTypes['PirRelationshipEdge']> }>;
   PirRelationshipEdge: ResolverTypeWrapper<Omit<PirRelationshipEdge, 'node'> & { node: ResolversTypes['PirRelationship'] }>;
   PirRelationshipOrdering: PirRelationshipOrdering;
+  PirRelationshipsTimeSeriesParameters: PirRelationshipsTimeSeriesParameters;
   PirScore: ResolverTypeWrapper<PirScore>;
   PirType: PirType;
   PirUnflagElementInput: PirUnflagElementInput;
@@ -35457,6 +35461,7 @@ export type ResolversParentTypes = ResolversObject<{
   PirRelationship: Omit<PirRelationship, 'from' | 'to'> & { from?: Maybe<ResolversParentTypes['InternalObject']>, to?: Maybe<ResolversParentTypes['InternalObject']> };
   PirRelationshipConnection: Omit<PirRelationshipConnection, 'edges'> & { edges: Array<ResolversParentTypes['PirRelationshipEdge']> };
   PirRelationshipEdge: Omit<PirRelationshipEdge, 'node'> & { node: ResolversParentTypes['PirRelationship'] };
+  PirRelationshipsTimeSeriesParameters: PirRelationshipsTimeSeriesParameters;
   PirScore: PirScore;
   PirUnflagElementInput: PirUnflagElementInput;
   PlatformCriticalAlert: Omit<PlatformCriticalAlert, 'details'> & { details?: Maybe<ResolversParentTypes['PlatformCriticalAlertDetails']> };
@@ -42805,8 +42810,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   participants?: Resolver<Maybe<ResolversTypes['ParticipantConnection']>, ParentType, ContextType, Partial<QueryParticipantsArgs>>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<QueryPendingFilesArgs>>;
   pir?: Resolver<Maybe<ResolversTypes['Pir']>, ParentType, ContextType, RequireFields<QueryPirArgs, 'id'>>;
-  pirRelationships?: Resolver<Maybe<ResolversTypes['PirRelationshipConnection']>, ParentType, ContextType, Partial<QueryPirRelationshipsArgs>>;
-  pirRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryPirRelationshipsDistributionArgs, 'field' | 'operation'>>;
+  pirRelationships?: Resolver<Maybe<ResolversTypes['PirRelationshipConnection']>, ParentType, ContextType, RequireFields<QueryPirRelationshipsArgs, 'pirId'>>;
+  pirRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryPirRelationshipsDistributionArgs, 'field' | 'operation' | 'pirId'>>;
   pirRelationshipsMultiTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['MultiTimeSeries']>>>, ParentType, ContextType, RequireFields<QueryPirRelationshipsMultiTimeSeriesArgs, 'interval' | 'operation' | 'startDate'>>;
   pirs?: Resolver<Maybe<ResolversTypes['PirConnection']>, ParentType, ContextType, Partial<QueryPirsArgs>>;
   playbook?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<QueryPlaybookArgs, 'id'>>;
