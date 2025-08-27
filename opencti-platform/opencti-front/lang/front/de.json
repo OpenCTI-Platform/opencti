@@ -2688,6 +2688,7 @@
   "Pir analyses disclaimer...": "Bitte beachten Sie, dass aufgrund technischer Beschränkungen nur die ersten 5000 markierten Einheiten zum Abrufen von Containern verwendet werden. Im Falle eines konsequenten PIR können also einige Container fehlen.",
   "Pir confidence...": "Beeinflussen Sie die Qualität Ihres PIR, indem Sie das erforderliche Mindestmaß an Quellenvertrauen auswählen. Elemente aus Quellen, die unter diesem Wert liegen, werden ausgeschlossen",
   "PIR Details": "PIR-Details",
+  "PIR Relationships distribution": "PIR Verteilung der Beziehungen",
   "PIR Rescan period (days)": "PIR-Rescan-Zeitraum (Tage)",
   "Pir targeted locations...": "Jede Bedrohung, die auf mindestens einen dieser Orte abzielt, wird in den PIR aufgenommen. Je mehr Standorte von einer Bedrohung betroffen sind, desto höher ist die Bewertung der Bedrohung",
   "Pir targeted sectors...": "Jede Bedrohung, die auf mindestens eine dieser Branchen abzielt, wird in den PIR aufgenommen. Je mehr Branchen von einer Bedrohung betroffen sind, desto höher ist die Punktzahl Ihrer Bedrohung",
