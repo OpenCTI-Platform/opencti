@@ -1203,6 +1203,18 @@ export const elConfigureAttachmentProcessor = async () => {
   }
   return success;
 };
+export const elDeleteIndex = async (indexName) => {
+  try {
+    const response = await engine.indices.delete({ index: indexName });
+    logApp.info(`Index '${indexName}' deleted successfully.`, response);
+  } catch (error) {
+    if (error.meta?.statusCode === 404) {
+      logApp.error(`Index '${indexName}' not found.`);
+    } else {
+      logApp.error('Error deleting index:', error);
+    }
+  }
+};
 export const elCreateIndex = async (index, mappingProperties) => {
   await elCreateIndexTemplate(index, mappingProperties);
   const indexName = `${index}${ES_INDEX_PATTERN_SUFFIX}`;
