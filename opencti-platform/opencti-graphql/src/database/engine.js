@@ -1203,16 +1203,14 @@ export const elConfigureAttachmentProcessor = async () => {
   }
   return success;
 };
-export const elDeleteIndex = async (indexName) => { // TODO PIR function at level up with alias, and look for all the indexes
+
+export const elDeleteIndex = async (index) => {
+  const indexesToRemove = await elIndexGetAlias(index);
   try {
-    const response = await engine.indices.delete({ index: indexName });
-    logApp.info(`Index '${indexName}' deleted successfully.`, response);
+    const response = await engine.indices.delete({ index: Object.keys(indexesToRemove) });
+    logApp.info(`Index '${indexesToRemove}' deleted successfully.`, response);
   } catch (error) {
-    if (error.meta?.statusCode === 404) {
-      logApp.error(`Index '${indexName}' not found.`);
-    } else {
-      logApp.error('Error deleting index:', error);
-    }
+    logApp.error('Error deleting indexes:', error);
   }
 };
 export const elCreateIndex = async (index, mappingProperties) => {
