@@ -10,6 +10,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { useFormatter } from '../../../../components/i18n';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 const ingestionCatalogConnectorQuery = graphql`
   query IngestionCatalogConnectorQuery($slug: String!) {
@@ -27,6 +28,7 @@ interface IngestionCatalogConnectorComponentProps {
 const IngestionCatalogConnectorComponent = ({
   queryRef,
 }: IngestionCatalogConnectorComponentProps) => {
+  const isEnterpriseEdition = useEnterpriseEdition();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Catalog | Ingestion | Data'));
@@ -47,7 +49,11 @@ const IngestionCatalogConnectorComponent = ({
         { label: connector.title, current: true },
       ]}
       />
-      <IngestionCatalogConnectorHeader connector={connector} catalogId={contract.catalog_id} />
+      <IngestionCatalogConnectorHeader
+        connector={connector}
+        catalogId={contract.catalog_id}
+        isEnterpriseEdition={isEnterpriseEdition}
+      />
       <IngestionCatalogConnectorOverview connector={connector} />
     </>
   );
