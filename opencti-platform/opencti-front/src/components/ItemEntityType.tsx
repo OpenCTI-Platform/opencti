@@ -8,7 +8,6 @@ import { useFormatter } from './i18n';
 import ThemeLight from './ThemeLight';
 import ThemeDark from './ThemeDark';
 import ItemIcon from './ItemIcon';
-import { truncate } from '../utils/String';
 import { chipInListBasicStyle } from '../utils/chipStyle';
 
 // Deprecated - https://mui.com/system/styles/basics/
