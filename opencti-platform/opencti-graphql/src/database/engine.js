@@ -3713,8 +3713,8 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
       }
     );
 };
-export const elListPaginated = async (context, user, indexName, opts = {}) => {
-  const { maxSize = undefined, logForMigration = false } = opts;
+const elListRaw = async (context, user, indexName, opts = {}) => {
+  const { maxSize = undefined, logForMigration = false, paginated = true } = opts;
   const first = opts.first ?? ES_DEFAULT_PAGINATION;
   let batch = 0;
   let emitSize = 0;
@@ -3725,13 +3725,14 @@ export const elListPaginated = async (context, user, indexName, opts = {}) => {
   let searchAfter = opts.after;
   const listing = [];
   const publish = async (edges, total) => {
+    const elements = paginated ? edges : await asyncMap(edges, (edge) => edge.node);
     totalHits = total;
     const { callback } = opts;
     if (callback) {
-      const callbackResult = await callback(edges, totalHits, totalFilteredCount);
+      const callbackResult = await callback(elements, totalHits, totalFilteredCount);
       continueProcess = callbackResult === true || callbackResult === undefined;
     } else {
-      listing.push(...edges);
+      listing.push(...elements);
     }
   };
   while (continueProcess && hasNextPage) {
@@ -3766,9 +3767,13 @@ export const elListPaginated = async (context, user, indexName, opts = {}) => {
   return { elements: listing, totalCount: totalHits, totalFilteredCount };
 };
 
+export const elListPaginated = async (context, user, indexName, opts = {}) => {
+  return elListRaw(context, user, indexName, { ...opts, paginated: true });
+};
+
 export const elList = async (context, user, indexName, opts = {}) => {
-  const data = await elListPaginated(context, user, indexName, opts);
-  return asyncMap(data.elements, (edge) => edge.node);
+  const data = await elListRaw(context, user, indexName, { ...opts, paginated: false });
+  return data.elements;
 };
 
 export const elLoadBy = async (context, user, field, value, type = null, indices = READ_DATA_INDICES) => {
