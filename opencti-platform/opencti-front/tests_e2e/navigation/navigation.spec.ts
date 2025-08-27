@@ -1557,7 +1557,7 @@ const navigateIngestion = async (page: Page) => {
   const ingestionPage = new IngestionPage(page);
   await ingestionPage.navigateFromMenu();
   await expect(ingestionPage.getIngestionPages('connectors-page')).toBeVisible();
-  await ingestionPage.navigateRightMenu('Catalog');
+  await ingestionPage.navigateRightMenu('Connector catalog');
   await expect(ingestionPage.getIngestionPages('catalog-page')).toBeVisible();
   await ingestionPage.navigateRightMenu('OpenCTI Streams');
   await expect(ingestionPage.getIngestionPages('streams-page')).toBeVisible();
@@ -1639,7 +1639,7 @@ const navigateSecurity = async (page: Page) => {
   await expect(securityPage.getSecurityPages('policies-settings-page')).toBeVisible();
   await securityPage.navigateRightMenu('Marking definitions');
   await expect(securityPage.getSecurityPages('marking-settings-page')).toBeVisible();
-  await securityPage.navigateRightMenu('Dissemination');
+  await securityPage.navigateRightMenu('Dissemination list');
   await expect(securityPage.getSecurityPages('dissemination-settings-page')).toBeVisible();
   await securityPage.navigateRightMenu('Email templates');
   await expect(securityPage.getSecurityPages('email-templates-page')).toBeVisible();
@@ -1964,7 +1964,9 @@ test('Check navigation on Trash menu', async ({ page }) => {
   await navigateTrash(page);
 });
 
-test.skip('Check navigation on Settings menu', async ({ page }) => {
+// Separating settings menu in two to avoid timeout while testing as this part is too long
+
+test('Check navigation on Settings menu part one', async ({ page }) => {
   await page.goto('/');
   const leftBarPage = new LeftBarPage(page);
   await leftBarPage.open();
@@ -1972,6 +1974,13 @@ test.skip('Check navigation on Settings menu', async ({ page }) => {
   await navigateSecurity(page);
   await navigateCustomization(page);
   await navigateTaxonomies(page);
+});
+
+test('Check navigation on Settings menu part two', async ({ page }) => {
+  await page.goto('/');
+  const leftBarPage = new LeftBarPage(page);
+  await leftBarPage.open();
+  await navigateSettings(page);
   await navigateActivity(page);
   await navigateFileIndexing(page);
   await navigateExperience(page);
