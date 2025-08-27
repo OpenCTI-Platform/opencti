@@ -16,11 +16,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import { graphql, useFragment } from 'react-relay';
 import React from 'react';
 import Grid from '@mui/material/Grid2';
-import StixRelationshipsMultiAreaChart from '@components/common/stix_relationships/StixRelationshipsMultiAreaChart';
 import { PirOverviewCountFlaggedFragment$key } from './__generated__/PirOverviewCountFlaggedFragment.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import Paper from '../../../../components/Paper';
 import { monthsAgo } from '../../../../utils/Time';
+import PirRelationshipsMultiAreaChart from '../PirRelationshipsMultiAreaChart';
 
 const countFlaggedFragment = graphql`
   fragment PirOverviewCountFlaggedFragment on Pir {
@@ -59,7 +59,7 @@ const PirOverviewCountFlagged = ({ data }: PirOverviewCountFlaggedProps) => {
   return (
     <Grid size={{ xs: 12 }}>
       <Paper title={t_i18n('Number of threats over time')}>
-        <StixRelationshipsMultiAreaChart
+        <PirRelationshipsMultiAreaChart
           relationshipTypes={['in-pir']}
           dataSelection={dataSelection}
           parameters={{ interval: 'month' }}

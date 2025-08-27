@@ -173,6 +173,15 @@ type Query {
         dynamicTo: FilterGroup
         aggregateOnConnections: Boolean
     ): [Distribution] @auth(for: [PIRAPI])
+    pirRelationshipsMultiTimeSeries(
+        operation: StatsOperation!
+        startDate: DateTime!
+        endDate: DateTime
+        interval: String!
+        onlyInferred: Boolean
+        timeSeriesParameters: [StixRelationshipsTimeSeriesParameters]
+        relationship_type: [String!]
+    ): [MultiTimeSeries] @auth(for: [PIRAPI])
 }
 
 # Mutations inputs

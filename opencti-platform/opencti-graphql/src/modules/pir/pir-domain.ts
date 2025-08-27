@@ -27,9 +27,10 @@ import {
   type PirFlagElementInput,
   type PirUnflagElementInput,
   type QueryPirRelationshipsArgs,
-  type QueryPirRelationshipsDistributionArgs
+  type QueryPirRelationshipsDistributionArgs,
+  type QueryPirRelationshipsMultiTimeArgs,
 } from '../../generated/graphql';
-import { createEntity, deleteRelationsByFromAndTo, distributionRelations, updateAttribute } from '../../database/middleware';
+import { createEntity, deleteRelationsByFromAndTo, distributionRelations, timeSeriesRelations, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS, logApp } from '../../config/conf';
@@ -47,6 +48,7 @@ import { editAuthorizedMembers } from '../../utils/authorizedMembers';
 import { isBypassUser, MEMBER_ACCESS_ALL, MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_VIEW, PIRAPI } from '../../utils/access';
 import { RELATION_IN_PIR } from '../../schema/internalRelationship';
 import { buildArgsFromDynamicFilters } from '../../domain/stixRelationship';
+import { fillTimeSeries } from '../../database/utils';
 
 export const findById = async (context: AuthContext, user: AuthUser, id: string) => {
   await checkEnterpriseEdition(context);
@@ -87,6 +89,22 @@ export const pirRelationshipsDistribution = async (
     return [];
   }
   return distributionRelations(context, context.user, dynamicArgs);
+};
+
+export const pirRelationshipsMultiTimeSeries = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: QueryPirRelationshipsMultiTimeArgs,
+) => {
+  const relationship_type = [RELATION_IN_PIR];
+  return Promise.all(args.timeSeriesParameters.map(async (timeSeriesParameter) => {
+    const { startDate, endDate, interval } = args;
+    const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, timeSeriesParameter);
+    if (isEmptyDynamic) {
+      return { data: fillTimeSeries(startDate, endDate, interval, []) };
+    }
+    return { data: timeSeriesRelations(context, user, { ...args, relationship_type, ...dynamicArgs }) };
+  }));
 };
 
 export const findPirContainers = async (

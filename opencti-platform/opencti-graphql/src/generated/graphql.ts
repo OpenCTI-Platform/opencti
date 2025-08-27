@@ -21461,6 +21461,7 @@ export type Query = {
   pir?: Maybe<Pir>;
   pirRelationships?: Maybe<PirRelationshipConnection>;
   pirRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
+  pirRelationshipsMultiTimeSeries?: Maybe<Array<Maybe<MultiTimeSeries>>>;
   pirs?: Maybe<PirConnection>;
   playbook?: Maybe<Playbook>;
   playbookComponents: Array<Maybe<PlaybookComponent>>;
@@ -23132,6 +23133,17 @@ export type QueryPirRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type QueryPirRelationshipsMultiTimeSeriesArgs = {
+  endDate?: InputMaybe<Scalars['DateTime']['input']>;
+  interval: Scalars['String']['input'];
+  onlyInferred?: InputMaybe<Scalars['Boolean']['input']>;
+  operation: StatsOperation;
+  relationship_type?: InputMaybe<Array<Scalars['String']['input']>>;
+  startDate: Scalars['DateTime']['input'];
+  timeSeriesParameters?: InputMaybe<Array<InputMaybe<StixRelationshipsTimeSeriesParameters>>>;
 };
 
 
@@ -42798,6 +42810,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   pir?: Resolver<Maybe<ResolversTypes['Pir']>, ParentType, ContextType, RequireFields<QueryPirArgs, 'id'>>;
   pirRelationships?: Resolver<Maybe<ResolversTypes['PirRelationshipConnection']>, ParentType, ContextType, Partial<QueryPirRelationshipsArgs>>;
   pirRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryPirRelationshipsDistributionArgs, 'field' | 'operation'>>;
+  pirRelationshipsMultiTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['MultiTimeSeries']>>>, ParentType, ContextType, RequireFields<QueryPirRelationshipsMultiTimeSeriesArgs, 'interval' | 'operation' | 'startDate'>>;
   pirs?: Resolver<Maybe<ResolversTypes['PirConnection']>, ParentType, ContextType, Partial<QueryPirsArgs>>;
   playbook?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<QueryPlaybookArgs, 'id'>>;
   playbookComponents?: Resolver<Array<Maybe<ResolversTypes['PlaybookComponent']>>, ParentType, ContextType>;
