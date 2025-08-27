@@ -315,12 +315,8 @@ describe('Service account with platform organization coverage', async () => {
     expect(userCreated.password).toBeUndefined();
 
     // WHEN user log in with token
-    // TODO fix this :(
-    const loggedInUser = await authenticateUserByTokenOrUserId(testContext, { headers: [
-      { attribute: 'Content-Type', value: 'application/json' },
-      { attribute: 'X-API-Key', value: userCreated.api_token },
-      { attribute: 'Accept', value: 'application/json' },
-    ] }, userCreated.api_token);
+    const fakeReq = { headers: () => { return undefined; }, header: () => { return undefined; }, socket: { remoteAddress: '::1' } };
+    const loggedInUser = await authenticateUserByTokenOrUserId(testContext, fakeReq, userCreated.api_token);
     expect(loggedInUser).toBeDefined();
 
     await deleteElementById(testContext, authUser, userAddResult.id, ENTITY_TYPE_USER);
