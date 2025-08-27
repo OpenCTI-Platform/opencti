@@ -10,6 +10,7 @@ import { UnsupportedError } from '../../config/errors';
 import { idGenFromData } from '../../schema/identifier';
 import filigranCatalog from './filigran/opencti-manifest.json';
 import conf from '../../config/conf';
+import type { ConnectorContractConfiguration, ContractConfigInput } from '../../generated/graphql';
 
 const CUSTOM_CATALOGS: string[] = conf.get('app:custom_catalogs') ?? [];
 const ajv = new Ajv({ coerceTypes: true });
@@ -90,28 +91,44 @@ const encryptValue = (publicKey: string, value: string) => {
   return encrypted.toString('base64');
 };
 
-export const computeConnectorTargetContract = (configurations: any, targetContract: CatalogContract, publicKey: string) => {
+export const computeConnectorTargetContract = (
+  configurations: ContractConfigInput[],
+  targetContract: CatalogContract,
+  publicKey: string,
+  currentManagerContractConfiguration?: ConnectorContractConfiguration[]
+) => {
   const targetConfig = targetContract.config_schema;
   // Rework configuration for default an array support
   const contractConfigurations = [];
   const keys = Object.keys(targetConfig.properties);
   for (let i = 0; i < keys.length; i += 1) {
     const propKey = keys[i];
-    const currentConfig: any = configurations.find((config: any) => config.key === propKey);
+    const currentConfig = configurations.find((config) => config.key === propKey);
+    const currentConnectorConfig = currentManagerContractConfiguration?.find((c) => c.key === propKey);
 
     if (!currentConfig) {
       if (targetConfig.properties[propKey].default) {
         contractConfigurations.push(({ key: propKey, value: targetConfig.properties[propKey].default }));
       }
-    } else if (targetConfig.properties[propKey].type !== 'array') {
-      const rawValue = currentConfig.value[0];
+    } else if (targetConfig.properties[propKey].type !== 'array' && currentConfig.value) {
       const isPassword = targetConfig.properties[propKey].format === 'password';
-      const finalValue = isPassword ? encryptValue(publicKey, rawValue) : rawValue;
-      contractConfigurations.push({
-        key: propKey,
-        value: finalValue,
-        ...(isPassword && { encrypted: true }),
-      });
+      // If value is already configured and has the same value, keep it
+      // This prevents re-encrypting already encrypted values
+      if (currentConfig.value[0] === currentConnectorConfig?.value) {
+        contractConfigurations.push({
+          key: propKey,
+          value: currentConnectorConfig.value,
+          ...(isPassword && { encrypted: true }),
+        });
+      } else {
+        const rawValue = currentConfig.value[0];
+        const finalValue = isPassword ? encryptValue(publicKey, rawValue) : rawValue;
+        contractConfigurations.push({
+          key: propKey,
+          value: finalValue,
+          ...(isPassword && { encrypted: true }),
+        });
+      }
     } else {
       contractConfigurations.push(currentConfig);
     }

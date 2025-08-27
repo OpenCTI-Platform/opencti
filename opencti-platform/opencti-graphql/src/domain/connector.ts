@@ -168,7 +168,12 @@ export const managedConnectorEdit = async (
     throw FunctionalError('There is no connector manager configured');
   }
   const currentManager = connectorManagers[0];
-  const contractConfigurations = computeConnectorTargetContract(input.manager_contract_configuration, targetContract, currentManager.public_key);
+  const contractConfigurations = computeConnectorTargetContract(
+    input.manager_contract_configuration,
+    targetContract,
+    currentManager.public_key,
+    conn.manager_contract_configuration
+  );
   const patch: any = {
     name: input.name,
     connector_type: targetContract.container_type,
