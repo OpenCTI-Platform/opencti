@@ -32,7 +32,6 @@ import {
   isInferredIndex,
   isNotEmptyField,
   isObjectPathTargetMultipleAttribute,
-  MAX_EVENT_LOOP_PROCESSING_TIME,
   READ_DATA_INDICES,
   READ_DATA_INDICES_INFERRED,
   READ_INDEX_HISTORY,
@@ -237,6 +236,7 @@ import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
 import { generateVulnerabilitiesUpdates } from '../utils/vulnerabilities';
 import { idLabel } from '../schema/schema-labels';
 import { pirExplanation } from '../modules/attributes/internalRelationship-registrationAttributes';
+import { doYield } from '../utils/eventloop-utils';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -369,21 +369,14 @@ const loadElementMetaDependencies = async (context, user, elements, args = {}) =
         const [key, values] = entries[index];
         const invalidRelations = [];
         const resolvedElementsWithRelation = [];
-        let startProcessingTime = new Date().getTime();
         for (let valueIndex = 0; valueIndex < values.length; valueIndex += 1) {
+          await doYield();
           const v = values[valueIndex];
           const resolvedElement = toResolvedElements[v.toId];
           if (resolvedElement) {
             resolvedElementsWithRelation.push({ ...resolvedElement, i_relation: v });
           } else {
             invalidRelations.push({ relation_id: v.id, target_id: v.toId });
-          }
-          // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
-          if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
-            startProcessingTime = new Date().getTime();
-            await new Promise((resolve) => {
-              setImmediate(resolve);
-            });
           }
         }
         if (invalidRelations.length > 0) {
@@ -440,8 +433,8 @@ export const loadElementsWithDependencies = async (context, user, elements, opts
   }
   const [fromAndToMap, depsElementsMap, fileMarkingsMap] = await Promise.all([fromAndToPromise, depsPromise, fileMarkingsPromise]);
   const loadedElements = [];
-  let startProcessingTime = new Date().getTime();
   for (let i = 0; i < elements.length; i += 1) {
+    await doYield();
     const element = elements[i];
     const files = [];
     if (isNotEmptyField(element.x_opencti_files) && isNotEmptyField(fileMarkingsMap)) {
@@ -481,13 +474,6 @@ export const loadElementsWithDependencies = async (context, user, elements, opts
       }
     } else {
       loadedElements.push(R.mergeRight(element, { ...deps }));
-    }
-    // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
-    if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
-      startProcessingTime = new Date().getTime();
-      await new Promise((resolve) => {
-        setImmediate(resolve);
-      });
     }
   }
   return loadedElements;
@@ -864,7 +850,6 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
     }
     const resolutionsMap = new Map();
     const resolvedIds = new Set();
-    let startProcessingTime = new Date().getTime();
     for (let i = 0; i < resolvedElements.length; i += 1) {
       const resolvedElement = resolvedElements[i];
       const instanceIds = getInstanceIds(resolvedElement);
@@ -876,17 +861,11 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
         }
       });
       for (let configIndex = 0; configIndex < matchingConfigs.length; configIndex += 1) {
+        await doYield();
         const c = matchingConfigs[configIndex];
         const data = { ...resolvedElement, i_group: c };
         const dataKey = `${resolvedElement.internal_id}|${c.destKey}`;
         resolutionsMap.set(dataKey, data);
-        // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
-        if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
-          startProcessingTime = new Date().getTime();
-          await new Promise((resolve) => {
-            setImmediate(resolve);
-          });
-        }
       }
     }
     const groupByTypeElements = R.groupBy((e) => e.i_group.destKey, resolutionsMap.values());
