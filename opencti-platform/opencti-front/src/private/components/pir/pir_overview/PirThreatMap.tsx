@@ -33,7 +33,7 @@
 //
 // const pirThreatMapFragment = graphql`
 //   fragment PirThreatMapFragment on Query {
-//     inPirRelationships(
+//     pirRelationships(
 //       first: 100
 //       orderBy: pir_score
 //       orderMode: desc

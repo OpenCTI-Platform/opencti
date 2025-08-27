@@ -52,7 +52,7 @@ const countsFragment = graphql`
 
 const countsQuery = graphql`
   query PirOverviewCountsQuery($toId: [String], $startDate: DateTime) {
-    inPirRelationshipsDistribution(
+    pirRelationshipsDistribution(
       field: "entity_type",
       operation: count,
       startDate: $startDate
@@ -124,11 +124,11 @@ const PirOverviewCountsComponent = ({
   const resultAll = usePreloadedQuery(countsQuery, countsQueryRef);
   const result24h = usePreloadedQuery(countsQuery, counts24hQueryRef);
 
-  const data = resultAll.inPirRelationshipsDistribution?.flatMap((distribution) => {
+  const data = resultAll.pirRelationshipsDistribution?.flatMap((distribution) => {
     if (!distribution || distribution.label === 'Pir') return [];
     return distribution;
   });
-  const data24h = result24h.inPirRelationshipsDistribution?.flatMap((distribution) => {
+  const data24h = result24h.pirRelationshipsDistribution?.flatMap((distribution) => {
     if (!distribution || distribution.label === 'Pir') return [];
     return distribution;
   });

@@ -67,7 +67,7 @@ const LIST_RELS_QUERY = gql`
               id
             }
           }
-          ... on InPirRelationship {
+          ... on PirRelationship {
             pir_explanations {
               dependencies {
                 element_id

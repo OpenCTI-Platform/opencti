@@ -1,6 +1,6 @@
 import React from 'react';
 import { graphql } from 'react-relay';
-import { InPirRelationshipsDonutDistributionQuery$data } from '@components/pir/__generated__/InPirRelationshipsDonutDistributionQuery.graphql';
+import { PirRelationshipsDonutDistributionQuery$data } from '@components/pir/__generated__/PirRelationshipsDonutDistributionQuery.graphql';
 import WidgetDonut from '../../../components/dashboard/WidgetDonut';
 import WidgetNoData from '../../../components/dashboard/WidgetNoData';
 import Loader, { LoaderVariant } from '../../../components/Loader';
@@ -10,8 +10,8 @@ import { buildFiltersAndOptionsForWidgets } from '../../../utils/filters/filters
 import type { WidgetDataSelection, WidgetParameters } from '../../../utils/widget/widget';
 import { useFormatter } from '../../../components/i18n';
 
-export const inPirRelationshipsDonutsDistributionQuery = graphql`
-  query InPirRelationshipsDonutDistributionQuery(
+export const pirRelationshipsDonutsDistributionQuery = graphql`
+  query PirRelationshipsDonutDistributionQuery(
     $field: String!
     $operation: StatsOperation!
     $startDate: DateTime
@@ -34,7 +34,7 @@ export const inPirRelationshipsDonutsDistributionQuery = graphql`
     $dynamicFrom: FilterGroup
     $dynamicTo: FilterGroup
   ) {
-    inPirRelationshipsDistribution(
+    pirRelationshipsDistribution(
       field: $field
       operation: $operation
       startDate: $startDate
@@ -83,7 +83,7 @@ export const inPirRelationshipsDonutsDistributionQuery = graphql`
   }
 `;
 
-interface InPirRelationshipsDonutProps {
+interface PirRelationshipsDonutProps {
   title?: string,
   variant: string,
   height?: number,
@@ -97,7 +97,7 @@ interface InPirRelationshipsDonutProps {
   withoutTitle?: boolean
 }
 
-const InPirRelationshipsDonut = ({
+const PirRelationshipsDonut = ({
   title,
   variant,
   height,
@@ -109,7 +109,7 @@ const InPirRelationshipsDonut = ({
   withExportPopover = false,
   isReadOnly = false,
   withoutTitle = false,
-}: InPirRelationshipsDonutProps) => {
+}: PirRelationshipsDonutProps) => {
   const { t_i18n } = useFormatter();
   const renderContent = () => {
     let selection;
@@ -135,18 +135,18 @@ const InPirRelationshipsDonut = ({
     };
     return (
       <QueryRenderer
-        query={inPirRelationshipsDonutsDistributionQuery}
+        query={pirRelationshipsDonutsDistributionQuery}
         variables={variables}
-        render={({ props }: { props: InPirRelationshipsDonutDistributionQuery$data }) => {
+        render={({ props }: { props: PirRelationshipsDonutDistributionQuery$data }) => {
           if (
             props
-            && props.inPirRelationshipsDistribution
-            && props.inPirRelationshipsDistribution.length > 0
+            && props.pirRelationshipsDistribution
+            && props.pirRelationshipsDistribution.length > 0
           ) {
             return (
               <WidgetDonut
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                data={props.inPirRelationshipsDistribution as any[]}
+                data={props.pirRelationshipsDistribution as any[]}
                 groupBy={finalField}
                 withExport={withExportPopover}
                 readonly={isReadOnly}
@@ -173,4 +173,4 @@ const InPirRelationshipsDonut = ({
   );
 };
 
-export default InPirRelationshipsDonut;
+export default PirRelationshipsDonut;

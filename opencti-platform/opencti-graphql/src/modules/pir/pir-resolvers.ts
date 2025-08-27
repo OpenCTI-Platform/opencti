@@ -34,8 +34,8 @@ const pirResolvers: Resolvers = {
   Query: {
     pir: (_, { id }, context) => findById(context, context.user, id),
     pirs: (_, args, context) => findAll(context, context.user, args),
-    inPirRelationships: (_, args, context) => findAllPirRelations(context, context.user, args),
-    inPirRelationshipsDistribution: (_, args, context) => pirRelationshipsDistribution(context, context.user, args),
+    pirRelationships: (_, args, context) => findAllPirRelations(context, context.user, args),
+    pirRelationshipsDistribution: (_, args, context) => pirRelationshipsDistribution(context, context.user, args),
   },
   Pir: {
     creators: async (pir, _, context) => {

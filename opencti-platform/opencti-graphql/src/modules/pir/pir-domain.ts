@@ -26,8 +26,8 @@ import {
   type PirAddInput,
   type PirFlagElementInput,
   type PirUnflagElementInput,
-  type QueryInPirRelationshipsArgs,
-  type QueryInPirRelationshipsDistributionArgs
+  type QueryPirRelationshipsArgs,
+  type QueryPirRelationshipsDistributionArgs
 } from '../../generated/graphql';
 import { createEntity, deleteRelationsByFromAndTo, distributionRelations, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
@@ -61,7 +61,7 @@ export const findAll = async (context: AuthContext, user: AuthUser, opts?: Entit
 export const findAllPirRelations = async (
   context: AuthContext,
   user: AuthUser,
-  opts: QueryInPirRelationshipsArgs,
+  opts: QueryPirRelationshipsArgs,
 ) => {
   const { toId } = opts;
   if (!toId || toId.length !== 1) {
@@ -74,7 +74,7 @@ export const findAllPirRelations = async (
 export const pirRelationshipsDistribution = async (
   context: AuthContext,
   user: AuthUser,
-  args: QueryInPirRelationshipsDistributionArgs,
+  args: QueryPirRelationshipsDistributionArgs,
 ) => {
   const relationship_type = [RELATION_IN_PIR];
   const { toId } = args;

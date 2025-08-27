@@ -53,7 +53,7 @@ type Pir implements InternalObject & BasicObject {
     ): ContainerConnection
 }
 
-type InPirRelationship implements BasicRelationship {
+type PirRelationship implements BasicRelationship {
     # BasicRelationship
     id: ID! # internal_id
     standard_id: String!
@@ -81,7 +81,7 @@ enum PirOrdering {
     creator
 }
 
-enum InPirRelationshipOrdering {
+enum PirRelationshipOrdering {
     created_at
     updated_at
     pir_score
@@ -97,13 +97,13 @@ type PirEdge {
     node: Pir!
 }
 
-type InPirRelationshipConnection {
+type PirRelationshipConnection {
     pageInfo: PageInfo!
-    edges: [InPirRelationshipEdge!]!
+    edges: [PirRelationshipEdge!]!
 }
-type InPirRelationshipEdge {
+type PirRelationshipEdge {
     cursor: String!
-    node: InPirRelationship!
+    node: PirRelationship!
 }
 
 # Queries
@@ -117,10 +117,10 @@ type Query {
         filters: FilterGroup
         search: String
     ): PirConnection @auth(for: [PIRAPI])
-    inPirRelationships(
+    pirRelationships(
         first: Int
         after: ID
-        orderBy: InPirRelationshipOrdering
+        orderBy: PirRelationshipOrdering
         orderMode: OrderingMode
         fromOrToId: String
         elementWithTargetTypes: [String]
@@ -147,8 +147,8 @@ type Query {
         dynamicFrom: FilterGroup
         dynamicTo: FilterGroup
         stix: Boolean
-    ): InPirRelationshipConnection @auth(for: [PIRAPI])
-    inPirRelationshipsDistribution(
+    ): PirRelationshipConnection @auth(for: [PIRAPI])
+    pirRelationshipsDistribution(
         field: String!
         operation: StatsOperation!
         startDate: DateTime
