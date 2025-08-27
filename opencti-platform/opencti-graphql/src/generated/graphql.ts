@@ -22476,7 +22476,6 @@ export type QueryInPirRelationshipsArgs = {
   lastSeenStop?: InputMaybe<Scalars['DateTime']['input']>;
   orderBy?: InputMaybe<InPirRelationshipOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
-  pirId: Scalars['ID']['input'];
   relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   search?: InputMaybe<Scalars['String']['input']>;
   startDate?: InputMaybe<Scalars['DateTime']['input']>;
@@ -22509,7 +22508,6 @@ export type QueryInPirRelationshipsDistributionArgs = {
   limit?: InputMaybe<Scalars['Int']['input']>;
   operation: StatsOperation;
   order?: InputMaybe<Scalars['String']['input']>;
-  pirId: Scalars['ID']['input'];
   relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   search?: InputMaybe<Scalars['String']['input']>;
   startDate?: InputMaybe<Scalars['DateTime']['input']>;
@@ -42728,8 +42726,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   identities?: Resolver<Maybe<ResolversTypes['IdentityConnection']>, ParentType, ContextType, Partial<QueryIdentitiesArgs>>;
   identity?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType, RequireFields<QueryIdentityArgs, 'id'>>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<QueryImportFilesArgs>>;
-  inPirRelationships?: Resolver<Maybe<ResolversTypes['InPirRelationshipConnection']>, ParentType, ContextType, RequireFields<QueryInPirRelationshipsArgs, 'pirId'>>;
-  inPirRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['InPirRelationshipDistribution']>>>, ParentType, ContextType, RequireFields<QueryInPirRelationshipsDistributionArgs, 'field' | 'operation' | 'pirId'>>;
+  inPirRelationships?: Resolver<Maybe<ResolversTypes['InPirRelationshipConnection']>, ParentType, ContextType, Partial<QueryInPirRelationshipsArgs>>;
+  inPirRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['InPirRelationshipDistribution']>>>, ParentType, ContextType, RequireFields<QueryInPirRelationshipsDistributionArgs, 'field' | 'operation'>>;
   incident?: Resolver<Maybe<ResolversTypes['Incident']>, ParentType, ContextType, Partial<QueryIncidentArgs>>;
   incidents?: Resolver<Maybe<ResolversTypes['IncidentConnection']>, ParentType, ContextType, Partial<QueryIncidentsArgs>>;
   incidentsTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryIncidentsTimeSeriesArgs, 'endDate' | 'field' | 'interval' | 'operation' | 'startDate'>>;

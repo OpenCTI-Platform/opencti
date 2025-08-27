@@ -12,7 +12,6 @@ import { useFormatter } from '../../../components/i18n';
 
 export const inPirRelationshipsDonutsDistributionQuery = graphql`
   query InPirRelationshipsDonutDistributionQuery(
-    $pirId: ID!
     $field: String!
     $operation: StatsOperation!
     $startDate: DateTime
@@ -36,7 +35,6 @@ export const inPirRelationshipsDonutsDistributionQuery = graphql`
     $dynamicTo: FilterGroup
   ) {
     inPirRelationshipsDistribution(
-      pirId: $pirId
       field: $field
       operation: $operation
       startDate: $startDate

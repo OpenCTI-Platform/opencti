@@ -63,12 +63,12 @@ export const findAllPirRelations = async (
   user: AuthUser,
   opts: QueryInPirRelationshipsArgs,
 ) => {
-  const { pirId } = opts;
-  if (!pirId) {
-    throw FunctionalError('You should provide exactly 1 Pir ID since in-pir relationships can only be fetch for a given PIR.', { pirId });
+  const { toId } = opts;
+  if (!toId || toId.length !== 1) {
+    throw FunctionalError('You should provide exactly 1 Pir ID since in-pir relationships can only be fetch for a given PIR.', { toId });
   }
-  await checkEEAndPirAccess(context, user, pirId);
-  return listRelationsPaginated<BasicStoreRelationPir>(context, user, RELATION_IN_PIR, { ...opts, toId: [pirId] });
+  await checkEEAndPirAccess(context, user, toId[0]);
+  return listRelationsPaginated<BasicStoreRelationPir>(context, user, RELATION_IN_PIR, opts);
 };
 
 export const pirRelationshipsDistribution = async (
@@ -77,12 +77,12 @@ export const pirRelationshipsDistribution = async (
   args: QueryInPirRelationshipsDistributionArgs,
 ) => {
   const relationship_type = [RELATION_IN_PIR];
-  const { pirId } = args;
-  if (!pirId) {
-    throw FunctionalError('You should provide exactly 1 Pir ID since in-pir relationships distribution can only be fetch for a given PIR.', { pirId });
+  const { toId } = args;
+  if (!toId || toId.length !== 1) {
+    throw FunctionalError('You should provide exactly 1 Pir ID since in-pir relationships distribution can only be fetch for a given PIR.', { toId });
   }
-  await checkEEAndPirAccess(context, user, pirId);
-  const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, { ...args, relationship_type, toId: [pirId] });
+  await checkEEAndPirAccess(context, user, toId[0]);
+  const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, { ...args, relationship_type });
   if (isEmptyDynamic) {
     return [];
   }

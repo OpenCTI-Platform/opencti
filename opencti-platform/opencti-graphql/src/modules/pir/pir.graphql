@@ -124,7 +124,6 @@ type Query {
         search: String
     ): PirConnection @auth(for: [PIRAPI])
     inPirRelationships(
-        pirId: ID!
         first: Int
         after: ID
         orderBy: InPirRelationshipOrdering
@@ -156,7 +155,6 @@ type Query {
         stix: Boolean
     ): InPirRelationshipConnection @auth(for: [PIRAPI])
     inPirRelationshipsDistribution(
-        pirId: ID!
         field: String!
         operation: StatsOperation!
         startDate: DateTime
