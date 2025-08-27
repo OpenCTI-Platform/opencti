@@ -8701,6 +8701,7 @@ type StixDomainObjectEditMutations {
   exportAsk(input: ExportAskInput!): [File!]
   exportPush(file: Upload!, file_markings: [String]!): Boolean
   stixDomainObjectFileEdit(input: StixDomainObjectFileEditInput): StixDomainObject
+  editAuthorizedMembers(input: [MemberAccessInput!]): StixDomainObject
 }
 
 type AttackPatternEditMutations {
@@ -12502,6 +12503,9 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
+  authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
+  currentUserAccessRight: String
   identity_class: String!
   name: String!
   description: String
@@ -12519,6 +12523,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   parentOrganizations: OrganizationConnection
   default_dashboard: Workspace
   default_hidden_types: [String!]
+  restrict_access: Boolean
   creators: [Creator!]
   toStix: String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection

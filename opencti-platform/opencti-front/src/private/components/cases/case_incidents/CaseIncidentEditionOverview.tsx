@@ -25,6 +25,7 @@ import StatusField from '../../common/form/StatusField';
 import { CaseIncidentEditionOverview_case$key } from './__generated__/CaseIncidentEditionOverview_case.graphql';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import { canUse } from '../../../../utils/authorizedMembers';
 
 export const caseIncidentMutationFieldPatch = graphql`
   mutation CaseIncidentEditionOverviewCaseFieldPatchMutation(
@@ -83,6 +84,18 @@ const caseIncidentEditionOverviewFragment = graphql`
         id
         name
         entity_type
+      }
+      ... on Organization {
+        currentUserAccessRight
+      }
+      ... on Individual {
+        organizations {
+          edges {
+            node {
+              currentUserAccessRight
+            }
+          }
+        }
       }
     }
     status {
@@ -260,7 +273,13 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
     x_opencti_workflow_id: convertStatus(t_i18n, caseData) as FieldOption,
     references: [],
   };
-
+  let disableAuthor = false;
+  if ('currentUserAccessRight' in (caseData?.createdBy ?? {})) {
+    disableAuthor = !canUse([caseData?.createdBy?.currentUserAccessRight]);
+  }
+  if ('organizations' in (caseData?.createdBy ?? {})) {
+    disableAuthor = !canUse(caseData?.createdBy?.organizations?.edges.map((o) => o.node.currentUserAccessRight) ?? []);
+  }
   return (
     <Formik
       enableReinitialize={true}
@@ -411,6 +430,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
             helpertext={
               <SubscriptionFocus context={context} fieldName="createdBy" />
             }
+            disabled={disableAuthor}
             onChange={editor.changeCreated}
           />
           <ObjectMarkingField

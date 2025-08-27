@@ -96,6 +96,9 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
+  authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
+  currentUserAccessRight: String
   # Identity
   identity_class: String!
   name: String!
@@ -122,6 +125,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   parentOrganizations: OrganizationConnection
   default_dashboard: Workspace
   default_hidden_types: [String!]
+  restrict_access: Boolean
   # Technical
   creators: [Creator!]
   toStix: String
@@ -223,9 +227,9 @@ type Mutation {
   organizationContextClean(id: ID!): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
   organizationRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   organizationRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
-  organizationEditAuthorizedAuthorities(id: ID!, input:[String!]!): Organization @auth(for: [SETTINGS_SETACCESSES])
-  organizationAdminAdd(id: ID!, memberId:String!): Organization @auth(for: [SETTINGS_SETACCESSES])
-  organizationAdminRemove(id: ID!, memberId:String!): Organization @auth(for: [SETTINGS_SETACCESSES])
+  organizationEditAuthorizedAuthorities(id: ID!, input: [String!]!): Organization @auth(for: [SETTINGS_SETACCESSES])
+  organizationAdminAdd(id: ID!, memberId: String!): Organization @auth(for: [SETTINGS_SETACCESSES])
+  organizationAdminRemove(id: ID!, memberId: String!): Organization @auth(for: [SETTINGS_SETACCESSES])
 }
 
 ################ Me Organizations

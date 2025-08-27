@@ -3,7 +3,7 @@ import type { StixOrganization, StoreEntityOrganization } from './organization-t
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from './organization-types';
 import { ENTITY_TYPE_IDENTITY } from '../../schema/general';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
-import { iAliasedIds, xOpenctiAliases, xOpenctiReliability } from '../../schema/attribute-definition';
+import { authorizedMembers, authorizedMembersActivationDate, iAliasedIds, xOpenctiAliases, xOpenctiReliability } from '../../schema/attribute-definition';
 import { RELATION_DERIVED_FROM, RELATION_LOCATED_AT, RELATION_PART_OF, RELATION_PUBLISHES, RELATION_SHOULD_COVER, RELATION_USES } from '../../schema/stixCoreRelationship';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
@@ -48,6 +48,8 @@ const ORGANIZATION_DEFINITION: ModuleDefinition<StoreEntityOrganization, StixOrg
     { name: 'default_hidden_types', label: 'Default hidden types', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
     { name: 'authorized_authorities', label: 'Authorized authorities', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
     { name: 'grantable_groups', label: 'Grantable groups', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
+    { ...authorizedMembers, editDefault: true },
+    { ...authorizedMembersActivationDate },
   ],
   relations: [
     {
