@@ -1381,7 +1381,6 @@ type PlatformEE {
   license_platform_match: Boolean!
   license_creator: String!
   license_global: Boolean!
-  license_raw_pem: String
 }
 
 enum PlatformCriticalAlertType {

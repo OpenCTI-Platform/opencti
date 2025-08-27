@@ -104,6 +104,7 @@ export const getSettings = async (context) => {
   const platformSettings = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
   const clusterInfo = await getClusterInformation();
   const eeInfo = getEnterpriseEditionInfoFromPem(platformSettings.internal_id, platformSettings.enterprise_license);
+
   return {
     ...platformSettings,
     platform_url: getBaseUrl(context.req),

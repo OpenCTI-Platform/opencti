@@ -363,6 +363,16 @@ export const getBaseUrl = (req) => {
   return basePath;
 };
 
+export const getChatbotUrl = (req) => {
+  if (req) {
+    const [, port] = req.headers.host ? req.headers.host.split(':') : [];
+    const isCustomPort = port !== '80' && port !== '443';
+    const httpPort = isCustomPort && port ? `:${port}` : '';
+    return `${req.protocol}://${req.hostname}${httpPort}${basePath}`;
+  }
+  throw UnknownError('Missing request for chatbot');
+};
+
 export const configureCA = (certificates) => {
   if (certificates && certificates.length > 0) {
     return { ca: certificates };

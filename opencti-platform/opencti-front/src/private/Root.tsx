@@ -83,7 +83,6 @@ const rootSettingsFragment = graphql`
       license_platform
       license_platform_match
       license_type
-      license_raw_pem
     }
     ...AppThemeProvider_settings
     ...AppIntlProvider_settings
