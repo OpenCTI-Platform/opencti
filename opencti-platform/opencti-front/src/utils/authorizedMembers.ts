@@ -1,4 +1,3 @@
-import { array } from 'yup';
 import { FieldOption } from './field';
 
 export const INPUT_AUTHORIZED_MEMBERS = 'restricted_members';

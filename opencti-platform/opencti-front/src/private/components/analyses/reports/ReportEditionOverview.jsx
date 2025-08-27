@@ -200,7 +200,13 @@ const ReportEditionOverviewComponent = (props) => {
       'x_opencti_workflow_id',
     ]),
   )(report);
-
+  let disableAuthor = false;
+  if ('currentUserAccessRight' in (report?.createdBy ?? {})) {
+    disableAuthor = !canUse([report?.createdBy?.currentUserAccessRight]);
+  }
+  if ('organizations' in (report?.createdBy ?? {})) {
+    disableAuthor = !canUse(report?.createdBy?.organizations?.edges.map((o) => o.node.currentUserAccessRight) ?? []);
+  }
   return (
     <Formik
       enableReinitialize={true}
@@ -339,7 +345,7 @@ const ReportEditionOverviewComponent = (props) => {
             onChange={editor.changeCreated}
             setFieldValue={setFieldValue}
             required={mandatoryAttributes.includes('createdBy')}
-            disabled={'currentUserAccessRight' in report.createdBy && !canUse([report.createdBy.currentUserAccessRight])}
+            disabled={disableAuthor}
           />
           <ObjectMarkingField
             name="objectMarking"

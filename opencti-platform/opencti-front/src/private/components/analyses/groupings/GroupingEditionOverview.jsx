@@ -183,7 +183,13 @@ const GroupingEditionOverviewComponent = (props) => {
       'x_opencti_workflow_id',
     ]),
   )(grouping);
-
+  let disableAuthor = false;
+  if ('currentUserAccessRight' in (grouping?.createdBy ?? {})) {
+    disableAuthor = !canUse([grouping?.createdBy?.currentUserAccessRight]);
+  }
+  if ('organizations' in (grouping?.createdBy ?? {})) {
+    disableAuthor = !canUse(grouping?.createdBy?.organizations?.edges.map((o) => o.node.currentUserAccessRight) ?? []);
+  }
   return (
     <Formik
       enableReinitialize={true}
@@ -276,7 +282,7 @@ const GroupingEditionOverviewComponent = (props) => {
                 <SubscriptionFocus context={context} fieldName="createdBy" />
               }
               onChange={editor.changeCreated}
-              disabled={'currentUserAccessRight' in report.createdBy && !canUse([report.createdBy.currentUserAccessRight])}
+              disabled={disableAuthor}
             />
             <ObjectMarkingField
               name="objectMarking"
