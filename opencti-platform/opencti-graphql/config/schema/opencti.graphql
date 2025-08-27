@@ -14398,6 +14398,7 @@ type StixDomainObjectEditMutations {
   exportAsk(input: ExportAskInput!): [File!] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   exportPush(file: Upload!, file_markings: [String]!): Boolean @auth(for: [CONNECTORAPI])
   stixDomainObjectFileEdit(input: StixDomainObjectFileEditInput): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
+  editAuthorizedMembers(input:[MemberAccessInput!]): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS])
 }
 type AttackPatternEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])

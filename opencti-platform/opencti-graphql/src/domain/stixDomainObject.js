@@ -25,7 +25,15 @@ import {
   isStixDomainObjectLocation,
   isStixDomainObjectThreatActor
 } from '../schema/stixDomainObject';
-import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey, INPUT_CREATED_BY, INPUT_MARKINGS } from '../schema/general';
+import {
+  ABSTRACT_STIX_CORE_OBJECT,
+  ABSTRACT_STIX_CYBER_OBSERVABLE,
+  ABSTRACT_STIX_DOMAIN_OBJECT,
+  buildRefRelationKey,
+  ENTITY_TYPE_CONTAINER,
+  INPUT_CREATED_BY,
+  INPUT_MARKINGS
+} from '../schema/general';
 import { RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE, } from '../schema/stixRefRelationship';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
@@ -39,6 +47,7 @@ import { entityLocationType, identityClass, xOpenctiType } from '../schema/attri
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { validateMarking } from '../utils/access';
+import { editAuthorizedMembers } from '../utils/authorizedMembers';
 
 export const findAll = async (context, user, args) => {
   let types = [];
@@ -245,6 +254,21 @@ export const stixDomainObjectEditField = async (context, user, stixObjectId, inp
     return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, updatedElem, user);
   }
   return updatedElem;
+};
+
+export const stixDomainObjectEditAuthorizedMembers = async (context, user, entityId, input) => {
+  const entity = await findById(context, user, entityId);
+  if (!entity) {
+    throw FunctionalError('Cant find element to update', { entityId });
+  }
+  const args = {
+    entityId,
+    input,
+    requiredCapabilities: ['KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS'],
+    entityType: entity.entity_type,
+    busTopicKey: ABSTRACT_STIX_DOMAIN_OBJECT,
+  };
+  return editAuthorizedMembers(context, user, args);
 };
 
 export const stixDomainObjectFileEdit = async (context, user, sdoId, { id, order, description, inCarousel }) => {

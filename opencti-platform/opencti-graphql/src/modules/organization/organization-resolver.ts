@@ -23,6 +23,8 @@ import {
 import type { Resolvers } from '../../generated/graphql';
 import type { BasicStoreEntityOrganization } from './organization-types';
 import { ENTITY_TYPE_WORKSPACE } from '../workspace/workspace-types';
+import { getAuthorizedMembers } from '../../utils/authorizedMembers';
+import { getUserAccessRight } from '../../utils/access';
 
 const organizationResolvers: Resolvers = {
   Query: {
@@ -36,6 +38,8 @@ const organizationResolvers: Resolvers = {
     parentOrganizations: (organization, args, context) => parentOrganizationsPaginated<BasicStoreEntityOrganization>(context, context.user, organization.id, args),
     default_dashboard: (current, _, context) => context.batch.idsBatchLoader.load({ id: current.default_dashboard, type: ENTITY_TYPE_WORKSPACE }),
     grantable_groups: (organization, _, context) => findGrantableGroups(context, context.user, organization),
+    authorized_members: (organization, _, context) => getAuthorizedMembers(context, context.user, organization),
+    currentUserAccessRight: (organization, _, context) => getUserAccessRight(context.user, organization),
   },
   User: {
     administrated_organizations: (user, _, context) => buildAdministratedOrganizations(context, context.user, user),
