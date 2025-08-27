@@ -70,7 +70,6 @@ type PirRelationship implements BasicRelationship {
     # in-pir relationship
     pir_explanations: [PirExplanation!]
     pir_score: Int
-    authorized_authorities: [String]
 }
 
 # Ordering

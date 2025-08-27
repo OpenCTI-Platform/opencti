@@ -12323,7 +12323,6 @@ input InternalRelationshipAddInput {
   toId: ID
   # in-pir rel
   pir_explanations: [PirExplanationInput!]
-  authorized_authorities: [String]
 }
 
 ######## STIX RELATIONSHIPS

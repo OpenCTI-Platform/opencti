@@ -272,7 +272,6 @@ export const createPirRelation = async (
     toId: pirId,
     pir_explanations: pirDependencies,
     pir_score,
-    authorized_authorities: [PIRAPI],
   };
   await createRelation(context, user, addRelationshipInput);
 };
