@@ -5,7 +5,7 @@ import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { getEnterpriseEditionActivePem } from '../modules/settings/licensing';
-import { logApp } from '../config/conf';
+import { getChatbotUrl, logApp } from '../config/conf';
 import type { BasicStoreSettings } from '../types/settings';
 import { setCookieError } from './httpUtils';
 
@@ -31,7 +31,7 @@ export const getChatbotProxy = async (req: Express.Request, res: Express.Respons
     }
 
     const vars = {
-      OPENCTI_URL: settings.platform_url,
+      OPENCTI_URL: getChatbotUrl(req),
       OPENCTI_TOKEN: context.user?.api_token,
       'X-API-KEY': Buffer.from(license_pem, 'utf-8').toString('base64'),
     };

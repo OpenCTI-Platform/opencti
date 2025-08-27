@@ -348,7 +348,7 @@ const baseUrl = BasePathUrl.endsWith('/') ? BasePathUrl.slice(0, -1) : BasePathU
 
 export const getBaseUrl = (req) => {
   // If base url is defined, take it in priority
-  if (baseUrl && !baseUrl.includes('localhost')) {
+  if (baseUrl) {
     // Always append base path to the uri
     return baseUrl + basePath;
   }
@@ -361,6 +361,16 @@ export const getBaseUrl = (req) => {
   }
   // If no base url and no request, send only the base path
   return basePath;
+};
+
+export const getChatbotUrl = (req) => {
+  if (req) {
+    const [, port] = req.headers.host ? req.headers.host.split(':') : [];
+    const isCustomPort = port !== '80' && port !== '443';
+    const httpPort = isCustomPort && port ? `:${port}` : '';
+    return `${req.protocol}://${req.hostname}${httpPort}${basePath}`;
+  }
+  throw UnknownError('Missing request for chatbot');
 };
 
 export const configureCA = (certificates) => {
