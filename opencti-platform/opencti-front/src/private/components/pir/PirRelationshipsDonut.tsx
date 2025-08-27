@@ -1,6 +1,6 @@
 import React from 'react';
 import { graphql } from 'react-relay';
-import { PirRelationshipsDonutDistributionQuery$data } from '@components/pir/__generated__/PirRelationshipsDonutDistributionQuery.graphql';
+import { PirRelationshipsDonutDistributionQuery$data } from './__generated__/PirRelationshipsDonutDistributionQuery.graphql';
 import WidgetDonut from '../../../components/dashboard/WidgetDonut';
 import WidgetNoData from '../../../components/dashboard/WidgetNoData';
 import Loader, { LoaderVariant } from '../../../components/Loader';
