@@ -20,8 +20,9 @@ import {
 } from '@components/data/IngestionCatalog/__generated__/IngestionCatalogConnectorCreationMutation.graphql';
 import IngestionCreationUserHandling, { BasicUserHandlingValues } from '@components/data/IngestionCreationUserHandling';
 import { IngestionConnector, IngestionTypedProperty } from '@components/data/IngestionCatalog';
-import { Git, Launch } from 'mdi-material-ui';
+import { Launch } from 'mdi-material-ui';
 import IconButton from '@mui/material/IconButton';
+import { LibraryBooksOutlined } from '@mui/icons-material';
 import { MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
@@ -148,7 +149,7 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
             target="blank"
             rel="noopener noreferrer"
           >
-            <Git />
+            <LibraryBooksOutlined />
           </IconButton>
         </div>
       }

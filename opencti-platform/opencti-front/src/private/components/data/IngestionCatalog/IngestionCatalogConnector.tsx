@@ -31,7 +31,7 @@ const IngestionCatalogConnectorComponent = ({
   const isEnterpriseEdition = useEnterpriseEdition();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Catalog | Ingestion | Data'));
+  setTitle(t_i18n('Connector catalog | Ingestion | Data'));
 
   const { contract } = usePreloadedQuery(
     ingestionCatalogConnectorQuery,
@@ -45,7 +45,7 @@ const IngestionCatalogConnectorComponent = ({
       <Breadcrumbs elements={[
         { label: t_i18n('Data') },
         { label: t_i18n('Ingestion') },
-        { label: t_i18n('Catalog'), link: '/dashboard/data/ingestion/catalog' },
+        { label: t_i18n('Connector catalog'), link: '/dashboard/data/ingestion/catalog' },
         { label: connector.title, current: true },
       ]}
       />
