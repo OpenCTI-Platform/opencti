@@ -15,12 +15,11 @@ import { isStixRefRelationship, RELATION_OBJECT_MARKING } from '../schema/stixRe
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { getDraftContext } from '../utils/draftContext';
 import { INPUT_OBJECTS } from '../schema/general';
+import { doYield } from '../utils/eventloop-utils';
 
 export const ES_INDEX_PREFIX = conf.get('elasticsearch:index_prefix') || 'opencti';
 const rabbitmqPrefix = conf.get('rabbitmq:queue_prefix');
 export const RABBIT_QUEUE_PREFIX = rabbitmqPrefix ? `${rabbitmqPrefix}_` : '';
-
-export const MAX_EVENT_LOOP_PROCESSING_TIME = 50;
 
 export const REDACTED_INFORMATION = '*** Redacted ***';
 export const RESTRICTED_INFORMATION = 'Restricted';
@@ -390,18 +389,11 @@ export const isObjectPathTargetMultipleAttribute = (instance, object_path) => {
 
 export const asyncListTransformation = async (elements, preparatoryFunction, opts = {}) => {
   const preparedElements = [];
-  let startProcessingTime = new Date().getTime();
   for (let n = 0; n < elements.length; n += 1) {
+    await doYield();
     const element = elements[n];
     const preparedElement = await preparatoryFunction(element, opts);
     preparedElements.push(preparedElement);
-    // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
-    if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
-      startProcessingTime = new Date().getTime();
-      await new Promise((resolve) => {
-        setImmediate(resolve);
-      });
-    }
   }
   return preparedElements;
 };
