@@ -18,7 +18,7 @@ import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rf
 import { loadEntity, updateAttribute } from './middleware';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
 import conf, { logApp } from '../config/conf';
-import { INDEX_INTERNAL_OBJECTS, isNotEmptyField } from './utils';
+import { INDEX_INTERNAL_OBJECTS, isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS } from './utils';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { elRawDelete, elRawGet, elRawIndex } from './engine';
 import { ConfigurationError } from '../config/errors';
@@ -405,7 +405,7 @@ export const setPlatformId = async (context, platformId) => {
       logApp.warn(`[INIT] Switching platform identifier from [${platformSettings.id}] to [${platformId}]`);
       // to change the id in elastic, we have no choice but to create a patched copy and delete the old document
       const response = await elRawGet({
-        index: INDEX_INTERNAL_OBJECTS,
+        index: READ_INDEX_INTERNAL_OBJECTS,
         id: platformSettings.id
       });
       await elRawIndex({
