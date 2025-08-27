@@ -10,15 +10,17 @@ import IngestionCatalogChip from '@components/data/IngestionCatalog/IngestionCat
 import { useTheme } from '@mui/styles';
 import IngestionCatalogConnectorCreation from '@components/data/IngestionCatalog/IngestionCatalogConnectorCreation';
 import { IngestionConnector } from '@components/data/IngestionCatalog';
+import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';
 import { useFormatter } from '../../../../components/i18n';
 import EnrichedTooltip from '../../../../components/EnrichedTooltip';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import type { Theme } from '../../../../components/Theme';
 
-interface IngestionCatalogCardProps {
+export interface IngestionCatalogCardProps {
   node: IngestionConnector;
   dataListId: string;
+  isEnterpriseEdition: boolean
 }
 
 export type IngestionConnectorType = 'INTERNAL_ENRICHMENT' | 'EXTERNAL_IMPORT' | 'INTERNAL_EXPORT_FILE' | 'INTERNAL_IMPORT_FILE';
@@ -42,7 +44,7 @@ export const ingestionConnectorTypeMetadata: Record<IngestionConnectorType, { la
   },
 };
 
-const IngestionCatalogCard = ({ node: connector, dataListId }: IngestionCatalogCardProps) => {
+const IngestionCatalogCard = ({ node: connector, dataListId, isEnterpriseEdition }: IngestionCatalogCardProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const [openCreation, setOpenCreation] = useState(false);
@@ -120,7 +122,13 @@ const IngestionCatalogCard = ({ node: connector, dataListId }: IngestionCatalogC
         <CardActions style={{ alignSelf: 'end' }}>
           <Button variant="outlined" size="small" component={Link} to={link}>{t_i18n('Details')}</Button>
           <Security needs={[INGESTION_SETINGESTIONS]}>
-            <Button variant="contained" onClick={() => setOpenCreation(true)} size="small">{t_i18n('Deploy')}</Button>
+            {
+              isEnterpriseEdition ? (
+                <Button variant="contained" onClick={() => setOpenCreation(true)} size="small">{t_i18n('Deploy')}</Button>
+              ) : (
+                <EnterpriseEditionButton title="Deploy" />
+              )
+            }
           </Security>
         </CardActions>
 

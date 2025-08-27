@@ -44,6 +44,7 @@ const IngestionMenu = () => {
     entries.unshift({
       path: '/dashboard/data/ingestion/catalog',
       label: 'Catalog',
+      isEE: true,
     });
   }
   if (isConnectorReader) {

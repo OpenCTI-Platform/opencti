@@ -3,6 +3,7 @@ import IngestionMenu from '@components/data/IngestionMenu';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { IngestionCatalogQuery } from '@components/data/__generated__/IngestionCatalogQuery.graphql';
 import IngestionCatalogCard, { IngestionConnectorType } from '@components/data/IngestionCatalog/IngestionCatalogCard';
+import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
@@ -13,6 +14,7 @@ import ListCardsContent from '../../../components/list_cards/ListCardsContent';
 import { MESSAGING$ } from '../../../relay/environment';
 import GradientButton from '../../../components/GradientButton';
 import SearchInput from '../../../components/SearchInput';
+import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 
 export const ingestionCatalogQuery = graphql`
   query IngestionCatalogQuery {
@@ -85,6 +87,7 @@ export interface IngestionConnector {
 const IngestionCatalogComponent = ({
   queryRef,
 }: IngestionCatalogComponentProps) => {
+  const isEnterpriseEdition = useEnterpriseEdition();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Catalog | Ingestion | Data'));
@@ -113,9 +116,13 @@ const IngestionCatalogComponent = ({
 
   return (
     <>
+
       <IngestionMenu />
       <PageContainer withRightMenu withGap>
         <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('Catalog'), current: true }]} />
+
+        {!isEnterpriseEdition && <EnterpriseEdition />}
+
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <SearchInput disabled />
           <GradientButton
@@ -137,7 +144,12 @@ const IngestionCatalogComponent = ({
               dataList={catalog.contracts}
               dataListId={catalog.id}
               globalCount={catalog.contracts.length}
-              CardComponent={IngestionCatalogCard}
+              CardComponent={(props: React.ComponentProps<typeof IngestionCatalogCard>) => (
+                <IngestionCatalogCard
+                  {...props}
+                  isEnterpriseEdition={isEnterpriseEdition}
+                />
+              )}
               rowHeight={350}
             />
           );
