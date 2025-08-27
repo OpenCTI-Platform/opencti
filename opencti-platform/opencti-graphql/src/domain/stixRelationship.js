@@ -125,6 +125,9 @@ export const stixRelationshipsNumber = async (context, user, args) => {
 };
 export const stixRelationshipsMultiTimeSeries = async (context, user, args) => {
   const relationship_type = buildRelationshipTypes(args.relationship_type);
+  if (!args.timeSeriesParameters) {
+    return [];
+  }
   return Promise.all(args.timeSeriesParameters.map(async (timeSeriesParameter) => {
     const { startDate, endDate, interval } = args;
     const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, timeSeriesParameter);

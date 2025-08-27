@@ -33,13 +33,16 @@ import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 /**
  * Helper function to check a user has access to a pir functionnalities
  */
-export const checkEEAndPirAccess = async (context: AuthContext, user: AuthUser, pirId: string) => {
+export const checkEEAndPirAccess = async (context: AuthContext, user: AuthUser, pirId?: string | null) => {
   // check EE
   await checkEnterpriseEdition(context);
   // check user has access to the PIR
+  if (!pirId) {
+    throw FunctionalError('No Pir ID provided');
+  }
   const pir = await storeLoadById(context, user, pirId, ENTITY_TYPE_PIR); // TODO PIR fetch from cache
   if (!pir) {
-    throw FunctionalError('No PIR found');
+    throw FunctionalError('No PIR found', { pirId });
   }
 };
 

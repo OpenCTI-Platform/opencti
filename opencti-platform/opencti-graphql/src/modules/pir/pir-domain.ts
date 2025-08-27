@@ -15,7 +15,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { now } from 'moment';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { type EntityOptions, internalLoadById, listEntitiesPaginated, listRelations, listRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
+import {
+  type EntityOptions,
+  internalLoadById,
+  listEntitiesPaginated,
+  listRelations,
+  listRelationsPaginated,
+  type RelationOptions,
+  storeLoadById
+} from '../../database/middleware-loader';
 import { type BasicStoreEntityPir, type BasicStoreRelationPir, ENTITY_TYPE_PIR, type PirExplanation } from './pir-types';
 import {
   type EditInput,
@@ -28,7 +36,7 @@ import {
   type PirUnflagElementInput,
   type QueryPirRelationshipsArgs,
   type QueryPirRelationshipsDistributionArgs,
-  type QueryPirRelationshipsMultiTimeArgs,
+  type QueryPirRelationshipsMultiTimeSeriesArgs,
 } from '../../generated/graphql';
 import { createEntity, deleteRelationsByFromAndTo, distributionRelations, timeSeriesRelations, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
@@ -70,7 +78,7 @@ export const findAllPirRelations = async (
     throw FunctionalError('You should provide exactly 1 Pir ID since in-pir relationships can only be fetch for a given PIR.', { toId });
   }
   await checkEEAndPirAccess(context, user, toId[0]);
-  return listRelationsPaginated<BasicStoreRelationPir>(context, user, RELATION_IN_PIR, opts);
+  return listRelationsPaginated<BasicStoreRelationPir>(context, user, RELATION_IN_PIR, opts as RelationOptions<BasicStoreRelationPir>);
 };
 
 export const pirRelationshipsDistribution = async (
@@ -94,9 +102,12 @@ export const pirRelationshipsDistribution = async (
 export const pirRelationshipsMultiTimeSeries = async (
   context: AuthContext,
   user: AuthUser,
-  args: QueryPirRelationshipsMultiTimeArgs,
+  args: QueryPirRelationshipsMultiTimeSeriesArgs,
 ) => {
   const relationship_type = [RELATION_IN_PIR];
+  if (!args.timeSeriesParameters) {
+    return [];
+  }
   return Promise.all(args.timeSeriesParameters.map(async (timeSeriesParameter) => {
     const { startDate, endDate, interval } = args;
     const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, timeSeriesParameter);

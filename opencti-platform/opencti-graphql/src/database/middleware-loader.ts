@@ -42,7 +42,6 @@ import { ASSIGNEE_FILTER, CREATOR_FILTER, INSTANCE_REGARDING_OF, PARTICIPANT_FIL
 import type { UserReadActionContextData } from '../listener/UserActionListener';
 import { completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from './entity-representative';
-import { RELATION_IN_PIR } from '../schema/internalRelationship';
 
 export interface FiltersWithNested extends Filter {
   nested?: Array<{

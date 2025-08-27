@@ -60,11 +60,6 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
           key: ['event_type'],
           values: ['create', 'delete', 'mutation'], // retro-compatibility
         },
-        {
-          key: ['context_data.entity_type'],
-          values: ['in-pir'],
-          operator: 'not_eq',
-        },
       ],
       filterGroups: [{
         mode: 'or',
