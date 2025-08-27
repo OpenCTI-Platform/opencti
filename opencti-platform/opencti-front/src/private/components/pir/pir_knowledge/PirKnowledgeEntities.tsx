@@ -52,9 +52,20 @@ const sourceFlaggedFragment = graphql`
       color
       value
     }
+    objectMarking {
+      id
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
     creators {
       id
       name
+    }
+    createdBy {
+      ... on Identity {
+        name
+      }
     }
     pirScore(pirId: $pirId)
     pirLastScoreDate(pirId: $pirId)
