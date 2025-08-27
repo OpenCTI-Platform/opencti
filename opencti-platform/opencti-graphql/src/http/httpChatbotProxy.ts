@@ -4,7 +4,7 @@ import type Express from 'express';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
-import { getEntrepriseEditionActivePem } from '../modules/settings/licensing';
+import { getEnterpriseEditionActivePem } from '../modules/settings/licensing';
 import { logApp } from '../config/conf';
 import type { BasicStoreSettings } from '../types/settings';
 import { setCookieError } from './httpUtils';
@@ -20,7 +20,7 @@ export const getChatbotProxy = async (req: Express.Request, res: Express.Respons
     const chatbotUrl = nconf.get('ai:chatbot:url');
     const isChatbotEnabled = nconf.get('ai:chatbot:enabled');
     const settings = await getEntityFromCache<BasicStoreSettings>(context, context.user, ENTITY_TYPE_SETTINGS);
-    const license_pem = getEntrepriseEditionActivePem(settings.enterprise_license);
+    const license_pem = getEnterpriseEditionActivePem(settings.enterprise_license);
     if (!isChatbotEnabled || !license_pem) {
       res.status(400).json({ error: 'Chatbot is not enabled' });
       return;
