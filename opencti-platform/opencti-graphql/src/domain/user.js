@@ -204,7 +204,7 @@ export const findById = async (context, user, userId) => {
   return buildCompleteUser(context, withoutPassword);
 };
 
-export const findAll = async (context, user, args) => {
+export const findAllPaginated = async (context, user, args) => {
   // if user is orga_admin && not set_accesses
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
     // TODO JRI REPLACE BY listEntities with filter?????
