@@ -7,7 +7,6 @@ import useIngestionCatalogFilters from '@components/data/IngestionCatalog/hooks/
 import { useSearchParams } from 'react-router-dom';
 import { Stack } from '@mui/material';
 import { Search } from '@mui/icons-material';
-import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
@@ -168,8 +167,6 @@ const IngestionCatalogComponent = ({
       <IngestionMenu />
       <PageContainer withRightMenu withGap>
         <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('Connector catalog'), current: true }]} />
-
-        {!isEnterpriseEdition && <EnterpriseEdition />}
 
         <Stack flexDirection="row">
           <IngestionCatalogFilters
