@@ -174,3 +174,13 @@ export const getEntityFromCache = async <T extends BasicStoreIdentifier>(context
   const data = await getEntitiesListFromCache<T>(context, user, type);
   return data[0];
 };
+
+export const getEntityFromIdFromCache = async <T extends BasicStoreIdentifier>(
+  context: AuthContext,
+  user: AuthUser,
+  id: string,
+  type: string
+): Promise<T | undefined> => {
+  const data = await getEntitiesListFromCache<T>(context, user, type);
+  return data.find((d) => d.id === id);
+};

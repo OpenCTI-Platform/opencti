@@ -27,8 +27,8 @@ import { RELATION_FROM_TYPES_FILTER } from '../../utils/filtering/filtering-cons
 import { elUpdate } from '../../database/engine';
 import { INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
 import type { BasicStoreEntity } from '../../types/store';
-import { PIRAPI } from '../../utils/access';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
+import { getEntityFromIdFromCache } from '../../database/cache';
 
 /**
  * Helper function to check a user has access to a pir functionnalities
@@ -40,7 +40,7 @@ export const checkEEAndPirAccess = async (context: AuthContext, user: AuthUser, 
   if (!pirId) {
     throw FunctionalError('No Pir ID provided');
   }
-  const pir = await storeLoadById(context, user, pirId, ENTITY_TYPE_PIR); // TODO PIR fetch from cache
+  const pir = await getEntityFromIdFromCache(context, user, pirId, ENTITY_TYPE_PIR);
   if (!pir) {
     throw FunctionalError('No PIR found', { pirId });
   }
