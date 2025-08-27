@@ -1,6 +1,6 @@
 import { isDateNumericOrBooleanAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
 import { FunctionalError, UnsupportedError } from '../config/errors';
-import { checkEEAndPirAccess } from '../modules/pir/pir-utils';
+import { checkEEAndPirAccess } from '../modules/pir/pir-checkPirAccess';
 import type { AuthContext, AuthUser } from '../types/user';
 
 const PIR_ORDERING_CRITERIA = ['pir_score', 'last_pir_score_date'];

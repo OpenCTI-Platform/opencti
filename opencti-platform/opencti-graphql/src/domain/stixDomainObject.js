@@ -48,7 +48,7 @@ import { addFilter } from '../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { validateMarking } from '../utils/access';
 import { editAuthorizedMembers } from '../utils/authorizedMembers';
-import { checkEEAndPirAccess } from '../modules/pir/pir-utils';
+import { checkEEAndPirAccess } from '../modules/pir/pir-checkPirAccess';
 
 export const findAll = async (context, user, args) => {
   let types = [];
