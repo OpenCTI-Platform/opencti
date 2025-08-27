@@ -3,6 +3,11 @@ kind: pipeline
 name: client-python-tests
 
 steps:
+  - name: Runner information
+    image: alpine:3.19
+    commands:
+    - echo DRONE_STAGE_MACHINE ${DRONE_STAGE_MACHINE}
+
   - name: sleep-for-opencti
     image: python:3.11
     commands:
@@ -77,6 +82,8 @@ services:
     environment:
       APP__ADMIN__PASSWORD: admin
       APP__ADMIN__TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
+      APP__ENTERPRISE_EDITION_LICENSE:
+        from_secret: ee_license
       REDIS__HOSTNAME: redis
       REDIS__NAMESPACE: raw-start
       ELASTICSEARCH__URL: http://elastic:9200
