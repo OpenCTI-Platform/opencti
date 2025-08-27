@@ -1,6 +1,7 @@
 import * as R from 'ramda';
 import {
   buildPagination,
+  buildPaginationFromEdges,
   isEmptyField,
   isNotEmptyField,
   READ_DATA_INDICES,
@@ -457,7 +458,7 @@ export const listEntitiesPaginated = async <T extends BasicStoreEntity>(context:
   const first = args.first ?? ES_DEFAULT_PAGINATION;
   const paginateArgs = { ...buildEntityFilters(entityTypes, args), first, maxSize: first };
   const { elements, totalCount, totalFilteredCount } = await elListPaginated(context, user, computedIndices, paginateArgs);
-  return buildPagination(args.first, args.after, elements, totalCount, totalFilteredCount);
+  return buildPaginationFromEdges(args.first, args.after, elements, totalCount, totalFilteredCount);
 };
 
 export const listEntities = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, entityTypes: string[], args: EntityOptions<T> = {}) => {
