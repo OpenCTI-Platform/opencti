@@ -23144,7 +23144,7 @@ export type QueryPirRelationshipsMultiTimeSeriesArgs = {
   operation: StatsOperation;
   relationship_type?: InputMaybe<Array<Scalars['String']['input']>>;
   startDate: Scalars['DateTime']['input'];
-  timeSeriesParameters?: InputMaybe<Array<InputMaybe<PirRelationshipsTimeSeriesParameters>>>;
+  timeSeriesParameters: Array<PirRelationshipsTimeSeriesParameters>;
 };
 
 
@@ -42812,7 +42812,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   pir?: Resolver<Maybe<ResolversTypes['Pir']>, ParentType, ContextType, RequireFields<QueryPirArgs, 'id'>>;
   pirRelationships?: Resolver<Maybe<ResolversTypes['PirRelationshipConnection']>, ParentType, ContextType, RequireFields<QueryPirRelationshipsArgs, 'pirId'>>;
   pirRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryPirRelationshipsDistributionArgs, 'field' | 'operation' | 'pirId'>>;
-  pirRelationshipsMultiTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['MultiTimeSeries']>>>, ParentType, ContextType, RequireFields<QueryPirRelationshipsMultiTimeSeriesArgs, 'interval' | 'operation' | 'startDate'>>;
+  pirRelationshipsMultiTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['MultiTimeSeries']>>>, ParentType, ContextType, RequireFields<QueryPirRelationshipsMultiTimeSeriesArgs, 'interval' | 'operation' | 'startDate' | 'timeSeriesParameters'>>;
   pirs?: Resolver<Maybe<ResolversTypes['PirConnection']>, ParentType, ContextType, Partial<QueryPirsArgs>>;
   playbook?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<QueryPlaybookArgs, 'id'>>;
   playbookComponents?: Resolver<Array<Maybe<ResolversTypes['PlaybookComponent']>>, ParentType, ContextType>;

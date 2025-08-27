@@ -168,7 +168,7 @@ type Query {
         endDate: DateTime
         interval: String!
         onlyInferred: Boolean
-        timeSeriesParameters: [PirRelationshipsTimeSeriesParameters]
+        timeSeriesParameters: [PirRelationshipsTimeSeriesParameters!]!
         relationship_type: [String!]
     ): [MultiTimeSeries] @auth(for: [PIRAPI])
 }

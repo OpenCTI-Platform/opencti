@@ -107,9 +107,6 @@ export const pirRelationshipsMultiTimeSeries = async (
   args: QueryPirRelationshipsMultiTimeSeriesArgs,
 ) => {
   const relationship_type = [RELATION_IN_PIR];
-  if (!args.timeSeriesParameters) {
-    return [];
-  }
   return Promise.all(args.timeSeriesParameters.map(async (timeSeriesParameter) => {
     const { startDate, endDate, interval } = args;
     const { pirId } = timeSeriesParameter;

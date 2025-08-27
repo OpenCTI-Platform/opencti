@@ -33,7 +33,7 @@ const pirRelationshipsMultiAreaChartTimeSeriesQuery = graphql`
     $endDate: DateTime!
     $interval: String!
     $relationship_type: [String!]
-    $timeSeriesParameters: [PirRelationshipsTimeSeriesParameters]
+    $timeSeriesParameters: [PirRelationshipsTimeSeriesParameters!]!
   ) {
     pirRelationshipsMultiTimeSeries(
       operation: $operation
