@@ -14,6 +14,18 @@ export const identitySearchIdentitiesSearchQuery = graphql`
           identity_class
           name
           entity_type
+          ... on Organization {
+            currentUserAccessRight
+          }
+          ... on Individual {
+            organizations {
+              edges {
+                node {
+                  currentUserAccessRight
+                }
+              }
+            }
+          }
         }
       }
     }

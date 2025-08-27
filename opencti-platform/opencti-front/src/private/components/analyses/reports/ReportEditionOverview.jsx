@@ -24,6 +24,7 @@ import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import { canUse } from '../../../../utils/authorizedMembers';
 
 export const reportMutationFieldPatch = graphql`
   mutation ReportEditionOverviewFieldPatchMutation(
@@ -338,6 +339,7 @@ const ReportEditionOverviewComponent = (props) => {
             onChange={editor.changeCreated}
             setFieldValue={setFieldValue}
             required={mandatoryAttributes.includes('createdBy')}
+            disabled={'currentUserAccessRight' in report.createdBy && !canUse([report.createdBy.currentUserAccessRight])}
           />
           <ObjectMarkingField
             name="objectMarking"
@@ -383,6 +385,18 @@ export default createFragmentContainer(ReportEditionOverviewComponent, {
           id
           name
           entity_type
+        }
+        ... on Organization {
+          currentUserAccessRight
+        }
+        ... on Individual {
+          organizations {
+            edges {
+              node {
+                currentUserAccessRight
+              }
+            }
+          }
         }
       }
       objectMarking {

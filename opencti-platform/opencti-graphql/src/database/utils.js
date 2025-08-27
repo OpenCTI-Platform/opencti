@@ -23,6 +23,7 @@ export const RABBIT_QUEUE_PREFIX = rabbitmqPrefix ? `${rabbitmqPrefix}_` : '';
 export const MAX_EVENT_LOOP_PROCESSING_TIME = 50;
 
 export const REDACTED_INFORMATION = '*** Redacted ***';
+export const RESTRICTED_INFORMATION = 'Restricted';
 
 export const EVENT_TYPE_CREATE = 'create';
 export const EVENT_TYPE_DELETE = 'delete';

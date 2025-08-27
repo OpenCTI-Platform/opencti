@@ -1,19 +1,20 @@
-import React, { Component } from 'react';
-import { compose, pathOr, pipe, map, union } from 'ramda';
+import React, { useEffect, useState } from 'react';
+import { filter, map, pathOr, pipe, union } from 'ramda';
 import { debounce } from 'rxjs/operators';
 import { Subject, timer } from 'rxjs';
 import { Field } from 'formik';
-import withStyles from '@mui/styles/withStyles';
+import makeStyles from '@mui/styles/makeStyles';
 import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
-import inject18n from '../../../../components/i18n';
 import IdentityCreation from '../identities/IdentityCreation';
 import { identitySearchIdentitiesSearchQuery } from '../identities/IdentitySearch';
 import ItemIcon from '../../../../components/ItemIcon';
+import { canUse } from '../../../../utils/authorizedMembers';
+import { useFormatter } from '../../../../components/i18n';
 
 const SEARCH$ = new Subject().pipe(debounce(() => timer(1500)));
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   icon: {
     paddingTop: 4,
     display: 'inline-block',
@@ -27,63 +28,47 @@ const styles = (theme) => ({
   autoCompleteIndicator: {
     display: 'none',
   },
-});
+}));
 
-class CreatedByField extends Component {
-  constructor(props) {
-    super(props);
-    const { defaultCreatedBy } = props;
-    this.state = {
-      identityCreation: false,
-      keyword: '',
-      identities: defaultCreatedBy
-        ? [
-          {
-            label: defaultCreatedBy.name,
-            value: defaultCreatedBy.id,
-            type: defaultCreatedBy.entity_type,
-            entity: defaultCreatedBy,
-          },
-        ]
-        : [],
-    };
-  }
+const CreatedByField = (props) => {
+  const {
+    name,
+    style,
+    label,
+    setFieldValue,
+    onChange,
+    helpertext,
+    disabled,
+    dryrun,
+    required = false,
+    defaultCreatedBy,
+  } = props;
+  const classes = useStyles();
+  const { t_i18n } = useFormatter();
+  const [identityCreation, setIdentityCreation] = useState(false);
+  const [keyword, setKeyword] = useState('');
+  const [identities, setIdentities] = useState(defaultCreatedBy
+    ? [
+      {
+        label: defaultCreatedBy.name,
+        value: defaultCreatedBy.id,
+        type: defaultCreatedBy.entity_type,
+        entity: defaultCreatedBy,
+      },
+    ]
+    : []);
 
-  componentDidMount() {
-    this.subscription = SEARCH$.subscribe({
-      next: () => this.searchIdentities(),
-    });
-  }
-
-  componentWillUnmount() {
-    this.subscription.unsubscribe();
-  }
-
-  handleSearch(event) {
-    if (event && event.target && event.target.value) {
-      this.setState({ keyword: event.target.value });
-      SEARCH$.next({ action: 'Search' });
-    }
-  }
-
-  handleOpenIdentityCreation() {
-    this.setState({ identityCreation: true });
-  }
-
-  handleCloseIdentityCreation() {
-    this.setState({ identityCreation: false });
-  }
-
-  searchIdentities() {
+  const searchIdentities = () => {
     fetchQuery(identitySearchIdentitiesSearchQuery, {
       types: ['Individual', 'Organization', 'System'],
-      search: this.state.keyword,
+      search: keyword,
       first: 10,
     })
       .toPromise()
       .then((data) => {
-        const identities = pipe(
+        const resultIdentities = pipe(
           pathOr([], ['identities', 'edges']),
+          filter((n) => !('currentUserAccessRight' in n.node) || canUse([n.node.currentUserAccessRight, ...(n.node.organizations?.edges.map((o) => o.node.currentUserAccessRight)) ?? []])),
           map((n) => ({
             label: n.node.name,
             value: n.node.id,
@@ -91,81 +76,89 @@ class CreatedByField extends Component {
             entity: n.node,
           })),
         )(data);
-        this.setState({ identities: union(this.state.identities, identities) });
+        setIdentities(union(identities, resultIdentities));
       });
-  }
+  };
 
-  render() {
-    const {
-      t,
-      name,
-      style,
-      label,
-      classes,
-      setFieldValue,
-      onChange,
-      helpertext,
-      disabled,
-      dryrun,
-      required = false,
-    } = this.props;
-    return (
-      <>
-        <Field
-          component={AutocompleteField}
-          style={style}
-          name={name}
-          required={required}
-          disabled={disabled}
-          textfieldprops={{
-            variant: 'standard',
-            label: label ?? t('Author'),
-            helperText: helpertext,
-            onFocus: this.searchIdentities.bind(this),
-            required,
-          }}
-          noOptionsText={t('No available options')}
-          options={this.state.identities.sort((a, b) => a.label.localeCompare(b.label))}
-          onInputChange={this.handleSearch.bind(this)}
-          openCreate={this.handleOpenIdentityCreation.bind(this)}
-          onChange={typeof onChange === 'function' ? onChange.bind(this) : null}
-          renderOption={({ key, ...props }, option) => (
-            <li key={key} {...props}>
-              <div className={classes.icon}>
-                <ItemIcon type={option.type} />
-              </div>
-              <div className={classes.text}>{option.label}</div>
-            </li>
-          )}
-          classes={{ clearIndicator: classes.autoCompleteIndicator }}
-        />
-        <IdentityCreation
-          contextual={true}
-          onlyAuthors={true}
-          inputValue={this.state.keyword}
-          open={this.state.identityCreation}
-          handleClose={this.handleCloseIdentityCreation.bind(this)}
-          dryrun={dryrun}
-          creationCallback={(data) => {
-            setFieldValue(name, {
+  useEffect(() => {
+    const subscription = SEARCH$.subscribe({
+      next: () => searchIdentities(),
+    });
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const handleSearch = (event) => {
+    if (event && event.target && event.target.value) {
+      setKeyword(event.target.value);
+      SEARCH$.next({ action: 'Search' });
+    }
+  };
+
+  const handleOpenIdentityCreation = () => {
+    setIdentityCreation(true);
+  };
+
+  const handleCloseIdentityCreation = () => {
+    setIdentityCreation(false);
+  };
+  return (
+    <>
+      <Field
+        component={AutocompleteField}
+        style={style}
+        name={name}
+        required={required}
+        disabled={disabled}
+        textfieldprops={{
+          variant: 'standard',
+          label: label ?? t_i18n('Author'),
+          helperText: helpertext,
+          onFocus: searchIdentities,
+          required,
+        }}
+        noOptionsText={t_i18n('No available options')}
+        options={identities.sort((a, b) => a.label.localeCompare(b.label))}
+        onInputChange={handleSearch}
+        openCreate={handleOpenIdentityCreation}
+        onChange={typeof onChange === 'function' ? onChange : null}
+        renderOption={({ key, ...innerProps }, option) => (
+          <li key={key} {...innerProps}>
+            <div className={classes.icon}>
+              <ItemIcon type={option.type} />
+            </div>
+            <div className={classes.text}>{option.label}</div>
+          </li>
+        )}
+        classes={{ clearIndicator: classes.autoCompleteIndicator }}
+      />
+      <IdentityCreation
+        contextual={true}
+        onlyAuthors={true}
+        inputValue={keyword}
+        open={identityCreation}
+        handleClose={handleCloseIdentityCreation}
+        dryrun={dryrun}
+        creationCallback={(data) => {
+          setFieldValue(name, {
+            label: data.identityAdd.name,
+            value: data.identityAdd.id,
+            type: data.identityAdd.entity_type,
+            entity: data.identityAdd,
+          });
+          if (typeof onChange === 'function') {
+            onChange(name, {
               label: data.identityAdd.name,
               value: data.identityAdd.id,
               type: data.identityAdd.entity_type,
               entity: data.identityAdd,
             });
-            if (typeof onChange === 'function') {
-              onChange(name, {
-                label: data.identityAdd.name,
-                value: data.identityAdd.id,
-                type: data.identityAdd.entity_type,
-                entity: data.identityAdd,
-              });
-            }
-          }}
-        />
-      </>
-    );
-  }
-}
+          }
+        }}
+      />
+    </>
+  );
+};
 
-export default compose(inject18n, withStyles(styles))(CreatedByField);
+export default CreatedByField;

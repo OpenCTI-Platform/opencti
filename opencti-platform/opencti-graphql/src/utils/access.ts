@@ -18,7 +18,7 @@ import type { BasicStoreSettings } from '../types/settings';
 import { ACCOUNT_STATUS_ACTIVE, isFeatureEnabled } from '../config/conf';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { FunctionalError, UnsupportedError } from '../config/errors';
-import { extractIdsFromStoreObject, isNotEmptyField, REDACTED_INFORMATION } from '../database/utils';
+import { extractIdsFromStoreObject, isNotEmptyField, REDACTED_INFORMATION, RESTRICTED_INFORMATION } from '../database/utils';
 import { isStixObject } from '../schema/stixCoreObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import type { UpdateEvent } from '../types/event';
@@ -58,6 +58,7 @@ export const DECAY_MANAGER_USER_UUID = '7f176d74-9084-4d23-8138-22ac78549547';
 export const GARBAGE_COLLECTION_MANAGER_USER_UUID = 'c30d12be-d5fb-4724-88e7-8a7c9a4516c2';
 const TELEMETRY_MANAGER_USER_UUID = 'c30d12be-d5fb-4724-88e7-8a7c9a4516c3';
 export const REDACTED_USER_UUID = '31afac4e-6b99-44a0-b91b-e04738d31461';
+export const RESTRICTED_USER_UUID = '27d2b0af-4d1e-42ae-a50c-9691bf57f35d';
 const PIR_MANAGER_USER_UUID = '1e20b6e5-e0f7-46f2-bacb-c37e4f8707a2';
 const HUB_REGISTRATION_MANAGER_USER_UUID = 'e16d7175-17c7-4dae-bd3c-48c939f47dfb';
 
@@ -65,8 +66,9 @@ export const MEMBER_ACCESS_ALL = 'ALL';
 export const MEMBER_ACCESS_CREATOR = 'CREATOR';
 export const MEMBER_ACCESS_RIGHT_ADMIN = 'admin';
 export const MEMBER_ACCESS_RIGHT_EDIT = 'edit';
+export const MEMBER_ACCESS_RIGHT_USE = 'use';
 export const MEMBER_ACCESS_RIGHT_VIEW = 'view';
-const MEMBER_ACCESS_RIGHTS = [MEMBER_ACCESS_RIGHT_VIEW, MEMBER_ACCESS_RIGHT_EDIT, MEMBER_ACCESS_RIGHT_ADMIN];
+const MEMBER_ACCESS_RIGHTS = [MEMBER_ACCESS_RIGHT_VIEW, MEMBER_ACCESS_RIGHT_USE, MEMBER_ACCESS_RIGHT_EDIT, MEMBER_ACCESS_RIGHT_ADMIN];
 
 type ObjectWithCreators = {
   id: string,
@@ -332,6 +334,31 @@ export const REDACTED_USER: AuthUser = {
   restrict_delete: false,
 };
 
+export const RESTRICTED_USER: AuthUser = {
+  administrated_organizations: [],
+  entity_type: 'User',
+  id: RESTRICTED_USER_UUID,
+  internal_id: RESTRICTED_USER_UUID,
+  individual_id: undefined,
+  name: RESTRICTED_INFORMATION,
+  user_email: RESTRICTED_INFORMATION,
+  origin: { user_id: RESTRICTED_USER_UUID, socket: 'internal' },
+  roles: [],
+  groups: [],
+  capabilities: [],
+  organizations: [],
+  allowed_marking: [],
+  max_shareable_marking: [],
+  default_marking: [],
+  api_token: '',
+  account_lock_after_date: undefined,
+  account_status: ACCOUNT_STATUS_ACTIVE,
+  effective_confidence_level: null,
+  user_confidence_level: null,
+  no_creators: false,
+  restrict_delete: false,
+};
+
 export const TELEMETRY_MANAGER_USER: AuthUser = {
   entity_type: 'User',
   id: TELEMETRY_MANAGER_USER_UUID,
@@ -509,6 +536,7 @@ export const INTERNAL_USERS = {
   [DECAY_MANAGER_USER.id]: DECAY_MANAGER_USER,
   [EXPIRATION_MANAGER_USER.id]: EXPIRATION_MANAGER_USER,
   [REDACTED_USER.id]: REDACTED_USER,
+  [RESTRICTED_USER.id]: RESTRICTED_USER,
   [PIR_MANAGER_USER.id]: PIR_MANAGER_USER,
   [HUB_REGISTRATION_MANAGER_USER.id]: HUB_REGISTRATION_MANAGER_USER
 };
@@ -573,6 +601,9 @@ export const getExplicitUserAccessRight = (user: AuthUser, element: { restricted
   }
   if (foundAccessMembers.some((m) => m.access_right === MEMBER_ACCESS_RIGHT_EDIT)) {
     return MEMBER_ACCESS_RIGHT_EDIT;
+  }
+  if (foundAccessMembers.some((m) => m.access_right === MEMBER_ACCESS_RIGHT_USE)) {
+    return MEMBER_ACCESS_RIGHT_USE;
   }
   return MEMBER_ACCESS_RIGHT_VIEW;
 };
@@ -883,11 +914,11 @@ export const filterMembersWithUsersOrgs = async (
       if (!sameOrg) {
         return {
           ...member,
-          name: REDACTED_USER.name,
-          user_email: REDACTED_USER.user_email,
+          name: RESTRICTED_USER.name,
+          user_email: RESTRICTED_USER.user_email,
           representative: {
-            main: REDACTED_USER.name,
-            secondary: REDACTED_USER.name
+            main: RESTRICTED_USER.name,
+            secondary: RESTRICTED_USER.name
           }
         };
       }

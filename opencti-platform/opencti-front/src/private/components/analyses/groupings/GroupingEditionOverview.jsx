@@ -20,6 +20,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import { canUse } from '../../../../utils/authorizedMembers';
 
 export const groupingMutationFieldPatch = graphql`
   mutation GroupingEditionOverviewFieldPatchMutation(
@@ -275,6 +276,7 @@ const GroupingEditionOverviewComponent = (props) => {
                 <SubscriptionFocus context={context} fieldName="createdBy" />
               }
               onChange={editor.changeCreated}
+              disabled={'currentUserAccessRight' in report.createdBy && !canUse([report.createdBy.currentUserAccessRight])}
             />
             <ObjectMarkingField
               name="objectMarking"
@@ -322,6 +324,18 @@ export default createFragmentContainer(GroupingEditionOverviewComponent, {
           id
           name
           entity_type
+        }
+        ... on Organization {
+          currentUserAccessRight
+        }
+        ... on Individual {
+          organizations {
+            edges {
+              node {
+                currentUserAccessRight
+              }
+            }
+          }
         }
       }
       objectMarking {
