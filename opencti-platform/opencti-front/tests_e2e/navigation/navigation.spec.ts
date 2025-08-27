@@ -1557,6 +1557,8 @@ const navigateIngestion = async (page: Page) => {
   const ingestionPage = new IngestionPage(page);
   await ingestionPage.navigateFromMenu();
   await expect(ingestionPage.getIngestionPages('connectors-page')).toBeVisible();
+  await ingestionPage.navigateRightMenu('Catalog');
+  await expect(ingestionPage.getIngestionPages('catalog-page')).toBeVisible();
   await ingestionPage.navigateRightMenu('OpenCTI Streams');
   await expect(ingestionPage.getIngestionPages('streams-page')).toBeVisible();
   await ingestionPage.navigateRightMenu('TAXII Feeds');
@@ -1639,6 +1641,8 @@ const navigateSecurity = async (page: Page) => {
   await expect(securityPage.getSecurityPages('marking-settings-page')).toBeVisible();
   await securityPage.navigateRightMenu('Dissemination');
   await expect(securityPage.getSecurityPages('dissemination-settings-page')).toBeVisible();
+  await securityPage.navigateRightMenu('Email templates');
+  await expect(securityPage.getSecurityPages('email-templates-page')).toBeVisible();
 };
 
 const navigateCustomization = async (page: Page) => {

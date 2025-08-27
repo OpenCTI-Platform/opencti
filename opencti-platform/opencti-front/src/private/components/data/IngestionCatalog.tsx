@@ -114,7 +114,7 @@ const IngestionCatalogComponent = ({
   }, [catalogs]);
 
   return (
-    <>
+    <div data-testid="catalog-page">
       <IngestionMenu />
       <PageContainer withRightMenu withGap>
         <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('Connector catalog'), current: true }]} />
@@ -152,7 +152,7 @@ const IngestionCatalogComponent = ({
           );
         })}
       </PageContainer>
-    </>
+    </div>
   );
 };
 
