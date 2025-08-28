@@ -20,6 +20,7 @@ import {
   findAllPirRelations,
   findById,
   findPirContainers,
+  findPirHistory,
   pirAdd,
   pirEditAuthorizedMembers,
   pirFlagElement,
@@ -38,6 +39,7 @@ const pirResolvers: Resolvers = {
     pirRelationships: (_, args, context) => findAllPirRelations(context, context.user, args),
     pirRelationshipsDistribution: (_, args, context) => pirRelationshipsDistribution(context, context.user, args),
     pirRelationshipsMultiTimeSeries: (_, args, context) => pirRelationshipsMultiTimeSeries(context, context.user, args),
+    pirLogs: (_, args, context) => findPirHistory(context, context.user, args),
   },
   Pir: {
     creators: async (pir, _, context) => {

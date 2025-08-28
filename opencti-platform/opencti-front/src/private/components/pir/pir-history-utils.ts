@@ -15,13 +15,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { GqlFilterGroup, sanitizeFilterGroupKeysForFrontend } from '../../../utils/filters/filtersUtils';
 
-export const pirHistoryFilterGroup = (pirId: string): GqlFilterGroup => {
+export const pirHistoryFilterGroup = (): GqlFilterGroup => {
   return {
     mode: 'and',
     filters: [
       {
         key: ['event_type'],
         values: ['create', 'delete', 'mutation'], // retro-compatibility
+      },
+      {
+        operator: 'not_eq',
+        key: ['context_data.entity_type'],
+        values: ['indicates'], // don't display indicates relationships events
       },
     ],
     filterGroups: [
@@ -36,27 +41,6 @@ export const pirHistoryFilterGroup = (pirId: string): GqlFilterGroup => {
             key: ['event_scope'],
             values: [], // if event_scope is null, event_type is not
             operator: 'nil',
-          },
-        ],
-        filterGroups: [],
-      },
-      {
-        mode: 'or',
-        filters: [
-          {
-            key: ['context_data.pir_ids'],
-            values: [pirId],
-          },
-        ],
-        filterGroups: [],
-      },
-      {
-        mode: 'or',
-        filters: [
-          {
-            operator: 'not_eq',
-            key: ['context_data.entity_type'],
-            values: ['indicates'],
           },
         ],
         filterGroups: [],

@@ -39,7 +39,8 @@ const pirFragment = graphql`
 
 const pirHistoryFragment = graphql`
   fragment PirOverviewHistoryFragment on Query {
-    logs(
+    pirLogs(
+      pirId: $pirId
       first: $first
       orderBy: $orderBy
       orderMode: $orderMode
@@ -79,8 +80,8 @@ const PirOverviewHistory = ({ dataHistory, dataPir }: PirOverviewHistoryProps) =
   const { t_i18n, nsdt } = useFormatter();
 
   const pir = useFragment(pirFragment, dataPir);
-  const { logs } = useFragment(pirHistoryFragment, dataHistory);
-  const history = (logs?.edges ?? []).flatMap((e) => e?.node ?? []);
+  const { pirLogs } = useFragment(pirHistoryFragment, dataHistory);
+  const history = (pirLogs?.edges ?? []).flatMap((e) => e?.node ?? []);
 
   return (
     <Paper

@@ -54,6 +54,7 @@ const pirHistoryLogFragment = graphql`
 const pirHistoryLogsFragment = graphql`
   fragment PirHistoryLogsFragment on Query 
   @argumentDefinitions(
+    pirId: { type: "ID!" }
     search: { type: "String" }
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
@@ -62,14 +63,15 @@ const pirHistoryLogsFragment = graphql`
     filters: { type: "FilterGroup" }
   )
   @refetchable(queryName: "PirHistoryLogsRefetchQuery") {
-    logs(
+    pirLogs(
+      pirId: $pirId
       search: $search
       first: $count
       after: $cursor
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
-    ) @connection(key: "PaginationPirHistory_logs") {
+    ) @connection(key: "PaginationPirHistory_pirLogs") {
       edges {
         node {
           id
@@ -87,6 +89,7 @@ const pirHistoryLogsFragment = graphql`
 
 const pirHistoryLogsQuery = graphql`
   query PirHistoryLogsQuery(
+    $pirId: ID!
     $search: String
     $count: Int!
     $cursor: ID
@@ -96,6 +99,7 @@ const pirHistoryLogsQuery = graphql`
   ) {
     ...PirHistoryLogsFragment
     @arguments(
+      pirId: $pirId
       search: $search
       count: $count
       cursor: $cursor
@@ -120,9 +124,9 @@ interface PirHistoryProps {
 const PirHistory = ({ data }: PirHistoryProps) => {
   const [ref, setRef] = useState<HTMLDivElement | null>(null);
   const { t_i18n } = useFormatter();
-  const { id, name } = useFragment(historyFragment, data);
+  const { id: pirId, name } = useFragment(historyFragment, data);
 
-  const LOCAL_STORAGE_KEY = `PirHistoryLogs-${id}`;
+  const LOCAL_STORAGE_KEY = `PirHistoryLogs-${pirId}`;
   const initialValues = {
     filters: emptyFilterGroup,
     searchTerm: '',
@@ -138,13 +142,14 @@ const PirHistory = ({ data }: PirHistoryProps) => {
   const { viewStorage, paginationOptions, helpers } = localStorage;
   const { filters } = viewStorage;
 
-  const contextFilters = useBuildEntityTypeBasedFilterContext('History', filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext(['History', 'PirHistory'], filters);
   const queryPaginationOptions = {
     ...paginationOptions,
+    pirId,
     filters: {
       mode: 'and',
       filters: [],
-      filterGroups: [contextFilters, pirHistoryFilterGroup(id)],
+      filterGroups: [contextFilters, pirHistoryFilterGroup()],
     },
   } as unknown as PirHistoryLogsQuery$variables;
 
@@ -205,7 +210,7 @@ const PirHistory = ({ data }: PirHistoryProps) => {
         lineFragment={pirHistoryLogFragment}
         entityTypes={['History']}
         useComputeLink={({ context_data }: PirHistoryLogFragment$data) => {
-          return pirLogRedirectUri(id, context_data);
+          return pirLogRedirectUri(pirId, context_data);
         }}
         searchContextFinal={{ entityTypes: ['History'] }}
         availableFilterKeys={[
@@ -218,13 +223,13 @@ const PirHistory = ({ data }: PirHistoryProps) => {
           'contextEntityId',
         ]}
         resolvePath={(d: PirHistoryLogsFragment$data) => {
-          return d.logs?.edges?.map((e) => e?.node);
+          return d.pirLogs?.edges?.map((e) => e?.node);
         }}
         preloadedPaginationProps={{
           linesQuery: pirHistoryLogsQuery,
           linesFragment: pirHistoryLogsFragment,
           queryRef,
-          nodePath: ['logs', 'pageInfo', 'globalCount'],
+          nodePath: ['pirLogs', 'pageInfo', 'globalCount'],
           setNumberOfElements: helpers.handleSetNumberOfElements,
         }}
       />

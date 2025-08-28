@@ -35,6 +35,7 @@ import {
   type PirAddInput,
   type PirFlagElementInput,
   type PirUnflagElementInput,
+  type QueryPirLogsArgs,
   type QueryPirRelationshipsArgs,
   type QueryPirRelationshipsDistributionArgs,
   type QueryPirRelationshipsMultiTimeSeriesArgs,
@@ -51,14 +52,16 @@ import { createPirRelation, serializePir, updatePirExplanations } from './pir-ut
 import { getPirWithAccessCheck } from './pir-checkPirAccess';
 import { ForbiddenAccess, FunctionalError } from '../../config/errors';
 import { ABSTRACT_STIX_REF_RELATIONSHIP, ENTITY_TYPE_CONTAINER } from '../../schema/general';
-import { extractFilterKeyValues } from '../../utils/filtering/filtering-utils';
+import { addFilter, extractFilterKeyValues } from '../../utils/filtering/filtering-utils';
 import { INSTANCE_DYNAMIC_REGARDING_OF, INSTANCE_REGARDING_OF, OBJECT_CONTAINS_FILTER, RELATION_TO_FILTER, RELATION_TYPE_FILTER } from '../../utils/filtering/filtering-constants';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
 import { isBypassUser, MEMBER_ACCESS_ALL, MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_VIEW, PIRAPI } from '../../utils/access';
 import { RELATION_IN_PIR } from '../../schema/internalRelationship';
 import { buildArgsFromDynamicFilters } from '../../domain/stixRelationship';
-import { fillTimeSeries } from '../../database/utils';
+import { fillTimeSeries, READ_INDEX_HISTORY } from '../../database/utils';
+import { ENTITY_TYPE_HISTORY, ENTITY_TYPE_PIR_HISTORY } from '../../schema/internalObject';
+import { elPaginate } from '../../database/engine';
 
 export const findById = async (context: AuthContext, user: AuthUser, id: string) => {
   await checkEnterpriseEdition(context);
@@ -117,6 +120,20 @@ export const pirRelationshipsMultiTimeSeries = async (
     }
     return { data: await timeSeriesRelations(context, user, { ...args, relationship_type, ...dynamicArgs }) };
   }));
+};
+
+export const findPirHistory = async (context: AuthContext, user: AuthUser, args: QueryPirLogsArgs) => {
+  const { pirId } = args;
+  await getPirWithAccessCheck(context, user, pirId);
+  const filters = addFilter(args.filters, 'context_data.pir_ids', pirId);
+  const finalArgs = {
+    ...args,
+    filters,
+    orderBy: args.orderBy ?? 'timestamp',
+    orderMode: args.orderMode ?? 'desc',
+    types: [ENTITY_TYPE_PIR_HISTORY, ENTITY_TYPE_HISTORY],
+  };
+  return elPaginate(context, user, READ_INDEX_HISTORY, finalArgs);
 };
 
 export const findPirContainers = async (

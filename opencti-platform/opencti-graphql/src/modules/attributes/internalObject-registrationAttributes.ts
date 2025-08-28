@@ -12,6 +12,7 @@ import {
   ENTITY_TYPE_HISTORY,
   ENTITY_TYPE_MIGRATION_REFERENCE,
   ENTITY_TYPE_MIGRATION_STATUS,
+  ENTITY_TYPE_PIR_HISTORY,
   ENTITY_TYPE_RETENTION_RULE,
   ENTITY_TYPE_ROLE,
   ENTITY_TYPE_RULE,
@@ -568,7 +569,8 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'no_dependencies', label: 'No dependencies', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
   ],
   [ENTITY_TYPE_HISTORY]: HistoryDefinition,
-  [ENTITY_TYPE_ACTIVITY]: HistoryDefinition
+  [ENTITY_TYPE_PIR_HISTORY]: HistoryDefinition,
+  [ENTITY_TYPE_ACTIVITY]: HistoryDefinition,
 };
 
 R.forEachObjIndexed((value, key) => schemaAttributesDefinition.registerAttributes(key as string, value), internalObjectsAttributes);

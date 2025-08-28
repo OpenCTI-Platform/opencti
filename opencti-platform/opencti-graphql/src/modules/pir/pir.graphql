@@ -144,7 +144,7 @@ type Query {
         filters: FilterGroup
         dynamicFrom: FilterGroup
         stix: Boolean
-    ): PirRelationshipConnection @auth(for: [PIRAPI])
+    ): PirRelationshipConnection @auth(for: [KNOWLEDGE, PIRAPI])
     pirRelationshipsDistribution(
         pirId: ID!
         field: String!
@@ -162,7 +162,7 @@ type Query {
         filters: FilterGroup
         dynamicFrom: FilterGroup
         aggregateOnConnections: Boolean
-    ): [Distribution] @auth(for: [PIRAPI])
+    ): [Distribution] @auth(for: [KNOWLEDGE, PIRAPI])
     pirRelationshipsMultiTimeSeries(
         operation: StatsOperation!
         startDate: DateTime!
@@ -171,7 +171,16 @@ type Query {
         onlyInferred: Boolean
         timeSeriesParameters: [PirRelationshipsTimeSeriesParameters!]!
         relationship_type: [String!]
-    ): [MultiTimeSeries] @auth(for: [PIRAPI])
+    ): [MultiTimeSeries] @auth(for: [KNOWLEDGE, PIRAPI])
+    pirLogs(
+        pirId: ID!
+        first: Int
+        after: ID
+        orderBy: LogsOrdering
+        orderMode: OrderingMode
+        filters: FilterGroup
+        search: String
+    ): LogConnection @auth(for: [KNOWLEDGE, PIRAPI])
 }
 
 # Mutations inputs

@@ -16,7 +16,7 @@ import { internalFindByIds, listEntities } from '../database/middleware-loader';
 import type { BasicRuleEntity, BasicStoreEntity } from '../types/store';
 import { BASE_TYPE_ENTITY, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
 import { generateStandardId } from '../schema/identifier';
-import { ENTITY_TYPE_HISTORY } from '../schema/internalObject';
+import { ENTITY_TYPE_HISTORY, ENTITY_TYPE_PIR_HISTORY } from '../schema/internalObject';
 import type { StixId } from '../types/stix-2-1-common';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { getEntitiesMapFromCache } from '../database/cache';
@@ -92,7 +92,7 @@ export const generatePirContextData = (event: SseEvent<StreamDataEvent>): Partia
   let pir_ids: string[] = [];
   let from_id: string | undefined;
   let pir_score: number | undefined;
-  // Listened events: stix core relationships, pir meta rels creation, 'contains' flagged entities
+  // Listened events: stix core relationships, pir relationships, 'contains' flagged entities
   const eventData = event.data.data;
   // 1. detect stix core relationships
   if (eventData.type === 'relationship') {
@@ -108,7 +108,7 @@ export const generatePirContextData = (event: SseEvent<StreamDataEvent>): Partia
     }
   } else if (eventData.type === 'internal-relationship'
     && eventData.extensions[STIX_EXT_OCTI].type === RELATION_IN_PIR
-  ) { // 2. detect in-pir rels
+  ) { // 2. detect in-pir relations
     const relationEvent = eventData as StixRelation;
     const extensions = relationEvent.extensions[STIX_EXT_OCTI];
     pir_ids = [extensions.target_ref];
@@ -194,12 +194,20 @@ export const buildHistoryElementsFromEvents = async (context:AuthContext, events
     }
     const activityDate = utcDate(eventDate).toDate();
     const standardId = generateStandardId(ENTITY_TYPE_HISTORY, { internal_id: event.id }) as StixId;
+    let entity_type = ENTITY_TYPE_HISTORY;
     if (isFeatureEnabled('Pir')) {
+      // add Pir context data for concerned events
       contextData = {
         ...contextData,
         ...generatePirContextData(event)
       };
+      // history type is different for events concerning pir relationships
+      const eventData = event.data.data;
+      entity_type = eventData.type === 'internal-relationship' && eventData.extensions[STIX_EXT_OCTI].type === RELATION_IN_PIR
+        ? ENTITY_TYPE_PIR_HISTORY
+        : ENTITY_TYPE_HISTORY;
     }
+    // return history object
     return {
       _index: INDEX_HISTORY,
       internal_id: event.id,
@@ -207,7 +215,7 @@ export const buildHistoryElementsFromEvents = async (context:AuthContext, events
       base_type: BASE_TYPE_ENTITY,
       created_at: activityDate,
       updated_at: activityDate,
-      entity_type: ENTITY_TYPE_HISTORY,
+      entity_type,
       event_type: 'mutation',
       event_scope: event.event,
       user_id: ENABLED_DEMO_MODE ? REDACTED_USER.id : event.data.origin?.user_id,

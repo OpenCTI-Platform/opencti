@@ -21474,6 +21474,7 @@ export type Query = {
   participants?: Maybe<ParticipantConnection>;
   pendingFiles?: Maybe<FileConnection>;
   pir?: Maybe<Pir>;
+  pirLogs?: Maybe<LogConnection>;
   pirRelationships?: Maybe<PirRelationshipConnection>;
   pirRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   pirRelationshipsMultiTimeSeries?: Maybe<Array<Maybe<MultiTimeSeries>>>;
@@ -23088,6 +23089,17 @@ export type QueryPendingFilesArgs = {
 
 export type QueryPirArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type QueryPirLogsArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<LogsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  pirId: Scalars['ID']['input'];
+  search?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -42815,6 +42827,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   participants?: Resolver<Maybe<ResolversTypes['ParticipantConnection']>, ParentType, ContextType, Partial<QueryParticipantsArgs>>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<QueryPendingFilesArgs>>;
   pir?: Resolver<Maybe<ResolversTypes['Pir']>, ParentType, ContextType, RequireFields<QueryPirArgs, 'id'>>;
+  pirLogs?: Resolver<Maybe<ResolversTypes['LogConnection']>, ParentType, ContextType, RequireFields<QueryPirLogsArgs, 'pirId'>>;
   pirRelationships?: Resolver<Maybe<ResolversTypes['PirRelationshipConnection']>, ParentType, ContextType, RequireFields<QueryPirRelationshipsArgs, 'pirId'>>;
   pirRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryPirRelationshipsDistributionArgs, 'field' | 'operation' | 'pirId'>>;
   pirRelationshipsMultiTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['MultiTimeSeries']>>>, ParentType, ContextType, RequireFields<QueryPirRelationshipsMultiTimeSeriesArgs, 'interval' | 'operation' | 'startDate' | 'timeSeriesParameters'>>;
