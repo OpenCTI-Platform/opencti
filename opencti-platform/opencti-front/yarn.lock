@@ -13421,10 +13421,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"filigran-icon@npm:0.14.1":
-  version: 0.14.1
-  resolution: "filigran-icon@npm:0.14.1"
-  checksum: 10/12165cdb0501f160de28fabd6b3e175dca14549ba5f7d2a21640b82d0fb795ea5ba325f7504155cb881d218350380d1b2faa99b3e2eba2e0e1382b5dc29ed141
+"filigran-icon@npm:0.18.1":
+  version: 0.18.1
+  resolution: "filigran-icon@npm:0.18.1"
+  checksum: 10/f1148ccde97aebb2f1529bd2616363d3708f7c87dc36ecf3ebb90c4aa24ad3c51c396c0d121f5b2176a992306702a5fee55b6cc83cfe327b3def5d380f0631c0
   languageName: node
   linkType: hard
 
@@ -18231,7 +18231,7 @@ __metadata:
     eslint-plugin-react: "npm:7.37.5"
     express: "npm:4.21.2"
     extract-files: "npm:13.0.0"
-    filigran-icon: "npm:0.14.1"
+    filigran-icon: "npm:0.18.1"
     filigran-ui: "npm:0.32.1"
     formik: "npm:2.4.6"
     formik-mui: "npm:5.0.0-alpha.0"
