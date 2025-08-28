@@ -27,7 +27,6 @@ import { isNotEmptyField } from '../../utils/utils';
 import useDimensions from '../../utils/hooks/useDimensions';
 import SystemBanners from './SystemBanners';
 import ResetPassword from './ResetPassword';
-import { deserializeThemeManifest } from '../../private/components/settings/themes/ThemeType';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -122,11 +121,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
 interface LoginProps {
   type: string;
   settings: LoginRootPublicQuery$data['settings'];
-  themes: LoginRootPublicQuery$data['themes'];
 }
 
 const FLASH_COOKIE = 'opencti_flash';
-const Login: FunctionComponent<LoginProps> = ({ type, settings, themes }) => {
+const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
   const classes = useStyles();
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
@@ -193,11 +191,9 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings, themes }) => {
     ? settings.platform_consent_confirm_text
     : t_i18n('I have read and comply with the above statement');
   const loginMessage = settings.platform_login_message;
-  const defaultTheme = themes?.edges?.filter((node) => !!node)
-    .map(({ node }) => ({ ...node }))
-    .filter(({ name }) => name === settings.platform_theme)?.[0];
-  const loginLogo = deserializeThemeManifest(defaultTheme?.manifest)
-    .theme_logo_login;
+  const loginLogo = theme.palette.mode === 'dark'
+    ? settings.platform_theme_dark_logo_login
+    : settings.platform_theme_light_logo_login;
   const providers = settings.platform_providers;
   const isAuthForm = providers.filter((p) => p?.type === 'FORM').length > 0;
   const authSSOs = providers.filter((p) => p.type === 'SSO');
