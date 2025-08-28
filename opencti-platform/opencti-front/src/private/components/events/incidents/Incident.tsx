@@ -10,6 +10,7 @@ import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../commo
 import { Incident_incident$key } from './__generated__/Incident_incident.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import { useIsHiddenEntities } from '../../../../utils/hooks/useEntitySettings';
 
 const incidentFragment = graphql`
   fragment Incident_incident on Incident {
@@ -144,6 +145,7 @@ const Incident: React.FC<IncidentProps> = ({ incidentData }) => {
                   </Grid>
                 );
               case 'notes':
+                if (useIsHiddenEntities('Note')) return null;
                 return (
                   <Grid key={key} item xs={width}>
                     <StixCoreObjectOrStixCoreRelationshipNotes

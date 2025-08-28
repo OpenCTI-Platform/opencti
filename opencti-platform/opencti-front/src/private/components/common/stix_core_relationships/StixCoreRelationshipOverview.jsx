@@ -47,6 +47,7 @@ import StixCoreRelationshipObjectLabelsView from './StixCoreRelationshipLabelsVi
 import Transition from '../../../../components/Transition';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import withRouter from '../../../../utils/compat_router/withRouter';
+import { useIsHiddenEntities } from '../../../../utils/hooks/useEntitySettings';
 
 const styles = (theme) => ({
   container: {
@@ -159,6 +160,11 @@ const styles = (theme) => ({
     borderRadius: 4,
   },
 });
+
+const IsHiddenEntities = ({ types, children }) => {
+  const isHidden = useIsHiddenEntities(...types);
+  return children(isHidden);
+};
 
 class StixCoreRelationshipContainer extends Component {
   constructor(props) {
@@ -555,11 +561,15 @@ class StixCoreRelationshipContainer extends Component {
                 />
               </Grid>
               <Grid item xs={12}>
-                <StixCoreObjectOrStixCoreRelationshipNotes
-                  stixCoreObjectOrStixCoreRelationshipId={stixCoreRelationship.id}
-                  isRelationship={true}
-                  defaultMarkings={stixCoreRelationship.objectMarking ?? []}
-                />
+                <IsHiddenEntities types={['Note']}>
+                  {(isHidden) => !isHidden && (
+                    <StixCoreObjectOrStixCoreRelationshipNotes
+                      stixCoreObjectOrStixCoreRelationshipId={stixCoreRelationship.id}
+                      isRelationship={true}
+                      defaultMarkings={stixCoreRelationship.objectMarking ?? []}
+                    />
+                  )}
+                </IsHiddenEntities>
               </Grid>
             </>
           )}

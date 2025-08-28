@@ -10,6 +10,7 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import { useIsHiddenEntities } from '../../../../utils/hooks/useEntitySettings';
 
 export const narrativeFragment = graphql`
   fragment Narrative_narrative on Narrative {
@@ -127,6 +128,7 @@ const Narrative: React.FC<NarrativeProps> = ({ narrativeData }) => {
                   </Grid>
                 );
               case 'notes':
+                if (useIsHiddenEntities('Note')) return null;
                 return (
                   <Grid key={key} item xs={width}>
                     <StixCoreObjectOrStixCoreRelationshipNotes

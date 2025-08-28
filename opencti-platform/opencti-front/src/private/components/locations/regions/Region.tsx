@@ -11,6 +11,7 @@ import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../commo
 import LocationMiniMap from '../../common/location/LocationMiniMap';
 import { Region_region$key } from './__generated__/Region_region.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
+import {useIsHiddenEntities} from "../../../../utils/hooks/useEntitySettings";
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -88,6 +89,8 @@ const RegionComponent = ({ regionData }: { regionData: Region_region$key }) => {
   const countries = region.countries?.edges.map(
     (countryEdge) => countryEdge.node,
   );
+  const hiddenNote = useIsHiddenEntities('Note');
+
   return (
     <>
       <Grid
@@ -132,10 +135,12 @@ const RegionComponent = ({ regionData }: { regionData: Region_region$key }) => {
           <StixCoreObjectLatestHistory stixCoreObjectId={region.id} />
         </Grid>
       </Grid>
-      <StixCoreObjectOrStixCoreRelationshipNotes
-        stixCoreObjectOrStixCoreRelationshipId={region.id}
-        defaultMarkings={region.objectMarking ?? []}
-      />
+      {!hiddenNote && (
+        <StixCoreObjectOrStixCoreRelationshipNotes
+          stixCoreObjectOrStixCoreRelationshipId={region.id}
+          defaultMarkings={region.objectMarking ?? []}
+        />
+      )}
     </>
   );
 };

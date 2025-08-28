@@ -8,6 +8,7 @@ import StixCoreObjectExternalReferences from '../external_references/StixCoreObj
 import StixCoreObjectOrStixCoreRelationshipNotes from '../notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import { useIsHiddenEntities } from '../../../../utils/hooks/useEntitySettings';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -63,6 +64,7 @@ const GroupingComponent = ({ grouping }) => {
                   </Grid>
                 );
               case 'notes':
+                if (useIsHiddenEntities('Note')) return null;
                 return (
                   <Grid key={key} item xs={width}>
                     <StixCoreObjectOrStixCoreRelationshipNotes
