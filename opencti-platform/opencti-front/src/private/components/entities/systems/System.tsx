@@ -9,7 +9,7 @@ import StixCoreObjectOrStixRelationshipLastContainers from '../../common/contain
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
-import {useIsHiddenEntities} from "../../../../utils/hooks/useEntitySettings";
+import { useIsHiddenEntities } from '../../../../utils/hooks/useEntitySettings';
 
 const systemFragment = graphql`
   fragment System_system on System {

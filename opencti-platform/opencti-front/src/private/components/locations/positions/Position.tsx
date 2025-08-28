@@ -14,7 +14,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { PositionDetailsLocationRelationshipsLinesQueryLinesPaginationQuery } from './__generated__/PositionDetailsLocationRelationshipsLinesQueryLinesPaginationQuery.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
-import {useIsHiddenEntities} from "../../../../utils/hooks/useEntitySettings";
+import { useIsHiddenEntities } from '../../../../utils/hooks/useEntitySettings';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.

@@ -10,7 +10,7 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
-import {useIsHiddenEntities} from "../../../../utils/hooks/useEntitySettings";
+import { useIsHiddenEntities } from '../../../../utils/hooks/useEntitySettings';
 
 export const courssOfActionFragment = graphql`
   fragment CourseOfAction_courseOfAction on CourseOfAction {

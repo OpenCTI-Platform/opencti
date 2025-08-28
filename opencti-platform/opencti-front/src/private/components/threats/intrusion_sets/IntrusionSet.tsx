@@ -10,7 +10,7 @@ import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../commo
 import { IntrusionSet_intrusionSet$key } from './__generated__/IntrusionSet_intrusionSet.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
-import {useIsHiddenEntities} from "../../../../utils/hooks/useEntitySettings";
+import { useIsHiddenEntities } from '../../../../utils/hooks/useEntitySettings';
 
 const intrusionSetFragment = graphql`
   fragment IntrusionSet_intrusionSet on IntrusionSet {

@@ -15,7 +15,7 @@ import {
   ThreatActorIndividual_ThreatActorIndividual$key,
 } from './__generated__/ThreatActorIndividual_ThreatActorIndividual.graphql';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
-import {useIsHiddenEntities} from "../../../../utils/hooks/useEntitySettings";
+import { useIsHiddenEntities } from '../../../../utils/hooks/useEntitySettings';
 
 export const threatActorIndividualFragment = graphql`
   fragment ThreatActorIndividual_ThreatActorIndividual on ThreatActorIndividual {
