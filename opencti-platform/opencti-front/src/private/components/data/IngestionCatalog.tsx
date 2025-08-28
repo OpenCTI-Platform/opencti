@@ -13,7 +13,6 @@ import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocum
 import PageContainer from '../../../components/PageContainer';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import ListCardsContent from '../../../components/list_cards/ListCardsContent';
 import GradientButton from '../../../components/GradientButton';
 import IngestionCatalogFilters from './IngestionCatalog/IngestionCatalogFilters';
 import GradientCard from '../../../components/GradientCard';
