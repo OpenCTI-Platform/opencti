@@ -112,8 +112,14 @@ import {
 import TableViewIcon from '@mui/icons-material/TableView';
 import { itemColor } from '../utils/Colors';
 
-const iconSelector = (type?: string, variant?: string, fontSize?: string, color?: string, isReversed?: boolean) => {
-  let style;
+const iconSelector = (
+  type: string | undefined,
+  variant: string | undefined,
+  fontSize: 'inherit' | 'large' | 'medium' | 'small',
+  color: string | null,
+  isReversed?: boolean,
+) => {
+  let style: React.CSSProperties;
   switch (variant) {
     case 'inline':
       style = {
@@ -586,16 +592,15 @@ const iconSelector = (type?: string, variant?: string, fontSize?: string, color?
 };
 
 interface ItemIconProps {
-  type: string,
-  size?: string,
+  type?: string,
+  size?: 'inherit' | 'large' | 'medium' | 'small',
   variant?: string,
-  color?: string,
+  color?: string | null,
   isReversed?: boolean,
 }
 
-const ItemIcon = ({ type, size, variant, color = null, isReversed = false }: ItemIconProps) => {
-  const fontSize = size || 'medium';
-  return iconSelector(type, variant, fontSize, color, isReversed);
+const ItemIcon = ({ type, size = 'medium', variant, color = null, isReversed = false }: ItemIconProps) => {
+  return iconSelector(type, variant, size, color, isReversed);
 };
 
 export default ItemIcon;
