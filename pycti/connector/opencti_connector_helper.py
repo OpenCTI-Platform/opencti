@@ -2001,6 +2001,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 self.api.send_bundle_to_api(
                     connector_id=self.connector_id, bundle=bundle, work_id=work_id
                 )
+                self.metric.inc("bundle_send")
             else:
                 raise ValueError(
                     f"{self.queue_protocol}: this queue protocol is not supported"

@@ -546,7 +546,7 @@ class CaseRfi:
             data = self.opencti.process_multiple(result["data"]["caseRfis"])
             final_data = final_data + data
             while result["data"]["caseRfis"]["pageInfo"]["hasNextPage"]:
-                after = result["date"]["caseRfis"]["pageInfo"]["endCursor"]
+                after = result["data"]["caseRfis"]["pageInfo"]["endCursor"]
                 self.opencti.app_logger.info("Listing Case Rfis", {"after": after})
                 result = self.opencti.query(
                     query,

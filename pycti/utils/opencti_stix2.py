@@ -308,7 +308,7 @@ class OpenCTIStix2:
         object_marking_ids = (
             stix_object["object_marking_refs"]
             if "object_marking_refs" in stix_object
-            else []
+            else None
         )
 
         # Open vocabularies

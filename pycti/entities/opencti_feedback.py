@@ -506,7 +506,7 @@ class Feedback:
             data = self.opencti.process_multiple(result["data"]["feedbacks"])
             final_data = final_data + data
             while result["data"]["feedbacks"]["pageInfo"]["hasNextPage"]:
-                after = result["date"]["feedbacks"]["pageInfo"]["endCursor"]
+                after = result["data"]["feedbacks"]["pageInfo"]["endCursor"]
                 self.opencti.app_logger.info("Listing Feedbacks", {"after": after})
                 result = self.opencti.query(
                     query,
