@@ -134,18 +134,16 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
   }
 
   switch (type?.toLowerCase()) {
+    case 'restricted':
+      return <HelpOutlined style={style} fontSize={fontSize} role="img" />;
     case 'unauthorized':
-      return (
-        <ReportProblemOutlined style={style} fontSize={fontSize} role="img" />
-      );
+      return <ReportProblemOutlined style={style} fontSize={fontSize} role="img" />;
     case 'global':
       return <PublicOutlined style={style} fontSize={fontSize} role="img" />;
     case 'trigger':
       return <CampaignOutlined style={style} fontSize={fontSize} role="img" />;
     case 'admin':
-      return (
-        <ManageAccountsOutlined style={style} fontSize={fontSize} role="img" />
-      );
+      return <ManageAccountsOutlined style={style} fontSize={fontSize} role="img" />;
     case 'search':
       return <BiotechOutlined style={style} fontSize={fontSize} role="img" />;
     case 'login':

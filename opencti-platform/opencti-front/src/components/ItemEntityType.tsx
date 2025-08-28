@@ -89,7 +89,7 @@ const ItemEntityType: FunctionComponent<ItemEntityTypeProps> = ({
       return (
         <ItemIcon
           variant="inline"
-          type={isRestricted ? 'restricted' : entityType}
+          type={isRestricted ? 'Restricted' : entityType}
         />
       );
     }
