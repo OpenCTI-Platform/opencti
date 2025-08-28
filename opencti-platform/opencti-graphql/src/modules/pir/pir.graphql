@@ -122,12 +122,9 @@ type Query {
         after: ID
         orderBy: PirRelationshipOrdering
         orderMode: OrderingMode
-        fromOrToId: String
-        elementWithTargetTypes: [String]
         fromId: [String]
         fromRole: String
         fromTypes: [String]
-        relationship_type: [String]
         startTimeStart: DateTime
         startTimeStop: DateTime
         stopTimeStart: DateTime

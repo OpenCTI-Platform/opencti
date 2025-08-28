@@ -23091,14 +23091,12 @@ export type QueryPirRelationshipsArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
   confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
   dynamicFrom?: InputMaybe<FilterGroup>;
-  elementWithTargetTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   endDate?: InputMaybe<Scalars['DateTime']['input']>;
   filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']['input']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']['input']>;
   fromId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  fromOrToId?: InputMaybe<Scalars['String']['input']>;
   fromRole?: InputMaybe<Scalars['String']['input']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']['input']>;
@@ -23106,7 +23104,6 @@ export type QueryPirRelationshipsArgs = {
   orderBy?: InputMaybe<PirRelationshipOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   pirId: Scalars['ID']['input'];
-  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   search?: InputMaybe<Scalars['String']['input']>;
   startDate?: InputMaybe<Scalars['DateTime']['input']>;
   startTimeStart?: InputMaybe<Scalars['DateTime']['input']>;

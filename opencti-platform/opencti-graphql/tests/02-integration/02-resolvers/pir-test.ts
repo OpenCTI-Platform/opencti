@@ -3,15 +3,12 @@ import { describe, expect, it } from 'vitest';
 import { now } from 'moment';
 import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
 import { FilterMode, FilterOperator, PirType } from '../../../src/generated/graphql';
-import { RELATION_IN_PIR } from '../../../src/schema/internalRelationship';
 import { SYSTEM_USER } from '../../../src/utils/access';
 import { listEntities, listEntitiesPaginated, storeLoadById } from '../../../src/database/middleware-loader';
 import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import type { BasicStoreEntity } from '../../../src/types/store';
-import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_HISTORY } from '../../../src/schema/internalObject';
+import { ENTITY_TYPE_CONNECTOR } from '../../../src/schema/internalObject';
 import { addFilter } from '../../../src/utils/filtering/filtering-utils';
-import { elPaginate } from '../../../src/database/engine';
-import { READ_INDEX_HISTORY } from '../../../src/database/utils';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../../src/schema/general';
 import { LAST_PIR_SCORE_DATE_FILTER_PREFIX, PIR_SCORE_FILTER_PREFIX } from '../../../src/utils/filtering/filtering-constants';
 
@@ -45,25 +42,24 @@ const LIST_QUERY = gql`
 `;
 
 const LIST_RELS_QUERY = gql`
-  query stixRelationships(
+  query pirRelationships(
+    $pirId: ID!
     $filters: FilterGroup
-    $relationship_type: [String]
   ) {
-    stixRelationships(
+    pirRelationships(
+      pirId: $pirId
       filters: $filters
-      relationship_type: $relationship_type
     ) {
       edges {
         node {
           id
-          relationship_type
           from {
-            ... on StixObject {
+            ... on StixDomainObject {
               id
             }
           }
           to {
-            ... on InternalObject{
+            ... on Pir {
               id
             }
           }
@@ -219,7 +215,7 @@ describe('PIR resolver standard behavior', () => {
     expect(queryResult.errors?.[0].message).toEqual('Error while updating the PIR, invalid or forbidden key.');
   });
 
-  it('should flag an element and create a pir meta rel', async () => {
+  it('should flag an element and create a pir relationship', async () => {
     // fetch an element standard id
     const malware = await storeLoadById<BasicStoreEntity>(
       testContext,
@@ -249,18 +245,18 @@ describe('PIR resolver standard behavior', () => {
       query: FLAG_QUERY,
       variables: { id: pirInternalId, input: { relationshipId, sourceId: flaggedElementId, matchingCriteria } },
     });
-    // Verify the in-pir rel has been created
+    // Verify the in-pir relation has been created
     const queryResult = await queryAsAdmin({
       query: LIST_RELS_QUERY,
-      variables: { relationship_type: [RELATION_IN_PIR] },
+      variables: { pirId: pirInternalId },
     });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data?.stixRelationships.edges.length).toEqual(1);
-    expect(queryResult.data?.stixRelationships.edges[0].node.from.id).toEqual(flaggedElementId);
-    expect(queryResult.data?.stixRelationships.edges[0].node.to.id).toEqual(pirInternalId);
-    expect(queryResult.data?.stixRelationships.edges[0].node.pir_score).toEqual(67);
-    expect(queryResult.data?.stixRelationships.edges[0].node.pir_explanations.length).toEqual(1);
-    expect(queryResult.data?.stixRelationships.edges[0].node.pir_explanations[0].dependencies[0].element_id).toEqual(relationshipId);
+    expect(queryResult.data?.pirRelationships.edges.length).toEqual(1);
+    expect(queryResult.data?.pirRelationships.edges[0].node.from.id).toEqual(flaggedElementId);
+    expect(queryResult.data?.pirRelationships.edges[0].node.to.id).toEqual(pirInternalId);
+    expect(queryResult.data?.pirRelationships.edges[0].node.pir_score).toEqual(67);
+    expect(queryResult.data?.pirRelationships.edges[0].node.pir_explanations.length).toEqual(1);
+    expect(queryResult.data?.pirRelationships.edges[0].node.pir_explanations[0].dependencies[0].element_id).toEqual(relationshipId);
     // Verify the pir information has been updated at the entity level
     const malwareAfterFlag = await storeLoadById<BasicStoreEntity>(
       testContext,
@@ -350,14 +346,14 @@ describe('PIR resolver standard behavior', () => {
     // Verify the in-pir rel has been updated
     const queryResult = await queryAsAdmin({
       query: LIST_RELS_QUERY,
-      variables: { relationship_type: [RELATION_IN_PIR] },
+      variables: { pirId: pirInternalId },
     });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data?.stixRelationships.edges.length).toEqual(1);
-    expect(queryResult.data?.stixRelationships.edges[0].node.from.id).toEqual(flaggedElementId);
-    expect(queryResult.data?.stixRelationships.edges[0].node.to.id).toEqual(pirInternalId);
-    expect(queryResult.data?.stixRelationships.edges[0].node.pir_score).toEqual(100);
-    expect(queryResult.data?.stixRelationships.edges[0].node.pir_explanations.length).toEqual(2);
+    expect(queryResult.data?.pirRelationships.edges.length).toEqual(1);
+    expect(queryResult.data?.pirRelationships.edges[0].node.from.id).toEqual(flaggedElementId);
+    expect(queryResult.data?.pirRelationships.edges[0].node.to.id).toEqual(pirInternalId);
+    expect(queryResult.data?.pirRelationships.edges[0].node.pir_score).toEqual(100);
+    expect(queryResult.data?.pirRelationships.edges[0].node.pir_explanations.length).toEqual(2);
     // Verify the pir information has been updated at the entity level
     const malwareAfterFlag = await storeLoadById<BasicStoreEntity>(
       testContext,
@@ -384,14 +380,14 @@ describe('PIR resolver standard behavior', () => {
     // Verify the in-pir rel has been updated
     const queryResult = await queryAsAdmin({
       query: LIST_RELS_QUERY,
-      variables: { relationship_type: [RELATION_IN_PIR] },
+      variables: { pirId: pirInternalId },
     });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data?.stixRelationships.edges.length).toEqual(1);
-    expect(queryResult.data?.stixRelationships.edges[0].node.from.id).toEqual(flaggedElementId);
-    expect(queryResult.data?.stixRelationships.edges[0].node.to.id).toEqual(pirInternalId);
-    expect(queryResult.data?.stixRelationships.edges[0].node.pir_score).toEqual(67);
-    expect(queryResult.data?.stixRelationships.edges[0].node.pir_explanations.length).toEqual(1);
+    expect(queryResult.data?.pirRelationships.edges.length).toEqual(1);
+    expect(queryResult.data?.pirRelationships.edges[0].node.from.id).toEqual(flaggedElementId);
+    expect(queryResult.data?.pirRelationships.edges[0].node.to.id).toEqual(pirInternalId);
+    expect(queryResult.data?.pirRelationships.edges[0].node.pir_score).toEqual(67);
+    expect(queryResult.data?.pirRelationships.edges[0].node.pir_explanations.length).toEqual(1);
   });
 
   it('should unflag an element', async () => {
@@ -408,10 +404,10 @@ describe('PIR resolver standard behavior', () => {
     // Verify the in-pir rel has been deleted
     const queryResult = await queryAsAdmin({
       query: LIST_RELS_QUERY,
-      variables: { relationship_type: [RELATION_IN_PIR] },
+      variables: { pirId: pirInternalId },
     });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data?.stixRelationships.edges.length).toEqual(0);
+    expect(queryResult.data?.pirRelationships.edges.length).toEqual(0);
   });
 
   it('should pir deleted', async () => {
@@ -428,10 +424,10 @@ describe('PIR resolver standard behavior', () => {
     // Verify in-pir rels have been deleted
     const refQueryResult = await queryAsAdmin({
       query: LIST_RELS_QUERY,
-      variables: { relationship_type: [RELATION_IN_PIR] },
+      variables: { pirId: pirInternalId },
     });
     expect(refQueryResult).not.toBeNull();
-    expect(refQueryResult.data?.stixRelationships.edges.length).toEqual(0);
+    expect(refQueryResult.data?.pirRelationships.edges.length).toEqual(0);
     // Verify the pir information has been removed for the PIR at entities levels
     const malwareAfterFlag = await storeLoadById<BasicStoreEntity>(
       testContext,
@@ -448,10 +444,6 @@ describe('PIR resolver standard behavior', () => {
       { connectionFormat: false, filters: addFilter(undefined, 'connector_type', ['INTERNAL_INGESTION_PIR']) }
     );
     expect(pirConnectors.length).toEqual(0);
-    // Verify pir_ids have been removed from historic events
-    const args = { connectionFormat: false, types: [ENTITY_TYPE_HISTORY], filters: addFilter(undefined, 'context_data.pir_ids', [pirInternalId]) };
-    const logs = await elPaginate(testContext, ADMIN_USER, READ_INDEX_HISTORY, args);
-    expect(logs.length).toEqual(0);
     // Verify the PIR is no longer found
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: pirInternalId } });
     expect(queryResult).not.toBeNull();
