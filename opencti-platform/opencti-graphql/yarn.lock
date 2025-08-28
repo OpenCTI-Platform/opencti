@@ -1616,14 +1616,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@elastic/elasticsearch@npm:8.19.0":
-  version: 8.19.0
-  resolution: "@elastic/elasticsearch@npm:8.19.0"
+"@elastic/elasticsearch@npm:8.19.1":
+  version: 8.19.1
+  resolution: "@elastic/elasticsearch@npm:8.19.1"
   dependencies:
     "@elastic/transport": "npm:^8.9.6"
-    apache-arrow: "npm:18.x - 19.x"
+    apache-arrow: "npm:18.x - 21.x"
     tslib: "npm:^2.4.0"
-  checksum: 10/e6ed1073631c32c920f69571d3407414f8687b2f1f2e6e8574bdab05cd13bd9319021bdd630f61f68343dffd96294ad81b9c2c5a6673f7a60afe9e452f45b7d1
+  checksum: 10/c3415c4a3f55c2d28b9f0bcafa7f080522c28bb329aa726356de9c82a1ad83cad371d23cc367b8e843f82f1713b1ba0c7f362599bb485b73b8d03369b9238da1
   languageName: node
   linkType: hard
 
@@ -5021,12 +5021,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^20.13.0":
-  version: 20.17.10
-  resolution: "@types/node@npm:20.17.10"
+"@types/node@npm:^24.0.3":
+  version: 24.3.0
+  resolution: "@types/node@npm:24.3.0"
   dependencies:
-    undici-types: "npm:~6.19.2"
-  checksum: 10/9a1bcb2f25ce1ad249497e5f10ed984bf0ec476439fad2e965c3d6cc4642abb23c5e8400f7e48e55ff121d2b80b14bdc1bd4eac7ff6848154033a2be25fffb17
+    undici-types: "npm:~7.10.0"
+  checksum: 10/1331c2d0e9a512ac27a016b4df3eff92317e4603dbbbab31731275dff14d3a04847a50c5776cbf94f99ff4dedac0ba5f721dce8cea020d8eea5e21711fd964b0
   languageName: node
   linkType: hard
 
@@ -5701,22 +5701,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"apache-arrow@npm:18.x - 19.x":
-  version: 19.0.1
-  resolution: "apache-arrow@npm:19.0.1"
+"apache-arrow@npm:18.x - 21.x":
+  version: 21.0.0
+  resolution: "apache-arrow@npm:21.0.0"
   dependencies:
     "@swc/helpers": "npm:^0.5.11"
     "@types/command-line-args": "npm:^5.2.3"
     "@types/command-line-usage": "npm:^5.0.4"
-    "@types/node": "npm:^20.13.0"
+    "@types/node": "npm:^24.0.3"
     command-line-args: "npm:^6.0.1"
     command-line-usage: "npm:^7.0.1"
-    flatbuffers: "npm:^24.3.25"
+    flatbuffers: "npm:^25.1.24"
     json-bignum: "npm:^0.0.3"
     tslib: "npm:^2.6.2"
   bin:
     arrow2csv: bin/arrow2csv.js
-  checksum: 10/d3d58dcef8c0b27e00bbc0b46212aca829bcdfddc6982d598eb34815ffc98c349faff2e507b196a9251088459aa4ff39deb4bfe3b2af8a251154e92a6f1a6ecd
+  checksum: 10/ca1a799369dd6723af6969be57b17f7224f37ed1ff002196def5c8fe5bfac732f9434b9cc53adc4b66298b27c85560011e221cb8ec0f99701a6bfd6caf62c70b
   languageName: node
   linkType: hard
 
@@ -8902,10 +8902,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"flatbuffers@npm:^24.3.25":
-  version: 24.3.25
-  resolution: "flatbuffers@npm:24.3.25"
-  checksum: 10/e26cd55935a664ef312110df470f37ddee1f83ce92da0cb6f0abf35824406fd49b5f23704366d7613eed207f9414625cde448aa99d0385cbaeac83cf170147d4
+"flatbuffers@npm:^25.1.24":
+  version: 25.2.10
+  resolution: "flatbuffers@npm:25.2.10"
+  checksum: 10/3c58430b3820a338df88a8b3fc673946692c953f9de1a15c31e942b499247c9fd57e20bcb7a449ffa6b9c4cb714518327865f0adfdd86d7332a3e8fd6b4126d4
   languageName: node
   linkType: hard
 
@@ -12010,7 +12010,7 @@ __metadata:
     "@aws-sdk/lib-storage": "npm:3.787.0"
     "@aws-sdk/property-provider": "npm:3.374.0"
     "@datadog/pprof": "npm:5.7.1"
-    "@elastic/elasticsearch": "npm:8.19.0"
+    "@elastic/elasticsearch": "npm:8.19.1"
     "@escape.tech/graphql-armor": "npm:3.1.2"
     "@graphql-codegen/cli": "npm:5.0.5"
     "@graphql-codegen/client-preset": "npm:4.8.0"
@@ -14712,10 +14712,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici-types@npm:~6.19.2, undici-types@npm:~6.19.8":
+"undici-types@npm:~6.19.8":
   version: 6.19.8
   resolution: "undici-types@npm:6.19.8"
   checksum: 10/cf0b48ed4fc99baf56584afa91aaffa5010c268b8842f62e02f752df209e3dea138b372a60a963b3b2576ed932f32329ce7ddb9cb5f27a6c83040d8cd74b7a70
+  languageName: node
+  linkType: hard
+
+"undici-types@npm:~7.10.0":
+  version: 7.10.0
+  resolution: "undici-types@npm:7.10.0"
+  checksum: 10/1f3fe777937690ab8a7a7bccabc8fdf4b3171f4899b5a384fb5f3d6b56c4b5fec2a51fbf345c9dd002ff6716fd440a37fa8fdb0e13af8eca8889f25445875ba3
   languageName: node
   linkType: hard
 
