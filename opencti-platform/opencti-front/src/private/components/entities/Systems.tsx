@@ -119,10 +119,10 @@ const Systems = () => {
   };
 
   return (
-    <>
+    <div data-testid="system-page">
       <Breadcrumbs elements={[{ label: t_i18n('Entities') }, { label: t_i18n('Systems'), current: true }]} />
       {renderLines()}
-    </>
+    </div>
   );
 };
 

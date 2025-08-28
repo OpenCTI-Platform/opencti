@@ -92,7 +92,7 @@ const FileIndexingComponent: FunctionComponent<FileIndexingComponentProps> = ({
     };
   }, []);
   return (
-    <>
+    <div data-testid="file-indexing-page">
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('File indexing'), current: true }]} />
       {!isEnterpriseEdition ? (
         <EnterpriseEdition feature="File indexing" />
@@ -133,7 +133,7 @@ const FileIndexingComponent: FunctionComponent<FileIndexingComponentProps> = ({
           )}
         </>
       )}
-    </>
+    </div>
   );
 };
 

@@ -5,6 +5,6 @@ export default class StixCoreObjectDataTab {
   }
 
   getPage() {
-    return this.page.getByTestId('sco-data-file-and-history');
+    return this.page.getByTestId('FileManager');
   }
 }

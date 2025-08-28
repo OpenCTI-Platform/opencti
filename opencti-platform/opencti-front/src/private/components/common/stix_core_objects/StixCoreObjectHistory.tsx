@@ -108,14 +108,13 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
   );
 
   return (
-    <div style={{ height: '100%' }}>
+    <div style={{ height: '100%' }} data-testid='sco-history-content'>
       <Grid
         container
         spacing={3}
         sx={{
           marginBottom: theme.spacing(2),
         }}
-        data-testid='sco-history-content'
       >
         <Grid
           item

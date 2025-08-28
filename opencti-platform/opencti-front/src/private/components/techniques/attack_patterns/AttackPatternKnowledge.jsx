@@ -33,7 +33,7 @@ const AttackPatternKnowledgeComponent = ({
   const { schema } = useAuth();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(attackPattern.entity_type, schema);
   return (
-    <>
+    <div data-testid="attack-pattern-knowledge">
       <Routes>
         <Route
           path="/relations/:relationId"
@@ -224,7 +224,7 @@ const AttackPatternKnowledgeComponent = ({
             }
         />
       </Routes>
-    </>
+    </div>
   );
 };
 

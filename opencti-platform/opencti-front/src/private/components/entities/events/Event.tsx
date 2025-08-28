@@ -73,7 +73,7 @@ const Event: React.FC<EventProps> = ({ eventData }) => {
     eventData,
   );
   return (
-    <>
+    <div data-testid="event-details-page">
       <Grid
         container={true}
         spacing={3}
@@ -109,7 +109,7 @@ const Event: React.FC<EventProps> = ({ eventData }) => {
         stixCoreObjectOrStixCoreRelationshipId={event.id}
         defaultMarkings={event.objectMarking ?? []}
       />
-    </>
+    </div>
   );
 };
 

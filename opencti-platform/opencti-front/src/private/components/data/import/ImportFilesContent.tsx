@@ -195,7 +195,7 @@ const ImportFilesContent = ({ inDraftOverview }: ImportFilesContentProps) => {
   };
 
   return (
-    <div style={{ height: '100%' }} className="break">
+    <div style={{ height: '100%' }} className="break" data-testid="file-page">
       {!inDraftOverview && (
         <>
           <Breadcrumbs

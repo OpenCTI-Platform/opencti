@@ -151,7 +151,7 @@ const CsvMappers = () => {
           mappersQueryRef={queryRefMappers}
           schemaAttributesQueryRef={queryRefSchemaAttributes}
         >
-          <div className={classes.container}>
+          <div className={classes.container} data-testid="csv-mapper-page">
             <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Processing') }, { label: t_i18n('CSV Mappers'), current: true }]} />
             <ProcessingMenu />
             <ListLines

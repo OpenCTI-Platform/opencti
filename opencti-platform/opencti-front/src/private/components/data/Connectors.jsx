@@ -17,7 +17,7 @@ const Connectors = () => {
   const enableComposerFeatureFlag = isFeatureEnable('COMPOSER');
   setTitle(t_i18n('Ingestion monitoring | Ingestion | Data'));
   return (
-    <>
+    <div data-testid="connectors-page">
       <IngestionMenu />
       <PageContainer withRightMenu withGap>
         <Breadcrumbs
@@ -45,7 +45,7 @@ const Connectors = () => {
           }}
         />
       </PageContainer>
-    </>
+    </div>
   );
 };
 
