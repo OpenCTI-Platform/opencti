@@ -5,8 +5,9 @@ import { IngestionCatalogQuery } from '@components/data/__generated__/IngestionC
 import IngestionCatalogCard, { IngestionConnectorType } from '@components/data/IngestionCatalog/IngestionCatalogCard';
 import useIngestionCatalogFilters from '@components/data/IngestionCatalog/hooks/useIngestionCatalogFilters';
 import { useSearchParams } from 'react-router-dom';
-import { Stack, Grid } from '@mui/material';
+import { Stack } from '@mui/material';
 import { Search } from '@mui/icons-material';
+import Grid from '@mui/material/Grid2';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
@@ -115,13 +116,11 @@ const CatalogsEmptyState = () => {
       >
         <Stack flexDirection="row" alignItems="flex-start" gap={1}>
           <GradientCard.Icon icon={Search} size="large" />
-
           <Stack>
             <GradientCard.Text sx={{ whiteSpace: 'pre' }}>{t_i18n('Sorry, we couldn\'t find any results for your search.')}</GradientCard.Text>
             <GradientCard.Text sx={{ whiteSpace: 'pre' }}>{t_i18n('For more results, you can search in the XTM Hub.')}</GradientCard.Text>
           </Stack>
         </Stack>
-
         <BrowseMoreButton />
       </GradientCard>
     </Stack>
@@ -177,11 +176,11 @@ const IngestionCatalogComponent = ({
           <BrowseMoreButton />
         </Stack>
 
-        <Grid container spacing={2} id="testMicro" sx={{ marginRight: '200px' }}>
+        <Grid container spacing={2}>
           {filteredCatalogs.map((catalog) => {
             return catalog.contracts.map((contract) => {
               return (
-                <Grid key={contract.title} item lg={4} xs={6}>
+                <Grid key={contract.title} size={{ lg: 4, xs: 6 }}>
                   <IngestionCatalogCard
                     node={contract}
                     dataListId={catalog.id}

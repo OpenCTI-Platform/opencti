@@ -194,16 +194,14 @@ const IngestionCatalogCard = ({
           </CardContent>
         </div>
         <CardActions style={{ justifyContent: 'space-between', padding: 16 }}>
-          <div>
-            <IngestionCatalogChip
-              label={t_i18n(
-                ingestionConnectorTypeMetadata[connector.container_type].label,
-              )}
-              color={
+          <IngestionCatalogChip
+            label={t_i18n(
+              ingestionConnectorTypeMetadata[connector.container_type].label,
+            )}
+            color={
                 ingestionConnectorTypeMetadata[connector.container_type].color
               }
-            />
-          </div>
+          />
           <div style={{ display: 'flex', gap: 4 }}>
             <Button variant="outlined" size="small" component={Link} to={link}>
               {t_i18n('Details')}
