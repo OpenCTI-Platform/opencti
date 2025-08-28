@@ -248,7 +248,8 @@ const buildCreatorUser = (user) => {
     entity_type: user.entity_type,
     name: ENABLED_DEMO_MODE ? REDACTED_USER.name : user.name,
     description: user.description,
-    standard_id: user.id
+    standard_id: user.id,
+    [RELATION_PARTICIPATE_TO]: user[RELATION_PARTICIPATE_TO],
   };
 };
 export const batchCreator = async (context, user, userIds) => {
