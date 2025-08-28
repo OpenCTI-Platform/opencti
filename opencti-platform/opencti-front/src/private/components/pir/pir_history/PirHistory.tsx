@@ -210,7 +210,7 @@ const PirHistory = ({ data }: PirHistoryProps) => {
         lineFragment={pirHistoryLogFragment}
         entityTypes={['History']}
         useComputeLink={({ context_data }: PirHistoryLogFragment$data) => {
-          return pirLogRedirectUri(pirId, context_data);
+          return pirLogRedirectUri(context_data);
         }}
         searchContextFinal={{ entityTypes: ['History'] }}
         availableFilterKeys={[

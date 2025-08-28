@@ -111,6 +111,7 @@ export const generatePirContextData = (event: SseEvent<StreamDataEvent>): Partia
   ) { // 2. detect in-pir relations
     const relationEvent = eventData as StixRelation;
     const extensions = relationEvent.extensions[STIX_EXT_OCTI];
+    from_id = extensions.source_ref;
     pir_ids = [extensions.target_ref];
     pir_score = extensions.pir_score;
   } else if (event.event === 'update' && (event.data as UpdateEvent).context.patch) {

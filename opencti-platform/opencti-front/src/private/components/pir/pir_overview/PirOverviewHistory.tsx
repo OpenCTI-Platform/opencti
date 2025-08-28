@@ -97,7 +97,7 @@ const PirOverviewHistory = ({ dataHistory, dataPir }: PirOverviewHistoryProps) =
 
         {history.map((historyItem) => {
           const { id, context_data, timestamp } = historyItem;
-          const redirectURI = pirLogRedirectUri(pir.id, context_data);
+          const redirectURI = pirLogRedirectUri(context_data);
 
           return (
             <Box

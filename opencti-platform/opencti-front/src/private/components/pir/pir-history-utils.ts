@@ -13,7 +13,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import { GqlFilterGroup, sanitizeFilterGroupKeysForFrontend } from '../../../utils/filters/filtersUtils';
+import { GqlFilterGroup } from '../../../utils/filters/filtersUtils';
 
 export const pirHistoryFilterGroup = (): GqlFilterGroup => {
   return {
@@ -59,25 +59,10 @@ export const pirHistoryFilterGroup = (): GqlFilterGroup => {
  * @returns URI.
  */
 export const pirLogRedirectUri = (
-  pirId: string,
   context: {
     readonly entity_id: string | null | undefined
     readonly from_id: string | null | undefined
-    readonly message: string
   } | null | undefined,
 ) => {
-  const isAddInPir = /added to Pir/.test(context?.message ?? '');
-  let redirectURI = `/dashboard/id/${context?.from_id ?? context?.entity_id}`;
-  if (isAddInPir && context?.from_id) {
-    const filter = encodeURIComponent(JSON.stringify(sanitizeFilterGroupKeysForFrontend({
-      mode: 'and',
-      filters: [{
-        key: ['fromId'],
-        values: [context.from_id],
-      }],
-      filterGroups: [],
-    })));
-    redirectURI = `/dashboard/pirs/${pirId}/threats?filters=${filter}`;
-  }
-  return redirectURI;
+  return `/dashboard/id/${context?.from_id ?? context?.entity_id}`;
 };
