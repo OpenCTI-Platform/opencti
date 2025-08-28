@@ -24,6 +24,7 @@ import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import { canUse } from '../../../../utils/authorizedMembers';
 
 export const reportMutationFieldPatch = graphql`
   mutation ReportEditionOverviewFieldPatchMutation(
@@ -199,7 +200,13 @@ const ReportEditionOverviewComponent = (props) => {
       'x_opencti_workflow_id',
     ]),
   )(report);
-
+  let disableAuthor = false;
+  if ('currentUserAccessRight' in (report?.createdBy ?? {})) {
+    disableAuthor = !canUse([report?.createdBy?.currentUserAccessRight]);
+  }
+  if ('organizations' in (report?.createdBy ?? {})) {
+    disableAuthor = !canUse(report?.createdBy?.organizations?.edges.map((o) => o.node.currentUserAccessRight) ?? []);
+  }
   return (
     <Formik
       enableReinitialize={true}
@@ -338,6 +345,7 @@ const ReportEditionOverviewComponent = (props) => {
             onChange={editor.changeCreated}
             setFieldValue={setFieldValue}
             required={mandatoryAttributes.includes('createdBy')}
+            disabled={disableAuthor}
           />
           <ObjectMarkingField
             name="objectMarking"
@@ -383,6 +391,18 @@ export default createFragmentContainer(ReportEditionOverviewComponent, {
           id
           name
           entity_type
+        }
+        ... on Organization {
+          currentUserAccessRight
+        }
+        ... on Individual {
+          organizations {
+            edges {
+              node {
+                currentUserAccessRight
+              }
+            }
+          }
         }
       }
       objectMarking {

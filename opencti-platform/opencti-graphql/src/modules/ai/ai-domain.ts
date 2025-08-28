@@ -15,6 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { callWithTimeout } from '@opentelemetry/sdk-metrics/build/esnext/utils';
 import { TimeoutError } from '@opentelemetry/sdk-metrics';
+import nconf from 'nconf';
 import { logApp } from '../../config/conf';
 import { FunctionalError, UnknownError } from '../../config/errors';
 import { queryAi, queryNLQAi } from '../../database/ai-llm';
@@ -417,7 +418,7 @@ export const generateNLQresponse = async (context: AuthContext, user: AuthUser, 
 
   // 01. query the model
   logApp.debug('[AI] Querying NLQ with prompt', { questionStart: search.substring(0, 100) });
-  const NLQ_TIMEOUT = 30 * 1000; // timeout: 30s
+  const NLQ_TIMEOUT = nconf.get('app:ai:timeout') || 60000;
   let rawResponse;
   try {
     rawResponse = await callWithTimeout(queryNLQAi(promptValue), NLQ_TIMEOUT);

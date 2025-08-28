@@ -2,12 +2,12 @@ import Chip from '@mui/material/Chip';
 import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/material';
+import Tooltip from '@mui/material/Tooltip';
 import { itemColor } from '../utils/Colors';
 import { useFormatter } from './i18n';
 import ThemeLight from './ThemeLight';
 import ThemeDark from './ThemeDark';
 import ItemIcon from './ItemIcon';
-import { truncate } from '../utils/String';
 import { chipInListBasicStyle } from '../utils/chipStyle';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -30,7 +30,6 @@ const useStyles = makeStyles(() => ({
 
 interface ItemEntityTypeProps {
   entityType: string;
-  maxLength?: number;
   inList?: boolean;
   showIcon?: boolean;
   isRestricted?: boolean;
@@ -40,7 +39,6 @@ interface ItemEntityTypeProps {
 
 const ItemEntityType: FunctionComponent<ItemEntityTypeProps> = ({
   inList = true,
-  maxLength,
   entityType,
   showIcon = false,
   isRestricted = false,
@@ -99,23 +97,23 @@ const ItemEntityType: FunctionComponent<ItemEntityTypeProps> = ({
   };
   const getLabel = () => {
     if (isRestricted) return t_i18n('Restricted');
-    const label = t_i18n(isRelationship ? `relationship_${entityType}` : `entity_${entityType}`);
-    if (maxLength) return truncate(label, maxLength);
-    return label;
+    return t_i18n(isRelationship ? `relationship_${entityType}` : `entity_${entityType}`);
   };
 
   return (
-    <Chip
-      classes={{ root: rootStyle }}
-      style={{
-        ...getStyle(),
-        ...style,
-      }}
-      label={<>
-        {getIcon()}
-        {getLabel()}
-      </>}
-    />
+    <Tooltip title={getLabel()}>
+      <Chip
+        classes={{ root: rootStyle }}
+        style={{
+          ...getStyle(),
+          ...style,
+        }}
+        label={<>
+          {getIcon()}
+          {getLabel()}
+        </>}
+      />
+    </Tooltip>
   );
 };
 

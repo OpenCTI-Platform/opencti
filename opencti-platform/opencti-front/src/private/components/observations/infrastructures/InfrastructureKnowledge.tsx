@@ -175,6 +175,7 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
                 'communicates-with',
                 'consists-of',
                 'related-to',
+                'technology-from',
                 'technology-to',
                 'technology',
               ]}

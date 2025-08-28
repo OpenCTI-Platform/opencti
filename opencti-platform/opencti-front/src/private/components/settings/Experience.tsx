@@ -308,9 +308,12 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
             </Paper>
           </Grid>
         )}
-        <Grid item xs={6}>
-          <XtmHubSettings />
-        </Grid>
+        {
+          <Grid item xs={6}>
+            <XtmHubSettings />
+          </Grid>
+        }
+
         {isGrantedToSupport && (
           <Grid item xs={12} style={{ marginTop: 15 }}>
             <SupportPackages />

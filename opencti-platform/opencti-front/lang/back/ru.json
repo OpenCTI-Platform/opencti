@@ -966,5 +966,6 @@
   "XTM Hub registration status": "Статус регистрации XTM Hub",
   "XTM Hub registration User ID": "Идентификатор пользователя при регистрации концентратора XTM",
   "XTM Hub registration User name": "Регистрация концентратора XTM Имя пользователя",
+  "XTM Hub should send connectivity email": "Концентратор XTM должен отправить электронное сообщение о возможности подключения",
   "XTM Hub Token": "Токен концентратора XTM"
 }

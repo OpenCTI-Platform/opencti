@@ -28,4 +28,6 @@ export interface BasicStoreSettings extends BasicStoreEntity {
   xtm_hub_registration_user_id?: string
   xtm_hub_registration_user_name?: string
   xtm_hub_registration_date?: Date
+  xtm_hub_last_connectivity_check?: Date
+  xtm_hub_should_send_connectivity_email?: boolean
 }

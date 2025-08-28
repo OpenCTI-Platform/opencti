@@ -18,6 +18,7 @@ import { RootMe_data$key } from './__generated__/RootMe_data.graphql';
 import { RootPrivateQuery } from './__generated__/RootPrivateQuery.graphql';
 import { RootSettings$data, RootSettings$key } from './__generated__/RootSettings.graphql';
 import 'filigran-chatbot/dist/web'; // allows to use <filigran-chatbot /> element
+import useNetworkCheck from '../utils/hooks/useCheckNetwork';
 
 const rootSettingsFragment = graphql`
   fragment RootSettings on Settings {
@@ -394,6 +395,7 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
   const platformModuleHelpers = platformModuleHelper(settings);
   const platformAnalyticsConfiguration = generateAnalyticsConfig(settings);
 
+  const { isReachable } = useNetworkCheck(settings?.platform_xtmhub_url);
   return (
     <UserContext.Provider
       value={{
@@ -403,6 +405,7 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
         entitySettings,
         platformModuleHelpers,
         schema,
+        isXTMHubAccessible: isReachable,
       }}
     >
       <StyledEngineProvider injectFirst={true}>

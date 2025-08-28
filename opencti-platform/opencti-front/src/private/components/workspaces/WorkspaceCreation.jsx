@@ -59,7 +59,7 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
   const theme = useTheme();
   const { t_i18n } = useFormatter();
   const inputRef = useRef();
-  const { settings } = useContext(UserContext);
+  const { settings, isXTMHubAccessible } = useContext(UserContext);
   const importFromHubUrl = isNotEmptyField(settings?.platform_xtmhub_url)
     ? `${settings.platform_xtmhub_url}/redirect/octi_custom_dashboards?opencti_platform_id=${settings.id}`
     : '';
@@ -125,7 +125,7 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
       >
         <FileUploadOutlined fontSize="small" color={'primary'} />
       </ToggleButton>
-      {isNotEmptyField(importFromHubUrl) && (
+      {isXTMHubAccessible && isNotEmptyField(importFromHubUrl) && (
         <GradientButton
           size="small"
           sx={{ marginLeft: theme.spacing(1) }}

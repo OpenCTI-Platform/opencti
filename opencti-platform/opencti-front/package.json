@@ -1,6 +1,6 @@
 {
   "name": "opencti-front",
-  "version": "6.7.14",
+  "version": "6.7.15",
   "private": true,
   "main": "src/front.tsx",
   "dependencies": {
@@ -41,7 +41,7 @@
     "dompurify": "3.2.6",
     "extract-files": "13.0.0",
     "filigran-chatbot": "https://github.com/FiligranHQ/filigran-chatbot/releases/download/0.1.4/filigran-chatbot-v0.1.4.tgz",
-    "filigran-icon": "0.14.1",
+    "filigran-icon": "0.18.1",
     "filigran-ui": "0.32.1",
     "formik": "2.4.6",
     "formik-mui": "5.0.0-alpha.0",
@@ -75,7 +75,7 @@
     "react-cookie": "7.2.2",
     "react-csv": "2.2.2",
     "react-dom": "19.1.0",
-    "react-draggable": "4.4.6",
+    "react-draggable": "4.5.0",
     "react-force-graph-2d": "1.28.0",
     "react-force-graph-3d": "1.24.4",
     "react-grid-layout": "1.5.2",
@@ -96,7 +96,7 @@
     "react-virtualized": "9.22.6",
     "react-wordcloud": "1.2.7",
     "reactflow": "11.11.4",
-    "recharts": "3.1.1",
+    "recharts": "3.1.2",
     "relay-runtime": "20.1.1",
     "remark-flexible-markers": "1.3.0",
     "remark-gfm": "4.0.1",
@@ -136,7 +136,7 @@
     "chokidar": "4.0.3",
     "compression": "1.8.0",
     "cross-env": "7.0.3",
-    "esbuild": "0.25.5",
+    "esbuild": "0.25.9",
     "esbuild-jest": "0.5.0",
     "eslint": "8.57.1",
     "eslint-config-airbnb": "19.0.4",
@@ -159,7 +159,7 @@
     "typescript": "5.9.2",
     "vite": "7.0.0",
     "vite-plugin-relay": "2.1.0",
-    "vite-plugin-static-copy": "2.3.1",
+    "vite-plugin-static-copy": "2.3.2",
     "vitest": "2.0.5"
   },
   "engines": {
