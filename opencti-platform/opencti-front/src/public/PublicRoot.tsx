@@ -22,7 +22,7 @@ const queryRef = loadQuery<LoginRootPublicQuery>(
 );
 
 const PublicRoot = () => {
-  const { settings, themes } = usePreloadedQuery<LoginRootPublicQuery>(
+  const { settings } = usePreloadedQuery<LoginRootPublicQuery>(
     rootPublicQuery,
     queryRef,
   );
@@ -30,7 +30,7 @@ const PublicRoot = () => {
   return (
     <PublicSettingsProvider settings={settings}>
       <StyledEngineProvider injectFirst={true}>
-        <ConnectedThemeProvider settings={settings} themes={themes}>
+        <ConnectedThemeProvider settings={settings}>
           <ConnectedIntlProvider settings={settings}>
             <CssBaseline />
             <Message />

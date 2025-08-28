@@ -390,7 +390,7 @@ export const initializeData = async (context, withMarkings = true) => {
     internal_id: platformId,
     platform_title: 'OpenCTI - Cyber Threat Intelligence Platform',
     platform_email: 'admin@opencti.io',
-    platform_theme: 'Dark',
+    platform_theme: 'dark',
     platform_language: 'auto',
   });
   await initCreateEntitySettings(context, SYSTEM_USER);

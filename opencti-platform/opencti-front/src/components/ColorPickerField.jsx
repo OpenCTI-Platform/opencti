@@ -19,14 +19,13 @@ const ColorPickerField = (props) => {
   };
 
   const {
-    form: { setFieldValue, setFieldTouched, submitCount },
+    form: { setFieldValue, setFieldTouched },
     field: { name },
     onChange,
     onFocus,
     onSubmit,
   } = props;
   const [, meta] = useField(name);
-  const showError = !isNil(meta.error) && (meta.touched || submitCount > 0);
 
   const internalOnChange = React.useCallback(
     (event) => {
@@ -71,8 +70,8 @@ const ColorPickerField = (props) => {
       <MuiTextField
         {...otherProps}
         value={value ?? ''}
-        error={showError}
-        helperText={showError ? meta.error : props.helperText}
+        error={!isNil(meta.error)}
+        helperText={!isNil(meta.error) ? meta.error : props.helperText}
         onChange={internalOnChange}
         onFocus={internalOnFocus}
         onBlur={internalOnBlur}

@@ -237,15 +237,6 @@ const rootPrivateQuery = graphql`
     settings {
       ...RootSettings
     }
-    themes {
-      edges {
-        node {
-          id
-          name
-          manifest
-        }
-      }
-    }
     about {
       version
     }
@@ -355,7 +346,6 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
   const {
     me: meFragment,
     settings: settingsFragment,
-    themes,
     entitySettings,
     schemaSCOs,
     schemaSDOs,
@@ -409,7 +399,7 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
       }}
     >
       <StyledEngineProvider injectFirst={true}>
-        <ConnectedThemeProvider settings={settings} themes={themes}>
+        <ConnectedThemeProvider settings={settings}>
           <ConnectedIntlProvider settings={settings}>
             <AnalyticsProvider instance={Analytics(platformAnalyticsConfiguration)}>
               <Index settings={settings} />
