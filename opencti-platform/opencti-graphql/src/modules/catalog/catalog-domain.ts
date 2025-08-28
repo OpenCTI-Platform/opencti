@@ -108,7 +108,8 @@ export const computeConnectorTargetContract = (
 
     if (!currentConfig) {
       // If value isn't set in input but is already set in config, keep the config value
-      if (currentConnectorConfig) {
+      // Only applicable to password fields
+      if (currentConnectorConfig && targetConfig.properties[propKey].format === 'password') {
         contractConfigurations.push(currentConnectorConfig);
       } else if (targetConfig.properties[propKey].default) {
         contractConfigurations.push(({ key: propKey, value: targetConfig.properties[propKey].default }));
