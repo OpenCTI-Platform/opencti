@@ -282,6 +282,16 @@ describe('PIR resolver standard behavior', () => {
   });
 
   it('should filter entities by a pir score', async () => {
+    // return no entities if the pir id matches no PIR
+    const filtersWithFakePirId = addFilter(undefined, `${PIR_SCORE_FILTER_PREFIX}.fakeId}`, ['50'], 'gt');
+    await expect(async () => {
+      await listEntitiesPaginated(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithFakePirId });
+    }).rejects.toThrowError('No PIR found');
+    // return error if the filter key is not in a correct format
+    const filtersInIncorrectFormat = addFilter(undefined, PIR_SCORE_FILTER_PREFIX, ['50'], 'gt');
+    await expect(async () => {
+      await listEntitiesPaginated(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersInIncorrectFormat });
+    }).rejects.toThrowError('The filter key should be followed by a dot and the Pir ID');
     // fetch entities with a score > 50 for a given PIR
     const filtersWithGtOperator = addFilter(undefined, `${PIR_SCORE_FILTER_PREFIX}.${pirInternalId}`, ['50'], 'gt');
     const stixDomainObjects1 = await listEntitiesPaginated(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithGtOperator });
@@ -291,19 +301,19 @@ describe('PIR resolver standard behavior', () => {
     const filtersWithLtOperator = addFilter(undefined, `${PIR_SCORE_FILTER_PREFIX}.${pirInternalId}`, ['50'], 'lt');
     const stixDomainObjects2 = await listEntitiesPaginated(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithLtOperator });
     expect(stixDomainObjects2.edges.length).toEqual(0);
-    // return no entities if the pir id matches no PIR
-    const filtersWithFakePirId = addFilter(undefined, `${PIR_SCORE_FILTER_PREFIX}.fakeId}`, ['50'], 'gt');
-    const stixDomainObjects3 = await listEntitiesPaginated(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithFakePirId });
-    expect(stixDomainObjects3.edges.length).toEqual(0);
-    // return error if the filter key is not in a correct format
-    const filtersInIncorrectFormat = addFilter(undefined, PIR_SCORE_FILTER_PREFIX, ['50'], 'gt');
-    await expect(async () => {
-      await listEntitiesPaginated(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersInIncorrectFormat });
-    })
-      .rejects.toThrowError('The filter key should be followed by a dot and the Pir ID');
   });
 
   it('should filter entities by last pir score date', async () => {
+    // return no entities if the pir id matches no PIR
+    const filtersWithFakePirId = addFilter(undefined, `${LAST_PIR_SCORE_DATE_FILTER_PREFIX}.fakeId}`, [now().toString()], 'lt');
+    await expect(async () => {
+      await listEntitiesPaginated(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithFakePirId });
+    }).rejects.toThrowError('No PIR found');
+    // return error if the filter key is not in a correct format
+    const filtersInIncorrectFormat = addFilter(undefined, LAST_PIR_SCORE_DATE_FILTER_PREFIX, [now().toString()], 'lt');
+    await expect(async () => {
+      await listEntitiesPaginated(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersInIncorrectFormat });
+    }).rejects.toThrowError('The filter key should be followed by a dot and the Pir ID');
     // fetch entities scored before now for the pir
     const filtersWithGtOperator = addFilter(undefined, `${LAST_PIR_SCORE_DATE_FILTER_PREFIX}.${pirInternalId}`, [now().toString()], 'lt');
     const stixDomainObjects1 = await listEntitiesPaginated(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithGtOperator });
@@ -313,25 +323,15 @@ describe('PIR resolver standard behavior', () => {
     const filtersWithLtOperator = addFilter(undefined, `${LAST_PIR_SCORE_DATE_FILTER_PREFIX}.${pirInternalId}`, [now().toString()], 'gt');
     const stixDomainObjects2 = await listEntitiesPaginated(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithLtOperator });
     expect(stixDomainObjects2.edges.length).toEqual(0);
-    // return no entities if the pir id matches no PIR
-    const filtersWithFakePirId = addFilter(undefined, `${LAST_PIR_SCORE_DATE_FILTER_PREFIX}.fakeId}`, [now().toString()], 'lt');
-    const stixDomainObjects3 = await listEntitiesPaginated(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithFakePirId });
-    expect(stixDomainObjects3.edges.length).toEqual(0);
-    // return error if the filter key is not in a correct format
-    const filtersInIncorrectFormat = addFilter(undefined, LAST_PIR_SCORE_DATE_FILTER_PREFIX, [now().toString()], 'lt');
-    await expect(async () => {
-      await listEntitiesPaginated(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersInIncorrectFormat });
-    })
-      .rejects.toThrowError('The filter key should be followed by a dot and the Pir ID');
     // fetch entities scored today
     const filtersWithinToday = addFilter(undefined, `${LAST_PIR_SCORE_DATE_FILTER_PREFIX}.${pirInternalId}`, ['now-1d', 'now'], 'within');
-    const stixDomainObjects4 = await listEntitiesPaginated(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithinToday });
-    expect(stixDomainObjects1.edges.length).toEqual(1);
-    expect(stixDomainObjects4.edges[0].node.internal_id).toEqual(flaggedElementId);
+    const stixDomainObjects3 = await listEntitiesPaginated(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithinToday });
+    expect(stixDomainObjects3.edges.length).toEqual(1);
+    expect(stixDomainObjects3.edges[0].node.internal_id).toEqual(flaggedElementId);
     // fetch entities scored tomorrow
     const filtersWithinTomorrow = addFilter(undefined, `${LAST_PIR_SCORE_DATE_FILTER_PREFIX}.${pirInternalId}`, ['now', 'now+1d'], 'within');
-    const stixDomainObjects5 = await listEntitiesPaginated(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithinTomorrow });
-    expect(stixDomainObjects5.edges.length).toEqual(0);
+    const stixDomainObjects4 = await listEntitiesPaginated(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithinTomorrow });
+    expect(stixDomainObjects4.edges.length).toEqual(0);
   });
 
   it('should update a pir meta rel by adding a new explanation', async () => {
