@@ -8,6 +8,7 @@ import StixCoreObjectExternalReferences from '../external_references/StixCoreObj
 import StixCoreObjectOrStixCoreRelationshipNotes from '../notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import { Report_report$key } from './__generated__/Report_report.graphql';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import { useIsHiddenEntities } from '../../../../utils/hooks/useEntitySettings';
 
 const reportComponentFragment = graphql`
   fragment Report_report on Report {
@@ -126,6 +127,7 @@ const Report: React.FC<ReportComponentProps> = ({ reportFragment }) => {
                 </Grid>
               );
             case 'notes':
+              if (useIsHiddenEntities('Note')) return null;
               return (
                 <Grid key={key} item xs={width}>
                   <StixCoreObjectOrStixCoreRelationshipNotes

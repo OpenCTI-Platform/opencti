@@ -11,6 +11,7 @@ import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../commo
 import LocationMiniMap from '../../common/location/LocationMiniMap';
 import { Country_country$key } from './__generated__/Country_country.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
+import {useIsHiddenEntities} from "../../../../utils/hooks/useEntitySettings";
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -97,6 +98,8 @@ const CountryComponent = ({
     countryFragment,
     countryData,
   );
+  const hiddenNote = useIsHiddenEntities('Note');
+
   return (
     <>
       <Grid
@@ -141,10 +144,12 @@ const CountryComponent = ({
           <StixCoreObjectLatestHistory stixCoreObjectId={country.id} />
         </Grid>
       </Grid>
-      <StixCoreObjectOrStixCoreRelationshipNotes
-        stixCoreObjectOrStixCoreRelationshipId={country.id}
-        defaultMarkings={country.objectMarking ?? []}
-      />
+      {!hiddenNote && (
+        <StixCoreObjectOrStixCoreRelationshipNotes
+          stixCoreObjectOrStixCoreRelationshipId={country.id}
+          defaultMarkings={country.objectMarking ?? []}
+        />
+      )}
     </>
   );
 };

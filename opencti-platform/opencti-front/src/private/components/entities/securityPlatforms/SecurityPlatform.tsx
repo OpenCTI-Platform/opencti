@@ -10,6 +10,7 @@ import StixCoreObjectOrStixRelationshipLastContainers from '../../common/contain
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
+import {useIsHiddenEntities} from "../../../../utils/hooks/useEntitySettings";
 
 export const securityPlatformFragment = graphql`
   fragment SecurityPlatform_securityPlatform on SecurityPlatform {
@@ -74,6 +75,8 @@ const SecurityPlatform: React.FC<SecurityPlatformProps> = ({ securityPlatformDat
     securityPlatformFragment,
     securityPlatformData,
   );
+  const hiddenNote = useIsHiddenEntities('Note');
+
   return (
     <>
       <Grid
@@ -110,10 +113,12 @@ const SecurityPlatform: React.FC<SecurityPlatformProps> = ({ securityPlatformDat
           />
         </Grid>
         <Grid item xs={12}>
-          <StixCoreObjectOrStixCoreRelationshipNotes
-            stixCoreObjectOrStixCoreRelationshipId={securityPlatform.id}
-            defaultMarkings={securityPlatform.objectMarking ?? []}
-          />
+          {!hiddenNote && (
+            <StixCoreObjectOrStixCoreRelationshipNotes
+              stixCoreObjectOrStixCoreRelationshipId={securityPlatform.id}
+              defaultMarkings={securityPlatform.objectMarking ?? []}
+            />
+          )}
         </Grid>
       </Grid>
     </>

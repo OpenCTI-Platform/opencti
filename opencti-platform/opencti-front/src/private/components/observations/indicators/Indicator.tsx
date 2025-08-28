@@ -10,6 +10,7 @@ import StixCoreObjectOrStixRelationshipLastContainers from '../../common/contain
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
+import { useIsHiddenEntities } from '../../../../utils/hooks/useEntitySettings';
 
 const indicatorFragment = graphql`
   fragment Indicator_indicator on Indicator {
@@ -72,6 +73,8 @@ const Indicator: React.FC<IndicatorProps> = ({ indicatorData }) => {
     indicatorFragment,
     indicatorData,
   );
+  const hiddenNote = useIsHiddenEntities('Note');
+
   return (
     <>
       <Grid
@@ -106,10 +109,12 @@ const Indicator: React.FC<IndicatorProps> = ({ indicatorData }) => {
           <StixCoreObjectLatestHistory stixCoreObjectId={indicator.id} />
         </Grid>
         <Grid item xs={12}>
-          <StixCoreObjectOrStixCoreRelationshipNotes
-            stixCoreObjectOrStixCoreRelationshipId={indicator.id}
-            defaultMarkings={indicator.objectMarking ?? []}
-          />
+          {!hiddenNote && (
+            <StixCoreObjectOrStixCoreRelationshipNotes
+              stixCoreObjectOrStixCoreRelationshipId={indicator.id}
+              defaultMarkings={indicator.objectMarking ?? []}
+            />
+          )}
         </Grid>
       </Grid>
     </>

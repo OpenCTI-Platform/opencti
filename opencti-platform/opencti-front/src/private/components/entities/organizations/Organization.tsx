@@ -10,6 +10,7 @@ import StixCoreObjectOrStixRelationshipLastContainers from '../../common/contain
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
+import {useIsHiddenEntities} from "../../../../utils/hooks/useEntitySettings";
 
 const organizationFragment = graphql`
   fragment Organization_organization on Organization {
@@ -77,6 +78,8 @@ const Organization: React.FC<OrganizationProps> = ({ organizationData, viewAs })
   const lastReportsProps = viewAs === 'knowledge'
     ? { stixCoreObjectOrStixRelationshipId: organization.id }
     : { authorId: organization.id };
+  const hiddenNote = useIsHiddenEntities('Note');
+
   return (
     <>
       <Grid
@@ -117,10 +120,12 @@ const Organization: React.FC<OrganizationProps> = ({ organizationData, viewAs })
           <StixCoreObjectLatestHistory stixCoreObjectId={organization.id} />
         </Grid>
       </Grid>
-      <StixCoreObjectOrStixCoreRelationshipNotes
-        stixCoreObjectOrStixCoreRelationshipId={organization.id}
-        defaultMarkings={organization.objectMarking ?? []}
-      />
+      {!hiddenNote && (
+        <StixCoreObjectOrStixCoreRelationshipNotes
+          stixCoreObjectOrStixCoreRelationshipId={organization.id}
+          defaultMarkings={organization.objectMarking ?? []}
+        />
+      )}
     </>
   );
 };
