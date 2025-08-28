@@ -63,9 +63,13 @@ type PirRelationship implements BasicRelationship {
     toRole: String
     created_at: DateTime!
     updated_at: DateTime!
+    fromId: String!
+    toId: String!
+    fromType: String!
+    toType: String!
     # InternalRelationship
-    from: InternalObject
-    to: InternalObject
+    from: StixDomainObject
+    to: Pir
     creators: [Creator!]
     # in-pir relationship
     pir_explanations: [PirExplanation!]

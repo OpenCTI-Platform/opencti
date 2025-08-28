@@ -53,6 +53,10 @@ const pirResolvers: Resolvers = {
     authorizedMembers: (pir, _, context) => getAuthorizedMembers(context, context.user, pir),
     currentUserAccessRight: (pir, _, context) => getUserAccessRight(context.user, pir)
   },
+  PirRelationship: {
+    from: (rel, _, context) => (rel.from ? rel.from : context.batch.idsBatchLoader.load({ id: rel.fromId, type: rel.fromType })),
+    to: (rel, _, context) => (rel.to ? rel.to : context.batch.idsBatchLoader.load({ id: rel.toId, type: rel.toType })),
+  },
   Mutation: {
     pirAdd: (_, { input }, context) => pirAdd(context, context.user, input),
     pirFieldPatch: (_, { id, input }, context) => updatePir(context, context.user, id, input),
