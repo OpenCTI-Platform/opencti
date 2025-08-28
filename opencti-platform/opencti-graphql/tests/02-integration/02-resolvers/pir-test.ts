@@ -4,13 +4,16 @@ import { now } from 'moment';
 import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
 import { FilterMode, FilterOperator, PirType } from '../../../src/generated/graphql';
 import { SYSTEM_USER } from '../../../src/utils/access';
-import { listEntities, listEntitiesPaginated, storeLoadById } from '../../../src/database/middleware-loader';
+import { internalLoadById, listEntities, listEntitiesPaginated, listRelationsPaginated } from '../../../src/database/middleware-loader';
 import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import type { BasicStoreEntity } from '../../../src/types/store';
 import { ENTITY_TYPE_CONNECTOR } from '../../../src/schema/internalObject';
 import { addFilter } from '../../../src/utils/filtering/filtering-utils';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../../src/schema/general';
 import { LAST_PIR_SCORE_DATE_FILTER_PREFIX, PIR_SCORE_FILTER_PREFIX } from '../../../src/utils/filtering/filtering-constants';
+import { resetCacheForEntity } from '../../../src/database/cache';
+import { type BasicStoreRelationPir, ENTITY_TYPE_PIR } from '../../../src/modules/pir/pir-types';
+import { RELATION_IN_PIR } from '../../../src/schema/internalRelationship';
 
 const LIST_QUERY = gql`
   query pirs(
@@ -152,6 +155,8 @@ describe('PIR resolver standard behavior', () => {
     expect(pir.data?.pirAdd).not.toBeNull();
     expect(pir.data?.pirAdd.name).toEqual('MyPir');
     pirInternalId = pir.data?.pirAdd.id;
+    // reset cache for Pir
+    resetCacheForEntity(ENTITY_TYPE_PIR);
   });
 
   it('should pir loaded by internal id', async () => {
@@ -211,13 +216,24 @@ describe('PIR resolver standard behavior', () => {
     expect(queryResult.errors?.[0].message).toEqual('Error while updating the PIR, invalid or forbidden key.');
   });
 
+  it('should not fetch pir relationships for a not accessible Pir', async () => {
+    // Verify in-pir relations are not accessible for a not accessible Pir
+    const relationshipsQueryResult = await queryAsAdmin({
+      query: LIST_RELS_QUERY,
+      variables: { pirId: 'fakeId' },
+    });
+    expect(relationshipsQueryResult).not.toBeNull();
+    expect(relationshipsQueryResult.errors?.length).toEqual(1);
+    expect(relationshipsQueryResult.errors?.[0].message).toEqual('No PIR found');
+  });
+
   it('should flag an element and create a pir relationship', async () => {
     // fetch an element standard id
-    const malware = await storeLoadById<BasicStoreEntity>(
+    const malware = await internalLoadById<BasicStoreEntity>(
       testContext,
       SYSTEM_USER,
       'malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88',
-      ENTITY_TYPE_MALWARE
+      { type: ENTITY_TYPE_MALWARE },
     );
     flaggedElementId = malware.id;
     // flag the element
@@ -254,11 +270,11 @@ describe('PIR resolver standard behavior', () => {
     expect(queryResult.data?.pirRelationships.edges[0].node.pir_explanations.length).toEqual(1);
     expect(queryResult.data?.pirRelationships.edges[0].node.pir_explanations[0].dependencies[0].element_id).toEqual(relationshipId);
     // Verify the pir information has been updated at the entity level
-    const malwareAfterFlag = await storeLoadById<BasicStoreEntity>(
+    const malwareAfterFlag = await internalLoadById<BasicStoreEntity>(
       testContext,
       SYSTEM_USER,
       'malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88',
-      ENTITY_TYPE_MALWARE
+      { type: ENTITY_TYPE_MALWARE },
     );
     expect(malwareAfterFlag.pir_information.length).toEqual(1);
     expect(malwareAfterFlag.pir_information.filter((s) => s.pir_id === pirInternalId).length).toEqual(1);
@@ -351,11 +367,11 @@ describe('PIR resolver standard behavior', () => {
     expect(queryResult.data?.pirRelationships.edges[0].node.pir_score).toEqual(100);
     expect(queryResult.data?.pirRelationships.edges[0].node.pir_explanations.length).toEqual(2);
     // Verify the pir information has been updated at the entity level
-    const malwareAfterFlag = await storeLoadById<BasicStoreEntity>(
+    const malwareAfterFlag = await internalLoadById<BasicStoreEntity>(
       testContext,
       SYSTEM_USER,
       'malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88',
-      ENTITY_TYPE_MALWARE
+      { type: ENTITY_TYPE_MALWARE },
     );
     expect(malwareAfterFlag.pir_information.length).toEqual(1);
     expect(malwareAfterFlag.pir_information.filter((s) => s.pir_id === pirInternalId).length).toEqual(1);
@@ -417,21 +433,18 @@ describe('PIR resolver standard behavior', () => {
       query: DELETE_QUERY,
       variables: { id: pirInternalId },
     });
-    // Verify in-pir rels have been deleted
-    const refQueryResult = await queryAsAdmin({
-      query: LIST_RELS_QUERY,
-      variables: { pirId: pirInternalId },
-    });
-    expect(refQueryResult).not.toBeNull();
-    expect(refQueryResult.data?.pirRelationships.edges.length).toEqual(0);
+    // Verify the in-pir relations have been deleted
+    const pirRelations = await listRelationsPaginated<BasicStoreRelationPir>(testContext, SYSTEM_USER, RELATION_IN_PIR, { toId: [pirInternalId] });
+    expect(pirRelations).not.toBeNull();
+    expect(pirRelations.edges.length).toEqual(0);
     // Verify the pir information has been removed for the PIR at entities levels
-    const malwareAfterFlag = await storeLoadById<BasicStoreEntity>(
+    const malwareAfterFlag = await internalLoadById<BasicStoreEntity>(
       testContext,
       SYSTEM_USER,
       'malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88',
-      ENTITY_TYPE_MALWARE
+      { type: ENTITY_TYPE_MALWARE },
     );
-    expect(malwareAfterFlag.pir_information.length).toEqual(0);
+    expect(malwareAfterFlag.pir_information).toEqual(null);
     // Verify the associated connector queue is no longer found
     const pirConnectors = await listEntities<BasicStoreEntity>(
       testContext,
