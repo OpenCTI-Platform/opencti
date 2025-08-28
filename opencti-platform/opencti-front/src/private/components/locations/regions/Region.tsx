@@ -11,7 +11,7 @@ import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../commo
 import LocationMiniMap from '../../common/location/LocationMiniMap';
 import { Region_region$key } from './__generated__/Region_region.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
-import {useIsHiddenEntities} from "../../../../utils/hooks/useEntitySettings";
+import { useIsHiddenEntities } from '../../../../utils/hooks/useEntitySettings';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.

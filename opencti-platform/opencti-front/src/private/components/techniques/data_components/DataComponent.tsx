@@ -10,7 +10,7 @@ import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/Stix
 import { DataComponent_dataComponent$key } from './__generated__/DataComponent_dataComponent.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
-import {useIsHiddenEntities} from "../../../../utils/hooks/useEntitySettings";
+import { useIsHiddenEntities } from '../../../../utils/hooks/useEntitySettings';
 
 const DataComponentFragment = graphql`
   fragment DataComponent_dataComponent on DataComponent {
