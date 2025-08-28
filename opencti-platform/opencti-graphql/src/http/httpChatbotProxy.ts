@@ -8,6 +8,7 @@ import { getEnterpriseEditionActivePem } from '../modules/settings/licensing';
 import { getChatbotUrl, logApp } from '../config/conf';
 import type { BasicStoreSettings } from '../types/settings';
 import { setCookieError } from './httpUtils';
+import { isFiligranChatbotAiActivated } from '../modules/ai/chatbot-ai-settings';
 
 export const getChatbotProxy = async (req: Express.Request, res: Express.Response) => {
   try {
@@ -17,11 +18,12 @@ export const getChatbotProxy = async (req: Express.Request, res: Express.Respons
       return;
     }
 
-    const chatbotUrl = nconf.get('ai:chatbot:url');
-    const isChatbotEnabled = nconf.get('ai:chatbot:enabled');
+    const chatbotUrl = nconf.get('xtm:one:ai:url');
+    const isChatbotEnabled = nconf.get('xtm:one:ai:enabled');
     const settings = await getEntityFromCache<BasicStoreSettings>(context, context.user, ENTITY_TYPE_SETTINGS);
     const license_pem = getEnterpriseEditionActivePem(settings.enterprise_license);
-    if (!isChatbotEnabled || !license_pem) {
+    const isChatbotAiActivated = await isFiligranChatbotAiActivated();
+    if (!isChatbotEnabled || !isChatbotAiActivated || !license_pem) {
       res.status(400).json({ error: 'Chatbot is not enabled' });
       return;
     }

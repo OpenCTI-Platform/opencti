@@ -226,6 +226,12 @@
     "timeout": 60000
   },
   "xtm": {
+    "one": {
+      "ai": {
+        "enabled": false,
+        "url": ""
+      }
+    },
     "openbas_url": "",
     "openbas_token": "",
     "openbas_reject_unauthorized": false,
