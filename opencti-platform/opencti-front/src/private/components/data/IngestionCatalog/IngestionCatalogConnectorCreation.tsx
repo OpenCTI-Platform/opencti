@@ -11,7 +11,8 @@ import { JsonForms } from '@jsonforms/react';
 import { Schema, Validator } from '@cfworker/json-schema';
 import { Link } from 'react-router-dom';
 import { JsonSchema } from '@jsonforms/core';
-import { Alert } from '@mui/material';
+import Alert from '@mui/material/Alert';
+import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import {
@@ -23,6 +24,8 @@ import { IngestionConnector, IngestionTypedProperty } from '@components/data/Ing
 import { Launch } from 'mdi-material-ui';
 import IconButton from '@mui/material/IconButton';
 import { LibraryBooksOutlined } from '@mui/icons-material';
+import useConnectorManagerStatus from '@components/data/connectors/ConnectorManagerStatusContext';
+import NoConnectorManagersBanner from '@components/data/connectors/NoConnectorManagersBanner';
 import { MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
@@ -66,6 +69,8 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
   const theme = useTheme<Theme>();
   const [compiledValidator, setCompiledValidator] = useState<Validator | undefined>(undefined);
   const [commitRegister] = useApiMutation<IngestionCatalogConnectorCreationMutation>(ingestionCatalogConnectorCreationMutation);
+
+  const { hasRegisteredManagers } = useConnectorManagerStatus();
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -154,44 +159,53 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
         </div>
       }
     >
-      <Formik<ManagedConnectorValues>
-        onReset={onClose}
-        validationSchema={Yup.object().shape({
-          name: Yup.string().required().min(2),
-          user_id: Yup.object().required(),
-        })}
-        initialValues={{
-          name: '',
-          confidence_level: connector.max_confidence_level.toString(),
-          user_id: '',
-          automatic_user: true,
-          ...defaultValues,
-        }}
-        onSubmit={() => {
-        }}
-      >
-        {({ values, isSubmitting, setSubmitting, resetForm, isValid, setValues }) => {
-          const errors = compiledValidator?.validate(values)?.errors;
-          return (
-            <Form>
-              <Field
-                component={TextField}
-                style={fieldSpacingContainerStyle}
-                variant="standard"
-                name="name"
-                label={t_i18n('Instance name')}
-                required
-                fullWidth={true}
-              />
-              <IngestionCreationUserHandling
-                default_confidence_level={connector.max_confidence_level}
-                labelTag="C"
-                isSensitive={true}
-              />
-              {(requiredPropertiesArray.length > 0 || optionalPropertiesArray.length > 0) && (
-                <>
-                  <div style={fieldSpacingContainerStyle}>{t_i18n('Configuration')}</div>
-                  {requiredPropertiesArray.length > 0 && (
+      <Stack gap={1}>
+        {
+          !hasRegisteredManagers && <NoConnectorManagersBanner />
+        }
+
+        <Formik<ManagedConnectorValues>
+          onReset={onClose}
+          validationSchema={Yup.object().shape({
+            name: Yup.string().required().min(2),
+            user_id: Yup.object().required(),
+          })}
+          initialValues={{
+            name: '',
+            confidence_level: connector.max_confidence_level.toString(),
+            user_id: '',
+            automatic_user: true,
+            ...defaultValues,
+          }}
+          onSubmit={() => {
+          }}
+        >
+          {({ values, isSubmitting, setSubmitting, resetForm, isValid, setValues }) => {
+            const errors = compiledValidator?.validate(values)?.errors;
+            return (
+              <Form>
+                <fieldset
+                  disabled={!hasRegisteredManagers}
+                  style={!hasRegisteredManagers ? { opacity: 0.5, pointerEvents: 'none' } : undefined}
+                >
+                  <Field
+                    component={TextField}
+                    style={fieldSpacingContainerStyle}
+                    variant="standard"
+                    name="name"
+                    label={t_i18n('Instance name')}
+                    required
+                    fullWidth={true}
+                  />
+                  <IngestionCreationUserHandling
+                    default_confidence_level={connector.max_confidence_level}
+                    labelTag="C"
+                    isSensitive={true}
+                  />
+                  {(requiredPropertiesArray.length > 0 || optionalPropertiesArray.length > 0) && (
+                  <>
+                    <div style={fieldSpacingContainerStyle}>{t_i18n('Configuration')}</div>
+                    {requiredPropertiesArray.length > 0 && (
                     <Alert
                       severity="info"
                       icon={false}
@@ -218,56 +232,63 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
                         onChange={({ data }) => setValues({ ...values, ...data })}
                       />
                     </Alert>
+                    )}
+                    {optionalPropertiesArray.length > 0 && (
+                      <div style={fieldSpacingContainerStyle}>
+                        <Accordion slotProps={{ transition: { unmountOnExit: false } }}>
+                          <AccordionSummary id="accordion-panel">
+                            <Typography>{t_i18n('Advanced options')}</Typography>
+                          </AccordionSummary>
+                          <AccordionDetails>
+                            <JsonForms
+                              data={defaultValues}
+                              schema={optionalProperties}
+                              renderers={materialRenderers}
+                              validationMode={'NoValidation'}
+                              onChange={({ data }) => setValues({ ...values, ...data })}
+                            />
+                          </AccordionDetails>
+                        </Accordion>
+                      </div>
+                    )}
+                  </>
                   )}
-                  {optionalPropertiesArray.length > 0 && (
-                    <div style={fieldSpacingContainerStyle}>
-                      <Accordion slotProps={{ transition: { unmountOnExit: false } }}>
-                        <AccordionSummary id="accordion-panel">
-                          <Typography>{t_i18n('Advanced options')}</Typography>
-                        </AccordionSummary>
-                        <AccordionDetails>
-                          <JsonForms
-                            data={defaultValues}
-                            schema={optionalProperties}
-                            renderers={materialRenderers}
-                            validationMode={'NoValidation'}
-                            onChange={({ data }) => setValues({ ...values, ...data })}
-                          />
-                        </AccordionDetails>
-                      </Accordion>
-                    </div>
-                  )}
-                </>
-              )}
-              <div style={{ textAlign: 'right', marginTop: theme.spacing(2) }}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={() => {
-                    resetForm();
-                  }}
-                >
-                  {t_i18n('Cancel')}
-                </Button>
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  style={{ marginLeft: theme.spacing(2) }}
-                  onClick={() => {
-                    submitConnectorManagementCreation(values, {
-                      setSubmitting,
-                      resetForm,
-                    });
-                  }}
-                  disabled={!isValid || isSubmitting || !!errors?.[0]}
-                >
-                  {t_i18n('Create')}
-                </Button>
-              </div>
-            </Form>
-          );
-        }}
-      </Formik>
+                </fieldset>
+
+                <div style={{ textAlign: 'right', marginTop: theme.spacing(2) }}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => {
+                      resetForm();
+                    }}
+                  >
+                    {t_i18n('Cancel')}
+                  </Button>
+                  {
+                    hasRegisteredManagers && (
+                      <Button
+                        variant="contained"
+                        color="secondary"
+                        style={{ marginLeft: theme.spacing(2) }}
+                        onClick={() => {
+                          submitConnectorManagementCreation(values, {
+                            setSubmitting,
+                            resetForm,
+                          });
+                        }}
+                        disabled={!isValid || isSubmitting || !!errors?.[0]}
+                      >
+                        {t_i18n('Create')}
+                      </Button>
+                    )
+                  }
+                </div>
+              </Form>
+            );
+          }}
+        </Formik>
+      </Stack>
     </Drawer>
   );
 };
