@@ -1,5 +1,4 @@
 import React from 'react';
-import * as PropTypes from 'prop-types';
 import {
   AccountBalanceOutlined,
   AlternateEmailOutlined,
@@ -26,6 +25,7 @@ import {
   FactCheckOutlined,
   FilterAltOutlined,
   FlagOutlined,
+  HelpOutlined,
   LayersClearOutlined,
   LinkOutlined,
   LocalOfferOutlined,
@@ -112,7 +112,7 @@ import {
 import TableViewIcon from '@mui/icons-material/TableView';
 import { itemColor } from '../utils/Colors';
 
-const iconSelector = (type, variant, fontSize, color, isReversed) => {
+const iconSelector = (type?: string, variant?: string, fontSize?: string, color?: string, isReversed?: boolean) => {
   let style;
   switch (variant) {
     case 'inline':
@@ -585,18 +585,17 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
   }
 };
 
-const ItemIcon = (props) => {
-  const { type, size, variant, color = null, isReversed = false } = props;
+interface ItemIconProps {
+  type: string,
+  size?: string,
+  variant?: string,
+  color?: string,
+  isReversed?: boolean,
+}
+
+const ItemIcon = ({ type, size, variant, color = null, isReversed = false }: ItemIconProps) => {
   const fontSize = size || 'medium';
   return iconSelector(type, variant, fontSize, color, isReversed);
-};
-
-ItemIcon.propTypes = {
-  type: PropTypes.string,
-  size: PropTypes.string,
-  variant: PropTypes.string,
-  color: PropTypes.string,
-  isReversed: PropTypes.bool,
 };
 
 export default ItemIcon;
