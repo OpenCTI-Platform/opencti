@@ -456,6 +456,7 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
     if (scoreEditInput && !scoreEditInput.value.includes(baseScore) && !validUntilEditInput) {
       const newScore = scoreEditInput.value[0];
       // First check if the same update by the same source exists
+      logApp.info('INDICATOR UPDATE', { userId: user.id, newScore, currentHistory: indicatorBeforeUpdate.decay_history });
       if (!hasSameSourceAlreadyUpdateThisScore(user.id, newScore, indicatorBeforeUpdate.decay_history)) {
         const allChanges = restartDecayComputationOnEdit(newScore, indicatorBeforeUpdate, user.id);
         finalInput.push(...allChanges);
