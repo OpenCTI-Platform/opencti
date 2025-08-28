@@ -62,7 +62,7 @@ type RenderConnectorUseCasesType = {
 const IngestionCatalogCard = ({
   node: connector,
   dataListId,
-                                isEnterpriseEdition,
+  isEnterpriseEdition,
 }: IngestionCatalogCardProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -190,7 +190,7 @@ const IngestionCatalogCard = ({
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Description')}
             </Typography>
-            <div>{truncate(connector.short_description, 200)}</div>
+            <div>{truncate(connector.short_description, 100)}</div>
           </CardContent>
         </div>
         <CardActions style={{ justifyContent: 'space-between', padding: 16 }}>
