@@ -54,14 +54,10 @@ const LIST_RELS_QUERY = gql`
         node {
           id
           from {
-            ... on StixDomainObject {
-              id
-            }
+            id
           }
           to {
-            ... on Pir {
-              id
-            }
+            id
           }
           ... on PirRelationship {
             pir_explanations {
