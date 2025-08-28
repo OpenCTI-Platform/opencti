@@ -2880,9 +2880,11 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
   if (inputs.length > 0) {
     // Update the attribute and return the result
     const updateOpts = { ...opts, upsert: context.synchronizedUpsert !== true };
+    logApp.info('UPSERT - END', { inputs, updateOpts, resolvedElement });
     return await updateAttributeMetaResolved(context, user, resolvedElement, inputs, updateOpts);
   }
   // -- No modification applied
+  logApp.info('UPSERT - End No modification applied');
   return { element: resolvedElement, event: null, isCreation: false };
 };
 
