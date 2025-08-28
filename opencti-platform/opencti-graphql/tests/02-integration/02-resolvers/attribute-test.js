@@ -43,7 +43,7 @@ const SCHEMA_ATTRIBUTES_QUERY = gql`
 `;
 
 describe('Attribute resolver standard behavior', () => {
-  const REL_RELATIONSHIP_ATTRIBUTES_NUMBER = 25;
+  const REL_RELATIONSHIP_ATTRIBUTES_NUMBER = 23;
   it('should retrieve runtime attribute for an entity', async () => {
     const queryResult = await queryAsAdmin({
       query: RUNTIME_ATTRIBUTES_QUERY,
