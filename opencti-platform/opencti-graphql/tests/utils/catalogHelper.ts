@@ -60,7 +60,7 @@ class CatalogHelper {
   private catalog: Catalog;
 
   constructor() {
-    const catalogPath = path.join(__dirname, '../../src/modules/catalog/filigran/opencti-manifest.json');
+    const catalogPath = path.join(__dirname, '../../src/__generated__/opencti-manifest.json');
     const catalogContent = fs.readFileSync(catalogPath, 'utf8');
     this.catalog = JSON.parse(catalogContent);
   }
