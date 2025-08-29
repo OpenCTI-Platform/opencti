@@ -7,13 +7,13 @@ import useIngestionCatalogFilters from '@components/data/IngestionCatalog/hooks/
 import { useSearchParams } from 'react-router-dom';
 import { Stack } from '@mui/material';
 import { Search } from '@mui/icons-material';
+import Grid from '@mui/material/Grid2';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import PageContainer from '../../../components/PageContainer';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import ListCardsContent from '../../../components/list_cards/ListCardsContent';
 import GradientButton from '../../../components/GradientButton';
 import IngestionCatalogFilters from './IngestionCatalog/IngestionCatalogFilters';
 import GradientCard from '../../../components/GradientCard';
@@ -116,13 +116,11 @@ const CatalogsEmptyState = () => {
       >
         <Stack flexDirection="row" alignItems="flex-start" gap={1}>
           <GradientCard.Icon icon={Search} size="large" />
-
           <Stack>
             <GradientCard.Text sx={{ whiteSpace: 'pre' }}>{t_i18n('Sorry, we couldn\'t find any results for your search.')}</GradientCard.Text>
             <GradientCard.Text sx={{ whiteSpace: 'pre' }}>{t_i18n('For more results, you can search in the XTM Hub.')}</GradientCard.Text>
           </Stack>
         </Stack>
-
         <BrowseMoreButton />
       </GradientCard>
     </Stack>
@@ -178,23 +176,21 @@ const IngestionCatalogComponent = ({
           <BrowseMoreButton />
         </Stack>
 
-        {filteredCatalogs.map((catalog) => (
-          <ListCardsContent
-            key={catalog.id}
-            hasMore={() => false}
-            isLoading={() => false}
-            dataList={catalog.contracts}
-            dataListId={catalog.id}
-            globalCount={catalog.contracts.length}
-            CardComponent={(props: React.ComponentProps<typeof IngestionCatalogCard>) => (
-              <IngestionCatalogCard
-                {...props}
-                isEnterpriseEdition={isEnterpriseEdition}
-              />
-            )}
-            rowHeight={350}
-          />
-        ))}
+        <Grid container spacing={2}>
+          {filteredCatalogs.map((catalog) => {
+            return catalog.contracts.map((contract) => {
+              return (
+                <Grid key={contract.title} size={{ lg: 4, xs: 6 }}>
+                  <IngestionCatalogCard
+                    node={contract}
+                    dataListId={catalog.id}
+                    isEnterpriseEdition={isEnterpriseEdition}
+                  />
+                </Grid>
+              );
+            });
+          })}
+        </Grid>
 
         {filteredCatalogs.length === 0 && (
           <CatalogsEmptyState />
