@@ -8,16 +8,16 @@ import {
   stixDomainObjectCleanContext,
   stixDomainObjectDelete,
   stixDomainObjectDeleteRelation,
+  stixDomainObjectEditAuthorizedMembers,
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
   stixDomainObjectExportAsk,
   stixDomainObjectFileEdit,
-  stixDomainObjectPirScore,
+  stixDomainObjectPirInformation,
   stixDomainObjectsDelete,
   stixDomainObjectsDistributionByEntity,
   stixDomainObjectsExportAsk,
   stixDomainObjectsNumber,
-  stixDomainObjectsPirExplanations,
   stixDomainObjectsTimeSeries,
   stixDomainObjectsTimeSeriesByAuthor
 } from '../domain/stixDomainObject';
@@ -74,8 +74,7 @@ const stixDomainObjectResolvers = {
       const statusesType = await findByType(context, context.user, stixDomainObject.entity_type);
       return statusesType.length > 0;
     },
-    pirScore: (stixDomainObject, { pirId }, context) => stixDomainObjectPirScore(context, context.user, stixDomainObject, pirId),
-    pirExplanations: (stixDomainObject, { pirId }, context) => stixDomainObjectsPirExplanations(context, context.user, stixDomainObject, pirId),
+    pirInformation: (stixDomainObject, { pirId }, context) => stixDomainObjectPirInformation(context, context.user, stixDomainObject, pirId),
   },
   Mutation: {
     stixDomainObjectEdit: (_, { id }, context) => ({
@@ -85,6 +84,7 @@ const stixDomainObjectResolvers = {
       contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
       relationAdd: ({ input }) => stixDomainObjectAddRelation(context, context.user, id, input),
       relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
+      editAuthorizedMembers: ({ input }) => stixDomainObjectEditAuthorizedMembers(context, context.user, id, input),
       importPush: (args) => stixCoreObjectImportPush(context, context.user, id, args.file, args),
       exportAsk: ({ input }) => stixDomainObjectExportAsk(context, context.user, id, input),
       exportPush: (args) => stixCoreObjectExportPush(context, context.user, id, args),

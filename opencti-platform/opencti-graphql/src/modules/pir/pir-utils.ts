@@ -13,10 +13,10 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import { type BasicStoreEntityPir, type BasicStoreRelationPir, ENTITY_TYPE_PIR, type ParsedPir, type PirExplanation } from './pir-types';
+import { type BasicStoreEntityPir, type BasicStoreRelationPir, type ParsedPir, type PirExplanation } from './pir-types';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { listRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
-import { RELATION_IN_PIR } from '../../schema/stixRefRelationship';
+import { RELATION_IN_PIR } from '../../schema/internalRelationship';
 import { FunctionalError } from '../../config/errors';
 import { createRelation, patchAttribute } from '../../database/middleware';
 import { type FilterGroup, type PirAddInput, PirType } from '../../generated/graphql';
@@ -27,6 +27,7 @@ import { RELATION_FROM_TYPES_FILTER } from '../../utils/filtering/filtering-cons
 import { elUpdate } from '../../database/engine';
 import { INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
 import type { BasicStoreEntity } from '../../types/store';
+import { getPirWithAccessCheck } from './pir-checkPirAccess';
 
 /**
  * Helper function to parse filters that are saved as string in elastic.
@@ -90,7 +91,7 @@ export const constructFinalPirFilters = (pirType: PirType, pirFilters: FilterGro
  * @returns An integer between 0 and 100.
  */
 export const computePirScore = async (context: AuthContext, user: AuthUser, pirId: string, explanations: PirExplanation[]) => {
-  const pir = await storeLoadById<BasicStoreEntityPir>(context, user, pirId, ENTITY_TYPE_PIR);
+  const pir = await getPirWithAccessCheck(context, user, pirId);
   const maxScore = pir.pir_criteria.reduce((acc, val) => acc + val.weight, 0);
   const depScore = explanations.reduce((acc, val) => acc + val.criterion.weight, 0);
   if (maxScore <= 0) return 0;
@@ -112,7 +113,7 @@ export const updatePirInformationOnEntity = async (context: AuthContext, user: A
   const initialInformation = stixDomainObject.pir_information ?? [];
   const newInformation = initialInformation.filter((s) => s.pir_id !== pirId);
   if (score > 0) {
-    newInformation.push({ pir_id: pirId, pir_score: score });
+    newInformation.push({ pir_id: pirId, pir_score: score, last_pir_score_date: new Date() });
   }
   const params = { pir_information: newInformation };
   const source = 'ctx._source.pir_information = params.pir_information;';
@@ -160,7 +161,7 @@ export const diffPirExplanations = (
 /**
  * Update an array of pir explanations by adding the new information
  *
- * @param actualExplanations Explanations of the pir meta rel
+ * @param actualExplanations Explanations of the in-pir relationship
  * @param newExplanations New explanations information to add
  * @returns an array of pir explanations updated with the new information
  */
@@ -181,7 +182,7 @@ export const updatePirExplanationsArray = (
 };
 
 /**
- * Find a meta relationship "in-pir" between an entity and a Pir and update
+ * Find a relationship "in-pir" between an entity and a Pir and update
  * its explanations (matching criteria).
  *
  * @param context To be able to make the calls.
@@ -199,37 +200,37 @@ export const updatePirExplanations = async (
   pirExplanations: PirExplanation[],
   operation?: string, // 'add' to add a new dependency, 'replace' by default
 ) => {
-  const pirMetaRels = await listRelationsPaginated<BasicStoreRelationPir>(context, user, RELATION_IN_PIR, { fromId: sourceId, toId: pirId, });
-  if (pirMetaRels.edges.length === 0) {
-    // If = 0 then the meta relationship does not exist.
-    throw FunctionalError('Relation between the entity and a Pir not found', { sourceId, pirId, pirMetaRels });
+  const inPirRels = await listRelationsPaginated<BasicStoreRelationPir>(context, user, RELATION_IN_PIR, { fromId: sourceId, toId: pirId, });
+  if (inPirRels.edges.length === 0) {
+    // If = 0 then the in-pir relationship does not exist.
+    throw FunctionalError('Relation between the entity and a Pir not found', { sourceId, pirId, inPirRels });
   }
-  if (pirMetaRels.edges.length > 1) {
+  if (inPirRels.edges.length > 1) {
     // If > 1, well this case should not be possible at all.
-    throw FunctionalError('Find more than one relation between an entity and a Pir', { sourceId, pirId, pirMetaRels });
+    throw FunctionalError('Find more than one relation between an entity and a Pir', { sourceId, pirId, inPirRels });
   }
 
-  const pirMetaRel = pirMetaRels.edges[0].node;
+  const inPirRel = inPirRels.edges[0].node;
   let explanations = pirExplanations; // Default case : replace the entire array.
   if (operation === 'add') { // Add case: add the new information contained in pirExplanations
-    const newExplanations = diffPirExplanations(pirExplanations, pirMetaRel.pir_explanations);
+    const newExplanations = diffPirExplanations(pirExplanations, inPirRel.pir_explanations);
     if (newExplanations.length === 0) {
       // In this case there is nothing to add so skip.
       return;
     }
-    explanations = updatePirExplanationsArray(pirMetaRel.pir_explanations, newExplanations);
+    explanations = updatePirExplanationsArray(inPirRel.pir_explanations, newExplanations);
   }
 
   // compute score
   const pir_score = await computePirScore(context, user, pirId, explanations);
-  // replace pir_explanations
-  await patchAttribute(context, user, pirMetaRel.id, RELATION_IN_PIR, { pir_explanations: explanations, pir_score });
-  // update pir score on the entity
+  // replace pir_explanations on in-pir rel
+  await patchAttribute(context, user, inPirRel.id, RELATION_IN_PIR, { pir_explanations: explanations, pir_score });
+  // update pir information on the entity
   await updatePirInformationOnEntity(context, user, sourceId, pirId, pir_score);
 };
 
 /**
- * Flag the source of the relationship by creating a meta relationship 'in-pir'
+ * Flag the source of a stix core relationship by creating an internal 'in-pir' relationship
  * between the source and the PIR.
  *
  * @param context To be able to create the relationship.
@@ -238,7 +239,7 @@ export const updatePirExplanations = async (
  * @param pirId The ID of the PIR.
  * @param pirDependencies Criteria matched by the relationship.
  */
-export const createPirRel = async (
+export const createPirRelation = async (
   context: AuthContext,
   user: AuthUser,
   sourceId: string,
@@ -247,15 +248,13 @@ export const createPirRel = async (
 ) => {
   // compute score
   const pir_score = await computePirScore(context, user, pirId, pirDependencies);
-  // create the in-pir meta rel
-  const addRefInput = {
+  // create the in-pir relationship
+  const addRelationshipInput = {
     relationship_type: RELATION_IN_PIR,
     fromId: sourceId,
     toId: pirId,
     pir_explanations: pirDependencies,
     pir_score,
   };
-  await createRelation(context, user, addRefInput);
-  // add pir score on the entity
-  await updatePirInformationOnEntity(context, user, sourceId, pirId, pir_score);
+  await createRelation(context, user, addRelationshipInput);
 };

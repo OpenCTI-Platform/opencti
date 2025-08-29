@@ -478,6 +478,7 @@
   "Last modifier": "마지막 수정자",
   "Last observation": "마지막 관찰",
   "Last observed": "마지막 관찰됨",
+  "Last PIR score date": "마지막 PIR 점수 날짜",
   "Last run": "마지막 실행",
   "Last run end date": "마지막 실행 종료 날짜",
   "Last run start date": "마지막 실행 시작 날짜",
@@ -966,5 +967,6 @@
   "XTM Hub registration status": "XTM Hub 등록 상태",
   "XTM Hub registration User ID": "XTM Hub 등록 사용자 ID",
   "XTM Hub registration User name": "XTM Hub 등록 사용자 이름",
+  "XTM Hub should send connectivity email": "XTM 허브가 연결 이메일을 보내야 합니다",
   "XTM Hub Token": "XTM 허브 토큰"
 }

@@ -24,6 +24,7 @@ import * as R from 'ramda';
 import * as Yup from 'yup';
 import { useTheme } from '@mui/styles';
 import { useNavigate } from 'react-router-dom';
+import FormAuthorizedMembersDialog from '../form/FormAuthorizedMembersDialog';
 import StixCoreObjectMenuItemUnderEE from '../stix_core_objects/StixCoreObjectMenuItemUnderEE';
 import StixCoreObjectSharingList from '../stix_core_objects/StixCoreObjectSharingList';
 import { DraftChip } from '../draft/DraftChip';
@@ -42,6 +43,7 @@ import useGranted, {
   KNOWLEDGE_KNGETEXPORT_KNASKEXPORT,
   KNOWLEDGE_KNUPDATE,
   KNOWLEDGE_KNUPDATE_KNDELETE,
+  KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS,
   KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
   SETTINGS_SETACCESSES,
 } from '../../../../utils/hooks/useGranted';
@@ -55,6 +57,7 @@ import Transition from '../../../../components/Transition';
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
 import PopoverMenu from '../../../../components/PopoverMenu';
 import { resolveLink } from '../../../../utils/Entity';
+import { authorizedMembersToOptions, useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 
 export const stixDomainObjectMutation = graphql`
   mutation StixDomainObjectHeaderFieldMutation(
@@ -84,6 +87,18 @@ export const stixDomainObjectMutation = graphql`
         }
         ... on Organization {
           x_opencti_aliases
+          currentUserAccessRight
+          authorized_members {
+            id
+            member_id
+            name
+            entity_type
+            access_right
+            groups_restriction {
+              id
+              name
+            }
+          }
         }
         ... on Sector {
           x_opencti_aliases
@@ -238,6 +253,31 @@ const aliasValidation = (t) => Yup.object().shape({
   references: Yup.array().required(t('This field is required')),
 });
 
+const stixDomainObjectHeaderEditAuthorizedMembersMutation = graphql`
+  mutation  StixDomainObjectHeaderEditAuthorizedMembersMutation(
+    $id: ID!
+    $input: [MemberAccessInput!]
+  ) {
+    stixDomainObjectEdit(id: $id) {
+      editAuthorizedMembers(input: $input) {
+        ... on Organization {
+          authorized_members {
+              id
+              member_id
+              name
+              entity_type
+              access_right
+              groups_restriction {
+                  id
+                  name
+              }
+          }
+        }
+      }
+    }
+  }
+`;
+
 const StixDomainObjectHeader = (props) => {
   const theme = useTheme();
   const { t_i18n } = useFormatter();
@@ -254,13 +294,18 @@ const StixDomainObjectHeader = (props) => {
     enableQuickSubscription,
     enableEnricher,
     enableEnrollPlaybook,
+    enableAuthorizedMembers,
     redirectToContent,
   } = props;
+  const currentAccessRight = useGetCurrentUserAccessRight(stixDomainObject.currentUserAccessRight);
+  const enableManageAuthorizedMembers = currentAccessRight.canManage && enableAuthorizedMembers;
+
   const openAliasesCreate = false;
   const [openAlias, setOpenAlias] = useState(false);
   const [openAliases, setOpenAliases] = useState(false);
   const [openCommitCreate, setOpenCommitCreate] = useState(false);
   const [openCommitDelete, setOpenCommitDelete] = useState(false);
+  const [openAccessRestriction, setOpenAccessRestriction] = useState(false);
   const [newAlias, setNewAlias] = useState('');
   const [aliasToDelete, setAliasToDelete] = useState(null);
   const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]);
@@ -308,6 +353,10 @@ const StixDomainObjectHeader = (props) => {
   };
 
   const handleCloseCommitDelete = () => setOpenCommitDelete(false);
+
+  const handleCloseAccessRestriction = () => {
+    setOpenAccessRestriction(false);
+  };
 
   const handleChangeNewAlias = (_, value) => setNewAlias(value);
 
@@ -637,6 +686,18 @@ const StixDomainObjectHeader = (props) => {
                 stixCoreObjectId={stixDomainObject.id}
               />
             )}
+            {enableManageAuthorizedMembers && (
+              <FormAuthorizedMembersDialog
+                id={stixDomainObject.id}
+                owner={stixDomainObject.creators?.[0]}
+                authorizedMembers={authorizedMembersToOptions(
+                  stixDomainObject.authorized_members,
+                )}
+                mutation={stixDomainObjectHeaderEditAuthorizedMembersMutation}
+                open={openAccessRestriction}
+                handleClose={handleCloseAccessRestriction}
+              />
+            )}
             {displayPopoverMenu ? (
               <PopoverMenu>
                 {({ closeMenu }) => (
@@ -647,6 +708,15 @@ const StixDomainObjectHeader = (props) => {
                         title={t_i18n('Share with an organization')}
                         handleCloseMenu={closeMenu}
                         needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}
+                      />
+                    )}
+                    {enableManageAuthorizedMembers && (
+                      <StixCoreObjectMenuItemUnderEE
+                        setOpen={setOpenAccessRestriction}
+                        title={t_i18n('Manage access restriction')}
+                        handleCloseMenu={closeMenu}
+                        isDisabled={!enableManageAuthorizedMembers}
+                        needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
                       />
                     )}
                     {(enableEnricher && isKnowledgeEnricher) && (

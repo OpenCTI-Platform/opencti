@@ -973,17 +973,19 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     render: ({ relationship_type }, { t_i18n, storageHelpers: { handleAddFilter } }) => {
       const classes = useStyles();
       return (
-        <Chip
-          classes={{ root: classes.chipInList }}
-          color="primary"
-          variant="outlined"
-          label={relationship_type ?? t_i18n('Unknown')}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleAddFilter('relationship_type', relationship_type ?? null, 'eq');
-          }}
-        />
+        <Tooltip title={t_i18n(`relationship_${relationship_type}`) ?? t_i18n('Unknown')}>
+          <Chip
+            classes={{ root: classes.chipInList }}
+            color="primary"
+            variant="outlined"
+            label={ t_i18n(`relationship_${relationship_type}`) ?? t_i18n('Unknown') }
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleAddFilter('relationship_type', relationship_type ?? null, 'eq');
+            }}
+          />
+        </Tooltip>
       );
     },
   },

@@ -478,6 +478,7 @@
   "Last modifier": "Последний модификатор",
   "Last observation": "Последнее наблюдение",
   "Last observed": "Последнее наблюдение",
+  "Last PIR score date": "Дата последней оценки ПИР",
   "Last run": "Последний запуск",
   "Last run end date": "Дата окончания последнего прогона",
   "Last run start date": "Дата начала последнего запуска",
@@ -966,5 +967,6 @@
   "XTM Hub registration status": "Статус регистрации XTM Hub",
   "XTM Hub registration User ID": "Идентификатор пользователя при регистрации концентратора XTM",
   "XTM Hub registration User name": "Регистрация концентратора XTM Имя пользователя",
+  "XTM Hub should send connectivity email": "Концентратор XTM должен отправить электронное сообщение о возможности подключения",
   "XTM Hub Token": "Токен концентратора XTM"
 }

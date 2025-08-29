@@ -478,6 +478,7 @@
   "Last modifier": "最後の修飾子",
   "Last observation": "最後の観測",
   "Last observed": "観測数",
+  "Last PIR score date": "最終PIRスコア日付",
   "Last run": "最後の実行",
   "Last run end date": "物語タイプ",
   "Last run start date": "最終実行終了日",
@@ -966,5 +967,6 @@
   "XTM Hub registration status": "XTMハブ登録状況",
   "XTM Hub registration User ID": "XTMハブ登録ユーザーID",
   "XTM Hub registration User name": "XTMハブ登録ユーザー名",
+  "XTM Hub should send connectivity email": "XTM Hubは接続性の電子メールを送信する必要があります。",
   "XTM Hub Token": "XTM ハブ・トークン"
 }

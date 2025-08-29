@@ -181,7 +181,7 @@ const Playbooks: FunctionComponent = () => {
     },
   };
   return (
-    <div style={{ paddingRight: '200px', height: '100%' }}>
+    <div style={{ paddingRight: '200px', height: '100%', minWidth: 1280 }} data-testid="playbook-page">
       <Breadcrumbs
         elements={[
           { label: t_i18n('Data') },

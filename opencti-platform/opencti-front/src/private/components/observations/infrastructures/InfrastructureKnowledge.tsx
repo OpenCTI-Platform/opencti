@@ -39,7 +39,7 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
   const { schema } = useAuth();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(infrastructureData.entity_type, schema);
   return (
-    <>
+    <div data-testid="infrastructure-knowledge">
       <StixCoreObjectKnowledgeBar
         stixCoreObjectLink={link}
         data={infrastructureData}
@@ -175,6 +175,7 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
                 'communicates-with',
                 'consists-of',
                 'related-to',
+                'technology-from',
                 'technology-to',
                 'technology',
               ]}
@@ -343,7 +344,7 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
           }
         />
       </Routes>
-    </>
+    </div>
   );
 };
 

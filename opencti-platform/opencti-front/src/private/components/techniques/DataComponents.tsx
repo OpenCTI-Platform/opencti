@@ -147,7 +147,7 @@ const DataComponents: FunctionComponent = () => {
   } as UsePreloadedPaginationFragment<DataComponentsLinesPaginationQuery>;
 
   return (
-    <>
+    <div data-testid="data-component-page">
       <Breadcrumbs elements={[{ label: t_i18n('Techniques') }, { label: t_i18n('Data components'), current: true }]} />
       {queryRef && (
         <DataTable
@@ -166,7 +166,7 @@ const DataComponents: FunctionComponent = () => {
           )}
         />
       )}
-    </>
+    </div>
   );
 };
 

@@ -1,18 +1,24 @@
-import React, { Suspense, useEffect, useState } from 'react';
+import React, { Suspense } from 'react';
 import IngestionMenu from '@components/data/IngestionMenu';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { IngestionCatalogQuery } from '@components/data/__generated__/IngestionCatalogQuery.graphql';
 import IngestionCatalogCard, { IngestionConnectorType } from '@components/data/IngestionCatalog/IngestionCatalogCard';
+import useIngestionCatalogFilters from '@components/data/IngestionCatalog/hooks/useIngestionCatalogFilters';
+import { useSearchParams } from 'react-router-dom';
+import { Stack } from '@mui/material';
+import { Search } from '@mui/icons-material';
+import Grid from '@mui/material/Grid2';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import PageContainer from '../../../components/PageContainer';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import ListCardsContent from '../../../components/list_cards/ListCardsContent';
-import { MESSAGING$ } from '../../../relay/environment';
 import GradientButton from '../../../components/GradientButton';
-import SearchInput from '../../../components/SearchInput';
+import IngestionCatalogFilters from './IngestionCatalog/IngestionCatalogFilters';
+import GradientCard from '../../../components/GradientCard';
+import { MESSAGING$ } from '../../../relay/environment';
+import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 
 export const ingestionCatalogQuery = graphql`
   query IngestionCatalogQuery {
@@ -29,14 +35,6 @@ export const ingestionCatalogQuery = graphql`
 interface IngestionCatalogComponentProps {
   queryRef: PreloadedQuery<IngestionCatalogQuery>;
 }
-
-type IngestionCatalogParsed = {
-  contracts: IngestionConnector[];
-  description: string;
-  entity_type: string;
-  id: string;
-  name: string;
-};
 
 type IngestionTypeMap = {
   string: string;
@@ -82,68 +80,123 @@ export interface IngestionConnector {
   }
 }
 
+const BrowseMoreButton = () => {
+  const { t_i18n } = useFormatter();
+
+  return (
+    <GradientButton
+      size="small"
+      sx={{ marginLeft: 1 }}
+      href={'https://filigran.notion.site/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76'}
+      target="_blank"
+      title={t_i18n('Browse more')}
+    >
+      {t_i18n('Browse more').toUpperCase()}
+    </GradientButton>
+  );
+};
+
+const CatalogsEmptyState = () => {
+  const { t_i18n } = useFormatter();
+  return (
+    <Stack
+      justifyContent="center"
+      alignItems="center"
+      sx={{
+        minHeight: '50vh',
+      }}
+    >
+      <GradientCard sx={{
+        px: 10,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 4,
+      }}
+      >
+        <Stack flexDirection="row" alignItems="flex-start" gap={1}>
+          <GradientCard.Icon icon={Search} size="large" />
+          <Stack>
+            <GradientCard.Text sx={{ whiteSpace: 'pre' }}>{t_i18n('Sorry, we couldn\'t find any results for your search.')}</GradientCard.Text>
+            <GradientCard.Text sx={{ whiteSpace: 'pre' }}>{t_i18n('For more results, you can search in the XTM Hub.')}</GradientCard.Text>
+          </Stack>
+        </Stack>
+        <BrowseMoreButton />
+      </GradientCard>
+    </Stack>
+  );
+};
+
 const IngestionCatalogComponent = ({
   queryRef,
 }: IngestionCatalogComponentProps) => {
+  const isEnterpriseEdition = useEnterpriseEdition();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Catalog | Ingestion | Data'));
-  const [catalogsParsed, setCatalogsParsed] = useState<IngestionCatalogParsed[]>([]);
+  const [searchParams] = useSearchParams();
+
+  setTitle(t_i18n('Connector catalog | Ingestion | Data'));
 
   const { catalogs } = usePreloadedQuery(
     ingestionCatalogQuery,
     queryRef,
   );
 
-  useEffect(() => {
-    catalogs.forEach((catalog) => {
-      const finalContracts: IngestionConnector[] = [];
-      catalog.contracts.forEach((contract) => {
-        try {
-          const parsedContract = JSON.parse(contract);
-          if (parsedContract.manager_supported) finalContracts.push(parsedContract);
-        } catch (e) {
-          MESSAGING$.notifyError(t_i18n('Failed to parse a contract'));
-        }
-        const finalCatalog = { ...catalog, contracts: finalContracts };
-        setCatalogsParsed([...catalogsParsed, finalCatalog]);
-      });
-    });
-  }, [catalogs]);
+  const { filteredCatalogs, filters, setFilters } = useIngestionCatalogFilters({
+    catalogs,
+    searchParams,
+  });
+
+  const allContracts: IngestionConnector[] = [];
+
+  for (const catalog of catalogs) {
+    for (const contract of catalog.contracts) {
+      try {
+        const parsedContract = JSON.parse(contract);
+        allContracts.push(parsedContract);
+      } catch (e) {
+        MESSAGING$.notifyError(t_i18n('Failed to parse a contract'));
+      }
+    }
+  }
 
   return (
-    <>
+    <div data-testid="catalog-page">
       <IngestionMenu />
       <PageContainer withRightMenu withGap>
-        <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('Catalog'), current: true }]} />
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <SearchInput disabled />
-          <GradientButton
-            size="small"
-            sx={{ marginLeft: 1 }}
-            href={'https://filigran.notion.site/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76'}
-            target="_blank"
-            title={t_i18n('Browse more')}
-          >
-            {t_i18n('Browse more').toUpperCase()}
-          </GradientButton>
-        </div>
-        {catalogsParsed.map((catalog) => {
-          return catalog.contracts.length > 0 && (
-            <ListCardsContent
-              key={catalog.id}
-              hasMore={() => false}
-              isLoading={() => false}
-              dataList={catalog.contracts}
-              dataListId={catalog.id}
-              globalCount={catalog.contracts.length}
-              CardComponent={IngestionCatalogCard}
-              rowHeight={350}
-            />
-          );
-        })}
+        <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('Connector catalog'), current: true }]} />
+
+        <Stack flexDirection="row">
+          <IngestionCatalogFilters
+            contracts={allContracts}
+            filters={filters}
+            onFiltersChange={setFilters}
+          />
+
+          <BrowseMoreButton />
+        </Stack>
+
+        <Grid container spacing={2}>
+          {filteredCatalogs.map((catalog) => {
+            return catalog.contracts.map((contract) => {
+              return (
+                <Grid key={contract.title} size={{ lg: 4, xs: 6 }}>
+                  <IngestionCatalogCard
+                    node={contract}
+                    dataListId={catalog.id}
+                    isEnterpriseEdition={isEnterpriseEdition}
+                  />
+                </Grid>
+              );
+            });
+          })}
+        </Grid>
+
+        {filteredCatalogs.length === 0 && (
+          <CatalogsEmptyState />
+        )}
       </PageContainer>
-    </>
+    </div>
   );
 };
 

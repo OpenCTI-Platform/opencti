@@ -141,6 +141,7 @@ const StixRelationshipsDonut = ({
     }
     const finalField = selection?.attribute || field || 'entity_type';
     const variables = {
+      ...selection,
       field: finalField,
       operation: 'count',
       startDate,

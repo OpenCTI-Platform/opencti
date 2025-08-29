@@ -10,6 +10,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { useFormatter } from '../../../../components/i18n';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 const ingestionCatalogConnectorQuery = graphql`
   query IngestionCatalogConnectorQuery($slug: String!) {
@@ -27,9 +28,10 @@ interface IngestionCatalogConnectorComponentProps {
 const IngestionCatalogConnectorComponent = ({
   queryRef,
 }: IngestionCatalogConnectorComponentProps) => {
+  const isEnterpriseEdition = useEnterpriseEdition();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Catalog | Ingestion | Data'));
+  setTitle(t_i18n('Connector catalog | Ingestion | Data'));
 
   const { contract } = usePreloadedQuery(
     ingestionCatalogConnectorQuery,
@@ -43,11 +45,15 @@ const IngestionCatalogConnectorComponent = ({
       <Breadcrumbs elements={[
         { label: t_i18n('Data') },
         { label: t_i18n('Ingestion') },
-        { label: t_i18n('Catalog'), link: '/dashboard/data/ingestion/catalog' },
+        { label: t_i18n('Connector catalog'), link: '/dashboard/data/ingestion/catalog' },
         { label: connector.title, current: true },
       ]}
       />
-      <IngestionCatalogConnectorHeader connector={connector} catalogId={contract.catalog_id} />
+      <IngestionCatalogConnectorHeader
+        connector={connector}
+        catalogId={contract.catalog_id}
+        isEnterpriseEdition={isEnterpriseEdition}
+      />
       <IngestionCatalogConnectorOverview connector={connector} />
     </>
   );

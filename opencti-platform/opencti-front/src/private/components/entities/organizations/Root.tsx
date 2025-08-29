@@ -57,6 +57,18 @@ const organizationQuery = graphql`
       entity_type
       name
       x_opencti_aliases
+      currentUserAccessRight
+      authorized_members {
+        id
+        member_id
+        name
+        entity_type
+        access_right
+        groups_restriction {
+          id
+          name
+        }
+      }
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...Organization_organization
       ...OrganizationKnowledge_organization
@@ -169,6 +181,7 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
               stixDomainObject={organization}
               isOpenctiAlias={true}
               enableQuickSubscription={true}
+              enableAuthorizedMembers={true}
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <OrganizationEdition organizationId={organization.id} />

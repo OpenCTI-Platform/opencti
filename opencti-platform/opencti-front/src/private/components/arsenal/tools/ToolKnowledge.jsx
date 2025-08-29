@@ -32,7 +32,7 @@ const ToolKnowledgeComponent = ({
   const { schema } = useAuth();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(tool.entity_type, schema);
   return (
-    <>
+    <div data-testid="tool-knowledge">
       <Routes>
         <Route
           path="/relations/:relationId/*"
@@ -244,7 +244,7 @@ const ToolKnowledgeComponent = ({
             }
         />
       </Routes>
-    </>
+    </div>
   );
 };
 

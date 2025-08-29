@@ -1,10 +1,12 @@
 import { Page } from '@playwright/test';
 import AutocompleteFieldPageModel from './field/AutocompleteField.pageModel';
 import SDOOverview from './SDOOverview.pageModel';
+import SDOTabs from './SDOTabs.pageModel';
 
 export default class IncidentResponseDetailsPage {
   labelsSelect = new AutocompleteFieldPageModel(this.page, 'Labels', true);
   overview = new SDOOverview(this.page);
+  tabs = new SDOTabs(this.page);
 
   constructor(private page: Page) {}
 
@@ -48,7 +50,8 @@ export default class IncidentResponseDetailsPage {
   }
 
   async delete() {
-    await this.page.getByRole('button', { name: 'Popover of actions' }).click();
+    await this.page.getByRole('button', { name: 'Popover of actions' })
+      .click();
     await this.page.getByRole('menuitem', { name: 'Delete' }).click();
     return this.page.getByRole('dialog').getByRole('button', { name: 'Confirm' }).click();
   }

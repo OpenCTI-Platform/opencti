@@ -1,0 +1,92 @@
+import nconf from 'nconf';
+import axios from 'axios';
+import type Express from 'express';
+import { createAuthenticatedContext } from './httpAuthenticatedContext';
+import { getEntityFromCache } from '../database/cache';
+import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
+import { getEnterpriseEditionActivePem } from '../modules/settings/licensing';
+import { getChatbotUrl, logApp } from '../config/conf';
+import type { BasicStoreSettings } from '../types/settings';
+import { setCookieError } from './httpUtils';
+
+export const getChatbotProxy = async (req: Express.Request, res: Express.Response) => {
+  try {
+    const context = await createAuthenticatedContext(req, res, 'chatbot');
+    if (!context.user) {
+      res.sendStatus(403);
+      return;
+    }
+
+    const chatbotUrl = nconf.get('ai:chatbot:url');
+    const isChatbotEnabled = nconf.get('ai:chatbot:enabled');
+    const settings = await getEntityFromCache<BasicStoreSettings>(context, context.user, ENTITY_TYPE_SETTINGS);
+    const license_pem = getEnterpriseEditionActivePem(settings.enterprise_license);
+    if (!isChatbotEnabled || !license_pem) {
+      res.status(400).json({ error: 'Chatbot is not enabled' });
+      return;
+    }
+    if (!chatbotUrl) {
+      res.status(400).json({ error: 'Chatbot proxy not properly configured' });
+      return;
+    }
+
+    const vars = {
+      OPENCTI_URL: getChatbotUrl(req),
+      OPENCTI_TOKEN: context.user?.api_token,
+      'X-API-KEY': Buffer.from(license_pem, 'utf-8').toString('base64'),
+    };
+
+    // Enhance headers with url, token and certificate
+    const headers = {
+      'Content-Type': 'application/json',
+      Accept: 'text/event-stream',
+      ...vars,
+    };
+    if (!req.body) {
+      res.status(400).json({ error: 'Chatbot request body is missing' });
+      return;
+    }
+    const enhancedBody = {
+      ...req.body,
+      overrideConfig: {
+        ...req.body?.overrideConfig,
+        vars: {
+          ...req.body?.overrideConfig?.vars,
+          ...vars,
+        }
+      }
+    };
+
+    // Repost the request to Flowise with enhanced headers and body
+    const response = await axios.post(chatbotUrl, enhancedBody, {
+      headers,
+      responseType: 'stream',
+    });
+
+    // Set SSE headers and forward Flowise headers
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    Object.entries(response.headers).forEach(([key, value]) => {
+      if (!['content-length', 'content-encoding'].includes(key.toLowerCase())) {
+        res.setHeader(key, value);
+      }
+    });
+
+    // Pipe the response stream directly to client
+    response.data.pipe(res);
+
+    req.on('close', () => {
+      response.data.destroy();
+    });
+  } catch (e: unknown) {
+    logApp.error('Error in chatbot proxy', { cause: e });
+    const { message } = (e as Error);
+    setCookieError(res, message);
+    res.status(503).send({
+      status: 'error',
+      error: message,
+    });
+  }
+};

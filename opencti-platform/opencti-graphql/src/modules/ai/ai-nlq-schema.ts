@@ -1,4 +1,5 @@
 import { z, ZodLiteral, ZodNever, ZodType } from 'zod';
+import type { ZodTypeDef } from 'zod';
 import {
   modeDescription,
   modeKeys,
@@ -51,11 +52,11 @@ export function createZodLiteralUnion(
   filterKeys: string[],
   FilterObject: Record<string, { description: string }>,
   unionDescription?: string
-) {
+): ZodType<string, ZodTypeDef, string> | ZodNever {
   const literalList = createZodLiteralList(filterKeys, FilterObject);
 
   // Return appropriate schema based on how many keys were selected
-  let resultUnion: ZodType<string, string> | ZodNever;
+  let resultUnion: ZodType<string, ZodTypeDef, string> | ZodNever;
   if (literalList.length === 0) {
     resultUnion = z.never();
   } else if (literalList.length === 1) {

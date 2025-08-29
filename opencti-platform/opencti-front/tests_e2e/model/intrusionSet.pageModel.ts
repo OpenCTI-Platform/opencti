@@ -1,10 +1,17 @@
 import { Page } from '@playwright/test';
+import LeftBarPage from "./menu/leftBar.pageModel";
 
 export default class IntrusionSetPage {
   constructor(private page: Page) {}
 
   getPage() {
-    return this.page.getByTestId('instrusionSet-knowledge');
+    return this.page.getByTestId('instrusion-set-page');
+  }
+
+  async navigateFromMenu() {
+    const leftBarPage = new LeftBarPage(this.page);
+    await leftBarPage.open();
+    await leftBarPage.clickOnMenu('Threats', 'Intrusion sets');
   }
 
   addNewIntrusionSet() {

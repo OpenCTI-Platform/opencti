@@ -82,7 +82,7 @@ const Infrastructure = ({
     data,
   );
   return (
-    <>
+    <div data-testid="infrastructure-overview">
       <Grid
         container={true}
         spacing={3}
@@ -122,7 +122,7 @@ const Infrastructure = ({
           />
         </Grid>
       </Grid>
-    </>
+    </div>
   );
 };
 

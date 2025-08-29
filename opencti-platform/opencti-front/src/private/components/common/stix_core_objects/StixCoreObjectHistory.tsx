@@ -60,11 +60,6 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
           key: ['event_type'],
           values: ['create', 'delete', 'mutation'], // retro-compatibility
         },
-        {
-          key: ['context_data.entity_type'],
-          values: ['in-pir'],
-          operator: 'not_eq',
-        },
       ],
       filterGroups: [{
         mode: 'or',
@@ -108,14 +103,13 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
   );
 
   return (
-    <div style={{ height: '100%' }}>
+    <div style={{ height: '100%' }} data-testid='sco-history-content'>
       <Grid
         container
         spacing={3}
         sx={{
           marginBottom: theme.spacing(2),
         }}
-        data-testid='sco-history-content'
       >
         <Grid
           item

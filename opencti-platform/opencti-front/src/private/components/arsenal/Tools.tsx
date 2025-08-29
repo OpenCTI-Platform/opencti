@@ -147,7 +147,7 @@ const Tools = () => {
   } as UsePreloadedPaginationFragment<ToolsLinesPaginationQuery>;
 
   return (
-    <>
+    <div data-testid="tool-page">
       <Breadcrumbs elements={[{ label: t_i18n('Arsenal') }, { label: t_i18n('Tools'), current: true }]} />
       {queryRef && (
         <DataTable
@@ -166,7 +166,7 @@ const Tools = () => {
           )}
         />
       )}
-    </>
+    </div>
   );
 };
 

@@ -28,6 +28,7 @@ export interface WidgetDataSelection {
   columns?: readonly WidgetColumn[] | null
   sort_by?: string | null
   sort_mode?: string | null
+  field?: string
 }
 
 interface WidgetParameters {
@@ -56,4 +57,8 @@ export interface Widget {
   dataSelection: WidgetDataSelection[]
   parameters?: WidgetParameters | null
   layout?: WidgetLayout | null
+}
+
+interface PirWidgetDataSelection extends WidgetDataSelection {
+  pirId: string,
 }

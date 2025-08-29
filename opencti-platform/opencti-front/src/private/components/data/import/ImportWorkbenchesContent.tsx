@@ -207,7 +207,7 @@ const ImportWorkbenchesContent = () => {
   };
 
   return (
-    <div style={{ height: '100%' }} className="break">
+    <div style={{ height: '100%' }} className="break" data-testid="workbench-page">
       <Breadcrumbs
         elements={[{ label: t_i18n('Data') }, { label: t_i18n('Import'), current: true }]}
       />

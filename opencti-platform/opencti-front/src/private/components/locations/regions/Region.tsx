@@ -89,7 +89,7 @@ const RegionComponent = ({ regionData }: { regionData: Region_region$key }) => {
     (countryEdge) => countryEdge.node,
   );
   return (
-    <>
+    <div data-testid="region-details-page">
       <Grid
         container={true}
         spacing={3}
@@ -136,7 +136,7 @@ const RegionComponent = ({ regionData }: { regionData: Region_region$key }) => {
         stixCoreObjectOrStixCoreRelationshipId={region.id}
         defaultMarkings={region.objectMarking ?? []}
       />
-    </>
+    </div>
   );
 };
 

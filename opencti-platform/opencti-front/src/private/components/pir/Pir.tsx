@@ -57,6 +57,7 @@ const redisStreamQuery = graphql`
 
 const pirHistoryQuery = graphql`
   query PirHistoryQuery(
+    $pirId: ID!
     $first: Int
     $orderBy: LogsOrdering
     $orderMode: OrderingMode
@@ -126,7 +127,8 @@ const Pir = () => {
     first: 20,
     orderBy: 'timestamp',
     orderMode: 'desc',
-    filters: pirHistoryFilterGroup(pirId),
+    filters: pirHistoryFilterGroup,
+    pirId,
   });
 
   return (

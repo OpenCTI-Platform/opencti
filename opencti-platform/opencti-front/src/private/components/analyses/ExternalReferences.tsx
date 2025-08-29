@@ -150,7 +150,7 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
     setNumberOfElements: storageHelpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<ExternalReferencesLinesPaginationQuery>;
   return (
-    <>
+    <div data-testid="external-reference-page">
       <Breadcrumbs elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('External references'), current: true }]} />
       {queryRef && (
         <DataTable
@@ -172,7 +172,7 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
           )}
         />
       )}
-    </>
+    </div>
   );
 };
 

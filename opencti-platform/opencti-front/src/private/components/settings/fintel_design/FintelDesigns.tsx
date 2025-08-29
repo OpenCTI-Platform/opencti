@@ -154,7 +154,7 @@ const FintelDesigns = () => {
   };
 
   return (
-    <>
+    <div data-testid="fintel-designs-page">
       <CustomizationMenu />
       <PageContainer withGap withRightMenu >
         <Breadcrumbs
@@ -190,7 +190,7 @@ const FintelDesigns = () => {
           </>
         )}
       </PageContainer>
-    </>
+    </div>
   );
 };
 

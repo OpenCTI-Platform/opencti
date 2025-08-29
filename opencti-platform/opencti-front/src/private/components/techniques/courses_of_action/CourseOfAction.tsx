@@ -72,7 +72,7 @@ const CourseOfAction: React.FC<CourseOfActionProps> = ({ courseOfActionData }) =
   const overviewLayoutCustomization = useOverviewLayoutCustomization(courseOfAction.entity_type);
 
   return (
-    <>
+    <div data-testid="course-of-action-details-page">
       <Grid
         container={true}
         spacing={3}
@@ -141,7 +141,7 @@ const CourseOfAction: React.FC<CourseOfActionProps> = ({ courseOfActionData }) =
           })
         }
       </Grid>
-    </>
+    </div>
   );
 };
 

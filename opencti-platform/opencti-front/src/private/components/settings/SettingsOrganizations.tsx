@@ -79,7 +79,7 @@ const SettingsOrganizations = () => {
     },
   };
   return (
-    <div className={classes.container}>
+    <div className={classes.container} data-testid="orga-settings-page">
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Organizations'), current: true }]} />
       <AccessesMenu />
       <ListLines

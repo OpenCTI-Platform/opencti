@@ -33,6 +33,8 @@ import { PaginationOptions } from '../../../../components/list_lines';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { LocalStorage } from '../../../../utils/hooks/useLocalStorageModel';
+import { defaultRender } from '../../../../components/dataGrid/dataTableUtils';
+import { useFormatter } from '../../../../components/i18n';
 
 const sourceFlaggedFragment = graphql`
   fragment PirKnowledgeEntities_SourceFlaggedFragment on StixDomainObject
@@ -50,14 +52,28 @@ const sourceFlaggedFragment = graphql`
       color
       value
     }
+    objectMarking {
+      id
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
     creators {
       id
       name
     }
-    pirScore(pirId: $pirId)
-    pirExplanations(pirId: $pirId) {
-      criterion {
-        filters
+    createdBy {
+      ... on Identity {
+        name
+      }
+    }
+    pirInformation(pirId: $pirId) {
+      pir_score
+      last_pir_score_date
+      pir_explanations {
+        criterion {
+          filters
+        }
       }
     }
   }
@@ -80,6 +96,7 @@ const sourcesFlaggedFragment = graphql`
       first: $count
       after: $cursor
       orderBy: $orderBy
+      pirId: $pirId
       orderMode: $orderMode
       filters: $filters
     ) @connection(key: "PaginationPirKnowledgeEntities_stixDomainObjects") {
@@ -131,9 +148,11 @@ interface PirKnowledgeEntitiesProps {
   additionalHeaderButtons: ReactNode[];
 }
 
-type PirExplanation = NonNullable<PirKnowledgeEntities_SourceFlaggedFragment$data['pirExplanations']>[number];
+type PirInformation = NonNullable<PirKnowledgeEntities_SourceFlaggedFragment$data['pirInformation']>;
 
 const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHeaderButtons }: PirKnowledgeEntitiesProps) => {
+  const { fd } = useFormatter();
+
   const {
     viewStorage,
     helpers,
@@ -181,23 +200,30 @@ const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHe
       label: 'Score',
       percentWidth: 6,
       isSortable: true,
-      render: ({ pirScore, pirExplanations }) => {
-        const criteria: FilterGroup[] = pirExplanations.map(
-          (e: PirExplanation) => JSON.parse(e.criterion.filters),
+      render: ({ pirInformation }: { pirInformation: PirInformation }) => {
+        const criteria: FilterGroup[] = pirInformation.pir_explanations.map(
+          (e) => JSON.parse(e.criterion.filters),
         );
         return (
           <PirCriteriaDisplay criteria={criteria}>
-            <PirRadialScore value={pirScore}/>
+            <PirRadialScore value={pirInformation.pir_score}/>
           </PirCriteriaDisplay>
         );
       },
     },
-    entity_type: { percentWidth: 12 },
-    name: {},
+    pirLastScoreDate: {
+      id: 'last_pir_score_date',
+      label: 'Last score date',
+      percentWidth: 11,
+      isSortable: true,
+      render: ({ pirInformation }) => defaultRender(fd(pirInformation.last_pir_score_date)),
+    },
+    entity_type: { percentWidth: 10 },
+    name: { percentWidth: 20 },
     createdBy: { isSortable: isRuntimeSort },
     creator: { isSortable: isRuntimeSort },
-    objectLabel: { percentWidth: 12 },
-    created_at: { percentWidth: 13 },
+    objectLabel: { percentWidth: 10 },
+    created_at: { percentWidth: 11 },
     objectMarking: { isSortable: isRuntimeSort },
   };
 
@@ -230,7 +256,7 @@ const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHe
             return computeLink(e);
           }}
           additionalHeaderButtons={additionalHeaderButtons}
-          additionalFilterKeys={[`pir_score.${pirId}`]}
+          additionalFilterKeys={[`pir_score.${pirId}`, `last_pir_score_date.${pirId}`]}
         />
       )}
     </>

@@ -39,13 +39,12 @@ const PirKnowledge = ({ data }: PirKnowledgeProps) => {
   const initialValues = {
     filters: {
       ...emptyFilterGroup,
-      filters: useGetDefaultFilterObject([`pir_score.${pirId}`], ['Notification']),
+      filters: useGetDefaultFilterObject([`pir_score.${pirId}`, `last_pir_score_date.${pirId}`], ['Stix-Domain-Object']),
     },
     searchTerm: '',
-    sortBy: 'created', // TODO PIR order by score
+    sortBy: 'pir_score',
     orderAsc: false,
     openExports: false,
-    view: 'relationships',
   };
 
   const localStorage = usePaginationLocalStorage<PaginationOptions>(
@@ -59,7 +58,7 @@ const PirKnowledge = ({ data }: PirKnowledgeProps) => {
         pirId={pirId}
         localStorage={localStorage}
         initialValues={initialValues}
-        additionalHeaderButtons={[]} // TODO PIR add export button
+        additionalHeaderButtons={[]}
       />
     </div>
   );

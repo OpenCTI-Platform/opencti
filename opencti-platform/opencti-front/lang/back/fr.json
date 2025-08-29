@@ -478,6 +478,7 @@
   "Last modifier": "Dernier modificateur",
   "Last observation": "Dernière observation",
   "Last observed": "Dernière observation",
+  "Last PIR score date": "Date du dernier score PIR",
   "Last run": "Dernière exécution",
   "Last run end date": "Date de fin de la dernière exécution",
   "Last run start date": "Date de début de la dernière exécution",
@@ -966,5 +967,6 @@
   "XTM Hub registration status": "Statut de l'inscription au XTM Hub",
   "XTM Hub registration User ID": "ID de l'utilisateur de l'enregistrement du XTM Hub",
   "XTM Hub registration User name": "Nom de l'utilisateur pour l'enregistrement du XTM Hub",
+  "XTM Hub should send connectivity email": "XTM Hub doit envoyer un e-mail de connectivité",
   "XTM Hub Token": "Token XTM Hub"
 }

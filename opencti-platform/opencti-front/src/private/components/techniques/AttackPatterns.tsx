@@ -151,7 +151,7 @@ const AttackPatterns = () => {
   } as UsePreloadedPaginationFragment<AttackPatternsLinesPaginationQuery>;
 
   return (
-    <>
+    <div data-testid="attack-pattern-page">
       <Breadcrumbs elements={[{ label: t_i18n('Techniques') }, { label: t_i18n('Attack patterns'), current: true }]} />
       {queryRef && (
         <DataTable
@@ -170,7 +170,7 @@ const AttackPatterns = () => {
           )}
         />
       )}
-    </>
+    </div>
   );
 };
 

@@ -72,7 +72,7 @@ const AttackPattern: React.FC<AttackPatternProps> = ({ attackPatternData }) => {
   const overviewLayoutCustomization = useOverviewLayoutCustomization(attackPattern.entity_type);
 
   return (
-    <>
+    <div data-testid="attack-pattern-details-page">
       <Grid
         container={true}
         spacing={3}
@@ -141,7 +141,7 @@ const AttackPattern: React.FC<AttackPatternProps> = ({ attackPatternData }) => {
           })
         }
       </Grid>
-    </>
+    </div>
   );
 };
 

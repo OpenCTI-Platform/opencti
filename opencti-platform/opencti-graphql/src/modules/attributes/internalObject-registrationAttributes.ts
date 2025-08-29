@@ -12,6 +12,7 @@ import {
   ENTITY_TYPE_HISTORY,
   ENTITY_TYPE_MIGRATION_REFERENCE,
   ENTITY_TYPE_MIGRATION_STATUS,
+  ENTITY_TYPE_PIR_HISTORY,
   ENTITY_TYPE_RETENTION_RULE,
   ENTITY_TYPE_ROLE,
   ENTITY_TYPE_RULE,
@@ -215,6 +216,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'xtm_hub_registration_user_id', label: 'XTM Hub registration User ID', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_USER], mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'xtm_hub_registration_user_name', label: 'XTM Hub registration User name', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'xtm_hub_last_connectivity_check', label: 'XTM Hub last connectivity check', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'xtm_hub_should_send_connectivity_email', label: 'XTM Hub should send connectivity email', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'xtm_hub_registration_date', label: 'XTM Hub registration date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'xtm_hub_registration_status', label: 'XTM Hub registration status', type: 'string', format: 'enum', values: ['registered', 'unregistered', 'lost_connectivity'], editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: false },
   ],
@@ -567,7 +569,8 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'no_dependencies', label: 'No dependencies', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
   ],
   [ENTITY_TYPE_HISTORY]: HistoryDefinition,
-  [ENTITY_TYPE_ACTIVITY]: HistoryDefinition
+  [ENTITY_TYPE_PIR_HISTORY]: HistoryDefinition,
+  [ENTITY_TYPE_ACTIVITY]: HistoryDefinition,
 };
 
 R.forEachObjIndexed((value, key) => schemaAttributesDefinition.registerAttributes(key as string, value), internalObjectsAttributes);

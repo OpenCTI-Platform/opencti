@@ -193,7 +193,7 @@ const Indicators = () => {
   } as UsePreloadedPaginationFragment<IndicatorsLinesPaginationQuery>;
 
   return (
-    <>
+    <div data-testid="indicator-page">
       <Breadcrumbs elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Indicators'), current: true }]} />
       {queryRef && (
         <DataTable
@@ -212,7 +212,7 @@ const Indicators = () => {
           )}
         />
       )}
-    </>
+    </div>
   );
 };
 

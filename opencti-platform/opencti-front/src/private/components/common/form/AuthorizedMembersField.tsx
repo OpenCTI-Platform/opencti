@@ -116,6 +116,7 @@ const AuthorizedMembersField = ({
 
   const accessRights = [
     { label: t_i18n('can view'), value: 'view' },
+    { label: t_i18n('can use'), value: 'use' },
     { label: t_i18n('can edit'), value: 'edit' },
     { label: t_i18n('can manage'), value: 'admin' },
   ];

@@ -29,7 +29,6 @@ const investigationExpandFormTargetsDistributionFromQuery = graphql`
       field: "entity_type"
       relationship_type: "stix-relationship"
       aggregateOnConnections: true
-      filters: { mode: and, filters: [{ key: "relationship_type", values: ["in-pir"], operator: not_eq }], filterGroups: [] }
     ) {
       label
       value
@@ -48,7 +47,6 @@ const investigationExpandFormTargetsDistributionToQuery = graphql`
       field: "entity_type"
       relationship_type: "stix-relationship"
       aggregateOnConnections: true
-      filters: { mode: and, filters: [{ key: "relationship_type", values: ["in-pir"], operator: not_eq }], filterGroups: [] }
     ) {
       label
       value
@@ -65,7 +63,6 @@ const investigationExpandFormRelDistributionQuery = graphql`
       field: "entity_type"
       relationship_type: "stix-relationship"
       aggregateOnConnections: false
-      filters: { mode: and, filters: [{ key: "relationship_type", values: ["in-pir"], operator: not_eq }], filterGroups: [] }
     ) {
       label
       value
