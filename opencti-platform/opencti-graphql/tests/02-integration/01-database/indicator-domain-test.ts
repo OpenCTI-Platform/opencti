@@ -371,4 +371,57 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
     const indicatorAfterUpsert2 = await findById(testContext, ADMIN_USER, indicatorCreated.id);
     expect(indicatorAfterUpsert2.x_opencti_score).toBe(75); // score update is ignored
   });
+
+  it('should upsert 2 times with same source and same score be ignored - without decay', async () => {
+    // GIVEN an indicator that is created
+    const indicatorInput = {
+      name: 'Indicator domain test concurrent upserts',
+      pattern: '[domain-name:value = \'jesaisplus.io\']',
+      pattern_type: STIX_PATTERN_TYPE,
+      x_opencti_score: 100,
+      valid_from: inPast90Days,
+      valid_until: inFiveDays,
+    };
+    const indicatorCreated = await createIndicator(ADMIN_USER, indicatorInput, true);
+    expect(indicatorCreated.x_opencti_score).toBe(100);
+
+    // Same user decrease score => should be taken
+    const indicatorInput2 = {
+      name: 'Indicator domain test concurrent upserts',
+      pattern: '[domain-name:value = \'jesaisplus.io\']',
+      pattern_type: STIX_PATTERN_TYPE,
+      x_opencti_score: 80,
+      valid_from: inPast90Days,
+      valid_until: inFiveDays,
+    };
+    await createIndicator(ADMIN_USER, indicatorInput2, true);
+    const indicatorCreated2 = await findById(testContext, ADMIN_USER, indicatorCreated.id);
+    expect(indicatorCreated2.x_opencti_score).toBe(80);
+
+    // When the same indicator is created again (upsert) - with another user => should be taken
+    const indicatorUpsert1 = {
+      name: 'Indicator domain test concurrent upserts',
+      pattern: '[domain-name:value = \'jesaisplus.io\']',
+      pattern_type: STIX_PATTERN_TYPE,
+      x_opencti_score: 75,
+      valid_from: inPast90Days,
+      valid_until: inFiveDays,
+    };
+    await createIndicator(connectorUser, indicatorUpsert1, true);
+    const indicatorAfterUpsert1 = await findById(testContext, ADMIN_USER, indicatorCreated.id);
+    expect(indicatorAfterUpsert1.x_opencti_score).toBe(75);
+
+    // When the same indicator is created again (upsert) - same user (ADMIN_USER) same score (80) => should be skipped
+    const indicatorUpsert2 = {
+      name: 'Indicator domain test concurrent upserts',
+      pattern: '[domain-name:value = \'jesaisplus.io\']',
+      pattern_type: STIX_PATTERN_TYPE,
+      x_opencti_score: 80,
+      valid_from: inPast90Days,
+      valid_until: inFiveDays,
+    };
+    await createIndicator(ADMIN_USER, indicatorUpsert2, true);
+    const indicatorAfterUpsert2 = await findById(testContext, ADMIN_USER, indicatorCreated.id);
+    expect(indicatorAfterUpsert2.x_opencti_score).toBe(75); // score update is ignored
+  });
 });

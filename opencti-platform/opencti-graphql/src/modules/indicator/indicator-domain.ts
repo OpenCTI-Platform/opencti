@@ -255,6 +255,7 @@ const validateIndicatorPattern = async (context: AuthContext, user: AuthUser, pa
 };
 
 export const addIndicator = async (context: AuthContext, user: AuthUser, indicator: IndicatorAddInput) => {
+  logApp.info('ADD INDICATOR');
   let observableType: string = isEmptyField(indicator.x_opencti_main_observable_type) ? 'Unknown' : indicator.x_opencti_main_observable_type as string;
   if (observableType === 'File') {
     observableType = 'StixFile';
