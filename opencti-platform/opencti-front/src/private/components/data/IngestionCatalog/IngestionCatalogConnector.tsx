@@ -4,6 +4,9 @@ import React, { Suspense } from 'react';
 import IngestionCatalogConnectorHeader from '@components/data/IngestionCatalog/IngestionCatalogConnectorHeader';
 import IngestionCatalogConnectorOverview from '@components/data/IngestionCatalog/IngestionCatalogConnectorOverview';
 import { IngestionCatalogConnectorQuery } from '@components/data/IngestionCatalog/__generated__/IngestionCatalogConnectorQuery.graphql';
+import { ConnectorManagerStatusProvider, useConnectorManagerStatus } from '@components/data/connectors/ConnectorManagerStatusContext';
+import NoConnectorManagersBanner from '@components/data/connectors/NoConnectorManagersBanner';
+import { Stack } from '@mui/material';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -31,30 +34,42 @@ const IngestionCatalogConnectorComponent = ({
   const isEnterpriseEdition = useEnterpriseEdition();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Connector catalog | Ingestion | Data'));
+
+  const { hasRegisteredManagers } = useConnectorManagerStatus();
 
   const { contract } = usePreloadedQuery(
     ingestionCatalogConnectorQuery,
     queryRef,
   );
+
+  setTitle(t_i18n('Connector catalog | Ingestion | Data'));
+
   if (!contract) return <ErrorNotFound />;
+
   const connector = JSON.parse(contract.contract);
 
   return (
     <>
-      <Breadcrumbs elements={[
-        { label: t_i18n('Data') },
-        { label: t_i18n('Ingestion') },
-        { label: t_i18n('Connector catalog'), link: '/dashboard/data/ingestion/catalog' },
-        { label: connector.title, current: true },
-      ]}
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Data') },
+          { label: t_i18n('Ingestion') },
+          { label: t_i18n('Connector catalog'), link: '/dashboard/data/ingestion/catalog' },
+          { label: connector.title, current: true },
+        ]}
       />
-      <IngestionCatalogConnectorHeader
-        connector={connector}
-        catalogId={contract.catalog_id}
-        isEnterpriseEdition={isEnterpriseEdition}
-      />
-      <IngestionCatalogConnectorOverview connector={connector} />
+
+      <Stack gap={2}>
+        { !hasRegisteredManagers && <NoConnectorManagersBanner />}
+
+        <IngestionCatalogConnectorHeader
+          connector={connector}
+          catalogId={contract.catalog_id}
+          isEnterpriseEdition={isEnterpriseEdition}
+        />
+
+        <IngestionCatalogConnectorOverview connector={connector} />
+      </Stack>
     </>
   );
 };
@@ -67,7 +82,11 @@ const IngestionCatalogConnector = () => {
   );
   return (
     <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-      {queryRef && <IngestionCatalogConnectorComponent queryRef={queryRef} />}
+      {queryRef && (
+        <ConnectorManagerStatusProvider>
+          <IngestionCatalogConnectorComponent queryRef={queryRef} />
+        </ConnectorManagerStatusProvider>
+      )}
     </Suspense>
   );
 };

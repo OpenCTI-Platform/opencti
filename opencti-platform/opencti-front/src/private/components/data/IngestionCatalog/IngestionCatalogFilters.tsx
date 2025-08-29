@@ -126,14 +126,16 @@ const IngestionCatalogFilters: React.FC<IngestionCatalogFiltersProps> = ({
       />
 
       <Tooltip title={t_i18n('Clear filters')}>
-        <IconButton
-          color={hasActiveFilters ? 'primary' : 'default'}
-          onClick={handleClearFilters}
-          size="small"
-          disabled={!hasActiveFilters}
-        >
-          <FilterListOffOutlined fontSize="small" />
-        </IconButton>
+        <span>
+          <IconButton
+            color={hasActiveFilters ? 'primary' : 'default'}
+            onClick={handleClearFilters}
+            size="small"
+            disabled={!hasActiveFilters}
+          >
+            <FilterListOffOutlined fontSize="small" />
+          </IconButton>
+        </span>
       </Tooltip>
     </Stack>
   );

@@ -8,6 +8,8 @@ import { useSearchParams } from 'react-router-dom';
 import { Stack } from '@mui/material';
 import { Search } from '@mui/icons-material';
 import Grid from '@mui/material/Grid2';
+import { ConnectorManagerStatusProvider, useConnectorManagerStatus } from '@components/data/connectors/ConnectorManagerStatusContext';
+import NoConnectorManagersBanner from '@components/data/connectors/NoConnectorManagersBanner';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
@@ -135,6 +137,8 @@ const IngestionCatalogComponent = ({
   const { setTitle } = useConnectedDocumentModifier();
   const [searchParams] = useSearchParams();
 
+  const { hasRegisteredManagers } = useConnectorManagerStatus();
+
   setTitle(t_i18n('Connector catalog | Ingestion | Data'));
 
   const { catalogs } = usePreloadedQuery(
@@ -165,6 +169,10 @@ const IngestionCatalogComponent = ({
       <IngestionMenu />
       <PageContainer withRightMenu withGap>
         <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('Connector catalog'), current: true }]} />
+
+        {
+          !hasRegisteredManagers && <NoConnectorManagersBanner />
+        }
 
         <Stack flexDirection="row">
           <IngestionCatalogFilters
@@ -206,7 +214,11 @@ const IngestionCatalog = () => {
   );
   return (
     <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-      {queryRef && <IngestionCatalogComponent queryRef={queryRef} />}
+      {queryRef && (
+        <ConnectorManagerStatusProvider>
+          <IngestionCatalogComponent queryRef={queryRef} />
+        </ConnectorManagerStatusProvider>
+      )}
     </Suspense>
   );
 };
