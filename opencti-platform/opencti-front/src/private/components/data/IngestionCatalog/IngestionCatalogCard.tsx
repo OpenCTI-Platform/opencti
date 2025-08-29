@@ -8,7 +8,6 @@ import { VerifiedOutlined } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import IngestionCatalogChip from '@components/data/IngestionCatalog/IngestionCatalogUseCaseChip';
 import { useTheme } from '@mui/styles';
-import IngestionCatalogConnectorCreation from '@components/data/IngestionCatalog/IngestionCatalogConnectorCreation';
 import { IngestionConnector } from '@components/data/IngestionCatalog';
 import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';
 import { truncate } from 'src/utils/String';
@@ -25,6 +24,7 @@ export interface IngestionCatalogCardProps {
   dataListId: string;
   isEnterpriseEdition: boolean
   deploymentCount?: number;
+  onClickDeploy: () => void
 }
 
 export type IngestionConnectorType =
@@ -81,13 +81,13 @@ const DeployButton = ({ deploymentCount, onClick }: { deploymentCount?: number, 
 
 const IngestionCatalogCard = ({
   node: connector,
-  dataListId,
   isEnterpriseEdition,
+  onClickDeploy,
   deploymentCount = 0,
 }: IngestionCatalogCardProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const [openCreation, setOpenCreation] = useState(false);
+
   const link = `/dashboard/data/ingestion/catalog/${connector.slug}`;
 
   const renderConnectorUseCases = ({
@@ -230,7 +230,7 @@ const IngestionCatalogCard = ({
             <Security needs={[INGESTION_SETINGESTIONS]}>
               {
                 isEnterpriseEdition ? (
-                  <DeployButton deploymentCount={deploymentCount} onClick={() => setOpenCreation(true)} />
+                  <DeployButton deploymentCount={deploymentCount} onClick={onClickDeploy} />
                 ) : (
                   <Box sx={{ '& .MuiButton-root': { marginLeft: 0 } }}>
                     {/** FIXME: remove marginLeft in EnterpriseEditionButton * */}
@@ -242,13 +242,6 @@ const IngestionCatalogCard = ({
           </div>
         </CardActions>
       </Card>
-
-      <IngestionCatalogConnectorCreation
-        open={openCreation}
-        connector={connector}
-        onClose={() => setOpenCreation(false)}
-        catalogId={dataListId}
-      />
     </>
   );
 };

@@ -12,6 +12,7 @@ import { Schema, Validator } from '@cfworker/json-schema';
 import { Link } from 'react-router-dom';
 import { JsonSchema } from '@jsonforms/core';
 import { Alert } from '@mui/material';
+import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import {
@@ -143,15 +144,14 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
       open={open}
       onClose={onClose}
       header={
-        <div style={{ position: 'absolute', right: theme.spacing(1) }}>
+        <Stack flex={1} direction="row" justifyContent="flex-end" spacing={theme.spacing(1)} paddingRight={1}>
           <Button
-            size="large"
+            size="small"
             variant="contained"
             startIcon={<Launch />}
             href={connector.subscription_link}
             target="blank"
             rel="noopener noreferrer"
-            style={{ marginRight: theme.spacing(1) }}
           >
             {t_i18n('Vendor contact')}
           </Button>
@@ -164,7 +164,7 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
           >
             <LibraryBooksOutlined />
           </IconButton>
-        </div>
+        </Stack>
       }
     >
       <Formik<ManagedConnectorValues>
