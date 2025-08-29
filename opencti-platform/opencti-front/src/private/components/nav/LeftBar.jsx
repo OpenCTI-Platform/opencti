@@ -999,7 +999,7 @@ const LeftBar = () => {
         >
           <Divider />
           {!draftContext && (
-            <MenuList component="nav">
+            <MenuList component="nav" style={{ marginBottom: 48 }}>
               <MenuItem
                 ref={anchors.settings}
                 selected={!navOpen && location.pathname.includes('/dashboard/settings')}
