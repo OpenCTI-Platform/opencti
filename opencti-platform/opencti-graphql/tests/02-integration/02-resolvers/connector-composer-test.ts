@@ -132,8 +132,6 @@ const ipinfoListProperties = [
   { key: 'CONNECTOR_LISTEN_PROTOCOL_API_SSL', value: ['false'] }
 ];
 
-
-
 describe('Connector Composer and Managed Connectors', () => {
   // Track all created resources
   const createdConnectorIds = new Set<string>();
@@ -154,6 +152,47 @@ describe('Connector Composer and Managed Connectors', () => {
   });
 
   describe('Connector Composer operations', () => {
+    it('should sanitize connector names for Kubernetes/Docker compatibility', async () => {
+      const testConnector = catalogHelper.getTestSafeConnector();
+      const catalogId = catalogHelper.getCatalogId();
+
+      const testCases = [
+        { input: 'ServiceNow Connector', expectedPattern: /^service-now-connector-[a-f0-9]{8}$/ },
+        { input: '-Test@Connector#2024!', expectedPattern: /^test-connector-2024-[a-f0-9]{8}$/ },
+        { input: 'Very___Long---Name__With$$Special##Chars@@That--Exceeds--The--Maximum--Length--Limit--Of--63--Characters', expectedPattern: /^very-long-name-with-special-chars-that-exceeds-the-max-[a-f0-9]{8}$/ }
+      ];
+
+      await Promise.all(testCases.map(async (testCase) => {
+        const input = {
+          name: testCase.input,
+          user_id: TEST_USER_CONNECTOR_ID,
+          catalog_id: catalogId,
+          manager_contract_image: testConnector.container_image,
+          manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
+            IPINFO_TOKEN: 'sanitization-test-token',
+            ...ipinfoProperties
+          })
+        };
+
+        const result = await queryAsAdminWithSuccess({
+          query: ADD_MANAGED_CONNECTOR_MUTATION,
+          variables: { input }
+        });
+
+        expect(result.data).toBeDefined();
+        expect(result.data?.managedConnectorAdd.name).toMatch(testCase.expectedPattern);
+
+        const connectorId = result.data?.managedConnectorAdd.id;
+        createdConnectorIds.add(connectorId);
+
+        await queryAsAdminWithSuccess({
+          query: DELETE_CONNECTOR_MUTATION,
+          variables: { id: connectorId }
+        });
+        createdConnectorIds.delete(connectorId);
+      }));
+    });
+
     it('should register a new connector composer', async () => {
       const input = {
         id: TEST_COMPOSER_ID,
@@ -489,6 +528,7 @@ describe('Connector Composer and Managed Connectors', () => {
 
       expect(createResult.data).toBeDefined();
       const logLevelConnectorId = createResult.data?.managedConnectorAdd.id;
+      const sanitizedConnectorName = createResult.data?.managedConnectorAdd.name; // Capture the sanitized name
       createdConnectorIds.add(logLevelConnectorId);
 
       // Start the connector
@@ -528,7 +568,7 @@ describe('Connector Composer and Managed Connectors', () => {
       // Update the connector configuration with a new log level (change from 'info' to 'debug')
       const updateInput = {
         id: logLevelConnectorId,
-        name: 'Log Level Test Connector',
+        name: sanitizedConnectorName, // Use the sanitized name
         connector_user_id: TEST_USER_CONNECTOR_ID,
         manager_contract_configuration: [
           { key: 'IPINFO_TOKEN', value: ['log-level-test-token'] },
@@ -581,7 +621,7 @@ describe('Connector Composer and Managed Connectors', () => {
       // Test changing to another log level (ERROR)
       const updateInput2 = {
         id: logLevelConnectorId,
-        name: 'Log Level Test Connector',
+        name: sanitizedConnectorName, // Use the sanitized name
         connector_user_id: TEST_USER_CONNECTOR_ID,
         manager_contract_configuration: [
           { key: 'IPINFO_TOKEN', value: ['log-level-test-token'] },
@@ -618,7 +658,7 @@ describe('Connector Composer and Managed Connectors', () => {
       // Test updating only the name without changing configuration (should not redeploy)
       const updateInput3 = {
         id: logLevelConnectorId,
-        name: 'Log Level Test Connector - Updated Name Only',
+        name: `${sanitizedConnectorName}-updated`, // Use a modified version of the sanitized name
         connector_user_id: TEST_USER_CONNECTOR_ID,
         manager_contract_configuration: [
           { key: 'IPINFO_TOKEN', value: ['log-level-test-token'] },
@@ -796,7 +836,7 @@ describe('Connector Composer and Managed Connectors', () => {
 
       const testConnector = connectors.find((c: any) => c.id === testConnectorId);
       expect(testConnector).toBeDefined();
-      expect(testConnector.name).toEqual('XTM Composer Test Connector');
+      expect(testConnector.name).toMatch(/^xtm-composer-test-connector-[a-f0-9]{8}$/);
       // Split image name to ignore version
       const [imageName] = testConnector.manager_contract_image.split(':');
       expect(imageName).toEqual('opencti/connector-ipinfo');
@@ -925,7 +965,7 @@ describe('Connector Composer and Managed Connectors', () => {
       managedConnectorId = result.data?.managedConnectorAdd.id;
       createdConnectorIds.add(managedConnectorId);
       expect(result.data?.managedConnectorAdd).not.toBeNull();
-      expect(result.data?.managedConnectorAdd.name).toEqual('Test IpInfo Connector');
+      expect(result.data?.managedConnectorAdd.name).toMatch(/^test-ip-info-connector-[a-f0-9]{8}$/);
       expect(result.data?.managedConnectorAdd.connector_user_id).toBeDefined();
       expect(result.data?.managedConnectorAdd.manager_requested_status).toEqual('stopped');
       expect(result.data?.managedConnectorAdd.manager_contract_hash).toBeDefined();
