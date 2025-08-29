@@ -15,38 +15,36 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { GqlFilterGroup } from '../../../utils/filters/filtersUtils';
 
-export const pirHistoryFilterGroup = (): GqlFilterGroup => {
-  return {
-    mode: 'and',
-    filters: [
-      {
-        key: ['event_type'],
-        values: ['create', 'delete', 'mutation'], // retro-compatibility
-      },
-      {
-        operator: 'not_eq',
-        key: ['context_data.entity_type'],
-        values: ['indicates'], // don't display indicates relationships events
-      },
-    ],
-    filterGroups: [
-      {
-        mode: 'or',
-        filters: [
-          {
-            key: ['event_scope'],
-            values: ['create', 'delete', 'update'],
-          },
-          {
-            key: ['event_scope'],
-            values: [], // if event_scope is null, event_type is not
-            operator: 'nil',
-          },
-        ],
-        filterGroups: [],
-      },
-    ],
-  };
+export const pirHistoryFilterGroup: GqlFilterGroup = {
+  mode: 'and',
+  filters: [
+    {
+      key: ['event_type'],
+      values: ['create', 'delete', 'mutation'], // retro-compatibility
+    },
+    {
+      operator: 'not_eq',
+      key: ['context_data.entity_type'],
+      values: ['indicates'], // don't display indicates relationships events
+    },
+  ],
+  filterGroups: [
+    {
+      mode: 'or',
+      filters: [
+        {
+          key: ['event_scope'],
+          values: ['create', 'delete', 'update'],
+        },
+        {
+          key: ['event_scope'],
+          values: [], // if event_scope is null, event_type is not
+          operator: 'nil',
+        },
+      ],
+      filterGroups: [],
+    },
+  ],
 };
 
 /**

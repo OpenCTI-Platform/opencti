@@ -127,7 +127,7 @@ const Pir = () => {
     first: 20,
     orderBy: 'timestamp',
     orderMode: 'desc',
-    filters: pirHistoryFilterGroup(),
+    filters: pirHistoryFilterGroup,
     pirId,
   });
 

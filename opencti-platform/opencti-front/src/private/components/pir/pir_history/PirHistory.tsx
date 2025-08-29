@@ -149,7 +149,7 @@ const PirHistory = ({ data }: PirHistoryProps) => {
     filters: {
       mode: 'and',
       filters: [],
-      filterGroups: [contextFilters, pirHistoryFilterGroup()],
+      filterGroups: [contextFilters, pirHistoryFilterGroup],
     },
   } as unknown as PirHistoryLogsQuery$variables;
 
