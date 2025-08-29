@@ -18,7 +18,7 @@ import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { ENTITY_TYPE_PIR, PIR_TYPES, type StixPir, type StoreEntityPir } from './pir-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import convertEntityPirToStix from './pir-converter';
-import { authorizedAuthorities, authorizedMembers, createdAt, creators, lastEventId, updatedAt } from '../../schema/attribute-definition';
+import { authorizedAuthorities, authorizedMembers, createdAt, creators, draftChange, lastEventId, updatedAt } from '../../schema/attribute-definition';
 import { isFeatureEnabled } from '../../config/conf';
 
 const ENTITY_PIR_DEFINITION: ModuleDefinition<StoreEntityPir, StixPir> = {
@@ -46,6 +46,7 @@ const ENTITY_PIR_DEFINITION: ModuleDefinition<StoreEntityPir, StixPir> = {
     { name: 'pir_filters', label: 'PIR Filters', type: 'string', format: 'json', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     authorizedMembers,
     authorizedAuthorities,
+    { ...draftChange, isFilterable: false },
   ],
   relations: [],
   representative: (stix: StixPir) => stix.name,
