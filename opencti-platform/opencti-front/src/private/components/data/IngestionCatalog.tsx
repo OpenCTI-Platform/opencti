@@ -1,7 +1,7 @@
 import React, { Suspense } from 'react';
 import IngestionMenu from '@components/data/IngestionMenu';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { IngestionCatalogQuery } from '@components/data/__generated__/IngestionCatalogQuery.graphql';
+import { IngestionCatalogQuery, IngestionCatalogQuery$data } from '@components/data/__generated__/IngestionCatalogQuery.graphql';
 import IngestionCatalogCard, { IngestionConnectorType } from '@components/data/IngestionCatalog/IngestionCatalogCard';
 import useIngestionCatalogFilters from '@components/data/IngestionCatalog/hooks/useIngestionCatalogFilters';
 import { useSearchParams } from 'react-router-dom';
@@ -28,6 +28,9 @@ export const ingestionCatalogQuery = graphql`
       description
       entity_type
       contracts
+    }
+    connectors {
+      manager_contract_image
     }
   }
 `;
@@ -79,6 +82,26 @@ export interface IngestionConnector {
     additionalProperties: boolean,
   }
 }
+
+type Connector = NonNullable<IngestionCatalogQuery$data['connectors']>[number];
+
+const createDeploymentCountMap = (connectors: readonly Connector[]) => {
+  const deploymentCountMap = new Map<string, number>();
+
+  const hasManagerContractImage = (connector: Connector): connector is Connector & { manager_contract_image: string } => {
+    return connector.manager_contract_image != null;
+  };
+
+  const connectorsWithManagerContract = connectors.filter(hasManagerContractImage);
+
+  for (const connector of connectorsWithManagerContract) {
+    const containerType = connector.manager_contract_image.split(':')[0];
+    const counter = deploymentCountMap.get(containerType) ?? 0;
+    deploymentCountMap.set(containerType, counter + 1);
+  }
+
+  return deploymentCountMap;
+};
 
 const BrowseMoreButton = () => {
   const { t_i18n } = useFormatter();
@@ -137,7 +160,7 @@ const IngestionCatalogComponent = ({
 
   setTitle(t_i18n('Connector catalog | Ingestion | Data'));
 
-  const { catalogs } = usePreloadedQuery(
+  const { catalogs, connectors } = usePreloadedQuery(
     ingestionCatalogQuery,
     queryRef,
   );
@@ -160,6 +183,8 @@ const IngestionCatalogComponent = ({
     }
   }
 
+  const deploymentCounts = createDeploymentCountMap(connectors);
+
   return (
     <div data-testid="catalog-page">
       <IngestionMenu />
@@ -179,12 +204,14 @@ const IngestionCatalogComponent = ({
         <Grid container spacing={2}>
           {filteredCatalogs.map((catalog) => {
             return catalog.contracts.map((contract) => {
+              const deploymentCount = deploymentCounts.get(contract.container_image) ?? 0;
               return (
                 <Grid key={contract.title} size={{ lg: 4, xs: 6 }}>
                   <IngestionCatalogCard
                     node={contract}
                     dataListId={catalog.id}
                     isEnterpriseEdition={isEnterpriseEdition}
+                    deploymentCount={deploymentCount}
                   />
                 </Grid>
               );
@@ -204,6 +231,7 @@ const IngestionCatalog = () => {
   const queryRef = useQueryLoading<IngestionCatalogQuery>(
     ingestionCatalogQuery,
   );
+
   return (
     <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
       {queryRef && <IngestionCatalogComponent queryRef={queryRef} />}

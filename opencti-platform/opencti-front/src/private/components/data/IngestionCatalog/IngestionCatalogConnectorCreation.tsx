@@ -40,8 +40,12 @@ const ingestionCatalogConnectorCreationMutation = graphql`
       manager_requested_status
       manager_current_status
       manager_contract_configuration {
-        key
-        value
+          key
+          value
+      }
+      ...on Connector {
+        id
+        manager_contract_image
       }
     }
   }
@@ -98,6 +102,15 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
         setSubmitting?.(false);
         resetForm?.();
         onClose();
+      },
+      updater: (store) => {
+        const root = store.getRoot();
+        const existingConnectors = root.getLinkedRecords('connectors') || [];
+        const newConnector = store.getRootField('managedConnectorAdd');
+
+        if (newConnector) {
+          root.setLinkedRecords([...existingConnectors, newConnector], 'connectors');
+        }
       },
     });
   };
