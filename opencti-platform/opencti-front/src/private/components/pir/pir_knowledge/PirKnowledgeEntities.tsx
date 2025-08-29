@@ -67,11 +67,13 @@ const sourceFlaggedFragment = graphql`
         name
       }
     }
-    pirScore(pirId: $pirId)
-    pirLastScoreDate(pirId: $pirId)
-    pirExplanations(pirId: $pirId) {
-      criterion {
-        filters
+    pirInformation(pirId: $pirId) {
+      pir_score
+      last_pir_score_date
+      pir_explanations {
+        criterion {
+          filters
+        }
       }
     }
   }
@@ -198,13 +200,13 @@ const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHe
       label: 'Score',
       percentWidth: 6,
       isSortable: true,
-      render: ({ pirScore, pirExplanations }) => {
-        const criteria: FilterGroup[] = pirExplanations.map(
+      render: ({ pirInformation }) => {
+        const criteria: FilterGroup[] = pirInformation.pir_explanations.map(
           (e: PirExplanation) => JSON.parse(e.criterion.filters),
         );
         return (
           <PirCriteriaDisplay criteria={criteria}>
-            <PirRadialScore value={pirScore}/>
+            <PirRadialScore value={pirInformation.pir_score}/>
           </PirCriteriaDisplay>
         );
       },
@@ -214,7 +216,7 @@ const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHe
       label: 'Last score date',
       percentWidth: 11,
       isSortable: true,
-      render: ({ pirLastScoreDate }) => defaultRender(fd(pirLastScoreDate)),
+      render: ({ pirInformation }) => defaultRender(fd(pirInformation.pir_last_score_date)),
     },
     entity_type: { percentWidth: 10 },
     name: { percentWidth: 20 },

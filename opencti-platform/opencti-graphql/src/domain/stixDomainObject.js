@@ -109,25 +109,12 @@ export const stixDomainObjectAvatar = (stixDomainObject) => {
 // endregion
 
 // region PIR
-export const stixDomainObjectPirScore = async (context, user, stixDomainObject, pirId) => {
+export const stixDomainObjectPirInformation = async (context, user, stixDomainObject, pirId) => {
+  // check pir access
   await getPirWithAccessCheck(context, user, pirId);
-  // fetch stix domain object pir score
+  // fetch stix domain object pir information
   const pirInformation = (stixDomainObject.pir_information ?? []).find((s) => s.pir_id === pirId);
-  if (!pirInformation) return 0;
-  return pirInformation.pir_score;
-};
-
-export const stixDomainObjectLastPirScoreDate = async (context, user, stixDomainObject, pirId) => {
-  await getPirWithAccessCheck(context, user, pirId);
-  // fetch stix domain object pir score
-  const pirInformation = (stixDomainObject.pir_information ?? []).find((s) => s.pir_id === pirId);
-  if (!pirInformation) return 0;
-  return pirInformation.last_pir_score_date;
-};
-
-export const stixDomainObjectsPirExplanations = async (context, user, stixDomainObject, pirId) => {
-  await getPirWithAccessCheck(context, user, pirId);
-  // retrieve in-pir relationship
+  // retrieve asociated in-pir relationship
   const inPirRelations = await listRelations(context, user, RELATION_IN_PIR, {
     connectionFormat: false,
     filters: {
@@ -139,10 +126,13 @@ export const stixDomainObjectsPirExplanations = async (context, user, stixDomain
       filterGroups: [],
     },
   });
-  if (inPirRelations.length !== 1) return null;
-  return inPirRelations[0].pir_explanations;
+  // return pir useful information
+  return {
+    pir_score: pirInformation?.pir_score ?? undefined,
+    last_pir_score_date: pirInformation?.last_pir_score_date ?? undefined,
+    pir_explanations: inPirRelations.length !== 1 ? null : inPirRelations[0].pir_explanations,
+  };
 };
-// endregion
 
 // region export
 export const stixDomainObjectsExportAsk = async (context, user, args) => {

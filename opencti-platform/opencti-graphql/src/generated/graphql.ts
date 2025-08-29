@@ -132,9 +132,7 @@ export type AdministrativeArea = BasicObject & Location & StixCoreObject & StixD
   opinions_metrics?: Maybe<OpinionsMetrics>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   precision?: Maybe<Scalars['Float']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
@@ -227,17 +225,7 @@ export type AdministrativeAreaPendingFilesArgs = {
 };
 
 
-export type AdministrativeAreaPirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type AdministrativeAreaPirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type AdministrativeAreaPirScoreArgs = {
+export type AdministrativeAreaPirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -720,9 +708,7 @@ export type AttackPattern = BasicObject & StixCoreObject & StixDomainObject & St
   parentAttackPatterns?: Maybe<AttackPatternConnection>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
@@ -838,17 +824,7 @@ export type AttackPatternPendingFilesArgs = {
 };
 
 
-export type AttackPatternPirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type AttackPatternPirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type AttackPatternPirScoreArgs = {
+export type AttackPatternPirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -1733,9 +1709,7 @@ export type Campaign = BasicObject & StixCoreObject & StixDomainObject & StixObj
   opinions_metrics?: Maybe<OpinionsMetrics>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
@@ -1826,17 +1800,7 @@ export type CampaignPendingFilesArgs = {
 };
 
 
-export type CampaignPirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type CampaignPirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type CampaignPirScoreArgs = {
+export type CampaignPirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -2110,9 +2074,7 @@ export type Case = {
   opinions_metrics?: Maybe<OpinionsMetrics>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
@@ -2228,17 +2190,7 @@ export type CasePendingFilesArgs = {
 };
 
 
-export type CasePirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type CasePirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type CasePirScoreArgs = {
+export type CasePirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -2380,9 +2332,7 @@ export type CaseIncident = BasicObject & Case & Container & StixCoreObject & Sti
   opinions_metrics?: Maybe<OpinionsMetrics>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   priority?: Maybe<Scalars['String']['output']>;
   rating?: Maybe<Scalars['Int']['output']>;
   relatedContainers?: Maybe<ContainerConnection>;
@@ -2502,17 +2452,7 @@ export type CaseIncidentPendingFilesArgs = {
 };
 
 
-export type CaseIncidentPirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type CaseIncidentPirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type CaseIncidentPirScoreArgs = {
+export type CaseIncidentPirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -2704,9 +2644,7 @@ export type CaseRfi = BasicObject & Case & Container & StixCoreObject & StixDoma
   opinions_metrics?: Maybe<OpinionsMetrics>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   priority?: Maybe<Scalars['String']['output']>;
   relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
@@ -2827,17 +2765,7 @@ export type CaseRfiPendingFilesArgs = {
 };
 
 
-export type CaseRfiPirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type CaseRfiPirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type CaseRfiPirScoreArgs = {
+export type CaseRfiPirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -3028,9 +2956,7 @@ export type CaseRft = BasicObject & Case & Container & StixCoreObject & StixDoma
   opinions_metrics?: Maybe<OpinionsMetrics>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   priority?: Maybe<Scalars['String']['output']>;
   relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
@@ -3149,17 +3075,7 @@ export type CaseRftPendingFilesArgs = {
 };
 
 
-export type CaseRftPirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type CaseRftPirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type CaseRftPirScoreArgs = {
+export type CaseRftPirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -3432,9 +3348,7 @@ export type Channel = BasicObject & StixCoreObject & StixDomainObject & StixObje
   opinions_metrics?: Maybe<OpinionsMetrics>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
@@ -3525,17 +3439,7 @@ export type ChannelPendingFilesArgs = {
 };
 
 
-export type ChannelPirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type ChannelPirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type ChannelPirScoreArgs = {
+export type ChannelPirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -3716,9 +3620,7 @@ export type City = BasicObject & Location & StixCoreObject & StixDomainObject & 
   opinions_metrics?: Maybe<OpinionsMetrics>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   precision?: Maybe<Scalars['Float']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
@@ -3811,17 +3713,7 @@ export type CityPendingFilesArgs = {
 };
 
 
-export type CityPirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type CityPirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type CityPirScoreArgs = {
+export type CityPirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -4476,9 +4368,7 @@ export type Country = BasicObject & Location & StixCoreObject & StixDomainObject
   opinions_metrics?: Maybe<OpinionsMetrics>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   precision?: Maybe<Scalars['Float']['output']>;
   region?: Maybe<Region>;
   reports?: Maybe<ReportConnection>;
@@ -4572,17 +4462,7 @@ export type CountryPendingFilesArgs = {
 };
 
 
-export type CountryPirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type CountryPirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type CountryPirScoreArgs = {
+export type CountryPirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -4762,9 +4642,7 @@ export type CourseOfAction = BasicObject & StixCoreObject & StixDomainObject & S
   opinions_metrics?: Maybe<OpinionsMetrics>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
@@ -4859,17 +4737,7 @@ export type CourseOfActionPendingFilesArgs = {
 };
 
 
-export type CourseOfActionPirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type CourseOfActionPirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type CourseOfActionPirScoreArgs = {
+export type CourseOfActionPirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -5826,9 +5694,7 @@ export type DataComponent = BasicObject & StixCoreObject & StixDomainObject & St
   opinions_metrics?: Maybe<OpinionsMetrics>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
@@ -5919,17 +5785,7 @@ export type DataComponentPendingFilesArgs = {
 };
 
 
-export type DataComponentPirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type DataComponentPirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type DataComponentPirScoreArgs = {
+export type DataComponentPirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -6088,9 +5944,7 @@ export type DataSource = BasicObject & StixCoreObject & StixDomainObject & StixO
   opinions_metrics?: Maybe<OpinionsMetrics>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
@@ -6182,17 +6036,7 @@ export type DataSourcePendingFilesArgs = {
 };
 
 
-export type DataSourcePirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type DataSourcePirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type DataSourcePirScoreArgs = {
+export type DataSourcePirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -7839,9 +7683,7 @@ export type Event = BasicObject & StixCoreObject & StixDomainObject & StixObject
   opinions_metrics?: Maybe<OpinionsMetrics>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
@@ -7934,17 +7776,7 @@ export type EventPendingFilesArgs = {
 };
 
 
-export type EventPirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type EventPirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type EventPirScoreArgs = {
+export type EventPirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -8418,9 +8250,7 @@ export type Feedback = BasicObject & Case & Container & StixCoreObject & StixDom
   opinions_metrics?: Maybe<OpinionsMetrics>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   rating?: Maybe<Scalars['Int']['output']>;
   relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
@@ -8537,17 +8367,7 @@ export type FeedbackPendingFilesArgs = {
 };
 
 
-export type FeedbackPirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type FeedbackPirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type FeedbackPirScoreArgs = {
+export type FeedbackPirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -9076,9 +8896,7 @@ export type Grouping = BasicObject & Container & StixCoreObject & StixDomainObje
   opinions_metrics?: Maybe<OpinionsMetrics>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
@@ -9194,17 +9012,7 @@ export type GroupingPendingFilesArgs = {
 };
 
 
-export type GroupingPirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type GroupingPirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type GroupingPirScoreArgs = {
+export type GroupingPirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -10490,9 +10298,7 @@ export type Incident = BasicObject & StixCoreObject & StixDomainObject & StixObj
   opinions_metrics?: Maybe<OpinionsMetrics>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
@@ -10585,17 +10391,7 @@ export type IncidentPendingFilesArgs = {
 };
 
 
-export type IncidentPirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type IncidentPirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type IncidentPirScoreArgs = {
+export type IncidentPirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -10839,9 +10635,7 @@ export type Indicator = BasicObject & StixCoreObject & StixDomainObject & StixOb
   pattern_type?: Maybe<Scalars['String']['output']>;
   pattern_version?: Maybe<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
@@ -10944,17 +10738,7 @@ export type IndicatorPendingFilesArgs = {
 };
 
 
-export type IndicatorPirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type IndicatorPirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type IndicatorPirScoreArgs = {
+export type IndicatorPirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -11151,9 +10935,7 @@ export type Individual = BasicObject & Identity & StixCoreObject & StixDomainObj
   organizations?: Maybe<OrganizationConnection>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
@@ -11249,17 +11031,7 @@ export type IndividualPendingFilesArgs = {
 };
 
 
-export type IndividualPirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type IndividualPirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type IndividualPirScoreArgs = {
+export type IndividualPirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -11470,9 +11242,7 @@ export type Infrastructure = BasicObject & StixCoreObject & StixDomainObject & S
   opinions_metrics?: Maybe<OpinionsMetrics>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
@@ -11563,17 +11333,7 @@ export type InfrastructurePendingFilesArgs = {
 };
 
 
-export type InfrastructurePirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type InfrastructurePirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type InfrastructurePirScoreArgs = {
+export type InfrastructurePirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -12132,9 +11892,7 @@ export type IntrusionSet = BasicObject & StixCoreObject & StixDomainObject & Sti
   opinions_metrics?: Maybe<OpinionsMetrics>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   primary_motivation?: Maybe<Scalars['String']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
@@ -12228,17 +11986,7 @@ export type IntrusionSetPendingFilesArgs = {
 };
 
 
-export type IntrusionSetPirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type IntrusionSetPirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type IntrusionSetPirScoreArgs = {
+export type IntrusionSetPirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -12711,9 +12459,7 @@ export type Language = BasicObject & StixCoreObject & StixDomainObject & StixObj
   opinions_metrics?: Maybe<OpinionsMetrics>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
@@ -12804,17 +12550,7 @@ export type LanguagePendingFilesArgs = {
 };
 
 
-export type LanguagePirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type LanguagePirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type LanguagePirScoreArgs = {
+export type LanguagePirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -13532,9 +13268,7 @@ export type Malware = BasicObject & StixCoreObject & StixDomainObject & StixObje
   opinions_metrics?: Maybe<OpinionsMetrics>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
@@ -13626,17 +13360,7 @@ export type MalwarePendingFilesArgs = {
 };
 
 
-export type MalwarePirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type MalwarePirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type MalwarePirScoreArgs = {
+export type MalwarePirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -13800,9 +13524,7 @@ export type MalwareAnalysis = BasicObject & StixCoreObject & StixDomainObject & 
   opinions_metrics?: Maybe<OpinionsMetrics>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   product: Scalars['String']['output'];
   reports?: Maybe<ReportConnection>;
   representative: Representative;
@@ -13899,17 +13621,7 @@ export type MalwareAnalysisPendingFilesArgs = {
 };
 
 
-export type MalwareAnalysisPirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type MalwareAnalysisPirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type MalwareAnalysisPirScoreArgs = {
+export type MalwareAnalysisPirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -17708,9 +17420,7 @@ export type Narrative = BasicObject & StixCoreObject & StixDomainObject & StixOb
   parentNarratives?: Maybe<NarrativeConnection>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
@@ -17802,17 +17512,7 @@ export type NarrativePendingFilesArgs = {
 };
 
 
-export type NarrativePirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type NarrativePirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type NarrativePirScoreArgs = {
+export type NarrativePirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -18199,9 +17899,7 @@ export type Note = BasicObject & Container & StixCoreObject & StixDomainObject &
   opinions_metrics?: Maybe<OpinionsMetrics>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
@@ -18316,17 +18014,7 @@ export type NotePendingFilesArgs = {
 };
 
 
-export type NotePirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type NotePirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type NotePirScoreArgs = {
+export type NotePirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -18699,9 +18387,7 @@ export type ObservedData = BasicObject & Container & StixCoreObject & StixDomain
   opinions_metrics?: Maybe<OpinionsMetrics>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
@@ -18816,17 +18502,7 @@ export type ObservedDataPendingFilesArgs = {
 };
 
 
-export type ObservedDataPirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type ObservedDataPirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type ObservedDataPirScoreArgs = {
+export type ObservedDataPirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -19048,9 +18724,7 @@ export type Opinion = BasicObject & Container & StixCoreObject & StixDomainObjec
   opinions_metrics?: Maybe<OpinionsMetrics>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
@@ -19165,17 +18839,7 @@ export type OpinionPendingFilesArgs = {
 };
 
 
-export type OpinionPirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type OpinionPirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type OpinionPirScoreArgs = {
+export type OpinionPirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -19423,9 +19087,7 @@ export type Organization = BasicObject & Identity & StixCoreObject & StixDomainO
   parentOrganizations?: Maybe<OrganizationConnection>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   restrict_access?: Maybe<Scalars['Boolean']['output']>;
@@ -19534,17 +19196,7 @@ export type OrganizationPendingFilesArgs = {
 };
 
 
-export type OrganizationPirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type OrganizationPirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type OrganizationPirScoreArgs = {
+export type OrganizationPirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -20415,6 +20067,13 @@ export type PirFlagElementInput = {
   sourceId: Scalars['ID']['input'];
 };
 
+export type PirInformation = {
+  __typename?: 'PirInformation';
+  last_pir_score_date?: Maybe<Scalars['DateTime']['output']>;
+  pir_explanations?: Maybe<Array<PirExplanation>>;
+  pir_score?: Maybe<Scalars['Int']['output']>;
+};
+
 export enum PirOrdering {
   CreatedAt = 'created_at',
   Creator = 'creator',
@@ -20686,9 +20345,7 @@ export type Position = BasicObject & Location & StixCoreObject & StixDomainObjec
   opinions_metrics?: Maybe<OpinionsMetrics>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   postal_code?: Maybe<Scalars['String']['output']>;
   precision?: Maybe<Scalars['Float']['output']>;
   reports?: Maybe<ReportConnection>;
@@ -20783,17 +20440,7 @@ export type PositionPendingFilesArgs = {
 };
 
 
-export type PositionPirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type PositionPirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type PositionPirScoreArgs = {
+export type PositionPirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -24681,9 +24328,7 @@ export type Region = BasicObject & Location & StixCoreObject & StixDomainObject 
   parentRegions?: Maybe<RegionConnection>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   precision?: Maybe<Scalars['Float']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
@@ -24777,17 +24422,7 @@ export type RegionPendingFilesArgs = {
 };
 
 
-export type RegionPirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type RegionPirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type RegionPirScoreArgs = {
+export type RegionPirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -25009,9 +24644,7 @@ export type Report = BasicObject & Container & StixCoreObject & StixDomainObject
   opinions_metrics?: Maybe<OpinionsMetrics>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   published?: Maybe<Scalars['DateTime']['output']>;
   relatedContainers?: Maybe<ContainerConnection>;
   report_types?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
@@ -25129,17 +24762,7 @@ export type ReportPendingFilesArgs = {
 };
 
 
-export type ReportPirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type ReportPirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type ReportPirScoreArgs = {
+export type ReportPirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -25673,9 +25296,7 @@ export type Sector = BasicObject & Identity & StixCoreObject & StixDomainObject 
   parentSectors?: Maybe<SectorConnection>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
@@ -25771,17 +25392,7 @@ export type SectorPendingFilesArgs = {
 };
 
 
-export type SectorPirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type SectorPirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type SectorPirScoreArgs = {
+export type SectorPirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -25973,9 +25584,7 @@ export type SecurityPlatform = BasicObject & Identity & StixCoreObject & StixDom
   opinions_metrics?: Maybe<OpinionsMetrics>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
@@ -26070,17 +25679,7 @@ export type SecurityPlatformPendingFilesArgs = {
 };
 
 
-export type SecurityPlatformPirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type SecurityPlatformPirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type SecurityPlatformPirScoreArgs = {
+export type SecurityPlatformPirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -27659,9 +27258,7 @@ export type StixDomainObject = {
   opinions_metrics?: Maybe<OpinionsMetrics>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
@@ -27751,17 +27348,7 @@ export type StixDomainObjectPendingFilesArgs = {
 };
 
 
-export type StixDomainObjectPirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type StixDomainObjectPirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type StixDomainObjectPirScoreArgs = {
+export type StixDomainObjectPirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -29203,9 +28790,7 @@ export type System = BasicObject & Identity & StixCoreObject & StixDomainObject 
   organizations?: Maybe<OrganizationConnection>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
@@ -29301,17 +28886,7 @@ export type SystemPendingFilesArgs = {
 };
 
 
-export type SystemPirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type SystemPirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type SystemPirScoreArgs = {
+export type SystemPirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -29512,9 +29087,7 @@ export type Task = BasicObject & Container & StixCoreObject & StixDomainObject &
   opinions_metrics?: Maybe<OpinionsMetrics>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
@@ -29629,17 +29202,7 @@ export type TaskPendingFilesArgs = {
 };
 
 
-export type TaskPirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type TaskPirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type TaskPirScoreArgs = {
+export type TaskPirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -30134,9 +29697,7 @@ export type ThreatActor = {
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
   personal_motivations?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   primary_motivation?: Maybe<Scalars['String']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
@@ -30233,17 +29794,7 @@ export type ThreatActorPendingFilesArgs = {
 };
 
 
-export type ThreatActorPirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type ThreatActorPirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type ThreatActorPirScoreArgs = {
+export type ThreatActorPirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -30372,9 +29923,7 @@ export type ThreatActorGroup = BasicObject & StixCoreObject & StixDomainObject &
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
   personal_motivations?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   primary_motivation?: Maybe<Scalars['String']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
@@ -30471,17 +30020,7 @@ export type ThreatActorGroupPendingFilesArgs = {
 };
 
 
-export type ThreatActorGroupPirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type ThreatActorGroupPirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type ThreatActorGroupPirScoreArgs = {
+export type ThreatActorGroupPirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -30685,9 +30224,7 @@ export type ThreatActorIndividual = BasicObject & StixCoreObject & StixDomainObj
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
   personal_motivations?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   primary_motivation?: Maybe<Scalars['String']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
@@ -30785,17 +30322,7 @@ export type ThreatActorIndividualPendingFilesArgs = {
 };
 
 
-export type ThreatActorIndividualPirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type ThreatActorIndividualPirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type ThreatActorIndividualPirScoreArgs = {
+export type ThreatActorIndividualPirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -31004,9 +30531,7 @@ export type Tool = BasicObject & StixCoreObject & StixDomainObject & StixObject 
   opinions_metrics?: Maybe<OpinionsMetrics>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
@@ -31099,17 +30624,7 @@ export type ToolPendingFilesArgs = {
 };
 
 
-export type ToolPirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type ToolPirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type ToolPirScoreArgs = {
+export type ToolPirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -32594,9 +32109,7 @@ export type Vulnerability = BasicObject & StixCoreObject & StixDomainObject & St
   opinions_metrics?: Maybe<OpinionsMetrics>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
-  pirExplanations?: Maybe<Array<PirExplanation>>;
-  pirLastScoreDate?: Maybe<Scalars['DateTime']['output']>;
-  pirScore?: Maybe<Scalars['Int']['output']>;
+  pirInformation?: Maybe<PirInformation>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   revoked: Scalars['Boolean']['output'];
@@ -32737,17 +32250,7 @@ export type VulnerabilityPendingFilesArgs = {
 };
 
 
-export type VulnerabilityPirExplanationsArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type VulnerabilityPirLastScoreDateArgs = {
-  pirId: Scalars['ID']['input'];
-};
-
-
-export type VulnerabilityPirScoreArgs = {
+export type VulnerabilityPirInformationArgs = {
   pirId: Scalars['ID']['input'];
 };
 
@@ -34562,6 +34065,7 @@ export type ResolversTypes = ResolversObject<{
   PirExplanation: ResolverTypeWrapper<PirExplanation>;
   PirExplanationInput: PirExplanationInput;
   PirFlagElementInput: PirFlagElementInput;
+  PirInformation: ResolverTypeWrapper<PirInformation>;
   PirOrdering: PirOrdering;
   PirRelationship: ResolverTypeWrapper<Omit<PirRelationship, 'from' | 'to'> & { from?: Maybe<ResolversTypes['StixDomainObject']>, to?: Maybe<ResolversTypes['Pir']> }>;
   PirRelationshipConnection: ResolverTypeWrapper<Omit<PirRelationshipConnection, 'edges'> & { edges: Array<ResolversTypes['PirRelationshipEdge']> }>;
@@ -35471,6 +34975,7 @@ export type ResolversParentTypes = ResolversObject<{
   PirExplanation: PirExplanation;
   PirExplanationInput: PirExplanationInput;
   PirFlagElementInput: PirFlagElementInput;
+  PirInformation: PirInformation;
   PirRelationship: Omit<PirRelationship, 'from' | 'to'> & { from?: Maybe<ResolversParentTypes['StixDomainObject']>, to?: Maybe<ResolversParentTypes['Pir']> };
   PirRelationshipConnection: Omit<PirRelationshipConnection, 'edges'> & { edges: Array<ResolversParentTypes['PirRelationshipEdge']> };
   PirRelationshipEdge: Omit<PirRelationshipEdge, 'node'> & { node: ResolversParentTypes['PirRelationship'] };
@@ -35866,9 +35371,7 @@ export type AdministrativeAreaResolvers<ContextType = any, ParentType extends Re
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<AdministrativeAreaPendingFilesArgs>>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<AdministrativeAreaPirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<AdministrativeAreaPirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<AdministrativeAreaPirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<AdministrativeAreaPirInformationArgs, 'pirId'>>;
   precision?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<AdministrativeAreaReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
@@ -36089,9 +35592,7 @@ export type AttackPatternResolvers<ContextType = any, ParentType extends Resolve
   parentAttackPatterns?: Resolver<Maybe<ResolversTypes['AttackPatternConnection']>, ParentType, ContextType, Partial<AttackPatternParentAttackPatternsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<AttackPatternPendingFilesArgs>>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<AttackPatternPirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<AttackPatternPirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<AttackPatternPirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<AttackPatternPirInformationArgs, 'pirId'>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<AttackPatternReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -36441,9 +35942,7 @@ export type CampaignResolvers<ContextType = any, ParentType extends ResolversPar
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CampaignPendingFilesArgs>>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<CampaignPirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<CampaignPirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<CampaignPirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<CampaignPirInformationArgs, 'pirId'>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<CampaignReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -36556,9 +36055,7 @@ export type CaseResolvers<ContextType = any, ParentType extends ResolversParentT
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CasePendingFilesArgs>>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<CasePirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<CasePirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<CasePirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<CasePirInformationArgs, 'pirId'>>;
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<CaseRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<CaseReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
@@ -36635,9 +36132,7 @@ export type CaseIncidentResolvers<ContextType = any, ParentType extends Resolver
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CaseIncidentPendingFilesArgs>>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<CaseIncidentPirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<CaseIncidentPirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<CaseIncidentPirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<CaseIncidentPirInformationArgs, 'pirId'>>;
   priority?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   rating?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<CaseIncidentRelatedContainersArgs>>;
@@ -36720,9 +36215,7 @@ export type CaseRfiResolvers<ContextType = any, ParentType extends ResolversPare
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CaseRfiPendingFilesArgs>>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<CaseRfiPirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<CaseRfiPirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<CaseRfiPirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<CaseRfiPirInformationArgs, 'pirId'>>;
   priority?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<CaseRfiRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<CaseRfiReportsArgs>>;
@@ -36805,9 +36298,7 @@ export type CaseRftResolvers<ContextType = any, ParentType extends ResolversPare
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CaseRftPendingFilesArgs>>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<CaseRftPirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<CaseRftPirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<CaseRftPirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<CaseRftPirInformationArgs, 'pirId'>>;
   priority?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<CaseRftRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<CaseRftReportsArgs>>;
@@ -36930,9 +36421,7 @@ export type ChannelResolvers<ContextType = any, ParentType extends ResolversPare
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ChannelPendingFilesArgs>>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<ChannelPirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<ChannelPirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<ChannelPirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<ChannelPirInformationArgs, 'pirId'>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<ChannelReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -37009,9 +36498,7 @@ export type CityResolvers<ContextType = any, ParentType extends ResolversParentT
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CityPendingFilesArgs>>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<CityPirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<CityPirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<CityPirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<CityPirInformationArgs, 'pirId'>>;
   precision?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<CityReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
@@ -37320,9 +36807,7 @@ export type CountryResolvers<ContextType = any, ParentType extends ResolversPare
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CountryPendingFilesArgs>>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<CountryPirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<CountryPirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<CountryPirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<CountryPirInformationArgs, 'pirId'>>;
   precision?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   region?: Resolver<Maybe<ResolversTypes['Region']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<CountryReportsArgs>>;
@@ -37404,9 +36889,7 @@ export type CourseOfActionResolvers<ContextType = any, ParentType extends Resolv
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CourseOfActionPendingFilesArgs>>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<CourseOfActionPirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<CourseOfActionPirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<CourseOfActionPirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<CourseOfActionPirInformationArgs, 'pirId'>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<CourseOfActionReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -37746,9 +37229,7 @@ export type DataComponentResolvers<ContextType = any, ParentType extends Resolve
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<DataComponentPendingFilesArgs>>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<DataComponentPirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<DataComponentPirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<DataComponentPirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<DataComponentPirInformationArgs, 'pirId'>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<DataComponentReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -37819,9 +37300,7 @@ export type DataSourceResolvers<ContextType = any, ParentType extends ResolversP
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<DataSourcePendingFilesArgs>>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<DataSourcePirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<DataSourcePirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<DataSourcePirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<DataSourcePirInformationArgs, 'pirId'>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<DataSourceReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -38470,9 +37949,7 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<EventPendingFilesArgs>>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<EventPirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<EventPirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<EventPirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<EventPirInformationArgs, 'pirId'>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<EventReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -38689,9 +38166,7 @@ export type FeedbackResolvers<ContextType = any, ParentType extends ResolversPar
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<FeedbackPendingFilesArgs>>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<FeedbackPirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<FeedbackPirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<FeedbackPirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<FeedbackPirInformationArgs, 'pirId'>>;
   rating?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<FeedbackRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<FeedbackReportsArgs>>;
@@ -38974,9 +38449,7 @@ export type GroupingResolvers<ContextType = any, ParentType extends ResolversPar
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<GroupingPendingFilesArgs>>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<GroupingPirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<GroupingPirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<GroupingPirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<GroupingPirInformationArgs, 'pirId'>>;
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<GroupingRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<GroupingReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
@@ -39326,9 +38799,7 @@ export type IncidentResolvers<ContextType = any, ParentType extends ResolversPar
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IncidentPendingFilesArgs>>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<IncidentPirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<IncidentPirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<IncidentPirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<IncidentPirInformationArgs, 'pirId'>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<IncidentReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -39448,9 +38919,7 @@ export type IndicatorResolvers<ContextType = any, ParentType extends ResolversPa
   pattern_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   pattern_version?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IndicatorPendingFilesArgs>>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<IndicatorPirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<IndicatorPirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<IndicatorPirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<IndicatorPirInformationArgs, 'pirId'>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<IndicatorReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -39538,9 +39007,7 @@ export type IndividualResolvers<ContextType = any, ParentType extends ResolversP
   organizations?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IndividualPendingFilesArgs>>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<IndividualPirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<IndividualPirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<IndividualPirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<IndividualPirInformationArgs, 'pirId'>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<IndividualReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -39641,9 +39108,7 @@ export type InfrastructureResolvers<ContextType = any, ParentType extends Resolv
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<InfrastructurePendingFilesArgs>>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<InfrastructurePirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<InfrastructurePirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<InfrastructurePirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<InfrastructurePirInformationArgs, 'pirId'>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<InfrastructureReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -39943,9 +39408,7 @@ export type IntrusionSetResolvers<ContextType = any, ParentType extends Resolver
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IntrusionSetPendingFilesArgs>>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<IntrusionSetPirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<IntrusionSetPirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<IntrusionSetPirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<IntrusionSetPirInformationArgs, 'pirId'>>;
   primary_motivation?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<IntrusionSetReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
@@ -40216,9 +39679,7 @@ export type LanguageResolvers<ContextType = any, ParentType extends ResolversPar
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<LanguagePendingFilesArgs>>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<LanguagePirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<LanguagePirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<LanguagePirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<LanguagePirInformationArgs, 'pirId'>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<LanguageReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -40481,9 +39942,7 @@ export type MalwareResolvers<ContextType = any, ParentType extends ResolversPare
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<MalwarePendingFilesArgs>>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<MalwarePirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<MalwarePirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<MalwarePirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<MalwarePirInformationArgs, 'pirId'>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<MalwareReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -40548,9 +40007,7 @@ export type MalwareAnalysisResolvers<ContextType = any, ParentType extends Resol
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<MalwareAnalysisPendingFilesArgs>>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<MalwareAnalysisPirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<MalwareAnalysisPirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<MalwareAnalysisPirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<MalwareAnalysisPirInformationArgs, 'pirId'>>;
   product?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<MalwareAnalysisReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
@@ -41426,9 +40883,7 @@ export type NarrativeResolvers<ContextType = any, ParentType extends ResolversPa
   parentNarratives?: Resolver<Maybe<ResolversTypes['NarrativeConnection']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<NarrativePendingFilesArgs>>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<NarrativePirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<NarrativePirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<NarrativePirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<NarrativePirInformationArgs, 'pirId'>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<NarrativeReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -41565,9 +41020,7 @@ export type NoteResolvers<ContextType = any, ParentType extends ResolversParentT
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<NotePendingFilesArgs>>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<NotePirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<NotePirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<NotePirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<NotePirInformationArgs, 'pirId'>>;
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<NoteRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<NoteReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
@@ -41765,9 +41218,7 @@ export type ObservedDataResolvers<ContextType = any, ParentType extends Resolver
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ObservedDataPendingFilesArgs>>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<ObservedDataPirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<ObservedDataPirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<ObservedDataPirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<ObservedDataPirInformationArgs, 'pirId'>>;
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<ObservedDataRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<ObservedDataReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
@@ -41863,9 +41314,7 @@ export type OpinionResolvers<ContextType = any, ParentType extends ResolversPare
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<OpinionPendingFilesArgs>>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<OpinionPirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<OpinionPirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<OpinionPirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<OpinionPirInformationArgs, 'pirId'>>;
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<OpinionRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<OpinionReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
@@ -41963,9 +41412,7 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   parentOrganizations?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<OrganizationPendingFilesArgs>>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<OrganizationPirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<OrganizationPirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<OrganizationPirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<OrganizationPirInformationArgs, 'pirId'>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<OrganizationReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   restrict_access?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -42253,6 +41700,13 @@ export type PirExplanationResolvers<ContextType = any, ParentType extends Resolv
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type PirInformationResolvers<ContextType = any, ParentType extends ResolversParentTypes['PirInformation'] = ResolversParentTypes['PirInformation']> = ResolversObject<{
+  last_pir_score_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  pir_explanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType>;
+  pir_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type PirRelationshipResolvers<ContextType = any, ParentType extends ResolversParentTypes['PirRelationship'] = ResolversParentTypes['PirRelationship']> = ResolversObject<{
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
@@ -42452,9 +41906,7 @@ export type PositionResolvers<ContextType = any, ParentType extends ResolversPar
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<PositionPendingFilesArgs>>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<PositionPirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<PositionPirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<PositionPirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<PositionPirInformationArgs, 'pirId'>>;
   postal_code?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   precision?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<PositionReportsArgs>>;
@@ -43101,9 +42553,7 @@ export type RegionResolvers<ContextType = any, ParentType extends ResolversParen
   parentRegions?: Resolver<Maybe<ResolversTypes['RegionConnection']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<RegionPendingFilesArgs>>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<RegionPirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<RegionPirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<RegionPirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<RegionPirInformationArgs, 'pirId'>>;
   precision?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<RegionReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
@@ -43201,9 +42651,7 @@ export type ReportResolvers<ContextType = any, ParentType extends ResolversParen
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ReportPendingFilesArgs>>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<ReportPirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<ReportPirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<ReportPirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<ReportPirInformationArgs, 'pirId'>>;
   published?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<ReportRelatedContainersArgs>>;
   report_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
@@ -43491,9 +42939,7 @@ export type SectorResolvers<ContextType = any, ParentType extends ResolversParen
   parentSectors?: Resolver<Maybe<ResolversTypes['SectorConnection']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SectorPendingFilesArgs>>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<SectorPirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<SectorPirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<SectorPirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<SectorPirInformationArgs, 'pirId'>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<SectorReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -43579,9 +43025,7 @@ export type SecurityPlatformResolvers<ContextType = any, ParentType extends Reso
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SecurityPlatformPendingFilesArgs>>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<SecurityPlatformPirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<SecurityPlatformPirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<SecurityPlatformPirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<SecurityPlatformPirInformationArgs, 'pirId'>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<SecurityPlatformReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -44115,9 +43559,7 @@ export type StixDomainObjectResolvers<ContextType = any, ParentType extends Reso
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<StixDomainObjectPendingFilesArgs>>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<StixDomainObjectPirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<StixDomainObjectPirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<StixDomainObjectPirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<StixDomainObjectPirInformationArgs, 'pirId'>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<StixDomainObjectReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -44725,9 +44167,7 @@ export type SystemResolvers<ContextType = any, ParentType extends ResolversParen
   organizations?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SystemPendingFilesArgs>>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<SystemPirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<SystemPirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<SystemPirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<SystemPirInformationArgs, 'pirId'>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<SystemReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -44818,9 +44258,7 @@ export type TaskResolvers<ContextType = any, ParentType extends ResolversParentT
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<TaskPendingFilesArgs>>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<TaskPirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<TaskPirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<TaskPirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<TaskPirInformationArgs, 'pirId'>>;
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<TaskRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<TaskReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
@@ -45021,9 +44459,7 @@ export type ThreatActorResolvers<ContextType = any, ParentType extends Resolvers
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ThreatActorPendingFilesArgs>>;
   personal_motivations?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<ThreatActorPirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<ThreatActorPirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<ThreatActorPirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<ThreatActorPirInformationArgs, 'pirId'>>;
   primary_motivation?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<ThreatActorReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
@@ -45103,9 +44539,7 @@ export type ThreatActorGroupResolvers<ContextType = any, ParentType extends Reso
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ThreatActorGroupPendingFilesArgs>>;
   personal_motivations?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<ThreatActorGroupPirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<ThreatActorGroupPirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<ThreatActorGroupPirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<ThreatActorGroupPirInformationArgs, 'pirId'>>;
   primary_motivation?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<ThreatActorGroupReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
@@ -45205,9 +44639,7 @@ export type ThreatActorIndividualResolvers<ContextType = any, ParentType extends
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ThreatActorIndividualPendingFilesArgs>>;
   personal_motivations?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<ThreatActorIndividualPirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<ThreatActorIndividualPirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<ThreatActorIndividualPirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<ThreatActorIndividualPirInformationArgs, 'pirId'>>;
   primary_motivation?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<ThreatActorIndividualReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
@@ -45290,9 +44722,7 @@ export type ToolResolvers<ContextType = any, ParentType extends ResolversParentT
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ToolPendingFilesArgs>>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<ToolPirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<ToolPirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<ToolPirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<ToolPirInformationArgs, 'pirId'>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<ToolReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -45771,9 +45201,7 @@ export type VulnerabilityResolvers<ContextType = any, ParentType extends Resolve
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<VulnerabilityPendingFilesArgs>>;
-  pirExplanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType, RequireFields<VulnerabilityPirExplanationsArgs, 'pirId'>>;
-  pirLastScoreDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType, RequireFields<VulnerabilityPirLastScoreDateArgs, 'pirId'>>;
-  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<VulnerabilityPirScoreArgs, 'pirId'>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<VulnerabilityPirInformationArgs, 'pirId'>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<VulnerabilityReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -46589,6 +46017,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   PirDependency?: PirDependencyResolvers<ContextType>;
   PirEdge?: PirEdgeResolvers<ContextType>;
   PirExplanation?: PirExplanationResolvers<ContextType>;
+  PirInformation?: PirInformationResolvers<ContextType>;
   PirRelationship?: PirRelationshipResolvers<ContextType>;
   PirRelationshipConnection?: PirRelationshipConnectionResolvers<ContextType>;
   PirRelationshipEdge?: PirRelationshipEdgeResolvers<ContextType>;

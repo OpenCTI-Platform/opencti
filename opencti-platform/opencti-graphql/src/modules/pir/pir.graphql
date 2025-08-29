@@ -23,6 +23,11 @@ type PirExplanation {
     dependencies: [PirDependency!]!
     criterion: PirCriterion!
 }
+type PirInformation {
+    pir_score: Int
+    last_pir_score_date: DateTime
+    pir_explanations: [PirExplanation!]
+}
 
 type Pir implements InternalObject & BasicObject {
     id: ID!
