@@ -148,7 +148,7 @@ interface PirKnowledgeEntitiesProps {
   additionalHeaderButtons: ReactNode[];
 }
 
-type PirExplanation = NonNullable<PirKnowledgeEntities_SourceFlaggedFragment$data['pirExplanations']>[number];
+type PirInformation = NonNullable<PirKnowledgeEntities_SourceFlaggedFragment$data['pirInformation']>;
 
 const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHeaderButtons }: PirKnowledgeEntitiesProps) => {
   const { fd } = useFormatter();
@@ -200,9 +200,9 @@ const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHe
       label: 'Score',
       percentWidth: 6,
       isSortable: true,
-      render: ({ pirInformation }) => {
+      render: ({ pirInformation }: { pirInformation: PirInformation }) => {
         const criteria: FilterGroup[] = pirInformation.pir_explanations.map(
-          (e: PirExplanation) => JSON.parse(e.criterion.filters),
+          (e) => JSON.parse(e.criterion.filters),
         );
         return (
           <PirCriteriaDisplay criteria={criteria}>
@@ -216,7 +216,7 @@ const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHe
       label: 'Last score date',
       percentWidth: 11,
       isSortable: true,
-      render: ({ pirInformation }) => defaultRender(fd(pirInformation.pir_last_score_date)),
+      render: ({ pirInformation }) => defaultRender(fd(pirInformation.last_pir_score_date)),
     },
     entity_type: { percentWidth: 10 },
     name: { percentWidth: 20 },

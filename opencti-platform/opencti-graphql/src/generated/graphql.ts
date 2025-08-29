@@ -20069,9 +20069,9 @@ export type PirFlagElementInput = {
 
 export type PirInformation = {
   __typename?: 'PirInformation';
-  last_pir_score_date?: Maybe<Scalars['DateTime']['output']>;
-  pir_explanations?: Maybe<Array<PirExplanation>>;
-  pir_score?: Maybe<Scalars['Int']['output']>;
+  last_pir_score_date: Scalars['DateTime']['output'];
+  pir_explanations: Array<PirExplanation>;
+  pir_score: Scalars['Int']['output'];
 };
 
 export enum PirOrdering {
@@ -41701,9 +41701,9 @@ export type PirExplanationResolvers<ContextType = any, ParentType extends Resolv
 }>;
 
 export type PirInformationResolvers<ContextType = any, ParentType extends ResolversParentTypes['PirInformation'] = ResolversParentTypes['PirInformation']> = ResolversObject<{
-  last_pir_score_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  pir_explanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType>;
-  pir_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  last_pir_score_date?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  pir_explanations?: Resolver<Array<ResolversTypes['PirExplanation']>, ParentType, ContextType>;
+  pir_score?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
