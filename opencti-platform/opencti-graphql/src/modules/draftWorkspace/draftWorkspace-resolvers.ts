@@ -12,6 +12,7 @@ import {
   validateDraftWorkspace
 } from './draftWorkspace-domain';
 import { findById as findWorkById, worksForDraft } from '../../domain/work';
+import { filterMembersWithUsersOrgs } from '../../utils/access';
 
 const draftWorkspaceResolvers: Resolvers = {
   Query: {
@@ -28,7 +29,13 @@ const draftWorkspaceResolvers: Resolvers = {
     },
   },
   DraftWorkspace: {
-    creators: (draft, _, context) => context.batch.creatorsBatchLoader.load(draft.creator_id),
+    creators: async (draft, _, context) => {
+      const creators = await context.batch.creatorsBatchLoader.load(draft.creator_id);
+      if (!creators) {
+        return [];
+      }
+      return filterMembersWithUsersOrgs(context, context.user, creators);
+    },
     objectsCount: (draft, _, context) => getObjectsCount(context, context.user, draft),
     processingCount: (draft, _, context) => getProcessingCount(context, context.user, draft),
     works: (draft, args, context) => worksForDraft(context, context.user, draft.id, args),

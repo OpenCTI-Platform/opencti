@@ -20,6 +20,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import { canUse } from '../../../../utils/authorizedMembers';
 
 export const groupingMutationFieldPatch = graphql`
   mutation GroupingEditionOverviewFieldPatchMutation(
@@ -182,7 +183,13 @@ const GroupingEditionOverviewComponent = (props) => {
       'x_opencti_workflow_id',
     ]),
   )(grouping);
-
+  let disableAuthor = false;
+  if ('currentUserAccessRight' in (grouping?.createdBy ?? {})) {
+    disableAuthor = !canUse([grouping?.createdBy?.currentUserAccessRight]);
+  }
+  if ('organizations' in (grouping?.createdBy ?? {})) {
+    disableAuthor = !canUse(grouping?.createdBy?.organizations?.edges.map((o) => o.node.currentUserAccessRight) ?? []);
+  }
   return (
     <Formik
       enableReinitialize={true}
@@ -275,6 +282,7 @@ const GroupingEditionOverviewComponent = (props) => {
                 <SubscriptionFocus context={context} fieldName="createdBy" />
               }
               onChange={editor.changeCreated}
+              disabled={disableAuthor}
             />
             <ObjectMarkingField
               name="objectMarking"
@@ -322,6 +330,18 @@ export default createFragmentContainer(GroupingEditionOverviewComponent, {
           id
           name
           entity_type
+        }
+        ... on Organization {
+          currentUserAccessRight
+        }
+        ... on Individual {
+          organizations {
+            edges {
+              node {
+                currentUserAccessRight
+              }
+            }
+          }
         }
       }
       objectMarking {

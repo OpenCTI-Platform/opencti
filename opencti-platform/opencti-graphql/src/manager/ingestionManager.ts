@@ -13,7 +13,7 @@ import { TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { type GetHttpClient, getHttpClient, OpenCTIHeaders } from '../utils/http-client';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
-import { FROM_START_STR, isDateInRange, now, sanitizeForMomentParsing, sinceNowInMinutes, utcDate } from '../utils/format';
+import { FROM_START_STR, isDateInRange, now, sanitizeForMomentParsing, schedulingPeriodToMs, sinceNowInMinutes, utcDate } from '../utils/format';
 import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 import { pushToWorkerForConnector } from '../database/rabbitmq';
@@ -71,7 +71,8 @@ const asArray = (data: unknown) => {
 
 const isMustExecuteIteration = (last_execution_date: Date | undefined, scheduling_period: string) => {
   if (isNotEmptyField(scheduling_period) && scheduling_period !== 'auto' && last_execution_date) {
-    const isInRange = isDateInRange(last_execution_date, scheduling_period, utcDate());
+    const schedulingPeriod = schedulingPeriodToMs(scheduling_period);
+    const isInRange = isDateInRange(last_execution_date, schedulingPeriod, utcDate());
     return !isInRange;
   }
   return true;

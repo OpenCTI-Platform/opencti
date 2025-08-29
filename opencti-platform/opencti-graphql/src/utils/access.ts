@@ -6,7 +6,7 @@ import { context as telemetryContext, trace } from '@opentelemetry/api';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
-import { ENTITY_TYPE_SETTINGS, isInternalObject } from '../schema/internalObject';
+import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { AuthContext, AuthUser, UserRole } from '../types/user';
 import type { BasicStoreCommon } from '../types/store';
@@ -18,10 +18,12 @@ import type { BasicStoreSettings } from '../types/settings';
 import { ACCOUNT_STATUS_ACTIVE, isFeatureEnabled } from '../config/conf';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { FunctionalError, UnsupportedError } from '../config/errors';
-import { extractIdsFromStoreObject, isNotEmptyField, REDACTED_INFORMATION } from '../database/utils';
+import { extractIdsFromStoreObject, isNotEmptyField, REDACTED_INFORMATION, RESTRICTED_INFORMATION } from '../database/utils';
 import { isStixObject } from '../schema/stixCoreObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import type { UpdateEvent } from '../types/event';
+import { RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
+import { type Creator, type FilterGroup, FilterMode, type Participant } from '../generated/graphql';
 
 export const DEFAULT_INVALID_CONF_VALUE = 'ChangeMe';
 
@@ -56,6 +58,7 @@ export const DECAY_MANAGER_USER_UUID = '7f176d74-9084-4d23-8138-22ac78549547';
 export const GARBAGE_COLLECTION_MANAGER_USER_UUID = 'c30d12be-d5fb-4724-88e7-8a7c9a4516c2';
 const TELEMETRY_MANAGER_USER_UUID = 'c30d12be-d5fb-4724-88e7-8a7c9a4516c3';
 export const REDACTED_USER_UUID = '31afac4e-6b99-44a0-b91b-e04738d31461';
+export const RESTRICTED_USER_UUID = '27d2b0af-4d1e-42ae-a50c-9691bf57f35d';
 const PIR_MANAGER_USER_UUID = '1e20b6e5-e0f7-46f2-bacb-c37e4f8707a2';
 const HUB_REGISTRATION_MANAGER_USER_UUID = 'e16d7175-17c7-4dae-bd3c-48c939f47dfb';
 
@@ -63,8 +66,9 @@ export const MEMBER_ACCESS_ALL = 'ALL';
 export const MEMBER_ACCESS_CREATOR = 'CREATOR';
 export const MEMBER_ACCESS_RIGHT_ADMIN = 'admin';
 export const MEMBER_ACCESS_RIGHT_EDIT = 'edit';
+export const MEMBER_ACCESS_RIGHT_USE = 'use';
 export const MEMBER_ACCESS_RIGHT_VIEW = 'view';
-const MEMBER_ACCESS_RIGHTS = [MEMBER_ACCESS_RIGHT_VIEW, MEMBER_ACCESS_RIGHT_EDIT, MEMBER_ACCESS_RIGHT_ADMIN];
+const MEMBER_ACCESS_RIGHTS = [MEMBER_ACCESS_RIGHT_VIEW, MEMBER_ACCESS_RIGHT_USE, MEMBER_ACCESS_RIGHT_EDIT, MEMBER_ACCESS_RIGHT_ADMIN];
 
 type ObjectWithCreators = {
   id: string,
@@ -330,6 +334,31 @@ export const REDACTED_USER: AuthUser = {
   restrict_delete: false,
 };
 
+export const RESTRICTED_USER: AuthUser = {
+  administrated_organizations: [],
+  entity_type: 'User',
+  id: RESTRICTED_USER_UUID,
+  internal_id: RESTRICTED_USER_UUID,
+  individual_id: undefined,
+  name: RESTRICTED_INFORMATION,
+  user_email: RESTRICTED_INFORMATION,
+  origin: { user_id: RESTRICTED_USER_UUID, socket: 'internal' },
+  roles: [],
+  groups: [],
+  capabilities: [],
+  organizations: [],
+  allowed_marking: [],
+  max_shareable_marking: [],
+  default_marking: [],
+  api_token: '',
+  account_lock_after_date: undefined,
+  account_status: ACCOUNT_STATUS_ACTIVE,
+  effective_confidence_level: null,
+  user_confidence_level: null,
+  no_creators: false,
+  restrict_delete: false,
+};
+
 export const TELEMETRY_MANAGER_USER: AuthUser = {
   entity_type: 'User',
   id: TELEMETRY_MANAGER_USER_UUID,
@@ -507,6 +536,7 @@ export const INTERNAL_USERS = {
   [DECAY_MANAGER_USER.id]: DECAY_MANAGER_USER,
   [EXPIRATION_MANAGER_USER.id]: EXPIRATION_MANAGER_USER,
   [REDACTED_USER.id]: REDACTED_USER,
+  [RESTRICTED_USER.id]: RESTRICTED_USER,
   [PIR_MANAGER_USER.id]: PIR_MANAGER_USER,
   [HUB_REGISTRATION_MANAGER_USER.id]: HUB_REGISTRATION_MANAGER_USER
 };
@@ -571,6 +601,9 @@ export const getExplicitUserAccessRight = (user: AuthUser, element: { restricted
   }
   if (foundAccessMembers.some((m) => m.access_right === MEMBER_ACCESS_RIGHT_EDIT)) {
     return MEMBER_ACCESS_RIGHT_EDIT;
+  }
+  if (foundAccessMembers.some((m) => m.access_right === MEMBER_ACCESS_RIGHT_USE)) {
+    return MEMBER_ACCESS_RIGHT_USE;
   }
   return MEMBER_ACCESS_RIGHT_VIEW;
 };
@@ -853,4 +886,89 @@ export const isUserInPlatformOrganization = (user: AuthUser, settings: BasicStor
   }
   const userOrganizationIds = (user.organizations ?? []).map((organization) => organization.internal_id);
   return settings.platform_organization ? userOrganizationIds.includes(settings.platform_organization) : true;
+};
+
+type ParticipantWithOrgIds = Participant & Creator & {
+  representative?: {
+    main: string,
+    secondary: string
+  }
+  [RELATION_PARTICIPATE_TO]?: string[];
+};
+
+export const filterMembersWithUsersOrgs = async (
+  context: AuthContext,
+  user: AuthUser,
+  members: ParticipantWithOrgIds[]
+): Promise<ParticipantWithOrgIds[]> => {
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const userInPlatformOrg = isUserInPlatformOrganization(user, settings);
+  if (!userInPlatformOrg) {
+    const userOrgIds = (user.organizations || []).map((org) => org.id);
+    return members.map((member) => {
+      if (member.id === user.id || INTERNAL_USERS[member.id]) { // TODO add service account after 6.8 release
+        return member;
+      }
+      const memberOrgIds = member[RELATION_PARTICIPATE_TO] ?? [];
+      const sameOrg = memberOrgIds.some((id) => userOrgIds.includes(id));
+      if (!sameOrg) {
+        return {
+          ...member,
+          name: RESTRICTED_USER.name,
+          user_email: RESTRICTED_USER.user_email,
+          representative: {
+            main: RESTRICTED_USER.name,
+            secondary: RESTRICTED_USER.name
+          }
+        };
+      }
+      return member;
+    });
+  }
+  return members;
+};
+
+interface ListArgs {
+  filters?: FilterGroup;
+  entityTypes?: string[] | null;
+  [key: string]: any;
+}
+
+export const applyOrganizationRestriction = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: ListArgs,
+) => {
+  const { filters: argsFilters } = args;
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const userInPlatformOrg = isUserInPlatformOrganization(user, settings);
+
+  if (!userInPlatformOrg) {
+    const userOrgIds = (user.organizations || []).map((org) => org.id);
+    const membersFilters = {
+      key: ['participate-to'],
+      values: userOrgIds,
+      operator: 'eq',
+    };
+    const userTypeFilters = {
+      key: ['entity_type'],
+      values: [ENTITY_TYPE_USER],
+      operator: 'not_eq',
+    };
+    const userMembersFilter = {
+      mode: FilterMode.Or,
+      filters: [membersFilters, userTypeFilters],
+      filterGroups: [],
+    };
+    const filters = {
+      mode: FilterMode.And,
+      filters: [],
+      filterGroups: argsFilters ? [argsFilters, userMembersFilter] : [userMembersFilter],
+    };
+    return {
+      ...args,
+      filters,
+    };
+  }
+  return args;
 };

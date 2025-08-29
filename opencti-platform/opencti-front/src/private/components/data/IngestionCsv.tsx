@@ -33,9 +33,9 @@ const useStyles = makeStyles(() => ({
 
 const IngestionCsv = () => {
   const classes = useStyles();
-  const { settings } = useContext(UserContext);
+  const { settings, isXTMHubAccessible } = useContext(UserContext);
   const importFromHubUrl = isNotEmptyField(settings?.platform_xtmhub_url)
-    ? `${settings.platform_xtmhub_url}/redirect/octi_integration_feeds?octi_instance_id=${settings.id}`
+    ? `${settings.platform_xtmhub_url}/redirect/octi_integration_feeds?opencti_platform_id=${settings.id}`
     : '';
 
   const { t_i18n } = useFormatter();
@@ -89,6 +89,7 @@ const IngestionCsv = () => {
       ingestionCsvLinesQuery,
       paginationOptions,
     );
+
     return (
       <ListLines
         helpers={helpers}
@@ -108,7 +109,7 @@ const IngestionCsv = () => {
               <IngestionCsvImport
                 paginationOptions={paginationOptions}
               />
-              {isNotEmptyField(importFromHubUrl) && (
+              {isXTMHubAccessible && isNotEmptyField(importFromHubUrl) && (
                 <GradientButton
                   size="small"
                   sx={{ marginLeft: 1 }}

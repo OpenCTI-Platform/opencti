@@ -41,20 +41,25 @@ import { getEntitiesListFromCache } from '../../database/cache';
 import { SYSTEM_USER } from '../../utils/access';
 import { findFiltersFromKey, checkAndConvertFilters } from '../../utils/filtering/filtering-utils';
 import { elFindByIds } from '../../database/engine';
+import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 
-export const findById: DomainFindById<BasicStoreEntityPlaybook> = (context: AuthContext, user: AuthUser, playbookId: string) => {
+export const findById: DomainFindById<BasicStoreEntityPlaybook> = async (context: AuthContext, user: AuthUser, playbookId: string) => {
+  await checkEnterpriseEdition(context);
   return storeLoadById(context, user, playbookId, ENTITY_TYPE_PLAYBOOK);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityPlaybook>) => {
+export const findAll = async (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityPlaybook>) => {
+  await checkEnterpriseEdition(context);
   return listEntitiesPaginated<BasicStoreEntityPlaybook>(context, user, [ENTITY_TYPE_PLAYBOOK], opts);
 };
 
-export const findAllPlaybooks = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityPlaybook>) => {
+export const findAllPlaybooks = async (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityPlaybook>) => {
+  await checkEnterpriseEdition(context);
   return listAllEntities<BasicStoreEntityPlaybook>(context, user, [ENTITY_TYPE_PLAYBOOK], opts);
 };
 
 export const findPlaybooksForEntity = async (context: AuthContext, user: AuthUser, id: string) => {
+  await checkEnterpriseEdition(context);
   const stixEntity = await stixLoadById(context, user, id);
   const playbooks = await getEntitiesListFromCache<BasicStoreEntityPlaybook>(context, SYSTEM_USER, ENTITY_TYPE_PLAYBOOK);
   const filteredPlaybooks = [];
@@ -81,11 +86,13 @@ export const findPlaybooksForEntity = async (context: AuthContext, user: AuthUse
   return filteredPlaybooks;
 };
 
-export const availableComponents = () => {
+export const availableComponents = async (context: AuthContext) => {
+  await checkEnterpriseEdition(context);
   return Object.values(PLAYBOOK_COMPONENTS);
 };
 
 export const getPlaybookDefinition = async (context: AuthContext, playbook: BasicStoreEntityPlaybook) => {
+  await checkEnterpriseEdition(context);
   if (playbook.playbook_definition && playbook.playbook_definition.includes('PLAYBOOK_SHARING_COMPONENT')) {
     // parse playbook definition in case there is a sharing with organization component, in order to parse organizations to get their label
     const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
@@ -117,7 +124,12 @@ export const getPlaybookDefinition = async (context: AuthContext, playbook: Basi
   return playbook.playbook_definition;
 };
 
-const checkPlaybookFiltersAndBuildConfigWithCorrectFilters = async (context: AuthContext, user: AuthUser, input: PlaybookAddNodeInput, userId: string) => {
+const checkPlaybookFiltersAndBuildConfigWithCorrectFilters = async (
+  context: AuthContext,
+  user: AuthUser,
+  input: PlaybookAddNodeInput,
+  userId: string
+) => {
   if (!input.configuration) {
     return '{}';
   }
@@ -137,6 +149,7 @@ const checkPlaybookFiltersAndBuildConfigWithCorrectFilters = async (context: Aut
 };
 
 export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: string, input: PlaybookAddNodeInput) => {
+  await checkEnterpriseEdition(context);
   const configuration = await checkPlaybookFiltersAndBuildConfigWithCorrectFilters(context, user, input, user.id);
 
   const playbook = await findById(context, user, id);
@@ -196,6 +209,7 @@ const deleteLinksAndAllChildren = (definition: ComponentDefinition, links: LinkD
 };
 
 export const playbookUpdatePositions = async (context: AuthContext, user: AuthUser, id: string, positions: string) => {
+  await checkEnterpriseEdition(context);
   const playbook = await findById(context, user, id);
   const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
   const nodesPositions = JSON.parse(positions);
@@ -213,7 +227,14 @@ export const playbookUpdatePositions = async (context: AuthContext, user: AuthUs
   return patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch).then(() => id);
 };
 
-export const playbookReplaceNode = async (context: AuthContext, user: AuthUser, id: string, nodeId: string, input: PlaybookAddNodeInput) => {
+export const playbookReplaceNode = async (
+  context: AuthContext,
+  user: AuthUser,
+  id: string,
+  nodeId: string,
+  input: PlaybookAddNodeInput
+) => {
+  await checkEnterpriseEdition(context);
   const configuration = await checkPlaybookFiltersAndBuildConfigWithCorrectFilters(context, user, input, user.id);
 
   const playbook = await findById(context, user, id);
@@ -260,8 +281,16 @@ export const playbookReplaceNode = async (context: AuthContext, user: AuthUser, 
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user).then(() => nodeId);
 };
 
-// eslint-disable-next-line max-len
-export const playbookInsertNode = async (context: AuthContext, user: AuthUser, id: string, parentNodeId: string, parentPortId: string, childNodeId: string, input: PlaybookAddNodeInput) => {
+export const playbookInsertNode = async (
+  context: AuthContext,
+  user: AuthUser,
+  id: string,
+  parentNodeId: string,
+  parentPortId: string,
+  childNodeId: string,
+  input: PlaybookAddNodeInput
+) => {
+  await checkEnterpriseEdition(context);
   const playbook = await findById(context, user, id);
   const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
   const relatedComponent = PLAYBOOK_COMPONENTS[input.component_id];
@@ -340,6 +369,7 @@ export const playbookInsertNode = async (context: AuthContext, user: AuthUser, i
 };
 
 export const playbookDeleteNode = async (context: AuthContext, user: AuthUser, id: string, nodeId: string) => {
+  await checkEnterpriseEdition(context);
   const playbook = await findById(context, user, id);
   const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
   definition.nodes = definition.nodes.filter((n) => n.id !== nodeId);
@@ -356,6 +386,7 @@ export const playbookDeleteNode = async (context: AuthContext, user: AuthUser, i
 };
 
 export const playbookAddLink = async (context: AuthContext, user: AuthUser, id: string, input: PlaybookAddLinkInput) => {
+  await checkEnterpriseEdition(context);
   const playbook = await findById(context, user, id);
   const definition = JSON.parse(playbook.playbook_definition ?? '{}') as ComponentDefinition;
   // Check from consistency
@@ -395,6 +426,7 @@ export const playbookAddLink = async (context: AuthContext, user: AuthUser, id: 
 };
 
 export const playbookDeleteLink = async (context: AuthContext, user: AuthUser, id: string, linkId: string) => {
+  await checkEnterpriseEdition(context);
   const playbook = await findById(context, user, id);
   const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
   definition.links = definition.links.filter((n) => n.id !== linkId);
@@ -404,6 +436,7 @@ export const playbookDeleteLink = async (context: AuthContext, user: AuthUser, i
 };
 
 export const playbookAdd = async (context: AuthContext, user: AuthUser, input: PlaybookAddInput) => {
+  await checkEnterpriseEdition(context);
   const playbook_definition = JSON.stringify({ nodes: [], links: [] });
   const playbook = { ...input, playbook_definition, playbook_running: false };
   const created = await createEntity(context, user, playbook, ENTITY_TYPE_PLAYBOOK);
@@ -413,12 +446,14 @@ export const playbookAdd = async (context: AuthContext, user: AuthUser, input: P
 };
 
 export const playbookDelete = async (context: AuthContext, user: AuthUser, playbookId: string) => {
+  await checkEnterpriseEdition(context);
   const element = await deleteElementById(context, user, playbookId, ENTITY_TYPE_PLAYBOOK);
   await unregisterConnector(playbookId);
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, element, user).then(() => playbookId);
 };
 
 export const playbookEdit = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {
+  await checkEnterpriseEdition(context);
   const { element: updatedElem } = await updateAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, input);
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user);
 };

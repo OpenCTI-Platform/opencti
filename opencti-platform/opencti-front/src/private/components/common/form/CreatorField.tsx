@@ -61,7 +61,6 @@ const CreatorField: FunctionComponent<CreatorFieldProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const isGrantedToUsers = useGranted([SETTINGS_SETACCESSES]);
-
   const [creatorOptions, setCreatorOptions] = useState<CreatorOption[]>([]);
 
   const getExtraFromNode = (node?: CreatorNode) => {

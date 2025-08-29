@@ -6586,6 +6586,8 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   is_active: Boolean
   src_port: Int
   dst_port: Int
+  src_ref: Int
+  dst_ref: Int
   protocols: [String]
   src_byte_count: Int
   dst_byte_count: Int
@@ -8699,6 +8701,7 @@ type StixDomainObjectEditMutations {
   exportAsk(input: ExportAskInput!): [File!]
   exportPush(file: Upload!, file_markings: [String]!): Boolean
   stixDomainObjectFileEdit(input: StixDomainObjectFileEditInput): StixDomainObject
+  editAuthorizedMembers(input: [MemberAccessInput!]): StixDomainObject
 }
 
 type AttackPatternEditMutations {
@@ -9389,6 +9392,7 @@ type Mutation {
   emailTemplateDelete(id: ID!): ID
   emailTemplateFieldPatch(id: ID!, input: [EditInput!]!): EmailTemplate
   emailTemplateTestSend(id: ID!): Boolean
+  checkXTMHubConnectivity: CheckXTMHubConnectivityResponse!
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -12499,6 +12503,9 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
+  authorized_members: [MemberAccess!]
+  authorized_members_activation_date: DateTime
+  currentUserAccessRight: String
   identity_class: String!
   name: String!
   description: String
@@ -12516,6 +12523,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   parentOrganizations: OrganizationConnection
   default_dashboard: Workspace
   default_hidden_types: [String!]
+  restrict_access: Boolean
   creators: [Creator!]
   toStix: String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
@@ -13641,4 +13649,8 @@ input EmailTemplateAddInput {
   email_object: String!
   sender_email: String!
   template_body: String!
+}
+
+type CheckXTMHubConnectivityResponse {
+  status: XTMHubRegistrationStatus
 }

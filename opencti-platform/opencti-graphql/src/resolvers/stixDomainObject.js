@@ -8,6 +8,7 @@ import {
   stixDomainObjectCleanContext,
   stixDomainObjectDelete,
   stixDomainObjectDeleteRelation,
+  stixDomainObjectEditAuthorizedMembers,
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
   stixDomainObjectExportAsk,
@@ -26,6 +27,7 @@ import { stixDomainObjectOptions as StixDomainObjectsOptions } from '../schema/s
 import { stixCoreObjectExportPush, stixCoreObjectImportPush, stixCoreObjectsExportPush } from '../domain/stixCoreObject';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { loadThroughDenormalized } from './stix';
+import { filterMembersWithUsersOrgs } from '../utils/access';
 
 const stixDomainObjectResolvers = {
   Query: {
@@ -60,7 +62,13 @@ const stixDomainObjectResolvers = {
     },
     avatar: (stixDomainObject) => stixDomainObjectAvatar(stixDomainObject),
     status: (stixDomainObject, _, context) => (stixDomainObject.x_opencti_workflow_id ? findStatusById(context, context.user, stixDomainObject.x_opencti_workflow_id) : null),
-    objectAssignee: (stixDomainObject, args, context) => loadThroughDenormalized(context, context.user, stixDomainObject, INPUT_ASSIGNEE, { sortBy: 'user_email' }),
+    objectAssignee: async (stixDomainObject, args, context) => {
+      const assignees = await loadThroughDenormalized(context, context.user, stixDomainObject, INPUT_ASSIGNEE, { sortBy: 'user_email' });
+      if (!assignees) {
+        return [];
+      }
+      return filterMembersWithUsersOrgs(context, context.user, assignees);
+    },
     workflowEnabled: async (stixDomainObject, _, context) => {
       const statusesType = await findByType(context, context.user, stixDomainObject.entity_type);
       return statusesType.length > 0;
@@ -74,6 +82,7 @@ const stixDomainObjectResolvers = {
       contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
       relationAdd: ({ input }) => stixDomainObjectAddRelation(context, context.user, id, input),
       relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
+      editAuthorizedMembers: ({ input }) => stixDomainObjectEditAuthorizedMembers(context, context.user, id, input),
       importPush: (args) => stixCoreObjectImportPush(context, context.user, id, args.file, args),
       exportAsk: ({ input }) => stixDomainObjectExportAsk(context, context.user, id, input),
       exportPush: (args) => stixCoreObjectExportPush(context, context.user, id, args),

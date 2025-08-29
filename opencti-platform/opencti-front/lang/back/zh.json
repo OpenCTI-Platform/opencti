@@ -952,5 +952,6 @@
   "XTM Hub registration status": "XTM Hub 注册状态",
   "XTM Hub registration User ID": "XTM Hub 注册用户 ID",
   "XTM Hub registration User name": "XTM Hub 注册用户名",
+  "XTM Hub should send connectivity email": "XTM 中枢应发送连接电子邮件",
   "XTM Hub Token": "XTM 中枢令牌"
 }

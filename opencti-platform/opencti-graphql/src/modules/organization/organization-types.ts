@@ -12,6 +12,7 @@ export interface BasicStoreEntityOrganization extends BasicIdentityEntity {
   default_dashboard: string
   authorized_authorities?: string[]
   grantable_groups: string[]
+  restrict_access: boolean
   [RELATION_PARTICIPATE_TO]: string[]
 }
 

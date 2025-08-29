@@ -1,18 +1,3 @@
-/*
-Copyright (c) 2021-2025 Filigran SAS
-
-This file is part of the OpenCTI Enterprise Edition ("EE") and is
-licensed under the OpenCTI Enterprise Edition License (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*/
-
 import React, { BaseSyntheticEvent, Suspense, useRef, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import JsonMapperLines from '@components/data/jsonMapper/JsonMapperLines';
@@ -22,7 +7,6 @@ import JsonMappersProvider, { mappersQuery } from '@components/data/jsonMapper/j
 import VisuallyHiddenInput from '@components/common/VisuallyHiddenInput';
 import { JsonMapperLine_jsonMapper$data } from '@components/data/jsonMapper/__generated__/JsonMapperLine_jsonMapper.graphql';
 import { graphql } from 'react-relay';
-import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
 import JsonMapperCreationContainer from '@components/data/jsonMapper/JsonMapperCreationContainer';
 import { schemaAttributesQuery } from '@components/data/csvMapper/csvMappers.data';
 import { jsonMappers_SchemaAttributesQuery } from '@components/data/jsonMapper/__generated__/jsonMappers_SchemaAttributesQuery.graphql';
@@ -38,7 +22,6 @@ import type { Theme } from '../../../components/Theme';
 import { jsonMappers_MappersQuery, jsonMappers_MappersQuery$variables } from './jsonMapper/__generated__/jsonMappers_MappersQuery.graphql';
 import { handleError } from '../../../relay/environment';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
-import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 
 const LOCAL_STORAGE_KEY_JSON_MAPPERS = 'jsonMappers';
 
@@ -59,7 +42,6 @@ export const importMutation = graphql`
 const JsonMappers = () => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const isEnterpriseEdition = useEnterpriseEdition();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('JSON Mappers | Processing | Data'));
   const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage<jsonMappers_MappersQuery$variables>(
@@ -135,67 +117,61 @@ const JsonMappers = () => {
           <div className={classes.container}>
             <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Processing') }, { label: t_i18n('JSON mappers'), current: true }]} />
             <ProcessingMenu />
-            {!isEnterpriseEdition ? (
-              <EnterpriseEdition feature="Dissemination lists" />
-            ) : (
-              <>
-                <ListLines
-                  helpers={helpers}
-                  sortBy={viewStorage.sortBy}
-                  orderAsc={viewStorage.orderAsc}
-                  dataColumns={dataColumns}
-                  handleSort={helpers.handleSort}
-                  handleSearch={helpers.handleSearch}
-                  displayImport={false}
-                  secondaryAction={true}
-                  keyword={viewStorage.searchTerm}
-                  paginationOptions={paginationOptions}
-                  numberOfElements={viewStorage.numberOfElements}
-                  createButton={(
-                    <>
-                      <>
-                        <Button
-                          variant='outlined'
-                          disableElevation
-                          sx={{ marginLeft: 1 }}
-                          onClick={() => inputFileRef?.current?.click()}
-                        >
-                          {t_i18n('Import a JSON mapper')}
-                        </Button>
-                        <Button
-                          variant='contained'
-                          disableElevation
-                          sx={{ marginLeft: 1 }}
-                          onClick={() => setOpen(true)}
-                        >
-                          {t_i18n('Create a JSON mapper')}
-                        </Button>
-                      </>
-                    </>
+            <ListLines
+              helpers={helpers}
+              sortBy={viewStorage.sortBy}
+              orderAsc={viewStorage.orderAsc}
+              dataColumns={dataColumns}
+              handleSort={helpers.handleSort}
+              handleSearch={helpers.handleSearch}
+              displayImport={false}
+              secondaryAction={true}
+              keyword={viewStorage.searchTerm}
+              paginationOptions={paginationOptions}
+              numberOfElements={viewStorage.numberOfElements}
+              createButton={(
+                <>
+                  <>
+                    <Button
+                      variant='outlined'
+                      disableElevation
+                      sx={{ marginLeft: 1 }}
+                      onClick={() => inputFileRef?.current?.click()}
+                    >
+                      {t_i18n('Import a JSON mapper')}
+                    </Button>
+                    <Button
+                      variant='contained'
+                      disableElevation
+                      sx={{ marginLeft: 1 }}
+                      onClick={() => setOpen(true)}
+                    >
+                      {t_i18n('Create a JSON mapper')}
+                    </Button>
+                  </>
+                </>
                   )}
-                >
-                  <React.Suspense
-                    fallback={<Loader variant={LoaderVariant.inElement}/>}
-                  >
-                    <JsonMapperLines
-                      paginationOptions={paginationOptions}
-                      dataColumns={dataColumns}
-                    />
-                  </React.Suspense>
-                </ListLines>
-                <VisuallyHiddenInput
-                  ref={inputFileRef}
-                  type="file"
-                  accept={'application/JSON'}
-                  onChange={handleFileImport}
-                />
-                <JsonMapperCreationContainer
+            >
+              <React.Suspense
+                fallback={<Loader variant={LoaderVariant.inElement}/>}
+              >
+                <JsonMapperLines
                   paginationOptions={paginationOptions}
-                  open={open}
-                  onClose={handleClose}
+                  dataColumns={dataColumns}
                 />
-              </>
-            )}
+              </React.Suspense>
+            </ListLines>
+            <VisuallyHiddenInput
+              ref={inputFileRef}
+              type="file"
+              accept={'application/JSON'}
+              onChange={handleFileImport}
+            />
+            <JsonMapperCreationContainer
+              paginationOptions={paginationOptions}
+              open={open}
+              onClose={handleClose}
+            />
           </div>
         </JsonMappersProvider>
       </Suspense>

@@ -17,6 +17,7 @@ describe('StixRefRelationship', () => {
                     spec_version
                     created_at
                     updated_at
+                    confidence
                     from {
                         ... on Malware {
                             id
@@ -32,6 +33,7 @@ describe('StixRefRelationship', () => {
         fromId: 'malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88',
         toId: 'software--b0debdba-74e7-4463-ad2a-34334ee66d8d',
         relationship_type: 'operating-system',
+        confidence: 90,
       },
     };
     const stixRefRelationship = await queryAsAdmin({
@@ -42,6 +44,7 @@ describe('StixRefRelationship', () => {
     expect(stixRefRelationship.data.stixRefRelationshipAdd).not.toBeNull();
     expect(stixRefRelationship.data.stixRefRelationshipAdd.created_at).toEqual(stixRefRelationship.data.stixRefRelationshipAdd.updated_at);
     expect(stixRefRelationship.data.stixRefRelationshipAdd.spec_version).toEqual('2.1');
+    expect(stixRefRelationship.data.stixRefRelationshipAdd.confidence).toEqual(90);
     expect(stixRefRelationship.data.stixRefRelationshipAdd.from.x_opencti_stix_ids[0]).toEqual('malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88');
     stixRefRelationshipInternalId = stixRefRelationship.data.stixRefRelationshipAdd.id;
     stixRefRelationshipCreatedAt = stixRefRelationship.data.stixRefRelationshipAdd.created_at;

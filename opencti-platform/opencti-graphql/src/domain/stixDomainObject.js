@@ -39,6 +39,7 @@ import { entityLocationType, identityClass, xOpenctiType } from '../schema/attri
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { validateMarking } from '../utils/access';
+import { editAuthorizedMembers } from '../utils/authorizedMembers';
 
 export const findAll = async (context, user, args) => {
   let types = [];
@@ -245,6 +246,21 @@ export const stixDomainObjectEditField = async (context, user, stixObjectId, inp
     return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, updatedElem, user);
   }
   return updatedElem;
+};
+
+export const stixDomainObjectEditAuthorizedMembers = async (context, user, entityId, input) => {
+  const entity = await findById(context, user, entityId);
+  if (!entity) {
+    throw FunctionalError('Cant find element to update', { entityId });
+  }
+  const args = {
+    entityId,
+    input,
+    requiredCapabilities: ['KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS'],
+    entityType: entity.entity_type,
+    busTopicKey: ABSTRACT_STIX_DOMAIN_OBJECT,
+  };
+  return editAuthorizedMembers(context, user, args);
 };
 
 export const stixDomainObjectFileEdit = async (context, user, sdoId, { id, order, description, inCarousel }) => {

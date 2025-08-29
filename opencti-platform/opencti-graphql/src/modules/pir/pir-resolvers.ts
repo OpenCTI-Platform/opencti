@@ -1,5 +1,6 @@
 import type { Resolvers } from '../../generated/graphql';
 import { pirFlagElement, deletePir, findAll, findById, pirAdd, pirUnflagElement, updatePir } from './pir-domain';
+import { filterMembersWithUsersOrgs } from '../../utils/access';
 
 const pirResolvers: Resolvers = {
   Query: {
@@ -7,7 +8,13 @@ const pirResolvers: Resolvers = {
     pirs: (_, args, context) => findAll(context, context.user, args),
   },
   Pir: {
-    creators: (pir, _, context) => context.batch.creatorsBatchLoader.load(pir.creator_id),
+    creators: async (pir, _, context) => {
+      const creators = await context.batch.creatorsBatchLoader.load(pir.creator_id);
+      if (!creators) {
+        return [];
+      }
+      return filterMembersWithUsersOrgs(context, context.user, creators);
+    },
     objectMarking: (pir, _, context) => context.batch.markingsBatchLoader.load(pir),
   },
   Mutation: {
