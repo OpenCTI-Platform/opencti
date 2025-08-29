@@ -410,6 +410,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
   [ENTITY_TYPE_CONNECTOR_MANAGER]: [
     { ...updatedAt, update: true }, // Allow change of updated_at for connector ping
     { featureFlag: COMPOSER_FF, name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { featureFlag: COMPOSER_FF, name: 'public_key', label: 'PublicKey', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { featureFlag: COMPOSER_FF, name: 'last_sync_execution', label: 'Last execution', type: 'date', editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: true },
   ],
   [ENTITY_TYPE_TAXII_COLLECTION]: [

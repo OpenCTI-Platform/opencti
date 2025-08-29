@@ -43,14 +43,15 @@ export const computeManagerConnectorContract = async (_context, _user, cn) => {
   return contract ? JSON.stringify(contract) : contract;
 };
 
-export const computeManagerConnectorConfiguration = async (context, _user, cn) => {
-  const config = [...cn.manager_contract_configuration ?? []];
+export const computeManagerConnectorConfiguration = async (context, _user, cn, hideEncryptedConfigs = false) => {
+  const currentContractConfig = cn.manager_contract_configuration ?? [];
+  const fullContractConfig = hideEncryptedConfigs ? currentContractConfig.filter((c) => !c.encrypted) : currentContractConfig;
   const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  config.push({ key: 'CONNECTOR_ID', value: cn.internal_id });
-  config.push({ key: 'CONNECTOR_NAME', value: cn.name });
-  config.push({ key: 'CONNECTOR_TYPE', value: cn.connector_type });
-  config.push({ key: 'OPENCTI_TOKEN', value: platformUsers.get(cn.connector_user_id)?.api_token });
-  return config.sort();
+  fullContractConfig.push({ key: 'CONNECTOR_ID', value: cn.internal_id });
+  fullContractConfig.push({ key: 'CONNECTOR_NAME', value: cn.name });
+  fullContractConfig.push({ key: 'CONNECTOR_TYPE', value: cn.connector_type });
+  fullContractConfig.push({ key: 'OPENCTI_TOKEN', value: platformUsers.get(cn.connector_user_id)?.api_token });
+  return fullContractConfig.sort();
 };
 
 export const computeManagerConnectorImage = (cn) => {

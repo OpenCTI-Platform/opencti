@@ -1972,6 +1972,7 @@ input AddManagedConnectorInput {
 input RegisterConnectorsManagerInput {
   id: ID!
   name: String! @constraint(minLength:2, format: "not-blank")
+  public_key: String!
 }
 
 input UpdateConnectorManagerStatusInput {
@@ -2048,6 +2049,7 @@ type ConnectorQueueDetails {
 type ConnectorContractConfiguration {
   key: String!
   value: String
+  encrypted: Boolean
 }
 
 enum ConnectorRequestStatus {
@@ -2132,6 +2134,7 @@ type ConnectorManager implements BasicObject & InternalObject {
   parent_types: [String]!
   # Manager
   name: String!
+  public_key: String!
   last_sync_execution: DateTime
   about_version: String!
   active: Boolean!

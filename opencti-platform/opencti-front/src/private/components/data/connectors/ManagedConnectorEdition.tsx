@@ -94,9 +94,17 @@ const ManagedConnectorEdition = ({
   // Get required and optional properties to use into JsonForms
   type Properties = [string, IngestionTypedProperty][];
   const propertiesArray: Properties = Object.entries(contract.config_schema.properties);
+  const propertiesWithPasswordDescription: Properties = propertiesArray.map(([key, value]) => {
+    const isPasswordField = value.format === 'password';
+    if (!isPasswordField) {
+      return [key, value];
+    }
+    const passwordDescription = `${value.description} Current value is hidden, but can still be replaced.`;
+    return [key, { ...value, description: passwordDescription }];
+  });
   const requiredPropertiesArray: Properties = [];
   const optionalPropertiesArray: Properties = [];
-  propertiesArray.forEach((property) => {
+  propertiesWithPasswordDescription.forEach((property) => {
     const key = property[0];
     const isRequired = contract.config_schema.required.includes(key);
     if (isRequired) {
