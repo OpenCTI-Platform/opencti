@@ -134,9 +134,9 @@ const StixCoreObjectSharedOrganisationsDrawer: FunctionComponent<StixCoreObjectS
         isSortable: true,
       },
       value: {
-        label: 'Value',
+        label: 'Name',
         width: '32%',
-        isSortable: false,
+        isSortable: true,
       },
       createdBy: {
         label: 'Author',
