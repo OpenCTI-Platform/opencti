@@ -96,6 +96,24 @@ const READ_QUERY = gql`
   }
 `;
 
+const MALWARE_QUERY = gql`
+  query malware($id: String, $pirId: ID!) {
+    malware(id: $id) {
+      id
+      entity_type
+      pirInformation(pirId: $pirId) {
+        pir_score
+        last_pir_score_date
+        pir_explanations {
+          criterion {
+            filters
+          }
+        }
+      }
+    }
+  }
+`;
+
 describe('PIR resolver standard behavior', () => {
   let pirInternalId: string = '';
   let flaggedElementId: string = '';
@@ -246,10 +264,10 @@ describe('PIR resolver standard behavior', () => {
     const matchingCriteria = {
       filters: {
         mode: FilterMode.And,
-        filterGroups: [],
         filters: [
           { key: ['toId'], values: ['24b6365f-dd85-4ee3-a28d-bb4b37e1619c'] }
-        ]
+        ],
+        filterGroups: [],
       },
       weight: 2,
     };
@@ -279,6 +297,18 @@ describe('PIR resolver standard behavior', () => {
     expect(malwareAfterFlag.pir_information.length).toEqual(1);
     expect(malwareAfterFlag.pir_information.filter((s) => s.pir_id === pirInternalId).length).toEqual(1);
     expect(malwareAfterFlag.pir_information.filter((s) => s.pir_id === pirInternalId)[0].pir_score).toEqual(67);
+    // should fetch stix domain object pir information
+    const malwareQueryResult = await queryAsAdmin({
+      query: MALWARE_QUERY,
+      variables: {
+        id: flaggedElementId,
+        pirId: pirInternalId,
+      },
+    });
+    expect(malwareQueryResult.data?.malware).not.toBeNull();
+    expect(malwareQueryResult.data?.malware.pirInformation.pir_score).toEqual(67);
+    expect(malwareQueryResult.data?.malware.pirInformation.pir_explanations.length).toEqual(1);
+    expect(malwareQueryResult.data?.malware.pirInformation.pir_explanations[0].criterion.filters).toEqual(JSON.stringify(matchingCriteria.filters));
   });
 
   it('should filter entities by a pir score', async () => {
