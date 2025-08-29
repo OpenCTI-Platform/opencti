@@ -43,6 +43,7 @@ import { elPaginate } from '../database/engine';
 import { stixLoadById } from '../database/middleware';
 import { convertRelationRefsFilterKeys } from '../utils/filtering/filtering-utils';
 import type { ExecutionEnvelop, ExecutionEnvelopStep } from '../types/playbookExecution';
+import { isEnterpriseEdition } from '../enterprise-edition/ee';
 
 const PLAYBOOK_LIVE_KEY = conf.get('playbook_manager:lock_key');
 const PLAYBOOK_CRON_KEY = conf.get('playbook_manager:lock_cron_key');
@@ -236,6 +237,10 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
       return;
     }
     const context = executionContext('playbook_manager');
+    const isEE = await isEnterpriseEdition(context);
+    if (!isEE) {
+      return;
+    }
     const playbooks = await getEntitiesListFromCache<BasicStoreEntityPlaybook>(context, SYSTEM_USER, ENTITY_TYPE_PLAYBOOK);
     for (let index = 0; index < streamEvents.length; index += 1) {
       const streamEvent = streamEvents[index];
@@ -419,6 +424,10 @@ const initPlaybookManager = () => {
   };
   const handlePlaybookCrons = async (context: AuthContext) => {
     const baseDate = utcDate().startOf('minutes');
+    const isEE = await isEnterpriseEdition(context);
+    if (!isEE) {
+      return;
+    }
     // Get playbook crons that need to be executed
     const playbooks = await getEntitiesListFromCache<BasicStoreEntityPlaybook>(context, SYSTEM_USER, ENTITY_TYPE_PLAYBOOK);
     for (let playbookIndex = 0; playbookIndex < playbooks.length; playbookIndex += 1) {
