@@ -1,4 +1,4 @@
-import { v5 as uuidv5 } from 'uuid';
+import { v4 as uuidv4, v5 as uuidv5 } from 'uuid';
 import { createEntity, deleteElementById, internalDeleteElementById, patchAttribute, updateAttribute } from '../database/middleware';
 import { type GetHttpClient, getHttpClient } from '../utils/http-client';
 import { completeConnector, connector, connectors, connectorsFor } from '../database/repository';
@@ -48,6 +48,32 @@ import { computeConnectorTargetContract, getSupportedContractsByImage } from '..
 import { getEntitiesMapFromCache } from '../database/cache';
 import { removeAuthenticationCredentials } from '../modules/ingestion/ingestion-common';
 import { createOnTheFlyUser } from '../modules/user/user-domain';
+
+// Sanitize name for K8s/Docker with unique suffix
+const sanitizeContainerName = (label: string, connectorId: string): string => {
+  const withHyphens = label.replace(/([a-z])([A-Z])/g, '$1-$2');
+  let sanitized = withHyphens
+    .replace(/[^a-zA-Z0-9]+/g, '-')
+    .toLowerCase()
+    .replace(/^-+/, '')
+    .replace(/-+$/, '');
+
+  // Add first 8 chars of connector ID as suffix
+  const idSuffix = connectorId.substring(0, 8);
+  const maxLabelLength = 63 - idSuffix.length - 1; // -1 for separator dash
+
+  if (sanitized.length > maxLabelLength) {
+    sanitized = sanitized.substring(0, maxLabelLength);
+    sanitized = sanitized.replace(/-+$/, '');
+  }
+
+  // Handle empty name after sanitization
+  if (sanitized.length === 0) {
+    sanitized = 'connector';
+  }
+
+  return `${sanitized}-${idSuffix}`;
+};
 
 // region connectors
 export const connectorForWork = async (context: AuthContext, user: AuthUser, id: string) => {
@@ -206,9 +232,18 @@ export const managedConnectorAdd = async (
   if (isEmptyField(connectorUser)) {
     throw UnsupportedError('Connector user not found');
   }
+  // Generate connector ID first
+  const connectorId = uuidv4();
+
+  // Sanitize name with ID suffix
+  const sanitizedName = sanitizeContainerName(input.name, connectorId);
+  if (!sanitizedName || sanitizedName.length < 2) {
+    throw FunctionalError('Invalid connector name');
+  }
   // Create connector
   const connectorToCreate: any = {
-    name: input.name,
+    internal_id: connectorId,
+    name: sanitizedName,
     connector_type: targetContract.container_type,
     catalog_id: input.catalog_id,
     connector_user_id: connectorUser.id,
