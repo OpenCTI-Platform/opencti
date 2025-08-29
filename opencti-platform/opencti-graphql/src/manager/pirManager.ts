@@ -29,8 +29,6 @@ import { createRedisClient, fetchStreamEventsRangeFromEventId } from '../databas
 import { updatePir } from '../modules/pir/pir-domain';
 import { pushToWorkerForConnector } from '../database/rabbitmq';
 import { connectorIdFromIngestId } from '../domain/connector';
-import { createWork } from '../domain/work';
-import { ConnectorType } from '../generated/graphql';
 import convertEntityPirToStix from '../modules/pir/pir-converter';
 import { buildStixBundle } from '../database/stix-2-1-converter';
 import conf, { booleanConf, isFeatureEnabled } from '../config/conf';
@@ -54,12 +52,6 @@ const pirFlagElementToQueue = async (
   relationshipAuthorId?: string,
 ) => {
   const connectorId = connectorIdFromIngestId(pir.id);
-  const work: any = await createWork(
-    context,
-    PIR_MANAGER_USER,
-    { internal_id: connectorId, connector_type: ConnectorType.InternalIngestionPir },
-    `Add dependency ${matchingCriteria} for ${sourceId} in pir ${pir.name}`
-  );
   const stixPir = convertEntityPirToStix(pir as StoreEntityPir);
   stixPir.extensions[STIX_EXT_OCTI].opencti_operation = 'pir_flag_element';
   const pirBundle = {
@@ -72,7 +64,6 @@ const pirFlagElementToQueue = async (
   const message = {
     type: 'bundle',
     applicant_id: PIR_MANAGER_USER.id,
-    work_id: work.id,
     update: true,
     content,
   };
@@ -86,12 +77,6 @@ const pirUnflagElementFromQueue = async (
   sourceId: string,
 ) => {
   const connectorId = connectorIdFromIngestId(pir.id);
-  const work: any = await createWork(
-    context,
-    PIR_MANAGER_USER,
-    { internal_id: connectorId, connector_type: ConnectorType.InternalIngestionPir },
-    `Remove dependency ${relationshipId} for ${sourceId} in pir ${pir.name}`
-  );
   const stixPir = convertEntityPirToStix(pir as StoreEntityPir);
   stixPir.extensions[STIX_EXT_OCTI].opencti_operation = 'pir_unflag_element';
   const pirBundle = {
@@ -104,7 +89,6 @@ const pirUnflagElementFromQueue = async (
   const message = {
     type: 'bundle',
     applicant_id: PIR_MANAGER_USER.id,
-    work_id: work.id,
     update: true,
     content,
   };

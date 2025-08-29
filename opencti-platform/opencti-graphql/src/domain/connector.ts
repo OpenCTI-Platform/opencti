@@ -1,9 +1,27 @@
 import { v5 as uuidv5 } from 'uuid';
-import { createEntity, deleteElementById, internalDeleteElementById, patchAttribute, updateAttribute } from '../database/middleware';
+import {
+  createEntity,
+  deleteElementById,
+  internalDeleteElementById,
+  patchAttribute,
+  updateAttribute
+} from '../database/middleware';
 import { type GetHttpClient, getHttpClient } from '../utils/http-client';
 import { completeConnector, connector, connectors, connectorsFor } from '../database/repository';
-import { getConnectorQueueDetails, purgeConnectorQueues, registerConnectorQueues, unregisterConnector, unregisterExchanges } from '../database/rabbitmq';
-import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER, ENTITY_TYPE_SYNC, ENTITY_TYPE_USER, ENTITY_TYPE_WORK } from '../schema/internalObject';
+import {
+  getConnectorQueueDetails,
+  purgeConnectorQueues,
+  registerConnectorQueues,
+  unregisterConnector,
+  unregisterExchanges
+} from '../database/rabbitmq';
+import {
+  ENTITY_TYPE_CONNECTOR,
+  ENTITY_TYPE_CONNECTOR_MANAGER,
+  ENTITY_TYPE_SYNC,
+  ENTITY_TYPE_USER,
+  ENTITY_TYPE_WORK
+} from '../schema/internalObject';
 import { FunctionalError, UnsupportedError, ValidationError } from '../config/errors';
 import { validateFilterGroupForStixMatch } from '../utils/filtering/filtering-stix/stix-filtering';
 import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
@@ -11,10 +29,14 @@ import { now } from '../utils/format';
 import { elLoadById } from '../database/engine';
 import { isEmptyField, READ_INDEX_HISTORY } from '../database/utils';
 import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE, OPENCTI_NAMESPACE } from '../schema/general';
-import { isUserHasCapability, PIR_MANAGER_USER, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
+import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import { delEditContext, notify, redisGetWork, redisSetConnectorLogs, setEditContext } from '../database/redis';
 import { internalLoadById, listAllEntities, listEntities, storeLoadById } from '../database/middleware-loader';
-import { completeContextDataForEntity, publishUserAction, type UserImportActionContextData } from '../listener/UserActionListener';
+import {
+  completeContextDataForEntity,
+  publishUserAction,
+  type UserImportActionContextData
+} from '../listener/UserActionListener';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreEntityConnector, BasicStoreEntityConnectorManager, BasicStoreEntitySynchronizer, ConnectorInfo } from '../types/connector';
 import {
@@ -444,22 +466,7 @@ export const registerConnectorForIngestion = async (context: AuthContext, input:
     connector_user_id: input.connector_user_id
   });
 };
-export const registerConnectorForPir = async (context: AuthContext, input: any) => {
-  // Create the representing connector
-  await registerConnector(context, PIR_MANAGER_USER, {
-    id: connectorIdFromIngestId(input.id),
-    name: `[PIR] ${input.name}`,
-    type: ConnectorType.InternalIngestionPir,
-    auto: true,
-    scope: ['application/stix+json;version=2.1'],
-    only_contextual: false,
-    playbook_compatible: false
-  }, {
-    built_in: true,
-    active: input.is_running,
-    connector_user_id: input.connector_user_id
-  });
-};
+
 export const unregisterConnectorForIngestion = async (context: AuthContext, id: string) => {
   const connectorId = connectorIdFromIngestId(id);
   await connectorDelete(context, SYSTEM_USER, connectorId);

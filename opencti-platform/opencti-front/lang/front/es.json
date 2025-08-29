@@ -1953,7 +1953,6 @@
   "INTERNAL_EXPORT_FILE": "Exportación de ficheros",
   "INTERNAL_IMPORT_FILE": "Importación de ficheros",
   "INTERNAL_INGESTION": "Ingesta de datos",
-  "INTERNAL_INGESTION_PIR": "Ingestión de PIR",
   "Interval": "Intervalo",
   "Interval between injections (in minutes)": "Intervalo entre inyecciones (en minutos)",
   "Interval must be a positive number": "El intervalo debe ser un número positivo",
