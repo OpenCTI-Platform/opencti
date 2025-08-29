@@ -35,7 +35,6 @@ import {
   READ_INDEX_INFERRED_RELATIONSHIPS,
   READ_INDEX_INTERNAL_OBJECTS,
   READ_INDEX_INTERNAL_RELATIONSHIPS,
-  READ_INDEX_PIR_RELATIONSHIPS,
   READ_INDEX_STIX_CORE_RELATIONSHIPS,
   READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
   READ_INDEX_STIX_CYBER_OBSERVABLES,
@@ -58,7 +57,6 @@ import {
   RELATION_CREATED_BY,
   RELATION_ETHNICITY,
   RELATION_GRANTED_TO,
-  RELATION_IN_PIR,
   RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT_ASSIGNEE,
   RELATION_OBJECT_LABEL,
@@ -148,6 +146,7 @@ import {
   INSTANCE_RELATION_TYPES_FILTER,
   IS_INFERRED_FILTER,
   isComplexConversionFilterKey,
+  LAST_PIR_SCORE_DATE_FILTER_PREFIX,
   PIR_SCORE_FILTER_PREFIX,
   RELATION_FROM_FILTER,
   RELATION_FROM_ROLE_FILTER,
@@ -183,7 +182,7 @@ import {
 } from '../schema/attribute-definition';
 import { connections as connectionsAttribute } from '../modules/attributes/basicRelationship-registrationAttributes';
 import { schemaTypesDefinition } from '../schema/schema-types';
-import { INTERNAL_RELATIONSHIPS, isInternalRelationship, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
+import { INTERNAL_RELATIONSHIPS, isInternalRelationship, RELATION_IN_PIR, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
 import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { rule_definitions } from '../rules/rules-definition';
 import { buildElasticSortingForAttributeCriteria } from '../utils/sorting';
@@ -198,6 +197,8 @@ import { ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, isStixCyberObservable } from '../sc
 import { lockResources } from '../lock/master-lock';
 import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_UPDATE_LINKED } from '../modules/draftWorkspace/draftOperations';
 import { RELATION_SAMPLE } from '../modules/malwareAnalysis/malwareAnalysis-types';
+import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
+import { getPirWithAccessCheck } from '../modules/pir/pir-checkPirAccess';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -1202,6 +1203,16 @@ export const elConfigureAttachmentProcessor = async () => {
   }
   return success;
 };
+
+export const elDeleteIndex = async (index) => {
+  const indexesToRemove = await elIndexGetAlias(index);
+  try {
+    const response = await engine.indices.delete({ index: Object.keys(indexesToRemove) });
+    logApp.info(`Index '${indexesToRemove}' deleted successfully.`, response);
+  } catch (error) {
+    logApp.error('Error deleting indexes:', error);
+  }
+};
 export const elCreateIndex = async (index, mappingProperties) => {
   await elCreateIndexTemplate(index, mappingProperties);
   const indexName = `${index}${ES_INDEX_PATTERN_SUFFIX}`;
@@ -1588,9 +1599,6 @@ export const computeQueryIndices = (indices, typeOrTypes, withInferences = true)
         if (isBasicObject(findType)) {
           if (isInternalObject(findType)) {
             return withInferencesEntities([READ_INDEX_INTERNAL_OBJECTS], withInferences);
-          }
-          if (findType === RELATION_IN_PIR) {
-            return [READ_INDEX_PIR_RELATIONSHIPS];
           }
           if (isStixMetaObject(findType)) {
             return withInferencesEntities([READ_INDEX_STIX_META_OBJECTS], withInferences);
@@ -2072,8 +2080,21 @@ export const elGenerateFieldTextSearchShould = (search, arrayKeys, args = {}) =>
   return shouldSearch;
 };
 
-const BASE_FIELDS = ['_index', idAttribute.name, internalId.name, standardId.name, 'sort', baseType.name, entityTypeAttribute.name,
-  connectionsAttribute.name, 'first_seen', 'last_seen', 'start_time', 'stop_time', authorizedMembers.name];
+const BASE_FIELDS = [
+  '_index',
+  idAttribute.name,
+  internalId.name,
+  standardId.name,
+  'sort',
+  baseType.name,
+  entityTypeAttribute.name,
+  connectionsAttribute.name,
+  'first_seen',
+  'last_seen',
+  'start_time',
+  'stop_time',
+  authorizedMembers.name,
+];
 
 const RANGE_OPERATORS = ['gt', 'gte', 'lt', 'lte'];
 
@@ -2140,6 +2161,12 @@ const buildLocalMustFilter = async (validFilter) => {
               field: nestedFieldKey
             }
           });
+        } else if (nestedOperator === FilterOperator.Within) {
+          nestedShould.push({
+            range: {
+              [nestedFieldKey]: { gte: nestedValues[0], lte: nestedValues[1] }
+            }
+          });
         } else {
           for (let i = 0; i < nestedValues.length; i += 1) {
             const nestedSearchValue = nestedValues[i].toString();
@@ -2153,7 +2180,11 @@ const buildLocalMustFilter = async (validFilter) => {
                 }
               });
             } else if (RANGE_OPERATORS.includes(nestedOperator)) {
-              nestedShould.push({ range: { [nestedFieldKey]: { [nestedOperator]: nestedSearchValue } } });
+              nestedShould.push({
+                range: {
+                  [nestedFieldKey]: { [nestedOperator]: nestedSearchValue }
+                }
+              });
             } else { // nestedOperator = 'eq'
               nestedShould.push({
                 multi_match: {
@@ -2408,7 +2439,11 @@ const buildLocalMustFilter = async (validFilter) => {
             if (arrayKeys.length > 1) {
               throw UnsupportedError('Range filter must have only one field', { keys: arrayKeys });
             }
-            valuesFiltering.push({ range: { [headKey]: { [operator]: values[i] } } });
+            valuesFiltering.push({
+              range: {
+                [headKey]: { [operator]: values[i] }
+              }
+            });
           }
         }
       }
@@ -2598,7 +2633,7 @@ const adaptFilterToIdsFilterKey = (filter) => {
     };
   }
 
-  // depending on the operator, only one of new Filter and newFilterGroup is defined
+  // depending on the operator, only one of newFilter and newFilterGroup is defined
   return { newFilter, newFilterGroup };
 };
 const adaptFilterToSourceReliabilityFilterKey = async (context, user, filter) => {
@@ -3085,19 +3120,22 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
           });
         }
       }
-      if (filterKey.startsWith(PIR_SCORE_FILTER_PREFIX)) {
+      if (filterKey.startsWith(PIR_SCORE_FILTER_PREFIX) || filterKey.startsWith(LAST_PIR_SCORE_DATE_FILTER_PREFIX)) {
         // the key should be of format: pir_score.PIR_ID
         const splittedKey = filterKey.split('.');
         if (splittedKey.length !== 2) {
-          throw FunctionalError('The pir_score filter key should be followed by a dot and the pir ID', { filterKey });
+          throw FunctionalError('The filter key should be followed by a dot and the Pir ID', { filterKey });
         }
+        const pirKey = splittedKey[0];
         const pirId = splittedKey[1];
+        // check the user has access to the PIR
+        await getPirWithAccessCheck(context, user, pirId);
         // push the nested pir_score filter associated to the given PIR ID
         finalFilters.push({
           key: ['pir_information'],
           values: [],
           nested: [
-            { ...filter, key: 'pir_score' },
+            { ...filter, key: pirKey },
             { key: 'pir_id', values: [pirId], operator: FilterOperator.Eq },
           ]
         });
@@ -3171,7 +3209,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
 };
 const elQueryBodyBuilder = async (context, user, options) => {
   // eslint-disable-next-line no-use-before-define
-  const { ids = [], after, orderBy = null, orderMode = 'asc', noSize = false, noSort = false, intervalInclude = false } = options;
+  const { ids = [], after, orderBy = null, pirId = null, orderMode = 'asc', noSize = false, noSort = false, intervalInclude = false } = options;
   const { relCount = false } = options;
   const first = options.first ?? ES_DEFAULT_PAGINATION;
   const { types = null, search = null } = options;
@@ -3241,7 +3279,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
       if (orderCriteria === '_score') {
         ordering = R.append({ [orderCriteria]: scoreSearchOrder }, ordering);
       } else {
-        const sortingForCriteria = buildElasticSortingForAttributeCriteria(orderCriteria, orderMode);
+        const sortingForCriteria = await buildElasticSortingForAttributeCriteria(context, user, orderCriteria, orderMode, pirId);
         ordering = R.append(sortingForCriteria, ordering);
       }
     }
@@ -3907,15 +3945,17 @@ export const elRemoveRelationConnection = async (context, user, elementsImpact, 
   const impacts = Object.entries(elementsImpact);
   if (impacts.length > 0) {
     const idsToResolve = impacts.map(([k]) => k);
-    const dataIds = await elFindByIds(context, user, idsToResolve, { baseData: true });
+    const dataIds = await elFindByIds(context, user, idsToResolve, { baseData: true, baseFields: ['pir_information'] });
     // Build cache for rest of execution
     const elIdsCache = {};
     const indexCache = {};
+    const pirInformationCache = {};
     let startProcessingTime = new Date().getTime();
     for (let idIndex = 0; idIndex < dataIds.length; idIndex += 1) {
       const element = dataIds[idIndex];
       elIdsCache[element.internal_id] = element._id;
       indexCache[element.internal_id] = element._index;
+      pirInformationCache[element.internal_id] = element.pir_information;
       // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
       if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
         startProcessingTime = new Date().getTime();
@@ -3934,12 +3974,14 @@ export const elRemoveRelationConnection = async (context, user, elementsImpact, 
           const updates = [];
           const elId = elIdsCache[impactId];
           const fromIndex = indexCache[impactId];
+          const entityPirInformation = pirInformationCache[impactId];
           if (isEmptyField(fromIndex)) { // No need to clean up the connections if the target is already deleted.
             return updates;
           }
           const [relationType, relationIndex, side, sideType] = typeAndIndex.split('|');
           const refField = isStixRefRelationship(relationType) && isInferredIndex(relationIndex) ? ID_INFERRED : ID_INTERNAL;
           const rel_key = buildRefRelationKey(relationType, refField);
+          let pir_information;
           let source = `if(ctx._source[params.rel_key] != null){
               for (int i=params.cleanupIds.length-1; i>=0; i--) {
                 def cleanupIndex = ctx._source[params.rel_key].indexOf(params.cleanupIds[i]);
@@ -3959,7 +4001,18 @@ export const elRemoveRelationConnection = async (context, user, elementsImpact, 
               source += 'ctx._source[\'modified\'] = params.updated_at;';
             }
           }
-          const script = { source, params: { rel_key, cleanupIds, updated_at: now() } };
+          // Remove the pir information concerning the Pir in case of in-pir rel deletion
+          if (relationType === RELATION_IN_PIR && entityPirInformation) {
+            pir_information = entityPirInformation.filter((pirInfo) => !cleanupIds.includes(pirInfo.pir_id));
+            if (pir_information.length === 0) {
+              pir_information = undefined;
+            }
+            source += 'ctx._source[\'pir_information\'] = params.pir_information;';
+          }
+          // if (isStixRelationship(relationType)) {
+          //   source += 'ctx._source[\'refreshed_at\'] = params.updated_at;';
+          // }
+          const script = { source, params: { rel_key, cleanupIds, updated_at: now(), pir_information } };
           updates.push([
             { update: { _index: fromIndex, _id: elId, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
             { script },
@@ -4507,7 +4560,12 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
         const refField = isStixRefRelationship(e.entity_type) && isInferredIndex(e._index) ? ID_INFERRED : ID_INTERNAL;
         const relationshipType = e.entity_type;
         if (isImpactedRole(relationshipType, fromType, toType, fromRole)) {
-          impacts.push({ refField, from: e.fromId, relationshipType, to: e.to, type: e.to.entity_type, side: 'from' });
+          if (relationshipType === RELATION_IN_PIR) {
+            const { pir_score } = e;
+            impacts.push({ refField, from: e.fromId, relationshipType, to: e.to, type: e.to.entity_type, side: 'from', pir_score });
+          } else {
+            impacts.push({ refField, from: e.fromId, relationshipType, to: e.to, type: e.to.entity_type, side: 'from' });
+          }
         }
         if (isImpactedRole(relationshipType, fromType, toType, toRole)) {
           impacts.push({ refField, from: e.toId, relationshipType, to: e.from, type: e.from.entity_type, side: 'to' });
@@ -4522,14 +4580,14 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
       const targets = impactedEntities[entityId];
       // Build document fields to update ( per relation type )
       const targetsByRelation = R.groupBy((i) => `${i.relationshipType}|${i.refField}`, targets);
-      const targetsElements = R.map((relTypeAndField) => {
+      const targetsElements = Object.keys(targetsByRelation).map((relTypeAndField) => {
         const [relType, refField] = relTypeAndField.split('|');
         const data = targetsByRelation[relTypeAndField];
-        const resolvedData = R.map((d) => {
-          return { id: d.to.internal_id, side: d.side, type: d.type };
-        }, data);
+        const resolvedData = data.map((d) => {
+          return { id: d.to.internal_id, side: d.side, type: d.type, pir_score: d.pir_score };
+        });
         return { relation: relType, field: refField, elements: resolvedData };
-      }, Object.keys(targetsByRelation));
+      });
       // Create params and scripted update
       const params = { updated_at: now() };
       const sources = targetsElements.map((t) => {
@@ -4544,6 +4602,23 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
           if (isModifiedObject(fromSide.type)) {
             script += '; ctx._source[\'modified\'] = params.updated_at';
           }
+        }
+        // if (isStixRelationship(t.relation)) {
+        //   script += '; ctx._source[\'refreshed_at\'] = params.updated_at';
+        // }
+        // Add Pir information concerning the Pir
+        if (t.relation === RELATION_IN_PIR) {
+          const pirIds = t.elements.map((e) => e.id);
+          params.pir_information = [
+            ...entity.pir_information?.filter((i) => !pirIds.includes(i.pir_id)) ?? [],
+            ...t.elements.filter((e) => e.type === ENTITY_TYPE_PIR)
+              .map((e) => ({
+                pir_id: e.id,
+                pir_score: e.pir_score,
+                last_pir_score_date: params.updated_at,
+              }))
+          ];
+          script += '; ctx._source[\'pir_information\'] = params.pir_information';
         }
         return script;
       });

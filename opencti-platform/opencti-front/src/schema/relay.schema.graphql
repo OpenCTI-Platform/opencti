@@ -2697,6 +2697,8 @@ enum StixDomainObjectsOrdering {
   result_name
   operatingSystem
   x_opencti_cvss_base_severity
+  pir_score
+  last_pir_score_date
 }
 
 type StixDomainObjectConnection {
@@ -2758,8 +2760,7 @@ interface StixDomainObject {
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input StixDomainObjectAddInput {
@@ -2871,8 +2872,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input AttackPatternAddInput {
@@ -3011,8 +3011,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input CampaignAddInput {
@@ -3202,8 +3201,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input NoteAddInput {
@@ -3338,8 +3336,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input ObservedDataAddInput {
@@ -3449,8 +3446,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input OpinionAddInput {
@@ -3586,8 +3582,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   status: Status
   workflowEnabled: Boolean
   deleteWithElementsCount: Int
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input ReportAddInput {
@@ -3699,8 +3694,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input CourseOfActionAddInput {
@@ -3915,8 +3909,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   status: Status
   workflowEnabled: Boolean
   isUser: Boolean
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input IndividualAddInput {
@@ -4029,8 +4022,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input SectorAddInput {
@@ -4137,8 +4129,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input SystemAddInput {
@@ -4252,8 +4243,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input InfrastructureAddInput {
@@ -4366,8 +4356,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input IntrusionSetAddInput {
@@ -4583,8 +4572,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input PositionAddInput {
@@ -4694,8 +4682,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input CityAddInput {
@@ -4800,8 +4787,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input CountryAddInput {
@@ -4907,8 +4893,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input RegionAddInput {
@@ -5024,8 +5009,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input MalwareAddInput {
@@ -5150,8 +5134,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
 }
 
 type ThreatActorEdge {
@@ -5229,8 +5212,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input ThreatActorGroupAddInput {
@@ -5343,8 +5325,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input ToolAddInput {
@@ -5499,8 +5480,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input VulnerabilityAddInput {
@@ -5661,8 +5641,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input IncidentAddInput {
@@ -7751,6 +7730,7 @@ input InternalRelationshipAddInput {
   relationship_type: String!
   fromId: ID
   toId: ID
+  pir_explanations: [PirExplanationInput!]
 }
 
 enum StixObjectOrStixRelationshipsOrdering {
@@ -8149,8 +8129,6 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   groupings(first: Int): GroupingConnection
   cases(first: Int): CaseConnection
   toStix: String
-  pir_explanations: [PirExplanation!]
-  pir_score: Int
   creators: [Creator!]
   editContext: [EditUserContext!]
 }
@@ -8178,7 +8156,6 @@ input StixRefRelationshipAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
-  pir_explanations: [PirExplanationInput!]
 }
 
 input StixRefRelationshipsAddInput {
@@ -8292,7 +8269,7 @@ type Query {
   stixCoreObjectsMultiDistribution(field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, distributionParameters: StixCoreObjectsDistributionParameters): [MultiDistribution]
   filtersRepresentatives(filters: FilterGroup!): [RepresentativeWithId!]!
   stixDomainObject(id: String!): StixDomainObject
-  stixDomainObjects(first: Int, after: ID, types: [String], orderBy: StixDomainObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixDomainObjectConnection
+  stixDomainObjects(first: Int, after: ID, types: [String], orderBy: StixDomainObjectsOrdering, pirId: ID, orderMode: OrderingMode, filters: FilterGroup, search: String): StixDomainObjectConnection
   bookmarks(first: Int, after: ID, types: [String], filters: FilterGroup): StixDomainObjectConnection
   stixDomainObjectsExportFiles(first: Int, exportContext: ExportContext!): FileConnection
   stixDomainObjectsTimeSeries(authorId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, types: [String], onlyInferred: Boolean, filters: FilterGroup, search: String): [TimeSeries]
@@ -8549,6 +8526,10 @@ type Query {
   savedFilters(first: Int, after: ID, orderBy: SavedFilterOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): SavedFilterConnection
   pir(id: ID!): Pir
   pirs(first: Int, after: ID, orderBy: PirOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): PirConnection
+  pirRelationships(pirId: ID!, first: Int, after: ID, orderBy: PirRelationshipOrdering, orderMode: OrderingMode, fromId: [String], fromRole: String, fromTypes: [String], startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, startDate: DateTime, endDate: DateTime, confidences: [Int], search: String, filters: FilterGroup, dynamicFrom: FilterGroup, stix: Boolean): PirRelationshipConnection
+  pirRelationshipsDistribution(pirId: ID!, field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, fromId: [String], fromTypes: [String], relationship_type: [String], search: String, filters: FilterGroup, dynamicFrom: FilterGroup, aggregateOnConnections: Boolean): [Distribution]
+  pirRelationshipsMultiTimeSeries(operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, timeSeriesParameters: [PirRelationshipsTimeSeriesParameters!]!, relationship_type: [String!]): [MultiTimeSeries]
+  pirLogs(pirId: ID!, first: Int, after: ID, orderBy: LogsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): LogConnection
   fintelDesign(id: String!): FintelDesign
   fintelDesigns(first: Int, after: ID, orderBy: FintelDesignOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): FintelDesignConnection
   securityPlatform(id: String!): SecurityPlatform
@@ -9134,7 +9115,7 @@ type Mutation {
   stixBundlePush(connectorId: String!, bundle: String!, work_id: String): Boolean
   stixDomainObjectAdd(input: StixDomainObjectAddInput!): StixDomainObject
   stixDomainObjectEdit(id: ID!): StixDomainObjectEditMutations
-  stixDomainObjectsExportAsk(format: String!, exportType: String!, contentMaxMarkings: [String], fileMarkings: [String], search: String, exportContext: ExportContext, relationship_type: [String], orderBy: StixDomainObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, selectedIds: [String]): [File!]
+  stixDomainObjectsExportAsk(format: String!, exportType: String!, contentMaxMarkings: [String], fileMarkings: [String], search: String, exportContext: ExportContext, relationship_type: [String], orderBy: StixDomainObjectsOrdering, pirId: ID, orderMode: OrderingMode, filters: FilterGroup, selectedIds: [String]): [File!]
   stixDomainObjectsDelete(id: [ID]!): [ID]!
   stixDomainObjectsExportPush(entity_id: String, entity_type: String!, file: Upload!, file_markings: [String]!, listFilters: String): Boolean
   attackPatternAdd(input: AttackPatternAddInput!): AttackPattern
@@ -9524,8 +9505,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
 }
 
 enum ChannelsOrdering {
@@ -9657,8 +9637,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
 }
 
 enum LanguagesOrdering {
@@ -9759,8 +9738,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
 }
 
 enum EventsOrdering {
@@ -9875,8 +9853,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
 }
 
 enum GroupingsOrdering {
@@ -9987,8 +9964,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
 }
 
 enum NarrativesOrdering {
@@ -10248,8 +10224,7 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
   name: String!
   description: String
   aliases: [String]
@@ -10351,8 +10326,7 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
   name: String!
   description: String
   aliases: [String]
@@ -10583,8 +10557,7 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
 }
 
 enum AdministrativeAreasOrdering {
@@ -10690,8 +10663,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
   name: String!
   description: String
   due_date: DateTime
@@ -10835,8 +10807,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
   name: String!
   description: String
   content: String
@@ -10962,8 +10933,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
   name: String!
   description: String
   content: String
@@ -11079,8 +11049,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
   authorized_members: [MemberAccess!]
   authorized_members_activation_date: DateTime
   currentUserAccessRight: String
@@ -11210,8 +11179,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
   authorized_members: [MemberAccess!]
   authorized_members_activation_date: DateTime
   currentUserAccessRight: String
@@ -11355,8 +11323,7 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
   name: String!
   description: String
   content: String
@@ -11609,8 +11576,7 @@ type MalwareAnalysis implements BasicObject & StixCoreObject & StixDomainObject 
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
   product: String!
   version: String
   hostVm: Software
@@ -11847,8 +11813,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
 }
 
 enum ThreatActorsIndividualOrdering {
@@ -12487,8 +12452,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input IndicatorAddInput {
@@ -12649,8 +12613,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
 }
 
 enum OrganizationsOrdering {
@@ -13550,6 +13513,12 @@ type PirExplanation {
   criterion: PirCriterion!
 }
 
+type PirInformation {
+  pir_score: Int!
+  last_pir_score_date: DateTime!
+  pir_explanations: [PirExplanation!]!
+}
+
 type Pir implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
@@ -13566,8 +13535,29 @@ type Pir implements InternalObject & BasicObject {
   pir_filters: String!
   lastEventId: String!
   authorizedMembers: [MemberAccess!]!
+  authorizedAuthorities: [String]
   currentUserAccessRight: String
   pirContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): ContainerConnection
+}
+
+type PirRelationship implements BasicRelationship {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  fromRole: String
+  toRole: String
+  created_at: DateTime!
+  updated_at: DateTime!
+  fromId: String!
+  toId: String!
+  fromType: String!
+  toType: String!
+  from: StixDomainObject
+  to: Pir
+  creators: [Creator!]
+  pir_explanations: [PirExplanation!]
+  pir_score: Int
 }
 
 enum PirOrdering {
@@ -13575,6 +13565,12 @@ enum PirOrdering {
   created_at
   updated_at
   creator
+}
+
+enum PirRelationshipOrdering {
+  created_at
+  updated_at
+  pir_score
 }
 
 type PirConnection {
@@ -13585,6 +13581,16 @@ type PirConnection {
 type PirEdge {
   cursor: String!
   node: Pir!
+}
+
+type PirRelationshipConnection {
+  pageInfo: PageInfo!
+  edges: [PirRelationshipEdge!]!
+}
+
+type PirRelationshipEdge {
+  cursor: String!
+  node: PirRelationship!
 }
 
 input PirCriterionInput {
@@ -13622,6 +13628,19 @@ input PirFlagElementInput {
 input PirUnflagElementInput {
   relationshipId: ID!
   sourceId: ID!
+}
+
+input PirRelationshipsTimeSeriesParameters {
+  pirId: ID!
+  field: String!
+  elementWithTargetTypes: [String]
+  fromId: [String]
+  fromTypes: [String]
+  relationship_type: [String]
+  confidences: [Int]
+  search: String
+  filters: FilterGroup
+  dynamicFrom: FilterGroup
 }
 
 type FintelDesign implements BasicObject & InternalObject {
@@ -13719,8 +13738,7 @@ type SecurityPlatform implements BasicObject & StixObject & StixCoreObject & Sti
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  pirScore(pirId: ID!): Int
-  pirExplanations(pirId: ID!): [PirExplanation!]
+  pirInformation(pirId: ID!): PirInformation
 }
 
 enum SecurityPlatformOrdering {

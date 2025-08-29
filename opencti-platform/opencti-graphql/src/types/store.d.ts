@@ -31,7 +31,6 @@ import {
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
   RELATION_GRANTED_TO,
-  RELATION_IN_PIR,
   RELATION_OBJECT,
   RELATION_OBJECT_ASSIGNEE,
   RELATION_OBJECT_LABEL,
@@ -55,7 +54,7 @@ import {
 import type { StixId } from './stix-2-1-common';
 import { type EditOperation, type PageInfo, StatusScope } from '../generated/graphql';
 import type { windows_integrity_level_enum, windows_service_start_type_enum, windows_service_status_enum, windows_service_type_enum } from './stix-2-1-sco';
-import { RELATION_MEMBER_OF } from '../schema/internalRelationship';
+import { RELATION_MEMBER_OF, RELATION_IN_PIR } from '../schema/internalRelationship';
 import { AuthorizedMember } from '../utils/access';
 
 interface Representative {
@@ -453,7 +452,7 @@ interface BasicStoreEntity extends BasicStoreCommon {
   // CVSS4
   x_opencti_cvss_v4_base_score: number;
   // PIR
-  pir_information: Array<{ pir_id: string, pir_score: number }>;
+  pir_information: Array<{ pir_id: string, pir_score: number, last_pir_score_date: Date }>;
 }
 
 interface StoreEntity extends BasicStoreEntity, StoreCommon {

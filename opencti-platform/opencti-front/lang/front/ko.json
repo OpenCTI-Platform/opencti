@@ -2688,6 +2688,7 @@
   "Pir analyses disclaimer...": "기술적 제한으로 인해 처음 5000개의 플래그가 지정된 엔티티만 컨테이너를 검색하는 데 사용된다는 점에 유의하세요. 따라서 결과적인 PIR의 경우 일부 컨테이너가 누락될 수 있습니다.",
   "Pir confidence...": "필요한 최소 소스 신뢰도를 선택하여 PIR의 품질에 영향을 줍니다. 이 수준 이하의 출처의 항목은 제외됩니다",
   "PIR Details": "PIR 세부 정보",
+  "PIR Relationships distribution": "PIR 관계 분포",
   "PIR Rescan period (days)": "PIR 재검사 기간(일)",
   "Pir targeted locations...": "이러한 위치 중 하나 이상을 대상으로 하는 모든 위협은 PIR에 포함됩니다. 위협의 표적이 되는 위치가 많을수록 위협의 점수가 높아집니다",
   "Pir targeted sectors...": "이 산업 중 하나 이상을 대상으로 하는 모든 위협은 PIR에 포함됩니다. 위협의 표적이 되는 산업이 많을수록 위협의 점수는 더 높아집니다",

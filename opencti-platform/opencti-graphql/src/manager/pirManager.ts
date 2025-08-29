@@ -187,10 +187,10 @@ const processStreamEventsForPir = (context:AuthContext, pir: BasicStoreEntityPir
 const pirManagerHandler = async () => {
   const redisClient = await createRedisClient(PIR_MANAGER_LABEL, false);
   const context = executionContext(PIR_MANAGER_CONTEXT);
-  const allPir = await getEntitiesListFromCache<BasicStoreEntityPir>(context, PIR_MANAGER_USER, ENTITY_TYPE_PIR);
+  const allPirs = await getEntitiesListFromCache<BasicStoreEntityPir>(context, PIR_MANAGER_USER, ENTITY_TYPE_PIR);
 
   // Loop through all Pir one by one.
-  await BluePromise.map(allPir, async (pir) => {
+  await BluePromise.map(allPirs, async (pir) => {
     // Fetch stream events since last event id caught by the Pir.
     const { lastEventId } = await fetchStreamEventsRangeFromEventId(
       redisClient,

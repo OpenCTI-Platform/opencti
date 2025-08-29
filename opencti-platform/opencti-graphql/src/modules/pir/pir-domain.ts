@@ -14,9 +14,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import { now } from 'moment';
+import * as R from 'ramda';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { type EntityOptions, internalLoadById, listEntitiesPaginated, listRelations, storeLoadById } from '../../database/middleware-loader';
-import { type BasicStoreEntityPir, ENTITY_TYPE_PIR, type PirExplanation } from './pir-types';
+import {
+  type EntityOptions,
+  internalLoadById,
+  listEntitiesPaginated,
+  listRelations,
+  listRelationsPaginated,
+  type RelationOptions,
+  storeLoadById
+} from '../../database/middleware-loader';
+import { type BasicStoreEntityPir, type BasicStoreRelationPir, ENTITY_TYPE_PIR, type PirExplanation } from './pir-types';
 import {
   type EditInput,
   EditOperation,
@@ -25,26 +34,34 @@ import {
   type MemberAccessInput,
   type PirAddInput,
   type PirFlagElementInput,
-  type PirUnflagElementInput
+  type PirUnflagElementInput,
+  type QueryPirLogsArgs,
+  type QueryPirRelationshipsArgs,
+  type QueryPirRelationshipsDistributionArgs,
+  type QueryPirRelationshipsMultiTimeSeriesArgs,
 } from '../../generated/graphql';
-import { createEntity, deleteRelationsByFromAndTo, updateAttribute } from '../../database/middleware';
+import { createEntity, deleteRelationsByFromAndTo, distributionRelations, timeSeriesRelations, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS, logApp } from '../../config/conf';
 import { deleteInternalObject } from '../../domain/internalObject';
 import { registerConnectorForPir, unregisterConnectorForIngestion } from '../../domain/connector';
 import type { BasicStoreCommon, BasicStoreObject } from '../../types/store';
-import { RELATION_IN_PIR, RELATION_OBJECT } from '../../schema/stixRefRelationship';
-import { createPirRel, serializePir, updatePirExplanations, updatePirInformationOnEntity } from './pir-utils';
+import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
+import { createPirRelation, serializePir, updatePirExplanations } from './pir-utils';
+import { getPirWithAccessCheck } from './pir-checkPirAccess';
 import { ForbiddenAccess, FunctionalError } from '../../config/errors';
 import { ABSTRACT_STIX_REF_RELATIONSHIP, ENTITY_TYPE_CONTAINER } from '../../schema/general';
-import { elRawUpdateByQuery } from '../../database/engine';
-import { READ_INDEX_HISTORY, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
-import { extractFilterKeyValues } from '../../utils/filtering/filtering-utils';
+import { addFilter, extractFilterKeyValues } from '../../utils/filtering/filtering-utils';
 import { INSTANCE_DYNAMIC_REGARDING_OF, INSTANCE_REGARDING_OF, OBJECT_CONTAINS_FILTER, RELATION_TO_FILTER, RELATION_TYPE_FILTER } from '../../utils/filtering/filtering-constants';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
-import { isBypassUser, MEMBER_ACCESS_ALL, MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_VIEW } from '../../utils/access';
+import { isBypassUser, MEMBER_ACCESS_ALL, MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_VIEW, PIRAPI } from '../../utils/access';
+import { RELATION_IN_PIR } from '../../schema/internalRelationship';
+import { buildArgsFromDynamicFilters } from '../../domain/stixRelationship';
+import { fillTimeSeries, READ_INDEX_HISTORY } from '../../database/utils';
+import { ENTITY_TYPE_HISTORY, ENTITY_TYPE_PIR_HISTORY } from '../../schema/internalObject';
+import { elPaginate } from '../../database/engine';
 
 export const findById = async (context: AuthContext, user: AuthUser, id: string) => {
   await checkEnterpriseEdition(context);
@@ -54,6 +71,69 @@ export const findById = async (context: AuthContext, user: AuthUser, id: string)
 export const findAll = async (context: AuthContext, user: AuthUser, opts?: EntityOptions<BasicStoreEntityPir>) => {
   await checkEnterpriseEdition(context);
   return listEntitiesPaginated<BasicStoreEntityPir>(context, user, [ENTITY_TYPE_PIR], opts);
+};
+
+export const findAllPirRelations = async (
+  context: AuthContext,
+  user: AuthUser,
+  opts: QueryPirRelationshipsArgs,
+) => {
+  const { pirId } = opts;
+  if (!pirId) {
+    throw FunctionalError('You should provide a Pir ID since in-pir relationships can only be fetch for a given PIR.', { pirId });
+  }
+  await getPirWithAccessCheck(context, user, pirId);
+  return listRelationsPaginated<BasicStoreRelationPir>(context, user, RELATION_IN_PIR, { ...R.dissoc('pirId', opts), toId: [pirId] } as RelationOptions<BasicStoreRelationPir>);
+};
+
+export const pirRelationshipsDistribution = async (
+  context: AuthContext,
+  user: AuthUser,
+  opts: QueryPirRelationshipsDistributionArgs,
+) => {
+  const relationship_type = [RELATION_IN_PIR];
+  const { pirId } = opts;
+  if (!pirId) {
+    throw FunctionalError('You should provide exactly a Pir ID since in-pir relationships distribution can only be fetch for a given PIR.', { pirId });
+  }
+  await getPirWithAccessCheck(context, user, pirId);
+  const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, { ...R.dissoc('pirId', opts), relationship_type, toId: [pirId] });
+  if (isEmptyDynamic) {
+    return [];
+  }
+  return distributionRelations(context, context.user, dynamicArgs);
+};
+
+export const pirRelationshipsMultiTimeSeries = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: QueryPirRelationshipsMultiTimeSeriesArgs,
+) => {
+  const relationship_type = [RELATION_IN_PIR];
+  return Promise.all(args.timeSeriesParameters.map(async (timeSeriesParameter) => {
+    const { startDate, endDate, interval } = args;
+    const { pirId } = timeSeriesParameter;
+    await getPirWithAccessCheck(context, user, pirId);
+    const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, { ...R.dissoc('pirId', timeSeriesParameter), toId: [pirId] });
+    if (isEmptyDynamic) {
+      return { data: fillTimeSeries(startDate, endDate, interval, []) };
+    }
+    return { data: await timeSeriesRelations(context, user, { ...args, relationship_type, ...dynamicArgs }) };
+  }));
+};
+
+export const findPirHistory = async (context: AuthContext, user: AuthUser, args: QueryPirLogsArgs) => {
+  const { pirId } = args;
+  await getPirWithAccessCheck(context, user, pirId);
+  const filters = addFilter(args.filters, 'context_data.pir_ids', pirId);
+  const finalArgs = {
+    ...args,
+    filters,
+    orderBy: args.orderBy ?? 'timestamp',
+    orderMode: args.orderMode ?? 'desc',
+    types: [ENTITY_TYPE_PIR_HISTORY, ENTITY_TYPE_HISTORY],
+  };
+  return elPaginate(context, user, READ_INDEX_HISTORY, finalArgs);
 };
 
 export const findPirContainers = async (
@@ -122,7 +202,8 @@ export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAdd
   const finalInput = {
     ...serializePir(input),
     lastEventId: `${rescanStartDate}-0`,
-    authorized_members
+    authorized_members,
+    authorized_authorities: [PIRAPI],
   };
   const created: BasicStoreEntityPir = await createEntity(
     context,
@@ -153,42 +234,6 @@ export const deletePir = async (context: AuthContext, user: AuthUser, pirId: str
   } catch (e) {
     logApp.error('[OPENCTI] Error while unregistering Pir connector', { cause: e });
   }
-  // remove pir_information of pir from entities
-  const sourceScores = `
-    def pirIdIndex = ctx._source.pir_information.pir_id.indexOf(params.pirId);
-    if (pirIdIndex >=0 ) {
-       ctx._source.pir_information.remove(pirIdIndex);
-    }  
-  `;
-  await elRawUpdateByQuery({
-    index: READ_INDEX_STIX_DOMAIN_OBJECTS,
-    body: {
-      script: { source: sourceScores, params: { pirId } },
-      query: {
-        term: {
-          'pir_information.pir_id.keyword': pirId
-        }
-      },
-    },
-  });
-  // remove pir_ids from historic events
-  const sourceHistory = `
-    def pirIdIndex = ctx._source.context_data.pir_ids.indexOf(params.pirId);
-    if (pirIdIndex >=0 ) {
-       ctx._source.context_data.pir_ids.remove(pirIdIndex);
-    }  
-  `;
-  await elRawUpdateByQuery({
-    index: READ_INDEX_HISTORY,
-    body: {
-      script: { source: sourceHistory, params: { pirId } },
-      query: {
-        term: {
-          'context_data.pir_ids.keyword': pirId
-        }
-      },
-    },
-  });
   // delete the Pir
   return deleteInternalObject(context, user, pirId, ENTITY_TYPE_PIR);
 };
@@ -206,8 +251,8 @@ export const updatePir = async (context: AuthContext, user: AuthUser, pirId: str
 
 /**
  * Called when an event of create new relationship matches a Pir criteria.
- * If the source of the relationship is already flagged update its dependencies,
- * otherwise create a new meta relationship between the source and the PIR.
+ * If the source of the relationship is already flagged: update its dependencies,
+ * otherwise: create a new in-pir relationship between the source and the PIR.
  *
  * @param context To be able to call engine.
  * @param user User making the request.
@@ -223,11 +268,7 @@ export const pirFlagElement = async (
   if (!isBypassUser(user)) {
     throw ForbiddenAccess();
   }
-  await checkEnterpriseEdition(context);
-  const pir = await storeLoadById<BasicStoreEntityPir>(context, user, pirStandardId, ENTITY_TYPE_PIR);
-  if (!pir) {
-    throw FunctionalError('No PIR found');
-  }
+  const pir = await getPirWithAccessCheck(context, user, pirStandardId);
 
   const { relationshipId, sourceId, matchingCriteria, relationshipAuthorId } = input;
   const source = await internalLoadById<BasicStoreCommon>(context, user, sourceId);
@@ -244,14 +285,16 @@ export const pirFlagElement = async (
     if (sourceFlagged) {
       await updatePirExplanations(context, user, sourceId, pir.id, pirDependencies, EditOperation.Add);
     } else {
-      await createPirRel(context, user, sourceId, pir.id, pirDependencies);
+      await createPirRelation(context, user, sourceId, pir.id, pirDependencies);
     }
   }
   return pir.id;
 };
 
 /**
- * Called when an event of delete a relationship matches a PIR criteria.
+ * Called when a relationship delete event matches a PIR criteria.
+ * The in-pir relationship between the source and the PIR should be either deleted
+ * either updated (remove the corresponding dependency)
  *
  * @param context To be able to call engine.
  * @param user User making the request.
@@ -267,11 +310,8 @@ export const pirUnflagElement = async (
   if (!isBypassUser(user)) {
     throw ForbiddenAccess();
   }
-  await checkEnterpriseEdition(context);
-  const pir = await storeLoadById<BasicStoreEntityPir>(context, user, pirStandardId, ENTITY_TYPE_PIR);
-  if (!pir) {
-    throw FunctionalError('No PIR found');
-  }
+  const pir = await getPirWithAccessCheck(context, user, pirStandardId);
+
   const { relationshipId, sourceId } = input;
   // fetch in-pir rels between the entity and the pir
   const rels = await listRelations(context, user, RELATION_IN_PIR, { fromId: sourceId, toId: pir.id, connectionFormat: false });
@@ -283,10 +323,8 @@ export const pirUnflagElement = async (
       .map((d) => d.element_id)
       .includes(relationshipId));
     if (newRelDependencies.length === 0) {
-      // delete the rel between source and PIR
+      // delete the in-pir relationship between source and PIR
       await deleteRelationsByFromAndTo(context, user, sourceId, pir.id, RELATION_IN_PIR, ABSTRACT_STIX_REF_RELATIONSHIP);
-      // remove pir score on the entity
-      await updatePirInformationOnEntity(context, user, sourceId, pir.id, 0);
     } else if (newRelDependencies.length < relDependencies.length) {
       // update dependencies
       await updatePirExplanations(context, user, sourceId, pir.id, newRelDependencies);

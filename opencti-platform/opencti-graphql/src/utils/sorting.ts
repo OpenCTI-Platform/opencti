@@ -1,19 +1,27 @@
 import { isDateNumericOrBooleanAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
 import { FunctionalError, UnsupportedError } from '../config/errors';
+import { getPirWithAccessCheck } from '../modules/pir/pir-checkPirAccess';
+import type { AuthContext, AuthUser } from '../types/user';
 
-const PIR_SCORE_ORDERING_PREFIX = 'pir_score';
+const PIR_ORDERING_CRITERIA = ['pir_score', 'last_pir_score_date'];
 
-export const buildElasticSortingForAttributeCriteria = (orderCriteria: string, orderMode: 'asc' | 'desc') => {
+export const buildElasticSortingForAttributeCriteria = async (
+  context: AuthContext,
+  user: AuthUser,
+  orderCriteria: string,
+  orderMode: 'asc' | 'desc',
+  pirId?: string,
+) => {
   let definition;
-  if (orderCriteria.startsWith(PIR_SCORE_ORDERING_PREFIX)) {
-    // the key should be of format: pir_score.PIR_ID
-    const splittedCriteria = orderCriteria.split('.');
-    if (splittedCriteria.length !== 2) {
-      throw FunctionalError('The pir_score ordering criteria should be followed by a dot and the pir ID', { orderCriteria });
+  if (PIR_ORDERING_CRITERIA.includes(orderCriteria)) {
+    // the pir id should be specified and the pir accessible
+    if (!pirId) {
+      throw FunctionalError('You should provide a PIR ID to order by pir_score.');
     }
-    const pirId = splittedCriteria[1];
-    // return nested pir_score order criteria associated to the given PIR ID
-    return { 'pir_information.pir_score': {
+    // check the user has access to the PIR
+    await getPirWithAccessCheck(context, user, pirId);
+    // return nested order criteria associated to the given PIR ID
+    return { [`pir_information.${orderCriteria}`]: {
       order: orderMode,
       missing: '_last',
       nested: {

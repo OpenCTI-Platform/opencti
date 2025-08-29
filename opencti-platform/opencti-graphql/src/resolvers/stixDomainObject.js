@@ -13,12 +13,11 @@ import {
   stixDomainObjectEditField,
   stixDomainObjectExportAsk,
   stixDomainObjectFileEdit,
-  stixDomainObjectPirScore,
+  stixDomainObjectPirInformation,
   stixDomainObjectsDelete,
   stixDomainObjectsDistributionByEntity,
   stixDomainObjectsExportAsk,
   stixDomainObjectsNumber,
-  stixDomainObjectsPirExplanations,
   stixDomainObjectsTimeSeries,
   stixDomainObjectsTimeSeriesByAuthor
 } from '../domain/stixDomainObject';
@@ -75,8 +74,7 @@ const stixDomainObjectResolvers = {
       const statusesType = await findByType(context, context.user, stixDomainObject.entity_type);
       return statusesType.length > 0;
     },
-    pirScore: (stixDomainObject, { pirId }, context) => stixDomainObjectPirScore(context, context.user, stixDomainObject, pirId),
-    pirExplanations: (stixDomainObject, { pirId }, context) => stixDomainObjectsPirExplanations(context, context.user, stixDomainObject, pirId),
+    pirInformation: (stixDomainObject, { pirId }, context) => stixDomainObjectPirInformation(context, context.user, stixDomainObject, pirId),
   },
   Mutation: {
     stixDomainObjectEdit: (_, { id }, context) => ({

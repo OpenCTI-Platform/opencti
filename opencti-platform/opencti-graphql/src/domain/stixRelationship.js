@@ -96,7 +96,7 @@ const buildRelationshipTypes = (relationshipTypes) => {
   const isValidRelationshipTypes = relationshipTypes.every((type) => isStixRelationship(type));
 
   if (!isValidRelationshipTypes) {
-    throw new GraphQLError('Invalid argument: relationship_type is not a stix-relationship', { extensions: { code: ApolloServerErrorCode.BAD_USER_INPUT } });
+    throw new GraphQLError(`Invalid argument: relationship_type ${relationshipTypes} is not a stix-relationship`, { extensions: { code: ApolloServerErrorCode.BAD_USER_INPUT } });
   }
   return relationshipTypes;
 };
@@ -124,13 +124,17 @@ export const stixRelationshipsNumber = async (context, user, args) => {
   };
 };
 export const stixRelationshipsMultiTimeSeries = async (context, user, args) => {
+  const relationship_type = buildRelationshipTypes(args.relationship_type);
+  if (!args.timeSeriesParameters) {
+    return [];
+  }
   return Promise.all(args.timeSeriesParameters.map(async (timeSeriesParameter) => {
     const { startDate, endDate, interval } = args;
     const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, timeSeriesParameter);
     if (isEmptyDynamic) {
       return { data: fillTimeSeries(startDate, endDate, interval, []) };
     }
-    return { data: timeSeriesRelations(context, user, { ...args, ...dynamicArgs }) };
+    return { data: timeSeriesRelations(context, user, { ...args, relationship_type, ...dynamicArgs }) };
   }));
 };
 // endregion

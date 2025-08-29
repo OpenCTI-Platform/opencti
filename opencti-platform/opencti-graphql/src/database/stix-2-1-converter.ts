@@ -34,9 +34,7 @@ import {
   INPUT_SRC,
   INPUT_SRC_PAYLOAD,
   INPUT_VALUES,
-  isStoreRelationPir,
   RELATION_GRANTED_TO,
-  RELATION_IN_PIR,
   RELATION_OBJECT_MARKING
 } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../schema/stixMetaObject';
@@ -120,7 +118,7 @@ import {
   INPUT_PARTICIPANT
 } from '../schema/general';
 import { isRelationBuiltin, STIX_SPEC_VERSION } from './stix';
-import { isInternalRelationship } from '../schema/internalRelationship';
+import { isInternalRelationship, isStoreRelationPir, RELATION_IN_PIR } from '../schema/internalRelationship';
 import { isInternalObject } from '../schema/internalObject';
 import { isInternalId, isStixId } from '../schema/schemaUtils';
 import { assertType, cleanObject, convertToStixDate } from './stix-converter-utils';
@@ -141,7 +139,7 @@ export const convertTypeToStixType = (type: string): string => {
   if (type.toLowerCase() === ENTITY_HASHED_OBSERVABLE_STIX_FILE.toLowerCase()) {
     return 'file';
   }
-  if (isInternalRelationship(type) || type === RELATION_IN_PIR) {
+  if (isInternalRelationship(type)) {
     return 'internal-relationship';
   }
   if (isStixSightingRelationship(type)) {

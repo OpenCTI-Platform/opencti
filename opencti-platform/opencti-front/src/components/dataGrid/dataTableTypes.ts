@@ -164,7 +164,6 @@ export interface DataTableBodyProps {
 
 export interface DataTableDisplayFiltersProps {
   entityTypes?: string[]
-  additionalFilterKeys?: string[]
   availableRelationFilterTypes?: Record<string, string[]> | undefined
   availableFilterKeys?: string[] | undefined;
   availableEntityTypes?: string[]

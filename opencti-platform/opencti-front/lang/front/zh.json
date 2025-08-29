@@ -2688,6 +2688,7 @@
   "Pir analyses disclaimer...": "请注意，由于技术限制，只有前 5000 个标记的实体才会被用于检索容器。因此，在随后的 PIR 中，可能会遗漏一些容器。",
   "Pir confidence...": "通过选择所需的最低来源可信度来影响您的 PIR 质量。低于此级别的来源项目将被排除在外",
   "PIR Details": "PIR 详情",
+  "PIR Relationships distribution": "PIR 关系分布",
   "PIR Rescan period (days)": "PIR 重新扫描周期（天）",
   "Pir targeted locations...": "任何至少针对其中一个地点的威胁都会被列入 PIR。威胁针对的地点越多，威胁的得分就越高",
   "Pir targeted sectors...": "任何针对至少一个行业的威胁都将被纳入 PIR。威胁针对的行业越多，威胁的得分就越高",

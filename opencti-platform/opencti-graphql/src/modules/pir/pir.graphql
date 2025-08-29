@@ -23,6 +23,11 @@ type PirExplanation {
     dependencies: [PirDependency!]!
     criterion: PirCriterion!
 }
+type PirInformation {
+    pir_score: Int!
+    last_pir_score_date: DateTime!
+    pir_explanations: [PirExplanation!]!
+}
 
 type Pir implements InternalObject & BasicObject {
     id: ID!
@@ -41,6 +46,7 @@ type Pir implements InternalObject & BasicObject {
     pir_filters: String!
     lastEventId: String!
     authorizedMembers: [MemberAccess!]!
+    authorizedAuthorities: [String]
     currentUserAccessRight: String
     pirContainers(
         first: Int
@@ -52,12 +58,41 @@ type Pir implements InternalObject & BasicObject {
     ): ContainerConnection
 }
 
+type PirRelationship implements BasicRelationship {
+    # BasicRelationship
+    id: ID! # internal_id
+    standard_id: String!
+    entity_type: String!
+    parent_types: [String]!
+    fromRole: String
+    toRole: String
+    created_at: DateTime!
+    updated_at: DateTime!
+    fromId: String!
+    toId: String!
+    fromType: String!
+    toType: String!
+    # InternalRelationship
+    from: StixDomainObject
+    to: Pir
+    creators: [Creator!]
+    # in-pir relationship
+    pir_explanations: [PirExplanation!]
+    pir_score: Int
+}
+
 # Ordering
 enum PirOrdering {
     name
     created_at
     updated_at
     creator
+}
+
+enum PirRelationshipOrdering {
+    created_at
+    updated_at
+    pir_score
 }
 
 # Relay connections
@@ -68,6 +103,15 @@ type PirConnection {
 type PirEdge {
     cursor: String!
     node: Pir!
+}
+
+type PirRelationshipConnection {
+    pageInfo: PageInfo!
+    edges: [PirRelationshipEdge!]!
+}
+type PirRelationshipEdge {
+    cursor: String!
+    node: PirRelationship!
 }
 
 # Queries
@@ -81,6 +125,67 @@ type Query {
         filters: FilterGroup
         search: String
     ): PirConnection @auth(for: [PIRAPI])
+    pirRelationships(
+        pirId: ID!
+        first: Int
+        after: ID
+        orderBy: PirRelationshipOrdering
+        orderMode: OrderingMode
+        fromId: [String]
+        fromRole: String
+        fromTypes: [String]
+        startTimeStart: DateTime
+        startTimeStop: DateTime
+        stopTimeStart: DateTime
+        stopTimeStop: DateTime
+        firstSeenStart: DateTime
+        firstSeenStop: DateTime
+        lastSeenStart: DateTime
+        lastSeenStop: DateTime
+        startDate: DateTime
+        endDate: DateTime
+        confidences: [Int]
+        search: String
+        filters: FilterGroup
+        dynamicFrom: FilterGroup
+        stix: Boolean
+    ): PirRelationshipConnection @auth(for: [KNOWLEDGE, PIRAPI])
+    pirRelationshipsDistribution(
+        pirId: ID!
+        field: String!
+        operation: StatsOperation!
+        startDate: DateTime
+        endDate: DateTime
+        dateAttribute: String
+        isTo: Boolean
+        limit: Int
+        order: String
+        fromId: [String]
+        fromTypes: [String]
+        relationship_type: [String]
+        search: String
+        filters: FilterGroup
+        dynamicFrom: FilterGroup
+        aggregateOnConnections: Boolean
+    ): [Distribution] @auth(for: [KNOWLEDGE, PIRAPI])
+    pirRelationshipsMultiTimeSeries(
+        operation: StatsOperation!
+        startDate: DateTime!
+        endDate: DateTime
+        interval: String!
+        onlyInferred: Boolean
+        timeSeriesParameters: [PirRelationshipsTimeSeriesParameters!]!
+        relationship_type: [String!]
+    ): [MultiTimeSeries] @auth(for: [KNOWLEDGE, PIRAPI])
+    pirLogs(
+        pirId: ID!
+        first: Int
+        after: ID
+        orderBy: LogsOrdering
+        orderMode: OrderingMode
+        filters: FilterGroup
+        search: String
+    ): LogConnection @auth(for: [KNOWLEDGE, PIRAPI])
 }
 
 # Mutations inputs
@@ -119,6 +224,19 @@ input PirFlagElementInput {
 input PirUnflagElementInput {
     relationshipId: ID!
     sourceId: ID!
+}
+
+input PirRelationshipsTimeSeriesParameters {
+    pirId: ID!
+    field: String!
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: FilterGroup
+    dynamicFrom: FilterGroup
 }
 
 # Mutations

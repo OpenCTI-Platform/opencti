@@ -14,7 +14,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import type { Resolvers } from '../../generated/graphql';
-import { pirFlagElement, deletePir, findAll, findById, pirAdd, pirUnflagElement, updatePir, findPirContainers, pirEditAuthorizedMembers } from './pir-domain';
+import {
+  deletePir,
+  findAll,
+  findAllPirRelations,
+  findById,
+  findPirContainers,
+  findPirHistory,
+  pirAdd,
+  pirEditAuthorizedMembers,
+  pirFlagElement,
+  pirRelationshipsDistribution,
+  pirRelationshipsMultiTimeSeries,
+  pirUnflagElement,
+  updatePir
+} from './pir-domain';
 import { getAuthorizedMembers } from '../../utils/authorizedMembers';
 import { filterMembersWithUsersOrgs, getUserAccessRight } from '../../utils/access';
 
@@ -22,6 +36,10 @@ const pirResolvers: Resolvers = {
   Query: {
     pir: (_, { id }, context) => findById(context, context.user, id),
     pirs: (_, args, context) => findAll(context, context.user, args),
+    pirRelationships: (_, args, context) => findAllPirRelations(context, context.user, args),
+    pirRelationshipsDistribution: (_, args, context) => pirRelationshipsDistribution(context, context.user, args),
+    pirRelationshipsMultiTimeSeries: (_, args, context) => pirRelationshipsMultiTimeSeries(context, context.user, args),
+    pirLogs: (_, args, context) => findPirHistory(context, context.user, args),
   },
   Pir: {
     creators: async (pir, _, context) => {
@@ -36,6 +54,10 @@ const pirResolvers: Resolvers = {
     pirContainers: (pir, args, context) => findPirContainers(context, context.user, pir, args),
     authorizedMembers: (pir, _, context) => getAuthorizedMembers(context, context.user, pir),
     currentUserAccessRight: (pir, _, context) => getUserAccessRight(context.user, pir)
+  },
+  PirRelationship: {
+    from: (rel, _, context) => (rel.from ? rel.from : context.batch.idsBatchLoader.load({ id: rel.fromId, type: rel.fromType })),
+    to: (rel, _, context) => (rel.to ? rel.to : context.batch.idsBatchLoader.load({ id: rel.toId, type: rel.toType })),
   },
   Mutation: {
     pirAdd: (_, { input }, context) => pirAdd(context, context.user, input),

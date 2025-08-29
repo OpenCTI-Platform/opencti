@@ -1,17 +1,33 @@
+/*
+Copyright (c) 2021-2025 Filigran SAS
+
+This file is part of the OpenCTI Enterprise Edition ("EE") and is
+licensed under the OpenCTI Enterprise Edition License (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*/
+
 import React from 'react';
 import { graphql } from 'react-relay';
-import { StixRelationshipsDonutDistributionQuery$data } from '@components/common/stix_relationships/__generated__/StixRelationshipsDonutDistributionQuery.graphql';
-import { QueryRenderer } from '../../../../relay/environment';
-import { useFormatter } from '../../../../components/i18n';
-import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
-import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
-import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
-import WidgetDonut from '../../../../components/dashboard/WidgetDonut';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
-import type { WidgetDataSelection, WidgetParameters } from '../../../../utils/widget/widget';
+import { PirRelationshipsDonutDistributionQuery$data } from './__generated__/PirRelationshipsDonutDistributionQuery.graphql';
+import WidgetDonut from '../../../components/dashboard/WidgetDonut';
+import WidgetNoData from '../../../components/dashboard/WidgetNoData';
+import Loader, { LoaderVariant } from '../../../components/Loader';
+import WidgetContainer from '../../../components/dashboard/WidgetContainer';
+import { QueryRenderer } from '../../../relay/environment';
+import { buildFiltersAndOptionsForWidgets } from '../../../utils/filters/filtersUtils';
+import type { PirWidgetDataSelection, WidgetParameters } from '../../../utils/widget/widget';
+import { useFormatter } from '../../../components/i18n';
 
-export const stixRelationshipsDonutsDistributionQuery = graphql`
-  query StixRelationshipsDonutDistributionQuery(
+export const pirRelationshipsDonutsDistributionQuery = graphql`
+  query PirRelationshipsDonutDistributionQuery(
+    $pirId: ID!
     $field: String!
     $operation: StatsOperation!
     $startDate: DateTime
@@ -19,22 +35,15 @@ export const stixRelationshipsDonutsDistributionQuery = graphql`
     $dateAttribute: String
     $isTo: Boolean
     $limit: Int
-    $fromOrToId: [String]
-    $elementWithTargetTypes: [String]
     $fromId: [String]
-    $fromRole: String
     $fromTypes: [String]
-    $toId: [String]
-    $toRole: String
-    $toTypes: [String]
     $relationship_type: [String]
-    $confidences: [Int]
     $search: String
     $filters: FilterGroup
     $dynamicFrom: FilterGroup
-    $dynamicTo: FilterGroup
   ) {
-    stixRelationshipsDistribution(
+    pirRelationshipsDistribution(
+      pirId: $pirId
       field: $field
       operation: $operation
       startDate: $startDate
@@ -42,20 +51,12 @@ export const stixRelationshipsDonutsDistributionQuery = graphql`
       dateAttribute: $dateAttribute
       isTo: $isTo
       limit: $limit
-      fromOrToId: $fromOrToId
-      elementWithTargetTypes: $elementWithTargetTypes
       fromId: $fromId
-      fromRole: $fromRole
       fromTypes: $fromTypes
-      toId: $toId
-      toRole: $toRole
-      toTypes: $toTypes
       relationship_type: $relationship_type
-      confidences: $confidences
       search: $search
       filters: $filters
       dynamicFrom: $dynamicFrom
-      dynamicTo: $dynamicTo
     ) {
       label
       value
@@ -78,46 +79,26 @@ export const stixRelationshipsDonutsDistributionQuery = graphql`
             main
           }
         }
-        # use colors when available
-        ... on Label {
-          color
-        }
-        ... on MarkingDefinition {
-          x_opencti_color
-        }
-        # objects without representative
-        ... on Creator {
-          name
-        }
-        ... on Group {
-          name
-        }
-        ... on Status {
-          template {
-            name
-            color
-          }
-        }
       }
     }
   }
 `;
 
-interface StixRelationshipsDonutProps {
+interface PirRelationshipsDonutProps {
   title?: string,
   variant: string,
   height?: number,
   field?: string,
   startDate: string | null,
   endDate: string | null,
-  dataSelection: WidgetDataSelection[],
+  dataSelection: PirWidgetDataSelection[],
   parameters?: WidgetParameters,
   withExportPopover?: boolean,
   isReadOnly?: boolean,
   withoutTitle?: boolean
 }
 
-const StixRelationshipsDonut = ({
+const PirRelationshipsDonut = ({
   title,
   variant,
   height,
@@ -129,7 +110,7 @@ const StixRelationshipsDonut = ({
   withExportPopover = false,
   isReadOnly = false,
   withoutTitle = false,
-}: StixRelationshipsDonutProps) => {
+}: PirRelationshipsDonutProps) => {
   const { t_i18n } = useFormatter();
   const renderContent = () => {
     let selection;
@@ -155,18 +136,18 @@ const StixRelationshipsDonut = ({
     };
     return (
       <QueryRenderer
-        query={stixRelationshipsDonutsDistributionQuery}
+        query={pirRelationshipsDonutsDistributionQuery}
         variables={variables}
-        render={({ props }: { props: StixRelationshipsDonutDistributionQuery$data }) => {
+        render={({ props }: { props: PirRelationshipsDonutDistributionQuery$data }) => {
           if (
             props
-            && props.stixRelationshipsDistribution
-            && props.stixRelationshipsDistribution.length > 0
+            && props.pirRelationshipsDistribution
+            && props.pirRelationshipsDistribution.length > 0
           ) {
             return (
               <WidgetDonut
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                data={props.stixRelationshipsDistribution as any[]}
+                data={props.pirRelationshipsDistribution as any[]}
                 groupBy={finalField}
                 withExport={withExportPopover}
                 readonly={isReadOnly}
@@ -184,7 +165,7 @@ const StixRelationshipsDonut = ({
   return (
     <WidgetContainer
       height={height}
-      title={parameters.title ?? title ?? t_i18n('Relationships distribution')}
+      title={parameters.title ?? title ?? t_i18n('PIR Relationships distribution')}
       variant={variant}
       withoutTitle={withoutTitle}
     >
@@ -193,4 +174,4 @@ const StixRelationshipsDonut = ({
   );
 };
 
-export default StixRelationshipsDonut;
+export default PirRelationshipsDonut;

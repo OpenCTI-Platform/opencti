@@ -2688,6 +2688,7 @@
   "Pir analyses disclaimer...": "Tenga en cuenta que, debido a limitaciones técnicas, sólo se utilizan las 5.000 primeras entidades marcadas para recuperar los contenedores. Por lo tanto, en el caso de un PIR consecuente, es posible que se pierdan algunos contenedores.",
   "Pir confidence...": "Afecte a la calidad de su PIR seleccionando el nivel mínimo de confianza requerido. Los elementos de fuentes por debajo de este nivel serán excluidos",
   "PIR Details": "Detalles PIR",
+  "PIR Relationships distribution": "PIR Distribución de relaciones",
   "PIR Rescan period (days)": "Periodo de reexploración PIR (días)",
   "Pir targeted locations...": "Cualquier amenaza que tenga como objetivo al menos una de estas ubicaciones se incluirá en el PIR. Cuantas más ubicaciones sean objetivo de una amenaza, mayor será la puntuación de su amenaza",
   "Pir targeted sectors...": "Cualquier amenaza dirigida al menos a una de estas industrias se incluirá en el PIR. Cuantas más industrias sean objetivo de una amenaza, mayor será la puntuación de su amenaza",
