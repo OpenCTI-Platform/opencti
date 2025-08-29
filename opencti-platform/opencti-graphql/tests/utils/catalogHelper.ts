@@ -1,7 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-
 export type ConnectorType = 'INTERNAL_ENRICHMENT' | 'EXTERNAL_IMPORT' | 'INTERNAL_EXPORT_FILE' | 'INTERNAL_IMPORT_FILE';
 
 type ConnectorTypeMap = {
@@ -60,7 +59,7 @@ class CatalogHelper {
   private catalog: Catalog;
 
   constructor() {
-    const catalogPath = path.join(__dirname, '../../src/__generated__/opencti-manifest.json');
+    const catalogPath = path.join(__dirname, 'opencti-manifest.json');
     const catalogContent = fs.readFileSync(catalogPath, 'utf8');
     this.catalog = JSON.parse(catalogContent);
   }
