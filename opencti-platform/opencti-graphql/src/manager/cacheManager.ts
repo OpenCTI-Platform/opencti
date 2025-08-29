@@ -45,7 +45,6 @@ import type { BasicStoreEntityPlaybook, ComponentDefinition } from '../modules/p
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { ENTITY_TYPE_DECAY_RULE } from '../modules/decayRule/decayRule-types';
 import { fromBase64, isNotEmptyField } from '../database/utils';
-import { findAllPlaybooks } from '../modules/playbook/playbook-domain';
 import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached } from '../modules/publicDashboard/publicDashboard-types';
 import { getAllowedMarkings } from '../modules/publicDashboard/publicDashboard-domain';
 import type { BasicStoreEntityConnector } from '../types/connector';
@@ -183,7 +182,7 @@ const platformRunningPlaybooks = (context: AuthContext) => {
       filterGroups: [],
     };
     const opts = { filters, noFiltersChecking: true, connectionFormat: false };
-    return findAllPlaybooks(context, SYSTEM_USER, opts);
+    return listAllEntities<BasicStoreEntityPlaybook>(context, SYSTEM_USER, [ENTITY_TYPE_PLAYBOOK], opts);
   };
   return { values: null, fn: reloadPlaybooks };
 };
