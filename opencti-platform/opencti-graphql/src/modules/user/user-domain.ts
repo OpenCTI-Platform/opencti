@@ -1,6 +1,6 @@
 import { v4 as uuid } from 'uuid';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { addUser, findAllPaginated as findAllUsersPaginated } from '../../domain/user';
+import { addUser, findUsersPaginated } from '../../domain/user';
 import { SYSTEM_USER } from '../../utils/access';
 import type { BasicGroupEntity } from '../../types/store';
 import { findDefaultIngestionGroups } from '../../domain/group';
@@ -12,7 +12,8 @@ import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 
 export const userAlreadyExists = async (context: AuthContext, name: string) => {
   // We use SYSTEM_USER because manage ingestion should be enough to create an ingestion Feed
-  const users = await findAllUsersPaginated(context, SYSTEM_USER, {
+  const users = await findUsersPaginated(context, SYSTEM_USER, {
+    first: 1,
     filters: {
       mode: 'and',
       filters: [

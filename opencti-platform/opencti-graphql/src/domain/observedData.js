@@ -22,7 +22,7 @@ export const findAll = async (context, user, args) => {
 };
 
 export const resolveName = async (context, user, observedData) => {
-  const relationArgs = { first: 1, fromId: observedData.id, toTypes: [ABSTRACT_STIX_CORE_OBJECT], connectionFormat: false, baseData: true };
+  const relationArgs = { first: 1, fromId: observedData.id, toTypes: [ABSTRACT_STIX_CORE_OBJECT], baseData: true };
   const observedDataRelations = await listRelations(context, user, RELATION_OBJECT, relationArgs);
   if (observedDataRelations.length === 1) {
     const firstElement = await internalLoadById(context, user, observedDataRelations[0].toId);

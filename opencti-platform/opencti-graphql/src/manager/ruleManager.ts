@@ -393,7 +393,7 @@ export const executeRuleElementRescan = async (context: AuthContext, user: AuthU
           }
         }
       };
-      const args = { connectionFormat: false, fromId: element.internal_id, callback: listCallback };
+      const args = { fromId: element.internal_id, callback: listCallback };
       await listAllRelations<BasicStoreRelation>(context, user, ABSTRACT_STIX_RELATIONSHIP, args);
     }
   }

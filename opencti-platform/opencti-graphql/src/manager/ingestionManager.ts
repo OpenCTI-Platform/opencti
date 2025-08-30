@@ -283,7 +283,7 @@ const rssExecutor = async (context: AuthContext, turndownService: TurndownServic
     filters: [{ key: 'ingestion_running', values: [true] }],
     filterGroups: [],
   };
-  const opts = { filters, connectionFormat: false, noFiltersChecking: true };
+  const opts = { filters, noFiltersChecking: true };
   const ingestions = await findAllRssIngestions(context, SYSTEM_USER, opts);
   const ingestionPromises = [];
   for (let i = 0; i < ingestions.length; i += 1) {
@@ -479,7 +479,7 @@ const taxiiExecutor = async (context: AuthContext) => {
     filters: [{ key: 'ingestion_running', values: [true] }],
     filterGroups: [],
   };
-  const opts = { filters, connectionFormat: false, noFiltersChecking: true };
+  const opts = { filters, noFiltersChecking: true };
   const ingestions = await findAllTaxiiIngestions(context, SYSTEM_USER, opts);
   const ingestionPromises = [];
   for (let i = 0; i < ingestions.length; i += 1) {
@@ -572,7 +572,7 @@ const csvExecutor = async (context: AuthContext) => {
     filters: [{ key: 'ingestion_running', values: [true] }],
     filterGroups: [],
   };
-  const opts = { filters, connectionFormat: false, noFiltersChecking: true };
+  const opts = { filters, noFiltersChecking: true };
   const ingestions = await findAllCsvIngestions(context, SYSTEM_USER, opts);
   const ingestionPromises = [];
   for (let i = 0; i < ingestions.length; i += 1) {
@@ -626,7 +626,7 @@ export const jsonExecutor = async (context: AuthContext) => {
     filters: [{ key: 'ingestion_running', values: [true] }],
     filterGroups: [],
   };
-  const opts = { filters, connectionFormat: false, noFiltersChecking: true };
+  const opts = { filters, noFiltersChecking: true };
   const ingestions = await findAllJsonIngestions(context, SYSTEM_USER, opts);
   for (let i = 0; i < ingestions.length; i += 1) {
     const ingestion = ingestions[i];

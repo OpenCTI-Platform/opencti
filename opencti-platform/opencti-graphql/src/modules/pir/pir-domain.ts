@@ -314,7 +314,7 @@ export const pirUnflagElement = async (
 
   const { relationshipId, sourceId } = input;
   // fetch in-pir rels between the entity and the pir
-  const rels = await listRelations(context, user, RELATION_IN_PIR, { fromId: sourceId, toId: pir.id, connectionFormat: false });
+  const rels = await listRelations(context, user, RELATION_IN_PIR, { fromId: sourceId, toId: pir.id });
   // eslint-disable-next-line no-restricted-syntax
   for (const rel of rels) {
     const relDependencies = (rel as any).pir_explanations as PirExplanation[];

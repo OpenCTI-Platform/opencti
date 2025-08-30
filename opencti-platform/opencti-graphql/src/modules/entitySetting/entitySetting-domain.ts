@@ -55,8 +55,7 @@ export const batchEntitySettingsByType = async (context: AuthContext, user: Auth
         mode: FilterMode.And,
         filters: [{ key: ['target_type'], values: targetTypes }],
         filterGroups: [],
-      },
-      connectionFormat: false
+      }
     });
     return targetTypes.map((targetType) => entitySettings.find((entitySetting) => entitySetting.target_type === targetType));
   };
@@ -131,7 +130,7 @@ export const initCreateEntitySettings = async (context: AuthContext, user: AuthU
   // First check existing
   const subTypes = await queryDefaultSubTypes(context, user);
   // Get all current settings
-  const entitySettings = await listAllEntities<BasicStoreEntityEntitySetting>(context, SYSTEM_USER, [ENTITY_TYPE_ENTITY_SETTING], { connectionFormat: false });
+  const entitySettings = await listAllEntities<BasicStoreEntityEntitySetting>(context, SYSTEM_USER, [ENTITY_TYPE_ENTITY_SETTING]);
   const currentEntityTypes = entitySettings.map((e) => e.target_type);
   for (let index = 0; index < subTypes.edges.length; index += 1) {
     const entityType = subTypes.edges[index].node.id;

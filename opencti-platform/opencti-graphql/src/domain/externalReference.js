@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, listThings, paginateAllThings, updateAttribute } from '../database/middleware';
+import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, listAllThings, listThings, updateAttribute } from '../database/middleware';
 import { internalLoadById, listEntitiesPaginated, storeLoadById } from '../database/middleware-loader';
 import conf, { BUS_TOPICS } from '../config/conf';
 import { FunctionalError, ValidationError } from '../config/errors';
@@ -28,13 +28,13 @@ export const references = async (context, user, externalReferenceId, args) => {
   }
   const filters = addFilter(args.filters, key, externalReferenceId);
   if (args.all) {
-    return paginateAllThings(context, user, types, R.assoc('filters', filters, args));
+    return listAllThings(context, user, types, R.assoc('filters', filters, args));
   }
   return listThings(context, user, types, R.assoc('filters', filters, args));
 };
 
 export const externalReferenceImportPush = async (context, user, externalReferenceId, file, args = {}) => {
-  const entitiesReferences = await references(context, user, externalReferenceId, { types: ['Stix-Domain-Object'], connectionFormat: false, first: 50 });
+  const entitiesReferences = await references(context, user, externalReferenceId, { types: ['Stix-Domain-Object'], first: 50 });
   const finalArgs = { ...args, importContextEntities: entitiesReferences };
   return stixCoreObjectImportPush(context, user, externalReferenceId, file, finalArgs);
 };

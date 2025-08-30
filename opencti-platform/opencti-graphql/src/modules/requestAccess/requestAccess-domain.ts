@@ -143,8 +143,7 @@ export const findFirstWorkflowStatus = async (context: AuthContext, user: AuthUs
         { key: ['scope'], values: [StatusScope.RequestAccess] }
       ],
       filterGroups: [],
-    },
-    connectionFormat: false
+    }
   };
   const allRequestAccessStatus = await listAllEntities<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], args);
   logApp.debug('[OPENCTI-MODULE][Request access] Found first status as:', { status: allRequestAccessStatus[0] });

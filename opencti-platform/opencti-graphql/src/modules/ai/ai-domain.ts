@@ -34,7 +34,6 @@ import type {
   MutationAiNlqArgs,
   MutationAiSummarizeFilesArgs,
   StixMetaObjectConnection,
-  UserConnection
 } from '../../generated/graphql';
 import { Format, Tone } from '../../generated/graphql';
 import { ABSTRACT_STIX_CORE_OBJECT, ENTITY_TYPE_CONTAINER } from '../../schema/general';
@@ -339,7 +338,7 @@ const resolveValuesIdsMapForEntityTypes = async (context: AuthContext, user: Aut
         orderBy: '_score',
         orderMode: 'desc',
       });
-      resultIds = (result as UserConnection).edges.map((n) => n.node.id);
+      resultIds = result.edges.map((n) => n.node.id);
     } else if (entityTypes.every((type) => isStixMetaObject(type))) { // case Stix-Meta-Object
       const result = await findAllSmos(context, user, {
         filters: entityTypesFilter,

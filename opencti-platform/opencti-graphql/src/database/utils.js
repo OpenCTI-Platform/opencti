@@ -270,14 +270,12 @@ export const buildPaginationFromEdges = (limit, searchAfter, edges, globalCount,
 };
 
 export const buildPagination = (limit, searchAfter, instances, globalCount, filteredCount = 0) => {
-  const edges = R.pipe(
-    R.mapObjIndexed((record) => {
-      const { node, sort, types } = record;
-      const cursor = sort ? offsetToCursor(sort) : '';
-      return { node, cursor, types };
-    }),
-    R.values
-  )(instances);
+  // TODO Make this transformation async
+  const edges = instances.map((record) => {
+    const { node, sort, types } = record;
+    const cursor = sort ? offsetToCursor(sort) : '';
+    return { node, cursor, types };
+  });
   return buildPaginationFromEdges(limit, searchAfter, edges, globalCount, filteredCount);
 };
 

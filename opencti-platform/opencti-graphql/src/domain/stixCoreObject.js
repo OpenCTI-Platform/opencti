@@ -851,7 +851,7 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
     const fileMarkings = R.uniq(R.flatten(files.filter((f) => f.file_markings).map((f) => f.file_markings)));
     let fileMarkingsPromise = Promise.resolve();
     if (fileMarkings.length > 0) {
-      const argsMarkings = { type: ENTITY_TYPE_MARKING_DEFINITION, toMap: true, connectionFormat: false, baseData: true };
+      const argsMarkings = { type: ENTITY_TYPE_MARKING_DEFINITION, toMap: true, baseData: true };
       fileMarkingsPromise = elFindByIds(context, SYSTEM_USER, R.uniq(fileMarkings), argsMarkings);
     }
     const fileMarkingsMap = await fileMarkingsPromise;

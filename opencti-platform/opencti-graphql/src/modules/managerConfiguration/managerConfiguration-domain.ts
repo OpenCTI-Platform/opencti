@@ -80,7 +80,7 @@ const addManagerConfiguration = async (
 };
 
 export const initManagerConfigurations = async (context: AuthContext, user: AuthUser) => {
-  const managerConfigurations = await listAllEntities<BasicStoreEntityManagerConfiguration>(context, user, [ENTITY_TYPE_MANAGER_CONFIGURATION], { connectionFormat: false });
+  const managerConfigurations = await listAllEntities<BasicStoreEntityManagerConfiguration>(context, user, [ENTITY_TYPE_MANAGER_CONFIGURATION]);
   const allManagerConfigurations = getAllDefaultManagerConfigurations();
   for (let index = 0; index < allManagerConfigurations.length; index += 1) {
     const managerConfiguration = { ...allManagerConfigurations[index] };

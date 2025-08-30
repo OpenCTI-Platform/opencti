@@ -23,7 +23,6 @@ import {
   type CsvMapperResolved,
   ENTITY_TYPE_CSV_MAPPER
 } from '../internal/csvMapper/csvMapper-types';
-import { findAllPaginated as findAllUsersPaginated } from '../../domain/user';
 import { type CsvBundlerTestOpts, getCsvTestObjects, removeHeaderFromFullFile } from '../../parser/csv-bundler';
 import { findById as findCsvMapperById, transformCsvMapperConfig } from '../internal/csvMapper/csvMapper-domain';
 import { parseCsvMapper } from '../internal/csvMapper/csvMapper-utils';
@@ -68,23 +67,6 @@ export const defaultIngestionGroupsCount = async (context: AuthContext) => {
   // We use SYSTEM_USER because manage ingestion should be enough to create an ingestion Feed
   const defaultGroupLength = await findDefaultIngestionGroups(context, SYSTEM_USER);
   return defaultGroupLength.length ?? 0;
-};
-
-export const userAlreadyExists = async (context: AuthContext, name: string) => {
-  // We use SYSTEM_USER because manage ingestion should be enough to create an ingestion Feed
-  const users = await findAllUsersPaginated(context, SYSTEM_USER, {
-    filters: {
-      mode: 'and',
-      filters: [
-        {
-          key: ['name'],
-          values: [name],
-        },
-      ],
-      filterGroups: [],
-    }
-  });
-  return users.edges.length > 0;
 };
 
 export const addIngestionCsv = async (context: AuthContext, user: AuthUser, input: IngestionCsvAddInput) => {

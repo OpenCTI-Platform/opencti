@@ -51,7 +51,6 @@ export const up = async (next) => {
   };
   const vocabularies = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_VOCABULARY], {
     indices: [READ_INDEX_STIX_META_OBJECTS],
-    connectionFormat: false,
     filters,
     noFiltersChecking: true,
   });

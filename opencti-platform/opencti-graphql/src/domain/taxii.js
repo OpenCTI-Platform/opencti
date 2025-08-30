@@ -180,8 +180,7 @@ export const restBuildCollection = (collection) => {
   };
 };
 export const restAllCollections = async (context, user) => {
-  const opts = { connectionFormat: false };
-  const collections = await listAllEntities(context, user, [ENTITY_TYPE_TAXII_COLLECTION, ENTITY_TYPE_INGESTION_TAXII_COLLECTION], opts);
+  const collections = await listAllEntities(context, user, [ENTITY_TYPE_TAXII_COLLECTION, ENTITY_TYPE_INGESTION_TAXII_COLLECTION]);
   return collections
     .filter((c) => !(c.entity_type === ENTITY_TYPE_INGESTION_TAXII_COLLECTION && c.ingestion_running === false))
     .map((c) => restBuildCollection(c));
