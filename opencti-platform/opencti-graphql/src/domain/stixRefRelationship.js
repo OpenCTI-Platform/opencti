@@ -11,7 +11,7 @@ import {
 } from '../schema/general';
 import { FunctionalError } from '../config/errors';
 import { isStixRefRelationship, META_RELATIONS, STIX_REF_RELATIONSHIP_TYPES } from '../schema/stixRefRelationship';
-import { internalLoadById, listRelations, storeLoadById } from '../database/middleware-loader';
+import { internalLoadById, listRelationsPaginated, storeLoadById } from '../database/middleware-loader';
 import { stixCoreRelationshipCleanContext, stixCoreRelationshipEditContext } from './stixCoreRelationship';
 import { schemaTypesDefinition } from '../schema/schema-types';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
@@ -22,17 +22,17 @@ import { findAll as findSubTypes } from './subType';
 
 // Query
 
-export const findAll = async (context, user, args) => {
-  return listRelations(context, user, args.relationship_type ?? STIX_REF_RELATIONSHIP_TYPES, args);
+export const findRefRelationshipsPaginated = async (context, user, args) => {
+  return listRelationsPaginated(context, user, args.relationship_type ?? STIX_REF_RELATIONSHIP_TYPES, args);
 };
 export const findById = async (context, user, stixRefRelationshipId) => {
   // Not use ABSTRACT_STIX_REF_RELATIONSHIP to have compatibility on parent type with ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP type
   return storeLoadById(context, user, stixRefRelationshipId, ABSTRACT_STIX_RELATIONSHIP);
 };
 const notNestedRefRelation = META_RELATIONS.map((arr) => arr.databaseName);
-export const findNested = async (context, user, args) => {
+export const findNestedPaginated = async (context, user, args) => {
   const relationTypes = schemaTypesDefinition.get(ABSTRACT_STIX_REF_RELATIONSHIP).filter((type) => !notNestedRefRelation.includes(type));
-  return listRelations(context, user, relationTypes, args);
+  return listRelationsPaginated(context, user, relationTypes, args);
 };
 export const schemaRefRelationships = async (context, user, id, toType) => {
   return findStixObjectOrStixRelationshipById(context, user, id)

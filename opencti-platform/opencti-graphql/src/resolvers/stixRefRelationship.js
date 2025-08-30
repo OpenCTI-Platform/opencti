@@ -1,8 +1,8 @@
 import {
   addStixRefRelationship,
-  findAll,
+  findRefRelationshipsPaginated,
   findById,
-  findNested,
+  findNestedPaginated,
   isDatable,
   schemaRefRelationships,
   schemaRefRelationshipsPossibleTypes,
@@ -24,8 +24,8 @@ import { filterMembersWithUsersOrgs } from '../utils/access';
 const stixRefRelationshipResolvers = {
   Query: {
     stixRefRelationship: (_, { id }, context) => findById(context, context.user, id),
-    stixRefRelationships: (_, args, context) => findAll(context, context.user, args),
-    stixNestedRefRelationships: (_, args, context) => findNested(context, context.user, args),
+    stixRefRelationships: (_, args, context) => findRefRelationshipsPaginated(context, context.user, args),
+    stixNestedRefRelationships: (_, args, context) => findNestedPaginated(context, context.user, args),
     stixSchemaRefRelationships: (_, { id, toType }, context) => schemaRefRelationships(context, context.user, id, toType),
     stixSchemaRefRelationshipsPossibleTypes: (_, { type }, context) => schemaRefRelationshipsPossibleTypes(context, context.user, type),
     stixRefRelationshipsDistribution: (_, args, context) => distributionRelations(context, context.user, args),
