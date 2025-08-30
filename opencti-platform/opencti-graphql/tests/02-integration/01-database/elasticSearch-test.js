@@ -49,6 +49,7 @@ const elWhiteUser = async () => {
 };
 
 const VOCABULARY_COUNT = 347;
+export const ENTITY_SETTINGS_COUNT = 42;
 
 describe('Elasticsearch configuration test', () => {
   it('should configuration correct', async () => {
@@ -414,7 +415,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Course-Of-Action')).toBe(1);
     expect(entityTypeMap.get('Credential')).toBe(1);
     expect(entityTypeMap.get('DecayRule')).toBe(4);
-    expect(entityTypeMap.get('EntitySetting')).toBe(44);
+    expect(entityTypeMap.get('EntitySetting')).toBe(ENTITY_SETTINGS_COUNT);
     expect(entityTypeMap.get('External-Reference')).toBe(7);
     expect(entityTypeMap.get('StixFile')).toBe(1);
     expect(entityTypeMap.get('Group')).toBe(TESTING_GROUPS.length + 3);
@@ -563,7 +564,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Course-Of-Action')).toBe(1);
     expect(entityTypeMap.get('Credential')).toBe(1);
     expect(entityTypeMap.get('DecayRule')).toBe(4);
-    expect(entityTypeMap.get('EntitySetting')).toBe(44);
+    expect(entityTypeMap.get('EntitySetting')).toBe(ENTITY_SETTINGS_COUNT);
     expect(entityTypeMap.get('External-Reference')).toBe(7);
     expect(entityTypeMap.get('StixFile')).toBe(1);
     expect(entityTypeMap.get('Group')).toBe(TESTING_GROUPS.length + 3);
@@ -598,7 +599,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Tracking-Number')).toBe(1);
     expect(entityTypeMap.get('User')).toBe(TESTING_USERS.length + 1);
     expect(entityTypeMap.get('Vocabulary')).toBe(VOCABULARY_COUNT);
-    expect(data.edges.length).toEqual(544);
+    expect(data.edges.length).toEqual(543);
   });
   it('should entity paginate with field exist filter', async () => {
     const filters = {
@@ -696,7 +697,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Capability')).toBe(42);
     expect(entityTypeMap.get('Credential')).toBe(1);
     expect(entityTypeMap.get('DecayRule')).toBe(4);
-    expect(entityTypeMap.get('EntitySetting')).toBe(44);
+    expect(entityTypeMap.get('EntitySetting')).toBe(ENTITY_SETTINGS_COUNT);
     expect(entityTypeMap.get('StixFile')).toBe(1);
     expect(entityTypeMap.get('Group')).toBe(TESTING_GROUPS.length + 3);
     expect(entityTypeMap.get('ManagerConfiguration')).toBe(1);
