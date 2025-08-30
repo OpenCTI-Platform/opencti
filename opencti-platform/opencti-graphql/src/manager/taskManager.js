@@ -53,7 +53,7 @@ import { BackgroundTaskScope } from '../generated/graphql';
 import { getDraftContext } from '../utils/draftContext';
 import { getBestBackgroundConnectorId, pushToWorkerForConnector } from '../database/rabbitmq';
 import { updateExpectationsNumber, updateProcessedTime } from '../domain/work';
-import { convertStoreToStix, convertTypeToStixType } from '../database/stix-2-1-converter';
+import { convertStoreToStix_2_1, convertTypeToStixType } from '../database/stix-2-1-converter';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { extractValidObservablesFromIndicatorPattern } from '../utils/syntax';
@@ -406,7 +406,7 @@ const promoteOperationCallback = async (context, user, task, container) => {
             externalReferences: indicator.externalReferences,
           };
           observableToCreate.standard_id = generateStandardId(observableToCreate.entity_type, observableToCreate);
-          const stixObservable = convertStoreToStix(observableToCreate);
+          const stixObservable = convertStoreToStix_2_1(observableToCreate);
           objects.push(stixObservable);
           const relationToCreate = {
             from: indicator,
@@ -421,7 +421,7 @@ const promoteOperationCallback = async (context, user, task, container) => {
             objectOrganization: indicator.objectOrganization,
           };
           relationToCreate.standard_id = generateStandardId(RELATION_BASED_ON, relationToCreate);
-          const stixRelation = convertStoreToStix(relationToCreate);
+          const stixRelation = convertStoreToStix_2_1(relationToCreate);
           objects.push(stixRelation);
         }
       }
@@ -430,7 +430,7 @@ const promoteOperationCallback = async (context, user, task, container) => {
         const indicatorToCreate = await generateIndicatorFromObservable(context, user, loadedElement, loadedElement);
         indicatorToCreate.entity_type = ENTITY_TYPE_INDICATOR;
         indicatorToCreate.standard_id = generateStandardId(ENTITY_TYPE_INDICATOR, indicatorToCreate);
-        const stixIndicator = convertStoreToStix(indicatorToCreate);
+        const stixIndicator = convertStoreToStix_2_1(indicatorToCreate);
         objects.push(stixIndicator);
         const relationToCreate = {
           from: indicatorToCreate,
@@ -445,7 +445,7 @@ const promoteOperationCallback = async (context, user, task, container) => {
           objectOrganization: indicatorToCreate.objectOrganization,
         };
         relationToCreate.standard_id = generateStandardId(RELATION_BASED_ON, relationToCreate);
-        const stixRelation = convertStoreToStix(relationToCreate);
+        const stixRelation = convertStoreToStix_2_1(relationToCreate);
         objects.push(stixRelation);
       }
     }
