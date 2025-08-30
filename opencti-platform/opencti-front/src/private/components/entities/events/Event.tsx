@@ -10,6 +10,7 @@ import StixCoreObjectOrStixRelationshipLastContainers from '../../common/contain
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
+import { useIsHiddenEntities } from '../../../../utils/hooks/useEntitySettings';
 
 const eventFragment = graphql`
   fragment Event_event on Event {
@@ -72,6 +73,8 @@ const Event: React.FC<EventProps> = ({ eventData }) => {
     eventFragment,
     eventData,
   );
+  const hiddenNote = useIsHiddenEntities('Note');
+
   return (
     <>
       <Grid
@@ -105,10 +108,12 @@ const Event: React.FC<EventProps> = ({ eventData }) => {
           <StixCoreObjectLatestHistory stixCoreObjectId={event.id} />
         </Grid>
       </Grid>
-      <StixCoreObjectOrStixCoreRelationshipNotes
-        stixCoreObjectOrStixCoreRelationshipId={event.id}
-        defaultMarkings={event.objectMarking ?? []}
-      />
+      {!hiddenNote && (
+        <StixCoreObjectOrStixCoreRelationshipNotes
+          stixCoreObjectOrStixCoreRelationshipId={event.id}
+          defaultMarkings={event.objectMarking ?? []}
+        />
+      )}
     </>
   );
 };

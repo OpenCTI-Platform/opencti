@@ -8,6 +8,7 @@ import TaskDetails from './TaskDetails';
 import { Tasks_tasks$key } from './__generated__/Tasks_tasks.graphql';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import { useIsHiddenEntities } from '../../../../utils/hooks/useEntitySettings';
 
 export const taskFragment = graphql`
   fragment Tasks_tasks on Task {
@@ -123,6 +124,7 @@ const Task: React.FC<TaskProps> = ({ taskData, enableReferences }) => {
                   </Grid>
                 );
               case 'notes':
+                if (useIsHiddenEntities('Note')) return null;
                 return (
                   <Grid key={key} item xs={width}>
                     <StixCoreObjectOrStixCoreRelationshipNotes

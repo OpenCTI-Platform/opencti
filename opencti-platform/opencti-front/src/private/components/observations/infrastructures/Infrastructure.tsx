@@ -10,6 +10,7 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import { Infrastructure_infrastructure$key } from './__generated__/Infrastructure_infrastructure.graphql';
+import { useIsHiddenEntities } from '../../../../utils/hooks/useEntitySettings';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -81,6 +82,8 @@ const Infrastructure = ({
     infrastructureFragment,
     data,
   );
+  const hiddenNote = useIsHiddenEntities('Note');
+
   return (
     <>
       <Grid
@@ -116,10 +119,13 @@ const Infrastructure = ({
           />
         </Grid>
         <Grid item xs={12}>
-          <StixCoreObjectOrStixCoreRelationshipNotes
-            stixCoreObjectOrStixCoreRelationshipId={infrastructureData.id}
-            defaultMarkings={infrastructureData.objectMarking ?? []}
-          />
+          {!hiddenNote && (
+            <StixCoreObjectOrStixCoreRelationshipNotes
+              stixCoreObjectOrStixCoreRelationshipId={infrastructureData.id}
+              defaultMarkings={infrastructureData.objectMarking ?? []}
+            />
+          )}
+
         </Grid>
       </Grid>
     </>
