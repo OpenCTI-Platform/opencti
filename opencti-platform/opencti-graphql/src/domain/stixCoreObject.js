@@ -18,7 +18,7 @@ import {
   storeLoadById,
   storeLoadByIds
 } from '../database/middleware-loader';
-import { findAll as relationFindAll } from './stixCoreRelationship';
+import { findStixCoreRelationshipsPaginated } from './stixCoreRelationship';
 import { delEditContext, notify, setEditContext, storeUpdateEvent } from '../database/redis';
 import conf, { BUS_TOPICS, logApp } from '../config/conf';
 import { ForbiddenAccess, FunctionalError, LockTimeoutError, ResourceNotFoundError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
@@ -299,9 +299,9 @@ export const externalReferencesPaginated = async (context, user, stixCoreObjectI
   return listEntitiesThroughRelationsPaginated(context, user, stixCoreObjectId, RELATION_EXTERNAL_REFERENCE, ENTITY_TYPE_EXTERNAL_REFERENCE, false, opts);
 };
 
-export const stixCoreRelationships = (context, user, stixCoreObjectId, args) => {
+export const stixCoreRelationshipsPaginated = (context, user, stixCoreObjectId, args) => {
   const finalArgs = R.assoc('fromOrToId', stixCoreObjectId, args);
-  return relationFindAll(context, user, finalArgs);
+  return findStixCoreRelationshipsPaginated(context, user, finalArgs);
 };
 
 // region relation ref

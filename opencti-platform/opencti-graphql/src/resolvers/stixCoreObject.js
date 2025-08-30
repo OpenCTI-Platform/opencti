@@ -44,7 +44,7 @@ import {
   stixCoreObjectsNumber,
   stixCoreObjectsTimeSeries,
   stixCoreObjectsTimeSeriesByAuthor,
-  stixCoreRelationships
+  stixCoreRelationshipsPaginated
 } from '../domain/stixCoreObject';
 import { fetchEditContext } from '../database/redis';
 import { distributionRelations, stixLoadByIdStringify } from '../database/middleware';
@@ -113,7 +113,7 @@ const stixCoreObjectResolvers = {
     objectMarking: (stixCoreObject, _, context) => context.batch.markingsBatchLoader.load(stixCoreObject),
     // endregion
     // region inner listing - cant be batch loaded
-    stixCoreRelationships: (stixCoreObject, args, context) => stixCoreRelationships(context, context.user, stixCoreObject.id, args),
+    stixCoreRelationships: (stixCoreObject, args, context) => stixCoreRelationshipsPaginated(context, context.user, stixCoreObject.id, args),
     externalReferences: (stixCoreObject, args, context) => externalReferencesPaginated(context, context.user, stixCoreObject.id, args),
     containers: (stixCoreObject, args, context) => containersPaginated(context, context.user, stixCoreObject.id, args),
     reports: (stixCoreObject, args, context) => reportsPaginated(context, context.user, stixCoreObject.id, args),
