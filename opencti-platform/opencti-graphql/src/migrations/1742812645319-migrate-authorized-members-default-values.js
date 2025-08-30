@@ -12,7 +12,7 @@ export const up = async (next) => {
   logMigration.info(`${message} > started`);
   // do your migration
   const context = executionContext('migration', SYSTEM_USER);
-  const entitySettings = await listAllEntities(context, context.user, [ENTITY_TYPE_ENTITY_SETTING], { connectionFormat: false });
+  const entitySettings = await listAllEntities(context, context.user, [ENTITY_TYPE_ENTITY_SETTING]);
   for (let i = 0; i < entitySettings.length; i += 1) {
     const entitySetting = entitySettings[i];
     let attributesConfiguration = getAttributesConfiguration(entitySetting);

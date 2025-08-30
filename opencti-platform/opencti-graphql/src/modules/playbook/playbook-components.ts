@@ -1144,7 +1144,7 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
         filters: [{ key: ['objects'], values: [id], }],
         filterGroups: []
       };
-      const containers = await listAllEntities(context, AUTOMATION_MANAGER_USER, [ENTITY_TYPE_CONTAINER], { filters, connectionFormat: false, baseData: true });
+      const containers = await listAllEntities(context, AUTOMATION_MANAGER_USER, [ENTITY_TYPE_CONTAINER], { filters, baseData: true });
       const containersToResolve = containers.map((container) => container.id);
       const elements = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, containersToResolve);
       if (elements.length > 0) {

@@ -6,13 +6,13 @@ import { v4 as uuid } from 'uuid';
 import ejs from 'ejs';
 import { DateTime } from 'luxon';
 import {
-  getRequestAuditHeaders,
   ACCOUNT_STATUS_ACTIVE,
   ACCOUNT_STATUS_EXPIRED,
   ACCOUNT_STATUSES,
   BUS_TOPICS,
   DEFAULT_ACCOUNT_STATUS,
   ENABLED_DEMO_MODE,
+  getRequestAuditHeaders,
   logApp
 } from '../config/conf';
 import { AuthenticationFailure, DatabaseError, DraftLockedError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
@@ -24,10 +24,9 @@ import {
   internalLoadById,
   listAllEntities,
   listAllEntitiesForFilter,
-  listAllFromEntitiesThroughRelations,
+  listAllEntitiesPaginated,
   listAllRelations,
   listAllToEntitiesThroughRelations,
-  listEntities,
   listEntitiesPaginated,
   listEntitiesThroughRelationsPaginated,
   storeLoadById
@@ -88,7 +87,7 @@ import { cleanMarkings } from '../utils/markingDefinition-utils';
 import { UnitSystem } from '../generated/graphql';
 import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
-import { addServiceAccountIntoUserCount, addUserIntoServiceAccountCount, addUserEmailSendCount } from '../manager/telemetryManager';
+import { addServiceAccountIntoUserCount, addUserEmailSendCount, addUserIntoServiceAccountCount } from '../manager/telemetryManager';
 import { sendMail } from '../database/smtp';
 import { checkEnterpriseEdition } from '../enterprise-edition/ee';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
@@ -204,21 +203,48 @@ export const findById = async (context, user, userId) => {
   return buildCompleteUser(context, withoutPassword);
 };
 
-export const findAllPaginated = async (context, user, args) => {
-  // if user is orga_admin && not set_accesses
+const buildUserOrganizationRestrictedFilters = (user, filters) => {
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
-    // TODO JRI REPLACE BY listEntities with filter?????
-    const organisationIds = user.administrated_organizations.map((organization) => organization.id);
-    const users = (await listAllFromEntitiesThroughRelations(
-      context,
-      user,
-      organisationIds,
-      RELATION_PARTICIPATE_TO,
-      ENTITY_TYPE_USER,
-    )).map((n) => ({ node: n }));
-    return buildPagination(0, null, users, users.length);
+    // If user is not a set access administrator, user can only see attached organization users
+    const organizationIds = user.administrated_organizations.map((organization) => organization.id);
+    return {
+      mode: 'and',
+      filters: [
+        {
+          key: 'regardingOf',
+          operator: 'eq',
+          values: [
+            {
+              key: 'relationship_type',
+              values: ['participate-to'],
+            },
+            {
+              key: 'id',
+              values: organizationIds,
+            },
+          ],
+          mode: 'or',
+        },
+      ],
+      filterGroups: filters ?? [],
+    };
   }
-  return listEntitiesPaginated(context, user, [ENTITY_TYPE_USER], args);
+  return filters;
+};
+
+export const findAll = async (context, user, args) => {
+  const filters = buildUserOrganizationRestrictedFilters(user, args.filters);
+  return listAllEntities(context, user, [ENTITY_TYPE_USER], { ...args, filters });
+};
+
+export const findAllPaginated = async (context, user, args) => {
+  const filters = buildUserOrganizationRestrictedFilters(user, args.filters);
+  return listAllEntitiesPaginated(context, user, [ENTITY_TYPE_USER], { ...args, filters });
+};
+
+export const findUsersPaginated = async (context, user, args) => {
+  const filters = buildUserOrganizationRestrictedFilters(user, args.filters);
+  return listEntitiesPaginated(context, user, [ENTITY_TYPE_USER], { ...args, filters });
 };
 
 export const findCreators = (context, user, args) => {
@@ -235,7 +261,7 @@ export const findParticipants = (context, user, args) => {
   return listAllEntitiesForFilter(context, user, PARTICIPANT_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes });
 };
 
-export const findAllMembersPaginated = (context, user, args) => {
+export const findMembersPaginated = (context, user, args) => {
   const { entityTypes = null } = args;
   const types = entityTypes || MEMBERS_ENTITY_TYPES;
   return listEntitiesPaginated(context, user, types, args);
@@ -245,7 +271,7 @@ export const findAllMembers = async (context, user, args) => {
   const { entityTypes = null } = args;
   const types = entityTypes || MEMBERS_ENTITY_TYPES;
   const restrictedArgs = await applyOrganizationRestriction(context, user, args);
-  return listEntities(context, user, types, restrictedArgs);
+  return listAllEntities(context, user, types, restrictedArgs);
 };
 
 export const findUserWithCapabilities = async (context, user, capabilities) => {
@@ -1045,7 +1071,7 @@ export const isUserTheLastAdmin = (userId, authorized_members) => {
 export const deleteAllWorkspaceForUser = async (context, authUser, userId) => {
   const userToDeleteAuth = await findById(context, authUser, userId);
 
-  const workspacesToDelete = await listAllEntities(context, userToDeleteAuth, [ENTITY_TYPE_WORKSPACE], { connectionFormat: false });
+  const workspacesToDelete = await listAllEntities(context, userToDeleteAuth, [ENTITY_TYPE_WORKSPACE]);
 
   const workspaceToDeleteIds = workspacesToDelete
     .filter((workspaceEntity) => isUserTheLastAdmin(userId, workspaceEntity.restricted_members))
@@ -1435,7 +1461,7 @@ export const buildCompleteUsers = async (context, clients) => {
   const resolvedUsers = [];
   const markingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   const contactInformationFilter = { mode: 'and', filters: [{ key: 'contact_information', values: clients.map((c) => c.user_email) }], filterGroups: [] };
-  const individualArgs = { indices: [READ_INDEX_STIX_DOMAIN_OBJECTS], filters: contactInformationFilter, connectionFormat: false, noFiltersChecking: true };
+  const individualArgs = { indices: [READ_INDEX_STIX_DOMAIN_OBJECTS], filters: contactInformationFilter, noFiltersChecking: true };
   const individualsPromise = listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], individualArgs);
   const authRelationships = [RELATION_PARTICIPATE_TO, RELATION_MEMBER_OF, RELATION_HAS_CAPABILITY, RELATION_HAS_ROLE, RELATION_ACCESSES_TO];
   const relations = await listAllRelations(context, SYSTEM_USER, authRelationships, { indices: READ_RELATIONSHIPS_INDICES });

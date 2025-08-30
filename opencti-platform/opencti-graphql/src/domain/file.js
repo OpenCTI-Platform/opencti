@@ -215,7 +215,6 @@ export const batchFileWorks = async (context, user, files) => {
     };
     const items = await listAllEntities(context, user, [ENTITY_TYPE_WORK], {
       indices: [READ_INDEX_HISTORY],
-      connectionFormat: false,
       orderBy: 'timestamp',
       orderMode: OrderingMode.Desc,
       filters,

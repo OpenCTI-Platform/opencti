@@ -2666,7 +2666,7 @@ const adaptFilterToSourceReliabilityFilterKey = async (context, user, filter) =>
     filters: [{ key: ['x_opencti_reliability'], operator, values, mode }],
     filterGroups: [],
   };
-  const opts = { types: authorTypes, filters: reliabilityFilter, connectionFormat: false };
+  const opts = { types: authorTypes, filters: reliabilityFilter };
   const authors = await elList(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, opts); // the authors with reliability matching the filter
   // we construct a new filter that matches against the creator internal_id respecting the filtering
   const authorIds = authors.length > 0 ? authors.map((author) => author.internal_id) : ['<no-author-matching-filter>'];
@@ -3715,22 +3715,18 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
     query.docvalue_fields = REL_DEFAULT_FETCH;
   }
   logApp.debug('[SEARCH] paginate', { query });
-  return elRawSearch(context, user, types !== null ? types : 'Any', query)
-    .then((data) => {
-      return buildSearchResult(context, user, data, first, body.search_after, options);
-    }).then((parsedResult) => {
-      if (withResultMeta) return parsedResult;
-      return parsedResult.elements;
-    }).catch(
-      /* v8 ignore next */ (err) => {
-        const root_cause = err.meta?.body?.error?.caused_by?.type;
-        if (root_cause === TOO_MANY_CLAUSES) throw ComplexSearchError();
-        throw DatabaseError('Fail to execute engine pagination', { cause: err, root_cause, query, queryArguments: options });
-      }
-    );
+  try {
+    const data = await elRawSearch(context, user, types !== null ? types : 'Any', query);
+    const parsedResult = await buildSearchResult(context, user, data, first, body.search_after, options);
+    return withResultMeta ? parsedResult : parsedResult.elements;
+  } catch (err) {
+    const root_cause = err.meta?.body?.error?.caused_by?.type;
+    if (root_cause === TOO_MANY_CLAUSES) throw ComplexSearchError();
+    throw DatabaseError('Fail to execute engine pagination', { cause: err, root_cause, query, queryArguments: options });
+  }
 };
 const elListRaw = async (context, user, indexName, opts = {}) => {
-  const { maxSize = undefined, logForMigration = false, paginated = true } = opts;
+  const { maxSize = undefined, logForMigration = false, connectionFormat = true } = opts;
   const first = opts.first ?? ES_DEFAULT_PAGINATION;
   let batch = 0;
   let emitSize = 0;
@@ -3741,7 +3737,7 @@ const elListRaw = async (context, user, indexName, opts = {}) => {
   let searchAfter = opts.after;
   const listing = [];
   const publish = async (edges, total) => {
-    const elements = paginated ? edges : await asyncMap(edges, (edge) => edge.node);
+    const elements = connectionFormat ? edges : await asyncMap(edges, (edge) => edge.node);
     totalHits = total;
     const { callback } = opts;
     if (callback) {
@@ -3752,7 +3748,7 @@ const elListRaw = async (context, user, indexName, opts = {}) => {
     }
   };
   while (continueProcess && hasNextPage) {
-    // Force options to prevent connection format and manage search after
+    // Force options to get connection format and manage search after and metadata
     const paginateOpts = { ...opts, first, after: searchAfter, connectionFormat: true, withResultMeta: true };
     const { elements: page, filterCount, total, endCursor } = await elPaginate(context, user, indexName, paginateOpts);
     totalFilteredCount += filterCount;
@@ -3784,11 +3780,11 @@ const elListRaw = async (context, user, indexName, opts = {}) => {
 };
 
 export const elListPaginated = async (context, user, indexName, opts = {}) => {
-  return elListRaw(context, user, indexName, { ...opts, paginated: true });
+  return elListRaw(context, user, indexName, { ...opts, connectionFormat: true });
 };
 
 export const elList = async (context, user, indexName, opts = {}) => {
-  const data = await elListRaw(context, user, indexName, { ...opts, paginated: false });
+  const data = await elListRaw(context, user, indexName, { ...opts, connectionFormat: false });
   return data.elements;
 };
 
@@ -3962,14 +3958,15 @@ const buildSearchResult = async (context, user, data, first, searchAfter, opts =
   const { connectionFormat = true } = opts;
   if (data.hits.hits.length === 0) {
     if (connectionFormat) {
-      return { elements: buildPagination(first, searchAfter, [], data.hits.total.value, 0), filterCount: 0, endCursor: null };
+      const elements = buildPagination(first, searchAfter, [], data.hits.total.value, 0);
+      return { elements, filterCount: 0, total: 0, endCursor: null };
     }
     return { elements: [], total: 0, filterCount: 0, endCursor: null };
   }
   const { elements, ids: elementIds } = await elConvertHits(data.hits.hits);
   const { filterCount, endCursor, elements: convertedHits } = await regardingOfFiltering(context, user, elements, elementIds, opts);
   if (connectionFormat) {
-    const nodeHits = R.map((n) => ({ node: n, sort: n.sort, types: n.regardingOfTypes }), convertedHits);
+    const nodeHits = convertedHits.map((n) => ({ node: n, sort: n.sort, types: n.regardingOfTypes }));
     const paginateElements = buildPagination(first, searchAfter, nodeHits, data.hits.total.value, filterCount);
     return { elements: paginateElements, total: data.hits.total.value, filterCount, endCursor };
   }
@@ -4074,7 +4071,7 @@ const getRelatedRelations = async (context, user, targetIds, elements, level, ca
     });
     elements.unshift(...preparedElements);
   };
-  const finalOpts = { ...opts, filters, connectionFormat: false, callback, types: [ABSTRACT_BASIC_RELATIONSHIP] };
+  const finalOpts = { ...opts, filters, callback, types: [ABSTRACT_BASIC_RELATIONSHIP] };
   await elList(context, user, READ_RELATIONSHIPS_INDICES, finalOpts);
   // If relations find, need to recurs to find relations to relations
   if (foundRelations.length > 0) {
@@ -4622,7 +4619,6 @@ const prepareIndexing = async (context, user, elements) => {
 };
 export const elListExistingDraftWorkspaces = async (context, user) => {
   const listArgs = {
-    connectionFormat: false,
     filters: { mode: FilterMode.And, filters: [{ key: ['entity_type'], values: [ENTITY_TYPE_DRAFT_WORKSPACE] }], filterGroups: [] }
   };
   return elList(context, user, READ_INDEX_INTERNAL_OBJECTS, listArgs);

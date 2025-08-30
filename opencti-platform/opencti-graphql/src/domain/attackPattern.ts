@@ -60,14 +60,13 @@ export const getAttackPatternsMatrix = async (context: AuthContext, user: AuthUs
   const attackPatternsOfPhases = [];
   const attackPatternsArgs = {
     withoutRels: false, // Must be replace by relation queries
-    connectionFormat: false,
     indices: [READ_INDEX_STIX_DOMAIN_OBJECTS],
     filters: { mode: FilterMode.And, filters: [{ key: ['revoked'], values: ['false'] }], filterGroups: [] }
   };
   const allAttackPatterns = await listAllEntities(context, user, [ENTITY_TYPE_ATTACK_PATTERN], attackPatternsArgs);
   const allAttackPatternsById = new Map(allAttackPatterns.map((a) => [a.id, a]));
-  const allKillChainPhases = await listAllEntities(context, user, [ENTITY_TYPE_KILL_CHAIN_PHASE], { connectionFormat: false, indices: [READ_INDEX_STIX_META_OBJECTS] });
-  const subTechniquesRelations = await listAllRelations<BasicStoreRelation>(context, user, RELATION_SUBTECHNIQUE_OF, { connectionFormat: false });
+  const allKillChainPhases = await listAllEntities(context, user, [ENTITY_TYPE_KILL_CHAIN_PHASE], { indices: [READ_INDEX_STIX_META_OBJECTS] });
+  const subTechniquesRelations = await listAllRelations<BasicStoreRelation>(context, user, RELATION_SUBTECHNIQUE_OF);
   for (let index = 0; index < allKillChainPhases.length; index += 1) {
     const killChainPhase = allKillChainPhases[index];
     const phaseAttackPatterns = allAttackPatterns

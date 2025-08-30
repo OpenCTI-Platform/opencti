@@ -303,7 +303,7 @@ export const listRelations = async <T extends StoreProxyRelation>(context: AuthC
   const { indices } = args;
   const computedIndices = computeQueryIndices(indices, type);
   const paginateArgs = buildRelationsFilter(type, args);
-  return elPaginate(context, user, computedIndices, paginateArgs);
+  return elPaginate(context, user, computedIndices, { ...paginateArgs, connectionFormat: false });
 };
 
 export const listRelationsPaginated = async <T extends BasicStoreRelation>(context: AuthContext, user: AuthUser, type: string | Array<string>,
@@ -365,6 +365,14 @@ export const listAllEntities = async <T extends BasicStoreEntity>(context: AuthC
   return elList(context, user, computedIndices, paginateArgs);
 };
 
+export const listAllEntitiesPaginated = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, entityTypes: Array<string>,
+  args: EntityOptions<T> = {}): Promise<StoreEntityConnection<T>> => {
+  const { indices } = args;
+  const computedIndices = computeQueryIndices(indices, entityTypes);
+  const paginateArgs = buildEntityFilters(entityTypes, args);
+  return elListPaginated(context, user, computedIndices, paginateArgs) as unknown as StoreEntityConnection<T>;
+};
+
 export interface ListAllEntitiesThroughRelation {
   type: string | string[]
   fromOrToId: string | string[]
@@ -412,7 +420,6 @@ export const listAllEntitiesThroughRelations = async <T extends BasicStoreCommon
   const relations = await listAllRelations<BasicStoreRelation>(context, user, type, {
     filters,
     indices,
-    connectionFormat: false,
     noFiltersChecking: true,
   });
   // region Resolved all targets for all relations
@@ -491,7 +498,7 @@ export const listEntitiesThroughRelationsPaginated = async <T extends BasicStore
     ],
     filterGroups: args.filters && isNotEmptyField(args.filters) ? [args.filters] : [],
   };
-  return await listEntitiesPaginated(context, user, entityTypes, { ...args, filters: connectedFilters }) as unknown as StoreCommonConnection<T>;
+  return listEntitiesPaginated(context, user, entityTypes, { ...args, filters: connectedFilters });
 };
 
 export const findEntitiesIdsWithRelations = async (

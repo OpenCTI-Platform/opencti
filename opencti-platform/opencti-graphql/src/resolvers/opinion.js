@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import {
   addOpinion,
-  findAll,
+  findOpinionsPaginated,
   findById,
   findMyOpinion,
   opinionContainsStixObjectOrStixRelationship,
@@ -42,7 +42,7 @@ const checkUserAccess = async (context, user, id) => {
 const opinionResolvers = {
   Query: {
     opinion: (_, { id }, context) => findById(context, context.user, id),
-    opinions: (_, args, context) => findAll(context, context.user, args),
+    opinions: (_, args, context) => findOpinionsPaginated(context, context.user, args),
     myOpinion: (_, { id }, context) => findMyOpinion(context, context.user, id),
     opinionsTimeSeries: (_, args, context) => {
       if (args.objectId && args.objectId.length > 0) {

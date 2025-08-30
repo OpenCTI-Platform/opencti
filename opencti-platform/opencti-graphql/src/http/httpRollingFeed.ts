@@ -67,7 +67,7 @@ const initHttpRollingFeeds = (app: Express.Application) => {
       const field = feed.feed_date_attribute ?? 'created_at';
       const extraOptions = { defaultTypes: feed.feed_types, field, orderMode: 'desc', after: fromDate };
       const options = await convertFiltersToQueryOptions(filters, extraOptions);
-      const args = { connectionFormat: false, maxSize: SIZE_LIMIT, ...options };
+      const args = { maxSize: SIZE_LIMIT, ...options };
       const paginateElements = await listAllThings(context, user, feed.feed_types, args);
       const elements = R.take(SIZE_LIMIT, paginateElements); // Due to pagination, number of results can be slightly superior
       if (feed.include_header) {

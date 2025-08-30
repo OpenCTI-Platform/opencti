@@ -79,7 +79,7 @@ export const connectorManager = async (context, user, managerId) => {
 };
 
 export const connectorManagers = async (context, user) => {
-  return listAllEntities(context, user, [ENTITY_TYPE_CONNECTOR_MANAGER], { connectionFormat: false });
+  return listAllEntities(context, user, [ENTITY_TYPE_CONNECTOR_MANAGER]);
 };
 
 export const connectorsForManagers = async (context, user) => {
@@ -116,7 +116,7 @@ export const connectorsForWorker = async (context, user) => {
   });
   // endregion
   // Expose syncs
-  const syncs = await listAllEntities(context, user, [ENTITY_TYPE_SYNC], { connectionFormat: false });
+  const syncs = await listAllEntities(context, user, [ENTITY_TYPE_SYNC]);
   for (let i = 0; i < syncs.length; i += 1) {
     const sync = syncs[i];
     registeredConnectors.push({
@@ -128,7 +128,7 @@ export const connectorsForWorker = async (context, user) => {
     });
   }
   // Expose playbooks
-  const playbooks = await listAllEntities(context, user, [ENTITY_TYPE_PLAYBOOK], { connectionFormat: false });
+  const playbooks = await listAllEntities(context, user, [ENTITY_TYPE_PLAYBOOK]);
   for (let i = 0; i < playbooks.length; i += 1) {
     const playbook = playbooks[i];
     registeredConnectors.push({

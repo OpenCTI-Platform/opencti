@@ -211,7 +211,6 @@ export const addDraftWorkspace = async (context: AuthContext, user: AuthUser, in
 
 const findAllUsersWithDraftContext = async (context: AuthContext, user: AuthUser, draftId: string) => {
   const listArgs = {
-    connectionFormat: false,
     indices: [READ_INDEX_INTERNAL_OBJECTS],
     filters: { mode: FilterMode.And, filters: [{ key: ['draft_context'], values: [draftId] }], filterGroups: [] }
   };
@@ -229,7 +228,6 @@ const deleteDraftContextFromUsers = async (context: AuthContext, user: AuthUser,
 
 const findAllWorksWithDraftContext = async (context: AuthContext, user: AuthUser, draftId: string) => {
   const listArgs = {
-    connectionFormat: false,
     indices: [READ_INDEX_HISTORY],
     filters: { mode: FilterMode.And, filters: [{ key: ['draft_context'], values: [draftId] }], filterGroups: [] }
   };

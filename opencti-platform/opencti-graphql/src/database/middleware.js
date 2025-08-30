@@ -21,7 +21,6 @@ import {
 } from '../config/errors';
 import { extractEntityRepresentativeName } from './entity-representative';
 import {
-  buildPagination,
   computeAverage,
   extractIdsFromStoreObject,
   extractObjectsPirsFromInputs,
@@ -52,6 +51,7 @@ import {
   elHistogramCount,
   elIndexElements,
   elList,
+  elListPaginated,
   elMarkElementsAsDraftDelete,
   elPaginate,
   elUpdateElement,
@@ -302,17 +302,22 @@ const checkIfInferenceOperationIsValid = (user, element) => {
 export const listThings = async (context, user, thingsTypes, args = {}) => {
   const { indices = READ_DATA_INDICES } = args;
   const paginateArgs = buildThingsFilters(thingsTypes, args);
-  return elPaginate(context, user, indices, paginateArgs);
+  return elPaginate(context, user, indices, { ...paginateArgs, connectionFormat: false });
+};
+export const listThingsPaginated = async (context, user, thingsTypes, args = {}) => {
+  const { indices = READ_DATA_INDICES } = args;
+  const paginateArgs = buildThingsFilters(thingsTypes, args);
+  return elPaginate(context, user, indices, { ...paginateArgs, connectionFormat: true });
 };
 export const listAllThings = async (context, user, thingsTypes, args = {}) => {
   const { indices = READ_DATA_INDICES } = args;
   const paginateArgs = buildThingsFilters(thingsTypes, args);
   return elList(context, user, indices, paginateArgs);
 };
-export const paginateAllThings = async (context, user, thingsTypes, args = {}) => {
-  const result = await listAllThings(context, user, thingsTypes, args);
-  const nodeResult = result.map((n) => ({ node: n }));
-  return buildPagination(0, null, nodeResult, nodeResult.length);
+export const listAllThingsPaginated = async (context, user, thingsTypes, args = {}) => {
+  const { indices = READ_DATA_INDICES } = args;
+  const paginateArgs = buildThingsFilters(thingsTypes, args);
+  return elListPaginated(context, user, indices, paginateArgs);
 };
 export const loadEntity = async (context, user, entityTypes, args = {}) => {
   const entities = await listEntities(context, user, entityTypes, args);
@@ -348,7 +353,7 @@ const loadElementMetaDependencies = async (context, user, elements, args = {}) =
   // Parallel resolutions
   const toResolvedIds = R.uniq(refsRelations.map((rel) => rel.toId));
   const toResolvedTypes = R.uniq(refsRelations.map((rel) => rel.toType));
-  const toResolvedElements = await elFindByIds(context, user, toResolvedIds, { type: toResolvedTypes, connectionFormat: false, toMap: true });
+  const toResolvedElements = await elFindByIds(context, user, toResolvedIds, { type: toResolvedTypes, toMap: true });
   const refEntries = Object.entries(refsPerElements);
   const loadedElementMap = new Map();
   for (let indexRef = 0; indexRef < refEntries.length; indexRef += 1) {
@@ -425,12 +430,11 @@ export const loadElementsWithDependencies = async (context, user, elements, opts
   });
   const depsPromise = loadElementMetaDependencies(context, user, elementsToDeps, opts);
   if (targetsToResolved.length > 0) {
-    const args = { toMap: true, connectionFormat: false };
     // Load with System user, access rights will be dynamically change after
-    fromAndToPromise = elFindByIds(context, SYSTEM_USER, targetsToResolved, args);
+    fromAndToPromise = elFindByIds(context, SYSTEM_USER, targetsToResolved, { toMap: true });
   }
   if (fileMarkings.length > 0) {
-    const args = { type: ENTITY_TYPE_MARKING_DEFINITION, toMap: true, connectionFormat: false, baseData: true };
+    const args = { type: ENTITY_TYPE_MARKING_DEFINITION, toMap: true, baseData: true };
     fileMarkingsPromise = elFindByIds(context, SYSTEM_USER, R.uniq(fileMarkings), args);
   }
   const [fromAndToMap, depsElementsMap, fileMarkingsMap] = await Promise.all([fromAndToPromise, depsPromise, fileMarkingsPromise]);
@@ -488,7 +492,7 @@ export const loadElementsWithDependencies = async (context, user, elements, opts
   return loadedElements;
 };
 const loadByIdsWithDependencies = async (context, user, ids, opts = {}) => {
-  const elements = await elFindByIds(context, user, ids, { ...opts, connectionFormat: false });
+  const elements = await elFindByIds(context, user, ids, opts);
   if (elements.length > 0) {
     return loadElementsWithDependencies(context, user, elements, opts);
   }
@@ -497,7 +501,7 @@ const loadByIdsWithDependencies = async (context, user, ids, opts = {}) => {
 const loadByFiltersWithDependencies = async (context, user, types, args = {}) => {
   const { indices = READ_DATA_INDICES } = args;
   const paginateArgs = buildEntityFilters(types, args);
-  const elements = await elList(context, user, indices, { ...paginateArgs, connectionFormat: false });
+  const elements = await elList(context, user, indices, paginateArgs);
   if (elements.length > 0) {
     return loadElementsWithDependencies(context, user, elements, { ...args, onlyMarking: false });
   }
@@ -2880,7 +2884,6 @@ export const getExistingRelations = async (context, user, input, opts = {}) => {
     const fromRuleArgs = {
       fromId: from.internal_id,
       toId: to.internal_id,
-      connectionFormat: false,
       indices: [READ_INDEX_INFERRED_RELATIONSHIPS]
     };
     const inferredRelationships = await listRelations(context, SYSTEM_USER, relationshipType, fromRuleArgs);
@@ -2917,7 +2920,7 @@ export const getExistingRelations = async (context, user, input, opts = {}) => {
       }]
     };
     // inputIds
-    const manualArgs = { indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, filters: searchFilters, connectionFormat: false };
+    const manualArgs = { indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, filters: searchFilters };
     const manualRelationships = await listRelations(context, SYSTEM_USER, relationshipType, manualArgs);
     existingRelationships.push(...manualRelationships);
   }
@@ -3610,7 +3613,6 @@ export const deleteRelationsByFromAndTo = async (context, user, fromId, toId, re
   const relationsToDelete = await listAllRelations(context, user, relationshipType, {
     indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
     baseData: true,
-    connectionFormat: false,
     filters: {
       mode: 'and',
       filters: [

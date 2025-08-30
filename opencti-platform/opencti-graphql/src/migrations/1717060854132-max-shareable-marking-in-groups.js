@@ -14,7 +14,7 @@ const message = '[MIGRATION] Remove max shareable markings from platform setting
 export const up = async (next) => {
   logApp.info(`${message} > started`);
   const context = executionContext('migration', SYSTEM_USER);
-  const groups = await listAllEntities(context, context.user, [ENTITY_TYPE_GROUP], { connectionFormat: false });
+  const groups = await listAllEntities(context, context.user, [ENTITY_TYPE_GROUP]);
   const markings = await listAllEntities(context, context.user, [ENTITY_TYPE_MARKING_DEFINITION], {});
   const settings = await getSettings(context);
   const platformMaxShareableMarkingIds = settings.platform_data_sharing_max_markings || [];
