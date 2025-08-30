@@ -23,7 +23,7 @@ import {
   vulnerabilitiesPaginated
 } from '../domain/stixCyberObservable';
 import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
-import { stixCoreObjectExportPush, stixCoreObjectImportPush, stixCoreObjectsExportPush, stixCoreRelationships } from '../domain/stixCoreObject';
+import { stixCoreObjectExportPush, stixCoreObjectImportPush, stixCoreObjectsExportPush, stixCoreRelationshipsPaginated } from '../domain/stixCoreObject';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../schema/general';
 import { stixHashesToInput } from '../schema/fieldDataAdapter';
 import { stixCyberObservableOptions } from '../schema/stixCyberObservable';
@@ -66,7 +66,7 @@ const stixCyberObservableResolvers = {
       return 'Unknown';
     },
     observable_value: (stixCyberObservable) => observableValue(stixCyberObservable),
-    stixCoreRelationships: (rel, args, context) => stixCoreRelationships(context, context.user, rel.id, args),
+    stixCoreRelationships: (rel, args, context) => stixCoreRelationshipsPaginated(context, context.user, rel.id, args),
     toStix: (stixCyberObservable, _, context) => stixLoadByIdStringify(context, context.user, stixCyberObservable.id),
     importFiles: (stixCyberObservable, { first }, context) => {
       const path = `import/${stixCyberObservable.entity_type}/${stixCyberObservable.id}`;

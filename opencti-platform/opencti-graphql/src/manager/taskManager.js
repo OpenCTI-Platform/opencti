@@ -76,7 +76,6 @@ let running = false;
 
 const findTasksToExecute = async (context) => {
   return findAll(context, SYSTEM_USER, {
-    connectionFormat: false,
     orderBy: 'created_at',
     orderMode: 'asc',
     limit: 1,
@@ -96,7 +95,7 @@ export const taskRule = async (context, user, task, callback) => {
     const { scan } = ruleDefinition;
     // task_position is no longer used, but we still handle it to properly process task that were processing before task migrated to worker
     const options = { baseData: true, orderMode: 'asc', orderBy: 'updated_at', ...buildEntityFilters(scan.types, scan), after: task_position };
-    const finalOpts = { ...options, connectionFormat: false, callback };
+    const finalOpts = { ...options, callback };
     await elList(context, RULE_MANAGER_USER, READ_DATA_INDICES_WITHOUT_INFERRED, finalOpts);
   } else {
     const filters = {
@@ -106,7 +105,7 @@ export const taskRule = async (context, user, task, callback) => {
     };
     // task_position is no longer used, but we still handle it to properly process task that were processing before task migrated to worker
     const options = { baseData: true, orderMode: 'asc', orderBy: 'updated_at', filters, after: task_position };
-    const finalOpts = { ...options, connectionFormat: false, callback };
+    const finalOpts = { ...options, callback };
     await elList(context, RULE_MANAGER_USER, READ_DATA_INDICES, finalOpts);
   }
 };
@@ -114,7 +113,7 @@ export const taskRule = async (context, user, task, callback) => {
 export const taskQuery = async (context, user, task, callback) => {
   const { task_position, task_filters, task_search = null, task_excluded_ids = [], scope, task_order_mode } = task;
   const options = await buildQueryFilters(context, user, task_filters, task_search, task_position, scope, task_order_mode, task_excluded_ids);
-  const finalOpts = { ...options, connectionFormat: false, baseData: true, callback };
+  const finalOpts = { ...options, baseData: true, callback };
   await elList(context, user, READ_DATA_INDICES, finalOpts);
 };
 

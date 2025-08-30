@@ -324,8 +324,7 @@ export const initDecayRules = async (context: AuthContext, user: AuthUser) => {
       mode: 'and' as FilterMode,
       filters: [{ key: ['built_in'], values: [true] }],
       filterGroups: [],
-    },
-    connectionFormat: false,
+    }
   };
   const currentBuiltInDecayRules = await listAllEntities<BasicStoreEntityDecayRule>(context, user, [ENTITY_TYPE_DECAY_RULE], args);
   if (currentBuiltInDecayRules.length === 0) {

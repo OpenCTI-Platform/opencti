@@ -12,12 +12,12 @@ export const up = async (next) => {
   logApp.info('[MIGRATION] Roles missing groups');
   const context = executionContext('migration', SYSTEM_USER);
   const start = new Date().getTime();
-  const relationArgs = { fromTypes: [ENTITY_TYPE_USER], connectionFormat: false };
+  const relationArgs = { fromTypes: [ENTITY_TYPE_USER] };
   const currentRolesRelations = await listAllRelations(context, context.user, [RELATION_HAS_ROLE], relationArgs);
   // If remaining user->roles relationships available.
   if (currentRolesRelations.length > 0) {
-    const roles = await listAllEntities(context, context.user, [ENTITY_TYPE_ROLE], { connectionFormat: false });
-    const groups = await listAllEntities(context, context.user, [ENTITY_TYPE_GROUP], { connectionFormat: false });
+    const roles = await listAllEntities(context, context.user, [ENTITY_TYPE_ROLE]);
+    const groups = await listAllEntities(context, context.user, [ENTITY_TYPE_GROUP]);
     const groupsNames = groups.map((group) => group.name);
     // For each role, create the corresponding group
     logApp.info(`[MIGRATION] Roles missing groups creating ${roles.length} groups from roles`);

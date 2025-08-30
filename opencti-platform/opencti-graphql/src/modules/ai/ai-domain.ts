@@ -25,7 +25,7 @@ import { isEmptyField } from '../../database/utils';
 import { generateFilterKeysSchema } from '../../domain/filterKeysSchema';
 import { findAll as findAllScos } from '../../domain/stixCoreObject';
 import { findAll as findAllSmos } from '../../domain/stixMetaObject';
-import { findAll as findAllUsers } from '../../domain/user';
+import { findAllPaginated as findAllUsersPaginated } from '../../domain/user';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import type {
   FilterGroup,
@@ -34,7 +34,6 @@ import type {
   MutationAiNlqArgs,
   MutationAiSummarizeFilesArgs,
   StixMetaObjectConnection,
-  UserConnection
 } from '../../generated/graphql';
 import { Format, Tone } from '../../generated/graphql';
 import { ABSTRACT_STIX_CORE_OBJECT, ENTITY_TYPE_CONTAINER } from '../../schema/general';
@@ -333,13 +332,13 @@ const resolveValuesIdsMapForEntityTypes = async (context: AuthContext, user: Aut
       });
       resultIds = result.edges.map((n) => n.node.id);
     } else if (entityTypes.length === 1 && entityTypes.includes(ENTITY_TYPE_USER)) { // case User
-      const result = await findAllUsers(context, user, {
+      const result = await findAllUsersPaginated(context, user, {
         filters: entityTypesFilter,
         search: value,
         orderBy: '_score',
         orderMode: 'desc',
       });
-      resultIds = (result as UserConnection).edges.map((n) => n.node.id);
+      resultIds = result.edges.map((n) => n.node.id);
     } else if (entityTypes.every((type) => isStixMetaObject(type))) { // case Stix-Meta-Object
       const result = await findAllSmos(context, user, {
         filters: entityTypesFilter,

@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { createEntity } from '../database/middleware';
-import { listAllFromEntitiesThroughRelations, listEntities, listEntitiesThroughRelationsPaginated, listRelations, storeLoadById } from '../database/middleware-loader';
+import { listAllFromEntitiesThroughRelations, listEntitiesPaginated, listEntitiesThroughRelationsPaginated, listRelations, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_IDENTITY_SECTOR } from '../schema/stixDomainObject';
@@ -14,7 +14,7 @@ export const findById = (context, user, sectorId) => {
 };
 
 export const findAll = (context, user, args) => {
-  return listEntities(context, user, [ENTITY_TYPE_IDENTITY_SECTOR], args);
+  return listEntitiesPaginated(context, user, [ENTITY_TYPE_IDENTITY_SECTOR], args);
 };
 
 export const parentSectorsPaginated = async (context, user, groupId, args) => {

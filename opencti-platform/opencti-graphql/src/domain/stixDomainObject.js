@@ -13,7 +13,7 @@ import {
 } from '../database/middleware';
 import {
   listAllToEntitiesThroughRelations,
-  listEntities,
+  listEntitiesPaginated,
   listEntitiesThroughRelationsPaginated,
   listRelations,
   storeLoadById,
@@ -58,7 +58,7 @@ export const findAll = async (context, user, args) => {
   if (types.length === 0) {
     types.push(ABSTRACT_STIX_DOMAIN_OBJECT);
   }
-  return listEntities(context, user, types, args);
+  return listEntitiesPaginated(context, user, types, args);
 };
 
 export const findById = async (context, user, stixDomainObjectId) => storeLoadById(context, user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);

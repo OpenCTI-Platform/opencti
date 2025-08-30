@@ -90,8 +90,7 @@ export const batchRequestAccessStatusesByType = async (context: AuthContext, use
         mode: FilterMode.And,
         filters: [{ key: ['type'], values: types }, { key: ['scope'], values: [StatusScope.RequestAccess] }],
         filterGroups: [],
-      },
-      connectionFormat: false
+      }
     };
     const statuses = await listAllEntities<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], argsFilter);
     const statusesGrouped = R.groupBy((e) => e.type, statuses);
@@ -113,7 +112,6 @@ export const batchGlobalStatusesByType = async (context: AuthContext, user: Auth
         filters: [{ key: ['type'], values: types }, { key: ['scope'], values: [StatusScope.Global] }],
         filterGroups: [],
       },
-      connectionFormat: false
     };
     const statuses = await listAllEntities<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], args);
     const statusesGrouped = R.groupBy((e) => e.type, statuses);
@@ -196,7 +194,7 @@ export const statusTemplateDelete = async (context: AuthContext, user: AuthUser,
     filters: [{ key: ['template_id'], values: [statusTemplateId] }],
     filterGroups: [],
   };
-  const result = await listAllEntities(context, user, [ENTITY_TYPE_STATUS], { filters, connectionFormat: false });
+  const result = await listAllEntities(context, user, [ENTITY_TYPE_STATUS], { filters });
   await Promise.all(result.map((status) => internalDeleteElementById(context, user, status.id)
     .then(({ element }) => notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, element, user))));
   const deleted = await deleteElementById(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE);

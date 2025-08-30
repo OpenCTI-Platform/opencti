@@ -16,7 +16,6 @@ import { RELATION_DYNAMIC_FROM_FILTER, RELATION_DYNAMIC_TO_FILTER } from '../uti
 export const buildArgsFromDynamicFilters = async (context, user, args) => {
   const { dynamicFrom, dynamicTo } = args;
   const listEntitiesWithFilters = async (filters) => listEntities(context, user, [ABSTRACT_STIX_OBJECT], {
-    connectionFormat: false,
     first: MAX_RUNTIME_RESOLUTION_SIZE,
     bypassSizeLimit: true, // ensure that max runtime prevent on ES_MAX_PAGINATION
     baseData: true,

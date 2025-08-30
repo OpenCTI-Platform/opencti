@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { assoc, dissoc, pipe } from 'ramda';
 import { createEntity, distributionEntities, listAllThings, patchAttribute, timeSeriesEntities } from '../database/middleware';
-import { internalLoadById, listEntities, storeLoadById } from '../database/middleware-loader';
+import { internalLoadById, listEntitiesPaginated, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_CONTAINER_OPINION } from '../schema/stixDomainObject';
@@ -18,8 +18,8 @@ import { SYSTEM_USER } from '../utils/access';
 export const findById = (context, user, opinionId) => {
   return storeLoadById(context, user, opinionId, ENTITY_TYPE_CONTAINER_OPINION);
 };
-export const findAll = async (context, user, args) => {
-  return listEntities(context, user, [ENTITY_TYPE_CONTAINER_OPINION], args);
+export const findOpinionsPaginated = async (context, user, args) => {
+  return listEntitiesPaginated(context, user, [ENTITY_TYPE_CONTAINER_OPINION], args);
 };
 export const findMyOpinion = async (context, user, entityId) => {
   const keyObject = buildRefRelationKey(RELATION_OBJECT);
@@ -32,10 +32,9 @@ export const findMyOpinion = async (context, user, entityId) => {
       ],
       filterGroups: [],
     },
-    connectionFormat: false,
   };
-  const opinions = await findAll(context, user, opinionsArgs);
-  return opinions.length > 0 ? R.head(opinions) : null;
+  const opinions = await findOpinionsPaginated(context, user, opinionsArgs);
+  return opinions.edges.length > 0 ? R.head(opinions.edges).node : null;
 };
 
 // Entities tab
@@ -52,7 +51,7 @@ export const opinionContainsStixObjectOrStixRelationship = async (context, user,
       filterGroups: [],
     },
   };
-  const opinionFound = await findAll(context, user, args);
+  const opinionFound = await findOpinionsPaginated(context, user, args);
   return opinionFound.edges.length > 0;
 };
 

@@ -35,7 +35,7 @@ import {
   type QueryIndicatorsNumberArgs,
   type StixCyberObservable
 } from '../../generated/graphql';
-import type { BasicStoreCommon, NumberResult } from '../../types/store';
+import type { BasicStoreEntity, NumberResult } from '../../types/store';
 import {
   computeChartDecayAlgoSerie,
   type ComputeDecayChartInput,
@@ -618,6 +618,6 @@ export const indicatorsDistributionByEntity = async (context: AuthContext, user:
 };
 // endregion
 
-export const observablesPaginated = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, indicatorId: string, args: EntityOptions<T>) => {
+export const observablesPaginated = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, indicatorId: string, args: EntityOptions<T>) => {
   return listEntitiesThroughRelationsPaginated<T>(context, user, indicatorId, RELATION_BASED_ON, ABSTRACT_STIX_CYBER_OBSERVABLE, false, args);
 };
