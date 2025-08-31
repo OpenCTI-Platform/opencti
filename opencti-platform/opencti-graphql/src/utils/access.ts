@@ -910,7 +910,7 @@ export const filterMembersWithUsersOrgs = async (
   if (!userInPlatformOrg) {
     const userOrgIds = (user.organizations || []).map((org) => org.id);
     return members.map((member) => {
-      if (member.id === user.id) {
+      if (member.id === user.id || INTERNAL_USERS[member.id]) { // TODO add service account after 6.8 release
         return member;
       }
       const memberOrgIds = member[RELATION_PARTICIPATE_TO] ?? [];

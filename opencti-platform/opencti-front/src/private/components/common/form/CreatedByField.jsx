@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { filter, map, pathOr, pipe, union } from 'ramda';
-import { debounce } from 'rxjs/operators';
-import { Subject, timer } from 'rxjs';
 import { Field } from 'formik';
 import makeStyles from '@mui/styles/makeStyles';
 import { fetchQuery } from '../../../../relay/environment';
@@ -11,8 +9,6 @@ import { identitySearchIdentitiesSearchQuery } from '../identities/IdentitySearc
 import ItemIcon from '../../../../components/ItemIcon';
 import { canUse } from '../../../../utils/authorizedMembers';
 import { useFormatter } from '../../../../components/i18n';
-
-const SEARCH$ = new Subject().pipe(debounce(() => timer(1500)));
 
 const useStyles = makeStyles((theme) => ({
   icon: {
@@ -47,6 +43,20 @@ const CreatedByField = (props) => {
   const { t_i18n } = useFormatter();
   const [identityCreation, setIdentityCreation] = useState(false);
   const [keyword, setKeyword] = useState('');
+  const [debouncedKeyword, setDebouncedKeyword] = useState(keyword); // Debounced value
+
+  useEffect(() => {
+    // Set a timeout to update debounced value after 500ms
+    const handler = setTimeout(() => {
+      setDebouncedKeyword(keyword);
+    }, 1500);
+
+    // Cleanup the timeout if `query` changes before 500ms
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [keyword]);
+
   const [identities, setIdentities] = useState(defaultCreatedBy
     ? [
       {
@@ -61,7 +71,7 @@ const CreatedByField = (props) => {
   const searchIdentities = () => {
     fetchQuery(identitySearchIdentitiesSearchQuery, {
       types: ['Individual', 'Organization', 'System'],
-      search: keyword,
+      search: debouncedKeyword,
       first: 10,
     })
       .toPromise()
@@ -81,18 +91,14 @@ const CreatedByField = (props) => {
   };
 
   useEffect(() => {
-    const subscription = SEARCH$.subscribe({
-      next: () => searchIdentities(),
-    });
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
+    if (debouncedKeyword) {
+      searchIdentities();
+    }
+  }, [debouncedKeyword]);
 
   const handleSearch = (event) => {
     if (event && event.target && event.target.value) {
       setKeyword(event.target.value);
-      SEARCH$.next({ action: 'Search' });
     }
   };
 

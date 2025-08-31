@@ -809,25 +809,6 @@ const isFilterKeyAvailable = (key: string, availableFilterKeys: string[]) => {
   return completedAvailableFilterKeys.includes(key) || key.startsWith('pir_score') || key.startsWith('last_pir_score_date');
 };
 
-export const useRemoveIdAndIncorrectKeysFromFilterGroupObject = (filters?: FilterGroup | null, entityTypes = ['Stix-Core-Object']): FilterGroup | undefined => {
-  const availableFilterKeys = useAvailableFilterKeysForEntityTypes(entityTypes);
-  if (!filters) {
-    return undefined;
-  }
-  return {
-    mode: filters.mode,
-    filters: filters.filters
-      .filter((f) => isFilterKeyAvailable(f.key, availableFilterKeys))
-      .filter((f) => ['nil', 'not_nil'].includes(f.operator ?? 'eq') || f.values.length > 0)
-      .map((f) => {
-        const newFilter = { ...f };
-        delete newFilter.id;
-        return newFilter;
-      }),
-    filterGroups: filters.filterGroups.map((group) => useRemoveIdAndIncorrectKeysFromFilterGroupObject(group, entityTypes)) as FilterGroup[],
-  };
-};
-
 export const removeIdFromFilterGroupObject = (filters?: FilterGroup | null): FilterGroup | undefined => {
   if (!filters) {
     return undefined;
@@ -839,11 +820,22 @@ export const removeIdFromFilterGroupObject = (filters?: FilterGroup | null): Fil
       .map((f) => {
         const newFilter = { ...f };
         delete newFilter.id;
+        if (newFilter.key === 'dynamicRegardingOf') { // remove id from filters contained in dynamic values of dynamicRegardingOf filter
+          const dynamicValues = newFilter.values.filter((value) => value.key === 'dynamic')
+            .map((dynamic) => ({
+              ...dynamic,
+              values: dynamic.values.map((dynamicFilter: FilterGroup) => removeIdFromFilterGroupObject(dynamicFilter)),
+            }));
+          const relationshipTypeValues = newFilter.values.filter((value) => value.key === 'relationship_type');
+          newFilter.values = [...dynamicValues, ...relationshipTypeValues];
+        }
         return newFilter;
       }),
     filterGroups: filters.filterGroups.map((group) => removeIdFromFilterGroupObject(group)) as FilterGroup[],
   };
 };
+
+const notCleanableFilterKeys = ['ids', 'entity_type', 'authorized_members.id', 'user_id', 'internal_id', 'entity_id'];
 
 // TODO use useRemoveIdAndIncorrectKeysFromFilterGroupObject instead when all the calling files are in pure function
 export const removeIdAndIncorrectKeysFromFilterGroupObject = (filters: FilterGroup | null | undefined, availableFilterKeys: string[]): FilterGroup | undefined => {
@@ -858,10 +850,24 @@ export const removeIdAndIncorrectKeysFromFilterGroupObject = (filters: FilterGro
       .map((f) => {
         const newFilter = { ...f };
         delete newFilter.id;
+        if (newFilter.key === 'dynamicRegardingOf') { // remove id from filters contained in dynamic values of dynamicRegardingOf filter
+          const dynamicValues = newFilter.values.filter((value) => value.key === 'dynamic')
+            .map((dynamic) => ({
+              ...dynamic,
+              values: dynamic.values.map((dynamicFilter: FilterGroup) => removeIdFromFilterGroupObject(dynamicFilter)),
+            }));
+          const relationshipTypeValues = newFilter.values.filter((value) => value.key === 'relationship_type');
+          newFilter.values = [...dynamicValues, ...relationshipTypeValues];
+        }
         return newFilter;
       }),
     filterGroups: filters.filterGroups.map((group) => removeIdAndIncorrectKeysFromFilterGroupObject(group, availableFilterKeys)) as FilterGroup[],
   };
+};
+
+export const useRemoveIdAndIncorrectKeysFromFilterGroupObject = (filters?: FilterGroup | null, entityTypes = ['Stix-Core-Object']): FilterGroup | undefined => {
+  const availableFilterKeys = useAvailableFilterKeysForEntityTypes(entityTypes).concat(notCleanableFilterKeys);
+  return removeIdAndIncorrectKeysFromFilterGroupObject(filters, availableFilterKeys);
 };
 
 export const useBuildEntityTypeBasedFilterContext = (

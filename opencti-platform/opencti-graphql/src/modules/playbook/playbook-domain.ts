@@ -42,11 +42,12 @@ import { getEntitiesListFromCache } from '../../database/cache';
 import { SYSTEM_USER } from '../../utils/access';
 import { findFiltersFromKey, checkAndConvertFilters } from '../../utils/filtering/filtering-utils';
 import { elFindByIds } from '../../database/engine';
-import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
+import { checkEnterpriseEdition, isEnterpriseEdition } from '../../enterprise-edition/ee';
 import pjson from '../../../package.json';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
+import { buildPagination } from '../../database/utils';
 
 const MINIMAL_COMPATIBLE_VERSION = '6.7.14';
 
@@ -56,17 +57,26 @@ export const findById: DomainFindById<BasicStoreEntityPlaybook> = async (context
 };
 
 export const findAll = async (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityPlaybook>) => {
-  await checkEnterpriseEdition(context);
+  const isEE = await isEnterpriseEdition(context);
+  if (!isEE) {
+    return buildPagination(0, null, [], 0);
+  }
   return listEntitiesPaginated<BasicStoreEntityPlaybook>(context, user, [ENTITY_TYPE_PLAYBOOK], opts);
 };
 
 export const findAllPlaybooks = async (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityPlaybook>) => {
-  await checkEnterpriseEdition(context);
+  const isEE = await isEnterpriseEdition(context);
+  if (!isEE) {
+    return buildPagination(0, null, [], 0);
+  }
   return listAllEntities<BasicStoreEntityPlaybook>(context, user, [ENTITY_TYPE_PLAYBOOK], opts);
 };
 
 export const findPlaybooksForEntity = async (context: AuthContext, user: AuthUser, id: string) => {
-  await checkEnterpriseEdition(context);
+  const isEE = await isEnterpriseEdition(context);
+  if (!isEE) {
+    return [];
+  }
   const stixEntity = await stixLoadById(context, user, id);
   const playbooks = await getEntitiesListFromCache<BasicStoreEntityPlaybook>(context, SYSTEM_USER, ENTITY_TYPE_PLAYBOOK);
   const filteredPlaybooks = [];
@@ -158,7 +168,6 @@ const checkPlaybookFiltersAndBuildConfigWithCorrectFilters = async (
 export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: string, input: PlaybookAddNodeInput) => {
   await checkEnterpriseEdition(context);
   const configuration = await checkPlaybookFiltersAndBuildConfigWithCorrectFilters(context, user, input, user.id);
-
   const playbook = await findById(context, user, id);
   const definition = JSON.parse(playbook.playbook_definition ?? '{}') as ComponentDefinition;
   const relatedComponent = PLAYBOOK_COMPONENTS[input.component_id];

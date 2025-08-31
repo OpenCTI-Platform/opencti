@@ -395,7 +395,7 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
   const platformModuleHelpers = platformModuleHelper(settings);
   const platformAnalyticsConfiguration = generateAnalyticsConfig(settings);
 
-  const { isReachable } = useNetworkCheck(settings?.platform_xtmhub_url);
+  const { isReachable } = useNetworkCheck(`${settings?.platform_xtmhub_url}/health`);
   return (
     <UserContext.Provider
       value={{

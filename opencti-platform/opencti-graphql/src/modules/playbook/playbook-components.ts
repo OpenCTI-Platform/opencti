@@ -318,7 +318,7 @@ const PLAYBOOK_REDUCING_COMPONENT: PlaybookComponent<ReduceConfiguration> = {
   icon: 'reduce',
   is_entry_point: false,
   is_internal: true,
-  ports: [{ id: 'out', type: 'out' }],
+  ports: [{ id: 'out', type: 'out' }, { id: 'unmatch', type: 'out' }],
   configuration_schema: PLAYBOOK_REDUCING_COMPONENT_SCHEMA,
   schema: async () => PLAYBOOK_REDUCING_COMPONENT_SCHEMA,
   executor: async ({ playbookNode, dataInstanceId, bundle }) => {
@@ -326,6 +326,10 @@ const PLAYBOOK_REDUCING_COMPONENT: PlaybookComponent<ReduceConfiguration> = {
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
     const { filters } = playbookNode.configuration;
     const jsonFilters = JSON.parse(filters);
+    const baseMatches = await isStixMatchFilterGroup(context, SYSTEM_USER, baseData, jsonFilters);
+    if (!baseMatches) {
+      return { output_port: 'unmatch', bundle };
+    }
     const matchedElements = [baseData];
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const bundleElement = bundle.objects[index];
