@@ -64,14 +64,6 @@ export const findPlaybookPaginated = async (context: AuthContext, user: AuthUser
   return listEntitiesPaginated<BasicStoreEntityPlaybook>(context, user, [ENTITY_TYPE_PLAYBOOK], opts);
 };
 
-export const findAllPlaybooks = async (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityPlaybook>) => {
-  const isEE = await isEnterpriseEdition(context);
-  if (!isEE) {
-    return buildPagination(0, null, [], 0);
-  }
-  return listAllEntities<BasicStoreEntityPlaybook>(context, user, [ENTITY_TYPE_PLAYBOOK], opts);
-};
-
 export const findPlaybooksForEntity = async (context: AuthContext, user: AuthUser, id: string) => {
   const isEE = await isEnterpriseEdition(context);
   if (!isEE) {
