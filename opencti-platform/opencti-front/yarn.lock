@@ -18258,7 +18258,7 @@ __metadata:
     moment: "npm:2.30.1"
     moment-timezone: "npm:0.6.0"
     monocart-reporter: "npm:2.9.21"
-    pdfmake: "npm:0.2.18"
+    pdfmake: "npm:0.2.20"
     prop-types: "npm:15.8.1"
     qrcode: "npm:1.5.4"
     ramda: "npm:0.31.3"
@@ -18611,15 +18611,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pdfmake@npm:0.2.18":
-  version: 0.2.18
-  resolution: "pdfmake@npm:0.2.18"
+"pdfmake@npm:0.2.20":
+  version: 0.2.20
+  resolution: "pdfmake@npm:0.2.20"
   dependencies:
     "@foliojs-fork/linebreak": "npm:^1.1.2"
     "@foliojs-fork/pdfkit": "npm:^0.15.3"
     iconv-lite: "npm:^0.6.3"
-    xmldoc: "npm:^1.3.0"
-  checksum: 10/02c430bfa761615dd2237880d4d7ad07279fbc47017701111d15a39dabe9f8f00973d59f66f6401124f2558f358d0bec639855645f2f67b29937f9fe3225ee70
+    xmldoc: "npm:^2.0.1"
+  checksum: 10/524807370eb9f9c2a55b7aadfb2dfbd183ac81b2d7dbcba8e4f79566f220fcbf8e73d3a28e5988d42b38094615c82b966d7a039a07159db836c800a7395b5d44
   languageName: node
   linkType: hard
 
@@ -23279,12 +23279,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"xmldoc@npm:^1.3.0":
-  version: 1.3.0
-  resolution: "xmldoc@npm:1.3.0"
+"xmldoc@npm:^2.0.1":
+  version: 2.0.2
+  resolution: "xmldoc@npm:2.0.2"
   dependencies:
     sax: "npm:^1.2.4"
-  checksum: 10/7a084948c3671d9337764168c40d72f8e73f5483cae6a561e2fdb338c4942d16c7d61d9163c089b041a5d588916b57a0835547841acafae02e388b62fe86b821
+  checksum: 10/b62fe5b2de3c9f79e5d26d1737583a7988dcc19eb0bb1710480940b0500c50f5d565ebf9682b5be0b43658811ab919e05cab45b8ad5e8fee4bb9300a3e3cd758
   languageName: node
   linkType: hard
 
