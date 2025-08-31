@@ -1005,7 +1005,8 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
     { name: RELATION_USES, type: REL_EXTENDED }
   ],
   [`${ENTITY_HOSTNAME}_${ENTITY_DOMAIN_NAME}`]: [
-    { name: RELATION_COMMUNICATES_WITH, type: REL_EXTENDED }
+    { name: RELATION_COMMUNICATES_WITH, type: REL_EXTENDED },
+    { name: RELATION_RESOLVES_TO, type: REL_EXTENDED },
   ],
   [`${ENTITY_HOSTNAME}_${ENTITY_IPV4_ADDR}`]: [
     { name: RELATION_COMMUNICATES_WITH, type: REL_EXTENDED },
@@ -1124,6 +1125,10 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   // endregion
   // region DOMAIN_NAME
   [`${ENTITY_DOMAIN_NAME}_${ENTITY_DOMAIN_NAME}`]: [
+    { name: RELATION_RESOLVES_TO, type: REL_BUILT_IN },
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_DOMAIN_NAME}_${ENTITY_HOSTNAME}`]: [
     { name: RELATION_RESOLVES_TO, type: REL_BUILT_IN },
     { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
   ],
