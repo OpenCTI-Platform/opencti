@@ -17,7 +17,7 @@ import { v4 as uuidv4 } from 'uuid';
 import type { FileHandle } from 'fs/promises';
 import { BUS_TOPICS, logApp } from '../../config/conf';
 import { createEntity, deleteElementById, patchAttribute, stixLoadById, updateAttribute } from '../../database/middleware';
-import { type EntityOptions, internalFindByIds, listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { type EntityOptions, internalFindByIds, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { notify } from '../../database/redis';
 import type { DomainFindById } from '../../domain/domainTypes';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
