@@ -18,11 +18,11 @@ export const findById = async (context: AuthContext, user: AuthUser, ingestionId
   return taxiiIngestion;
 };
 
-export const findAllPaginated = async (context: AuthContext, user: AuthUser, opts = {}) => {
+export const findTaxiiIngestionPaginated = async (context: AuthContext, user: AuthUser, opts = {}) => {
   return listEntitiesPaginated<BasicStoreEntityIngestionTaxii>(context, user, [ENTITY_TYPE_INGESTION_TAXII], opts);
 };
 
-export const findAllTaxiiIngestions = async (context: AuthContext, user: AuthUser, opts = {}) => {
+export const findAllTaxiiIngestion = async (context: AuthContext, user: AuthUser, opts = {}) => {
   return listAllEntities<BasicStoreEntityIngestionTaxii>(context, user, [ENTITY_TYPE_INGESTION_TAXII], opts);
 };
 

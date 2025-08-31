@@ -16,7 +16,7 @@ import type { BasicStoreEntityCase } from '../case-types';
 export const findById: DomainFindById<BasicStoreEntityCaseTemplate> = (context: AuthContext, user: AuthUser, templateId: string) => {
   return storeLoadById(context, user, templateId, ENTITY_TYPE_CASE_TEMPLATE);
 };
-export const findAll = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityCaseTemplate>) => {
+export const findCaseTemplatePaginated = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityCaseTemplate>) => {
   return listEntitiesPaginated<BasicStoreEntityCaseTemplate>(context, user, [ENTITY_TYPE_CASE_TEMPLATE], opts);
 };
 

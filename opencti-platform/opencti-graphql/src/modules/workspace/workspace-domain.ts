@@ -3,7 +3,7 @@ import type { FileHandle } from 'fs/promises';
 import { v4 as uuidv4 } from 'uuid';
 import pjson from '../../../package.json';
 import { createEntity, deleteElementById, listAllThingsPaginated, updateAttribute, listThingsPaginated } from '../../database/middleware';
-import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS } from '../../config/conf';
 import { delEditContext, notify, setEditContext } from '../../database/redis';
 import { ENTITY_TYPE_WORKSPACE, type BasicStoreEntityWorkspace } from './workspace-types';
@@ -59,17 +59,12 @@ export const findById = (
   );
 };
 
-export const findAll = (
-  context: AuthContext,
-  user: AuthUser,
-  args: QueryWorkspacesArgs,
-) => {
-  return listEntitiesPaginated<BasicStoreEntityWorkspace>(
-    context,
-    user,
-    [ENTITY_TYPE_WORKSPACE],
-    args,
-  );
+export const findAllWorkspaces = (context: AuthContext, user: AuthUser, args: QueryWorkspacesArgs) => {
+  return listAllEntities(context, user, [ENTITY_TYPE_WORKSPACE], args);
+};
+
+export const findWorkspacePaginated = (context: AuthContext, user: AuthUser, args: QueryWorkspacesArgs) => {
+  return listEntitiesPaginated<BasicStoreEntityWorkspace>(context, user, [ENTITY_TYPE_WORKSPACE], args);
 };
 
 export const workspaceEditAuthorizedMembers = async (

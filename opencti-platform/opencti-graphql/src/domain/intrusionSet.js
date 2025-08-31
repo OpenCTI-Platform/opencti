@@ -12,7 +12,7 @@ export const findById = (context, user, intrusionSetId) => {
   return storeLoadById(context, user, intrusionSetId, ENTITY_TYPE_INTRUSION_SET);
 };
 
-export const findAll = (context, user, args) => {
+export const findIntrusionSetPaginated = (context, user, args) => {
   return listEntitiesPaginated(context, user, [ENTITY_TYPE_INTRUSION_SET], args);
 };
 

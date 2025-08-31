@@ -45,7 +45,7 @@ export const findById = async (context: AuthContext, user: AuthUser, id: string)
   return storeLoadById<BasicStoreEntityDisseminationList>(context, user, id, ENTITY_TYPE_DISSEMINATION_LIST);
 };
 
-export const findAll = async (context: AuthContext, user: AuthUser, args: QueryDisseminationListsArgs) => {
+export const findDisseminationListPaginated = async (context: AuthContext, user: AuthUser, args: QueryDisseminationListsArgs) => {
   await checkEnterpriseEdition(context);
   return listEntitiesPaginated<BasicStoreEntityDisseminationList>(context, user, [ENTITY_TYPE_DISSEMINATION_LIST], args);
 };

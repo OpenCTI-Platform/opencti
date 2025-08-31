@@ -1,11 +1,11 @@
-import { deleteTask, createQueryTask, findAllPaginated, findById } from '../domain/backgroundTask';
+import { deleteTask, createQueryTask, findBackgroundTaskPaginated, findById } from '../domain/backgroundTask';
 import { createListTask } from '../domain/backgroundTask-common';
 import { ENTITY_TYPE_WORK } from '../schema/internalObject';
 
 const taskResolvers = {
   Query: {
     backgroundTask: (_, { id }, context) => findById(context, context.user, id),
-    backgroundTasks: (_, args, context) => findAllPaginated(context, context.user, args),
+    backgroundTasks: (_, args, context) => findBackgroundTaskPaginated(context, context.user, args),
   },
   Mutation: {
     listTaskAdd: (_, { input }, context) => createListTask(context, context.user, input),

@@ -3,7 +3,7 @@ import {
   buildAdministratedOrganizations,
   childOrganizationsPaginated,
   editAuthorizedAuthorities,
-  findAll,
+  findOrganizationPaginated,
   findAllSecurityOrganizations,
   findById,
   findGrantableGroups,
@@ -30,7 +30,7 @@ import { getUserAccessRight } from '../../utils/access';
 const organizationResolvers: Resolvers = {
   Query: {
     organization: (_, { id }, context) => findById(context, context.user, id),
-    organizations: (_, args, context) => findAll(context, context.user, args),
+    organizations: (_, args, context) => findOrganizationPaginated(context, context.user, args),
     securityOrganizations: (_, args, context) => findAllSecurityOrganizations(context, context.user, args),
   },
   Organization: {

@@ -38,7 +38,7 @@ export const findById = async (context: AuthContext, user: AuthUser, jsonMapperI
   return storeLoadById<BasicStoreEntityJsonMapper>(context, user, jsonMapperId, ENTITY_TYPE_JSON_MAPPER);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, opts: QueryJsonMappersArgs) => {
+export const findJsonMapperPaginated = (context: AuthContext, user: AuthUser, opts: QueryJsonMappersArgs) => {
   return listEntitiesPaginated<BasicStoreEntityJsonMapper>(context, user, [ENTITY_TYPE_JSON_MAPPER], opts);
 };
 

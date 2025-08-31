@@ -9,7 +9,7 @@ export const findById = (context, user, toolId) => {
   return storeLoadById(context, user, toolId, ENTITY_TYPE_TOOL);
 };
 
-export const findAll = (context, user, args) => {
+export const findToolPaginated = (context, user, args) => {
   return listEntitiesPaginated(context, user, [ENTITY_TYPE_TOOL], args);
 };
 

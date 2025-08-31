@@ -2,7 +2,7 @@ import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic
 import * as R from 'ramda';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../schema/internalObject';
 import { createEntity, deleteElementById, internalDeleteElementById, updateAttribute } from '../database/middleware';
-import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../database/middleware-loader';
+import { listAllEntities, listEntitiesPaginated, storeLoadById, storeLoadByIds } from '../database/middleware-loader';
 import { findById as findSubTypeById } from './subType';
 import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
 import {
@@ -33,20 +33,14 @@ import { telemetry } from '../config/tracing';
 export const findTemplateById = (context: AuthContext, user: AuthUser, statusTemplateId: string): StatusTemplate => {
   return storeLoadById(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE) as unknown as StatusTemplate;
 };
-export const findAllTemplates = async (context: AuthContext, user: AuthUser, args: QueryStatusTemplatesArgs) => {
+export const findTemplatePaginated = async (context: AuthContext, user: AuthUser, args: QueryStatusTemplatesArgs) => {
   return listEntitiesPaginated<BasicStoreEntity>(context, user, [ENTITY_TYPE_STATUS_TEMPLATE], args);
 };
 export const findAllTemplatesByStatusScope = async (context: AuthContext, user: AuthUser, args: QueryStatusTemplatesByStatusScopeArgs) => {
   const platformStatuses = await getEntitiesListFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);
   const allStatusesByScope = platformStatuses.filter((status) => status.scope === args.scope);
-  const templateByScope: StatusTemplate[] = [];
-
-  for (let i = 0; i < allStatusesByScope.length; i += 1) {
-    const status = allStatusesByScope[i];
-    const templateForStatus = await storeLoadById(context, user, status.template_id, ENTITY_TYPE_STATUS_TEMPLATE) as unknown as StatusTemplate;
-    templateByScope.push(templateForStatus);
-  }
-  return templateByScope;
+  const templateIds = allStatusesByScope.map((status) => status.template_id);
+  return storeLoadByIds<BasicWorkflowStatus>(context, user, templateIds, ENTITY_TYPE_STATUS_TEMPLATE);
 };
 export const findById = async (context: AuthContext, user: AuthUser, statusId: string): Promise<BasicWorkflowStatus> => {
   const platformStatuses = await getEntitiesListFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);
@@ -57,7 +51,7 @@ export const findByType = async (context: AuthContext, user: AuthUser, statusTyp
   const platformStatuses = await getEntitiesListFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);
   return platformStatuses.filter((status) => status.type === statusType);
 };
-export const findAll = (context: AuthContext, user: AuthUser, args: QueryStatusesArgs) => {
+export const findStatusPaginated = (context: AuthContext, user: AuthUser, args: QueryStatusesArgs) => {
   return listEntitiesPaginated<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], args);
 };
 export const getTypeStatuses = async (context: AuthContext, user: AuthUser, type: string) => {
@@ -71,7 +65,7 @@ export const getTypeStatuses = async (context: AuthContext, user: AuthUser, type
         filterGroups: [],
       },
     };
-    return findAll(context, user, args);
+    return findStatusPaginated(context, user, args);
   };
   return telemetry(context, user, 'QUERY type statuses', {
     [SEMATTRS_DB_NAME]: 'statuses_domain',

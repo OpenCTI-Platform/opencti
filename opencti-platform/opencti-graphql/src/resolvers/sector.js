@@ -1,4 +1,4 @@
-import { addSector, childSectorsPaginated, findAll, findById, isSubSector, parentSectorsPaginated, targetedOrganizations } from '../domain/sector';
+import { addSector, childSectorsPaginated, findSectorPaginated, findById, isSubSector, parentSectorsPaginated, targetedOrganizations } from '../domain/sector';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -11,7 +11,7 @@ import {
 const sectorResolvers = {
   Query: {
     sector: (_, { id }, context) => findById(context, context.user, id),
-    sectors: (_, args, context) => findAll(context, context.user, args),
+    sectors: (_, args, context) => findSectorPaginated(context, context.user, args),
   },
   Sector: {
     parentSectors: (sector, args, context) => parentSectorsPaginated(context, context.user, sector.id, args),

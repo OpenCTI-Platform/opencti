@@ -4,7 +4,7 @@ import {
   csvMapperTest,
   deleteCsvMapper,
   fieldPatchCsvMapper,
-  findAll,
+  findCsvMapperPaginated,
   findById,
   csvMapperSchemaAttributes,
   getParsedRepresentations,
@@ -16,7 +16,7 @@ import { getCsvMapperErrorMessage } from './csvMapper-utils';
 const csvMapperResolvers: Resolvers = {
   Query: {
     csvMapper: (_, { id }, context) => findById(context, context.user, id),
-    csvMappers: (_, args, context) => findAll(context, context.user, args),
+    csvMappers: (_, args, context) => findCsvMapperPaginated(context, context.user, args),
     csvMapperSchemaAttributes: (_, __, context) => csvMapperSchemaAttributes(context, context.user),
     csvMapperAddInputFromImport: (_, { file }, context) => csvMapperAddInputFromImport(context, context.user, file),
   },

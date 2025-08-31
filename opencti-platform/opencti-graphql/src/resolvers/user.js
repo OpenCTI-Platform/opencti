@@ -15,7 +15,7 @@ import {
   buildCompleteUser,
   deleteBookmark,
   findMembersPaginated,
-  findAllSystemMembers,
+  findAllSystemMemberPaginated,
   findAssignees,
   findById,
   findCapabilities,
@@ -52,7 +52,7 @@ import {
   userWithOrigin,
   userRoles,
   sendEmailToUser,
-  findUsersPaginated
+  findUserPaginated
 } from '../domain/user';
 import { subscribeToInstanceEvents, subscribeToUserEvents } from '../graphql/subscriptionWrapper';
 import { publishUserAction } from '../listener/UserActionListener';
@@ -67,7 +67,7 @@ const userResolvers = {
     me: (_, __, context) => context.user,
     user: (_, { id }, context) => findById(context, context.user, id),
     otpGeneration: (_, __, context) => otpUserGeneration(context.user),
-    users: (_, args, context) => findUsersPaginated(context, context.user, args),
+    users: (_, args, context) => findUserPaginated(context, context.user, args),
     role: (_, { id }, context) => findRoleById(context, context.user, id),
     roles: (_, args, context) => findRoles(context, context.user, args),
     creators: async (_, args, context) => { // all
@@ -80,7 +80,7 @@ const userResolvers = {
     assignees: (_, args, context) => findAssignees(context, context.user, args),
     participants: (_, args, context) => findParticipants(context, context.user, args),
     members: (_, args, context) => findMembersPaginated(context, context.user, args),
-    systemMembers: () => findAllSystemMembers(),
+    systemMembers: () => findAllSystemMemberPaginated(),
     sessions: () => findSessions(),
     capabilities: (_, args, context) => findCapabilities(context, context.user, args),
     bookmarks: (_, args, context) => bookmarks(context, context.user, args),

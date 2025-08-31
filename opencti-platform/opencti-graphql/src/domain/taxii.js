@@ -46,7 +46,7 @@ export const createTaxiiCollection = async (context, user, input) => {
 export const findById = async (context, user, collectionId) => {
   return storeLoadById(context, user, collectionId, [ENTITY_TYPE_TAXII_COLLECTION, ENTITY_TYPE_INGESTION_TAXII_COLLECTION]);
 };
-export const findAll = (context, user, args) => {
+export const findTaxiiCollectionPaginated = (context, user, args) => {
   if (user && isUserHasCapability(user, TAXIIAPI)) {
     const options = { ...args, includeAuthorities: true };
     return listEntitiesPaginated(context, user, [ENTITY_TYPE_TAXII_COLLECTION], options);

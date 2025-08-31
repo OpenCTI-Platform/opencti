@@ -50,7 +50,7 @@ import { validateMarking } from '../utils/access';
 import { editAuthorizedMembers } from '../utils/authorizedMembers';
 import { getPirWithAccessCheck } from '../modules/pir/pir-checkPirAccess';
 
-export const findAll = async (context, user, args) => {
+export const findStixDomainObjectPaginated = async (context, user, args) => {
   let types = [];
   if (isNotEmptyField(args.types)) {
     types = R.filter((type) => isStixDomainObject(type), args.types);

@@ -21,7 +21,7 @@ export const findById: DomainFindById<BasicStoreEntityFeedback> = (context: Auth
   return storeLoadById(context, user, caseId, ENTITY_TYPE_CONTAINER_FEEDBACK);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityFeedback>) => {
+export const findFeedbackPaginated = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityFeedback>) => {
   return listEntitiesPaginated<BasicStoreEntityFeedback>(context, user, [ENTITY_TYPE_CONTAINER_FEEDBACK], opts);
 };
 
@@ -47,7 +47,7 @@ export const feedbackContainsStixObjectOrStixRelationship = async (context: Auth
       filterGroups: [],
     },
   };
-  const feedbackFound = await findAll(context, user, args);
+  const feedbackFound = await findFeedbackPaginated(context, user, args);
   return feedbackFound.edges.length > 0;
 };
 

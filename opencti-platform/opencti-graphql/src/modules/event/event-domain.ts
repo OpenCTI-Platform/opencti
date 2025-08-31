@@ -11,7 +11,7 @@ export const findById = (context: AuthContext, user: AuthUser, channelId: string
   return storeLoadById(context, user, channelId, ENTITY_TYPE_EVENT) as unknown as BasicStoreEntityEvent;
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, opts: QueryEventsArgs) => {
+export const findEventPaginated = (context: AuthContext, user: AuthUser, opts: QueryEventsArgs) => {
   return listEntitiesPaginated<BasicStoreEntityEvent>(context, user, [ENTITY_TYPE_EVENT], opts);
 };
 

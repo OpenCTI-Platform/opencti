@@ -48,7 +48,7 @@ export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntitySupportPackage>(context, user, id, ENTITY_TYPE_SUPPORT_PACKAGE);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, args: QuerySupportPackagesArgs) => {
+export const findSupportPaginated = (context: AuthContext, user: AuthUser, args: QuerySupportPackagesArgs) => {
   return listEntitiesPaginated<BasicStoreEntitySupportPackage>(context, user, [ENTITY_TYPE_SUPPORT_PACKAGE], args);
 };
 

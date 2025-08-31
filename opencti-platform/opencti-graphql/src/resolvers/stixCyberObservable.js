@@ -2,7 +2,7 @@ import { BUS_TOPICS } from '../config/conf';
 import {
   addStixCyberObservable,
   artifactImport,
-  findAll,
+  findStixCyberObservablePaginated,
   findById,
   indicatorsPaginated,
   promoteObservableToIndicator,
@@ -35,7 +35,7 @@ import { countriesPaginated } from '../domain/region';
 const stixCyberObservableResolvers = {
   Query: {
     stixCyberObservable: (_, { id }, context) => findById(context, context.user, id),
-    stixCyberObservables: (_, args, context) => findAll(context, context.user, args),
+    stixCyberObservables: (_, args, context) => findStixCyberObservablePaginated(context, context.user, args),
     stixCyberObservablesTimeSeries: (_, args, context) => {
       return stixCyberObservablesTimeSeries(context, context.user, args);
     },

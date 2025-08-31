@@ -11,7 +11,7 @@ export const findById = (context, user, threatActorId) => {
   return storeLoadById(context, user, threatActorId, ENTITY_TYPE_THREAT_ACTOR_GROUP);
 };
 
-export const findAll = (context, user, args) => {
+export const findThreatActorGroupPaginated = (context, user, args) => {
   return listEntitiesPaginated(context, user, [ENTITY_TYPE_THREAT_ACTOR_GROUP], args);
 };
 

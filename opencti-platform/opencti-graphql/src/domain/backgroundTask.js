@@ -17,7 +17,7 @@ import { ENTITY_TYPE_CASE_TEMPLATE } from '../modules/case/case-template/case-te
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
 import { BackgroundTaskScope, FilterMode } from '../generated/graphql';
-import { findAll as findAllWorkspaces } from '../modules/workspace/workspace-domain';
+import { findAllWorkspaces } from '../modules/workspace/workspace-domain';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { getDraftContext } from '../utils/draftContext';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
@@ -44,11 +44,11 @@ export const findById = async (context, user, taskId) => {
   return storeLoadById(context, user, taskId, ENTITY_TYPE_BACKGROUND_TASK);
 };
 
-export const findAllPaginated = (context, user, args) => {
+export const findBackgroundTaskPaginated = (context, user, args) => {
   return listEntitiesPaginated(context, user, [ENTITY_TYPE_BACKGROUND_TASK], args);
 };
 
-export const findAll = (context, user, args) => {
+export const findBackgroundTask = (context, user, args) => {
   return listEntities(context, user, [ENTITY_TYPE_BACKGROUND_TASK], args);
 };
 
@@ -83,7 +83,7 @@ export const buildQueryFilters = async (context, user, filters, search, taskPosi
         }
       }
     );
-    const dashboardIds = dashboards.edges.map((n) => (n.node.id));
+    const dashboardIds = dashboards.map((n) => n.id);
     inputFilters = addFilter(inputFilters, 'dashboard_id', dashboardIds);
     types = [ENTITY_TYPE_PUBLIC_DASHBOARD];
   } else if (scope === BackgroundTaskScope.Dashboard || scope === BackgroundTaskScope.Investigation) {

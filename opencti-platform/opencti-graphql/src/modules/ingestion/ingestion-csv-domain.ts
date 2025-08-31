@@ -51,11 +51,11 @@ export const findById = async (context: AuthContext, user: AuthUser, ingestionId
 
 // findLastCSVIngestion
 
-export const findAllPaginated = async (context: AuthContext, user: AuthUser, opts = {}) => {
+export const findCsvIngestionPaginated = async (context: AuthContext, user: AuthUser, opts = {}) => {
   return listEntitiesPaginated<BasicStoreEntityIngestionCsv>(context, user, [ENTITY_TYPE_INGESTION_CSV], opts);
 };
 
-export const findAllCsvIngestions = async (context: AuthContext, user: AuthUser, opts = {}) => {
+export const findAllCsvIngestion = async (context: AuthContext, user: AuthUser, opts = {}) => {
   return listAllEntities<BasicStoreEntityIngestionCsv>(context, user, [ENTITY_TYPE_INGESTION_CSV], opts);
 };
 

@@ -2,12 +2,12 @@ import type { Resolvers } from '../../../generated/graphql';
 import { buildRefRelationKey } from '../../../schema/general';
 import { RELATION_OBJECT_ASSIGNEE } from '../../../schema/stixRefRelationship';
 import { stixDomainObjectDelete } from '../../../domain/stixDomainObject';
-import { addCaseRft, caseRftContainsStixObjectOrStixRelationship, findAll, findById } from './case-rft-domain';
+import { addCaseRft, caseRftContainsStixObjectOrStixRelationship, findRftPaginated, findById } from './case-rft-domain';
 
 const caseRftResolvers: Resolvers = {
   Query: {
     caseRft: (_, { id }, context) => findById(context, context.user, id),
-    caseRfts: (_, args, context) => findAll(context, context.user, args),
+    caseRfts: (_, args, context) => findRftPaginated(context, context.user, args),
     caseRftContainsStixObjectOrStixRelationship: (_, args, context) => {
       return caseRftContainsStixObjectOrStixRelationship(context, context.user, args.id, args.stixObjectOrStixRelationshipId);
     },

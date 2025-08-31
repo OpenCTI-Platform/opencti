@@ -17,7 +17,7 @@ export const findById: DomainFindById<BasicStoreEntityVocabulary> = (context: Au
   return storeLoadById(context, user, id, ENTITY_TYPE_VOCABULARY);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, opts: QueryVocabulariesArgs) => {
+export const findVocabularyPaginated = (context: AuthContext, user: AuthUser, opts: QueryVocabulariesArgs) => {
   const { category } = opts;
   let { filters } = opts;
   const entityTypes = (filters?.filters ?? []).find(({ key }) => key.includes('entity_types'));

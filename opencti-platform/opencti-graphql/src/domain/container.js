@@ -47,7 +47,7 @@ export const findById = async (context, user, containerId) => {
   return storeLoadById(context, user, containerId, ENTITY_TYPE_CONTAINER);
 };
 
-export const findAll = async (context, user, args) => {
+export const findContainerPaginated = async (context, user, args) => {
   const hasTypesArgs = args.types && args.types.length > 0;
   const types = hasTypesArgs ? args.types.filter((type) => isStixDomainObjectContainer(type)) : [ENTITY_TYPE_CONTAINER];
   return listEntitiesPaginated(context, user, types, args);
@@ -188,7 +188,7 @@ export const relatedContainers = async (context, user, containerId, args) => {
   const elementsIds = elements.map((element) => element.id);
   const queryFilters = addFilter(args.filters, buildRefRelationKey(RELATION_OBJECT), elementsIds);
   const queryArgs = { ...args, filters: queryFilters };
-  return findAll(context, user, queryArgs);
+  return findContainerPaginated(context, user, queryArgs);
 };
 
 // Starting an object, get 1000 containers that have this object

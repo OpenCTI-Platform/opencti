@@ -13,7 +13,7 @@ export const findById = (context, user, individualId) => {
   return storeLoadById(context, user, individualId, ENTITY_TYPE_IDENTITY_INDIVIDUAL);
 };
 
-export const findAll = (context, user, args) => {
+export const findIndividualPaginated = (context, user, args) => {
   return listEntitiesPaginated(context, user, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], args);
 };
 

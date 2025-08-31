@@ -19,7 +19,7 @@ import {
   playbookDelete,
   playbookEdit,
   findById,
-  findAll,
+  findPlaybookPaginated,
   availableComponents,
   playbookAddNode,
   playbookInsertNode,
@@ -41,7 +41,7 @@ import { getConnectorQueueSize } from '../../database/rabbitmq';
 const playbookResolvers: Resolvers = {
   Query: {
     playbook: (_, { id }, context) => findById(context, context.user, id),
-    playbooks: (_, args, context) => findAll(context, context.user, args),
+    playbooks: (_, args, context) => findPlaybookPaginated(context, context.user, args),
     playbooksForEntity: (_, { id }, context) => findPlaybooksForEntity(context, context.user, id),
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore

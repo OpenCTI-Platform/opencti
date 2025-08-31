@@ -4,7 +4,7 @@ import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/dynamic
 import * as R from 'ramda';
 import { Promise as BluePromise } from 'bluebird';
 import { lockResources } from '../lock/master-lock';
-import { buildQueryFilters, findAll, updateTask } from '../domain/backgroundTask';
+import { buildQueryFilters, findBackgroundTask, updateTask } from '../domain/backgroundTask';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { resolveUserByIdFromCache } from '../domain/user';
 import { storeLoadByIdsWithRefs } from '../database/middleware';
@@ -75,7 +75,7 @@ const TASK_CONCURRENCY = parseInt(conf.get('task_scheduler:max_concurrency') ?? 
 let running = false;
 
 const findTasksToExecute = async (context) => {
-  return findAll(context, SYSTEM_USER, {
+  return findBackgroundTask(context, SYSTEM_USER, {
     orderBy: 'created_at',
     orderMode: 'asc',
     limit: 1,

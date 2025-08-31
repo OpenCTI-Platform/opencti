@@ -45,7 +45,7 @@ export const buildArgsFromDynamicFilters = async (context, user, args) => {
   return { dynamicArgs: finalArgs, isEmptyDynamic: false };
 };
 
-export const findAll = async (context, user, args) => {
+export const findStixRelationPaginated = async (context, user, args) => {
   let finalArgs = args;
   const finalFilters = args.filters;
   if (finalFilters) {

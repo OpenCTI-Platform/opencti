@@ -15,17 +15,17 @@ export const findById = (context, user, markingDefinitionId) => {
 };
 
 // Force looking with prefix wildcard for markings
-export const findAllPaginated = (context, user, args) => {
+export const findMarkingsPaginated = (context, user, args) => {
   return listEntitiesPaginated(context, user, [ENTITY_TYPE_MARKING_DEFINITION], { ...args, useWildcardPrefix: true });
 };
 
 // Force looking with prefix wildcard for markings
-export const findAll = (context, user, args) => {
-  return listEntities(context, user, [ENTITY_TYPE_MARKING_DEFINITION], { ...args, useWildcardPrefix: true });
+export const findAllMarkings = (context, user, args) => {
+  return listAllEntities(context, user, [ENTITY_TYPE_MARKING_DEFINITION], { ...args, useWildcardPrefix: true });
 };
 
 const notifyMembersOfNewMarking = async (context, user, newMarking) => {
-  const allMarkings = await findAll(context, SYSTEM_USER);
+  const allMarkings = await findAllMarkings(context, SYSTEM_USER);
   const userGroupedMarkings = R.groupBy((m) => m.definition_type, allMarkings);
   const otherExistingTypeMarkingIds = (userGroupedMarkings[newMarking.definition_type] ?? []).map((m) => m.internal_id);
   const groupIds = new Set();

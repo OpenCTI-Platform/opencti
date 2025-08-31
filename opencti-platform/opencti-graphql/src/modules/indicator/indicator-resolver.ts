@@ -1,6 +1,6 @@
 import {
   addIndicator,
-  findAll,
+  findIndicatorPaginated,
   findById,
   getDecayChartData,
   getDecayDetails,
@@ -29,7 +29,7 @@ import { INPUT_KILLCHAIN } from '../../schema/general';
 const indicatorResolvers: Resolvers = {
   Query: {
     indicator: (_, { id }, context) => findById(context, context.user, id),
-    indicators: (_, args, context) => findAll(context, context.user, args),
+    indicators: (_, args, context) => findIndicatorPaginated(context, context.user, args),
     indicatorsTimeSeries: (_, args, context) => {
       if (args.objectId && args.objectId.length > 0) {
         return indicatorsTimeSeriesByEntity(context, context.user, args);

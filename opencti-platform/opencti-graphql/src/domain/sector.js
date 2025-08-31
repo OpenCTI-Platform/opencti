@@ -13,7 +13,7 @@ export const findById = (context, user, sectorId) => {
   return storeLoadById(context, user, sectorId, ENTITY_TYPE_IDENTITY_SECTOR);
 };
 
-export const findAll = (context, user, args) => {
+export const findSectorPaginated = (context, user, args) => {
   return listEntitiesPaginated(context, user, [ENTITY_TYPE_IDENTITY_SECTOR], args);
 };
 

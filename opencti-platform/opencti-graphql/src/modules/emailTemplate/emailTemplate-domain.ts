@@ -32,7 +32,7 @@ export const findById = async (context: AuthContext, user: AuthUser, id: string)
   return storeLoadById<BasicStoreEntityEmailTemplate>(context, user, id, ENTITY_TYPE_EMAIL_TEMPLATE);
 };
 
-export const findAll = async (context: AuthContext, user: AuthUser, args: QueryEmailTemplatesArgs) => {
+export const findEmailTemplatePaginated = async (context: AuthContext, user: AuthUser, args: QueryEmailTemplatesArgs) => {
   await checkEnterpriseEdition(context);
   return listEntitiesPaginated<BasicStoreEntityEmailTemplate>(context, user, [ENTITY_TYPE_EMAIL_TEMPLATE], args);
 };

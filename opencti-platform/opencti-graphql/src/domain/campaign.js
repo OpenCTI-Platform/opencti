@@ -12,7 +12,7 @@ export const findById = (context, user, campaignId) => {
   return storeLoadById(context, user, campaignId, ENTITY_TYPE_CAMPAIGN);
 };
 
-export const findAll = (context, user, args) => {
+export const findCampaignPaginated = (context, user, args) => {
   return listEntitiesPaginated(context, user, [ENTITY_TYPE_CAMPAIGN], args);
 };
 

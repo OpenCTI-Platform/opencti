@@ -24,7 +24,6 @@ import {
   internalLoadById,
   listAllEntities,
   listAllEntitiesForFilter,
-  listAllEntitiesPaginated,
   listAllRelations,
   listAllToEntitiesThroughRelations,
   listEntitiesPaginated,
@@ -75,7 +74,7 @@ import {
 import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering/filtering-constants';
 import { now, utcDate } from '../utils/format';
 import { addGroup } from './grant';
-import { defaultMarkingDefinitionsFromGroups, findAll as findGroups } from './group';
+import { defaultMarkingDefinitionsFromGroups, findGroupPaginated as findGroups } from './group';
 import { addIndividual } from './individual';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
@@ -232,17 +231,12 @@ const buildUserOrganizationRestrictedFilters = (user, filters) => {
   return filters;
 };
 
-export const findAll = async (context, user, args) => {
+export const findAllUser = async (context, user, args) => {
   const filters = buildUserOrganizationRestrictedFilters(user, args.filters);
   return listAllEntities(context, user, [ENTITY_TYPE_USER], { ...args, filters });
 };
 
-export const findAllPaginated = async (context, user, args) => {
-  const filters = buildUserOrganizationRestrictedFilters(user, args.filters);
-  return listAllEntitiesPaginated(context, user, [ENTITY_TYPE_USER], { ...args, filters });
-};
-
-export const findUsersPaginated = async (context, user, args) => {
+export const findUserPaginated = async (context, user, args) => {
   const filters = buildUserOrganizationRestrictedFilters(user, args.filters);
   return listEntitiesPaginated(context, user, [ENTITY_TYPE_USER], { ...args, filters });
 };
@@ -279,7 +273,7 @@ export const findUserWithCapabilities = async (context, user, capabilities) => {
   return users.filter((u) => u.capabilities.some((userCapability) => capabilities.some((capability) => capability === userCapability.name)));
 };
 
-export const findAllSystemMembers = () => {
+export const findAllSystemMemberPaginated = () => {
   const members = R.values(INTERNAL_USERS_WITHOUT_REDACTED);
   return buildPagination(0, null, members.map((r) => ({ node: r })), members.length);
 };

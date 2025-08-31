@@ -72,7 +72,7 @@ export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDecayRule>(context, user, id, ENTITY_TYPE_DECAY_RULE);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, args: QueryDecayRulesArgs) => {
+export const findDecayRulePaginated = (context: AuthContext, user: AuthUser, args: QueryDecayRulesArgs) => {
   return listEntitiesPaginated<BasicStoreEntityDecayRule>(context, user, [ENTITY_TYPE_DECAY_RULE], args);
 };
 

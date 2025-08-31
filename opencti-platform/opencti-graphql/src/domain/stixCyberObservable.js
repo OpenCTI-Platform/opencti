@@ -50,7 +50,7 @@ export const findById = (context, user, stixCyberObservableId) => {
   return storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
 };
 
-export const findAll = async (context, user, args) => {
+export const findStixCyberObservablePaginated = async (context, user, args) => {
   let types = [];
   if (args.types && args.types.length > 0) {
     types = args.types.filter((type) => isStixCyberObservable(type));

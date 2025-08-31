@@ -9,10 +9,10 @@ import {
   casesPaginated,
   containersPaginated,
   externalReferencesPaginated,
-  findAll,
-  findAllAuthMemberRestricted,
+  findStixCoreObjectPaginated,
+  findStixCoreObjectRestrictedPaginated,
   findById,
-  globalSearch,
+  globalSearchPaginated,
   groupingsPaginated,
   notesPaginated,
   observedDataPaginated,
@@ -62,12 +62,12 @@ import { loadThroughDenormalized } from './stix';
 
 const stixCoreObjectResolvers = {
   Query: {
-    globalSearch: (_, args, context) => globalSearch(context, context.user, args),
+    globalSearch: (_, args, context) => globalSearchPaginated(context, context.user, args),
     stixCoreObject: (_, { id }, context) => findById(context, context.user, id),
     stixCoreObjectRaw: (_, { id }, context) => stixLoadByIdStringify(context, context.user, id),
-    stixCoreObjects: (_, args, context) => findAll(context, context.user, args),
+    stixCoreObjects: (_, args, context) => findStixCoreObjectPaginated(context, context.user, args),
     stixCoreBackgroundActiveOperations: (_, { id }, context) => stixCoreBackgroundActiveOperations(context, context.user, id),
-    stixCoreObjectsRestricted: (_, args, context) => findAllAuthMemberRestricted(context, context.user, args),
+    stixCoreObjectsRestricted: (_, args, context) => findStixCoreObjectRestrictedPaginated(context, context.user, args),
     stixCoreObjectsTimeSeries: (_, args, context) => {
       if (args.authorId && args.authorId.length > 0) {
         return stixCoreObjectsTimeSeriesByAuthor(context, context.user, args);

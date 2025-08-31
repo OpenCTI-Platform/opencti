@@ -23,9 +23,9 @@ import { elSearchFiles } from '../../database/file-search';
 import { storeLoadById } from '../../database/middleware-loader';
 import { isEmptyField } from '../../database/utils';
 import { generateFilterKeysSchema } from '../../domain/filterKeysSchema';
-import { findAll as findAllScos } from '../../domain/stixCoreObject';
-import { findAll as findAllSmos } from '../../domain/stixMetaObject';
-import { findAllPaginated as findAllUsersPaginated } from '../../domain/user';
+import { findStixCoreObjectPaginated } from '../../domain/stixCoreObject';
+import { findStixMetaObjectPaginated } from '../../domain/stixMetaObject';
+import { findUserPaginated } from '../../domain/user';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import type {
   FilterGroup,
@@ -324,7 +324,7 @@ const resolveValuesIdsMapForEntityTypes = async (context: AuthContext, user: Aut
     let resultIds: string[] = [];
     // case Stix-Core-Object
     if (entityTypes.every((type) => isStixCoreObject(type))) {
-      const result = await findAllScos(context, user, {
+      const result = await findStixCoreObjectPaginated(context, user, {
         filters: entityTypesFilter,
         search: value,
         orderBy: '_score',
@@ -332,7 +332,7 @@ const resolveValuesIdsMapForEntityTypes = async (context: AuthContext, user: Aut
       });
       resultIds = result.edges.map((n) => n.node.id);
     } else if (entityTypes.length === 1 && entityTypes.includes(ENTITY_TYPE_USER)) { // case User
-      const result = await findAllUsersPaginated(context, user, {
+      const result = await findUserPaginated(context, user, {
         filters: entityTypesFilter,
         search: value,
         orderBy: '_score',
@@ -340,7 +340,7 @@ const resolveValuesIdsMapForEntityTypes = async (context: AuthContext, user: Aut
       });
       resultIds = result.edges.map((n) => n.node.id);
     } else if (entityTypes.every((type) => isStixMetaObject(type))) { // case Stix-Meta-Object
-      const result = await findAllSmos(context, user, {
+      const result = await findStixMetaObjectPaginated(context, user, {
         filters: entityTypesFilter,
         search: value,
         orderBy: '_score',

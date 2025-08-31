@@ -2,14 +2,7 @@ import { beforeAll, afterAll, describe, expect, it } from 'vitest';
 import { ADMIN_USER, getGroupIdByName, getOrganizationIdByName, GREEN_GROUP, PLATFORM_ORGANIZATION, TEST_ORGANIZATION, testContext } from '../../utils/testQuery';
 import { entitySettingEditField, findByType as findEntitySettingsByType } from '../../../src/modules/entitySetting/entitySetting-domain';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../../src/modules/case/case-rfi/case-rfi-types';
-import {
-  createStatus,
-  createStatusTemplate,
-  findAll as findAllStatuses,
-  findAllTemplatesByStatusScope,
-  findById as findStatusById,
-  findTemplateById
-} from '../../../src/domain/status';
+import { createStatus, createStatusTemplate, findStatusPaginated, findAllTemplatesByStatusScope, findById as findStatusById, findTemplateById } from '../../../src/domain/status';
 import {
   type EditInput,
   FilterMode,
@@ -104,7 +97,7 @@ describe('Request access domain  - initialized status', async () => {
       orderMode: OrderingMode.Asc,
     };
 
-    const result = await findAllStatuses(testContext, ADMIN_USER, args);
+    const result = await findStatusPaginated(testContext, ADMIN_USER, args);
     expect(result.edges.some((status) => status.node.template_id === statusTemplateRequestAccess.id)).toBeTruthy();
     expect(result.edges.some((status) => status.node.template_id === statusTemplateGlobalRfi.id)).toBeFalsy();
   });
@@ -123,7 +116,7 @@ describe('Request access domain  - initialized status', async () => {
       orderBy: StatusOrdering.Order,
       orderMode: OrderingMode.Asc,
     };
-    const result = await findAllStatuses(testContext, ADMIN_USER, args);
+    const result = await findStatusPaginated(testContext, ADMIN_USER, args);
     expect(result.edges.some((status) => status.node.template_id === statusTemplateRequestAccess.id)).toBeFalsy();
     expect(result.edges.some((status) => status.node.template_id === statusTemplateGlobalRfi.id)).toBeTruthy();
   });

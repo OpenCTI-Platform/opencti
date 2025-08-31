@@ -1,5 +1,5 @@
-import { findAll as genericFindAll, findById as genericFindById, threatActorCountriesPaginated, threatActorLocationsPaginated } from '../domain/threatActor';
-import { addThreatActorGroup, findAll as groupFindAll, findById as groupFindById } from '../domain/threatActorGroup';
+import { findThreatActorPaginated, findById as threatActorFindById, threatActorCountriesPaginated, threatActorLocationsPaginated } from '../domain/threatActor';
+import { addThreatActorGroup, findThreatActorGroupPaginated, findById as groupFindById } from '../domain/threatActorGroup';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -11,10 +11,10 @@ import {
 
 const threatActorGroupResolvers = {
   Query: {
-    threatActor: (_, { id }, context) => genericFindById(context, context.user, id),
-    threatActors: (_, args, context) => genericFindAll(context, context.user, args),
+    threatActor: (_, { id }, context) => threatActorFindById(context, context.user, id),
+    threatActors: (_, args, context) => findThreatActorPaginated(context, context.user, args),
     threatActorGroup: (_, { id }, context) => groupFindById(context, context.user, id),
-    threatActorsGroup: (_, args, context) => groupFindAll(context, context.user, args),
+    threatActorsGroup: (_, args, context) => findThreatActorGroupPaginated(context, context.user, args),
   },
   ThreatActor: {
     locations: (threatActor, args, context) => threatActorLocationsPaginated(context, context.user, threatActor.id, args),

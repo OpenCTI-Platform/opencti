@@ -1,6 +1,6 @@
 import {
   findById,
-  findAll,
+  findStreamCollectionPaginated,
   createStreamCollection,
   streamCollectionDelete,
   streamCollectionEditField,
@@ -13,7 +13,7 @@ import { fetchStreamInfo } from '../database/redis';
 const streamResolvers = {
   Query: {
     streamCollection: (_, { id }, context) => findById(context, context.user, id),
-    streamCollections: (_, args, context) => findAll(context, context.user, args),
+    streamCollections: (_, args, context) => findStreamCollectionPaginated(context, context.user, args),
     redisStreamInfo: () => fetchStreamInfo()
   },
   StreamCollection: {

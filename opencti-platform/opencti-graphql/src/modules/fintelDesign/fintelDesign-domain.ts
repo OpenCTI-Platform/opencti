@@ -17,7 +17,7 @@ export const findById = async (context: AuthContext, user: AuthUser, id: string)
   return storeLoadById(context, user, id, ENTITY_TYPE_FINTEL_DESIGN);
 };
 
-export const findAll = async (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityFintelDesign>) => {
+export const findFintelDesignPaginated = async (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityFintelDesign>) => {
   await checkEnterpriseEdition(context);
   return listEntitiesPaginated<BasicStoreEntityFintelDesign>(context, user, [ENTITY_TYPE_FINTEL_DESIGN], opts);
 };

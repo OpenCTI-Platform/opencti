@@ -12,7 +12,7 @@ const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntitySavedFilter>(context, user, id, ENTITY_TYPE_SAVED_FILTER);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, args: QuerySavedFiltersArgs) => {
+export const findSaveFilterPaginated = (context: AuthContext, user: AuthUser, args: QuerySavedFiltersArgs) => {
   return listEntitiesPaginated<BasicStoreEntitySavedFilter>(context, user, [ENTITY_TYPE_SAVED_FILTER], args);
 };
 export const addSavedFilter = (context: AuthContext, user: AuthUser, input: SavedFilterAddInput) => {

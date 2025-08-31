@@ -15,7 +15,7 @@ export const findById = (context: AuthContext, user: AuthUser, ingestionId: stri
   return storeLoadById<BasicStoreEntityIngestionTaxiiCollection>(context, user, ingestionId, ENTITY_TYPE_INGESTION_TAXII_COLLECTION);
 };
 
-export const findAllPaginated = async (context: AuthContext, user: AuthUser, opts = {}) => {
+export const findTaxiiCollectionPaginated = async (context: AuthContext, user: AuthUser, opts = {}) => {
   const args = { ...opts, includeAuthorities: true };
   return listEntitiesPaginated<BasicStoreEntityIngestionTaxiiCollection>(context, user, [ENTITY_TYPE_INGESTION_TAXII_COLLECTION], args);
 };

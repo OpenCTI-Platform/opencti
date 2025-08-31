@@ -10,7 +10,7 @@ import { SYSTEM_USER } from '../../utils/access';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { defaultEntitySetting, type EntitySettingSchemaAttribute, getAvailableSettings, type typeAvailableSetting } from './entitySetting-utils';
-import { queryDefaultSubTypes } from '../../domain/subType';
+import { queryDefaultSubTypesPaginated } from '../../domain/subType';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { telemetry } from '../../config/tracing';
 import { INPUT_AUTHORIZED_MEMBERS } from '../../schema/general';
@@ -65,7 +65,7 @@ export const batchEntitySettingsByType = async (context: AuthContext, user: Auth
   }, findByTypeFn);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, opts: QueryEntitySettingsArgs) => {
+export const findEntitySettingPaginated = (context: AuthContext, user: AuthUser, opts: QueryEntitySettingsArgs) => {
   return listEntitiesPaginated<BasicStoreEntityEntitySetting>(context, user, [ENTITY_TYPE_ENTITY_SETTING], opts);
 };
 
@@ -128,7 +128,7 @@ export const addEntitySetting = async (context: AuthContext, user: AuthUser, ent
 
 export const initCreateEntitySettings = async (context: AuthContext, user: AuthUser) => {
   // First check existing
-  const subTypes = await queryDefaultSubTypes(context, user);
+  const subTypes = await queryDefaultSubTypesPaginated(context, user);
   // Get all current settings
   const entitySettings = await listAllEntities<BasicStoreEntityEntitySetting>(context, SYSTEM_USER, [ENTITY_TYPE_ENTITY_SETTING]);
   const currentEntityTypes = entitySettings.map((e) => e.target_type);

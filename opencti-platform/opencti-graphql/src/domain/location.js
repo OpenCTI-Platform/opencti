@@ -12,7 +12,7 @@ export const findById = async (context, user, locationId) => {
   return storeLoadById(context, user, locationId, ENTITY_TYPE_LOCATION);
 };
 
-export const findAll = async (context, user, args) => {
+export const findLocationPaginated = async (context, user, args) => {
   let types = [];
   if (args.types && args.types.length > 0) {
     types = args.types.filter((type) => isStixDomainObjectLocation(type));

@@ -9,7 +9,7 @@ export const findById = (context, user, infrastructureId) => {
   return storeLoadById(context, user, infrastructureId, ENTITY_TYPE_INFRASTRUCTURE);
 };
 
-export const findAll = (context, user, args) => {
+export const findInfrastructurePaginated = (context, user, args) => {
   return listEntitiesPaginated(context, user, [ENTITY_TYPE_INFRASTRUCTURE], args);
 };
 

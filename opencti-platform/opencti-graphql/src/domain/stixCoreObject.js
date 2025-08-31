@@ -170,18 +170,18 @@ export const stixCoreBackgroundActiveOperations = async (context, user, id) => {
   return activeTasks;
 };
 
-export const findAll = async (context, user, args) => {
+export const findStixCoreObjectPaginated = async (context, user, args) => {
   const types = extractStixCoreObjectTypesFromArgs(args);
   return listEntitiesPaginated(context, user, types, args);
 };
 
-export const globalSearch = async (context, user, args) => {
+export const globalSearchPaginated = async (context, user, args) => {
   const context_data = { input: args, search: args.search };
   await publishUserAction({ user, event_type: 'command', event_scope: 'search', event_access: 'extended', context_data });
-  return findAll(context, user, args);
+  return findStixCoreObjectPaginated(context, user, args);
 };
 
-export const findAllAuthMemberRestricted = async (context, user, args) => {
+export const findStixCoreObjectRestrictedPaginated = async (context, user, args) => {
   if (!isBypassUser(user)) {
     throw ForbiddenAccess();
   }

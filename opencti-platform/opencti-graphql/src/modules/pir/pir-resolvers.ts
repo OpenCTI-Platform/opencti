@@ -16,8 +16,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import type { Resolvers } from '../../generated/graphql';
 import {
   deletePir,
-  findAll,
-  findAllPirRelations,
+  findPirPaginated,
+  findPirRelationPaginated,
   findById,
   findPirContainers,
   findPirHistory,
@@ -36,8 +36,8 @@ import { getConnectorQueueSize } from '../../database/rabbitmq';
 const pirResolvers: Resolvers = {
   Query: {
     pir: (_, { id }, context) => findById(context, context.user, id),
-    pirs: (_, args, context) => findAll(context, context.user, args),
-    pirRelationships: (_, args, context) => findAllPirRelations(context, context.user, args),
+    pirs: (_, args, context) => findPirPaginated(context, context.user, args),
+    pirRelationships: (_, args, context) => findPirRelationPaginated(context, context.user, args),
     pirRelationshipsDistribution: (_, args, context) => pirRelationshipsDistribution(context, context.user, args),
     pirRelationshipsMultiTimeSeries: (_, args, context) => pirRelationshipsMultiTimeSeries(context, context.user, args),
     pirLogs: (_, args, context) => findPirHistory(context, context.user, args),

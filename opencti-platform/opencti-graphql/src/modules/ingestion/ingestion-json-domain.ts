@@ -180,11 +180,11 @@ export const findById = async (context: AuthContext, user: AuthUser, ingestionId
   return jsonIngestion;
 };
 
-export const findAllPaginated = async (context: AuthContext, user: AuthUser, opts = {}) => {
+export const findJsonIngestionPaginated = async (context: AuthContext, user: AuthUser, opts = {}) => {
   return listEntitiesPaginated<BasicStoreEntityIngestionJson>(context, user, [ENTITY_TYPE_INGESTION_JSON], opts);
 };
 
-export const findAllJsonIngestions = async (context: AuthContext, user: AuthUser, opts = {}) => {
+export const findAllJsonIngestion = async (context: AuthContext, user: AuthUser, opts = {}) => {
   return listAllEntities<BasicStoreEntityIngestionJson>(context, user, [ENTITY_TYPE_INGESTION_JSON], opts);
 };
 

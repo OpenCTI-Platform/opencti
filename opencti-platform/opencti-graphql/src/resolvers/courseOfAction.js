@@ -1,4 +1,4 @@
-import { addCourseOfAction, attackPatternsPaginated, findAll, findById } from '../domain/courseOfAction';
+import { addCourseOfAction, attackPatternsPaginated, findCourseOfActionPaginated, findById } from '../domain/courseOfAction';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -11,7 +11,7 @@ import {
 const courseOfActionResolvers = {
   Query: {
     courseOfAction: (_, { id }, context) => findById(context, context.user, id),
-    coursesOfAction: (_, args, context) => findAll(context, context.user, args),
+    coursesOfAction: (_, args, context) => findCourseOfActionPaginated(context, context.user, args),
   },
   CourseOfAction: {
     attackPatterns: (courseOfAction, args, context) => attackPatternsPaginated(context, context.user, courseOfAction.id, args),

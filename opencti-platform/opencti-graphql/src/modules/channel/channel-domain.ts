@@ -11,7 +11,7 @@ export const findById = (context: AuthContext, user: AuthUser, channelId: string
   return storeLoadById(context, user, channelId, ENTITY_TYPE_CHANNEL) as unknown as BasicStoreEntityChannel;
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, opts: QueryChannelsArgs) => {
+export const findChannelPaginated = (context: AuthContext, user: AuthUser, opts: QueryChannelsArgs) => {
   return listEntitiesPaginated<BasicStoreEntityChannel>(context, user, [ENTITY_TYPE_CHANNEL], opts);
 };
 

@@ -32,7 +32,7 @@ export const findById = (context, user, groupId) => {
   return storeLoadById(context, user, groupId, ENTITY_TYPE_GROUP);
 };
 
-export const findAll = async (context, user, args) => {
+export const findGroupPaginated = async (context, user, args) => {
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
     const groupsIds = R.uniq((user.administrated_organizations ?? []).map((orga) => (orga.grantable_groups ?? [])).flat());
     return listEntitiesPaginated(context, user, [ENTITY_TYPE_GROUP], { ...args, ids: groupsIds });

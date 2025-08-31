@@ -1,4 +1,4 @@
-import { addIncident, findAll, findById, incidentsTimeSeries, incidentsTimeSeriesByEntity } from '../domain/incident';
+import { addIncident, findIncidentPaginated, findById, incidentsTimeSeries, incidentsTimeSeriesByEntity } from '../domain/incident';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -15,7 +15,7 @@ import { filterMembersWithUsersOrgs } from '../utils/access';
 const incidentResolvers = {
   Query: {
     incident: (_, { id }, context) => findById(context, context.user, id),
-    incidents: (_, args, context) => findAll(context, context.user, args),
+    incidents: (_, args, context) => findIncidentPaginated(context, context.user, args),
     incidentsTimeSeries: (_, args, context) => {
       if (args.objectId && args.objectId.length > 0) {
         return incidentsTimeSeriesByEntity(context, context.user, args);

@@ -44,7 +44,7 @@ import { addMalware } from '../../../src/domain/malware';
 import { addIntrusionSet } from '../../../src/domain/intrusionSet';
 import { ENTITY_TYPE_INDICATOR } from '../../../src/modules/indicator/indicator-types';
 import { addIndicator } from '../../../src/modules/indicator/indicator-domain';
-import { findAll } from '../../../src/domain/subType';
+import { findSubTypePaginated } from '../../../src/domain/subType';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { addReport } from '../../../src/domain/report';
 import { addIndividual } from '../../../src/domain/individual';
@@ -79,7 +79,7 @@ describe('Basic and utils', () => {
 
 describe('Loaders', () => {
   it('should load subTypes values', async () => {
-    const stixObservableSubTypes = await findAll(testContext, ADMIN_USER, { type: 'Stix-Cyber-Observable' });
+    const stixObservableSubTypes = await findSubTypePaginated(testContext, ADMIN_USER, { type: 'Stix-Cyber-Observable' });
     expect(stixObservableSubTypes).not.toBeNull();
     expect(stixObservableSubTypes.edges.length).toEqual(STIX_CYBER_OBSERVABLES.length);
     const subTypeLabels = R.map((e) => e.node.label, stixObservableSubTypes.edges);

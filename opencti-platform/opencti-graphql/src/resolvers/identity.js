@@ -1,4 +1,4 @@
-import { addIdentity, findAll, findById } from '../domain/identity';
+import { addIdentity, findIdentityPaginated, findById } from '../domain/identity';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -11,7 +11,7 @@ import {
 const identityResolvers = {
   Query: {
     identity: (_, { id }, context) => findById(context, context.user, id),
-    identities: (_, args, context) => findAll(context, context.user, args),
+    identities: (_, args, context) => findIdentityPaginated(context, context.user, args),
   },
   Identity: {
     __resolveType(obj) {

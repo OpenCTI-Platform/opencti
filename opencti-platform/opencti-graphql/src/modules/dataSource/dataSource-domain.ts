@@ -16,7 +16,7 @@ export const findById: DomainFindById<BasicStoreEntityDataSource> = (context: Au
   return storeLoadById(context, user, dataSourceId, ENTITY_TYPE_DATA_SOURCE);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, opts: QueryDataSourcesArgs) => {
+export const findDatasourcePaginated = (context: AuthContext, user: AuthUser, opts: QueryDataSourcesArgs) => {
   return listEntitiesPaginated<BasicStoreEntityDataSource>(context, user, [ENTITY_TYPE_DATA_SOURCE], opts);
 };
 

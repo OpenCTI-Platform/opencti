@@ -30,7 +30,7 @@ export const findById: DomainFindById<BasicStoreEntityTask> = (context: AuthCont
   return storeLoadById(context, user, templateId, ENTITY_TYPE_CONTAINER_TASK);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityTask>) => {
+export const findTaskPaginated = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityTask>) => {
   return listEntitiesPaginated<BasicStoreEntityTask>(context, user, [ENTITY_TYPE_CONTAINER_TASK], opts);
 };
 
@@ -74,6 +74,7 @@ export const taskEdit = async (context: AuthContext, user: AuthUser, id: string,
 export const taskContainsStixObjectOrStixRelationship = async (context: AuthContext, user: AuthUser, taskId: string, thingId: string) => {
   const resolvedThingId = isStixId(thingId) ? (await internalLoadById(context, user, thingId)).internal_id : thingId;
   const args = {
+    first: 1,
     filters: {
       mode: FilterMode.And,
       filters: [
@@ -83,7 +84,7 @@ export const taskContainsStixObjectOrStixRelationship = async (context: AuthCont
       filterGroups: [],
     },
   };
-  const taskFound = await findAll(context, user, args);
+  const taskFound = await findTaskPaginated(context, user, args);
   return taskFound.edges.length > 0;
 };
 

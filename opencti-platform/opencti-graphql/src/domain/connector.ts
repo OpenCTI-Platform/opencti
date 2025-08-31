@@ -461,7 +461,7 @@ export const findSyncById = async (context: AuthContext, user: AuthUser, syncId:
   }
   return basicIngestion;
 };
-export const findAllSync = async (context: AuthContext, user: AuthUser, opts = {}) => {
+export const findSyncPaginated = async (context: AuthContext, user: AuthUser, opts = {}) => {
   return listEntitiesPaginated(context, SYSTEM_USER, [ENTITY_TYPE_SYNC], opts);
 };
 

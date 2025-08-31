@@ -8,7 +8,7 @@ export const findById = async (context, user, stixMetaObjectId) => {
   return storeLoadById(context, user, stixMetaObjectId, ABSTRACT_STIX_META_OBJECT);
 };
 
-export const findAll = async (context, user, args) => {
+export const findStixMetaObjectPaginated = async (context, user, args) => {
   let types = [];
   if (isNotEmptyField(args.types)) {
     types = R.filter((type) => isStixMetaObject(type), args.types);

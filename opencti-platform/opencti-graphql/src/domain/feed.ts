@@ -82,7 +82,7 @@ export const editFeed = async (context: AuthContext, user: AuthUser, id: string,
   });
   return findById(context, user, id);
 };
-export const findAll = (context: AuthContext, user: AuthUser, opts: QueryFeedsArgs) => {
+export const findFeedPaginated = (context: AuthContext, user: AuthUser, opts: QueryFeedsArgs) => {
   if (user && isUserHasCapability(user, TAXIIAPI)) {
     const options = { ...opts, includeAuthorities: true };
     return listEntitiesPaginated<BasicStoreEntityFeed>(context, user, [ENTITY_TYPE_FEED], options);

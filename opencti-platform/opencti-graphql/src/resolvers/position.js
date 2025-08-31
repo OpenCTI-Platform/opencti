@@ -1,4 +1,4 @@
-import { addPosition, findAll, findById, locatedAtCity } from '../domain/position';
+import { addPosition, findPositionPaginated, findById, locatedAtCity } from '../domain/position';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -11,7 +11,7 @@ import {
 const positionResolvers = {
   Query: {
     position: (_, { id }, context) => findById(context, context.user, id),
-    positions: (_, args, context) => findAll(context, context.user, args),
+    positions: (_, args, context) => findPositionPaginated(context, context.user, args),
   },
   Position: {
     city: (position, _, context) => locatedAtCity(context, context.user, position.id),

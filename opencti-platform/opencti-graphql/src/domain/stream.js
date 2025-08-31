@@ -39,7 +39,7 @@ export const createStreamCollection = async (context, user, input) => {
 export const findById = async (context, user, collectionId) => {
   return storeLoadById(context, user, collectionId, ENTITY_TYPE_STREAM_COLLECTION);
 };
-export const findAll = (context, user, args) => {
+export const findStreamCollectionPaginated = (context, user, args) => {
   // If user is logged, list all streams where the user have access.
   if (user && isUserHasCapability(user, TAXIIAPI)) {
     // If user can manage the feeds, list everything related

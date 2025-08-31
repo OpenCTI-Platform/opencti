@@ -18,7 +18,7 @@ import {
   addIngestionJson,
   deleteIngestionJson,
   editIngestionJson,
-  findAllPaginated,
+  findJsonIngestionPaginated,
   findById,
   findJsonMapperForIngestionById,
   ingestionJsonEditField,
@@ -30,7 +30,7 @@ import { connectorIdFromIngestId } from '../../domain/connector';
 const ingestionJsonResolvers: Resolvers = {
   Query: {
     ingestionJson: (_, { id }, context) => findById(context, context.user, id, true),
-    ingestionJsons: (_, args, context) => findAllPaginated(context, context.user, args),
+    ingestionJsons: (_, args, context) => findJsonIngestionPaginated(context, context.user, args),
   },
   IngestionJson: {
     user: (ingestionJson, _, context) => context.batch.creatorBatchLoader.load(ingestionJson.user_id),

@@ -14,7 +14,7 @@ export const findById = (context: AuthContext, user: AuthUser, caseId: string): 
   return storeLoadById(context, user, caseId, ENTITY_TYPE_CONTAINER_CASE) as unknown as BasicStoreEntityCase;
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityCase>) => {
+export const findCasesPaginated = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityCase>) => {
   return listEntitiesPaginated<BasicStoreEntityCase>(context, user, [ENTITY_TYPE_CONTAINER_CASE], opts);
 };
 

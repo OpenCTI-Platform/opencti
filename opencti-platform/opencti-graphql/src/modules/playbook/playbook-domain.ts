@@ -56,7 +56,7 @@ export const findById: DomainFindById<BasicStoreEntityPlaybook> = async (context
   return storeLoadById(context, user, playbookId, ENTITY_TYPE_PLAYBOOK);
 };
 
-export const findAll = async (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityPlaybook>) => {
+export const findPlaybookPaginated = async (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityPlaybook>) => {
   const isEE = await isEnterpriseEdition(context);
   if (!isEE) {
     return buildPagination(0, null, [], 0);

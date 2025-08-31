@@ -11,7 +11,7 @@ export const findById = (context: AuthContext, user: AuthUser, securityPlatformI
   return storeLoadById<BasicStoreEntitySecurityPlatform>(context, user, securityPlatformId, ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreEntitySecurityPlatform>) => {
+export const findSecurityPlatformPaginated = (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreEntitySecurityPlatform>) => {
   return listEntitiesPaginated<BasicStoreEntitySecurityPlatform>(context, user, [ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM], args);
 };
 

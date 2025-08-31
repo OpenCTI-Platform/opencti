@@ -161,7 +161,7 @@ export const findById = (_context: AuthContext, _user: AuthUser, catalogId: stri
   return catalogDefinitions[catalogId].graphql;
 };
 
-export const findAll = (_context: AuthContext, _user: AuthUser) => {
+export const findCatalog = (_context: AuthContext, _user: AuthUser) => {
   const catalogDefinitions = getCatalogs();
   return Object.values(catalogDefinitions).map((catalog) => catalog.graphql);
 };

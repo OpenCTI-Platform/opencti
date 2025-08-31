@@ -18,7 +18,7 @@ export const findById = (context, user, labelIdOrName) => {
   return storeLoadById(context, user, labelId, ENTITY_TYPE_LABEL);
 };
 
-export const findAll = (context, user, args) => {
+export const findLabelPaginated = (context, user, args) => {
   return listEntitiesPaginated(context, user, [ENTITY_TYPE_LABEL], args);
 };
 

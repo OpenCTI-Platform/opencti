@@ -11,7 +11,7 @@ export const findById = (context, user, regionId) => {
   return storeLoadById(context, user, regionId, ENTITY_TYPE_LOCATION_REGION);
 };
 
-export const findAll = (context, user, args) => {
+export const findRegionPaginated = (context, user, args) => {
   return listEntitiesPaginated(context, user, [ENTITY_TYPE_LOCATION_REGION], args);
 };
 

@@ -13,11 +13,11 @@ export const findById = (context: AuthContext, user: AuthUser, ingestionId: stri
   return storeLoadById<BasicStoreEntityIngestionRss>(context, user, ingestionId, ENTITY_TYPE_INGESTION_RSS);
 };
 
-export const findAllPaginated = async (context: AuthContext, user: AuthUser, opts = {}) => {
+export const findRssIngestionPaginated = async (context: AuthContext, user: AuthUser, opts = {}) => {
   return listEntitiesPaginated<BasicStoreEntityIngestionRss>(context, user, [ENTITY_TYPE_INGESTION_RSS], opts);
 };
 
-export const findAllRssIngestions = async (context: AuthContext, user: AuthUser, opts = {}) => {
+export const findAllRssIngestion = async (context: AuthContext, user: AuthUser, opts = {}) => {
   return listAllEntities<BasicStoreEntityIngestionRss>(context, user, [ENTITY_TYPE_INGESTION_RSS], opts);
 };
 

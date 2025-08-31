@@ -13,7 +13,7 @@ export const findById = async (context: AuthContext, user: AuthUser, identityId:
   return storeLoadById(context, user, identityId, ENTITY_TYPE_IDENTITY);
 };
 
-export const findAll = async (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreCommon>) => {
+export const findIdentityPaginated = async (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreCommon>) => {
   let types: Array<string> = [];
   if (args.types && args.types.length > 0) {
     types = filter((type) => isStixDomainObjectIdentity(type), args.types);

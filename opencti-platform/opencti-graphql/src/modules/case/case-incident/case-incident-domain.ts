@@ -21,7 +21,7 @@ export const findById: DomainFindById<BasicStoreEntityCaseIncident> = (context: 
   return storeLoadById(context, user, caseIncidentId, ENTITY_TYPE_CONTAINER_CASE_INCIDENT);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityCaseIncident>) => {
+export const findCaseIncidentPaginated = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityCaseIncident>) => {
   return listEntitiesPaginated<BasicStoreEntityCaseIncident>(context, user, [ENTITY_TYPE_CONTAINER_CASE_INCIDENT], opts);
 };
 
@@ -52,6 +52,6 @@ export const caseIncidentContainsStixObjectOrStixRelationship = async (context: 
       filterGroups: [],
     },
   };
-  const caseIncidentFound = await findAll(context, user, args);
+  const caseIncidentFound = await findCaseIncidentPaginated(context, user, args);
   return caseIncidentFound.edges.length > 0;
 };

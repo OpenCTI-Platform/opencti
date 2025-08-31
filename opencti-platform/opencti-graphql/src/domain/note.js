@@ -16,7 +16,7 @@ export const findById = (context, user, noteId) => {
   return storeLoadById(context, user, noteId, ENTITY_TYPE_CONTAINER_NOTE);
 };
 
-export const findAll = async (context, user, args) => {
+export const findNotePaginated = async (context, user, args) => {
   return listEntitiesPaginated(context, user, [ENTITY_TYPE_CONTAINER_NOTE], args);
 };
 
@@ -42,7 +42,7 @@ export const noteContainsStixObjectOrStixRelationship = async (context, user, no
       filterGroups: [],
     },
   };
-  const noteFound = await findAll(context, user, args);
+  const noteFound = await findNotePaginated(context, user, args);
   return noteFound.edges.length > 0;
 };
 

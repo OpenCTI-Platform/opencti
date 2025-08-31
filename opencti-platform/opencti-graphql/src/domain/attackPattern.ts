@@ -24,7 +24,7 @@ export const findById = (context: AuthContext, user: AuthUser, attackPatternId: 
   return storeLoadById(context, user, attackPatternId, ENTITY_TYPE_ATTACK_PATTERN);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreCommon>) => {
+export const findAttackPatternPaginated = (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreCommon>) => {
   return listEntitiesPaginated(context, user, [ENTITY_TYPE_ATTACK_PATTERN], args);
 };
 

@@ -18,7 +18,7 @@ import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 import { pushToWorkerForConnector } from '../database/rabbitmq';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
-import { findAllRssIngestions, patchRssIngestion } from '../modules/ingestion/ingestion-rss-domain';
+import { findAllRssIngestion, patchRssIngestion } from '../modules/ingestion/ingestion-rss-domain';
 import type { AuthContext, AuthUser } from '../types/user';
 import type {
   BasicStoreEntityIngestionCsv,
@@ -28,9 +28,9 @@ import type {
   BasicStoreEntityIngestionTaxiiCollection,
   DataParam,
 } from '../modules/ingestion/ingestion-types';
-import { findAllTaxiiIngestions, patchTaxiiIngestion } from '../modules/ingestion/ingestion-taxii-domain';
+import { findAllTaxiiIngestion, patchTaxiiIngestion } from '../modules/ingestion/ingestion-taxii-domain';
 import { ConnectorType, IngestionAuthType, IngestionCsvMapperType, TaxiiVersion } from '../generated/graphql';
-import { fetchCsvFromUrl, findAllCsvIngestions, patchCsvIngestion } from '../modules/ingestion/ingestion-csv-domain';
+import { fetchCsvFromUrl, findAllCsvIngestion, patchCsvIngestion } from '../modules/ingestion/ingestion-csv-domain';
 import { findById as findCsvMapperById } from '../modules/internal/csvMapper/csvMapper-domain';
 import { type CsvBundlerIngestionOpts, generateAndSendBundleProcess, removeHeaderFromFullFile } from '../parser/csv-bundler';
 import { createWork, reportExpectation, updateExpectationsNumber } from '../domain/work';
@@ -44,7 +44,7 @@ import { connectorIdFromIngestId, queueDetails } from '../domain/connector';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { StixIndicator } from '../modules/indicator/indicator-types';
 import type { CsvMapperParsed } from '../modules/internal/csvMapper/csvMapper-types';
-import { executeJsonQuery, findAllJsonIngestions, patchJsonIngestion } from '../modules/ingestion/ingestion-json-domain';
+import { executeJsonQuery, findAllJsonIngestion, patchJsonIngestion } from '../modules/ingestion/ingestion-json-domain';
 
 // Ingestion manager responsible to cleanup old data
 // Each API will start is ingestion manager.
@@ -284,7 +284,7 @@ const rssExecutor = async (context: AuthContext, turndownService: TurndownServic
     filterGroups: [],
   };
   const opts = { filters, noFiltersChecking: true };
-  const ingestions = await findAllRssIngestions(context, SYSTEM_USER, opts);
+  const ingestions = await findAllRssIngestion(context, SYSTEM_USER, opts);
   const ingestionPromises = [];
   for (let i = 0; i < ingestions.length; i += 1) {
     const ingestion = ingestions[i];
@@ -480,7 +480,7 @@ const taxiiExecutor = async (context: AuthContext) => {
     filterGroups: [],
   };
   const opts = { filters, noFiltersChecking: true };
-  const ingestions = await findAllTaxiiIngestions(context, SYSTEM_USER, opts);
+  const ingestions = await findAllTaxiiIngestion(context, SYSTEM_USER, opts);
   const ingestionPromises = [];
   for (let i = 0; i < ingestions.length; i += 1) {
     const ingestion = ingestions[i];
@@ -573,7 +573,7 @@ const csvExecutor = async (context: AuthContext) => {
     filterGroups: [],
   };
   const opts = { filters, noFiltersChecking: true };
-  const ingestions = await findAllCsvIngestions(context, SYSTEM_USER, opts);
+  const ingestions = await findAllCsvIngestion(context, SYSTEM_USER, opts);
   const ingestionPromises = [];
   for (let i = 0; i < ingestions.length; i += 1) {
     const ingestion = ingestions[i];
@@ -627,7 +627,7 @@ export const jsonExecutor = async (context: AuthContext) => {
     filterGroups: [],
   };
   const opts = { filters, noFiltersChecking: true };
-  const ingestions = await findAllJsonIngestions(context, SYSTEM_USER, opts);
+  const ingestions = await findAllJsonIngestion(context, SYSTEM_USER, opts);
   for (let i = 0; i < ingestions.length; i += 1) {
     const ingestion = ingestions[i];
     if (isMustExecuteIteration(ingestion.last_execution_date, ingestion.scheduling_period)) {

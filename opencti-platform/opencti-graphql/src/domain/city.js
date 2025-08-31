@@ -10,7 +10,7 @@ export const findById = (context, user, cityId) => {
   return storeLoadById(context, user, cityId, ENTITY_TYPE_LOCATION_CITY);
 };
 
-export const findAll = (context, user, args) => {
+export const findCityPaginated = (context, user, args) => {
   return listEntitiesPaginated(context, user, [ENTITY_TYPE_LOCATION_CITY], args);
 };
 

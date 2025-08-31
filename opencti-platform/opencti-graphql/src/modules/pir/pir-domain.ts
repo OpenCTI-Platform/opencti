@@ -68,12 +68,12 @@ export const findById = async (context: AuthContext, user: AuthUser, id: string)
   return storeLoadById<BasicStoreEntityPir>(context, user, id, ENTITY_TYPE_PIR);
 };
 
-export const findAll = async (context: AuthContext, user: AuthUser, opts?: EntityOptions<BasicStoreEntityPir>) => {
+export const findPirPaginated = async (context: AuthContext, user: AuthUser, opts?: EntityOptions<BasicStoreEntityPir>) => {
   await checkEnterpriseEdition(context);
   return listEntitiesPaginated<BasicStoreEntityPir>(context, user, [ENTITY_TYPE_PIR], opts);
 };
 
-export const findAllPirRelations = async (
+export const findPirRelationPaginated = async (
   context: AuthContext,
   user: AuthUser,
   opts: QueryPirRelationshipsArgs,

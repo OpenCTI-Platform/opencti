@@ -65,7 +65,7 @@ export const findById = (context: AuthContext, user: AuthUser, indicatorId: stri
   return storeLoadById<BasicStoreEntityIndicator>(context, user, indicatorId, ENTITY_TYPE_INDICATOR);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, args: QueryIndicatorsArgs) => {
+export const findIndicatorPaginated = (context: AuthContext, user: AuthUser, args: QueryIndicatorsArgs) => {
   return listEntitiesPaginated<BasicStoreEntityIndicator>(context, user, [ENTITY_TYPE_INDICATOR], args);
 };
 

@@ -106,7 +106,7 @@ export const findById = async (context, user, retentionRuleId) => {
   return storeLoadById(context, user, retentionRuleId, ENTITY_TYPE_RETENTION_RULE);
 };
 
-export const findAll = (context, user, args) => {
+export const findRetentionRulePaginated = (context, user, args) => {
   return listEntitiesPaginated(context, user, [ENTITY_TYPE_RETENTION_RULE], args);
 };
 

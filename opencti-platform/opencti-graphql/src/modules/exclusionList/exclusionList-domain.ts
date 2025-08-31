@@ -21,7 +21,7 @@ export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityExclusionList>(context, user, id, ENTITY_TYPE_EXCLUSION_LIST);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, args: QueryExclusionListsArgs) => {
+export const findExclusionListPaginated = (context: AuthContext, user: AuthUser, args: QueryExclusionListsArgs) => {
   return listEntitiesPaginated<BasicStoreEntityExclusionList>(context, user, [ENTITY_TYPE_EXCLUSION_LIST], args);
 };
 

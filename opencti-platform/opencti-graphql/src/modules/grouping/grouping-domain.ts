@@ -19,7 +19,7 @@ export const findById: DomainFindById<BasicStoreEntityGrouping> = (context: Auth
   return storeLoadById<BasicStoreEntityGrouping>(context, user, groupingId, ENTITY_TYPE_CONTAINER_GROUPING);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityGrouping>) => {
+export const findGroupingPaginated = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityGrouping>) => {
   return listEntitiesPaginated<BasicStoreEntityGrouping>(context, user, [ENTITY_TYPE_CONTAINER_GROUPING], opts);
 };
 
@@ -32,6 +32,7 @@ export const addGrouping = async (context: AuthContext, user: AuthUser, grouping
 export const groupingContainsStixObjectOrStixRelationship = async (context: AuthContext, user: AuthUser, groupingId: string, thingId: string) => {
   const resolvedThingId = isStixId(thingId) ? (await internalLoadById(context, user, thingId)).internal_id : thingId;
   const opts: EntityOptions<BasicStoreEntityGrouping> = {
+    first: 1,
     filters: {
       mode: FilterMode.And,
       filters: [
@@ -41,7 +42,7 @@ export const groupingContainsStixObjectOrStixRelationship = async (context: Auth
       filterGroups: [],
     },
   };
-  const groupingFound = await findAll(context, user, opts);
+  const groupingFound = await findGroupingPaginated(context, user, opts);
   return groupingFound.edges.length > 0;
 };
 

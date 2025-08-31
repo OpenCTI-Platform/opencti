@@ -12,7 +12,7 @@ export const findById = (context, user, systemId) => {
   return storeLoadById(context, user, systemId, ENTITY_TYPE_IDENTITY_SYSTEM);
 };
 
-export const findAll = (context, user, args) => {
+export const findSystemPaginated = (context, user, args) => {
   return listEntitiesPaginated(context, user, [ENTITY_TYPE_IDENTITY_SYSTEM], args);
 };
 

@@ -1,4 +1,4 @@
-import { addSystem, belongsToOrganizationsPaginated, findAll, findById } from '../domain/system';
+import { addSystem, belongsToOrganizationsPaginated, findSystemPaginated, findById } from '../domain/system';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -11,7 +11,7 @@ import {
 const systemResolvers = {
   Query: {
     system: (_, { id }, context) => findById(context, context.user, id),
-    systems: (_, args, context) => findAll(context, context.user, args),
+    systems: (_, args, context) => findSystemPaginated(context, context.user, args),
   },
   System: {
     organizations: (system, args, context) => belongsToOrganizationsPaginated(context, context.user, system.id, args),

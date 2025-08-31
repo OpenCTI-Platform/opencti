@@ -66,7 +66,7 @@ export const findById = async (context: AuthContext, user: AuthUser, csvMapperId
   return storeLoadById<BasicStoreEntityCsvMapper>(context, user, csvMapperId, ENTITY_TYPE_CSV_MAPPER);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, opts: QueryCsvMappersArgs) => {
+export const findCsvMapperPaginated = (context: AuthContext, user: AuthUser, opts: QueryCsvMappersArgs) => {
   return listEntitiesPaginated<BasicStoreEntityCsvMapper>(context, user, [ENTITY_TYPE_CSV_MAPPER], opts);
 };
 

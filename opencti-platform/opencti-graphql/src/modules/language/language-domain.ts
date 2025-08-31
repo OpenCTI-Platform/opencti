@@ -11,7 +11,7 @@ export const findById = (context: AuthContext, user: AuthUser, languageId: strin
   return storeLoadById(context, user, languageId, ENTITY_TYPE_LANGUAGE) as unknown as BasicStoreEntityLanguage;
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, opts: QueryLanguagesArgs) => {
+export const findLanguagePaginated = (context: AuthContext, user: AuthUser, opts: QueryLanguagesArgs) => {
   return listEntitiesPaginated<BasicStoreEntityLanguage>(context, user, [ENTITY_TYPE_LANGUAGE], opts);
 };
 

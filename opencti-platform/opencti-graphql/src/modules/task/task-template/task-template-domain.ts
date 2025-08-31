@@ -13,7 +13,7 @@ export const findById: DomainFindById<BasicStoreEntityTaskTemplate> = (context: 
   return storeLoadById(context, user, templateId, ENTITY_TYPE_TASK_TEMPLATE);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityTaskTemplate>) => {
+export const findTaskTemplatePaginated = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityTaskTemplate>) => {
   return listEntitiesPaginated<BasicStoreEntityTaskTemplate>(context, user, [ENTITY_TYPE_TASK_TEMPLATE], opts);
 };
 

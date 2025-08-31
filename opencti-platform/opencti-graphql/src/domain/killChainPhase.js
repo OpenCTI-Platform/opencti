@@ -10,7 +10,7 @@ export const findById = (context, user, killChainPhaseId) => {
   return storeLoadById(context, user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE);
 };
 
-export const findAll = (context, user, args) => {
+export const findKillChainPhasePaginated = (context, user, args) => {
   return listEntitiesPaginated(context, user, [ENTITY_TYPE_KILL_CHAIN_PHASE], args);
 };
 

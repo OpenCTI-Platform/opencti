@@ -1,4 +1,4 @@
-import { addLocation, findAll, findById } from '../domain/location';
+import { addLocation, findLocationPaginated, findById } from '../domain/location';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -12,7 +12,7 @@ import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../modules/administrat
 const locationResolvers = {
   Query: {
     location: (_, { id }, context) => findById(context, context.user, id),
-    locations: (_, args, context) => findAll(context, context.user, args),
+    locations: (_, args, context) => findLocationPaginated(context, context.user, args),
   },
   Location: {
     __resolveType(obj) {

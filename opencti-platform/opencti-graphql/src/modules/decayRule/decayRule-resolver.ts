@@ -1,10 +1,10 @@
 import type { Resolvers } from '../../generated/graphql';
-import { addDecayRule, countAppliedIndicators, deleteDecayRule, fieldPatchDecayRule, findAll, findById, getDecaySettingsChartData } from './decayRule-domain';
+import { addDecayRule, countAppliedIndicators, deleteDecayRule, fieldPatchDecayRule, findDecayRulePaginated, findById, getDecaySettingsChartData } from './decayRule-domain';
 
 const decayRuleResolvers: Resolvers = {
   Query: {
     decayRule: (_, { id }, context) => findById(context, context.user, id),
-    decayRules: (_, args, context) => findAll(context, context.user, args),
+    decayRules: (_, args, context) => findDecayRulePaginated(context, context.user, args),
   },
   DecayRule: {
     appliedIndicatorsCount: (decayRule, _, context) => countAppliedIndicators(context, context.user, decayRule),

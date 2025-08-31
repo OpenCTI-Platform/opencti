@@ -17,7 +17,7 @@ export const findById = (context, user, reportId) => {
   return storeLoadById(context, user, reportId, ENTITY_TYPE_CONTAINER_REPORT);
 };
 
-export const findAll = async (context, user, args) => {
+export const findReportPaginated = async (context, user, args) => {
   return listEntitiesPaginated(context, user, [ENTITY_TYPE_CONTAINER_REPORT], args);
 };
 
@@ -34,7 +34,7 @@ export const reportContainsStixObjectOrStixRelationship = async (context, user, 
       filterGroups: [],
     },
   };
-  const reportFound = await findAll(context, user, args);
+  const reportFound = await findReportPaginated(context, user, args);
   return reportFound.edges.length > 0;
 };
 

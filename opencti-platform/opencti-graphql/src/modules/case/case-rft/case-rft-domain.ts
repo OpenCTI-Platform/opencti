@@ -21,7 +21,7 @@ export const findById: DomainFindById<BasicStoreEntityCaseRft> = (context: AuthC
   return storeLoadById(context, user, caseId, ENTITY_TYPE_CONTAINER_CASE_RFT);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityCaseRft>) => {
+export const findRftPaginated = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityCaseRft>) => {
   return listEntitiesPaginated<BasicStoreEntityCaseRft>(context, user, [ENTITY_TYPE_CONTAINER_CASE_RFT], opts);
 };
 
@@ -43,6 +43,7 @@ export const addCaseRft = async (context: AuthContext, user: AuthUser, caseRftAd
 export const caseRftContainsStixObjectOrStixRelationship = async (context: AuthContext, user: AuthUser, caseRftId: string, thingId: string) => {
   const resolvedThingId = isStixId(thingId) ? (await internalLoadById(context, user, thingId)).internal_id : thingId;
   const args = {
+    first: 1,
     filters: {
       mode: FilterMode.And,
       filters: [
@@ -52,6 +53,6 @@ export const caseRftContainsStixObjectOrStixRelationship = async (context: AuthC
       filterGroups: [],
     },
   };
-  const caseRftFound = await findAll(context, user, args);
+  const caseRftFound = await findRftPaginated(context, user, args);
   return caseRftFound.edges.length > 0;
 };

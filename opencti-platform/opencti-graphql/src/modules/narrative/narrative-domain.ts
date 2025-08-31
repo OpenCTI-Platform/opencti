@@ -13,7 +13,7 @@ export const findById = (context: AuthContext, user: AuthUser, narrativeId: stri
   return storeLoadById(context, user, narrativeId, ENTITY_TYPE_NARRATIVE) as unknown as BasicStoreEntityNarrative;
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, opts: QueryNarrativesArgs) => {
+export const findNarrativePaginated = (context: AuthContext, user: AuthUser, opts: QueryNarrativesArgs) => {
   return listEntitiesPaginated<BasicStoreEntityNarrative>(context, user, [ENTITY_TYPE_NARRATIVE], opts);
 };
 

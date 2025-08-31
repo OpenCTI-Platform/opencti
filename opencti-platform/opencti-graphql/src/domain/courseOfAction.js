@@ -10,7 +10,7 @@ export const findById = (context, user, courseOfActionId) => {
   return storeLoadById(context, user, courseOfActionId, ENTITY_TYPE_COURSE_OF_ACTION);
 };
 
-export const findAll = (context, user, args) => {
+export const findCourseOfActionPaginated = (context, user, args) => {
   return listEntitiesPaginated(context, user, [ENTITY_TYPE_COURSE_OF_ACTION], args);
 };
 
