@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import type { FileHandle } from 'fs/promises';
 import { v4 as uuidv4 } from 'uuid';
 import pjson from '../../../package.json';
-import { createEntity, deleteElementById, listThings, listAllThingsPaginated, updateAttribute } from '../../database/middleware';
+import { createEntity, deleteElementById, listAllThingsPaginated, updateAttribute, listThingsPaginated } from '../../database/middleware';
 import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS } from '../../config/conf';
 import { delEditContext, notify, setEditContext } from '../../database/redis';
@@ -121,7 +121,7 @@ export const objects = async (
   if (args.all) {
     return listAllThingsPaginated(context, user, args.types, finalArgs);
   }
-  return listThings(context, user, args.types, finalArgs);
+  return listThingsPaginated(context, user, args.types, finalArgs);
 };
 
 const checkInvestigatedEntitiesInputs = async (
