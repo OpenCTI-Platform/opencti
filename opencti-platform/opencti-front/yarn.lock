@@ -4274,15 +4274,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@jsonforms/core@npm:3.5.1":
-  version: 3.5.1
-  resolution: "@jsonforms/core@npm:3.5.1"
+"@jsonforms/core@npm:3.6.0":
+  version: 3.6.0
+  resolution: "@jsonforms/core@npm:3.6.0"
   dependencies:
     "@types/json-schema": "npm:^7.0.3"
     ajv: "npm:^8.6.1"
     ajv-formats: "npm:^2.1.0"
     lodash: "npm:^4.17.21"
-  checksum: 10/f8ef9f86e07d20d1d3feec5bc96fff85a743b8ae98558c57ca8991945d58167c1f04ea701919f39d1b2453bdd340c7b469d71927ded3a079eadd947af4695686
+  checksum: 10/73bd20485029f0482ae6af780e5f7b2a9ddccd27bab5e3fc2288d0583b065f1a7725b97a15ca825e6049facd1c850388846fa675e9c5d49b20c8f550873f0181
   languageName: node
   linkType: hard
 
@@ -18163,7 +18163,7 @@ __metadata:
     "@fontsource/ibm-plex-sans": "npm:5.2.6"
     "@graphiql/toolkit": "npm:0.11.1"
     "@hello-pangea/dnd": "npm:18.0.1"
-    "@jsonforms/core": "npm:3.5.1"
+    "@jsonforms/core": "npm:3.6.0"
     "@jsonforms/material-renderers": "npm:3.5.1"
     "@jsonforms/react": "npm:3.5.1"
     "@mui/icons-material": "npm:6.5.0"
