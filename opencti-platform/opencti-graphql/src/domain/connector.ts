@@ -1,27 +1,9 @@
 import { v5 as uuidv5 } from 'uuid';
-import {
-  createEntity,
-  deleteElementById,
-  internalDeleteElementById,
-  patchAttribute,
-  updateAttribute
-} from '../database/middleware';
+import { createEntity, deleteElementById, internalDeleteElementById, patchAttribute, updateAttribute } from '../database/middleware';
 import { type GetHttpClient, getHttpClient } from '../utils/http-client';
 import { completeConnector, connector, connectors, connectorsFor } from '../database/repository';
-import {
-  getConnectorQueueDetails,
-  purgeConnectorQueues,
-  registerConnectorQueues,
-  unregisterConnector,
-  unregisterExchanges
-} from '../database/rabbitmq';
-import {
-  ENTITY_TYPE_CONNECTOR,
-  ENTITY_TYPE_CONNECTOR_MANAGER,
-  ENTITY_TYPE_SYNC,
-  ENTITY_TYPE_USER,
-  ENTITY_TYPE_WORK
-} from '../schema/internalObject';
+import { getConnectorQueueDetails, purgeConnectorQueues, registerConnectorQueues, unregisterConnector, unregisterExchanges } from '../database/rabbitmq';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER, ENTITY_TYPE_SYNC, ENTITY_TYPE_USER, ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { FunctionalError, UnsupportedError, ValidationError } from '../config/errors';
 import { validateFilterGroupForStixMatch } from '../utils/filtering/filtering-stix/stix-filtering';
 import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
@@ -32,11 +14,7 @@ import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE, OPENCTI_NAMES
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import { delEditContext, notify, redisGetWork, redisSetConnectorLogs, setEditContext } from '../database/redis';
 import { internalLoadById, listAllEntities, listEntities, storeLoadById } from '../database/middleware-loader';
-import {
-  completeContextDataForEntity,
-  publishUserAction,
-  type UserImportActionContextData
-} from '../listener/UserActionListener';
+import { completeContextDataForEntity, publishUserAction, type UserImportActionContextData } from '../listener/UserActionListener';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreEntityConnector, BasicStoreEntityConnectorManager, BasicStoreEntitySynchronizer, ConnectorInfo } from '../types/connector';
 import {

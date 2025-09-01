@@ -14,13 +14,16 @@ import {
   INSTANCE_RELATION_TYPES_FILTER,
   RELATION_FROM_TYPES_FILTER,
   RELATION_TO_TYPES_FILTER,
-  SOURCE_RELIABILITY_FILTER
+  RELATION_TYPE_FILTER,
+  SOURCE_RELIABILITY_FILTER,
+  TYPE_FILTER
 } from '../../../src/utils/filtering/filtering-constants';
 import { storeLoadById } from '../../../src/database/middleware-loader';
 import { addUser, findById } from '../../../src/domain/user';
 import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 import { getFakeAuthUser } from '../../utils/domainQueryHelper';
 import { SETTINGS_SET_ACCESSES } from '../../../src/utils/access';
+import { RELATION_IN_PIR } from '../../../src/schema/internalRelationship';
 
 // test queries involving dynamic filters
 
@@ -861,6 +864,47 @@ describe('Complex filters combinations for elastic queries', () => {
     expect(queryResult.data.reports.edges.length).toEqual(2);
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report1')).toBeTruthy();
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report2')).toBeTruthy();
+  });
+  it('should list entities according to filters: in-pir relationship type not authorized with types filter key', async () => {
+    // in-pir value not authorized with entity_type filter key
+    let queryResult = await queryAsAdmin({
+      query: LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: TYPE_FILTER,
+              operator: 'eq',
+              values: [ENTITY_TYPE_MALWARE, RELATION_IN_PIR],
+            }
+          ],
+          filterGroups: [],
+        },
+      }
+    });
+    expect(queryResult.errors.length).toEqual(1);
+    expect(queryResult.errors[0].message).toEqual('The \'in-pir\' relationship value is not authorized with the \'entity_type\' filter key.');
+    // in-pir value not authorized with relationship_type filter key
+    queryResult = await queryAsAdmin({
+      query: LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: RELATION_TYPE_FILTER,
+              values: [RELATION_IN_PIR],
+            }
+          ],
+          filterGroups: [],
+        },
+      }
+    });
+    expect(queryResult.errors.length).toEqual(1);
+    expect(queryResult.errors[0].message).toEqual('The \'in-pir\' relationship value is not authorized with the \'relationship_type\' filter key.');
   });
   it('should list entities according to filters: combinations of operators and modes with entity_type filter', async () => {
     // objective: test the correct injection of parent types

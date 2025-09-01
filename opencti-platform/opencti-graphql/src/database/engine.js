@@ -3014,6 +3014,9 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         }
       }
       if (filterKey === TYPE_FILTER || filterKey === RELATION_TYPE_FILTER) {
+        if (filter.values.includes(RELATION_IN_PIR)) {
+          throw FunctionalError(`The \'${RELATION_IN_PIR}\' relationship value is not authorized with the \'${filterKey}\' filter key.`, { filter });
+        }
         // in case we want to filter by entity_type
         // we need to add parent_types checking (in case the given value in type is an abstract type)
         const { newFilter, newFilterGroup } = adaptFilterToEntityTypeFilterKey(filter);
