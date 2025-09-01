@@ -199,7 +199,6 @@ import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_
 import { RELATION_SAMPLE } from '../modules/malwareAnalysis/malwareAnalysis-types';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { getAccessiblePirsAmongList, getPirWithAccessCheck } from '../modules/pir/pir-checkPirAccess';
-import { checkEnterpriseEdition } from '../enterprise-edition/ee';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
