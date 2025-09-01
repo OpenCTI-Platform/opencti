@@ -9,6 +9,7 @@ import { getChatbotUrl, logApp } from '../config/conf';
 import type { BasicStoreSettings } from '../types/settings';
 import { setCookieError } from './httpUtils';
 import { isFiligranChatbotAiActivated } from '../modules/ai/chatbot-ai-settings';
+import { getApplicationInfo } from '../domain/settings';
 
 export const getChatbotProxy = async (req: Express.Request, res: Express.Response) => {
   try {
@@ -32,10 +33,13 @@ export const getChatbotProxy = async (req: Express.Request, res: Express.Respons
       return;
     }
 
+    const { version } = getApplicationInfo();
     const vars = {
       OPENCTI_URL: getChatbotUrl(req),
       OPENCTI_TOKEN: context.user?.api_token,
       'X-API-KEY': Buffer.from(license_pem, 'utf-8').toString('base64'),
+      X_XTM_PRODUCT: 'OpenCTI',
+      X_OPENCTI_VERSION: version,
     };
 
     // Enhance headers with url, token and certificate

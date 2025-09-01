@@ -339,6 +339,7 @@ export const logTelemetry = {
   }
 };
 
+export const PORT = nconf.get('app:port');
 const BasePathConfig = nconf.get('app:base_path')?.trim() ?? '';
 const AppBasePath = BasePathConfig.endsWith('/') ? BasePathConfig.slice(0, -1) : BasePathConfig;
 export const basePath = isEmpty(AppBasePath) || AppBasePath.startsWith('/') ? AppBasePath : `/${AppBasePath}`;
@@ -364,11 +365,13 @@ export const getBaseUrl = (req) => {
 };
 
 export const getChatbotUrl = (req) => {
+  if (baseUrl && !baseUrl.includes('localhost') && !baseUrl.includes('127.0.0.1')) {
+    // Always append base path to the uri
+    return baseUrl + basePath;
+  }
   if (req) {
-    const [, port] = req.headers.host ? req.headers.host.split(':') : [];
-    const isCustomPort = port !== '80' && port !== '443';
-    const httpPort = isCustomPort && port ? `:${port}` : '';
-    return `${req.protocol}://${req.hostname}${httpPort}${basePath}`;
+    const hostname = req.headers.host;
+    return `${req.protocol}://${hostname}:${PORT}${basePath}`;
   }
   throw UnknownError('Missing request for chatbot');
 };
@@ -404,7 +407,6 @@ export const loadCert = (cert) => {
   }
   return readFileSync(cert);
 };
-export const PORT = nconf.get('app:port');
 
 const escapeRegex = (string) => {
   return string.replace(/[/\-\\^$*+?.()|[\]{}]/g, '\\$&');
