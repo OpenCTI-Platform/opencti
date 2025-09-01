@@ -145,6 +145,21 @@ const ipinfoListProperties = [
   { key: 'CONNECTOR_LISTEN_PROTOCOL_API_SSL', value: ['false'] }
 ];
 
+const CONNECTOR_WITH_HEALTH_QUERY = gql`
+  query GetConnectorWithHealth($id: String!) {
+    connector(id: $id) {
+      id
+      name
+      manager_health_metrics {
+        restart_count
+        started_at
+        is_in_reboot_loop
+        last_update
+      }
+    }
+  }
+`;
+
 describe('Connector Composer and Managed Connectors', () => {
   // Track all created resources
   const createdConnectorIds = new Set<string>();
@@ -928,6 +943,166 @@ describe('Connector Composer and Managed Connectors', () => {
           expect(connectorResult.data?.connector.manager_current_status).toEqual('started');
         })
       );
+    });
+  });
+
+  describe('Connector health metrics', () => {
+    let healthTestConnectorId: string;
+
+    beforeAll(async () => {
+      // Get test connector from catalog
+      const testConnector = catalogHelper.getTestSafeConnector();
+      const catalogId = catalogHelper.getCatalogId();
+
+      // Create a test connector for health metrics tests
+      const createInput = {
+        name: 'Health Metrics Test Connector',
+        user_id: TEST_USER_CONNECTOR_ID,
+        catalog_id: catalogId,
+        manager_contract_image: testConnector.container_image,
+        manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
+          IPINFO_TOKEN: 'health-test-token',
+          ...ipinfoProperties
+        })
+      };
+
+      const createResult = await queryAsAdminWithSuccess({
+        query: ADD_MANAGED_CONNECTOR_MUTATION,
+        variables: { input: createInput }
+      });
+
+      healthTestConnectorId = createResult.data?.managedConnectorAdd.id;
+      createdConnectorIds.add(healthTestConnectorId);
+    });
+
+    it('should update connector health metrics when XTM Composer deploys a connector', async () => {
+      // Request deployment through platform
+      const deployInput = {
+        id: healthTestConnectorId,
+        status: 'starting'
+      };
+
+      await queryAsAdminWithSuccess({
+        query: UPDATE_CONNECTOR_REQUESTED_STATUS_MUTATION,
+        variables: { input: deployInput }
+      });
+
+      // XTM Composer deploys the connector and updates health metrics
+      await xtmComposer.deployConnector(healthTestConnectorId);
+
+      // Verify metrics were stored by querying the connector
+      const queryResult = await queryAsAdminWithSuccess({
+        query: CONNECTOR_WITH_HEALTH_QUERY,
+        variables: { id: healthTestConnectorId },
+      });
+
+      const connector = queryResult.data?.connector;
+      expect(connector).toBeDefined();
+      expect(connector.manager_health_metrics).toBeDefined();
+      expect(connector.manager_health_metrics.restart_count).toBe(0);
+      expect(connector.manager_health_metrics.started_at).toBeDefined();
+      expect(connector.manager_health_metrics.is_in_reboot_loop).toBe(false);
+      expect(connector.manager_health_metrics.last_update).toBeDefined();
+    });
+
+    it('should update health metrics when XTM Composer restarts a connector', async () => {
+      // Simulate multiple restarts
+      await xtmComposer.restartConnector(healthTestConnectorId);
+      await wait(100);
+      await xtmComposer.restartConnector(healthTestConnectorId);
+      await wait(100);
+      await xtmComposer.restartConnector(healthTestConnectorId);
+
+      // Query connector with health metrics
+      const queryResult = await queryAsAdminWithSuccess({
+        query: CONNECTOR_WITH_HEALTH_QUERY,
+        variables: { id: healthTestConnectorId },
+      });
+
+      const connector = queryResult.data?.connector;
+      expect(connector).toBeDefined();
+      expect(connector.manager_health_metrics).toBeDefined();
+      expect(connector.manager_health_metrics.restart_count).toBe(3);
+      expect(connector.manager_health_metrics.started_at).toBeDefined();
+      expect(connector.manager_health_metrics.is_in_reboot_loop).toBe(true); // Should be true after 3 restarts
+      expect(connector.manager_health_metrics.last_update).toBeDefined();
+    });
+
+    it('should detect reboot loop when XTM Composer simulates it', async () => {
+      // Create a new connector for reboot loop test
+      const testConnector = catalogHelper.getTestSafeConnector();
+      const catalogId = catalogHelper.getCatalogId();
+
+      const createInput = {
+        name: 'Reboot Loop Test Connector',
+        user_id: TEST_USER_CONNECTOR_ID,
+        catalog_id: catalogId,
+        manager_contract_image: testConnector.container_image,
+        manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
+          IPINFO_TOKEN: 'reboot-loop-token',
+          ...ipinfoProperties
+        })
+      };
+
+      const createResult = await queryAsAdminWithSuccess({
+        query: ADD_MANAGED_CONNECTOR_MUTATION,
+        variables: { input: createInput }
+      });
+
+      const rebootLoopConnectorId = createResult.data?.managedConnectorAdd.id;
+      createdConnectorIds.add(rebootLoopConnectorId);
+
+      // Simulate a reboot loop
+      await xtmComposer.simulateRebootLoop(rebootLoopConnectorId, 10);
+
+      // Query connector to verify reboot loop detection
+      const queryResult = await queryAsAdminWithSuccess({
+        query: CONNECTOR_WITH_HEALTH_QUERY,
+        variables: { id: rebootLoopConnectorId },
+      });
+
+      const connector = queryResult.data?.connector;
+      expect(connector).toBeDefined();
+      expect(connector.manager_health_metrics).toBeDefined();
+      expect(connector.manager_health_metrics.restart_count).toBe(10);
+      expect(connector.manager_health_metrics.is_in_reboot_loop).toBe(true);
+      expect(connector.manager_health_metrics.last_update).toBeDefined();
+    });
+
+    it('should handle missing health metrics gracefully', async () => {
+      // Create a new connector without health metrics
+      const testConnector = catalogHelper.getTestSafeConnector();
+      const catalogId = catalogHelper.getCatalogId();
+
+      const createInput = {
+        name: 'No Health Metrics Connector',
+        user_id: TEST_USER_CONNECTOR_ID,
+        catalog_id: catalogId,
+        manager_contract_image: testConnector.container_image,
+        manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
+          IPINFO_TOKEN: 'no-health-token',
+          ...ipinfoProperties
+        })
+      };
+
+      const createResult = await queryAsAdminWithSuccess({
+        query: ADD_MANAGED_CONNECTOR_MUTATION,
+        variables: { input: createInput }
+      });
+
+      const noHealthConnectorId = createResult.data?.managedConnectorAdd.id;
+      createdConnectorIds.add(noHealthConnectorId);
+
+      // Query connector without health metrics (no deployment or health updates)
+      const queryResult = await queryAsAdminWithSuccess({
+        query: CONNECTOR_WITH_HEALTH_QUERY,
+        variables: { id: noHealthConnectorId },
+      });
+
+      const connector = queryResult.data?.connector;
+      expect(connector).toBeDefined();
+      // Health metrics should be null for a connector without metrics
+      expect(connector.manager_health_metrics).toBeNull();
     });
   });
 
