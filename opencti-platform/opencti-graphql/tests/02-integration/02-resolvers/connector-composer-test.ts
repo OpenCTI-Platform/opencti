@@ -2,15 +2,15 @@ import { expect, it, describe, afterAll, beforeAll } from 'vitest';
 import gql from 'graphql-tag';
 import { v4 as uuidv4 } from 'uuid';
 import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
-import { ADMIN_USER, USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
+import { USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
 import { wait } from '../../../src/database/utils';
 import { XTMComposerMock } from '../../utils/XTMComposerMock';
 import type { ApiConnector } from '../../utils/XTMComposerMock';
 import { catalogHelper } from '../../utils/catalogHelper';
-import { getBaseUrl } from '../../../src/config/conf';
 
 const TEST_COMPOSER_ID = uuidv4();
 const TEST_USER_CONNECTOR_ID: string = USER_CONNECTOR.id; // Initialize with default value
+const TEST_COMPOSER_PUBLIC_KEY = '-----BEGIN RSA PUBLIC KEY-----\nMIICCgKCAgEAk8V1xvej71cJhH+XAVwJKXkpM90fM8gf9jhq5t2SKDnMhGfl7bSNSRKEN6zUea3F4Q635SCK0klAh69J2wh1LakPb5Z/lRv5n/OA3QnINNbQwnDD2tjMoVoR/fW/oe8AG5CvgES0kLx/wfVoxUPpWyOTtWvtIjJH+Cyrj4as4lICaeci6AdjRfhR/syVaErflTEdJyps2g5DA3p8H9f+IOTxOK8dCBYWGPHLkgEXhz8Pc6mmIq7IYHeYMUXHOokrjCKiw1s59NAJvhdSmYP15Udac1QNGLTIsV8IvWvYWmUmOWUOTXAgy/sX1IuH+mt3yjmPzfScaSwPkecLkaGdUIecHZGyDHy+fJsb8vmj3NWr6MiehTFLs+UKyp+VPLSzxT29Umd/ZkqoYtMH0Fj/vIptxg7E5G/YQZtwB23OXPEZ2eC6cUKXwZXext+CS7Gdp8HoQn4Z7lpSQTh6lim/Olx5SpTSpXhFE8lTjT1MlbXyeEwBRFYpb/BjthsHM3d7pRdpJL613ZzMjEgJnE5dwAX7nlTdAldChLbA7U9Hw254NLZcO301j2YHcU1JiGHTtMO7nOrVFy7FIA5HS2kKRW8dWMm7C3sVmuWEjmydsCQZIvHmPTvkTE4YnEP1UZuNczinaR08oW/CBuajmNqJsCsmg6m9ThuxizJh71NzcNMCAwEAAQ==\n-----END RSA PUBLIC KEY-----';
 
 // Test configuration
 // The goal is to achieve a 1:1 behavior match between XTMComposerMock and XTMComposer.
@@ -22,6 +22,7 @@ const REGISTER_CONNECTORS_MANAGER_MUTATION = gql`
     mutation RegisterConnectorsManager($input: RegisterConnectorsManagerInput!) {
         registerConnectorsManager(input: $input) {
             id
+            public_key
             name
             last_sync_execution
             active
@@ -34,6 +35,7 @@ const UPDATE_CONNECTOR_MANAGER_STATUS_MUTATION = gql`
     mutation UpdateConnectorManagerStatus($input: UpdateConnectorManagerStatusInput!) {
         updateConnectorManagerStatus(input: $input) {
             id
+            public_key
             last_sync_execution
         }
     }
@@ -97,6 +99,7 @@ const CONNECTOR_MANAGER_QUERY = gql`
         connectorManager(managerId: $managerId) {
             id
             name
+            public_key
             last_sync_execution
             active
         }
@@ -108,6 +111,7 @@ const CONNECTOR_MANAGERS_QUERY = gql`
         connectorManagers {
             id
             name
+            public_key
             active
         }
     }
@@ -132,8 +136,6 @@ const ipinfoListProperties = [
   { key: 'CONNECTOR_LISTEN_PROTOCOL_API_SSL', value: ['false'] }
 ];
 
-
-
 describe('Connector Composer and Managed Connectors', () => {
   // Track all created resources
   const createdConnectorIds = new Set<string>();
@@ -157,7 +159,8 @@ describe('Connector Composer and Managed Connectors', () => {
     it('should register a new connector composer', async () => {
       const input = {
         id: TEST_COMPOSER_ID,
-        name: 'Test Composer'
+        name: 'Test Composer',
+        public_key: TEST_COMPOSER_PUBLIC_KEY,
       };
 
       const result = await queryAsAdminWithSuccess({
@@ -169,13 +172,15 @@ describe('Connector Composer and Managed Connectors', () => {
       expect(result.data?.registerConnectorsManager).not.toBeNull();
       expect(result.data?.registerConnectorsManager.id).toEqual(TEST_COMPOSER_ID);
       expect(result.data?.registerConnectorsManager.name).toEqual('Test Composer');
+      expect(result.data?.registerConnectorsManager.public_key).toEqual(TEST_COMPOSER_PUBLIC_KEY);
       expect(result.data?.registerConnectorsManager.last_sync_execution).not.toBeNull();
     });
 
     it('should update existing connector composer', async () => {
       const input = {
         id: TEST_COMPOSER_ID,
-        name: 'Test Composer Updated'
+        name: 'Test Composer Updated',
+        public_key: TEST_COMPOSER_PUBLIC_KEY,
       };
 
       const result = await queryAsAdminWithSuccess({
@@ -185,6 +190,7 @@ describe('Connector Composer and Managed Connectors', () => {
 
       expect(result.data).toBeDefined();
       expect(result.data?.registerConnectorsManager.name).toEqual('Test Composer Updated');
+      expect(result.data?.registerConnectorsManager.public_key).toEqual(TEST_COMPOSER_PUBLIC_KEY);
     });
 
     it('should update connector composer status', async () => {
@@ -964,7 +970,8 @@ describe('Connector Composer and Managed Connectors', () => {
     it('should deny non-admin users from registering connector composer', async () => {
       const input = {
         id: uuidv4(),
-        name: 'Unauthorized Composer'
+        name: 'Unauthorized Composer',
+        public_key: 'Unauthorized Composer',
       };
 
       await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {

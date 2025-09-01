@@ -50,6 +50,7 @@ export type IngestionTypedProperty<K extends keyof IngestionTypeMap = keyof Inge
   type: K;
   default: IngestionTypeMap[K];
   description: string;
+  format?: string;
 };
 
 export interface IngestionConnector {

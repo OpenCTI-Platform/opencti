@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import * as R from 'ramda';
+import crypto from 'crypto';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type CatalogContract, type CatalogDefinition, type CatalogType } from './catalog-types';
 import { isEmptyField } from '../../database/utils';
@@ -9,6 +10,7 @@ import { UnsupportedError } from '../../config/errors';
 import { idGenFromData } from '../../schema/identifier';
 import filigranCatalog from '../../__generated__/opencti-manifest.json';
 import conf from '../../config/conf';
+import type { ConnectorContractConfiguration, ContractConfigInput } from '../../generated/graphql';
 
 const CUSTOM_CATALOGS: string[] = conf.get('app:custom_catalogs') ?? [];
 const ajv = new Ajv({ coerceTypes: true });
@@ -77,20 +79,56 @@ const getCatalogs = () => {
   return catalogMap;
 };
 
-export const computeConnectorTargetContract = (configurations: any, targetContract: CatalogContract) => {
+const encryptValue = (publicKey: string, value: string) => {
+  const buffer = Buffer.from(value, 'utf8');
+  const encrypted = crypto.publicEncrypt(
+    {
+      key: publicKey,
+      padding: crypto.constants.RSA_PKCS1_PADDING,
+    },
+    buffer
+  );
+  return encrypted.toString('base64');
+};
+
+export const computeConnectorTargetContract = (
+  configurations: ContractConfigInput[],
+  targetContract: CatalogContract,
+  publicKey: string,
+  currentManagerContractConfiguration?: ConnectorContractConfiguration[]
+) => {
   const targetConfig = targetContract.config_schema;
   // Rework configuration for default an array support
   const contractConfigurations = [];
   const keys = Object.keys(targetConfig.properties);
   for (let i = 0; i < keys.length; i += 1) {
     const propKey = keys[i];
-    const currentConfig: any = configurations.find((config: any) => config.key === propKey);
+    const currentConfig = configurations.find((config) => config.key === propKey);
+    const currentConnectorConfig = currentManagerContractConfiguration?.find((c) => c.key === propKey);
+
     if (!currentConfig) {
-      if (targetConfig.properties[propKey].default) {
+      // If value isn't set in input but is already set in config, keep the config value
+      // Only applicable to password fields
+      if (currentConnectorConfig && targetConfig.properties[propKey].format === 'password') {
+        contractConfigurations.push(currentConnectorConfig);
+      } else if (targetConfig.properties[propKey].default) {
         contractConfigurations.push(({ key: propKey, value: targetConfig.properties[propKey].default }));
       }
-    } else if (targetConfig.properties[propKey].type !== 'array') {
-      contractConfigurations.push(({ key: propKey, value: currentConfig.value[0] }));
+    } else if (targetConfig.properties[propKey].type !== 'array' && currentConfig.value) {
+      const isPassword = targetConfig.properties[propKey].format === 'password';
+      // If value is already configured and has the same value, keep it
+      // This prevents re-encrypting already encrypted values
+      if (currentConfig.value[0] === currentConnectorConfig?.value) {
+        contractConfigurations.push(currentConnectorConfig);
+      } else {
+        const rawValue = currentConfig.value[0];
+        const finalValue = isPassword ? encryptValue(publicKey, rawValue) : rawValue;
+        contractConfigurations.push({
+          key: propKey,
+          value: finalValue,
+          ...(isPassword && { encrypted: true }),
+        });
+      }
     } else {
       contractConfigurations.push(currentConfig);
     }
