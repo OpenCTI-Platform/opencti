@@ -145,14 +145,10 @@ export const extractFilterKeys = (filterGroup: FilterGroup): string[] => {
 /**
  * extract all the filters from a filter group for specified keys
  */
-export const extractFiltersFromGroup = (inputFilters: FilterGroup, key: string | string[]): Filter[] => {
-  const keysToKeep = Array.isArray(key) ? key : [key];
+export const extractFiltersFromGroup = (inputFilters: FilterGroup, keysToKeep: string[]): Filter[] => {
   const { filters = [], filterGroups = [] } = inputFilters;
   const filteredFilters = filters.filter((f) => (Array.isArray(f.key) ? f.key.some((k) => keysToKeep.includes(k)) : keysToKeep.includes(f.key)));
-  // recurse on filter groups
-  if (filterGroups.length > 0) {
-    filteredFilters.push(...filterGroups.map((group) => extractFiltersFromGroup(group, key)).flat());
-  }
+  filteredFilters.push(...filterGroups.map((group) => extractFiltersFromGroup(group, keysToKeep)).flat());
   return filteredFilters;
 };
 
