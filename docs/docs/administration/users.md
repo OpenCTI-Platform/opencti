@@ -74,7 +74,37 @@ You can manage the users in `Settings > Security > Users`. If you are using [Sin
 
 To create a user, just click on the `+` button:
 
-![Create user](assets/create-user-new.png)
+![Create user](assets/create_user.png)
+
+# Service Account
+
+Service Account aims administrators to create technical users. Service accounts do not have any password which therefore prevent them from logging in via UI.
+
+## Create a Service Account
+It is possible to create `Service accounts`. These accounts are specifically designed for technical users, such as connectors.
+
+When creating a service account, an email address is automatically generated for the `Service account` if not provided by the user who creates the service account. A password is automatically generated for the `Service account` and it is not stored in the database. Technical users like connectors will authenticate using their API tokens.
+Although these accounts generally do not receive emails, it is possible to add a personalized email.
+
+## Main difference between a Service Account & a user
+
+- A Service Account will be considered to belong to the platform's organization to ensure it can access the data: service account when logging in, will be considered as users of the main platform organisation, in addition of their current organization. This will be done by manually adding **the platform org to the user's session**. It will not be possible to change this behavior. Therefore, even if you change your main platform organization, your service account will always be considered to be part of the main platform organisation, ensuring that you do not have any issue ingesting data. Removing your platform org will ensure that your service account does not belong anymore to the platform organisation, unless a specific relation between the organisation and the service account has been created.
+- A Service Account will not be able to log in via Email & Password since the password of the service account will not exists in DB.
+- A service account will not be able to receive emails.
+
+## Convert a User into a Service Account & vice-versa
+
+It is possible to convert a user into a service account and ice-versa.
+Two options are possible:
+- through massive operations.
+- directly in the user/service account overview.
+
+![Convert User](assets%2Fconvert_user.png)
+
+Converting a user into a service account will simply remove its password from our Database. The "new" service account will still have the same ID & same Token than the user, to preserve data consistency.
+
+Converting back a service account into a user will also be possible. However, if the service account has directly been created as a service account without adding a specific email address, the "new" user won't be able to trigger a password reset flow to get a new password. We therefore advise you to first provide a valid email address to your "new" user, so that the "new" user can trigger the reset password flow by himself/herself.
+
 
 ### Manage a user
 

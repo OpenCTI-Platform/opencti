@@ -5,16 +5,16 @@ CSV feed ingester enables users to import CSV files exposed on URLs.
 <a id="best-practices-section"></a>
 ## Best practices
 
-In OpenCTI, the "Data > Ingestion" section provides users with built-in functions for automated data import. These functions are designed for specific purposes and can be configured to seamlessly ingest data into the platform. Here, we'll explore the configuration process for the five built-in functions: Live Streams, TAXII Feeds, TAXII Push, RSS Feeds, and JSON/CSV Feeds.
+In OpenCTI, the "Data > Ingestion" section provides Service accounts with built-in functions for automated data import. These functions are designed for specific purposes and can be configured to seamlessly ingest data into the platform. Here, we'll explore the configuration process for the five built-in functions: Live Streams, TAXII Feeds, TAXII Push, RSS Feeds, and JSON/CSV Feeds.
 
 Ensuring a secure and well-organized environment is paramount in OpenCTI. Here are two recommended best practices to enhance security, traceability, and overall organizational clarity:
 
-1. Create a dedicated user for each source: Generate a user specifically for feed import, following the convention `[F] Source name` for clear identification. Assign the user to the "Connectors" group to streamline user management and permission related to data creation. Please [see here](../../deployment/connectors.md#connector-token-section) for more information on this good practice.
+1. Create a dedicated Service account for each source: Generate a technical user (or Service account) specifically for feed import, following the convention `[F] Source name` for clear identification. Assign the Service account to the "Connectors" group to streamline user management and permission related to data creation. Please [see here](../../deployment/connectors.md#connector-token-section) for more information on this good practice.
 2. Establish a dedicated Organization for the source: Create an organization named after the data source for clear identification. Assign the newly created organization to the "Default author" field in feed import configuration if available.
 
-By adhering to these best practices, you ensure independence in managing rights for each import source through dedicated user and organization structures. In addition, you enable clear traceability to the entity's creator, facilitating source evaluation, dashboard creation, data filtering and other administrative tasks.
+By adhering to these best practices, you ensure independence in managing rights for each import source through dedicated service account and organization structures. In addition, you enable clear traceability to the entity's creator, facilitating source evaluation, dashboard creation, data filtering and other administrative tasks.
 
-Under Settings > Policies, you can now define a default group for the ingestion user, allowing you to create a specific user when setting up the CSV Feed.
+Under Settings > Policies, you can now define a default group for the ingestion user, allowing you to create a specific Service accounts when setting up the CSV Feed.
 
 ![Select default group in settings](../assets/settings_default_group.png)
 
@@ -35,7 +35,7 @@ Here's a step-by-step guide to configure Csv Feeds:
 
 Additional configuration options:
 
-- User responsible for data creation: Define the user responsible for creating data received from this CSV feed. Best practice is to dedicate one user per source for organizational clarity by clicking on "Create automatic user". The name is not editable (unless you change the feed's name) but you must define a confidence level (between 0 and 100) to set this confidence to the user that will be automatically created. _Important_ : before clicking on "Create automatic user" you must define a default group for ingestion users, in the Settings part.
+- Service account responsible for data creation: Define the Service account responsible for creating data received from this CSV feed. Best practice is to dedicate one Service account per source for organizational clarity by clicking on "Automatically create a service account". The name is not editable (unless you change the feed's name) but you must define a confidence level (between 0 and 100) to set this confidence to the Service account that will be automatically created. _Important_ : before clicking on "Automatically create a service account" you must define a default group for ingestion users, in the Settings part.
 - Description
 
 ![csv-feeds-creation.png](../assets/csv-feeds-creation.png)
