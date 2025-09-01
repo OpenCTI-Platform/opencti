@@ -194,8 +194,13 @@ describe('PIR resolver standard behavior', () => {
   });
 
   it('should exist associated pir connector queue', async () => {
-    const filters = addFilter(undefined, 'connector_type', ['INTERNAL_INGESTION_PIR']);
-    const pirConnectors = await listEntities<BasicStoreEntity>(testContext, ADMIN_USER, [ENTITY_TYPE_CONNECTOR], { connectionFormat: false, filters });
+    const filters = addFilter(undefined, 'connector_scope', ['pir']);
+    const pirConnectors = await listEntities<BasicStoreEntity>(
+      testContext,
+      ADMIN_USER,
+      [ENTITY_TYPE_CONNECTOR],
+      { connectionFormat: false, filters }
+    );
     expect(pirConnectors.length).toEqual(1);
     expect(pirConnectors[0].name).toEqual('[PIR] MyPir');
   });
@@ -480,7 +485,7 @@ describe('PIR resolver standard behavior', () => {
       testContext,
       ADMIN_USER,
       [ENTITY_TYPE_CONNECTOR],
-      { connectionFormat: false, filters: addFilter(undefined, 'connector_type', ['INTERNAL_INGESTION_PIR']) }
+      { connectionFormat: false, filters: addFilter(undefined, 'connector_scope', ['pir']) }
     );
     expect(pirConnectors.length).toEqual(0);
     // Verify the PIR is no longer found
