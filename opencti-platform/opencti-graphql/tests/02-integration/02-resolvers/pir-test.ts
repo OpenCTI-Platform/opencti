@@ -195,8 +195,8 @@ describe('PIR resolver standard behavior', () => {
 
   it('should exist associated pir connector queue for worker', async () => {
     const connectors = await connectorsForWorker(testContext, ADMIN_USER);
-    const pirConnector = connectors.find((c) => c.id === pirInternalId);
-    expect(pirConnector.length).toEqual(1);
+    const pirConnectors = connectors.filter((c) => c.id === pirInternalId);
+    expect(pirConnectors.length).toEqual(1);
   });
 
   it('should update a pir', async () => {
@@ -280,6 +280,7 @@ describe('PIR resolver standard behavior', () => {
       variables: { pirId: pirInternalId },
     });
     expect(queryResult).not.toBeNull();
+    expect(queryResult).toEqual('test');
     expect(queryResult.data?.pirRelationships.edges.length).toEqual(1);
     expect(queryResult.data?.pirRelationships.edges[0].node.from.id).toEqual(flaggedElementId);
     expect(queryResult.data?.pirRelationships.edges[0].node.to.id).toEqual(pirInternalId);
@@ -550,7 +551,7 @@ describe('PIR resolver standard behavior', () => {
     expect(malwareAfterFlag.pir_information).toEqual(null);
     // Verify the associated connector queue is no longer found
     const connectors = await connectorsForWorker(testContext, ADMIN_USER);
-    const pirConnector = connectors.find((c) => c.id === pirInternalId);
+    const pirConnector = connectors.filter((c) => c.id === pirInternalId);
     expect(pirConnector.length).toEqual(0);
     // Verify the PIR is no longer found
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: pirInternalId } });

@@ -199,6 +199,7 @@ import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_
 import { RELATION_SAMPLE } from '../modules/malwareAnalysis/malwareAnalysis-types';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { getAccessiblePirsAmongList, getPirWithAccessCheck } from '../modules/pir/pir-checkPirAccess';
+import { checkEnterpriseEdition } from '../enterprise-edition/ee';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -2509,7 +2510,7 @@ const buildSubQueryForFilterGroup = async (context, user, inputFilters) => {
 // If filter key = entity_type, we should also handle parent_types
 // Example: filter = {mode: 'or', operator: 'eq', key: ['entity_type'], values: ['Report', 'Stix-Cyber-Observable']}
 // we check parent_types because otherwise we would never match Stix-Cyber-Observable which is an abstract parent type
-const adaptFilterToEntityTypeFilterKey = (filter) => {
+const adaptFilterToEntityTypeFilterKey = async (context, user, filter) => {
   const { key, mode = 'or', operator = 'eq' } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
   if (arrayKeys.length > 1) {
@@ -2520,6 +2521,35 @@ const adaptFilterToEntityTypeFilterKey = (filter) => {
   // we'll build these new filters or filterGroup, depending on the situation
   let newFilter;
   let newFilterGroup;
+
+  // if in-pir type value, check user pir rights access and add the accessible pirs // TODO PIR
+  // if (filter.values.includes(RELATION_IN_PIR)) {
+  //   if (filter.values.length !== 1) {
+  //     throw UnsupportedError(`${key} filter with in-pir value cannot accept other entity type values`, { filter });
+  //   }
+  //   await checkEnterpriseEdition(context);
+  //   const computedIndices = computeQueryIndices([], [ENTITY_TYPE_PIR]);
+  //   const pirs = await elPaginate(
+  //     context,
+  //     user,
+  //     computedIndices,
+  //     { connectionFormat: false, filters: addFilter(undefined, TYPE_FILTER, ENTITY_TYPE_PIR) },
+  //   );
+  //   console.log('pirs', pirs);
+  //   const pirIds = pirs.map((p) => p.id);
+  //   if (pirIds.length === 0) {
+  //     throw UnsupportedError('No PIR found', { filter });
+  //   }
+  //   newFilterGroup = {
+  //     mode: 'and',
+  //     filters: [
+  //       ...filter,
+  //       { key: RELATION_TO_FILTER, values: pirIds },
+  //     ],
+  //     filterGroups: [],
+  //   };
+  //   return { newFilter, newFilterGroup };
+  // }
 
   if (operator === 'nil' || operator === 'not_nil') { // nil and not_nil operators must have a single key
     newFilterGroup = {
@@ -3062,12 +3092,8 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         }
       }
       if (filterKey === TYPE_FILTER || filterKey === RELATION_TYPE_FILTER) {
-        if (filter.values.includes(RELATION_IN_PIR)) {
-          throw UnsupportedError(`The '${RELATION_IN_PIR}' relationship value is not authorized with the '${filterKey}' filter key.`, { filter });
-        }
-        // in case we want to filter by entity_type
-        // we need to add parent_types checking (in case the given value in type is an abstract type)
-        const { newFilter, newFilterGroup } = adaptFilterToEntityTypeFilterKey(filter);
+        // add parent_types checking (in case the given value in type is an abstract type)
+        const { newFilter, newFilterGroup } = await adaptFilterToEntityTypeFilterKey(context, user, filter);
         if (newFilter) {
           finalFilters.push(newFilter);
         }
