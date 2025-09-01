@@ -156,7 +156,7 @@ export const connectorsForWorker = async (context, user) => {
     const pir = pirs[i];
     registeredConnectors.push({
       id: pir.internal_id,
-      name: `Playbook ${pir.internal_id} queue`,
+      name: `Pir ${pir.internal_id} queue`,
       connector_scope: [],
       config: connectorConfig(pir.internal_id),
       active: true

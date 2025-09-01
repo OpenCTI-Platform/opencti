@@ -16,7 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type BasicStoreEntityPir, ENTITY_TYPE_PIR } from './pir-types';
-import { getEntitiesMapFromCache } from '../../database/cache';
+import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../../database/cache';
 import { FunctionalError } from '../../config/errors';
 import { isUserCanAccessStoreElement } from '../../utils/access';
 
@@ -36,6 +36,28 @@ export const getPirWithAccessCheck = async (context: AuthContext, user: AuthUser
   if (!pir) {
     throw FunctionalError('No PIR found', { pirId });
   }
-  await isUserCanAccessStoreElement(context, user, pir);
+  const isUserCanAccessPir = await isUserCanAccessStoreElement(context, user, pir);
+  if (!isUserCanAccessPir) {
+    throw FunctionalError('No PIR found', { pirId });
+  }
   return pir;
+};
+
+/**
+ * return the accessible Pirs among a list of pir internal ids
+ */
+export const getAccessiblePirsAmongList = async (context: AuthContext, user: AuthUser, pirIds: string[]) => {
+  // check EE
+  await checkEnterpriseEdition(context);
+  // check user has access to the PIR
+  const allPirs = await getEntitiesListFromCache<BasicStoreEntityPir>(context, user, ENTITY_TYPE_PIR);
+  const targetedPirs = allPirs.filter((p) => pirIds.includes(p.id));
+  for (let i = 0; i < targetedPirs.length; i += 1) {
+    const pir = targetedPirs[i];
+    const isUserCanAccessPir = await isUserCanAccessStoreElement(context, user, pir);
+    if (!isUserCanAccessPir) {
+      throw FunctionalError('No PIR found', { pirId: pir.id });
+    }
+  }
+  return targetedPirs.map((p) => p.id);
 };
