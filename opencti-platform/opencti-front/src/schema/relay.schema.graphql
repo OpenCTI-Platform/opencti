@@ -13491,6 +13491,17 @@ type PirInformation {
   pir_explanations: [PirExplanation!]!
 }
 
+type PirExecutionStep {
+  id: ID!
+  message: String
+  status: String
+  in_timestamp: String
+  out_timestamp: String
+  duration: Int
+  bundle_or_patch: String
+  error: String
+}
+
 type Pir implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
@@ -13510,6 +13521,7 @@ type Pir implements InternalObject & BasicObject {
   authorizedAuthorities: [String]
   currentUserAccessRight: String
   pirContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): ContainerConnection
+  queue_messages: Int!
 }
 
 type PirRelationship implements BasicRelationship {

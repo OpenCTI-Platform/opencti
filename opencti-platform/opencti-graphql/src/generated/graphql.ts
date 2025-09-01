@@ -19964,6 +19964,7 @@ export type Pir = BasicObject & InternalObject & {
   pir_filters: Scalars['String']['output'];
   pir_rescan_days: Scalars['Int']['output'];
   pir_type: PirType;
+  queue_messages: Scalars['Int']['output'];
   standard_id: Scalars['String']['output'];
   updated_at: Scalars['DateTime']['output'];
 };
@@ -20020,6 +20021,18 @@ export type PirEdge = {
   __typename?: 'PirEdge';
   cursor: Scalars['String']['output'];
   node: Pir;
+};
+
+export type PirExecutionStep = {
+  __typename?: 'PirExecutionStep';
+  bundle_or_patch?: Maybe<Scalars['String']['output']>;
+  duration?: Maybe<Scalars['Int']['output']>;
+  error?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  in_timestamp?: Maybe<Scalars['String']['output']>;
+  message?: Maybe<Scalars['String']['output']>;
+  out_timestamp?: Maybe<Scalars['String']['output']>;
+  status?: Maybe<Scalars['String']['output']>;
 };
 
 export type PirExplanation = {
@@ -34004,6 +34017,7 @@ export type ResolversTypes = ResolversObject<{
   PirDependency: ResolverTypeWrapper<PirDependency>;
   PirDependencyInput: PirDependencyInput;
   PirEdge: ResolverTypeWrapper<Omit<PirEdge, 'node'> & { node: ResolversTypes['Pir'] }>;
+  PirExecutionStep: ResolverTypeWrapper<PirExecutionStep>;
   PirExplanation: ResolverTypeWrapper<PirExplanation>;
   PirExplanationInput: PirExplanationInput;
   PirFlagElementInput: PirFlagElementInput;
@@ -34910,6 +34924,7 @@ export type ResolversParentTypes = ResolversObject<{
   PirDependency: PirDependency;
   PirDependencyInput: PirDependencyInput;
   PirEdge: Omit<PirEdge, 'node'> & { node: ResolversParentTypes['Pir'] };
+  PirExecutionStep: PirExecutionStep;
   PirExplanation: PirExplanation;
   PirExplanationInput: PirExplanationInput;
   PirFlagElementInput: PirFlagElementInput;
@@ -41597,6 +41612,7 @@ export type PirResolvers<ContextType = any, ParentType extends ResolversParentTy
   pir_filters?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   pir_rescan_days?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   pir_type?: Resolver<ResolversTypes['PirType'], ParentType, ContextType>;
+  queue_messages?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -41623,6 +41639,18 @@ export type PirDependencyResolvers<ContextType = any, ParentType extends Resolve
 export type PirEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['PirEdge'] = ResolversParentTypes['PirEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Pir'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type PirExecutionStepResolvers<ContextType = any, ParentType extends ResolversParentTypes['PirExecutionStep'] = ResolversParentTypes['PirExecutionStep']> = ResolversObject<{
+  bundle_or_patch?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  duration?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  error?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  in_timestamp?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  out_timestamp?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -45924,6 +45952,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   PirCriterion?: PirCriterionResolvers<ContextType>;
   PirDependency?: PirDependencyResolvers<ContextType>;
   PirEdge?: PirEdgeResolvers<ContextType>;
+  PirExecutionStep?: PirExecutionStepResolvers<ContextType>;
   PirExplanation?: PirExplanationResolvers<ContextType>;
   PirInformation?: PirInformationResolvers<ContextType>;
   PirRelationship?: PirRelationshipResolvers<ContextType>;
