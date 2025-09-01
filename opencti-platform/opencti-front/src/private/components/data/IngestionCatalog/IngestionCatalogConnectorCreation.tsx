@@ -24,7 +24,6 @@ import { IngestionConnector, IngestionTypedProperty } from '@components/data/Ing
 import { Launch } from 'mdi-material-ui';
 import IconButton from '@mui/material/IconButton';
 import { LibraryBooksOutlined } from '@mui/icons-material';
-import useConnectorManagerStatus from '@components/data/connectors/ConnectorManagerStatusContext';
 import NoConnectorManagersBanner from '@components/data/connectors/NoConnectorManagersBanner';
 import Tooltip from '@mui/material/Tooltip';
 import { MESSAGING$ } from '../../../../relay/environment';
@@ -56,6 +55,7 @@ interface IngestionCatalogConnectorCreationProps {
   open: boolean;
   onClose: () => void;
   catalogId: string;
+  hasRegisteredManagers: boolean
 }
 
 export interface ManagedConnectorValues extends BasicUserHandlingValues {
@@ -65,13 +65,11 @@ export interface ManagedConnectorValues extends BasicUserHandlingValues {
   confidence_level?: string;
 }
 
-const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId }: IngestionCatalogConnectorCreationProps) => {
+const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId, hasRegisteredManagers }: IngestionCatalogConnectorCreationProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const [compiledValidator, setCompiledValidator] = useState<Validator | undefined>(undefined);
   const [commitRegister] = useApiMutation<IngestionCatalogConnectorCreationMutation>(ingestionCatalogConnectorCreationMutation);
-
-  const { hasRegisteredManagers } = useConnectorManagerStatus();
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -179,11 +177,11 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
             automatic_user: true,
             ...defaultValues,
           }}
-          onSubmit={() => {
-          }}
+          onSubmit={() => {}}
         >
           {({ values, isSubmitting, setSubmitting, resetForm, isValid, setValues }) => {
             const errors = compiledValidator?.validate(values)?.errors;
+
             return (
               <Form>
                 <fieldset
@@ -209,55 +207,58 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
                     isSensitive={true}
                   />
                   {(requiredPropertiesArray.length > 0 || optionalPropertiesArray.length > 0) && (
-                  <>
-                    <div style={fieldSpacingContainerStyle}>{t_i18n('Configuration')}</div>
-                    {requiredPropertiesArray.length > 0 && (
-                    <Alert
-                      severity="info"
-                      icon={false}
-                      variant="outlined"
-                      style={{
-                        position: 'relative',
-                        width: '100%',
-                        marginTop: 8,
-                      }}
-                      slotProps={{
-                        message: {
-                          style: {
+                    <>
+                      <div style={fieldSpacingContainerStyle}>{t_i18n('Configuration')}</div>
+                      {requiredPropertiesArray.length > 0 && (
+                        <Alert
+                          severity="info"
+                          icon={false}
+                          variant="outlined"
+                          style={{
+                            position: 'relative',
                             width: '100%',
-                            overflow: 'visible',
-                          },
-                        },
-                      }}
-                    >
-                      <JsonForms
-                        data={defaultValues}
-                        schema={requiredProperties}
-                        renderers={materialRenderers}
-                        validationMode={'NoValidation'}
-                        onChange={({ data }) => setValues({ ...values, ...data })}
-                      />
-                    </Alert>
-                    )}
-                    {optionalPropertiesArray.length > 0 && (
-                      <div style={fieldSpacingContainerStyle}>
-                        <Accordion slotProps={{ transition: { unmountOnExit: false } }}>
-                          <AccordionSummary id="accordion-panel">
-                            <Typography>{t_i18n('Advanced options')}</Typography>
-                          </AccordionSummary>
-                          <AccordionDetails>
-                            <JsonForms
-                              data={defaultValues}
-                              schema={optionalProperties}
-                              renderers={materialRenderers}
-                              validationMode={'NoValidation'}
-                              onChange={({ data }) => setValues({ ...values, ...data })}
-                            />
-                          </AccordionDetails>
-                        </Accordion>
-                      </div>
-                    )}
-                  </>
+                            marginTop: 8,
+                          }}
+                          slotProps={{
+                            message: {
+                              style: {
+                                width: '100%',
+                                overflow: 'visible',
+                              },
+                            },
+                          }}
+                        >
+                          <JsonForms
+                            data={defaultValues}
+                            schema={requiredProperties}
+                            renderers={materialRenderers}
+                            validationMode={'NoValidation'}
+                            onChange={async ({ data }) => {
+                              await setValues({ ...values, ...data });
+                            }}
+                          />
+                        </Alert>
+                      )}
+
+                      {optionalPropertiesArray.length > 0 && (
+                        <div style={fieldSpacingContainerStyle}>
+                          <Accordion slotProps={{ transition: { unmountOnExit: false } }}>
+                            <AccordionSummary id="accordion-panel">
+                              <Typography>{t_i18n('Advanced options')}</Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                              <JsonForms
+                                data={defaultValues}
+                                schema={optionalProperties}
+                                renderers={materialRenderers}
+                                validationMode={'NoValidation'}
+                                onChange={({ data }) => setValues({ ...values, ...data })}
+                              />
+                            </AccordionDetails>
+                          </Accordion>
+                        </div>
+                      )}
+                    </>
                   )}
                 </fieldset>
 

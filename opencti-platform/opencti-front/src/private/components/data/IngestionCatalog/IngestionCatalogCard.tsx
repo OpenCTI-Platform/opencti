@@ -1,5 +1,5 @@
 import Card from '@mui/material/Card';
-import React, { useState } from 'react';
+import React from 'react';
 import CardHeader from '@mui/material/CardHeader';
 import CardContent from '@mui/material/CardContent';
 import { Badge, CardActions, Grid, Tooltip } from '@mui/material';
@@ -8,7 +8,6 @@ import { VerifiedOutlined } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import IngestionCatalogChip from '@components/data/IngestionCatalog/IngestionCatalogUseCaseChip';
 import { useTheme } from '@mui/styles';
-import IngestionCatalogConnectorCreation from '@components/data/IngestionCatalog/IngestionCatalogConnectorCreation';
 import { IngestionConnector } from '@components/data/IngestionCatalog';
 import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';
 import { truncate } from 'src/utils/String';
@@ -23,6 +22,7 @@ export interface IngestionCatalogCardProps {
   node: IngestionConnector;
   dataListId: string;
   isEnterpriseEdition: boolean
+  onClickDeploy: () => void
 }
 
 export type IngestionConnectorType =
@@ -61,12 +61,11 @@ type RenderConnectorUseCasesType = {
 
 const IngestionCatalogCard = ({
   node: connector,
-  dataListId,
   isEnterpriseEdition,
+  onClickDeploy,
 }: IngestionCatalogCardProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const [openCreation, setOpenCreation] = useState(false);
   const link = `/dashboard/data/ingestion/catalog/${connector.slug}`;
 
   const renderConnectorUseCases = ({
@@ -209,7 +208,7 @@ const IngestionCatalogCard = ({
             <Security needs={[INGESTION_SETINGESTIONS]}>
               {
                 isEnterpriseEdition ? (
-                  <Button variant="contained" onClick={() => setOpenCreation(true)} size="small">{t_i18n('Deploy')}</Button>
+                  <Button variant="contained" onClick={onClickDeploy} size="small">{t_i18n('Deploy')}</Button>
                 ) : (
                   <EnterpriseEditionButton title="Deploy" />
                 )
@@ -218,13 +217,6 @@ const IngestionCatalogCard = ({
           </div>
         </CardActions>
       </Card>
-
-      <IngestionCatalogConnectorCreation
-        open={openCreation}
-        connector={connector}
-        onClose={() => setOpenCreation(false)}
-        catalogId={dataListId}
-      />
     </>
   );
 };
