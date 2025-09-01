@@ -35,9 +35,10 @@ A well-designed playbook end with a component executing an action based on the p
 
     The STIX bundle processed by the playbook won't be written in the platform without specifying it using the appropriate component, i.e. "Send for ingestion".
 
-## Create a Playbook
+## Create a playbook
+### Manual creation 
 
-It is possible to create as many playbooks as needed which are running independently. You can give a name and description to each playbook.
+It is possible to create as many playbooks as needed, which run independently. You can give a name and description to each playbook.
 
 ![Create a new playbook](assets/playbook_create.png)
 
@@ -46,9 +47,46 @@ To do so, click on the grey rectangle in the center of the workspace and select 
 
 ![Choose input component](assets/playbook_input.png)
 
+### Duplicate a playbook 
+
+It is possible to duplicate a playbook, to easily replicate a playbook. You can do it directly by cliking on the burger menu (the 3 dots) at the end of the row and click on duplicate, or directly when you're inside a playbook.
+
+
+### Import/Export a playbook
+#### Export a playbook
+
+If you need to share a playbook with a colleague that is not on the same platform than you (or if you need to troubleshoot a playbook issue), you can now export your playbook directly: by cliking on the burger menu (the 3 dots) at the end of the row and click on duplicate, or directly when you're inside a playbook.
+
+
+#### Import a playbook
+
+You can import a playbook in OpenCTI coming either from your own platform or another platform. Simply go to playbooks, click on import & select the playbook you want to import.
+
+!!! warning "Verify your playbook"
+
+    Imported playbooks may contain data that does not exist in your platform. For instance, the initial playbook could have listened on a specific label & applied a specific marking that does not exist in your platform. Therefore, when you import a playbook, always check all the boxes/steps to ensure your playbook will run smoothly.
+
+**Applicable steps & data to verify:**
+- Listen knowledge events/ Manual enrollment / Query knowledge on regular basis / Match knowledge / Reduce knowledge / Manipulate knowledge
+   - Verify if any of the following data is correctly defined in your playbook, otherwise create it in your platform
+      - Taxonomies: any not existing taxonomy will be shown as deleted (Labels, vocabularies...) 
+      - Specific instances (entity/observable): If your playbook was listening on a specific instance, verify that the instance exists in your platform
+      - Marking: verify that the marking you're listening to exists in your platform
+      - Author: verify that the identities in your platform exist
+      - Creators: verify that you have existing users in your platform
+- Enrich through connector
+   - Verify if any of the following data is correctly define in your playbook, otherwise create it in your platform
+      - Connector exists in your platform   
+- Container wrapper
+   - Verify if any of the following data is correctly define in your playbook, otherwise create it in your platform
+      - Task template exists in your platform.
+- Send to notifier
+   - Verify that the notifier exists in your platform
+   - Verify that the target exsits in your platform
+
 ### Listen knowledge events
 With this event source, the playbook will be triggered on any knowledge event (create, update or delete) that matches the selected filters.
-Note that you are limited to a subset of filters, available for stream events that contain STIX data objects.
+Note that you are limited to a subset of filters available for stream events that contain STIX data objects.
 
 ![Listening creation event for TLP:GREEN IPs and domain names](assets/playbook_listen.png)
 
@@ -181,5 +219,7 @@ In this list, you will find:
 At the top right of the interface, you can access execution trace of your playbook and consult the raw data after every step of your playbook execution.
 
 ![Steps monitoring](assets/playbook_traces.png)
+
+
 
 
