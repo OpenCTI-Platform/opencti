@@ -260,7 +260,7 @@
       "support_version": ">= 6.5.1",
       "subscription_link": "",
       "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/email-intel-imap",
-      "manager_supported": false,
+      "manager_supported": true,
       "container_version": "rolling",
       "container_image": "opencti/connector-email-intel-imap",
       "container_type": "EXTERNAL_IMPORT",
@@ -453,7 +453,7 @@
       "support_version": ">= 6.5.1",
       "subscription_link": "",
       "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/oob/connector_manager/external-import/email-intel-microsoft",
-      "manager_supported": false,
+      "manager_supported": true,
       "container_version": "rolling",
       "container_image": "opencti/connector-email-intel-microsoft",
       "container_type": "EXTERNAL_IMPORT",
@@ -587,7 +587,9 @@
             "type": "string"
           },
           "EMAIL_INTEL_MICROSOFT_CLIENT_SECRET": {
-            "type": "string"
+            "format": "password",
+            "type": "string",
+            "writeOnly": true
           },
           "EMAIL_INTEL_MICROSOFT_EMAIL": {
             "format": "email",
@@ -637,7 +639,7 @@
       "support_version": ">= 6.5.1",
       "subscription_link": "",
       "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/flashpoint",
-      "manager_supported": false,
+      "manager_supported": true,
       "container_version": "rolling",
       "container_image": "opencti/connector-flashpoint",
       "container_type": "EXTERNAL_IMPORT",
@@ -764,7 +766,9 @@
           },
           "FLASHPOINT_API_KEY": {
             "description": "The API key to connect to Flashpoint.",
-            "type": "string"
+            "format": "password",
+            "type": "string",
+            "writeOnly": true
           },
           "FLASHPOINT_IMPORT_START_DATE": {
             "description": "The date from which to start importing data.",
@@ -1003,7 +1007,9 @@
           },
           "GREYNOISE_FEED_API_KEY": {
             "description": "The API key to connect to Greynoise.",
-            "type": "string"
+            "format": "password",
+            "type": "string",
+            "writeOnly": true
           },
           "GREYNOISE_FEED_FEED_TYPE": {
             "default": "malicious",
@@ -1247,7 +1253,7 @@
       "support_version": ">= 6.7.5",
       "subscription_link": "https://www.ransomware.live",
       "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/oob/connector_manager/external-import/ransomwarelive",
-      "manager_supported": false,
+      "manager_supported": true,
       "container_version": "rolling",
       "container_image": "opencti/connector-ransomwarelive",
       "container_type": "EXTERNAL_IMPORT",
