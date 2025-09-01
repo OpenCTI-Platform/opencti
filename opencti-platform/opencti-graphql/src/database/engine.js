@@ -2576,6 +2576,72 @@ const adaptFilterToEntityTypeFilterKey = (filter) => {
   // depending on the operator (or/and), only one of newFilter and newFilterGroup is defined
   return { newFilter, newFilterGroup };
 };
+
+const adaptFilterToRegardingOfFilterKeys = async (context, user, filterKey, filter) => {
+  const regardingFilters = [];
+  const id = filter.values.find((i) => i.key === 'id');
+  const type = filter.values.find((i) => i.key === 'relationship_type');
+  const dynamic = filter.values.find((i) => i.key === 'dynamic');
+  if (!id && !dynamic && !type) {
+    throw UnsupportedError('Id or dynamic or relationship type are needed for this filtering key', { key: filterKey });
+  }
+  if (dynamic && !type?.values?.length) {
+    throw UnsupportedError('Relationship type is needed for dynamic in regards of filtering', { key: filterKey, type });
+  }
+  let ids = id?.values ?? [];
+  const operator = id?.operator ?? 'eq';
+  // Check ids
+  if (ids.length > 0) {
+    const computedIndices = computeQueryIndices([], [ABSTRACT_STIX_OBJECT]);
+    const entities = await elPaginate(context, user, computedIndices, {
+      connectionFormat: false,
+      first: ES_MAX_PAGINATION,
+      bypassSizeLimit: true, // ensure that max runtime prevent on ES_MAX_PAGINATION
+      baseData: true,
+      filters: addFilter(undefined, IDS_FILTER, ids),
+    });
+    ids = entities.map((n) => n.id); // Keep ids the user has access to
+  }
+  // Check dynamic
+  const dynamicFilter = dynamic?.values ?? [];
+  if (isNotEmptyField(dynamicFilter)) {
+    const computedIndices = computeQueryIndices([], [ABSTRACT_STIX_OBJECT]);
+    const relatedEntities = await elPaginate(context, user, computedIndices, {
+      connectionFormat: false,
+      first: ES_MAX_PAGINATION,
+      bypassSizeLimit: true, // ensure that max runtime prevent on ES_MAX_PAGINATION
+      baseData: true,
+      filters: addFilter(dynamicFilter[0], TYPE_FILTER, [ABSTRACT_STIX_CORE_OBJECT]),
+    });
+    if (relatedEntities.length > 0) {
+      const relatedIds = relatedEntities.map((n) => n.id);
+      ids.push(...relatedIds);
+    } else {
+      ids.push('<invalid id>'); // To force empty result in the query result
+    }
+  }
+  // Check type
+  if (type && type.operator && type.operator !== 'eq') {
+    throw UnsupportedError('regardingOf only support types equality restriction');
+  }
+  const types = type?.values;
+  // Construct and push the final regarding of filter
+  if (isEmptyField(ids)) {
+    const keys = isEmptyField(types)
+      ? buildRefRelationKey('*', '*')
+      : types.map((t) => buildRefRelationKey(t, '*'));
+    keys.forEach((relKey) => {
+      regardingFilters.push({ key: [relKey], operator, values: ['EXISTS'] });
+    });
+  } else {
+    const keys = isEmptyField(types)
+      ? buildRefRelationKey('*', '*')
+      : types.flatMap((t) => [buildRefRelationKey(t, ID_INTERNAL), buildRefRelationKey(t, ID_INFERRED)]);
+    regardingFilters.push({ key: keys, operator, values: ids });
+  }
+  return { newFilter: regardingFilters, newFilterGroup: undefined };
+};
+
 const adaptFilterToIdsFilterKey = (filter) => {
   const { key, mode = 'or', operator = 'eq' } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
@@ -2769,6 +2835,28 @@ const adaptFilterToFromOrToFilterKeys = (filter) => {
   return { newFilter: undefined, newFilterGroup };
 };
 
+const adaptFilterToPirFilterKeys = async (context, user, filterKey, filter) => {
+  // the key should be of format: pir_score.PIR_ID
+  const splittedKey = filterKey.split('.');
+  if (splittedKey.length !== 2) {
+    throw FunctionalError('The filter key should be followed by a dot and the Pir ID', { filterKey });
+  }
+  const pirKey = splittedKey[0];
+  const pirId = splittedKey[1];
+  // check the user has access to the PIR
+  await getPirWithAccessCheck(context, user, pirId);
+  // push the nested pir_score filter associated to the given PIR ID
+  const newFilter = {
+    key: ['pir_information'],
+    values: [],
+    nested: [
+      { ...filter, key: pirKey },
+      { key: 'pir_id', values: [pirId], operator: FilterOperator.Eq },
+    ]
+  };
+  return { newFilter, newFilterGroup: undefined };
+};
+
 const adaptFilterToComputedReliabilityFilterKey = async (context, user, filter) => {
   const { key, operator = 'eq' } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
@@ -2949,57 +3037,10 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
       }
       const filterKey = arrayKeys[0];
       if (filterKey === INSTANCE_REGARDING_OF || filterKey === INSTANCE_DYNAMIC_REGARDING_OF) {
-        const regardingFilters = [];
-        const id = filter.values.find((i) => i.key === 'id');
-        const type = filter.values.find((i) => i.key === 'relationship_type');
-        const dynamic = filter.values.find((i) => i.key === 'dynamic');
-        if (!id && !dynamic && !type) {
-          throw UnsupportedError('Id or dynamic or relationship type are needed for this filtering key', { key: filterKey });
-        }
-        if (dynamic && !type?.values?.length) {
-          throw UnsupportedError('Relationship type is needed for dynamic in regards of filtering', { key: filterKey, type });
-        }
-        const ids = id?.values ?? [];
-        const operator = id?.operator ?? 'eq';
-        // Check dynamic
-        const dynamicFilter = dynamic?.values ?? [];
-        if (isNotEmptyField(dynamicFilter)) {
-          const computedIndices = computeQueryIndices([], [ABSTRACT_STIX_OBJECT]);
-          const relatedEntities = await elPaginate(context, user, computedIndices, {
-            connectionFormat: false,
-            first: ES_MAX_PAGINATION,
-            bypassSizeLimit: true, // ensure that max runtime prevent on ES_MAX_PAGINATION
-            baseData: true,
-            filters: addFilter(dynamicFilter[0], TYPE_FILTER, [ABSTRACT_STIX_CORE_OBJECT]),
-          });
-          if (relatedEntities.length > 0) {
-            const relatedIds = relatedEntities.map((n) => n.id);
-            ids.push(...relatedIds);
-          } else {
-            ids.push('<invalid id>'); // To force empty result in the query result
-          }
-        }
-        // Check type
-        if (type && type.operator && type.operator !== 'eq') {
-          throw UnsupportedError('regardingOf only support types equality restriction');
-        }
-        const types = type?.values;
-        if (isEmptyField(ids)) {
-          const keys = isEmptyField(types)
-            ? buildRefRelationKey('*', '*')
-            : types.map((t) => buildRefRelationKey(t, '*'));
-          keys.forEach((relKey) => {
-            regardingFilters.push({ key: [relKey], operator, values: ['EXISTS'] });
-          });
-        } else {
-          const keys = isEmptyField(types)
-            ? buildRefRelationKey('*', '*')
-            : types.flatMap((t) => [buildRefRelationKey(t, ID_INTERNAL), buildRefRelationKey(t, ID_INFERRED)]);
-          regardingFilters.push({ key: keys, operator, values: ids });
-        }
+        const { newFilter } = await adaptFilterToRegardingOfFilterKeys(context, user, filterKey, filter);
         finalFilterGroups.push({
           mode: filter.mode ?? FilterMode.Or,
-          filters: regardingFilters,
+          filters: newFilter,
           filterGroups: []
         });
       }
@@ -3015,7 +3056,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
       }
       if (filterKey === TYPE_FILTER || filterKey === RELATION_TYPE_FILTER) {
         if (filter.values.includes(RELATION_IN_PIR)) {
-          throw FunctionalError(`The \'${RELATION_IN_PIR}\' relationship value is not authorized with the \'${filterKey}\' filter key.`, { filter });
+          throw UnsupportedError(`The '${RELATION_IN_PIR}' relationship value is not authorized with the '${filterKey}' filter key.`, { filter });
         }
         // in case we want to filter by entity_type
         // we need to add parent_types checking (in case the given value in type is an abstract type)
@@ -3124,24 +3165,8 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         }
       }
       if (filterKey.startsWith(PIR_SCORE_FILTER_PREFIX) || filterKey.startsWith(LAST_PIR_SCORE_DATE_FILTER_PREFIX)) {
-        // the key should be of format: pir_score.PIR_ID
-        const splittedKey = filterKey.split('.');
-        if (splittedKey.length !== 2) {
-          throw FunctionalError('The filter key should be followed by a dot and the Pir ID', { filterKey });
-        }
-        const pirKey = splittedKey[0];
-        const pirId = splittedKey[1];
-        // check the user has access to the PIR
-        await getPirWithAccessCheck(context, user, pirId);
-        // push the nested pir_score filter associated to the given PIR ID
-        finalFilters.push({
-          key: ['pir_information'],
-          values: [],
-          nested: [
-            { ...filter, key: pirKey },
-            { key: 'pir_id', values: [pirId], operator: FilterOperator.Eq },
-          ]
-        });
+        const { newFilter } = await adaptFilterToPirFilterKeys(context, user, filterKey, filter);
+        finalFilters.push(newFilter);
       }
       if (filterKey === USER_SERVICE_ACCOUNT_FILTER) {
         const { operator, mode, values } = filter;
