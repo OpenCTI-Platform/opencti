@@ -12,6 +12,7 @@ import { shortHash } from '../schema/schemaUtils';
 import { getEntitiesMapFromCache } from './cache';
 import { SYSTEM_USER } from '../utils/access';
 import { getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
+import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 
 export const completeConnector = (connector) => {
   if (connector) {
@@ -146,6 +147,18 @@ export const connectorsForWorker = async (context, user) => {
       name: `Background task ${i} queue`,
       connector_scope: [],
       config: connectorConfig(`background-task-${i}`),
+      active: true
+    });
+  }
+  // Expose pirs
+  const pirs = await listAllEntities(context, user, [ENTITY_TYPE_PIR], { connectionFormat: false });
+  for (let i = 0; i < pirs.length; i += 1) {
+    const pir = pirs[i];
+    registeredConnectors.push({
+      id: pir.internal_id,
+      name: `Playbook ${pir.internal_id} queue`,
+      connector_scope: [],
+      config: connectorConfig(pir.internal_id),
       active: true
     });
   }
