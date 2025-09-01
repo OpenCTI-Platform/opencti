@@ -349,7 +349,6 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                   <div style={{
                     display: 'grid',
                     gridTemplateColumns: gridColumns,
-                    width: '100%',
                   }}
                   >
                     <SortConnectorsHeader field="name" label="Name" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
@@ -430,12 +429,11 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
 
                         <ListItemText
                           primary={
-                            <div style={{
-                              display: 'grid',
-                              gridTemplateColumns: gridColumns,
-                              width: '100%',
-                              alignItems: 'center',
-                            }}
+                            <div
+                              style={{
+                                display: 'grid',
+                                gridTemplateColumns: gridColumns,
+                              }}
                             >
                               <div className={classes.bodyItem}>
                                 {connector.name}
@@ -473,7 +471,6 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                             </div>
                           }
                         />
-
                       </ListItemButton>
                     </ListItem>
                   );
