@@ -51,6 +51,8 @@ export class XTMComposerMock {
 
   private connectorLogLevels: Map<string, string> = new Map();
 
+  private connectorRestartCounts: Map<string, number> = new Map();
+
   private logToConsole: boolean;
 
   private operationDelay: number;
@@ -184,6 +186,30 @@ export class XTMComposerMock {
     return result.data?.updateConnectorLogs;
   }
 
+  static async updateConnectorHealth(connectorId: string, healthMetrics: {
+    restart_count: number;
+    started_at: string;
+    is_in_reboot_loop: boolean;
+  }): Promise<string> {
+    const mutation = gql`
+      mutation UpdateConnectorHealth($input: HealthConnectorStatusInput!) {
+        updateConnectorHealth(input: $input)
+      }
+    `;
+
+    const result = await queryAsAdminWithSuccess({
+      query: mutation,
+      variables: {
+        input: {
+          id: connectorId,
+          ...healthMetrics
+        }
+      }
+    });
+
+    return result.data?.updateConnectorHealth;
+  }
+
   static async updateConnectorCurrentStatus(connectorId: string, status: string): Promise<any> {
     const mutation = gql`
       mutation UpdateConnectorCurrentStatus($input: CurrentConnectorStatusInput!) {
@@ -250,7 +276,17 @@ export class XTMComposerMock {
     // 3. Update status to started
     await XTMComposerMock.updateConnectorCurrentStatus(connectorId, 'started');
 
-    // 4. Final log
+    // 4. Initialize restart count to 0 for new deployment
+    this.connectorRestartCounts.set(connectorId, 0);
+
+    // 5. Update health metrics
+    await XTMComposerMock.updateConnectorHealth(connectorId, {
+      restart_count: 0,
+      started_at: new Date().toISOString(),
+      is_in_reboot_loop: false
+    });
+
+    // 6. Final log
     await XTMComposerMock.updateConnectorLogs(connectorId, [
       '[XTM-Composer] Connector deployed successfully'
     ]);
@@ -277,7 +313,7 @@ export class XTMComposerMock {
     ]);
   }
 
-  async restartConnector(connectorId: string) {
+  async restartConnector(connectorId: string, incrementRestartCount: boolean = true) {
     await this.stopConnector(connectorId);
 
     // Simulate restart delay
@@ -289,8 +325,37 @@ export class XTMComposerMock {
 
     await XTMComposerMock.updateConnectorCurrentStatus(connectorId, 'started');
 
+    // Update health metrics with incremented restart count if requested
+    if (incrementRestartCount) {
+      // Use internal map to track restart counts
+      const currentCount = this.connectorRestartCounts.get(connectorId) || 0;
+      const restartCount = currentCount + 1;
+      this.connectorRestartCounts.set(connectorId, restartCount);
+
+      await XTMComposerMock.updateConnectorHealth(connectorId, {
+        restart_count: restartCount,
+        started_at: new Date().toISOString(),
+        is_in_reboot_loop: restartCount >= 3 // Consider it a reboot loop after 3 restarts
+      });
+    }
+
     await XTMComposerMock.updateConnectorLogs(connectorId, [
       '[XTM-Composer] Connector restarted successfully'
+    ]);
+  }
+
+  // Method to simulate a reboot loop scenario
+  // eslint-disable-next-line class-methods-use-this
+  async simulateRebootLoop(connectorId: string, restartCount: number = 5) {
+    await XTMComposerMock.updateConnectorHealth(connectorId, {
+      restart_count: restartCount,
+      started_at: new Date().toISOString(),
+      is_in_reboot_loop: true
+    });
+
+    await XTMComposerMock.updateConnectorLogs(connectorId, [
+      '[XTM-Composer] WARNING: Connector is in a reboot loop',
+      `[XTM-Composer] Restart count: ${restartCount}`
     ]);
   }
 
@@ -673,6 +738,7 @@ export class XTMComposerMock {
     this.containers.clear();
     this.connectors.clear();
     this.connectorLogLevels.clear();
+    this.connectorRestartCounts.clear();
     XTMComposerMock.connectorLogsHistory.clear();
     this.log('info', 'Mock state reset');
   }

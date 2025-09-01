@@ -1094,3 +1094,23 @@ export const redisGetConnectorLogs = async (connectorId: string): Promise<string
   return rawLogs ? JSON.parse(rawLogs) : [];
 };
 // endregion
+
+// region connector health metrics
+export interface ConnectorHealthMetrics {
+  restart_count: number;
+  started_at: string;
+  last_update: string;
+  is_in_reboot_loop: boolean;
+}
+
+export const redisSetConnectorHealthMetrics = async (connectorId: string, metrics: ConnectorHealthMetrics) => {
+  const data = JSON.stringify(metrics);
+  // TTL of 5 minutes (300 seconds)
+  await getClientBase().set(`connector-${connectorId}-health`, data, 'EX', 300);
+};
+
+export const redisGetConnectorHealthMetrics = async (connectorId: string): Promise<ConnectorHealthMetrics | null> => {
+  const rawMetrics = await getClientBase().get(`connector-${connectorId}-health`);
+  return rawMetrics ? JSON.parse(rawMetrics) : null;
+};
+// endregion

@@ -12,7 +12,16 @@ import { elLoadById } from '../database/engine';
 import { isEmptyField, READ_INDEX_HISTORY } from '../database/utils';
 import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE, OPENCTI_NAMESPACE } from '../schema/general';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
-import { delEditContext, notify, redisGetWork, redisSetConnectorLogs, setEditContext } from '../database/redis';
+import {
+  delEditContext,
+  notify,
+  redisGetWork,
+  redisSetConnectorLogs,
+  setEditContext,
+  redisSetConnectorHealthMetrics,
+  redisGetConnectorHealthMetrics,
+  type ConnectorHealthMetrics
+} from '../database/redis';
 import { internalLoadById, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import { completeContextDataForEntity, publishUserAction, type UserImportActionContextData } from '../listener/UserActionListener';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -381,6 +390,31 @@ const updateConnector = async (context: AuthContext, user: AuthUser, connectorId
 export const connectorUpdateLogs = async (_context: AuthContext, _user: AuthUser, input: LogsConnectorStatusInput) => {
   await redisSetConnectorLogs(input.id, input.logs);
   return input.id;
+};
+
+// Health metrics input interface
+interface HealthConnectorStatusInput {
+  id: string;
+  restart_count: number;
+  started_at: string;
+  is_in_reboot_loop: boolean;
+}
+
+// Health metrics update function
+export const connectorUpdateHealth = async (_context: AuthContext, _user: AuthUser, input: HealthConnectorStatusInput) => {
+  const metrics: ConnectorHealthMetrics = {
+    restart_count: input.restart_count,
+    started_at: input.started_at,
+    is_in_reboot_loop: input.is_in_reboot_loop,
+    last_update: new Date().toISOString()
+  };
+  await redisSetConnectorHealthMetrics(input.id, metrics);
+  return input.id;
+};
+
+// Get health metrics function
+export const connectorGetHealth = async (_context: AuthContext, _user: AuthUser, connectorId: string): Promise<ConnectorHealthMetrics | null> => {
+  return redisGetConnectorHealthMetrics(connectorId);
 };
 
 export const updateConnectorRequestedStatus = async (context: AuthContext, user: AuthUser, input: RequestConnectorStatusInput) => {

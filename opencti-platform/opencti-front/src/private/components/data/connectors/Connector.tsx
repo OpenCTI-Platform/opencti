@@ -22,6 +22,7 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import ConnectorPopover from '@components/data/connectors/ConnectorPopover';
 import ConnectorStatusChip from '@components/data/connectors/ConnectorStatusChip';
+import moment from 'moment';
 import Filters from '../../common/lists/Filters';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { useFormatter } from '../../../../components/i18n';
@@ -251,6 +252,51 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
+  };
+
+  // Calculate uptime from started_at using moment duration
+  const calculateUptime = (startedAt: string | null | undefined): string => {
+    if (!startedAt) return t_i18n('Not available');
+
+    // Handle potential Unix timestamp in seconds (if it's a number string)
+    let start;
+    if (!Number.isNaN(Number(startedAt)) && Number(startedAt) < 10000000000) {
+      // If it's a Unix timestamp in seconds (less than 10 billion), convert to milliseconds
+      start = moment(Number(startedAt) * 1000);
+    } else {
+      start = moment(startedAt);
+    }
+
+    // Validate the parsed date
+    if (!start.isValid()) {
+      return t_i18n('Not available');
+    }
+
+    const now = moment();
+
+    const duration = moment.duration(now.diff(start));
+
+    // Additional check: if duration is negative or unreasonably large (more than 10 years)
+    if (duration.asMilliseconds() < 0 || duration.asYears() > 10) {
+      return t_i18n('Not available');
+    }
+
+    const days = Math.floor(duration.asDays());
+    const hours = duration.hours();
+    const minutes = duration.minutes();
+    const seconds = duration.seconds();
+
+    const parts = [];
+    if (days > 0) parts.push(`${days} ${t_i18n(days === 1 ? 'day' : 'days')}`);
+    if (hours > 0) parts.push(`${hours} ${t_i18n(hours === 1 ? 'hour' : 'hours')}`);
+    if (minutes > 0) parts.push(`${minutes} ${t_i18n(minutes === 1 ? 'minute' : 'minutes')}`);
+
+    // If uptime is less than a minute, show seconds
+    if (parts.length === 0) {
+      parts.push(`${seconds} ${t_i18n(seconds === 1 ? 'second' : 'seconds')}`);
+    }
+
+    return parts.join(', ');
   };
 
   // Component for Overview content (without ConnectorWorks)
@@ -640,6 +686,16 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                   )
               }
               </Grid>
+              {connector.is_managed && connector.manager_current_status === 'started' && connector.manager_health_metrics?.started_at && (
+                <Grid item xs={6}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t_i18n('Uptime')}
+                  </Typography>
+                  <Typography variant="body1" gutterBottom={true}>
+                    {calculateUptime(connector.manager_health_metrics?.started_at)}
+                  </Typography>
+                </Grid>
+              )}
             </Grid>
           </Paper>
         </Grid>
@@ -795,6 +851,12 @@ const Connector = createRefetchContainer(
         manager_requested_status
         manager_contract_image
         manager_connector_logs
+        manager_health_metrics {
+          restart_count
+          started_at
+          last_update
+          is_in_reboot_loop
+        }
         connector_user {
           id
           name

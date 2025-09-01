@@ -2102,6 +2102,13 @@ input LogsConnectorStatusInput {
   logs: [String!]!
 }
 
+input HealthConnectorStatusInput {
+  id: ID!
+  restart_count: Int!
+  started_at: DateTime!
+  is_in_reboot_loop: Boolean!
+}
+
 type RabbitMQConnection {
   host: String!
   vhost: String!
@@ -2210,6 +2217,7 @@ type Connector implements BasicObject & InternalObject {
   manager_contract_configuration: [ManagerContractConfiguration!]
   manager_connector_logs: [String!]
   manager_contract_hash: String
+  manager_health_metrics: ConnectorHealthMetrics
   built_in: Boolean
   configurations: [ConnectorConfiguration!]
 }
@@ -2230,6 +2238,14 @@ type ManagedConnector implements BasicObject & InternalObject {
   manager_contract_configuration: [ConnectorContractConfiguration!]!
   manager_contract_hash: String!
   manager_connector_logs: [String!]!
+  manager_health_metrics: ConnectorHealthMetrics
+}
+
+type ConnectorHealthMetrics {
+  restart_count: Int!
+  started_at: DateTime!
+  last_update: DateTime!
+  is_in_reboot_loop: Boolean!
 }
 
 type ConnectorManager implements BasicObject & InternalObject {
@@ -9181,6 +9197,7 @@ type Mutation {
   updateConnectorRequestedStatus(input: RequestConnectorStatusInput!): ManagedConnector
   updateConnectorCurrentStatus(input: CurrentConnectorStatusInput!): ManagedConnector
   updateConnectorLogs(input: LogsConnectorStatusInput!): ID!
+  updateConnectorHealth(input: HealthConnectorStatusInput!): ID!
   updateConnectorTrigger(id: ID!, input: [EditInput]!): Connector
   feedAdd(input: FeedAddInput!): Feed
   feedDelete(id: ID!): ID!
