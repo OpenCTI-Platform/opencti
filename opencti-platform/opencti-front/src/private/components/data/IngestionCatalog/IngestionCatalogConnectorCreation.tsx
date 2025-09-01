@@ -26,6 +26,7 @@ import IconButton from '@mui/material/IconButton';
 import { LibraryBooksOutlined } from '@mui/icons-material';
 import useConnectorManagerStatus from '@components/data/connectors/ConnectorManagerStatusContext';
 import NoConnectorManagersBanner from '@components/data/connectors/NoConnectorManagersBanner';
+import Tooltip from '@mui/material/Tooltip';
 import { MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
@@ -136,17 +137,18 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
       onClose={onClose}
       header={
         <div style={{ position: 'absolute', right: theme.spacing(1) }}>
-          <Button
-            size="large"
-            variant="contained"
-            startIcon={<Launch />}
-            href={connector.subscription_link}
-            target="blank"
-            rel="noopener noreferrer"
-            style={{ marginRight: theme.spacing(1) }}
-          >
-            {t_i18n('Vendor contact')}
-          </Button>
+          <Tooltip title={t_i18n('Vendor contact')}>
+            <IconButton
+              aria-label="Vendor contact"
+              component={Link}
+              to={connector.subscription_link}
+              target="blank"
+              rel="noopener noreferrer"
+            >
+              <Launch />
+            </IconButton>
+          </Tooltip>
+
           <IconButton
             aria-label="Go to"
             component={Link}
@@ -186,7 +188,11 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
               <Form>
                 <fieldset
                   disabled={!hasRegisteredManagers}
-                  style={!hasRegisteredManagers ? { opacity: 0.5, pointerEvents: 'none' } : undefined}
+                  style={{
+                    border: 'none',
+                    padding: 0,
+                    ...(!hasRegisteredManagers && { opacity: 0.5, pointerEvents: 'none' }),
+                  }}
                 >
                   <Field
                     component={TextField}
