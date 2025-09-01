@@ -1,4 +1,4 @@
-import React, { memo, Suspense, useState } from 'react';
+import React, { Suspense, useState } from 'react';
 import IngestionMenu from '@components/data/IngestionMenu';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { IngestionCatalogQuery } from '@components/data/__generated__/IngestionCatalogQuery.graphql';

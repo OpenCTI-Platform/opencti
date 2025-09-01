@@ -1,7 +1,7 @@
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import Drawer from '@components/common/drawer/Drawer';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useTheme } from '@mui/styles';
 import { FormikHelpers } from 'formik/dist/types';
 import * as Yup from 'yup';
@@ -83,6 +83,10 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
     setSubmitting,
     resetForm,
   }: Partial<FormikHelpers<ManagedConnectorValues>>) => {
+    const manager_contract_configuration = Object.entries(values)
+      .filter(([, value]) => value != null)
+      .map(([key, value]) => ({ key, value: [value.toString()] }));
+
     const input = {
       name: values.name,
       catalog_id: catalogId,
@@ -90,8 +94,9 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
       automatic_user: values.automatic_user ?? true,
       ...((values.automatic_user !== false) && { confidence_level: values.confidence_level?.toString() }),
       manager_contract_image: connector.container_image,
-      manager_contract_configuration: Object.entries(values).map(([key, value]) => ({ key, value: [value.toString()] })),
+      manager_contract_configuration,
     };
+
     commitRegister({
       variables: {
         input,
@@ -106,27 +111,56 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
     });
   };
 
-  // Get default values, required and optional properties to use into JsonForms
-  type Properties = [string, IngestionTypedProperty][];
-  const propertiesArray: Properties = Object.entries(connector.config_schema.properties);
-  const requiredPropertiesArray: Properties = [];
-  const optionalPropertiesArray: Properties = [];
-  const defaultValuesArray: [string, string | number | object | string[] | boolean][] = [];
-  propertiesArray.forEach((property) => {
-    const key = property[0];
-    const value = property[1];
-    const isRequired = connector.config_schema.required.includes(key);
-    if (isRequired) {
-      requiredPropertiesArray.push(property);
-    } else {
-      optionalPropertiesArray.push(property);
-    }
-    if (key === 'CONNECTOR_NAME') defaultValuesArray.push(['name', value.default]);
-    if (value.default) defaultValuesArray.push([key, value.default]);
-  });
-  const requiredProperties: JsonSchema = { properties: Object.fromEntries(requiredPropertiesArray), required: connector.config_schema.required };
-  const optionalProperties: JsonSchema = { properties: Object.fromEntries(optionalPropertiesArray) };
-  const defaultValues = Object.fromEntries(defaultValuesArray);
+  const {
+    requiredProperties,
+    optionalProperties,
+    configDefaults,
+    connectorName,
+  } = useMemo(() => {
+    const requiredProps: Record<string, IngestionTypedProperty> = {};
+    const optionalProps: Record<string, IngestionTypedProperty> = {};
+    const defaults: Record<string, string | number | boolean | object | string[]> = {};
+    let defaultConnectorName = '';
+
+    Object.entries(connector.config_schema.properties).forEach(([key, value]) => {
+      if (key === 'CONNECTOR_NAME') {
+        if (value.default !== undefined) {
+          defaultConnectorName = value.default.toString();
+        }
+        return;
+      }
+
+      const isRequired = connector.config_schema.required.includes(key);
+      if (isRequired) {
+        requiredProps[key] = value;
+      } else {
+        optionalProps[key] = value;
+      }
+
+      if (value.default !== undefined) {
+        defaults[key] = value.default;
+      }
+    });
+
+    const reqProperties: JsonSchema = {
+      properties: requiredProps,
+      required: connector.config_schema.required.filter((req) => req !== 'CONNECTOR_NAME' && req !== 'name'),
+    };
+
+    const optProperties: JsonSchema = {
+      properties: optionalProps,
+    };
+
+    return {
+      requiredProperties: reqProperties,
+      optionalProperties: optProperties,
+      configDefaults: defaults,
+      connectorName: defaultConnectorName,
+    };
+  }, [connector]);
+
+  const hasRequiredProperties = Object.keys(requiredProperties.properties || {}).length > 0;
+  const hasOptionalProperties = Object.keys(optionalProperties.properties || {}).length > 0;
 
   return (
     <Drawer
@@ -171,11 +205,11 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
             user_id: Yup.object().required(),
           })}
           initialValues={{
-            name: '',
+            name: connectorName,
             confidence_level: connector.max_confidence_level.toString(),
             user_id: '',
             automatic_user: true,
-            ...defaultValues,
+            ...configDefaults,
           }}
           onSubmit={() => {}}
         >
@@ -206,41 +240,43 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
                     labelTag="C"
                     isSensitive={true}
                   />
-                  {(requiredPropertiesArray.length > 0 || optionalPropertiesArray.length > 0) && (
+                  {(hasRequiredProperties || hasOptionalProperties) && (
                     <>
                       <div style={fieldSpacingContainerStyle}>{t_i18n('Configuration')}</div>
-                      {requiredPropertiesArray.length > 0 && (
-                        <Alert
-                          severity="info"
-                          icon={false}
-                          variant="outlined"
-                          style={{
-                            position: 'relative',
-                            width: '100%',
-                            marginTop: 8,
-                          }}
-                          slotProps={{
-                            message: {
-                              style: {
-                                width: '100%',
-                                overflow: 'visible',
-                              },
-                            },
-                          }}
-                        >
-                          <JsonForms
-                            data={defaultValues}
-                            schema={requiredProperties}
-                            renderers={materialRenderers}
-                            validationMode={'NoValidation'}
-                            onChange={async ({ data }) => {
-                              await setValues({ ...values, ...data });
+                      {
+                        hasRequiredProperties && (
+                          <Alert
+                            severity="info"
+                            icon={false}
+                            variant="outlined"
+                            style={{
+                              position: 'relative',
+                              width: '100%',
+                              marginTop: 8,
                             }}
-                          />
-                        </Alert>
-                      )}
+                            slotProps={{
+                              message: {
+                                style: {
+                                  width: '100%',
+                                  overflow: 'visible',
+                                },
+                              },
+                            }}
+                          >
+                            <JsonForms
+                              data={configDefaults}
+                              schema={requiredProperties}
+                              renderers={materialRenderers}
+                              validationMode={'NoValidation'}
+                              onChange={async ({ data }) => {
+                                await setValues({ ...values, ...data });
+                              }}
+                            />
+                          </Alert>
+                        )
+                      }
 
-                      {optionalPropertiesArray.length > 0 && (
+                      {hasOptionalProperties && (
                         <div style={fieldSpacingContainerStyle}>
                           <Accordion slotProps={{ transition: { unmountOnExit: false } }}>
                             <AccordionSummary id="accordion-panel">
@@ -248,7 +284,7 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
                             </AccordionSummary>
                             <AccordionDetails>
                               <JsonForms
-                                data={defaultValues}
+                                data={configDefaults}
                                 schema={optionalProperties}
                                 renderers={materialRenderers}
                                 validationMode={'NoValidation'}

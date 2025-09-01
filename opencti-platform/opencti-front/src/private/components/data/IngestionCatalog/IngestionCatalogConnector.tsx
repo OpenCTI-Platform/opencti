@@ -1,12 +1,14 @@
 import { useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import React, { Suspense } from 'react';
+import React, { Suspense, useState } from 'react';
 import IngestionCatalogConnectorHeader from '@components/data/IngestionCatalog/IngestionCatalogConnectorHeader';
 import IngestionCatalogConnectorOverview from '@components/data/IngestionCatalog/IngestionCatalogConnectorOverview';
 import { IngestionCatalogConnectorQuery } from '@components/data/IngestionCatalog/__generated__/IngestionCatalogConnectorQuery.graphql';
 import { ConnectorManagerStatusProvider, useConnectorManagerStatus } from '@components/data/connectors/ConnectorManagerStatusContext';
 import NoConnectorManagersBanner from '@components/data/connectors/NoConnectorManagersBanner';
 import { Stack } from '@mui/material';
+import IngestionCatalogConnectorCreation from '@components/data/IngestionCatalog/IngestionCatalogConnectorCreation';
+import { IngestionConnector } from '@components/data/IngestionCatalog';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -26,10 +28,12 @@ const ingestionCatalogConnectorQuery = graphql`
 
 interface IngestionCatalogConnectorComponentProps {
   queryRef: PreloadedQuery<IngestionCatalogConnectorQuery>;
+  onClickDeploy: (connector: IngestionConnector, catalogId: string, hasRegisteredManagers: boolean) => void;
 }
 
 const IngestionCatalogConnectorComponent = ({
   queryRef,
+  onClickDeploy,
 }: IngestionCatalogConnectorComponentProps) => {
   const isEnterpriseEdition = useEnterpriseEdition();
   const { t_i18n } = useFormatter();
@@ -64,8 +68,8 @@ const IngestionCatalogConnectorComponent = ({
 
         <IngestionCatalogConnectorHeader
           connector={connector}
-          catalogId={contract.catalog_id}
           isEnterpriseEdition={isEnterpriseEdition}
+          onClickDeploy={() => onClickDeploy(connector, contract?.catalog_id, hasRegisteredManagers)}
         />
 
         <IngestionCatalogConnectorOverview connector={connector} />
@@ -74,19 +78,65 @@ const IngestionCatalogConnectorComponent = ({
   );
 };
 
+interface CatalogState {
+  selectedConnector: IngestionConnector | null;
+  selectedCatalogId: string;
+  hasRegisteredManagers: boolean;
+}
+
 const IngestionCatalogConnector = () => {
   const { connectorSlug } = useParams();
+
   const queryRef = useQueryLoading<IngestionCatalogConnectorQuery>(
     ingestionCatalogConnectorQuery,
     { slug: connectorSlug ?? '' },
   );
+
+  const [catalogState, setCatalogState] = useState<CatalogState>({
+    selectedConnector: null,
+    selectedCatalogId: '',
+    hasRegisteredManagers: false,
+  });
+
+  const handleOpenDeployDialog = (connector: IngestionConnector, catalogId: string, registeredManagers: boolean) => {
+    setCatalogState((prev) => ({
+      ...prev,
+      selectedConnector: connector,
+      selectedCatalogId: catalogId,
+      hasRegisteredManagers: registeredManagers,
+    }));
+  };
+
+  const handleCloseDeployDialog = () => {
+    setCatalogState((prev) => ({
+      ...prev,
+      selectedConnector: null,
+      selectedCatalogId: '',
+    }));
+  };
+
   return (
     <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
       {queryRef && (
         <ConnectorManagerStatusProvider>
-          <IngestionCatalogConnectorComponent queryRef={queryRef} />
+          <IngestionCatalogConnectorComponent
+            queryRef={queryRef}
+            onClickDeploy={handleOpenDeployDialog}
+          />
         </ConnectorManagerStatusProvider>
       )}
+
+      {
+        catalogState.selectedConnector && (
+          <IngestionCatalogConnectorCreation
+            open={!!catalogState.selectedConnector}
+            connector={catalogState.selectedConnector}
+            onClose={handleCloseDeployDialog}
+            catalogId={catalogState.selectedCatalogId}
+            hasRegisteredManagers={catalogState.hasRegisteredManagers}
+          />
+        )
+      }
     </Suspense>
   );
 };
