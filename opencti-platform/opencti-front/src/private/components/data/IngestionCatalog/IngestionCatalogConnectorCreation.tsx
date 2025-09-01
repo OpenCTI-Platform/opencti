@@ -137,7 +137,7 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
       header={
         <div style={{ position: 'absolute', right: theme.spacing(1) }}>
           <Button
-            size="large"
+            size="small"
             variant="contained"
             startIcon={<Launch />}
             href={connector.subscription_link}
@@ -186,7 +186,11 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
               <Form>
                 <fieldset
                   disabled={!hasRegisteredManagers}
-                  style={!hasRegisteredManagers ? { opacity: 0.5, pointerEvents: 'none' } : undefined}
+                  style={{
+                    border: 'none',
+                    padding: 0,
+                    ...(!hasRegisteredManagers && { opacity: 0.5, pointerEvents: 'none' }),
+                  }}
                 >
                   <Field
                     component={TextField}
