@@ -13,6 +13,10 @@ import useGranted, {
   SETTINGS_SETPARAMETERS,
   SETTINGS_SETDISSEMINATION,
   SETTINGS_SETMANAGEXTMHUB,
+  SETTINGS_SETVOCABULARIES,
+  SETTINGS_SETKILLCHAINPHASES,
+  SETTINGS_SETCASETEMPLATES,
+  SETTINGS_SETSTATUSTEMPLATES,
 } from '../../../utils/hooks/useGranted';
 import Loader from '../../../components/Loader';
 
@@ -57,11 +61,18 @@ const Experience = lazy(() => import('./Experience'));
 
 const Root = () => {
   const adminOrga = isOnlyOrganizationAdmin();
+
+  const isGrantedToLabels = useGranted([SETTINGS_SETLABELS]);
+  const isGrantedToVocabularies = useGranted([SETTINGS_SETVOCABULARIES]);
+  const isGrantedToKillChainPhases = useGranted([SETTINGS_SETKILLCHAINPHASES]);
+  const isGrantedToCaseTemplates = useGranted([SETTINGS_SETCASETEMPLATES]);
+  const isGrantedToStatusTemplates = useGranted([SETTINGS_SETSTATUSTEMPLATES]);
+  const isGrantedToTaxonomies = isGrantedToLabels || isGrantedToVocabularies || isGrantedToKillChainPhases || isGrantedToCaseTemplates || isGrantedToStatusTemplates;
+
   const urlWithCapabilities = () => {
     const isGrantedToParameters = useGranted([SETTINGS_SETPARAMETERS]);
     const isGrantedToSecurity = useGranted([SETTINGS_SETMARKINGS, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]);
     const isGrantedToCustomization = useGranted([SETTINGS_SETCUSTOMIZATION]);
-    const isGrantedToTaxonomies = useGranted([SETTINGS_SETLABELS]);
     const isGrantedToActivity = useGranted([SETTINGS_SECURITYACTIVITY]);
     const isGrantedToFileIndexing = useGranted([SETTINGS_FILEINDEXING]);
     const isGrantedToExperience = useGranted([SETTINGS_SUPPORT, SETTINGS_SETMANAGEXTMHUB]);
@@ -73,6 +84,22 @@ const Root = () => {
     if (isGrantedToFileIndexing) return '/dashboard/settings/file_indexing';
     if (isGrantedToExperience) return '/dashboard/settings/experience';
     return '/dashboard';
+  };
+
+  const generateTaxonomyLink = () => {
+    if (isGrantedToLabels) {
+      return '/dashboard/settings/vocabularies/labels';
+    }
+    if (isGrantedToKillChainPhases) {
+      return '/dashboard/settings/vocabularies/kill_chain_phases';
+    }
+    if (isGrantedToCaseTemplates) {
+      return '/dashboard/settings/vocabularies/case_templates';
+    }
+    if (isGrantedToStatusTemplates) {
+      return '/dashboard/settings/vocabularies/status_templates';
+    }
+    return '/dashboard/settings/vocabularies/fields';
   };
 
   return (
@@ -401,10 +428,10 @@ const Root = () => {
             path="/vocabularies"
             element={
               <Security
-                needs={[SETTINGS_SETLABELS]}
+                needs={[SETTINGS_SETVOCABULARIES]}
                 placeholder={<Navigate to={urlWithCapabilities()} />}
               >
-                <Navigate to="/dashboard/settings/vocabularies/labels" />
+                <Navigate to={generateTaxonomyLink()} />
               </Security>
             }
           />
@@ -423,7 +450,7 @@ const Root = () => {
             path="/vocabularies/kill_chain_phases"
             element={
               <Security
-                needs={[SETTINGS_SETLABELS]}
+                needs={[SETTINGS_SETKILLCHAINPHASES]}
                 placeholder={<Navigate to={urlWithCapabilities()} />}
               >
                 <KillChainPhases />
@@ -434,7 +461,7 @@ const Root = () => {
             path="/vocabularies/status_templates"
             element={
               <Security
-                needs={[SETTINGS_SETLABELS]}
+                needs={[SETTINGS_SETSTATUSTEMPLATES]}
                 placeholder={<Navigate to={urlWithCapabilities()} />}
               >
                 <StatusTemplates />
@@ -445,7 +472,7 @@ const Root = () => {
             path="/vocabularies/case_templates"
             element={
               <Security
-                needs={[SETTINGS_SETLABELS]}
+                needs={[SETTINGS_SETCASETEMPLATES]}
                 placeholder={<Navigate to={urlWithCapabilities()} />}
               >
                 <CaseTemplates />
@@ -456,7 +483,7 @@ const Root = () => {
             path="/vocabularies/case_templates/:caseTemplateId/*"
             element={
               <Security
-                needs={[SETTINGS_SETLABELS]}
+                needs={[SETTINGS_SETCASETEMPLATES]}
                 placeholder={<Navigate to={urlWithCapabilities()} />}
               >
                 <CaseTemplateTasks />
@@ -467,7 +494,7 @@ const Root = () => {
             path="/vocabularies/fields"
             element={
               <Security
-                needs={[SETTINGS_SETLABELS]}
+                needs={[SETTINGS_SETVOCABULARIES]}
                 placeholder={<Navigate to={urlWithCapabilities()} />}
               >
                 <VocabularyCategories />
@@ -478,7 +505,7 @@ const Root = () => {
             path="/vocabularies/fields/:category"
             element={
               <Security
-                needs={[SETTINGS_SETLABELS]}
+                needs={[SETTINGS_SETVOCABULARIES]}
                 placeholder={<Navigate to={urlWithCapabilities()} />}
               >
                 <Vocabularies />
