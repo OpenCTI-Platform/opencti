@@ -12340,9 +12340,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"filigran-chatbot@https://github.com/FiligranHQ/filigran-chatbot/releases/download/0.1.4/filigran-chatbot-v0.1.4.tgz":
-  version: 0.1.4
-  resolution: "filigran-chatbot@https://github.com/FiligranHQ/filigran-chatbot/releases/download/0.1.4/filigran-chatbot-v0.1.4.tgz"
+"filigran-chatbot@https://github.com/FiligranHQ/filigran-chatbot/releases/download/0.1.5/filigran-chatbot-v0.1.5.tgz":
+  version: 0.1.5
+  resolution: "filigran-chatbot@https://github.com/FiligranHQ/filigran-chatbot/releases/download/0.1.5/filigran-chatbot-v0.1.5.tgz"
   dependencies:
     "@babel/core": "npm:7.28.3"
     "@microsoft/fetch-event-source": "npm:2.0.1"
@@ -12353,7 +12353,7 @@ __metadata:
     prettier: "npm:3.1.0"
     solid-element: "npm:1.9.1"
     solid-js: "npm:1.9.9"
-  checksum: 10/d1ba57568fc41acb9de00cf3f05847a842125bfb277a5d6f64bb2e77b7e97366f6ea0d707045e2fab0cc90537173cdf1f020bc8b34e15220e7680eef2693dc20
+  checksum: 10/9446c8f995de49cf0929c746b7baebad950195ee9ccc53f42794d534160ad6d23cfbb338faee5151c9de8f599b63350e3867387aa16675f0af9094cf5e126051
   languageName: node
   linkType: hard
 
@@ -16814,7 +16814,7 @@ __metadata:
     eslint-plugin-react: "npm:7.37.5"
     express: "npm:4.21.2"
     extract-files: "npm:13.0.0"
-    filigran-chatbot: "https://github.com/FiligranHQ/filigran-chatbot/releases/download/0.1.4/filigran-chatbot-v0.1.4.tgz"
+    filigran-chatbot: "https://github.com/FiligranHQ/filigran-chatbot/releases/download/0.1.5/filigran-chatbot-v0.1.5.tgz"
     filigran-icon: "npm:0.18.1"
     filigran-ui: "npm:0.32.1"
     formik: "npm:2.4.6"
