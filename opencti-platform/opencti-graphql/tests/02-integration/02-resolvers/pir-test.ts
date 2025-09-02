@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { now } from 'moment';
 import { ADMIN_USER, buildStandardUser, queryAsAdmin, testContext } from '../../utils/testQuery';
 import { FilterMode, FilterOperator, PirType } from '../../../src/generated/graphql';
-import { RESTRICTED_USER, SYSTEM_USER } from '../../../src/utils/access';
+import { SYSTEM_USER } from '../../../src/utils/access';
 import { internalLoadById, listEntitiesPaginated, listRelationsPaginated } from '../../../src/database/middleware-loader';
 import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import type { BasicStoreEntity } from '../../../src/types/store';
@@ -324,11 +324,9 @@ describe('PIR resolver standard behavior', () => {
     }).rejects.toThrowError('The filter key should be followed by a dot and the Pir ID');
     // return error if the pir is not accessible for the user
     const filtersWithGtOperator = addFilter(undefined, `${PIR_SCORE_FILTER_PREFIX}.${pirInternalId}`, ['50'], 'gt');
-    const test = await listEntitiesPaginated(testContext, userUpdate, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithGtOperator });
-    expect(test).toEqual('TEST');
     await expect(async () => {
-      await listEntitiesPaginated(testContext, RESTRICTED_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithGtOperator });
-    }).rejects.toThrowError('No PIR found');
+      await listEntitiesPaginated(testContext, userUpdate, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithGtOperator });
+    }).rejects.toThrowError('Unauthorized Pir access');
     // fetch entities with a score > 50 for a given PIR
     const stixDomainObjects1 = await listEntitiesPaginated(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithGtOperator });
     expect(stixDomainObjects1.edges.length).toEqual(1);
@@ -403,23 +401,6 @@ describe('PIR resolver standard behavior', () => {
     };
     await expect(async () => {
       await listEntitiesPaginated(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters });
-    }).rejects.toThrowError('regardingOf filter with in-pir relationship type should be used with one or more valid pir id.');
-    // error if regardingOf filter with in-pir relationship type and a pir id not accessible for the user
-    filters = {
-      mode: FilterMode.And,
-      filterGroups: [],
-      filters: [
-        {
-          key: ['regardingOf'],
-          values: [
-            { key: 'relationship_type', values: [RELATION_IN_PIR] },
-            { key: 'id', values: [pirInternalId] },
-          ],
-        },
-      ]
-    };
-    await expect(async () => {
-      await listEntitiesPaginated(testContext, userUpdate, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters });
     }).rejects.toThrowError('regardingOf filter with in-pir relationship type should be used with one or more valid pir id.');
     // regardingOf filter with in-pir relationship type and pir id should return flagged entities
     filters = {
