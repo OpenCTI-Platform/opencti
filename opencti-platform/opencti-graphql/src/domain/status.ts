@@ -2,7 +2,7 @@ import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic
 import * as R from 'ramda';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../schema/internalObject';
 import { createEntity, deleteElementById, internalDeleteElementById, updateAttribute } from '../database/middleware';
-import { listAllEntities, listEntitiesPaginated, storeLoadById, storeLoadByIds } from '../database/middleware-loader';
+import { fullEntitiesList, pageEntitiesConnection, storeLoadById, storeLoadByIds } from '../database/middleware-loader';
 import { findById as findSubTypeById } from './subType';
 import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
 import {
@@ -34,7 +34,7 @@ export const findTemplateById = (context: AuthContext, user: AuthUser, statusTem
   return storeLoadById(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE) as unknown as StatusTemplate;
 };
 export const findTemplatePaginated = async (context: AuthContext, user: AuthUser, args: QueryStatusTemplatesArgs) => {
-  return listEntitiesPaginated<BasicStoreEntity>(context, user, [ENTITY_TYPE_STATUS_TEMPLATE], args);
+  return pageEntitiesConnection<BasicStoreEntity>(context, user, [ENTITY_TYPE_STATUS_TEMPLATE], args);
 };
 export const findAllTemplatesByStatusScope = async (context: AuthContext, user: AuthUser, args: QueryStatusTemplatesByStatusScopeArgs) => {
   const platformStatuses = await getEntitiesListFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);
@@ -52,7 +52,7 @@ export const findByType = async (context: AuthContext, user: AuthUser, statusTyp
   return platformStatuses.filter((status) => status.type === statusType);
 };
 export const findStatusPaginated = (context: AuthContext, user: AuthUser, args: QueryStatusesArgs) => {
-  return listEntitiesPaginated<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], args);
+  return pageEntitiesConnection<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], args);
 };
 export const getTypeStatuses = async (context: AuthContext, user: AuthUser, type: string) => {
   const getTypeStatusesFn = async () => {
@@ -86,7 +86,7 @@ export const batchRequestAccessStatusesByType = async (context: AuthContext, use
         filterGroups: [],
       }
     };
-    const statuses = await listAllEntities<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], argsFilter);
+    const statuses = await fullEntitiesList<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], argsFilter);
     const statusesGrouped = R.groupBy((e) => e.type, statuses);
     return types.map((type) => statusesGrouped[type] || []);
   };
@@ -107,7 +107,7 @@ export const batchGlobalStatusesByType = async (context: AuthContext, user: Auth
         filterGroups: [],
       },
     };
-    const statuses = await listAllEntities<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], args);
+    const statuses = await fullEntitiesList<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], args);
     const statusesGrouped = R.groupBy((e) => e.type, statuses);
     return types.map((type) => statusesGrouped[type] || []);
   };
@@ -188,7 +188,7 @@ export const statusTemplateDelete = async (context: AuthContext, user: AuthUser,
     filters: [{ key: ['template_id'], values: [statusTemplateId] }],
     filterGroups: [],
   };
-  const result = await listAllEntities(context, user, [ENTITY_TYPE_STATUS], { filters });
+  const result = await fullEntitiesList(context, user, [ENTITY_TYPE_STATUS], { filters });
   await Promise.all(result.map((status) => internalDeleteElementById(context, user, status.id)
     .then(({ element }) => notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, element, user))));
   const deleted = await deleteElementById(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE);

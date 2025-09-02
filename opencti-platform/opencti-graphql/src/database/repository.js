@@ -3,7 +3,7 @@ import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER, ENTITY_TYPE_SYNC,
 import { BACKGROUND_TASK_QUEUES, connectorConfig } from './rabbitmq';
 import { sinceNowInMinutes } from '../utils/format';
 import { CONNECTOR_INTERNAL_ANALYSIS, CONNECTOR_INTERNAL_ENRICHMENT, CONNECTOR_INTERNAL_IMPORT_FILE, CONNECTOR_INTERNAL_NOTIFICATION } from '../schema/general';
-import { listAllEntities, listEntities, storeLoadById } from './middleware-loader';
+import { fullEntitiesList, topEntitiesList, storeLoadById } from './middleware-loader';
 import { isEmptyField, isNotEmptyField } from './utils';
 import { BUILTIN_NOTIFIERS_CONNECTORS } from '../modules/notifier/notifier-statics';
 import { builtInConnector, builtInConnectorsRuntime } from '../connector/connector-domain';
@@ -69,7 +69,7 @@ export const computeManagerContractHash = async (context, user, cn) => {
 };
 
 export const connectors = async (context, user) => {
-  const elements = await listEntities(context, user, [ENTITY_TYPE_CONNECTOR]);
+  const elements = await topEntitiesList(context, user, [ENTITY_TYPE_CONNECTOR]);
   const builtInElements = await builtInConnectorsRuntime(context, user);
   return map((conn) => completeConnector(conn), [...elements, ...builtInElements]);
 };
@@ -79,7 +79,7 @@ export const connectorManager = async (context, user, managerId) => {
 };
 
 export const connectorManagers = async (context, user) => {
-  return listAllEntities(context, user, [ENTITY_TYPE_CONNECTOR_MANAGER]);
+  return fullEntitiesList(context, user, [ENTITY_TYPE_CONNECTOR_MANAGER]);
 };
 
 export const connectorsForManagers = async (context, user) => {
@@ -91,7 +91,7 @@ export const connectorsForManagers = async (context, user) => {
     },
     noFiltersChecking: true
   };
-  const elements = await listEntities(context, user, [ENTITY_TYPE_CONNECTOR], args);
+  const elements = await topEntitiesList(context, user, [ENTITY_TYPE_CONNECTOR], args);
   return elements.map((conn) => completeConnector(conn));
 };
 
@@ -116,7 +116,7 @@ export const connectorsForWorker = async (context, user) => {
   });
   // endregion
   // Expose syncs
-  const syncs = await listAllEntities(context, user, [ENTITY_TYPE_SYNC]);
+  const syncs = await fullEntitiesList(context, user, [ENTITY_TYPE_SYNC]);
   for (let i = 0; i < syncs.length; i += 1) {
     const sync = syncs[i];
     registeredConnectors.push({
@@ -128,7 +128,7 @@ export const connectorsForWorker = async (context, user) => {
     });
   }
   // Expose playbooks
-  const playbooks = await listAllEntities(context, user, [ENTITY_TYPE_PLAYBOOK]);
+  const playbooks = await fullEntitiesList(context, user, [ENTITY_TYPE_PLAYBOOK]);
   for (let i = 0; i < playbooks.length; i += 1) {
     const playbook = playbooks[i];
     registeredConnectors.push({

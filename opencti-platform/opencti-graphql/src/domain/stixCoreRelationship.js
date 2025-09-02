@@ -10,7 +10,7 @@ import { fillTimeSeries, isEmptyField, isNotEmptyField, READ_INDEX_INFERRED_RELA
 import { isStixCoreRelationship, stixCoreRelationshipOptions } from '../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
 import { RELATION_CREATED_BY, } from '../schema/stixRefRelationship';
-import { buildRelationsFilter, listRelationsPaginated, storeLoadById } from '../database/middleware-loader';
+import { buildRelationsFilter, pageRelationsConnection, storeLoadById } from '../database/middleware-loader';
 import { askListExport, exportTransformFilters } from './stix';
 import { workToExportFile } from './work';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
@@ -58,7 +58,7 @@ export const findStixCoreRelationshipsPaginated = async (context, user, args) =>
   if (!types.every((t) => isStixCoreRelationship(t))) {
     throw UnsupportedError('This API only support Stix core relationships', { type });
   }
-  return listRelationsPaginated(context, user, type, R.dissoc('relationship_type', dynamicArgs));
+  return pageRelationsConnection(context, user, type, R.dissoc('relationship_type', dynamicArgs));
 };
 
 export const findById = (context, user, stixCoreRelationshipId) => {

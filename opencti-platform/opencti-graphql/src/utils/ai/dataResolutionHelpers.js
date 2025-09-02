@@ -10,7 +10,7 @@ import {
   ENTITY_TYPE_LOCATION
 } from '../../schema/general';
 import { extractEntityRepresentativeName, extractRepresentativeDescription } from '../../database/entity-representative';
-import { listAllToEntitiesThroughRelations } from '../../database/middleware-loader';
+import { fullEntitiesThroughRelationsToList } from '../../database/middleware-loader';
 import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
 import {
   RELATION_AMPLIFIES,
@@ -199,7 +199,7 @@ export const getHistory = (context, user, id) => {
 };
 
 export const getContainerKnowledge = async (context, user, id) => {
-  const elements = await listAllToEntitiesThroughRelations(context, user, id, RELATION_OBJECT, [ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP]);
+  const elements = await fullEntitiesThroughRelationsToList(context, user, id, RELATION_OBJECT, [ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP]);
   // generate mappings
   const relationships = R.take(RESOLUTION_LIMIT, elements.filter((n) => n.parent_types.includes(ABSTRACT_STIX_CORE_RELATIONSHIP)));
   const entities = R.take(RESOLUTION_LIMIT, elements.filter((n) => !isStixCyberObservable(n.entity_type) && n.entity_type !== ENTITY_TYPE_INDICATOR));

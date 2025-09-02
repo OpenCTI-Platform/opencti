@@ -1,6 +1,6 @@
 import { getHeapStatistics } from 'node:v8';
 import nconf from 'nconf';
-import { createEntity, listAllThings, loadEntity, patchAttribute, updateAttribute } from '../database/middleware';
+import { createEntity, fullEntitiesOrRelationsList, loadEntity, patchAttribute, updateAttribute } from '../database/middleware';
 import conf, { ACCOUNT_STATUSES, booleanConf, BUS_TOPICS, ENABLED_DEMO_MODE, ENABLED_FEATURE_FLAGS, getBaseUrl, PLATFORM_VERSION, PLAYGROUND_ENABLED } from '../config/conf';
 import { delEditContext, getRedisVersion, notify, setEditContext } from '../database/redis';
 import { isRuntimeSortEnable, searchEngineVersion } from '../database/engine';
@@ -288,7 +288,7 @@ export const getCriticalAlerts = async (context, user) => {
   // only 1 critical alert is checked: null confidence level on groups
   // it's for admins only (only them can take action)
   if (isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
-    const allGroups = await listAllThings(context, user, [ENTITY_TYPE_GROUP], {});
+    const allGroups = await fullEntitiesOrRelationsList(context, user, [ENTITY_TYPE_GROUP], {});
     // if at least one have a null effective confidence level, it's an issue
     const groupsWithNull = allGroups.filter((group) => !group.group_confidence_level);
     if (groupsWithNull.length === 0) {

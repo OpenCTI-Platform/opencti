@@ -2,7 +2,7 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import { logApp } from '../config/conf';
 import { userAddRelation } from '../domain/user';
 import { groupAddRelation } from '../domain/group';
-import { listAllEntities, listAllRelations } from '../database/middleware-loader';
+import { fullEntitiesList, fullRelationsList } from '../database/middleware-loader';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_USER, } from '../schema/internalObject';
 import { RELATION_HAS_ROLE, RELATION_MEMBER_OF } from '../schema/internalRelationship';
 import { deleteElementById } from '../database/middleware';
@@ -13,11 +13,11 @@ export const up = async (next) => {
   const start = new Date().getTime();
   logApp.info('[MIGRATION] Roles under groups');
   const relationArgs = { fromTypes: [ENTITY_TYPE_USER] };
-  const currentRolesRelations = await listAllRelations(context, context.user, [RELATION_HAS_ROLE], relationArgs);
+  const currentRolesRelations = await fullRelationsList(context, context.user, [RELATION_HAS_ROLE], relationArgs);
   // If remaining user->roles relationships available.
   if (currentRolesRelations.length > 0) {
-    const roles = await listAllEntities(context, context.user, [ENTITY_TYPE_ROLE]);
-    const groups = await listAllEntities(context, context.user, [ENTITY_TYPE_GROUP]);
+    const roles = await fullEntitiesList(context, context.user, [ENTITY_TYPE_ROLE]);
+    const groups = await fullEntitiesList(context, context.user, [ENTITY_TYPE_GROUP]);
     const groupsNames = groups.map((group) => group.name);
     // For each role, create the corresponding group
     logApp.info(`[MIGRATION] Roles under groups creating ${roles.length} groups from roles`);

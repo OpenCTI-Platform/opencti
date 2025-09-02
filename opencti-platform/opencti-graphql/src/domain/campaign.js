@@ -5,7 +5,7 @@ import { notify } from '../database/redis';
 import { ENTITY_TYPE_CAMPAIGN } from '../schema/stixDomainObject';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../schema/general';
 import { FROM_START, UNTIL_END } from '../utils/format';
-import { listEntitiesPaginated, storeLoadById } from '../database/middleware-loader';
+import { pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import { addFilter } from '../utils/filtering/filtering-utils';
 
 export const findById = (context, user, campaignId) => {
@@ -13,7 +13,7 @@ export const findById = (context, user, campaignId) => {
 };
 
 export const findCampaignPaginated = (context, user, args) => {
-  return listEntitiesPaginated(context, user, [ENTITY_TYPE_CAMPAIGN], args);
+  return pageEntitiesConnection(context, user, [ENTITY_TYPE_CAMPAIGN], args);
 };
 
 // region time series

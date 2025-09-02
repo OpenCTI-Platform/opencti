@@ -16,7 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import type { FileHandle } from 'fs/promises';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { type EditInput, FilterMode, type JsonMapperAddInput, type QueryJsonMappersArgs } from '../../../generated/graphql';
-import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../../database/middleware-loader';
+import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../../database/middleware-loader';
 import { type BasicStoreEntityJsonMapper, ENTITY_TYPE_JSON_MAPPER, type JsonMapperRepresentation, type StoreEntityJsonMapper } from './jsonMapper-types';
 import { extractContentFrom } from '../../../utils/fileToContent';
 import { createEntity } from '../../../database/middleware';
@@ -39,7 +39,7 @@ export const findById = async (context: AuthContext, user: AuthUser, jsonMapperI
 };
 
 export const findJsonMapperPaginated = (context: AuthContext, user: AuthUser, opts: QueryJsonMappersArgs) => {
-  return listEntitiesPaginated<BasicStoreEntityJsonMapper>(context, user, [ENTITY_TYPE_JSON_MAPPER], opts);
+  return pageEntitiesConnection<BasicStoreEntityJsonMapper>(context, user, [ENTITY_TYPE_JSON_MAPPER], opts);
 };
 
 export const jsonMapperTest = async (context: AuthContext, user: AuthUser, configuration: string, fileUpload: Promise<FileUploadData>) => {
@@ -122,7 +122,7 @@ export const deleteJsonMapper = async (context: AuthContext, user: AuthUser, jso
       filters: [{ key: ['json_mapper_id'], values: [jsonMapperId] }]
     }
   };
-  const ingesters = await listAllEntities<BasicStoreEntityIngestionJson>(context, user, [ENTITY_TYPE_INGESTION_JSON], opts);
+  const ingesters = await fullEntitiesList<BasicStoreEntityIngestionJson>(context, user, [ENTITY_TYPE_INGESTION_JSON], opts);
   // prevent deletion if an ingester uses the mapper
   if (ingesters.length > 0) {
     throw FunctionalError('Cannot delete this JSON Mapper: it is used by one or more IngestionJson ingester(s)', { id: jsonMapperId });

@@ -4,7 +4,7 @@ import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import type { NarrativeAddInput, QueryNarrativesArgs } from '../../generated/graphql';
-import { type EntityOptions, listEntitiesPaginated, listEntitiesThroughRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
+import { type EntityOptions, pageEntitiesConnection, pageRegardingEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityNarrative, ENTITY_TYPE_NARRATIVE } from './narrative-types';
 import { RELATION_SUBNARRATIVE_OF } from '../../schema/stixCoreRelationship';
 import type { BasicStoreCommon, BasicStoreEntity } from '../../types/store';
@@ -14,7 +14,7 @@ export const findById = (context: AuthContext, user: AuthUser, narrativeId: stri
 };
 
 export const findNarrativePaginated = (context: AuthContext, user: AuthUser, opts: QueryNarrativesArgs) => {
-  return listEntitiesPaginated<BasicStoreEntityNarrative>(context, user, [ENTITY_TYPE_NARRATIVE], opts);
+  return pageEntitiesConnection<BasicStoreEntityNarrative>(context, user, [ENTITY_TYPE_NARRATIVE], opts);
 };
 
 export const addNarrative = async (context: AuthContext, user: AuthUser, narrative: NarrativeAddInput) => {
@@ -23,11 +23,11 @@ export const addNarrative = async (context: AuthContext, user: AuthUser, narrati
 };
 
 export const parentNarrativesPaginated = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, narrativeId: string, args: EntityOptions<BasicStoreCommon>) => {
-  return listEntitiesThroughRelationsPaginated<T>(context, user, narrativeId, RELATION_SUBNARRATIVE_OF, ENTITY_TYPE_NARRATIVE, false, args);
+  return pageRegardingEntitiesConnection<T>(context, user, narrativeId, RELATION_SUBNARRATIVE_OF, ENTITY_TYPE_NARRATIVE, false, args);
 };
 
 export const childNarrativesPaginated = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, narrativeId: string, args: EntityOptions<BasicStoreCommon>) => {
-  return listEntitiesThroughRelationsPaginated<T>(context, user, narrativeId, RELATION_SUBNARRATIVE_OF, ENTITY_TYPE_NARRATIVE, true, args);
+  return pageRegardingEntitiesConnection<T>(context, user, narrativeId, RELATION_SUBNARRATIVE_OF, ENTITY_TYPE_NARRATIVE, true, args);
 };
 
 export const isSubNarrative = async (context: AuthContext, user: AuthUser, narrativeId: string) => {

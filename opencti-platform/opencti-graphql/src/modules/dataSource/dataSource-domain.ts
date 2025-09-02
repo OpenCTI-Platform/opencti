@@ -1,5 +1,5 @@
 import { createEntity } from '../../database/middleware';
-import { listEntitiesPaginated, listEntitiesThroughRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
+import { pageEntitiesConnection, pageRegardingEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntityDataSource } from './dataSource-types';
 import type { DataSourceAddInput, QueryDataSourcesArgs } from '../../generated/graphql';
@@ -17,7 +17,7 @@ export const findById: DomainFindById<BasicStoreEntityDataSource> = (context: Au
 };
 
 export const findDatasourcePaginated = (context: AuthContext, user: AuthUser, opts: QueryDataSourcesArgs) => {
-  return listEntitiesPaginated<BasicStoreEntityDataSource>(context, user, [ENTITY_TYPE_DATA_SOURCE], opts);
+  return pageEntitiesConnection<BasicStoreEntityDataSource>(context, user, [ENTITY_TYPE_DATA_SOURCE], opts);
 };
 
 export const dataSourceAdd = async (context: AuthContext, user: AuthUser, dataSource: DataSourceAddInput) => {
@@ -26,7 +26,7 @@ export const dataSourceAdd = async (context: AuthContext, user: AuthUser, dataSo
 };
 
 export const dataComponentsPaginated = async <T extends BasicStoreEntity> (context: AuthContext, user: AuthUser, dataSourceId: string, opts: QueryDataSourcesArgs) => {
-  return listEntitiesThroughRelationsPaginated<T>(context, user, dataSourceId, RELATION_DATA_SOURCE, ENTITY_TYPE_DATA_COMPONENT, true, opts);
+  return pageRegardingEntitiesConnection<T>(context, user, dataSourceId, RELATION_DATA_SOURCE, ENTITY_TYPE_DATA_COMPONENT, true, opts);
 };
 
 export const dataSourceDataComponentAdd = async (context: AuthContext, user: AuthUser, dataSourceId: string, dataComponentId: string) => {

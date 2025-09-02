@@ -1,13 +1,6 @@
 import { BUS_TOPICS } from '../../config/conf';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
-import {
-  type EntityOptions,
-  internalLoadById,
-  listAllEntities,
-  listEntitiesPaginated,
-  listEntitiesThroughRelationsPaginated,
-  storeLoadById
-} from '../../database/middleware-loader';
+import { type EntityOptions, internalLoadById, fullEntitiesList, pageEntitiesConnection, pageRegardingEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { notify } from '../../database/redis';
 import type { DomainFindById } from '../../domain/domainTypes';
 
@@ -31,7 +24,7 @@ export const findById: DomainFindById<BasicStoreEntityTask> = (context: AuthCont
 };
 
 export const findTaskPaginated = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityTask>) => {
-  return listEntitiesPaginated<BasicStoreEntityTask>(context, user, [ENTITY_TYPE_CONTAINER_TASK], opts);
+  return pageEntitiesConnection<BasicStoreEntityTask>(context, user, [ENTITY_TYPE_CONTAINER_TASK], opts);
 };
 
 export const findAllByCaseTemplateId = async (context: AuthContext, user: AuthUser, caseTemplateId: string) => {
@@ -43,15 +36,15 @@ export const findAllByCaseTemplateId = async (context: AuthContext, user: AuthUs
       filterGroups: [],
     }
   };
-  return listAllEntities<BasicStoreEntityTaskTemplate>(context, user, [ENTITY_TYPE_TASK_TEMPLATE], opts);
+  return fullEntitiesList<BasicStoreEntityTaskTemplate>(context, user, [ENTITY_TYPE_TASK_TEMPLATE], opts);
 };
 
 export const caseTasksPaginated = async <T extends BasicStoreEntity> (context: AuthContext, user: AuthUser, caseId: string, opts: EntityOptions<T>) => {
-  return listEntitiesThroughRelationsPaginated<T>(context, user, caseId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_TASK, true, opts);
+  return pageRegardingEntitiesConnection<T>(context, user, caseId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_TASK, true, opts);
 };
 
 export const taskParticipantsPaginated = async (context: AuthContext, user: AuthUser, caseId: string, opts: EntityOptions<BasicStoreEntityCase>) => {
-  return listEntitiesThroughRelationsPaginated(context, user, caseId, RELATION_OBJECT_PARTICIPANT, ENTITY_TYPE_USER, false, opts);
+  return pageRegardingEntitiesConnection(context, user, caseId, RELATION_OBJECT_PARTICIPANT, ENTITY_TYPE_USER, false, opts);
 };
 
 export const taskAdd = async (context: AuthContext, user: AuthUser, input: TaskAddInput) => {

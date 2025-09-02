@@ -3737,6 +3737,7 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
     throw DatabaseError('Fail to execute engine pagination', { cause: err, root_cause, query, queryArguments: options });
   }
 };
+
 const elListRaw = async (context, user, indexName, opts = {}) => {
   const { maxSize = undefined, logForMigration = false, connectionFormat = true } = opts;
   const first = opts.first ?? ES_DEFAULT_PAGINATION;
@@ -3790,11 +3791,9 @@ const elListRaw = async (context, user, indexName, opts = {}) => {
   }
   return { elements: listing, totalCount: totalHits, totalFilteredCount };
 };
-
-export const elListPaginated = async (context, user, indexName, opts = {}) => {
+export const elConnection = async (context, user, indexName, opts = {}) => {
   return elListRaw(context, user, indexName, { ...opts, connectionFormat: true });
 };
-
 export const elList = async (context, user, indexName, opts = {}) => {
   const data = await elListRaw(context, user, indexName, { ...opts, connectionFormat: false });
   return data.elements;

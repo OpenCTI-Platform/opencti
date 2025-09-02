@@ -4,7 +4,7 @@ import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_IDENTITY } from '../schema/general';
 import { ENTITY_TYPE_IDENTITY_SECTOR, isStixDomainObjectIdentity } from '../schema/stixDomainObject';
-import { type EntityOptions, listEntitiesPaginated, storeLoadById } from '../database/middleware-loader';
+import { type EntityOptions, pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreCommon } from '../types/store';
 import type { IdentityAddInput } from '../generated/graphql';
@@ -21,7 +21,7 @@ export const findIdentityPaginated = async (context: AuthContext, user: AuthUser
   if (types.length === 0) {
     types.push(ENTITY_TYPE_IDENTITY);
   }
-  return listEntitiesPaginated(context, user, types, args);
+  return pageEntitiesConnection(context, user, types, args);
 };
 
 export const addIdentity = async (context: AuthContext, user: AuthUser, identity: IdentityAddInput) => {

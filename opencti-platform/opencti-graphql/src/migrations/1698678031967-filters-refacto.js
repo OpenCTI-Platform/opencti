@@ -1,6 +1,6 @@
 import { head, last, toPairs } from 'ramda';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import { listAllEntities } from '../database/middleware-loader';
+import { fullEntitiesList } from '../database/middleware-loader';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_FEED, ENTITY_TYPE_RETENTION_RULE, ENTITY_TYPE_STREAM_COLLECTION, ENTITY_TYPE_TAXII_COLLECTION } from '../schema/internalObject';
 import { ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
 import { logApp } from '../config/conf';
@@ -99,7 +99,7 @@ export const up = async (next) => {
   };
 
   // 01. feeds, taxiiCollections, triggers, streams, retention rules
-  const entitiesToRefacto = await listAllEntities(
+  const entitiesToRefacto = await fullEntitiesList(
     context,
     SYSTEM_USER,
     [ENTITY_TYPE_FEED, ENTITY_TYPE_TAXII_COLLECTION, ENTITY_TYPE_TRIGGER, ENTITY_TYPE_STREAM_COLLECTION, ENTITY_TYPE_RETENTION_RULE],
@@ -160,7 +160,7 @@ export const up = async (next) => {
   );
 
   // 02. not finished query background tasks
-  const tasks = await listAllEntities(
+  const tasks = await fullEntitiesList(
     context,
     SYSTEM_USER,
     [ENTITY_TYPE_BACKGROUND_TASK],
@@ -215,7 +215,7 @@ export const up = async (next) => {
   );
 
   // 03. Workspaces
-  const workspaces = await listAllEntities(
+  const workspaces = await fullEntitiesList(
     context,
     SYSTEM_USER,
     [ENTITY_TYPE_WORKSPACE],
@@ -292,7 +292,7 @@ export const up = async (next) => {
   );
 
   // 04. Playbooks
-  const playbooks = await listAllEntities(
+  const playbooks = await fullEntitiesList(
     context,
     SYSTEM_USER,
     [ENTITY_TYPE_PLAYBOOK],

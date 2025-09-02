@@ -1,7 +1,7 @@
 import { getEntityFromCache } from './cache';
 import { FunctionalError } from '../config/errors';
 import { FilterMode } from '../generated/graphql';
-import { countAllThings, listEntitiesThroughRelationsPaginated } from './middleware-loader';
+import { countAllThings, pageRegardingEntitiesConnection } from './middleware-loader';
 import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
@@ -55,7 +55,7 @@ export const verifyCanDeleteOrganization = async (context: AuthContext, user: Au
     return false;
   }
   // organizationMembersPaginated
-  const members = await listEntitiesThroughRelationsPaginated(
+  const members = await pageRegardingEntitiesConnection(
     context,
     user,
     organization.id,

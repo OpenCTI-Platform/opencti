@@ -22,12 +22,12 @@ import { createEntity, createRelation, deleteElementById, deleteRelationsByFromA
 import {
   internalFindByIds,
   internalLoadById,
-  listAllEntities,
-  listAllEntitiesForFilter,
-  listAllRelations,
-  listAllToEntitiesThroughRelations,
-  listEntitiesPaginated,
-  listEntitiesThroughRelationsPaginated,
+  fullEntitiesList,
+  fullEntitiesThoughAggregationConnection,
+  fullRelationsList,
+  fullEntitiesThroughRelationsToList,
+  pageEntitiesConnection,
+  pageRegardingEntitiesConnection,
   storeLoadById
 } from '../database/middleware-loader';
 import { delEditContext, notify, setEditContext } from '../database/redis';
@@ -120,10 +120,10 @@ const AVAILABLE_LANGUAGES = ['auto', 'es-es', 'fr-fr', 'ja-jp', 'zh-cn', 'en-us'
 
 const computeImpactedUsers = async (context, user, roleId) => {
   // Get all groups that have this role
-  const groupsRoles = await listAllRelations(context, user, RELATION_HAS_ROLE, { toId: roleId, fromTypes: [ENTITY_TYPE_GROUP] });
+  const groupsRoles = await fullRelationsList(context, user, RELATION_HAS_ROLE, { toId: roleId, fromTypes: [ENTITY_TYPE_GROUP] });
   const groupIds = groupsRoles.map((group) => group.fromId);
   // Get all users for groups
-  const usersGroups = await listAllRelations(context, user, RELATION_MEMBER_OF, { toId: groupIds, toTypes: [ENTITY_TYPE_GROUP] });
+  const usersGroups = await fullRelationsList(context, user, RELATION_MEMBER_OF, { toId: groupIds, toTypes: [ENTITY_TYPE_GROUP] });
   const userIds = R.uniq(usersGroups.map((u) => u.fromId));
   // Mark for refresh all impacted sessions
   return internalFindByIds(context, user, userIds);
@@ -188,7 +188,7 @@ const extractTokenFromBasicAuth = async (authorization) => {
 export const findById = async (context, user, userId) => {
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && user.id !== userId) {
     // if no organization in common with the logged user
-    const memberOrganizations = await listAllToEntitiesThroughRelations(context, user, userId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+    const memberOrganizations = await fullEntitiesThroughRelationsToList(context, user, userId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION);
     const myOrganizationsIds = user.administrated_organizations.map((organization) => organization.id);
     if (!memberOrganizations.map((organization) => organization.id).find((orgaId) => myOrganizationsIds.includes(orgaId))) {
       throw ForbiddenAccess();
@@ -233,39 +233,39 @@ const buildUserOrganizationRestrictedFilters = (user, filters) => {
 
 export const findAllUser = async (context, user, args) => {
   const filters = buildUserOrganizationRestrictedFilters(user, args.filters);
-  return listAllEntities(context, user, [ENTITY_TYPE_USER], { ...args, filters });
+  return fullEntitiesList(context, user, [ENTITY_TYPE_USER], { ...args, filters });
 };
 
 export const findUserPaginated = async (context, user, args) => {
   const filters = buildUserOrganizationRestrictedFilters(user, args.filters);
-  return listEntitiesPaginated(context, user, [ENTITY_TYPE_USER], { ...args, filters });
+  return pageEntitiesConnection(context, user, [ENTITY_TYPE_USER], { ...args, filters });
 };
 
 export const findCreators = (context, user, args) => {
   const { entityTypes = [] } = args;
-  return listAllEntitiesForFilter(context, user, CREATOR_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes });
+  return fullEntitiesThoughAggregationConnection(context, user, CREATOR_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes });
 };
 
 export const findAssignees = (context, user, args) => {
   const { entityTypes = [] } = args;
-  return listAllEntitiesForFilter(context, user, ASSIGNEE_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes });
+  return fullEntitiesThoughAggregationConnection(context, user, ASSIGNEE_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes });
 };
 export const findParticipants = (context, user, args) => {
   const { entityTypes = [] } = args;
-  return listAllEntitiesForFilter(context, user, PARTICIPANT_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes });
+  return fullEntitiesThoughAggregationConnection(context, user, PARTICIPANT_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes });
 };
 
 export const findMembersPaginated = (context, user, args) => {
   const { entityTypes = null } = args;
   const types = entityTypes || MEMBERS_ENTITY_TYPES;
-  return listEntitiesPaginated(context, user, types, args);
+  return pageEntitiesConnection(context, user, types, args);
 };
 
 export const findAllMembers = async (context, user, args) => {
   const { entityTypes = null } = args;
   const types = entityTypes || MEMBERS_ENTITY_TYPES;
   const restrictedArgs = await applyOrganizationRestriction(context, user, args);
-  return listAllEntities(context, user, types, restrictedArgs);
+  return fullEntitiesList(context, user, types, restrictedArgs);
 };
 
 export const findUserWithCapabilities = async (context, user, capabilities) => {
@@ -305,11 +305,11 @@ export const batchCreators = async (context, user, userListIds) => {
 
 export const userOrganizationsPaginatedWithoutInferences = async (context, user, userId, opts) => {
   const args = { ...opts, withInferences: false };
-  return listEntitiesThroughRelationsPaginated(context, user, userId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION, false, args);
+  return pageRegardingEntitiesConnection(context, user, userId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION, false, args);
 };
 
 export const userOrganizationsPaginated = async (context, user, userId, opts) => {
-  return listEntitiesThroughRelationsPaginated(context, user, userId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION, false, opts);
+  return pageRegardingEntitiesConnection(context, user, userId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION, false, opts);
 };
 
 // Get the creator of userId
@@ -337,16 +337,16 @@ export const userRoles = async (context, _user, userId, opts) => {
 };
 
 export const userGroupsPaginated = async (context, user, userId, opts) => {
-  return listEntitiesThroughRelationsPaginated(context, user, userId, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP, false, opts);
+  return pageRegardingEntitiesConnection(context, user, userId, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP, false, opts);
 };
 
 export const groupRolesPaginated = async (context, user, groupId, opts) => {
-  return listEntitiesThroughRelationsPaginated(context, user, groupId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, false, opts);
+  return pageRegardingEntitiesConnection(context, user, groupId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, false, opts);
 };
 
 export const batchRolesForUsers = async (context, user, userIds, opts = {}) => {
   // Get all groups for users
-  const usersGroups = await listAllRelations(context, user, RELATION_MEMBER_OF, { fromId: userIds, toTypes: [ENTITY_TYPE_GROUP] });
+  const usersGroups = await fullRelationsList(context, user, RELATION_MEMBER_OF, { fromId: userIds, toTypes: [ENTITY_TYPE_GROUP] });
   const groupIds = [];
   const usersWithGroups = {};
   usersGroups.forEach((userGroup) => {
@@ -362,7 +362,7 @@ export const batchRolesForUsers = async (context, user, userIds, opts = {}) => {
   // Get all roles for groups
   const roleIds = [];
   const groupWithRoles = {};
-  const groupsRoles = await listAllRelations(context, user, RELATION_HAS_ROLE, { fromId: groupIds, toTypes: [ENTITY_TYPE_ROLE] });
+  const groupsRoles = await fullRelationsList(context, user, RELATION_HAS_ROLE, { fromId: groupIds, toTypes: [ENTITY_TYPE_ROLE] });
   groupsRoles.forEach((groupRole) => {
     if (!roleIds.includes(groupRole.toId)) {
       roleIds.push(groupRole.toId);
@@ -373,7 +373,7 @@ export const batchRolesForUsers = async (context, user, userIds, opts = {}) => {
       groupWithRoles[groupRole.fromId] = [groupRole.toId];
     }
   });
-  const roles = await listAllEntities(context, user, [ENTITY_TYPE_ROLE], { ...opts, ids: roleIds });
+  const roles = await fullEntitiesList(context, user, [ENTITY_TYPE_ROLE], { ...opts, ids: roleIds });
   return userIds.map((u) => {
     const groups = usersWithGroups[u] ?? [];
     const idRoles = uniq(groups.map((g) => groupWithRoles[g] ?? []).flat());
@@ -445,7 +445,7 @@ const getUserAndGlobalMarkings = async (context, userId, userGroups, userMarking
 };
 
 export const roleCapabilities = async (context, user, roleId) => {
-  return listAllToEntitiesThroughRelations(context, user, roleId, RELATION_HAS_CAPABILITY, ENTITY_TYPE_CAPABILITY);
+  return fullEntitiesThroughRelationsToList(context, user, roleId, RELATION_HAS_CAPABILITY, ENTITY_TYPE_CAPABILITY);
 };
 
 export const getDefaultHiddenTypes = (entities) => {
@@ -459,12 +459,12 @@ export const findRoleById = (context, user, roleId) => {
 };
 
 export const findRoles = (context, user, args) => {
-  return listEntitiesPaginated(context, user, [ENTITY_TYPE_ROLE], args);
+  return pageEntitiesConnection(context, user, [ENTITY_TYPE_ROLE], args);
 };
 
 export const findCapabilities = (context, user, args) => {
   const finalArgs = R.assoc('orderBy', 'attribute_order', args);
-  return listEntitiesPaginated(context, user, [ENTITY_TYPE_CAPABILITY], finalArgs);
+  return pageEntitiesConnection(context, user, [ENTITY_TYPE_CAPABILITY], finalArgs);
 };
 
 export const roleDelete = async (context, user, roleId) => {
@@ -1065,7 +1065,7 @@ export const isUserTheLastAdmin = (userId, authorized_members) => {
 export const deleteAllWorkspaceForUser = async (context, authUser, userId) => {
   const userToDeleteAuth = await findById(context, authUser, userId);
 
-  const workspacesToDelete = await listAllEntities(context, userToDeleteAuth, [ENTITY_TYPE_WORKSPACE]);
+  const workspacesToDelete = await fullEntitiesList(context, userToDeleteAuth, [ENTITY_TYPE_WORKSPACE]);
 
   const workspaceToDeleteIds = workspacesToDelete
     .filter((workspaceEntity) => isUserTheLastAdmin(userId, workspaceEntity.restricted_members))
@@ -1317,7 +1317,7 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
   // If groups are specified here, that overwrite the default assignation
   if (providerGroups.length > 0) {
     // 01 - Delete all groups relation from the user
-    const userGroups = await listAllToEntitiesThroughRelations(context, SYSTEM_USER, user.id, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP);
+    const userGroups = await fullEntitiesThroughRelationsToList(context, SYSTEM_USER, user.id, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP);
     const deleteGroups = userGroups.filter((o) => !providerGroups.includes(o.name));
     for (let index = 0; index < deleteGroups.length; index += 1) {
       const deleteGroup = deleteGroups[index];
@@ -1335,7 +1335,7 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
   // If organizations are specified here, that overwrite the default assignation
   if (providerOrganizations.length > 0) {
     // 01 - Delete all organizations no longer assign to the user
-    const userOrganizations = await listAllToEntitiesThroughRelations(context, SYSTEM_USER, user.id, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+    const userOrganizations = await fullEntitiesThroughRelationsToList(context, SYSTEM_USER, user.id, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION);
     const deleteOrganizations = userOrganizations.filter((o) => !providerOrganizations.includes(o.name));
     for (let index = 0; index < deleteOrganizations.length; index += 1) {
       const userOrganization = deleteOrganizations[index];
@@ -1456,9 +1456,9 @@ export const buildCompleteUsers = async (context, clients) => {
   const markingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   const contactInformationFilter = { mode: 'and', filters: [{ key: 'contact_information', values: clients.map((c) => c.user_email) }], filterGroups: [] };
   const individualArgs = { indices: [READ_INDEX_STIX_DOMAIN_OBJECTS], filters: contactInformationFilter, noFiltersChecking: true };
-  const individualsPromise = listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], individualArgs);
+  const individualsPromise = fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], individualArgs);
   const authRelationships = [RELATION_PARTICIPATE_TO, RELATION_MEMBER_OF, RELATION_HAS_CAPABILITY, RELATION_HAS_ROLE, RELATION_ACCESSES_TO];
-  const relations = await listAllRelations(context, SYSTEM_USER, authRelationships, { indices: READ_RELATIONSHIPS_INDICES });
+  const relations = await fullRelationsList(context, SYSTEM_USER, authRelationships, { indices: READ_RELATIONSHIPS_INDICES });
   const users = new Map();
   const roleIds = new Set();
   const groupIds = new Set();

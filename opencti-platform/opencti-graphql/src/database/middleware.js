@@ -51,7 +51,7 @@ import {
   elHistogramCount,
   elIndexElements,
   elList,
-  elListPaginated,
+  elConnection,
   elMarkElementsAsDraftDelete,
   elPaginate,
   elUpdateElement,
@@ -182,10 +182,10 @@ import {
   buildThingsFilters,
   internalFindByIds,
   internalLoadById,
-  listAllRelations,
-  listAllToEntitiesThroughRelations,
-  listEntities,
-  listRelations,
+  fullRelationsList,
+  fullEntitiesThroughRelationsToList,
+  topEntitiesList,
+  topRelationsList,
   storeLoadById
 } from './middleware-loader';
 import { checkRelationConsistency, isRelationConsistent } from '../utils/modelConsistency';
@@ -260,7 +260,7 @@ export const canRequestAccess = async (context, user, elements) => {
       });
       if (requestAccessSettings.request_access_workflow && requestAccessSettings.request_access_workflow?.approval_admin.length > 0) {
         const adminGroupId = requestAccessSettings.request_access_workflow?.approval_admin[0];
-        const adminGroupMarking = await listAllToEntitiesThroughRelations(context, user, adminGroupId, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION);
+        const adminGroupMarking = await fullEntitiesThroughRelationsToList(context, user, adminGroupId, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION);
         const authorizedGroupMarkings = adminGroupMarking.map((a) => a.internal_id);
 
         if (isMarkingAllowed(currentElement, authorizedGroupMarkings)) {
@@ -299,28 +299,28 @@ const checkIfInferenceOperationIsValid = (user, element) => {
 // endregion
 
 // Standard listing
-export const listThings = async (context, user, thingsTypes, args = {}) => {
+export const topEntitiesOrRelationsList = async (context, user, thingsTypes, args = {}) => {
   const { indices = READ_DATA_INDICES } = args;
   const paginateArgs = buildThingsFilters(thingsTypes, args);
   return elPaginate(context, user, indices, { ...paginateArgs, connectionFormat: false });
 };
-export const listThingsPaginated = async (context, user, thingsTypes, args = {}) => {
+export const pageEntitiesOrRelationsConnection = async (context, user, thingsTypes, args = {}) => {
   const { indices = READ_DATA_INDICES } = args;
   const paginateArgs = buildThingsFilters(thingsTypes, args);
   return elPaginate(context, user, indices, { ...paginateArgs, connectionFormat: true });
 };
-export const listAllThings = async (context, user, thingsTypes, args = {}) => {
+export const fullEntitiesOrRelationsList = async (context, user, thingsTypes, args = {}) => {
   const { indices = READ_DATA_INDICES } = args;
   const paginateArgs = buildThingsFilters(thingsTypes, args);
   return elList(context, user, indices, paginateArgs);
 };
-export const listAllThingsPaginated = async (context, user, thingsTypes, args = {}) => {
+export const fullEntitiesOrRelationsConnection = async (context, user, thingsTypes, args = {}) => {
   const { indices = READ_DATA_INDICES } = args;
   const paginateArgs = buildThingsFilters(thingsTypes, args);
-  return elListPaginated(context, user, indices, paginateArgs);
+  return elConnection(context, user, indices, paginateArgs);
 };
 export const loadEntity = async (context, user, entityTypes, args = {}) => {
-  const entities = await listEntities(context, user, entityTypes, args);
+  const entities = await topEntitiesList(context, user, entityTypes, args);
   if (entities.length > 1) {
     throw DatabaseError('Expect only one response', { entityTypes, args });
   }
@@ -342,12 +342,12 @@ const loadElementMetaDependencies = async (context, user, elements, args = {}) =
     const fromIds = groupOfWorkingIds[i];
     const relationFilter = { mode: FilterMode.And, filters: [{ key: ['fromId'], values: fromIds }], filterGroups: [] };
     // All callback to iteratively push the relations to the global ref relations array
-    // As listAllRelations can bring more than 100K+ relations, we need to split the append
+    // As fullRelationsList can bring more than 100K+ relations, we need to split the append
     // due to nodejs limitation to 100K function parameters limit
     const allRelCallback = async (relations) => {
       refsRelations.push(...relations);
     };
-    await listAllRelations(context, user, relTypes, { baseData: true, filters: relationFilter, callback: allRelCallback });
+    await fullRelationsList(context, user, relTypes, { baseData: true, filters: relationFilter, callback: allRelCallback });
   }
   const refsPerElements = R.groupBy((r) => r.fromId, refsRelations);
   // Parallel resolutions
@@ -1135,7 +1135,7 @@ const listEntitiesByHashes = async (context, user, type, hashes) => {
   if (searchHashes.length === 0) {
     return [];
   }
-  return listEntities(context, user, [type], {
+  return topEntitiesList(context, user, [type], {
     filters: {
       mode: 'and',
       filters: [{ key: 'hashes.*', values: searchHashes, operator: 'wildcard' }],
@@ -1496,7 +1496,7 @@ const loadMergeEntitiesDependencies = async (context, user, entityIds) => {
       }
     };
     const fromArgs = { baseData: true, fromId: entityId, callback: listFromCallback };
-    await listAllRelations(context, user, ABSTRACT_STIX_RELATIONSHIP, fromArgs);
+    await fullRelationsList(context, user, ABSTRACT_STIX_RELATIONSHIP, fromArgs);
     // Internal to
     const listToCallback = async (elements) => {
       const findArgs = { toMap: true, baseData: true };
@@ -1515,7 +1515,7 @@ const loadMergeEntitiesDependencies = async (context, user, entityIds) => {
       }
     };
     const toArgs = { baseData: true, toId: entityId, callback: listToCallback };
-    await listAllRelations(context, user, ABSTRACT_STIX_RELATIONSHIP, toArgs);
+    await fullRelationsList(context, user, ABSTRACT_STIX_RELATIONSHIP, toArgs);
   }
   return data;
 };
@@ -2183,7 +2183,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
         if (currentValue?.id !== targetCreated?.internal_id) {
           // Delete the current relation
           if (currentValue?.standard_id) {
-            const currentRels = (await listAllRelations(context, user, relType, { fromId: initial.id }))
+            const currentRels = (await fullRelationsList(context, user, relType, { fromId: initial.id }))
               .map((rel) => ({
                 ...rel,
                 // we resolve from and to without need of an extra query
@@ -2220,7 +2220,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
         }
         if (operation === UPDATE_OPERATION_REPLACE) {
           // Delete all relations
-          const currentRels = await listAllRelations(context, user, relType, { indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, fromId: initial.internal_id });
+          const currentRels = await fullRelationsList(context, user, relType, { indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, fromId: initial.internal_id });
           const currentRelsToIds = currentRels.map((n) => n.toId);
           const newTargetsIds = refs.map((n) => n.id);
           if (R.symmetricDifference(newTargetsIds, currentRelsToIds).length > 0) {
@@ -2251,7 +2251,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
         }
         if (operation === UPDATE_OPERATION_REMOVE) {
           const targetIds = refs.map((t) => t.internal_id);
-          const currentRels = await listAllRelations(context, user, relType, { indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, fromId: initial.internal_id });
+          const currentRels = await fullRelationsList(context, user, relType, { indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, fromId: initial.internal_id });
           const relsToDelete = currentRels.filter((c) => targetIds.includes(c.toId))
             .map((r) => ({
               ...r,
@@ -2333,7 +2333,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
         },
         noFiltersChecking: true,
       };
-      const individuals = await listEntities(context, user, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], args);
+      const individuals = await topEntitiesList(context, user, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], args);
       if (individuals.length > 0) {
         const individualId = R.head(individuals).id;
         const patch = {
@@ -2886,7 +2886,7 @@ export const getExistingRelations = async (context, user, input, opts = {}) => {
       toId: to.internal_id,
       indices: [READ_INDEX_INFERRED_RELATIONSHIPS]
     };
-    const inferredRelationships = await listRelations(context, SYSTEM_USER, relationshipType, fromRuleArgs);
+    const inferredRelationships = await topRelationsList(context, SYSTEM_USER, relationshipType, fromRuleArgs);
     existingRelationships.push(...inferredRelationships);
   } else {
     // In case of direct relation, try to find the relation with time filters
@@ -2921,7 +2921,7 @@ export const getExistingRelations = async (context, user, input, opts = {}) => {
     };
     // inputIds
     const manualArgs = { indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, filters: searchFilters };
-    const manualRelationships = await listRelations(context, SYSTEM_USER, relationshipType, manualArgs);
+    const manualRelationships = await topRelationsList(context, SYSTEM_USER, relationshipType, manualArgs);
     existingRelationships.push(...manualRelationships);
   }
   return existingRelationships;
@@ -3610,7 +3610,7 @@ export const deleteRelationsByFromAndTo = async (context, user, fromId, toId, re
       await deleteElementById(context, user, r.internal_id, r.entity_type, opts);
     }
   };
-  const relationsToDelete = await listAllRelations(context, user, relationshipType, {
+  const relationsToDelete = await fullRelationsList(context, user, relationshipType, {
     indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
     baseData: true,
     filters: {

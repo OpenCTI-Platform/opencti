@@ -1,5 +1,5 @@
 // region [>=6.5 & <6.8]
-import { listAllToEntitiesThroughRelations, storeLoadById } from '../../../database/middleware-loader';
+import { fullEntitiesThroughRelationsToList, storeLoadById } from '../../../database/middleware-loader';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_CONTAINER, ENTITY_TYPE_IDENTITY } from '../../../schema/general';
 import { RELATION_CREATED_BY, RELATION_OBJECT, RELATION_OBJECT_LABEL } from '../../../schema/stixRefRelationship';
 import {
@@ -33,9 +33,9 @@ export const generateContainerScenario = async (context, user, args) => {
     await checkEnterpriseEdition(context);
   }
   const container = await storeLoadById(context, user, id, ENTITY_TYPE_CONTAINER);
-  const author = await listAllToEntitiesThroughRelations(context, user, id, RELATION_CREATED_BY, [ENTITY_TYPE_IDENTITY]);
-  const labels = await listAllToEntitiesThroughRelations(context, user, id, RELATION_OBJECT_LABEL, [ENTITY_TYPE_LABEL]);
-  const attackPatterns = await listAllToEntitiesThroughRelations(context, user, id, RELATION_OBJECT, [ENTITY_TYPE_ATTACK_PATTERN]);
+  const author = await fullEntitiesThroughRelationsToList(context, user, id, RELATION_CREATED_BY, [ENTITY_TYPE_IDENTITY]);
+  const labels = await fullEntitiesThroughRelationsToList(context, user, id, RELATION_OBJECT_LABEL, [ENTITY_TYPE_LABEL]);
+  const attackPatterns = await fullEntitiesThroughRelationsToList(context, user, id, RELATION_OBJECT, [ENTITY_TYPE_ATTACK_PATTERN]);
   return generateOpenBasScenario(context, user, container, attackPatterns, labels, (author && author.length > 0 ? author.at(0) : 'Unknown'), simulationType, interval, selection);
 };
 
@@ -49,9 +49,9 @@ export const generateThreatScenario = async (context, user, args) => {
     await checkEnterpriseEdition(context);
   }
   const stixCoreObject = await storeLoadById(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT);
-  const labels = await listAllToEntitiesThroughRelations(context, user, id, RELATION_OBJECT_LABEL, [ENTITY_TYPE_LABEL]);
-  const author = await listAllToEntitiesThroughRelations(context, user, id, RELATION_CREATED_BY, [ENTITY_TYPE_IDENTITY]);
-  const attackPatterns = await listAllToEntitiesThroughRelations(context, user, id, RELATION_USES, [ENTITY_TYPE_ATTACK_PATTERN]);
+  const labels = await fullEntitiesThroughRelationsToList(context, user, id, RELATION_OBJECT_LABEL, [ENTITY_TYPE_LABEL]);
+  const author = await fullEntitiesThroughRelationsToList(context, user, id, RELATION_CREATED_BY, [ENTITY_TYPE_IDENTITY]);
+  const attackPatterns = await fullEntitiesThroughRelationsToList(context, user, id, RELATION_USES, [ENTITY_TYPE_ATTACK_PATTERN]);
   return generateOpenBasScenario(context, user, stixCoreObject, attackPatterns, labels, (author && author.length > 0 ? author.at(0) : 'Unknown'), simulationType, interval, selection);
 };
 
@@ -65,9 +65,9 @@ export const generateVictimScenario = async (context, user, args) => {
     await checkEnterpriseEdition(context);
   }
   const stixCoreObject = await storeLoadById(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT);
-  const labels = await listAllToEntitiesThroughRelations(context, user, id, RELATION_OBJECT_LABEL, [ENTITY_TYPE_LABEL]);
-  const author = await listAllToEntitiesThroughRelations(context, user, id, RELATION_CREATED_BY, [ENTITY_TYPE_IDENTITY]);
-  const threats = await listAllToEntitiesThroughRelations(
+  const labels = await fullEntitiesThroughRelationsToList(context, user, id, RELATION_OBJECT_LABEL, [ENTITY_TYPE_LABEL]);
+  const author = await fullEntitiesThroughRelationsToList(context, user, id, RELATION_CREATED_BY, [ENTITY_TYPE_IDENTITY]);
+  const threats = await fullEntitiesThroughRelationsToList(
     context,
     user,
     id,
@@ -81,7 +81,7 @@ export const generateVictimScenario = async (context, user, args) => {
     ]
   );
   const threatsIds = threats.map((n) => n.id);
-  const attackPatterns = await listAllToEntitiesThroughRelations(context, user, threatsIds, RELATION_USES, [ENTITY_TYPE_ATTACK_PATTERN]);
+  const attackPatterns = await fullEntitiesThroughRelationsToList(context, user, threatsIds, RELATION_USES, [ENTITY_TYPE_ATTACK_PATTERN]);
   return generateOpenBasScenario(context, user, stixCoreObject, attackPatterns, labels, (author && author.length > 0 ? author.at(0) : 'Unknown'), simulationType, interval, selection);
 };
 // endregion

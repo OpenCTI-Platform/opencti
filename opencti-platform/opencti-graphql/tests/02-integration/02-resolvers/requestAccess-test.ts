@@ -20,7 +20,7 @@ import { findTemplatePaginated, } from '../../../src/domain/status';
 import { FilterMode, OrderingMode, type RequestAccessConfigureInput, RequestAccessType, type StatusAddInput, StatusOrdering, StatusScope } from '../../../src/generated/graphql';
 import { logApp } from '../../../src/config/conf';
 import { ENTITY_TYPE_STATUS } from '../../../src/schema/internalObject';
-import { listAllEntities } from '../../../src/database/middleware-loader';
+import { fullEntitiesList } from '../../../src/database/middleware-loader';
 import type { BasicWorkflowStatus } from '../../../src/types/store';
 import { internalDeleteElementById } from '../../../src/database/middleware';
 import { MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_EDIT } from '../../../src/utils/access';
@@ -313,7 +313,7 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
         filterGroups: [],
       }
     };
-    const allRequestAccessStatuses = await listAllEntities<BasicWorkflowStatus>(testContext, ADMIN_USER, [ENTITY_TYPE_STATUS], argsFilter);
+    const allRequestAccessStatuses = await fullEntitiesList<BasicWorkflowStatus>(testContext, ADMIN_USER, [ENTITY_TYPE_STATUS], argsFilter);
     logApp.info('[TEST] allRequestAccessStatuses:', { allRequestAccessStatuses });
     const closedStatus = allRequestAccessStatuses.find((status) => status.template_id === closedTemplate?.node.id);
     logApp.info('[TEST] closedStatus:', { closedStatus });

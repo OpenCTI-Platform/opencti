@@ -3,7 +3,7 @@ import conf, { BUS_TOPICS } from '../../config/conf';
 import { type FileUploadData, uploadToStorage } from '../../database/file-storage-helper';
 import { deleteFile, guessMimeType } from '../../database/file-storage';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
-import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type BasicStoreEntityExclusionList, ENTITY_TYPE_EXCLUSION_LIST, type StoreEntityExclusionList } from './exclusionList-types';
 import type { ExclusionListFileAddInput, MutationExclusionListFieldPatchArgs, QueryExclusionListsArgs } from '../../generated/graphql';
@@ -22,7 +22,7 @@ export const findById = (context: AuthContext, user: AuthUser, id: string) => {
 };
 
 export const findExclusionListPaginated = (context: AuthContext, user: AuthUser, args: QueryExclusionListsArgs) => {
-  return listEntitiesPaginated<BasicStoreEntityExclusionList>(context, user, [ENTITY_TYPE_EXCLUSION_LIST], args);
+  return pageEntitiesConnection<BasicStoreEntityExclusionList>(context, user, [ENTITY_TYPE_EXCLUSION_LIST], args);
 };
 
 export const getCacheStatus = async () => {

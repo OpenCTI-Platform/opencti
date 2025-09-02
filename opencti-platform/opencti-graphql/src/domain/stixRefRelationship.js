@@ -11,7 +11,7 @@ import {
 } from '../schema/general';
 import { FunctionalError } from '../config/errors';
 import { isStixRefRelationship, META_RELATIONS, STIX_REF_RELATIONSHIP_TYPES } from '../schema/stixRefRelationship';
-import { internalLoadById, listRelationsPaginated, storeLoadById } from '../database/middleware-loader';
+import { internalLoadById, pageRelationsConnection, storeLoadById } from '../database/middleware-loader';
 import { stixCoreRelationshipCleanContext, stixCoreRelationshipEditContext } from './stixCoreRelationship';
 import { schemaTypesDefinition } from '../schema/schema-types';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
@@ -23,7 +23,7 @@ import { findSubTypePaginated as findSubTypes } from './subType';
 // Query
 
 export const findRefRelationshipsPaginated = async (context, user, args) => {
-  return listRelationsPaginated(context, user, args.relationship_type ?? STIX_REF_RELATIONSHIP_TYPES, args);
+  return pageRelationsConnection(context, user, args.relationship_type ?? STIX_REF_RELATIONSHIP_TYPES, args);
 };
 export const findById = async (context, user, stixRefRelationshipId) => {
   // Not use ABSTRACT_STIX_REF_RELATIONSHIP to have compatibility on parent type with ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP type
@@ -32,7 +32,7 @@ export const findById = async (context, user, stixRefRelationshipId) => {
 const notNestedRefRelation = META_RELATIONS.map((arr) => arr.databaseName);
 export const findNestedPaginated = async (context, user, args) => {
   const relationTypes = schemaTypesDefinition.get(ABSTRACT_STIX_REF_RELATIONSHIP).filter((type) => !notNestedRefRelation.includes(type));
-  return listRelationsPaginated(context, user, relationTypes, args);
+  return pageRelationsConnection(context, user, relationTypes, args);
 };
 export const schemaRefRelationships = async (context, user, id, toType) => {
   return findStixObjectOrStixRelationshipById(context, user, id)

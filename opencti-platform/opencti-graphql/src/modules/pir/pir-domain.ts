@@ -19,9 +19,9 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import {
   type EntityOptions,
   internalLoadById,
-  listEntitiesPaginated,
-  listRelations,
-  listRelationsPaginated,
+  pageEntitiesConnection,
+  topRelationsList,
+  pageRelationsConnection,
   type RelationOptions,
   storeLoadById
 } from '../../database/middleware-loader';
@@ -70,7 +70,7 @@ export const findById = async (context: AuthContext, user: AuthUser, id: string)
 
 export const findPirPaginated = async (context: AuthContext, user: AuthUser, opts?: EntityOptions<BasicStoreEntityPir>) => {
   await checkEnterpriseEdition(context);
-  return listEntitiesPaginated<BasicStoreEntityPir>(context, user, [ENTITY_TYPE_PIR], opts);
+  return pageEntitiesConnection<BasicStoreEntityPir>(context, user, [ENTITY_TYPE_PIR], opts);
 };
 
 export const findPirRelationPaginated = async (
@@ -83,7 +83,7 @@ export const findPirRelationPaginated = async (
     throw FunctionalError('You should provide a Pir ID since in-pir relationships can only be fetch for a given PIR.', { pirId });
   }
   await getPirWithAccessCheck(context, user, pirId);
-  return listRelationsPaginated<BasicStoreRelationPir>(context, user, RELATION_IN_PIR, { ...R.dissoc('pirId', opts), toId: [pirId] } as RelationOptions<BasicStoreRelationPir>);
+  return pageRelationsConnection<BasicStoreRelationPir>(context, user, RELATION_IN_PIR, { ...R.dissoc('pirId', opts), toId: [pirId] } as RelationOptions<BasicStoreRelationPir>);
 };
 
 export const pirRelationshipsDistribution = async (
@@ -182,7 +182,7 @@ export const findPirContainers = async (
       filterGroups: [containsFilter, opts.filters],
     }
     : containsFilter;
-  return listEntitiesPaginated(context, user, [ENTITY_TYPE_CONTAINER], { ...opts, filters });
+  return pageEntitiesConnection(context, user, [ENTITY_TYPE_CONTAINER], { ...opts, filters });
 };
 
 export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAddInput) => {
@@ -314,7 +314,7 @@ export const pirUnflagElement = async (
 
   const { relationshipId, sourceId } = input;
   // fetch in-pir rels between the entity and the pir
-  const rels = await listRelations(context, user, RELATION_IN_PIR, { fromId: sourceId, toId: pir.id });
+  const rels = await topRelationsList(context, user, RELATION_IN_PIR, { fromId: sourceId, toId: pir.id });
   // eslint-disable-next-line no-restricted-syntax
   for (const rel of rels) {
     const relDependencies = (rel as any).pir_explanations as PirExplanation[];

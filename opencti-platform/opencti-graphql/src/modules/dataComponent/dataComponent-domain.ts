@@ -1,11 +1,5 @@
 import { createEntity } from '../../database/middleware';
-import {
-  type EntityOptions,
-  listEntitiesPaginated,
-  listEntitiesThroughRelationsPaginated,
-  loadEntityThroughRelationsPaginated,
-  storeLoadById
-} from '../../database/middleware-loader';
+import { type EntityOptions, pageEntitiesConnection, pageRegardingEntitiesConnection, loadEntityThroughRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type BasicStoreEntityDataComponent, RELATION_DATA_SOURCE } from './dataComponent-types';
 import type { DataComponentAddInput, QueryDataComponentsArgs } from '../../generated/graphql';
@@ -22,7 +16,7 @@ export const findById: DomainFindById<BasicStoreEntityDataComponent> = (context:
 };
 
 export const findDataComponentPaginated = (context: AuthContext, user: AuthUser, opts: QueryDataComponentsArgs) => {
-  return listEntitiesPaginated<BasicStoreEntityDataComponent>(context, user, [ENTITY_TYPE_DATA_COMPONENT], opts);
+  return pageEntitiesConnection<BasicStoreEntityDataComponent>(context, user, [ENTITY_TYPE_DATA_COMPONENT], opts);
 };
 
 export const dataComponentAdd = async (context: AuthContext, user: AuthUser, dataComponent: DataComponentAddInput) => {
@@ -35,5 +29,5 @@ export const withDataSource = async <T extends BasicStoreEntity>(context: AuthCo
 };
 
 export const attackPatternsPaginated = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, dataComponentId: string, args: EntityOptions<T>) => {
-  return listEntitiesThroughRelationsPaginated<T>(context, user, dataComponentId, RELATION_DETECTS, ENTITY_TYPE_ATTACK_PATTERN, false, args);
+  return pageRegardingEntitiesConnection<T>(context, user, dataComponentId, RELATION_DETECTS, ENTITY_TYPE_ATTACK_PATTERN, false, args);
 };

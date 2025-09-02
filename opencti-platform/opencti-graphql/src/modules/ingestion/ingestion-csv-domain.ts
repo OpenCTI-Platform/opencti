@@ -1,7 +1,7 @@
 import { v4 as uuid } from 'uuid';
 import type { FileHandle } from 'fs/promises';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityIngestionCsv, ENTITY_TYPE_INGESTION_CSV } from './ingestion-types';
 import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
@@ -52,11 +52,11 @@ export const findById = async (context: AuthContext, user: AuthUser, ingestionId
 // findLastCSVIngestion
 
 export const findCsvIngestionPaginated = async (context: AuthContext, user: AuthUser, opts = {}) => {
-  return listEntitiesPaginated<BasicStoreEntityIngestionCsv>(context, user, [ENTITY_TYPE_INGESTION_CSV], opts);
+  return pageEntitiesConnection<BasicStoreEntityIngestionCsv>(context, user, [ENTITY_TYPE_INGESTION_CSV], opts);
 };
 
 export const findAllCsvIngestion = async (context: AuthContext, user: AuthUser, opts = {}) => {
-  return listAllEntities<BasicStoreEntityIngestionCsv>(context, user, [ENTITY_TYPE_INGESTION_CSV], opts);
+  return fullEntitiesList<BasicStoreEntityIngestionCsv>(context, user, [ENTITY_TYPE_INGESTION_CSV], opts);
 };
 
 export const findCsvMapperForIngestionById = (context: AuthContext, user: AuthUser, csvMapperId: string) => {

@@ -20,7 +20,7 @@ import { elIndex } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { ENTITY_TYPE_NOTIFICATION } from '../modules/notification/notification-types';
 import { publishUserAction } from '../listener/UserActionListener';
-import { internalFindByIds, listEntitiesPaginated, storeLoadById } from '../database/middleware-loader';
+import { internalFindByIds, pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import { getParentTypes } from '../schema/schemaUtils';
 import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
@@ -253,7 +253,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
       if (!isPublicDashboards) {
         throw ForbiddenAccess('The targeted ids are not public dashboards.');
       }
-      const dashboards = await listEntitiesPaginated(
+      const dashboards = await pageEntitiesConnection(
         context,
         user,
         [ENTITY_TYPE_WORKSPACE],

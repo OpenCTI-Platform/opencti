@@ -15,7 +15,7 @@ import type {
   TriggerType
 } from '../../generated/graphql';
 import { TriggerType as TriggerTypeValue } from '../../generated/graphql';
-import { internalFindByIds, internalLoadById, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { internalFindByIds, internalLoadById, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import {
   type BasicStoreEntityNotification,
   type BasicStoreEntityTrigger,
@@ -264,7 +264,7 @@ export const triggersKnowledgeFind = (context: AuthContext, user: AuthUser, opts
   // key is a string[] because of the resolver, we have updated the keys
   const finalFilter = addFilter(opts.filters, 'trigger_scope', 'knowledge');
   const queryArgs = { ...opts, filters: finalFilter };
-  return listEntitiesPaginated<BasicStoreEntityTrigger>(context, user, [ENTITY_TYPE_TRIGGER], queryArgs);
+  return pageEntitiesConnection<BasicStoreEntityTrigger>(context, user, [ENTITY_TYPE_TRIGGER], queryArgs);
 };
 
 export const triggersKnowledgeCount = async (context: AuthContext, opts: QueryTriggersKnowledgeArgs) => {
@@ -276,7 +276,7 @@ export const triggersKnowledgeCount = async (context: AuthContext, opts: QueryTr
 export const triggersActivityFind = (context: AuthContext, user: AuthUser, opts: QueryTriggersActivityArgs) => {
   const finalFilter = addFilter(opts.filters, 'trigger_scope', 'activity');
   const queryArgs = { ...opts, includeAuthorities: true, filters: finalFilter };
-  return listEntitiesPaginated<BasicStoreEntityTrigger>(context, user, [ENTITY_TYPE_TRIGGER], queryArgs);
+  return pageEntitiesConnection<BasicStoreEntityTrigger>(context, user, [ENTITY_TYPE_TRIGGER], queryArgs);
 };
 
 export const triggersFind = (context: AuthContext, user: AuthUser, opts: QueryTriggersActivityArgs) => {
@@ -285,7 +285,7 @@ export const triggersFind = (context: AuthContext, user: AuthUser, opts: QueryTr
     return triggersKnowledgeFind(context, user, opts);
   }
   const queryArgs = { ...opts, includeAuthorities: true };
-  return listEntitiesPaginated<BasicStoreEntityTrigger>(context, user, [ENTITY_TYPE_TRIGGER], queryArgs);
+  return pageEntitiesConnection<BasicStoreEntityTrigger>(context, user, [ENTITY_TYPE_TRIGGER], queryArgs);
 };
 
 // region Notifications
@@ -294,12 +294,12 @@ export const notificationGet = (context: AuthContext, user: AuthUser, narrativeI
 };
 export const notificationsFind = (context: AuthContext, user: AuthUser, opts: QueryNotificationsArgs) => {
   const queryArgs = { ...opts, includeAuthorities: true };
-  return listEntitiesPaginated<BasicStoreEntityNotification>(context, user, [ENTITY_TYPE_NOTIFICATION], queryArgs);
+  return pageEntitiesConnection<BasicStoreEntityNotification>(context, user, [ENTITY_TYPE_NOTIFICATION], queryArgs);
 };
 export const myNotificationsFind = (context: AuthContext, user: AuthUser, opts: QueryNotificationsArgs) => {
   const queryFilters = addFilter(opts.filters, 'user_id', user.id);
   const queryArgs = { ...opts, filters: queryFilters };
-  return listEntitiesPaginated<BasicStoreEntityNotification>(context, user, [ENTITY_TYPE_NOTIFICATION], queryArgs);
+  return pageEntitiesConnection<BasicStoreEntityNotification>(context, user, [ENTITY_TYPE_NOTIFICATION], queryArgs);
 };
 export const myUnreadNotificationsCount = async (context: AuthContext, user: AuthUser, userId = null) => {
   const queryFilters = {

@@ -2,8 +2,8 @@ import * as R from 'ramda';
 import type { FileHandle } from 'fs/promises';
 import { v4 as uuidv4 } from 'uuid';
 import pjson from '../../../package.json';
-import { createEntity, deleteElementById, listAllThingsPaginated, updateAttribute, listThingsPaginated } from '../../database/middleware';
-import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { createEntity, deleteElementById, fullEntitiesOrRelationsConnection, updateAttribute, pageEntitiesOrRelationsConnection } from '../../database/middleware';
+import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS } from '../../config/conf';
 import { delEditContext, notify, setEditContext } from '../../database/redis';
 import { ENTITY_TYPE_WORKSPACE, type BasicStoreEntityWorkspace } from './workspace-types';
@@ -60,11 +60,11 @@ export const findById = (
 };
 
 export const findAllWorkspaces = (context: AuthContext, user: AuthUser, args: QueryWorkspacesArgs) => {
-  return listAllEntities(context, user, [ENTITY_TYPE_WORKSPACE], args);
+  return fullEntitiesList(context, user, [ENTITY_TYPE_WORKSPACE], args);
 };
 
 export const findWorkspacePaginated = (context: AuthContext, user: AuthUser, args: QueryWorkspacesArgs) => {
-  return listEntitiesPaginated<BasicStoreEntityWorkspace>(context, user, [ENTITY_TYPE_WORKSPACE], args);
+  return pageEntitiesConnection<BasicStoreEntityWorkspace>(context, user, [ENTITY_TYPE_WORKSPACE], args);
 };
 
 export const workspaceEditAuthorizedMembers = async (
@@ -114,9 +114,9 @@ export const objects = async (
   );
   const finalArgs = { ...args, filters };
   if (args.all) {
-    return listAllThingsPaginated(context, user, args.types, finalArgs);
+    return fullEntitiesOrRelationsConnection(context, user, args.types, finalArgs);
   }
-  return listThingsPaginated(context, user, args.types, finalArgs);
+  return pageEntitiesOrRelationsConnection(context, user, args.types, finalArgs);
 };
 
 const checkInvestigatedEntitiesInputs = async (

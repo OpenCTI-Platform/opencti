@@ -14,7 +14,7 @@ import { elList } from '../database/engine';
 import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, INPUT_OBJECTS, RULE_PREFIX } from '../schema/general';
 import { executionContext, isUserInPlatformOrganization, RULE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
-import { buildEntityFilters, internalFindByIds, internalLoadById, listAllRelations } from '../database/middleware-loader';
+import { buildEntityFilters, internalFindByIds, internalLoadById, fullRelationsList } from '../database/middleware-loader';
 import { getRule } from '../domain/rules';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
@@ -334,7 +334,7 @@ export const buildContainersElementsBundle = async (context, user, containers, e
       });
     };
     const args = { fromOrToId: Array.from(elementIds), baseData: true, callback };
-    await listAllRelations(context, user, ABSTRACT_STIX_CORE_RELATIONSHIP, args);
+    await fullRelationsList(context, user, ABSTRACT_STIX_CORE_RELATIONSHIP, args);
   }
   // Build limited stix object to limit memory footprint
   const containerOperations = [{

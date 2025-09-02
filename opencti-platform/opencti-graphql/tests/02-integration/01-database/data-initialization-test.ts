@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { listAllEntities } from '../../../src/database/middleware-loader';
+import { fullEntitiesList } from '../../../src/database/middleware-loader';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS } from '../../../src/schema/internalObject';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import type { BasicStoreEntity } from '../../../src/types/store';
@@ -28,7 +28,7 @@ describe('Data initialization test', () => {
   });
 
   it('should create all capabilities', async () => {
-    const capabilities = await listAllEntities<BasicStoreEntity>(testContext, ADMIN_USER, [ENTITY_TYPE_CAPABILITY]);
+    const capabilities = await fullEntitiesList<BasicStoreEntity>(testContext, ADMIN_USER, [ENTITY_TYPE_CAPABILITY]);
     expect(capabilities.length).toEqual(48);
     const capabilitiesNames = capabilities.map((capa) => capa.name).sort();
     const allExpectedNames = [
@@ -85,7 +85,7 @@ describe('Data initialization test', () => {
   });
 
   it('should create all initial roles', async () => {
-    const allRoles = await listAllEntities<BasicStoreEntity>(testContext, ADMIN_USER, [ENTITY_TYPE_ROLE]);
+    const allRoles = await fullEntitiesList<BasicStoreEntity>(testContext, ADMIN_USER, [ENTITY_TYPE_ROLE]);
     const allRolesNames = allRoles.map((role) => role.name).sort();
     const allExpectedRoles = ['Administrator', 'Connector', 'Default'];
     for (let i = 0; i < allExpectedRoles.length; i += 1) {
@@ -94,7 +94,7 @@ describe('Data initialization test', () => {
   });
 
   it('should create all initial Groups', async () => {
-    const allGroups = await listAllEntities<BasicStoreEntity>(testContext, ADMIN_USER, [ENTITY_TYPE_GROUP]);
+    const allGroups = await fullEntitiesList<BasicStoreEntity>(testContext, ADMIN_USER, [ENTITY_TYPE_GROUP]);
     const allGroupsNames = allGroups.map((group) => group.name).sort();
     const allExpectedGroups = ['Administrators', 'Connectors', 'Default'];
     for (let i = 0; i < allExpectedGroups.length; i += 1) {

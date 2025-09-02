@@ -1,7 +1,7 @@
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { createEntity } from '../../../database/middleware';
 import type { EntityOptions } from '../../../database/middleware-loader';
-import { internalLoadById, listEntitiesPaginated, storeLoadById } from '../../../database/middleware-loader';
+import { internalLoadById, pageEntitiesConnection, storeLoadById } from '../../../database/middleware-loader';
 import { BUS_TOPICS } from '../../../config/conf';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../../../schema/general';
 import { notify } from '../../../database/redis';
@@ -22,7 +22,7 @@ export const findById: DomainFindById<BasicStoreEntityCaseRft> = (context: AuthC
 };
 
 export const findRftPaginated = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityCaseRft>) => {
-  return listEntitiesPaginated<BasicStoreEntityCaseRft>(context, user, [ENTITY_TYPE_CONTAINER_CASE_RFT], opts);
+  return pageEntitiesConnection<BasicStoreEntityCaseRft>(context, user, [ENTITY_TYPE_CONTAINER_CASE_RFT], opts);
 };
 
 export const addCaseRft = async (context: AuthContext, user: AuthUser, caseRftAdd: CaseRftAddInput) => {

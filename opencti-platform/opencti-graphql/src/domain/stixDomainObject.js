@@ -12,10 +12,10 @@ import {
   validateCreatedBy,
 } from '../database/middleware';
 import {
-  listAllToEntitiesThroughRelations,
-  listEntitiesPaginated,
-  listEntitiesThroughRelationsPaginated,
-  listRelations,
+  fullEntitiesThroughRelationsToList,
+  pageEntitiesConnection,
+  pageRegardingEntitiesConnection,
+  topRelationsList,
   storeLoadById,
   storeLoadByIds
 } from '../database/middleware-loader';
@@ -58,7 +58,7 @@ export const findStixDomainObjectPaginated = async (context, user, args) => {
   if (types.length === 0) {
     types.push(ABSTRACT_STIX_DOMAIN_OBJECT);
   }
-  return listEntitiesPaginated(context, user, types, args);
+  return pageEntitiesConnection(context, user, types, args);
 };
 
 export const findById = async (context, user, stixDomainObjectId) => storeLoadById(context, user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
@@ -70,7 +70,7 @@ export const batchStixDomainObjects = async (context, user, objectsIds) => {
 };
 
 export const assigneesPaginated = async (context, user, stixDomainObjectId, args) => {
-  return listEntitiesThroughRelationsPaginated(context, user, stixDomainObjectId, RELATION_OBJECT_ASSIGNEE, ENTITY_TYPE_USER, false, args);
+  return pageRegardingEntitiesConnection(context, user, stixDomainObjectId, RELATION_OBJECT_ASSIGNEE, ENTITY_TYPE_USER, false, args);
 };
 
 // region time series
@@ -115,7 +115,7 @@ export const stixDomainObjectPirInformation = async (context, user, stixDomainOb
   // fetch stix domain object pir information
   const pirInformation = (stixDomainObject.pir_information ?? []).find((s) => s.pir_id === pirId);
   // retrieve asociated in-pir relationship
-  const inPirRelations = await listRelations(context, user, RELATION_IN_PIR, {
+  const inPirRelations = await topRelationsList(context, user, RELATION_IN_PIR, {
     filters: {
       mode: 'and',
       filters: [
@@ -260,7 +260,7 @@ export const stixDomainObjectEditField = async (context, user, stixObjectId, inp
   const { element: updatedElem } = await updateAttribute(context, user, stixObjectId, ABSTRACT_STIX_DOMAIN_OBJECT, input, opts);
   // If indicator is score patched, we also patch the score of all observables attached to the indicator
   if (stixDomainObject.entity_type === ENTITY_TYPE_INDICATOR && input.key === 'x_opencti_score') {
-    const observables = await listAllToEntitiesThroughRelations(context, user, stixObjectId, RELATION_BASED_ON, ABSTRACT_STIX_CYBER_OBSERVABLE);
+    const observables = await fullEntitiesThroughRelationsToList(context, user, stixObjectId, RELATION_BASED_ON, ABSTRACT_STIX_CYBER_OBSERVABLE);
     await Promise.all(
       observables.map((observable) => updateAttribute(context, user, observable.id, ABSTRACT_STIX_CYBER_OBSERVABLE, input, opts))
     );

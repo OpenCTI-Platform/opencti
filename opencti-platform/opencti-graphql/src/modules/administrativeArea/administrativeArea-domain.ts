@@ -4,7 +4,7 @@ import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import type { AdministrativeAreaAddInput, QueryAdministrativeAreasArgs } from '../../generated/graphql';
-import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityAdministrativeArea, ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from './administrativeArea-types';
 import type { DomainFindPaginated, DomainFindById } from '../../domain/domainTypes';
 
@@ -17,7 +17,7 @@ export const findAdministrativeAreaPaginated: DomainFindPaginated<BasicStoreEnti
   user: AuthUser,
   opts: QueryAdministrativeAreasArgs
 ) => {
-  return listEntitiesPaginated<BasicStoreEntityAdministrativeArea>(context, user, [ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA], opts);
+  return pageEntitiesConnection<BasicStoreEntityAdministrativeArea>(context, user, [ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA], opts);
 };
 
 export const addAdministrativeArea = async (context: AuthContext, user: AuthUser, administrativeArea: AdministrativeAreaAddInput) => {

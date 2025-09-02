@@ -5,13 +5,13 @@ import { BUS_TOPICS } from '../config/conf';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { elCount } from '../database/engine';
 import { READ_INDEX_STIX_SIGHTING_RELATIONSHIPS } from '../database/utils';
-import { listRelationsPaginated, storeLoadById } from '../database/middleware-loader';
+import { pageRelationsConnection, storeLoadById } from '../database/middleware-loader';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
 import { FunctionalError } from '../config/errors';
 import { elRemoveElementFromDraft } from '../database/draft-engine';
 
 export const findStixSightingsPaginated = async (context, user, args) => {
-  return listRelationsPaginated(context, user, STIX_SIGHTING_RELATIONSHIP, args);
+  return pageRelationsConnection(context, user, STIX_SIGHTING_RELATIONSHIP, args);
 };
 
 export const findById = (context, user, stixSightingRelationshipId) => {

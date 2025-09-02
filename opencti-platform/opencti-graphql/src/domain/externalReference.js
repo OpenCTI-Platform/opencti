@@ -5,13 +5,11 @@ import {
   createRelation,
   deleteElementById,
   deleteRelationsByFromAndTo,
-  listAllThings,
-  listAllThingsPaginated,
-  listThings,
-  listThingsPaginated,
+  topEntitiesOrRelationsList,
+  pageEntitiesOrRelationsConnection,
   updateAttribute
 } from '../database/middleware';
-import { internalLoadById, listEntitiesPaginated, storeLoadById } from '../database/middleware-loader';
+import { internalLoadById, pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import conf, { BUS_TOPICS } from '../config/conf';
 import { FunctionalError, ValidationError } from '../config/errors';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
@@ -27,7 +25,7 @@ export const findById = (context, user, externalReferenceId) => {
 };
 
 export const findReferencesPaginated = (context, user, args) => {
-  return listEntitiesPaginated(context, user, [ENTITY_TYPE_EXTERNAL_REFERENCE], args);
+  return pageEntitiesConnection(context, user, [ENTITY_TYPE_EXTERNAL_REFERENCE], args);
 };
 
 const buildFilterForExternalReference = (externalReferenceId, args) => {
@@ -41,18 +39,12 @@ const buildFilterForExternalReference = (externalReferenceId, args) => {
 
 export const findReferencesForExternalId = async (context, user, externalReferenceId, args) => {
   const { types, filters } = buildFilterForExternalReference(externalReferenceId, args);
-  if (args.all) {
-    return listAllThings(context, user, types, { ...args, filters });
-  }
-  return listThings(context, user, types, { ...args, filters });
+  return topEntitiesOrRelationsList(context, user, types, { ...args, filters });
 };
 
 export const findReferencesForExternalIdPaginated = async (context, user, externalReferenceId, args) => {
   const { types, filters } = buildFilterForExternalReference(externalReferenceId, args);
-  if (args.all) {
-    return listAllThingsPaginated(context, user, types, { ...args, filters });
-  }
-  return listThingsPaginated(context, user, types, { ...args, filters });
+  return pageEntitiesOrRelationsConnection(context, user, types, { ...args, filters });
 };
 
 export const externalReferenceImportPush = async (context, user, externalReferenceId, file, args = {}) => {

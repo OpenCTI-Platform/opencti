@@ -11,9 +11,9 @@ import { ApolloServerErrorCode } from '@apollo/server/errors';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { createEntity, deleteElementById, distributionEntities, storeLoadByIdWithRefs, timeSeriesEntities, updateAttribute } from '../database/middleware';
 import {
-  listAllFromEntitiesThroughRelations,
-  listEntitiesPaginated,
-  listEntitiesThroughRelationsPaginated,
+  fullEntitiesThroughRelationsFromList,
+  pageEntitiesConnection,
+  pageRegardingEntitiesConnection,
   loadEntityThroughRelationsPaginated,
   storeLoadById
 } from '../database/middleware-loader';
@@ -58,7 +58,7 @@ export const findStixCyberObservablePaginated = async (context, user, args) => {
   if (types.length === 0) {
     types.push(ABSTRACT_STIX_CYBER_OBSERVABLE);
   }
-  return listEntitiesPaginated(context, user, types, args);
+  return pageEntitiesConnection(context, user, types, args);
 };
 
 // region by elastic
@@ -305,7 +305,7 @@ export const stixCyberObservableEditField = async (context, user, stixCyberObser
     if (isNumericAttribute(key) && value === '') delete stixCyberObservable[key];
   });
   if (scoreInput) {
-    const indicators = await listAllFromEntitiesThroughRelations(
+    const indicators = await fullEntitiesThroughRelationsFromList(
       context,
       user,
       stixCyberObservableId,
@@ -435,15 +435,15 @@ export const artifactImport = async (context, user, args) => {
 };
 
 export const indicatorsPaginated = async (context, user, stixCyberObservableId, args) => {
-  return listEntitiesThroughRelationsPaginated(context, user, stixCyberObservableId, RELATION_BASED_ON, ENTITY_TYPE_INDICATOR, true, args);
+  return pageRegardingEntitiesConnection(context, user, stixCyberObservableId, RELATION_BASED_ON, ENTITY_TYPE_INDICATOR, true, args);
 };
 
 export const vulnerabilitiesPaginated = async (context, user, stixCyberObservableId, args) => {
-  return listEntitiesThroughRelationsPaginated(context, user, stixCyberObservableId, RELATION_HAS, ENTITY_TYPE_VULNERABILITY, false, args);
+  return pageRegardingEntitiesConnection(context, user, stixCyberObservableId, RELATION_HAS, ENTITY_TYPE_VULNERABILITY, false, args);
 };
 
 export const serviceDllsPaginated = async (context, user, stixCyberObservableId, args) => {
-  return listEntitiesThroughRelationsPaginated(context, user, stixCyberObservableId, RELATION_SERVICE_DLL, ENTITY_HASHED_OBSERVABLE_STIX_FILE, false, args);
+  return pageRegardingEntitiesConnection(context, user, stixCyberObservableId, RELATION_SERVICE_DLL, ENTITY_HASHED_OBSERVABLE_STIX_FILE, false, args);
 };
 
 export const stixFileObsArtifact = async (context, user, stixCyberObservableId) => {

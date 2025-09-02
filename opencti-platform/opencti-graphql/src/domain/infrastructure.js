@@ -1,5 +1,5 @@
 import { createEntity } from '../database/middleware';
-import { listEntitiesPaginated, storeLoadById } from '../database/middleware-loader';
+import { pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_INFRASTRUCTURE } from '../schema/stixDomainObject';
@@ -10,7 +10,7 @@ export const findById = (context, user, infrastructureId) => {
 };
 
 export const findInfrastructurePaginated = (context, user, args) => {
-  return listEntitiesPaginated(context, user, [ENTITY_TYPE_INFRASTRUCTURE], args);
+  return pageEntitiesConnection(context, user, [ENTITY_TYPE_INFRASTRUCTURE], args);
 };
 
 export const addInfrastructure = async (context, user, infrastructure) => {

@@ -1,6 +1,6 @@
 import { CONNECTOR_INTERNAL_IMPORT_FILE } from '../../schema/general';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { listAllEntities } from '../../database/middleware-loader';
+import { fullEntitiesList } from '../../database/middleware-loader';
 import { ENTITY_TYPE_CSV_MAPPER } from '../../modules/internal/csvMapper/csvMapper-types';
 import type { Connector } from '../internalConnector';
 import { ENABLED_IMPORT_CSV_BUILT_IN_CONNECTOR } from './importCsv-configuration';
@@ -16,5 +16,5 @@ export const IMPORT_CSV_CONNECTOR: Connector = {
   connector_type: CONNECTOR_INTERNAL_IMPORT_FILE,
   name: '[FILE] CSV Mapper import',
   built_in: true,
-  connector_schema_runtime_fn: (context: AuthContext, user: AuthUser) => listAllEntities(context, user, [ENTITY_TYPE_CSV_MAPPER]),
+  connector_schema_runtime_fn: (context: AuthContext, user: AuthUser) => fullEntitiesList(context, user, [ENTITY_TYPE_CSV_MAPPER]),
 };

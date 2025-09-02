@@ -4,7 +4,7 @@ import { type EntityOptions, storeLoadById } from '../database/middleware-loader
 import { ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_REF_RELATIONSHIP, ABSTRACT_STIX_RELATIONSHIP } from '../schema/general';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { isStixRefRelationship, RELATION_CREATED_BY, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
-import { listThingsPaginated, storeLoadByIdWithRefs, transformPatchToInput, updateAttributeFromLoadedWithRefs, validateCreatedBy } from '../database/middleware';
+import { pageEntitiesOrRelationsConnection, storeLoadByIdWithRefs, transformPatchToInput, updateAttributeFromLoadedWithRefs, validateCreatedBy } from '../database/middleware';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -22,7 +22,7 @@ export const findById = async <T extends BasicStoreObject> (context: AuthContext
 
 export const findStixObjectOrRelationshipsPaginated = async <T extends BasicStoreObject> (context: AuthContext, user: AuthUser,
   args: EntityOptions<BasicStoreCommon>) : Promise<StoreCommonConnection<T>> => {
-  return await listThingsPaginated(context, user, [ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP], args) as unknown as StoreCommonConnection<T>;
+  return await pageEntitiesOrRelationsConnection(context, user, [ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP], args) as unknown as StoreCommonConnection<T>;
 };
 
 const patchElementWithRefRelationships = async (

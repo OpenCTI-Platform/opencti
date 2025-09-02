@@ -1,5 +1,5 @@
 import { createEntity } from '../database/middleware';
-import { listEntitiesPaginated, storeLoadById } from '../database/middleware-loader';
+import { pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_TOOL } from '../schema/stixDomainObject';
@@ -10,7 +10,7 @@ export const findById = (context, user, toolId) => {
 };
 
 export const findToolPaginated = (context, user, args) => {
-  return listEntitiesPaginated(context, user, [ENTITY_TYPE_TOOL], args);
+  return pageEntitiesConnection(context, user, [ENTITY_TYPE_TOOL], args);
 };
 
 export const addTool = async (context, user, tool) => {

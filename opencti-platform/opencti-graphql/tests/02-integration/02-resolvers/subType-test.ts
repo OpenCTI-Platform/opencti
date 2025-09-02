@@ -7,7 +7,7 @@ import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../../src/modules/case/case-r
 import { StatusScope, type TypeAttribute } from '../../../src/generated/graphql';
 import type { BasicStoreEntity, BasicStoreEntityEdge } from '../../../src/types/store';
 import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
-import { listEntitiesPaginated } from '../../../src/database/middleware-loader';
+import { pageEntitiesConnection } from '../../../src/database/middleware-loader';
 import { ENTITY_TYPE_STATUS_TEMPLATE } from '../../../src/schema/internalObject';
 import { QUERY_REQUEST_ACCESS_SETTINGS } from './requestAccess-test';
 
@@ -154,12 +154,12 @@ describe('SubType resolver for RFI and request access use case', () => {
 
 describe('SubType resolver for RFI use case', () => {
   it('should RFI workflow enabled with at least one status', async () => {
-    const statusTemplateId_NEW = await listEntitiesPaginated<BasicStoreEntity>(testContext, ADMIN_USER, [ENTITY_TYPE_STATUS_TEMPLATE], { search: '"NEW"' });
+    const statusTemplateId_NEW = await pageEntitiesConnection<BasicStoreEntity>(testContext, ADMIN_USER, [ENTITY_TYPE_STATUS_TEMPLATE], { search: '"NEW"' });
     expect(statusTemplateId_NEW.edges[0].node.name).toBe('NEW');
     expect(statusTemplateId_NEW.edges[0].node.internal_id).toBeDefined();
     const newStatusId = statusTemplateId_NEW.edges[0].node.internal_id;
 
-    const statusTemplateId_IN_PROGRESS = await listEntitiesPaginated<BasicStoreEntity>(testContext, ADMIN_USER, [ENTITY_TYPE_STATUS_TEMPLATE], { search: '"IN_PROGRESS"' });
+    const statusTemplateId_IN_PROGRESS = await pageEntitiesConnection<BasicStoreEntity>(testContext, ADMIN_USER, [ENTITY_TYPE_STATUS_TEMPLATE], { search: '"IN_PROGRESS"' });
     const inProgressStatusId = statusTemplateId_IN_PROGRESS.edges[0].node.internal_id;
 
     // To verify 'NEW' usage, let's have 2 status created in reverse order.

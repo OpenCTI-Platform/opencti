@@ -1,6 +1,6 @@
 import { Promise as BluePromise } from 'bluebird';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { internalLoadById, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { internalLoadById, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached } from './publicDashboard-types';
 import { createEntity, deleteElementById, loadEntity, updateAttribute } from '../../database/middleware';
 import { type BasicStoreEntityWorkspace } from '../workspace/workspace-types';
@@ -93,7 +93,7 @@ export const findPublicDashboardPaginated = async (
   }
 
   const filters = addFilter(args.filters ?? undefined, 'dashboard_id', dashboardIds);
-  return listEntitiesPaginated<BasicStoreEntityPublicDashboard>(
+  return pageEntitiesConnection<BasicStoreEntityPublicDashboard>(
     context,
     user,
     [ENTITY_TYPE_PUBLIC_DASHBOARD],

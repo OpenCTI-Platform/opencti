@@ -3,7 +3,7 @@ import { GraphQLError } from 'graphql/index';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
 import { deleteElementById, distributionRelations, timeSeriesRelations } from '../database/middleware';
 import { ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP } from '../schema/general';
-import { buildRelationsFilter, listEntities, listRelationsPaginated, storeLoadById } from '../database/middleware-loader';
+import { buildRelationsFilter, topEntitiesList, pageRelationsConnection, storeLoadById } from '../database/middleware-loader';
 import { fillTimeSeries, isEmptyField, READ_INDEX_INFERRED_RELATIONSHIPS, READ_RELATIONSHIPS_INDICES } from '../database/utils';
 import { elCount, MAX_RUNTIME_RESOLUTION_SIZE } from '../database/engine';
 import { STIX_SPEC_VERSION, stixCoreRelationshipsMapping } from '../database/stix';
@@ -15,7 +15,7 @@ import { RELATION_DYNAMIC_FROM_FILTER, RELATION_DYNAMIC_TO_FILTER } from '../uti
 
 export const buildArgsFromDynamicFilters = async (context, user, args) => {
   const { dynamicFrom, dynamicTo } = args;
-  const listEntitiesWithFilters = async (filters) => listEntities(context, user, [ABSTRACT_STIX_OBJECT], {
+  const listEntitiesWithFilters = async (filters) => topEntitiesList(context, user, [ABSTRACT_STIX_OBJECT], {
     first: MAX_RUNTIME_RESOLUTION_SIZE,
     bypassSizeLimit: true, // ensure that max runtime prevent on ES_MAX_PAGINATION
     baseData: true,
@@ -75,7 +75,7 @@ export const findStixRelationPaginated = async (context, user, args) => {
   if (!types.every((t) => isStixRelationship(t))) {
     throw UnsupportedError('This API only support Stix relationships', { type });
   }
-  return listRelationsPaginated(context, user, type, R.dissoc('relationship_type', dynamicArgs));
+  return pageRelationsConnection(context, user, type, R.dissoc('relationship_type', dynamicArgs));
 };
 
 export const findById = (context, user, stixRelationshipId) => {

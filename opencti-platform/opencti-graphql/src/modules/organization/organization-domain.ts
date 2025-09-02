@@ -2,10 +2,10 @@ import { createEntity, deleteElementById, patchAttribute } from '../../database/
 import {
   type EntityOptions,
   internalFindByIds,
-  listAllEntities,
-  listAllFromEntitiesThroughRelations,
-  listEntitiesPaginated,
-  listEntitiesThroughRelationsPaginated,
+  fullEntitiesList,
+  fullEntitiesThroughRelationsFromList,
+  pageEntitiesConnection,
+  pageRegardingEntitiesConnection,
   storeLoadById
 } from '../../database/middleware-loader';
 import { BUS_TOPICS } from '../../config/conf';
@@ -31,11 +31,11 @@ export const findById = (context: AuthContext, user: AuthUser, organizationId: s
 };
 
 export const findOrganizationPaginated = (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreEntityOrganization>) => {
-  return listEntitiesPaginated<BasicStoreEntityOrganization>(context, user, [ENTITY_TYPE_IDENTITY_ORGANIZATION], args);
+  return pageEntitiesConnection<BasicStoreEntityOrganization>(context, user, [ENTITY_TYPE_IDENTITY_ORGANIZATION], args);
 };
 
 export const findAllSecurityOrganizations = (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreEntityOrganization>) => {
-  return listEntitiesPaginated<BasicStoreEntityOrganization>(context, user, [ENTITY_TYPE_IDENTITY_ORGANIZATION], { includeAuthorities: true, ...args });
+  return pageEntitiesConnection<BasicStoreEntityOrganization>(context, user, [ENTITY_TYPE_IDENTITY_ORGANIZATION], { includeAuthorities: true, ...args });
 };
 
 export const addOrganization = async (context: AuthContext, user: AuthUser, organization: OrganizationAddInput) => {
@@ -58,7 +58,7 @@ export const organizationAdminAdd = async (context: AuthContext, user: AuthUser,
   if (!organization) {
     throw FunctionalError('Organization not found');
   }
-  const members: BasicStoreEntity[] = await listAllFromEntitiesThroughRelations(context, user, organization.id, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER);
+  const members: BasicStoreEntity[] = await fullEntitiesThroughRelationsFromList(context, user, organization.id, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER);
   const updatedUser = members.find(({ id }) => id === memberId);
   // Check if user is part of Orga. If not, throw exception
   if (!updatedUser) {
@@ -84,7 +84,7 @@ export const organizationAdminRemove = async (context: AuthContext, user: AuthUs
   if (!organization) {
     throw FunctionalError('Organization not found');
   }
-  const members: BasicStoreEntity[] = await listAllFromEntitiesThroughRelations(context, user, organization.id, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER);
+  const members: BasicStoreEntity[] = await fullEntitiesThroughRelationsFromList(context, user, organization.id, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER);
   const updatedUser = members.find(({ id }) => id === memberId);
   // Check if user is part of Orga and is orga_admin. If not, throw exception
   if (!updatedUser) {
@@ -114,7 +114,7 @@ export const findGrantableGroups = async (context: AuthContext, user: AuthUser, 
 export const buildAdministratedOrganizations = async (context: AuthContext, user: AuthUser, member: BasicObject) => {
   let organizations: BasicStoreEntityOrganization[];
   if (isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
-    organizations = await listAllEntities(context, user, [ENTITY_TYPE_IDENTITY_ORGANIZATION]);
+    organizations = await fullEntitiesList(context, user, [ENTITY_TYPE_IDENTITY_ORGANIZATION]);
   } else {
     organizations = user.administrated_organizations as BasicStoreEntityOrganization[];
   }
@@ -124,22 +124,22 @@ export const buildAdministratedOrganizations = async (context: AuthContext, user
 
 export const organizationSectorsPaginated = async <T extends BasicStoreEntity> (context: AuthContext, user: AuthUser, organizationId: string,
   args: EntityOptions<T>) => {
-  return listEntitiesThroughRelationsPaginated<T>(context, user, organizationId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR, false, args);
+  return pageRegardingEntitiesConnection<T>(context, user, organizationId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR, false, args);
 };
 
 export const organizationMembersPaginated = async <T extends BasicStoreEntity> (context: AuthContext, user: AuthUser, organizationId: string,
   args: EntityOptions<T>) => {
-  return listEntitiesThroughRelationsPaginated<T>(context, user, organizationId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER, true, args);
+  return pageRegardingEntitiesConnection<T>(context, user, organizationId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER, true, args);
 };
 
 export const parentOrganizationsPaginated = async <T extends BasicStoreEntity> (context: AuthContext, user: AuthUser, organizationId: string,
   args: EntityOptions<T>) => {
-  return listEntitiesThroughRelationsPaginated<T>(context, user, organizationId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION, false, args);
+  return pageRegardingEntitiesConnection<T>(context, user, organizationId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION, false, args);
 };
 
 export const childOrganizationsPaginated = async <T extends BasicStoreEntity> (context: AuthContext, user: AuthUser, organizationId: string,
   args: EntityOptions<T>) => {
-  return listEntitiesThroughRelationsPaginated<T>(context, user, organizationId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION, true, args);
+  return pageRegardingEntitiesConnection<T>(context, user, organizationId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION, true, args);
 };
 
 export const organizationDelete = async (context: AuthContext, user: AuthUser, organizationId: string) => {

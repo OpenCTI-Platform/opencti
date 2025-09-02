@@ -1,6 +1,6 @@
 import { type BasicStoreEntityIngestionRss, ENTITY_TYPE_INGESTION_RSS } from './ingestion-types';
 import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
-import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS } from '../../config/conf';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
@@ -14,11 +14,11 @@ export const findById = (context: AuthContext, user: AuthUser, ingestionId: stri
 };
 
 export const findRssIngestionPaginated = async (context: AuthContext, user: AuthUser, opts = {}) => {
-  return listEntitiesPaginated<BasicStoreEntityIngestionRss>(context, user, [ENTITY_TYPE_INGESTION_RSS], opts);
+  return pageEntitiesConnection<BasicStoreEntityIngestionRss>(context, user, [ENTITY_TYPE_INGESTION_RSS], opts);
 };
 
 export const findAllRssIngestion = async (context: AuthContext, user: AuthUser, opts = {}) => {
-  return listAllEntities<BasicStoreEntityIngestionRss>(context, user, [ENTITY_TYPE_INGESTION_RSS], opts);
+  return fullEntitiesList<BasicStoreEntityIngestionRss>(context, user, [ENTITY_TYPE_INGESTION_RSS], opts);
 };
 
 export const addIngestion = async (context: AuthContext, user: AuthUser, input: IngestionRssAddInput) => {

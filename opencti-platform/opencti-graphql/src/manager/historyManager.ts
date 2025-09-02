@@ -12,7 +12,7 @@ import type { SseEvent, StreamDataEvent, UpdateEvent } from '../types/event';
 import { utcDate } from '../utils/format';
 import { elIndexElements } from '../database/engine';
 import type { StixRelation, StixSighting } from '../types/stix-2-1-sro';
-import { internalFindByIds, listEntities } from '../database/middleware-loader';
+import { internalFindByIds, topEntitiesList } from '../database/middleware-loader';
 import type { BasicRuleEntity, BasicStoreEntity } from '../types/store';
 import { BASE_TYPE_ENTITY, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
 import { generateStandardId } from '../schema/identifier';
@@ -313,7 +313,7 @@ const initHistoryManager = () => {
       // To start the manager we need to find the last event id indexed
       // and restart the stream consumption from this point.
       const context = executionContext('history_manager');
-      const histoElements = await listEntities<HistoryData>(context, SYSTEM_USER, [ENTITY_TYPE_HISTORY], {
+      const histoElements = await topEntitiesList<HistoryData>(context, SYSTEM_USER, [ENTITY_TYPE_HISTORY], {
         first: 1,
         indices: [INDEX_HISTORY],
         orderBy: ['timestamp'],

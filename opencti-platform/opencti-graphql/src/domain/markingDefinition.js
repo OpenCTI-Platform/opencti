@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { createEntity, deleteElementById, updateAttribute } from '../database/middleware';
-import { internalFindByIds, listAllEntities, listAllRelations, listEntities, listEntitiesPaginated, storeLoadById } from '../database/middleware-loader';
+import { internalFindByIds, fullEntitiesList, fullRelationsList, topEntitiesList, pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../schema/internalObject';
@@ -16,12 +16,12 @@ export const findById = (context, user, markingDefinitionId) => {
 
 // Force looking with prefix wildcard for markings
 export const findMarkingsPaginated = (context, user, args) => {
-  return listEntitiesPaginated(context, user, [ENTITY_TYPE_MARKING_DEFINITION], { ...args, useWildcardPrefix: true });
+  return pageEntitiesConnection(context, user, [ENTITY_TYPE_MARKING_DEFINITION], { ...args, useWildcardPrefix: true });
 };
 
 // Force looking with prefix wildcard for markings
 export const findAllMarkings = (context, user, args) => {
-  return listAllEntities(context, user, [ENTITY_TYPE_MARKING_DEFINITION], { ...args, useWildcardPrefix: true });
+  return fullEntitiesList(context, user, [ENTITY_TYPE_MARKING_DEFINITION], { ...args, useWildcardPrefix: true });
 };
 
 const notifyMembersOfNewMarking = async (context, user, newMarking) => {
@@ -30,7 +30,7 @@ const notifyMembersOfNewMarking = async (context, user, newMarking) => {
   const otherExistingTypeMarkingIds = (userGroupedMarkings[newMarking.definition_type] ?? []).map((m) => m.internal_id);
   const groupIds = new Set();
   const groupUsers = new Map();
-  const relations = await listAllRelations(context, SYSTEM_USER, [RELATION_ACCESSES_TO, RELATION_MEMBER_OF], { indices: READ_RELATIONSHIPS_INDICES });
+  const relations = await fullRelationsList(context, SYSTEM_USER, [RELATION_ACCESSES_TO, RELATION_MEMBER_OF], { indices: READ_RELATIONSHIPS_INDICES });
   for (let index = 0; index < relations.length; index += 1) {
     // group <- RELATION_ACCESSES_TO -> marking
     const { fromId, entity_type, toId } = relations[index];
@@ -63,7 +63,7 @@ const updateGroupsAfterAddingMarking = async (context, markingCreated) => {
     filters: [{ key: 'auto_new_marking', values: [true] }],
     filterGroups: [],
   };
-  const groupsWithAutoNewMarking = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_GROUP], { filters });
+  const groupsWithAutoNewMarking = await topEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_GROUP], { filters });
   if (groupsWithAutoNewMarking && groupsWithAutoNewMarking.length > 0) {
     const markingId = markingCreated.id;
     const markingType = markingCreated.definition_type;
@@ -119,7 +119,7 @@ export const markingDefinitionDelete = async (context, user, markingDefinitionId
 
 export const markingDefinitionDeleteAndUpdateGroups = async (context, user, markingDefinitionId, opts) => {
   // remove the marking from the groups max shareable markings config if needed
-  const groupsWithMarkingInShareableMarkings = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_GROUP], {
+  const groupsWithMarkingInShareableMarkings = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_GROUP], {
     filters: {
       mode: 'and',
       filters: [{ key: 'max_shareable_markings.value', values: [markingDefinitionId], operator: 'eq', mode: 'or' }],

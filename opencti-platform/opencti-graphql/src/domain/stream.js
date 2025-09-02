@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import { ENTITY_TYPE_STREAM_COLLECTION } from '../schema/internalObject';
 import { createEntity, deleteElementById, updateAttribute, } from '../database/middleware';
-import { listEntitiesPaginated, storeLoadById } from '../database/middleware-loader';
+import { pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import { isUserHasCapability, MEMBER_ACCESS_RIGHT_VIEW, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../utils/access';
@@ -44,12 +44,12 @@ export const findStreamCollectionPaginated = (context, user, args) => {
   if (user && isUserHasCapability(user, TAXIIAPI)) {
     // If user can manage the feeds, list everything related
     const options = { ...args, includeAuthorities: true };
-    return listEntitiesPaginated(context, user, [ENTITY_TYPE_STREAM_COLLECTION], options);
+    return pageEntitiesConnection(context, user, [ENTITY_TYPE_STREAM_COLLECTION], options);
   }
   // No user specify, listing only public streams
   const filters = addFilter(args?.filters, 'stream_public', 'true');
   const publicArgs = { ...(args ?? {}), filters };
-  return listEntitiesPaginated(context, SYSTEM_USER, [ENTITY_TYPE_STREAM_COLLECTION], publicArgs);
+  return pageEntitiesConnection(context, SYSTEM_USER, [ENTITY_TYPE_STREAM_COLLECTION], publicArgs);
 };
 export const streamCollectionEditField = async (context, user, collectionId, input) => {
   const filtersItem = input.find((item) => item.key === 'filters');

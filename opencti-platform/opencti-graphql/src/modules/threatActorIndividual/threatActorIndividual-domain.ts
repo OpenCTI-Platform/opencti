@@ -1,7 +1,7 @@
 import { assoc, isNil, pipe } from 'ramda';
 import type { DomainFindById } from '../../domain/domainTypes';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { type EntityOptions, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { type EntityOptions, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { createEntity } from '../../database/middleware';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
@@ -15,7 +15,7 @@ export const findById: DomainFindById<BasicStoreEntityThreatActorIndividual> = (
 };
 
 export const findThreatActorIndividualPaginated = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityThreatActorIndividual>) => {
-  return listEntitiesPaginated<BasicStoreEntityThreatActorIndividual>(context, user, [ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL], opts);
+  return pageEntitiesConnection<BasicStoreEntityThreatActorIndividual>(context, user, [ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL], opts);
 };
 
 export const addThreatActorIndividual = async (context: AuthContext, user: AuthUser, input: ThreatActorIndividualAddInput) => {

@@ -1,6 +1,6 @@
 import { assoc } from 'ramda';
 import { createEntity } from '../database/middleware';
-import { listEntitiesPaginated, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
+import { pageEntitiesConnection, pageRegardingEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_LOCATION_REGION } from '../schema/stixDomainObject';
@@ -12,23 +12,23 @@ export const findById = (context, user, regionId) => {
 };
 
 export const findRegionPaginated = (context, user, args) => {
-  return listEntitiesPaginated(context, user, [ENTITY_TYPE_LOCATION_REGION], args);
+  return pageEntitiesConnection(context, user, [ENTITY_TYPE_LOCATION_REGION], args);
 };
 
 export const parentRegionsPaginated = async (context, user, regionId, args) => {
-  return listEntitiesThroughRelationsPaginated(context, user, regionId, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION, false, args);
+  return pageRegardingEntitiesConnection(context, user, regionId, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION, false, args);
 };
 
 export const childRegionsPaginated = async (context, user, regionId, args) => {
-  return listEntitiesThroughRelationsPaginated(context, user, regionId, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION, true, args);
+  return pageRegardingEntitiesConnection(context, user, regionId, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION, true, args);
 };
 
 export const countriesPaginated = async (context, user, elementId, args) => {
   const element = await findById(context, user, elementId);
   if (element) {
-    return listEntitiesThroughRelationsPaginated(context, user, elementId, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_COUNTRY, true, args);
+    return pageRegardingEntitiesConnection(context, user, elementId, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_COUNTRY, true, args);
   }
-  return listEntitiesThroughRelationsPaginated(context, user, elementId, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_COUNTRY, false, args);
+  return pageRegardingEntitiesConnection(context, user, elementId, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_COUNTRY, false, args);
 };
 
 export const addRegion = async (context, user, region) => {

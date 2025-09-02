@@ -1,4 +1,4 @@
-import { listAllEntities } from '../database/middleware-loader';
+import { fullEntitiesList } from '../database/middleware-loader';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { fromBase64, isNotEmptyField, READ_DATA_INDICES, toBase64 } from '../database/utils';
@@ -51,7 +51,7 @@ const convertFilters = (filters, perspective) => {
 
 export const up = async (next) => {
   const context = executionContext('migration', SYSTEM_USER);
-  const workspaces = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_WORKSPACE]);
+  const workspaces = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_WORKSPACE]);
   let workspacesManifestConvertor = {};
   workspaces.forEach((workspace) => {
     if (isNotEmptyField(workspace.manifest)) {
