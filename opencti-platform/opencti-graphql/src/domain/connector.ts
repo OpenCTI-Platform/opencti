@@ -49,6 +49,27 @@ import { getEntitiesMapFromCache } from '../database/cache';
 import { removeAuthenticationCredentials } from '../modules/ingestion/ingestion-common';
 import { createOnTheFlyUser } from '../modules/user/user-domain';
 
+// Sanitize name for K8s/Docker
+const sanitizeContainerName = (label: string): string => {
+  const withHyphens = label.replace(/([a-z])([A-Z])/g, '$1-$2');
+  let sanitized = withHyphens
+    .replace(/[^a-zA-Z0-9]+/g, '-')
+    .toLowerCase()
+    .replace(/^-+/, '')
+    .replace(/-+$/, '');
+
+  if (sanitized.length > 63) {
+    sanitized = sanitized.substring(0, 63);
+    sanitized = sanitized.replace(/-+$/, '');
+  }
+
+  if (sanitized.length === 0) {
+    return `a-${Math.floor(Math.random() * 10)}`;
+  }
+
+  return sanitized;
+};
+
 // region connectors
 export const connectorForWork = async (context: AuthContext, user: AuthUser, id: string) => {
   const work = await elLoadById(context, user, id, { type: ENTITY_TYPE_WORK, indices: READ_INDEX_HISTORY }) as unknown as Work;
@@ -221,9 +242,21 @@ export const managedConnectorAdd = async (
   if (isEmptyField(connectorUser)) {
     throw UnsupportedError('Connector user not found');
   }
+  // Sanitize name
+  const sanitizedName = sanitizeContainerName(input.name);
+  if (!sanitizedName || sanitizedName.length < 2) {
+    throw FunctionalError('Invalid connector name');
+  }
+  // Check for name collision
+  const existingConnectors = await connectors(context, user);
+  const nameCollision = existingConnectors.find((c) => c.name === sanitizedName);
+  if (nameCollision) {
+    logApp.info(`[CONNECTOR] Name collision detected: connector with name '${sanitizedName}' already exists`);
+    throw FunctionalError('CONNECTOR_NAME_ALREADY_EXISTS');
+  }
   // Create connector
   const connectorToCreate: any = {
-    name: input.name,
+    name: sanitizedName,
     connector_type: targetContract.container_type,
     catalog_id: input.catalog_id,
     connector_user_id: connectorUser.id,

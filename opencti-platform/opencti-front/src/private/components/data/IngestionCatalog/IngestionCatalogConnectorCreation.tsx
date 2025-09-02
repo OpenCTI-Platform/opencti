@@ -5,7 +5,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useTheme } from '@mui/styles';
 import { FormikHelpers } from 'formik/dist/types';
 import * as Yup from 'yup';
-import { graphql } from 'react-relay';
+import { graphql, useMutation } from 'react-relay';
 import { materialRenderers } from '@jsonforms/material-renderers';
 import { JsonForms } from '@jsonforms/react';
 import { Schema, Validator } from '@cfworker/json-schema';
@@ -27,7 +27,7 @@ import { LibraryBooksOutlined } from '@mui/icons-material';
 import NoConnectorManagersBanner from '@components/data/connectors/NoConnectorManagersBanner';
 import Tooltip from '@mui/material/Tooltip';
 import { MESSAGING$ } from '../../../../relay/environment';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { RelayError } from '../../../../relay/relayTypes';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { type FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -50,6 +50,32 @@ const ingestionCatalogConnectorCreationMutation = graphql`
   }
 `;
 
+// Sanitize name for K8s/Docker compatibility
+const sanitizeContainerName = (label: string): string => {
+  const withHyphens = label.replace(/([a-z])([A-Z])/g, '$1-$2');
+  let sanitized = withHyphens
+    .replace(/[^a-zA-Z0-9]+/g, '-')
+    .toLowerCase()
+    .replace(/^-+/, '')
+    .replace(/-+$/, '');
+
+  if (sanitized.length > 63) {
+    sanitized = sanitized.substring(0, 63);
+    sanitized = sanitized.replace(/-+$/, '');
+  }
+
+  if (sanitized.length === 0) {
+    return `a-${Math.floor(Math.random() * 10)}`;
+  }
+
+  return sanitized;
+};
+
+// Validate K8s name format
+const isValidContainerName = (name: string): boolean => {
+  return /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/.test(name) && name.length >= 2 && name.length <= 63;
+};
+
 interface IngestionCatalogConnectorCreationProps {
   connector: IngestionConnector;
   open: boolean;
@@ -69,7 +95,7 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const [compiledValidator, setCompiledValidator] = useState<Validator | undefined>(undefined);
-  const [commitRegister] = useApiMutation<IngestionCatalogConnectorCreationMutation>(ingestionCatalogConnectorCreationMutation);
+  const [commitRegister] = useMutation<IngestionCatalogConnectorCreationMutation>(ingestionCatalogConnectorCreationMutation);
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -101,7 +127,18 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
       variables: {
         input,
       },
-      onError: () => setSubmitting?.(false),
+      onError: (error: Error) => {
+        const { errors } = (error as unknown as RelayError).res;
+        const errorMessage = errors?.at(0)?.message;
+        if (errorMessage?.includes('CONNECTOR_NAME_ALREADY_EXISTS')) {
+          MESSAGING$.notifyError(t_i18n('A connector with this name already exists. Please choose a different name.'));
+        } else if (errorMessage) {
+          MESSAGING$.notifyError(errorMessage);
+        } else {
+          MESSAGING$.notifyError(t_i18n('An error occurred while creating the connector'));
+        }
+        setSubmitting?.(false);
+      },
       onCompleted: (response: IngestionCatalogConnectorCreationMutation$data) => {
         MESSAGING$.notifySuccess(<span><Link to={`/dashboard/data/ingestion/connectors/${response.managedConnectorAdd?.id}`}>{t_i18n('The connector instance has been deployed')}</Link></span>);
         setSubmitting?.(false);
@@ -125,7 +162,8 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
     Object.entries(connector.config_schema.properties).forEach(([key, value]) => {
       if (key === 'CONNECTOR_NAME') {
         if (value.default !== undefined) {
-          defaultConnectorName = value.default.toString();
+          // Apply sanitization to the default connector name
+          defaultConnectorName = sanitizeContainerName(value.default.toString());
         }
         return;
       }
@@ -197,11 +235,16 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
         {
           !hasRegisteredManagers && <NoConnectorManagersBanner />
         }
-
         <Formik<ManagedConnectorValues>
           onReset={onClose}
           validationSchema={Yup.object().shape({
-            name: Yup.string().required().min(2),
+            name: Yup.string()
+              .required(t_i18n('This field is required'))
+              .min(2, t_i18n('Name must be at least 2 characters'))
+              .max(63, t_i18n('Name must be at most 63 characters'))
+              .test('valid-container-name', t_i18n('Name must contain only lowercase letters, numbers, and hyphens. Must start and end with a letter or number.'), (value) => {
+                return !value || isValidContainerName(value);
+              }),
             user_id: Yup.object().required(),
           })}
           initialValues={{
@@ -213,7 +256,7 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
           }}
           onSubmit={() => {}}
         >
-          {({ values, isSubmitting, setSubmitting, resetForm, isValid, setValues }) => {
+          {({ values, isSubmitting, setSubmitting, resetForm, isValid, setValues, setFieldValue }) => {
             const errors = compiledValidator?.validate(values)?.errors;
 
             return (
@@ -234,6 +277,10 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
                     label={t_i18n('Instance name')}
                     required
                     fullWidth={true}
+                    helperText={t_i18n('Only lowercase letters, numbers and hyphens')}
+                    onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                      setFieldValue('name', sanitizeContainerName(event.target.value));
+                    }}
                   />
                   <IngestionCreationUserHandling
                     default_confidence_level={connector.max_confidence_level}

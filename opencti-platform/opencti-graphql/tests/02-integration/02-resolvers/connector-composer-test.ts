@@ -1,7 +1,7 @@
 import { expect, it, describe, afterAll, beforeAll } from 'vitest';
 import gql from 'graphql-tag';
 import { v4 as uuidv4 } from 'uuid';
-import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { adminQueryWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
 import { wait } from '../../../src/database/utils';
 import { XTMComposerMock } from '../../utils/XTMComposerMock';
@@ -93,6 +93,15 @@ const DELETE_CONNECTOR_MUTATION = gql`
     }
 `;
 
+const REGISTER_CONNECTOR_MUTATION = gql`
+    mutation RegisterConnector($input: RegisterConnectorInput) {
+        registerConnector(input: $input) {
+            id
+            name
+        }
+    }
+`;
+
 // Queries
 const CONNECTOR_MANAGER_QUERY = gql`
     query ConnectorManager($managerId: ID!) {
@@ -174,6 +183,47 @@ describe('Connector Composer and Managed Connectors', () => {
       expect(result.data?.registerConnectorsManager.name).toEqual('Test Composer');
       expect(result.data?.registerConnectorsManager.public_key).toEqual(TEST_COMPOSER_PUBLIC_KEY);
       expect(result.data?.registerConnectorsManager.last_sync_execution).not.toBeNull();
+    });
+
+    it('should sanitize connector names for Kubernetes/Docker compatibility', async () => {
+      const testConnector = catalogHelper.getTestSafeConnector();
+      const catalogId = catalogHelper.getCatalogId();
+
+      const testCases = [
+        { input: 'ServiceNow Connector', expected: 'service-now-connector' },
+        { input: '-Test@Connector#2024!', expected: 'test-connector-2024' },
+        { input: 'Very___Long---Name__With$$Special##Chars@@That--Exceeds--The--Maximum--Length--Limit--Of--63--Characters', expected: 'very-long-name-with-special-chars-that-exceeds-the-maximum-leng' }
+      ];
+
+      await Promise.all(testCases.map(async (testCase) => {
+        const input = {
+          name: testCase.input,
+          user_id: TEST_USER_CONNECTOR_ID,
+          catalog_id: catalogId,
+          manager_contract_image: testConnector.container_image,
+          manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
+            IPINFO_TOKEN: 'sanitization-test-token',
+            ...ipinfoProperties
+          })
+        };
+
+        const result = await queryAsAdminWithSuccess({
+          query: ADD_MANAGED_CONNECTOR_MUTATION,
+          variables: { input }
+        });
+
+        expect(result.data).toBeDefined();
+        expect(result.data?.managedConnectorAdd.name).toEqual(testCase.expected);
+
+        const connectorId = result.data?.managedConnectorAdd.id;
+        createdConnectorIds.add(connectorId);
+
+        await queryAsAdminWithSuccess({
+          query: DELETE_CONNECTOR_MUTATION,
+          variables: { id: connectorId }
+        });
+        createdConnectorIds.delete(connectorId);
+      }));
     });
 
     it('should update existing connector composer', async () => {
@@ -802,7 +852,7 @@ describe('Connector Composer and Managed Connectors', () => {
 
       const testConnector = connectors.find((c: any) => c.id === testConnectorId);
       expect(testConnector).toBeDefined();
-      expect(testConnector.name).toEqual('XTM Composer Test Connector');
+      expect(testConnector.name).toEqual('xtm-composer-test-connector');
       // Split image name to ignore version
       const [imageName] = testConnector.manager_contract_image.split(':');
       expect(imageName).toEqual('opencti/connector-ipinfo');
@@ -931,7 +981,7 @@ describe('Connector Composer and Managed Connectors', () => {
       managedConnectorId = result.data?.managedConnectorAdd.id;
       createdConnectorIds.add(managedConnectorId);
       expect(result.data?.managedConnectorAdd).not.toBeNull();
-      expect(result.data?.managedConnectorAdd.name).toEqual('Test IpInfo Connector');
+      expect(result.data?.managedConnectorAdd.name).toEqual('test-ip-info-connector');
       expect(result.data?.managedConnectorAdd.connector_user_id).toBeDefined();
       expect(result.data?.managedConnectorAdd.manager_requested_status).toEqual('stopped');
       expect(result.data?.managedConnectorAdd.manager_contract_hash).toBeDefined();
@@ -963,6 +1013,72 @@ describe('Connector Composer and Managed Connectors', () => {
       const autoConfig = result.data?.managedConnectorEdit.manager_contract_configuration
         .find((c: any) => c.key === 'CONNECTOR_AUTO');
       expect(autoConfig.value).toEqual('false');
+    });
+
+    it('should prevent creating managed connector with duplicate name', async () => {
+      // Get test connector from catalog
+      const testConnector = catalogHelper.getTestSafeConnector();
+      const catalogId = catalogHelper.getCatalogId();
+
+      // First create a connector with a specific name
+      const firstInput = {
+        name: 'Duplicate Name Test Connector',
+        user_id: TEST_USER_CONNECTOR_ID,
+        catalog_id: catalogId,
+        manager_contract_image: testConnector.container_image,
+        manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
+          IPINFO_TOKEN: 'first-token',
+          ...ipinfoProperties
+        })
+      };
+
+      const firstResult = await queryAsAdminWithSuccess({
+        query: ADD_MANAGED_CONNECTOR_MUTATION,
+        variables: { input: firstInput }
+      });
+
+      const firstConnectorId = firstResult.data?.managedConnectorAdd.id;
+      createdConnectorIds.add(firstConnectorId);
+
+      // Try to create another connector with the same name (after sanitization)
+      const duplicateInput = {
+        name: 'Duplicate Name Test Connector', // Same name, will be sanitized to same value
+        user_id: TEST_USER_CONNECTOR_ID,
+        catalog_id: catalogId,
+        manager_contract_image: testConnector.container_image,
+        manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
+          IPINFO_TOKEN: 'duplicate-token',
+          ...ipinfoProperties
+        })
+      };
+
+      await adminQueryWithError(
+        {
+          query: ADD_MANAGED_CONNECTOR_MUTATION,
+          variables: { input: duplicateInput }
+        },
+        'CONNECTOR_NAME_ALREADY_EXISTS'
+      );
+
+      // Test with different raw name but same sanitized name
+      const duplicateSanitizedInput = {
+        name: 'Duplicate-Name-Test-Connector!', // Different raw name but same after sanitization
+        user_id: TEST_USER_CONNECTOR_ID,
+        catalog_id: catalogId,
+        manager_contract_image: testConnector.container_image,
+        manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
+          IPINFO_TOKEN: 'duplicate-sanitized-token',
+          ...ipinfoProperties
+        })
+      };
+
+      await adminQueryWithError(
+        {
+          query: ADD_MANAGED_CONNECTOR_MUTATION,
+          variables: { input: duplicateSanitizedInput }
+        },
+        'CONNECTOR_NAME_ALREADY_EXISTS'
+      );
     });
   });
 
