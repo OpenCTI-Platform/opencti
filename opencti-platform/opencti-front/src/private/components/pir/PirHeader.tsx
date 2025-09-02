@@ -17,7 +17,6 @@ import { graphql, useFragment } from 'react-relay';
 import React, { useState } from 'react';
 import { Box, Button, Typography } from '@mui/material';
 import FormAuthorizedMembersDialog from '@components/common/form/FormAuthorizedMembersDialog';
-import Chip from '@mui/material/Chip';
 import PirPopover from './PirPopover';
 import PirEdition from './pir_form/PirEdition';
 import { PirHeaderFragment$key } from './__generated__/PirHeaderFragment.graphql';
@@ -49,7 +48,6 @@ const headerFragment = graphql`
         name
       }
     }
-    queue_messages
     ...PirPopoverFragment
   }
 `;
@@ -68,7 +66,7 @@ interface PirHeaderProps {
 }
 
 const PirHeader = ({ data, editionData }: PirHeaderProps) => {
-  const { t_i18n, n } = useFormatter();
+  const { t_i18n } = useFormatter();
   const pir = useFragment(headerFragment, data);
   const { name, id, authorizedMembers, creators, currentUserAccessRight } = pir;
   const { canManage, canEdit } = useGetCurrentUserAccessRight(currentUserAccessRight);
@@ -88,20 +86,6 @@ const PirHeader = ({ data, editionData }: PirHeaderProps) => {
         <Typography variant="h1" sx={{ marginBottom: 0, flex: 1 }}>
           {name}
         </Typography>
-
-        <div>
-          <Chip
-            style={{
-              fontSize: 12,
-              lineHeight: '12px',
-              height: 25,
-              textTransform: 'uppercase',
-              borderRadius: 4,
-              marginRight: 5,
-            }}
-            label={`${n(pir.queue_messages)} ${t_i18n('messages in queue')}`}
-          />
-        </div>
 
         <Security needs={[PIRAPI_PIRUPDATE]} hasAccess={canEdit}>
           <>
