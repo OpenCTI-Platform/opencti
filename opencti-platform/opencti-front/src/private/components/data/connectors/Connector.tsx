@@ -22,7 +22,7 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import ConnectorPopover from '@components/data/connectors/ConnectorPopover';
 import ConnectorStatusChip from '@components/data/connectors/ConnectorStatusChip';
-import moment from 'moment';
+import { fromUnixTime, parseISO, isValid, differenceInDays, differenceInHours, differenceInMinutes, differenceInSeconds } from 'date-fns';
 import Filters from '../../common/lists/Filters';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { useFormatter } from '../../../../components/i18n';
@@ -254,37 +254,50 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
     setTabValue(newValue);
   };
 
-  // Calculate uptime from started_at using moment duration
+  // Calculate uptime from started_at using date-fns
   const calculateUptime = (startedAt: string | null | undefined): string => {
     if (!startedAt) return t_i18n('Not available');
 
-    // Handle potential Unix timestamp in seconds (if it's a number string)
-    let start;
-    if (!Number.isNaN(Number(startedAt)) && Number(startedAt) < 10000000000) {
-      // If it's a Unix timestamp in seconds (less than 10 billion), convert to milliseconds
-      start = moment(Number(startedAt) * 1000);
+    let startDate: Date;
+
+    // Handle different input formats
+    if (!Number.isNaN(Number(startedAt))) {
+      const timestamp = Number(startedAt);
+      // Unix timestamp in seconds
+      if (timestamp < 10000000000) {
+        startDate = fromUnixTime(timestamp);
+      } else {
+        // Timestamp in milliseconds
+        startDate = new Date(timestamp);
+      }
     } else {
-      start = moment(startedAt);
+      // Try to parse ISO string or other format
+      startDate = parseISO(startedAt);
     }
 
     // Validate the parsed date
-    if (!start.isValid()) {
+    if (!isValid(startDate)) {
       return t_i18n('Not available');
     }
 
-    const now = moment();
+    const now = new Date();
 
-    const duration = moment.duration(now.diff(start));
-
-    // Additional check: if duration is negative or unreasonably large (more than 10 years)
-    if (duration.asMilliseconds() < 0 || duration.asYears() > 10) {
+    // Check for edge cases
+    const totalSeconds = differenceInSeconds(now, startDate);
+    if (totalSeconds < 0 || totalSeconds > 315360000) { // More than 10 years in seconds
       return t_i18n('Not available');
     }
 
-    const days = Math.floor(duration.asDays());
-    const hours = duration.hours();
-    const minutes = duration.minutes();
-    const seconds = duration.seconds();
+    // Calculate differences
+    const totalDays = differenceInDays(now, startDate);
+    const totalHours = differenceInHours(now, startDate);
+    const totalMinutes = differenceInMinutes(now, startDate);
+
+    // Calculate remaining units
+    const days = totalDays;
+    const hours = totalHours % 24;
+    const minutes = totalMinutes % 60;
+    const seconds = totalSeconds % 60;
 
     const parts = [];
     if (days > 0) parts.push(`${days} ${t_i18n(days === 1 ? 'day' : 'days')}`);

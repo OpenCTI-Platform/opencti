@@ -42,6 +42,7 @@ import {
   type SynchronizerAddInput,
   type SynchronizerFetchInput,
   type UpdateConnectorManagerStatusInput,
+  type HealthConnectorStatusInput,
   ValidationMode,
 } from '../generated/graphql';
 import { BUS_TOPICS, logApp } from '../config/conf';
@@ -391,14 +392,6 @@ export const connectorUpdateLogs = async (_context: AuthContext, _user: AuthUser
   await redisSetConnectorLogs(input.id, input.logs);
   return input.id;
 };
-
-// Health metrics input interface
-interface HealthConnectorStatusInput {
-  id: string;
-  restart_count: number;
-  started_at: string;
-  is_in_reboot_loop: boolean;
-}
 
 // Health metrics update function
 export const connectorUpdateHealth = async (_context: AuthContext, _user: AuthUser, input: HealthConnectorStatusInput) => {
