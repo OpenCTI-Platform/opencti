@@ -18,7 +18,6 @@ import StixCoreObjectFileExportButton from '../stix_core_objects/StixCoreObjectF
 import StixCoreObjectsSuggestions from '../stix_core_objects/StixCoreObjectsSuggestions';
 import { DraftChip } from '../draft/DraftChip';
 import { stixCoreObjectQuickSubscriptionContentQuery } from '../stix_core_objects/stixCoreObjectTriggersUtils';
-import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
 import StixCoreObjectSubscribers from '../stix_core_objects/StixCoreObjectSubscribers';
 import FormAuthorizedMembersDialog from '../form/FormAuthorizedMembersDialog';
 import ExportButtons from '../../../../components/ExportButtons';
@@ -41,6 +40,7 @@ import { authorizedMembersToOptions, useGetCurrentUserAccessRight } from '../../
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
 import { resolveLink } from '../../../../utils/Entity';
 import PopoverMenu from '../../../../components/PopoverMenu';
+import useAuth from '../../../../utils/hooks/useAuth';
 
 export const containerHeaderObjectsQuery = graphql`
   query ContainerHeaderObjectsQuery($id: String!) {
@@ -486,7 +486,7 @@ const ContainerHeader = (props) => {
     navigate(`${entityLink}/${targetTab}?${urlParams}`);
   };
 
-  const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
+  const { bannerSettings: { bannerHeightNumber } } = useAuth();
   // containerDefault style
   let containerStyle = {
     display: 'flex',
@@ -500,7 +500,7 @@ const ContainerHeader = (props) => {
     containerStyle = {
       position: 'absolute',
       display: 'flex',
-      top: 166 + settingsMessagesBannerHeight,
+      top: 166 + bannerHeightNumber,
       right: 24,
     };
   }
