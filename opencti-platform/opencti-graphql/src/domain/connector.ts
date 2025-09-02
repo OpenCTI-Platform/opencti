@@ -184,7 +184,7 @@ export const managedConnectorEdit = async (
   if (isEmptyField(targetContract)) {
     throw UnsupportedError('Target contract not found');
   }
-  const connectorManagers = await listAllEntities<BasicStoreEntityConnectorManager>(context, user, [ENTITY_TYPE_CONNECTOR_MANAGER], { connectionFormat: false });
+  const connectorManagers = await listAllEntities<BasicStoreEntityConnectorManager>(context, user, [ENTITY_TYPE_CONNECTOR_MANAGER]);
   if (connectorManagers?.length < 1) {
     throw FunctionalError('There is no connector manager configured');
   }
@@ -219,7 +219,7 @@ export const managedConnectorAdd = async (
   if (!targetContract.manager_supported) {
     throw FunctionalError('You have not chosen a connector supported by the manager');
   }
-  const connectorManagers = await listAllEntities<BasicStoreEntityConnectorManager>(context, user, [ENTITY_TYPE_CONNECTOR_MANAGER], { connectionFormat: false });
+  const connectorManagers = await listAllEntities<BasicStoreEntityConnectorManager>(context, user, [ENTITY_TYPE_CONNECTOR_MANAGER]);
   if (connectorManagers?.length < 1) {
     throw FunctionalError('There is no connector manager configured');
   }

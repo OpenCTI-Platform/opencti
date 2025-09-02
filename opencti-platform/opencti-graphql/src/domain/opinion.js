@@ -34,7 +34,7 @@ export const findMyOpinion = async (context, user, entityId) => {
     },
   };
   const opinions = await findOpinionsPaginated(context, user, opinionsArgs);
-  return opinions.edges.length > 0 ? R.head(opinions.edges).node : null;
+  return opinions.edges[0]?.node;
 };
 
 // Entities tab

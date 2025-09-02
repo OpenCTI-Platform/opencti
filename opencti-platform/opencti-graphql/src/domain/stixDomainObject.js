@@ -116,7 +116,6 @@ export const stixDomainObjectPirInformation = async (context, user, stixDomainOb
   const pirInformation = (stixDomainObject.pir_information ?? []).find((s) => s.pir_id === pirId);
   // retrieve asociated in-pir relationship
   const inPirRelations = await listRelations(context, user, RELATION_IN_PIR, {
-    connectionFormat: false,
     filters: {
       mode: 'and',
       filters: [

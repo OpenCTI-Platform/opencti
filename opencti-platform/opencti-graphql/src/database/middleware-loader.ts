@@ -82,7 +82,6 @@ export interface ListFilter<T extends BasicStoreCommon> {
 
 // entities
 interface EntityFilters<T extends BasicStoreCommon> extends ListFilter<T> {
-  connectionFormat?: boolean;
   fromOrToId?: string | Array<string>;
   fromId?: string | Array<string>;
   fromRole?: string;
@@ -106,7 +105,6 @@ export interface EntityOptions<T extends BasicStoreCommon> extends EntityFilters
 
 // relations
 interface RelationFilters<T extends BasicStoreCommon> extends ListFilter<T> {
-  connectionFormat?: boolean;
   relationFilter?: {
     relation: string;
     id: string;
@@ -365,14 +363,6 @@ export const listAllEntities = async <T extends BasicStoreEntity>(context: AuthC
   return elList(context, user, computedIndices, paginateArgs);
 };
 
-export const listAllEntitiesPaginated = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, entityTypes: Array<string>,
-  args: EntityOptions<T> = {}): Promise<StoreEntityConnection<T>> => {
-  const { indices } = args;
-  const computedIndices = computeQueryIndices(indices, entityTypes);
-  const paginateArgs = buildEntityFilters(entityTypes, args);
-  return elListPaginated(context, user, computedIndices, paginateArgs) as unknown as StoreEntityConnection<T>;
-};
-
 export interface ListAllEntitiesThroughRelation {
   type: string | string[]
   fromOrToId: string | string[]
@@ -476,10 +466,6 @@ export const listEntities = async <T extends BasicStoreEntity>(context: AuthCont
 export const listEntitiesThroughRelationsPaginated = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, connectedEntityId: string,
   relationType: string, entityType: string | string[], reverse_relation: boolean, args: EntityOptions<T> = {}): Promise<StoreCommonConnection<T>> => {
   const entityTypes = Array.isArray(entityType) ? entityType : [entityType];
-  const { connectionFormat } = args;
-  if (connectionFormat === false) {
-    throw UnsupportedError('List connected entities paginated require connectionFormat option to true');
-  }
   if (UNIMPACTED_ENTITIES_ROLE.includes(`${relationType}_to`)) {
     throw UnsupportedError('List connected entities paginated cant be used', { type: entityType });
   }

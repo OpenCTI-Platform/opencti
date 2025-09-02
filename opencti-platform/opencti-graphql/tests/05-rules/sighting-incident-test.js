@@ -45,7 +45,7 @@ describe('Sighting incident rule', () => {
       expect(R.head(inference[RELATION_OBJECT_MARKING])).toBe(clear.internal_id);
       expect(inference.first_seen).toBe('2016-08-06T20:08:31.000Z');
       expect(inference.last_seen).toBe('2016-08-07T20:08:31.000Z');
-      const relArgs = { fromId: inference.id, connectionFormat: false };
+      const relArgs = { fromId: inference.id };
       const related = await listRelations(testContext, SYSTEM_USER, RELATION_RELATED_TO, relArgs);
       expect(related.length).toBe(1);
       const targets = await listRelations(testContext, SYSTEM_USER, RELATION_TARGETS, relArgs);

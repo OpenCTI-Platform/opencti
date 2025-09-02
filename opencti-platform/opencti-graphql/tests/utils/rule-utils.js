@@ -26,7 +26,7 @@ export const inferenceLookup = async (inferences, fromStandardId, toStandardId, 
 };
 
 export const getInferences = (type) => {
-  const opts = { indices: [READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_INFERRED_ENTITIES], connectionFormat: false };
+  const opts = { indices: [READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_INFERRED_ENTITIES] };
   return listThings(testContext, SYSTEM_USER, [type], opts);
 };
 

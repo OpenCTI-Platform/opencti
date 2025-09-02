@@ -311,8 +311,7 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
         mode: FilterMode.And,
         filters: [{ key: ['type'], values: [ENTITY_TYPE_CONTAINER_CASE_RFI] }, { key: ['scope'], values: [StatusScope.RequestAccess] }],
         filterGroups: [],
-      },
-      connectionFormat: false
+      }
     };
     const allRequestAccessStatuses = await listAllEntities<BasicWorkflowStatus>(testContext, ADMIN_USER, [ENTITY_TYPE_STATUS], argsFilter);
     logApp.info('[TEST] allRequestAccessStatuses:', { allRequestAccessStatuses });
