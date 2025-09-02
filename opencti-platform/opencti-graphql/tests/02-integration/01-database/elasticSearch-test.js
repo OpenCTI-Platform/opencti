@@ -450,7 +450,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Tracking-Number')).toBe(1);
     expect(entityTypeMap.get('User')).toBe(TESTING_USERS.length + 1);
     expect(entityTypeMap.get('Vocabulary')).toBe(VOCABULARY_COUNT);
-    expect(data.edges.length).toEqual(537 + TESTING_ORGS.length + TESTING_USERS.length + TESTING_ROLES.length + TESTING_GROUPS.length);
+    expect(data.edges.length).toEqual(541 + TESTING_ORGS.length + TESTING_USERS.length + TESTING_ROLES.length + TESTING_GROUPS.length);
     const filterBaseTypes = R.uniq(R.map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('ENTITY');
@@ -566,7 +566,7 @@ describe('Elasticsearch pagination', () => {
     const entityTypeMap = mapEdgesCountPerEntityType(data);
     expect(entityTypeMap.get('Attack-Pattern')).toBe(2);
     expect(entityTypeMap.get('Campaign')).toBe(1);
-    expect(entityTypeMap.get('Capability')).toBe(44);
+    expect(entityTypeMap.get('Capability')).toBe(48);
     expect(entityTypeMap.get('Course-Of-Action')).toBe(1);
     expect(entityTypeMap.get('Credential')).toBe(1);
     expect(entityTypeMap.get('DecayRule')).toBe(4);
@@ -605,7 +605,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Tracking-Number')).toBe(1);
     expect(entityTypeMap.get('User')).toBe(TESTING_USERS.length + 1);
     expect(entityTypeMap.get('Vocabulary')).toBe(VOCABULARY_COUNT);
-    expect(data.edges.length).toEqual(546);
+    expect(data.edges.length).toEqual(550);
   });
   it('should entity paginate with field exist filter', async () => {
     const filters = {
@@ -700,7 +700,7 @@ describe('Elasticsearch pagination', () => {
       first: ES_MAX_PAGINATION
     });
     const entityTypeMap = mapEdgesCountPerEntityType(data);
-    expect(entityTypeMap.get('Capability')).toBe(44);
+    expect(entityTypeMap.get('Capability')).toBe(48);
     expect(entityTypeMap.get('Credential')).toBe(1);
     expect(entityTypeMap.get('DecayRule')).toBe(4);
     expect(entityTypeMap.get('EntitySetting')).toBe(44);
