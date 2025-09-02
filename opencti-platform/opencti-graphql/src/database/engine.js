@@ -50,7 +50,17 @@ import {
   WRITE_PLATFORM_INDICES
 } from './utils';
 import conf, { booleanConf, extendedErrors, isFeatureEnabled, loadCert, logApp, logMigration } from '../config/conf';
-import { ComplexSearchError, ConfigurationError, DatabaseError, EngineShardsError, FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
+import {
+  ComplexSearchError,
+  ConfigurationError,
+  DatabaseError,
+  EngineShardsError,
+  FunctionalError,
+  LockTimeoutError,
+  ResourceNotFoundError,
+  TYPE_LOCK_ERROR,
+  UnsupportedError
+} from '../config/errors';
 import {
   isStixRefRelationship,
   RELATION_BORN_IN,
@@ -2979,39 +2989,41 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
       const filterKey = arrayKeys[0];
       if (filterKey === INSTANCE_REGARDING_OF || filterKey === INSTANCE_DYNAMIC_REGARDING_OF) {
         const regardingFilters = [];
-        const id = filter.values.find((i) => i.key === 'id');
-        const type = filter.values.find((i) => i.key === 'relationship_type');
-        const dynamic = filter.values.find((i) => i.key === 'dynamic');
-        if (!id && !dynamic && !type) {
+        const idParameter = filter.values.find((i) => i.key === 'id');
+        const typeParameter = filter.values.find((i) => i.key === 'relationship_type');
+        const dynamicParameter = filter.values.find((i) => i.key === 'dynamic');
+        // Check parameters
+        if (!idParameter && !dynamicParameter && !typeParameter) {
           throw UnsupportedError('Id or dynamic or relationship type are needed for this filtering key', { key: filterKey });
         }
-        if (dynamic && !type?.values?.length) {
-          throw UnsupportedError('Relationship type is needed for dynamic in regards of filtering', { key: filterKey, type });
+        if (dynamicParameter && !typeParameter?.values?.length) {
+          throw UnsupportedError('Relationship type is needed for dynamic in regards of filtering', { key: filterKey, type: typeParameter });
         }
-        let ids = id?.values ?? [];
-        const operator = id?.operator ?? 'eq';
-        // Check type
-        if (type && type.operator && type.operator !== 'eq') {
-          throw UnsupportedError('regardingOf filter only support types equality restriction');
+        // Check operator
+        if (typeParameter && typeParameter.operator && typeParameter.operator !== 'eq') {
+          throw UnsupportedError('regardingOf only support types equality restriction');
         }
-        const types = type?.values;
-        // Check types are stix relationships // TODO PIR
-        // if (types.some((t) => !isStixRelationship(t))) {
-        //   throw UnsupportedError('regardingOf filter only support stix relationship types', { key: filterKey, types });
-        // }
-        // Check ids
+        let ids = idParameter?.values ?? [];
+        // Limit the number of possible ids in the regardingOf
+        if (ids.length > ES_MAX_PAGINATION) {
+          throw UnsupportedError('Too much ids specified', { size: ids.length, max: ES_MAX_PAGINATION });
+        }
         if (ids.length > 0) {
-          const entities = await elFindByIds(context, user, ids, { baseData: true });
-          ids = entities.map((n) => n.id); // Keep ids the user has access to
+          // Keep ids the user has access to
+          const filteredEntities = await elFindByIds(context, user, ids, { baseData: true });
+          ids = filteredEntities.map((n) => n.id);
+          if (ids.length === 0) { // If no id available, reject the query
+            throw ResourceNotFoundError('Specified ids not found or restricted');
+          }
         }
+        const operator = idParameter?.operator ?? 'eq';
         // Check dynamic
-        const dynamicFilter = dynamic?.values ?? [];
+        const dynamicFilter = dynamicParameter?.values ?? [];
         if (isNotEmptyField(dynamicFilter)) {
           const computedIndices = computeQueryIndices([], [ABSTRACT_STIX_OBJECT]);
           const relatedEntities = await elPaginate(context, user, computedIndices, {
             connectionFormat: false,
             first: ES_MAX_PAGINATION,
-            bypassSizeLimit: true, // ensure that max runtime prevent on ES_MAX_PAGINATION
             baseData: true,
             filters: addFilter(dynamicFilter[0], TYPE_FILTER, [ABSTRACT_STIX_CORE_OBJECT]),
           });
@@ -3022,10 +3034,10 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
             ids.push('<invalid id>'); // To force empty result in the query result
           }
         }
+        const types = typeParameter?.values;
         // Construct and push the final regarding of filter
         if (isEmptyField(ids)) {
-          const keys = isEmptyField(types)
-            ? buildRefRelationKey('*', '*')
+          const keys = isEmptyField(types) ? buildRefRelationKey('*', '*')
             : types.map((t) => buildRefRelationKey(t, '*'));
           keys.forEach((relKey) => {
             regardingFilters.push({ key: [relKey], operator, values: ['EXISTS'] });
