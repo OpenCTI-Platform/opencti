@@ -410,7 +410,7 @@ describe('Elasticsearch pagination', () => {
     const entityTypeMap = mapEdgesCountPerEntityType(data);
     expect(entityTypeMap.get('Attack-Pattern')).toBe(2);
     expect(entityTypeMap.get('Campaign')).toBe(1);
-    expect(entityTypeMap.get('Capability')).toBe(44);
+    expect(entityTypeMap.get('Capability')).toBe(48);
     expect(entityTypeMap.get('Course-Of-Action')).toBe(1);
     expect(entityTypeMap.get('Credential')).toBe(1);
     expect(entityTypeMap.get('DecayRule')).toBe(4);
