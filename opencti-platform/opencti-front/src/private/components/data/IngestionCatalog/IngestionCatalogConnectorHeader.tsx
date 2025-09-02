@@ -3,7 +3,6 @@ import { VerifiedOutlined } from '@mui/icons-material';
 import Button from '@mui/material/Button';
 import React from 'react';
 import { useTheme } from '@mui/styles';
-import { ingestionConnectorTypeMetadata } from '@components/data/IngestionCatalog/IngestionCatalogCard';
 import IngestionCatalogChip from '@components/data/IngestionCatalog/IngestionCatalogUseCaseChip';
 import { IngestionConnector } from '@components/data/IngestionCatalog';
 import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';
@@ -12,6 +11,7 @@ import type { Theme } from '../../../../components/Theme';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import ItemBoolean from '../../../../components/ItemBoolean';
+import {ingestionConnectorTypeMetadata} from "@components/data/IngestionCatalog/utils/ingestionConnectorTypeMetadata";
 
 type IngestionCatalogConnectorHeaderProps = {
   connector: IngestionConnector,

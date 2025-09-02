@@ -159,7 +159,7 @@ const ConnectorPopover = ({ connector }: ConnectorPopoverProps) => {
           <MenuItem onClick={handleOpenResetState}>{t_i18n('Reset the connector state')}</MenuItem>
         )}
         <MenuItem onClick={handleOpenClearWorks}>{t_i18n('Clear all works')}</MenuItem>
-        <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+        <MenuItem onClick={handleOpenDelete} disabled={!!connector.active || !!connector.built_in}>{t_i18n('Delete')}</MenuItem>
       </Menu>
 
       {editionOpen
