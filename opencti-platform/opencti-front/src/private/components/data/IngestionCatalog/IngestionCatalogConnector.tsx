@@ -16,6 +16,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import { resolveLink } from '../../../../utils/Entity';
 
 const ingestionCatalogConnectorQuery = graphql`
   query IngestionCatalogConnectorQuery($slug: String!) {
@@ -137,7 +138,7 @@ const IngestionCatalogConnector = () => {
             catalogId={catalogState.selectedCatalogId}
             hasRegisteredManagers={catalogState.hasRegisteredManagers}
             onCreate={(connectorId) => {
-              navigate(`../ingestion/connectors/${connectorId}`);
+              navigate(`${resolveLink('Connectors')}/${connectorId}`);
             }}
           />
         )

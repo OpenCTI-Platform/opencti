@@ -23,6 +23,7 @@ import IngestionCatalogFilters from './IngestionCatalog/IngestionCatalogFilters'
 import GradientCard from '../../../components/GradientCard';
 import { MESSAGING$ } from '../../../relay/environment';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
+import { resolveLink } from '../../../utils/Entity';
 
 export const ingestionCatalogQuery = graphql`
   query IngestionCatalogQuery {
@@ -271,7 +272,7 @@ const IngestionCatalog = () => {
           catalogId={catalogState.selectedCatalogId}
           hasRegisteredManagers={catalogState.hasRegisteredManagers}
           onCreate={(connectorId) => {
-            navigate(`../ingestion/connectors/${connectorId}`);
+            navigate(`${resolveLink('Connectors')}/${connectorId}`);
           }}
         />
       )}
