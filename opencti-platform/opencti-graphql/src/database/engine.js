@@ -2577,10 +2577,6 @@ const adaptFilterToEntityTypeFilterKey = (filter) => {
   return { newFilter, newFilterGroup };
 };
 
-const adaptFilterToRegardingOfFilterKeys = async (context, user, filterKey, filter) => {
-
-};
-
 const adaptFilterToIdsFilterKey = (filter) => {
   const { key, mode = 'or', operator = 'eq' } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
