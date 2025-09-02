@@ -16,7 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type BasicStoreEntityPir, ENTITY_TYPE_PIR } from './pir-types';
-import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../../database/cache';
+import { getEntitiesMapFromCache } from '../../database/cache';
 import { FunctionalError } from '../../config/errors';
 import { isUserCanAccessStoreElement } from '../../utils/access';
 
