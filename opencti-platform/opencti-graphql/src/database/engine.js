@@ -2509,7 +2509,7 @@ const buildSubQueryForFilterGroup = async (context, user, inputFilters) => {
 // If filter key = entity_type, we should also handle parent_types
 // Example: filter = {mode: 'or', operator: 'eq', key: ['entity_type'], values: ['Report', 'Stix-Cyber-Observable']}
 // we check parent_types because otherwise we would never match Stix-Cyber-Observable which is an abstract parent type
-const adaptFilterToEntityTypeFilterKey = async (context, user, filter) => {
+const adaptFilterToEntityTypeFilterKey = (filter) => {
   const { key, mode = 'or', operator = 'eq' } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
   if (arrayKeys.length > 1) {
@@ -2520,35 +2520,6 @@ const adaptFilterToEntityTypeFilterKey = async (context, user, filter) => {
   // we'll build these new filters or filterGroup, depending on the situation
   let newFilter;
   let newFilterGroup;
-
-  // if in-pir type value, check user pir rights access and add the accessible pirs // TODO PIR
-  // if (filter.values.includes(RELATION_IN_PIR)) {
-  //   if (filter.values.length !== 1) {
-  //     throw UnsupportedError(`${key} filter with in-pir value cannot accept other entity type values`, { filter });
-  //   }
-  //   await checkEnterpriseEdition(context);
-  //   const computedIndices = computeQueryIndices([], [ENTITY_TYPE_PIR]);
-  //   const pirs = await elPaginate(
-  //     context,
-  //     user,
-  //     computedIndices,
-  //     { connectionFormat: false, filters: addFilter(undefined, TYPE_FILTER, ENTITY_TYPE_PIR) },
-  //   );
-  //   console.log('pirs', pirs);
-  //   const pirIds = pirs.map((p) => p.id);
-  //   if (pirIds.length === 0) {
-  //     throw UnsupportedError('No PIR found', { filter });
-  //   }
-  //   newFilterGroup = {
-  //     mode: 'and',
-  //     filters: [
-  //       ...filter,
-  //       { key: RELATION_TO_FILTER, values: pirIds },
-  //     ],
-  //     filterGroups: [],
-  //   };
-  //   return { newFilter, newFilterGroup };
-  // }
 
   if (operator === 'nil' || operator === 'not_nil') { // nil and not_nil operators must have a single key
     newFilterGroup = {
@@ -2619,16 +2590,18 @@ const adaptFilterToRegardingOfFilterKeys = async (context, user, filterKey, filt
   }
   let ids = id?.values ?? [];
   const operator = id?.operator ?? 'eq';
+  // Check type
+  if (type && type.operator && type.operator !== 'eq') {
+    throw UnsupportedError('regardingOf filter only support types equality restriction');
+  }
+  const types = type?.values;
+  // Check types are stix relationships
+  if (!types.every((t) => isStixRelationship(t))) {
+
+  }
   // Check ids
   if (ids.length > 0) {
-    const computedIndices = computeQueryIndices([], [ABSTRACT_STIX_OBJECT]);
-    const entities = await elPaginate(context, user, computedIndices, {
-      connectionFormat: false,
-      first: ES_MAX_PAGINATION,
-      bypassSizeLimit: true, // ensure that max runtime prevent on ES_MAX_PAGINATION
-      baseData: true,
-      filters: addFilter(undefined, IDS_FILTER, ids),
-    });
+    const entities = await elFindByIds(context, user, ids, { baseData: true });
     ids = entities.map((n) => n.id); // Keep ids the user has access to
   }
   // Check dynamic
@@ -2647,18 +2620,6 @@ const adaptFilterToRegardingOfFilterKeys = async (context, user, filterKey, filt
       ids.push(...relatedIds);
     } else {
       ids.push('<invalid id>'); // To force empty result in the query result
-    }
-  }
-  // Check type
-  if (type && type.operator && type.operator !== 'eq') {
-    throw UnsupportedError('regardingOf filter only support types equality restriction');
-  }
-  const types = type?.values;
-  // Check pir access if type contains in-pir value
-  if (types.includes(RELATION_IN_PIR)) {
-    const accessiblePirs = await getAccessiblePirsAmongList(context, user, ids ?? []);
-    if (accessiblePirs.length === 0) {
-      throw UnsupportedError('regardingOf filter with in-pir relationship type should be used with one or more valid pir id.', { filter });
     }
   }
   // Construct and push the final regarding of filter
@@ -3092,7 +3053,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
       }
       if (filterKey === TYPE_FILTER || filterKey === RELATION_TYPE_FILTER) {
         // add parent_types checking (in case the given value in type is an abstract type)
-        const { newFilter, newFilterGroup } = await adaptFilterToEntityTypeFilterKey(context, user, filter);
+        const { newFilter, newFilterGroup } = adaptFilterToEntityTypeFilterKey(filter);
         if (newFilter) {
           finalFilters.push(newFilter);
         }

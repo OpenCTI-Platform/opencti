@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { describe, expect, it } from 'vitest';
 import { now } from 'moment';
-import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, buildStandardUser, queryAsAdmin, testContext } from '../../utils/testQuery';
 import { FilterMode, FilterOperator, PirType } from '../../../src/generated/graphql';
 import { RESTRICTED_USER, SYSTEM_USER } from '../../../src/utils/access';
 import { internalLoadById, listEntitiesPaginated, listRelationsPaginated } from '../../../src/database/middleware-loader';
@@ -117,6 +117,7 @@ const MALWARE_QUERY = gql`
 describe('PIR resolver standard behavior', () => {
   let pirInternalId: string = '';
   let flaggedElementId: string = '';
+  const userUpdate = buildStandardUser([], [], [{ name: 'KNOWLEDGE_KNUPDATE' }]);
 
   it('should pir created', async () => {
     const CREATE_QUERY = gql`
@@ -280,7 +281,6 @@ describe('PIR resolver standard behavior', () => {
       variables: { pirId: pirInternalId },
     });
     expect(queryResult).not.toBeNull();
-    expect(queryResult).toEqual('test');
     expect(queryResult.data?.pirRelationships.edges.length).toEqual(1);
     expect(queryResult.data?.pirRelationships.edges[0].node.from.id).toEqual(flaggedElementId);
     expect(queryResult.data?.pirRelationships.edges[0].node.to.id).toEqual(pirInternalId);
@@ -324,6 +324,8 @@ describe('PIR resolver standard behavior', () => {
     }).rejects.toThrowError('The filter key should be followed by a dot and the Pir ID');
     // return error if the pir is not accessible for the user
     const filtersWithGtOperator = addFilter(undefined, `${PIR_SCORE_FILTER_PREFIX}.${pirInternalId}`, ['50'], 'gt');
+    const test = await listEntitiesPaginated(testContext, userUpdate, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithGtOperator });
+    expect(test).toEqual('TEST');
     await expect(async () => {
       await listEntitiesPaginated(testContext, RESTRICTED_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithGtOperator });
     }).rejects.toThrowError('No PIR found');
@@ -417,7 +419,7 @@ describe('PIR resolver standard behavior', () => {
       ]
     };
     await expect(async () => {
-      await listEntitiesPaginated(testContext, RESTRICTED_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters });
+      await listEntitiesPaginated(testContext, userUpdate, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters });
     }).rejects.toThrowError('regardingOf filter with in-pir relationship type should be used with one or more valid pir id.');
     // regardingOf filter with in-pir relationship type and pir id should return flagged entities
     filters = {
