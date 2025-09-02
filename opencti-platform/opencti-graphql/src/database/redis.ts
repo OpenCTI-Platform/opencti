@@ -1,12 +1,10 @@
 import { SEMATTRS_DB_NAME } from '@opentelemetry/semantic-conventions';
-import Redis, { Cluster, type RedisOptions, type SentinelAddress } from 'ioredis';
+import { Cluster, Redis } from 'ioredis';
+import type { ChainableCommander, CommonRedisOptions, ClusterOptions, RedisOptions, SentinelAddress, SentinelConnectionOptions } from 'ioredis';
 import { Redlock } from '@sesamecare-oss/redlock';
 import * as jsonpatch from 'fast-json-patch';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import * as R from 'ramda';
-import type { ChainableCommander } from 'ioredis/built/utils/RedisCommander';
-import type { ClusterOptions } from 'ioredis/built/cluster/ClusterOptions';
-import type { SentinelConnectionOptions } from 'ioredis/built/connectors/SentinelConnector';
 import conf, { booleanConf, configureCA, DEV_MODE, getStoppingState, loadCert, logApp, REDIS_PREFIX } from '../config/conf';
 import { asyncListTransformation, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, isNotEmptyField, waitInSec } from './utils';
 import { isStixExportableData } from '../schema/stixCoreObject';
@@ -51,10 +49,13 @@ const isStreamPublishable = (opts: EventOpts) => {
   return opts.publishStreamEvent === undefined || opts.publishStreamEvent;
 };
 
-const redisOptions = async (autoReconnect = false): Promise<RedisOptions> => {
+const connectionName = (provider: string) => `${REDIS_PREFIX}${provider.replaceAll(' ', '_')}`;
+
+const redisOptions = async (provider: string, autoReconnect = false): Promise<RedisOptions> => {
   const baseAuth = { username: conf.get('redis:username'), password: conf.get('redis:password') };
   const userPasswordAuth = await enrichWithRemoteCredentials('redis', baseAuth);
   return {
+    connectionName: connectionName(provider),
     keyPrefix: REDIS_PREFIX,
     ...userPasswordAuth,
     tls: USE_SSL ? { ...configureCA(REDIS_CA), servername: conf.get('redis:hostname') } : undefined,
@@ -96,8 +97,8 @@ export const generateNatMap = (mappings: string[]): Record<string, { host: strin
   return natMap;
 };
 
-const clusterOptions = async (): Promise<ClusterOptions> => {
-  const redisOpts = await redisOptions();
+const clusterOptions = async (provider: string): Promise<ClusterOptions> => {
+  const redisOpts = await redisOptions(provider);
   return {
     keyPrefix: REDIS_PREFIX,
     lazyConnect: true,
@@ -110,10 +111,11 @@ const clusterOptions = async (): Promise<ClusterOptions> => {
   };
 };
 
-const sentinelOptions = async (clusterNodes: Partial<SentinelAddress>[]): Promise<SentinelConnectionOptions> => {
+const sentinelOptions = async (provider: string, clusterNodes: Partial<SentinelAddress>[]): Promise<SentinelConnectionOptions & CommonRedisOptions> => {
   const baseAuth = { sentinelPassword: conf.get('redis:sentinel_password') };
   const passwordAuth = await enrichWithRemoteCredentials('redis', baseAuth);
   return {
+    connectionName: connectionName(provider),
     ...passwordAuth,
     keyPrefix: REDIS_PREFIX,
     name: conf.get('redis:sentinel_master_name'),
@@ -131,13 +133,13 @@ export const createRedisClient = async (provider: string, autoReconnect = false)
   const redisMode: string = conf.get('redis:mode');
   const clusterNodes = generateClusterNodes(conf.get('redis:hostnames') ?? []);
   if (redisMode === 'cluster') {
-    const clusterOpts = await clusterOptions();
+    const clusterOpts = await clusterOptions(provider);
     client = new Redis.Cluster(clusterNodes, clusterOpts);
   } else if (redisMode === 'sentinel') {
-    const sentinelOpts = await sentinelOptions(clusterNodes);
+    const sentinelOpts = await sentinelOptions(provider, clusterNodes);
     client = new Redis(sentinelOpts);
   } else {
-    const singleOptions = await redisOptions(autoReconnect);
+    const singleOptions = await redisOptions(provider, autoReconnect);
     client = new Redis({ ...singleOptions, db: conf.get('redis:database') ?? 0, port: conf.get('redis:port'), host: conf.get('redis:hostname') });
   }
 
