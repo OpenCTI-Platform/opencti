@@ -123,7 +123,7 @@ const CatalogsEmptyState = () => {
           <GradientCard.Icon icon={Search} size="large" />
           <Stack>
             <GradientCard.Text sx={{ whiteSpace: 'pre' }}>{t_i18n('Sorry, we couldn\'t find any results for your search.')}</GradientCard.Text>
-            <GradientCard.Text sx={{ whiteSpace: 'pre' }}>{t_i18n('For more results, you can search in the XTM Hub.')}</GradientCard.Text>
+            <GradientCard.Text sx={{ whiteSpace: 'pre' }}>{t_i18n('For more results, you can search in the ecosystem.')}</GradientCard.Text>
           </Stack>
         </Stack>
         <BrowseMoreButton />
