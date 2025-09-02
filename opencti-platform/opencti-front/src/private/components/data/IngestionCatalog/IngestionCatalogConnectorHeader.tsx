@@ -1,11 +1,10 @@
 import Typography from '@mui/material/Typography';
 import { VerifiedOutlined } from '@mui/icons-material';
 import Button from '@mui/material/Button';
-import React, { useState } from 'react';
+import React from 'react';
 import { useTheme } from '@mui/styles';
 import { ingestionConnectorTypeMetadata } from '@components/data/IngestionCatalog/IngestionCatalogCard';
 import IngestionCatalogChip from '@components/data/IngestionCatalog/IngestionCatalogUseCaseChip';
-import IngestionCatalogConnectorCreation from '@components/data/IngestionCatalog/IngestionCatalogConnectorCreation';
 import { IngestionConnector } from '@components/data/IngestionCatalog';
 import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';
 import { useFormatter } from '../../../../components/i18n';
@@ -16,14 +15,13 @@ import ItemBoolean from '../../../../components/ItemBoolean';
 
 type IngestionCatalogConnectorHeaderProps = {
   connector: IngestionConnector,
-  catalogId: string,
   isEnterpriseEdition: boolean,
+  onClickDeploy: () => void
 };
 
-const IngestionCatalogConnectorHeader = ({ connector, catalogId, isEnterpriseEdition }: IngestionCatalogConnectorHeaderProps) => {
+const IngestionCatalogConnectorHeader = ({ connector, isEnterpriseEdition, onClickDeploy }: IngestionCatalogConnectorHeaderProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const [openCreation, setOpenCreation] = useState(false);
 
   return (
     <>
@@ -60,15 +58,13 @@ const IngestionCatalogConnectorHeader = ({ connector, catalogId, isEnterpriseEdi
           <Security needs={[INGESTION_SETINGESTIONS]}>
             {
               isEnterpriseEdition ? (
-                <Button variant="contained" onClick={() => setOpenCreation(true)} style={{ marginLeft: theme.spacing(1) }}>{t_i18n('Deploy')}</Button>
+                <Button variant="contained" onClick={onClickDeploy} style={{ marginLeft: theme.spacing(1) }}>{t_i18n('Deploy')}</Button>
               ) : (
                 <EnterpriseEditionButton title="Deploy" />
               )
             }
           </Security>
         </div>
-
-        <IngestionCatalogConnectorCreation open={openCreation} connector={connector} onClose={() => setOpenCreation(false)} catalogId={catalogId} />
 
       </div>
     </>

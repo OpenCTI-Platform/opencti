@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useState } from 'react';
 import IngestionMenu from '@components/data/IngestionMenu';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { IngestionCatalogQuery } from '@components/data/__generated__/IngestionCatalogQuery.graphql';
@@ -10,6 +10,7 @@ import { Search } from '@mui/icons-material';
 import Grid from '@mui/material/Grid2';
 import { ConnectorManagerStatusProvider, useConnectorManagerStatus } from '@components/data/connectors/ConnectorManagerStatusContext';
 import NoConnectorManagersBanner from '@components/data/connectors/NoConnectorManagersBanner';
+import IngestionCatalogConnectorCreation from '@components/data/IngestionCatalog/IngestionCatalogConnectorCreation';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
@@ -36,6 +37,7 @@ export const ingestionCatalogQuery = graphql`
 
 interface IngestionCatalogComponentProps {
   queryRef: PreloadedQuery<IngestionCatalogQuery>;
+  onClickDeploy: (connector: IngestionConnector, catalogId: string, hasRegisteredManagers: boolean) => void;
 }
 
 type IngestionTypeMap = {
@@ -132,6 +134,7 @@ const CatalogsEmptyState = () => {
 
 const IngestionCatalogComponent = ({
   queryRef,
+  onClickDeploy,
 }: IngestionCatalogComponentProps) => {
   const isEnterpriseEdition = useEnterpriseEdition();
   const { t_i18n } = useFormatter();
@@ -194,6 +197,7 @@ const IngestionCatalogComponent = ({
                     node={contract}
                     dataListId={catalog.id}
                     isEnterpriseEdition={isEnterpriseEdition}
+                    onClickDeploy={() => onClickDeploy(contract, catalog.id, hasRegisteredManagers)}
                   />
                 </Grid>
               );
@@ -209,18 +213,63 @@ const IngestionCatalogComponent = ({
   );
 };
 
+interface CatalogState {
+  selectedConnector: IngestionConnector | null;
+  selectedCatalogId: string;
+  hasRegisteredManagers: boolean;
+}
+
 const IngestionCatalog = () => {
+  const [catalogState, setCatalogState] = useState<CatalogState>({
+    selectedConnector: null,
+    selectedCatalogId: '',
+    hasRegisteredManagers: false,
+  });
+
+  const handleOpenDeployDialog = (connector: IngestionConnector, catalogId: string, registeredManagers: boolean) => {
+    setCatalogState((prev) => ({
+      ...prev,
+      selectedConnector: connector,
+      selectedCatalogId: catalogId,
+      hasRegisteredManagers: registeredManagers,
+    }));
+  };
+
+  const handleCloseDeployDialog = () => {
+    setCatalogState((prev) => ({
+      ...prev,
+      selectedConnector: null,
+      selectedCatalogId: '',
+    }));
+  };
+
   const queryRef = useQueryLoading<IngestionCatalogQuery>(
     ingestionCatalogQuery,
   );
+
   return (
-    <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-      {queryRef && (
-        <ConnectorManagerStatusProvider>
-          <IngestionCatalogComponent queryRef={queryRef} />
-        </ConnectorManagerStatusProvider>
+    <>
+      <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+        {queryRef && (
+          <ConnectorManagerStatusProvider>
+            <IngestionCatalogComponent
+              queryRef={queryRef}
+              onClickDeploy={handleOpenDeployDialog}
+            />
+          </ConnectorManagerStatusProvider>
+        )}
+      </Suspense>
+
+      {catalogState.selectedConnector && (
+        <IngestionCatalogConnectorCreation
+          open={!!catalogState.selectedConnector}
+          connector={catalogState.selectedConnector}
+          onClose={handleCloseDeployDialog}
+          catalogId={catalogState.selectedCatalogId}
+          hasRegisteredManagers={catalogState.hasRegisteredManagers}
+        />
       )}
-    </Suspense>
+    </>
   );
 };
 
