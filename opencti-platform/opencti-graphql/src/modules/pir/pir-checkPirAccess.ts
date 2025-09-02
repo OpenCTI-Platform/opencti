@@ -42,22 +42,3 @@ export const getPirWithAccessCheck = async (context: AuthContext, user: AuthUser
   }
   return pir;
 };
-
-/**
- * return the accessible Pirs among a list of pir internal ids
- */
-export const getAccessiblePirsAmongList = async (context: AuthContext, user: AuthUser, pirIds: string[]) => {
-  // check EE
-  await checkEnterpriseEdition(context);
-  // check user has access to the PIR
-  const allPirs = await getEntitiesListFromCache<BasicStoreEntityPir>(context, user, ENTITY_TYPE_PIR);
-  const targetedPirs = allPirs.filter((p) => pirIds.includes(p.id));
-  for (let i = 0; i < targetedPirs.length; i += 1) {
-    const pir = targetedPirs[i];
-    const isUserCanAccessPir = await isUserCanAccessStoreElement(context, user, pir);
-    if (!isUserCanAccessPir) {
-      throw FunctionalError('No PIR found', { pirId: pir.id });
-    }
-  }
-  return targetedPirs.map((p) => p.id);
-};

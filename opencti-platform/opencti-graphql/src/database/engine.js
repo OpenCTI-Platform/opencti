@@ -198,7 +198,7 @@ import { lockResources } from '../lock/master-lock';
 import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_UPDATE_LINKED } from '../modules/draftWorkspace/draftOperations';
 import { RELATION_SAMPLE } from '../modules/malwareAnalysis/malwareAnalysis-types';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
-import { getAccessiblePirsAmongList, getPirWithAccessCheck } from '../modules/pir/pir-checkPirAccess';
+import { getPirWithAccessCheck } from '../modules/pir/pir-checkPirAccess';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -2595,10 +2595,10 @@ const adaptFilterToRegardingOfFilterKeys = async (context, user, filterKey, filt
     throw UnsupportedError('regardingOf filter only support types equality restriction');
   }
   const types = type?.values;
-  // Check types are stix relationships
-  if (!types.every((t) => isStixRelationship(t))) {
-
-  }
+  // Check types are stix relationships // TODO PIR
+  // if (types.some((t) => !isStixRelationship(t))) {
+  //   throw UnsupportedError('regardingOf filter only support stix relationship types', { key: filterKey, types });
+  // }
   // Check ids
   if (ids.length > 0) {
     const entities = await elFindByIds(context, user, ids, { baseData: true });
