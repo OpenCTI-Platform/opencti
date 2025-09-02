@@ -397,6 +397,99 @@ If a values combination may not return all the results because one of the above 
 ![RegardingOf filter with warning](./assets/filters-regardingOf-warning.png)
 
 
+#### The dynamic regardingOf filter keys
+
+The ``dynamicRegardingOf`` filter key, displayed as `in regards of (dynamic)` in the UI enables to target the entities having a relationship of a certain type with entities matching a given filter.
+The ``values`` of this filter can take two subfilters with the ``eq`` opeartor:
+- the ``relationship_type`` values indicates which relationship types are concerned 
+- the ``dynamic`` values contains the filter the entities involved in the relationships should match
+
+Here is an example of filter to fetch the entities targeting malwares with a given label:
+
+```ts
+// Example: entities having a relationship of type 'targets' with a malware having a 'ransomware' label
+filters = {
+  mode: 'and',
+  filters: [
+    {
+      key: 'dynamicRegardingOf',
+      values: [
+        {
+          key: 'dynamic',
+          values: [
+            {
+              mode: 'and',
+              filters: [
+                {
+                  key: 'entity_type',
+                  values: ['Malware'],
+                },
+                {
+                  key: 'objectLabel',
+                  values: ['ransomware'],
+                },
+              ],
+              filterGroups: [],
+            }
+          ]
+        },
+        {
+          key: 'relationship_type',
+          values: ['targets']
+        },
+      ],
+    },
+  ],
+  filterGroups: [],
+};
+```
+
+![DyanmicRegardingOf filter](./assets/filters-dynamicRegardingOf.png)
+
+
+!!! warning "This filter may exclude some results for technical reasons"
+
+    This filter requires a pre-query to fetch entities ids matching the dynamic filter. Then the regardingOf filter is applied on these ids.
+    Only the first 5000 results of this prequery are taken into account. So the final results may exclude some entities if the number of entities matching the dynamic filter is too large. In this case, a warning is displayed in the UI and you may consider giving a more restrictive dynamic filter.
+
+![DynamicRegardingOf filter with warning](./assets/filters-dynamicRegardingOf-warning.png)
+
+#### The ``dynamicFrom`` and ``dynamicTo`` filter keys
+
+The ``dynamicFrom`` (respectively ``dynamicTo``) filter key is used to apply a given filter on the source (respectively target) of a relationship.
+
+Here is an example of filter used to fetch the relationships whose source is a malware with the 'ransomware' label.
+```ts
+// Example: relationships whose source entity is a malware with the 'ransomware' label
+filters = {
+  mode: 'and',
+  filters: [
+    {
+      key: 'dynamicFrom',
+      values: [
+        {
+          mode: 'and',
+          filters: [
+            {
+              key: 'entity_type',
+              values: ['Malware'],
+            },
+            {
+              key: 'objectLabel',
+              values: ['ransomware'],
+            },
+          ],
+          filterGroups: [],
+        }
+      ],
+    },
+  ],
+  filterGroups: [],
+};
+```
+
+![DynamicFrom filter](./assets/filters-dynamicFrom.png)
+
 
 #### Limited support in stream events filtering
 
