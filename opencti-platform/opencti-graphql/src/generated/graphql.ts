@@ -1653,6 +1653,12 @@ export type BasicRelationship = {
   updated_at: Scalars['DateTime']['output'];
 };
 
+export enum CguStatus {
+  Disabled = 'disabled',
+  Enabled = 'enabled',
+  Pending = 'pending'
+}
+
 export type CsvFeedAddInputFromImport = {
   __typename?: 'CSVFeedAddInputFromImport';
   authentication_type: Scalars['String']['output'];
@@ -25788,7 +25794,7 @@ export type Settings = BasicObject & InternalObject & {
   created_at: Scalars['DateTime']['output'];
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
-  filigran_chatbot_ai_enabled?: Maybe<Scalars['Boolean']['output']>;
+  filigran_chatbot_ai_cgu_status: CguStatus;
   filigran_chatbot_ai_url?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   messages_administration?: Maybe<Array<SettingsMessage>>;
@@ -33460,6 +33466,7 @@ export type ResolversTypes = ResolversObject<{
   BasicObject: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['BasicObject']>;
   BasicRelationship: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['BasicRelationship']>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
+  CGUStatus: CguStatus;
   CSVFeedAddInputFromImport: ResolverTypeWrapper<CsvFeedAddInputFromImport>;
   Campaign: ResolverTypeWrapper<Omit<Campaign, 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { avatar?: Maybe<ResolversTypes['OpenCtiFile']>, cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, status?: Maybe<ResolversTypes['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   CampaignAddInput: CampaignAddInput;
@@ -43006,7 +43013,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  filigran_chatbot_ai_enabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  filigran_chatbot_ai_cgu_status?: Resolver<ResolversTypes['CGUStatus'], ParentType, ContextType>;
   filigran_chatbot_ai_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   messages_administration?: Resolver<Maybe<Array<ResolversTypes['SettingsMessage']>>, ParentType, ContextType>;

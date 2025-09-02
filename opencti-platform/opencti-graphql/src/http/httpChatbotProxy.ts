@@ -23,7 +23,7 @@ export const getChatbotProxy = async (req: Express.Request, res: Express.Respons
     const isChatbotEnabled = nconf.get('xtm:one:ai:enabled');
     const settings = await getEntityFromCache<BasicStoreSettings>(context, context.user, ENTITY_TYPE_SETTINGS);
     const license_pem = getEnterpriseEditionActivePem(settings.enterprise_license);
-    const isChatbotAiActivated = await isFiligranChatbotAiActivated();
+    const isChatbotAiActivated = await isFiligranChatbotAiActivated(settings);
     if (!isChatbotEnabled || !isChatbotAiActivated || !license_pem) {
       res.status(400).json({ error: 'Chatbot is not enabled' });
       return;

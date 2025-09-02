@@ -219,6 +219,8 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'xtm_hub_should_send_connectivity_email', label: 'XTM Hub should send connectivity email', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'xtm_hub_registration_date', label: 'XTM Hub registration date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'xtm_hub_registration_status', label: 'XTM Hub registration status', type: 'string', format: 'enum', values: ['registered', 'unregistered', 'lost_connectivity'], editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: false },
+    { name: 'filigran_chatbot_ai_cgu_status', label: 'XTM1 CGU acceptance status', type: 'string', format: 'enum', values: ['pending', 'disabled', 'enabled'], editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: false },
+    { name: 'platform_ai_enabled', label: 'AI insight activation', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   ],
   [ENTITY_TYPE_MIGRATION_STATUS]: [
     { name: 'lastRun', label: 'Last run', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },

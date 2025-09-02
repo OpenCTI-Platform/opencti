@@ -25,6 +25,7 @@
   "Additional names": "추가 이름",
   "Administrated organizations": "관리되는 조직",
   "Administrator": "관리자",
+  "AI insight activation": "AI 인사이트 활성화",
   "Algorithm": "알고리즘",
   "Alias": "별칭",
   "Aliases": "별칭",
@@ -961,5 +962,6 @@
   "XTM Hub registration User ID": "XTM Hub 등록 사용자 ID",
   "XTM Hub registration User name": "XTM Hub 등록 사용자 이름",
   "XTM Hub should send connectivity email": "XTM 허브가 연결 이메일을 보내야 합니다",
-  "XTM Hub Token": "XTM 허브 토큰"
+  "XTM Hub Token": "XTM 허브 토큰",
+  "XTM1 CGU acceptance status": "XTM1 CGU 승인 상태"
 }

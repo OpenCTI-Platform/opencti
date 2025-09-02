@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { ChangeEvent, FunctionComponent, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import Grid from '@mui/material/Grid';
 import XtmHubSettings from '@components/settings/xtm-hub/XtmHubSettings';
@@ -18,10 +18,10 @@ import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import * as Yup from 'yup';
 import Box from '@mui/material/Box';
+import { Switch } from '@mui/material';
 import { ExperienceQuery } from './__generated__/ExperienceQuery.graphql';
 import Transition from '../../../components/Transition';
 import useSensitiveModifications from '../../../utils/hooks/useSensitiveModifications';
@@ -35,6 +35,14 @@ import type { Theme } from '../../../components/Theme';
 import { FieldOption } from '../../../utils/field';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useGranted, { SETTINGS_SETPARAMETERS, SETTINGS_SUPPORT } from '../../../utils/hooks/useGranted';
+import ValidateTermsOfUseDialog from './ValidateTermsOfUseDialog';
+import useAuth from '../../../utils/hooks/useAuth';
+
+export enum CGUStatus {
+  pending = 'pending',
+  disabled = 'disabled',
+  enabled = 'enabled',
+}
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -66,6 +74,8 @@ const ExperienceFragment = graphql`
       license_creator
       license_global
     }
+    platform_ai_enabled
+    filigran_chatbot_ai_cgu_status
   }
 `;
 
@@ -97,6 +107,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
   setTitle(t_i18n('Filigran Experience | Settings'));
   const theme = useTheme<Theme>();
   const classes = useStyles();
+  const { settings: { filigran_chatbot_ai_cgu_status, platform_ai_enabled } } = useAuth();
   const isGrantedToParameters = useGranted([SETTINGS_SETPARAMETERS]);
   const isGrantedToSupport = useGranted([SETTINGS_SUPPORT]);
   const data = usePreloadedQuery(experienceQuery, queryRef);
@@ -105,11 +116,14 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
   const isEnterpriseEditionByConfig = settings.platform_enterprise_edition.license_by_configuration;
   const { isAllowed } = useSensitiveModifications('ce_ee_toggle');
   const [openEEChanges, setOpenEEChanges] = useState(false);
+  const [openValidateTermsOfUse, setOpenValidateTermsOfUse] = useState(false);
   const experienceValidation = () => Yup.object().shape({
     enterprise_license: Yup.string().nullable(),
+    filigran_chatbot_ai_cgu_status: Yup.mixed<CGUStatus>().oneOf([CGUStatus.enabled, CGUStatus.disabled, CGUStatus.pending]),
+    platform_ai_enabled: Yup.boolean(),
   });
   const [commitField] = useApiMutation(experienceFieldPatch);
-  const handleSubmitField = (name: string, value: string | string[] | FieldOption | null) => {
+  const handleSubmitField = (name: string, value: string | string[] | FieldOption | null | boolean) => {
     experienceValidation()
       .validateAt(name, { [name]: value })
       .then(() => {
@@ -126,6 +140,23 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
       .catch(() => false);
   };
 
+  const handleXtmOneCGUStatusChange = (event: ChangeEvent<HTMLInputElement>) => {
+    handleSubmitField('filigran_chatbot_ai_cgu_status', event.target.checked ? CGUStatus.enabled : CGUStatus.disabled);
+  };
+
+  const handlePlatformAiEnabledChange = (event: ChangeEvent<HTMLInputElement>) => {
+    handleSubmitField('platform_ai_enabled', event.target.checked);
+  };
+
+  const handleValidateTermsOfUse = (status?: CGUStatus.enabled | CGUStatus.disabled) => {
+    if (status === CGUStatus.enabled) {
+      handleSubmitField('filigran_chatbot_ai_cgu_status', CGUStatus.enabled);
+    } else if (status === CGUStatus.disabled) {
+      handleSubmitField('filigran_chatbot_ai_cgu_status', CGUStatus.disabled);
+    }
+    setOpenValidateTermsOfUse(false);
+  };
+
   return (
     <div className={classes.container} data-testid="experience-page">
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Filigran Experience'), current: true }]} />
@@ -136,39 +167,38 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
               {t_i18n('Enterprise Edition')}
             </Typography>
             {!isEnterpriseEditionByConfig && isGrantedToParameters && (
-            <div style={{ float: 'right', marginTop: theme.spacing(-2.6), position: 'relative' }}>
-              <DangerZoneBlock
-                type='ce_ee_toggle'
-                sx={{
-                  root: { border: 'none', padding: 0, margin: 0 },
-                  title: { position: 'absolute', zIndex: 2, left: 4, top: 9, fontSize: 8 },
-                }}
-              >
-                {({ disabled }) => (
-                  <>
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      color='dangerZone'
-                      onClick={() => setOpenEEChanges(true)}
-                      disabled={disabled}
-                      style={{
-                        color: isAllowed ? theme.palette.dangerZone.text?.primary : theme.palette.dangerZone.text?.disabled,
-                        borderColor: theme.palette.dangerZone.main,
-                      }}
-                    >
-                      {t_i18n('Disable Enterprise Edition')}
-                    </Button>
-                    <Dialog
-                      slotProps={{ paper: { elevation: 1 } }}
-                      open={openEEChanges}
-                      keepMounted
-                      slots={{ transition: Transition }}
-                      onClose={() => setOpenEEChanges(false)}
-                    >
-                      <DialogTitle>{t_i18n('Disable Enterprise Edition')}</DialogTitle>
-                      <DialogContent>
-                        <DialogContentText>
+              <div style={{ float: 'right', marginTop: theme.spacing(-2.6), position: 'relative' }}>
+                <DangerZoneBlock
+                  type='ce_ee_toggle'
+                  sx={{
+                    root: { border: 'none', padding: 0, margin: 0 },
+                    title: { position: 'absolute', zIndex: 2, left: 4, top: 9, fontSize: 8 },
+                  }}
+                >
+                  {({ disabled }) => (
+                    <>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color='dangerZone'
+                        onClick={() => setOpenEEChanges(true)}
+                        disabled={disabled}
+                        style={{
+                          color: isAllowed ? theme.palette.dangerZone.text?.primary : theme.palette.dangerZone.text?.disabled,
+                          borderColor: theme.palette.dangerZone.main,
+                        }}
+                      >
+                        {t_i18n('Disable Enterprise Edition')}
+                      </Button>
+                      <Dialog
+                        slotProps={{ paper: { elevation: 1 } }}
+                        open={openEEChanges}
+                        keepMounted
+                        slots={{ transition: Transition }}
+                        onClose={() => setOpenEEChanges(false)}
+                      >
+                        <DialogTitle>{t_i18n('Disable Enterprise Edition')}</DialogTitle>
+                        <DialogContent>
                           <Alert
                             severity="warning"
                             variant="outlined"
@@ -176,41 +206,46 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                             style={{ borderColor: theme.palette.dangerZone.main }}
                           >
                             {t_i18n('You are about to disable the "Enterprise Edition" mode. Please note that this action will disable access to certain advanced features (organization segregation, automation, file indexing etc.).')}
-                            <br /><br />
+                            <br/><br/>
                             <strong>{t_i18n('However, your existing data will remain intact and will not be lost.')}</strong>
                           </Alert>
-                        </DialogContentText>
-                      </DialogContent>
-                      <DialogActions>
-                        <Button
-                          onClick={() => {
-                            setOpenEEChanges(false);
-                          }}
-                        >
-                          {t_i18n('Cancel')}
-                        </Button>
-                        <Button
-                          color="secondary"
-                          onClick={() => {
-                            setOpenEEChanges(false);
-                            handleSubmitField('enterprise_license', '');
-                          }}
-                        >
-                          {t_i18n('Validate')}
-                        </Button>
-                      </DialogActions>
-                    </Dialog>
-                  </>
-                )}
-              </DangerZoneBlock>
-            </div>
-            )}
-            {!isEnterpriseEditionByConfig && isGrantedToParameters && (
-              <div style={{ float: 'right', marginRight: theme.spacing(1), marginTop: theme.spacing(-2), position: 'relative' }}>
-                <EnterpriseEditionButton inLine={true} title={t_i18n('Update license')} />
+                        </DialogContent>
+                        <DialogActions>
+                          <Button
+                            onClick={() => {
+                              setOpenEEChanges(false);
+                            }}
+                          >
+                            {t_i18n('Cancel')}
+                          </Button>
+                          <Button
+                            color="secondary"
+                            onClick={() => {
+                              setOpenEEChanges(false);
+                              handleSubmitField('enterprise_license', '');
+                            }}
+                          >
+                            {t_i18n('Validate')}
+                          </Button>
+                        </DialogActions>
+                      </Dialog>
+                    </>
+                  )}
+                </DangerZoneBlock>
               </div>
             )}
-            <div className="clearfix" />
+            {!isEnterpriseEditionByConfig && isGrantedToParameters && (
+              <div style={{
+                float: 'right',
+                marginRight: theme.spacing(1),
+                marginTop: theme.spacing(-2),
+                position: 'relative',
+              }}
+              >
+                <EnterpriseEditionButton inLine={true} title={t_i18n('Update license')}/>
+              </div>
+            )}
+            <div className="clearfix"/>
             <Paper
               classes={{ root: classes.paper }}
               variant="outlined"
@@ -218,7 +253,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
             >
               <List style={{ marginTop: -20 }}>
                 <ListItem divider={true}>
-                  <ListItemText primary={t_i18n('Organization')} />
+                  <ListItemText primary={t_i18n('Organization')}/>
                   <ItemBoolean
                     variant="xlarge"
                     neutralLabel={settings.platform_enterprise_edition.license_customer}
@@ -226,7 +261,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                   />
                 </ListItem>
                 <ListItem divider={true}>
-                  <ListItemText primary={t_i18n('Scope')} />
+                  <ListItemText primary={t_i18n('Scope')}/>
                   <ItemBoolean
                     variant="xlarge"
                     neutralLabel={settings.platform_enterprise_edition.license_global ? t_i18n('Global') : t_i18n('Current instance')}
@@ -234,18 +269,18 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                   />
                 </ListItem>
                 {!settings.platform_enterprise_edition.license_expired && settings.platform_enterprise_edition.license_expiration_prevention && (
-                <ListItem divider={false}>
-                  <Alert severity="warning" variant="outlined" style={{ width: '100%' }}>
-                    {t_i18n('Your Enterprise Edition license will expire in less than 3 months.')}
-                  </Alert>
-                </ListItem>
+                  <ListItem divider={false}>
+                    <Alert severity="warning" variant="outlined" style={{ width: '100%' }}>
+                      {t_i18n('Your Enterprise Edition license will expire in less than 3 months.')}
+                    </Alert>
+                  </ListItem>
                 )}
                 {!settings.platform_enterprise_edition.license_validated && settings.platform_enterprise_edition.license_valid_cert && (
-                <ListItem divider={false}>
-                  <Alert severity="error" variant="outlined" style={{ width: '100%' }}>
-                    {t_i18n('Your Enterprise Edition license is expired. Please contact your Filigran representative.')}
-                  </Alert>
-                </ListItem>
+                  <ListItem divider={false}>
+                    <Alert severity="error" variant="outlined" style={{ width: '100%' }}>
+                      {t_i18n('Your Enterprise Edition license is expired. Please contact your Filigran representative.')}
+                    </Alert>
+                  </ListItem>
                 )}
                 <ListItem divider={true}>
                   <ListItemText primary={t_i18n('Start date')}/>
@@ -270,6 +305,36 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                     neutralLabel={settings.platform_enterprise_edition.license_type}
                     status={null}
                   />
+                </ListItem>
+                <ListItem divider={true}>
+                  <ListItemText primary={t_i18n('XTMOne Agentic (Ariane Assistant)')}/>
+                  {filigran_chatbot_ai_cgu_status === CGUStatus.pending ? (
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() => setOpenValidateTermsOfUse(true)}
+                      style={{ marginRight: 7, lineHeight: '12px', width: 250 }}
+                    >{t_i18n('Validate Terms of Services')}</Button>
+                  ) : (
+                    <Box sx={{ marginBlock: -6 }}>
+                      <Switch
+                        checked={filigran_chatbot_ai_cgu_status === CGUStatus.enabled}
+                        onChange={handleXtmOneCGUStatusChange}
+                      />
+                    </Box>
+                  )}
+                  {openValidateTermsOfUse && (
+                    <ValidateTermsOfUseDialog open={openValidateTermsOfUse} onClose={handleValidateTermsOfUse}/>
+                  )}
+                </ListItem>
+                <ListItem divider={true}>
+                  <ListItemText primary={t_i18n('Generative AI (AI Insight, NLQ)')}/>
+                  <Box sx={{ marginBlock: -6 }}>
+                    <Switch
+                      checked={platform_ai_enabled}
+                      onChange={handlePlatformAiEnabledChange}
+                    />
+                  </Box>
                 </ListItem>
               </List>
             </Paper>

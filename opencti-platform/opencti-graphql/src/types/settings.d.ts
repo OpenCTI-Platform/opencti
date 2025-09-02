@@ -1,5 +1,5 @@
 import type { BasicStoreEntity } from './store';
-import type { XtmHubRegistrationStatus } from '../generated/graphql';
+import type { XtmHubRegistrationStatus, CguStatus } from '../generated/graphql';
 
 export interface BasicStoreSettingsMessage {
   id: string
@@ -30,4 +30,6 @@ export interface BasicStoreSettings extends BasicStoreEntity {
   xtm_hub_registration_date?: Date
   xtm_hub_last_connectivity_check?: Date
   xtm_hub_should_send_connectivity_email?: boolean
+  platform_ai_enabled: boolean
+  filigran_chatbot_ai_cgu_status: CguStatus
 }

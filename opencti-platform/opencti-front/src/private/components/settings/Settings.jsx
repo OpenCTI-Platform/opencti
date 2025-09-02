@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import * as R from 'ramda';
-import { graphql } from 'react-relay';
-import { Field, Form, Formik } from 'formik';
+import {graphql} from 'react-relay';
+import {Field, Form, Formik} from 'formik';
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
@@ -11,7 +11,7 @@ import * as Yup from 'yup';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import { makeStyles, useTheme } from '@mui/styles';
+import {makeStyles, useTheme} from '@mui/styles';
 import Switch from '@mui/material/Switch';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -22,18 +22,18 @@ import DialogActions from '@mui/material/DialogActions';
 import DangerZoneBlock from '../common/danger_zone/DangerZoneBlock';
 import EEChip from '../common/entreprise_edition/EEChip';
 import EnterpriseEditionButton from '../common/entreprise_edition/EnterpriseEditionButton';
-import { SubscriptionFocus } from '../../../components/Subscription';
-import { commitMutation, QueryRenderer } from '../../../relay/environment';
-import { useFormatter } from '../../../components/i18n';
+import {SubscriptionFocus} from '../../../components/Subscription';
+import {commitMutation, QueryRenderer} from '../../../relay/environment';
+import {useFormatter} from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import SelectField from '../../../components/fields/SelectField';
 import ColorPickerField from '../../../components/ColorPickerField';
 import HiddenTypesField from './hidden_types/HiddenTypesField';
-import { fieldSpacingContainerStyle } from '../../../utils/field';
+import {fieldSpacingContainerStyle} from '../../../utils/field';
 import SettingsMessages from './settings_messages/SettingsMessages';
 import SettingsAnalytics from './settings_analytics/SettingsAnalytics';
 import ItemBoolean from '../../../components/ItemBoolean';
-import { availableLanguage } from '../../../components/AppIntlProvider';
+import {availableLanguage} from '../../../components/AppIntlProvider';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useSensitiveModifications from '../../../utils/hooks/useSensitiveModifications';
 import Transition from '../../../components/Transition';
@@ -123,6 +123,7 @@ const settingsQuery = graphql`
       otp_mandatory
       ...SettingsMessages_settingsMessages
       analytics_google_analytics_v4
+      filigran_chatbot_ai_cgu_status
     }
     about {
       version
@@ -523,14 +524,13 @@ const Settings = () => {
                               label={t_i18n('Platform title')}
                               fullWidth
                               onFocus={(name) => handleChangeFocus(id, name)}
-                              onSubmit={(name, value) => handleSubmitField(id, name, value)
-                                  }
+                              onSubmit={(name, value) => handleSubmitField(id, name, value)}
                               helperText={
                                 <SubscriptionFocus
                                   context={editContext}
                                   fieldName="platform_title"
                                 />
-                                  }
+                              }
                             />
                             <Field
                               component={TextField}
@@ -540,8 +540,7 @@ const Settings = () => {
                               fullWidth
                               style={{ marginTop: 20 }}
                               onFocus={(name) => handleChangeFocus(id, name)}
-                              onSubmit={(name, value) => handleSubmitField(id, name, value)
-                                  }
+                              onSubmit={(name, value) => handleSubmitField(id, name, value)}
                               helperText={
                                 <SubscriptionFocus
                                   context={editContext}
@@ -557,8 +556,7 @@ const Settings = () => {
                               fullWidth
                               style={{ marginTop: 20 }}
                               onFocus={(name) => handleChangeFocus(id, name)}
-                              onSubmit={(name, value) => handleSubmitField(id, name, value)
-                                  }
+                              onSubmit={(name, value) => handleSubmitField(id, name, value)}
                               helperText={
                                 <SubscriptionFocus
                                   context={editContext}
@@ -654,10 +652,10 @@ const Settings = () => {
                                 <ItemBoolean
                                   variant="large"
                                   neutralLabel={
-                                          isEnterpriseEditionValid
-                                            ? t_i18n('Enterprise')
-                                            : t_i18n('Community')
-                                        }
+                                    isEnterpriseEditionValid
+                                      ? t_i18n('Enterprise')
+                                      : t_i18n('Community')
+                                  }
                                   status={null}
                                 />
                               </ListItem>
@@ -668,11 +666,10 @@ const Settings = () => {
                                 <ItemBoolean
                                   variant="large"
                                   neutralLabel={
-                                          settings.platform_cluster.instances_number
-                                          > 1
-                                            ? t_i18n('Cluster')
-                                            : t_i18n('Standalone')
-                                        }
+                                    settings.platform_cluster.instances_number > 1
+                                      ? t_i18n('Cluster')
+                                      : t_i18n('Standalone')
+                                  }
                                   status={null}
                                 />
                               </ListItem>
@@ -682,9 +679,7 @@ const Settings = () => {
                                 />
                                 <ItemBoolean
                                   variant="large"
-                                  neutralLabel={
-                                          `${settings.platform_cluster.instances_number}`
-                                        }
+                                  neutralLabel={`${settings.platform_cluster.instances_number}`}
                                   status={null}
                                 />
                               </ListItem>
@@ -695,9 +690,9 @@ const Settings = () => {
                                 <ItemBoolean
                                   variant="large"
                                   label={
-                                          // eslint-disable-next-line no-nested-ternary
-                                          !settings.platform_ai_enabled ? t_i18n('Disabled') : settings.platform_ai_has_token
-                                            ? settings.platform_ai_type : `${settings.platform_ai_type} - ${t_i18n('Missing token')}`}
+                                    // eslint-disable-next-line no-nested-ternary
+                                    !settings.platform_ai_enabled ? t_i18n('Disabled') : settings.platform_ai_has_token
+                                      ? settings.platform_ai_type : `${settings.platform_ai_type} - ${t_i18n('Missing token')}`}
                                   status={settings.platform_ai_enabled && settings.platform_ai_has_token}
                                   tooltip={settings.platform_ai_has_token ? `${settings.platform_ai_type} - ${settings.platform_ai_model}` : t_i18n('The token is missing in your platform configuration, please ask your Filigran representative to provide you with it or with on-premise deployment instructions. Your can open a support ticket to do so.')}
                                 />
@@ -709,7 +704,7 @@ const Settings = () => {
                                       {t_i18n('Remove Filigran logos')}
                                       <EEChip/>
                                     </>
-                                        }
+                                  }
                                 />
                                 <Field
                                   component={Switch}
@@ -717,15 +712,14 @@ const Settings = () => {
                                   name="platform_whitemark"
                                   disabled={!isEnterpriseEditionValid}
                                   checked={
-                                            settings.platform_whitemark
-                                            && isEnterpriseEditionValid
-                                        }
+                                    settings.platform_whitemark
+                                    && isEnterpriseEditionValid
+                                  }
                                   onChange={(event, value) => handleSubmitField(
                                     id,
                                     'platform_whitemark',
                                     value,
-                                  )
-                                        }
+                                  )}
                                 />
                               </ListItem>
                             </List>

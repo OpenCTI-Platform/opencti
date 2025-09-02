@@ -25,6 +25,7 @@
   "Additional names": "追加名",
   "Administrated organizations": "管理団体",
   "Administrator": "管理者",
+  "AI insight activation": "AIによる洞察の活性化",
   "Algorithm": "アルゴリズム",
   "Alias": "別名",
   "Aliases": "エイリアス",
@@ -961,5 +962,6 @@
   "XTM Hub registration User ID": "XTMハブ登録ユーザーID",
   "XTM Hub registration User name": "XTMハブ登録ユーザー名",
   "XTM Hub should send connectivity email": "XTM Hubは接続性の電子メールを送信する必要があります。",
-  "XTM Hub Token": "XTM ハブ・トークン"
+  "XTM Hub Token": "XTM ハブ・トークン",
+  "XTM1 CGU acceptance status": "XTM1 CGU受入状況"
 }

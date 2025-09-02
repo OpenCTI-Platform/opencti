@@ -25,6 +25,7 @@
   "Additional names": "Nombres adicionales",
   "Administrated organizations": "Organizaciones administradas",
   "Administrator": "Administrador",
+  "AI insight activation": "AI insight activation",
   "Algorithm": "Algoritmo",
   "Alias": "Alias",
   "Aliases": "Aliases",
@@ -961,5 +962,6 @@
   "XTM Hub registration User ID": "XTM Hub registro ID de usuario",
   "XTM Hub registration User name": "XTM Hub registro Nombre de usuario",
   "XTM Hub should send connectivity email": "El eje de XTM debe enviar el email de la conectividad",
-  "XTM Hub Token": "Token del concentrador XTM"
+  "XTM Hub Token": "Token del concentrador XTM",
+  "XTM1 CGU acceptance status": "XTM1 Estado de aceptación de la UGC"
 }

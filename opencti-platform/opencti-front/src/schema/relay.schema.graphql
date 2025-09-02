@@ -1414,6 +1414,12 @@ type PlatformProtectedSensitiveConfig {
   platform_organization: PlatformProtectedSubConfig!
 }
 
+enum CGUStatus {
+  pending
+  disabled
+  enabled
+}
+
 type Settings implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
@@ -1456,10 +1462,6 @@ type Settings implements InternalObject & BasicObject {
   platform_openerm_url: String
   platform_openmtd_url: String
   platform_xtmhub_url: String
-  platform_ai_enabled: Boolean!
-  platform_ai_type: String
-  platform_ai_model: String
-  platform_ai_has_token: Boolean!
   platform_login_message: String
   platform_consent_message: String
   platform_consent_confirm_text: String
@@ -1475,8 +1477,6 @@ type Settings implements InternalObject & BasicObject {
   platform_trash_enabled: Boolean!
   platform_translations: String
   platform_protected_sensitive_config: PlatformProtectedSensitiveConfig!
-  filigran_chatbot_ai_url: String
-  filigran_chatbot_ai_enabled: Boolean
   created_at: DateTime!
   updated_at: DateTime!
   activity_listeners: [Member!]
@@ -1500,6 +1500,12 @@ type Settings implements InternalObject & BasicObject {
   xtm_hub_last_connectivity_check: DateTime
   xtm_hub_registration_date: DateTime
   xtm_hub_registration_status: XTMHubRegistrationStatus
+  platform_ai_enabled: Boolean!
+  platform_ai_type: String
+  platform_ai_model: String
+  platform_ai_has_token: Boolean!
+  filigran_chatbot_ai_url: String
+  filigran_chatbot_ai_cgu_status: CGUStatus!
 }
 
 enum GroupsOrdering {
