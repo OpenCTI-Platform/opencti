@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React, { Suspense, useState } from 'react';
 import IngestionCatalogConnectorHeader from '@components/data/IngestionCatalog/IngestionCatalogConnectorHeader';
@@ -85,6 +85,8 @@ interface CatalogState {
 }
 
 const IngestionCatalogConnector = () => {
+  const navigate = useNavigate();
+
   const { connectorSlug } = useParams();
 
   const queryRef = useQueryLoading<IngestionCatalogConnectorQuery>(
@@ -134,6 +136,9 @@ const IngestionCatalogConnector = () => {
             onClose={handleCloseDeployDialog}
             catalogId={catalogState.selectedCatalogId}
             hasRegisteredManagers={catalogState.hasRegisteredManagers}
+            onCreate={(connectorId) => {
+              navigate(`../ingestion/connectors/${connectorId}`);
+            }}
           />
         )
       }
