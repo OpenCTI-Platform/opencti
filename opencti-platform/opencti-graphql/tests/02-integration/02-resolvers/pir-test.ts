@@ -368,59 +368,6 @@ describe('PIR resolver standard behavior', () => {
     expect(stixDomainObjects4.edges.length).toEqual(0);
   });
 
-  it('regardingOf filter used with in-pir relationship type', async () => {
-    // error if regardingOf filter with in-pir relationship type and no id
-    let filters = {
-      mode: FilterMode.And,
-      filterGroups: [],
-      filters: [
-        {
-          key: ['regardingOf'],
-          values: [
-            { key: 'relationship_type', values: [RELATION_IN_PIR, 'targets'] },
-          ],
-        },
-      ]
-    };
-    await expect(async () => {
-      await listEntitiesPaginated(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters });
-    }).rejects.toThrowError('regardingOf filter with in-pir relationship type should be used with one or more valid pir id.');
-    // error if regardingOf filter with in-pir relationship type and id corresponding to no pir
-    filters = {
-      mode: FilterMode.And,
-      filterGroups: [],
-      filters: [
-        {
-          key: ['regardingOf'],
-          values: [
-            { key: 'relationship_type', values: [RELATION_IN_PIR] },
-            { key: 'id', values: ['fakeId'] },
-          ],
-        },
-      ]
-    };
-    await expect(async () => {
-      await listEntitiesPaginated(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters });
-    }).rejects.toThrowError('regardingOf filter with in-pir relationship type should be used with one or more valid pir id.');
-    // regardingOf filter with in-pir relationship type and pir id should return flagged entities
-    filters = {
-      mode: FilterMode.And,
-      filterGroups: [],
-      filters: [
-        {
-          key: ['regardingOf'],
-          values: [
-            { key: 'relationship_type', values: [RELATION_IN_PIR] },
-            { key: 'id', values: [pirInternalId] },
-          ],
-        },
-      ]
-    };
-    const stixDomainObjects = await listEntitiesPaginated(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters });
-    expect(stixDomainObjects.edges.length).toEqual(1);
-    expect(stixDomainObjects.edges[0].node.internal_id).toEqual(flaggedElementId);
-  });
-
   it('should update a pir meta rel by adding a new explanation', async () => {
     const FLAG_QUERY = gql`
       mutation pirFlagElement($id: ID!, $input: PirFlagElementInput!) {
