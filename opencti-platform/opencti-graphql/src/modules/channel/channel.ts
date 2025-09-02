@@ -118,6 +118,7 @@ export const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel, StixChanne
       name: RELATION_AMPLIFIES,
       targets: [
         { name: ENTITY_TYPE_CHANNEL, type: REL_NEW },
+        { name: ENTITY_MEDIA_CONTENT, type: REL_NEW },
       ]
     },
     {
