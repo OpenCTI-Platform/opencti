@@ -176,26 +176,33 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
       header={
         <div style={{ position: 'absolute', right: theme.spacing(1) }}>
           <Tooltip title={t_i18n('Vendor contact')}>
-            <IconButton
-              aria-label="Vendor contact"
-              component={Link}
-              to={connector.subscription_link}
-              target="blank"
-              rel="noopener noreferrer"
-            >
-              <Launch />
-            </IconButton>
+            <span> {/** keep span so tooltip is still displayed if button is disabled * */}
+              <IconButton
+                aria-label="Vendor contact"
+                component={Link}
+                to={connector.subscription_link}
+                target="blank"
+                rel="noopener noreferrer"
+                disabled={!connector.subscription_link}
+              >
+                <Launch />
+              </IconButton>
+            </span>
           </Tooltip>
 
-          <IconButton
-            aria-label="Go to"
-            component={Link}
-            to={connector.source_code}
-            target="blank"
-            rel="noopener noreferrer"
-          >
-            <LibraryBooksOutlined />
-          </IconButton>
+          <Tooltip title={t_i18n('Source code')}>
+            <span>
+              <IconButton
+                aria-label="Go to"
+                component={Link}
+                to={connector.source_code}
+                target="blank"
+                rel="noopener noreferrer"
+              >
+                <LibraryBooksOutlined />
+              </IconButton>
+            </span>
+          </Tooltip>
         </div>
       }
     >

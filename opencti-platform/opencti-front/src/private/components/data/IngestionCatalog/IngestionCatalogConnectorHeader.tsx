@@ -6,12 +6,12 @@ import { useTheme } from '@mui/styles';
 import IngestionCatalogChip from '@components/data/IngestionCatalog/IngestionCatalogUseCaseChip';
 import { IngestionConnector } from '@components/data/IngestionCatalog';
 import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';
+import { ingestionConnectorTypeMetadata } from '@components/data/IngestionCatalog/utils/ingestionConnectorTypeMetadata';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import ItemBoolean from '../../../../components/ItemBoolean';
-import {ingestionConnectorTypeMetadata} from "@components/data/IngestionCatalog/utils/ingestionConnectorTypeMetadata";
 
 type IngestionCatalogConnectorHeaderProps = {
   connector: IngestionConnector,
