@@ -3,6 +3,7 @@ import { Autocomplete, Stack, TextField } from '@mui/material';
 import { FilterListOffOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
+import { IngestionConnectorType, ingestionConnectorTypeMetadata } from '@components/data/IngestionCatalog/utils/ingestionConnectorTypeMetadata';
 import { useFormatter } from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 
@@ -103,7 +104,10 @@ const IngestionCatalogFilters: React.FC<IngestionCatalogFiltersProps> = ({
         options={filterOptions.types}
         value={filterOptions.types.find((o) => o.value === filters.type) || null}
         onChange={(event, option) => handleFilterChange('type', option?.value || '')}
-        getOptionLabel={(option) => t_i18n(option.label)}
+        getOptionLabel={(option) => {
+          const metadata = ingestionConnectorTypeMetadata[option.label as IngestionConnectorType];
+          return metadata ? t_i18n(metadata.label) : t_i18n(option.label);
+        }}
         isOptionEqualToValue={(option, value) => option.value === value.value}
         renderInput={(params) => (
           <TextField {...params} label={t_i18n('Types')} placeholder={t_i18n('Types')} variant="outlined" />

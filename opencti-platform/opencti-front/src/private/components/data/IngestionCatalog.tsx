@@ -2,15 +2,16 @@ import React, { Suspense, useState } from 'react';
 import IngestionMenu from '@components/data/IngestionMenu';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { IngestionCatalogQuery } from '@components/data/__generated__/IngestionCatalogQuery.graphql';
-import IngestionCatalogCard, { IngestionConnectorType } from '@components/data/IngestionCatalog/IngestionCatalogCard';
+import IngestionCatalogCard from '@components/data/IngestionCatalog/IngestionCatalogCard';
 import useIngestionCatalogFilters from '@components/data/IngestionCatalog/hooks/useIngestionCatalogFilters';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Stack } from '@mui/material';
 import { Search } from '@mui/icons-material';
 import Grid from '@mui/material/Grid2';
 import { ConnectorManagerStatusProvider, useConnectorManagerStatus } from '@components/data/connectors/ConnectorManagerStatusContext';
 import NoConnectorManagersBanner from '@components/data/connectors/NoConnectorManagersBanner';
 import IngestionCatalogConnectorCreation from '@components/data/IngestionCatalog/IngestionCatalogConnectorCreation';
+import { IngestionConnectorType } from '@components/data/IngestionCatalog/utils/ingestionConnectorTypeMetadata';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
@@ -22,6 +23,7 @@ import IngestionCatalogFilters from './IngestionCatalog/IngestionCatalogFilters'
 import GradientCard from '../../../components/GradientCard';
 import { MESSAGING$ } from '../../../relay/environment';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
+import { resolveLink } from '../../../utils/Entity';
 
 export const ingestionCatalogQuery = graphql`
   query IngestionCatalogQuery {
@@ -123,7 +125,7 @@ const CatalogsEmptyState = () => {
           <GradientCard.Icon icon={Search} size="large" />
           <Stack>
             <GradientCard.Text sx={{ whiteSpace: 'pre' }}>{t_i18n('Sorry, we couldn\'t find any results for your search.')}</GradientCard.Text>
-            <GradientCard.Text sx={{ whiteSpace: 'pre' }}>{t_i18n('For more results, you can search in the XTM Hub.')}</GradientCard.Text>
+            <GradientCard.Text sx={{ whiteSpace: 'pre' }}>{t_i18n('For more results, you can search in the ecosystem.')}</GradientCard.Text>
           </Stack>
         </Stack>
         <BrowseMoreButton />
@@ -220,6 +222,8 @@ interface CatalogState {
 }
 
 const IngestionCatalog = () => {
+  const navigate = useNavigate();
+
   const [catalogState, setCatalogState] = useState<CatalogState>({
     selectedConnector: null,
     selectedCatalogId: '',
@@ -267,6 +271,9 @@ const IngestionCatalog = () => {
           onClose={handleCloseDeployDialog}
           catalogId={catalogState.selectedCatalogId}
           hasRegisteredManagers={catalogState.hasRegisteredManagers}
+          onCreate={(connectorId) => {
+            navigate(`${resolveLink('Connectors')}/${connectorId}`);
+          }}
         />
       )}
     </>

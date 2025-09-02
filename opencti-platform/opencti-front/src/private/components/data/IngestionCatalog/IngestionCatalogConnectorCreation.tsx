@@ -82,6 +82,7 @@ interface IngestionCatalogConnectorCreationProps {
   onClose: () => void;
   catalogId: string;
   hasRegisteredManagers: boolean
+  onCreate?: (connectorId: string) => void;
 }
 
 export interface ManagedConnectorValues extends BasicUserHandlingValues {
@@ -91,7 +92,7 @@ export interface ManagedConnectorValues extends BasicUserHandlingValues {
   confidence_level?: string;
 }
 
-const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId, hasRegisteredManagers }: IngestionCatalogConnectorCreationProps) => {
+const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId, hasRegisteredManagers, onCreate }: IngestionCatalogConnectorCreationProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const [compiledValidator, setCompiledValidator] = useState<Validator | undefined>(undefined);
@@ -140,10 +141,15 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
         setSubmitting?.(false);
       },
       onCompleted: (response: IngestionCatalogConnectorCreationMutation$data) => {
-        MESSAGING$.notifySuccess(<span><Link to={`/dashboard/data/ingestion/connectors/${response.managedConnectorAdd?.id}`}>{t_i18n('The connector instance has been deployed')}</Link></span>);
+        const connectorId = response.managedConnectorAdd?.id;
+        MESSAGING$.notifySuccess(<span><Link to={`/dashboard/data/ingestion/connectors/${connectorId}`}>{t_i18n('The connector instance has been deployed')}</Link></span>);
         setSubmitting?.(false);
         resetForm?.();
         onClose();
+
+        if (connectorId) {
+          onCreate?.(connectorId);
+        }
       },
     });
   };
@@ -208,26 +214,33 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
       header={
         <div style={{ position: 'absolute', right: theme.spacing(1) }}>
           <Tooltip title={t_i18n('Vendor contact')}>
-            <IconButton
-              aria-label="Vendor contact"
-              component={Link}
-              to={connector.subscription_link}
-              target="blank"
-              rel="noopener noreferrer"
-            >
-              <Launch />
-            </IconButton>
+            <span> {/** keep span so tooltip is still displayed if button is disabled * */}
+              <IconButton
+                aria-label="Vendor contact"
+                component={Link}
+                to={connector.subscription_link}
+                target="blank"
+                rel="noopener noreferrer"
+                disabled={!connector.subscription_link}
+              >
+                <Launch />
+              </IconButton>
+            </span>
           </Tooltip>
 
-          <IconButton
-            aria-label="Go to"
-            component={Link}
-            to={connector.source_code}
-            target="blank"
-            rel="noopener noreferrer"
-          >
-            <LibraryBooksOutlined />
-          </IconButton>
+          <Tooltip title={t_i18n('Source code')}>
+            <span>
+              <IconButton
+                aria-label="Go to"
+                component={Link}
+                to={connector.source_code}
+                target="blank"
+                rel="noopener noreferrer"
+              >
+                <LibraryBooksOutlined />
+              </IconButton>
+            </span>
+          </Tooltip>
         </div>
       }
     >

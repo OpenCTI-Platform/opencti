@@ -12,6 +12,7 @@ import { IngestionConnector } from '@components/data/IngestionCatalog';
 import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';
 import { truncate } from 'src/utils/String';
 import Typography from '@mui/material/Typography';
+import { IngestionConnectorType, ingestionConnectorTypeMetadata } from '@components/data/IngestionCatalog/utils/ingestionConnectorTypeMetadata';
 import { useFormatter } from '../../../../components/i18n';
 import EnrichedTooltip from '../../../../components/EnrichedTooltip';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
@@ -24,34 +25,6 @@ export interface IngestionCatalogCardProps {
   isEnterpriseEdition: boolean
   onClickDeploy: () => void
 }
-
-export type IngestionConnectorType =
-  | 'INTERNAL_ENRICHMENT'
-  | 'EXTERNAL_IMPORT'
-  | 'INTERNAL_EXPORT_FILE'
-  | 'INTERNAL_IMPORT_FILE';
-
-export const ingestionConnectorTypeMetadata: Record<
-IngestionConnectorType,
-{ label: string; color: 'primary' | 'secondary' | 'error' | 'success' }
-> = {
-  EXTERNAL_IMPORT: {
-    label: 'External import',
-    color: 'primary',
-  },
-  INTERNAL_ENRICHMENT: {
-    label: 'Internal enrichment',
-    color: 'secondary',
-  },
-  INTERNAL_EXPORT_FILE: {
-    label: 'Internal export file',
-    color: 'error',
-  },
-  INTERNAL_IMPORT_FILE: {
-    label: 'Internal import file',
-    color: 'success',
-  },
-};
 
 type RenderConnectorUseCasesType = {
   useCases: string[];
@@ -195,10 +168,10 @@ const IngestionCatalogCard = ({
         <CardActions style={{ justifyContent: 'space-between', padding: 16 }}>
           <IngestionCatalogChip
             label={t_i18n(
-              ingestionConnectorTypeMetadata[connector.container_type].label,
+              ingestionConnectorTypeMetadata[connector.container_type as IngestionConnectorType].label,
             )}
             color={
-                ingestionConnectorTypeMetadata[connector.container_type].color
+                ingestionConnectorTypeMetadata[connector.container_type as IngestionConnectorType].color
               }
           />
           <div style={{ display: 'flex', gap: 4 }}>

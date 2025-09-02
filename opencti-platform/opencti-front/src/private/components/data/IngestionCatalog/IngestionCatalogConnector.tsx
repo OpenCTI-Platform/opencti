@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React, { Suspense, useState } from 'react';
 import IngestionCatalogConnectorHeader from '@components/data/IngestionCatalog/IngestionCatalogConnectorHeader';
@@ -16,6 +16,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import { resolveLink } from '../../../../utils/Entity';
 
 const ingestionCatalogConnectorQuery = graphql`
   query IngestionCatalogConnectorQuery($slug: String!) {
@@ -85,6 +86,8 @@ interface CatalogState {
 }
 
 const IngestionCatalogConnector = () => {
+  const navigate = useNavigate();
+
   const { connectorSlug } = useParams();
 
   const queryRef = useQueryLoading<IngestionCatalogConnectorQuery>(
@@ -134,6 +137,9 @@ const IngestionCatalogConnector = () => {
             onClose={handleCloseDeployDialog}
             catalogId={catalogState.selectedCatalogId}
             hasRegisteredManagers={catalogState.hasRegisteredManagers}
+            onCreate={(connectorId) => {
+              navigate(`${resolveLink('Connectors')}/${connectorId}`);
+            }}
           />
         )
       }
