@@ -370,8 +370,10 @@ export const getChatbotUrl = (req) => {
     return baseUrl + basePath;
   }
   if (req) {
-    const hostname = req.headers.host;
-    return `${req.protocol}://${hostname}:${PORT}${basePath}`;
+    const [hostname, port] = req.headers.host ? req.headers.host.split(':') : [];
+    const isCustomPort = port !== '80' && port !== '443';
+    const httpPort = isCustomPort && port ? `:${port}` : `:${PORT}`;
+    return `${req.protocol}://${hostname}${httpPort}${basePath}`;
   }
   throw UnknownError('Missing request for chatbot');
 };
