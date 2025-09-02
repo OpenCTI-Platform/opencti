@@ -26,7 +26,7 @@ import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import ItemCreators from '../../../../components/ItemCreators';
 import FilterIconButton from '../../../../components/FilterIconButton';
-import { minutesBetweenDates, streamEventIdToDate } from '../../../../utils/Time';
+import { minutesBetweenDates, streamEventIdToDate, stringFormatMinutes } from '../../../../utils/Time';
 import PirCriteriaDisplay from '../PirCriteriaDisplay';
 import type { Theme } from '../../../../components/Theme';
 import PaperAccordion from '../../../../components/PaperAccordion';
@@ -113,7 +113,7 @@ const PirOverviewDetails = ({ data, dataStream }: PirOverviewDetailsProps) => {
               </Typography>
               <Typography variant="body2" gutterBottom style={{ display: 'flex' }}>
                 <div style={{ color: diffInMinutes > 1 ? theme.palette.warn.main : undefined }}>
-                  {diffInMinutes > 1 ? `${diffInMinutes} ${t_i18n('minutes behind live stream')}` : t_i18n('ON TIME')}
+                  {diffInMinutes > 1 ? `${stringFormatMinutes(diffInMinutes, t_i18n)} ${t_i18n('behind live stream')}` : t_i18n('ON TIME')}
                 </div>
                 <Tooltip title={`${t_i18n('Last event processed')}: ${fldt(lastEventDate)}`}>
                   <InformationOutline
