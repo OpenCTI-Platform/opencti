@@ -9,6 +9,7 @@ import { getChatbotUrl, logApp } from '../config/conf';
 import type { BasicStoreSettings } from '../types/settings';
 import { setCookieError } from './httpUtils';
 import { isFiligranChatbotAiActivated } from '../modules/ai/chatbot-ai-settings';
+import { getApplicationInfo } from '../domain/settings';
 
 export const getChatbotProxy = async (req: Express.Request, res: Express.Response) => {
   try {
@@ -32,10 +33,13 @@ export const getChatbotProxy = async (req: Express.Request, res: Express.Respons
       return;
     }
 
+    const { version } = getApplicationInfo();
     const vars = {
       OPENCTI_URL: getChatbotUrl(req),
       OPENCTI_TOKEN: context.user?.api_token,
       'X-API-KEY': Buffer.from(license_pem, 'utf-8').toString('base64'),
+      X_XTM_PRODUCT: 'OpenCTI',
+      X_OPENCTI_VERSION: version,
     };
 
     // Enhance headers with url, token and certificate
@@ -63,15 +67,21 @@ export const getChatbotProxy = async (req: Express.Request, res: Express.Respons
     const response = await axios.post(chatbotUrl, enhancedBody, {
       headers,
       responseType: 'stream',
+      decompress: false,
+      timeout: 0,
     });
 
     // Set SSE headers and forward Flowise headers
     res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
     res.setHeader('Connection', 'keep-alive');
     res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('X-Accel-Buffering', 'no');
+    res.setHeader('Transfer-Encoding', 'chunked');
+    const headersToForward = ['content-type', 'cache-control', 'connection'];
     Object.entries(response.headers).forEach(([key, value]) => {
-      if (!['content-length', 'content-encoding'].includes(key.toLowerCase())) {
+      const lowerKey = key.toLowerCase();
+      if (headersToForward.includes(lowerKey) && value) {
         res.setHeader(key, value);
       }
     });
@@ -81,6 +91,19 @@ export const getChatbotProxy = async (req: Express.Request, res: Express.Respons
 
     req.on('close', () => {
       response.data.destroy();
+    });
+
+    response.data.on('error', (error: Error) => {
+      logApp.error('Stream error in chatbot proxy', { cause: error });
+      if (!res.headersSent) {
+        const { message } = (error as Error);
+        res.status(500).json({
+          status: 'error',
+          error: message,
+        });
+      } else {
+        res.end();
+      }
     });
   } catch (e: unknown) {
     logApp.error('Error in chatbot proxy', { cause: e });
