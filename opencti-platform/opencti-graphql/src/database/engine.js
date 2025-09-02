@@ -2578,65 +2578,7 @@ const adaptFilterToEntityTypeFilterKey = (filter) => {
 };
 
 const adaptFilterToRegardingOfFilterKeys = async (context, user, filterKey, filter) => {
-  const regardingFilters = [];
-  const id = filter.values.find((i) => i.key === 'id');
-  const type = filter.values.find((i) => i.key === 'relationship_type');
-  const dynamic = filter.values.find((i) => i.key === 'dynamic');
-  if (!id && !dynamic && !type) {
-    throw UnsupportedError('Id or dynamic or relationship type are needed for this filtering key', { key: filterKey });
-  }
-  if (dynamic && !type?.values?.length) {
-    throw UnsupportedError('Relationship type is needed for dynamic in regards of filtering', { key: filterKey, type });
-  }
-  let ids = id?.values ?? [];
-  const operator = id?.operator ?? 'eq';
-  // Check type
-  if (type && type.operator && type.operator !== 'eq') {
-    throw UnsupportedError('regardingOf filter only support types equality restriction');
-  }
-  const types = type?.values;
-  // Check types are stix relationships // TODO PIR
-  // if (types.some((t) => !isStixRelationship(t))) {
-  //   throw UnsupportedError('regardingOf filter only support stix relationship types', { key: filterKey, types });
-  // }
-  // Check ids
-  if (ids.length > 0) {
-    const entities = await elFindByIds(context, user, ids, { baseData: true });
-    ids = entities.map((n) => n.id); // Keep ids the user has access to
-  }
-  // Check dynamic
-  const dynamicFilter = dynamic?.values ?? [];
-  if (isNotEmptyField(dynamicFilter)) {
-    const computedIndices = computeQueryIndices([], [ABSTRACT_STIX_OBJECT]);
-    const relatedEntities = await elPaginate(context, user, computedIndices, {
-      connectionFormat: false,
-      first: ES_MAX_PAGINATION,
-      bypassSizeLimit: true, // ensure that max runtime prevent on ES_MAX_PAGINATION
-      baseData: true,
-      filters: addFilter(dynamicFilter[0], TYPE_FILTER, [ABSTRACT_STIX_CORE_OBJECT]),
-    });
-    if (relatedEntities.length > 0) {
-      const relatedIds = relatedEntities.map((n) => n.id);
-      ids.push(...relatedIds);
-    } else {
-      ids.push('<invalid id>'); // To force empty result in the query result
-    }
-  }
-  // Construct and push the final regarding of filter
-  if (isEmptyField(ids)) {
-    const keys = isEmptyField(types)
-      ? buildRefRelationKey('*', '*')
-      : types.map((t) => buildRefRelationKey(t, '*'));
-    keys.forEach((relKey) => {
-      regardingFilters.push({ key: [relKey], operator, values: ['EXISTS'] });
-    });
-  } else {
-    const keys = isEmptyField(types)
-      ? buildRefRelationKey('*', '*')
-      : types.flatMap((t) => [buildRefRelationKey(t, ID_INTERNAL), buildRefRelationKey(t, ID_INFERRED)]);
-    regardingFilters.push({ key: keys, operator, values: ids });
-  }
-  return { newFilter: regardingFilters, newFilterGroup: undefined };
+
 };
 
 const adaptFilterToIdsFilterKey = (filter) => {
@@ -3034,10 +2976,67 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
       }
       const filterKey = arrayKeys[0];
       if (filterKey === INSTANCE_REGARDING_OF || filterKey === INSTANCE_DYNAMIC_REGARDING_OF) {
-        const { newFilter } = await adaptFilterToRegardingOfFilterKeys(context, user, filterKey, filter);
+        const regardingFilters = [];
+        const id = filter.values.find((i) => i.key === 'id');
+        const type = filter.values.find((i) => i.key === 'relationship_type');
+        const dynamic = filter.values.find((i) => i.key === 'dynamic');
+        if (!id && !dynamic && !type) {
+          throw UnsupportedError('Id or dynamic or relationship type are needed for this filtering key', { key: filterKey });
+        }
+        if (dynamic && !type?.values?.length) {
+          throw UnsupportedError('Relationship type is needed for dynamic in regards of filtering', { key: filterKey, type });
+        }
+        let ids = id?.values ?? [];
+        const operator = id?.operator ?? 'eq';
+        // Check type
+        if (type && type.operator && type.operator !== 'eq') {
+          throw UnsupportedError('regardingOf filter only support types equality restriction');
+        }
+        const types = type?.values;
+        // Check types are stix relationships // TODO PIR
+        // if (types.some((t) => !isStixRelationship(t))) {
+        //   throw UnsupportedError('regardingOf filter only support stix relationship types', { key: filterKey, types });
+        // }
+        // Check ids
+        if (ids.length > 0) {
+          const entities = await elFindByIds(context, user, ids, { baseData: true });
+          ids = entities.map((n) => n.id); // Keep ids the user has access to
+        }
+        // Check dynamic
+        const dynamicFilter = dynamic?.values ?? [];
+        if (isNotEmptyField(dynamicFilter)) {
+          const computedIndices = computeQueryIndices([], [ABSTRACT_STIX_OBJECT]);
+          const relatedEntities = await elPaginate(context, user, computedIndices, {
+            connectionFormat: false,
+            first: ES_MAX_PAGINATION,
+            bypassSizeLimit: true, // ensure that max runtime prevent on ES_MAX_PAGINATION
+            baseData: true,
+            filters: addFilter(dynamicFilter[0], TYPE_FILTER, [ABSTRACT_STIX_CORE_OBJECT]),
+          });
+          if (relatedEntities.length > 0) {
+            const relatedIds = relatedEntities.map((n) => n.id);
+            ids.push(...relatedIds);
+          } else {
+            ids.push('<invalid id>'); // To force empty result in the query result
+          }
+        }
+        // Construct and push the final regarding of filter
+        if (isEmptyField(ids)) {
+          const keys = isEmptyField(types)
+            ? buildRefRelationKey('*', '*')
+            : types.map((t) => buildRefRelationKey(t, '*'));
+          keys.forEach((relKey) => {
+            regardingFilters.push({ key: [relKey], operator, values: ['EXISTS'] });
+          });
+        } else {
+          const keys = isEmptyField(types)
+            ? buildRefRelationKey('*', '*')
+            : types.flatMap((t) => [buildRefRelationKey(t, ID_INTERNAL), buildRefRelationKey(t, ID_INFERRED)]);
+          regardingFilters.push({ key: keys, operator, values: ids });
+        }
         finalFilterGroups.push({
           mode: filter.mode ?? FilterMode.Or,
-          filters: newFilter,
+          filters: regardingFilters,
           filterGroups: []
         });
       }
