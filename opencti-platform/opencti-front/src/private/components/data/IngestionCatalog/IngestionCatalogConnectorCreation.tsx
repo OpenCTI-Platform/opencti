@@ -56,6 +56,7 @@ interface IngestionCatalogConnectorCreationProps {
   onClose: () => void;
   catalogId: string;
   hasRegisteredManagers: boolean
+  onCreate?: (connectorId: string) => void;
 }
 
 export interface ManagedConnectorValues extends BasicUserHandlingValues {
@@ -65,7 +66,7 @@ export interface ManagedConnectorValues extends BasicUserHandlingValues {
   confidence_level?: string;
 }
 
-const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId, hasRegisteredManagers }: IngestionCatalogConnectorCreationProps) => {
+const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId, hasRegisteredManagers, onCreate }: IngestionCatalogConnectorCreationProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const [compiledValidator, setCompiledValidator] = useState<Validator | undefined>(undefined);
@@ -103,10 +104,15 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
       },
       onError: () => setSubmitting?.(false),
       onCompleted: (response: IngestionCatalogConnectorCreationMutation$data) => {
-        MESSAGING$.notifySuccess(<span><Link to={`/dashboard/data/ingestion/connectors/${response.managedConnectorAdd?.id}`}>{t_i18n('The connector instance has been deployed')}</Link></span>);
+        const connectorId = response.managedConnectorAdd?.id;
+        MESSAGING$.notifySuccess(<span><Link to={`/dashboard/data/ingestion/connectors/${connectorId}`}>{t_i18n('The connector instance has been deployed')}</Link></span>);
         setSubmitting?.(false);
         resetForm?.();
         onClose();
+
+        if (connectorId) {
+          onCreate?.(connectorId);
+        }
       },
     });
   };

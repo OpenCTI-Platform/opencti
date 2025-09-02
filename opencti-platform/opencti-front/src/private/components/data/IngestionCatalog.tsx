@@ -2,15 +2,16 @@ import React, { Suspense, useState } from 'react';
 import IngestionMenu from '@components/data/IngestionMenu';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { IngestionCatalogQuery } from '@components/data/__generated__/IngestionCatalogQuery.graphql';
-import IngestionCatalogCard, { IngestionConnectorType } from '@components/data/IngestionCatalog/IngestionCatalogCard';
+import IngestionCatalogCard from '@components/data/IngestionCatalog/IngestionCatalogCard';
 import useIngestionCatalogFilters from '@components/data/IngestionCatalog/hooks/useIngestionCatalogFilters';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Stack } from '@mui/material';
 import { Search } from '@mui/icons-material';
 import Grid from '@mui/material/Grid2';
 import { ConnectorManagerStatusProvider, useConnectorManagerStatus } from '@components/data/connectors/ConnectorManagerStatusContext';
 import NoConnectorManagersBanner from '@components/data/connectors/NoConnectorManagersBanner';
 import IngestionCatalogConnectorCreation from '@components/data/IngestionCatalog/IngestionCatalogConnectorCreation';
+import { IngestionConnectorType } from '@components/data/IngestionCatalog/utils/ingestionConnectorTypeMetadata';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
@@ -220,6 +221,8 @@ interface CatalogState {
 }
 
 const IngestionCatalog = () => {
+  const navigate = useNavigate();
+
   const [catalogState, setCatalogState] = useState<CatalogState>({
     selectedConnector: null,
     selectedCatalogId: '',
@@ -267,6 +270,9 @@ const IngestionCatalog = () => {
           onClose={handleCloseDeployDialog}
           catalogId={catalogState.selectedCatalogId}
           hasRegisteredManagers={catalogState.hasRegisteredManagers}
+          onCreate={(connectorId) => {
+            navigate(`../ingestion/connectors/${connectorId}`);
+          }}
         />
       )}
     </>
