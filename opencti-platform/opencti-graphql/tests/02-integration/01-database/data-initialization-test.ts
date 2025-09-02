@@ -29,7 +29,7 @@ describe('Data initialization test', () => {
 
   it('should create all capabilities', async () => {
     const capabilities = await listAllEntities<BasicStoreEntity>(testContext, ADMIN_USER, [ENTITY_TYPE_CAPABILITY]);
-    expect(capabilities.length).toEqual(44);
+    expect(capabilities.length).toEqual(48);
     const capabilitiesNames = capabilities.map((capa) => capa.name).sort();
     const allExpectedNames = [
       'BYPASS',
@@ -70,6 +70,10 @@ describe('Data initialization test', () => {
       'SETTINGS_SETCUSTOMIZATION',
       'SETTINGS_SETDISSEMINATION',
       'SETTINGS_SETLABELS',
+      'SETTINGS_SETVOCABULARIES',
+      'SETTINGS_SETCASETEMPLATES',
+      'SETTINGS_SETSTATUSTEMPLATES',
+      'SETTINGS_SETKILLCHAINPHASES',
       'SETTINGS_SETMANAGEXTMHUB',
       'SETTINGS_SETMARKINGS',
       'SETTINGS_SETPARAMETERS',
