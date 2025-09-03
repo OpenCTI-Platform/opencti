@@ -30,13 +30,6 @@ export const buildOptionsFromFileManager = async (context) => {
   const excludedPaths = ['import/pending/']; // always exclude pending
   const managerConfiguration = await getManagerConfigurationFromCache(context, SYSTEM_USER, 'FILE_INDEX_MANAGER');
   const configMimetypes = managerConfiguration.manager_setting?.accept_mime_types;
-  if (isEmptyField(configMimetypes)) {
-    return {
-      globalCount: 0,
-      globalSize: 0,
-      metricsByMimeType: [],
-    };
-  }
   const includeGlobal = managerConfiguration.manager_setting?.include_global_files || false;
   const onlyForEntityTypes = managerConfiguration.manager_setting?.entity_types;
   if (isNotEmptyField(onlyForEntityTypes)) {
@@ -56,6 +49,13 @@ export const filesMetrics = async (context, user) => {
   const metrics = await getStats([READ_INDEX_FILES]);
   const indexedFilesCount = metrics.docs.count;
   const fileOptions = await buildOptionsFromFileManager(context);
+  if (isEmptyField(fileOptions.opts.prefixMimeTypes)) {
+    return {
+      globalCount: 0,
+      globalSize: 0,
+      metricsByMimeType: [],
+    };
+  }
   const filesMimeTypesDistribution = await allFilesMimeTypeDistribution(context, user, fileOptions.paths, fileOptions.opts);
   const remainingFilesCount = await allRemainingFilesCount(context, user, fileOptions.paths, fileOptions.opts);
   const metricsByMimeType = [];

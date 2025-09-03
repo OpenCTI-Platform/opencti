@@ -111,36 +111,39 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
     }
   };
   const handleReportCreation = async (context: AuthContext, report: StixReport, addedRefs: Array<string>, removedRefs: Array<string>): Promise<void> => {
-    const addedTargets: ArrayRefs = [];
-    const relations = [];
     if (addedRefs.length > 0) {
       const identities = await internalFindByIds(context, RULE_MANAGER_USER, addedRefs) as Array<StoreObject>;
       const originIds = identities.map((i) => i.internal_id);
       // Find all identities part of current identities
-      const listArgs = isSource ? { fromId: originIds, toTypes: [relationTypes.rightType] } : { toId: originIds, fromTypes: [relationTypes.leftType] };
-      const fromRelations = await listAllRelations<BasicStoreRelation>(context, RULE_MANAGER_USER, relationTypes.creationType, listArgs);
-      relations.push(...fromRelations);
-    }
-    if (relations.length > 0) {
-      const targets = await internalFindByIds(context, RULE_MANAGER_USER, R.uniq(relations.map((r) => (isSource ? r.toId : r.fromId)))) as Array<StoreObject>;
-      const targetIdsMap = new Map(targets.map((i) => [i.internal_id, i.standard_id]));
-      for (let relIndex = 0; relIndex < relations.length; relIndex += 1) {
-        const { internal_id: partOfId, standard_id: partOfStandardId, fromId: partOfFromId, toId: partOfTargetId } = relations[relIndex];
-        if (isSource) {
-          const partOfTargetStandardId = targetIdsMap.get(partOfTargetId);
-          if (partOfStandardId && partOfTargetStandardId) {
-            addedTargets.push({ partOfFromId, partOfId, partOfStandardId, partOfTargetId, partOfTargetStandardId });
+      const listAddedRefsCallback = async (relationships: Array<BasicStoreRelation>) => {
+        if (relationships.length > 0) {
+          const addedTargets: ArrayRefs = [];
+          const targets = await internalFindByIds(context, RULE_MANAGER_USER, R.uniq(relationships.map((r) => (isSource ? r.toId : r.fromId)))) as Array<StoreObject>;
+          const targetIdsMap = new Map(targets.map((i) => [i.internal_id, i.standard_id]));
+          for (let relIndex = 0; relIndex < relationships.length; relIndex += 1) {
+            const { internal_id: partOfId, standard_id: partOfStandardId, fromId: partOfFromId, toId: partOfTargetId } = relationships[relIndex];
+            if (isSource) {
+              const partOfTargetStandardId = targetIdsMap.get(partOfTargetId);
+              if (partOfStandardId && partOfTargetStandardId) {
+                addedTargets.push({ partOfFromId, partOfId, partOfStandardId, partOfTargetId, partOfTargetStandardId });
+              }
+            } else {
+              const partOfTargetStandardId = targetIdsMap.get(partOfFromId);
+              if (partOfStandardId && partOfTargetStandardId) {
+                addedTargets.push({ partOfFromId, partOfId, partOfStandardId, partOfTargetId, partOfTargetStandardId });
+              }
+            }
           }
-        } else {
-          const partOfTargetStandardId = targetIdsMap.get(partOfFromId);
-          if (partOfStandardId && partOfTargetStandardId) {
-            addedTargets.push({ partOfFromId, partOfId, partOfStandardId, partOfTargetId, partOfTargetStandardId });
-          }
+          // update the report
+          await createObjectRefsInferences(context, report, addedTargets, []);
         }
-      }
+      };
+      const listArgs = isSource ? { fromId: originIds, toTypes: [relationTypes.rightType] } : { toId: originIds, fromTypes: [relationTypes.leftType] };
+      const fullListArgs = { ...listArgs, callback: listAddedRefsCallback };
+      await listAllRelations<BasicStoreRelation>(context, RULE_MANAGER_USER, relationTypes.creationType, fullListArgs);
     }
+
     // Find all current inferences that need to be deleted
-    const deletedTargets: Array<BasicStoreRelation> = [];
     if (removedRefs.length > 0) {
       const removedRefIdentities = await internalFindByIds(context, RULE_MANAGER_USER, removedRefs) as Array<StoreObject>;
       const removedIds = removedRefIdentities.map((i) => `${i.internal_id}_ref`);
@@ -149,12 +152,15 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
         filters: [{ key: [`${RULE_PREFIX}*.dependencies`], values: removedIds, operator: FilterOperator.Wildcard }],
         filterGroups: [],
       };
-      const args = { fromId: report.extensions[STIX_EXT_OCTI].id, filters, noFiltersChecking: true, indices: READ_DATA_INDICES };
-      const targets = await listAllRelations<BasicStoreRelation>(context, RULE_MANAGER_USER, RELATION_OBJECT, args);
-      deletedTargets.push(...targets);
+      const listRemovedRefsCallback = async (deletedTargets: Array<BasicStoreRelation>) => {
+        if (deletedTargets.length > 0) {
+          // update the report
+          await createObjectRefsInferences(context, report, [], deletedTargets);
+        }
+      };
+      const args = { fromId: report.extensions[STIX_EXT_OCTI].id, filters, noFiltersChecking: true, indices: READ_DATA_INDICES, callback: listRemovedRefsCallback };
+      await listAllRelations<BasicStoreRelation>(context, RULE_MANAGER_USER, RELATION_OBJECT, args);
     }
-    // update the report
-    return createObjectRefsInferences(context, report, addedTargets, deletedTargets);
   };
   const handlePartOfRelationCreation = async (context: AuthContext, partOfRelation: StixRelation): Promise<void> => {
     let partOfTargetStandardId: StixId;

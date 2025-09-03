@@ -46,14 +46,14 @@ export const settingsOrganizationsLinesFragment = graphql`
     orderMode: { type: "OrderingMode", defaultValue: asc }
     filters: { type: "FilterGroup" }
   ) @refetchable(queryName: "SettingsOrganizationsLinesRefetchQuery") {
-    organizations(
+    securityOrganizations(
       search: $search
       first: $count
       after: $cursor
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
-    ) @connection(key: "Pagination_organizations") {
+    ) @connection(key: "Pagination_securityOrganizations") {
       edges {
         node {
           id
@@ -83,7 +83,7 @@ const SettingsOrganizationsLines: FunctionComponent<SettingsOrganizationsLinesPr
     queryRef,
     linesQuery: settingsOrganizationsLinesQuery,
     linesFragment: settingsOrganizationsLinesFragment,
-    nodePath: ['organizations', 'pageInfo', 'globalCount'],
+    nodePath: ['securityOrganizations', 'pageInfo', 'globalCount'],
   });
   return (
     <ListLinesContent
@@ -91,8 +91,8 @@ const SettingsOrganizationsLines: FunctionComponent<SettingsOrganizationsLinesPr
       hasMore={hasMore}
       loadMore={loadMore}
       isLoading={isLoadingMore}
-      dataList={data?.organizations?.edges ?? []}
-      globalCount={data?.organizations?.pageInfo?.globalCount}
+      dataList={data?.securityOrganizations?.edges ?? []}
+      globalCount={data?.securityOrganizations?.pageInfo?.globalCount}
       LineComponent={SettingsOrganizationLine}
       DummyLineComponent={SettingsOrganizationLineDummy}
       dataColumns={dataColumns}
