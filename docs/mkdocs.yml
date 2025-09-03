@@ -216,6 +216,8 @@ nav:
           - Organization segregation: administration/organization-segregation.md
           - Authorized members: administration/authorized-members.md
           - Request access: administration/request-access.md
+        - Dissemination list: administration/dissemination-list.md
+        - Email templates: administration/email-templates.md
       - Customization:
         - Entity types: administration/entities.md
         - Rules engine: administration/reasoning.md
