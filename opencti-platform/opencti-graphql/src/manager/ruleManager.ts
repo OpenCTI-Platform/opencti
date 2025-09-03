@@ -200,7 +200,7 @@ export const rulesApplyHandler = async (context: AuthContext, user: AuthUser, ev
           }
           // Rule match, need to apply
           if (isCurrentMatched) {
-            logApp.info('[RULE_MANAGER_DEBUG] Applying rule update on event', { rule });
+            logApp.info('[RULE_MANAGER_DEBUG] Applying rule update on rule', { rule });
             await rule.update(data, updateEvent);
           }
         }
@@ -211,7 +211,7 @@ export const rulesApplyHandler = async (context: AuthContext, user: AuthUser, ev
           const rule = rules[ruleIndex];
           const isImpactedElement = isMatchRuleFilters(rule, data);
           if (isImpactedElement) {
-            logApp.info('[RULE_MANAGER_DEBUG] Applying rule insert on event', { rule });
+            logApp.info('[RULE_MANAGER_DEBUG] Applying rule insert on rule', { rule });
             await rule.insert(data);
           }
         }
