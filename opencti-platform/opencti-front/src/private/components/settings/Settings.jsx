@@ -289,7 +289,7 @@ const Settings = () => {
       .catch(() => false);
   };
   return (
-    <div className={classes.container}>
+    <div className={classes.container} data-testid="setting-page">
       <QueryRenderer
         query={settingsQuery}
         render={({ props }) => {
