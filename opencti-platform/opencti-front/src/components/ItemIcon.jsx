@@ -105,6 +105,10 @@ import {
   SourceFork,
   SourcePull,
   Target,
+  BankPlus,
+  BankMinus,
+  LockOutline,
+  LockMinusOutline,
 } from 'mdi-material-ui';
 import TableViewIcon from '@mui/icons-material/TableView';
 import { itemColor } from '../utils/Colors';
@@ -238,6 +242,14 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'identity':
       return (
         <AccountBalanceOutlined style={style} fontSize={fontSize} role="img" />
+      );
+    case 'organization-add':
+      return (
+        <BankPlus style={style} fontSize={fontSize} role="img" />
+      );
+    case 'organization-remove':
+      return (
+        <BankMinus style={style} fontSize={fontSize} role="img" />
       );
     case 'sector':
       return <DomainOutlined style={style} fontSize={fontSize} role="img" />;
@@ -566,7 +578,9 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'autofix':
       return <AutoFix style={style} fontSize={fontSize} role="img" />;
     case 'lock':
-      return <LockOutlined style={style} fontSize={fontSize} role="img" />;
+      return <LockOutline style={style} fontSize={fontSize} role="img" />;
+    case 'lock-remove':
+      return <LockMinusOutline style={style} fontSize={fontSize} role="img" />;
     case 'default':
       return <CircleOutlined style={style} fontSize={fontSize} role="img" />;
     default:

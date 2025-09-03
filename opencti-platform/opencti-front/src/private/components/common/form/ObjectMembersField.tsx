@@ -58,6 +58,7 @@ interface ObjectMembersFieldProps {
   disabled?: boolean;
   required?: boolean;
   entityTypes?: MemberType[];
+  dynamicKeysForPlaybooks?: boolean;
 }
 const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
   name,
@@ -69,10 +70,32 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
   disabled = false,
   required = false,
   entityTypes,
+  dynamicKeysForPlaybooks,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const [members, setMembers] = useState<OptionMember[]>([]);
+  const [members, setMembers] = useState<OptionMember[]>(dynamicKeysForPlaybooks ? [
+    {
+      type: t_i18n('Dynamic from the main entity triggering the playbook'),
+      value: 'AUTHOR',
+      label: t_i18n('Author'),
+    },
+    {
+      type: t_i18n('Dynamic from the main entity triggering the playbook'),
+      value: 'CREATORS',
+      label: t_i18n('Creators'),
+    },
+    {
+      type: t_i18n('Dynamic from the main entity triggering the playbook'),
+      value: 'ASSIGNEES',
+      label: t_i18n('Assignees'),
+    },
+    {
+      type: t_i18n('Dynamic from the main entity triggering the playbook'),
+      value: 'PARTICIPANTS',
+      label: t_i18n('Participants'),
+    },
+  ] : []);
   const searchMembers = (event: React.ChangeEvent<HTMLInputElement>) => {
     fetchQuery(objectMembersFieldSearchQuery, {
       search: event && event.target.value ? event.target.value : '',

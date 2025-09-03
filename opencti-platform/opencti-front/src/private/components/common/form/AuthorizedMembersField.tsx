@@ -49,6 +49,8 @@ interface AuthorizedMembersFieldProps
   addMeUserWithAdminRights?: boolean;
   enableAccesses?: boolean;
   hideInfo?: boolean;
+  adminDefault?: boolean;
+  dynamicKeysForPlaybooks?: boolean;
 }
 
 // Type of data for internal form, not exposed to others.
@@ -85,6 +87,7 @@ const AuthorizedMembersField = ({
   enableAccesses = false,
   hideInfo = false,
   adminDefault = false,
+  dynamicKeysForPlaybooks = false,
 }: AuthorizedMembersFieldProps) => {
   const { t_i18n } = useFormatter();
   const { setFieldValue } = form;
@@ -353,6 +356,7 @@ const AuthorizedMembersField = ({
                     <ObjectMembersField
                       name="newAccessMember"
                       disabled={!values.applyAccesses}
+                      dynamicKeysForPlaybooks={dynamicKeysForPlaybooks}
                     />
                     {value?.find(
                       (a) => a.value === values.newAccessMember?.value,

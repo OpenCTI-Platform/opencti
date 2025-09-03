@@ -18,7 +18,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
 import { ListItemButton } from '@mui/material';
-import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
+import AuthorizedMembersField from '../../common/form/AuthorizedMembersField';
 import CaseTemplateField from '../../common/form/CaseTemplateField';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import OpenVocabField from '../../common/form/OpenVocabField';
@@ -605,6 +605,7 @@ const PlaybookAddComponentsContent = ({
                         enableAccesses={true}
                         hideInfo={true}
                         adminDefault={true}
+                        dynamicKeysForPlaybooks={true}
                       />
                     );
                   }
