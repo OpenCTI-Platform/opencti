@@ -19949,7 +19949,6 @@ export type PhoneNumberAddInput = {
 
 export type Pir = BasicObject & InternalObject & {
   __typename?: 'Pir';
-  authorizedAuthorities?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   authorizedMembers: Array<MemberAccess>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
@@ -41584,7 +41583,6 @@ export type PhoneNumberResolvers<ContextType = any, ParentType extends Resolvers
 }>;
 
 export type PirResolvers<ContextType = any, ParentType extends ResolversParentTypes['Pir'] = ResolversParentTypes['Pir']> = ResolversObject<{
-  authorizedAuthorities?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   authorizedMembers?: Resolver<Array<ResolversTypes['MemberAccess']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;

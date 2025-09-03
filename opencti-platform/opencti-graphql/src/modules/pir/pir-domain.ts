@@ -55,7 +55,7 @@ import { addFilter, extractFilterKeyValues } from '../../utils/filtering/filteri
 import { INSTANCE_DYNAMIC_REGARDING_OF, INSTANCE_REGARDING_OF, OBJECT_CONTAINS_FILTER, RELATION_TO_FILTER, RELATION_TYPE_FILTER } from '../../utils/filtering/filtering-constants';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
-import { isBypassUser, MEMBER_ACCESS_ALL, MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_VIEW, PIRAPI } from '../../utils/access';
+import { isBypassUser, MEMBER_ACCESS_ALL, MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_VIEW } from '../../utils/access';
 import { RELATION_IN_PIR } from '../../schema/internalRelationship';
 import { buildArgsFromDynamicFilters } from '../../domain/stixRelationship';
 import { fillTimeSeries, READ_INDEX_HISTORY } from '../../database/utils';
@@ -203,7 +203,6 @@ export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAdd
     ...serializePir(input),
     lastEventId: `${rescanStartDate}-0`,
     authorized_members,
-    authorized_authorities: [PIRAPI],
   };
   const created: BasicStoreEntityPir = await createEntity(
     context,

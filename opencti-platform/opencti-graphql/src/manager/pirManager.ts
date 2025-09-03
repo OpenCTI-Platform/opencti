@@ -182,6 +182,9 @@ const pirManagerHandler = async () => {
       await updatePir(context, PIR_MANAGER_USER, pir.id, [{ key: 'lastEventId', value: [lastEventId] }]);
     }
   }, { concurrency: 5 });
+
+  // close redis client connexion
+  await redisClient.quit();
 };
 
 // Configuration of the manager.
@@ -204,4 +207,6 @@ const PIR_MANAGER_DEFINITION: ManagerDefinition = {
   }
 };
 // Automatically register manager on start.
-if (isFeatureEnabled('Pir')) registerManager(PIR_MANAGER_DEFINITION);
+if (isFeatureEnabled('Pir')) {
+  registerManager(PIR_MANAGER_DEFINITION);
+}
