@@ -13,7 +13,8 @@ import validator from 'validator';
 import archiverZipEncrypted from 'archiver-zip-encrypted';
 import rateLimit from 'express-rate-limit';
 import contentDisposition from 'content-disposition';
-import { basePath, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION } from '../config/conf';
+import { printSchema } from 'graphql/utilities';
+import { basePath, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION, PLATFORM_VERSION } from '../config/conf';
 import passport, { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { HEADERS_AUTHENTICATORS, loginFromProvider, sessionAuthenticateUser, userWithOrigin } from '../domain/user';
 import { downloadFile, getFileContent, isStorageAlive, loadFile } from '../database/file-storage';
@@ -73,7 +74,7 @@ const publishFileRead = async (executeContext, auth, file) => {
   });
 };
 
-const createApp = async (app) => {
+const createApp = async (app, schema) => {
   const limiter = rateLimit({
     windowMs: nconf.get('app:rate_protection:time_window') * 1000, // seconds
     limit: nconf.get('app:rate_protection:max_requests'),
@@ -178,6 +179,17 @@ const createApp = async (app) => {
 
   // -- Register the encryption module
   archiver.registerFormat('zip-encrypted', archiverZipEncrypted);
+
+  // -- API schema
+  app.get(`${basePath}/schema`, async (req, res) => {
+    const context = await createAuthenticatedContext(req, res, 'schema_get');
+    if (!context.user) {
+      res.sendStatus(403);
+      return;
+    }
+    res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+    res.json({ version: PLATFORM_VERSION, schema: printSchema(schema) });
+  });
 
   // -- File download
   app.get(`${basePath}/storage/get/:file(*)`, async (req, res) => {
