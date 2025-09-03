@@ -10,7 +10,6 @@ import { asyncListTransformation, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TY
 import { isStixExportableData } from '../schema/stixCoreObject';
 import { DatabaseError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { mergeDeepRightAll, now, utcDate } from '../utils/format';
-import { convertStoreToStix } from './stix-2-1-converter';
 import type { BasicStoreCommon, StoreObject, StoreRelation } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
 import type {
@@ -38,6 +37,8 @@ import { enrichWithRemoteCredentials } from '../config/credentials';
 import { getDraftContext } from '../utils/draftContext';
 import type { ExclusionListCacheItem } from './exclusionListCache';
 import { refreshLocalCacheForEntity } from './cache';
+
+import { convertStoreToStix_2_1 } from './stix-2-1-converter';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => loadCert(path));
@@ -517,8 +518,8 @@ const pushToStream = async (context: AuthContext, user: AuthUser, client: Cluste
 // Merge
 const buildMergeEvent = async (user: AuthUser, previous: StoreObject, instance: StoreObject, sourceEntities: Array<StoreObject>): Promise<MergeEvent> => {
   const message = generateMergeMessage(instance, sourceEntities);
-  const previousStix = convertStoreToStix(previous) as StixCoreObject;
-  const currentStix = convertStoreToStix(instance) as StixCoreObject;
+  const previousStix = convertStoreToStix_2_1(previous) as StixCoreObject;
+  const currentStix = convertStoreToStix_2_1(instance) as StixCoreObject;
   return {
     version: EVENT_CURRENT_VERSION,
     type: EVENT_TYPE_MERGE,
@@ -529,7 +530,7 @@ const buildMergeEvent = async (user: AuthUser, previous: StoreObject, instance: 
     context: {
       patch: jsonpatch.compare(previousStix, currentStix),
       reverse_patch: jsonpatch.compare(currentStix, previousStix),
-      sources: await asyncListTransformation(sourceEntities, convertStoreToStix),
+      sources: await asyncListTransformation(sourceEntities, convertStoreToStix_2_1),
     }
   };
 };
@@ -581,8 +582,8 @@ export const publishStixToStream = async (context: AuthContext, user: AuthUser, 
 };
 const buildUpdateEvent = (user: AuthUser, previous: StoreObject, instance: StoreObject, message: string, opts: UpdateEventOpts): UpdateEvent => {
   // Build and send the event
-  const stix = convertStoreToStix(instance) as StixCoreObject;
-  const previousStix = convertStoreToStix(previous) as StixCoreObject;
+  const stix = convertStoreToStix_2_1(instance) as StixCoreObject;
+  const previousStix = convertStoreToStix_2_1(previous) as StixCoreObject;
   return buildStixUpdateEvent(user, previousStix, stix, message, opts);
 };
 export const storeUpdateEvent = async (context: AuthContext, user: AuthUser, previous: StoreObject, instance: StoreObject, message: string, opts: UpdateEventOpts = {}) => {
@@ -599,7 +600,7 @@ export const storeUpdateEvent = async (context: AuthContext, user: AuthUser, pre
 };
 // Create
 export const buildCreateEvent = (user: AuthUser, instance: StoreObject, message: string): StreamDataEvent => {
-  const stix = convertStoreToStix(instance) as StixCoreObject;
+  const stix = convertStoreToStix_2_1(instance) as StixCoreObject;
   return {
     version: EVENT_CURRENT_VERSION,
     type: EVENT_TYPE_CREATE,
@@ -645,7 +646,7 @@ export const buildDeleteEvent = async (
   instance: StoreObject,
   message: string,
 ): Promise<DeleteEvent> => {
-  const stix = convertStoreToStix(instance) as StixCoreObject;
+  const stix = convertStoreToStix_2_1(instance) as StixCoreObject;
   return {
     version: EVENT_CURRENT_VERSION,
     type: EVENT_TYPE_DELETE,

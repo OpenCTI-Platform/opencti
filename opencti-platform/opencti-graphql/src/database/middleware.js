@@ -176,7 +176,7 @@ import {
 import { isRuleUser, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules-utils';
 import { instanceMetaRefsExtractor, isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
 import { createEntityAutoEnrichment } from '../domain/enrichment';
-import { convertExternalReferenceToStix, convertStoreToStix } from './stix-2-1-converter';
+import { convertExternalReferenceToStix, convertStoreToStix_2_1 } from './stix-2-1-converter';
 import {
   buildAggregationRelationFilter,
   buildEntityFilters,
@@ -213,7 +213,7 @@ import {
   xOpenctiStixIds
 } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
-import { FilterMode, FilterOperator } from '../generated/graphql';
+import { FilterMode, FilterOperator, Version } from '../generated/graphql';
 import { getMandatoryAttributesForSetting } from '../modules/entitySetting/entitySetting-attributeUtils';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import {
@@ -237,6 +237,8 @@ import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetti
 import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
 import { generateVulnerabilitiesUpdates } from '../utils/vulnerabilities';
 import { idLabel } from '../schema/schema-labels';
+
+import { convertStoreToStix } from './stix-common-converter';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -517,10 +519,11 @@ export const storeLoadByIdWithRefs = async (context, user, id, opts = {}) => {
 };
 export const stixLoadById = async (context, user, id, opts = {}) => {
   const instance = await storeLoadByIdWithRefs(context, user, id, opts);
-  return instance ? convertStoreToStix(instance) : undefined;
+  const version = opts?.version ?? Version.Stix_2_1;
+  return instance ? convertStoreToStix(instance, version) : undefined;
 };
 const convertStoreToStixWithResolvedFiles = async (instance) => {
-  const instanceInStix = convertStoreToStix(instance);
+  const instanceInStix = convertStoreToStix_2_1(instance);
   const nonResolvedFiles = instanceInStix.extensions[STIX_EXT_OCTI].files;
   if (nonResolvedFiles) {
     for (let i = 0; i < nonResolvedFiles.length; i += 1) {
@@ -547,15 +550,16 @@ export const stixLoadByIds = async (context, user, ids, opts = {}) => {
   }
   return ids.map((id) => loadedInstancesMap.get(id))
     .filter((i) => isNotEmptyField(i))
-    .map((e) => (convertStoreToStix(e)));
+    .map((e) => (convertStoreToStix_2_1(e)));
 };
-export const stixLoadByIdStringify = async (context, user, id) => {
-  const data = await stixLoadById(context, user, id);
+export const stixLoadByIdStringify = async (context, user, id, version) => {
+  const opts = { version };
+  const data = await stixLoadById(context, user, id, opts);
   return data ? JSON.stringify(data) : '';
 };
 export const stixLoadByFilters = async (context, user, types, args) => {
   const elements = await loadByFiltersWithDependencies(context, user, types, args);
-  return elements ? elements.map((element) => convertStoreToStix(element)) : [];
+  return elements ? elements.map((element) => convertStoreToStix_2_1(element)) : [];
 };
 // endregion
 
