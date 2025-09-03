@@ -13,7 +13,7 @@ import validator from 'validator';
 import archiverZipEncrypted from 'archiver-zip-encrypted';
 import rateLimit from 'express-rate-limit';
 import contentDisposition from 'content-disposition';
-import { basePath, booleanConf, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION } from '../config/conf';
+import { basePath, booleanConf, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION, AUTH_PAYLOAD_BODY_SIZE } from '../config/conf';
 import passport, { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { HEADERS_AUTHENTICATORS, loginFromProvider, sessionAuthenticateUser, userWithOrigin } from '../domain/user';
 import { downloadFile, getFileContent, isStorageAlive, loadFile } from '../database/file-storage';
@@ -448,7 +448,8 @@ const createApp = async (app) => {
   });
 
   // -- Passport callback
-  const urlencodedParser = bodyParser.urlencoded({ extended: true });
+  // -- Default limit is '100kb' based on https://expressjs.com/en/resources/middleware/body-parser.html
+  const urlencodedParser = bodyParser.urlencoded({ extended: true, limit: AUTH_PAYLOAD_BODY_SIZE });
   app.all(`${basePath}/auth/:provider/callback`, urlencodedParser, async (req, res, next) => {
     const referer = req.body.RelayState ?? req.session.referer;
     const { provider } = req.params;
