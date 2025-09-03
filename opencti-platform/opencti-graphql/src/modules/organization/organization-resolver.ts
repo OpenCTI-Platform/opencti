@@ -4,6 +4,7 @@ import {
   childOrganizationsPaginated,
   editAuthorizedAuthorities,
   findAll,
+  findAllSecurityOrganizations,
   findById,
   findGrantableGroups,
   organizationAdminAdd,
@@ -30,6 +31,7 @@ const organizationResolvers: Resolvers = {
   Query: {
     organization: (_, { id }, context) => findById(context, context.user, id),
     organizations: (_, args, context) => findAll(context, context.user, args),
+    securityOrganizations: (_, args, context) => findAllSecurityOrganizations(context, context.user, args),
   },
   Organization: {
     sectors: (organization, args, context) => organizationSectorsPaginated<any>(context, context.user, organization.id, args),

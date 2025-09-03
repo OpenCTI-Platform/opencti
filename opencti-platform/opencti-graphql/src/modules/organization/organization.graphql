@@ -190,6 +190,15 @@ type Query {
     search: String
     toStix: Boolean
   ): OrganizationConnection @auth(for: [KNOWLEDGE, SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
+  securityOrganizations(
+    first: Int
+    after: ID
+    orderBy: OrganizationsOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+    toStix: Boolean
+  ): OrganizationConnection @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
 }
 
 # Mutations
