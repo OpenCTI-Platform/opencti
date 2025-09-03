@@ -167,7 +167,7 @@ export const rulesApplyHandler = async (context: AuthContext, user: AuthUser, ev
   for (let index = 0; index < events.length; index += 1) {
     const event = events[index];
     const { type, data } = event;
-    logApp.info('[RULE_MANAGER_DEBUG] Handling event in ruleManager', { event });
+    logApp.info('[RULE_MANAGER_DEBUG] Handling event in ruleManager', { eventType: event.type, eventMessage: event.message });
     try {
       // In case of merge convert the events to basic events and restart the process
       if (type === EVENT_TYPE_MERGE) {
@@ -200,7 +200,7 @@ export const rulesApplyHandler = async (context: AuthContext, user: AuthUser, ev
           }
           // Rule match, need to apply
           if (isCurrentMatched) {
-            logApp.info('[RULE_MANAGER_DEBUG] Applying rule update on rule', { rule });
+            logApp.info('[RULE_MANAGER_DEBUG] Applying rule update on rule', { ruleId: rule.id, ruleName: rule.name });
             await rule.update(data, updateEvent);
           }
         }
@@ -211,7 +211,7 @@ export const rulesApplyHandler = async (context: AuthContext, user: AuthUser, ev
           const rule = rules[ruleIndex];
           const isImpactedElement = isMatchRuleFilters(rule, data);
           if (isImpactedElement) {
-            logApp.info('[RULE_MANAGER_DEBUG] Applying rule insert on rule', { rule });
+            logApp.info('[RULE_MANAGER_DEBUG] Applying rule insert on rule', { ruleId: rule.id, ruleName: rule.name });
             await rule.insert(data);
           }
         }
