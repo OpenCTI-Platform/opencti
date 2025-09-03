@@ -2339,6 +2339,7 @@
   "N/A": "該当なし",
   "Name": "名前",
   "name": "名前",
+  "Name cannot contain whitespace": "名前に空白を含めることはできない",
   "Name cannot start or end with a hyphen": "名前はハイフンで始めることも、ハイフンで終わることもできない",
   "Name must be at least 2 characters": "名前は少なくとも2文字必要です。",
   "Name must be at most 63 characters": "名前は半角63文字以内",

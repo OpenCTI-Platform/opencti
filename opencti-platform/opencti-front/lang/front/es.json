@@ -2339,6 +2339,7 @@
   "N/A": "N/A",
   "Name": "Nombre",
   "name": "Nombre",
+  "Name cannot contain whitespace": "El nombre no puede contener espacios en blanco",
   "Name cannot start or end with a hyphen": "El nombre no puede empezar ni terminar con un guión",
   "Name must be at least 2 characters": "El nombre debe tener al menos 2 caracteres",
   "Name must be at most 63 characters": "El nombre debe tener un máximo de 63 caracteres",

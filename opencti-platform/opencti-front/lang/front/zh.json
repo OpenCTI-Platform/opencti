@@ -2339,6 +2339,7 @@
   "N/A": "不适用",
   "Name": "名称",
   "name": "名称",
+  "Name cannot contain whitespace": "名称不能包含空白",
   "Name cannot start or end with a hyphen": "姓名不能以连字号开头或结尾",
   "Name must be at least 2 characters": "名称必须至少为2个字符",
   "Name must be at most 63 characters": "名称最多 63 个字符",

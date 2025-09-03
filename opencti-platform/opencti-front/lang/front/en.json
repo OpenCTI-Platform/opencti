@@ -2339,6 +2339,7 @@
   "N/A": "N/A",
   "Name": "Name",
   "name": "name",
+  "Name cannot contain whitespace": "Name cannot contain whitespace",
   "Name cannot start or end with a hyphen": "Name cannot start or end with a hyphen",
   "Name must be at least 2 characters": "Name must be at least 2 characters",
   "Name must be at most 63 characters": "Name must be at most 63 characters",

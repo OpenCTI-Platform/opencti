@@ -2339,6 +2339,7 @@
   "N/A": "해당 없음",
   "Name": "이름",
   "name": "이름",
+  "Name cannot contain whitespace": "이름에 공백을 포함할 수 없습니다",
   "Name cannot start or end with a hyphen": "하이픈으로 시작하거나 끝낼 수 없는 이름",
   "Name must be at least 2 characters": "이름은 최소 2자 이상이어야 합니다",
   "Name must be at most 63 characters": "이름은 최대 63자 이내여야 합니다",
