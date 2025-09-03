@@ -2,31 +2,55 @@ import React from 'react';
 import * as PropTypes from 'prop-types';
 import {
   AccountBalanceOutlined,
+  AlternateEmailOutlined,
+  ArchitectureOutlined,
   AssignmentOutlined,
+  AutoAwesomeMotion,
+  BackupTableOutlined,
   BiotechOutlined,
   BugReportOutlined,
   CampaignOutlined,
+  CastConnectedOutlined,
   CenterFocusStrongOutlined,
+  CircleOutlined,
+  DashboardCustomizeOutlined,
   DescriptionOutlined,
+  DiamondOutlined,
   DomainOutlined,
+  DrawOutlined,
+  DriveFolderUploadOutlined,
+  EditOutlined,
+  EmailOutlined,
   EventOutlined,
   ExtensionOutlined,
   FactCheckOutlined,
+  FilterAltOutlined,
   FlagOutlined,
   LayersClearOutlined,
+  LinkOutlined,
   LocalOfferOutlined,
+  LocalPoliceOutlined,
   LoginOutlined,
   LogoutOutlined,
   ManageAccountsOutlined,
   MapOutlined,
+  MemoryOutlined,
+  NotificationsOutlined,
   PersonOutlined,
   PlaceOutlined,
+  PlayCircleOutlined,
+  PlaylistRemoveOutlined,
+  PrecisionManufacturingOutlined,
   PublicOutlined,
+  ReceiptOutlined,
   ReportProblemOutlined,
   ReviewsOutlined,
+  RouteOutlined,
   RouterOutlined,
-  SettingsOutlined,
+  SafetyCheckOutlined,
+  SecurityOutlined,
   SettingsApplicationsOutlined,
+  SettingsOutlined,
   ShortTextOutlined,
   SourceOutlined,
   SpeakerNotesOutlined,
@@ -34,47 +58,27 @@ import {
   StreamOutlined,
   SubjectOutlined,
   SurroundSoundOutlined,
+  TaskAlt,
   TaskAltOutlined,
+  TerminalOutlined,
   TranslateOutlined,
+  TravelExploreOutlined,
+  TroubleshootOutlined,
+  UpcomingOutlined,
+  ViewStreamTwoTone,
+  VisibilityOutlined,
   WebAssetOutlined,
   WifiTetheringOutlined,
   WorkOutline,
   WorkspacesOutlined,
-  SafetyCheckOutlined,
-  SecurityOutlined,
-  LocalPoliceOutlined,
-  DashboardCustomizeOutlined,
-  TravelExploreOutlined,
-  ReceiptOutlined,
-  UpcomingOutlined,
-  PrecisionManufacturingOutlined,
-  FilterAltOutlined,
-  CastConnectedOutlined,
-  TerminalOutlined,
-  DriveFolderUploadOutlined,
-  EditOutlined,
-  MemoryOutlined,
-  NotificationsOutlined,
-  LinkOutlined,
-  VisibilityOutlined,
-  RouteOutlined,
-  TroubleshootOutlined,
-  DiamondOutlined,
-  CircleOutlined,
-  TaskAlt,
-  AutoAwesomeMotion,
-  ViewStreamTwoTone,
-  BackupTableOutlined,
-  PlayCircleOutlined,
-  ArchitectureOutlined,
-  PlaylistRemoveOutlined,
-  DrawOutlined,
-  AlternateEmailOutlined,
-  EmailOutlined,
 } from '@mui/icons-material';
 import {
-  AutoFix,
+  AccountGroupOutline,
+  AccountMultipleOutline,
   ArchiveOutline,
+  AutoFix,
+  BankMinus,
+  BankPlus,
   Biohazard,
   BriefcaseCheckOutline,
   BriefcaseEditOutline,
@@ -83,27 +87,27 @@ import {
   BriefcaseSearchOutline,
   ChessKnight,
   CityVariantOutline,
+  ClipboardTextClockOutline,
   DatabaseExportOutline,
   FileDelimitedOutline,
   FileOutline,
+  FilterVariant,
   Fire,
+  FlaskOutline,
+  Gauge,
+  Group,
   HexagonOutline,
   LabelOutline,
   LaptopAccount,
+  LockMinusOutline,
+  LockOutline,
   LockPattern,
   ProgressWrench,
   ShieldSearch,
-  VectorRadius,
-  ClipboardTextClockOutline,
-  AccountMultipleOutline,
-  AccountGroupOutline,
-  Group,
-  FilterVariant,
-  FlaskOutline,
-  Gauge,
   SourceFork,
   SourcePull,
   Target,
+  VectorRadius,
 } from 'mdi-material-ui';
 import TableViewIcon from '@mui/icons-material/TableView';
 import { itemColor } from '../utils/Colors';
@@ -237,6 +241,14 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'identity':
       return (
         <AccountBalanceOutlined style={style} fontSize={fontSize} role="img" />
+      );
+    case 'organization-add':
+      return (
+        <BankPlus style={style} fontSize={fontSize} role="img" />
+      );
+    case 'organization-remove':
+      return (
+        <BankMinus style={style} fontSize={fontSize} role="img" />
       );
     case 'sector':
       return <DomainOutlined style={style} fontSize={fontSize} role="img" />;
@@ -564,6 +576,10 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       return <SecurityOutlined style={style} fontSize={fontSize} role="img" />;
     case 'autofix':
       return <AutoFix style={style} fontSize={fontSize} role="img" />;
+    case 'lock':
+      return <LockOutline style={style} fontSize={fontSize} role="img" />;
+    case 'lock-remove':
+      return <LockMinusOutline style={style} fontSize={fontSize} role="img" />;
     case 'default':
       return <CircleOutlined style={style} fontSize={fontSize} role="img" />;
     default:

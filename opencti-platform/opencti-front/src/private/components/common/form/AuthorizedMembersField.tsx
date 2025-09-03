@@ -21,6 +21,7 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
+import { OPENCTI_ADMIN_UUID } from '../../../../utils/hooks/useGranted';
 
 /**
  * Returns true if the authorized member option is generic.
@@ -46,6 +47,10 @@ interface AuthorizedMembersFieldProps
   showCreatorLine?: boolean;
   canDeactivate?: boolean;
   addMeUserWithAdminRights?: boolean;
+  enableAccesses?: boolean;
+  hideInfo?: boolean;
+  adminDefault?: boolean;
+  dynamicKeysForPlaybooks?: boolean;
 }
 
 // Type of data for internal form, not exposed to others.
@@ -79,6 +84,10 @@ const AuthorizedMembersField = ({
   showCreatorLine = false,
   canDeactivate = false,
   addMeUserWithAdminRights = false,
+  enableAccesses = false,
+  hideInfo = false,
+  adminDefault = false,
+  dynamicKeysForPlaybooks = false,
 }: AuthorizedMembersFieldProps) => {
   const { t_i18n } = useFormatter();
   const { setFieldValue } = form;
@@ -89,9 +98,7 @@ const AuthorizedMembersField = ({
   // Value in sync with internal Formik field 'applyAccesses'.
   // Require to use a state in addition to the Formik field because
   // we use the value outside the scope of the internal Formik form.
-  const [applyAccesses, setApplyAccesses] = useState(
-    value && Array.isArray(value) && value.length > 0,
-  );
+  const [applyAccesses, setApplyAccesses] = useState(enableAccesses || (value && Array.isArray(value) && value.length > 0));
   const accessForAllMembers = (value ?? []).find(
     (o) => o.value === ALL_MEMBERS_AUTHORIZED_CONFIG.id,
   );
@@ -304,7 +311,7 @@ const AuthorizedMembersField = ({
           setFieldValue: setField,
         }) => (
           <>
-            <Alert severity="info">{accessInfoMessage}</Alert>
+            {!hideInfo && <Alert severity="info">{accessInfoMessage}</Alert>}
             {!!draftContext && (
             <Alert style={{ marginTop: 15 }} severity="warning">{t_i18n('Not available in draft')}</Alert>
             )}
@@ -349,6 +356,7 @@ const AuthorizedMembersField = ({
                     <ObjectMembersField
                       name="newAccessMember"
                       disabled={!values.applyAccesses}
+                      dynamicKeysForPlaybooks={dynamicKeysForPlaybooks}
                     />
                     {value?.find(
                       (a) => a.value === values.newAccessMember?.value,
@@ -376,7 +384,7 @@ const AuthorizedMembersField = ({
                     ))}
                   </Field>
                   <IconButton
-                    color="secondary"
+                    color="primary"
                     aria-label="More"
                     onClick={() => handleSubmit()}
                     disabled={
@@ -461,16 +469,19 @@ const AuthorizedMembersField = ({
             <>
               {value && value.length > 0 && (
                 <List sx={{ pt: 0 }}>
-                  {value.map((authorizedMember, index) => (!isGenericOption(authorizedMember.value) ? (
-                    <AuthorizedMembersFieldListItem
-                      key={index}
-                      authorizedMember={authorizedMember}
-                      name={`${name}[${index}].accessRight`}
-                      accessRights={accessRights}
-                      ownerId={owner?.id}
-                      onRemove={() => arrayHelpers.remove(index)}
-                    />
-                  ) : null))}
+                  {value.map((authorizedMember, index) => (
+                    !isGenericOption(authorizedMember.value)
+                      && !(adminDefault && authorizedMember.value === OPENCTI_ADMIN_UUID
+                      ) ? (
+                        <AuthorizedMembersFieldListItem
+                          key={index}
+                          authorizedMember={authorizedMember}
+                          name={`${name}[${index}].accessRight`}
+                          accessRights={accessRights}
+                          ownerId={owner?.id}
+                          onRemove={() => arrayHelpers.remove(index)}
+                        />
+                      ) : null))}
                 </List>
               )}
             </>
