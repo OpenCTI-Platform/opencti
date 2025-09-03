@@ -17,7 +17,7 @@ import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from
 import { Promise as BluePromise } from 'bluebird';
 import * as R from 'ramda';
 import type { BasicStoreSettings } from '../types/settings';
-import { EVENT_TYPE_UPDATE, waitInSec } from '../database/utils';
+import { EVENT_TYPE_UPDATE, isEmptyField, waitInSec } from '../database/utils';
 import conf, { ENABLED_FILE_INDEX_MANAGER, logApp } from '../config/conf';
 import { createStreamProcessor, type StreamProcessor, } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
@@ -64,6 +64,9 @@ const loadFilesToIndex = async (file: FileToIndexObject) => {
 
 export const indexImportedFiles = async (context: AuthContext, indexFromDate: string | null) => {
   const fileOptions = await buildOptionsFromFileManager(context);
+  if (isEmptyField(fileOptions.opts.prefixMimeTypes)) {
+    return; // no mimetype prefix selected, should return 0 files
+  }
   const opts = { ...fileOptions.opts, modifiedSince: indexFromDate };
   const allFiles = await allFilesForPaths(context, SYSTEM_USER, fileOptions.paths ?? [], opts);
 
