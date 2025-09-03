@@ -17,7 +17,8 @@ export const findById = (context, user, externalReferenceId) => {
 };
 
 export const findAll = (context, user, args) => {
-  return listEntities(context, user, [ENTITY_TYPE_EXTERNAL_REFERENCE], args);
+  const filters = addFilter(args.filters, 'base_type', 'ENTITY');
+  return listEntities(context, user, [ENTITY_TYPE_EXTERNAL_REFERENCE], { ...args, filters });
 };
 
 export const references = async (context, user, externalReferenceId, args) => {
