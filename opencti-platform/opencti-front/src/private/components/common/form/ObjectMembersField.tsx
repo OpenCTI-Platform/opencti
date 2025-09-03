@@ -78,7 +78,7 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
     {
       type: t_i18n('Dynamic from the main entity triggering the playbook'),
       value: 'AUTHOR',
-      label: t_i18n('Author'),
+      label: t_i18n('Author (organization)'),
     },
     {
       type: t_i18n('Dynamic from the main entity triggering the playbook'),
