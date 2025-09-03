@@ -20,6 +20,7 @@ import { buildStixUpdateEvent, publishStixToStream } from '../database/redis';
 import { INPUT_DOMAIN_TO, INPUT_OBJECTS, RULE_PREFIX } from '../schema/general';
 import { FilterMode, FilterOperator } from '../generated/graphql';
 import { asyncFilter } from '../utils/data-processing';
+import { logApp } from '../config/conf';
 
 const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: string, relationTypes: RelationTypes): RuleRuntime => {
   const { id } = ruleDefinition;
@@ -106,12 +107,14 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
         inputs.push({ key: INPUT_OBJECTS, value: deletedTargetRefs, operation: UPDATE_OPERATION_REMOVE });
       }
       const message = await generateUpdateMessage(context, RULE_MANAGER_USER, report.extensions[STIX_EXT_OCTI].type, inputs);
+      logApp.info('[RULE_MANAGER_DEBUG] Sending update message', { message });
       const updateEvent = buildStixUpdateEvent(RULE_MANAGER_USER, report, updatedReport, message);
       await publishStixToStream(context, RULE_MANAGER_USER, updateEvent);
     }
   };
   const handleReportCreation = async (context: AuthContext, report: StixReport, addedRefs: Array<string>, removedRefs: Array<string>): Promise<void> => {
     if (addedRefs.length > 0) {
+      logApp.info('[RULE_MANAGER_DEBUG] Looking up added refs', { addedRefsLength: addedRefs.length });
       const identities = await internalFindByIds(context, RULE_MANAGER_USER, addedRefs) as Array<StoreObject>;
       const originIds = identities.map((i) => i.internal_id);
       // Find all identities part of current identities
@@ -140,6 +143,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
       };
       const listArgs = isSource ? { fromId: originIds, toTypes: [relationTypes.rightType] } : { toId: originIds, fromTypes: [relationTypes.leftType] };
       const fullListArgs = { ...listArgs, callback: listAddedRefsCallback };
+      logApp.info('[RULE_MANAGER_DEBUG] Listing all rels', { fullListArgs });
       await listAllRelations<BasicStoreRelation>(context, RULE_MANAGER_USER, relationTypes.creationType, fullListArgs);
     }
 
@@ -159,6 +163,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
         }
       };
       const args = { fromId: report.extensions[STIX_EXT_OCTI].id, filters, noFiltersChecking: true, indices: READ_DATA_INDICES, callback: listRemovedRefsCallback };
+      logApp.info('[RULE_MANAGER_DEBUG] Listing all remove rels', { args });
       await listAllRelations<BasicStoreRelation>(context, RULE_MANAGER_USER, RELATION_OBJECT, args);
     }
   };
