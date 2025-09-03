@@ -143,7 +143,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
       };
       const listArgs = isSource ? { fromId: originIds, toTypes: [relationTypes.rightType] } : { toId: originIds, fromTypes: [relationTypes.leftType] };
       const fullListArgs = { ...listArgs, callback: listAddedRefsCallback };
-      logApp.info('[RULE_MANAGER_DEBUG] Listing all rels', { fullListArgs });
+      logApp.info('[RULE_MANAGER_DEBUG] Listing all rels', { listArgs });
       await listAllRelations<BasicStoreRelation>(context, RULE_MANAGER_USER, relationTypes.creationType, fullListArgs);
     }
 
@@ -163,7 +163,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
         }
       };
       const args = { fromId: report.extensions[STIX_EXT_OCTI].id, filters, noFiltersChecking: true, indices: READ_DATA_INDICES, callback: listRemovedRefsCallback };
-      logApp.info('[RULE_MANAGER_DEBUG] Listing all remove rels', { args });
+      logApp.info('[RULE_MANAGER_DEBUG] Listing all remove rels', { fromId: args.fromId, filters });
       await listAllRelations<BasicStoreRelation>(context, RULE_MANAGER_USER, RELATION_OBJECT, args);
     }
   };
