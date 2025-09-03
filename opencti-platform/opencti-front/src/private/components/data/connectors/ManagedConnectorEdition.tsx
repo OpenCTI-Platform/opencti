@@ -213,7 +213,7 @@ const ManagedConnectorEdition = ({
               <div style={{ marginTop: theme.spacing(2), gap: theme.spacing(1), display: 'flex', justifyContent: 'flex-end' }}>
                 <div style={{ display: 'flex', gap: theme.spacing(1) }}>
                   <Button
-                    variant="outlined"
+                    variant="contained"
                     color="primary"
                     onClick={() => {
                       resetForm();
@@ -223,7 +223,7 @@ const ManagedConnectorEdition = ({
                   </Button>
                   <Button
                     variant="contained"
-                    color="primary"
+                    color="secondary"
                     onClick={() => {
                       submitConnectorManagementCreation(values, {
                         setSubmitting,
