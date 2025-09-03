@@ -213,7 +213,7 @@ const OtpComponent = ({ closeFunction }) => (
 );
 
 const ProfileOverviewComponent = (props) => {
-  const { t, me, classes, about, settings, themes } = props;
+  const { t, me, classes, about, settings } = props;
   const theme = useTheme();
   const { external, otp_activated: useOtp } = me;
   const { t_i18n } = useFormatter();
@@ -286,11 +286,6 @@ const ProfileOverviewComponent = (props) => {
       },
     });
   };
-
-  const themeList = themes?.edges
-    ?.filter((node) => !!node)
-    .map((node) => node.node)
-    ?? [];
 
   return (
     <div className={classes.container}>
@@ -408,9 +403,8 @@ const ProfileOverviewComponent = (props) => {
                 onChange={handleSubmitField}
               >
                 <MenuItem value="default">{t('Default')}</MenuItem>
-                {themeList.map(({ id, name }) => (
-                  <MenuItem key={id} value={id}>{name}</MenuItem>
-                ))}
+                <MenuItem value="dark">{t('Dark')}</MenuItem>
+                <MenuItem value="light">{t('Light')}</MenuItem>
               </Field>
               <Field
                 component={SelectField}
@@ -720,9 +714,6 @@ ProfileOverviewComponent.propTypes = {
   theme: PropTypes.object,
   t: PropTypes.func,
   me: PropTypes.object,
-  about: PropTypes.object,
-  settings: PropTypes.object,
-  themes: PropTypes.object,
 };
 
 const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
