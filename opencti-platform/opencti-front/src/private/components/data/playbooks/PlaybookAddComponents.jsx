@@ -18,6 +18,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
 import { ListItemButton } from '@mui/material';
+import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
 import CaseTemplateField from '../../common/form/CaseTemplateField';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import OpenVocabField from '../../common/form/OpenVocabField';
@@ -593,6 +594,20 @@ const PlaybookAddComponentsContent = ({
               />
               {Object.entries(configurationSchema?.properties ?? {}).map(
                 ([k, v]) => {
+                  if (k === 'access_restrictions') {
+                    return (
+                      <Field
+                        key={k}
+                        name="access_restrictions"
+                        label={t_i18n('Access restrictions')}
+                        component={AuthorizedMembersField}
+                        showAllMembersLine={true}
+                        enableAccesses={true}
+                        hideInfo={true}
+                        adminDefault={true}
+                      />
+                    );
+                  }
                   if (k === 'authorized_members') {
                     return (
                       <ObjectMembersField

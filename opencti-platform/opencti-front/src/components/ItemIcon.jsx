@@ -71,6 +71,7 @@ import {
   DrawOutlined,
   AlternateEmailOutlined,
   EmailOutlined,
+  LockOutlined,
 } from '@mui/icons-material';
 import {
   AutoFix,
@@ -564,6 +565,8 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       return <SecurityOutlined style={style} fontSize={fontSize} role="img" />;
     case 'autofix':
       return <AutoFix style={style} fontSize={fontSize} role="img" />;
+    case 'lock':
+      return <LockOutlined style={style} fontSize={fontSize} role="img" />;
     case 'default':
       return <CircleOutlined style={style} fontSize={fontSize} role="img" />;
     default:

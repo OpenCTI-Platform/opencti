@@ -40,7 +40,8 @@ import {
   INPUT_KILLCHAIN,
   INPUT_LABELS,
   INPUT_MARKINGS,
-  INPUT_PARTICIPANT
+  INPUT_PARTICIPANT,
+  OPENCTI_ADMIN_UUID
 } from '../../schema/general';
 import { convertStoreToStix } from '../../database/stix-2-1-converter';
 import type { BasicStoreCommon, BasicStoreRelation, StoreCommon, StoreRelation } from '../../types/store';
@@ -100,6 +101,7 @@ import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
 import { findAllByCaseTemplateId } from '../task/task-domain';
 import type { BasicStoreEntityTaskTemplate } from '../task/task-template/task-template-types';
 import type { BasicStoreSettings } from '../../types/settings';
+import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES, editAuthorizedMembers } from '../../utils/authorizedMembers';
 
 const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixObject => {
   const baseData = bundle.objects.find((o) => o.id === instanceId);
@@ -628,6 +630,68 @@ export const PLAYBOOK_SHARING_COMPONENT: PlaybookComponent<SharingConfiguration>
       const element = bundle.objects[index];
       if (all || element.id === dataInstanceId) {
         element.extensions[STIX_EXT_OCTI].granted_refs = [...(element.extensions[STIX_EXT_OCTI].granted_refs ?? []), ...organizationIds];
+      }
+    }
+    return { output_port: 'out', bundle };
+  }
+};
+
+export interface AccessRestrictionsConfiguration {
+  access_restrictions: { groupsRestriction: { label: string, value: string, type: string }[], accessRight: string, label: string, type: string, value: string }[]
+  all: boolean
+}
+const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT_SCHEMA: JSONSchemaType<AccessRestrictionsConfiguration> = {
+  type: 'object',
+  properties: {
+    access_restrictions: {
+      type: 'array',
+      uniqueItems: true,
+      default: [{
+        label: 'Administrator',
+        type: 'User',
+        value: OPENCTI_ADMIN_UUID,
+        accessRight: 'admin',
+        groupsRestriction: [],
+      }],
+      $ref: 'Access restrictions',
+      items: { type: 'object', oneOf: [] }
+    },
+    all: { type: 'boolean', $ref: 'Apply access restrictions on all elements included in the bundle', default: false },
+  },
+  required: ['access_restrictions'],
+};
+export const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<AccessRestrictionsConfiguration> = {
+  id: 'PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT',
+  name: 'Manage access restrictions',
+  description: 'Manage advanced access restrictions on entities',
+  icon: 'lock',
+  is_entry_point: false,
+  is_internal: true,
+  ports: [{ id: 'out', type: 'out' }],
+  configuration_schema: PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT_SCHEMA,
+  schema: async () => PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT_SCHEMA,
+  executor: async ({ dataInstanceId, playbookNode, bundle }) => {
+    const context = executionContext('playbook_components');
+    const { access_restrictions: accessRestrictions, all } = playbookNode.configuration;
+    const input = accessRestrictions.map((n) => ({
+      id: n.value,
+      access_right: n.accessRight,
+      groups_restriction_ids: n.groupsRestriction.map((o) => o.value),
+    }));
+    for (let index = 0; index < bundle.objects.length; index += 1) {
+      const element = bundle.objects[index];
+      const internalType = generateInternalType(element);
+      if (AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES.includes(internalType) && (all || element.id === dataInstanceId)) {
+        const args = {
+          entityId: element.id,
+          input,
+          requiredCapabilities: ['KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS'],
+          entityType: internalType,
+          busTopicKey: ABSTRACT_STIX_DOMAIN_OBJECT,
+        };
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        await editAuthorizedMembers(context, AUTOMATION_MANAGER_USER, args);
       }
     }
     return { output_port: 'out', bundle };
@@ -1442,6 +1506,7 @@ export const PLAYBOOK_COMPONENTS: { [k: string]: PlaybookComponent<object> } = {
   [PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT.id]: PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT,
   [PLAYBOOK_CONTAINER_WRAPPER_COMPONENT.id]: PLAYBOOK_CONTAINER_WRAPPER_COMPONENT,
   [PLAYBOOK_SHARING_COMPONENT.id]: PLAYBOOK_SHARING_COMPONENT,
+  [PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.id]: PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT,
   [PLAYBOOK_RULE_COMPONENT.id]: PLAYBOOK_RULE_COMPONENT,
   [PLAYBOOK_NOTIFIER_COMPONENT.id]: PLAYBOOK_NOTIFIER_COMPONENT,
   [PLAYBOOK_CREATE_INDICATOR_COMPONENT.id]: PLAYBOOK_CREATE_INDICATOR_COMPONENT,
