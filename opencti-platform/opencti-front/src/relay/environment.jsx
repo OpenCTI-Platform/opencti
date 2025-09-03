@@ -22,6 +22,14 @@ export const MESSAGING$ = {
     }));
     MESSENGER$.next(messages);
   },
+  notifyCustomRelayError: (error, errorMessageMap) => {
+    const messages = (error.res.errors ?? []).map((e) => ({
+      type: 'error',
+      text: errorMessageMap[e.name] ?? e.message,
+      fullError: e,
+    }));
+    MESSENGER$.next(messages);
+  },
   notifySuccess: (text) => MESSENGER$.next([{ type: 'message', text }]),
   notifyNLQ: (text) => MESSENGER$.next([{ type: 'nlq', text }]),
   toggleNav: new Subject(),

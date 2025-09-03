@@ -3989,6 +3989,7 @@
   "You are about to switch to Draft mode. All your OpenCTI platform will be in draft. The selected Draft will be the draft by default.": "Si sta per passare alla modalità Bozza. Tutta la piattaforma OpenCTI sarà in bozza. La bozza selezionata sarà quella predefinita.",
   "You are about to validate this mapping, it will add suggested entities to your container.": "Stai per convalidare questa mappatura, aggiungerà le entità suggerite al tuo contenitore.",
   "You are not allowed to do this": "Non è consentito fare questo",
+  "You are not allowed to do this because you do not have the rights to create dashboards.": "Non è possibile farlo perché non si hanno i diritti per creare dashboard.",
   "You are not allowed to do this.": "Non ti è permesso fare questo.",
   "You are not authorized to see this data.": "Non sei autorizzato a vedere questi dati.",
   "You are now in Draft Mode": "Ora sei in modalità Bozza",

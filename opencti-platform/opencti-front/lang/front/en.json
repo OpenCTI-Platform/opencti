@@ -3989,6 +3989,7 @@
   "You are about to switch to Draft mode. All your OpenCTI platform will be in draft. The selected Draft will be the draft by default.": "You are about to switch to Draft mode. All your OpenCTI platform will be in draft. The selected Draft will be the draft by default.",
   "You are about to validate this mapping, it will add suggested entities to your container.": "You are about to validate this mapping, it will add suggested entities to your container.",
   "You are not allowed to do this": "You are not allowed to do this",
+  "You are not allowed to do this because you do not have the rights to create dashboards.": "You are not allowed to do this because you do not have the rights to create dashboards.",
   "You are not allowed to do this.": "You are not allowed to do this.",
   "You are not authorized to see this data.": "You are not authorized to see this data.",
   "You are now in Draft Mode": "You are now in Draft Mode",

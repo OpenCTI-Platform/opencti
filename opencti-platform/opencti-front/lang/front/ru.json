@@ -3989,6 +3989,7 @@
   "You are about to switch to Draft mode. All your OpenCTI platform will be in draft. The selected Draft will be the draft by default.": "Вы собираетесь перейти в режим черновика. Вся ваша платформа OpenCTI будет находиться в черновом варианте. Выбранный черновик будет черновиком по умолчанию.",
   "You are about to validate this mapping, it will add suggested entities to your container.": "Сейчас вы проверите это отображение, и оно добавит предложенные сущности в ваш контейнер.",
   "You are not allowed to do this": "Вам не разрешается делать это",
+  "You are not allowed to do this because you do not have the rights to create dashboards.": "Вы не можете этого сделать, потому что у вас нет прав на создание приборных панелей.",
   "You are not allowed to do this.": "Вам не разрешается этого делать.",
   "You are not authorized to see this data.": "Вы не имеете права просматривать эти данные.",
   "You are now in Draft Mode": "Теперь вы находитесь в режиме черновика",
