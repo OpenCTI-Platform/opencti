@@ -80,6 +80,7 @@ import {
   RELATION_TECHNOLOGY_TO,
   RELATION_TECHNOLOGY_FROM,
   RELATION_DEMONSTRATES,
+  RELATION_AMPLIFIES,
 } from '../schema/stixCoreRelationship';
 import { isStixRefRelationship } from '../schema/stixRefRelationship';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ENTITY_TYPE_THREAT_ACTOR } from '../schema/general';
@@ -270,6 +271,9 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   ],
   [`${ENTITY_TYPE_CHANNEL}_${ENTITY_TYPE_INTRUSION_SET}`]: [
     { name: RELATION_BELONGS_TO, type: REL_EXTENDED }
+  ],
+  [`${ENTITY_TYPE_CHANNEL}_${ENTITY_MEDIA_CONTENT}`]: [
+    { name: RELATION_AMPLIFIES, type: REL_NEW }
   ],
   // endregion
   // region COURSE_OF_ACTION
@@ -1192,8 +1196,11 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_MEDIA_CONTENT}_${ENTITY_USER_ACCOUNT}`]: [
     { name: RELATION_AUTHORED_BY, type: REL_EXTENDED }
   ],
+  [`${ENTITY_MEDIA_CONTENT}_${ENTITY_TYPE_NARRATIVE}`]: [
+    { name: RELATION_USES, type: REL_EXTENDED }
+  ],
   [`${ENTITY_MEDIA_CONTENT}_${ENTITY_MEDIA_CONTENT}`]: [
-    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
+    { name: RELATION_DERIVED_FROM, type: REL_EXTENDED }
   ],
   // From USER_ACCOUNT
   [`${ENTITY_USER_ACCOUNT}_${ENTITY_MEDIA_CONTENT}`]: [

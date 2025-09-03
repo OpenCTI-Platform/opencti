@@ -2,9 +2,6 @@
 kind: pipeline
 name: opencti-tests
 
-node:
-  env: kubernetes
-
 steps:
   - name: Runner information
     image: alpine:3.19
