@@ -72,9 +72,13 @@ const sanitizeContainerName = (label: string): string => {
 };
 
 // Validate K8s name format
-const isValidContainerName = (name: string): boolean => {
-  return /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/.test(name) && name.length >= 2 && name.length <= 63;
-};
+const k8sNameSchema = (t_i18n: (key: string) => string) => Yup.string()
+  .required(t_i18n('This field is required'))
+  .min(2, t_i18n('Name must be at least 2 characters'))
+  .max(63, t_i18n('Name must be at most 63 characters'))
+  .matches(/^\S+$/, t_i18n('Name cannot contain whitespace'))
+  .matches(/^[a-z0-9-]+$/, t_i18n('Only lowercase letters, numbers and hyphens are allowed'))
+  .matches(/^[a-z0-9].*[a-z0-9]$/, t_i18n('Name cannot start or end with a hyphen'));
 
 interface IngestionCatalogConnectorCreationProps {
   connector: IngestionConnector;
@@ -142,7 +146,7 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
       },
       onCompleted: (response: IngestionCatalogConnectorCreationMutation$data) => {
         const connectorId = response.managedConnectorAdd?.id;
-        MESSAGING$.notifySuccess(<span><Link to={`/dashboard/data/ingestion/connectors/${connectorId}`}>{t_i18n('The connector instance has been deployed')}</Link></span>);
+        MESSAGING$.notifySuccess(t_i18n('The connector instance has been deployed. You can now start it.'));
         setSubmitting?.(false);
         resetForm?.();
         onClose();
@@ -251,13 +255,7 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
         <Formik<ManagedConnectorValues>
           onReset={onClose}
           validationSchema={Yup.object().shape({
-            name: Yup.string()
-              .required(t_i18n('This field is required'))
-              .min(2, t_i18n('Name must be at least 2 characters'))
-              .max(63, t_i18n('Name must be at most 63 characters'))
-              .test('valid-container-name', t_i18n('Name must contain only lowercase letters, numbers, and hyphens. Must start and end with a letter or number.'), (value) => {
-                return !value || isValidContainerName(value);
-              }),
+            name: k8sNameSchema(t_i18n),
             user_id: Yup.object().required(),
           })}
           initialValues={{
@@ -267,9 +265,10 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
             automatic_user: true,
             ...configDefaults,
           }}
+          validateOnMount
           onSubmit={() => {}}
         >
-          {({ values, isSubmitting, setSubmitting, resetForm, isValid, setValues, setFieldValue }) => {
+          {({ values, isSubmitting, setSubmitting, resetForm, isValid, setValues }) => {
             const errors = compiledValidator?.validate(values)?.errors;
 
             return (
@@ -291,15 +290,14 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
                     required
                     fullWidth={true}
                     helperText={t_i18n('Only lowercase letters, numbers and hyphens')}
-                    onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                      setFieldValue('name', sanitizeContainerName(event.target.value));
-                    }}
                   />
+
                   <IngestionCreationUserHandling
                     default_confidence_level={connector.max_confidence_level}
                     labelTag="C"
                     isSensitive={true}
                   />
+
                   {(hasRequiredProperties || hasOptionalProperties) && (
                     <>
                       <div style={fieldSpacingContainerStyle}>{t_i18n('Configuration')}</div>
