@@ -28,7 +28,6 @@ const workspaceHeaderFragment = graphql`
     type
     currentUserAccessRight
     ...WorkspaceKebabMenuFragment
-    ...WorkspaceWidgetConfigFragment
     ...WorkspaceEditionContainer_workspace
   }
 `;
@@ -52,6 +51,7 @@ type WorkspaceHeaderProps = {
     relativeDate: string | null
   },
   handleAddWidget?: () => void;
+  handleImportWidget?: (widgetFile: File) => void
 };
 
 const WorkspaceHeader = ({
@@ -59,6 +59,7 @@ const WorkspaceHeader = ({
   variant,
   adjust = () => {},
   handleAddWidget = () => {},
+  handleImportWidget = () => {},
 }: WorkspaceHeaderProps) => {
   const { t_i18n } = useFormatter();
   const workspace = useFragment(workspaceHeaderFragment, data);
@@ -120,7 +121,7 @@ const WorkspaceHeader = ({
             >
               <WorkspaceWidgetConfig
                 onComplete={handleAddWidget}
-                data={workspace}
+                handleImportWidget={handleImportWidget}
               />
             </Security>
           </>)}
