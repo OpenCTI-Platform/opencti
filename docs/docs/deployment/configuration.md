@@ -173,6 +173,8 @@ Here are the configuration keys, for both containers (environment variables) and
 | redis:hostnames            | REDIS__HOSTNAMES            |               | Hostnames definition for Redis cluster or sentinel mode: a list of host:port objects. |
 | redis:port                 | REDIS__PORT                 | 6379          | Port of the Redis Server                                                              |
 | redis:sentinel_master_name | REDIS__SENTINEL_MASTER_NAME |               | Name of your Redis Sentinel Master (mandatory in sentinel mode)                       |
+| redis:sentinel_username    | REDIS__SENTINEL_USERNAME    |               | Username to authenticate on Redis Sentinel                                            |
+| redis:sentinel_password    | REDIS__SENTINEL_PASSWORD    |               | Password to authenticate on Redis Sentinel                                            |
 | redis:use_ssl              | REDIS__USE_SSL              | `false`       | Is the Redis Server has TLS enabled                                                   |
 | redis:username             | REDIS__USERNAME             |               | Username of the Redis Server                                                          |
 | redis:password             | REDIS__PASSWORD             |               | Password of the Redis Server                                                          |
