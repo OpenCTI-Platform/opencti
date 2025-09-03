@@ -17,6 +17,7 @@ Retention rules can be configured in the "Settings > Customization > Retention p
 ## Scopes
 
 There are 3 possible scopes for a retention rule:
+
 - **Knowledge**: The rule concerns all the entities of the platform. Users can define filters to target specific objects. Any object respecting the specified filters and that haven't been updated within the duration set in 'maximum retention days' will be permanently deleted.
 
 
