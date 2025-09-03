@@ -524,6 +524,7 @@ type ContextData {
   workspace_type: String
   pir_ids: [String!]
   pir_score: Int
+  pir_match_from: Boolean
 }
 
 type Log {

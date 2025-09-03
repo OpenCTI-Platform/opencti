@@ -59,8 +59,11 @@ export const pirHistoryFilterGroup: GqlFilterGroup = {
 export const pirLogRedirectUri = (
   context: {
     readonly entity_id: string | null | undefined
+    readonly pir_match_from: boolean | null | undefined
     readonly from_id: string | null | undefined
+    readonly to_id: string | null | undefined
   } | null | undefined,
 ) => {
-  return `/dashboard/id/${context?.from_id ?? context?.entity_id}`;
+  const relationshipRedirectionId = context?.pir_match_from ? context?.from_id : context?.to_id;
+  return `/dashboard/id/${relationshipRedirectionId ?? context?.entity_id}`;
 };

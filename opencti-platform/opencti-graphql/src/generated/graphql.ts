@@ -4308,6 +4308,7 @@ export type ContextData = {
   from_id?: Maybe<Scalars['String']['output']>;
   message: Scalars['String']['output'];
   pir_ids?: Maybe<Array<Scalars['String']['output']>>;
+  pir_match_from?: Maybe<Scalars['Boolean']['output']>;
   pir_score?: Maybe<Scalars['Int']['output']>;
   to_id?: Maybe<Scalars['String']['output']>;
   workspace_type?: Maybe<Scalars['String']['output']>;
@@ -36699,6 +36700,7 @@ export type ContextDataResolvers<ContextType = any, ParentType extends Resolvers
   from_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   pir_ids?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  pir_match_from?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   pir_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   to_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   workspace_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

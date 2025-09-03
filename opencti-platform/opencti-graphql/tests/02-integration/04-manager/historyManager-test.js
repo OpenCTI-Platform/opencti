@@ -315,6 +315,7 @@ describe('History manager test generatePirContextData', () => {
     };
     expect(generatePirContextData(relationshipEventWithSourceFlagged).pir_ids).toEqual([pirId1]);
     expect(generatePirContextData(relationshipEventWithSourceFlagged).from_id).toEqual('42e68a45-55e0-425e-aa11-51947f96e6bc');
+    expect(generatePirContextData(relationshipEventWithSourceFlagged).pir_match_from).toEqual(true);
   });
 
   it('should return pir ids if a new entity is flagged', async () => {
