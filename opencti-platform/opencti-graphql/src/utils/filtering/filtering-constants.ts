@@ -23,6 +23,7 @@ export const INSTANCE_REGARDING_OF_DIRECTION_FORCED = 'direction_forced';
 export const INSTANCE_REGARDING_OF_DIRECTION_REVERSE = 'direction_reverse';
 // ---- relationships
 // TODO remove and migration in favor of exploiting directly 'connections' in the relationship model
+export const RELATION_DYNAMIC_FILTER = 'dynamic';
 export const RELATION_FROM_FILTER = 'fromId';
 export const RELATION_DYNAMIC_FROM_FILTER = 'dynamicFrom';
 export const RELATION_TO_FILTER = 'toId';

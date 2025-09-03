@@ -161,6 +161,7 @@ import {
   isComplexConversionFilterKey,
   LAST_PIR_SCORE_DATE_FILTER_PREFIX,
   PIR_SCORE_FILTER_PREFIX,
+  RELATION_DYNAMIC_FILTER,
   RELATION_FROM_FILTER,
   RELATION_FROM_ROLE_FILTER,
   RELATION_FROM_TYPES_FILTER,
@@ -2989,9 +2990,9 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
       const filterKey = arrayKeys[0];
       if (filterKey === INSTANCE_REGARDING_OF || filterKey === INSTANCE_DYNAMIC_REGARDING_OF) {
         const regardingFilters = [];
-        const idParameter = filter.values.find((i) => i.key === 'id');
-        const typeParameter = filter.values.find((i) => i.key === 'relationship_type');
-        const dynamicParameter = filter.values.find((i) => i.key === 'dynamic');
+        const idParameter = filter.values.find((i) => i.key === ID_FILTER);
+        const typeParameter = filter.values.find((i) => i.key === RELATION_TYPE_FILTER);
+        const dynamicParameter = filter.values.find((i) => i.key === RELATION_DYNAMIC_FILTER);
         // Check parameters
         if (!idParameter && !dynamicParameter && !typeParameter) {
           throw UnsupportedError('Id or dynamic or relationship type are needed for this filtering key', { key: filterKey });
@@ -3704,6 +3705,136 @@ export const elAggregationsList = async (context, user, indexName, aggregations,
   });
 };
 
+// If filters contains an "in regards of" filter a post-security filtering is needed
+const regardingOfFiltering = async (context, user, elements, elementIds, opts) => {
+  const { filters = {} } = opts;
+  let filterCount = 0;
+  const lastElement = R.last(elements);
+  const endCursor = lastElement.sort ? offsetToCursor(lastElement.sort) : null;
+  // First check if there is an "in regards of" filter
+  // If its case we need to ensure elements are filtered according to denormalization rights.
+  if (isNotEmptyField(filters)) {
+    const availableKeys = extractFilterKeys(filters);
+    const isRegardingFilter = availableKeys.includes(INSTANCE_REGARDING_OF) || availableKeys.includes(INSTANCE_DYNAMIC_REGARDING_OF);
+    if (isRegardingFilter) {
+      const extractedFilters = extractFiltersFromGroup(filters, [INSTANCE_REGARDING_OF, INSTANCE_DYNAMIC_REGARDING_OF]);
+      const targetValidatedIds = new Set();
+      const sideIdManualInferred = new Map();
+      for (let i = 0; i < extractedFilters.length; i += 1) {
+        const { values } = extractedFilters[i];
+        const ids = values.filter((v) => v.key === ID_FILTER).map((f) => f.values).flat();
+        const types = values.filter((v) => v.key === RELATION_TYPE_FILTER).map((f) => f.values).flat();
+        const directionForced = R.head(values.filter((v) => v.key === INSTANCE_REGARDING_OF_DIRECTION_FORCED).map((f) => f.values).flat()) ?? false;
+        const directionReverse = R.head(values.filter((v) => v.key === INSTANCE_REGARDING_OF_DIRECTION_REVERSE).map((f) => f.values).flat()) ?? false;
+        // resolve all relationships that target the id values, forcing the type is available
+        const paginateArgs = { baseData: true, types };
+        if (directionForced) {
+          // If a direction is forced, build the filter in the correct direction
+          paginateArgs.filters = {
+            mode: 'and',
+            filters: [
+              { key: ['fromId'], values: directionReverse ? elementIds : ids },
+              { key: ['toId'], values: directionReverse ? ids : elementIds }
+            ],
+            filterGroups: []
+          };
+        } else {
+          // If no direction is setup, create the filter group for both directions
+          paginateArgs.filters = {
+            mode: 'or',
+            filters: [],
+            filterGroups: [{
+              mode: 'and',
+              filterGroups: [],
+              filters: [
+                { key: ['fromId'], values: elementIds },
+                { key: ['toId'], values: ids }
+              ],
+            }, {
+              mode: 'and',
+              filterGroups: [],
+              filters: [
+                { key: ['fromId'], values: ids },
+                { key: ['toId'], values: elementIds }
+              ],
+            }]
+          };
+        }
+        const relationships = await elList(context, user, READ_RELATIONSHIPS_INDICES, paginateArgs);
+        // compute side ids
+        const addTypeSide = (sideId, sideType) => {
+          targetValidatedIds.add(sideId);
+          if (sideIdManualInferred.has(sideId)) {
+            const toTypes = sideIdManualInferred.get(sideId);
+            toTypes.add(sideType);
+            sideIdManualInferred.set(sideId, toTypes);
+          } else {
+            const toTypes = new Set();
+            toTypes.add(sideType);
+            sideIdManualInferred.set(sideId, toTypes);
+          }
+        };
+        let startProcessingTime = new Date().getTime();
+        for (let relIndex = 0; relIndex < relationships.length; relIndex += 1) {
+          const relation = relationships[relIndex];
+          const relType = isInferredIndex(relation._index) ? 'inferred' : 'manual';
+          addTypeSide(relation.fromId, relType);
+          addTypeSide(relation.toId, relType);
+          // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
+          if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
+            startProcessingTime = new Date().getTime();
+            await new Promise((resolve) => {
+              setImmediate(resolve);
+            });
+          }
+        }
+      }
+      // For all convertHit id that is not included in the reduction, convert to restricted visibility
+      const filteredHits = [];
+      let startProcessingTime = new Date().getTime();
+      for (let hitIndex = 0; hitIndex < elements.length; hitIndex += 1) {
+        const convertedHit = elements[hitIndex];
+        if (!targetValidatedIds.has(convertedHit.id)) {
+          filterCount += 1;
+        } else {
+          convertedHit.regardingOfTypes = sideIdManualInferred.get(convertedHit.id);
+          filteredHits.push(convertedHit);
+        }
+        // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
+        if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
+          startProcessingTime = new Date().getTime();
+          await new Promise((resolve) => {
+            setImmediate(resolve);
+          });
+        }
+      }
+      return { elements: filteredHits, filterCount, endCursor };
+    }
+  }
+  return { elements, filterCount, endCursor };
+};
+
+// Build result from generic paginate
+// Ensure also post filtering when in regards of filtering is used.
+const buildSearchResult = async (context, user, data, first, searchAfter, opts = {}) => {
+  const { connectionFormat = true } = opts;
+  if (data.hits.hits.length === 0) {
+    if (connectionFormat) {
+      const elements = buildPagination(first, searchAfter, [], data.hits.total.value, 0);
+      return { elements, filterCount: 0, total: 0, endCursor: null };
+    }
+    return { elements: [], total: 0, filterCount: 0, endCursor: null };
+  }
+  const { elements, ids: elementIds } = await elConvertHits(data.hits.hits);
+  const { filterCount, endCursor, elements: convertedHits } = await regardingOfFiltering(context, user, elements, elementIds, opts);
+  if (connectionFormat) {
+    const nodeHits = convertedHits.map((n) => ({ node: n, sort: n.sort, types: n.regardingOfTypes }));
+    const paginateElements = buildPagination(first, searchAfter, nodeHits, data.hits.total.value, filterCount);
+    return { elements: paginateElements, total: data.hits.total.value, filterCount, endCursor };
+  }
+  return { elements: convertedHits, total: data.hits.total.value, filterCount, endCursor };
+};
+
 export const elPaginate = async (context, user, indexName, options = {}) => {
   // eslint-disable-next-line no-use-before-define
   const { baseData = false, baseFields = [], bypassSizeLimit = false } = options;
@@ -3853,136 +3984,6 @@ export const elAttributeValues = async (context, user, field, opts = {}) => {
   return buildPagination(0, null, nodeElements, nodeElements.length);
 };
 // endregion
-
-// If filters contains an "in regards of" filter a post-security filtering is needed
-const regardingOfFiltering = async (context, user, elements, elementIds, opts) => {
-  const { filters = {} } = opts;
-  let filterCount = 0;
-  const lastElement = R.last(elements);
-  const endCursor = lastElement.sort ? offsetToCursor(lastElement.sort) : null;
-  // First check if there is an "in regards of" filter
-  // If its case we need to ensure elements are filtered according to denormalization rights.
-  if (isNotEmptyField(filters)) {
-    const availableKeys = extractFilterKeys(filters);
-    const isRegardingFilter = availableKeys.includes(INSTANCE_REGARDING_OF) || availableKeys.includes(INSTANCE_DYNAMIC_REGARDING_OF);
-    if (isRegardingFilter) {
-      const extractedFilters = extractFiltersFromGroup(filters, [INSTANCE_REGARDING_OF, INSTANCE_DYNAMIC_REGARDING_OF]);
-      const targetValidatedIds = new Set();
-      const sideIdManualInferred = new Map();
-      for (let i = 0; i < extractedFilters.length; i += 1) {
-        const { values } = extractedFilters[i];
-        const ids = values.filter((v) => v.key === ID_FILTER).map((f) => f.values).flat();
-        const types = values.filter((v) => v.key === RELATION_TYPE_FILTER).map((f) => f.values).flat();
-        const directionForced = R.head(values.filter((v) => v.key === INSTANCE_REGARDING_OF_DIRECTION_FORCED).map((f) => f.values).flat()) ?? false;
-        const directionReverse = R.head(values.filter((v) => v.key === INSTANCE_REGARDING_OF_DIRECTION_REVERSE).map((f) => f.values).flat()) ?? false;
-        // resolve all relationships that target the id values, forcing the type is available
-        const paginateArgs = { baseData: true, types };
-        if (directionForced) {
-          // If a direction is forced, build the filter in the correct direction
-          paginateArgs.filters = {
-            mode: 'and',
-            filters: [
-              { key: ['fromId'], values: directionReverse ? elementIds : ids },
-              { key: ['toId'], values: directionReverse ? ids : elementIds }
-            ],
-            filterGroups: []
-          };
-        } else {
-          // If no direction is setup, create the filter group for both directions
-          paginateArgs.filters = {
-            mode: 'or',
-            filters: [],
-            filterGroups: [{
-              mode: 'and',
-              filterGroups: [],
-              filters: [
-                { key: ['fromId'], values: elementIds },
-                { key: ['toId'], values: ids }
-              ],
-            }, {
-              mode: 'and',
-              filterGroups: [],
-              filters: [
-                { key: ['fromId'], values: ids },
-                { key: ['toId'], values: elementIds }
-              ],
-            }]
-          };
-        }
-        const relationships = await elList(context, user, READ_RELATIONSHIPS_INDICES, paginateArgs);
-        // compute side ids
-        const addTypeSide = (sideId, sideType) => {
-          targetValidatedIds.add(sideId);
-          if (sideIdManualInferred.has(sideId)) {
-            const toTypes = sideIdManualInferred.get(sideId);
-            toTypes.add(sideType);
-            sideIdManualInferred.set(sideId, toTypes);
-          } else {
-            const toTypes = new Set();
-            toTypes.add(sideType);
-            sideIdManualInferred.set(sideId, toTypes);
-          }
-        };
-        let startProcessingTime = new Date().getTime();
-        for (let relIndex = 0; relIndex < relationships.length; relIndex += 1) {
-          const relation = relationships[relIndex];
-          const relType = isInferredIndex(relation._index) ? 'inferred' : 'manual';
-          addTypeSide(relation.fromId, relType);
-          addTypeSide(relation.toId, relType);
-          // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
-          if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
-            startProcessingTime = new Date().getTime();
-            await new Promise((resolve) => {
-              setImmediate(resolve);
-            });
-          }
-        }
-      }
-      // For all convertHit id that is not included in the reduction, convert to restricted visibility
-      const filteredHits = [];
-      let startProcessingTime = new Date().getTime();
-      for (let hitIndex = 0; hitIndex < elements.length; hitIndex += 1) {
-        const convertedHit = elements[hitIndex];
-        if (!targetValidatedIds.has(convertedHit.id)) {
-          filterCount += 1;
-        } else {
-          convertedHit.regardingOfTypes = sideIdManualInferred.get(convertedHit.id);
-          filteredHits.push(convertedHit);
-        }
-        // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
-        if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
-          startProcessingTime = new Date().getTime();
-          await new Promise((resolve) => {
-            setImmediate(resolve);
-          });
-        }
-      }
-      return { elements: filteredHits, filterCount, endCursor };
-    }
-  }
-  return { elements, filterCount, endCursor };
-};
-
-// Build result from generic paginate
-// Ensure also post filtering when in regards of filtering is used.
-const buildSearchResult = async (context, user, data, first, searchAfter, opts = {}) => {
-  const { connectionFormat = true } = opts;
-  if (data.hits.hits.length === 0) {
-    if (connectionFormat) {
-      const elements = buildPagination(first, searchAfter, [], data.hits.total.value, 0);
-      return { elements, filterCount: 0, total: 0, endCursor: null };
-    }
-    return { elements: [], total: 0, filterCount: 0, endCursor: null };
-  }
-  const { elements, ids: elementIds } = await elConvertHits(data.hits.hits);
-  const { filterCount, endCursor, elements: convertedHits } = await regardingOfFiltering(context, user, elements, elementIds, opts);
-  if (connectionFormat) {
-    const nodeHits = convertedHits.map((n) => ({ node: n, sort: n.sort, types: n.regardingOfTypes }));
-    const paginateElements = buildPagination(first, searchAfter, nodeHits, data.hits.total.value, filterCount);
-    return { elements: paginateElements, total: data.hits.total.value, filterCount, endCursor };
-  }
-  return { elements: convertedHits, total: data.hits.total.value, filterCount, endCursor };
-};
 
 export const elBulk = async (args) => {
   return elRawBulk(args).then((data) => {

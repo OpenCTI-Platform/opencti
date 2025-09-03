@@ -363,7 +363,7 @@ export const fullEntitiesList = async <T extends BasicStoreEntity>(context: Auth
   return elList(context, user, computedIndices, paginateArgs);
 };
 
-export interface fullEntitiesThroughRelation {
+export interface FullEntitiesThroughRelation {
   type: string | string[]
   fromOrToId: string | string[]
   fromOrToType: string | string[]
@@ -375,7 +375,7 @@ export interface fullEntitiesThroughRelation {
 // This method is designed to fetch all entities
 // If you need to paginate, order and sort, use pageEntitiesConnection
 export const fullEntitiesListThroughRelations = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser,
-  relation: fullEntitiesThroughRelation): Promise<Array<T>> => {
+  relation: FullEntitiesThroughRelation): Promise<Array<T>> => {
   const { type, sourceSide, fromOrToId, fromOrToType, withInferences = false, filters: argsFilters } = relation;
   if (isEmptyField(fromOrToId) || isEmptyField(fromOrToType)) {
     return [];
@@ -425,7 +425,7 @@ interface fullOptsList {
 
 export const fullEntitiesThroughRelationsToList = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser,
   fromId: string | string[], relationship_type: string, toType: string | string[], opts: fullOptsList = {}): Promise<Array<T>> => {
-  const rel: fullEntitiesThroughRelation = {
+  const rel: FullEntitiesThroughRelation = {
     type: relationship_type,
     fromOrToId: fromId,
     fromOrToType: toType,
@@ -437,7 +437,7 @@ export const fullEntitiesThroughRelationsToList = async <T extends BasicStoreCom
 };
 export const fullEntitiesThroughRelationsFromList = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser,
   toId: string | string[], relationship_type: string, fromType: string | string[], opts: fullOptsList = {}): Promise<Array<T>> => {
-  const rel: fullEntitiesThroughRelation = {
+  const rel: FullEntitiesThroughRelation = {
     type: relationship_type,
     fromOrToId: toId,
     fromOrToType: fromType,
