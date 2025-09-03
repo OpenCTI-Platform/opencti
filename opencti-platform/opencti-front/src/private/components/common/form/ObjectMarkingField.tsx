@@ -10,8 +10,8 @@ import DialogContentText from '@mui/material/DialogContentText';
 import { ObjectMarkingFieldAllowedMarkingQuery$data } from '@components/common/form/__generated__/ObjectMarkingFieldAllowedMarkingQuery.graphql';
 import { ObjectMarkingFieldOtherUserAllowedMarkingsQuery$data } from '@components/common/form/__generated__/ObjectMarkingFieldOtherUserAllowedMarkingsQuery.graphql';
 import DialogTitle from '@mui/material/DialogTitle';
+import { useTheme } from '@mui/material/styles';
 import useAuth from '../../../../utils/hooks/useAuth';
-import ItemIcon from '../../../../components/ItemIcon';
 import Transition from '../../../../components/Transition';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { RenderOption } from '../../../../components/list_lines';
@@ -21,6 +21,8 @@ import { filterMarkingsOutFor } from '../../../../utils/markings/markingsFilteri
 import { isEmptyField } from '../../../../utils/utils';
 import { fetchQuery } from '../../../../relay/environment';
 import { FieldOption } from '../../../../utils/field';
+import type { Theme } from '../../../../components/Theme';
+import MarkingIcon from '../../../../utils/MarkingIcon';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -131,6 +133,7 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
   const [newMarking, setNewMarking] = useState<
   FieldOption[] | OptionValues | undefined
   >(undefined);
@@ -246,7 +249,7 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
   const renderOption: RenderOption = (props, option) => (
     <li {...props} key={option.value}>
       <div className={classes.icon} style={{ color: option.color }}>
-        <ItemIcon type="Marking-Definition" color={option.color} />
+        <MarkingIcon theme={theme} color={option.color}/>
       </div>
       <div className={classes.text}>{option.label}</div>
     </li>

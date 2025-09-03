@@ -11,16 +11,18 @@ import { Field, Form, Formik } from 'formik';
 import Typography from '@mui/material/Typography';
 import MaxShareableMarkingsSelectField from '@components/common/form/MaxShareableMarkingsSelectField';
 import { MarkingDefinitionsQuerySearchQuery$data } from '@components/settings/__generated__/MarkingDefinitionsQuerySearchQuery.graphql';
+import { useTheme } from '@mui/material/styles';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { GroupEditionMarkings_group$data } from './__generated__/GroupEditionMarkings_group.graphql';
 import AutocompleteField from '../../../../components/AutocompleteField';
-import ItemIcon from '../../../../components/ItemIcon';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { convertMarking } from '../../../../utils/edition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { checkIsMarkingAllowed } from '../../../../utils/markings/markingsFiltering';
 import { markingDefinitionsLinesSearchQuery } from '../MarkingDefinitionsQuery';
+import type { Theme } from '../../../../components/Theme';
+import MarkingIcon from '../../../../utils/MarkingIcon';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -97,6 +99,7 @@ const GroupEditionMarkingsComponent = ({
   group: GroupEditionMarkings_group$data;
 }) => {
   const classes = useStyles();
+  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const groupMarkingDefinitions = group.allowed_marking || [];
   const groupDefaultMarkingDefinitions = group.default_marking || [];
@@ -263,10 +266,7 @@ const GroupEditionMarkingsComponent = ({
                         }
                       >
                         <ListItemIcon>
-                          <ItemIcon
-                            type="Marking-Definition"
-                            color={markingDefinition.x_opencti_color ?? undefined}
-                          />
+                          <MarkingIcon theme={theme} color={markingDefinition.x_opencti_color}/>
                         </ListItemIcon>
                         <ListItemText primary={markingDefinition.definition} />
                       </ListItem>
@@ -321,10 +321,7 @@ const GroupEditionMarkingsComponent = ({
                               className={classes.icon}
                               style={{ color: option.color }}
                             >
-                              <ItemIcon
-                                type="Marking-Definition"
-                                color={option.color}
-                              />
+                              <MarkingIcon theme={theme} color={option.color}/>
                             </div>
                             <div className={classes.text}>{option.label}</div>
                           </li>

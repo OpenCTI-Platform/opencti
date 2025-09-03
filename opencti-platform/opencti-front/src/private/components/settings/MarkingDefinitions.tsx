@@ -1,8 +1,9 @@
-import React, { ReactNode } from 'react';
+import React from 'react';
 import { graphql } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import { MarkingDefinitionsLine_node$data } from '@components/settings/__generated__/MarkingDefinitionsLine_node.graphql';
 import DangerZoneChip from '@components/common/danger_zone/DangerZoneChip';
+import { useTheme } from '@mui/material/styles';
 import { MarkingDefinitionsLinesPaginationQuery } from './__generated__/MarkingDefinitionsLinesPaginationQuery.graphql';
 import MarkingDefinitionPopover from './marking_definitions/MarkingDefinitionPopover';
 import AccessesMenu from './AccessesMenu';
@@ -19,7 +20,8 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import useSensitiveModifications from '../../../utils/hooks/useSensitiveModifications';
 import { Truncate } from '../../../components/dataGrid/dataTableUtils';
 import type { DataTableColumn } from '../../../components/dataGrid/dataTableTypes';
-import ItemIcon from '../../../components/ItemIcon';
+import type { Theme } from '../../../components/Theme';
+import MarkingIcon from '../../../utils/MarkingIcon';
 
 const LOCAL_STORAGE_KEY = 'MarkingDefinitions';
 
@@ -97,6 +99,7 @@ const markingDefinitionsLinesFragment = graphql`
 
 const MarkingDefinitions = () => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Marking Definitions | Security | Settings'));
 
@@ -128,18 +131,6 @@ const MarkingDefinitions = () => {
           {isSensitive && <DangerZoneChip />}
         </div>
       </Tooltip>
-    );
-  };
-
-  const iconRender = (
-    data: MarkingDefinitionsLine_node$data,
-  ) : ReactNode => {
-    const { x_opencti_color } = data;
-    return (
-      <ItemIcon
-        type="Marking-Definition"
-        color={x_opencti_color ?? undefined}
-      />
     );
   };
 
@@ -185,7 +176,12 @@ const MarkingDefinitions = () => {
           toolbarFilters={contextFilters}
           lineFragment={markingDefinitionLineFragment}
           preloadedPaginationProps={preloadedPaginationProps}
-          icon={iconRender}
+          icon={(data) => {
+            const { x_opencti_color } = data;
+            return (
+              <MarkingIcon theme={theme} color={x_opencti_color}/>
+            );
+          }}
           actions={(markingDefinition) => (
             <MarkingDefinitionPopover
               markingDefinition={markingDefinition}
