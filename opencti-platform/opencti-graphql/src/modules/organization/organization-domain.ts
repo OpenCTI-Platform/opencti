@@ -34,6 +34,10 @@ export const findAll = (context: AuthContext, user: AuthUser, args: EntityOption
   return listEntitiesPaginated<BasicStoreEntityOrganization>(context, user, [ENTITY_TYPE_IDENTITY_ORGANIZATION], args);
 };
 
+export const findAllSecurityOrganizations = (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreEntityOrganization>) => {
+  return listEntitiesPaginated<BasicStoreEntityOrganization>(context, user, [ENTITY_TYPE_IDENTITY_ORGANIZATION], { includeAuthorities: true, ...args });
+};
+
 export const addOrganization = async (context: AuthContext, user: AuthUser, organization: OrganizationAddInput) => {
   if (organization.x_opencti_score) {
     checkScore(organization.x_opencti_score);

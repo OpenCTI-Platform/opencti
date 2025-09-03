@@ -20820,6 +20820,7 @@ export type Query = {
   schemaRelationsTypesMapping: Array<StixRelationshipSchema>;
   sector?: Maybe<Sector>;
   sectors?: Maybe<SectorConnection>;
+  securityOrganizations?: Maybe<OrganizationConnection>;
   securityPlatform?: Maybe<SecurityPlatform>;
   securityPlatforms?: Maybe<SecurityPlatformConnection>;
   sessions?: Maybe<Array<Maybe<UserSession>>>;
@@ -22668,6 +22669,17 @@ export type QuerySectorsArgs = {
   filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<SectorsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  toStix?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+
+export type QuerySecurityOrganizationsArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<OrganizationsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
   toStix?: InputMaybe<Scalars['Boolean']['input']>;
@@ -41637,6 +41649,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   schemaRelationsTypesMapping?: Resolver<Array<ResolversTypes['StixRelationshipSchema']>, ParentType, ContextType>;
   sector?: Resolver<Maybe<ResolversTypes['Sector']>, ParentType, ContextType, Partial<QuerySectorArgs>>;
   sectors?: Resolver<Maybe<ResolversTypes['SectorConnection']>, ParentType, ContextType, Partial<QuerySectorsArgs>>;
+  securityOrganizations?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType, Partial<QuerySecurityOrganizationsArgs>>;
   securityPlatform?: Resolver<Maybe<ResolversTypes['SecurityPlatform']>, ParentType, ContextType, RequireFields<QuerySecurityPlatformArgs, 'id'>>;
   securityPlatforms?: Resolver<Maybe<ResolversTypes['SecurityPlatformConnection']>, ParentType, ContextType, Partial<QuerySecurityPlatformsArgs>>;
   sessions?: Resolver<Maybe<Array<Maybe<ResolversTypes['UserSession']>>>, ParentType, ContextType>;

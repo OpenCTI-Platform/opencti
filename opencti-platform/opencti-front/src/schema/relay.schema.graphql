@@ -8443,6 +8443,7 @@ type Query {
   decayRules(first: Int, after: ID, orderBy: DecayRuleOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DecayRuleConnection
   organization(id: String!): Organization
   organizations(first: Int, after: ID, orderBy: OrganizationsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): OrganizationConnection
+  securityOrganizations(first: Int, after: ID, orderBy: OrganizationsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): OrganizationConnection
   csvMapper(id: ID!): CsvMapper
   csvMappers(first: Int, after: ID, orderBy: CsvMapperOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): CsvMapperConnection
   csvMapperSchemaAttributes: [CsvMapperSchemaAttributes!]!
