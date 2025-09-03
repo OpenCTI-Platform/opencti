@@ -17,9 +17,8 @@ In addition, files can be manually imported. When that is the case, an option is
 
 !!! warning "Import data without update"
 
-    When importing data that already exists in the platform, if this data is not updated by the import, the data contained in the file will not be updated.
-    As an example: 
-    - importing an email "test@test.com" and validate your draft, then re-importing the same email "test@test.com" will not appear in the newly created draft since it is not edited. However, if another user imports it, the email "test@test.com" will be in your draft, given the "creator" will be updated with the new user who whas imported it.
+    When importing data that already exists in the platform, if this data is not updated by the import, the data contained in the file will not be present in your draft.
+    As an example: importing an email "test@test.com" and validating your draft, then re-importing the same email "test@test.com" will not appear in the newly created draft since it is not edited. However, if another user imports it, the email "test@test.com" will be in your draft, given that the "creator" will be updated with the new user who imported it.
 
 For more detailed information on file import, see the import documentation page here: [Import from files](import-files.md).
 
