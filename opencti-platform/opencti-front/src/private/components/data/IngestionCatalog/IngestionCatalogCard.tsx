@@ -13,6 +13,7 @@ import EnterpriseEditionButton from '@components/common/entreprise_edition/Enter
 import { truncate } from 'src/utils/String';
 import Typography from '@mui/material/Typography';
 import { IngestionConnectorType, ingestionConnectorTypeMetadata } from '@components/data/IngestionCatalog/utils/ingestionConnectorTypeMetadata';
+import Box from '@mui/material/Box';
 import { useFormatter } from '../../../../components/i18n';
 import EnrichedTooltip from '../../../../components/EnrichedTooltip';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
@@ -24,6 +25,7 @@ export interface IngestionCatalogCardProps {
   dataListId: string;
   isEnterpriseEdition: boolean
   onClickDeploy: () => void
+  deploymentCount?: number;
 }
 
 type RenderConnectorUseCasesType = {
@@ -32,10 +34,29 @@ type RenderConnectorUseCasesType = {
   withBadge?: boolean;
 };
 
+const DeployButton = ({ deploymentCount, onClick }: { deploymentCount?: number, onClick: () => void }) => {
+  const { t_i18n } = useFormatter();
+
+  return (
+    <Tooltip title={deploymentCount ? `${deploymentCount} deployments` : '' }>
+      <Badge badgeContent={deploymentCount} color={'warning'}>
+        <Button
+          variant="contained"
+          onClick={onClick}
+          size="small"
+        >
+          {t_i18n('Deploy')}
+        </Button>
+      </Badge>
+    </Tooltip>
+  );
+};
+
 const IngestionCatalogCard = ({
   node: connector,
   isEnterpriseEdition,
   onClickDeploy,
+  deploymentCount = 0,
 }: IngestionCatalogCardProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -181,9 +202,12 @@ const IngestionCatalogCard = ({
             <Security needs={[INGESTION_SETINGESTIONS]}>
               {
                 isEnterpriseEdition ? (
-                  <Button variant="contained" onClick={onClickDeploy} size="small">{t_i18n('Deploy')}</Button>
+                  <DeployButton deploymentCount={deploymentCount} onClick={onClickDeploy} />
                 ) : (
-                  <EnterpriseEditionButton title="Deploy" />
+                  <Box sx={{ '& .MuiButton-root': { marginLeft: 0 } }}>
+                    {/** FIXME: remove marginLeft in EnterpriseEditionButton * */}
+                    <EnterpriseEditionButton title="Deploy" />
+                  </Box>
                 )
               }
             </Security>

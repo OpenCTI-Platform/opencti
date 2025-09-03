@@ -91,7 +91,7 @@ const IngestionCatalogFilters: React.FC<IngestionCatalogFiltersProps> = ({
   const hasActiveFilters = filters.search || filters.type || filters.useCase;
 
   return (
-    <Stack flexDirection="row" gap={2} flex={1}>
+    <Stack flexDirection="row" gap={2} flex={1} alignItems="center">
       <SearchInput
         value={searchInput}
         onSubmit={handleSearchInputSubmit}

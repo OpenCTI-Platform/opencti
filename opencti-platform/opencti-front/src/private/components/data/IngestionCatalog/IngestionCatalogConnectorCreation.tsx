@@ -23,9 +23,10 @@ import IngestionCreationUserHandling, { BasicUserHandlingValues } from '@compone
 import { IngestionConnector, IngestionTypedProperty } from '@components/data/IngestionCatalog';
 import { Launch } from 'mdi-material-ui';
 import IconButton from '@mui/material/IconButton';
-import { LibraryBooksOutlined } from '@mui/icons-material';
+import { HubOutlined, LibraryBooksOutlined } from '@mui/icons-material';
 import NoConnectorManagersBanner from '@components/data/connectors/NoConnectorManagersBanner';
 import Tooltip from '@mui/material/Tooltip';
+import { Badge } from '@mui/material';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { RelayError } from '../../../../relay/relayTypes';
 import type { Theme } from '../../../../components/Theme';
@@ -33,6 +34,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { type FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import TextField from '../../../../components/TextField';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
+import { resolveLink } from '../../../../utils/Entity';
 
 const ingestionCatalogConnectorCreationMutation = graphql`
   mutation IngestionCatalogConnectorCreationMutation($input: AddManagedConnectorInput) {
@@ -43,8 +45,8 @@ const ingestionCatalogConnectorCreationMutation = graphql`
       manager_requested_status
       manager_current_status
       manager_contract_configuration {
-        key
-        value
+          key
+          value
       }
     }
   }
@@ -82,6 +84,7 @@ interface IngestionCatalogConnectorCreationProps {
   onClose: () => void;
   catalogId: string;
   hasRegisteredManagers: boolean
+  deploymentCount?: number;
   onCreate?: (connectorId: string) => void;
 }
 
@@ -92,7 +95,9 @@ export interface ManagedConnectorValues extends BasicUserHandlingValues {
   confidence_level?: string;
 }
 
-const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId, hasRegisteredManagers, onCreate }: IngestionCatalogConnectorCreationProps) => {
+const IngestionCatalogConnectorCreation = ({
+  connector, open, onClose, catalogId, hasRegisteredManagers, deploymentCount = 0, onCreate,
+}: IngestionCatalogConnectorCreationProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const [compiledValidator, setCompiledValidator] = useState<Validator | undefined>(undefined);
@@ -151,6 +156,15 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
           onCreate?.(connectorId);
         }
       },
+      updater: (store) => {
+        const root = store.getRoot();
+        const existingConnectors = root.getLinkedRecords('connectors') || [];
+        const newConnector = store.getRootField('managedConnectorAdd');
+
+        if (newConnector) {
+          root.setLinkedRecords([...existingConnectors, newConnector], 'connectors');
+        }
+      },
     });
   };
 
@@ -206,6 +220,17 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
   const hasRequiredProperties = Object.keys(requiredProperties.properties || {}).length > 0;
   const hasOptionalProperties = Object.keys(optionalProperties.properties || {}).length > 0;
 
+  const buildConnectorsUrl = () => {
+    const { container_image, container_version } = connector;
+    const value = `${container_image}:${container_version}`;
+
+    const params = new URLSearchParams({
+      manager_contract_image: value,
+    });
+
+    return `${resolveLink('Connectors')}?${params.toString()}`;
+  };
+
   return (
     <Drawer
       title={t_i18n('Deploy a new connector')}
@@ -213,6 +238,21 @@ const IngestionCatalogConnectorCreation = ({ connector, open, onClose, catalogId
       onClose={onClose}
       header={
         <div style={{ position: 'absolute', right: theme.spacing(1) }}>
+          <Tooltip title={`${deploymentCount} ${t_i18n('connectors deployed')}`}>
+            <span> {/** keep span so tooltip is still displayed if button is disabled * */}
+              <IconButton
+                aria-label="Connectors deployed"
+                component={Link}
+                to={buildConnectorsUrl()}
+                disabled={deploymentCount === 0}
+              >
+                <Badge badgeContent={deploymentCount} color={'warning'}>
+                  <HubOutlined />
+                </Badge>
+              </IconButton>
+            </span>
+          </Tooltip>
+
           <Tooltip title={t_i18n('Vendor contact')}>
             <span> {/** keep span so tooltip is still displayed if button is disabled * */}
               <IconButton
