@@ -116,6 +116,7 @@ When access to a user, it is possible to:
 * Manage its triggers and digests
 * Visualize the history and operations
 * Manage its max confidence levels
+* Manage its status
 
 ![User overview](assets/user-overveiw-new.png)
 
@@ -134,6 +135,18 @@ From this view you can edit the user's information by clicking the "Update" butt
     A user without Max confidence level won't have the ability to create, delete or update any data in our platform. Please be sure that your users are always either assigned to group that have a confidence level defined or that have an override of this group confidence level.
 
 <a id="group-section"></a>
+
+#### Account status
+
+Account status can have four values: 
+
+* Active: a user active will be able to log in
+* Inactive: an inactive user will not be able to log in
+* Locked: a locked user will not be able to log in
+* Expired: an expired user will not be able to log in. A user can be in an expired state because an **Account Expiry Date** has been defined for this user, and we are past this date. It ensures automatically that the user will not be able to log in after that date.
+
+Only the expired status can be automatically set (given the account expiry date). The other statuses can be set manually or through mass operations within the user management screen. 
+
 ## Groups
 
 Groups are the main way to manage permissions and [data segregation](segregation.md) as well as platform customization for the given users part of this group. You can manage the groups in `Settings > Security > Groups`.
