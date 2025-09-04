@@ -682,8 +682,8 @@ const mapStreamToJS = ([id, data]: any): SseEvent<any> => {
   }
   return { id, event: obj.type, data: obj };
 };
-export const fetchStreamInfo = async () => {
-  const res: any = await getClientBase().xinfo('STREAM', REDIS_STREAM_NAME);
+export const fetchStreamInfo = async (streamName = REDIS_STREAM_NAME) => {
+  const res: any = await getClientBase().xinfo('STREAM', streamName);
   const info: any = R.fromPairs(R.splitEvery(2, res) as any);
   const firstId = info['first-entry'][0];
   const firstEventDate = utcDate(parseInt(firstId.split('-')[0], 10)).toISOString();
@@ -730,9 +730,7 @@ export const createStreamProcessor = <T extends BaseEvent> (
   let processingLoopPromise: Promise<void>;
   let streamListening = true;
   const streamName = opts.streamName ?? REDIS_STREAM_NAME;
-  const processInfo = async () => {
-    return fetchStreamInfo();
-  };
+
   const processStep = async () => {
     // since previous call is async (and blocking) we should check if we are still running before processing the message
     if (!streamListening) {
@@ -777,7 +775,7 @@ export const createStreamProcessor = <T extends BaseEvent> (
     }
   };
   return {
-    info: async () => processInfo(),
+    info: async () => fetchStreamInfo(streamName),
     running: () => streamListening,
     start: async (start = 'live') => {
       if (streamListening) {
