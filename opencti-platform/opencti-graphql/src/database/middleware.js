@@ -40,7 +40,6 @@ import {
   READ_INDEX_INFERRED_RELATIONSHIPS,
   READ_RELATIONSHIPS_INDICES,
   READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
-  toBase64,
   UPDATE_OPERATION_ADD,
   UPDATE_OPERATION_REMOVE,
   UPDATE_OPERATION_REPLACE
@@ -527,7 +526,7 @@ const convertStoreToStixWithResolvedFiles = async (instance) => {
       const currentFile = nonResolvedFiles[i];
       const currentFileUri = currentFile.uri;
       const fileId = currentFileUri.replace('/storage/get/', '');
-      currentFile.data = toBase64(await getFileContent(fileId));
+      currentFile.data = await getFileContent(fileId, 'base64');
       currentFile.no_trigger_import = true;
     }
   }
