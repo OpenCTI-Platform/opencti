@@ -79,7 +79,7 @@ export const SETTINGS_CAPABILITIES = {
     { name: 'SETVOCABULARIES', description: 'Manage vocabularies', attribute_order: 3410 },
     { name: 'SETCASETEMPLATES', description: 'Manage case templates', attribute_order: 3420 },
     { name: 'SETSTATUSTEMPLATES', description: 'Manage status templates', attribute_order: 3430 },
-    { name: 'SETKILLCHAINPHASES', description: 'Manage killchain phases', attribute_order: 3440 },
+    { name: 'SETKILLCHAINPHASES', description: 'Manage kill chain phases', attribute_order: 3440 },
     { name: 'SETMANAGEXTMHUB', description: 'Manage XTM Hub', attribute_order: 3450 },
     { name: 'SECURITYACTIVITY', description: 'Access security activity', attribute_order: 3500 },
     { name: 'FILEINDEXING', description: 'Access to file indexing', attribute_order: 3600 },

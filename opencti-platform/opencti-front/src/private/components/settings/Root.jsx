@@ -87,19 +87,12 @@ const Root = () => {
   };
 
   const generateTaxonomyLink = () => {
-    if (isGrantedToLabels) {
-      return '/dashboard/settings/vocabularies/labels';
-    }
-    if (isGrantedToKillChainPhases) {
-      return '/dashboard/settings/vocabularies/kill_chain_phases';
-    }
-    if (isGrantedToCaseTemplates) {
-      return '/dashboard/settings/vocabularies/case_templates';
-    }
-    if (isGrantedToStatusTemplates) {
-      return '/dashboard/settings/vocabularies/status_templates';
-    }
-    return '/dashboard/settings/vocabularies/fields';
+    if (isGrantedToLabels) return '/dashboard/settings/vocabularies/labels';
+    if (isGrantedToKillChainPhases) return '/dashboard/settings/vocabularies/kill_chain_phases';
+    if (isGrantedToCaseTemplates) return '/dashboard/settings/vocabularies/case_templates';
+    if (isGrantedToStatusTemplates) return '/dashboard/settings/vocabularies/status_templates';
+    if (isGrantedToVocabularies) return '/dashboard/settings/vocabularies/fields';
+    return '/dashboard';
   };
 
   return (
@@ -424,17 +417,7 @@ const Root = () => {
               </Security>
             }
           />
-          <Route
-            path="/vocabularies"
-            element={
-              <Security
-                needs={[SETTINGS_SETVOCABULARIES]}
-                placeholder={<Navigate to={urlWithCapabilities()} />}
-              >
-                <Navigate to={generateTaxonomyLink()} />
-              </Security>
-            }
-          />
+          <Route path="/vocabularies" element={<Navigate to={generateTaxonomyLink()} />}/>
           <Route
             path="/vocabularies/labels"
             element={
