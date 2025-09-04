@@ -141,7 +141,11 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
   };
 
   const handleXtmOneCGUStatusChange = (event: ChangeEvent<HTMLInputElement>) => {
-    handleSubmitField('filigran_chatbot_ai_cgu_status', event.target.checked ? CGUStatus.enabled : CGUStatus.disabled);
+    if (event.target.checked) {
+      setOpenValidateTermsOfUse(true);
+    } else {
+      handleSubmitField('filigran_chatbot_ai_cgu_status', CGUStatus.disabled);
+    }
   };
 
   const handlePlatformAiEnabledChange = (event: ChangeEvent<HTMLInputElement>) => {

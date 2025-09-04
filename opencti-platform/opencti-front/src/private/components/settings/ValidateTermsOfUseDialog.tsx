@@ -51,7 +51,7 @@ const ValidateTermsOfUseDialog = ({ open, onClose }: ValidateTermsOfUseDialogPro
         </Button>
       </DialogContent>
       <DialogActions>
-        <Button color="primary" onClick={() => onClose(CGUStatus.disabled)}>{t_i18n('Disable')}</Button>
+        <Button color="primary" onClick={() => onClose(CGUStatus.disabled)}>{t_i18n('Decline')}</Button>
         <Button color="secondary" onClick={() => onClose(CGUStatus.enabled)}>{t_i18n('Validate')}</Button>
       </DialogActions>
     </Dialog>
