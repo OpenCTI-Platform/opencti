@@ -3992,6 +3992,7 @@
   "You are about to switch to Draft mode. All your OpenCTI platform will be in draft. The selected Draft will be the draft by default.": "ドラフトモードに切り替わります。すべての OpenCTI Plateform がドラフトになります。選択したドラフトがデフォルトのドラフトになります。",
   "You are about to validate this mapping, it will add suggested entities to your container.": "このマッピングを検証すると、提案されたエンティティがコンテナに追加されます。",
   "You are not allowed to do this": "あなたはこれを行うことはできません",
+  "You are not allowed to do this because you do not have the rights to create dashboards.": "ダッシュボードを作成する権限がないため、これを行うことはできません。",
   "You are not allowed to do this.": "この操作を行う権限がありません。",
   "You are not authorized to see this data.": "このデータを見る権限がありません。",
   "You are now in Draft Mode": "ドラフトモードに移行します。",

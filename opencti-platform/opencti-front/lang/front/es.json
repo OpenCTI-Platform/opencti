@@ -3992,6 +3992,7 @@
   "You are about to switch to Draft mode. All your OpenCTI platform will be in draft. The selected Draft will be the draft by default.": "Está a punto de cambiar al modo Borrador. Todo su OpenCTI Plateform estará en borrador. El Borrador seleccionado será el borrador por defecto.",
   "You are about to validate this mapping, it will add suggested entities to your container.": "Está a punto de validar este mapeo, añadirá las entidades sugeridas a su contenedor.",
   "You are not allowed to do this": "No está permitido hacer esto",
+  "You are not allowed to do this because you do not have the rights to create dashboards.": "No puede hacerlo porque no tiene derechos para crear cuadros de mando.",
   "You are not allowed to do this.": "No tienes permitido hacer esto.",
   "You are not authorized to see this data.": "No está autorizado a ver estos datos.",
   "You are now in Draft Mode": "Ahora se encuentra en modo Borrador",

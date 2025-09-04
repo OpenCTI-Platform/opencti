@@ -3992,6 +3992,7 @@
   "You are about to switch to Draft mode. All your OpenCTI platform will be in draft. The selected Draft will be the draft by default.": "您即将切换到草稿模式。您的所有 OpenCTI Plateform 都将处于草稿状态。选定的草稿将是默认草稿。",
   "You are about to validate this mapping, it will add suggested entities to your container.": "您即将验证此映射，它将把建议的实体添加到您的容器中。",
   "You are not allowed to do this": "您不能这样做",
+  "You are not allowed to do this because you do not have the rights to create dashboards.": "您不能这样做，因为您没有创建仪表盘的权限。",
   "You are not allowed to do this.": "您这样操作不被允许。",
   "You are not authorized to see this data.": "您无权查看此数据。",
   "You are now in Draft Mode": "您现在处于草稿模式",
