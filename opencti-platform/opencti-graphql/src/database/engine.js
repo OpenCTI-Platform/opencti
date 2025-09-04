@@ -4757,17 +4757,23 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
         // }
         // Add Pir information concerning the Pir
         if (t.relation === RELATION_IN_PIR) {
-          const pirIds = t.elements.map((e) => e.id);
-          params.pir_information = [
-            ...entity.pir_information?.filter((i) => !pirIds.includes(i.pir_id)) ?? [],
-            ...t.elements.filter((e) => e.type === ENTITY_TYPE_PIR)
-              .map((e) => ({
-                pir_id: e.id,
-                pir_score: e.pir_score,
-                last_pir_score_date: params.updated_at,
-              }))
-          ];
-          script += '; ctx._source[\'pir_information\'] = params.pir_information';
+          params.pirIds = t.elements.map((e) => e.id);
+          params.new_pir_information = t.elements.filter((e) => e.type === ENTITY_TYPE_PIR)
+            .map((e) => ({
+              pir_id: e.id,
+              pir_score: e.pir_score,
+              last_pir_score_date: params.updated_at,
+            }));
+          // remove pir_information concerning the pir
+          script += '; if (ctx._source.containsKey(\'pir_information\') && ctx._source[\'pir_information\'] != null) {'
+            + 'ctx._source[\'pir_information\'].removeIf(item -> params.pirIds.contains(item.pir_id));'
+            + '}';
+          // add the new pir_information
+          script += 'if (ctx._source.containsKey(\'pir_information\') && ctx._source[\'pir_information\'] != null) {'
+            + 'ctx._source[\'pir_information\'].addAll(params.new_pir_information);'
+            + '} else {'
+            + 'ctx._source[\'pir_information\'] = params.new_pir_information;'
+            + '}';
         }
         return script;
       });
