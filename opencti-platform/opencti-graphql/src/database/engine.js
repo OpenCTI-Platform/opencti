@@ -213,7 +213,7 @@ import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_
 import { RELATION_SAMPLE } from '../modules/malwareAnalysis/malwareAnalysis-types';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { getPirWithAccessCheck } from '../modules/pir/pir-checkPirAccess';
-import { asyncMap } from '../utils/data-processing';
+import { asyncFilter, asyncMap } from '../utils/data-processing';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -3687,11 +3687,7 @@ export const elAggregationsList = async (context, user, indexName, aggregations,
   });
 };
 
-// If filters contains an "in regards of" filter a post-security filtering is needed
-const regardingOfFiltering = async (context, user, elements, filters) => {
-  let filterCount = 0;
-  const lastElement = R.last(elements);
-  const endCursor = lastElement.sort ? offsetToCursor(lastElement.sort) : null;
+const buildRegardingOfFilter = async (context, user, elements, filters) => {
   // First check if there is an "in regards of" filter
   // If its case we need to ensure elements are filtered according to denormalization rights.
   if (isNotEmptyField(filters)) {
@@ -3771,49 +3767,25 @@ const regardingOfFiltering = async (context, user, elements, filters) => {
           }
         }
       }
-      // For all convertHit id that is not included in the reduction, convert to restricted visibility
-      const filteredHits = [];
-      let startProcessingTime = new Date().getTime();
-      for (let hitIndex = 0; hitIndex < elements.length; hitIndex += 1) {
-        const convertedHit = elements[hitIndex];
-        if (!targetValidatedIds.has(convertedHit.id)) {
-          filterCount += 1;
-        } else {
-          convertedHit.regardingOfTypes = sideIdManualInferred.get(convertedHit.id);
-          filteredHits.push(convertedHit);
+      return (element) => {
+        const accepted = targetValidatedIds.has(element.id);
+        if (accepted) {
+          // eslint-disable-next-line no-param-reassign
+          element.regardingOfTypes = sideIdManualInferred.get(element.id);
         }
-        // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
-        if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
-          startProcessingTime = new Date().getTime();
-          await new Promise((resolve) => {
-            setImmediate(resolve);
-          });
-        }
-      }
-      return { elements: filteredHits, filterCount, endCursor };
+        return accepted;
+      };
     }
   }
-  return { elements, filterCount, endCursor };
+  return undefined;
 };
 
-// Build result from generic paginate
-// Ensure also post filtering when in regards of filtering is used.
-const buildSearchResult = async (context, user, data, first, searchAfter, filters, connectionFormat) => {
-  if (data.hits.hits.length === 0) {
-    if (connectionFormat) {
-      const elements = buildPagination(first, searchAfter, [], data.hits.total.value, 0);
-      return { elements, filterCount: 0, total: 0, endCursor: null };
-    }
-    return { elements: [], total: 0, filterCount: 0, endCursor: null };
-  }
-  const elements = await elConvertHits(data.hits.hits);
-  const { filterCount, endCursor, elements: convertedHits } = await regardingOfFiltering(context, user, elements, filters);
+const buildSearchResult = (elements, first, searchAfter, globalCount, filterCount, connectionFormat) => {
   if (connectionFormat) {
-    const nodeHits = convertedHits.map((n) => ({ node: n, sort: n.sort, types: n.regardingOfTypes }));
-    const paginateElements = buildPagination(first, searchAfter, nodeHits, data.hits.total.value, filterCount);
-    return { elements: paginateElements, total: data.hits.total.value, filterCount, endCursor };
+    const nodeHits = elements.map((n) => ({ node: n, sort: n.sort, types: n.regardingOfTypes }));
+    return buildPagination(first, searchAfter, nodeHits, globalCount, filterCount);
   }
-  return { elements: convertedHits, total: data.hits.total.value, filterCount, endCursor };
+  return elements;
 };
 
 export const elPaginate = async (context, user, indexName, options = {}) => {
@@ -3848,8 +3820,19 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
   logApp.debug('[SEARCH] paginate', { query });
   try {
     const data = await elRawSearch(context, user, types !== null ? types : 'Any', query);
-    const parsedResult = await buildSearchResult(context, user, data, first, body.search_after, filters, connectionFormat);
-    return withResultMeta ? parsedResult : parsedResult.elements;
+    const globalCount = data.hits.total.value;
+    const elements = await elConvertHits(data.hits.hits);
+    // If filters contains an "in regards of" filter a post-security filtering is needed
+    const regardingOfFilter = elements.length === 0 ? undefined : await buildRegardingOfFilter(context, user, elements, filters);
+    const filteredElements = regardingOfFilter ? await asyncFilter(elements, regardingOfFilter) : elements;
+    const filterCount = elements.length - filteredElements.length;
+    const result = buildSearchResult(filteredElements, first, body.search_after, globalCount, filterCount, connectionFormat);
+    if (withResultMeta) {
+      const lastProcessedSort = R.last(elements)?.sort;
+      const endCursor = lastProcessedSort ? offsetToCursor(lastProcessedSort) : null;
+      return { elements: result, endCursor, total: globalCount, filterCount };
+    }
+    return result;
   } catch (err) {
     const root_cause = err.meta?.body?.error?.caused_by?.type;
     if (root_cause === TOO_MANY_CLAUSES) throw ComplexSearchError();
