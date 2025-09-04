@@ -3828,7 +3828,7 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
     const filterCount = elements.length - filteredElements.length;
     const result = buildSearchResult(filteredElements, first, body.search_after, globalCount, filterCount, connectionFormat);
     if (withResultMeta) {
-      const lastProcessedSort = R.last(filteredElements)?.sort;
+      const lastProcessedSort = R.last(elements)?.sort;
       const endCursor = lastProcessedSort ? offsetToCursor(lastProcessedSort) : null;
       return { elements: result, endCursor, total: globalCount, filterCount };
     }
