@@ -76,6 +76,7 @@ import {
 } from 'mdi-material-ui';
 import Popover from '@mui/material/Popover';
 import Collapse from '@mui/material/Collapse';
+import { CGUStatus } from '../settings/Experience';
 import AskArianeButton from '../chatbox/AskArianeButton';
 import { useFormatter } from '../../../components/i18n';
 import Security from '../../../utils/Security';
@@ -215,6 +216,7 @@ const LeftBar = () => {
   const { t_i18n } = useFormatter();
   const {
     me: { submenu_auto_collapse, submenu_show_icons, draftContext },
+    settings: { filigran_chatbot_ai_cgu_status },
   } = useAuth();
   const navigate = useNavigate();
   const { isFeatureEnable } = useHelper();
@@ -1050,7 +1052,7 @@ const LeftBar = () => {
       >
         <Divider />
         <MenuList>
-          {isChatbotFeatureFlag && (
+          {isChatbotFeatureFlag && filigran_chatbot_ai_cgu_status !== CGUStatus.disabled && (
           <MenuItem
             style={{
               color: theme.palette.ai.main,

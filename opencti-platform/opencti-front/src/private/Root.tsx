@@ -70,7 +70,7 @@ const rootSettingsFragment = graphql`
       running
       warning
     }
-    filigran_chatbot_ai_enabled
+    filigran_chatbot_ai_cgu_status
     filigran_chatbot_ai_url
     platform_enterprise_edition {
       license_validated
@@ -94,6 +94,7 @@ const rootSettingsFragment = graphql`
     platform_ai_type
     platform_ai_has_token
     platform_trash_enabled
+    filigran_chatbot_ai_cgu_status
     platform_protected_sensitive_config {
       enabled
       markings {

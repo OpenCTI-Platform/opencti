@@ -4,6 +4,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
 import { useTheme } from '@mui/styles';
 import IconButton from '@mui/material/IconButton';
+import ValidateTermsOfUseInfoDialog from '@components/chatbox/ValidateTermsOfUseInfoDialog';
+import { CGUStatus } from '@components/settings/Experience';
 import GradientButton, { GradientVariant } from '../../../components/GradientButton';
 import { useFormatter } from '../../../components/i18n';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
@@ -12,10 +14,12 @@ import { APP_BASE_PATH, fileUri, MESSAGING$ } from '../../../relay/environment';
 import { DARK_BLUE } from '../../../utils/htmlToPdf/utils/constants';
 import embleme from '../../../static/images/embleme_filigran_white.png';
 import useHelper from '../../../utils/hooks/useHelper';
+import useAuth from '../../../utils/hooks/useAuth';
 
 const AskArianeButton = () => {
   const { t_i18n } = useFormatter();
   const { isChatbotAiEnabled } = useHelper();
+  const { settings: { filigran_chatbot_ai_cgu_status } } = useAuth();
   const theme = useTheme<Theme>();
   const isEnterpriseEdition = useEnterpriseEdition();
 
@@ -32,6 +36,7 @@ const AskArianeButton = () => {
   });
 
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
+  const [isChatbotCGUDialogOpen, setIsChatbotCGUDialogOpen] = useState(false);
   const chatbotRef = useRef<{ onClose:() => void }>(null);
   const EERef = useRef<HTMLDivElement>(null);
 
@@ -44,10 +49,14 @@ const AskArianeButton = () => {
   };
 
   const toggleChatbot = () => {
-    if (isChatbotOpen) {
-      closeChatbot();
+    if (filigran_chatbot_ai_cgu_status === CGUStatus.enabled) {
+      if (isChatbotOpen) {
+        closeChatbot();
+      } else {
+        openChatbot();
+      }
     } else {
-      openChatbot();
+      setIsChatbotCGUDialogOpen(true);
     }
   };
 
@@ -100,7 +109,7 @@ const AskArianeButton = () => {
         textColor: theme.palette.text?.primary,
         sendButtonColor: theme.palette.ai.main,
         maxChars: 256,
-        maxCharsWarningMessage: t_i18n('You exceeded the characters limit. Please input less than 50 characters.'),
+        maxCharsWarningMessage: t_i18n('You exceeded the characters limit. Please input less than 256 characters.'),
         autoFocus: true,
         sendMessageSound: false,
         receiveMessageSound: false,
@@ -155,6 +164,7 @@ const AskArianeButton = () => {
           <AutoAwesomeOutlined style={{ color: theme.palette.ai.main }}/>
         </IconButton>
       )}
+      <ValidateTermsOfUseInfoDialog open={isChatbotCGUDialogOpen} onClose={() => setIsChatbotCGUDialogOpen(false)}/>
     </>
   );
 };

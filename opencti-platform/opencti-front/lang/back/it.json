@@ -25,6 +25,7 @@
   "Additional names": "Nomi aggiuntivi",
   "Administrated organizations": "Organizzazioni amministrate",
   "Administrator": "Amministratore",
+  "AI insight activation": "Attivazione dell'intelligenza artificiale",
   "Algorithm": "Algoritmo",
   "Alias": "Alias",
   "Aliases": "Alias",
@@ -876,15 +877,6 @@
   "Templates": "Modelli",
   "Text Color": "Colore del testo",
   "Theme": "Tema",
-  "Theme accent color": "Colore d'accento del tema",
-  "Theme background color": "Colore di sfondo del tema",
-  "Theme logo": "Logo del tema",
-  "Theme logo collapsed": "Logo del tema collassato",
-  "Theme logo login": "Logo del tema login",
-  "Theme navigation": "Tema navigazione",
-  "Theme paper": "Tema carta",
-  "Theme primary": "Tema primario",
-  "Theme secondary": "Tema secondario",
   "This list displays all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.": "Questa lista mostra tutte le entità con restrizioni di accesso abilitate, il che significa che sono accessibili solo a utenti specifici. Puoi rimuovere queste restrizioni di accesso in questa schermata.",
   "Threat actor types": "Tipi di attori di minaccia",
   "Threat hunting": "Ricerca delle minacce",
@@ -972,5 +964,6 @@
   "XTM Hub registration User ID": "ID utente registrazione XTM Hub",
   "XTM Hub registration User name": "Registrazione XTM Hub Nome utente",
   "XTM Hub should send connectivity email": "XTM Hub dovrebbe inviare un'e-mail di connettività",
-  "XTM Hub Token": "Token XTM Hub"
+  "XTM Hub Token": "Token XTM Hub",
+  "XTM1 CGU acceptance status": "XTM1 Stato di accettazione della CGU"
 }

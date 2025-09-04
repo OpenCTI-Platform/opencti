@@ -212,7 +212,6 @@
     }
   },
   "ai": {
-    "enabled": true,
     "type": "mistralai",
     "endpoint": "",
     "token": "",
