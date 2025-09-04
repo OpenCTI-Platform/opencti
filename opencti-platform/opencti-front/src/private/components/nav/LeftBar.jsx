@@ -76,7 +76,7 @@ import {
 } from 'mdi-material-ui';
 import Popover from '@mui/material/Popover';
 import Collapse from '@mui/material/Collapse';
-import { CGUStatus } from '@components/settings/Experience';
+import { CGUStatus } from '../settings/Experience';
 import AskArianeButton from '../chatbox/AskArianeButton';
 import { useFormatter } from '../../../components/i18n';
 import Security from '../../../utils/Security';
