@@ -780,14 +780,23 @@ export const createStreamProcessor = <T extends BaseEvent> (
     info: async () => processInfo(),
     running: () => streamListening,
     start: async (start = 'live') => {
-      let fromStart = start;
-      if (isEmptyField(fromStart)) {
-        fromStart = 'live';
+      if (streamListening) {
+        let fromStart = start;
+        if (isEmptyField(fromStart)) {
+          fromStart = 'live';
+        }
+        startEventId = fromStart === 'live' ? '$' : fromStart;
+        logApp.info(`[STREAM] Starting stream processor at ${startEventId} for ${provider}`);
+        processingLoopPromise = (async () => {
+          client = await createRedisClient(provider, opts.autoReconnect); // Create client for this processing loop
+          try {
+            await processingLoop();
+          } finally {
+            logApp.info('[STREAM] Stream processor terminated, closing Redis client');
+            client.disconnect();
+          }
+        })();
       }
-      startEventId = fromStart === 'live' ? '$' : fromStart;
-      logApp.info(`[STREAM] Starting stream processor at ${startEventId} for ${provider}`);
-      client = await createRedisClient(provider, opts.autoReconnect); // Create client for this processing loop
-      processingLoopPromise = processingLoop();
     },
     shutdown: async () => {
       logApp.info(`[STREAM] Shutdown stream processor for ${provider}`);
@@ -796,9 +805,6 @@ export const createStreamProcessor = <T extends BaseEvent> (
         await processingLoopPromise;
       }
       logApp.info('[STREAM] Stream processor current promise terminated');
-      if (client) {
-        await client.disconnect();
-      }
     },
   };
 };
