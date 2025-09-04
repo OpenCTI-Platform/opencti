@@ -1,6 +1,5 @@
 import React from 'react';
-import { graphql, createFragmentContainer } from 'react-relay';
-import * as R from 'ramda';
+import { createFragmentContainer, graphql } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -14,6 +13,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import ItemEntityType from '../../../../components/ItemEntityType';
+import stopEvent from '../../../../utils/domEvent';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -45,13 +45,18 @@ const ContainerAddStixCoreObjectsLineComponent = ({
   onLabelClick,
   onToggleEntity,
   addedElements,
+  disableToggle,
 }) => {
   const classes = useStyles();
   return (
     <ListItemButton
       classes={{ root: classes.item }}
       divider={true}
-      onClick={(event) => onToggleEntity(node, event)}
+      style={disableToggle ? { pointerEvents: 'none' } : {}}
+      onClick={(event) => {
+        stopEvent(event);
+        onToggleEntity(node, event);
+      }}
     >
       <ListItemIcon style={{ paddingLeft: 10 }}>
         {node.id in (addedElements || {}) ? (
@@ -86,7 +91,7 @@ const ContainerAddStixCoreObjectsLineComponent = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.createdBy.width }}
             >
-              {R.pathOr('', ['createdBy', 'name'], node)}
+              {node.createdBy ? node.createdBy?.name : '-'}
             </div>
             <div
               className={classes.bodyItem}
