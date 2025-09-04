@@ -25,9 +25,8 @@ import * as Yup from 'yup';
 import { useTheme } from '@mui/styles';
 import { useNavigate } from 'react-router-dom';
 import FormAuthorizedMembersDialog from '../form/FormAuthorizedMembersDialog';
-import StixCoreObjectSharedOrganisationsDrawer from '../containers/StixCoreObjectSharedOrganisationsDrawer';
-import StixCoreObjectSharedOrganisations from '../stix_core_objects/StixCoreObjectSharedOrganisations';
 import StixCoreObjectMenuItemUnderEE from '../stix_core_objects/StixCoreObjectMenuItemUnderEE';
+import StixCoreObjectSharingList from '../stix_core_objects/StixCoreObjectSharingList';
 import { DraftChip } from '../draft/DraftChip';
 import StixCoreObjectEnrollPlaybook from '../stix_core_objects/StixCoreObjectEnrollPlaybook';
 import StixCoreObjectFileExportButton from '../stix_core_objects/StixCoreObjectFileExportButton';
@@ -49,6 +48,7 @@ import useGranted, {
   SETTINGS_SETACCESSES,
 } from '../../../../utils/hooks/useGranted';
 import CommitMessage from '../form/CommitMessage';
+import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
 import { truncate } from '../../../../utils/String';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObjectQuickSubscription';
@@ -639,11 +639,19 @@ const StixDomainObjectHeader = (props) => {
         </div>
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <div style={{ display: 'flex' }}>
-            {disableSharing !== true && (
-            <StixCoreObjectSharedOrganisations data={stixDomainObject}/>
-            )}
             {enableQuickSubscription && (
               <StixCoreObjectSubscribers triggerData={triggerData} />
+            )}
+            {disableSharing !== true && (
+              <StixCoreObjectSharingList data={stixDomainObject} />
+            )}
+            {disableSharing !== true && (
+              <StixCoreObjectSharing
+                elementId={stixDomainObject.id}
+                open={isSharingOpen}
+                variant="header"
+                handleClose={displaySharingButton ? undefined : handleCloseSharing}
+              />
             )}
             <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
               <StixCoreObjectFileExport
@@ -912,12 +920,13 @@ const StixDomainObjectHeader = (props) => {
           )}
         </Formik>
       )}
-      {(disableSharing !== true && isSharingOpen) && (
-      <StixCoreObjectSharedOrganisationsDrawer
-        data={stixDomainObject}
-        open={isSharingOpen}
-        onClose={handleCloseSharing}
-      />
+      {disableSharing !== true && (
+        <StixCoreObjectSharing
+          open={isSharingOpen}
+          handleClose={handleCloseSharing}
+          elementId={stixDomainObject.id}
+          variant="header"
+        />
       )}
     </React.Suspense>
   );
