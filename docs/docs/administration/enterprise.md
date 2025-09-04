@@ -69,6 +69,10 @@ Dissemination lists are email lists that are used to send documents (PDF/HTML) t
 
 Use an email template to create templates of emails to be sent to your users. Leverage this functionality to automatically send emails to the users you have created without the need to send them credentials. Additionally, you can, for instance, use these templates to warn all your users of a maintenance window. (please read [Email templates](../administration/email-templates.md).
 
+### Priority Intelligence Requirement
+
+Priority Intelligence Requirements (PIRs) gather and prioritize the most relevant and crucial information based on the user's focus, helping them analyze key insights needed for effective decision-making and risk assessment (please read [Priority Intelligence Requirement](../usage/pir.md)).
+
 
 ## More to come
 
