@@ -188,6 +188,7 @@ const createApp = async (app, schema) => {
       return;
     }
     res.set('Cache-Control', 'public, max-age=12000'); // 1 hour cache
+    res.set('Vary', 'X-OPENCTI-SCHEMA-VARY-CACHE'); // Way for client to invalidate cache
     res.json({ version: PLATFORM_VERSION, schema: printSchema(schema) });
   });
 
