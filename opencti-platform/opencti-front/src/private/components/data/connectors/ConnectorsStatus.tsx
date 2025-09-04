@@ -14,15 +14,16 @@ import List from '@mui/material/List';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { ConnectorsStatusQuery, ConnectorsStatusQuery$variables } from '@components/data/connectors/__generated__/ConnectorsStatusQuery.graphql';
+import { ConnectorsStatusQuery } from '@components/data/connectors/__generated__/ConnectorsStatusQuery.graphql';
 import { ConnectorsStatus_data$key } from '@components/data/connectors/__generated__/ConnectorsStatus_data.graphql';
 import makeStyles from '@mui/styles/makeStyles';
 import DialogTitle from '@mui/material/DialogTitle';
-import { ListItemButton } from '@mui/material';
+import { ListItemButton, Stack } from '@mui/material';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/styles';
-import Filters from '@components/common/lists/Filters';
+import useConnectorsStatusFilters from '@components/data/connectors/hooks/useConnectorsStatusFilters';
+import ConnectorsStatusFilters from '@components/data/connectors/ConnectorsStatusFilters';
 import Transition from '../../../../components/Transition';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
@@ -38,14 +39,8 @@ import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import SortConnectorsHeader from './SortConnectorsHeader';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 import useHelper from '../../../../utils/hooks/useHelper';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
-import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { UserContext } from '../../../../utils/hooks/useAuth';
-import FilterIconButton from '../../../../components/FilterIconButton';
 
 const interval$ = interval(FIVE_SECONDS);
-
-const LOCAL_STORAGE_KEY = 'connectors';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -188,45 +183,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
 
   const [searchParams] = useSearchParams();
 
-  const containerImage = searchParams.get('filters');
-
-  const initialFilters = containerImage ? {
-    mode: 'and' as const,
-    filterGroups: [],
-    filters: [{
-      key: 'manager_contract_image',
-      values: [containerImage],
-      operator: 'eq' as const,
-      mode: 'or' as const,
-    }],
-  } : emptyFilterGroup;
-
-  const initialValues = {
-    searchTerm: '',
-    sortBy: 'name',
-    orderAsc: true,
-    openExports: false,
-    filters: initialFilters,
-  };
-
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<ConnectorsStatusQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    initialValues,
-  );
-  //
-  const {
-    // sortBy,
-    // orderAsc,
-    searchTerm,
-    filters,
-    // openExports,
-    // numberOfElements,
-  } = viewStorage;
-
-  console.log('fitlers', filters);
-
-  const contextFilters = useBuildEntityTypeBasedFilterContext('Connector', filters);
-  console.log('contextFilters', contextFilters);
+  const { filteredConnectors, filters, setFilters } = useConnectorsStatusFilters({ connectors: data.connectors, searchParams });
 
   // eslint-disable-next-line class-methods-use-this
   const submitResetState = (connectorId: string | undefined) => {
@@ -274,7 +231,8 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
   };
 
   const queues = data.rabbitMQMetrics?.queues ?? [];
-  const connectorsWithMessages = data.connectors?.map((connector) => {
+
+  const connectorsWithMessages = filteredConnectors?.map((connector) => {
     const queueName = connector.connector_type === 'INTERNAL_ENRICHMENT'
       ? `listen_${connector.id}`
       : `push_${connector.id}`;
@@ -363,201 +321,174 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
         </DialogActions>
       </Dialog>
 
-      <UserContext.Consumer>
-        {({ schema }) => {
-          const filterKeysMap = schema?.filterKeysSchema.get('Connector') ?? new Map();
-          const availableFilterKeys = Array.from(filterKeysMap.keys());
-          console.log('filterKeysMap', filterKeysMap);
+      <Stack gap={1}>
+        <Typography variant="h4">{t_i18n('Registered connectors')}</Typography>
 
-          return (
-            <div>
-              <Typography
-                variant="h4"
-                style={{ float: 'left', marginBottom: 15 }}
-              >
-                {t_i18n('Registered connectors')}
-              </Typography>
+        <ConnectorsStatusFilters
+          connectors={data.connectors}
+          filters={filters}
+          onFiltersChange={setFilters}
+        />
 
-              <Filters
-                helpers={helpers}
-                availableFilterKeys={availableFilterKeys}
-                searchContext={{ entityTypes: ['Connector'] }}
-              />
-              <FilterIconButton
-                helpers={helpers}
-                filters={filters}
-                // handleRemoveFilter={handleRemoveFilter}
-                // handleSwitchGlobalMode={handleSwitchGlobalMode}
-                // handleSwitchLocalMode={handleSwitchLocalMode}
-                redirection
-                entityTypes={['Connector']}
-                searchContext={{
-                  entityTypes: ['Connector'],
-                }}
-              />
-
-              <div className="clearfix" />
-              <Paper
-                className={'paper-for-grid'}
-                style={{
-                  padding: `${theme.spacing(1)} ${theme.spacing(2)}`,
-                }}
-                variant="outlined"
-              >
-                <List classes={{ root: classes.linesContainer }}>
-                  <ListItem
-                    classes={{ root: classes.itemHead }}
-                    divider={false}
-                    style={{ paddingTop: 0 }}
-                    secondaryAction={<> &nbsp; </>}
+        <div className="clearfix" />
+        <Paper
+          className={'paper-for-grid'}
+          style={{
+            padding: `${theme.spacing(1)} ${theme.spacing(2)}`,
+          }}
+          variant="outlined"
+        >
+          <List classes={{ root: classes.linesContainer }}>
+            <ListItem
+              classes={{ root: classes.itemHead }}
+              divider={false}
+              style={{ paddingTop: 0 }}
+              secondaryAction={<> &nbsp; </>}
+            >
+              <ListItemIcon>
+                <span
+                  style={{
+                    padding: '0 8px 0 8px',
+                    fontWeight: 700,
+                    fontSize: 12,
+                  }}
+                />
+              </ListItemIcon>
+              <ListItemText
+                primary={
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: gridColumns,
+                  }}
                   >
-                    <ListItemIcon>
-                      <span
-                        style={{
-                          padding: '0 8px 0 8px',
-                          fontWeight: 700,
-                          fontSize: 12,
-                        }}
-                      />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={
-                        <div style={{
-                          display: 'grid',
-                          gridTemplateColumns: gridColumns,
-                        }}
-                        >
-                          <SortConnectorsHeader field="name" label="Name" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
-                          <SortConnectorsHeader field="connector_type" label="Type" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
-                          <SortConnectorsHeader field="auto" label="Automatic trigger" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
-                          <SortConnectorsHeader field="messages" label="Messages" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
-                          <SortConnectorsHeader field="active" label="Status" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
-                          <SortConnectorsHeader field="updated_at" label="Modified" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
-                          {
-                            isComposerEnable && (
-                              <SortConnectorsHeader field="is_managed" label="Manager Deployment" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
-                            )
-                          }
-                        </div>
-                      }
-                    />
-                  </ListItem>
-
-                  <div>
-                    {sortedConnectors && sortedConnectors
-                      .filter((connector) => connector.connector_type !== 'internal')
-                      .map((connector) => {
-                        let ConnectorIcon = ExtensionOutlined;
-                        if (connector.is_managed) {
-                          ConnectorIcon = HubOutlined;
-                        } else if (connector.built_in) {
-                          ConnectorIcon = DeveloperBoardOutlined;
-                        }
-                        return (
-                          <ListItem
-                            key={connector.id}
-                            divider={true}
-                            disablePadding
-                            secondaryAction={
-                              <Security needs={[MODULES_MODMANAGE]}>
-                                <>
-                                  {!isSensitive && (
-                                    <Tooltip title={t_i18n('Reset the connector state')}>
-                                      <IconButton
-                                        onClick={() => {
-                                          setConnectorIdToReset(connector.id);
-                                          setConnectorMessages(connector.messages);
-                                        }}
-                                        aria-haspopup="true"
-                                        color="primary"
-                                        size="large"
-                                        disabled={!!connector.built_in}
-                                      >
-                                        <PlaylistRemoveOutlined />
-                                      </IconButton>
-                                    </Tooltip>
-                                  )}
-                                  <Tooltip title={t_i18n('Clear this connector')}>
-                                    <IconButton
-                                      onClick={() => {
-                                        if (connector.id) handleDelete(connector.id);
-                                      }}
-                                      aria-haspopup="true"
-                                      color="primary"
-                                      disabled={!!connector.active || !!connector.built_in}
-                                      size="large"
-                                    >
-                                      <DeleteOutlined />
-                                    </IconButton>
-                                  </Tooltip>
-                                </>
-                              </Security>
-                            }
-                          >
-                            <ListItemButton
-                              component={Link}
-                              classes={{ root: classes.item }}
-                              to={`/dashboard/data/ingestion/connectors/${connector.id}`}
-                            >
-                              <ListItemIcon>
-                                <ConnectorIcon />
-                              </ListItemIcon>
-
-                              <ListItemText
-                                primary={
-                                  <div
-                                    style={{
-                                      display: 'grid',
-                                      gridTemplateColumns: gridColumns,
-                                    }}
-                                  >
-                                    <div className={classes.bodyItem}>
-                                      {connector.name}
-                                    </div>
-                                    <div className={classes.bodyItem}>
-                                      {t_i18n(connector.connector_type)}
-                                    </div>
-                                    <div className={classes.bodyItem}>
-                                      <ItemBoolean
-                                        label={connector.connectorTriggerStatus.label}
-                                        status={connector.connectorTriggerStatus.status}
-                                        variant="inList"
-                                      />
-                                    </div>
-                                    <div className={classes.bodyItem}>
-                                      {n(connector.messages)}
-                                    </div>
-                                    <div className={classes.bodyItem}>
-                                      {computeConnectorStatus(connector).render}
-                                    </div>
-                                    <div className={classes.bodyItem}>
-                                      {nsdt(connector.updated_at)}
-                                    </div>
-                                    {
-                                      isComposerEnable && (
-                                        <div className={classes.bodyItem}>
-                                          <ItemBoolean
-                                            label={connector.is_managed ? 'TRUE' : 'FALSE'}
-                                            status={connector.is_managed}
-                                            variant="inList"
-                                          />
-                                        </div>
-                                      )
-                                    }
-                                  </div>
-                                }
-                              />
-                            </ListItemButton>
-                          </ListItem>
-                        );
-                      })}
+                    <SortConnectorsHeader field="name" label="Name" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
+                    <SortConnectorsHeader field="connector_type" label="Type" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
+                    <SortConnectorsHeader field="auto" label="Automatic trigger" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
+                    <SortConnectorsHeader field="messages" label="Messages" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
+                    <SortConnectorsHeader field="active" label="Status" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
+                    <SortConnectorsHeader field="updated_at" label="Modified" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
+                    {
+                      isComposerEnable && (
+                        <SortConnectorsHeader field="is_managed" label="Manager Deployment" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
+                      )
+                    }
                   </div>
-                </List>
-              </Paper>
+                }
+              />
+            </ListItem>
+
+            <div>
+              {sortedConnectors && sortedConnectors
+                .filter((connector) => connector.connector_type !== 'internal')
+                .map((connector) => {
+                  let ConnectorIcon = ExtensionOutlined;
+                  if (connector.is_managed) {
+                    ConnectorIcon = HubOutlined;
+                  } else if (connector.built_in) {
+                    ConnectorIcon = DeveloperBoardOutlined;
+                  }
+                  return (
+                    <ListItem
+                      key={connector.id}
+                      divider={true}
+                      disablePadding
+                      secondaryAction={
+                        <Security needs={[MODULES_MODMANAGE]}>
+                          <>
+                            {!isSensitive && (
+                            <Tooltip title={t_i18n('Reset the connector state')}>
+                              <IconButton
+                                onClick={() => {
+                                  setConnectorIdToReset(connector.id);
+                                  setConnectorMessages(connector.messages);
+                                }}
+                                aria-haspopup="true"
+                                color="primary"
+                                size="large"
+                                disabled={!!connector.built_in}
+                              >
+                                <PlaylistRemoveOutlined />
+                              </IconButton>
+                            </Tooltip>
+                            )}
+                            <Tooltip title={t_i18n('Clear this connector')}>
+                              <IconButton
+                                onClick={() => {
+                                  if (connector.id) handleDelete(connector.id);
+                                }}
+                                aria-haspopup="true"
+                                color="primary"
+                                disabled={!!connector.active || !!connector.built_in}
+                                size="large"
+                              >
+                                <DeleteOutlined />
+                              </IconButton>
+                            </Tooltip>
+                          </>
+                        </Security>
+                            }
+                    >
+                      <ListItemButton
+                        component={Link}
+                        classes={{ root: classes.item }}
+                        to={`/dashboard/data/ingestion/connectors/${connector.id}`}
+                      >
+                        <ListItemIcon>
+                          <ConnectorIcon />
+                        </ListItemIcon>
+
+                        <ListItemText
+                          primary={
+                            <div
+                              style={{
+                                display: 'grid',
+                                gridTemplateColumns: gridColumns,
+                              }}
+                            >
+                              <div className={classes.bodyItem}>
+                                {connector.name}
+                              </div>
+                              <div className={classes.bodyItem}>
+                                {t_i18n(connector.connector_type)}
+                              </div>
+                              <div className={classes.bodyItem}>
+                                <ItemBoolean
+                                  label={connector.connectorTriggerStatus.label}
+                                  status={connector.connectorTriggerStatus.status}
+                                  variant="inList"
+                                />
+                              </div>
+                              <div className={classes.bodyItem}>
+                                {n(connector.messages)}
+                              </div>
+                              <div className={classes.bodyItem}>
+                                {computeConnectorStatus(connector).render}
+                              </div>
+                              <div className={classes.bodyItem}>
+                                {nsdt(connector.updated_at)}
+                              </div>
+                              {
+                                isComposerEnable && (
+                                  <div className={classes.bodyItem}>
+                                    <ItemBoolean
+                                      label={connector.is_managed ? 'TRUE' : 'FALSE'}
+                                      status={connector.is_managed}
+                                      variant="inList"
+                                    />
+                                  </div>
+                                )
+                              }
+                            </div>
+                          }
+                        />
+                      </ListItemButton>
+                    </ListItem>
+                  );
+                })}
             </div>
-          );
-        }}
-      </UserContext.Consumer>
+          </List>
+        </Paper>
+      </Stack>
     </>
   );
 };
