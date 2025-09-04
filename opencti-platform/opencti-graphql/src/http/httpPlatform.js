@@ -187,7 +187,7 @@ const createApp = async (app, schema) => {
       res.sendStatus(403);
       return;
     }
-    res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+    res.set('Cache-Control', 'public, max-age=12000'); // 1 hour cache
     res.json({ version: PLATFORM_VERSION, schema: printSchema(schema) });
   });
 
