@@ -1573,25 +1573,7 @@ export const elConvertHitsToMap = async (elements, opts) => {
   return convertedHitsMap;
 };
 
-export const elConvertHits = async (data) => {
-  const convertedHits = [];
-  const convertedHitIds = [];
-  let startProcessingTime = new Date().getTime();
-  for (let n = 0; n < data.length; n += 1) {
-    const hit = data[n];
-    const element = elDataConverter(hit);
-    convertedHits.push(element);
-    convertedHitIds.push(element.id);
-    // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
-    if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
-      startProcessingTime = new Date().getTime();
-      await new Promise((resolve) => {
-        setImmediate(resolve);
-      });
-    }
-  }
-  return { ids: convertedHitIds, elements: convertedHits };
-};
+export const elConvertHits = async (data) => asyncMap(data, (hit) => elDataConverter(hit));
 
 const withInferencesEntities = (indices, withInferences) => {
   return withInferences ? [READ_INDEX_INFERRED_ENTITIES, ...indices] : indices;
@@ -1812,7 +1794,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
         logApp.warn('Search query returned more elements than expected', { ids: workingIds });
       }
       if (elements.length > 0) {
-        const { elements: convertedHits } = await elConvertHits(elements);
+        const convertedHits = await elConvertHits(elements);
         hits.push(...convertedHits);
         if (elements.length < ES_MAX_PAGINATION) {
           hasNextPage = false;
@@ -3706,8 +3688,7 @@ export const elAggregationsList = async (context, user, indexName, aggregations,
 };
 
 // If filters contains an "in regards of" filter a post-security filtering is needed
-const regardingOfFiltering = async (context, user, elements, elementIds, opts) => {
-  const { filters = {} } = opts;
+const regardingOfFiltering = async (context, user, elements, filters) => {
   let filterCount = 0;
   const lastElement = R.last(elements);
   const endCursor = lastElement.sort ? offsetToCursor(lastElement.sort) : null;
@@ -3728,6 +3709,7 @@ const regardingOfFiltering = async (context, user, elements, elementIds, opts) =
         const directionReverse = R.head(values.filter((v) => v.key === INSTANCE_REGARDING_OF_DIRECTION_REVERSE).map((f) => f.values).flat()) ?? false;
         // resolve all relationships that target the id values, forcing the type is available
         const paginateArgs = { baseData: true, types };
+        const elementIds = elements.map(({ id }) => id);
         if (directionForced) {
           // If a direction is forced, build the filter in the correct direction
           paginateArgs.filters = {
@@ -3816,8 +3798,7 @@ const regardingOfFiltering = async (context, user, elements, elementIds, opts) =
 
 // Build result from generic paginate
 // Ensure also post filtering when in regards of filtering is used.
-const buildSearchResult = async (context, user, data, first, searchAfter, opts = {}) => {
-  const { connectionFormat = true } = opts;
+const buildSearchResult = async (context, user, data, first, searchAfter, filters, connectionFormat) => {
   if (data.hits.hits.length === 0) {
     if (connectionFormat) {
       const elements = buildPagination(first, searchAfter, [], data.hits.total.value, 0);
@@ -3825,8 +3806,8 @@ const buildSearchResult = async (context, user, data, first, searchAfter, opts =
     }
     return { elements: [], total: 0, filterCount: 0, endCursor: null };
   }
-  const { elements, ids: elementIds } = await elConvertHits(data.hits.hits);
-  const { filterCount, endCursor, elements: convertedHits } = await regardingOfFiltering(context, user, elements, elementIds, opts);
+  const elements = await elConvertHits(data.hits.hits);
+  const { filterCount, endCursor, elements: convertedHits } = await regardingOfFiltering(context, user, elements, filters);
   if (connectionFormat) {
     const nodeHits = convertedHits.map((n) => ({ node: n, sort: n.sort, types: n.regardingOfTypes }));
     const paginateElements = buildPagination(first, searchAfter, nodeHits, data.hits.total.value, filterCount);
@@ -3836,11 +3817,18 @@ const buildSearchResult = async (context, user, data, first, searchAfter, opts =
 };
 
 export const elPaginate = async (context, user, indexName, options = {}) => {
-  // eslint-disable-next-line no-use-before-define
-  const { baseData = false, baseFields = [], bypassSizeLimit = false } = options;
-  const first = options.first ?? ES_DEFAULT_PAGINATION;
-  const { withoutRels = true, types = null, withResultMeta = false } = options;
-  const body = await elQueryBodyBuilder(context, user, { ...options });
+  const {
+    baseData = false,
+    baseFields = [],
+    bypassSizeLimit = false,
+    withoutRels = true,
+    types = null,
+    withResultMeta = false,
+    first = ES_DEFAULT_PAGINATION,
+    filters,
+    connectionFormat = true,
+  } = options;
+  const body = await elQueryBodyBuilder(context, user, options);
   if (body.size > ES_MAX_PAGINATION && !bypassSizeLimit) {
     logApp.info('[SEARCH] Pagination limited to max result config', { size: body.size, max: ES_MAX_PAGINATION });
     body.size = ES_MAX_PAGINATION;
@@ -3860,7 +3848,7 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
   logApp.debug('[SEARCH] paginate', { query });
   try {
     const data = await elRawSearch(context, user, types !== null ? types : 'Any', query);
-    const parsedResult = await buildSearchResult(context, user, data, first, body.search_after, options);
+    const parsedResult = await buildSearchResult(context, user, data, first, body.search_after, filters, connectionFormat);
     return withResultMeta ? parsedResult : parsedResult.elements;
   } catch (err) {
     const root_cause = err.meta?.body?.error?.caused_by?.type;
@@ -3869,9 +3857,13 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
   }
 };
 
-const elListRaw = async (context, user, indexName, opts = {}) => {
-  const { maxSize = undefined, logForMigration = false, connectionFormat = true } = opts;
-  const first = opts.first ?? ES_DEFAULT_PAGINATION;
+const elRepaginate = async (context, user, indexName, connectionFormat, opts = {}) => {
+  const {
+    first = ES_DEFAULT_PAGINATION,
+    maxSize = undefined,
+    logForMigration = false,
+    callback
+  } = opts;
   let batch = 0;
   let emitSize = 0;
   let totalHits = 0;
@@ -3883,7 +3875,6 @@ const elListRaw = async (context, user, indexName, opts = {}) => {
   const publish = async (edges, total) => {
     const elements = connectionFormat ? edges : await asyncMap(edges, (edge) => edge.node);
     totalHits = total;
-    const { callback } = opts;
     if (callback) {
       const callbackResult = await callback(elements, totalHits, totalFilteredCount);
       continueProcess = callbackResult === true || callbackResult === undefined;
@@ -3922,11 +3913,13 @@ const elListRaw = async (context, user, indexName, opts = {}) => {
   }
   return { elements: listing, totalCount: totalHits, totalFilteredCount };
 };
+
 export const elConnection = async (context, user, indexName, opts = {}) => {
-  return elListRaw(context, user, indexName, { ...opts, connectionFormat: true });
+  return elRepaginate(context, user, indexName, true, opts);
 };
+
 export const elList = async (context, user, indexName, opts = {}) => {
-  const data = await elListRaw(context, user, indexName, { ...opts, connectionFormat: false });
+  const data = await elRepaginate(context, user, indexName, false, opts);
   return data.elements;
 };
 
