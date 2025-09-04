@@ -150,7 +150,7 @@ export const connectorsForWorker = async (context, user) => {
     });
   }
   // Expose pirs
-  const pirs = await listAllEntities(context, user, [ENTITY_TYPE_PIR], { connectionFormat: false });
+  const pirs = await fullEntitiesList(context, user, [ENTITY_TYPE_PIR]);
   for (let i = 0; i < pirs.length; i += 1) {
     const pir = pirs[i];
     registeredConnectors.push({
