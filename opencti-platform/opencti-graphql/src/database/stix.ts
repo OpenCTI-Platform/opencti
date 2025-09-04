@@ -23,6 +23,7 @@ import {
 } from '../schema/stixDomainObject';
 import {
   ENTITY_AUTONOMOUS_SYSTEM,
+  ENTITY_BANK_ACCOUNT,
   ENTITY_DOMAIN_NAME,
   ENTITY_HASHED_OBSERVABLE_ARTIFACT,
   ENTITY_HASHED_OBSERVABLE_STIX_FILE,
@@ -79,8 +80,10 @@ import {
   RELATION_TECHNOLOGY,
   RELATION_TECHNOLOGY_TO,
   RELATION_TECHNOLOGY_FROM,
+  RELATION_TRANSFERRED_TO,
   RELATION_DEMONSTRATES,
   RELATION_AMPLIFIES,
+  RELATION_SUPPORTS,
 } from '../schema/stixCoreRelationship';
 import { isStixRefRelationship } from '../schema/stixRefRelationship';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ENTITY_TYPE_THREAT_ACTOR } from '../schema/general';
@@ -520,7 +523,8 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
     { name: RELATION_CONSISTS_OF, type: REL_BUILT_IN },
     { name: RELATION_CONTROLS, type: REL_BUILT_IN },
     { name: RELATION_USES, type: REL_BUILT_IN },
-    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
+    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN },
+    { name: RELATION_SUPPORTS, type: REL_EXTENDED}
   ],
   [`${ENTITY_TYPE_INFRASTRUCTURE}_${ENTITY_TYPE_LOCATION_POSITION}`]: [
     { name: RELATION_LOCATED_AT, type: REL_BUILT_IN }
@@ -787,6 +791,9 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_IDENTITY_ORGANIZATION}_${ENTITY_TYPE_IDENTITY_ORGANIZATION}`]: [
     { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }
   ],
+  [`${ENTITY_TYPE_IDENTITY_ORGANIZATION}_${ENTITY_TYPE_INFRASTRUCTURE}`]: [
+    { name: RELATION_OWNS, type: REL_EXTENDED }
+  ],
   // endregion
   // region SECURITY_PLATFORM
   [`${ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM}_${ENTITY_TYPE_ATTACK_PATTERN}`]: [
@@ -1001,6 +1008,11 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   // endregion
   // endregion
   // Observables
+  // region BANK_ACCOUNT
+  [`${ENTITY_BANK_ACCOUNT}_${ENTITY_BANK_ACCOUNT}`]: [
+    { name: RELATION_TRANSFERRED_TO, type: REL_EXTENDED }
+  ],
+  // endregion
   // region HOSTNAME
   [`${ENTITY_HOSTNAME}_${ENTITY_HASHED_OBSERVABLE_ARTIFACT}`]: [
     { name: RELATION_DROPS, type: REL_EXTENDED }
