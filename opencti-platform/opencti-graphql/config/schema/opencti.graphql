@@ -496,6 +496,7 @@ type ContextData {
   workspace_type: String
   pir_ids: [String!] @auth(for: [PIRAPI])
   pir_score: Int @auth(for: [PIRAPI])
+  pir_match_from: Boolean @auth(for: [PIRAPI])
 }
 type Log {
   id: ID!
@@ -1872,7 +1873,6 @@ enum ConnectorType {
   INTERNAL_ANALYSIS
   INTERNAL_EXPORT_FILE
   STREAM
-  INTERNAL_INGESTION_PIR
 }
 
 input ConnectorWithConfig {

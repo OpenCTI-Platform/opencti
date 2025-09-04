@@ -128,6 +128,24 @@ export const formatSeconds = (seconds) => {
 };
 
 /**
+ * Returns a string of the format "1 day 3 hours 58 minutes" from a given number of minutes.
+ *
+ * @param {number} minutes
+ */
+export const stringFormatMinutes = (input, t_i18n) => {
+  const ONE_HOUR = 60;
+  const ONE_DAY = ONE_HOUR * 24;
+  const days = Math.floor(input / ONE_DAY);
+  let minutesLeft = input % ONE_DAY;
+  const hours = Math.floor(minutesLeft / ONE_HOUR);
+  minutesLeft = Math.floor(minutesLeft % ONE_HOUR);
+  const formattedDays = days ? `${String(days)} ${t_i18n('days')}` : '';
+  const formattedHours = hours || days ? `${String(hours)} ${t_i18n('hours')}` : '';
+  const formattedMins = `${String(minutesLeft)} ${t_i18n('minutes')}`;
+  return `${formattedDays} ${formattedHours} ${formattedMins}`;
+};
+
+/**
  * Get a past date in a string format based on a relative string
  * used to compute how much time we go before.
  *

@@ -45,7 +45,6 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS, logApp } from '../../config/conf';
 import { deleteInternalObject } from '../../domain/internalObject';
-import { registerConnectorForPir, unregisterConnectorForIngestion } from '../../domain/connector';
 import type { BasicStoreCommon, BasicStoreObject } from '../../types/store';
 import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
 import { createPirRelation, serializePir, updatePirExplanations } from './pir-utils';
@@ -56,12 +55,13 @@ import { addFilter, extractFilterKeyValues } from '../../utils/filtering/filteri
 import { INSTANCE_DYNAMIC_REGARDING_OF, INSTANCE_REGARDING_OF, OBJECT_CONTAINS_FILTER, RELATION_TO_FILTER, RELATION_TYPE_FILTER } from '../../utils/filtering/filtering-constants';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
-import { isBypassUser, MEMBER_ACCESS_ALL, MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_VIEW, PIRAPI } from '../../utils/access';
+import { isBypassUser, MEMBER_ACCESS_ALL, MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_VIEW } from '../../utils/access';
 import { RELATION_IN_PIR } from '../../schema/internalRelationship';
 import { buildArgsFromDynamicFilters } from '../../domain/stixRelationship';
 import { fillTimeSeries, READ_INDEX_HISTORY } from '../../database/utils';
 import { ENTITY_TYPE_HISTORY, ENTITY_TYPE_PIR_HISTORY } from '../../schema/internalObject';
 import { elPaginate } from '../../database/engine';
+import { registerConnectorQueues, unregisterConnector } from '../../database/rabbitmq';
 
 export const findById = async (context: AuthContext, user: AuthUser, id: string) => {
   await checkEnterpriseEdition(context);
@@ -203,7 +203,6 @@ export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAdd
     ...serializePir(input),
     lastEventId: `${rescanStartDate}-0`,
     authorized_members,
-    authorized_authorities: [PIRAPI],
   };
   const created: BasicStoreEntityPir = await createEntity(
     context,
@@ -211,6 +210,7 @@ export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAdd
     finalInput,
     ENTITY_TYPE_PIR,
   );
+  const pirId = created.internal_id;
 
   await publishUserAction({
     user,
@@ -218,10 +218,10 @@ export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAdd
     event_scope: 'create',
     event_access: 'extended',
     message: `creates Pir \`${created.name}\``,
-    context_data: { id: created.id, entity_type: ENTITY_TYPE_PIR, input: finalInput },
+    context_data: { id: pirId, entity_type: ENTITY_TYPE_PIR, input: finalInput },
   });
   // create rabbit queue for pir
-  await registerConnectorForPir(context, { id: created.id, ...finalInput });
+  await registerConnectorQueues(pirId, `Pir ${pirId} queue`, 'internal', 'pir');
   // -- notify the Pir creation --
   return notify(BUS_TOPICS[ENTITY_TYPE_PIR].ADDED_TOPIC, created, user);
 };
@@ -230,7 +230,7 @@ export const deletePir = async (context: AuthContext, user: AuthUser, pirId: str
   await checkEnterpriseEdition(context);
   // remove the Pir rabbit queue
   try {
-    await unregisterConnectorForIngestion(context, pirId);
+    await unregisterConnector(pirId);
   } catch (e) {
     logApp.error('[OPENCTI] Error while unregistering Pir connector', { cause: e });
   }

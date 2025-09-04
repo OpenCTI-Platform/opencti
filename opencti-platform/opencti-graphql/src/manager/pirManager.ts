@@ -28,9 +28,6 @@ import { getEntitiesListFromCache } from '../database/cache';
 import { createRedisClient, fetchStreamEventsRangeFromEventId } from '../database/redis';
 import { updatePir } from '../modules/pir/pir-domain';
 import { pushToWorkerForConnector } from '../database/rabbitmq';
-import { connectorIdFromIngestId } from '../domain/connector';
-import { createWork } from '../domain/work';
-import { ConnectorType } from '../generated/graphql';
 import convertEntityPirToStix from '../modules/pir/pir-converter';
 import { buildStixBundle } from '../database/stix-2-1-converter';
 import conf, { booleanConf, isFeatureEnabled } from '../config/conf';
@@ -46,20 +43,12 @@ const PIR_MANAGER_LOCK_KEY = conf.get('pir_manager:lock_key');
 const PIR_MANAGER_ENABLED = booleanConf('pir_manager:enabled', false);
 
 const pirFlagElementToQueue = async (
-  context: AuthContext,
   pir: BasicStoreEntityPir,
   relationshipId: string,
   sourceId: string,
   matchingCriteria: ParsedPirCriterion[],
   relationshipAuthorId?: string,
 ) => {
-  const connectorId = connectorIdFromIngestId(pir.id);
-  const work: any = await createWork(
-    context,
-    PIR_MANAGER_USER,
-    { internal_id: connectorId, connector_type: ConnectorType.InternalIngestionPir },
-    `Add dependency ${matchingCriteria} for ${sourceId} in pir ${pir.name}`
-  );
   const stixPir = convertEntityPirToStix(pir as StoreEntityPir);
   stixPir.extensions[STIX_EXT_OCTI].opencti_operation = 'pir_flag_element';
   const pirBundle = {
@@ -72,26 +61,17 @@ const pirFlagElementToQueue = async (
   const message = {
     type: 'bundle',
     applicant_id: PIR_MANAGER_USER.id,
-    work_id: work.id,
     update: true,
     content,
   };
-  await pushToWorkerForConnector(connectorId, message);
+  await pushToWorkerForConnector(pir.internal_id, message);
 };
 
 const pirUnflagElementFromQueue = async (
-  context: AuthContext,
   pir: BasicStoreEntityPir,
   relationshipId: string,
   sourceId: string,
 ) => {
-  const connectorId = connectorIdFromIngestId(pir.id);
-  const work: any = await createWork(
-    context,
-    PIR_MANAGER_USER,
-    { internal_id: connectorId, connector_type: ConnectorType.InternalIngestionPir },
-    `Remove dependency ${relationshipId} for ${sourceId} in pir ${pir.name}`
-  );
   const stixPir = convertEntityPirToStix(pir as StoreEntityPir);
   stixPir.extensions[STIX_EXT_OCTI].opencti_operation = 'pir_unflag_element';
   const pirBundle = {
@@ -104,11 +84,10 @@ const pirUnflagElementFromQueue = async (
   const message = {
     type: 'bundle',
     applicant_id: PIR_MANAGER_USER.id,
-    work_id: work.id,
     update: true,
     content,
   };
-  await pushToWorkerForConnector(connectorId, message);
+  await pushToWorkerForConnector(pir.internal_id, message);
 };
 
 /**
@@ -160,10 +139,10 @@ const processStreamEventsForPir = (context:AuthContext, pir: BasicStoreEntityPir
         switch (event.type) {
           case EVENT_TYPE_CREATE:
           case EVENT_TYPE_UPDATE:
-            await pirFlagElementToQueue(context, pir, relationshipId, sourceId, matchingCriteria, relationshipAuthorId);
+            await pirFlagElementToQueue(pir, relationshipId, sourceId, matchingCriteria, relationshipAuthorId);
             break;
           case EVENT_TYPE_DELETE:
-            await pirUnflagElementFromQueue(context, pir, relationshipId, sourceId);
+            await pirUnflagElementFromQueue(pir, relationshipId, sourceId);
             break;
           default: // Nothing to do
         }
@@ -174,7 +153,7 @@ const processStreamEventsForPir = (context:AuthContext, pir: BasicStoreEntityPir
           if (!sourceId) throw FunctionalError(`Cannot flag the source with Pir ${pir.id}, no source id found`);
           const relationshipId: string = data.extensions?.[STIX_EXT_OCTI]?.id;
           if (!relationshipId) throw FunctionalError(`Cannot flag the source with Pir ${pir.id}, no relationship id found`);
-          await pirUnflagElementFromQueue(context, pir, relationshipId, sourceId);
+          await pirUnflagElementFromQueue(pir, relationshipId, sourceId);
         }
       }
     }
@@ -203,6 +182,9 @@ const pirManagerHandler = async () => {
       await updatePir(context, PIR_MANAGER_USER, pir.id, [{ key: 'lastEventId', value: [lastEventId] }]);
     }
   }, { concurrency: 5 });
+
+  // close redis client connexion
+  await redisClient.quit();
 };
 
 // Configuration of the manager.
@@ -225,4 +207,6 @@ const PIR_MANAGER_DEFINITION: ManagerDefinition = {
   }
 };
 // Automatically register manager on start.
-if (isFeatureEnabled('Pir')) registerManager(PIR_MANAGER_DEFINITION);
+if (isFeatureEnabled('Pir')) {
+  registerManager(PIR_MANAGER_DEFINITION);
+}

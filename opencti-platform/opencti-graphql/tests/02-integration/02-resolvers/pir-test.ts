@@ -1,19 +1,19 @@
 import gql from 'graphql-tag';
 import { describe, expect, it } from 'vitest';
 import { now } from 'moment';
-import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, buildStandardUser, queryAsAdmin, testContext } from '../../utils/testQuery';
 import { FilterMode, FilterOperator, PirType } from '../../../src/generated/graphql';
 import { SYSTEM_USER } from '../../../src/utils/access';
-import { internalLoadById, listEntities, listEntitiesPaginated, listRelationsPaginated } from '../../../src/database/middleware-loader';
+import { internalLoadById, listEntitiesPaginated, listRelationsPaginated } from '../../../src/database/middleware-loader';
 import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import type { BasicStoreEntity } from '../../../src/types/store';
-import { ENTITY_TYPE_CONNECTOR } from '../../../src/schema/internalObject';
 import { addFilter } from '../../../src/utils/filtering/filtering-utils';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../../src/schema/general';
 import { LAST_PIR_SCORE_DATE_FILTER_PREFIX, PIR_SCORE_FILTER_PREFIX } from '../../../src/utils/filtering/filtering-constants';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { type BasicStoreRelationPir, ENTITY_TYPE_PIR } from '../../../src/modules/pir/pir-types';
 import { RELATION_IN_PIR } from '../../../src/schema/internalRelationship';
+import { connectorsForWorker } from '../../../src/database/repository';
 
 const LIST_QUERY = gql`
   query pirs(
@@ -117,6 +117,7 @@ const MALWARE_QUERY = gql`
 describe('PIR resolver standard behavior', () => {
   let pirInternalId: string = '';
   let flaggedElementId: string = '';
+  const userUpdate = buildStandardUser([], [], [{ name: 'KNOWLEDGE_KNUPDATE' }]);
 
   it('should pir created', async () => {
     const CREATE_QUERY = gql`
@@ -193,11 +194,10 @@ describe('PIR resolver standard behavior', () => {
     expect(queryResult.data?.pirs.edges.length).toEqual(1);
   });
 
-  it('should exist associated pir connector queue', async () => {
-    const filters = addFilter(undefined, 'connector_type', ['INTERNAL_INGESTION_PIR']);
-    const pirConnectors = await listEntities<BasicStoreEntity>(testContext, ADMIN_USER, [ENTITY_TYPE_CONNECTOR], { connectionFormat: false, filters });
+  it('should exist associated pir connector queue for worker', async () => {
+    const connectors = await connectorsForWorker(testContext, ADMIN_USER);
+    const pirConnectors = connectors.filter((c) => c.id === pirInternalId);
     expect(pirConnectors.length).toEqual(1);
-    expect(pirConnectors[0].name).toEqual('[PIR] MyPir');
   });
 
   it('should update a pir', async () => {
@@ -322,8 +322,12 @@ describe('PIR resolver standard behavior', () => {
     await expect(async () => {
       await listEntitiesPaginated(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersInIncorrectFormat });
     }).rejects.toThrowError('The filter key should be followed by a dot and the Pir ID');
-    // fetch entities with a score > 50 for a given PIR
+    // return error if the pir is not accessible for the user
     const filtersWithGtOperator = addFilter(undefined, `${PIR_SCORE_FILTER_PREFIX}.${pirInternalId}`, ['50'], 'gt');
+    await expect(async () => {
+      await listEntitiesPaginated(testContext, userUpdate, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithGtOperator });
+    }).rejects.toThrowError('Unauthorized Pir access');
+    // fetch entities with a score > 50 for a given PIR
     const stixDomainObjects1 = await listEntitiesPaginated(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithGtOperator });
     expect(stixDomainObjects1.edges.length).toEqual(1);
     expect(stixDomainObjects1.edges[0].node.internal_id).toEqual(flaggedElementId);
@@ -476,13 +480,9 @@ describe('PIR resolver standard behavior', () => {
     );
     expect(malwareAfterFlag.pir_information).toEqual(null);
     // Verify the associated connector queue is no longer found
-    const pirConnectors = await listEntities<BasicStoreEntity>(
-      testContext,
-      ADMIN_USER,
-      [ENTITY_TYPE_CONNECTOR],
-      { connectionFormat: false, filters: addFilter(undefined, 'connector_type', ['INTERNAL_INGESTION_PIR']) }
-    );
-    expect(pirConnectors.length).toEqual(0);
+    const connectors = await connectorsForWorker(testContext, ADMIN_USER);
+    const pirConnector = connectors.filter((c) => c.id === pirInternalId);
+    expect(pirConnector.length).toEqual(0);
     // Verify the PIR is no longer found
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: pirInternalId } });
     expect(queryResult).not.toBeNull();

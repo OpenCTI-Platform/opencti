@@ -213,7 +213,7 @@ const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHe
     },
     pirLastScoreDate: {
       id: 'last_pir_score_date',
-      label: 'Last score date',
+      label: 'Last score evolution',
       percentWidth: 11,
       isSortable: true,
       render: ({ pirInformation }) => defaultRender(fd(pirInformation.last_pir_score_date)),

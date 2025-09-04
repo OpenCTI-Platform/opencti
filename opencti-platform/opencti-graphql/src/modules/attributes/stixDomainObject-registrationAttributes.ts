@@ -66,7 +66,7 @@ const stixDomainObjectAttributes: Array<AttributeDefinition> = [
     mappings: [
       { name: 'pir_id', label: 'PIR ID', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_PIR], editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true, featureFlag: 'Pir' },
       { name: 'pir_score', label: 'PIR Score', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true, featureFlag: 'Pir' },
-      { name: 'last_pir_score_date', label: 'Last PIR score date', type: 'date', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true, featureFlag: 'Pir' },
+      { name: 'last_pir_score_date', label: 'Last score evolution', type: 'date', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true, featureFlag: 'Pir' },
     ]
   },
 ];

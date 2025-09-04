@@ -42,25 +42,25 @@ interface PirHistoryMessageProps {
 
 const PirHistoryMessage = ({ log }: PirHistoryMessageProps) => {
   const { t_i18n } = useFormatter();
-  const { context_data, entity_type, event_scope, user } = log;
+  const { context_data, event_scope, user } = log;
 
   const getHistoryMessage = () => {
     const message = context_data?.message ?? '';
     const entityType = t_i18n(displayEntityTypeForTranslation(context_data?.entity_type ?? ''));
 
+    const isUpdate = event_scope === 'update' && isNotEmptyField(context_data?.entity_name);
+
     if (context_data?.entity_type === 'in-pir') {
-      if (event_scope === 'update') {
-        return `Update PIR dependencies for \`${context_data?.entity_name}\` (new score: ${context_data?.pir_score})`;
-      } if (event_scope === 'create') {
+      if (event_scope === 'create') {
         return `${message} (score: ${context_data?.pir_score})`;
+      }
+      if (isUpdate) {
+        return `${message} for \`${context_data?.entity_name?.split('in-pir')[0]}\``;
       }
       return message;
     }
 
     // Default message
-    const isUpdate = entity_type === 'History'
-      && event_scope === 'update'
-      && isNotEmptyField(context_data?.entity_name);
     return `\`${user?.name}\` ${message} ${isUpdate ? `for \`${context_data?.entity_name}\` (${entityType})` : ''}`;
   };
 

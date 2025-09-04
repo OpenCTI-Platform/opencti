@@ -524,6 +524,7 @@ type ContextData {
   workspace_type: String
   pir_ids: [String!]
   pir_score: Int
+  pir_match_from: Boolean
 }
 
 type Log {
@@ -1946,7 +1947,6 @@ enum ConnectorType {
   INTERNAL_ANALYSIS
   INTERNAL_EXPORT_FILE
   STREAM
-  INTERNAL_INGESTION_PIR
 }
 
 input ConnectorWithConfig {
@@ -13508,9 +13508,9 @@ type Pir implements InternalObject & BasicObject {
   pir_filters: String!
   lastEventId: String!
   authorizedMembers: [MemberAccess!]!
-  authorizedAuthorities: [String]
   currentUserAccessRight: String
   pirContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): ContainerConnection
+  queue_messages: Int!
 }
 
 type PirRelationship implements BasicRelationship {

@@ -58,9 +58,21 @@ export const pirHistoryFilterGroup: GqlFilterGroup = {
  */
 export const pirLogRedirectUri = (
   context: {
+    readonly entity_type: string | null | undefined
     readonly entity_id: string | null | undefined
+    readonly pir_match_from: boolean | null | undefined
     readonly from_id: string | null | undefined
+    readonly to_id: string | null | undefined
   } | null | undefined,
 ) => {
-  return `/dashboard/id/${context?.from_id ?? context?.entity_id}`;
+  let redirectionId;
+  if (context?.entity_type === 'in-pir') { // in-pir: redirect to the flagged entity (i.e. the relationship source entity)
+    redirectionId = context?.from_id;
+  } else { // relationships: redirect to the flagged entity (if both from and to are flagged, redirect to the source entity)
+    redirectionId = context?.pir_match_from ? context?.from_id : context?.to_id;
+  }
+  if (!redirectionId) {
+    redirectionId = context?.entity_id; // not relationship: redirect to the entity (container containing a flagged entity)
+  }
+  return `/dashboard/id/${redirectionId ?? context?.entity_id}`;
 };

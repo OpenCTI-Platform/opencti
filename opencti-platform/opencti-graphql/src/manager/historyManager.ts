@@ -45,7 +45,8 @@ interface HistoryContext {
   created_by_ref_id?: string;
   marking_definitions?: Array<string>;
   pir_ids?: Array<string>;
-  pir_score?: number
+  pir_score?: number;
+  pir_match_from?: boolean;
 }
 
 export interface HistoryData extends BasicStoreEntity {
@@ -91,6 +92,8 @@ export const resolveGrantedRefsIds = async (context: AuthContext, events: Array<
 export const generatePirContextData = (event: SseEvent<StreamDataEvent>): Partial<HistoryContext> => {
   let pir_ids: string[] = [];
   let from_id: string | undefined;
+  let to_id: string | undefined;
+  let pir_match_from = false;
   let pir_score: number | undefined;
   // Listened events: stix core relationships, pir relationships, 'contains' flagged entities
   const eventData = event.data.data;
@@ -100,7 +103,9 @@ export const generatePirContextData = (event: SseEvent<StreamDataEvent>): Partia
     if (isStixCoreRelationship(relationEvent.relationship_type)) {
       const extensions = relationEvent.extensions[STIX_EXT_OCTI];
       from_id = extensions.source_ref;
+      to_id = extensions.target_ref;
       if ((extensions.source_ref_pir_refs ?? []).length > 0) {
+        pir_match_from = true;
         pir_ids = extensions.source_ref_pir_refs;
       } else if ((extensions.target_ref_pir_refs ?? []).length > 0) {
         pir_ids = extensions.target_ref_pir_refs;
@@ -125,7 +130,9 @@ export const generatePirContextData = (event: SseEvent<StreamDataEvent>): Partia
   return {
     pir_ids,
     from_id,
-    pir_score
+    to_id,
+    pir_match_from,
+    pir_score,
   };
 };
 

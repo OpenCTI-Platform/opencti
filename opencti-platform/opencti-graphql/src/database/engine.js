@@ -2576,6 +2576,7 @@ const adaptFilterToEntityTypeFilterKey = (filter) => {
   // depending on the operator (or/and), only one of newFilter and newFilterGroup is defined
   return { newFilter, newFilterGroup };
 };
+
 const adaptFilterToIdsFilterKey = (filter) => {
   const { key, mode = 'or', operator = 'eq' } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
@@ -2769,6 +2770,28 @@ const adaptFilterToFromOrToFilterKeys = (filter) => {
   return { newFilter: undefined, newFilterGroup };
 };
 
+const adaptFilterToPirFilterKeys = async (context, user, filterKey, filter) => {
+  // the key should be of format: pir_score.PIR_ID
+  const splittedKey = filterKey.split('.');
+  if (splittedKey.length !== 2) {
+    throw FunctionalError('The filter key should be followed by a dot and the Pir ID', { filterKey });
+  }
+  const pirKey = splittedKey[0];
+  const pirId = splittedKey[1];
+  // check the user has access to the PIR
+  await getPirWithAccessCheck(context, user, pirId);
+  // push the nested pir_score filter associated to the given PIR ID
+  const newFilter = {
+    key: ['pir_information'],
+    values: [],
+    nested: [
+      { ...filter, key: pirKey },
+      { key: 'pir_id', values: [pirId], operator: FilterOperator.Eq },
+    ]
+  };
+  return { newFilter, newFilterGroup: undefined };
+};
+
 const adaptFilterToComputedReliabilityFilterKey = async (context, user, filter) => {
   const { key, operator = 'eq' } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
@@ -2959,8 +2982,22 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         if (dynamic && !type?.values?.length) {
           throw UnsupportedError('Relationship type is needed for dynamic in regards of filtering', { key: filterKey, type });
         }
-        const ids = id?.values ?? [];
+        let ids = id?.values ?? [];
         const operator = id?.operator ?? 'eq';
+        // Check type
+        if (type && type.operator && type.operator !== 'eq') {
+          throw UnsupportedError('regardingOf filter only support types equality restriction');
+        }
+        const types = type?.values;
+        // Check types are stix relationships // TODO PIR
+        // if (types.some((t) => !isStixRelationship(t))) {
+        //   throw UnsupportedError('regardingOf filter only support stix relationship types', { key: filterKey, types });
+        // }
+        // Check ids
+        if (ids.length > 0) {
+          const entities = await elFindByIds(context, user, ids, { baseData: true });
+          ids = entities.map((n) => n.id); // Keep ids the user has access to
+        }
         // Check dynamic
         const dynamicFilter = dynamic?.values ?? [];
         if (isNotEmptyField(dynamicFilter)) {
@@ -2979,11 +3016,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
             ids.push('<invalid id>'); // To force empty result in the query result
           }
         }
-        // Check type
-        if (type && type.operator && type.operator !== 'eq') {
-          throw UnsupportedError('regardingOf only support types equality restriction');
-        }
-        const types = type?.values;
+        // Construct and push the final regarding of filter
         if (isEmptyField(ids)) {
           const keys = isEmptyField(types)
             ? buildRefRelationKey('*', '*')
@@ -3014,8 +3047,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         }
       }
       if (filterKey === TYPE_FILTER || filterKey === RELATION_TYPE_FILTER) {
-        // in case we want to filter by entity_type
-        // we need to add parent_types checking (in case the given value in type is an abstract type)
+        // add parent_types checking (in case the given value in type is an abstract type)
         const { newFilter, newFilterGroup } = adaptFilterToEntityTypeFilterKey(filter);
         if (newFilter) {
           finalFilters.push(newFilter);
@@ -3121,24 +3153,8 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         }
       }
       if (filterKey.startsWith(PIR_SCORE_FILTER_PREFIX) || filterKey.startsWith(LAST_PIR_SCORE_DATE_FILTER_PREFIX)) {
-        // the key should be of format: pir_score.PIR_ID
-        const splittedKey = filterKey.split('.');
-        if (splittedKey.length !== 2) {
-          throw FunctionalError('The filter key should be followed by a dot and the Pir ID', { filterKey });
-        }
-        const pirKey = splittedKey[0];
-        const pirId = splittedKey[1];
-        // check the user has access to the PIR
-        await getPirWithAccessCheck(context, user, pirId);
-        // push the nested pir_score filter associated to the given PIR ID
-        finalFilters.push({
-          key: ['pir_information'],
-          values: [],
-          nested: [
-            { ...filter, key: pirKey },
-            { key: 'pir_id', values: [pirId], operator: FilterOperator.Eq },
-          ]
-        });
+        const { newFilter } = await adaptFilterToPirFilterKeys(context, user, filterKey, filter);
+        finalFilters.push(newFilter);
       }
       if (filterKey === USER_SERVICE_ACCOUNT_FILTER) {
         const { operator, mode, values } = filter;

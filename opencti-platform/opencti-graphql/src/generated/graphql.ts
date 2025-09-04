@@ -4024,7 +4024,6 @@ export enum ConnectorType {
   InternalEnrichment = 'INTERNAL_ENRICHMENT',
   InternalExportFile = 'INTERNAL_EXPORT_FILE',
   InternalImportFile = 'INTERNAL_IMPORT_FILE',
-  InternalIngestionPir = 'INTERNAL_INGESTION_PIR',
   Stream = 'STREAM'
 }
 
@@ -4309,6 +4308,7 @@ export type ContextData = {
   from_id?: Maybe<Scalars['String']['output']>;
   message: Scalars['String']['output'];
   pir_ids?: Maybe<Array<Scalars['String']['output']>>;
+  pir_match_from?: Maybe<Scalars['Boolean']['output']>;
   pir_score?: Maybe<Scalars['Int']['output']>;
   to_id?: Maybe<Scalars['String']['output']>;
   workspace_type?: Maybe<Scalars['String']['output']>;
@@ -19949,7 +19949,6 @@ export type PhoneNumberAddInput = {
 
 export type Pir = BasicObject & InternalObject & {
   __typename?: 'Pir';
-  authorizedAuthorities?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   authorizedMembers: Array<MemberAccess>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
@@ -19965,6 +19964,7 @@ export type Pir = BasicObject & InternalObject & {
   pir_filters: Scalars['String']['output'];
   pir_rescan_days: Scalars['Int']['output'];
   pir_type: PirType;
+  queue_messages: Scalars['Int']['output'];
   standard_id: Scalars['String']['output'];
   updated_at: Scalars['DateTime']['output'];
 };
@@ -36699,6 +36699,7 @@ export type ContextDataResolvers<ContextType = any, ParentType extends Resolvers
   from_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   pir_ids?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  pir_match_from?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   pir_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   to_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   workspace_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -41582,7 +41583,6 @@ export type PhoneNumberResolvers<ContextType = any, ParentType extends Resolvers
 }>;
 
 export type PirResolvers<ContextType = any, ParentType extends ResolversParentTypes['Pir'] = ResolversParentTypes['Pir']> = ResolversObject<{
-  authorizedAuthorities?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   authorizedMembers?: Resolver<Array<ResolversTypes['MemberAccess']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
@@ -41598,6 +41598,7 @@ export type PirResolvers<ContextType = any, ParentType extends ResolversParentTy
   pir_filters?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   pir_rescan_days?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   pir_type?: Resolver<ResolversTypes['PirType'], ParentType, ContextType>;
+  queue_messages?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

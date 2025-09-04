@@ -128,8 +128,8 @@ export const stixDomainObjectPirInformation = async (context, user, stixDomainOb
   });
   // return pir useful information
   return {
-    pir_score: pirInformation.pir_score,
-    last_pir_score_date: pirInformation.last_pir_score_date,
+    pir_score: pirInformation?.pir_score,
+    last_pir_score_date: pirInformation?.last_pir_score_date,
     pir_explanations: inPirRelations.length !== 1 ? [] : inPirRelations[0].pir_explanations,
   };
 };

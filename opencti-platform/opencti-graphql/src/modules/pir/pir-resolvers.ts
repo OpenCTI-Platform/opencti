@@ -31,6 +31,7 @@ import {
 } from './pir-domain';
 import { getAuthorizedMembers } from '../../utils/authorizedMembers';
 import { filterMembersWithUsersOrgs, getUserAccessRight } from '../../utils/access';
+import { getConnectorQueueSize } from '../../database/rabbitmq';
 
 const pirResolvers: Resolvers = {
   Query: {
@@ -53,7 +54,8 @@ const pirResolvers: Resolvers = {
     // @ts-ignore
     pirContainers: (pir, args, context) => findPirContainers(context, context.user, pir, args),
     authorizedMembers: (pir, _, context) => getAuthorizedMembers(context, context.user, pir),
-    currentUserAccessRight: (pir, _, context) => getUserAccessRight(context.user, pir)
+    currentUserAccessRight: (pir, _, context) => getUserAccessRight(context.user, pir),
+    queue_messages: async (pir, _, context) => getConnectorQueueSize(context, context.user, pir.id),
   },
   PirRelationship: {
     from: (rel, _, context) => (rel.from ? rel.from : context.batch.idsBatchLoader.load({ id: rel.fromId, type: rel.fromType })),

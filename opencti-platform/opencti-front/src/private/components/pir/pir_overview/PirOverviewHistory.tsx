@@ -62,7 +62,9 @@ const pirHistoryFragment = graphql`
             entity_name
             message
             pir_score
+            pir_match_from
             from_id
+            to_id
           }
         }
       }
