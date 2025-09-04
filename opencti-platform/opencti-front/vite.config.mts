@@ -244,6 +244,7 @@ export default defineConfig({
       '/logout': backProxy(),
       '/stream': backProxy(),
       '/storage': backProxy(),
+      '/schema': backProxy(),
       '/taxii2': backProxy(),
       '/feeds': backProxy(),
       '/graphql': backProxy(true),

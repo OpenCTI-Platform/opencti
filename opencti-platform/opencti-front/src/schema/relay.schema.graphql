@@ -590,6 +590,7 @@ type TaxiiCollectionEdge {
 }
 
 input TaxiiCollectionAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   filters: String
@@ -642,6 +643,7 @@ input FeedAttributeMappingInput {
 }
 
 input FeedAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   filters: String
@@ -700,6 +702,7 @@ type StreamCollectionEdge {
 }
 
 input StreamCollectionAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   filters: String
@@ -806,6 +809,7 @@ input StatusAddInput {
 }
 
 input StatusTemplateAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   color: String!
 }
@@ -847,9 +851,14 @@ type SynchronizerConnection {
 }
 
 input SynchronizerAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
+
+  "*Constraints:*\n* Minimal length: `2`\n"
   uri: String!
   token: String
+
+  "*Constraints:*\n* Minimal length: `2`\n"
   stream_id: String!
   user_id: String
   recover: DateTime
@@ -1257,8 +1266,11 @@ input QueryTaskAddInput {
 }
 
 input RetentionRuleAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   filters: String
+
+  "*Constraints:*\n* Minimal value: `1`\n"
   max_retention: Int!
   retention_unit: RetentionUnit
   scope: RetentionRuleScope!
@@ -1568,6 +1580,7 @@ type Group implements InternalObject & BasicObject {
 }
 
 input GroupAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   default_assignation: Boolean
@@ -1835,7 +1848,10 @@ type UserSession {
 }
 
 input UserAddInput {
+  "*Constraints:*\n* Minimal length: `5`\n* Must match format: `email`\n"
   user_email: String
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   password: String
   firstname: String
@@ -1918,6 +1934,7 @@ type Role implements BasicObject & InternalObject {
 }
 
 input RoleAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   clientMutationId: String
@@ -2022,6 +2039,8 @@ input ContractConfigInput {
 
 input RegisterConnectorInput {
   id: ID!
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   type: ConnectorType!
   scope: [String!]
@@ -2033,12 +2052,15 @@ input RegisterConnectorInput {
 
 input EditManagedConnectorInput {
   id: ID!
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   connector_user_id: ID!
   manager_contract_configuration: [ContractConfigInput!]!
 }
 
 input AddManagedConnectorInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   connector_user_id: ID
   user_id: ID!
@@ -2051,6 +2073,8 @@ input AddManagedConnectorInput {
 
 input RegisterConnectorsManagerInput {
   id: ID!
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   public_key: String!
 }
@@ -2509,6 +2533,8 @@ type ExternalReference implements BasicObject & StixObject & StixMetaObject {
 input ExternalReferenceAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   source_name: String!
   description: String
   url: String
@@ -2775,6 +2801,8 @@ interface StixDomainObject {
 input StixDomainObjectAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   confidence: Int
@@ -2887,6 +2915,8 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
 input AttackPatternAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   aliases: [String]
@@ -3026,6 +3056,8 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
 input CampaignAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   aliases: [String]
@@ -3217,6 +3249,8 @@ input NoteAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   attribute_abstract: String
+
+  "*Constraints:*\n* Minimal length: `2`\n"
   content: String!
   authors: [String]
   note_types: [String]
@@ -3242,6 +3276,8 @@ input NoteUserAddInput {
   stix_id: String
   x_opencti_stix_ids: [String]
   attribute_abstract: String
+
+  "*Constraints:*\n* Minimal length: `2`\n"
   content: String!
   note_types: [String]
   likelihood: Int
@@ -3461,6 +3497,8 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
 input OpinionAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n"
   opinion: String!
   explanation: String
   authors: [String]
@@ -3597,6 +3635,8 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
 input ReportAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   content: String
@@ -3709,6 +3749,8 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
 input CourseOfActionAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   x_opencti_aliases: [String]
@@ -3817,6 +3859,8 @@ input IdentityAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   type: IdentityType!
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   contact_information: String
@@ -3924,6 +3968,8 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
 input IndividualAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   contact_information: String
@@ -4037,6 +4083,8 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
 input SectorAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   contact_information: String
@@ -4144,6 +4192,8 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
 input SystemAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   contact_information: String
@@ -4258,6 +4308,8 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
 input InfrastructureAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   aliases: [String]
@@ -4371,6 +4423,8 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
 input IntrusionSetAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   aliases: [String]
@@ -4480,6 +4534,8 @@ input LocationAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   type: String!
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   latitude: Float
@@ -4587,6 +4643,8 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
 input PositionAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   latitude: Float
@@ -4697,6 +4755,8 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
 input CityAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   latitude: Float
@@ -4802,6 +4862,8 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
 input CountryAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   latitude: Float
@@ -4908,6 +4970,8 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
 input RegionAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   latitude: Float
@@ -5024,6 +5088,8 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
 input MalwareAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   malware_types: [String]
@@ -5227,6 +5293,8 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
 input ThreatActorGroupAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   aliases: [String]
@@ -5340,6 +5408,8 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
 input ToolAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   aliases: [String]
@@ -5495,6 +5565,8 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
 input VulnerabilityAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   x_opencti_aliases: [String]
@@ -5656,6 +5728,8 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
 input IncidentAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   confidence: Int
@@ -6085,7 +6159,10 @@ input EmailMimePartTypeAddInput {
 }
 
 input HashInput {
+  "*Constraints:*\n* Minimal length: `3`\n"
   algorithm: String!
+
+  "*Constraints:*\n* Minimal length: `5`\n"
   hash: String!
 }
 
@@ -7705,6 +7782,7 @@ type Persona implements BasicObject & StixObject & StixCoreObject & StixCyberObs
 }
 
 input PersonaAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   persona_name: String!
   persona_type: String!
 }
@@ -9539,6 +9617,8 @@ type ChannelEdge {
 input ChannelAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   channel_types: [String]
@@ -9669,6 +9749,8 @@ type LanguageEdge {
 input LanguageAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   aliases: [String]
@@ -9773,6 +9855,8 @@ type EventEdge {
 input EventAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   event_types: [String!]
@@ -9887,10 +9971,14 @@ type GroupingEdge {
 input GroupingAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   content: String
   content_mapping: String
+
+  "*Constraints:*\n* Minimal length: `2`\n"
   context: String!
   x_opencti_aliases: [String]
   revoked: Boolean
@@ -9997,6 +10085,8 @@ type NarrativeEdge {
 input NarrativeAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   narrative_types: [String!]
@@ -10051,6 +10141,7 @@ enum TriggerEventType {
 }
 
 input TriggerLiveAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   event_types: [TriggerEventType!]!
@@ -10061,6 +10152,7 @@ input TriggerLiveAddInput {
 }
 
 input TriggerDigestAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   trigger_ids: [String!]!
@@ -10114,6 +10206,7 @@ enum TriggerActivityEventType {
 }
 
 input TriggerActivityLiveAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   notifiers: [StixRef!]
@@ -10122,6 +10215,7 @@ input TriggerActivityLiveAddInput {
 }
 
 input TriggerActivityDigestAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   trigger_ids: [String!]!
@@ -10272,6 +10366,8 @@ input DataComponentAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   aliases: [String]
@@ -10375,6 +10471,8 @@ input DataSourceAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   aliases: [String]
@@ -10494,6 +10592,8 @@ type VocabularyEdge {
 input VocabularyAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `1`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   category: VocabularyCategory!
@@ -10589,6 +10689,8 @@ type AdministrativeAreaEdge {
 input AdministrativeAreaAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   latitude: Float
@@ -10702,6 +10804,7 @@ type TaskConnection {
 }
 
 input TaskAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   created: DateTime
@@ -10750,6 +10853,7 @@ type TaskTemplateEdge {
 }
 
 input TaskTemplateAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
 }
@@ -10874,6 +10978,7 @@ type CaseTemplateEdge {
 }
 
 input CaseTemplateAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   created: DateTime
@@ -10980,6 +11085,8 @@ type CaseIncidentEdge {
 input CaseIncidentAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   severity: String
   priority: String
@@ -11114,6 +11221,8 @@ type CaseRfiEdge {
 input CaseRfiAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   content: String
@@ -11242,6 +11351,8 @@ type CaseRftEdge {
 input CaseRftAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   content: String
@@ -11365,6 +11476,8 @@ type FeedbackEdge {
 input FeedbackAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   content: String
@@ -11504,6 +11617,8 @@ type WorkspaceEdge {
 
 input WorkspaceAddInput {
   type: String!
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   tags: [String!]
@@ -11513,6 +11628,8 @@ input WorkspaceAddInput {
 
 input WorkspaceDuplicateInput {
   type: String!
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   manifest: String
@@ -11724,6 +11841,7 @@ input NotifierTestInput {
 }
 
 input NotifierAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   notifier_connector_id: String!
@@ -11848,6 +11966,8 @@ type ThreatActorIndividualEdge {
 input ThreatActorIndividualAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   aliases: [String]
@@ -11958,6 +12078,7 @@ type PlaybookEdge {
 }
 
 input PlaybookAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
 }
@@ -11968,6 +12089,7 @@ input PositionInput {
 }
 
 input PlaybookAddNodeInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   component_id: String!
   position: PositionInput!
@@ -12019,9 +12141,12 @@ type IngestionRssEdge {
 }
 
 input IngestionRssAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   scheduling_period: String
+
+  "*Constraints:*\n* Minimal length: `5`\n"
   uri: String!
   current_state_date: DateTime
   ingestion_running: Boolean
@@ -12087,12 +12212,17 @@ type IngestionTaxiiEdge {
 }
 
 input IngestionTaxiiAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   version: TaxiiVersion!
   authentication_type: IngestionAuthType!
   authentication_value: String
+
+  "*Constraints:*\n* Minimal length: `5`\n"
   uri: String!
+
+  "*Constraints:*\n* Minimal length: `5`\n"
   collection: String!
   added_after_start: DateTime
   ingestion_running: Boolean
@@ -12134,6 +12264,7 @@ type IngestionTaxiiCollectionEdge {
 }
 
 input IngestionTaxiiCollectionAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   user_id: String
@@ -12204,12 +12335,15 @@ type CSVFeedAddInputFromImport {
 }
 
 input IngestionCsvAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   scheduling_period: String
   authentication_type: IngestionAuthType!
   authentication_value: String
   current_state_date: DateTime
+
+  "*Constraints:*\n* Minimal length: `5`\n"
   uri: String!
   csv_mapper_id: String
   csv_mapper: String
@@ -12305,12 +12439,15 @@ input QueryAttribute {
 }
 
 input IngestionJsonAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   scheduling_period: String
   authentication_type: IngestionAuthType!
   authentication_value: String
   current_state_date: DateTime
+
+  "*Constraints:*\n* Minimal length: `5`\n"
   uri: String!
   verb: String!
   body: String
@@ -12465,6 +12602,8 @@ input IndicatorAddInput {
   pattern_type: String!
   pattern_version: String
   pattern: String!
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   indicator_types: [String!]
@@ -12473,6 +12612,8 @@ input IndicatorAddInput {
   confidence: Int
   revoked: Boolean
   lang: String
+
+  "*Constraints:*\n* Minimal value: `0`\n* Maximal value: `100`\n"
   x_opencti_score: Int
   x_opencti_detection: Boolean
   x_opencti_main_observable_type: String
@@ -12535,6 +12676,7 @@ type DecayRuleEdge {
 }
 
 input DecayRuleAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   order: Int!
@@ -12646,6 +12788,8 @@ type OrganizationEdge {
 input OrganizationAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   contact_information: String
@@ -12656,6 +12800,8 @@ input OrganizationAddInput {
   lang: String
   x_opencti_organization_type: String
   x_opencti_reliability: String
+
+  "*Constraints:*\n* Minimal value: `0`\n* Maximal value: `100`\n"
   x_opencti_score: Int
   createdBy: String
   objectMarking: [String]
@@ -12868,6 +13014,7 @@ input CsvMapperRepresentationInput {
 }
 
 input CsvMapperAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   has_header: Boolean!
   separator: String!
@@ -12974,6 +13121,7 @@ type JsonMapperAddInputFromImport {
 }
 
 input JsonMapperAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   representations: String!
 }
@@ -13029,6 +13177,7 @@ type PublicDashboardEdge {
 }
 
 input PublicDashboardAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   uri_key: String!
   description: String
@@ -13196,10 +13345,12 @@ enum SupportPackageOrdering {
 }
 
 input SupportPackageAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
 }
 
 input SupportPackageForceZipInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   id: String!
 }
 
@@ -13323,11 +13474,13 @@ type FintelTemplate implements BasicObject & InternalObject {
 }
 
 input FintelTemplateWidgetAddInput {
+  "*Constraints:*\n* Minimal length: `1`\n* Must match format: `not-blank`\n"
   variable_name: String!
   widget: Any!
 }
 
 input FintelTemplateAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   settings_types: [String!]!
@@ -13380,6 +13533,7 @@ type DisseminationListEdge {
 }
 
 input DisseminationListAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   emails: [String!]!
   description: String
@@ -13588,6 +13742,7 @@ input PirExplanationInput {
 }
 
 input PirAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   pir_type: PirType!
   description: String
@@ -13636,6 +13791,7 @@ type FintelDesign implements BasicObject & InternalObject {
 }
 
 input FintelDesignAddInput {
+  "*Constraints:*\n* Minimal length: `1`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   gradiantFromColor: String
@@ -13742,6 +13898,7 @@ type SecurityPlatformEdge {
 }
 
 input SecurityPlatformAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   security_platform_type: String
@@ -13811,8 +13968,11 @@ enum EmailTemplateOrdering {
 }
 
 input EmailTemplateAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   email_object: String!
   sender_email: String!
   template_body: String!
