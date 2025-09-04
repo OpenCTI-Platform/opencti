@@ -13180,32 +13180,6 @@ input PublicDashboardAddInput {
   enabled: Boolean!
 }
 
-type Theme implements InternalObject & BasicObject {
-  id: ID!
-  standard_id: String!
-  entity_type: String!
-  parent_types: [String!]!
-  name: String!
-  manifest: String
-  toConfigurationExport: String!
-}
-
-type ThemeEdge {
-  cursor: String!
-  node: Theme!
-}
-
-type ThemeConnection {
-  pageInfo: PageInfo!
-  edges: [ThemeEdge]
-}
-
-input ThemeAddInput {
-  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
-  name: String!
-  manifest: String!
-}
-
 enum Tone {
   tactical
   operational
