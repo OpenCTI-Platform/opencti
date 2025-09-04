@@ -592,7 +592,7 @@ const iconSelector = (
 };
 
 interface ItemIconProps {
-  type?: string,
+  type?: string | null,
   size?: 'inherit' | 'large' | 'medium' | 'small',
   variant?: string,
   color?: string | null,
