@@ -355,7 +355,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
         <Typography variant="h4">{t_i18n('Registered connectors')}</Typography>
 
         <ConnectorsStatusFilters
-          options={contractsOptions}
+          typeOptions={contractsOptions}
           filters={filters}
           onFiltersChange={setFilters}
         />

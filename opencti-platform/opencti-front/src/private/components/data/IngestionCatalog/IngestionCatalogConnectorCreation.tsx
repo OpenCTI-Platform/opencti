@@ -26,7 +26,6 @@ import IconButton from '@mui/material/IconButton';
 import { HubOutlined, LibraryBooksOutlined } from '@mui/icons-material';
 import NoConnectorManagersBanner from '@components/data/connectors/NoConnectorManagersBanner';
 import Tooltip from '@mui/material/Tooltip';
-import { Badge } from '@mui/material';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { RelayError } from '../../../../relay/relayTypes';
 import type { Theme } from '../../../../components/Theme';
@@ -238,20 +237,17 @@ const IngestionCatalogConnectorCreation = ({
       onClose={onClose}
       header={
         <div style={{ position: 'absolute', right: theme.spacing(1) }}>
-          <Tooltip title={`${deploymentCount} ${t_i18n('connectors deployed')}`}>
-            <span> {/** keep span so tooltip is still displayed if button is disabled * */}
-              <IconButton
-                aria-label="Connectors deployed"
-                component={Link}
-                to={buildConnectorsUrl()}
-                disabled={deploymentCount === 0}
-              >
-                <Badge badgeContent={deploymentCount} color={'warning'}>
-                  <HubOutlined />
-                </Badge>
-              </IconButton>
-            </span>
-          </Tooltip>
+          <Button
+            variant="outlined"
+            component={Link}
+            size="small"
+            to={buildConnectorsUrl()}
+            startIcon={<HubOutlined />}
+            color={'warning'}
+            disabled={deploymentCount === 0}
+          >
+            {`${deploymentCount} ${t_i18n('instances deployed')}`}
+          </Button>
 
           <Tooltip title={t_i18n('Vendor contact')}>
             <span> {/** keep span so tooltip is still displayed if button is disabled * */}

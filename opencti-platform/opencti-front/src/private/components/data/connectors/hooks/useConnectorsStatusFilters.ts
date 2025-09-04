@@ -9,16 +9,24 @@ type UseConnectorsStatusFiltersProps = {
   searchParams: URLSearchParams;
 };
 
+const parseBooleanParam = (value: string | null): boolean | null => {
+  if (value === 'true') return true;
+  if (value === 'false') return false;
+  return null;
+};
+
 const useConnectorsStatusFilters = ({ connectors, searchParams }: UseConnectorsStatusFiltersProps) => {
   const [filters, setFilters] = useState<ConnectorsStatusFilterState>({
     search: searchParams.get('search') || '',
     managerContractImage: searchParams.get('manager_contract_image') || '',
+    isManaged: parseBooleanParam(searchParams.get('is_managed')),
   });
 
   useEffect(() => {
     const params = new URLSearchParams();
     if (filters.search) params.set('search', filters.search);
     if (filters.managerContractImage) params.set('manager_contract_image', filters.managerContractImage);
+    if (filters.isManaged !== null) params.set('is_managed', String(filters.isManaged));
 
     const queryString = params.toString();
     const newUrl = queryString ? `${window.location.pathname}?${queryString}` : window.location.pathname;
@@ -40,12 +48,16 @@ const useConnectorsStatusFilters = ({ connectors, searchParams }: UseConnectorsS
       if (!imageMatch) return false;
     }
 
+    if (filters.isManaged !== null) {
+      if (connector.is_managed !== filters.isManaged) return false;
+    }
+
     return true;
   };
 
   const filteredConnectors = useMemo(() => {
     return connectors.filter(matchesFilterCriteria);
-  }, [connectors, filters.search, filters.managerContractImage]);
+  }, [connectors, filters.search, filters.managerContractImage, filters.isManaged]);
 
   return {
     filteredConnectors,

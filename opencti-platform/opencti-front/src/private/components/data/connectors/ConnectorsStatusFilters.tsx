@@ -9,10 +9,11 @@ import SearchInput from '../../../../components/SearchInput';
 export interface ConnectorsStatusFilterState {
   search: string;
   managerContractImage: string;
+  isManaged: boolean | null
 }
 
 interface ConnectorsStatusFiltersProps {
-  options: { label: string; value: string }[];
+  typeOptions: { label: string; value: string }[];
   filters: ConnectorsStatusFilterState;
   onFiltersChange: (filters: ConnectorsStatusFilterState) => void;
 }
@@ -20,7 +21,7 @@ interface ConnectorsStatusFiltersProps {
 const INPUT_WIDTH = 200; // same as defined in ListFilters
 
 const ConnectorsStatusFilters: React.FC<ConnectorsStatusFiltersProps> = ({
-  options,
+  typeOptions,
   filters,
   onFiltersChange,
 }) => {
@@ -31,9 +32,13 @@ const ConnectorsStatusFilters: React.FC<ConnectorsStatusFiltersProps> = ({
     onFiltersChange({ ...filters, [key]: value });
   };
 
+  const handleBooleanFilterChange = (key: keyof ConnectorsStatusFilterState, value: boolean | null) => {
+    onFiltersChange({ ...filters, [key]: value });
+  };
+
   const handleClearFilters = () => {
     setSearchInput('');
-    onFiltersChange({ search: '', managerContractImage: '' });
+    onFiltersChange({ search: '', managerContractImage: '', isManaged: null });
   };
 
   const handleSearchInputSubmit = (value: string) => {
@@ -50,7 +55,13 @@ const ConnectorsStatusFilters: React.FC<ConnectorsStatusFiltersProps> = ({
     }
   };
 
-  const hasActiveFilters = filters.search || filters.managerContractImage;
+  const hasActiveFilters = filters.search || filters.managerContractImage || filters.isManaged !== null;
+
+  const managedOptions = [
+    { label: t_i18n('-'), value: null },
+    { label: t_i18n('True'), value: true },
+    { label: t_i18n('False'), value: false },
+  ];
 
   return (
     <Stack flexDirection="row" gap={2} flex={1} alignItems="center">
@@ -63,14 +74,26 @@ const ConnectorsStatusFilters: React.FC<ConnectorsStatusFiltersProps> = ({
       <Autocomplete
         size="small"
         sx={{ width: INPUT_WIDTH }}
-        options={options}
-        value={options.find((o) => o.value === filters.managerContractImage) || null}
+        options={typeOptions}
+        value={typeOptions.find((o) => o.value === filters.managerContractImage) || null}
         onChange={(event, option) => handleFilterChange('managerContractImage', option?.value || '')}
         isOptionEqualToValue={(option, value) => option.value === value.value}
         renderInput={(params) => (
-          <TextField {...params} label={t_i18n('Types')} placeholder={t_i18n('Types')} variant="outlined" />
+          <TextField {...params} label={t_i18n('Connector name')} placeholder={t_i18n('Connector name')} variant="outlined" />
         )}
         clearOnEscape
+      />
+
+      <Autocomplete
+        size="small"
+        sx={{ width: INPUT_WIDTH }}
+        options={managedOptions}
+        value={managedOptions.find((o) => o.value === filters.isManaged) || managedOptions[0]}
+        onChange={(event, option) => handleBooleanFilterChange('isManaged', option?.value ?? null)}
+        isOptionEqualToValue={(option, value) => option.value === value.value}
+        renderInput={(params) => (
+          <TextField {...params} label={t_i18n('Manager deployment')} variant="outlined" />
+        )}
       />
 
       <Tooltip title={t_i18n('Clear filters')}>
@@ -85,6 +108,7 @@ const ConnectorsStatusFilters: React.FC<ConnectorsStatusFiltersProps> = ({
           </IconButton>
         </span>
       </Tooltip>
+
     </Stack>
   );
 };
