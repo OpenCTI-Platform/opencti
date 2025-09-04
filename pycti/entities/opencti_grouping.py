@@ -644,6 +644,7 @@ class Grouping:
         modified = kwargs.get("modified", None)
         name = kwargs.get("name", None)
         context = kwargs.get("context", None)
+        content = kwargs.get("content", None)
         description = kwargs.get("description", None)
         x_opencti_aliases = kwargs.get("x_opencti_aliases", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
@@ -681,6 +682,7 @@ class Grouping:
                         "modified": modified,
                         "name": name,
                         "context": context,
+                        "content": content,
                         "description": description,
                         "x_opencti_aliases": x_opencti_aliases,
                         "x_opencti_stix_ids": x_opencti_stix_ids,
@@ -802,6 +804,13 @@ class Grouping:
                 stix_object["x_opencti_granted_refs"] = (
                     self.opencti.get_attribute_in_extension("granted_refs", stix_object)
                 )
+            if "x_opencti_content" not in stix_object or "content" not in stix_object:
+                stix_object["content"] = self.opencti.get_attribute_in_extension(
+                    "content", stix_object
+                )
+            if "x_opencti_content" in stix_object:
+                stix_object["content"] = stix_object["x_opencti_content"]
+
             if "x_opencti_workflow_id" not in stix_object:
                 stix_object["x_opencti_workflow_id"] = (
                     self.opencti.get_attribute_in_extension("workflow_id", stix_object)
@@ -824,6 +833,11 @@ class Grouping:
                 externalReferences=(
                     extras["external_references_ids"]
                     if "external_references_ids" in extras
+                    else None
+                ),
+                content=(
+                    self.opencti.stix2.convert_markdown(stix_object["content"])
+                    if "content" in stix_object
                     else None
                 ),
                 revoked=stix_object["revoked"] if "revoked" in stix_object else None,

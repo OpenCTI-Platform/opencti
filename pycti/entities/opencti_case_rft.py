@@ -697,6 +697,7 @@ class CaseRft:
         priority = kwargs.get("priority", None)
         confidence = kwargs.get("confidence", None)
         lang = kwargs.get("lang", None)
+        content = kwargs.get("content", None)
         created = kwargs.get("created", None)
         modified = kwargs.get("modified", None)
         name = kwargs.get("name", None)
@@ -735,6 +736,7 @@ class CaseRft:
                         "revoked": revoked,
                         "severity": severity,
                         "priority": priority,
+                        "content": content,
                         "confidence": confidence,
                         "lang": lang,
                         "created": created,
@@ -865,6 +867,13 @@ class CaseRft:
                 stix_object["x_opencti_granted_refs"] = (
                     self.opencti.get_attribute_in_extension("granted_refs", stix_object)
                 )
+            if "x_opencti_content" not in stix_object or "content" not in stix_object:
+                stix_object["content"] = self.opencti.get_attribute_in_extension(
+                    "content", stix_object
+                )
+            if "x_opencti_content" in stix_object:
+                stix_object["content"] = stix_object["x_opencti_content"]
+
             if "x_opencti_workflow_id" not in stix_object:
                 stix_object["x_opencti_workflow_id"] = (
                     self.opencti.get_attribute_in_extension("workflow_id", stix_object)
@@ -903,6 +912,11 @@ class CaseRft:
                 priority=stix_object["priority"] if "priority" in stix_object else None,
                 confidence=(
                     stix_object["confidence"] if "confidence" in stix_object else None
+                ),
+                content=(
+                    self.opencti.stix2.convert_markdown(stix_object["content"])
+                    if "content" in stix_object
+                    else None
                 ),
                 lang=stix_object["lang"] if "lang" in stix_object else None,
                 created=stix_object["created"] if "created" in stix_object else None,
