@@ -11,7 +11,7 @@ import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { useFormatter } from '../../../../components/i18n';
 
-const objectOrganizationFragment = graphql`
+export const objectOrganizationFragment = graphql`
   fragment StixCoreObjectSharingListFragment on StixCoreObject {
     id
     objectOrganization {
@@ -21,7 +21,7 @@ const objectOrganizationFragment = graphql`
   }
 `;
 
-const objectOrganizationDeleteMutation = graphql`
+export const objectOrganizationDeleteMutation = graphql`
   mutation StixCoreObjectSharingListDeleteMutation($id: ID!, $organizationId: [ID!]!) {
     stixCoreObjectEdit(id: $id) {
       restrictionOrganizationDelete(organizationId: $organizationId) {

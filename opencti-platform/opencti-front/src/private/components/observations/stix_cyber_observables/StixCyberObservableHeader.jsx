@@ -3,19 +3,19 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import MenuItem from '@mui/material/MenuItem';
-import StixCoreObjectSharingList from '../../common/stix_core_objects/StixCoreObjectSharingList';
+import StixCoreObjectSharedOrganisations from '../../common/stix_core_objects/StixCoreObjectSharedOrganisations';
 import { DraftChip } from '../../common/draft/DraftChip';
 import StixCoreObjectEnrollPlaybook from '../../common/stix_core_objects/StixCoreObjectEnrollPlaybook';
 import StixCoreObjectContainer from '../../common/stix_core_objects/StixCoreObjectContainer';
 import { truncate } from '../../../../utils/String';
 import StixCoreObjectEnrichment from '../../common/stix_core_objects/StixCoreObjectEnrichment';
-import StixCoreObjectSharing from '../../common/stix_core_objects/StixCoreObjectSharing';
 import useGranted, { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE, KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/hooks/useGranted';
 import StixCyberObservableEdition from './StixCyberObservableEdition';
 import Security from '../../../../utils/Security';
 import PopoverMenu from '../../../../components/PopoverMenu';
 import StixCoreObjectMenuItemUnderEE from '../../common/stix_core_objects/StixCoreObjectMenuItemUnderEE';
 import { useFormatter } from '../../../../components/i18n';
+import StixCoreObjectSharedOrganisationsDrawer from '../../common/containers/StixCoreObjectSharedOrganisationsDrawer';
 
 const StixCyberObservableHeaderComponent = ({ stixCyberObservable, DeleteComponent }) => {
   const [openSharing, setOpenSharing] = useState(false);
@@ -40,7 +40,7 @@ const StixCyberObservableHeaderComponent = ({ stixCyberObservable, DeleteCompone
 
       <div>
         <div style={{ display: 'flex' }}>
-          <StixCoreObjectSharingList data={stixCyberObservable} />
+          <StixCoreObjectSharedOrganisations data={stixCyberObservable}/>
 
           {isKnowledgeUpdater && (
             <StixCoreObjectContainer elementId={stixCyberObservable.id} />
@@ -78,11 +78,10 @@ const StixCyberObservableHeaderComponent = ({ stixCyberObservable, DeleteCompone
           </Security>
           <DeleteComponent isOpen={openDelete} onClose={handleCloseDelete} />
 
-          <StixCoreObjectSharing
-            elementId={stixCyberObservable.id}
+          <StixCoreObjectSharedOrganisationsDrawer
+            data={stixCyberObservable}
             open={openSharing}
-            variant="header"
-            handleClose={() => setOpenSharing(false)}
+            onClose={() => setOpenSharing(false)}
           />
         </div>
       </div>

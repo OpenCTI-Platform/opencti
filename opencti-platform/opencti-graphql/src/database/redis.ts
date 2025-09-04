@@ -113,7 +113,12 @@ const clusterOptions = async (provider: string): Promise<ClusterOptions> => {
 };
 
 const sentinelOptions = async (provider: string, clusterNodes: Partial<SentinelAddress>[]): Promise<SentinelConnectionOptions & CommonRedisOptions> => {
-  const baseAuth = { sentinelPassword: conf.get('redis:sentinel_password') };
+  const baseAuth = {
+    sentinelUsername: conf.get('redis:sentinel_username'),
+    sentinelPassword: conf.get('redis:sentinel_password'),
+    username: conf.get('redis:username'),
+    password: conf.get('redis:password'),
+  };
   const passwordAuth = await enrichWithRemoteCredentials('redis', baseAuth);
   return {
     connectionName: connectionName(provider),

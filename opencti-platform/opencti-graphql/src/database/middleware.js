@@ -1007,7 +1007,8 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
   const isMultiple = isMultipleAttribute(instance.entity_type, key);
   let finalVal;
   if (isMultiple) {
-    const currentValues = (Array.isArray(instance[key]) ? instance[key] : [instance[key]]) ?? [];
+    const filledCurrentValues = isNotEmptyField(instance[key]) ? instance[key] : [];
+    const currentValues = Array.isArray(filledCurrentValues) ? filledCurrentValues : [filledCurrentValues];
     if (operation === UPDATE_OPERATION_ADD) {
       if (isObjectAttribute(key)) {
         const path = object_path ?? key;
@@ -1054,7 +1055,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
       }
     }
     // TODO: solve case where ordering is important and we should use regular 'compare'
-    if (key !== 'overview_layout_customization' && compareUnsorted(finalVal ?? [], currentValues)) {
+    if (key !== 'overview_layout_customization' && (compareUnsorted(finalVal ?? [], currentValues) || (isEmptyField(finalVal) && isEmptyField(currentValues)))) {
       return {}; // No need to update the attribute
     }
   } else if (isObjectAttribute(key) && object_path) {

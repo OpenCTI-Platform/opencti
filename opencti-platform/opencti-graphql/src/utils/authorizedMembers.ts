@@ -22,9 +22,31 @@ import { patchAttribute } from '../database/middleware';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import { getEntityFromCache } from '../database/cache';
-import { ENTITY_TYPE_SETTINGS, isInternalObject } from '../schema/internalObject';
+import { ENTITY_TYPE_GROUP, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
 import type { BasicStoreSettings } from '../types/settings';
 import { getDraftContext } from './draftContext';
+import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
+import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
+import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../modules/case/case-incident/case-incident-types';
+import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../modules/case/case-rft/case-rft-types';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
+import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
+
+export const AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES = [
+  ENTITY_TYPE_IDENTITY_ORGANIZATION,
+  ENTITY_TYPE_CONTAINER_REPORT,
+  ENTITY_TYPE_CONTAINER_NOTE,
+  ENTITY_TYPE_CONTAINER_GROUPING,
+  ENTITY_TYPE_CONTAINER_CASE_INCIDENT,
+  ENTITY_TYPE_CONTAINER_CASE_RFT,
+  ENTITY_TYPE_CONTAINER_CASE_RFI,
+];
+
+export const AUTHORIZED_MEMBERS_TYPES = [
+  ENTITY_TYPE_IDENTITY_ORGANIZATION,
+  ENTITY_TYPE_USER,
+  ENTITY_TYPE_GROUP,
+];
 
 export const getAuthorizedMembers = async (
   context: AuthContext,
