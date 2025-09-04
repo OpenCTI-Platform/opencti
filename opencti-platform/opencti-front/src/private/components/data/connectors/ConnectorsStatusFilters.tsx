@@ -1,13 +1,10 @@
-import React, { ChangeEvent, useMemo, useState } from 'react';
+import React, { ChangeEvent, useState } from 'react';
 import { Autocomplete, Stack, TextField } from '@mui/material';
 import { FilterListOffOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
-import { ConnectorsStatus_data$data } from '@components/data/connectors/__generated__/ConnectorsStatus_data.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
-
-type Connector = NonNullable<ConnectorsStatus_data$data['connectors']>[number];
 
 export interface ConnectorsStatusFilterState {
   search: string;
@@ -15,7 +12,7 @@ export interface ConnectorsStatusFilterState {
 }
 
 interface ConnectorsStatusFiltersProps {
-  connectors: readonly Connector[];
+  options: { label: string; value: string }[];
   filters: ConnectorsStatusFilterState;
   onFiltersChange: (filters: ConnectorsStatusFilterState) => void;
 }
@@ -23,31 +20,12 @@ interface ConnectorsStatusFiltersProps {
 const INPUT_WIDTH = 200; // same as defined in ListFilters
 
 const ConnectorsStatusFilters: React.FC<ConnectorsStatusFiltersProps> = ({
-  connectors,
+  options,
   filters,
   onFiltersChange,
 }) => {
   const { t_i18n } = useFormatter();
   const [searchInput, setSearchInput] = useState(filters.search);
-
-  const filterOptions = useMemo(() => {
-    const validImages = connectors
-      .filter((connector) => connector.manager_contract_image != null && connector.manager_contract_image !== '')
-      .map((connector) => connector.manager_contract_image);
-
-    const uniqueImages = validImages.filter(
-      (image, index) => validImages.indexOf(image) === index,
-    );
-
-    const managerContractImageOptions = uniqueImages.map((image) => ({
-      label: image,
-      value: image,
-    }));
-
-    return {
-      managerContractImage: managerContractImageOptions,
-    };
-  }, [connectors]);
 
   const handleFilterChange = (key: keyof ConnectorsStatusFilterState, value: string) => {
     onFiltersChange({ ...filters, [key]: value });
@@ -85,8 +63,8 @@ const ConnectorsStatusFilters: React.FC<ConnectorsStatusFiltersProps> = ({
       <Autocomplete
         size="small"
         sx={{ width: INPUT_WIDTH }}
-        options={filterOptions.managerContractImage}
-        value={filterOptions.managerContractImage.find((o) => o.value === filters.managerContractImage) || null}
+        options={options}
+        value={options.find((o) => o.value === filters.managerContractImage) || null}
         onChange={(event, option) => handleFilterChange('managerContractImage', option?.value || '')}
         isOptionEqualToValue={(option, value) => option.value === value.value}
         renderInput={(params) => (

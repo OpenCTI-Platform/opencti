@@ -1,5 +1,6 @@
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { interval } from 'rxjs';
+import * as Yup from 'yup';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
@@ -73,6 +74,12 @@ export const connectorsStatusQuery = graphql`
     ...ConnectorsStatus_data
   }
 `;
+
+const contractSchema = Yup.object({
+  container_image: Yup.string().required(),
+  container_version: Yup.string().required(),
+  title: Yup.string().required(),
+});
 
 const connectorsStatusFragment = graphql`
   fragment ConnectorsStatus_data on Query {
@@ -184,6 +191,29 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
   const [searchParams] = useSearchParams();
 
   const { filteredConnectors, filters, setFilters } = useConnectorsStatusFilters({ connectors: data.connectors, searchParams });
+
+  const contractsOptions = useMemo(() => {
+    if (!data.catalogs) return [];
+
+    const contracts = [];
+    for (const catalog of data.catalogs) {
+      for (const contract of catalog.contracts) {
+        try {
+          const parsedContract = JSON.parse(contract);
+          const validatedContract = contractSchema.validateSync(parsedContract);
+
+          contracts.push({
+            label: validatedContract.title,
+            value: `${validatedContract.container_image}:${validatedContract.container_version}`,
+          });
+        } catch (e) {
+          MESSAGING$.notifyError(t_i18n('Failed to parse a contract'));
+        }
+      }
+    }
+
+    return contracts;
+  }, [data.catalogs]);
 
   // eslint-disable-next-line class-methods-use-this
   const submitResetState = (connectorId: string | undefined) => {
@@ -325,7 +355,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
         <Typography variant="h4">{t_i18n('Registered connectors')}</Typography>
 
         <ConnectorsStatusFilters
-          connectors={data.connectors}
+          options={contractsOptions}
           filters={filters}
           onFiltersChange={setFilters}
         />
