@@ -453,6 +453,8 @@ export const pageEntitiesConnection = async <T extends BasicStoreEntity>(context
   const { indices } = args;
   const computedIndices = computeQueryIndices(indices, entityTypes);
   const first = args.first ?? ES_DEFAULT_PAGINATION;
+  // maxSize MUST be aligned with first in this method.
+  // As using elConnection is repaginate, removing maxSize will lead to major api breaking
   const paginateArgs = { ...buildEntityFilters(entityTypes, args), first, maxSize: first };
   const { elements, totalCount, totalFilteredCount } = await elConnection(context, user, computedIndices, paginateArgs);
   return buildPaginationFromEdges(args.first, args.after, elements, totalCount, totalFilteredCount);
