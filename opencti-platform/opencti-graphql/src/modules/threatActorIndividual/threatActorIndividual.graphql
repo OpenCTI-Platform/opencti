@@ -238,7 +238,6 @@ type Query {
     search: String
     toStix: Boolean
   ): ThreatActorIndividualConnection @auth(for: [KNOWLEDGE])
-  threatActorIndividualContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean @auth(for: [KNOWLEDGE])
 }
 
 type Mutation {

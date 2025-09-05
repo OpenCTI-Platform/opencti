@@ -21243,7 +21243,6 @@ export type Query = {
   threatActor?: Maybe<ThreatActor>;
   threatActorGroup?: Maybe<ThreatActorGroup>;
   threatActorIndividual?: Maybe<ThreatActorIndividual>;
-  threatActorIndividualContainsStixObjectOrStixRelationship?: Maybe<Scalars['Boolean']['output']>;
   threatActors?: Maybe<ThreatActorConnection>;
   threatActorsGroup?: Maybe<ThreatActorGroupConnection>;
   threatActorsIndividuals?: Maybe<ThreatActorIndividualConnection>;
@@ -23989,12 +23988,6 @@ export type QueryThreatActorGroupArgs = {
 
 export type QueryThreatActorIndividualArgs = {
   id: Scalars['String']['input'];
-};
-
-
-export type QueryThreatActorIndividualContainsStixObjectOrStixRelationshipArgs = {
-  id: Scalars['String']['input'];
-  stixObjectOrStixRelationshipId: Scalars['String']['input'];
 };
 
 
@@ -42362,7 +42355,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   threatActor?: Resolver<Maybe<ResolversTypes['ThreatActor']>, ParentType, ContextType, Partial<QueryThreatActorArgs>>;
   threatActorGroup?: Resolver<Maybe<ResolversTypes['ThreatActorGroup']>, ParentType, ContextType, Partial<QueryThreatActorGroupArgs>>;
   threatActorIndividual?: Resolver<Maybe<ResolversTypes['ThreatActorIndividual']>, ParentType, ContextType, RequireFields<QueryThreatActorIndividualArgs, 'id'>>;
-  threatActorIndividualContainsStixObjectOrStixRelationship?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryThreatActorIndividualContainsStixObjectOrStixRelationshipArgs, 'id' | 'stixObjectOrStixRelationshipId'>>;
   threatActors?: Resolver<Maybe<ResolversTypes['ThreatActorConnection']>, ParentType, ContextType, Partial<QueryThreatActorsArgs>>;
   threatActorsGroup?: Resolver<Maybe<ResolversTypes['ThreatActorGroupConnection']>, ParentType, ContextType, Partial<QueryThreatActorsGroupArgs>>;
   threatActorsIndividuals?: Resolver<Maybe<ResolversTypes['ThreatActorIndividualConnection']>, ParentType, ContextType, Partial<QueryThreatActorsIndividualsArgs>>;

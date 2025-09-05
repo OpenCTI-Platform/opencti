@@ -1,5 +1,5 @@
 import { deleteElementById, updateAttribute } from '../database/middleware';
-import { listEntities, storeLoadById } from '../database/middleware-loader';
+import { topEntitiesList, pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import { ENTITY_TYPE_RETENTION_RULE } from '../schema/internalObject';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { elIndex, elPaginate } from '../database/engine';
@@ -106,6 +106,10 @@ export const findById = async (context, user, retentionRuleId) => {
   return storeLoadById(context, user, retentionRuleId, ENTITY_TYPE_RETENTION_RULE);
 };
 
-export const findAll = (context, user, args) => {
-  return listEntities(context, user, [ENTITY_TYPE_RETENTION_RULE], args);
+export const findRetentionRulePaginated = (context, user, args) => {
+  return pageEntitiesConnection(context, user, [ENTITY_TYPE_RETENTION_RULE], args);
+};
+
+export const listRules = (context, user, args) => {
+  return topEntitiesList(context, user, [ENTITY_TYPE_RETENTION_RULE], args);
 };

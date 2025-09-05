@@ -41,7 +41,7 @@ export const findById = (context, user, workId) => {
   return loadWorkById(context, user, workId);
 };
 
-export const findAll = (context, user, args = {}) => {
+export const findWorkPaginated = (context, user, args = {}) => {
   const finalArgs = R.pipe(
     R.assoc('type', ENTITY_TYPE_WORK),
     R.assoc('orderBy', args.orderBy || 'timestamp'),

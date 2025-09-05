@@ -1,6 +1,6 @@
 import type { FileHandle } from 'fs/promises';
 import type { AuthContext, AuthUser } from '../../../types/user';
-import { internalFindByIdsMapped, listAllEntities, listEntitiesPaginated, storeLoadById } from '../../../database/middleware-loader';
+import { internalFindByIdsMapped, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../../database/middleware-loader';
 import {
   type BasicStoreEntityCsvMapper,
   type CsvMapperParsed,
@@ -66,8 +66,8 @@ export const findById = async (context: AuthContext, user: AuthUser, csvMapperId
   return storeLoadById<BasicStoreEntityCsvMapper>(context, user, csvMapperId, ENTITY_TYPE_CSV_MAPPER);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, opts: QueryCsvMappersArgs) => {
-  return listEntitiesPaginated<BasicStoreEntityCsvMapper>(context, user, [ENTITY_TYPE_CSV_MAPPER], opts);
+export const findCsvMapperPaginated = (context: AuthContext, user: AuthUser, opts: QueryCsvMappersArgs) => {
+  return pageEntitiesConnection<BasicStoreEntityCsvMapper>(context, user, [ENTITY_TYPE_CSV_MAPPER], opts);
 };
 
 export const createCsvMapper = async (context: AuthContext, user: AuthUser, csvMapperInput: CsvMapperAddInput) => {
@@ -91,7 +91,7 @@ export const deleteCsvMapper = async (context: AuthContext, user: AuthUser, csvM
       filters: [{ key: ['csv_mapper_id'], values: [csvMapperId] }]
     }
   };
-  const ingesters = await listAllEntities<BasicStoreEntityIngestionCsv>(context, user, [ENTITY_TYPE_INGESTION_CSV], opts);
+  const ingesters = await fullEntitiesList<BasicStoreEntityIngestionCsv>(context, user, [ENTITY_TYPE_INGESTION_CSV], opts);
   // prevent deletion if an ingester uses the mapper
   if (ingesters.length > 0) {
     throw FunctionalError('Cannot delete this CSV Mapper: it is used by one or more IngestionCsv feed(s)', { id: csvMapperId });

@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { createEntity } from '../database/middleware';
-import { listAllFromEntitiesThroughRelations, listEntities, listEntitiesThroughRelationsPaginated, listRelations, storeLoadById } from '../database/middleware-loader';
+import { fullEntitiesThroughRelationsFromList, pageEntitiesConnection, pageRegardingEntitiesConnection, topRelationsList, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_IDENTITY_SECTOR } from '../schema/stixDomainObject';
@@ -13,16 +13,16 @@ export const findById = (context, user, sectorId) => {
   return storeLoadById(context, user, sectorId, ENTITY_TYPE_IDENTITY_SECTOR);
 };
 
-export const findAll = (context, user, args) => {
-  return listEntities(context, user, [ENTITY_TYPE_IDENTITY_SECTOR], args);
+export const findSectorPaginated = (context, user, args) => {
+  return pageEntitiesConnection(context, user, [ENTITY_TYPE_IDENTITY_SECTOR], args);
 };
 
 export const parentSectorsPaginated = async (context, user, groupId, args) => {
-  return listEntitiesThroughRelationsPaginated(context, user, groupId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR, false, args);
+  return pageRegardingEntitiesConnection(context, user, groupId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR, false, args);
 };
 
 export const childSectorsPaginated = async (context, user, groupId, args) => {
-  return listEntitiesThroughRelationsPaginated(context, user, groupId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR, true, args);
+  return pageRegardingEntitiesConnection(context, user, groupId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR, true, args);
 };
 
 export const isSubSector = async (context, user, sectorId) => {
@@ -31,9 +31,9 @@ export const isSubSector = async (context, user, sectorId) => {
 };
 
 export const targetedOrganizations = async (context, user, sectorId) => {
-  const organizations = await listAllFromEntitiesThroughRelations(context, user, sectorId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+  const organizations = await fullEntitiesThroughRelationsFromList(context, user, sectorId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION);
   const targets = await Promise.all(
-    organizations.map((organization) => listRelations(context, user, RELATION_TARGETS, { fromId: organization.id }))
+    organizations.map((organization) => topRelationsList(context, user, RELATION_TARGETS, { fromId: organization.id }))
   );
   const finalTargets = R.pipe(
     R.map((n) => n.edges),

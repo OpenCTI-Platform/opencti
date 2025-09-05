@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import ejs from 'ejs';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { internalLoadById, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { internalLoadById, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type DisseminationListAddInput, type DisseminationListSendInput, type EditInput, type QueryDisseminationListsArgs } from '../../generated/graphql';
 import { type BasicStoreEntityDisseminationList, ENTITY_TYPE_DISSEMINATION_LIST, type StoreEntityDisseminationList } from './disseminationList-types';
 import { completeContextDataForEntity, publishUserAction, type UserDisseminateActionContextData } from '../../listener/UserActionListener';
@@ -45,9 +45,9 @@ export const findById = async (context: AuthContext, user: AuthUser, id: string)
   return storeLoadById<BasicStoreEntityDisseminationList>(context, user, id, ENTITY_TYPE_DISSEMINATION_LIST);
 };
 
-export const findAll = async (context: AuthContext, user: AuthUser, args: QueryDisseminationListsArgs) => {
+export const findDisseminationListPaginated = async (context: AuthContext, user: AuthUser, args: QueryDisseminationListsArgs) => {
   await checkEnterpriseEdition(context);
-  return listEntitiesPaginated<BasicStoreEntityDisseminationList>(context, user, [ENTITY_TYPE_DISSEMINATION_LIST], args);
+  return pageEntitiesConnection<BasicStoreEntityDisseminationList>(context, user, [ENTITY_TYPE_DISSEMINATION_LIST], args);
 };
 
 /**

@@ -1,11 +1,12 @@
 import * as R from 'ramda';
 import { createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute } from '../database/middleware';
 import {
-  listAllFromEntitiesThroughRelations,
-  listAllToEntitiesThroughRelations,
-  listEntities,
-  listEntitiesThroughRelationsPaginated,
-  storeLoadById,
+  fullEntitiesThroughRelationsFromList,
+  fullEntitiesThroughRelationsToList,
+  topEntitiesList,
+  pageEntitiesConnection,
+  pageRegardingEntitiesConnection,
+  storeLoadById
 } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
@@ -23,7 +24,7 @@ import { cleanMarkings } from '../utils/markingDefinition-utils';
 export const GROUP_DEFAULT = 'Default';
 
 const groupUsersCacheRefresh = async (context, user, groupId) => {
-  const members = await listAllFromEntitiesThroughRelations(context, user, groupId, RELATION_MEMBER_OF, ENTITY_TYPE_USER);
+  const members = await fullEntitiesThroughRelationsFromList(context, user, groupId, RELATION_MEMBER_OF, ENTITY_TYPE_USER);
   await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, members, user);
 };
 
@@ -31,16 +32,16 @@ export const findById = (context, user, groupId) => {
   return storeLoadById(context, user, groupId, ENTITY_TYPE_GROUP);
 };
 
-export const findAll = async (context, user, args) => {
+export const findGroupPaginated = async (context, user, args) => {
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
     const groupsIds = R.uniq((user.administrated_organizations ?? []).map((orga) => (orga.grantable_groups ?? [])).flat());
-    return listEntities(context, user, [ENTITY_TYPE_GROUP], { ...args, ids: groupsIds });
+    return pageEntitiesConnection(context, user, [ENTITY_TYPE_GROUP], { ...args, ids: groupsIds });
   }
-  return listEntities(context, user, [ENTITY_TYPE_GROUP], args);
+  return pageEntitiesConnection(context, user, [ENTITY_TYPE_GROUP], args);
 };
 
 export const findDefaultIngestionGroups = async (context, user) => {
-  return findAll(context, user, {
+  return topEntitiesList(context, user, [ENTITY_TYPE_GROUP], {
     filters: {
       mode: 'and',
       filters: [
@@ -52,13 +53,12 @@ export const findDefaultIngestionGroups = async (context, user) => {
         },
       ],
       filterGroups: [],
-    },
-    connectionFormat: false,
+    }
   });
 };
 
 export const groupAllowedMarkings = async (context, user, groupId) => {
-  return listAllToEntitiesThroughRelations(context, user, groupId, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION);
+  return fullEntitiesThroughRelationsToList(context, user, groupId, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION);
 };
 
 export const groupNotShareableMarkingTypes = (group) => group.max_shareable_markings?.filter(({ value }) => value === 'none')
@@ -132,11 +132,11 @@ export const defaultMarkingDefinitionsFromGroups = async (context, userGroups) =
 };
 
 export const rolesPaginated = async (context, user, groupId, args) => {
-  return listEntitiesThroughRelationsPaginated(context, user, groupId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, false, args);
+  return pageRegardingEntitiesConnection(context, user, groupId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, false, args);
 };
 
 export const membersPaginated = async (context, user, groupId, args) => {
-  return listEntitiesThroughRelationsPaginated(context, user, groupId, RELATION_MEMBER_OF, ENTITY_TYPE_USER, true, args);
+  return pageRegardingEntitiesConnection(context, user, groupId, RELATION_MEMBER_OF, ENTITY_TYPE_USER, true, args);
 };
 
 export const groupDelete = async (context, user, groupId) => {

@@ -1,7 +1,7 @@
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { createEntity } from '../../../database/middleware';
 import type { EntityOptions } from '../../../database/middleware-loader';
-import { internalLoadById, listEntitiesPaginated, storeLoadById } from '../../../database/middleware-loader';
+import { internalLoadById, pageEntitiesConnection, storeLoadById } from '../../../database/middleware-loader';
 import { BUS_TOPICS } from '../../../config/conf';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../../../schema/general';
 import { notify } from '../../../database/redis';
@@ -21,8 +21,8 @@ export const findById: DomainFindById<BasicStoreEntityCaseRfi> = (context: AuthC
   return storeLoadById(context, user, caseId, ENTITY_TYPE_CONTAINER_CASE_RFI);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityCaseRfi>) => {
-  return listEntitiesPaginated<BasicStoreEntityCaseRfi>(context, user, [ENTITY_TYPE_CONTAINER_CASE_RFI], opts);
+export const findRfiPaginated = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityCaseRfi>) => {
+  return pageEntitiesConnection<BasicStoreEntityCaseRfi>(context, user, [ENTITY_TYPE_CONTAINER_CASE_RFI], opts);
 };
 
 export const addCaseRfi = async (context: AuthContext, user: AuthUser, caseRfiAdd: CaseRfiAddInput) => {
@@ -43,6 +43,7 @@ export const addCaseRfi = async (context: AuthContext, user: AuthUser, caseRfiAd
 export const caseRfiContainsStixObjectOrStixRelationship = async (context: AuthContext, user: AuthUser, caseRfiId: string, thingId: string) => {
   const resolvedThingId = isStixId(thingId) ? (await internalLoadById(context, user, thingId)).internal_id : thingId;
   const args = {
+    first: 1,
     filters: {
       mode: FilterMode.And,
       filters: [
@@ -52,6 +53,6 @@ export const caseRfiContainsStixObjectOrStixRelationship = async (context: AuthC
       filterGroups: [],
     },
   };
-  const caseRfiFound = await findAll(context, user, args);
+  const caseRfiFound = await findRfiPaginated(context, user, args);
   return caseRfiFound.edges.length > 0;
 };

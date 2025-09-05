@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import { ENTITY_TYPE_FEED } from '../schema/internalObject';
 import { createEntity, deleteElementById } from '../database/middleware';
-import { listEntitiesPaginated, storeLoadById } from '../database/middleware-loader';
+import { pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { FeedAddInput, MemberAccessInput, QueryFeedsArgs } from '../generated/graphql';
 import type { BasicStoreEntityFeed } from '../types/store';
@@ -82,10 +82,10 @@ export const editFeed = async (context: AuthContext, user: AuthUser, id: string,
   });
   return findById(context, user, id);
 };
-export const findAll = (context: AuthContext, user: AuthUser, opts: QueryFeedsArgs) => {
+export const findFeedPaginated = (context: AuthContext, user: AuthUser, opts: QueryFeedsArgs) => {
   if (user && isUserHasCapability(user, TAXIIAPI)) {
     const options = { ...opts, includeAuthorities: true };
-    return listEntitiesPaginated<BasicStoreEntityFeed>(context, user, [ENTITY_TYPE_FEED], options);
+    return pageEntitiesConnection<BasicStoreEntityFeed>(context, user, [ENTITY_TYPE_FEED], options);
   }
   // No user specify, listing only public csv feeds
   const filters = {
@@ -97,7 +97,7 @@ export const findAll = (context: AuthContext, user: AuthUser, opts: QueryFeedsAr
     }],
   };
   const publicArgs = { ...(opts ?? {}), filters };
-  return listEntitiesPaginated<BasicStoreEntityFeed>(context, SYSTEM_USER, [ENTITY_TYPE_FEED], publicArgs);
+  return pageEntitiesConnection<BasicStoreEntityFeed>(context, SYSTEM_USER, [ENTITY_TYPE_FEED], publicArgs);
 };
 export const feedDelete = async (context: AuthContext, user: AuthUser, feedId: string) => {
   const deleted = await deleteElementById(context, user, feedId, ENTITY_TYPE_FEED);

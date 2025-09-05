@@ -1,4 +1,4 @@
-import { addIntrusionSet, findAll, findById, locationsPaginated } from '../domain/intrusionSet';
+import { addIntrusionSet, findIntrusionSetPaginated, findById, locationsPaginated } from '../domain/intrusionSet';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -11,7 +11,7 @@ import {
 const intrusionSetResolvers = {
   Query: {
     intrusionSet: (_, { id }, context) => findById(context, context.user, id),
-    intrusionSets: (_, args, context) => findAll(context, context.user, args),
+    intrusionSets: (_, args, context) => findIntrusionSetPaginated(context, context.user, args),
   },
   IntrusionSet: {
     locations: (intrusionSet, args, context) => locationsPaginated(context, context.user, intrusionSet.id, args),

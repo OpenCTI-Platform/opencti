@@ -1,5 +1,5 @@
 import type { Resolvers } from '../../generated/graphql';
-import { addLanguage, findAll, findById } from './language-domain';
+import { addLanguage, findLanguagePaginated, findById } from './language-domain';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -12,7 +12,7 @@ import {
 const languageResolvers: Resolvers = {
   Query: {
     language: (_, { id }, context) => findById(context, context.user, id),
-    languages: (_, args, context) => findAll(context, context.user, args),
+    languages: (_, args, context) => findLanguagePaginated(context, context.user, args),
   },
   Mutation: {
     languageAdd: (_, { input }, context) => {

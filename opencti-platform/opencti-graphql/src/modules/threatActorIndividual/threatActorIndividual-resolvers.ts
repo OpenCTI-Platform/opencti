@@ -1,4 +1,4 @@
-import { addThreatActorIndividual, findAll, findById, } from './threatActorIndividual-domain';
+import { addThreatActorIndividual, findThreatActorIndividualPaginated, findById, } from './threatActorIndividual-domain';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -15,7 +15,7 @@ import { INPUT_BORN_IN, INPUT_ETHNICITY } from '../../schema/general';
 const threatActorIndividualResolvers: Resolvers = {
   Query: {
     threatActorIndividual: (_, { id }, context) => findById(context, context.user, id),
-    threatActorsIndividuals: (_, args, context) => findAll(context, context.user, args),
+    threatActorsIndividuals: (_, args, context) => findThreatActorIndividualPaginated(context, context.user, args),
   },
   ThreatActorIndividual: {
     bornIn: (threatActorIndividual, _, context) => loadThroughDenormalized(context, context.user, threatActorIndividual, INPUT_BORN_IN),

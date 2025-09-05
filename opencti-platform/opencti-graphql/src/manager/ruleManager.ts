@@ -14,7 +14,7 @@ import { ALREADY_DELETED_ERROR, FunctionalError, TYPE_LOCK_ERROR } from '../conf
 import { getParentTypes } from '../schema/schemaUtils';
 import { isBasicRelationship, isStixRelationship } from '../schema/stixRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import { internalLoadById, listAllRelations } from '../database/middleware-loader';
+import { internalLoadById, fullRelationsList } from '../database/middleware-loader';
 import type { RuleDefinition, RuleRuntime, RuleScope } from '../types/rules';
 import type { BasicManagerEntity, BasicStoreBase, BasicStoreCommon, BasicStoreEntity, BasicStoreRelation, StoreObject } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -393,8 +393,8 @@ export const executeRuleElementRescan = async (context: AuthContext, user: AuthU
           }
         }
       };
-      const args = { connectionFormat: false, fromId: element.internal_id, callback: listCallback };
-      await listAllRelations<BasicStoreRelation>(context, user, ABSTRACT_STIX_RELATIONSHIP, args);
+      const args = { fromId: element.internal_id, callback: listCallback };
+      await fullRelationsList<BasicStoreRelation>(context, user, ABSTRACT_STIX_RELATIONSHIP, args);
     }
   }
 };

@@ -1,10 +1,10 @@
 import type { Resolvers } from '../../../generated/graphql';
-import { findAll, findById, taskTemplateAdd, taskTemplateDelete, taskTemplateEdit } from './task-template-domain';
+import { findTaskTemplatePaginated, findById, taskTemplateAdd, taskTemplateDelete, taskTemplateEdit } from './task-template-domain';
 
 const taskTemplateResolvers: Resolvers = {
   Query: {
     taskTemplate: (_, { id }, context) => findById(context, context.user, id),
-    taskTemplates: (_, args, context) => findAll(context, context.user, args)
+    taskTemplates: (_, args, context) => findTaskTemplatePaginated(context, context.user, args)
   },
   Mutation: {
     taskTemplateAdd: (_, { input }, context) => taskTemplateAdd(context, context.user, input),

@@ -1,11 +1,11 @@
 import type { Resolvers, VocabularyDefinition } from '../../generated/graphql';
-import { addVocabulary, deleteVocabulary, editVocabulary, findAll, findById, getVocabularyUsages } from './vocabulary-domain';
+import { addVocabulary, deleteVocabulary, editVocabulary, findVocabularyPaginated, findById, getVocabularyUsages } from './vocabulary-domain';
 import { getVocabulariesCategories } from './vocabulary-utils';
 
 const vocabularyResolvers: Resolvers = {
   Query: {
     vocabulary: (_, { id }, context) => findById(context, context.user, id),
-    vocabularies: (_, args, context) => findAll(context, context.user, args),
+    vocabularies: (_, args, context) => findVocabularyPaginated(context, context.user, args),
     vocabularyCategories: () => getVocabulariesCategories(),
   },
   Vocabulary: {

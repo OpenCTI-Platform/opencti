@@ -3,7 +3,7 @@ import { FunctionalError } from '../../config/errors';
 import { updateAttribute } from '../../database/middleware';
 import { type BasicStoreEntitySavedFilter, ENTITY_TYPE_SAVED_FILTER, type StoreEntitySavedFilter } from './savedFilter-types';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import type { MutationSavedFilterFieldPatchArgs, QuerySavedFiltersArgs, SavedFilterAddInput } from '../../generated/graphql';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
 import { MEMBER_ACCESS_RIGHT_ADMIN } from '../../utils/access';
@@ -12,8 +12,8 @@ const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntitySavedFilter>(context, user, id, ENTITY_TYPE_SAVED_FILTER);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, args: QuerySavedFiltersArgs) => {
-  return listEntitiesPaginated<BasicStoreEntitySavedFilter>(context, user, [ENTITY_TYPE_SAVED_FILTER], args);
+export const findSaveFilterPaginated = (context: AuthContext, user: AuthUser, args: QuerySavedFiltersArgs) => {
+  return pageEntitiesConnection<BasicStoreEntitySavedFilter>(context, user, [ENTITY_TYPE_SAVED_FILTER], args);
 };
 export const addSavedFilter = (context: AuthContext, user: AuthUser, input: SavedFilterAddInput) => {
   // Force context out of draft to force creation in live index

@@ -1,7 +1,7 @@
 import { logMigration } from '../config/conf';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { addCapability } from '../domain/grant';
-import { listAllEntities } from '../database/middleware-loader';
+import { fullEntitiesList } from '../database/middleware-loader';
 import { ENTITY_TYPE_ROLE } from '../schema/internalObject';
 import { roleCapabilities } from '../domain/user';
 import { createRelation } from '../database/middleware';
@@ -22,7 +22,7 @@ export const up = async (next) => {
   const setStatusTemplate = await addCapability(context, SYSTEM_USER, { name: 'SETTINGS_SETSTATUSTEMPLATES', description: 'Manage status templates', attribute_order: 3430 });
   const setKillChainPhase = await addCapability(context, SYSTEM_USER, { name: 'SETTINGS_SETKILLCHAINPHASES', description: 'Manage kill chain phases', attribute_order: 3440 });
   // Check existing roles that have SETTINGS_SETLABELS
-  const roles = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_ROLE], {});
+  const roles = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_ROLE]);
   for (let i = 0; i < roles.length; i += 1) {
     const role = roles[i].id;
     const getRoleCapabilities = await roleCapabilities(context, SYSTEM_USER, role);

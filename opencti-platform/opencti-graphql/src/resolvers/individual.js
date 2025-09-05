@@ -1,4 +1,4 @@
-import { addIndividual, findAll, findById, isUser, partOfOrganizationsPaginated } from '../domain/individual';
+import { addIndividual, findIndividualPaginated, findById, isUser, partOfOrganizationsPaginated } from '../domain/individual';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -11,7 +11,7 @@ import {
 const individualResolvers = {
   Query: {
     individual: (_, { id }, context) => findById(context, context.user, id),
-    individuals: (_, args, context) => findAll(context, context.user, args),
+    individuals: (_, args, context) => findIndividualPaginated(context, context.user, args),
   },
   Individual: {
     organizations: (individual, args, context) => partOfOrganizationsPaginated(context, context.user, individual.id, args),

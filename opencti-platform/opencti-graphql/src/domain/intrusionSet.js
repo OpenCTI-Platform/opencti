@@ -1,6 +1,6 @@
 import { assoc, isNil, pipe } from 'ramda';
 import { createEntity } from '../database/middleware';
-import { listEntities, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
+import { pageEntitiesConnection, pageRegardingEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_INTRUSION_SET } from '../schema/stixDomainObject';
@@ -12,8 +12,8 @@ export const findById = (context, user, intrusionSetId) => {
   return storeLoadById(context, user, intrusionSetId, ENTITY_TYPE_INTRUSION_SET);
 };
 
-export const findAll = (context, user, args) => {
-  return listEntities(context, user, [ENTITY_TYPE_INTRUSION_SET], args);
+export const findIntrusionSetPaginated = (context, user, args) => {
+  return pageEntitiesConnection(context, user, [ENTITY_TYPE_INTRUSION_SET], args);
 };
 
 export const addIntrusionSet = async (context, user, intrusionSet) => {
@@ -26,5 +26,5 @@ export const addIntrusionSet = async (context, user, intrusionSet) => {
 };
 
 export const locationsPaginated = async (context, user, intrusionSetId, args) => {
-  return listEntitiesThroughRelationsPaginated(context, user, intrusionSetId, RELATION_ORIGINATES_FROM, ENTITY_TYPE_LOCATION, false, args);
+  return pageRegardingEntitiesConnection(context, user, intrusionSetId, RELATION_ORIGINATES_FROM, ENTITY_TYPE_LOCATION, false, args);
 };

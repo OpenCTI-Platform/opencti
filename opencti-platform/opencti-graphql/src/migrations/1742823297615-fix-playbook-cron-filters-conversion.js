@@ -1,5 +1,5 @@
 import { logMigration } from '../config/conf';
-import { listAllEntities } from '../database/middleware-loader';
+import { fullEntitiesList } from '../database/middleware-loader';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { elUpdateByQueryForMigration } from '../database/engine';
@@ -78,7 +78,7 @@ export const up = async (next) => {
   };
 
   // -- step 1: fetch the playbooks --
-  const playbooks = await listAllEntities(
+  const playbooks = await fullEntitiesList(
     context,
     SYSTEM_USER,
     [ENTITY_TYPE_PLAYBOOK],

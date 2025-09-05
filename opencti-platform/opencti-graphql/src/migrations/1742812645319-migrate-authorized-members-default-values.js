@@ -1,5 +1,5 @@
 import { logMigration } from '../config/conf';
-import { listAllEntities } from '../database/middleware-loader';
+import { fullEntitiesList } from '../database/middleware-loader';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
 import { getAttributesConfiguration } from '../modules/entitySetting/entitySetting-utils';
@@ -12,7 +12,7 @@ export const up = async (next) => {
   logMigration.info(`${message} > started`);
   // do your migration
   const context = executionContext('migration', SYSTEM_USER);
-  const entitySettings = await listAllEntities(context, context.user, [ENTITY_TYPE_ENTITY_SETTING], { connectionFormat: false });
+  const entitySettings = await fullEntitiesList(context, context.user, [ENTITY_TYPE_ENTITY_SETTING]);
   for (let i = 0; i < entitySettings.length; i += 1) {
     const entitySetting = entitySettings[i];
     let attributesConfiguration = getAttributesConfiguration(entitySetting);

@@ -1,7 +1,15 @@
 import * as R from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, listThings, paginateAllThings, updateAttribute } from '../database/middleware';
-import { internalLoadById, listEntities, storeLoadById } from '../database/middleware-loader';
+import {
+  createEntity,
+  createRelation,
+  deleteElementById,
+  deleteRelationsByFromAndTo,
+  topEntitiesOrRelationsList,
+  pageEntitiesOrRelationsConnection,
+  updateAttribute
+} from '../database/middleware';
+import { internalLoadById, pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import conf, { BUS_TOPICS } from '../config/conf';
 import { FunctionalError, ValidationError } from '../config/errors';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
@@ -16,25 +24,31 @@ export const findById = (context, user, externalReferenceId) => {
   return storeLoadById(context, user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
 };
 
-export const findAll = (context, user, args) => {
-  return listEntities(context, user, [ENTITY_TYPE_EXTERNAL_REFERENCE], args);
+export const findReferencesPaginated = (context, user, args) => {
+  return pageEntitiesConnection(context, user, [ENTITY_TYPE_EXTERNAL_REFERENCE], args);
 };
 
-export const references = async (context, user, externalReferenceId, args) => {
+const buildFilterForExternalReference = (externalReferenceId, args) => {
   const key = buildRefRelationKey(RELATION_EXTERNAL_REFERENCE);
   let types = ['Stix-Core-Object', 'stix-core-relationship'];
   if (args.types) {
     types = args.types;
   }
-  const filters = addFilter(args.filters, key, externalReferenceId);
-  if (args.all) {
-    return paginateAllThings(context, user, types, R.assoc('filters', filters, args));
-  }
-  return listThings(context, user, types, R.assoc('filters', filters, args));
+  return { types, filters: addFilter(args.filters, key, externalReferenceId) };
+};
+
+export const findReferencesForExternalId = async (context, user, externalReferenceId, args) => {
+  const { types, filters } = buildFilterForExternalReference(externalReferenceId, args);
+  return topEntitiesOrRelationsList(context, user, types, { ...args, filters });
+};
+
+export const findReferencesForExternalIdPaginated = async (context, user, externalReferenceId, args) => {
+  const { types, filters } = buildFilterForExternalReference(externalReferenceId, args);
+  return pageEntitiesOrRelationsConnection(context, user, types, { ...args, filters });
 };
 
 export const externalReferenceImportPush = async (context, user, externalReferenceId, file, args = {}) => {
-  const entitiesReferences = await references(context, user, externalReferenceId, { types: ['Stix-Domain-Object'], connectionFormat: false, first: 50 });
+  const entitiesReferences = await findReferencesForExternalId(context, user, externalReferenceId, { types: ['Stix-Domain-Object'], first: 50 });
   const finalArgs = { ...args, importContextEntities: entitiesReferences };
   return stixCoreObjectImportPush(context, user, externalReferenceId, file, finalArgs);
 };

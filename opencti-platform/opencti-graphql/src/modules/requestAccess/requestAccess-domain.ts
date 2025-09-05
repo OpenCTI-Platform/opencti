@@ -22,7 +22,7 @@ import {
   MEMBER_ACCESS_RIGHT_EDIT,
   SYSTEM_USER
 } from '../../utils/access';
-import { internalLoadById, listAllEntities } from '../../database/middleware-loader';
+import { internalLoadById, fullEntitiesList } from '../../database/middleware-loader';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS } from '../../schema/internalObject';
 import { BUS_TOPICS, logApp } from '../../config/conf';
 import { addOrganizationRestriction } from '../../domain/stix';
@@ -143,10 +143,9 @@ export const findFirstWorkflowStatus = async (context: AuthContext, user: AuthUs
         { key: ['scope'], values: [StatusScope.RequestAccess] }
       ],
       filterGroups: [],
-    },
-    connectionFormat: false
+    }
   };
-  const allRequestAccessStatus = await listAllEntities<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], args);
+  const allRequestAccessStatus = await fullEntitiesList<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], args);
   logApp.debug('[OPENCTI-MODULE][Request access] Found first status as:', { status: allRequestAccessStatus[0] });
   return allRequestAccessStatus[0];
 };

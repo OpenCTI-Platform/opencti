@@ -1,7 +1,7 @@
 import { BUS_TOPICS } from '../config/conf';
 import {
   addKillChainPhase,
-  findAll,
+  findKillChainPhasePaginated,
   findById,
   killChainPhaseAddRelation,
   killChainPhaseCleanContext,
@@ -17,7 +17,7 @@ import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../schema/stixMetaObject';
 const killChainPhaseResolvers = {
   Query: {
     killChainPhase: (_, { id }, context) => findById(context, context.user, id),
-    killChainPhases: (_, args, context) => findAll(context, context.user, args),
+    killChainPhases: (_, args, context) => findKillChainPhasePaginated(context, context.user, args),
   },
   KillChainPhase: {
     editContext: (killChainPhase) => fetchEditContext(killChainPhase.id),

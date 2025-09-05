@@ -2,7 +2,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
 import type { EditInput, QueryVocabulariesArgs, VocabularyAddInput, } from '../../generated/graphql';
 import { FilterMode } from '../../generated/graphql';
-import { countAllThings, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { countAllThings, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY } from './vocabulary-types';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
@@ -17,7 +17,7 @@ export const findById: DomainFindById<BasicStoreEntityVocabulary> = (context: Au
   return storeLoadById(context, user, id, ENTITY_TYPE_VOCABULARY);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, opts: QueryVocabulariesArgs) => {
+export const findVocabularyPaginated = (context: AuthContext, user: AuthUser, opts: QueryVocabulariesArgs) => {
   const { category } = opts;
   let { filters } = opts;
   const entityTypes = (filters?.filters ?? []).find(({ key }) => key.includes('entity_types'));
@@ -42,7 +42,7 @@ export const findAll = (context: AuthContext, user: AuthUser, opts: QueryVocabul
     orderBy: ['order', 'name'], // Default orderBy if none
     ...opts
   };
-  return listEntitiesPaginated<BasicStoreEntityVocabulary>(context, user, [ENTITY_TYPE_VOCABULARY], {
+  return pageEntitiesConnection<BasicStoreEntityVocabulary>(context, user, [ENTITY_TYPE_VOCABULARY], {
     ...args,
     filters
   });

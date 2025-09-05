@@ -17,7 +17,7 @@ import { v4 as uuidv4 } from 'uuid';
 import type { FileHandle } from 'fs/promises';
 import { BUS_TOPICS, logApp } from '../../config/conf';
 import { createEntity, deleteElementById, patchAttribute, stixLoadById, updateAttribute } from '../../database/middleware';
-import { type EntityOptions, internalFindByIds, listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { type EntityOptions, internalFindByIds, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { notify } from '../../database/redis';
 import type { DomainFindById } from '../../domain/domainTypes';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
@@ -56,20 +56,12 @@ export const findById: DomainFindById<BasicStoreEntityPlaybook> = async (context
   return storeLoadById(context, user, playbookId, ENTITY_TYPE_PLAYBOOK);
 };
 
-export const findAll = async (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityPlaybook>) => {
+export const findPlaybookPaginated = async (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityPlaybook>) => {
   const isEE = await isEnterpriseEdition(context);
   if (!isEE) {
     return buildPagination(0, null, [], 0);
   }
-  return listEntitiesPaginated<BasicStoreEntityPlaybook>(context, user, [ENTITY_TYPE_PLAYBOOK], opts);
-};
-
-export const findAllPlaybooks = async (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityPlaybook>) => {
-  const isEE = await isEnterpriseEdition(context);
-  if (!isEE) {
-    return buildPagination(0, null, [], 0);
-  }
-  return listAllEntities<BasicStoreEntityPlaybook>(context, user, [ENTITY_TYPE_PLAYBOOK], opts);
+  return pageEntitiesConnection<BasicStoreEntityPlaybook>(context, user, [ENTITY_TYPE_PLAYBOOK], opts);
 };
 
 export const findPlaybooksForEntity = async (context: AuthContext, user: AuthUser, id: string) => {

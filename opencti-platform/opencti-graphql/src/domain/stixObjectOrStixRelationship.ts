@@ -4,12 +4,12 @@ import { type EntityOptions, storeLoadById } from '../database/middleware-loader
 import { ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_REF_RELATIONSHIP, ABSTRACT_STIX_RELATIONSHIP } from '../schema/general';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { isStixRefRelationship, RELATION_CREATED_BY, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
-import { listThings, storeLoadByIdWithRefs, transformPatchToInput, updateAttributeFromLoadedWithRefs, validateCreatedBy } from '../database/middleware';
+import { pageEntitiesOrRelationsConnection, storeLoadByIdWithRefs, transformPatchToInput, updateAttributeFromLoadedWithRefs, validateCreatedBy } from '../database/middleware';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import type { AuthContext, AuthUser } from '../types/user';
 import { type StixRefRelationshipAddInput, type StixRefRelationshipsAddInput } from '../generated/graphql';
-import type { BasicStoreCommon, BasicStoreObject } from '../types/store';
+import type { BasicStoreCommon, BasicStoreObject, StoreCommonConnection } from '../types/store';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { buildRelationData } from '../database/data-builder';
 import { validateMarking } from '../utils/access';
@@ -20,8 +20,9 @@ export const findById = async <T extends BasicStoreObject> (context: AuthContext
   return await elLoadById(context, user, id, { indices: READ_PLATFORM_INDICES }) as unknown as T;
 };
 
-export const findAll = async <T extends BasicStoreObject> (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreCommon>) : Promise<T> => {
-  return await listThings(context, user, [ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP], args) as unknown as T;
+export const findStixObjectOrRelationshipsPaginated = async <T extends BasicStoreObject> (context: AuthContext, user: AuthUser,
+  args: EntityOptions<BasicStoreCommon>) : Promise<StoreCommonConnection<T>> => {
+  return await pageEntitiesOrRelationsConnection(context, user, [ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP], args) as unknown as StoreCommonConnection<T>;
 };
 
 const patchElementWithRefRelationships = async (

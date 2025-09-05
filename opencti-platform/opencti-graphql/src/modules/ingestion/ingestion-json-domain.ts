@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import * as JSONPath from 'jsonpath-plus';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityIngestionJson, type DataParam, ENTITY_TYPE_INGESTION_JSON } from './ingestion-types';
 import { addAuthenticationCredentials, removeAuthenticationCredentials, verifyIngestionAuthenticationContent } from './ingestion-common';
 import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
@@ -180,12 +180,12 @@ export const findById = async (context: AuthContext, user: AuthUser, ingestionId
   return jsonIngestion;
 };
 
-export const findAllPaginated = async (context: AuthContext, user: AuthUser, opts = {}) => {
-  return listEntitiesPaginated<BasicStoreEntityIngestionJson>(context, user, [ENTITY_TYPE_INGESTION_JSON], opts);
+export const findJsonIngestionPaginated = async (context: AuthContext, user: AuthUser, opts = {}) => {
+  return pageEntitiesConnection<BasicStoreEntityIngestionJson>(context, user, [ENTITY_TYPE_INGESTION_JSON], opts);
 };
 
-export const findAllJsonIngestions = async (context: AuthContext, user: AuthUser, opts = {}) => {
-  return listAllEntities<BasicStoreEntityIngestionJson>(context, user, [ENTITY_TYPE_INGESTION_JSON], opts);
+export const findAllJsonIngestion = async (context: AuthContext, user: AuthUser, opts = {}) => {
+  return fullEntitiesList<BasicStoreEntityIngestionJson>(context, user, [ENTITY_TYPE_INGESTION_JSON], opts);
 };
 
 export const findJsonMapperForIngestionById = (context: AuthContext, user: AuthUser, jsonMapperId: string) => {

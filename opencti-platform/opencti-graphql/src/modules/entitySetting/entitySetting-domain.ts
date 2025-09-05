@@ -3,14 +3,14 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { createEntity, loadEntity, updateAttribute } from '../../database/middleware';
 import type { BasicStoreEntityEntitySetting } from './entitySetting-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
-import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import type { EditInput, EntitySettingFintelTemplatesArgs, QueryEntitySettingsArgs } from '../../generated/graphql';
 import { FilterMode } from '../../generated/graphql';
 import { SYSTEM_USER } from '../../utils/access';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { defaultEntitySetting, type EntitySettingSchemaAttribute, getAvailableSettings, type typeAvailableSetting } from './entitySetting-utils';
-import { queryDefaultSubTypes } from '../../domain/subType';
+import { queryDefaultSubTypesPaginated } from '../../domain/subType';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { telemetry } from '../../config/tracing';
 import { INPUT_AUTHORIZED_MEMBERS } from '../../schema/general';
@@ -50,13 +50,12 @@ export const findByType = async (context: AuthContext, user: AuthUser, targetTyp
 
 export const batchEntitySettingsByType = async (context: AuthContext, user: AuthUser, targetTypes: string[]) => {
   const findByTypeFn = async () => {
-    const entitySettings = await listAllEntities<BasicStoreEntityEntitySetting>(context, user, [ENTITY_TYPE_ENTITY_SETTING], {
+    const entitySettings = await fullEntitiesList<BasicStoreEntityEntitySetting>(context, user, [ENTITY_TYPE_ENTITY_SETTING], {
       filters: {
         mode: FilterMode.And,
         filters: [{ key: ['target_type'], values: targetTypes }],
         filterGroups: [],
-      },
-      connectionFormat: false
+      }
     });
     return targetTypes.map((targetType) => entitySettings.find((entitySetting) => entitySetting.target_type === targetType));
   };
@@ -66,8 +65,8 @@ export const batchEntitySettingsByType = async (context: AuthContext, user: Auth
   }, findByTypeFn);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, opts: QueryEntitySettingsArgs) => {
-  return listEntitiesPaginated<BasicStoreEntityEntitySetting>(context, user, [ENTITY_TYPE_ENTITY_SETTING], opts);
+export const findEntitySettingPaginated = (context: AuthContext, user: AuthUser, opts: QueryEntitySettingsArgs) => {
+  return pageEntitiesConnection<BasicStoreEntityEntitySetting>(context, user, [ENTITY_TYPE_ENTITY_SETTING], opts);
 };
 
 export const entitySettingEditField = async (context: AuthContext, user: AuthUser, entitySettingId: string, input: EditInput[]) => {
@@ -113,7 +112,7 @@ export const getTemplatesForSetting = async (
     return emptyPaginationResult();
   }
   const filters = addFilter(undefined, 'settings_types', [targetType]);
-  return listEntitiesPaginated(context, user, [ENTITY_TYPE_FINTEL_TEMPLATE], { ...opts, filters });
+  return pageEntitiesConnection(context, user, [ENTITY_TYPE_FINTEL_TEMPLATE], { ...opts, filters });
 };
 
 export const entitySettingsEditField = async (context: AuthContext, user: AuthUser, entitySettingIds: string[], input: EditInput[]) => {
@@ -129,9 +128,9 @@ export const addEntitySetting = async (context: AuthContext, user: AuthUser, ent
 
 export const initCreateEntitySettings = async (context: AuthContext, user: AuthUser) => {
   // First check existing
-  const subTypes = await queryDefaultSubTypes(context, user);
+  const subTypes = await queryDefaultSubTypesPaginated(context, user);
   // Get all current settings
-  const entitySettings = await listAllEntities<BasicStoreEntityEntitySetting>(context, SYSTEM_USER, [ENTITY_TYPE_ENTITY_SETTING], { connectionFormat: false });
+  const entitySettings = await fullEntitiesList<BasicStoreEntityEntitySetting>(context, SYSTEM_USER, [ENTITY_TYPE_ENTITY_SETTING]);
   const currentEntityTypes = entitySettings.map((e) => e.target_type);
   for (let index = 0; index < subTypes.edges.length; index += 1) {
     const entityType = subTypes.edges[index].node.id;
@@ -192,7 +191,6 @@ export const queryDefaultValuesAttributesForSetting = async (
       const membersIds = defaultValuesParsed.map((d) => d.id);
       const groupsRestrictionIds = defaultValuesParsed.flatMap((d) => d.groups_restriction_ids ?? []);
       const args = {
-        connectionFormat: false,
         filters: {
           mode: 'and',
           filters: [{ key: 'internal_id', values: [...membersIds, ...groupsRestrictionIds] }],

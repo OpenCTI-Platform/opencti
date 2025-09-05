@@ -1,4 +1,4 @@
-import { listAllEntities, listAllRelations } from '../database/middleware-loader';
+import { fullEntitiesList, fullRelationsList } from '../database/middleware-loader';
 import { executionContext, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../utils/access';
 import { RELATION_ACCESSES_TO, RELATION_HAS_CAPABILITY } from '../schema/internalRelationship';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_STREAM_COLLECTION } from '../schema/internalObject';
@@ -8,11 +8,11 @@ import { createRelationRaw } from '../database/middleware';
 export const up = async (next) => {
   // 01. Stream accesses-to migration to use restricted_members and authorized_authorities
   const context = executionContext('migration');
-  const streams = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_STREAM_COLLECTION]);
+  const streams = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_STREAM_COLLECTION]);
   for (let index = 0; index < streams.length; index += 1) {
     const stream = streams[index];
     const args = { toId: stream.internal_id, fromTypes: [ENTITY_TYPE_GROUP], toTypes: [ENTITY_TYPE_STREAM_COLLECTION] };
-    const relations = await listAllRelations(context, SYSTEM_USER, RELATION_ACCESSES_TO, args);
+    const relations = await fullRelationsList(context, SYSTEM_USER, RELATION_ACCESSES_TO, args);
     if (relations.length > 0) {
       const restricted_members = relations.map((r) => ({ id: r.fromId, access_right: 'view' }));
       const patch = { restricted_members, authorized_authorities: [TAXIIAPI_SETCOLLECTIONS] };
@@ -31,7 +31,7 @@ export const up = async (next) => {
   await elReplace(manageTaxii._index, manageTaxii.internal_id, { doc: managePatch });
   // ------ Roles that contains STREAMAPI must now contain TAXIIAPI
   const streamApi = await elLoadById(context, SYSTEM_USER, 'capability--beaa8173-6da3-5930-a0df-00e8feac9d52');
-  const capabilityRelations = await listAllRelations(context, SYSTEM_USER, RELATION_HAS_CAPABILITY, { toId: streamApi.internal_id });
+  const capabilityRelations = await fullRelationsList(context, SYSTEM_USER, RELATION_HAS_CAPABILITY, { toId: streamApi.internal_id });
   for (let capaIndex = 0; capaIndex < capabilityRelations.length; capaIndex += 1) {
     const capabilityRelation = capabilityRelations[capaIndex];
     await createRelationRaw(context, SYSTEM_USER, { fromId: capabilityRelation.fromId, relationship_type: RELATION_HAS_CAPABILITY, toId: accessTaxii.internal_id });

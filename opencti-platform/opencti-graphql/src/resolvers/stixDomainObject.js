@@ -1,7 +1,7 @@
 import { BUS_TOPICS } from '../config/conf';
 import {
   addStixDomainObject,
-  findAll,
+  findStixDomainObjectPaginated,
   findById,
   stixDomainObjectAddRelation,
   stixDomainObjectAvatar,
@@ -33,7 +33,7 @@ import { filterMembersWithUsersOrgs } from '../utils/access';
 const stixDomainObjectResolvers = {
   Query: {
     stixDomainObject: (_, { id }, context) => findById(context, context.user, id),
-    stixDomainObjects: (_, args, context) => findAll(context, context.user, args),
+    stixDomainObjects: (_, args, context) => findStixDomainObjectPaginated(context, context.user, args),
     stixDomainObjectsTimeSeries: (_, args, context) => {
       if (args.authorId && args.authorId.length > 0) {
         return stixDomainObjectsTimeSeriesByAuthor(context, context.user, args);

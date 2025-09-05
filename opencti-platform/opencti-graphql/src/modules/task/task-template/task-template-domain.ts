@@ -1,6 +1,6 @@
 import { BUS_TOPICS } from '../../../config/conf';
 import { createEntity, deleteElementById, updateAttribute } from '../../../database/middleware';
-import { type EntityOptions, listEntitiesPaginated, storeLoadById } from '../../../database/middleware-loader';
+import { type EntityOptions, pageEntitiesConnection, storeLoadById } from '../../../database/middleware-loader';
 import { notify } from '../../../database/redis';
 import type { DomainFindById } from '../../../domain/domainTypes';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../../schema/general';
@@ -13,8 +13,8 @@ export const findById: DomainFindById<BasicStoreEntityTaskTemplate> = (context: 
   return storeLoadById(context, user, templateId, ENTITY_TYPE_TASK_TEMPLATE);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityTaskTemplate>) => {
-  return listEntitiesPaginated<BasicStoreEntityTaskTemplate>(context, user, [ENTITY_TYPE_TASK_TEMPLATE], opts);
+export const findTaskTemplatePaginated = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityTaskTemplate>) => {
+  return pageEntitiesConnection<BasicStoreEntityTaskTemplate>(context, user, [ENTITY_TYPE_TASK_TEMPLATE], opts);
 };
 
 export const taskTemplateAdd = async (context: AuthContext, user: AuthUser, input: TaskTemplateAddInput) => {

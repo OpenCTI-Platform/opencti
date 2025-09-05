@@ -1,6 +1,6 @@
 import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { listAllEntities, storeLoadById } from '../../database/middleware-loader';
+import { fullEntitiesList, storeLoadById } from '../../database/middleware-loader';
 import { createEntity, loadEntity, patchAttribute, updateAttribute } from '../../database/middleware';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { telemetry } from '../../config/tracing';
@@ -80,7 +80,7 @@ const addManagerConfiguration = async (
 };
 
 export const initManagerConfigurations = async (context: AuthContext, user: AuthUser) => {
-  const managerConfigurations = await listAllEntities<BasicStoreEntityManagerConfiguration>(context, user, [ENTITY_TYPE_MANAGER_CONFIGURATION], { connectionFormat: false });
+  const managerConfigurations = await fullEntitiesList<BasicStoreEntityManagerConfiguration>(context, user, [ENTITY_TYPE_MANAGER_CONFIGURATION]);
   const allManagerConfigurations = getAllDefaultManagerConfigurations();
   for (let index = 0; index < allManagerConfigurations.length; index += 1) {
     const managerConfiguration = { ...allManagerConfigurations[index] };

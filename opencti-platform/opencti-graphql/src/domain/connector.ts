@@ -13,7 +13,7 @@ import { isEmptyField, READ_INDEX_HISTORY } from '../database/utils';
 import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE, OPENCTI_NAMESPACE } from '../schema/general';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import { delEditContext, notify, redisGetWork, redisSetConnectorLogs, setEditContext } from '../database/redis';
-import { internalLoadById, listAllEntities, listEntities, storeLoadById } from '../database/middleware-loader';
+import { internalLoadById, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import { completeContextDataForEntity, publishUserAction, type UserImportActionContextData } from '../listener/UserActionListener';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreEntityConnector, BasicStoreEntityConnectorManager, BasicStoreEntitySynchronizer, ConnectorInfo } from '../types/connector';
@@ -184,7 +184,7 @@ export const managedConnectorEdit = async (
   if (isEmptyField(targetContract)) {
     throw UnsupportedError('Target contract not found');
   }
-  const connectorManagers = await listAllEntities<BasicStoreEntityConnectorManager>(context, user, [ENTITY_TYPE_CONNECTOR_MANAGER], { connectionFormat: false });
+  const connectorManagers = await fullEntitiesList<BasicStoreEntityConnectorManager>(context, user, [ENTITY_TYPE_CONNECTOR_MANAGER]);
   if (connectorManagers?.length < 1) {
     throw FunctionalError('There is no connector manager configured');
   }
@@ -219,7 +219,7 @@ export const managedConnectorAdd = async (
   if (!targetContract.manager_supported) {
     throw FunctionalError('You have not chosen a connector supported by the manager');
   }
-  const connectorManagers = await listAllEntities<BasicStoreEntityConnectorManager>(context, user, [ENTITY_TYPE_CONNECTOR_MANAGER], { connectionFormat: false });
+  const connectorManagers = await fullEntitiesList<BasicStoreEntityConnectorManager>(context, user, [ENTITY_TYPE_CONNECTOR_MANAGER]);
   if (connectorManagers?.length < 1) {
     throw FunctionalError('There is no connector manager configured');
   }
@@ -461,8 +461,8 @@ export const findSyncById = async (context: AuthContext, user: AuthUser, syncId:
   }
   return basicIngestion;
 };
-export const findAllSync = async (context: AuthContext, user: AuthUser, opts = {}) => {
-  return listEntities(context, SYSTEM_USER, [ENTITY_TYPE_SYNC], opts);
+export const findSyncPaginated = async (context: AuthContext, user: AuthUser, opts = {}) => {
+  return pageEntitiesConnection(context, SYSTEM_USER, [ENTITY_TYPE_SYNC], opts);
 };
 
 export const testSync = async (context: AuthContext, user: AuthUser, sync: MutationSynchronizerTestArgs) => {

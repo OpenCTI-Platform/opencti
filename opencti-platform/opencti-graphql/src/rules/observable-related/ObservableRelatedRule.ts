@@ -5,7 +5,7 @@ import { RELATION_RELATED_TO } from '../../schema/stixCoreRelationship';
 import def from './ObservableRelatedDefinition';
 import { createRuleContent } from '../rules-utils';
 import { computeAverage } from '../../database/utils';
-import { listAllRelations } from '../../database/middleware-loader';
+import { fullRelationsList } from '../../database/middleware-loader';
 import type { StixRelation } from '../../types/stix-2-1-sro';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { BasicStoreRelation, StoreObject } from '../../types/store';
@@ -61,7 +61,7 @@ const ruleRelatedObservableBuilder = () => {
       }
     };
     const listFromArgs = { fromId: sourceRef, callback: listFromCallback };
-    await listAllRelations(context, RULE_MANAGER_USER, RELATION_RELATED_TO, listFromArgs);
+    await fullRelationsList(context, RULE_MANAGER_USER, RELATION_RELATED_TO, listFromArgs);
   };
   // Contract
   const clean = async (element: StoreObject, deletedDependencies: Array<string>): Promise<void> => {

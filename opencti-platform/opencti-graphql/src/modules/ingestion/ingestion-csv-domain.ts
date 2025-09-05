@@ -1,7 +1,7 @@
 import { v4 as uuid } from 'uuid';
 import type { FileHandle } from 'fs/promises';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityIngestionCsv, ENTITY_TYPE_INGESTION_CSV } from './ingestion-types';
 import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
@@ -23,7 +23,6 @@ import {
   type CsvMapperResolved,
   ENTITY_TYPE_CSV_MAPPER
 } from '../internal/csvMapper/csvMapper-types';
-import { findAll as findAllUsers } from '../../domain/user';
 import { type CsvBundlerTestOpts, getCsvTestObjects, removeHeaderFromFullFile } from '../../parser/csv-bundler';
 import { findById as findCsvMapperById, transformCsvMapperConfig } from '../internal/csvMapper/csvMapper-domain';
 import { parseCsvMapper } from '../internal/csvMapper/csvMapper-utils';
@@ -39,7 +38,6 @@ import { SYSTEM_USER } from '../../utils/access';
 import { findDefaultIngestionGroups } from '../../domain/group';
 import { regenerateCsvMapperUUID } from './ingestion-converter';
 import { createOnTheFlyUser } from '../user/user-domain';
-import type { BasicStoreCommon } from '../../types/store';
 
 const MINIMAL_CSV_FEED_COMPATIBLE_VERSION = '6.6.0';
 
@@ -53,12 +51,12 @@ export const findById = async (context: AuthContext, user: AuthUser, ingestionId
 
 // findLastCSVIngestion
 
-export const findAllPaginated = async (context: AuthContext, user: AuthUser, opts = {}) => {
-  return listEntitiesPaginated<BasicStoreEntityIngestionCsv>(context, user, [ENTITY_TYPE_INGESTION_CSV], opts);
+export const findCsvIngestionPaginated = async (context: AuthContext, user: AuthUser, opts = {}) => {
+  return pageEntitiesConnection<BasicStoreEntityIngestionCsv>(context, user, [ENTITY_TYPE_INGESTION_CSV], opts);
 };
 
-export const findAllCsvIngestions = async (context: AuthContext, user: AuthUser, opts = {}) => {
-  return listAllEntities<BasicStoreEntityIngestionCsv>(context, user, [ENTITY_TYPE_INGESTION_CSV], opts);
+export const findAllCsvIngestion = async (context: AuthContext, user: AuthUser, opts = {}) => {
+  return fullEntitiesList<BasicStoreEntityIngestionCsv>(context, user, [ENTITY_TYPE_INGESTION_CSV], opts);
 };
 
 export const findCsvMapperForIngestionById = (context: AuthContext, user: AuthUser, csvMapperId: string) => {
@@ -69,23 +67,6 @@ export const defaultIngestionGroupsCount = async (context: AuthContext) => {
   // We use SYSTEM_USER because manage ingestion should be enough to create an ingestion Feed
   const defaultGroupLength = await findDefaultIngestionGroups(context, SYSTEM_USER);
   return defaultGroupLength.length ?? 0;
-};
-
-export const userAlreadyExists = async (context: AuthContext, name: string) => {
-  // We use SYSTEM_USER because manage ingestion should be enough to create an ingestion Feed
-  const users = await findAllUsers(context, SYSTEM_USER, {
-    filters: {
-      mode: 'and',
-      filters: [
-        {
-          key: ['name'],
-          values: [name],
-        },
-      ],
-      filterGroups: [],
-    },
-    connectionFormat: false }) as BasicStoreCommon[];
-  return users.length > 0;
 };
 
 export const addIngestionCsv = async (context: AuthContext, user: AuthUser, input: IngestionCsvAddInput) => {

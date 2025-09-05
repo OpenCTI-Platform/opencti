@@ -1,6 +1,6 @@
 import {
   addReport,
-  findAll,
+  findReportPaginated,
   findById,
   reportContainsStixObjectOrStixRelationship,
   reportDeleteElementsCount,
@@ -30,7 +30,7 @@ import { filterMembersWithUsersOrgs } from '../utils/access';
 const reportResolvers = {
   Query: {
     report: (_, { id }, context) => findById(context, context.user, id),
-    reports: (_, args, context) => findAll(context, context.user, args),
+    reports: (_, args, context) => findReportPaginated(context, context.user, args),
     reportsTimeSeries: (_, args, context) => {
       if (args.objectId && args.objectId.length > 0) {
         return reportsTimeSeriesByEntity(context, context.user, args);

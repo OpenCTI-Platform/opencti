@@ -8,9 +8,9 @@ import {
   externalReferenceEditContext,
   externalReferenceEditField,
   externalReferenceImportPush,
-  findAll,
+  findReferencesPaginated,
   findById,
-  references,
+  findReferencesForExternalIdPaginated,
 } from '../domain/externalReference';
 import { fetchEditContext } from '../database/redis';
 import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
@@ -24,7 +24,7 @@ import { paginatedForPathWithEnrichment } from '../modules/internal/document/doc
 const externalReferenceResolvers = {
   Query: {
     externalReference: (_, { id }, context) => findById(context, context.user, id),
-    externalReferences: (_, args, context) => findAll(context, context.user, args),
+    externalReferences: (_, args, context) => findReferencesPaginated(context, context.user, args),
   },
   ExternalReference: {
     url: (externalReference, _, context) => {
@@ -33,7 +33,7 @@ const externalReferenceResolvers = {
       }
       return externalReference.url;
     },
-    references: (container, args, context) => references(context, context.user, container.id, args),
+    references: (externalReference, args, context) => findReferencesForExternalIdPaginated(context, context.user, externalReference.id, args),
     editContext: (externalReference) => fetchEditContext(externalReference.id),
     jobs: (externalReference, args, context) => worksForSource(context, context.user, externalReference.standard_id, args),
     connectors: (externalReference, { onlyAlive = false }, context) => connectorsForEnrichment(context, context.user, externalReference.entity_type, onlyAlive),

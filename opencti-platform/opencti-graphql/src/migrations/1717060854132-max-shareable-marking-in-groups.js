@@ -1,7 +1,7 @@
 import { logApp } from '../config/conf';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { getSettings } from '../domain/settings';
-import { listAllEntities } from '../database/middleware-loader';
+import { fullEntitiesList } from '../database/middleware-loader';
 import { ENTITY_TYPE_GROUP } from '../schema/internalObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { groupAllowedMarkings, groupEditField } from '../domain/group';
@@ -14,8 +14,8 @@ const message = '[MIGRATION] Remove max shareable markings from platform setting
 export const up = async (next) => {
   logApp.info(`${message} > started`);
   const context = executionContext('migration', SYSTEM_USER);
-  const groups = await listAllEntities(context, context.user, [ENTITY_TYPE_GROUP], { connectionFormat: false });
-  const markings = await listAllEntities(context, context.user, [ENTITY_TYPE_MARKING_DEFINITION], {});
+  const groups = await fullEntitiesList(context, context.user, [ENTITY_TYPE_GROUP]);
+  const markings = await fullEntitiesList(context, context.user, [ENTITY_TYPE_MARKING_DEFINITION], {});
   const settings = await getSettings(context);
   const platformMaxShareableMarkingIds = settings.platform_data_sharing_max_markings || [];
   const platformMaxShareableMarkings = markings.filter((m) => platformMaxShareableMarkingIds.includes(m.id));

@@ -1,6 +1,6 @@
 import { type BasicStoreEntityIngestionTaxiiCollection, ENTITY_TYPE_INGESTION_TAXII_COLLECTION } from './ingestion-types';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
-import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS } from '../../config/conf';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
@@ -15,9 +15,9 @@ export const findById = (context: AuthContext, user: AuthUser, ingestionId: stri
   return storeLoadById<BasicStoreEntityIngestionTaxiiCollection>(context, user, ingestionId, ENTITY_TYPE_INGESTION_TAXII_COLLECTION);
 };
 
-export const findAllPaginated = async (context: AuthContext, user: AuthUser, opts = {}) => {
+export const findTaxiiCollectionPaginated = async (context: AuthContext, user: AuthUser, opts = {}) => {
   const args = { ...opts, includeAuthorities: true };
-  return listEntitiesPaginated<BasicStoreEntityIngestionTaxiiCollection>(context, user, [ENTITY_TYPE_INGESTION_TAXII_COLLECTION], args);
+  return pageEntitiesConnection<BasicStoreEntityIngestionTaxiiCollection>(context, user, [ENTITY_TYPE_INGESTION_TAXII_COLLECTION], args);
 };
 
 export const addIngestion = async (context: AuthContext, user: AuthUser, input: IngestionTaxiiCollectionAddInput) => {

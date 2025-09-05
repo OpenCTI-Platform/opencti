@@ -10,7 +10,7 @@ import { RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { computeAverage } from '../../database/utils';
 import { createRuleContent } from '../rules-utils';
 import { createInferredRelation, deleteInferredRuleElement } from '../../database/middleware';
-import { listAllRelations, type RelationOptions } from '../../database/middleware-loader';
+import { fullRelationsList, type RelationOptions } from '../../database/middleware-loader';
 import { RELATION_BASED_ON } from '../../schema/stixCoreRelationship';
 import type { RuleRuntime } from '../../types/rules';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION } from '../../schema/general';
@@ -63,7 +63,7 @@ const sightingIndicatorRuleBuilder = (): RuleRuntime => {
       toTypes: [ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION],
       callback: listFromCallback
     };
-    await listAllRelations(context, RULE_MANAGER_USER, STIX_SIGHTING_RELATIONSHIP, listFromArgs);
+    await fullRelationsList(context, RULE_MANAGER_USER, STIX_SIGHTING_RELATIONSHIP, listFromArgs);
   };
   const applyFromStixSighting = async (context: AuthContext, data: StixSighting): Promise<void> => {
     // **indicator A** is `sighted` in **identity/location B**
@@ -104,7 +104,7 @@ const sightingIndicatorRuleBuilder = (): RuleRuntime => {
       toTypes: [ABSTRACT_STIX_CYBER_OBSERVABLE],
       callback: listFromCallback
     };
-    await listAllRelations(context, RULE_MANAGER_USER, RELATION_BASED_ON, listFromArgs);
+    await fullRelationsList(context, RULE_MANAGER_USER, RELATION_BASED_ON, listFromArgs);
   };
   const applyUpsert = async (data: StixRelation | StixSighting): Promise<void> => {
     const context = executionContext(def.name, RULE_MANAGER_USER);

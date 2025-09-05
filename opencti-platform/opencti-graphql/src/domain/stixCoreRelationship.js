@@ -10,7 +10,7 @@ import { fillTimeSeries, isEmptyField, isNotEmptyField, READ_INDEX_INFERRED_RELA
 import { isStixCoreRelationship, stixCoreRelationshipOptions } from '../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
 import { RELATION_CREATED_BY, } from '../schema/stixRefRelationship';
-import { buildRelationsFilter, listRelations, storeLoadById } from '../database/middleware-loader';
+import { buildRelationsFilter, pageRelationsConnection, storeLoadById } from '../database/middleware-loader';
 import { askListExport, exportTransformFilters } from './stix';
 import { workToExportFile } from './work';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
@@ -19,7 +19,7 @@ import { buildArgsFromDynamicFilters, stixRelationshipsDistribution } from './st
 import { elRemoveElementFromDraft } from '../database/draft-engine';
 import { RELATION_DYNAMIC_FROM_FILTER, RELATION_DYNAMIC_TO_FILTER } from '../utils/filtering/filtering-constants';
 
-export const findAll = async (context, user, args) => {
+export const findStixCoreRelationshipsPaginated = async (context, user, args) => {
   let finalArgs = args;
   const finalFilters = args.filters;
   if (finalFilters) {
@@ -58,7 +58,7 @@ export const findAll = async (context, user, args) => {
   if (!types.every((t) => isStixCoreRelationship(t))) {
     throw UnsupportedError('This API only support Stix core relationships', { type });
   }
-  return listRelations(context, user, type, R.dissoc('relationship_type', dynamicArgs));
+  return pageRelationsConnection(context, user, type, R.dissoc('relationship_type', dynamicArgs));
 };
 
 export const findById = (context, user, stixCoreRelationshipId) => {
@@ -112,11 +112,6 @@ export const stixCoreRelationshipsMultiTimeSeries = async (context, user, args) 
   }));
 };
 // endregion
-
-export const stixRelations = (context, user, stixCoreObjectId, args) => {
-  const finalArgs = R.assoc('fromId', stixCoreObjectId, args);
-  return findAll(context, user, finalArgs);
-};
 
 // region export
 export const stixCoreRelationshipsExportAsk = async (context, user, args) => {

@@ -8,7 +8,7 @@ import { SYSTEM_USER } from '../utils/access';
 import { telemetry } from '../config/tracing';
 import { isEmptyField, RABBIT_QUEUE_PREFIX } from './utils';
 import { getHttpClient } from '../utils/http-client';
-import { listAllEntities } from './middleware-loader';
+import { fullEntitiesList } from './middleware-loader';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC } from '../schema/internalObject';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 
@@ -280,7 +280,7 @@ export const initializeInternalQueues = async () => {
 
 export const getInternalPlaybookQueues = async (context, user) => {
   const playbookQueues = [];
-  const playbooks = await listAllEntities(context, user, [ENTITY_TYPE_PLAYBOOK]);
+  const playbooks = await fullEntitiesList(context, user, [ENTITY_TYPE_PLAYBOOK]);
   for (let index = 0; index < playbooks.length; index += 1) {
     const playbook = playbooks[index];
     playbookQueues.push({ id: playbook.internal_id, name: `[PLAYBOOK] ${playbook.name}`, type: 'internal', scope: ENTITY_TYPE_PLAYBOOK });
@@ -290,7 +290,7 @@ export const getInternalPlaybookQueues = async (context, user) => {
 
 export const getInternalSyncQueues = async (context, user) => {
   const syncQueues = [];
-  const syncs = await listAllEntities(context, user, [ENTITY_TYPE_SYNC]);
+  const syncs = await fullEntitiesList(context, user, [ENTITY_TYPE_SYNC]);
   for (let index = 0; index < syncs.length; index += 1) {
     const sync = syncs[index];
     syncQueues.push({ id: sync.internal_id, name: `[SYNC] ${sync.name}`, type: 'internal', scope: ENTITY_TYPE_SYNC });
@@ -303,7 +303,7 @@ export const getInternalSyncQueues = async (context, user) => {
 // will recreate everything needed by the queuing system.
 export const enforceQueuesConsistency = async (context, user) => {
   // List all current platform connectors and ensure queues are correctly setup
-  const connectors = await listAllEntities(context, user, [ENTITY_TYPE_CONNECTOR]);
+  const connectors = await fullEntitiesList(context, user, [ENTITY_TYPE_CONNECTOR]);
   for (let index = 0; index < connectors.length; index += 1) {
     const connector = connectors[index];
     const scopes = connector.connector_scope ? connector.connector_scope.split(',') : [];

@@ -1,6 +1,6 @@
 import * as R from 'ramda';
-import { createEntity, distributionEntities, internalDeleteElementById, listAllThings, timeSeriesEntities } from '../database/middleware';
-import { countAllThings, internalLoadById, listEntities, storeLoadById } from '../database/middleware-loader';
+import { createEntity, distributionEntities, internalDeleteElementById, fullEntitiesOrRelationsList, timeSeriesEntities } from '../database/middleware';
+import { countAllThings, internalLoadById, pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
@@ -17,8 +17,8 @@ export const findById = (context, user, reportId) => {
   return storeLoadById(context, user, reportId, ENTITY_TYPE_CONTAINER_REPORT);
 };
 
-export const findAll = async (context, user, args) => {
-  return listEntities(context, user, [ENTITY_TYPE_CONTAINER_REPORT], args);
+export const findReportPaginated = async (context, user, args) => {
+  return pageEntitiesConnection(context, user, [ENTITY_TYPE_CONTAINER_REPORT], args);
 };
 
 // Entities tab
@@ -34,7 +34,7 @@ export const reportContainsStixObjectOrStixRelationship = async (context, user, 
       filterGroups: [],
     },
   };
-  const reportFound = await findAll(context, user, args);
+  const reportFound = await findReportPaginated(context, user, args);
   return reportFound.edges.length > 0;
 };
 
@@ -141,7 +141,7 @@ const buildReportDeleteElementsFilter = (reportId) => {
 export const reportDeleteWithElements = async (context, user, reportId) => {
   // Load all entities & relationships contained only in this report (orphans)
   const args = { filters: buildReportDeleteElementsFilter(reportId) };
-  const reportOrphanObjects = await listAllThings(context, user, [ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_RELATIONSHIP], args);
+  const reportOrphanObjects = await fullEntitiesOrRelationsList(context, user, [ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_RELATIONSHIP], args);
   // Filter out relationships that will already be deleted with the deletion of the source or target element
   const objectsToDelete = reportOrphanObjects.filter((fo) => !reportOrphanObjects.some((o) => fo.fromId === o.internal_id || fo.toId === o.internal_id));
   for (let i = 0; i < objectsToDelete.length; i += 1) {

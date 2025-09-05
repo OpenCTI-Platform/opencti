@@ -1,7 +1,7 @@
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { getSettings } from '../domain/settings';
 import { entitySettingEditField, findByType } from '../modules/entitySetting/entitySetting-domain';
-import { queryDefaultSubTypes } from '../domain/subType';
+import { queryDefaultSubTypesPaginated } from '../domain/subType';
 import conf from '../config/conf';
 import { elLoadById, elReplace, prepareElementForIndexing } from '../database/engine';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
@@ -12,7 +12,7 @@ export const up = async (next) => {
   const refs = settings.platform_entities_files_ref ?? [];
   const hiddens = settings.platform_hidden_types ?? [];
   const enforceReferences = conf.get('app:enforce_references') ?? [];
-  const subTypes = await queryDefaultSubTypes(context, SYSTEM_USER);
+  const subTypes = await queryDefaultSubTypesPaginated(context, SYSTEM_USER);
 
   // Setup entity settings
   const migrationEntitySetting = {

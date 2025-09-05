@@ -1,5 +1,5 @@
 import type { Resolvers } from '../../generated/graphql';
-import { addAdministrativeArea, findAll, findById } from './administrativeArea-domain';
+import { addAdministrativeArea, findAdministrativeAreaPaginated, findById } from './administrativeArea-domain';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -13,7 +13,7 @@ import { locatedAtCountry } from '../../domain/city';
 const administrativeAreaResolvers: Resolvers = {
   Query: {
     administrativeArea: (_, { id }, context) => findById(context, context.user, id),
-    administrativeAreas: (_, args, context) => findAll(context, context.user, args),
+    administrativeAreas: (_, args, context) => findAdministrativeAreaPaginated(context, context.user, args),
   },
   AdministrativeArea: {
     /* eslint-disable @typescript-eslint/ban-ts-comment */

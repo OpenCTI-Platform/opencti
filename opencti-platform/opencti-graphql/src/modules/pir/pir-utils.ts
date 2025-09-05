@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { type BasicStoreEntityPir, type BasicStoreRelationPir, type ParsedPir, type PirExplanation } from './pir-types';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { listRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
+import { pageRelationsConnection, storeLoadById } from '../../database/middleware-loader';
 import { RELATION_IN_PIR } from '../../schema/internalRelationship';
 import { FunctionalError } from '../../config/errors';
 import { createRelation, patchAttribute } from '../../database/middleware';
@@ -200,7 +200,7 @@ export const updatePirExplanations = async (
   pirExplanations: PirExplanation[],
   operation?: string, // 'add' to add a new dependency, 'replace' by default
 ) => {
-  const inPirRels = await listRelationsPaginated<BasicStoreRelationPir>(context, user, RELATION_IN_PIR, { fromId: sourceId, toId: pirId, });
+  const inPirRels = await pageRelationsConnection<BasicStoreRelationPir>(context, user, RELATION_IN_PIR, { fromId: sourceId, toId: pirId, });
   if (inPirRels.edges.length === 0) {
     // If = 0 then the in-pir relationship does not exist.
     throw FunctionalError('Relation between the entity and a Pir not found', { sourceId, pirId, inPirRels });

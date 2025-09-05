@@ -1,10 +1,10 @@
-import { findAll, findById as findSubTypeById, findById } from '../domain/subType';
+import { findSubTypePaginated, findById as findSubTypeById, findById } from '../domain/subType';
 import { createStatus, isGlobalWorkflowEnabled, statusDelete, statusEditField } from '../domain/status';
 
 const subTypeResolvers = {
   Query: {
     subType: (_, { id }) => findById(id),
-    subTypes: (_, args, context) => findAll(context, context.user, args),
+    subTypes: (_, args, context) => findSubTypePaginated(context, context.user, args),
   },
   SubType: {
     workflowEnabled: (current, _, context) => isGlobalWorkflowEnabled(context, context.user, current.id),

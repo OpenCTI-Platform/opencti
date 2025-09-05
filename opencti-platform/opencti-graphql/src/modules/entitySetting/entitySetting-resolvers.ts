@@ -1,6 +1,6 @@
 import {
   entitySettingsEditField,
-  findAll,
+  findEntitySettingPaginated,
   findById,
   findByType,
   getOverviewLayoutCustomization,
@@ -20,7 +20,7 @@ import { getRequestAccessConfiguration } from '../requestAccess/requestAccess-do
 const entitySettingResolvers: Resolvers = {
   Query: {
     entitySetting: (_, { id }, context) => findById(context, context.user, id),
-    entitySettings: (_, args, context) => findAll(context, context.user, args),
+    entitySettings: (_, args, context) => findEntitySettingPaginated(context, context.user, args),
     entitySettingByType: (_, { targetType }, context) => findByType(context, context.user, targetType),
   },
   EntitySetting: {

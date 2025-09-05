@@ -1,6 +1,6 @@
 import moment, { type Moment } from 'moment/moment';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { countAllThings, listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { countAllThings, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import type { DecayRuleAddInput, EditInput, QueryDecayRulesArgs } from '../../generated/graphql';
 import { FilterMode } from '../../generated/graphql';
 import { type BasicStoreEntityDecayRule, ENTITY_TYPE_DECAY_RULE, type StoreEntityDecayRule } from './decayRule-types';
@@ -72,8 +72,8 @@ export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDecayRule>(context, user, id, ENTITY_TYPE_DECAY_RULE);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, args: QueryDecayRulesArgs) => {
-  return listEntitiesPaginated<BasicStoreEntityDecayRule>(context, user, [ENTITY_TYPE_DECAY_RULE], args);
+export const findDecayRulePaginated = (context: AuthContext, user: AuthUser, args: QueryDecayRulesArgs) => {
+  return pageEntitiesConnection<BasicStoreEntityDecayRule>(context, user, [ENTITY_TYPE_DECAY_RULE], args);
 };
 
 export const addDecayRule = async (context: AuthContext, user: AuthUser, input: DecayRuleAddInput, builtIn?: boolean) => {
@@ -324,10 +324,9 @@ export const initDecayRules = async (context: AuthContext, user: AuthUser) => {
       mode: 'and' as FilterMode,
       filters: [{ key: ['built_in'], values: [true] }],
       filterGroups: [],
-    },
-    connectionFormat: false,
+    }
   };
-  const currentBuiltInDecayRules = await listAllEntities<BasicStoreEntityDecayRule>(context, user, [ENTITY_TYPE_DECAY_RULE], args);
+  const currentBuiltInDecayRules = await fullEntitiesList<BasicStoreEntityDecayRule>(context, user, [ENTITY_TYPE_DECAY_RULE], args);
   if (currentBuiltInDecayRules.length === 0) {
     // no built-in decay rule, we should create the default ones
     const defaultDecayRules = [...BUILT_IN_DECAY_RULES];

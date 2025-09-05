@@ -8550,7 +8550,6 @@ type Query {
   notifiers(first: Int, after: ID, orderBy: NotifierOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): NotifierConnection
   threatActorIndividual(id: String!): ThreatActorIndividual
   threatActorsIndividuals(first: Int, after: ID, orderBy: ThreatActorsIndividualOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): ThreatActorIndividualConnection
-  threatActorIndividualContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
   playbook(id: String!): Playbook
   playbooks(first: Int, after: ID, orderBy: PlaybooksOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): PlaybookConnection
   playbookComponents: [PlaybookComponent]!
