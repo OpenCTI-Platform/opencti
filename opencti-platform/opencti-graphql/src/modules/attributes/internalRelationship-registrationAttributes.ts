@@ -23,7 +23,6 @@ export const internalRelationshipsAttributes: { [k: string]: Array<AttributeDefi
       multiple: false,
       upsert: true,
       isFilterable: true,
-      featureFlag: 'Pir',
     },
     {
       name: 'pir_explanations',
@@ -35,7 +34,6 @@ export const internalRelationshipsAttributes: { [k: string]: Array<AttributeDefi
       multiple: true,
       upsert: true,
       isFilterable: true,
-      featureFlag: 'Pir',
     },
     authorizedAuthorities,
   ],
