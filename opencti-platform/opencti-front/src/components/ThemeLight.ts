@@ -3,7 +3,7 @@ import type { ExtendedThemeOptions } from './Theme';
 import { fileUri } from '../relay/environment';
 import LogoText from '../static/images/logo_text_light.png';
 import LogoCollapsed from '../static/images/logo_light.png';
-import { hexToRGB } from '../utils/Colors';
+import { hexToRGB, stringToColour } from '../utils/Colors';
 
 const EE_COLOR = '#0c7e69';
 
@@ -14,6 +14,168 @@ const THEME_LIGHT_DEFAULT_ACCENT = '#dfdfdf';
 const THEME_LIGHT_DEFAULT_PAPER = '#ffffff';
 const THEME_LIGHT_DEFAULT_NAV = '#ffffff';
 
+const ThemeLightEntities = {
+  'Attack-Pattern': '#827717',
+  'Case-Incident': '#ec407a',
+  'Case-Rfi': '#3880b7',
+  'Case-Rft': '#8e24aa',
+  'Case-Feedback': '#006064',
+  Task: '#283593',
+  Campaign: '#ea80fc',
+  Note: '#689f38',
+  'Observed-Data': '#006064',
+  Opinion: '#1976d2',
+  Report: '#9c27b0',
+  Grouping: '#8bc34a',
+  'Course-Of-Action': '#689f38',
+  Individual: '#9c27b0',
+  User: '#9c27b0',
+  Group: '#00bcd4',
+  Capability: '#757575',
+  Organization: '#0c5c98',
+  Sector: '#2196f3',
+  System: '#689f38',
+  Event: '#006064',
+  Indicator: '#b69007',
+  Infrastructure: '#651fff',
+  'Intrusion-Set': '#ff5622',
+  City: '#006064',
+  Country: '#283593',
+  Region: '#689f38',
+  'Administrative-Area': '#b69007',
+  Position: '#827717',
+  Malware: '#d68100',
+  'Malware-Analysis': '#00acc1',
+  'Threat-Actor-Group': '#e91e63',
+  'Threat-Actor-Individual': '#9c27b0',
+  Tool: '#986937',
+  Channel: '#ec407a',
+  Narrative: '#689f38',
+  Language: '#d4e157',
+  Vulnerability: '#795548',
+  Incident: '#f44336',
+  Dashboard: '#33691e',
+  Investigation: '#33691e',
+  Session: '#795548',
+  Artifact: '#ff4081',
+  'Stix-Cyber-Observable': stringToColour('Stix-Cyber-Observable'),
+  'Autonomous-System': '#000000',
+  Directory: '#000000',
+  'Domain-Name': '#000000',
+  'Email-Addr': '#000000',
+  'Email-Message': '#000000',
+  'Email-Mime-Part-Type': '#000000',
+  StixFile: '#000000',
+  'X509-Certificate': '#000000',
+  'IPv4-Addr': '#000000',
+  'IPv6-Addr': '#000000',
+  'Mac-Addr': '#000000',
+  Mutex: '#000000',
+  'Network-Traffic': '#000000',
+  Process: '#000000',
+  Software: '#000000',
+  Url: '#000000',
+  'User-Account': '#000000',
+  'Windows-Registry-Key': '#000000',
+  'Windows-Registry-Value-Type': '#000000',
+  'Cryptographic-Key': '#000000',
+  'Cryptocurrency-Wallet': '#000000',
+  Text: '#000000',
+  'User-Agent': '#000000',
+  'Bank-Account': '#000000',
+  Credential: '#000000',
+  'Tracking-Number': '#000000',
+  'Phone-Number': '#000000',
+  'Payment-Card': '#000000',
+  'Media-Content': '#000000',
+  Persona: '#000000',
+};
+
+const ThemeLightRelationships = {
+  'Stix-Core-Relationship': '#9e9e9e',
+  Relationship: '#9e9e9e',
+  'stix-core-relationship': '#9e9e9e',
+  targets: '#9e9e9e',
+  uses: '#9e9e9e',
+  'located-at': '#9e9e9e',
+  'related-to': '#9e9e9e',
+  mitigates: '#9e9e9e',
+  impersonates: '#9e9e9e',
+  indicates: '#9e9e9e',
+  'comes-after': '#9e9e9e',
+  'attributed-to': '#9e9e9e',
+  'variant-of': '#9e9e9e',
+  'part-of': '#9e9e9e',
+  'employed-by': '#9e9e9e',
+  'resides-in': '#9e9e9e',
+  'citizen-of': '#9e9e9e',
+  'national-of': '#9e9e9e',
+  drops: '#9e9e9e',
+  delivers: '#9e9e9e',
+  compromises: '#9e9e9e',
+  'belongs-to': '#9e9e9e',
+  'based-on': '#9e9e9e',
+  'communicates-with': '#9e9e9e',
+  amplifies: '#9e9e9e',
+  'analyses-of': '#9e9e9e',
+  'authored-by': '#9e9e9e',
+  'beacons-to': '#9e9e9e',
+  characterizes: '#9e9e9e',
+  'consists-of': '#9e9e9e',
+  controls: '#9e9e9e',
+  'cooperates-with': '#9e9e9e',
+  'derived-from': '#9e9e9e',
+  downloads: '#9e9e9e',
+  has: '#9e9e9e',
+  bcc: '#9e9e9e',
+  cc: '#9e9e9e',
+  'obs_belongs-to': '#9e9e9e',
+  owns: '#9e9e9e',
+  dst: '#9e9e9e',
+  from: '#9e9e9e',
+  hosts: '#9e9e9e',
+  image: '#9e9e9e',
+  publishes: '#9e9e9e',
+  'duplicate-of': '#9e9e9e',
+  obs_content: '#9e9e9e',
+  'service-dll': '#9e9e9e',
+  'dynamic-analyses-of': '#9e9e9e',
+  contains: '#9e9e9e',
+  'exfiltrates-to': '#9e9e9e',
+  exploits: '#9e9e9e',
+  investigates: '#9e9e9e',
+  'originates-from': '#9e9e9e',
+  'participates-in': '#9e9e9e',
+  'body-multipart': '#9e9e9e',
+  'body-raw': '#9e9e9e',
+  child: '#9e9e9e',
+  'creator-user': '#9e9e9e',
+  detects: '#9e9e9e',
+  'dst-payload': '#9e9e9e',
+  'encapsulated-by': '#9e9e9e',
+  encapsulates: '#9e9e9e',
+  'opened-connection': '#9e9e9e',
+  'operating-system': '#9e9e9e',
+  parent: '#9e9e9e',
+  'parent-directory': '#9e9e9e',
+  'raw-email': '#9e9e9e',
+  'src-payload': '#9e9e9e',
+  remediates: '#9e9e9e',
+  'resolves-to': '#9e9e9e',
+  'obs_resolves-to': '#9e9e9e',
+  'revoked-by': '#9e9e9e',
+  sample: '#9e9e9e',
+  sender: '#9e9e9e',
+  src: '#9e9e9e',
+  to: '#9e9e9e',
+  values: '#9e9e9e',
+  'static-analyses-of': '#9e9e9e',
+  'subnarrative-of': '#9e9e9e',
+  'subtechnique-of': '#9e9e9e',
+  numberOfConnectedElement: '#9e9e9e',
+  'known-as': '#9e9e9e',
+};
+
 const ThemeLight = (
   logo: string | null = null,
   logo_collapsed: string | null = null,
@@ -23,6 +185,7 @@ const ThemeLight = (
   primary: string | null = null,
   secondary: string | null = null,
   accent: string | null = null,
+  text_color = 'rgba(0, 0, 0, 0.87)',
 ): ExtendedThemeOptions => ({
   logo: logo || fileUri(LogoText),
   logo_collapsed: logo_collapsed || fileUri(LogoCollapsed),
@@ -67,18 +230,23 @@ const ThemeLight = (
       accent: accent || THEME_LIGHT_DEFAULT_ACCENT,
       shadow: 'rgba(0, 0, 0, .15)',
     },
+    entities: ThemeLightEntities,
+    relationships: ThemeLightRelationships,
   },
   typography: {
     fontFamily: '"IBM Plex Sans", sans-serif',
     body2: {
       fontSize: '0.8rem',
       lineHeight: '1.2rem',
+      color: text_color,
     },
     body1: {
       fontSize: '0.9rem',
+      color: text_color,
     },
     overline: {
       fontWeight: 500,
+      color: text_color,
     },
     h1: {
       margin: '0 0 10px 0',
@@ -86,6 +254,7 @@ const ThemeLight = (
       fontWeight: 400,
       fontSize: 22,
       fontFamily: '"Geologica", sans-serif',
+      color: text_color,
     },
     h2: {
       margin: '0 0 10px 0',
@@ -94,11 +263,12 @@ const ThemeLight = (
       fontSize: 16,
       textTransform: 'uppercase',
       fontFamily: '"Geologica", sans-serif',
+      color: text_color,
     },
     h3: {
       margin: '0 0 10px 0',
       padding: 0,
-      color: '#757575',
+      color: text_color,
       fontWeight: 400,
       fontSize: 13,
       fontFamily: '"Geologica", sans-serif',
@@ -110,24 +280,25 @@ const ThemeLight = (
       textTransform: 'uppercase',
       fontSize: 12,
       fontWeight: 500,
-      color: '#505050',
+      color: text_color,
     },
     h5: {
       fontWeight: 400,
       fontSize: 13,
       textTransform: 'uppercase',
       marginTop: -4,
+      color: text_color,
     },
     h6: {
       fontWeight: 400,
       fontSize: 18,
-      color: primary || THEME_LIGHT_DEFAULT_PRIMARY,
+      color: text_color,
       fontFamily: '"Geologica", sans-serif',
     },
     subtitle2: {
       fontWeight: 400,
       fontSize: 18,
-      color: 'rgba(0, 0, 0, 0.87)',
+      color: text_color,
     },
   },
   components: {
@@ -172,15 +343,37 @@ const ThemeLight = (
       defaultProps: {
         variant: 'standard',
       },
+      styleOverrides: {
+        root: {
+          color: text_color,
+        },
+      },
     },
     MuiTextField: {
       defaultProps: {
         variant: 'standard',
       },
+      styleOverrides: {
+        root: {
+          color: text_color,
+        },
+      },
     },
     MuiSelect: {
       defaultProps: {
         variant: 'standard',
+      },
+      styleOverrides: {
+        root: {
+          color: text_color,
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          color: text_color,
+        },
       },
     },
     MuiCssBaseline: {
@@ -210,7 +403,7 @@ const ThemeLight = (
           },
           pre: {
             fontFamily: 'Consolas, monaco, monospace',
-            color: '#000000 !important',
+            color: `${text_color} !important`,
             background: `${accent || THEME_LIGHT_DEFAULT_ACCENT} !important`,
             borderRadius: 4,
           },
@@ -221,7 +414,7 @@ const ThemeLight = (
           },
           code: {
             fontFamily: 'Consolas, monaco, monospace',
-            color: '#000000 !important',
+            color: `${text_color} !important`,
             background: `${accent || THEME_LIGHT_DEFAULT_ACCENT} !important`,
             padding: 3,
             fontSize: 12,
@@ -246,20 +439,20 @@ const ThemeLight = (
           '.mde-header': {
             border: '0 !important',
             backgroundColor: 'transparent !important',
-            color: '#000000 !important',
+            color: `${text_color} !important`,
           },
           '.mde-header-item button': {
             fontFamily: '"IBM Plex Sans", sans-serif',
-            color: '#000000 !important',
+            color: `${text_color} !important`,
           },
           '.mde-tabs button': {
             fontFamily: '"IBM Plex Sans", sans-serif',
-            color: '#000000 !important',
+            color: `${text_color} !important`,
           },
           '.mde-textarea-wrapper textarea': {
             fontFamily: '"IBM Plex Sans", sans-serif',
             fontSize: 13,
-            color: 'rgba(0, 0, 0, 0.87)',
+            color: `${text_color} !important`,
             background: 'transparent',
             borderBottom: '1px solid rgba(0, 0, 0, 0.87) !important',
             transition: 'borderBottom .3s',
@@ -271,7 +464,7 @@ const ThemeLight = (
             },
           },
           '.mde-preview .mde-preview-content a': {
-            color: `${primary || THEME_LIGHT_DEFAULT_PRIMARY} !important`,
+            color: `${text_color} !important`,
           },
           '.react-grid-placeholder': {
             backgroundColor: `${accent || THEME_LIGHT_DEFAULT_ACCENT} !important`,
@@ -319,6 +512,27 @@ const ThemeLight = (
             boxShadow: `2px 0 ${primary || THEME_LIGHT_DEFAULT_PRIMARY} inset`,
             backgroundColor: hexToRGB(primary || THEME_LIGHT_DEFAULT_PRIMARY, 0.16),
           },
+        },
+      },
+    },
+    MuiTypography: {
+      styleOverrides: {
+        root: {
+          color: text_color,
+        },
+      },
+    },
+    MuiInputBase: {
+      styleOverrides: {
+        root: {
+          color: text_color,
+        },
+      },
+    },
+    MuiChip: {
+      styleOverrides: {
+        root: {
+          color: text_color,
         },
       },
     },

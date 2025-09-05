@@ -46,6 +46,7 @@ import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { RelayError } from '../../../relay/relayTypes';
 import { isFilterGroupNotEmpty } from '../../../utils/filters/filtersUtils';
 import UploadImport from '../../../components/UploadImport';
+import { deserializeThemeManifest } from '../settings/themes/ThemeType';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -133,6 +134,17 @@ interface TopBarProps {
 const topBarQuery = graphql`
   query TopBarQuery {
     myUnreadNotificationsCount
+    settings {
+      platform_theme
+    }
+    themes {
+      edges {
+        node {
+          name
+          manifest
+        }
+      }
+    }
   }
 `;
 
@@ -191,6 +203,23 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const [navOpen, setNavOpen] = useState(
     localStorage.getItem('navOpen') === 'true',
   );
+  const { themes } = data;
+  const current_theme = data.settings?.platform_theme;
+  const themeLogo = themes?.edges?.filter((node) => !!node)
+    .map(({ node }) => ({
+      name: node.name,
+      ...deserializeThemeManifest(node.manifest),
+    }))
+    .filter(({ name }) => name === current_theme)?.[0];
+  const fallbackLogo = navOpen
+    ? theme.logo
+    : theme.logo_collapsed;
+  let topBarLogo: string | undefined | null;
+  if (themeLogo) {
+    topBarLogo = navOpen
+      ? themeLogo.theme_logo
+      : themeLogo.theme_logo_collapsed;
+  }
   useEffect(() => {
     const sub = MESSAGING$.toggleNav.subscribe({
       next: () => setNavOpen(localStorage.getItem('navOpen') === 'true'),
@@ -289,7 +318,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
         <div className={classes.logoContainer} style={navOpen ? { width: OPEN_BAR_WIDTH } : {}}>
           <Link to="/dashboard">
             <img
-              src={navOpen ? theme.logo : theme.logo_collapsed}
+              src={isNotEmptyField(topBarLogo) ? topBarLogo : fallbackLogo}
               alt="logo"
               className={navOpen ? classes.logo : classes.logoCollapsed}
             />

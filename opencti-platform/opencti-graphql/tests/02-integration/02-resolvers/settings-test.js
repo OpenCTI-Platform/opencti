@@ -60,7 +60,7 @@ describe('Settings resolver standard behavior', () => {
     expect(settings.platform_title).toEqual(PLATFORM_TITLE);
     expect(settings.platform_email).toEqual('admin@opencti.io');
     expect(settings.platform_language).toEqual('auto');
-    expect(settings.platform_theme).toEqual('dark');
+    expect(settings.platform_theme).toEqual('Dark');
     expect(settings.editContext.length).toEqual(0);
   });
   it('should update settings', async () => {
