@@ -657,7 +657,6 @@ const StixCyberObservableCreation = ({
                 };
               } else if (status.type === 'Process') {
                 extraFieldsToValidate = {
-                  pid: Yup.mixed().required(t_i18n('This field is required')),
                   command_line: Yup.string().required(t_i18n('This field is required')),
                 };
               } else if (status.type === 'User-Account') {
