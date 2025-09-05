@@ -4632,6 +4632,7 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
         }
         return script;
       });
+      // Concat sources scripts by adding a ';' between each script to close each final script line
       const source = sources.length > 1 ? R.join(';', sources) : `${R.head(sources)};`;
       // Construct params
       for (let index = 0; index < targetsElements.length; index += 1) {
