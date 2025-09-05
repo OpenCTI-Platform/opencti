@@ -228,7 +228,7 @@
     "one": {
       "ai": {
         "enabled": false,
-        "url": ""
+        "url": "https://common.xtm1.filigran.io/chatbot"
       }
     },
     "openbas_url": "",
