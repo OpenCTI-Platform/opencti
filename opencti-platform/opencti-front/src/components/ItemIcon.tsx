@@ -113,10 +113,10 @@ import TableViewIcon from '@mui/icons-material/TableView';
 import { itemColor } from '../utils/Colors';
 
 const iconSelector = (
-  type: string | undefined,
+  type: string | null | undefined,
   variant: string | undefined,
   fontSize: 'inherit' | 'large' | 'medium' | 'small',
-  color: string | null,
+  color?: string | null,
   isReversed?: boolean,
 ) => {
   let style: React.CSSProperties;
