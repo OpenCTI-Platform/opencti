@@ -10,6 +10,7 @@ describe('Hook: useAuth', () => {
     entitySettings: { entitySettings: 'entitySettings' },
     platformModuleHelpers: { platformModuleHelpers: 'platformModuleHelpers' },
     settings: { settings: 'settings' },
+    about: { version: '6.7.17' },
   } as unknown as UserContextType;
 
   it('should throw an error if "me" undefined', () => {
@@ -39,5 +40,6 @@ describe('Hook: useAuth', () => {
     expect(data.entitySettings).toEqual({ entitySettings: 'entitySettings' });
     expect(data.platformModuleHelpers).toEqual({ platformModuleHelpers: 'platformModuleHelpers' });
     expect(data.settings).toEqual({ settings: 'settings' });
+    expect(data.about.version).toEqual('6.7.17');
   });
 });
