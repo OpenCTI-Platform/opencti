@@ -43,6 +43,7 @@ testCreatedCounter.note = 3;
 testCreatedCounter['observed-data'] = 1;
 testCreatedCounter.opinion = 4;
 testCreatedCounter.persona = 1;
+testCreatedCounter.pir = 2;
 testCreatedCounter.relationship = 133;
 testCreatedCounter.report = 31;
 testCreatedCounter.sighting = 4;
