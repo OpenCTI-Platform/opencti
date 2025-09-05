@@ -6,7 +6,7 @@ import { delEditContext, getRedisVersion, notify, setEditContext } from '../data
 import { isRuntimeSortEnable, searchEngineVersion } from '../database/engine';
 import { getRabbitMQVersion } from '../database/rabbitmq';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
-import { isUserHasCapability, SETTINGS_SET_ACCESSES, SETTINGS_SETMANAGEXTMHUB, SYSTEM_USER } from '../utils/access';
+import { isUserHasCapability, SETTINGS_SET_ACCESSES, SETTINGS_SETMANAGEXTMHUB, SETTINGS_SETPARAMETERS, SYSTEM_USER } from '../utils/access';
 import { storeLoadById } from '../database/middleware-loader';
 import { INTERNAL_SECURITY_PROVIDER, PROVIDERS } from '../config/providers';
 import { publishUserAction } from '../listener/UserActionListener';
@@ -163,6 +163,9 @@ const ACCESS_SETTINGS_RESTRICTED_KEYS = [
   'password_policy_min_words',
   'password_policy_min_lowercase',
   'password_policy_min_uppercase',
+];
+
+const PARAMETERS_SETTINGS_RESTRICTED_KEYS = [
   'filigran_chatbot_ai_cgu_status',
   'platform_ai_enabled',
 ];
@@ -179,9 +182,11 @@ const ACCESS_SETTINGS_MANAGE_XTMHUB_KEYS = [
 
 export const settingsEditField = async (context, user, settingsId, input) => {
   const hasSetAccessCapability = isUserHasCapability(user, SETTINGS_SET_ACCESSES);
+  const hasSetParameterCapability = isUserHasCapability(user, SETTINGS_SETPARAMETERS);
   const hasSetXTMHubCapability = isUserHasCapability(user, SETTINGS_SETMANAGEXTMHUB);
   const keysUserCannotModify = [
     ...(hasSetAccessCapability ? [] : ACCESS_SETTINGS_RESTRICTED_KEYS),
+    ...(hasSetParameterCapability ? [] : PARAMETERS_SETTINGS_RESTRICTED_KEYS),
     ...(hasSetXTMHubCapability ? [] : ACCESS_SETTINGS_MANAGE_XTMHUB_KEYS),
   ];
 
