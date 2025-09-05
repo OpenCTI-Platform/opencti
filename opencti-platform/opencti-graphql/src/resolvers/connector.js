@@ -6,6 +6,8 @@ import {
   connectorTriggerUpdate,
   connectorUpdateLogs,
   connectorUpdateHealth,
+  connectorGetHealth,
+  connectorGetUptime,
   connectorUser,
   fetchRemoteStreams,
   findSyncPaginated,
@@ -59,7 +61,7 @@ import {
   connectorsForWorker
 } from '../database/repository';
 import { getConnectorQueueSize } from '../database/rabbitmq';
-import { redisGetConnectorLogs, redisGetConnectorHealthMetrics } from '../database/redis';
+import { redisGetConnectorLogs } from '../database/redis';
 import pjson from '../../package.json';
 import { COMPOSER_FF } from '../modules/catalog/catalog-types';
 import { enforceEnableFeatureFlag } from '../utils/access';
@@ -91,7 +93,8 @@ const connectorResolvers = {
     connector_queue_details: (cn) => queueDetails(cn.id),
     connector_user: (cn, _, context) => connectorUser(context, context.user, cn.connector_user_id),
     manager_connector_logs: (cn) => redisGetConnectorLogs(cn.id),
-    manager_health_metrics: (cn) => redisGetConnectorHealthMetrics(cn.id),
+    manager_health_metrics: (cn, _, context) => connectorGetHealth(context, context.user, cn.id),
+    manager_connector_uptime: (cn, _, context) => connectorGetUptime(context, context.user, cn.id),
     manager_contract_hash: (cn, _, context) => computeManagerContractHash(context, context.user, cn),
     manager_contract_definition: (cn, _, context) => computeManagerConnectorContract(context, context.user, cn),
     manager_contract_configuration: (cn, _, context) => computeManagerConnectorConfiguration(context, context.user, cn, true),
@@ -99,7 +102,8 @@ const connectorResolvers = {
   },
   ManagedConnector: {
     manager_connector_logs: (cn) => redisGetConnectorLogs(cn.id),
-    manager_health_metrics: (cn) => redisGetConnectorHealthMetrics(cn.id),
+    manager_health_metrics: (cn, _, context) => connectorGetHealth(context, context.user, cn.id),
+    manager_connector_uptime: (cn, _, context) => connectorGetUptime(context, context.user, cn.id),
     manager_contract_hash: (cn, _, context) => computeManagerContractHash(context, context.user, cn),
     manager_contract_configuration: (cn, _, context) => computeManagerConnectorConfiguration(context, context.user, cn),
     manager_contract_image: (cn) => computeManagerConnectorImage(cn),

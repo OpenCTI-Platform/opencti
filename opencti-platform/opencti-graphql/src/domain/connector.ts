@@ -410,6 +410,22 @@ export const connectorGetHealth = async (_context: AuthContext, _user: AuthUser,
   return redisGetConnectorHealthMetrics(connectorId);
 };
 
+// Get connector uptime in seconds
+export const connectorGetUptime = async (context: AuthContext, user: AuthUser, connectorId: string): Promise<number | null> => {
+  const healthMetrics = await connectorGetHealth(context, user, connectorId);
+  if (!healthMetrics?.started_at) {
+    return null;
+  }
+  // Parse ISO8601 format from xtm-composer
+  const startDate = new Date(healthMetrics.started_at);
+  if (Number.isNaN(startDate.getTime())) {
+    return null;
+  }
+  const uptimeInSeconds = Math.floor((Date.now() - startDate.getTime()) / 1000);
+  // Return uptime if positive, null otherwise
+  return uptimeInSeconds >= 0 ? uptimeInSeconds : null;
+};
+
 export const updateConnectorRequestedStatus = async (context: AuthContext, user: AuthUser, input: RequestConnectorStatusInput) => {
   const ediInput: EditInput[] = [{ key: 'manager_requested_status', value: [input.status] }];
   return updateConnector(context, user, input.id, ediInput);

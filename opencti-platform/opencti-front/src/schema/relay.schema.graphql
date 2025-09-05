@@ -2218,6 +2218,7 @@ type Connector implements BasicObject & InternalObject {
   manager_connector_logs: [String!]
   manager_contract_hash: String
   manager_health_metrics: ConnectorHealthMetrics
+  manager_connector_uptime: Float
   built_in: Boolean
   configurations: [ConnectorConfiguration!]
 }
@@ -2239,6 +2240,7 @@ type ManagedConnector implements BasicObject & InternalObject {
   manager_contract_hash: String!
   manager_connector_logs: [String!]!
   manager_health_metrics: ConnectorHealthMetrics
+  manager_connector_uptime: Float
 }
 
 type ConnectorHealthMetrics {

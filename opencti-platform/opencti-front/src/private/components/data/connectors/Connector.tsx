@@ -22,7 +22,6 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import ConnectorPopover from '@components/data/connectors/ConnectorPopover';
 import ConnectorStatusChip from '@components/data/connectors/ConnectorStatusChip';
-import { fromUnixTime, parseISO, isValid, differenceInDays, differenceInHours, differenceInMinutes, differenceInSeconds } from 'date-fns';
 import Filters from '../../common/lists/Filters';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { useFormatter } from '../../../../components/i18n';
@@ -254,50 +253,16 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
     setTabValue(newValue);
   };
 
-  // Calculate uptime from started_at using date-fns
-  const calculateUptime = (startedAt: string | null | undefined): string => {
-    if (!startedAt) return t_i18n('Not available');
-
-    let startDate: Date;
-
-    // Handle different input formats
-    if (!Number.isNaN(Number(startedAt))) {
-      const timestamp = Number(startedAt);
-      // Unix timestamp in seconds
-      if (timestamp < 10000000000) {
-        startDate = fromUnixTime(timestamp);
-      } else {
-        // Timestamp in milliseconds
-        startDate = new Date(timestamp);
-      }
-    } else {
-      // Try to parse ISO string or other format
-      startDate = parseISO(startedAt);
-    }
-
-    // Validate the parsed date
-    if (!isValid(startDate)) {
+  // Format uptime from seconds to human-readable string
+  const formatUptime = (uptimeInSeconds: number | null | undefined): string => {
+    if (uptimeInSeconds === null || uptimeInSeconds === undefined) {
       return t_i18n('Not available');
     }
 
-    const now = new Date();
-
-    // Check for edge cases
-    const totalSeconds = differenceInSeconds(now, startDate);
-    if (totalSeconds < 0 || totalSeconds > 315360000) { // More than 10 years in seconds
-      return t_i18n('Not available');
-    }
-
-    // Calculate differences
-    const totalDays = differenceInDays(now, startDate);
-    const totalHours = differenceInHours(now, startDate);
-    const totalMinutes = differenceInMinutes(now, startDate);
-
-    // Calculate remaining units
-    const days = totalDays;
-    const hours = totalHours % 24;
-    const minutes = totalMinutes % 60;
-    const seconds = totalSeconds % 60;
+    const days = Math.floor(uptimeInSeconds / 86400);
+    const hours = Math.floor((uptimeInSeconds % 86400) / 3600);
+    const minutes = Math.floor((uptimeInSeconds % 3600) / 60);
+    const seconds = uptimeInSeconds % 60;
 
     const parts = [];
     if (days > 0) parts.push(`${days} ${t_i18n(days === 1 ? 'day' : 'days')}`);
@@ -699,13 +664,13 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                   )
               }
               </Grid>
-              {connector.is_managed && connector.manager_current_status === 'started' && connector.manager_health_metrics?.started_at && (
+              {connector.is_managed && connector.manager_current_status === 'started' && connector.manager_connector_uptime !== null && connector.manager_connector_uptime !== undefined && (
                 <Grid item xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t_i18n('Uptime')}
                   </Typography>
                   <Typography variant="body1" gutterBottom={true}>
-                    {calculateUptime(connector.manager_health_metrics?.started_at)}
+                    {formatUptime(connector.manager_connector_uptime)}
                   </Typography>
                 </Grid>
               )}
@@ -864,6 +829,7 @@ const Connector = createRefetchContainer(
         manager_requested_status
         manager_contract_image
         manager_connector_logs
+        manager_connector_uptime
         manager_health_metrics {
           restart_count
           started_at
