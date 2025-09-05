@@ -143,7 +143,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
       .catch(() => false);
   };
 
-  const handleXtmOneCGUStatusChange = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleCGUStatusChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
       setOpenValidateTermsOfUse(true);
     } else {
@@ -155,12 +155,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
     handleSubmitField('platform_ai_enabled', event.target.checked);
   };
 
-  const handleValidateTermsOfUse = (status?: CGUStatus.enabled | CGUStatus.disabled) => {
-    if (status === CGUStatus.enabled) {
-      handleSubmitField('filigran_chatbot_ai_cgu_status', CGUStatus.enabled);
-    } else if (status === CGUStatus.disabled) {
-      handleSubmitField('filigran_chatbot_ai_cgu_status', CGUStatus.disabled);
-    }
+  const handleValidateTermsOfUse = () => {
     setOpenValidateTermsOfUse(false);
   };
 
@@ -327,7 +322,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                       <Box sx={{ marginBlock: -6 }}>
                         <Switch
                           checked={filigran_chatbot_ai_cgu_status === CGUStatus.enabled}
-                          onChange={handleXtmOneCGUStatusChange}
+                          onChange={handleCGUStatusChange}
                         />
                       </Box>
                     )}
