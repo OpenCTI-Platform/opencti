@@ -69,6 +69,10 @@ enum Capabilities {
   SETTINGS_SETMARKINGS
   SETTINGS_SETDISSEMINATION
   SETTINGS_SETLABELS
+  SETTINGS_SETVOCABULARIES
+  SETTINGS_SETCASETEMPLATES
+  SETTINGS_SETSTATUSTEMPLATES
+  SETTINGS_SETKILLCHAINPHASES
   SETTINGS_SETCUSTOMIZATION
   SETTINGS_SECURITYACTIVITY
   SETTINGS_FILEINDEXING
@@ -13279,7 +13283,7 @@ type Query {
     filters: FilterGroup
     search: String
   ): ExternalReferenceConnection @auth(for: [KNOWLEDGE])
-  killChainPhase(id: String!): KillChainPhase @auth(for: [KNOWLEDGE, SETTINGS_SETLABELS])
+  killChainPhase(id: String!): KillChainPhase @auth(for: [KNOWLEDGE, SETTINGS_SETKILLCHAINPHASES])
   killChainPhases(
     first: Int
     after: ID
@@ -13287,7 +13291,7 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
-  ): KillChainPhaseConnection @auth(for: [KNOWLEDGE, SETTINGS_SETLABELS])
+  ): KillChainPhaseConnection @auth(for: [KNOWLEDGE, SETTINGS_SETKILLCHAINPHASES])
 
   ######## STIX CORE OBJECT ENTITIES
 
@@ -14248,7 +14252,7 @@ type Subscription {
   label(id: ID!): Label @auth(for: [SETTINGS_SETLABELS])
   statusTemplate(id: ID!): StatusTemplate @auth(for: [SETTINGS_SETLABELS])
   markingDefinition(id: ID!): MarkingDefinition @auth(for: [SETTINGS_SETMARKINGS])
-  killChainPhase(id: ID!): KillChainPhase @auth(for: [SETTINGS_SETLABELS])
+  killChainPhase(id: ID!): KillChainPhase @auth(for: [SETTINGS_SETKILLCHAINPHASES])
   stixCoreObject(id: ID!): StixCoreObject @auth(for: [KNOWLEDGE])
   internalObject(id: ID!): InternalObject @auth(for: [SETTINGS]) @deprecated(reason: "[>=6.3 & <6.6]. Not used in the platform.")
   stixDomainObject(id: ID!): StixDomainObject @auth(for: [KNOWLEDGE])
@@ -14769,11 +14773,11 @@ type Mutation {
   otpLogin(input: UserOTPLoginInput): Boolean @auth @rateLimit(limit: 1, duration: 1)
   settingsEdit(id: ID!): SettingsEditMutations @auth
   subTypeEdit(id: ID!): SubTypeEditMutations @auth(for: [SETTINGS_SETCUSTOMIZATION])
-  statusTemplateAdd(input: StatusTemplateAddInput!): StatusTemplate! @auth(for: [SETTINGS_SETLABELS])
-  statusTemplateDelete(id: ID!): ID! @auth(for: [SETTINGS_SETLABELS])
-  statusTemplateFieldPatch(id: ID!, input: [EditInput!]!): StatusTemplate! @auth(for: [SETTINGS_SETLABELS])
-  statusTemplateContextPatch(id: ID!, input: EditContext!): StatusTemplate! @auth(for: [SETTINGS_SETLABELS])
-  statusTemplateContextClean(id: ID!): StatusTemplate! @auth(for: [SETTINGS_SETLABELS])
+  statusTemplateAdd(input: StatusTemplateAddInput!): StatusTemplate! @auth(for: [SETTINGS_SETSTATUSTEMPLATES])
+  statusTemplateDelete(id: ID!): ID! @auth(for: [SETTINGS_SETSTATUSTEMPLATES])
+  statusTemplateFieldPatch(id: ID!, input: [EditInput!]!): StatusTemplate! @auth(for: [SETTINGS_SETSTATUSTEMPLATES])
+  statusTemplateContextPatch(id: ID!, input: EditContext!): StatusTemplate! @auth(for: [SETTINGS_SETSTATUSTEMPLATES])
+  statusTemplateContextClean(id: ID!): StatusTemplate! @auth(for: [SETTINGS_SETSTATUSTEMPLATES])
   groupAdd(input: GroupAddInput!): Group @auth(for: [SETTINGS_SETACCESSES])
   groupEdit(id: ID!): GroupEditMutations @auth(for: [SETTINGS_SETACCESSES])
   userAdd(input: UserAddInput!): User @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
@@ -14820,8 +14824,8 @@ type Mutation {
   labelEdit(id: ID!): LabelEditMutations @auth(for: [SETTINGS_SETLABELS])
   externalReferenceAdd(input: ExternalReferenceAddInput!): ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
   externalReferenceEdit(id: ID!): ExternalReferenceEditMutations @auth
-  killChainPhaseAdd(input: KillChainPhaseAddInput!): KillChainPhase @auth(for: [SETTINGS_SETLABELS])
-  killChainPhaseEdit(id: ID!): KillChainPhaseEditMutations @auth(for: [SETTINGS_SETLABELS])
+  killChainPhaseAdd(input: KillChainPhaseAddInput!): KillChainPhase @auth(for: [SETTINGS_SETKILLCHAINPHASES])
+  killChainPhaseEdit(id: ID!): KillChainPhaseEditMutations @auth(for: [SETTINGS_SETKILLCHAINPHASES])
 
   ######## STIX CORE OBJECT ENTITIES
   stixCoreObjectEdit(id: ID!): StixCoreObjectEditMutations @auth

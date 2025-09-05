@@ -96,11 +96,15 @@ import useGranted, {
   SETTINGS_FILEINDEXING,
   SETTINGS_SECURITYACTIVITY,
   SETTINGS_SETACCESSES,
+  SETTINGS_SETCASETEMPLATES,
   SETTINGS_SETCUSTOMIZATION,
+  SETTINGS_SETKILLCHAINPHASES,
   SETTINGS_SETLABELS,
   SETTINGS_SETMANAGEXTMHUB,
   SETTINGS_SETMARKINGS,
   SETTINGS_SETPARAMETERS,
+  SETTINGS_SETSTATUSTEMPLATES,
+  SETTINGS_SETVOCABULARIES,
   SETTINGS_SUPPORT,
   TAXIIAPI,
   VIRTUAL_ORGANIZATION_ADMIN,
@@ -228,7 +232,12 @@ const LeftBar = () => {
   const isGrantedToSharing = useGranted([TAXIIAPI]);
   const isGrantedToManage = useGranted([BYPASS]);
   const isGrantedToParameters = useGranted([SETTINGS_SETPARAMETERS]);
-  const isGrantedToTaxonomies = useGranted([SETTINGS_SETLABELS]);
+  const isGrantedToLabels = useGranted([SETTINGS_SETLABELS]);
+  const isGrantedToVocabularies = useGranted([SETTINGS_SETVOCABULARIES]);
+  const isGrantedToKillChainPhases = useGranted([SETTINGS_SETKILLCHAINPHASES]);
+  const isGrantedToCaseTemplates = useGranted([SETTINGS_SETCASETEMPLATES]);
+  const isGrantedToStatusTemplates = useGranted([SETTINGS_SETSTATUSTEMPLATES]);
+  const isGrantedToTaxonomies = isGrantedToLabels || isGrantedToVocabularies || isGrantedToKillChainPhases || isGrantedToCaseTemplates || isGrantedToStatusTemplates;
   const isGrantedToFileIndexing = useGranted([SETTINGS_FILEINDEXING]);
   const isGrantedToExperience = useGranted([SETTINGS_SETPARAMETERS, SETTINGS_SUPPORT, SETTINGS_SETMANAGEXTMHUB]);
   const isGrantedToIngestion = useGranted([MODULES, INGESTION, INGESTION_SETINGESTIONS]);
@@ -993,6 +1002,10 @@ const LeftBar = () => {
           SETTINGS_SETMARKINGS,
           SETTINGS_SETCUSTOMIZATION,
           SETTINGS_SETLABELS,
+          SETTINGS_SETVOCABULARIES,
+          SETTINGS_SETCASETEMPLATES,
+          SETTINGS_SETSTATUSTEMPLATES,
+          SETTINGS_SETKILLCHAINPHASES,
           SETTINGS_SECURITYACTIVITY,
           SETTINGS_FILEINDEXING,
           SETTINGS_SUPPORT,
