@@ -224,6 +224,7 @@ nav:
         - Notifiers:
           - Custom notifiers: administration/notifiers.md
           - Notifier samples: administration/notifier-samples.md
+          - Tips to create notifiers: administration/tips-to-create-a-custom-notifier.md
         - Retention policies: administration/retentions.md
         - Decay rules: administration/decay-rules.md
         - Exclusion lists: administration/exclusion-lists.md
