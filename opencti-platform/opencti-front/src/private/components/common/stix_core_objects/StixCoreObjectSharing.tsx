@@ -84,7 +84,7 @@ const containerHeaderSharedQueryGroupDeleteMutation = graphql`
   }
 `;
 
-const containerHeaderSharedGroupAddMutation = graphql`
+export const containerHeaderSharedGroupAddMutation = graphql`
   mutation StixCoreObjectSharingGroupAddMutation(
     $id: ID!
     $organizationId: [ID!]!

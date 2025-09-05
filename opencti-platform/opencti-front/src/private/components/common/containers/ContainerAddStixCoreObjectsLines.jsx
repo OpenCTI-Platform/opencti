@@ -5,6 +5,8 @@ import { createPaginationContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import { Form, Formik } from 'formik';
 import { ConnectionHandler } from 'relay-runtime';
+import { containerHeaderSharedGroupAddMutation } from '../stix_core_objects/StixCoreObjectSharing';
+import { objectOrganizationDeleteMutation } from '../stix_core_objects/StixCoreObjectSharingList';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { reportKnowledgeGraphMutationRelationDeleteMutation, reportKnowledgeGraphtMutationRelationAddMutation } from '../../analyses/reports/ReportKnowledgeGraphQuery';
@@ -100,7 +102,7 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
       currentlyToggledCoreObject: null,
       addedStixCoreObjects: R.indexBy(
         R.prop('id'),
-        (props.containerStixCoreObjects || []).map((n) => n.node),
+        (props.containerStixCoreObjects || []).map((n) => n.node || n),
       ),
     };
   }
@@ -122,6 +124,7 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
       onAdd,
       onDelete,
     } = this.props;
+    const isOrganizationType = stixCoreObject.entity_type === 'Organization';
     const { addedStixCoreObjects } = this.state;
     const alreadyAdded = stixCoreObject.id in addedStixCoreObjects || stixCoreObject.standard_id in addedStixCoreObjects;
     if (alreadyAdded) {
@@ -134,6 +137,28 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
             relationship_type: 'object',
             commitMessage,
             references,
+          },
+          onCompleted: () => {
+            this.setState({
+              addedStixCoreObjects: R.dissoc(
+                stixCoreObject.id,
+                this.state.addedStixCoreObjects,
+              ),
+            });
+            if (typeof onDelete === 'function') {
+              onDelete(stixCoreObject);
+            }
+            if (setSubmitting) setSubmitting(false);
+            if (resetForm) resetForm(true);
+          },
+          setSubmitting,
+        });
+      } else if (isOrganizationType) {
+        commitMutation({
+          mutation: objectOrganizationDeleteMutation,
+          variables: {
+            id: containerId,
+            organizationId: [stixCoreObject.id],
           },
           onCompleted: () => {
             this.setState({
@@ -208,6 +233,28 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
             input,
             commitMessage,
             references,
+          },
+          onCompleted: () => {
+            this.setState({
+              addedStixCoreObjects: {
+                ...this.state.addedStixCoreObjects,
+                [stixCoreObject.id]: stixCoreObject,
+              },
+            });
+            if (typeof onAdd === 'function') {
+              onAdd(stixCoreObject);
+            }
+            if (setSubmitting) setSubmitting(false);
+            if (resetForm) resetForm(true);
+          },
+          setSubmitting,
+        });
+      } else if (isOrganizationType) {
+        commitMutation({
+          mutation: containerHeaderSharedGroupAddMutation,
+          variables: {
+            id: containerId,
+            organizationId: stixCoreObject.id,
           },
           onCompleted: () => {
             this.setState({
@@ -318,7 +365,7 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
           dataList={dataList}
           globalCount={this.props.data?.stixCoreObjects?.pageInfo?.globalCount ?? nbOfRowsToLoad}
           onLabelClick={this.props.onLabelClick}
-          LineComponent={<ContainerAddStixCoreObjectsLine />}
+          LineComponent={<ContainerAddStixCoreObjectsLine disableToggle={!!this.props.disableToggle}/>}
           DummyLineComponent={<ContainerAddStixCoreObjecstLineDummy />}
           dataColumns={dataColumns}
           nbOfRowsToLoad={nbOfRowsToLoad}
@@ -374,6 +421,7 @@ ContainerAddStixCoreObjectsLinesComponent.propTypes = {
   containerRef: PropTypes.object,
   enableReferences: PropTypes.bool,
   onLabelClick: PropTypes.func,
+  disableToggle: PropTypes.bool,
 };
 
 export const containerAddStixCoreObjectsLinesQuery = graphql`
