@@ -37,6 +37,7 @@ import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useGranted, { SETTINGS_SETPARAMETERS, SETTINGS_SUPPORT } from '../../../utils/hooks/useGranted';
 import ValidateTermsOfUseDialog from './ValidateTermsOfUseDialog';
 import useAuth from '../../../utils/hooks/useAuth';
+import useHelper from '../../../utils/hooks/useHelper';
 
 export enum CGUStatus {
   pending = 'pending',
@@ -115,6 +116,8 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
   const isEnterpriseEditionActivated = settings.platform_enterprise_edition.license_enterprise;
   const isEnterpriseEditionByConfig = settings.platform_enterprise_edition.license_by_configuration;
   const { isAllowed } = useSensitiveModifications('ce_ee_toggle');
+  const { isFeatureEnable } = useHelper();
+  const isChatbotFeatureFlag = isFeatureEnable('CHATBOT_AI');
   const [openEEChanges, setOpenEEChanges] = useState(false);
   const [openValidateTermsOfUse, setOpenValidateTermsOfUse] = useState(false);
   const experienceValidation = () => Yup.object().shape({
@@ -310,27 +313,29 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                     status={null}
                   />
                 </ListItem>
-                <ListItem divider={true}>
-                  <ListItemText primary={t_i18n('XTMOne Agentic (Ariane Assistant)')}/>
-                  {filigran_chatbot_ai_cgu_status === CGUStatus.pending ? (
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      onClick={() => setOpenValidateTermsOfUse(true)}
-                      style={{ marginRight: 7, lineHeight: '12px', width: 250 }}
-                    >{t_i18n('Validate Terms of Services')}</Button>
-                  ) : (
-                    <Box sx={{ marginBlock: -6 }}>
-                      <Switch
-                        checked={filigran_chatbot_ai_cgu_status === CGUStatus.enabled}
-                        onChange={handleXtmOneCGUStatusChange}
-                      />
-                    </Box>
-                  )}
-                  {openValidateTermsOfUse && (
-                    <ValidateTermsOfUseDialog open={openValidateTermsOfUse} onClose={handleValidateTermsOfUse}/>
-                  )}
-                </ListItem>
+                {isChatbotFeatureFlag && (
+                  <ListItem divider={true}>
+                    <ListItemText primary={t_i18n('XTMOne Agentic (Ariane Assistant)')}/>
+                    {filigran_chatbot_ai_cgu_status === CGUStatus.pending ? (
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={() => setOpenValidateTermsOfUse(true)}
+                        style={{ marginRight: 7, lineHeight: '12px', width: 250 }}
+                      >{t_i18n('Validate Terms of Services')}</Button>
+                    ) : (
+                      <Box sx={{ marginBlock: -6 }}>
+                        <Switch
+                          checked={filigran_chatbot_ai_cgu_status === CGUStatus.enabled}
+                          onChange={handleXtmOneCGUStatusChange}
+                        />
+                      </Box>
+                    )}
+                    {openValidateTermsOfUse && (
+                      <ValidateTermsOfUseDialog open={openValidateTermsOfUse} onClose={handleValidateTermsOfUse}/>
+                    )}
+                  </ListItem>
+                )}
                 <ListItem divider={true}>
                   <ListItemText primary={t_i18n('Generative AI (AI Insight, NLQ)')}/>
                   <Box sx={{ marginBlock: -6 }}>
