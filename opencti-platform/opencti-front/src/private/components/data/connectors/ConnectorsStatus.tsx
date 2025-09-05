@@ -1,5 +1,6 @@
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { interval } from 'rxjs';
+import * as Yup from 'yup';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
@@ -13,15 +14,17 @@ import ListItemText from '@mui/material/ListItemText';
 import List from '@mui/material/List';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { ConnectorsStatusQuery } from '@components/data/connectors/__generated__/ConnectorsStatusQuery.graphql';
 import { ConnectorsStatus_data$key } from '@components/data/connectors/__generated__/ConnectorsStatus_data.graphql';
 import makeStyles from '@mui/styles/makeStyles';
 import DialogTitle from '@mui/material/DialogTitle';
-import { ListItemButton } from '@mui/material';
+import { ListItemButton, Stack } from '@mui/material';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/styles';
+import useConnectorsStatusFilters from '@components/data/connectors/hooks/useConnectorsStatusFilters';
+import ConnectorsStatusFilters from '@components/data/connectors/ConnectorsStatusFilters';
 import Transition from '../../../../components/Transition';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
@@ -71,6 +74,12 @@ export const connectorsStatusQuery = graphql`
     ...ConnectorsStatus_data
   }
 `;
+
+const contractSchema = Yup.object({
+  container_image: Yup.string().required(),
+  container_version: Yup.string().required(),
+  title: Yup.string().required(),
+});
 
 const connectorsStatusFragment = graphql`
   fragment ConnectorsStatus_data on Query {
@@ -179,6 +188,33 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
     };
   }, []);
 
+  const [searchParams] = useSearchParams();
+
+  const { filteredConnectors, filters, setFilters } = useConnectorsStatusFilters({ connectors: data.connectors, searchParams });
+
+  const contractsOptions = useMemo(() => {
+    if (!data.catalogs) return [];
+
+    const contracts = [];
+    for (const catalog of data.catalogs) {
+      for (const contract of catalog.contracts) {
+        try {
+          const parsedContract = JSON.parse(contract);
+          const validatedContract = contractSchema.validateSync(parsedContract);
+
+          contracts.push({
+            label: validatedContract.title,
+            value: `${validatedContract.container_image}:${validatedContract.container_version}`,
+          });
+        } catch (e) {
+          MESSAGING$.notifyError(t_i18n('Failed to parse a contract'));
+        }
+      }
+    }
+
+    return contracts;
+  }, [data.catalogs]);
+
   // eslint-disable-next-line class-methods-use-this
   const submitResetState = (connectorId: string | undefined) => {
     if (connectorId === undefined) return;
@@ -225,7 +261,8 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
   };
 
   const queues = data.rabbitMQMetrics?.queues ?? [];
-  const connectorsWithMessages = data.connectors?.map((connector) => {
+
+  const connectorsWithMessages = filteredConnectors?.map((connector) => {
     const queueName = connector.connector_type === 'INTERNAL_ENRICHMENT'
       ? `listen_${connector.id}`
       : `push_${connector.id}`;
@@ -313,13 +350,16 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
           </Button>
         </DialogActions>
       </Dialog>
-      <div>
-        <Typography
-          variant="h4"
-          style={{ float: 'left', marginBottom: 15 }}
-        >
-          {t_i18n('Registered connectors')}
-        </Typography>
+
+      <Stack gap={1}>
+        <Typography variant="h4">{t_i18n('Registered connectors')}</Typography>
+
+        <ConnectorsStatusFilters
+          typeOptions={contractsOptions}
+          filters={filters}
+          onFiltersChange={setFilters}
+        />
+
         <div className="clearfix" />
         <Paper
           className={'paper-for-grid'}
@@ -359,7 +399,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                     <SortConnectorsHeader field="updated_at" label="Modified" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
                     {
                       isComposerEnable && (
-                      <SortConnectorsHeader field="is_managed" label="Manager Deployment" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
+                        <SortConnectorsHeader field="is_managed" label="Manager Deployment" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
                       )
                     }
                   </div>
@@ -416,7 +456,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                             </Tooltip>
                           </>
                         </Security>
-                  }
+                            }
                     >
                       <ListItemButton
                         component={Link}
@@ -478,7 +518,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
             </div>
           </List>
         </Paper>
-      </div>
+      </Stack>
     </>
   );
 };
