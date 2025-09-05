@@ -52,4 +52,4 @@ const ENTITY_PIR_DEFINITION: ModuleDefinition<StoreEntityPir, StixPir> = {
   converter_2_1: convertEntityPirToStix
 };
 
-if (isFeatureEnabled('Pir')) registerDefinition(ENTITY_PIR_DEFINITION);
+registerDefinition(ENTITY_PIR_DEFINITION);

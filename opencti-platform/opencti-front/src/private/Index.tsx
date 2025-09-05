@@ -47,7 +47,7 @@ interface IndexProps {
 
 const Index = ({ settings }: IndexProps) => {
   const theme = useTheme<Theme>();
-  const { isTrashEnable, isFeatureEnable } = useHelper();
+  const { isTrashEnable } = useHelper();
   const {
     bannerSettings: { bannerHeight },
   } = useAuth();
@@ -122,7 +122,7 @@ const Index = ({ settings }: IndexProps) => {
               <Route path="/data/import/draft/*" element={boundaryWrapper(RootDrafts)}/>
               <Route path="/data/*" element={boundaryWrapper(RootData)}/>
               {isTrashEnable() && (<Route path="/trash/*" element={boundaryWrapper(RootTrash)}/>)}
-              {isFeatureEnable('Pir') && <Route path="/pirs/*" element={boundaryWrapper(RootPir)}/>}
+              <Route path="/pirs/*" element={boundaryWrapper(RootPir)}/>
               <Route path="/workspaces/*" element={boundaryWrapper(RootWorkspaces)}/>
               <Route path="/settings/*" element={boundaryWrapper(RootSettings)}/>
               <Route path="/audits/*" element={boundaryWrapper(RootAudit)}/>

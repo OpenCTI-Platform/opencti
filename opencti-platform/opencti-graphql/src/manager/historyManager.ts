@@ -202,19 +202,16 @@ export const buildHistoryElementsFromEvents = async (context:AuthContext, events
     }
     const activityDate = utcDate(eventDate).toDate();
     const standardId = generateStandardId(ENTITY_TYPE_HISTORY, { internal_id: event.id }) as StixId;
-    let entity_type = ENTITY_TYPE_HISTORY;
-    if (isFeatureEnabled('Pir')) {
-      // add Pir context data for concerned events
-      contextData = {
-        ...contextData,
-        ...generatePirContextData(event)
-      };
-      // history type is different for events concerning pir relationships
-      const eventData = event.data.data;
-      entity_type = eventData.type === 'internal-relationship' && eventData.extensions[STIX_EXT_OCTI].type === RELATION_IN_PIR
-        ? ENTITY_TYPE_PIR_HISTORY
-        : ENTITY_TYPE_HISTORY;
-    }
+    // add Pir context data for concerned events
+    contextData = {
+      ...contextData,
+      ...generatePirContextData(event)
+    };
+    // history type is different for events concerning pir relationships
+    const eventData = event.data.data;
+    const entity_type = eventData.type === 'internal-relationship' && eventData.extensions[STIX_EXT_OCTI].type === RELATION_IN_PIR
+      ? ENTITY_TYPE_PIR_HISTORY
+      : ENTITY_TYPE_HISTORY;
     // return history object
     return {
       _index: INDEX_HISTORY,
