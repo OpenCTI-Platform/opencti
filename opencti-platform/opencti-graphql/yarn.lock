@@ -2755,9 +2755,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graphql-tools/import@npm:7.0.21":
-  version: 7.0.21
-  resolution: "@graphql-tools/import@npm:7.0.21"
+"@graphql-tools/import@npm:7.1.1":
+  version: 7.1.1
+  resolution: "@graphql-tools/import@npm:7.1.1"
   dependencies:
     "@graphql-tools/utils": "npm:^10.9.1"
     "@theguild/federation-composition": "npm:^0.19.0"
@@ -2765,7 +2765,7 @@ __metadata:
     tslib: "npm:^2.4.0"
   peerDependencies:
     graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
-  checksum: 10/436a475b4d60b15663c77e285b2353ea6189728161aec5bf4ab25d154d2ce14827708ed10d6a9e94dd07bc5e6887d1a086dd7b8a021714eb8d68bbd99bcc46e2
+  checksum: 10/ab57e4533a3a395e6755cc1cdaa3be7d89b346082fb54e2b923296ee453cb577268f73b863efe8ddfc9a7c6e0ecfa62d2281137690f821daeaf4b4a3145d6a66
   languageName: node
   linkType: hard
 
@@ -12017,7 +12017,7 @@ __metadata:
     "@graphql-codegen/introspection": "npm:4.0.3"
     "@graphql-codegen/typescript": "npm:4.1.6"
     "@graphql-codegen/typescript-resolvers": "npm:4.5.0"
-    "@graphql-tools/import": "npm:7.0.21"
+    "@graphql-tools/import": "npm:7.1.1"
     "@graphql-tools/merge": "npm:9.1.1"
     "@graphql-tools/schema": "npm:10.0.25"
     "@graphql-tools/utils": "npm:10.9.1"
