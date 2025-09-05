@@ -12,6 +12,7 @@ const useApiMutation = <T extends MutationParameters>(
   fn?: (environment: IEnvironment, config: MutationConfig<T>) => Disposable,
   options?: {
     errorMessage?: string | ReactNode,
+    errorMessageMap?: Record<string, string | ReactNode>,
     successMessage?: string | ReactNode,
   },
 ): [(args: UseMutationConfig<T>) => void, boolean] => {
@@ -22,7 +23,9 @@ const useApiMutation = <T extends MutationParameters>(
       onError: (error: Error) => {
         if (args.onError) {
           args.onError(error);
-          if (options?.errorMessage) {
+          if (options?.errorMessageMap) {
+            MESSAGING$.notifyCustomRelayError(error as unknown as RelayError, options.errorMessageMap);
+          } else if (options?.errorMessage) {
             MESSAGING$.notifyError(options?.errorMessage);
           } else {
             MESSAGING$.notifyRelayError(error as unknown as RelayError);
