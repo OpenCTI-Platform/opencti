@@ -148,10 +148,10 @@ export const createRedisClient = async (provider: string, autoReconnect = false)
     client = new Redis({ ...singleOptions, db: conf.get('redis:database') ?? 0, port: conf.get('redis:port'), host: conf.get('redis:hostname') });
   }
 
-  client.on('close', () => logApp.debug(`[REDIS] Redis '${provider}' client closed`));
-  client.on('ready', () => logApp.debug(`[REDIS] Redis '${provider}' client ready`));
+  client.on('close', () => logApp.debug('[REDIS] Redis client closed', { provider }));
+  client.on('ready', () => logApp.debug('[REDIS] Redis client ready', { provider }));
   client.on('error', (err) => logApp.error('Redis client connection fail', { cause: err, provider }));
-  client.on('reconnecting', () => logApp.debug(`[REDIS] '${provider}' Redis client reconnecting`));
+  client.on('reconnecting', () => logApp.debug('[REDIS] Redis client reconnecting', { provider }));
   return client;
 };
 
@@ -323,7 +323,7 @@ export const redisInit = async () => {
     await initializeRedisClients();
     await redisIsAlive();
     const redisMode: string = conf.get('redis:mode');
-    logApp.info(`[REDIS] Clients initialized in ${redisMode} mode`);
+    logApp.info('[REDIS] Clients initialized', { redisMode });
     return true;
   } catch {
     throw DatabaseError('Redis seems down');
@@ -682,8 +682,8 @@ const mapStreamToJS = ([id, data]: any): SseEvent<any> => {
   }
   return { id, event: obj.type, data: obj };
 };
-export const fetchStreamInfo = async () => {
-  const res: any = await getClientBase().xinfo('STREAM', REDIS_STREAM_NAME);
+export const fetchStreamInfo = async (streamName = REDIS_STREAM_NAME) => {
+  const res: any = await getClientBase().xinfo('STREAM', streamName);
   const info: any = R.fromPairs(R.splitEvery(2, res) as any);
   const firstId = info['first-entry'][0];
   const firstEventDate = utcDate(parseInt(firstId.split('-')[0], 10)).toISOString();
@@ -730,9 +730,7 @@ export const createStreamProcessor = <T extends BaseEvent> (
   let processingLoopPromise: Promise<void>;
   let streamListening = true;
   const streamName = opts.streamName ?? REDIS_STREAM_NAME;
-  const processInfo = async () => {
-    return fetchStreamInfo();
-  };
+
   const processStep = async () => {
     // since previous call is async (and blocking) we should check if we are still running before processing the message
     if (!streamListening) {
@@ -777,28 +775,34 @@ export const createStreamProcessor = <T extends BaseEvent> (
     }
   };
   return {
-    info: async () => processInfo(),
+    info: async () => fetchStreamInfo(streamName),
     running: () => streamListening,
     start: async (start = 'live') => {
-      let fromStart = start;
-      if (isEmptyField(fromStart)) {
-        fromStart = 'live';
+      if (streamListening) {
+        let fromStart = start;
+        if (isEmptyField(fromStart)) {
+          fromStart = 'live';
+        }
+        startEventId = fromStart === 'live' ? '$' : fromStart;
+        logApp.info('[STREAM] Starting stream processor', { provider, startEventId });
+        processingLoopPromise = (async () => {
+          client = await createRedisClient(provider, opts.autoReconnect); // Create client for this processing loop
+          try {
+            await processingLoop();
+          } finally {
+            logApp.info('[STREAM] Stream processor terminated, closing Redis client');
+            client.disconnect();
+          }
+        })();
       }
-      startEventId = fromStart === 'live' ? '$' : fromStart;
-      logApp.info(`[STREAM] Starting stream processor at ${startEventId} for ${provider}`);
-      client = await createRedisClient(provider, opts.autoReconnect); // Create client for this processing loop
-      processingLoopPromise = processingLoop();
     },
     shutdown: async () => {
-      logApp.info(`[STREAM] Shutdown stream processor for ${provider}`);
+      logApp.info('[STREAM] Shutdown stream processor', { provider });
       streamListening = false;
       if (processingLoopPromise) {
         await processingLoopPromise;
       }
       logApp.info('[STREAM] Stream processor current promise terminated');
-      if (client) {
-        await client.disconnect();
-      }
     },
   };
 };
