@@ -254,6 +254,30 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
     setTabValue(newValue);
   };
 
+  // Format uptime from seconds to human-readable string
+  const formatUptime = (uptimeInSeconds: number | null | undefined): string => {
+    if (uptimeInSeconds === null || uptimeInSeconds === undefined) {
+      return t_i18n('Not available');
+    }
+
+    const days = Math.floor(uptimeInSeconds / 86400);
+    const hours = Math.floor((uptimeInSeconds % 86400) / 3600);
+    const minutes = Math.floor((uptimeInSeconds % 3600) / 60);
+    const seconds = uptimeInSeconds % 60;
+
+    const parts = [];
+    if (days > 0) parts.push(`${days} ${t_i18n(days === 1 ? 'day' : 'days')}`);
+    if (hours > 0) parts.push(`${hours} ${t_i18n(hours === 1 ? 'hour' : 'hours')}`);
+    if (minutes > 0) parts.push(`${minutes} ${t_i18n(minutes === 1 ? 'minute' : 'minutes')}`);
+
+    // If uptime is less than a minute, show seconds
+    if (parts.length === 0) {
+      parts.push(`${seconds} ${t_i18n(seconds === 1 ? 'second' : 'seconds')}`);
+    }
+
+    return parts.join(', ');
+  };
+
   // Component for Overview content (without ConnectorWorks)
   const ConnectorOverview = () => (
     <>
@@ -641,6 +665,16 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                   )
               }
               </Grid>
+              {connector.is_managed && connector.manager_current_status === 'started' && connector.manager_connector_uptime !== null && connector.manager_connector_uptime !== undefined && (
+                <Grid item xs={6}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t_i18n('Uptime')}
+                  </Typography>
+                  <Typography variant="body1" gutterBottom={true}>
+                    {formatUptime(connector.manager_connector_uptime)}
+                  </Typography>
+                </Grid>
+              )}
             </Grid>
           </Paper>
         </Grid>
@@ -796,6 +830,13 @@ const Connector = createRefetchContainer(
         manager_requested_status
         manager_contract_image
         manager_connector_logs
+        manager_connector_uptime
+        manager_health_metrics {
+          restart_count
+          started_at
+          last_update
+          is_in_reboot_loop
+        }
         connector_user {
           id
           name
