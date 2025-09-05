@@ -57,8 +57,7 @@ import {
   EngineShardsError,
   FunctionalError,
   LockTimeoutError,
-  ResourceNotFoundError,
-  TYPE_LOCK_ERROR,
+ ResourceNotFoundError, TYPE_LOCK_ERROR,
   UnsupportedError
 } from '../config/errors';
 import {
@@ -112,7 +111,14 @@ import {
 } from '../schema/stixDomainObject';
 import { isBasicObject, isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationship } from '../schema/stixRelationship';
-import { isStixCoreRelationship, RELATION_INDICATES, RELATION_LOCATED_AT, RELATION_PUBLISHES, RELATION_RELATED_TO, STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
+import {
+  isStixCoreRelationship,
+  RELATION_INDICATES,
+  RELATION_LOCATED_AT,
+  RELATION_PUBLISHES,
+  RELATION_RELATED_TO,
+  STIX_CORE_RELATIONSHIPS
+} from '../schema/stixCoreRelationship';
 import { generateInternalId, INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import {
   BYPASS,
@@ -127,10 +133,20 @@ import {
 } from '../utils/access';
 import { isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
 import { now, runtimeFieldObservableValueScript } from '../utils/format';
-import { ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../schema/stixMetaObject';
+import {
+  ENTITY_TYPE_KILL_CHAIN_PHASE,
+  ENTITY_TYPE_MARKING_DEFINITION,
+  isStixMetaObject
+} from '../schema/stixMetaObject';
 import { getEntitiesListFromCache, getEntityFromCache } from './cache';
 import { refang } from '../utils/refang';
-import { ENTITY_TYPE_MIGRATION_STATUS, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
+import {
+  ENTITY_TYPE_MIGRATION_STATUS,
+  ENTITY_TYPE_SETTINGS,
+  ENTITY_TYPE_STATUS,
+  ENTITY_TYPE_USER,
+  isInternalObject
+} from '../schema/internalObject';
 import { meterManager, telemetry } from '../config/tracing';
 import {
   isBooleanAttribute,
@@ -196,7 +212,12 @@ import {
 } from '../schema/attribute-definition';
 import { connections as connectionsAttribute } from '../modules/attributes/basicRelationship-registrationAttributes';
 import { schemaTypesDefinition } from '../schema/schema-types';
-import { INTERNAL_RELATIONSHIPS, isInternalRelationship, RELATION_IN_PIR, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
+import {
+  INTERNAL_RELATIONSHIPS,
+  isInternalRelationship,
+  RELATION_IN_PIR,
+  RELATION_PARTICIPATE_TO
+} from '../schema/internalRelationship';
 import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { rule_definitions } from '../rules/rules-definition';
 import { buildElasticSortingForAttributeCriteria } from '../utils/sorting';
@@ -209,9 +230,13 @@ import { enrichWithRemoteCredentials } from '../config/credentials';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, isStixCyberObservable } from '../schema/stixCyberObservable';
 import { lockResources } from '../lock/master-lock';
-import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_UPDATE_LINKED } from '../modules/draftWorkspace/draftOperations';
+import {
+  DRAFT_OPERATION_CREATE,
+  DRAFT_OPERATION_DELETE,
+  DRAFT_OPERATION_DELETE_LINKED,
+  DRAFT_OPERATION_UPDATE_LINKED
+} from '../modules/draftWorkspace/draftOperations';
 import { RELATION_SAMPLE } from '../modules/malwareAnalysis/malwareAnalysis-types';
-import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { getPirWithAccessCheck } from '../modules/pir/pir-checkPirAccess';
 import { asyncFilter, asyncMap } from '../utils/data-processing';
 
@@ -4755,32 +4780,35 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
         // if (isStixRelationship(t.relation)) {
         //   script += '; ctx._source[\'refreshed_at\'] = params.updated_at';
         // }
-        // Add Pir information concerning the Pir
+        // Add Pir information for in-pir relationships
         if (t.relation === RELATION_IN_PIR) {
-          params.pirIds = t.elements.map((e) => e.id);
-          params.new_pir_information = t.elements.filter((e) => e.type === ENTITY_TYPE_PIR)
-            .map((e) => ({
-              pir_id: e.id,
-              pir_score: e.pir_score,
-              last_pir_score_date: params.updated_at,
-            }));
-          // remove pir_information concerning the pir
-          script += '; if (ctx._source.containsKey(\'pir_information\') && ctx._source[\'pir_information\'] != null) {'
-            + 'ctx._source[\'pir_information\'].removeIf(item -> params.pirIds.contains(item.pir_id));'
-            + '}';
-          // add the new pir_information
-          script += 'if (ctx._source.containsKey(\'pir_information\') && ctx._source[\'pir_information\'] != null) {'
-            + 'ctx._source[\'pir_information\'].addAll(params.new_pir_information);'
-            + '} else {'
-            + 'ctx._source[\'pir_information\'] = params.new_pir_information;'
-            + '}';
+          // remove pir_information concerning the pir and add the new pir_information
+          script += `
+          ; if (ctx._source.containsKey('pir_information') && ctx._source['pir_information'] != null) {
+              ctx._source['pir_information'].removeIf(item -> params.pir_ids.contains(item.pir_id));
+              ctx._source['pir_information'].addAll(params.new_pir_information);
+            } else ctx._source['pir_information'] = params.new_pir_information
+          `;
         }
         return script;
       });
       const source = sources.length > 1 ? R.join(';', sources) : `${R.head(sources)};`;
+      // Construct params
       for (let index = 0; index < targetsElements.length; index += 1) {
         const targetElement = targetsElements[index];
         params[buildRefRelationKey(targetElement.relation, targetElement.field)] = targetElement.elements.map((e) => e.id);
+      }
+      // Add new_pir_information params
+      const pirElements = targetsElements.filter((e) => e.relation === RELATION_IN_PIR);
+      for (let index = 0; index < pirElements.length; index += 1) {
+        const pirElement = pirElements[index];
+        params.new_pir_information = pirElement.elements
+          .map((e) => ({
+            pir_id: e.id,
+            pir_score: e.pir_score,
+            last_pir_score_date: params.updated_at,
+          }));
+        params.pir_ids = pirElement.elements.map((e) => e.id);
       }
       return { ...entity, id: entityId, data: { script: { source, params } } };
     });
