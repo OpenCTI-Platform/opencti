@@ -54,6 +54,7 @@ const IngestionCatalogConnectorOverview = ({ connector }: { connector: Ingestion
               href={connector.subscription_link}
               target="blank"
               rel="noopener noreferrer"
+              disabled={!connector.subscription_link}
             >
               {t_i18n('Vendor contact')}
             </Button>
