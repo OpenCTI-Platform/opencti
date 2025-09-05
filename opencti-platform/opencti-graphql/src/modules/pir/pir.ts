@@ -19,7 +19,6 @@ import { ENTITY_TYPE_PIR, PIR_TYPES, type StixPir, type StoreEntityPir } from '.
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import convertEntityPirToStix from './pir-converter';
 import { authorizedMembers, createdAt, creators, draftChange, lastEventId, updatedAt } from '../../schema/attribute-definition';
-import { isFeatureEnabled } from '../../config/conf';
 
 const ENTITY_PIR_DEFINITION: ModuleDefinition<StoreEntityPir, StixPir> = {
   type: {
