@@ -11,7 +11,7 @@ import { now } from '../utils/format';
 import { elLoadById } from '../database/engine';
 import { isEmptyField, READ_INDEX_HISTORY } from '../database/utils';
 import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE, OPENCTI_NAMESPACE } from '../schema/general';
-import { isUserHasCapability, PIR_MANAGER_USER, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
+import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import {
   delEditContext,
   notify,
@@ -408,6 +408,22 @@ export const connectorUpdateHealth = async (_context: AuthContext, _user: AuthUs
 // Get health metrics function
 export const connectorGetHealth = async (_context: AuthContext, _user: AuthUser, connectorId: string): Promise<ConnectorHealthMetrics | null> => {
   return redisGetConnectorHealthMetrics(connectorId);
+};
+
+// Get connector uptime in seconds
+export const connectorGetUptime = async (context: AuthContext, user: AuthUser, connectorId: string): Promise<number | null> => {
+  const healthMetrics = await connectorGetHealth(context, user, connectorId);
+  if (!healthMetrics?.started_at) {
+    return null;
+  }
+  // Parse ISO8601 format from xtm-composer
+  const startDate = new Date(healthMetrics.started_at);
+  if (Number.isNaN(startDate.getTime())) {
+    return null;
+  }
+  const uptimeInSeconds = Math.floor((Date.now() - startDate.getTime()) / 1000);
+  // Return uptime if positive, null otherwise
+  return uptimeInSeconds >= 0 ? uptimeInSeconds : null;
 };
 
 export const updateConnectorRequestedStatus = async (context: AuthContext, user: AuthUser, input: RequestConnectorStatusInput) => {
