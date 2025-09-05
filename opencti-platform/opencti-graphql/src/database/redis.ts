@@ -148,10 +148,10 @@ export const createRedisClient = async (provider: string, autoReconnect = false)
     client = new Redis({ ...singleOptions, db: conf.get('redis:database') ?? 0, port: conf.get('redis:port'), host: conf.get('redis:hostname') });
   }
 
-  client.on('close', () => logApp.debug(`[REDIS] Redis '${provider}' client closed`));
-  client.on('ready', () => logApp.debug(`[REDIS] Redis '${provider}' client ready`));
+  client.on('close', () => logApp.debug('[REDIS] Redis client closed', { provider }));
+  client.on('ready', () => logApp.debug('[REDIS] Redis client ready', { provider }));
   client.on('error', (err) => logApp.error('Redis client connection fail', { cause: err, provider }));
-  client.on('reconnecting', () => logApp.debug(`[REDIS] '${provider}' Redis client reconnecting`));
+  client.on('reconnecting', () => logApp.debug('[REDIS] Redis client reconnecting', { provider }));
   return client;
 };
 
@@ -323,7 +323,7 @@ export const redisInit = async () => {
     await initializeRedisClients();
     await redisIsAlive();
     const redisMode: string = conf.get('redis:mode');
-    logApp.info(`[REDIS] Clients initialized in ${redisMode} mode`);
+    logApp.info('[REDIS] Clients initialized', { redisMode });
     return true;
   } catch {
     throw DatabaseError('Redis seems down');
@@ -784,7 +784,7 @@ export const createStreamProcessor = <T extends BaseEvent> (
           fromStart = 'live';
         }
         startEventId = fromStart === 'live' ? '$' : fromStart;
-        logApp.info(`[STREAM] Starting stream processor at ${startEventId} for ${provider}`);
+        logApp.info('[STREAM] Starting stream processor', { provider, startEventId });
         processingLoopPromise = (async () => {
           client = await createRedisClient(provider, opts.autoReconnect); // Create client for this processing loop
           try {
@@ -797,7 +797,7 @@ export const createStreamProcessor = <T extends BaseEvent> (
       }
     },
     shutdown: async () => {
-      logApp.info(`[STREAM] Shutdown stream processor for ${provider}`);
+      logApp.info('[STREAM] Shutdown stream processor', { provider });
       streamListening = false;
       if (processingLoopPromise) {
         await processingLoopPromise;
