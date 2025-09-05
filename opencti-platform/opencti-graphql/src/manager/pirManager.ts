@@ -206,7 +206,6 @@ const PIR_MANAGER_DEFINITION: ManagerDefinition = {
     lockKey: PIR_MANAGER_LOCK_KEY,
   }
 };
+
 // Automatically register manager on start.
-if (isFeatureEnabled('Pir')) {
-  registerManager(PIR_MANAGER_DEFINITION);
-}
+registerManager(PIR_MANAGER_DEFINITION);
