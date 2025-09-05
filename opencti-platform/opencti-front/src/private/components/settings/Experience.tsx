@@ -308,7 +308,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                     status={null}
                   />
                 </ListItem>
-                {isChatbotFeatureFlag && (
+                {isChatbotFeatureFlag && isGrantedToParameters && (
                   <ListItem divider={true}>
                     <ListItemText primary={t_i18n('XTMOne Agentic (Ariane Assistant)')}/>
                     {filigran_chatbot_ai_cgu_status === CGUStatus.pending ? (

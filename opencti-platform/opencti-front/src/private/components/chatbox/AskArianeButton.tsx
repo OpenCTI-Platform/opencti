@@ -16,7 +16,7 @@ import { DARK_BLUE } from '../../../utils/htmlToPdf/utils/constants';
 import embleme from '../../../static/images/embleme_filigran_white.png';
 import useHelper from '../../../utils/hooks/useHelper';
 import useAuth from '../../../utils/hooks/useAuth';
-import useGranted, { SETTINGS_SETACCESSES } from '../../../utils/hooks/useGranted';
+import useGranted, { SETTINGS_SETPARAMETERS } from '../../../utils/hooks/useGranted';
 
 const AskArianeButton = () => {
   const { t_i18n } = useFormatter();
@@ -24,7 +24,7 @@ const AskArianeButton = () => {
   const { settings: { filigran_chatbot_ai_cgu_status } } = useAuth();
   const theme = useTheme<Theme>();
   const isEnterpriseEdition = useEnterpriseEdition();
-  const hasRightToValidateCGU = useGranted([SETTINGS_SETACCESSES]);
+  const hasRightToValidateCGU = useGranted([SETTINGS_SETPARAMETERS]);
 
   const [navOpen, setNavOpen] = useState(
     localStorage.getItem('navOpen') === 'true',
