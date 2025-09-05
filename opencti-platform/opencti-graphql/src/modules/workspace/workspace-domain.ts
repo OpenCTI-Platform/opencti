@@ -293,6 +293,10 @@ configurationImportTypeValidation.set(
   'widget',
   'Invalid type. Please import OpenCTI widget-type only',
 );
+configurationImportTypeValidation.set(
+  'theme',
+  'Invalid type. Please import OpenCTI theme-type only',
+);
 
 interface ConfigImportData {
   type: string
