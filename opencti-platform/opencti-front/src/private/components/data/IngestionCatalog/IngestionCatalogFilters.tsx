@@ -4,6 +4,7 @@ import { FilterListOffOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import { IngestionConnectorType, ingestionConnectorTypeMetadata } from '@components/data/IngestionCatalog/utils/ingestionConnectorTypeMetadata';
+import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 
@@ -33,6 +34,7 @@ const IngestionCatalogFilters: React.FC<IngestionCatalogFiltersProps> = ({
   onFiltersChange,
 }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme();
   const [searchInput, setSearchInput] = useState(filters.search);
 
   const filterOptions = useMemo(() => {
@@ -100,7 +102,7 @@ const IngestionCatalogFilters: React.FC<IngestionCatalogFiltersProps> = ({
 
       <Autocomplete
         size="small"
-        sx={{ width: INPUT_WIDTH }}
+        sx={{ width: INPUT_WIDTH, backgroundColor: theme.palette.background.paper }}
         options={filterOptions.types}
         value={filterOptions.types.find((o) => o.value === filters.type) || null}
         onChange={(event, option) => handleFilterChange('type', option?.value || '')}
@@ -117,7 +119,7 @@ const IngestionCatalogFilters: React.FC<IngestionCatalogFiltersProps> = ({
 
       <Autocomplete
         size="small"
-        sx={{ width: INPUT_WIDTH }}
+        sx={{ width: INPUT_WIDTH, backgroundColor: theme.palette.background.paper }}
         options={filterOptions.useCases}
         value={filterOptions.useCases.find((o) => o.value === filters.useCase) || null}
         onChange={(event, option) => handleFilterChange('useCase', option?.value || '')}

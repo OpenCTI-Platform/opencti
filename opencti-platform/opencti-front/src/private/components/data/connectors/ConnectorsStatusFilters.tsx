@@ -3,6 +3,7 @@ import { Autocomplete, Stack, TextField } from '@mui/material';
 import { FilterListOffOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
+import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 
@@ -26,6 +27,7 @@ const ConnectorsStatusFilters: React.FC<ConnectorsStatusFiltersProps> = ({
   onFiltersChange,
 }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme();
   const [searchInput, setSearchInput] = useState(filters.search);
 
   const handleFilterChange = (key: keyof ConnectorsStatusFilterState, value: string) => {
@@ -58,7 +60,6 @@ const ConnectorsStatusFilters: React.FC<ConnectorsStatusFiltersProps> = ({
   const hasActiveFilters = filters.search || filters.managerContractImage || filters.isManaged !== null;
 
   const managedOptions = [
-    { label: t_i18n('-'), value: null },
     { label: t_i18n('True'), value: true },
     { label: t_i18n('False'), value: false },
   ];
@@ -73,7 +74,7 @@ const ConnectorsStatusFilters: React.FC<ConnectorsStatusFiltersProps> = ({
 
       <Autocomplete
         size="small"
-        sx={{ width: INPUT_WIDTH }}
+        sx={{ width: INPUT_WIDTH, backgroundColor: theme.palette.background.paper }}
         options={typeOptions}
         value={typeOptions.find((o) => o.value === filters.managerContractImage) || null}
         onChange={(event, option) => handleFilterChange('managerContractImage', option?.value || '')}
@@ -86,16 +87,15 @@ const ConnectorsStatusFilters: React.FC<ConnectorsStatusFiltersProps> = ({
 
       <Autocomplete
         size="small"
-        sx={{ width: INPUT_WIDTH }}
+        sx={{ width: INPUT_WIDTH, backgroundColor: theme.palette.background.paper }}
         options={managedOptions}
-        value={managedOptions.find((o) => o.value === filters.isManaged) || managedOptions[0]}
+        value={managedOptions.find((o) => o.value === filters.isManaged) || null} // This will show empty when isManaged is null
         onChange={(event, option) => handleBooleanFilterChange('isManaged', option?.value ?? null)}
         isOptionEqualToValue={(option, value) => option.value === value.value}
         renderInput={(params) => (
           <TextField {...params} label={t_i18n('Manager deployment')} variant="outlined" />
         )}
       />
-
       <Tooltip title={t_i18n('Clear filters')}>
         <span>
           <IconButton
