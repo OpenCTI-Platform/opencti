@@ -8,8 +8,8 @@ const HUB_BACKEND_URL = conf.get('xtm:xtmhub_api_override_url') ?? conf.get('xtm
 export const xtmHubClient = {
   loadRegistrationStatus: async ({ platformId, token }: { platformId: string, token: string }): Promise<RegistrationStatus> => {
     const query = `
-      query OpenCTIPlatformRegistrationStatus($input: OpenCTIPlatformRegistrationStatusInput!) {
-        openCTIPlatformRegistrationStatus(input: $input) {
+      query PlatformRegistrationConnectivityStatus($input: PlatformRegistrationConnectivityStatusInput!) {
+        platformRegistrationConnectivityStatus(input: $input) {
           status
         }
       }
@@ -28,7 +28,7 @@ export const xtmHubClient = {
 
     try {
       const response = await httpClient.post('/graphql-api', { query, variables });
-      return response.data.data.openCTIPlatformRegistrationStatus.status;
+      return response.data.data.platformRegistrationConnectivityStatus.status;
     } catch (error) {
       logApp.warn('XTM Hub is unreachable', { reason: error });
       return 'inactive';
