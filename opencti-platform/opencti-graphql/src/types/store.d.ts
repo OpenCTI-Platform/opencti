@@ -122,6 +122,7 @@ interface BasicStoreBase extends BasicStoreIdentifier {
   // representative
   representative: Representative
   restricted_members?: Array<AuthorizedMember>;
+  platformVersion: string;
 }
 
 interface StoreMarkingDefinition extends BasicStoreEntity {
