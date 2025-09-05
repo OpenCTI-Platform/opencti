@@ -1,11 +1,12 @@
 import React from 'react';
-import { ButtonProps, Button } from '@mui/material';
+import { Button, ButtonProps } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import type { Theme } from './Theme';
 
 export enum GradientVariant {
   default = 'default',
   ai = 'ai',
+  disabled = 'disabled',
 }
 
 interface GradientButtonProps extends ButtonProps {
@@ -27,6 +28,10 @@ const GradientButton = ({
     case 'ai':
       startColor = theme.palette.ai.light;
       endColor = theme.palette.ai.dark;
+      break;
+    case 'disabled':
+      startColor = theme.palette.action?.disabled;
+      endColor = theme.palette.action?.disabled;
       break;
     case 'default':
     default:
