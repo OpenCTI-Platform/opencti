@@ -50,16 +50,7 @@ import {
   WRITE_PLATFORM_INDICES
 } from './utils';
 import conf, { booleanConf, extendedErrors, isFeatureEnabled, loadCert, logApp, logMigration } from '../config/conf';
-import {
-  ComplexSearchError,
-  ConfigurationError,
-  DatabaseError,
-  EngineShardsError,
-  FunctionalError,
-  LockTimeoutError,
- ResourceNotFoundError, TYPE_LOCK_ERROR,
-  UnsupportedError
-} from '../config/errors';
+import { ComplexSearchError, ConfigurationError, DatabaseError, EngineShardsError, FunctionalError, LockTimeoutError,ResourceNotFoundError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import {
   isStixRefRelationship,
   RELATION_BORN_IN,
@@ -111,14 +102,7 @@ import {
 } from '../schema/stixDomainObject';
 import { isBasicObject, isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationship } from '../schema/stixRelationship';
-import {
-  isStixCoreRelationship,
-  RELATION_INDICATES,
-  RELATION_LOCATED_AT,
-  RELATION_PUBLISHES,
-  RELATION_RELATED_TO,
-  STIX_CORE_RELATIONSHIPS
-} from '../schema/stixCoreRelationship';
+import { isStixCoreRelationship, RELATION_INDICATES, RELATION_LOCATED_AT, RELATION_PUBLISHES, RELATION_RELATED_TO, STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
 import { generateInternalId, INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import {
   BYPASS,
@@ -133,20 +117,10 @@ import {
 } from '../utils/access';
 import { isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
 import { now, runtimeFieldObservableValueScript } from '../utils/format';
-import {
-  ENTITY_TYPE_KILL_CHAIN_PHASE,
-  ENTITY_TYPE_MARKING_DEFINITION,
-  isStixMetaObject
-} from '../schema/stixMetaObject';
+import { ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../schema/stixMetaObject';
 import { getEntitiesListFromCache, getEntityFromCache } from './cache';
 import { refang } from '../utils/refang';
-import {
-  ENTITY_TYPE_MIGRATION_STATUS,
-  ENTITY_TYPE_SETTINGS,
-  ENTITY_TYPE_STATUS,
-  ENTITY_TYPE_USER,
-  isInternalObject
-} from '../schema/internalObject';
+import { ENTITY_TYPE_MIGRATION_STATUS, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
 import { meterManager, telemetry } from '../config/tracing';
 import {
   isBooleanAttribute,
@@ -212,12 +186,7 @@ import {
 } from '../schema/attribute-definition';
 import { connections as connectionsAttribute } from '../modules/attributes/basicRelationship-registrationAttributes';
 import { schemaTypesDefinition } from '../schema/schema-types';
-import {
-  INTERNAL_RELATIONSHIPS,
-  isInternalRelationship,
-  RELATION_IN_PIR,
-  RELATION_PARTICIPATE_TO
-} from '../schema/internalRelationship';
+import { INTERNAL_RELATIONSHIPS, isInternalRelationship, RELATION_IN_PIR, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
 import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { rule_definitions } from '../rules/rules-definition';
 import { buildElasticSortingForAttributeCriteria } from '../utils/sorting';
@@ -230,12 +199,7 @@ import { enrichWithRemoteCredentials } from '../config/credentials';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, isStixCyberObservable } from '../schema/stixCyberObservable';
 import { lockResources } from '../lock/master-lock';
-import {
-  DRAFT_OPERATION_CREATE,
-  DRAFT_OPERATION_DELETE,
-  DRAFT_OPERATION_DELETE_LINKED,
-  DRAFT_OPERATION_UPDATE_LINKED
-} from '../modules/draftWorkspace/draftOperations';
+import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_UPDATE_LINKED } from '../modules/draftWorkspace/draftOperations';
 import { RELATION_SAMPLE } from '../modules/malwareAnalysis/malwareAnalysis-types';
 import { getPirWithAccessCheck } from '../modules/pir/pir-checkPirAccess';
 import { asyncFilter, asyncMap } from '../utils/data-processing';
@@ -4156,7 +4120,6 @@ export const elRemoveRelationConnection = async (context, user, elementsImpact, 
           const [relationType, relationIndex, side, sideType] = typeAndIndex.split('|');
           const refField = isStixRefRelationship(relationType) && isInferredIndex(relationIndex) ? ID_INFERRED : ID_INTERNAL;
           const rel_key = buildRefRelationKey(relationType, refField);
-          let pir_information;
           let source = `if(ctx._source[params.rel_key] != null){
               for (int i=params.cleanupIds.length-1; i>=0; i--) {
                 def cleanupIndex = ctx._source[params.rel_key].indexOf(params.cleanupIds[i]);
@@ -4178,16 +4141,16 @@ export const elRemoveRelationConnection = async (context, user, elementsImpact, 
           }
           // Remove the pir information concerning the Pir in case of in-pir rel deletion
           if (relationType === RELATION_IN_PIR && entityPirInformation) {
-            pir_information = entityPirInformation.filter((pirInfo) => !cleanupIds.includes(pirInfo.pir_id));
-            if (pir_information.length === 0) {
-              pir_information = undefined;
-            }
-            source += 'ctx._source[\'pir_information\'] = params.pir_information;';
+            source += `
+              if (ctx._source.containsKey('pir_information') && ctx._source['pir_information'] != null) {
+                ctx._source['pir_information'].removeIf(item -> params.cleanupIds.contains(item.pir_id));
+              }
+            `;
           }
           // if (isStixRelationship(relationType)) {
           //   source += 'ctx._source[\'refreshed_at\'] = params.updated_at;';
           // }
-          const script = { source, params: { rel_key, cleanupIds, updated_at: now(), pir_information } };
+          const script = { source, params: { rel_key, cleanupIds, updated_at: now() } };
           updates.push([
             { update: { _index: fromIndex, _id: elId, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
             { script },
