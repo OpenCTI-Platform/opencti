@@ -129,7 +129,7 @@ testDeletedCounter['ipv4-addr'] = 1;
 testDeletedCounter['network-traffic'] = 1;
 testDeletedCounter.tool = 2;
 testDeletedCounter.sighting = 1;
-testDeletedCounter['internal-relationship'] = 3;
+testDeletedCounter['internal-relationship'] = 4;
 testDeletedCounter.vulnerability = 1;
 
 export const doTotal = (eventCounter: Record<string, number>) => {
