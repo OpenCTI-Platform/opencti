@@ -95,7 +95,7 @@ export const getChatbotProxy = async (req: Express.Request, res: Express.Respons
       logApp.error('Stream error in chatbot proxy', { cause: error });
       if (!res.headersSent) {
         const { message } = (error as Error);
-        res.status(500).json({
+        res.status(500).send({
           status: 'error',
           error: message,
         });
@@ -106,10 +106,18 @@ export const getChatbotProxy = async (req: Express.Request, res: Express.Respons
   } catch (e: unknown) {
     logApp.error('Error in chatbot proxy', { cause: e });
     const { message } = (e as Error);
+
+    if (axios.isAxiosError(e) && e.response) {
+      res.status(e.response.status).send({
+        status: e.response.status,
+        error: message,
+      });
+    } else {
+      res.status(503).send({
+        status: 503,
+        error: message,
+      });
+    }
     setCookieError(res, message);
-    res.status(503).send({
-      status: 'error',
-      error: message,
-    });
   }
 };
