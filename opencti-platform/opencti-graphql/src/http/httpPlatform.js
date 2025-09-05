@@ -510,7 +510,7 @@ const createApp = async (app) => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   app.use((err, req, res, next) => {
     logApp.error('Http call interceptor fail', { cause: err, referer: req.headers?.referer });
-    res.status(500).send({ status: 'error', error: err.stack });
+    res.status(500).send({ status: 'error', error: DEV_MODE ? err.stack : err.message });
   });
 
   return { sseMiddleware };
