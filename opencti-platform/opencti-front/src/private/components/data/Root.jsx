@@ -145,7 +145,7 @@ const Root = () => {
           element={boundaryWrapper(Connectors)}
         />
         <Route
-          path="/ingestion/connectors/:connectorId"
+          path="/ingestion/connectors/:connectorId/*"
           element={<RootConnector />}
         />
         <Route

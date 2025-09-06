@@ -1,8 +1,5 @@
-import React from 'react';
 import { ConnectorsStatus_data$data } from '@components/data/connectors/__generated__/ConnectorsStatus_data.graphql';
 import { stixFilters, useAvailableFilterKeysForEntityTypes } from './filters/filtersUtils';
-import ItemBoolean from '../components/ItemBoolean';
-import { useFormatter } from '../components/i18n';
 import useSchema from './hooks/useSchema';
 
 export interface Connector {
@@ -66,47 +63,53 @@ export const useGetConnectorAvailableFilterKeys = (connector: Connector): string
   return availableFilterKeys;
 };
 
-export const useComputeConnectorStatus = () => {
-  const { t_i18n } = useFormatter();
-  // eslint-disable-next-line react/display-name
-  return ({
-    manager_current_status,
-    manager_requested_status,
-    active,
-  }: Partial<ConnectorsStatus_data$data['connectors'][0]>) => {
-    if (manager_requested_status) {
-      if ((manager_current_status ?? '').slice(0, 5) !== manager_requested_status.slice(0, 5)) {
+export const computeConnectorStatus = ({
+  manager_current_status,
+  manager_requested_status,
+  active,
+}: Partial<ConnectorsStatus_data$data['connectors'][0]>) => {
+  if (manager_requested_status) {
+    // On connector created, manager_current_status is null
+    const isTransitioning = (manager_current_status ?? '').slice(0, 5) !== manager_requested_status.slice(0, 5);
+
+    if (isTransitioning) {
+      const isProcessing = ['starting', 'stopping'].includes(manager_requested_status);
+
+      if (isProcessing) {
         return {
-          processing: ['starting', 'stopping'].includes(manager_requested_status),
-          render: (
-            <ItemBoolean
-              status={['starting', 'stopping'].includes(manager_requested_status) ? undefined : true}
-              label={t_i18n(manager_requested_status)}
-              variant="inList"
-            />
-          ),
+          status: 'processing',
+          processing: true,
+          label: manager_requested_status,
         };
       }
+
+      if (manager_requested_status === 'stopped') {
+        return {
+          status: 'stopped',
+          processing: false,
+          label: manager_requested_status,
+        };
+      }
+
       return {
+        status: 'active',
         processing: false,
-        render: (
-          <ItemBoolean
-            status={manager_current_status === 'started'}
-            label={t_i18n(manager_current_status)}
-            variant="inList"
-          />
-        ),
+        label: manager_requested_status,
       };
     }
+
+    const isStarted = manager_current_status === 'started';
     return {
+      status: isStarted ? 'active' : 'inactive',
       processing: false,
-      render: (
-        <ItemBoolean
-          status={active}
-          label={active ? t_i18n('Active') : t_i18n('Inactive')}
-          variant="inList"
-        />
-      ),
+      label: manager_current_status || '',
     };
+  }
+
+  // No manager status - use regular active/inactive
+  return {
+    status: active ? 'active' : 'inactive',
+    processing: false,
+    label: active ? 'Active' : 'Inactive',
   };
 };
