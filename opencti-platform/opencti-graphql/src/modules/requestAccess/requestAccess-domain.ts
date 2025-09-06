@@ -466,6 +466,7 @@ export const notifyRequestAccessResult = async (
       user_id: applicant.id,
       user_email: applicant.user_email,
       notifiers: applicant.personal_notifiers,
+      user_service_account: user.user_service_account ? user.user_service_account : false
     },
     type: 'ACCESS REQUEST',
     message: `${representative} request access is now ${status}`

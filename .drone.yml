@@ -24,6 +24,38 @@ steps:
       - echo "[INFO] using client-python on branch $(git branch --show-current)"
       - git log -n 1
 
+  - name: backend-verify-licenses
+    image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
+    commands:
+      - apk add build-base git libffi-dev cargo
+      - pip3 install --upgrade setuptools
+      - cd "$DRONE_WORKSPACE/client-python"
+      - pip install -r requirements.txt
+      - pip install -e .[dev,doc]
+      - cd "$DRONE_WORKSPACE/opencti-platform/opencti-graphql"
+      - yarn install
+      - yarn verify-licenses
+    depends_on:
+      - dependencies-checkout
+
+  - name: frontend-verify-licenses
+    image: node:22.14.0
+    commands:
+      - cd ./opencti-platform/opencti-front
+      - yarn install
+      - yarn verify-licenses
+    depends_on:
+      - dependencies-checkout
+
+  - name: generate-licenses
+    image: node:22.14.0
+    commands:
+      - chmod 777 scripts/*
+      - ./scripts/generate-licenses.sh
+      - test -f ./licenses/third-party-licenses.txt
+    depends_on:
+      - backend-verify-licenses
+      - frontend-verify-licenses
 
   - name: api-tests
     image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
@@ -67,6 +99,7 @@ steps:
       - NODE_OPTIONS=--max_old_space_size=8192 yarn test
     depends_on:
       - dependencies-checkout
+      - generate-licenses
 
   - name: api-coverage
     image: plugins/codecov
@@ -92,6 +125,8 @@ steps:
       - yarn check-ts
       - yarn lint
       - NODE_OPTIONS=--max_old_space_size=8192 yarn test
+    depends_on:
+        - generate-licenses
 
   - name: frontend-e2e-tests
     image: node:22.18.0

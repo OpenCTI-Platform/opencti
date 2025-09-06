@@ -9,4 +9,4 @@ schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_INTERNAL_FILE, [{ 
 
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_WORK, [objectMarking]);
 
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_USER, [objectOrganization]);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_USER, [{ ...objectOrganization, isFilterable: false }]);

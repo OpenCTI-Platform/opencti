@@ -221,6 +221,15 @@ const appLogger = winston.createLogger({
 // Setup audit log logApp
 const auditLogFileTransport = booleanConf('app:audit_logs:logs_files', true);
 const auditLogConsoleTransport = booleanConf('app:audit_logs:logs_console', true);
+export const auditRequestHeaderToKeep = nconf.get('app:audit_logs:trace_request_headers') ?? ['user-agent', 'x-forwarded-for'];
+
+// Gather all request header that are configured to be added to audit or activity logs.
+export const getRequestAuditHeaders = (req) => {
+  const sourceIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+  const allHeadersRequested = R.mergeAll((auditRequestHeaderToKeep).map((header) => ({ [header]: req.header(header) })));
+  return { ...allHeadersRequested, ip: sourceIp };
+};
+
 export const auditLogTypes = nconf.get('app:audit_logs:logs_in_transports') ?? ['administration'];
 const auditLogTransports = [];
 if (auditLogFileTransport) {
@@ -330,6 +339,7 @@ export const logTelemetry = {
   }
 };
 
+export const PORT = nconf.get('app:port');
 const BasePathConfig = nconf.get('app:base_path')?.trim() ?? '';
 const AppBasePath = BasePathConfig.endsWith('/') ? BasePathConfig.slice(0, -1) : BasePathConfig;
 export const basePath = isEmpty(AppBasePath) || AppBasePath.startsWith('/') ? AppBasePath : `/${AppBasePath}`;
@@ -352,6 +362,20 @@ export const getBaseUrl = (req) => {
   }
   // If no base url and no request, send only the base path
   return basePath;
+};
+
+export const getChatbotUrl = (req) => {
+  if (baseUrl && !baseUrl.includes('localhost') && !baseUrl.includes('127.0.0.1')) {
+    // Always append base path to the uri
+    return baseUrl + basePath;
+  }
+  if (req) {
+    const [hostname, port] = req.headers.host ? req.headers.host.split(':') : [];
+    const isCustomPort = port !== '80' && port !== '443';
+    const httpPort = isCustomPort && port ? `:${port}` : `:${PORT}`;
+    return `${req.protocol}://${hostname}${httpPort}${basePath}`;
+  }
+  throw UnknownError('Missing request for chatbot');
 };
 
 export const configureCA = (certificates) => {
@@ -385,7 +409,6 @@ export const loadCert = (cert) => {
   }
   return readFileSync(cert);
 };
-export const PORT = nconf.get('app:port');
 
 const escapeRegex = (string) => {
   return string.replace(/[/\-\\^$*+?.()|[\]{}]/g, '\\$&');
@@ -492,7 +515,7 @@ export const ENABLED_PLAYBOOK_MANAGER = booleanConf('playbook_manager:enabled', 
 // Default Accounts management
 export const ACCOUNT_STATUS_ACTIVE = 'Active';
 export const ACCOUNT_STATUS_EXPIRED = 'Expired';
-const computeAccountStatusChoices = () => {
+export const computeAccountStatusChoices = () => {
   const statusesDefinition = nconf.get('app:locked_account_statuses');
   return {
     [ACCOUNT_STATUS_ACTIVE]: 'All good folks',
@@ -561,6 +584,11 @@ export const BUS_TOPICS = {
     EDIT_TOPIC: `${TOPIC_PREFIX}WORKSPACE_EDIT_TOPIC`,
     ADDED_TOPIC: `${TOPIC_PREFIX}WORKSPACE_ADDED_TOPIC`,
   },
+  [O.ENTITY_TYPE_THEME]: {
+    EDIT_TOPIC: `${TOPIC_PREFIX}THEME_EDIT_TOPIC`,
+    ADDED_TOPIC: `${TOPIC_PREFIX}THEME_ADDED_TOPIC`,
+    DELETE_TOPIC: `${TOPIC_PREFIX}THEME_DELETE_TOPIC`,
+  },
   [ENTITY_TYPE_PUBLIC_DASHBOARD]: {
     EDIT_TOPIC: `${TOPIC_PREFIX}PUBLIC_DASHBOARD_EDIT_TOPIC`,
     ADDED_TOPIC: `${TOPIC_PREFIX}PUBLIC_DASHBOARD_ADDED_TOPIC`,
@@ -597,6 +625,7 @@ export const BUS_TOPICS = {
   },
   [M.ENTITY_TYPE_MARKING_DEFINITION]: {
     EDIT_TOPIC: `${TOPIC_PREFIX}MARKING_DEFINITION_EDIT_TOPIC`,
+    DELETE_TOPIC: `${TOPIC_PREFIX}MARKING_DEFINITION_EDIT_TOPIC`,
     ADDED_TOPIC: `${TOPIC_PREFIX}MARKING_DEFINITION_ADDED_TOPIC`,
   },
   [M.ENTITY_TYPE_LABEL]: {

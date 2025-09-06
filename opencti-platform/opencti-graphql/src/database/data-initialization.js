@@ -82,6 +82,18 @@ export const SETTINGS_CAPABILITIES = {
     { name: 'SUPPORT', description: 'Access to support data', attribute_order: 3700 },
   ],
 };
+const PIR_CAPABILITIES = {
+  name: 'PIRAPI',
+  description: 'Access PIR',
+  attribute_order: 2900,
+  dependencies: [
+    {
+      name: 'PIRUPDATE',
+      description: 'Create / Update / Delete PIR',
+      attribute_order: 2950,
+    },
+  ],
+};
 export const CAPABILITIES = [
   BYPASS_CAPABILITIES,
   KNOWLEDGE_CAPABILITIES,
@@ -123,6 +135,7 @@ export const CAPABILITIES = [
     dependencies: [{ name: 'MODMANAGE', description: 'Manage connector state', attribute_order: 2100 }],
   },
   TAXII_CAPABILITIES,
+  PIR_CAPABILITIES,
   SETTINGS_CAPABILITIES,
   {
     name: 'CONNECTORAPI',
@@ -377,7 +390,7 @@ export const initializeData = async (context, withMarkings = true) => {
     internal_id: platformId,
     platform_title: 'OpenCTI - Cyber Threat Intelligence Platform',
     platform_email: 'admin@opencti.io',
-    platform_theme: 'dark',
+    platform_theme: 'Dark',
     platform_language: 'auto',
   });
   await initCreateEntitySettings(context, SYSTEM_USER);

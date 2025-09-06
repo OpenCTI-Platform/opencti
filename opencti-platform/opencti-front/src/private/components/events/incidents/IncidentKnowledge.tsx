@@ -40,7 +40,7 @@ const IncidentKnowledge = ({
   const { schema } = useAuth();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(incident.entity_type, schema);
   return (
-    <>
+    <div data-testid="incident-knowledge">
       <Routes>
         <Route
           path="/relations/:relationId"
@@ -233,7 +233,7 @@ const IncidentKnowledge = ({
           )}
         />
       </Routes>
-    </>
+    </div>
   );
 };
 

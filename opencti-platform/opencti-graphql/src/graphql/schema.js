@@ -2,7 +2,7 @@ import { ApolloServerErrorCode } from '@apollo/server/errors';
 import { GraphQLError, GraphQLScalarType, Kind } from 'graphql';
 import { GraphQLDateTime } from 'graphql-scalars';
 import { makeExecutableSchema } from '@graphql-tools/schema';
-import { constraintDirectiveTypeDefs } from 'graphql-constraint-directive';
+import { constraintDirectiveDocumentation, constraintDirectiveTypeDefs } from 'graphql-constraint-directive';
 import { validate as uuidValidate } from 'uuid';
 import GraphQLUpload from 'graphql-upload/GraphQLUpload.mjs';
 import { mergeResolvers } from '@graphql-tools/merge';
@@ -281,6 +281,7 @@ const createSchema = () => {
     resolvers,
     inheritResolversFromInterfaces: true,
   });
+  schema = constraintDirectiveDocumentation()(schema);
   schema = rateLimitDirectiveTransformer(authDirectiveTransformer(schema));
   return schema;
 };

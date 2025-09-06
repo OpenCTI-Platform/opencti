@@ -14,7 +14,7 @@ export default class UserFormPage {
   }
 
   getEmailInput() {
-    return this.page.getByRole('textbox', { name: 'Email address' });
+    return this.page.getByTestId('user-creation-email-address-input').getByLabel('Email address');
   }
 
   async fillEmailInput(email: string) {
@@ -23,7 +23,7 @@ export default class UserFormPage {
   }
 
   getPasswordInput() {
-    return this.page.getByRole('textbox', { name: 'Password' });
+    return this.page.getByTestId('user-creation-password-input').getByLabel('Password');
   }
 
   async fillPasswordInput(password: string) {

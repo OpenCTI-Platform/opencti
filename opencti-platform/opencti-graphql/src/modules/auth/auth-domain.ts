@@ -73,7 +73,7 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
       + '<p>For any assistance or if you have concerns, do not hesitate to contact the system administrator.</p>'
       + '<p>Sincerely,</p>';
     const sendMailArgs: SendMailArgs = {
-      from: settings.platform_email,
+      from: `${settings.platform_title} <${settings.platform_email}>`,
       to: user_email,
       subject: 'Your OpenCTI account - Password recovery code',
       html: ejs.render(OCTI_EMAIL_TEMPLATE, { settings, body }),
@@ -184,7 +184,7 @@ export const changePassword = async (context: AuthContext, input: ChangePassword
       + '<p>If you initiated this change, no further action is required. However, if you did not request this change, please reset your password immediately and contact the system administrator.</p>'
       + '<p>Sincerely,</p>';
     const sendMailArgs: SendMailArgs = {
-      from: settings.platform_email,
+      from: `${settings.platform_title} <${settings.platform_email}>`,
       to: email,
       subject: 'Your OpenCTI account - Password updated',
       html: ejs.render(OCTI_EMAIL_TEMPLATE, { settings, body }),

@@ -11,12 +11,12 @@ import { now } from '../utils/format';
 import { elLoadById } from '../database/engine';
 import { isEmptyField, READ_INDEX_HISTORY } from '../database/utils';
 import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE, OPENCTI_NAMESPACE } from '../schema/general';
-import { isUserHasCapability, PIR_MANAGER_USER, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
+import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import { delEditContext, notify, redisGetWork, redisSetConnectorLogs, setEditContext } from '../database/redis';
-import { internalLoadById, listEntities, storeLoadById } from '../database/middleware-loader';
+import { internalLoadById, listAllEntities, listEntities, storeLoadById } from '../database/middleware-loader';
 import { completeContextDataForEntity, publishUserAction, type UserImportActionContextData } from '../listener/UserActionListener';
 import type { AuthContext, AuthUser } from '../types/user';
-import type { BasicStoreEntityConnector, ConnectorInfo } from '../types/connector';
+import type { BasicStoreEntityConnector, BasicStoreEntityConnectorManager, BasicStoreEntitySynchronizer, ConnectorInfo } from '../types/connector';
 import {
   type AddManagedConnectorInput,
   ConnectorType,
@@ -24,6 +24,7 @@ import {
   type EditContext,
   type EditInput,
   type EditManagedConnectorInput,
+  IngestionAuthType,
   type LogsConnectorStatusInput,
   type MutationSynchronizerTestArgs,
   type RegisterConnectorInput,
@@ -45,6 +46,29 @@ import type { Connector } from '../connector/internalConnector';
 import { addWorkbenchDraftConvertionCount, addWorkbenchValidationCount } from '../manager/telemetryManager';
 import { computeConnectorTargetContract, getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
 import { getEntitiesMapFromCache } from '../database/cache';
+import { removeAuthenticationCredentials } from '../modules/ingestion/ingestion-common';
+import { createOnTheFlyUser } from '../modules/user/user-domain';
+
+// Sanitize name for K8s/Docker
+const sanitizeContainerName = (label: string): string => {
+  const withHyphens = label.replace(/([a-z])([A-Z])/g, '$1-$2');
+  let sanitized = withHyphens
+    .replace(/[^a-zA-Z0-9]+/g, '-')
+    .toLowerCase()
+    .replace(/^-+/, '')
+    .replace(/-+$/, '');
+
+  if (sanitized.length > 63) {
+    sanitized = sanitized.substring(0, 63);
+    sanitized = sanitized.replace(/-+$/, '');
+  }
+
+  if (sanitized.length === 0) {
+    return `a-${Math.floor(Math.random() * 10)}`;
+  }
+
+  return sanitized;
+};
 
 // region connectors
 export const connectorForWork = async (context: AuthContext, user: AuthUser, id: string) => {
@@ -131,7 +155,7 @@ interface RegisterOptions {
 
 export const registerConnectorsManager = async (context: AuthContext, user: AuthUser, input: RegisterConnectorsManagerInput) => {
   const manager = await storeLoadById(context, user, input.id, ENTITY_TYPE_CONNECTOR_MANAGER);
-  const patch = { name: input.name, last_sync_execution: now() };
+  const patch = { name: input.name, last_sync_execution: now(), public_key: input.public_key };
   if (manager) {
     const { element } = await patchAttribute(context, user, input.id, ENTITY_TYPE_CONNECTOR_MANAGER, patch);
     return element;
@@ -160,7 +184,17 @@ export const managedConnectorEdit = async (
   if (isEmptyField(targetContract)) {
     throw UnsupportedError('Target contract not found');
   }
-  const contractConfigurations = computeConnectorTargetContract(input.manager_contract_configuration, targetContract);
+  const connectorManagers = await listAllEntities<BasicStoreEntityConnectorManager>(context, user, [ENTITY_TYPE_CONNECTOR_MANAGER], { connectionFormat: false });
+  if (connectorManagers?.length < 1) {
+    throw FunctionalError('There is no connector manager configured');
+  }
+  const currentManager = connectorManagers[0];
+  const contractConfigurations = computeConnectorTargetContract(
+    input.manager_contract_configuration,
+    targetContract,
+    currentManager.public_key,
+    conn.manager_contract_configuration
+  );
   const patch: any = {
     name: input.name,
     connector_type: targetContract.container_type,
@@ -176,21 +210,56 @@ export const managedConnectorAdd = async (
   user:AuthUser,
   input: AddManagedConnectorInput
 ) => {
-  const connectorUser: any = await storeLoadById(context, user, input.connector_user_id, ENTITY_TYPE_USER);
-  if (isEmptyField(connectorUser)) {
-    throw UnsupportedError('Connector user not found');
-  }
+  // Get contract
   const contractsMap = getSupportedContractsByImage();
   const targetContract: any = contractsMap.get(input.manager_contract_image);
   if (isEmptyField(targetContract)) {
     throw UnsupportedError('Target contract not found');
   }
-  const contractConfigurations = computeConnectorTargetContract(input.manager_contract_configuration, targetContract);
+  if (!targetContract.manager_supported) {
+    throw FunctionalError('You have not chosen a connector supported by the manager');
+  }
+  const connectorManagers = await listAllEntities<BasicStoreEntityConnectorManager>(context, user, [ENTITY_TYPE_CONNECTOR_MANAGER], { connectionFormat: false });
+  if (connectorManagers?.length < 1) {
+    throw FunctionalError('There is no connector manager configured');
+  }
+  const currentManager = connectorManagers[0];
+  const contractConfigurations = computeConnectorTargetContract(input.manager_contract_configuration, targetContract, currentManager.public_key);
+  // Get user
+  if (input.user_id.length < 2) {
+    throw FunctionalError('You have not chosen a user responsible for data creation', {});
+  }
+  let finalUserId = input.user_id;
+  if (input.automatic_user) {
+    const onTheFlyCreatedUser = await createOnTheFlyUser(
+      context,
+      user,
+      { userName: input.user_id, serviceAccount: true, confidenceLevel: input.confidence_level ? parseInt(input.confidence_level, 10) : null }
+    );
+    finalUserId = onTheFlyCreatedUser.id;
+  }
+  const connectorUser = await storeLoadById(context, user, finalUserId, ENTITY_TYPE_USER);
+  if (isEmptyField(connectorUser)) {
+    throw UnsupportedError('Connector user not found');
+  }
+  // Sanitize name
+  const sanitizedName = sanitizeContainerName(input.name);
+  if (!sanitizedName || sanitizedName.length < 2) {
+    throw FunctionalError('Invalid connector name');
+  }
+  // Check for name collision
+  const existingConnectors = await connectors(context, user);
+  const nameCollision = existingConnectors.find((c) => c.name === sanitizedName);
+  if (nameCollision) {
+    logApp.info(`[CONNECTOR] Name collision detected: connector with name '${sanitizedName}' already exists`);
+    throw FunctionalError('CONNECTOR_NAME_ALREADY_EXISTS');
+  }
+  // Create connector
   const connectorToCreate: any = {
-    name: input.name,
+    name: sanitizedName,
     connector_type: targetContract.container_type,
     catalog_id: input.catalog_id,
-    connector_user_id: input.connector_user_id,
+    connector_user_id: connectorUser.id,
     manager_contract_image: input.manager_contract_image,
     manager_contract_configuration: contractConfigurations,
     manager_requested_status: 'stopped',
@@ -198,6 +267,7 @@ export const managedConnectorAdd = async (
     built_in: false
   };
   const createdConnector: any = await createEntity(context, user, connectorToCreate, ENTITY_TYPE_CONNECTOR);
+  // Publish
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -374,22 +444,7 @@ export const registerConnectorForIngestion = async (context: AuthContext, input:
     connector_user_id: input.connector_user_id
   });
 };
-export const registerConnectorForPir = async (context: AuthContext, input: any) => {
-  // Create the representing connector
-  await registerConnector(context, PIR_MANAGER_USER, {
-    id: connectorIdFromIngestId(input.id),
-    name: `[PIR] ${input.name}`,
-    type: ConnectorType.InternalIngestionPir,
-    auto: true,
-    scope: ['application/stix+json;version=2.1'],
-    only_contextual: false,
-    playbook_compatible: false
-  }, {
-    built_in: true,
-    active: input.is_running,
-    connector_user_id: input.connector_user_id
-  });
-};
+
 export const unregisterConnectorForIngestion = async (context: AuthContext, id: string) => {
   const connectorId = connectorIdFromIngestId(id);
   await connectorDelete(context, SYSTEM_USER, connectorId);
@@ -399,8 +454,12 @@ export const patchSync = async (context: AuthContext, user: AuthUser, id: string
   const patched = await patchAttribute(context, user, id, ENTITY_TYPE_SYNC, patch);
   return patched.element;
 };
-export const findSyncById = (context: AuthContext, user: AuthUser, syncId: string) => {
-  return storeLoadById(context, user, syncId, ENTITY_TYPE_SYNC);
+export const findSyncById = async (context: AuthContext, user: AuthUser, syncId: string, removeCredentials = false) => {
+  const basicIngestion = await storeLoadById<BasicStoreEntitySynchronizer>(context, user, syncId, ENTITY_TYPE_SYNC);
+  if (removeCredentials) {
+    basicIngestion.token = removeAuthenticationCredentials(IngestionAuthType.Bearer, basicIngestion.token);
+  }
+  return basicIngestion;
 };
 export const findAllSync = async (context: AuthContext, user: AuthUser, opts = {}) => {
   return listEntities(context, SYSTEM_USER, [ENTITY_TYPE_SYNC], opts);

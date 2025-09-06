@@ -5,7 +5,16 @@ import { uniq } from 'ramda';
 import { v4 as uuid } from 'uuid';
 import ejs from 'ejs';
 import { DateTime } from 'luxon';
-import { ACCOUNT_STATUS_ACTIVE, ACCOUNT_STATUS_EXPIRED, ACCOUNT_STATUSES, BUS_TOPICS, DEFAULT_ACCOUNT_STATUS, ENABLED_DEMO_MODE, logApp } from '../config/conf';
+import {
+  getRequestAuditHeaders,
+  ACCOUNT_STATUS_ACTIVE,
+  ACCOUNT_STATUS_EXPIRED,
+  ACCOUNT_STATUSES,
+  BUS_TOPICS,
+  DEFAULT_ACCOUNT_STATUS,
+  ENABLED_DEMO_MODE,
+  logApp
+} from '../config/conf';
 import { AuthenticationFailure, DatabaseError, DraftLockedError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { elLoadBy, elRawDeleteByQuery } from '../database/engine';
@@ -78,9 +87,9 @@ import { cleanMarkings } from '../utils/markingDefinition-utils';
 import { UnitSystem } from '../generated/graphql';
 import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
+import { addServiceAccountIntoUserCount, addUserIntoServiceAccountCount, addUserEmailSendCount } from '../manager/telemetryManager';
 import { sendMail } from '../database/smtp';
 import { checkEnterpriseEdition } from '../enterprise-edition/ee';
-import { addUserEmailSendCount } from '../manager/telemetryManager';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
 
 const BEARER = 'Bearer ';
@@ -131,15 +140,19 @@ export const userWithOrigin = (req, user) => {
   // - In audit logs to identify the user
   // - In stream message to also identifier the user
   // - In logging system to know the level of the error message
-  const headers_metadata = R.mergeAll((user.headers_audit ?? [])
+
+  // Additional header from "authentication with header" authentication mode
+  const sso_headers_metadata = R.mergeAll((user.headers_audit ?? [])
     .map((header) => ({ [header]: req.header(header) })));
+  const tracing_headers_metadata = getRequestAuditHeaders(req);
+
   const origin = {
     socket: 'query',
     ip: req?.ip,
     user_id: user.id,
     group_ids: user.groups?.map((g) => g.internal_id) ?? [],
     organization_ids: user.organizations?.map((o) => o.internal_id) ?? [],
-    user_metadata: { ...headers_metadata },
+    user_metadata: { ...sso_headers_metadata, ...tracing_headers_metadata },
     referer: req?.headers.referer,
     applicant_id: req?.headers['opencti-applicant-id'],
     call_retry_number: req?.headers['opencti-retry-number'],
@@ -270,6 +283,17 @@ export const userOrganizationsPaginatedWithoutInferences = async (context, user,
 
 export const userOrganizationsPaginated = async (context, user, userId, opts) => {
   return listEntitiesThroughRelationsPaginated(context, user, userId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION, false, opts);
+};
+
+// Get the creator of userId
+export const getCreator = async (context, _user, userId) => {
+  const allUsersInCache = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const userLoaded = allUsersInCache.get(userId);
+  const firstCreatorId = Array.isArray(userLoaded.creator_id) && userLoaded.creator_id.length > 0
+    ? userLoaded.creator_id.at(0)
+    : userLoaded.creator_id;
+  const userCreatorFromCache = allUsersInCache.get(firstCreatorId);
+  return buildCreatorUser(userCreatorFromCache);
 };
 
 export const userRoles = async (context, _user, userId, opts) => {
@@ -629,11 +653,20 @@ export const sendEmailToUser = async (context, user, input) => {
 };
 
 export const addUser = async (context, user, newUser) => {
-  const userEmail = newUser.user_email.toLowerCase();
-  const existingUser = await elLoadBy(context, SYSTEM_USER, 'user_email', userEmail, ENTITY_TYPE_USER);
-  if (existingUser) {
-    throw FunctionalError('User already exists', { user_id: existingUser.internal_id });
+  let userEmail;
+  const userServiceAccount = newUser.user_service_account;
+  if (newUser.user_email && !userServiceAccount) {
+    userEmail = newUser.user_email.toLowerCase();
+    const existingUser = await elLoadBy(context, SYSTEM_USER, 'user_email', userEmail, ENTITY_TYPE_USER);
+    if (existingUser) {
+      throw FunctionalError('User already exists', { user_id: existingUser.internal_id });
+    }
+  } else if (userServiceAccount) {
+    userEmail = newUser.user_email ? newUser.user_email : `automatic+${uuid()}@opencti.invalid`;
+  } else {
+    throw FunctionalError('User cannot be created without email');
   }
+
   if (isUserHasCapability(user, VIRTUAL_ORGANIZATION_ADMIN) && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
     // user is Organization Admin
     // Check organization
@@ -649,13 +682,12 @@ export const addUser = async (context, user, newUser) => {
   // Create the user
   let userPassword = newUser.password;
   // If user is external and password is not specified, associate a random password
-  if (newUser.external === true && isEmptyField(userPassword)) {
+  if ((newUser.external === true && isEmptyField(userPassword)) || userServiceAccount) {
     userPassword = uuid();
   } else { // If local user, check the password policy
     await checkPasswordFromPolicy(context, userPassword);
   }
-
-  const userToCreate = R.pipe(
+  let userToCreate = R.pipe(
     R.assoc('user_email', userEmail),
     R.assoc('api_token', newUser.api_token ? newUser.api_token : uuid()),
     R.assoc('password', bcrypt.hashSync(userPassword)),
@@ -672,6 +704,19 @@ export const addUser = async (context, user, newUser) => {
     R.dissoc('prevent_default_groups'),
     R.dissoc('email_template_id'),
   )(newUser);
+
+  userToCreate = {
+    ...userToCreate,
+    user_service_account: newUser.user_service_account || false,
+  };
+
+  if (userServiceAccount) {
+    userToCreate = {
+      ...userToCreate,
+      password: undefined,
+    };
+  }
+
   const { element, isCreation } = await createEntity(context, user, userToCreate, ENTITY_TYPE_USER, { complete: true });
   // Link to organizations
   const userOrganizations = newUser.objectOrganization ?? [];
@@ -805,12 +850,22 @@ export const userEditField = async (context, user, userId, rawInputs) => {
       throw ForbiddenAccess();
     }
   }
+  let skipThisInput = false;
   for (let index = 0; index < rawInputs.length; index += 1) {
     const input = rawInputs[index];
     if (input.key === 'password') {
-      const userPassword = R.head(input.value).toString();
-      await checkPasswordFromPolicy(context, userPassword);
-      input.value = [bcrypt.hashSync(userPassword)];
+      const userServiceAccountInput = rawInputs.find((x) => x.key === 'user_service_account');
+      if (userServiceAccountInput && userToUpdate.user_service_account !== userServiceAccountInput.value[0]) {
+        skipThisInput = true;
+      }
+
+      if (!userToUpdate.user_service_account) {
+        const userPassword = R.head(input.value).toString();
+        await checkPasswordFromPolicy(context, userPassword);
+        input.value = [bcrypt.hashSync(userPassword)];
+      } else {
+        throw FunctionalError('Cannot update password for Service account');
+      }
     }
     if (input.key === 'account_status') {
       // If account status is not active, kill all current user sessions
@@ -849,7 +904,23 @@ export const userEditField = async (context, user, userId, rawInputs) => {
         throw FunctionalError('The language you have provided is not valid');
       }
     }
-    inputs.push(input);
+
+    // Turn User into Service Account
+    if (input.key === 'user_service_account' && !userToUpdate.user_service_account && input.value[0] === true) {
+      inputs.push({ key: 'password', value: [null] });
+      await addUserIntoServiceAccountCount();
+    }
+    // Turn Service Account into User
+    if (input.key === 'user_service_account' && userToUpdate.user_service_account && input.value[0] === false) {
+      const userPassword = uuid();
+      await checkPasswordFromPolicy(context, userPassword);
+      inputs.push({ key: 'password', value: [bcrypt.hashSync(userPassword)] });
+      await addServiceAccountIntoUserCount();
+    }
+
+    if (!skipThisInput) {
+      inputs.push(input);
+    }
   }
   const { element } = await updateAttribute(context, user, userId, ENTITY_TYPE_USER, inputs);
   const input = updatedInputsToData(element, inputs);
@@ -1576,7 +1647,7 @@ export const userRenewToken = async (context, user, userId) => {
 const validateUser = (user, settings) => {
   // Check organization consistency
   const hasSetAccessCapability = isUserHasCapability(user, SETTINGS_SET_ACCESSES);
-  if (!hasSetAccessCapability && settings.platform_organization && user.organizations.length === 0) {
+  if (!hasSetAccessCapability && settings.platform_organization && user.organizations.length === 0 && !user.user_service_account) {
     throw AuthenticationFailure('You can\'t login without an organization');
   }
   // Check account expiration date

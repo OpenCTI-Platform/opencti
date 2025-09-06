@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { graphql } from 'react-relay';
 import { UsersLinesPaginationQuery, UsersLinesPaginationQuery$variables } from '@components/settings/__generated__/UsersLinesPaginationQuery.graphql';
 import { UsersLine_node$data } from '@components/settings/__generated__/UsersLine_node.graphql';
-import { AccountCircleOutlined, PersonOutlined } from '@mui/icons-material';
+import { AccountCircleOutlined, ManageAccountsOutlined, PersonOutlined } from '@mui/icons-material';
 import SettingsOrganizationUserCreation from './users/SettingsOrganizationUserCreation';
 import EnterpriseEdition from '../common/entreprise_edition/EnterpriseEdition';
 import UserCreation from './users/UserCreation';
@@ -87,6 +87,7 @@ const usersLineFragment = graphql`
       external
       lastname
       entity_type
+      user_service_account
       effective_confidence_level {
         max_confidence
       }
@@ -226,25 +227,30 @@ const Users = () => {
       {isSetAccess || isEnterpriseEdition ? (
         <>
           {queryRef && (
-            <DataTable
-              dataColumns={dataColumns}
-              resolvePath={(data) => data.users?.edges?.map(({ node }: { node: UsersLine_node$data }) => node)}
-              storageKey={LOCAL_STORAGE_KEY}
-              initialValues={initialValues}
-              toolbarFilters={contextFilters}
-              lineFragment={usersLineFragment}
-              preloadedPaginationProps={preloadedPaginationProps}
-              createButton={userCreateButton}
-              disableLineSelection={isOnlyAdminOrganization}
-              icon={(user) => {
-                const external = user.external === true;
-                if (external) {
-                  return <AccountCircleOutlined color="primary" />;
-                }
-                return <PersonOutlined color="primary" />;
-              }}
-              taskScope={'USER'}
-            />
+          <DataTable
+            dataColumns={dataColumns}
+            resolvePath={(data) => data.users?.edges?.map(({ node }: { node: UsersLine_node$data }) => node)}
+            storageKey={LOCAL_STORAGE_KEY}
+            initialValues={initialValues}
+            toolbarFilters={contextFilters}
+            lineFragment={usersLineFragment}
+            preloadedPaginationProps={preloadedPaginationProps}
+            createButton={userCreateButton}
+            disableLineSelection={isOnlyAdminOrganization}
+            icon={(user) => {
+              const external = user.external === true;
+              const userServiceAccount = user.user_service_account;
+              if (userServiceAccount) {
+                return <ManageAccountsOutlined color="primary" />;
+              }
+              if (external) {
+                return <AccountCircleOutlined color="primary" />;
+              }
+              return <PersonOutlined color="primary" />;
+            }}
+            taskScope={'USER'}
+            entityTypes={['User']}
+          />
           )}
         </>
       ) : (

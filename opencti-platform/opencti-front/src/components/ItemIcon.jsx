@@ -61,6 +61,7 @@ import {
   TaskAlt,
   TaskAltOutlined,
   TerminalOutlined,
+  TrackChanges,
   TranslateOutlined,
   TravelExploreOutlined,
   TroubleshootOutlined,
@@ -275,8 +276,11 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       return <PublicOutlined style={style} fontSize={fontSize} role="img" />;
     case 'malware':
       return <Biohazard style={style} fontSize={fontSize} role="img" />;
+    case 'in-pir':
+      return <TrackChanges style={style} fontSize={fontSize} role="img" />;
     case 'malware-analysis':
       return <BiotechOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'threat-actor':
     case 'threat-actor-group':
       return (
         <AccountMultipleOutline style={style} fontSize={fontSize} role="img" />

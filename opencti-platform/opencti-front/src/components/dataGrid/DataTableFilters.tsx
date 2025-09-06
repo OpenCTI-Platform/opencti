@@ -25,7 +25,6 @@ import { useDataTableContext } from './components/DataTableContext';
 export const DataTableDisplayFilters = ({
   availableFilterKeys,
   availableRelationFilterTypes,
-  additionalFilterKeys,
   availableEntityTypes,
   entityTypes,
 }: DataTableDisplayFiltersProps) => {
@@ -49,9 +48,6 @@ export const DataTableDisplayFilters = ({
         availableEntityTypes={availableEntityTypes}
         entityTypes={entityTypes}
         hasSavedFilters={!!savedFilters}
-        filtersRestrictions={{
-          preventRemoveFor: additionalFilterKeys,
-        }}
         redirection
       />
     </div>

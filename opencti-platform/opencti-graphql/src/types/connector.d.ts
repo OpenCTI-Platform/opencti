@@ -1,4 +1,4 @@
-import type { StoreEntity } from './store';
+import type { BasicStoreEntity, StoreEntity } from './store';
 
 export interface ConnectorInfo {
   run_and_terminate: boolean,
@@ -21,4 +21,20 @@ export interface BasicStoreEntityConnector extends StoreEntity {
   connector_user_id; string,
   connector_info: ConnectorInfo,
   playbook_compatible: boolean,
+}
+export interface BasicStoreEntityConnectorManager extends BasicStoreEntity {
+  public_key: string,
+}
+
+export interface BasicStoreEntitySynchronizer extends BasicStoreEntity {
+  name: string,
+  uri: string,
+  token?: string | null
+  stream_id: string,
+  running: boolean,
+  current_state_date: Date,
+  listen_deletion: boolean,
+  no_dependencies: boolean,
+  ssl_verify: boolean
+  synchronized: boolean
 }

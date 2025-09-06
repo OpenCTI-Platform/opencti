@@ -123,6 +123,7 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
     jobs(first: Int): [Work]
     status: Status
     workflowEnabled: Boolean
+    pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
     # DataComponents
     name: String!
     description: String

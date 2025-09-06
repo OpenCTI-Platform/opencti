@@ -20,7 +20,7 @@ import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { BUS_TOPICS, logApp } from '../../config/conf';
 import { getDraftContext } from '../../utils/draftContext';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_USER, ENTITY_TYPE_WORK } from '../../schema/internalObject';
-import { elAggregationCount, elCount, elList } from '../../database/engine';
+import { elAggregationCount, elCount, elList, elLoadById, loadDraftElement } from '../../database/engine';
 import { buildStixBundle } from '../../database/stix-2-1-converter';
 import { pushToWorkerForConnector } from '../../database/rabbitmq';
 import { SYSTEM_USER } from '../../utils/access';
@@ -185,6 +185,13 @@ export const addDraftWorkspace = async (context: AuthContext, user: AuthUser, in
   };
   const draftWorkspaceInput = { ...input, ...defaultOps };
   const createdDraftWorkspace = await createEntity(context, user, draftWorkspaceInput, ENTITY_TYPE_DRAFT_WORKSPACE);
+  if (createdDraftWorkspace && input.entity_id) {
+    const contextInDraft = { ...context, draft_context: createdDraftWorkspace.id };
+    const draftInEntity = await elLoadById(contextInDraft, user, input.entity_id);
+    if (draftInEntity) {
+      await loadDraftElement(contextInDraft, user, draftInEntity);
+    }
+  }
   await addDraftCreationCount();
   await publishUserAction({
     user,

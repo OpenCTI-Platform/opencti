@@ -2,7 +2,6 @@ import { ApolloServer } from '@apollo/server';
 import { ApolloArmor } from '@escape.tech/graphql-armor';
 import { dissocPath } from 'ramda';
 import { createValidation as createAliasBatch } from 'graphql-no-alias';
-import { constraintDirectiveDocumentation } from 'graphql-constraint-directive';
 import { GraphQLError } from 'graphql/error';
 import { createApollo4QueryValidationPlugin } from 'graphql-constraint-directive/apollo4';
 import createSchema from './schema';
@@ -14,7 +13,7 @@ import tracingPlugin from './tracingPlugin';
 import httpResponsePlugin from './httpResponsePlugin';
 
 const createApolloServer = () => {
-  let schema = createSchema();
+  const schema = createSchema();
   // graphql-constraint-directive plugin configuration
   const formats = {
     'not-blank': (value) => {
@@ -25,7 +24,6 @@ const createApolloServer = () => {
     }
   };
   const constraintPlugin = createApollo4QueryValidationPlugin({ formats });
-  schema = constraintDirectiveDocumentation()(schema);
   const apolloPlugins = [loggerPlugin, httpResponsePlugin, constraintPlugin];
   // Protect batch graphql through alias usage
   const batchPermissions = {

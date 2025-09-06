@@ -678,7 +678,10 @@ export const distributionHistory = async (context, user, types, args) => {
 export const distributionEntities = async (context, user, types, args) => {
   const distributionArgs = buildEntityFilters(types, args);
   const { limit = 10, order = 'desc', field } = args;
-  if (field.includes('.') && !field.endsWith('internal_id') && !field.includes('opinions_metrics')) {
+  const aggregationNotSupported = field.includes('.')
+    && !field.endsWith('internal_id')
+    && !field.includes('opinions_metrics');
+  if (aggregationNotSupported) {
     throw FunctionalError('Distribution entities does not support relation aggregation field');
   }
   let finalField = field;
@@ -718,7 +721,7 @@ export const distributionRelations = async (context, user, args) => {
   const types = relationshipTypes || [ABSTRACT_BASIC_RELATIONSHIP];
   const distributionDateAttribute = dateAttribute || 'created_at';
   let finalField = field;
-  if (field.includes('.')) {
+  if (field.includes('.') && !field.includes('pir_explanations')) {
     finalField = REL_INDEX_PREFIX + field;
   }
   // Using elastic can only be done if the distribution is a count on types
@@ -727,7 +730,7 @@ export const distributionRelations = async (context, user, args) => {
   const distributionData = await elAggregationRelationsCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_RELATIONSHIPS : READ_RELATIONSHIPS_INDICES, distributionArgs);
   // Take a maximum amount of distribution depending on the ordering.
   const orderingFunction = order === 'asc' ? R.ascend : R.descend;
-  if (field.includes(ID_INTERNAL) || field === 'creator_id' || field === 'x_opencti_workflow_id') {
+  if (field.includes(ID_INTERNAL) || field === 'creator_id' || field === 'x_opencti_workflow_id' || field.includes('author_id')) {
     return convertAggregateDistributions(context, user, limit, orderingFunction, distributionData);
   }
   return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
@@ -3480,6 +3483,7 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
         external_references: references.map((ref) => convertExternalReferenceToStix(ref))
       } : undefined;
       await elDeleteElements(context, user, [element]);
+      // Publish event in the stream
       const eventPromise = storeUpdateEvent(context, user, previous, instance, message, { ...opts, commit });
       const taskPromise = createContainerSharingTask(context, ACTION_TYPE_UNSHARE, element);
       const [, updateEvent] = await Promise.all([taskPromise, eventPromise]);

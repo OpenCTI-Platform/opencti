@@ -107,6 +107,7 @@ esbuild.context({
   app.use(middleware("/logout"));
   app.use(middleware("/stream"));
   app.use(middleware("/storage"));
+  app.use(middleware("/chatbot"));
   app.use(middleware("/taxii2"));
   app.use(middleware("/feeds"));
   app.use(middleware("/graphql", true));

@@ -1,5 +1,4 @@
 import React, { FunctionComponent } from 'react';
-import { StixNestedRefRelationshipCreationFromEntityMutation$variables } from './__generated__/StixNestedRefRelationshipCreationFromEntityMutation.graphql';
 import StixNestedRefRelationshipCreationFromEntity, { stixNestedRefRelationResolveTypes } from './StixNestedRefRelationshipCreationFromEntity';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -7,7 +6,8 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 interface StixNestedRefRelationshipCreationFromEntityContainerProps {
   entityId: string,
   entityType: string,
-  paginationOptions: StixNestedRefRelationshipCreationFromEntityMutation$variables,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  paginationOptions: any, // FIXME find the right type
   variant: string,
 }
 

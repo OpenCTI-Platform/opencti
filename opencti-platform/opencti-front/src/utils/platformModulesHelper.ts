@@ -36,6 +36,7 @@ export interface ModuleHelper {
   isPlaygroundEnable: () => boolean;
   generateDisableMessage: (manager: string) => string;
   isRequestAccessEnabled: () => boolean;
+  isChatbotAiEnabled: () => boolean;
 }
 
 const isFeatureEnable = (
@@ -86,6 +87,7 @@ const platformModuleHelper = (
   isPlaygroundEnable: () => settings.playground_enabled,
   generateDisableMessage: (id: string) => (!isModuleEnable(settings, id) ? DISABLE_MANAGER_MESSAGE : ''),
   isRequestAccessEnabled: () => settings.request_access_enabled,
+  isChatbotAiEnabled: () => settings.filigran_chatbot_ai_cgu_status === 'enabled',
 });
 
 export default platformModuleHelper;

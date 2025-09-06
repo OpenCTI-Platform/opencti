@@ -101,6 +101,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
+  pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
   # Container
   authorized_members: [MemberAccess!]
   authorized_members_activation_date: DateTime

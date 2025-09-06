@@ -1,8 +1,39 @@
 import { isDateNumericOrBooleanAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
-import { UnsupportedError } from '../config/errors';
+import { FunctionalError, UnsupportedError } from '../config/errors';
+import { getPirWithAccessCheck } from '../modules/pir/pir-checkPirAccess';
+import type { AuthContext, AuthUser } from '../types/user';
 
-export const buildElasticSortingForAttributeCriteria = (orderCriteria: string, orderMode: 'asc' | 'desc') => {
+const PIR_ORDERING_CRITERIA = ['pir_score', 'last_pir_score_date'];
+
+export const buildElasticSortingForAttributeCriteria = async (
+  context: AuthContext,
+  user: AuthUser,
+  orderCriteria: string,
+  orderMode: 'asc' | 'desc',
+  pirId?: string,
+) => {
   let definition;
+  if (PIR_ORDERING_CRITERIA.includes(orderCriteria)) {
+    // the pir id should be specified and the pir accessible
+    if (!pirId) {
+      throw FunctionalError('You should provide a PIR ID to order by pir_score.');
+    }
+    // check the user has access to the PIR
+    await getPirWithAccessCheck(context, user, pirId);
+    // return nested order criteria associated to the given PIR ID
+    return { [`pir_information.${orderCriteria}`]: {
+      order: orderMode,
+      missing: '_last',
+      nested: {
+        path: 'pir_information',
+        filter: {
+          term: {
+            'pir_information.pir_id.keyword': pirId,
+          },
+        }
+      }
+    } };
+  }
   if (orderCriteria.includes('.') && !orderCriteria.endsWith('*')) {
     const attribute = schemaAttributesDefinition.getAttributeByName(orderCriteria.split('.')[0]);
     if (attribute && attribute.type === 'object' && attribute.format === 'standard') {
@@ -30,9 +61,14 @@ export const buildElasticSortingForAttributeCriteria = (orderCriteria: string, o
     const { sortBy } = definition;
     if (sortBy) {
       if (sortBy.type === 'numeric' || sortBy.type === 'boolean' || sortBy.type === 'date') {
-        return { [sortBy.path]: { order: orderMode, missing: sortBy.type === 'date' ? 0 : '_last' } };
+        return { [sortBy.path]: {
+          order: orderMode,
+          missing: sortBy.type === 'date' ? 0 : '_last',
+        } };
       }
-      return { [`${sortBy.path}.keyword`]: { order: orderMode, missing: '_last' } };
+      return { [`${sortBy.path}.keyword`]: {
+        order: orderMode, missing: '_last',
+      } };
     }
     throw UnsupportedError(`Sorting on [${orderCriteria}] is not supported: this criteria does not have a sortBy definition in schema`);
   }

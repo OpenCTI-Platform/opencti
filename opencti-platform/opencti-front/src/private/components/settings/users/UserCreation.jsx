@@ -36,17 +36,31 @@ const userMutation = graphql`
 `;
 
 const userValidation = (t) => Yup.object().shape({
+  user_service_account: Yup.boolean(),
   name: Yup.string().required(t('This field is required')),
   user_email: Yup.string()
-    .required(t('This field is required'))
-    .email(t('The value must be an email address')),
+    .email(t('The value must be an email address'))
+    .when('user_service_account', {
+      is: true,
+      then: (schema) => schema.nullable(),
+      otherwise: (schema) => schema.required(t('This field is required')).nullable(),
+    }),
   firstname: Yup.string().nullable(),
   lastname: Yup.string().nullable(),
   description: Yup.string().nullable(),
-  password: Yup.string().required(t('This field is required')),
+  password: Yup.string()
+    .when('user_service_account', {
+      is: true,
+      then: (schema) => schema.nullable(),
+      otherwise: (schema) => schema.required(t('This field is required')).nullable(),
+    }),
   confirmation: Yup.string()
     .oneOf([Yup.ref('password'), null], t('The values do not match'))
-    .required(t('This field is required')),
+    .when('user_service_account', {
+      is: true,
+      then: (schema) => schema.nullable(),
+      otherwise: (schema) => schema.required(t('This field is required')).nullable(),
+    }),
   user_confidence_level_enabled: Yup.boolean(),
   user_confidence_level: Yup.number()
     .min(0, t('The value must be greater than or equal to 0'))
@@ -92,6 +106,13 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
     delete finalValues.confirmation;
     delete finalValues.user_confidence_level_enabled;
 
+    if (finalValues.user_service_account) {
+      delete finalValues.password;
+      if (finalValues.user_email === '') {
+        delete finalValues.user_email;
+      }
+    }
+
     commitMutation({
       mutation: userMutation,
       variables: {
@@ -106,6 +127,26 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
     });
   };
 
+  const initialValuesBase = {
+    name: '',
+    user_email: '',
+    firstname: '',
+    lastname: '',
+    description: '',
+    password: '',
+    confirmation: '',
+    objectOrganization: [],
+    groups: [],
+    account_status: 'Active',
+    account_lock_after_date: null,
+    user_confidence_level: null,
+    prevent_default_groups: false,
+  };
+  const initialValues = {
+    ...initialValuesBase,
+    ...{ user_service_account: false },
+  };
+
   return (
     <Drawer
       title={t_i18n('Create a user')}
@@ -118,28 +159,30 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
           </Alert>
           <br />
           <Formik
-            initialValues={{
-              name: '',
-              user_email: '',
-              firstname: '',
-              lastname: '',
-              description: '',
-              password: '',
-              confirmation: '',
-              objectOrganization: [],
-              groups: [],
-              account_status: 'Active',
-              account_lock_after_date: null,
-              user_confidence_level: null,
-              prevent_default_groups: false,
-              email_template_id: null,
-            }}
+            initialValues={ initialValues }
             validationSchema={userValidation(t_i18n)}
             onSubmit={onSubmit}
             onReset={onClose}
           >
             {({ submitForm, handleReset, isSubmitting }) => (
               <Form>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <Field
+                    component={SwitchField}
+                    type="checkbox"
+                    name="user_service_account"
+                    label={t_i18n('This user is a service account')}
+                  />
+                  <Tooltip
+                    title={t_i18n('Service accounts do not have any password and a randomized email address will be generated, if not provided on creation. Service account do not receive notifications. Service account pertains automatically to the main platform organization.')}
+                  >
+                    <InformationOutline
+                      fontSize="small"
+                      color="primary"
+                      style={{ cursor: 'default' }}
+                    />
+                  </Tooltip>
+                </div>
                 <Field
                   component={TextField}
                   name="name"
@@ -153,6 +196,7 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                   label={t_i18n('Email address')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
+                  data-testid='user-creation-email-address-input'
                 />
                 <Field
                   component={TextField}
@@ -188,6 +232,7 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                   type="password"
                   style={{ marginTop: 20 }}
                   fullWidth={true}
+                  data-testid='user-creation-password-input'
                 />
                 <Field
                   component={TextField}
@@ -261,7 +306,7 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                   />
                 )}
                 <div style={{
-                  marginTop: 40,
+                  marginTop: 20,
                   textAlign: 'right',
                 }}
                 >

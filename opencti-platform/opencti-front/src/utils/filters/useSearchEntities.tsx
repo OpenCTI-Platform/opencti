@@ -37,11 +37,12 @@ import { fetchQuery } from '../../relay/environment';
 import { useSearchEntitiesSchemaSCOSearchQuery$data } from './__generated__/useSearchEntitiesSchemaSCOSearchQuery.graphql';
 import type { Theme } from '../../components/Theme';
 import useAttributes, { containerTypes } from '../hooks/useAttributes';
-import { contextFilters, entityTypesFilters, FilterSearchContext, ME_FILTER_VALUE } from './filtersUtils';
+import { contextFilters, entityTypesFilters, FilterSearchContext, getFilterDefinitionFromFilterKeysMap, ME_FILTER_VALUE } from './filtersUtils';
 import { useSearchEntitiesDashboardsQuery$data } from './__generated__/useSearchEntitiesDashboardsQuery.graphql';
 import { convertMarking } from '../edition';
 import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../hooks/useGranted';
 import { displayEntityTypeForTranslation } from '../String';
+import { useSearchEntitiesGroupsQuery$data } from './__generated__/useSearchEntitiesGroupsQuery.graphql';
 
 const filtersStixCoreObjectsSearchQuery = graphql`
   query useSearchEntitiesStixCoreObjectsSearchQuery(
@@ -241,6 +242,20 @@ const workspacesQuery = graphql`
         node {
           id
           name
+        }
+      }
+    }
+  }
+`;
+
+const groupsQuery = graphql`
+  query useSearchEntitiesGroupsQuery($search: String, $first: Int) {
+    groups(search: $search, first: $first) {
+      edges {
+        node {
+          id
+          name
+          entity_type
         }
       }
     }
@@ -448,6 +463,26 @@ const useSearchEntities = ({
             parentTypes: node.parent_types.flatMap((t) => (t || [])),
           }));
           unionSetEntities(key, elementIdEntities);
+        });
+    };
+
+    // fetches groups and add them to the set
+    const buildOptionsFromGroupSearchQuery = (key: string) => {
+      fetchQuery(groupsQuery, {
+        search: event.target.value !== 0 ? event.target.value : '',
+        first: 10,
+      })
+        .toPromise()
+        .then((data) => {
+          const groups: EntityValue[] = (
+            (data as useSearchEntitiesGroupsQuery$data)?.groups
+              ?.edges ?? []
+          ).flatMap((n) => (!n ? [] : {
+            label: n.node.name,
+            value: n.node.id,
+            type: n.node.entity_type,
+          }));
+          unionSetEntities(key, groups);
         });
     };
 
@@ -982,7 +1017,7 @@ const useSearchEntities = ({
     } else {
       // case 2: build according to the filter type
       // depending on the filter type, fetch the right data and build the options list
-      const filterDefinition: FilterDefinition | undefined = filterKeysMap.get(filterKey) ?? undefined;
+      const filterDefinition: FilterDefinition | undefined = getFilterDefinitionFromFilterKeysMap(filterKey, filterKeysMap);
       const filterType = filterDefinition?.type ?? 'undefined';
       switch (filterType) {
         case 'vocabulary':
@@ -1007,6 +1042,8 @@ const useSearchEntities = ({
               buildOptionsFromStixCoreObjectTypes(filterKey, idEntityTypes);
             } else if (idEntityTypes.every((typeOfId) => schema.smos.map((n) => n.id).includes(typeOfId))) { // Stix Meta Objects
               buildOptionsFromStixMetaObjectTypes(filterKey, idEntityTypes);
+            } else if (idEntityTypes.includes('Group')) {
+              buildOptionsFromGroupSearchQuery(filterKey);
             } else if (idEntityTypes.includes('Notifier')) {
               fetchQuery(NotifierFieldQuery)
                 .toPromise()

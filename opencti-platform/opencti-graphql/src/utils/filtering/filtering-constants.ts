@@ -1,5 +1,6 @@
 import { INPUT_LABELS } from '../../schema/general';
 import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
+import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../../schema/internalRelationship';
 
 // Resolved-Filters
 // These require special handling when comparing to a stix object as they need to be resolved before comparison
@@ -88,7 +89,14 @@ export const MEMBERS_ORGANIZATION_FILTER = 'members_organization';
 export const ALIAS_FILTER = 'alias'; // handle both 'aliases' and 'x_opencti_aliases' attributes
 export const IS_INFERRED_FILTER = 'is_inferred'; // if an entity or relationship is inferred
 
-export const complexConversionFilterKeys = [
+// for PIR
+export const PIR_SCORE_FILTER_PREFIX = 'pir_score';
+export const LAST_PIR_SCORE_DATE_FILTER_PREFIX = 'last_pir_score_date';
+
+// for users
+export const USER_SERVICE_ACCOUNT_FILTER = 'user_service_account';
+
+const COMPLEX_CONVERSION_FILTER_KEYS = [
   IDS_FILTER, // values should match any id (internal_id, standard_id, or stix_id)
   TYPE_FILTER, // values should match any parent_types
   RELATION_TYPE_FILTER, // values should match any parent_types
@@ -104,21 +112,28 @@ export const complexConversionFilterKeys = [
   INSTANCE_RELATION_TYPES_FILTER, // nested relation for the from or to type of a relationship
   RELATION_FROM_FILTER, // nested relation for the from of a relationship
   RELATION_TO_FILTER, // nested relation for the to of a relationship
-  RELATION_TO_SIGHTING_FILTER, // nested sigthing relation for the to of a sighting
+  RELATION_TO_SIGHTING_FILTER, // nested sighting relation for the to of a sighting
   RELATION_FROM_TYPES_FILTER, // nested relation for the from type of a relationship
   RELATION_TO_TYPES_FILTER, // nested relation for the to type of a relationship
   RELATION_FROM_ROLE_FILTER, // nested relation for the from role of a relationship
   RELATION_TO_ROLE_FILTER, // nested relation for the to role of a relationship
   ALIAS_FILTER, // key that target both the 'aliases' and 'x_opencti_aliases' attributes
   IS_INFERRED_FILTER, // if an entity or relationship is inferred
+  USER_SERVICE_ACCOUNT_FILTER, // if the user is technical or not
   'authorized_members', // nested filter on restricted members => kept for retro compatibility (TODO remove after renaming)
   'authorized_members.id', // nested filter on restricted members => kept for retro compatibility (TODO remove after renaming)
   'restricted_members.id', // nested filter on restricted members
 ];
 
+export const isComplexConversionFilterKey = (filterKey: string) => {
+  return COMPLEX_CONVERSION_FILTER_KEYS.includes(filterKey)
+    || filterKey.startsWith(PIR_SCORE_FILTER_PREFIX)
+    || filterKey.startsWith(LAST_PIR_SCORE_DATE_FILTER_PREFIX);
+};
+
 // list of the special filtering keys
 // (= key with a complex behavior, not belonging to the schema ref definition or the attribute definitions)
-export const specialFilterKeys = [
+export const SPECIAL_FILTER_KEYS = [
   SIGHTED_BY_FILTER, // relation between elements linked by a stix sighting relationship
   CONNECTIONS_FILTER, // for nested filters
   `rel_${RELATION_OBJECT}`,
@@ -138,12 +153,12 @@ export const specialFilterKeys = [
   MEMBERS_GROUP_FILTER,
   MEMBERS_ORGANIZATION_FILTER,
   RULE_FILTER, // for inference engine rules
-  ...complexConversionFilterKeys
+  ...COMPLEX_CONVERSION_FILTER_KEYS
 ];
 
 // list of filter keys that are not relation refs keys but whose values need to be resolved (= values point an entity with an id)
 // used in findFiltersRepresentatives
-export const specialFilterKeysWhoseValueToResolve = [
+export const SPECIAL_FILTER_KEYS_WHOSE_VALUE_TO_RESOLVE = [
   SIGHTED_BY_FILTER, // relation between elements linked by a stix sighting relationship
   INSTANCE_REGARDING_OF,
   INSTANCE_DYNAMIC_REGARDING_OF,
@@ -168,12 +183,14 @@ export const specialFilterKeysWhoseValueToResolve = [
   WORKFLOW_FILTER,
   INSTANCE_RELATION_FILTER,
   RELATION_FROM_FILTER,
-  RELATION_TO_FILTER
+  RELATION_TO_FILTER,
+  RELATION_MEMBER_OF,
+  RELATION_PARTICIPATE_TO,
 ];
 
 // special filter values
 export const ME_FILTER_VALUE = '@me';
-export const filterKeysWithMeValue = [
+export const FILTER_KEYS_WITH_ME_VALUE = [
   ASSIGNEE_FILTER,
   PARTICIPANT_FILTER,
   CONTEXT_CREATOR_FILTER,

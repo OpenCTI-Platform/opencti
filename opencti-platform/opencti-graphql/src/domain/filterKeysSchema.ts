@@ -389,16 +389,16 @@ const completeFilterDefinitionMapWithSpecialKeys = (
   }
   if (type === ENTITY_TYPE_USER) {
     // add context filters
-    filterDefinitionsMap.set(RELATION_MEMBER_OF, {
-      filterKey: RELATION_MEMBER_OF,
+    filterDefinitionsMap.set(RELATION_PARTICIPATE_TO, {
+      filterKey: RELATION_PARTICIPATE_TO,
       type: 'id',
       label: 'Organizations',
       multiple: true,
       subEntityTypes,
       elementsForFilterValuesSearch: [ENTITY_TYPE_IDENTITY_ORGANIZATION],
     });
-    filterDefinitionsMap.set(RELATION_PARTICIPATE_TO, {
-      filterKey: RELATION_PARTICIPATE_TO,
+    filterDefinitionsMap.set(RELATION_MEMBER_OF, {
+      filterKey: RELATION_MEMBER_OF,
       type: 'id',
       label: 'Groups',
       multiple: true,

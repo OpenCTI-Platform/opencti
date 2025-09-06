@@ -51,7 +51,7 @@ const FileExternalReferencesViewerBase = ({
     };
   });
   return (
-    <Grid item xs={6}>
+    <Grid item xs={12}>
       <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
         {t('External references files')}
       </Typography>

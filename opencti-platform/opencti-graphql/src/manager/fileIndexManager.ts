@@ -185,7 +185,7 @@ const initFileIndexManager = () => {
         lock = await lockResources([FILE_INDEX_MANAGER_STREAM_KEY], { retryCount: 0 });
         running = true;
         logApp.info('[OPENCTI-MODULE] Running file index manager stream handler');
-        streamProcessor = createStreamProcessor(SYSTEM_USER, 'File index manager', handleStreamEvents);
+        streamProcessor = createStreamProcessor(SYSTEM_USER, 'File index manager', handleStreamEvents, { bufferTime: 5000 });
         await streamProcessor.start('live');
         while (!shutdown && streamProcessor.running()) {
           lock.signal.throwIfAborted();

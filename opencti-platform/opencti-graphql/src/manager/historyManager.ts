@@ -1,7 +1,6 @@
 import * as R from 'ramda';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import * as jsonpatch from 'fast-json-patch';
-import type { AddOperation } from 'fast-json-patch/module/core';
 import { createStreamProcessor, type StreamProcessor } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, ENABLED_DEMO_MODE, isFeatureEnabled, logApp } from '../config/conf';
@@ -17,7 +16,7 @@ import { internalFindByIds, listEntities } from '../database/middleware-loader';
 import type { BasicRuleEntity, BasicStoreEntity } from '../types/store';
 import { BASE_TYPE_ENTITY, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
 import { generateStandardId } from '../schema/identifier';
-import { ENTITY_TYPE_HISTORY } from '../schema/internalObject';
+import { ENTITY_TYPE_HISTORY, ENTITY_TYPE_PIR_HISTORY } from '../schema/internalObject';
 import type { StixId } from '../types/stix-2-1-common';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { getEntitiesMapFromCache } from '../database/cache';
@@ -26,7 +25,7 @@ import { FilterMode, FilterOperator, OrderingMode } from '../generated/graphql';
 import { extractStixRepresentative } from '../database/stix-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
-import { inPir } from '../schema/stixRefRelationship';
+import { RELATION_IN_PIR } from '../schema/internalRelationship';
 
 const HISTORY_ENGINE_KEY = conf.get('history_manager:lock_key');
 const HISTORY_WITH_INFERENCES = booleanConf('history_manager:include_inferences', false);
@@ -46,6 +45,8 @@ interface HistoryContext {
   created_by_ref_id?: string;
   marking_definitions?: Array<string>;
   pir_ids?: Array<string>;
+  pir_score?: number;
+  pir_match_from?: boolean;
 }
 
 export interface HistoryData extends BasicStoreEntity {
@@ -88,40 +89,51 @@ export const resolveGrantedRefsIds = async (context: AuthContext, events: Array<
   return organizationByIdsMap;
 };
 
-export const generatePirIdsFromHistoryEvent = (event: SseEvent<StreamDataEvent>) => {
-  // Listened events: stix core relationships, 'contains', pir meta rels
+export const generatePirContextData = (event: SseEvent<StreamDataEvent>): Partial<HistoryContext> => {
+  let pir_ids: string[] = [];
+  let from_id: string | undefined;
+  let to_id: string | undefined;
+  let pir_match_from = false;
+  let pir_score: number | undefined;
+  // Listened events: stix core relationships, pir relationships, 'contains' flagged entities
   const eventData = event.data.data;
   // 1. detect stix core relationships
   if (eventData.type === 'relationship') {
-    if (isStixCoreRelationship((eventData as StixRelation).relationship_type)) {
-      const extensions = (eventData as StixRelation).extensions[STIX_EXT_OCTI];
+    const relationEvent = eventData as StixRelation;
+    if (isStixCoreRelationship(relationEvent.relationship_type)) {
+      const extensions = relationEvent.extensions[STIX_EXT_OCTI];
+      from_id = extensions.source_ref;
+      to_id = extensions.target_ref;
       if ((extensions.source_ref_pir_refs ?? []).length > 0) {
-        return extensions.source_ref_pir_refs;
-      } if ((extensions.target_ref_pir_refs ?? []).length > 0) {
-        return extensions.target_ref_pir_refs;
+        pir_match_from = true;
+        pir_ids = extensions.source_ref_pir_refs;
+      } else if ((extensions.target_ref_pir_refs ?? []).length > 0) {
+        pir_ids = extensions.target_ref_pir_refs;
       }
     }
-  }
-  if (event.event === 'update' && (event.data as UpdateEvent).context.patch) {
+  } else if (eventData.type === 'internal-relationship'
+    && eventData.extensions[STIX_EXT_OCTI].type === RELATION_IN_PIR
+  ) { // 2. detect in-pir relations
+    const relationEvent = eventData as StixRelation;
+    const extensions = relationEvent.extensions[STIX_EXT_OCTI];
+    from_id = extensions.source_ref;
+    pir_ids = [extensions.target_ref];
+    pir_score = extensions.pir_score;
+  } else if (event.event === 'update' && (event.data as UpdateEvent).context.patch) {
     const updateEvent: UpdateEvent = event.data as UpdateEvent;
-    // 2. detect 'contains' rel
+    // 3. detect 'contains' rel
     const pirIds = updateEvent.context.pir_ids ?? [];
     if (pirIds.length > 0) {
-      return pirIds;
-    }
-    // 3. detect in-pir rels
-    if (event.data.message.includes(inPir.label)) {
-      if (event.data.message.includes('adds')) {
-        const pirPatch = updateEvent.context.patch[0] as AddOperation<string[]>;
-        return pirPatch.value;
-      }
-      if (event.data.message.includes('removes')) {
-        const pirPatch = updateEvent.context.reverse_patch[0] as AddOperation<string[]>;
-        return pirPatch.value;
-      }
+      pir_ids = pirIds;
     }
   }
-  return [];
+  return {
+    pir_ids,
+    from_id,
+    to_id,
+    pir_match_from,
+    pir_score,
+  };
 };
 
 export const buildHistoryElementsFromEvents = async (context:AuthContext, events: Array<SseEvent<StreamDataEvent>>) => {
@@ -144,7 +156,7 @@ export const buildHistoryElementsFromEvents = async (context:AuthContext, events
         .map((stixId) => grantedRefsResolved.get(stixId))
         .filter((o) => isNotEmptyField(o));
     }
-    const contextData: HistoryContext = {
+    let contextData: HistoryContext = {
       id: stix.extensions[STIX_EXT_OCTI].id,
       message: event.data.message,
       entity_type: stix.extensions[STIX_EXT_OCTI].type,
@@ -190,9 +202,20 @@ export const buildHistoryElementsFromEvents = async (context:AuthContext, events
     }
     const activityDate = utcDate(eventDate).toDate();
     const standardId = generateStandardId(ENTITY_TYPE_HISTORY, { internal_id: event.id }) as StixId;
+    let entity_type = ENTITY_TYPE_HISTORY;
     if (isFeatureEnabled('Pir')) {
-      contextData.pir_ids = generatePirIdsFromHistoryEvent(event);
+      // add Pir context data for concerned events
+      contextData = {
+        ...contextData,
+        ...generatePirContextData(event)
+      };
+      // history type is different for events concerning pir relationships
+      const eventData = event.data.data;
+      entity_type = eventData.type === 'internal-relationship' && eventData.extensions[STIX_EXT_OCTI].type === RELATION_IN_PIR
+        ? ENTITY_TYPE_PIR_HISTORY
+        : ENTITY_TYPE_HISTORY;
     }
+    // return history object
     return {
       _index: INDEX_HISTORY,
       internal_id: event.id,
@@ -200,13 +223,14 @@ export const buildHistoryElementsFromEvents = async (context:AuthContext, events
       base_type: BASE_TYPE_ENTITY,
       created_at: activityDate,
       updated_at: activityDate,
-      entity_type: ENTITY_TYPE_HISTORY,
+      entity_type,
       event_type: 'mutation',
       event_scope: event.event,
       user_id: ENABLED_DEMO_MODE ? REDACTED_USER.id : event.data.origin?.user_id,
       group_ids: event.data.origin?.group_ids ?? [],
       organization_ids: event.data.origin?.organization_ids ?? [],
       applicant_id: event.data.origin?.applicant_id,
+      user_metadata: event.data.origin?.user_metadata,
       timestamp: eventDate,
       context_data: contextData,
       restricted_members: stix.extensions[STIX_EXT_OCTI].authorized_members,
@@ -265,7 +289,7 @@ const initHistoryManager = () => {
       lock = await lockResources([HISTORY_ENGINE_KEY], { retryCount: 0 });
       running = true;
       logApp.info('[OPENCTI-MODULE] Running history manager');
-      streamProcessor = createStreamProcessor(SYSTEM_USER, 'History manager', historyStreamHandler);
+      streamProcessor = createStreamProcessor(SYSTEM_USER, 'History manager', historyStreamHandler, { bufferTime: 5000 });
       await streamProcessor.start(lastEventId);
       while (!shutdown && streamProcessor.running()) {
         lock.signal.throwIfAborted();

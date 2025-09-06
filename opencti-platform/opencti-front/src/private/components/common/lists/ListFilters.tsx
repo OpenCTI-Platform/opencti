@@ -11,7 +11,7 @@ import MUIAutocomplete from '@mui/material/Autocomplete';
 import { type handleFilterHelpers } from 'src/utils/filters/filtersHelpers-types';
 import { type SavedFiltersSelectionData } from 'src/components/saved_filters/SavedFilterSelection';
 import { useFormatter } from '../../../../components/i18n';
-import { useBuildFilterKeysMapFromEntityType, getDefaultFilterObject } from '../../../../utils/filters/filtersUtils';
+import { useBuildFilterKeysMapFromEntityType, getDefaultFilterObject, getFilterDefinitionFromFilterKeysMap } from '../../../../utils/filters/filtersUtils';
 import SavedFilters from '../../../../components/saved_filters/SavedFilters';
 import SavedFilterButton from '../../../../components/saved_filters/SavedFilterButton';
 
@@ -109,7 +109,8 @@ const ListFilters = ({
   };
 
   const handleChange = (value: string) => {
-    helpers?.handleAddFilterWithEmptyValue(getDefaultFilterObject(value, filterKeysMap.get(value)));
+    const filterDefinition = getFilterDefinitionFromFilterKeysMap(value, filterKeysMap);
+    helpers?.handleAddFilterWithEmptyValue(getDefaultFilterObject(value, filterDefinition));
   };
 
   const isNotUniqEntityTypes = (entityTypes.length === 1 && ['Stix-Core-Object', 'Stix-Domain-Object', 'Stix-Cyber-Observable', 'Container'].includes(entityTypes[0]))
@@ -118,12 +119,13 @@ const ListFilters = ({
   const options = isNotUniqEntityTypes
     ? availableFilterKeys
       .map((key) => {
-        const subEntityTypes = filterKeysMap.get(key)?.subEntityTypes ?? [];
+        const filterDefinition = getFilterDefinitionFromFilterKeysMap(key, filterKeysMap);
+        const subEntityTypes = filterDefinition?.subEntityTypes ?? [];
         const isFilterKeyForAllTypes = (entityTypes.length === 1 && subEntityTypes.some((subType) => entityTypes.includes(subType)))
           || (entityTypes.length > 1 && entityTypes.every((subType) => subEntityTypes.includes(subType)));
         return {
           value: key,
-          label: t_i18n(filterKeysMap.get(key)?.label ?? key),
+          label: t_i18n(filterDefinition?.label ?? key),
           numberOfOccurences: subEntityTypes.length,
           // eslint-disable-next-line no-nested-ternary
           groupLabel: isFilterKeyForAllTypes
@@ -136,9 +138,10 @@ const ListFilters = ({
       .sort((a, b) => b.groupOrder - a.groupOrder) // 'Most used filters' before 'All other filters'
     : availableFilterKeys
       .map((key) => {
+        const filterDefinition = getFilterDefinitionFromFilterKeysMap(key, filterKeysMap);
         return {
           value: key,
-          label: t_i18n(filterKeysMap.get(key)?.label ?? key),
+          label: t_i18n(filterDefinition?.label ?? key),
         };
       })
       .sort((a, b) => a.label.localeCompare(b.label));

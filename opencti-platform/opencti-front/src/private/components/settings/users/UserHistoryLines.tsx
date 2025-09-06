@@ -37,7 +37,7 @@ export const userHistoryLinesQuery = graphql`
     @arguments( types: $types, search: $search, orderBy: $orderBy, orderMode: $orderMode, filters: $filters, cursor: $cursor)}
 `;
 
-const userHistoryLinesFragment = graphql`
+export const userHistoryLinesFragment = graphql`
     fragment UserHistoryLines_data on Query
     @argumentDefinitions(
       types: { type: "[String!]" }
@@ -62,6 +62,11 @@ const userHistoryLinesFragment = graphql`
             id
             ...UserHistoryLine_node
           }
+        }
+        pageInfo {
+          endCursor
+          hasNextPage
+          globalCount
         }
       }
     }

@@ -13,12 +13,12 @@ import {
   ingestionCsvEditField,
   ingestionCsvResetState,
   testCsvIngestionMapping,
-  userAlreadyExists
 } from './ingestion-csv-domain';
+import { userAlreadyExists } from '../user/user-domain';
 
 const ingestionCsvResolvers: Resolvers = {
   Query: {
-    ingestionCsv: (_, { id }, context) => findById(context, context.user, id),
+    ingestionCsv: (_, { id }, context) => findById(context, context.user, id, true),
     ingestionCsvs: (_, args, context) => findAllPaginated(context, context.user, args),
     csvFeedAddInputFromImport: (_, { file }, context) => csvFeedAddInputFromImport(context, context.user, file),
     defaultIngestionGroupCount: (_, __, context) => defaultIngestionGroupsCount(context),

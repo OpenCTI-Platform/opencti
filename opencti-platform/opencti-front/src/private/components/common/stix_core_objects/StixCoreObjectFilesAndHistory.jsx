@@ -15,6 +15,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import { InfoOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
+import DraftWorkspaceViewer from '../files/draftWorkspace/DraftWorkspaceViewer';
 import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE } from '../files/FileManager';
 import ManageImportConnectorMessage from '../../data/import/ManageImportConnectorMessage';
 import ObjectMarkingField from '../form/ObjectMarkingField';
@@ -265,15 +266,16 @@ const StixCoreObjectFilesAndHistory = ({
           connectors={importConnsPerFormat}
           handleOpenImport={handleOpenImport}
         />
-        <WorkbenchFileViewer
-          entity={entity}
-          handleOpenImport={handleOpenImport}
-        />
         <FileExportViewer
           entity={entity}
           handleOpenExport={handleOpenExport}
           isExportPossible={isExportPossible}
         />
+        <WorkbenchFileViewer
+          entity={entity}
+          handleOpenImport={handleOpenImport}
+        />
+        <DraftWorkspaceViewer entityId={entity.id} />
         <FileExternalReferencesViewer
           entity={entity}
           connectors={importConnsPerFormat}

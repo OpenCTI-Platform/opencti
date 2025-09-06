@@ -12,24 +12,25 @@ import { findById as findUserById } from '../../../src/domain/user';
 import { executionContext, SYSTEM_USER } from '../../../src/utils/access';
 
 const DELETE_USER_QUERY = gql`
-    mutation userDelete($id: ID!) {
-        userEdit(id: $id) {
-            delete
-        }
+  mutation userDelete($id: ID!) {
+    userEdit(id: $id) {
+      delete
     }
+  }
 `;
 
 const READ_USER_QUERY = gql`
-    query user($id: String!) {
-        user(id: $id) {
-            id
-            name
-            description
-            user_confidence_level {
-                max_confidence
-            }
-        }
+  query user($id: String!) {
+    user(id: $id) {
+      id
+      name
+      description
+      user_service_account
+      user_confidence_level {
+        max_confidence
+      }
     }
+  }
 `;
 describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
   const ingestionCreatedIds: string[] = [];
@@ -75,6 +76,7 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
     const createdUser = await findUserById(currentTestContext, SYSTEM_USER, ingestionCreated.user_id);
     expect(createdUser.name).toBe('[F] CSV Feed to test auto user creation without platform org');
     expect(createdUser.user_confidence_level?.max_confidence).toBe(42);
+    expect(createdUser.user_service_account).toBeTruthy();
     expect(createdUser.user_email.endsWith('@opencti.invalid'), `${createdUser.user_email} should ends with @opencti.invalid'`).toBeTruthy();
     const userInDefaultGroup: BasicGroupEntity[] = createdUser.groups.filter((group: BasicGroupEntity) => group.id === ingestionDefaultGroupId);
     expect(userInDefaultGroup[0].name).toBe('Connectors'); // just to check that user is in default ingestion group
@@ -110,13 +112,18 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
 
     const createdUser = await findUserById(currentTestContext, SYSTEM_USER, ingestionCreated.user_id);
     expect(createdUser.name).toBe('[F] CSV Feed to test auto user creation with platform org');
+    expect(createdUser.user_service_account).toBeTruthy();
     expect(createdUser.user_confidence_level?.max_confidence).toBe(81);
     expect(createdUser.user_email.endsWith('@opencti.invalid'), `${createdUser.user_email} should ends with @opencti.invalid'`).toBeTruthy();
     const userInDefaultGroup: BasicGroupEntity[] = createdUser.groups.filter((group: BasicGroupEntity) => group.id === ingestionDefaultGroupId);
     expect(userInDefaultGroup[0].name).toBe('Connectors'); // just to check that user is in default ingestion group
     expect(createdUser.groups.length, 'Platform default group should not apply, only default ingestion group').toBe(1);
-    expect(createdUser.organizations.length, 'There is one platform org, so user should have one organization').toBe(1);
-    expect(createdUser.organizations[0].id).toBe(platformOrganization.id);
+    if (!createdUser.user_service_account) {
+      expect(createdUser.organizations.length, 'There is one platform org, so user should have one organization').toBe(1);
+      expect(createdUser.organizations[0].id).toBe(platformOrganization.id);
+    } else {
+      expect(createdUser.organizations.length, 'There is one platform org, so user should not have organization').toBe(0);
+    }
     // Delete just created user
     await adminQuery({
       query: DELETE_USER_QUERY,
@@ -155,6 +162,7 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
     expect(ingestionCreated.user_id).toBe(USER_EDITOR.id);
 
     const editorUser = await findUserById(currentTestContext, SYSTEM_USER, USER_EDITOR.id);
+    expect(editorUser.user_service_account).toBeFalsy();
     expect(editorUser.user_confidence_level?.max_confidence).toBeUndefined();
     expect(editorUser.user_email).toBe('editor@opencti.io');
   });
@@ -174,6 +182,7 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
 
     const createdUser = await findUserById(currentTestContext, SYSTEM_USER, ingestionCreated.user_id);
     expect(createdUser.name).toBe('[F] MyFééd @ Testing @mail.fr 🌈🍅 - CSVフィードの作成');
+    expect(createdUser.user_service_account).toBeTruthy();
     expect(createdUser.user_confidence_level?.max_confidence).toBeUndefined();
     expect(createdUser.user_email.endsWith('@opencti.invalid'), `${createdUser.user_email} should ends with @opencti.invalid'`).toBeTruthy();
     const userInDefaultGroup: BasicGroupEntity[] = createdUser.groups.filter((group: BasicGroupEntity) => group.id === ingestionDefaultGroupId);
@@ -217,13 +226,13 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
     expect(ingestionDefaultGroups[0].auto_integration_assignation).toStrictEqual(['global']);
   });
 
-  it('should a CSV Feed with auto user creation be refused when user already exists', async () => {
+  it('should a CSV Feed with auto user creation be refused when service account already exists', async () => {
     // Create feed
     const ingestionCsvInput: IngestionCsvAddInput = {
       authentication_type: IngestionAuthType.None,
-      name: 'Feed not created because auto user already exists',
+      name: 'Feed not created because auto service account already exists',
       uri: 'http://fakefeed.invalid',
-      user_id: '[F] Feed not created because auto user already exists',
+      user_id: '[F] Feed not created because auto service account already exists',
       automatic_user: true
     };
     // First call
@@ -232,7 +241,7 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
     // Second call with exact same parameters
     await expect(async () => {
       await addIngestionCsv(currentTestContext, ingestionUser, ingestionCsvInput);
-    }).rejects.toThrowError('This user already exists. Change the feed\'s name to change the automatically created user\'s name');
+    }).rejects.toThrowError('This service account already exists. Change the instance name to change the automatically created service account name');
 
     // Delete just created user
     const createdUser = await findUserById(currentTestContext, SYSTEM_USER, firstIngestionCreated.user_id);
@@ -273,6 +282,7 @@ describe('Ingestion CSV domain - ingestionCsvAddAutoUser', async () => {
     await deleteIngestionCsv(currentTestContext, ingestionUser, ingestionCreated.id);
     const createdUser = await findUserById(currentTestContext, SYSTEM_USER, ingestionCreated.user_id);
     expect(createdUser.name).toBe('[F] CSV Feed to test with auto user');
+    expect(createdUser.user_service_account).toBeTruthy();
     expect(createdUser.user_confidence_level?.max_confidence).toBe(32);
     // Delete just created user
     await adminQuery({
@@ -287,13 +297,14 @@ describe('Ingestion CSV domain - ingestionCsvAddAutoUser', async () => {
 
   it('should create an automatic user and associate it to the ingestion feed', async () => {
     const ingestionCsvAddAutoUserInput: IngestionCsvAddAutoUserInput = {
-      user_name: '[F] shoud create automatic user',
+      user_name: '[F] should create automatic user',
       confidence_level: 63
     };
     const ingestionModified = await ingestionCsvAddAutoUser(currentTestContext, ingestionUser, ingestionCreated.id, ingestionCsvAddAutoUserInput);
 
     const createdUser = await findUserById(currentTestContext, SYSTEM_USER, ingestionModified.user_id);
-    expect(createdUser.name).toBe('[F] shoud create automatic user');
+    expect(createdUser.name).toBe('[F] should create automatic user');
+    expect(createdUser.user_service_account).toBeTruthy();
     expect(createdUser.user_confidence_level?.max_confidence).toBe(63);
     // Delete just created user
     await adminQuery({

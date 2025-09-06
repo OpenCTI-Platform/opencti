@@ -125,6 +125,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
     jobs(first: Int): [Work]
     status: Status
     workflowEnabled: Boolean
+    pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 
 enum LanguagesOrdering {

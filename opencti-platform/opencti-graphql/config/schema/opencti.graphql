@@ -60,6 +60,8 @@ enum Capabilities {
   INVESTIGATION_INUPDATE_INDELETE
   MODULES
   MODULES_MODMANAGE
+  PIRAPI
+  PIRAPI_PIRUPDATE
   SETTINGS
   SETTINGS_SETMANAGEXTMHUB
   SETTINGS_SETPARAMETERS
@@ -492,6 +494,9 @@ type ContextData {
   commit: String
   external_references: [ExternalReference!]
   workspace_type: String
+  pir_ids: [String!] @auth(for: [PIRAPI])
+  pir_score: Int @auth(for: [PIRAPI])
+  pir_match_from: Boolean @auth(for: [PIRAPI])
 }
 type Log {
   id: ID!
@@ -505,6 +510,7 @@ type Log {
   raw_data: String @auth(for: [SETTINGS_SECURITYACTIVITY])
   context_uri: String
   context_data: ContextData
+  user_metadata: JSON
 }
 
 ############## Attributes
@@ -671,6 +677,10 @@ enum StreamCollectionOrdering {
   id
   stream_live
   _score
+}
+type RedisStreamInfo {
+  lastEventId: String!
+  firstEventId: String!
 }
 
 ############## SubTypes
@@ -1326,6 +1336,11 @@ type PlatformProtectedSensitiveConfig {
   file_indexing: PlatformProtectedSubConfig!
   platform_organization: PlatformProtectedSubConfig!
 }
+enum CGUStatus {
+  pending
+  disabled
+  enabled
+}
 type Settings implements InternalObject & BasicObject {
   id: ID!
   standard_id: String! @auth
@@ -1369,10 +1384,6 @@ type Settings implements InternalObject & BasicObject {
   platform_openerm_url: String
   platform_openmtd_url: String
   platform_xtmhub_url: String
-  platform_ai_enabled: Boolean!
-  platform_ai_type: String
-  platform_ai_model: String
-  platform_ai_has_token: Boolean!
   platform_login_message: String
   platform_consent_message: String
   platform_consent_confirm_text: String
@@ -1413,6 +1424,14 @@ type Settings implements InternalObject & BasicObject {
   xtm_hub_last_connectivity_check: DateTime @auth
   xtm_hub_registration_date: DateTime @auth
   xtm_hub_registration_status: XTMHubRegistrationStatus @auth
+  # AI insight
+  platform_ai_enabled: Boolean!
+  platform_ai_type: String
+  platform_ai_model: String
+  platform_ai_has_token: Boolean!
+  # XTM1 AI
+  filigran_chatbot_ai_url: String @auth
+  filigran_chatbot_ai_cgu_status: CGUStatus!
 }
 
 ############## Groups
@@ -1641,6 +1660,7 @@ type User implements BasicObject & InternalObject {
   otp_activated: Boolean
   otp_qr: String
   otp_mandatory: Boolean
+  user_service_account: Boolean
   lastname: String
   theme: String
   language: String
@@ -1682,6 +1702,7 @@ type User implements BasicObject & InternalObject {
   monochrome_labels: Boolean
   # Technical
   editContext: [EditUserContext!]
+  creator: Creator
 }
 
 type MeUser implements BasicObject & InternalObject {
@@ -1741,9 +1762,9 @@ type UserSession {
   sessions: [SessionDetail]
 }
 input UserAddInput {
-  user_email: String! @constraint(minLength: 5, format: "email")
+  user_email: String @constraint(minLength: 5, format: "email")
   name: String! @constraint(minLength: 2, format: "not-blank")
-  password: String!
+  password: String
   firstname: String
   lastname: String
   description: String
@@ -1759,6 +1780,7 @@ input UserAddInput {
   groups: [ID!]
   user_confidence_level: ConfidenceLevelInput
   prevent_default_groups: Boolean
+  user_service_account: Boolean
   email_template_id: String
 }
 
@@ -1858,7 +1880,6 @@ enum ConnectorType {
   INTERNAL_ANALYSIS
   INTERNAL_EXPORT_FILE
   STREAM
-  INTERNAL_INGESTION_PIR
 }
 
 input ConnectorWithConfig {
@@ -1946,8 +1967,11 @@ input EditManagedConnectorInput {
 
 input AddManagedConnectorInput {
   name: String! @constraint(minLength:2, format: "not-blank")
-  connector_user_id: ID!
+  connector_user_id: ID
+  user_id: ID!
   catalog_id: ID!
+  automatic_user: Boolean
+  confidence_level: String
   manager_contract_image: String!
   manager_contract_configuration: [ContractConfigInput!]!
 }
@@ -1955,6 +1979,7 @@ input AddManagedConnectorInput {
 input RegisterConnectorsManagerInput {
   id: ID!
   name: String! @constraint(minLength:2, format: "not-blank")
+  public_key: String!
 }
 
 input UpdateConnectorManagerStatusInput {
@@ -2031,6 +2056,7 @@ type ConnectorQueueDetails {
 type ConnectorContractConfiguration {
   key: String!
   value: String
+  encrypted: Boolean
 }
 
 enum ConnectorRequestStatus {
@@ -2115,6 +2141,7 @@ type ConnectorManager implements BasicObject & InternalObject {
   parent_types: [String]!
   # Manager
   name: String!
+  public_key: String!
   last_sync_execution: DateTime
   about_version: String!
   active: Boolean!
@@ -2707,6 +2734,8 @@ enum StixDomainObjectsOrdering {
   result_name
   operatingSystem
   x_opencti_cvss_base_severity
+  pir_score
+  last_pir_score_date
 }
 type StixDomainObjectConnection {
   pageInfo: PageInfo!
@@ -2838,6 +2867,7 @@ interface StixDomainObject {
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 input StixDomainObjectAddInput {
   stix_id: StixId
@@ -3042,6 +3072,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 input AttackPatternAddInput {
   stix_id: StixId
@@ -3247,6 +3278,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 input CampaignAddInput {
   stix_id: StixId
@@ -3291,7 +3323,7 @@ enum ContainersOrdering {
 }
 type ContainerConnection {
   pageInfo: PageInfo!
-  edges: [ContainerEdge]
+  edges: [ContainerEdge!]!
 }
 type ContainerEdge {
   cursor: String!
@@ -3618,6 +3650,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 input NoteAddInput {
   stix_id: StixId
@@ -3850,6 +3883,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 input ObservedDataAddInput {
   stix_id: StixId
@@ -4058,6 +4092,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 input OpinionAddInput {
   stix_id: StixId
@@ -4291,6 +4326,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   status: Status
   workflowEnabled: Boolean
   deleteWithElementsCount: Int @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 input ReportAddInput {
   stix_id: StixId
@@ -4474,6 +4510,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 input CourseOfActionAddInput {
   stix_id: StixId
@@ -4831,6 +4868,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   status: Status
   workflowEnabled: Boolean
   isUser: Boolean @auth(for: [KNOWLEDGE, EXPLORE])
+  pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 input IndividualAddInput {
   stix_id: StixId
@@ -5016,6 +5054,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 input SectorAddInput {
   stix_id: StixId
@@ -5195,6 +5234,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 input SystemAddInput {
   stix_id: StixId
@@ -5380,6 +5420,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 input InfrastructureAddInput {
   stix_id: StixId
@@ -5564,6 +5605,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 input IntrusionSetAddInput {
   stix_id: StixId
@@ -5923,6 +5965,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 input PositionAddInput {
   stix_id: StixId
@@ -6105,6 +6148,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 input CityAddInput {
   stix_id: StixId
@@ -6281,6 +6325,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 input CountryAddInput {
   stix_id: StixId
@@ -6459,6 +6504,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 input RegionAddInput {
   stix_id: StixId
@@ -6646,6 +6692,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 input MalwareAddInput {
   stix_id: StixId
@@ -6844,6 +6891,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 
 type ThreatActorEdge {
@@ -6996,6 +7044,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 
 input ThreatActorGroupAddInput {
@@ -7181,6 +7230,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 input ToolAddInput {
   stix_id: StixId
@@ -7411,6 +7461,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 input VulnerabilityAddInput {
   stix_id: StixId
@@ -7647,6 +7698,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 input IncidentAddInput {
   stix_id: StixId
@@ -12233,6 +12285,8 @@ input InternalRelationshipAddInput {
   relationship_type: String! # Will be checked by code
   fromId: ID
   toId: ID
+  # in-pir rel
+  pir_explanations: [PirExplanationInput!]
 }
 
 ######## STIX RELATIONSHIPS
@@ -12358,6 +12412,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | Status
   | PublicDashboard
   | Pir
+  | Theme
 union StixObjectOrStixRelationship =
   MarkingDefinition
   | Label
@@ -12523,6 +12578,7 @@ union StixCoreObjectOrStixCoreRelationship =
   | ManagerConfiguration
   | Workspace
   | PublicDashboard
+  | Theme
 
 enum StixRelationshipsOrdering {
   entity_type
@@ -12549,7 +12605,7 @@ enum StixRelationshipsOrdering {
 }
 type StixRelationshipConnection {
   pageInfo: PageInfo!
-  edges: [StixRelationshipEdge]
+  edges: [StixRelationshipEdge!]!
 }
 type StixRelationshipEdge {
   cursor: String!
@@ -12859,7 +12915,7 @@ enum StixRefRelationshipsOrdering {
 }
 type StixRefRelationshipConnection {
   pageInfo: PageInfo!
-  edges: [StixRefRelationshipEdge]
+  edges: [StixRefRelationshipEdge!]!
 }
 type StixRefRelationshipEdge {
   cursor: String!
@@ -12902,8 +12958,6 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   groupings(first: Int): GroupingConnection
   cases(first: Int): CaseConnection
   toStix: String
-  pir_explanations: [PirExplanation!]
-  pir_score: Int
   # Technical
   creators: [Creator!]
   editContext: [EditUserContext!]
@@ -12933,7 +12987,6 @@ input StixRefRelationshipAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
-  pir_explanations: [PirExplanationInput!]
 }
 input StixRefRelationshipsAddInput {
   relationship_type: String!
@@ -13142,6 +13195,7 @@ type Query {
     search: String
     filters: FilterGroup
   ): StreamCollectionConnection! @public # Code protected
+  redisStreamInfo: RedisStreamInfo @auth
   statusTemplate(id: String!): StatusTemplate @auth
   statusTemplates(
     first: Int
@@ -13345,6 +13399,7 @@ type Query {
     after: ID
     types: [String]
     orderBy: StixDomainObjectsOrdering
+    pirId: ID
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
@@ -13883,6 +13938,7 @@ type Query {
     interval: String!
     onlyInferred: Boolean
     timeSeriesParameters: [StixRelationshipsTimeSeriesParameters]
+    relationship_type: [String!]
   ): [MultiTimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
   stixRelationshipsDistribution(
     field: String!
@@ -14787,6 +14843,7 @@ type Mutation {
     exportContext: ExportContext
     relationship_type: [String]
     orderBy: StixDomainObjectsOrdering
+    pirId: ID
     orderMode: OrderingMode
     filters: FilterGroup
     selectedIds: [String]

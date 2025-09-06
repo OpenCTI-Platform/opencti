@@ -5,7 +5,7 @@ import Tooltip from '@mui/material/Tooltip';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
-import { PersonOutlined, AccountCircleOutlined, KeyboardArrowRightOutlined, HorizontalRule, Security, ReportGmailerrorred } from '@mui/icons-material';
+import { PersonOutlined, AccountCircleOutlined, KeyboardArrowRightOutlined, HorizontalRule, Security, ReportGmailerrorred, ManageAccountsOutlined } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
 import { UserLine_node$data } from '@components/settings/users/__generated__/UserLine_node.graphql';
@@ -51,7 +51,7 @@ interface UserLineComponentProps {
 const UserLineComponent: React.FC<UserLineComponentProps> = (props) => {
   const { dataColumns, node } = props;
   const external = node.external === true;
-
+  const userServiceAccount = node.user_service_account;
   const classes = useStyles();
   const { t_i18n, fd } = useFormatter();
 
@@ -63,7 +63,8 @@ const UserLineComponent: React.FC<UserLineComponentProps> = (props) => {
       to={`/dashboard/settings/accesses/users/${node.id}`}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        {external ? <AccountCircleOutlined /> : <PersonOutlined />}
+        {userServiceAccount && (<ManageAccountsOutlined />)}
+        {!userServiceAccount && (external ? <AccountCircleOutlined /> : <PersonOutlined />)}
       </ListItemIcon>
       <ListItemText
         primary={
@@ -136,6 +137,7 @@ export const UserLine = createFragmentContainer(UserLineComponent, {
       id
       entity_type
       name
+      user_service_account
       user_email
       firstname
       external

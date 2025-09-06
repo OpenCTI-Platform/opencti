@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import { DraftsLinesPaginationQuery, DraftsLinesPaginationQuery$variables } from '@components/drafts/__generated__/DraftsLinesPaginationQuery.graphql';
 import DraftCreation from '@components/drafts/DraftCreation';
 import { graphql } from 'react-relay';
@@ -8,9 +8,10 @@ import Chip from '@mui/material/Chip';
 import { useTheme } from '@mui/styles';
 import { getDraftModeColor } from '@components/common/draft/DraftChip';
 import ImportMenu from '@components/data/ImportMenu';
+import DraftWorkspaceDialogCreation from '@components/common/files/draftWorkspace/DraftWorkspaceDialogCreation';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import { useFormatter } from '../../../components/i18n';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
+import { addFilter, emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
@@ -113,14 +114,23 @@ const computeValidationProgress = (validationWork: Drafts_node$data['validationW
   return `${Math.floor(100 * (validationWork.tracking.import_processed_number / validationWork.tracking.import_expected_number))}%`;
 };
 
-const Drafts: React.FC = () => {
+interface DraftsProps {
+  entityId?: string;
+  openCreate?: boolean;
+  setOpenCreate?: () => void;
+  emptyStateMessage?: string
+}
+
+const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenCreate, emptyStateMessage }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const draftColor = getDraftModeColor(theme);
   const validatedDraftColor = theme.palette.success.main;
   const draftContext = useDraftContext();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Drafts'));
+  if (!entityId) {
+    setTitle(t_i18n('Drafts'));
+  }
 
   const initialValues = {
     filters: emptyFilterGroup,
@@ -139,7 +149,8 @@ const Drafts: React.FC = () => {
     filters,
   } = viewStorage;
 
-  const contextFilters = useBuildEntityTypeBasedFilterContext('DraftWorkspace', filters);
+  const filtersForDataTable = addFilter(filters, 'entity_id', [entityId || ''], entityId ? 'eq' : 'nil', 'and');
+  const contextFilters = useBuildEntityTypeBasedFilterContext('DraftWorkspace', filtersForDataTable);
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,
@@ -205,30 +216,45 @@ const Drafts: React.FC = () => {
 
   return (
     <span data-testid="draft-page">
-      <Breadcrumbs
-        elements={[{ label: t_i18n('Data') }, { label: t_i18n('Import'), current: true }]}
-      />
-      <ImportMenu/>
+      {!entityId && (
+        <>
+          <Breadcrumbs
+            elements={[{ label: t_i18n('Data') }, { label: t_i18n('Import'), current: true }]}
+          />
+          <ImportMenu />
+        </>
+      )}
       {queryRef && (
-        <DataTable
-          dataColumns={dataColumns}
-          resolvePath={(data: DraftsLines_data$data) => (data.draftWorkspaces?.edges ?? []).map((n) => n?.node)}
-          storageKey={LOCAL_STORAGE_KEY}
-          initialValues={initialValues}
-          toolbarFilters={contextFilters}
-          preloadedPaginationProps={preloadedPaginationProps}
-          lineFragment={DraftLineFragment}
-          createButton={!draftContext && (
-            <DraftCreation paginationOptions={queryPaginationOptions}/>
-          )}
-          actions={(row) => (
-            <DraftPopover
-              draftId={row.id}
-              draftLocked={row.draft_status !== 'open'}
-              paginationOptions={queryPaginationOptions}
-            />
-          )}
-        />
+        <>
+          <DataTable
+            dataColumns={dataColumns}
+            resolvePath={(data: DraftsLines_data$data) => (data.draftWorkspaces?.edges ?? []).map((n) => n?.node)}
+            storageKey={LOCAL_STORAGE_KEY}
+            initialValues={initialValues}
+            toolbarFilters={contextFilters}
+            preloadedPaginationProps={preloadedPaginationProps}
+            lineFragment={DraftLineFragment}
+            hideSearch={!!entityId}
+            hideFilters={!!entityId}
+            hideHeaders={!!entityId}
+            disableLineSelection={!!entityId}
+            emptyStateMessage={emptyStateMessage}
+            createButton={!draftContext && <DraftCreation paginationOptions={queryPaginationOptions} />}
+            actions={(row) => (
+              <DraftPopover
+                draftId={row.id}
+                draftLocked={row.draft_status !== 'open'}
+                paginationOptions={queryPaginationOptions}
+              />
+            )}
+          />
+          <DraftWorkspaceDialogCreation
+            paginationOptions={queryPaginationOptions}
+            handleCloseCreate={setOpenCreate}
+            entityId={entityId}
+            openCreate={openCreate}
+          />
+        </>
       )}
     </span>
   );

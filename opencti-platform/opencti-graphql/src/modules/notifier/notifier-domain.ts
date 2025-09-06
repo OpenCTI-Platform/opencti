@@ -79,7 +79,7 @@ const validateNotifier = (notifier: { notifier_connector_id: string, notifier_co
   const validate = ajv.compile(JSON.parse(notifierConnector.connector_schema ?? '{}'));
   const isValidConfiguration = validate(JSON.parse(notifier.notifier_configuration));
   if (!isValidConfiguration) {
-    throw UnsupportedError('This configuration is invalid', { configuration: notifier.notifier_configuration });
+    throw UnsupportedError('This configuration is invalid', { configuration: notifier.notifier_configuration, errors: validate.errors });
   }
 };
 
@@ -193,6 +193,7 @@ export const testNotifier = async (context: AuthContext, user: AuthUser, notifie
     {
       user_id: user.id,
       user_email: user.user_email,
+      user_service_account: user.user_service_account ? user.user_service_account : false,
       notifiers: [],
     },
     notifier,

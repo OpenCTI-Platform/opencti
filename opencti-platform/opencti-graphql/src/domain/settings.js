@@ -19,6 +19,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { getEnterpriseEditionInfo, getEnterpriseEditionInfoFromPem, LICENSE_OPTION_TRIAL } from '../modules/settings/licensing';
 import { getClusterInformation } from '../database/cluster-module';
 import { completeXTMHubDataForRegistration } from '../utils/settings.helper';
+import { getFiligranChatbotAiEndpoint } from '../modules/ai/chatbot-ai-settings';
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
@@ -103,6 +104,7 @@ export const getSettings = async (context) => {
   const platformSettings = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
   const clusterInfo = await getClusterInformation();
   const eeInfo = getEnterpriseEditionInfoFromPem(platformSettings.internal_id, platformSettings.enterprise_license);
+
   return {
     ...platformSettings,
     platform_url: getBaseUrl(context.req),
@@ -121,12 +123,12 @@ export const getSettings = async (context) => {
     platform_openerm_url: nconf.get('xtm:openerm_url'),
     platform_openmtd_url: nconf.get('xtm:openmtd_url'),
     platform_xtmhub_url: nconf.get('xtm:xtmhub_url'),
-    platform_ai_enabled: nconf.get('ai:enabled') ?? false,
     platform_ai_type: `${getAIEndpointType()} ${nconf.get('ai:type')}`,
     platform_ai_model: nconf.get('ai:model'),
     platform_ai_has_token: !!isNotEmptyField(nconf.get('ai:token')),
     platform_trash_enabled: nconf.get('app:trash:enabled') ?? true,
     platform_translations: nconf.get('app:translations') ?? '{}',
+    filigran_chatbot_ai_url: getFiligranChatbotAiEndpoint(),
     platform_feature_flags: [
       { id: 'RUNTIME_SORTING', enable: isRuntimeSortEnable() },
       ...(ENABLED_FEATURE_FLAGS.map((feature) => ({ id: feature, enable: true })))
@@ -161,6 +163,8 @@ const ACCESS_SETTINGS_RESTRICTED_KEYS = [
   'password_policy_min_words',
   'password_policy_min_lowercase',
   'password_policy_min_uppercase',
+  'filigran_chatbot_ai_cgu_status',
+  'platform_ai_enabled',
 ];
 
 const ACCESS_SETTINGS_MANAGE_XTMHUB_KEYS = [

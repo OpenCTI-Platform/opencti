@@ -142,7 +142,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
   ).some(({ id }) => ['ALL', group.id].includes(id));
 
   return (
-    <div className={classes.container}>
+    <div className={classes.container} data-testid="group-details-page">
       <Grid
         container={true}
         spacing={3}

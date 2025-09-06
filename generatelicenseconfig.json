@@ -1,0 +1,5 @@
+{
+  "inputs": ["./opencti-platform/opencti-front/package.json", "./opencti-platform/opencti-graphql/package.json"],
+  "output": "./licenses/third-party-licenses.txt",
+  "overwrite": true
+}

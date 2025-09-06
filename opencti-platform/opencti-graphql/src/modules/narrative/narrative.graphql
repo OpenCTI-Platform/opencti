@@ -130,6 +130,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
     jobs(first: Int): [Work]
     status: Status
     workflowEnabled: Boolean
+    pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 
 # Ordering

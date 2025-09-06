@@ -1,10 +1,26 @@
+/*
+Copyright (c) 2021-2025 Filigran SAS
+
+This file is part of the OpenCTI Enterprise Edition ("EE") and is
+licensed under the OpenCTI Enterprise Edition License (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*/
+
 import React from 'react';
 import { graphql } from 'react-relay';
-import { PirsListQuery, PirsListQuery$variables } from '@components/pir/__generated__/PirsListQuery.graphql';
-import { Pirs_PirsFragment$data } from '@components/pir/__generated__/Pirs_PirsFragment.graphql';
-import { Pirs_PirFragment$data } from '@components/pir/__generated__/Pirs_PirFragment.graphql';
 import { useTheme } from '@mui/material/styles';
-import PirCreation from '@components/pir/PirCreation';
+import { PirsListQuery, PirsListQuery$variables } from './__generated__/PirsListQuery.graphql';
+import { Pirs_PirsFragment$data } from './__generated__/Pirs_PirsFragment.graphql';
+import { Pirs_PirFragment$data } from './__generated__/Pirs_PirFragment.graphql';
+import PirCreation from './pir_form/PirCreation';
+import PirCriteriaDisplay from './PirCriteriaDisplay';
 import { useFormatter } from '../../../components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
@@ -16,12 +32,14 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import FilterIconButton from '../../../components/FilterIconButton';
 import type { Theme } from '../../../components/Theme';
 import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import { PIRAPI_PIRUPDATE } from '../../../utils/hooks/useGranted';
+import { FilterGroup } from '../../../utils/filters/filtersHelpers-types';
 
 const pirFragment = graphql`
   fragment Pirs_PirFragment on Pir {
     id
     name
+    pir_type
     pir_rescan_days
     created_at
     updated_at
@@ -132,8 +150,9 @@ const Pirs = () => {
     name: {
       percentWidth: 13,
     },
+    pir_type: {},
     pir_rescan_days: {
-      percentWidth: 9,
+      percentWidth: 8,
       id: 'pir_rescan_days',
       label: 'Rescan (days)',
       render: ({ pir_rescan_days }: Pirs_PirFragment$data) => pir_rescan_days,
@@ -141,7 +160,7 @@ const Pirs = () => {
     filters: {
       id: 'filters',
       label: 'Filters',
-      percentWidth: 15,
+      percentWidth: 13,
       render: ({ pir_filters }: Pirs_PirFragment$data) => (
         <div style={{ marginLeft: theme.spacing(-0.5) }}>
           <FilterIconButton
@@ -156,24 +175,18 @@ const Pirs = () => {
     criteria: {
       id: 'criteria',
       label: 'Criteria',
-      percentWidth: 38,
-      render: ({ pir_criteria }: Pirs_PirFragment$data) => (
-        <div style={{ marginLeft: theme.spacing(-0.5), display: 'flex' }}>
-          {pir_criteria.map((c) => (
-            <FilterIconButton
-              key={c.filters}
-              filters={JSON.parse(c.filters)}
-              entityTypes={['Stix-Core-Object']}
-              styleNumber={3}
-            />
-          ))}
-        </div>
-      ),
+      percentWidth: 33,
+      render: ({ pir_criteria }: Pirs_PirFragment$data) => {
+        const criteria: FilterGroup[] = pir_criteria.map((c) => JSON.parse(c.filters));
+        return <PirCriteriaDisplay criteria={criteria} size='small' />;
+      },
     },
-    creator: {},
+    creator: {
+      percentWidth: 9,
+    },
     created_at: {
       id: 'created_at',
-      percentWidth: 13,
+      percentWidth: 12,
     },
   };
 
@@ -200,7 +213,7 @@ const Pirs = () => {
           entityTypes={['Pir']}
           searchContextFinal={{ entityTypes: ['Pir'] }}
           createButton={(
-            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <Security needs={[PIRAPI_PIRUPDATE]} >
               <PirCreation paginationOptions={queryPaginationOptions} />
             </Security>
           )}

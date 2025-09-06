@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { buildElasticSortingForAttributeCriteria } from '../../../src/utils/sorting';
+import { SYSTEM_USER } from '../../../src/utils/access';
+import { testContext } from '../../utils/testQuery';
 
 describe('Sorting utilities', () => {
   let sorting;
-  it('buildElasticSortingForAttributeCriteria properly construct elastic sorting options', () => {
-    sorting = buildElasticSortingForAttributeCriteria('name', 'asc');
+  it('buildElasticSortingForAttributeCriteria properly construct elastic sorting options', async () => {
+    sorting = await buildElasticSortingForAttributeCriteria(testContext, SYSTEM_USER, 'name', 'asc');
     expect(sorting).toEqual({
       'name.keyword': {
         missing: '_last',
@@ -12,7 +14,7 @@ describe('Sorting utilities', () => {
       },
     });
 
-    sorting = buildElasticSortingForAttributeCriteria('confidence', 'desc');
+    sorting = await buildElasticSortingForAttributeCriteria(testContext, SYSTEM_USER, 'confidence', 'desc');
     expect(sorting).toEqual({
       confidence: {
         missing: '_last',
@@ -20,7 +22,7 @@ describe('Sorting utilities', () => {
       },
     });
 
-    sorting = buildElasticSortingForAttributeCriteria('created_at', 'desc');
+    sorting = await buildElasticSortingForAttributeCriteria(testContext, SYSTEM_USER, 'created_at', 'desc');
     expect(sorting).toEqual({
       created_at: {
         missing: 0,
@@ -29,7 +31,7 @@ describe('Sorting utilities', () => {
     });
 
     // complex object with sortBy
-    sorting = buildElasticSortingForAttributeCriteria('group_confidence_level', 'asc');
+    sorting = await buildElasticSortingForAttributeCriteria(testContext, SYSTEM_USER, 'group_confidence_level', 'asc');
     expect(sorting).toEqual({
       'group_confidence_level.max_confidence': {
         missing: '_last',
@@ -38,7 +40,7 @@ describe('Sorting utilities', () => {
     });
 
     // fallback
-    sorting = buildElasticSortingForAttributeCriteria('some_attribute', 'asc');
+    sorting = await buildElasticSortingForAttributeCriteria(testContext, SYSTEM_USER, 'some_attribute', 'asc');
     expect(sorting).toEqual({
       'some_attribute.keyword': {
         missing: '_last',
@@ -47,8 +49,13 @@ describe('Sorting utilities', () => {
     });
   });
 
-  it('buildElasticSortingForAttributeCriteria throws on error', () => {
-    sorting = () => buildElasticSortingForAttributeCriteria('context_data', 'asc');
-    expect(sorting).toThrowError('Sorting on [context_data] is not supported: this criteria does not have a sortBy definition in schema');
+  it('buildElasticSortingForAttributeCriteria throws on error if sorting criteria not in schema', async () => {
+    sorting = async () => buildElasticSortingForAttributeCriteria(testContext, SYSTEM_USER, 'context_data', 'asc');
+    await expect(sorting).rejects.toThrowError('Sorting on [context_data] is not supported: this criteria does not have a sortBy definition in schema');
+  });
+
+  it('buildElasticSortingForAttributeCriteria throws on error if pir sorting and user has not the rights', async () => {
+    sorting = async () => buildElasticSortingForAttributeCriteria(testContext, SYSTEM_USER, 'pir_score', 'asc', 'fakePirId');
+    await expect(sorting).rejects.toThrowError('No PIR found');
   });
 });

@@ -13,6 +13,7 @@ import {
   stixDomainObjectEditField,
   stixDomainObjectExportAsk,
   stixDomainObjectFileEdit,
+  stixDomainObjectPirInformation,
   stixDomainObjectsDelete,
   stixDomainObjectsDistributionByEntity,
   stixDomainObjectsExportAsk,
@@ -73,6 +74,7 @@ const stixDomainObjectResolvers = {
       const statusesType = await findByType(context, context.user, stixDomainObject.entity_type);
       return statusesType.length > 0;
     },
+    pirInformation: (stixDomainObject, { pirId }, context) => stixDomainObjectPirInformation(context, context.user, stixDomainObject, pirId),
   },
   Mutation: {
     stixDomainObjectEdit: (_, { id }, context) => ({

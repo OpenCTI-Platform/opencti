@@ -1,3 +1,4 @@
+
 type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container {
     id: ID! # internal_id
     standard_id: String!
@@ -163,6 +164,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
     jobs(first: Int): [Work]
     status: Status
     workflowEnabled: Boolean
+    pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 
 # Ordering

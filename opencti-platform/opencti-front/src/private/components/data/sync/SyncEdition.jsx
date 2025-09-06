@@ -4,7 +4,6 @@ import { Field, Form, Formik } from 'formik';
 import Typography from '@mui/material/Typography';
 import { CheckCircleOutlined, WarningOutlined } from '@mui/icons-material';
 import * as Yup from 'yup';
-import * as R from 'ramda';
 import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
@@ -24,6 +23,7 @@ import { isNotEmptyField } from '../../../../utils/utils';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import PasswordTextField from '../../../../components/PasswordTextField';
+import { extractToken } from '../../../../utils/ingestionAuthentificationUtils';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -75,23 +75,23 @@ const SyncEditionContainer = ({ synchronizer }) => {
   const classes = useStyles();
   const [streams, setStreams] = useState([]);
   const [openOptions, setOpenOptions] = useState(synchronizer.no_dependencies || synchronizer.synchronized);
-  const relatedUser = synchronizer.user ? { label: synchronizer.user.name, value: synchronizer.user.id } : '';
-  const initialValues = R.pipe(
-    R.assoc('current_state_date', buildDate(synchronizer.current_state_date)),
-    R.assoc('user_id', relatedUser),
-    R.pick([
-      'name',
-      'uri',
-      'token',
-      'stream_id',
-      'user_id',
-      'listen_deletion',
-      'no_dependencies',
-      'current_state_date',
-      'ssl_verify',
-      'synchronized',
-    ]),
-  )(synchronizer);
+  const relatedUser = synchronizer.user
+    ? { label: synchronizer.user.name, value: synchronizer.user.id }
+    : '';
+
+  const initialValues = {
+    name: synchronizer.name,
+    uri: synchronizer.uri,
+    token: extractToken(synchronizer.token),
+    stream_id: synchronizer.stream_id,
+    listen_deletion: synchronizer.listen_deletion,
+    no_dependencies: synchronizer.no_dependencies,
+    ssl_verify: synchronizer.ssl_verify,
+    synchronized: synchronizer.synchronized,
+    current_state_date: buildDate(synchronizer.current_state_date),
+    user_id: relatedUser,
+  };
+
   const isStreamAccessible = isNotEmptyField(
     streams.find((s) => s.id === initialValues.stream_id),
   );
@@ -148,9 +148,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
   };
 
   useEffect(() => {
-    if (initialValues) {
-      handleGetStreams(initialValues);
-    }
+    handleGetStreams(initialValues);
   }, []);
 
   return (
@@ -212,6 +210,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
               name="token"
               label={t_i18n('token')}
               disabled={true}
+              isSecret
             />
             <Field
               component={TextField}

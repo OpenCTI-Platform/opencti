@@ -8,11 +8,13 @@ import {
   streamCollectionCleanContext,
 } from '../domain/stream';
 import { getAuthorizedMembers } from '../utils/authorizedMembers';
+import { fetchStreamInfo } from '../database/redis';
 
 const streamResolvers = {
   Query: {
     streamCollection: (_, { id }, context) => findById(context, context.user, id),
     streamCollections: (_, args, context) => findAll(context, context.user, args),
+    redisStreamInfo: () => fetchStreamInfo()
   },
   StreamCollection: {
     authorized_members: (stream, _, context) => getAuthorizedMembers(context, context.user, stream),

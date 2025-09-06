@@ -43,7 +43,7 @@ const SCHEMA_ATTRIBUTES_QUERY = gql`
 `;
 
 describe('Attribute resolver standard behavior', () => {
-  const REL_RELATIONSHIP_ATTRIBUTES_NUMBER = 25;
+  const REL_RELATIONSHIP_ATTRIBUTES_NUMBER = 23;
   it('should retrieve runtime attribute for an entity', async () => {
     const queryResult = await queryAsAdmin({
       query: RUNTIME_ATTRIBUTES_QUERY,
@@ -69,7 +69,7 @@ describe('Attribute resolver standard behavior', () => {
       variables: { elementType: ENTITY_TYPE_VULNERABILITY }
     });
     attributes = queryResult.data.schemaAttributeNames.edges.map((edgeNode) => edgeNode.node);
-    expect(attributes.length).toEqual(74);
+    expect(attributes.length).toEqual(75);
     expect(attributes.map((node) => node.value).includes('x_opencti_stix_ids')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('revoked')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('description')).toBeTruthy(); // Direct attribute
@@ -99,7 +99,7 @@ describe('Attribute resolver standard behavior', () => {
       variables: { elementType: ENTITY_TYPE_IDENTITY_INDIVIDUAL }
     });
     attributes = queryResult.data.schemaAttributeNames.edges.map((edgeNode) => edgeNode.node);
-    expect(attributes.length).toEqual(32);
+    expect(attributes.length).toEqual(33);
     expect(attributes.map((node) => node.value).includes('lang')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('contact_information')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('x_opencti_firstname')).toBeTruthy(); // Direct attribute
@@ -110,7 +110,7 @@ describe('Attribute resolver standard behavior', () => {
       variables: { elementType: ENTITY_TYPE_LOCATION_POSITION }
     });
     attributes = queryResult.data.schemaAttributeNames.edges.map((edgeNode) => edgeNode.node);
-    expect(attributes.length).toEqual(32);
+    expect(attributes.length).toEqual(33);
     expect(attributes.map((node) => node.value).includes('lang')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('precision')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('postal_code')).toBeTruthy(); // Direct attribute

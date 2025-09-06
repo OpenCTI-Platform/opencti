@@ -46,6 +46,7 @@ export const VIRTUAL_ORGANIZATION_ADMIN = 'VIRTUAL_ORGANIZATION_ADMIN';
 export const SETTINGS_SETACCESSES = 'SETTINGS_SETACCESSES';
 export const SETTINGS_SECURITYACTIVITY = 'SETTINGS_SECURITYACTIVITY';
 export const SETTINGS_SETLABELS = 'SETTINGS_SETLABELS';
+export const PIRAPI = 'PIRAPI';
 
 export const CONTAINER_SHARING_USER_UUID = 'cc3aef5c-6f05-434b-8bdf-8d370046f017';
 export const ROLE_DEFAULT = 'Default';
@@ -882,6 +883,9 @@ export const validateMarking = async (context: AuthContext, user: AuthUser, mark
 
 export const isUserInPlatformOrganization = (user: AuthUser, settings: BasicStoreSettings) => {
   if (isBypassUser(user)) {
+    return true;
+  }
+  if (user.user_service_account) {
     return true;
   }
   const userOrganizationIds = (user.organizations ?? []).map((organization) => organization.internal_id);

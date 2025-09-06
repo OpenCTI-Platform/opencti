@@ -1,23 +1,12 @@
 import Grid from '@mui/material/Grid';
 import TextField from '@mui/material/TextField';
 import React, { FunctionComponent } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
+import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../../../components/i18n';
-import { useBuildFilterKeysMapFromEntityType, FiltersVariant } from '../../../../utils/filters/filtersUtils';
+import { FiltersVariant, getFilterDefinitionFromFilterKeysMap, useBuildFilterKeysMapFromEntityType } from '../../../../utils/filters/filtersUtils';
 import FilterDate from './FilterDate';
 import FilterAutocomplete from './FilterAutocomplete';
-import type { Theme } from '../../../../components/Theme';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  helpertext: {
-    display: 'inline-block',
-    color: theme.palette.text?.secondary,
-    marginTop: 20,
-  },
-}));
 
 export type FilterElementsInputValue = {
   key: string;
@@ -68,7 +57,7 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
   disabled = false,
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
+  const theme = useTheme();
   const { entityTypes } = searchContext;
   const filterKeysMap = useBuildFilterKeysMapFromEntityType(entityTypes);
   const displayedFilters = availableFilterKeys
@@ -106,8 +95,9 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
         )}
         {displayedFilters.map((filter, index) => {
           const filterKey = filter.key;
-          const isDateFilter = filterKeysMap.get(filterKey)?.type === 'date';
-          const filterLabel = t_i18n(filterKeysMap.get(filterKey)?.label ?? filterKey);
+          const filterDefinition = getFilterDefinitionFromFilterKeysMap(filterKey, filterKeysMap);
+          const isDateFilter = filterDefinition?.type === 'date';
+          const filterLabel = t_i18n(filterDefinition?.label ?? filterKey);
           if (isDateFilter) {
             return (
               <Grid
@@ -143,7 +133,12 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
           );
         })}
       </Grid>
-      <div className={classes.helpertext}>
+      <div style={{
+        display: 'inline-block',
+        color: theme.palette.text?.secondary,
+        marginTop: 20,
+      }}
+      >
         {t_i18n('Use Alt + click to exclude items')}
       </div>
     </>

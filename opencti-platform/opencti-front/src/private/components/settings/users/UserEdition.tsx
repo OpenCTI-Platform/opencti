@@ -27,6 +27,7 @@ const UserEditionFragment = graphql`
   ) {
     id
     external
+    user_service_account
     user_confidence_level {
       max_confidence
       overrides {
@@ -111,6 +112,7 @@ const UserEditionDrawer: FunctionComponent<UserEditionDrawerProps> = ({
   const { t_i18n } = useFormatter();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
   const user = useFragment<UserEdition_user$key>(UserEditionFragment, userRef);
+  const isServiceAccount = user?.user_service_account;
   const [currentTab, setCurrentTab] = useState(0);
   const handleChangeTab = (value: number) => {
     setCurrentTab(value);
@@ -118,7 +120,7 @@ const UserEditionDrawer: FunctionComponent<UserEditionDrawerProps> = ({
 
   return (
     <Drawer
-      title={t_i18n('Update a user')}
+      title={isServiceAccount ? t_i18n('Update Service account') : t_i18n('Update User') }
       open={open}
       onClose={handleClose}
       context={user?.editContext}
@@ -131,7 +133,7 @@ const UserEditionDrawer: FunctionComponent<UserEditionDrawerProps> = ({
             onChange={(event, value) => handleChangeTab(value)}
           >
             <Tab label={t_i18n('Overview')} />
-            <Tab disabled={!!user.external} label={t_i18n('Password')} />
+            <Tab disabled={!!user.external || isServiceAccount === true} label={t_i18n('Password')} />
             <Tab label={t_i18n('Groups')} />
             {hasSetAccess
               && <Tab label={

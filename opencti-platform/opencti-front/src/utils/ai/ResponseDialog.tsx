@@ -19,6 +19,7 @@ import { useFormatter } from '../../components/i18n';
 import MarkdownDisplay from '../../components/MarkdownDisplay';
 import { isNotEmptyField } from '../utils';
 import CKEditor from '../../components/CKEditor';
+import useAI from '../hooks/useAI';
 
 // region types
 interface ResponseDialogProps {
@@ -69,6 +70,8 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
   const markdownFieldRef = useRef<HTMLTextAreaElement>(null);
   const { t_i18n } = useFormatter();
   const [markdownSelectedTab, setMarkdownSelectedTab] = useState<'write' | 'preview' | undefined>('write');
+  const { fullyActive } = useAI();
+
   const handleResponse = (response: ResponseDialogAskAISubscription$data | null | undefined) => {
     const newContent = response ? (response as ResponseDialogAskAISubscription$data).aiBus?.content : null;
     if (format === 'text' || format === 'json') {
@@ -128,7 +131,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
                 fullWidth={true}
                 slotProps={{
                   input: {
-                    endAdornment: (
+                    endAdornment: fullyActive && (
                       <TextFieldAskAI
                         currentValue={content ?? ''}
                         setFieldValue={(val) => {

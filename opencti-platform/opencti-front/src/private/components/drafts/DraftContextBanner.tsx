@@ -29,6 +29,7 @@ const draftContextBannerFragment = graphql`
   fragment DraftContextBanner_data on DraftWorkspace {
     id
     name
+    entity_id
     draft_status
     processingCount
     objectsCount {
@@ -87,16 +88,19 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
     return (<ErrorNotFound />);
   }
 
-  const { name, processingCount, objectsCount } = useFragment<DraftContextBanner_data$key>(draftContextBannerFragment, draftWorkspace);
+  const { name, processingCount, objectsCount, entity_id } = useFragment<DraftContextBanner_data$key>(draftContextBannerFragment, draftWorkspace);
   const currentlyProcessing = processingCount > 0;
-
   const handleExitDraft = () => {
     commitExitDraft({
       variables: {
         input: { key: 'draft_context', value: '' },
       },
       onCompleted: () => {
-        navigate('/dashboard/data/import/draft');
+        if (entity_id) {
+          navigate(`/dashboard/id/${entity_id}`);
+        } else {
+          navigate('/dashboard/data/import/draft');
+        }
       },
     });
   };
@@ -116,7 +120,11 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
             onCompleted: () => {
               setApproving(false);
               MESSAGING$.notifySuccess('Draft validation in progress');
-              navigate('/dashboard/data/import/draft');
+              if (entity_id) {
+                navigate(`/dashboard/id/${entity_id}`);
+              } else {
+                navigate('/dashboard/data/import/draft');
+              }
             },
           });
         },
@@ -177,11 +185,11 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
               <DialogContentText>
                 {t_i18n('Do you want to approve this draft and send it to ingestion?')}
                 {currentlyProcessing && (
-                <Alert style={{ marginTop: 10 }} severity={'warning'}>
-                  <AlertTitle>{t_i18n('Ongoing processes')}</AlertTitle>
-                  {t_i18n('There are processes still running that could impact the data of the draft. '
+                  <Alert style={{ marginTop: 10 }} severity={'warning'}>
+                    <AlertTitle>{t_i18n('Ongoing processes')}</AlertTitle>
+                    {t_i18n('There are processes still running that could impact the data of the draft. '
                       + 'By approving the draft now, the remaining changes that would have been applied by those processes will be ignored.')}
-                </Alert>)}
+                  </Alert>)}
               </DialogContentText>
             </DialogContent>
             <DialogActions>
@@ -202,18 +210,17 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
 const DraftContextBanner = () => {
   const draftContext = useDraftContext();
   const [queryRef, loadQuery] = useQueryLoader<DraftContextBannerQuery>(draftContextBannerQuery);
-
   if (!draftContext) {
     return null;
   }
 
-  useEffect(() => {
-    loadQuery({ id: draftContext.id }, { fetchPolicy: 'store-and-network' });
-  }, []);
-
   const refetch = React.useCallback(() => {
     loadQuery({ id: draftContext.id }, { fetchPolicy: 'store-and-network' });
-  }, [queryRef]);
+  }, [queryRef, draftContext]);
+
+  useEffect(() => {
+    refetch();
+  }, [draftContext.id]);
 
   return (
     <>

@@ -149,7 +149,7 @@ const EmailTemplates = () => {
   } as UsePreloadedPaginationFragment<EmailTemplatesLinesPaginationQuery>;
 
   return (
-    <>
+    <div data-testid="email-templates-page">
       <AccessesMenu/>
       <PageContainer withRightMenu>
         <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Email templates'), current: true }]} />
@@ -178,7 +178,7 @@ const EmailTemplates = () => {
           </>
         )}
       </PageContainer>
-    </>
+    </div>
   );
 };
 

@@ -1,6 +1,7 @@
 import { Field, FieldProps } from 'formik';
 import React, { FunctionComponent, useState } from 'react';
 import { Grid, MenuItem, Select, SelectChangeEvent, Slider } from '@mui/material';
+import FormHelperText from '@mui/material/FormHelperText';
 import SimpleTextField from './SimpleTextField';
 import { SubscriptionFocus } from './Subscription';
 import { buildScaleLevel, useLevel } from '../utils/hooks/useScale';
@@ -21,6 +22,7 @@ interface InputSliderFieldProps {
   attributeName: string;
   disabled?: boolean;
   maxLimit?: number;
+  helperText?: string;
 }
 
 const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = ({
@@ -35,6 +37,7 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
   attributeName,
   disabled,
   maxLimit,
+  helperText,
 }) => {
   const {
     level: { color },
@@ -116,12 +119,13 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
           valueLabelFormat={() => currentLevel.level.label}
           disabled={finalDisabled}
         />
+        {helperText && <FormHelperText sx={{ marginBottom: 1 }}>{helperText}</FormHelperText>}
       </>
     );
   }
   return (
     <>
-      <Grid container={true} spacing={3} >
+      <Grid container={true} spacing={3}>
         <Grid item xs={6}>
           <Field
             component={SimpleTextField}
@@ -166,6 +170,7 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
         valueLabelFormat={() => currentLevel.level.label}
         disabled={disabled}
       />
+      {helperText && <FormHelperText sx={{ marginBottom: 1 }}>{helperText}</FormHelperText>}
     </>
   );
 };

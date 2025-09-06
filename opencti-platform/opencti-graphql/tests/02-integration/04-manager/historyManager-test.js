@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { INDEX_HISTORY } from '../../../src/database/utils';
-import { buildHistoryElementsFromEvents, generatePirIdsFromHistoryEvent, resolveGrantedRefsIds } from '../../../src/manager/historyManager';
+import { buildHistoryElementsFromEvents, generatePirContextData, resolveGrantedRefsIds } from '../../../src/manager/historyManager';
 import { ENTITY_TYPE_HISTORY } from '../../../src/schema/internalObject';
 import { testContext } from '../../utils/testQuery';
+import { RELATION_IN_PIR } from '../../../src/schema/internalRelationship';
+import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 
 const eventWithGrantedRefIds = {
   id: '1731595374948-0',
@@ -26,7 +28,7 @@ const eventWithGrantedRefIds = {
       spec_version: '2.1',
       type: 'report',
       extensions: {
-        'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba': {
+        [STIX_EXT_OCTI]: {
           extension_type: 'property-extension',
           id: '58fbfcfa-01ce-4440-8edf-7ea38e7a6ae9',
           type: 'Report',
@@ -84,7 +86,7 @@ const eventWithGrantedRefsOnly = {
       spec_version: '2.1',
       type: 'report',
       extensions: {
-        'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba': {
+        [STIX_EXT_OCTI]: {
           extension_type: 'property-extension',
           id: 'a691be02-fb06-4358-8cf6-a08d97788340',
           type: 'Report',
@@ -140,7 +142,7 @@ const eventWithRelatedRestriction = {
       spec_version: '2.1',
       type: 'report',
       extensions: {
-        'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba': {
+        [STIX_EXT_OCTI]: {
           extension_type: 'property-extension',
           id: 'e6babfee-aa64-4e3a-9c67-1a163c178ca0',
           type: 'Report',
@@ -262,9 +264,10 @@ describe('history manager test buildHistoryElementsFromEvents', () => {
   });
 });
 
-describe('History manager test generatePirIdsFromHistoryEvent', () => {
+describe('History manager test generatePirContextData', () => {
   const pirId1 = '36d9bdf2-6639-4995-ab75-a5e9575594cd';
   const pirId2 = '445023c8-0827-42a0-b8aa-3865cf99cf18';
+
   it('should return pir ids to flag a relationship event', async () => {
     const relationshipEventWithSourceFlagged = {
       id: '1748415773588-0',
@@ -279,7 +282,7 @@ describe('History manager test generatePirIdsFromHistoryEvent', () => {
           spec_version: '2.1',
           type: 'relationship',
           extensions: {
-            'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba': {
+            [STIX_EXT_OCTI]: {
               extension_type: 'new-sro',
               id: 'ddc47198-7208-442d-96b2-0dfd16a900ff',
               type: 'participates-in',
@@ -310,9 +313,47 @@ describe('History manager test generatePirIdsFromHistoryEvent', () => {
         }
       }
     };
-    expect(generatePirIdsFromHistoryEvent(relationshipEventWithSourceFlagged)).toEqual([pirId1]);
+    expect(generatePirContextData(relationshipEventWithSourceFlagged).pir_ids).toEqual([pirId1]);
+    expect(generatePirContextData(relationshipEventWithSourceFlagged).from_id).toEqual('42e68a45-55e0-425e-aa11-51947f96e6bc');
+    expect(generatePirContextData(relationshipEventWithSourceFlagged).pir_match_from).toEqual(true);
   });
-  it('should return pir ids to flag a relationship event', async () => {
+
+  it('should return pir ids if a new entity is flagged', async () => {
+    const createInPirRelEvent = {
+      id: '1755163055565-0',
+      event: 'create',
+      data: {
+        version: '4',
+        type: 'create',
+        scope: 'external',
+        message: 'Malware `Paradise Ransomware` added to Pir `MyPir`',
+        data: {
+          id: 'relationship-meta--bf6f3c56-379d-4fed-a86e-377f120082b7',
+          spec_version: '2.1',
+          type: 'internal-relationship',
+          extensions: {
+            [STIX_EXT_OCTI]: {
+              type: RELATION_IN_PIR,
+              source_value: 'Paradise Ransomware',
+              source_ref: '49bb99a5-ffa8-4cde-a930-bbba0338d335',
+              source_type: 'Malware',
+              target_type: 'Pir',
+              target_ref: pirId1,
+              pir_score: 100,
+            },
+          },
+          confidence: 100,
+          relationship_type: 'in-pir',
+          source_ref: 'malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714',
+          target_ref: 'pir--8a00a0bf-f62e-5662-8dd1-a8a88960c306'
+        },
+      }
+    };
+    expect(generatePirContextData(createInPirRelEvent).pir_ids).toEqual([pirId1]);
+    expect(generatePirContextData(createInPirRelEvent).pir_score).toEqual(100);
+  });
+
+  it('should return pir ids if adding a flagged entity in a container', async () => {
     const updateEventAddFlaggedEntityInContainer = {
       id: '1748416417346-0',
       event: 'update',
@@ -347,6 +388,6 @@ describe('History manager test generatePirIdsFromHistoryEvent', () => {
         }
       }
     };
-    expect(generatePirIdsFromHistoryEvent(updateEventAddFlaggedEntityInContainer)).toEqual([pirId1, pirId2]);
+    expect(generatePirContextData(updateEventAddFlaggedEntityInContainer).pir_ids).toEqual([pirId1, pirId2]);
   });
 });
