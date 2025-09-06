@@ -30,8 +30,6 @@ import {
   MEMBERS_ORGANIZATION_FILTER,
   MEMBERS_USER_FILTER,
   OBJECT_CONTAINS_FILTER,
-  RELATION_DYNAMIC_FROM_FILTER,
-  RELATION_DYNAMIC_TO_FILTER,
   REPRESENTATIVE_FILTER,
   TYPE_FILTER,
   WORKFLOW_FILTER
@@ -415,6 +413,8 @@ const completeFilterDefinitionMapWithSpecialKeys = (
       subEntityTypes,
       elementsForFilterValuesSearch: [ENTITY_TYPE_STATUS_TEMPLATE],
     });
+    // TODO: fix dynamicFrom & dynamicTo filters (#12268)
+    /*
     filterDefinitionsMap.set(RELATION_DYNAMIC_FROM_FILTER, {
       filterKey: RELATION_DYNAMIC_FROM_FILTER,
       type: 'filters',
@@ -431,6 +431,7 @@ const completeFilterDefinitionMapWithSpecialKeys = (
       elementsForFilterValuesSearch: ['Stix-Core-Object'],
       subEntityTypes: [],
     });
+     */
   }
 };
 

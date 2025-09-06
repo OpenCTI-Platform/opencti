@@ -24,8 +24,6 @@ import {
   RELATION_FROM_TYPES_FILTER,
   RELATION_TO_FILTER,
   RELATION_TO_TYPES_FILTER,
-  RELATION_DYNAMIC_FROM_FILTER,
-  RELATION_DYNAMIC_TO_FILTER
 } from '../../utils/filtering/filtering-constants';
 
 export const connections: AttributeDefinition = {
@@ -45,9 +43,10 @@ export const connections: AttributeDefinition = {
       entityTypes: [ABSTRACT_STIX_CORE_OBJECT],
       associatedFilterKeys: [
         { key: RELATION_FROM_FILTER, label: 'Source entity' },
-        { key: RELATION_DYNAMIC_FROM_FILTER, label: 'Dynamic source' },
+        // TODO: fix dynamicFrom & dynamicTo filters (#12268)
+        // { key: RELATION_DYNAMIC_FROM_FILTER, label: 'Dynamic source' },
         { key: RELATION_TO_FILTER, label: 'Target entity' },
-        { key: RELATION_DYNAMIC_TO_FILTER, label: 'Dynamic target' },
+        // { key: RELATION_DYNAMIC_TO_FILTER, label: 'Dynamic target' },
         { key: INSTANCE_RELATION_FILTER, label: 'Related entity' },
       ]
     },
