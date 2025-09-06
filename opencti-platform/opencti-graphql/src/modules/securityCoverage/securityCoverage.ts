@@ -38,8 +38,8 @@ const SECURITY_COVERAGE_DEFINITION: ModuleDefinition<StoreEntitySecurityCoverage
     { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'periodicity', /* PT1S */ label: 'Periodicity', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     {
-      name: 'latest_coverage',
-      label: 'Latest coverage',
+      name: 'expectations',
+      label: 'Coverage expectations',
       type: 'object',
       format: 'nested',
       mandatoryType: 'no',
@@ -48,8 +48,8 @@ const SECURITY_COVERAGE_DEFINITION: ModuleDefinition<StoreEntitySecurityCoverage
       upsert: true,
       isFilterable: false,
       mappings: [
-        { name: 'name', label: 'Coverage name', type: 'string', format: 'short', mandatoryType: 'external', upsert: true, editDefault: false, multiple: false, isFilterable: true },
-        { name: 'score', label: 'Coverage score', type: 'numeric', mandatoryType: 'external', precision: 'float', upsert: true, editDefault: false, multiple: false, isFilterable: true },
+        { name: 'name', label: 'Expectation name', type: 'string', format: 'short', mandatoryType: 'external', upsert: true, editDefault: false, multiple: false, isFilterable: true },
+        { name: 'score', label: 'Expectation score', type: 'numeric', mandatoryType: 'external', precision: 'float', upsert: true, editDefault: false, multiple: false, isFilterable: true },
       ]
     },
     creators,
@@ -63,7 +63,7 @@ const SECURITY_COVERAGE_DEFINITION: ModuleDefinition<StoreEntitySecurityCoverage
       type: 'ref',
       databaseName: RELATION_ASSESS,
       stixName: ATTRIBUTE_ASSESS,
-      label: 'Assess target',
+      label: 'Coverage target',
       mandatoryType: 'external',
       editDefault: false,
       multiple: false,
