@@ -5,27 +5,27 @@ import { normalizeName } from '../../schema/identifier';
 import { createdAt, creators, updatedAt } from '../../schema/attribute-definition';
 import {
   ATTRIBUTE_ASSESS,
-  ENTITY_TYPE_SECURITY_ASSESSMENT,
+  ENTITY_TYPE_SECURITY_COVERAGE,
   INPUT_ASSESS,
   RELATION_ASSESS,
-  type StixSecurityAssessment,
-  type StoreEntitySecurityAssessment
-} from './securityAssessment-types';
-import convertSecurityAssessmentToStix from './securityAssessment-converter';
+  type StixSecurityCoverage,
+  type StoreEntitySecurityCoverage
+} from './securityCoverage-types';
+import convertSecurityCoverageToStix from './securityCoverage-converter';
 import { objectOrganization, } from '../../schema/stixRefRelationship';
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_THREAT_ACTOR_GROUP } from '../../schema/stixDomainObject';
-import { securityAssessmentStixBundle } from './securityAssessment-domain';
+import { SecurityCoverageStixBundle } from './securityCoverage-domain';
 
-const SECURITY_ASSESSMENT_DEFINITION: ModuleDefinition<StoreEntitySecurityAssessment, StixSecurityAssessment> = {
+const SECURITY_COVERAGE_DEFINITION: ModuleDefinition<StoreEntitySecurityCoverage, StixSecurityCoverage> = {
   type: {
     id: 'security-assessment',
-    name: ENTITY_TYPE_SECURITY_ASSESSMENT,
+    name: ENTITY_TYPE_SECURITY_COVERAGE,
     category: ABSTRACT_STIX_DOMAIN_OBJECT,
     aliased: false,
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_SECURITY_ASSESSMENT]: () => uuidv4()
+      [ENTITY_TYPE_SECURITY_COVERAGE]: () => uuidv4()
     },
     resolvers: {
       name(data: object) {
@@ -69,18 +69,18 @@ const SECURITY_ASSESSMENT_DEFINITION: ModuleDefinition<StoreEntitySecurityAssess
       multiple: false,
       upsert: true,
       isRefExistingForTypes(this, fromType, toType) {
-        return fromType === ENTITY_TYPE_SECURITY_ASSESSMENT && this.toTypes.includes(toType);
+        return fromType === ENTITY_TYPE_SECURITY_COVERAGE && this.toTypes.includes(toType);
       },
       isFilterable: true,
       toTypes: [ENTITY_TYPE_THREAT_ACTOR_GROUP, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_CONTAINER_REPORT],
     },
     { ...objectOrganization, isFilterable: false }
   ],
-  representative: (stix: StixSecurityAssessment) => {
+  representative: (stix: StixSecurityCoverage) => {
     return stix.name;
   },
-  converter_2_1: convertSecurityAssessmentToStix,
-  bundleResolver: securityAssessmentStixBundle
+  converter_2_1: convertSecurityCoverageToStix,
+  bundleResolver: SecurityCoverageStixBundle
 };
 
-registerDefinition(SECURITY_ASSESSMENT_DEFINITION);
+registerDefinition(SECURITY_COVERAGE_DEFINITION);

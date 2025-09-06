@@ -48,7 +48,7 @@ export interface ModuleDefinition<T extends StoreEntity, Z extends StixObject> {
   };
   representative: RepresentativeFn<Z>
   converter_2_1: ConvertFn<T, Z>
-  bundleResolver: (context: AuthContext, user: AuthUser, id: string) => Promise<string>
+  bundleResolver?: (context: AuthContext, user: AuthUser, id: string) => Promise<string>
   overviewLayoutCustomization?: Array<OverviewWidgetCustomization>
   attributes: Array<AttributeDefinition>
   relations: Array<{
