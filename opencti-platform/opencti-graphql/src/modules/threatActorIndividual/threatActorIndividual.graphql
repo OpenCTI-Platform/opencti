@@ -8,7 +8,7 @@ input MeasureInput {
   date_seen: DateTime
 }
 
-type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject & StixDomainObject & ThreatActor& StixAssessmentObject {
+type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject & StixDomainObject & ThreatActor {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!

@@ -140,7 +140,7 @@ import {
   ATTRIBUTE_ALIASES_OPENCTI,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
-  ENTITY_TYPE_RESOLVED_ASSESSMENT_TARGET,
+  ENTITY_TYPE_RESOLVED_COVERAGE_TARGET,
   ENTITY_TYPE_VULNERABILITY,
   isStixDomainObjectIdentity,
   isStixDomainObjectShareableContainer,
@@ -3122,14 +3122,14 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
       event = await storeCreateRelationEvent(context, user, createdRelation, opts);
     }
     // - TRANSACTION END
-    // region Hardcoded hook to notify security assessment
+    // region Hardcoded hook to notify security Coverage
     if (isStixCoreRelationship(relationshipType)) {
-      const targetAssessmentMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_RESOLVED_ASSESSMENT_TARGET);
-      if (targetAssessmentMap.has(fromId)) {
-        const securityAssessments = targetAssessmentMap.get(fromId);
-        for (let index = 0; index < securityAssessments.length; index += 1) {
-          const securityAssessment = securityAssessments[index];
-          await triggerEntityUpdateAutoEnrichment(context, user, securityAssessment);
+      const targetCoverageMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_RESOLVED_COVERAGE_TARGET);
+      if (targetCoverageMap.has(fromId)) {
+        const securityCoverages = targetCoverageMap.get(fromId);
+        for (let index = 0; index < securityCoverages.length; index += 1) {
+          const securityCoverage = securityCoverages[index];
+          await triggerEntityUpdateAutoEnrichment(context, user, securityCoverage);
         }
       }
     }

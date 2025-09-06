@@ -1,4 +1,6 @@
-type SecurityAssessment implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
+union StixCoverageAssessObject = Report | Malware
+
+type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
@@ -104,7 +106,7 @@ type SecurityAssessment implements BasicObject & StixObject & StixCoreObject & S
   roles: [String]
   x_opencti_aliases: [String]
   x_opencti_reliability: String
-  # SecurityAssessment
+  # SecurityCoverage
   security_platform_type: String
   # Technical
   creators: [Creator!]
@@ -132,13 +134,14 @@ type SecurityAssessment implements BasicObject & StixObject & StixCoreObject & S
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  # SecurityAssessment
-  objectAssess: StixAssessmentObject
+  pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  # SecurityCoverage
+  objectAssess: StixCoverageAssessObject
   toStixBundle: String
 }
 
 # Ordering
-enum SecurityAssessmentOrdering {
+enum SecurityCoverageOrdering {
   name
   confidence
   created
@@ -149,31 +152,31 @@ enum SecurityAssessmentOrdering {
 }
 
 # Relay connections
-type SecurityAssessmentConnection {
+type SecurityCoverageConnection {
   pageInfo: PageInfo!
-  edges: [SecurityAssessmentEdge!]!
+  edges: [SecurityCoverageEdge!]!
 }
-type SecurityAssessmentEdge {
+type SecurityCoverageEdge {
   cursor: String!
-  node: SecurityAssessment!
+  node: SecurityCoverage!
 }
 
 # Queries
 type Query {
-  securityAssessment(id: String!): SecurityAssessment @auth(for: [KNOWLEDGE])
-  securityAssessments(
+  SecurityCoverage(id: String!): SecurityCoverage @auth(for: [KNOWLEDGE])
+  SecurityCoverages(
     first: Int
     after: ID
-    orderBy: SecurityAssessmentOrdering
+    orderBy: SecurityCoverageOrdering
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
     toStix: Boolean
-  ): SecurityAssessmentConnection @auth(for: [KNOWLEDGE])
+  ): SecurityCoverageConnection @auth(for: [KNOWLEDGE])
 }
 
 # Mutations
-input SecurityAssessmentAddInput {
+input SecurityCoverageAddInput {
   name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   confidence: Int
@@ -193,12 +196,12 @@ input SecurityAssessmentAddInput {
 }
 
 type Mutation {
-  securityAssessmentAdd(input: SecurityAssessmentAddInput!): SecurityAssessment @auth(for: [KNOWLEDGE_KNUPDATE])
-  securityAssessmentDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  securityAssessmentFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): SecurityAssessment @auth(for: [KNOWLEDGE_KNUPDATE])
-  securityAssessmentContextPatch(id: ID!, input: EditContext!): SecurityAssessment @auth(for: [KNOWLEDGE_KNUPDATE])
-  securityAssessmentContextClean(id: ID!): SecurityAssessment @auth(for: [KNOWLEDGE_KNUPDATE])
-  securityAssessmentRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  securityAssessmentRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): SecurityAssessment @auth(for: [KNOWLEDGE_KNUPDATE])
+  SecurityCoverageAdd(input: SecurityCoverageAddInput!): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
+  SecurityCoverageDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  SecurityCoverageFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
+  SecurityCoverageContextPatch(id: ID!, input: EditContext!): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
+  SecurityCoverageContextClean(id: ID!): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
+  SecurityCoverageRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  SecurityCoverageRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 

@@ -3,17 +3,17 @@ import type { StixOpenctiExtensionSDO } from '../../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { StixContainer } from '../../types/stix-2-1-sdo';
 
-export const ENTITY_TYPE_SECURITY_ASSESSMENT = 'SecurityAssessment';
+export const ENTITY_TYPE_SECURITY_COVERAGE = 'SecurityCoverage';
 export const RELATION_ASSESS = 'object-assess';
 export const ATTRIBUTE_ASSESS = 'assess_ref';
 export const INPUT_ASSESS = 'objectAssess';
 
 // region Database types
-export interface BasicStoreEntitySecurityAssessment extends BasicIdentityEntity {
+export interface BasicStoreEntitySecurityCoverage extends BasicIdentityEntity {
   security_platform_type: string
 }
 
-export interface StoreEntitySecurityAssessment extends StoreEntityIdentity, BasicStoreEntitySecurityAssessment {
+export interface StoreEntitySecurityCoverage extends StoreEntityIdentity, BasicStoreEntitySecurityCoverage {
   filters: string
   periodicity: string
   latest_coverage: { name: string, score: number }[]
@@ -21,7 +21,7 @@ export interface StoreEntitySecurityAssessment extends StoreEntityIdentity, Basi
 // endregion
 
 // region Stix type
-export interface StixSecurityAssessment extends StixContainer {
+export interface StixSecurityCoverage extends StixContainer {
   name: string // optional
   description: string // optional
   filters: string

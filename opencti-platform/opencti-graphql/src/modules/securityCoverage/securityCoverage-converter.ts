@@ -1,10 +1,10 @@
-import type { StixSecurityAssessment, StoreEntitySecurityAssessment } from './securityAssessment-types';
+import type { StixSecurityCoverage, StoreEntitySecurityCoverage } from './securityCoverage-types';
 import { buildStixDomain } from '../../database/stix-2-1-converter';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import { cleanObject } from '../../database/stix-converter-utils';
 import { INPUT_OBJECTS } from '../../schema/general';
 
-const convertSecurityAssessmentToStix = (instance: StoreEntitySecurityAssessment): StixSecurityAssessment => {
+const convertSecurityCoverageToStix = (instance: StoreEntitySecurityCoverage): StixSecurityCoverage => {
   const stixDomainObject = buildStixDomain(instance);
   return {
     ...stixDomainObject,
@@ -23,4 +23,4 @@ const convertSecurityAssessmentToStix = (instance: StoreEntitySecurityAssessment
   };
 };
 
-export default convertSecurityAssessmentToStix;
+export default convertSecurityCoverageToStix;
