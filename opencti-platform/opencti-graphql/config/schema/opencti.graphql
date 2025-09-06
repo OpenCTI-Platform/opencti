@@ -2568,13 +2568,6 @@ input KillChainPhaseAddInput {
 }
 
 ######## STIX CORE OBJECT ENTITIES
-interface StixAssessmentObject {
-  id: ID! # internal_id
-  standard_id: String!
-  entity_type: String!
-  parent_types: [String]!
-}
-
 type Representative {
   main: String!
   secondary: String
@@ -4200,7 +4193,7 @@ type ReportEdge {
   cursor: String!
   node: Report!
 }
-type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container& StixAssessmentObject {
+type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
@@ -5511,7 +5504,7 @@ type IntrusionSetEdge {
   cursor: String!
   node: IntrusionSet!
 }
-type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDomainObject & StixAssessmentObject {
+type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
@@ -6792,7 +6785,7 @@ type ThreatActorGroupEdge {
   node: ThreatActorGroup!
 }
 
-interface ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDomainObject & StixAssessmentObject {
+interface ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
@@ -6945,7 +6938,7 @@ type  ThreatActorConnection {
   edges: [ThreatActorEdge]
 }
 
-type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & StixDomainObject & ThreatActor & StixAssessmentObject {
+type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & StixDomainObject & ThreatActor {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
