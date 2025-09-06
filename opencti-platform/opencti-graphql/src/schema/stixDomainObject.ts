@@ -59,7 +59,7 @@ export const ENTITY_TYPE_DATA_COMPONENT = 'Data-Component';
 export const ENTITY_TYPE_DATA_SOURCE = 'Data-Source';
 
 export const ENTITY_TYPE_RESOLVED_FILTERS = 'Resolved-Filters';
-export const ENTITY_TYPE_RESOLVED_ASSESSMENT_TARGET = 'Assessment-Target';
+export const ENTITY_TYPE_RESOLVED_COVERAGE_TARGET = 'Coverage-Target';
 
 export const STIX_DOMAIN_OBJECT_CONTAINER_CASES: Array<string> = [
   ENTITY_TYPE_CONTAINER_CASE_INCIDENT,
