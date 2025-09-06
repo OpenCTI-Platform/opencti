@@ -43,7 +43,7 @@ const WidgetDistributionList = ({
         {data.map((entry, key) => {
           const label = getMainRepresentative(entry.entity) || entry.label;
 
-          let link: string | null = null;
+          let link: string | undefined;
           if (!publicWidget && (entry.type !== 'User' || hasSettingAccess)) {
             const node: {
               id: string;
@@ -54,7 +54,7 @@ const WidgetDistributionList = ({
               id: entry.id,
               entity_type: entry.type,
             };
-            link = entry.id && entry.label !== 'Restricted' ? computeLink(node) : null;
+            link = entry.id && entry.label !== 'Restricted' ? computeLink(node) : undefined;
           }
           let linkProps = {};
           if (link) {
