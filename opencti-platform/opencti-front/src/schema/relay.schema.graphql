@@ -2160,6 +2160,8 @@ input RegisterConnectorInput {
   type: ConnectorType!
   scope: [String!]
   auto: Boolean
+  auto_update: Boolean
+  enrichment_resolution: String
   only_contextual: Boolean
   playbook_compatible: Boolean
   listen_callback_uri: String
@@ -2315,6 +2317,8 @@ type Connector implements BasicObject & InternalObject {
   title: String!
   active: Boolean
   auto: Boolean
+  auto_update: Boolean
+  enrichment_resolution: String
   only_contextual: Boolean
   playbook_compatible: Boolean
   connector_trigger_filters: String
@@ -8919,6 +8923,8 @@ type Query {
   fintelDesigns(first: Int, after: ID, orderBy: FintelDesignOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): FintelDesignConnection
   securityPlatform(id: String!): SecurityPlatform
   securityPlatforms(first: Int, after: ID, orderBy: SecurityPlatformOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): SecurityPlatformConnection
+  securityCoverage(id: String!): SecurityCoverage
+  securityCoverages(first: Int, after: ID, orderBy: SecurityCoverageOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): SecurityCoverageConnection
   emailTemplate(id: ID!): EmailTemplate
   emailTemplates(first: Int, after: ID, orderBy: EmailTemplateOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): EmailTemplateConnection
   form(id: ID!): Form
@@ -9824,6 +9830,13 @@ type Mutation {
   securityPlatformContextClean(id: ID!): SecurityPlatform
   securityPlatformRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   securityPlatformRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): SecurityPlatform
+  securityCoverageAdd(input: SecurityCoverageAddInput!): SecurityCoverage
+  securityCoverageDelete(id: ID!): ID
+  securityCoverageFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): SecurityCoverage
+  securityCoverageContextPatch(id: ID!, input: EditContext!): SecurityCoverage
+  securityCoverageContextClean(id: ID!): SecurityCoverage
+  securityCoverageRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
+  securityCoverageRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): SecurityCoverage
   askSendOtp(input: AskSendOtpInput!): String
   verifyOtp(input: VerifyOtpInput!): VerifyOtp
   verifyMfa(input: VerifyMfaInput!): Boolean
@@ -14300,6 +14313,110 @@ input SecurityPlatformAddInput {
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
+  created: DateTime
+  modified: DateTime
+  revoked: Boolean
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
+  x_opencti_workflow_id: String
+  externalReferences: [String]
+  update: Boolean
+}
+
+union StixCoverageAssessObject = Report | Malware
+
+type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  representative: Representative!
+  x_opencti_stix_ids: [StixId]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  draftVersion: DraftVersion
+  x_opencti_inferences: [Inference]
+  createdBy: Identity
+  numberOfConnectedElement: Int!
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
+  externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
+  observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
+  cases(first: Int): CaseConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
+  stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
+  stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime
+  modified: DateTime
+  x_opencti_graph_data: String
+  objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
+  avatar: OpenCtiFile
+  identity_class: String!
+  name: String!
+  description: String
+  contact_information: String
+  roles: [String]
+  x_opencti_aliases: [String]
+  x_opencti_reliability: String
+  security_platform_type: String
+  creators: [Creator!]
+  toStix: String
+  importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext!]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
+  objectAssess: StixCoverageAssessObject
+  toStixBundle: String
+}
+
+enum SecurityCoverageOrdering {
+  name
+  confidence
+  created
+  created_at
+  modified
+  updated_at
+  _score
+}
+
+type SecurityCoverageConnection {
+  pageInfo: PageInfo!
+  edges: [SecurityCoverageEdge!]!
+}
+
+type SecurityCoverageEdge {
+  cursor: String!
+  node: SecurityCoverage!
+}
+
+input SecurityCoverageAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+  description: String
+  confidence: Int
+  createdBy: String
+  objectMarking: [String]
+  objectLabel: [String]
+  objectAssess: String!
   created: DateTime
   modified: DateTime
   revoked: Boolean

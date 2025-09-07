@@ -10,23 +10,33 @@ import type { Resolvers } from '../../generated/graphql';
 
 const SecurityCoverageResolvers: Resolvers = {
   Query: {
-    SecurityCoverage: (_, { id }, context) => findById(context, context.user, id),
-    SecurityCoverages: (_, args, context) => findAll(context, context.user, args),
+    securityCoverage: (_, { id }, context) => findById(context, context.user, id),
+    securityCoverages: (_, args, context) => findAll(context, context.user, args),
   },
   SecurityCoverage: {
     objectAssess: (SecurityCoverage, _, context) => objectAssess<any>(context, context.user, SecurityCoverage.id),
     toStixBundle: (SecurityCoverage, _, context) => SecurityCoverageStixBundle(context, context.user, SecurityCoverage.id)
   },
+  StixCoverageAssessObject: {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    __resolveType(obj) {
+      if (obj.entity_type) {
+        return obj.entity_type.replace(/(?:^|-)(\w)/g, (matches, letter) => letter.toUpperCase());
+      }
+      return 'Unknown';
+    },
+  },
   Mutation: {
-    SecurityCoverageAdd: (_, { input }, context) => addSecurityCoverage(context, context.user, input),
-    SecurityCoverageDelete: (_, { id }, context) => SecurityCoverageDelete(context, context.user, id),
-    SecurityCoverageFieldPatch: (_, { id, input, commitMessage, references }, context) => {
+    securityCoverageAdd: (_, { input }, context) => addSecurityCoverage(context, context.user, input),
+    securityCoverageDelete: (_, { id }, context) => SecurityCoverageDelete(context, context.user, id),
+    securityCoverageFieldPatch: (_, { id, input, commitMessage, references }, context) => {
       return stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references });
     },
-    SecurityCoverageContextPatch: (_, { id, input }, context) => stixDomainObjectEditContext(context, context.user, id, input),
-    SecurityCoverageContextClean: (_, { id }, context) => stixDomainObjectCleanContext(context, context.user, id),
-    SecurityCoverageRelationAdd: (_, { id, input }, context) => stixDomainObjectAddRelation(context, context.user, id, input),
-    SecurityCoverageRelationDelete: (_, { id, toId, relationship_type: relationshipType }, context) => {
+    securityCoverageContextPatch: (_, { id, input }, context) => stixDomainObjectEditContext(context, context.user, id, input),
+    securityCoverageContextClean: (_, { id }, context) => stixDomainObjectCleanContext(context, context.user, id),
+    securityCoverageRelationAdd: (_, { id, input }, context) => stixDomainObjectAddRelation(context, context.user, id, input),
+    securityCoverageRelationDelete: (_, { id, toId, relationship_type: relationshipType }, context) => {
       return stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType);
     },
   },
