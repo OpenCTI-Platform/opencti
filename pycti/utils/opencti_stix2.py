@@ -1085,7 +1085,6 @@ class OpenCTIStix2:
             if "x_opencti_files" in stix_object:
                 for file in stix_object["x_opencti_files"]:
                     if "data" in file:
-                        print(file)
                         self.opencti.stix_domain_object.add_file(
                             id=stix_object_result["id"],
                             file_name=file["name"],
@@ -1104,7 +1103,6 @@ class OpenCTIStix2:
                     "files", stix_object
                 ):
                     if "data" in file:
-                        print(file)
                         self.opencti.stix_domain_object.add_file(
                             id=stix_object_result["id"],
                             file_name=file["name"],
