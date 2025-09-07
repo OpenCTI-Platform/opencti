@@ -185,12 +185,13 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
         version = kwargs.get("version", None)
         mime_type = kwargs.get("mime_type", "text/plain")
         no_trigger_import = kwargs.get("no_trigger_import", False)
+        embedded = kwargs.get("embedded", False)
         if id is not None and file_name is not None:
             final_file_name = os.path.basename(file_name)
             query = """
-                    mutation StixCyberObservableEdit($id: ID!, $file: Upload!, $fileMarkings: [String], $version: DateTime, $noTriggerImport: Boolean) {
+                    mutation StixCyberObservableEdit($id: ID!, $file: Upload!, $fileMarkings: [String], $version: DateTime, $noTriggerImport: Boolean, $embedded: Boolean) {
                         stixCyberObservableEdit(id: $id) {
-                            importPush(file: $file, version: $version, fileMarkings: $fileMarkings, noTriggerImport: $noTriggerImport) {
+                            importPush(file: $file, version: $version, fileMarkings: $fileMarkings, noTriggerImport: $noTriggerImport, embedded: $embedded) {
                                 id
                                 name
                             }
@@ -219,6 +220,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         if isinstance(no_trigger_import, bool)
                         else no_trigger_import == "True"
                     ),
+                    "embedded": embedded,
                 },
             )
         else:

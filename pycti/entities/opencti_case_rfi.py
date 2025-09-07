@@ -701,6 +701,7 @@ class CaseRfi:
         created = kwargs.get("created", None)
         modified = kwargs.get("modified", None)
         name = kwargs.get("name", None)
+        content = kwargs.get("content", None)
         description = kwargs.get("description", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         granted_refs = kwargs.get("objectOrganization", None)
@@ -742,6 +743,7 @@ class CaseRfi:
                         "modified": modified,
                         "name": name,
                         "description": description,
+                        "content": content,
                         "x_opencti_stix_ids": x_opencti_stix_ids,
                         "x_opencti_workflow_id": x_opencti_workflow_id,
                         "update": update,
@@ -874,6 +876,13 @@ class CaseRfi:
                 stix_object["x_opencti_assignee_ids"] = (
                     self.opencti.get_attribute_in_extension("assignee_ids", stix_object)
                 )
+            if "x_opencti_content" not in stix_object or "content" not in stix_object:
+                stix_object["content"] = self.opencti.get_attribute_in_extension(
+                    "content", stix_object
+                )
+            if "x_opencti_content" in stix_object:
+                stix_object["content"] = stix_object["x_opencti_content"]
+
             if "x_opencti_participant_ids" not in stix_object:
                 stix_object["x_opencti_participant_ids"] = (
                     self.opencti.get_attribute_in_extension(
@@ -898,6 +907,11 @@ class CaseRfi:
                 externalReferences=(
                     extras["external_references_ids"]
                     if "external_references_ids" in extras
+                    else None
+                ),
+                content=(
+                    self.opencti.stix2.convert_markdown(stix_object["content"])
+                    if "content" in stix_object
                     else None
                 ),
                 revoked=stix_object["revoked"] if "revoked" in stix_object else None,
