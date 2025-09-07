@@ -23,6 +23,7 @@ import { getDraftFilePrefix } from '../../../database/draft-utils';
 
 export const SUPPORT_STORAGE_PATH = 'support';
 export const IMPORT_STORAGE_PATH = 'import';
+export const EMBEDDED_STORAGE_PATH = 'embedded';
 export const EXPORT_STORAGE_PATH = 'export';
 export const FROM_TEMPLATE_STORAGE_PATH = 'fromTemplate';
 

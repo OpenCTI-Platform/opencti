@@ -17,21 +17,24 @@ const StixCoreObjectContentRoot: FunctionComponent<StixCoreObjectContentRootProp
   stixCoreObject, isContainer = false,
 }) => {
   const [isMappingHeaderDisabled, setMappingHeaderDisabled] = useState<boolean>(false);
+  const [isEditorHeaderDisabled, setEditorHeaderDisabled] = useState<boolean>(false);
   const { pathname } = useLocation();
 
   const getCurrentMode = (currentPathname: string) => {
     if (currentPathname.endsWith('/mapping')) return 'mapping';
+    if (currentPathname.endsWith('/editor')) return 'editor';
     return 'content';
   };
 
   const currentMode = getCurrentMode(pathname);
-  const modes = isContainer ? ['content', 'mapping'] : [];
+  const modes = isContainer ? ['content', 'editor', 'mapping'] : ['content', 'editor'];
   return (
     <>
       <StixCoreObjectContentHeader
         currentMode={currentMode}
         modes={modes}
-        disabled={isMappingHeaderDisabled}
+        disableMapping={isMappingHeaderDisabled}
+        disableEditor={isEditorHeaderDisabled}
       />
       <Routes>
         <Route
@@ -42,7 +45,7 @@ const StixCoreObjectContentRoot: FunctionComponent<StixCoreObjectContentRootProp
               variables={{ id: stixCoreObject.id }}
               render={({ props } : { props: ContainerMappingContentQuery$data }) => {
                 if (props && props.container) {
-                  return <ContainerMappingContent containerFragment={props.container}/>;
+                  return <ContainerMappingContent currentMode={currentMode} containerFragment={props.container}/>;
                 }
                 return (
                   <Loader
@@ -55,11 +58,23 @@ const StixCoreObjectContentRoot: FunctionComponent<StixCoreObjectContentRootProp
           }
         />
         <Route
+          path="/editor"
+          element={
+            <StixCoreObjectContent
+              currentMode={currentMode}
+              stixCoreObject={stixCoreObject}
+              setMappingHeaderDisabled={setMappingHeaderDisabled}
+              setEditorHeaderDisabled={setEditorHeaderDisabled}
+            />}
+        />
+        <Route
           path="/"
           element={
             <StixCoreObjectContent
+              currentMode={currentMode}
               stixCoreObject={stixCoreObject}
               setMappingHeaderDisabled={setMappingHeaderDisabled}
+              setEditorHeaderDisabled={setEditorHeaderDisabled}
             />}
         />
       </Routes>

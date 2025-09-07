@@ -1,16 +1,34 @@
 import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { isNotEmptyField } from '../utils';
 
-export const useDocumentTitleModifier = (title: string) => {
+export const useBaseHrefAbsolute = () => {
+  const location = useLocation();
   useEffect(() => {
-    const prevTitle = document.title;
-    if (prevTitle !== title) {
-      document.title = title;
+    const fullUrl = window.location.href;
+    const baseUrl = fullUrl.endsWith('/') ? fullUrl : `${fullUrl}/`;
+    let baseTag = document.querySelector('base');
+    const isNewTag = !baseTag;
+    if (!baseTag) {
+      baseTag = document.createElement('base');
+    }
+    const previousHref = baseTag.getAttribute('href');
+    baseTag.setAttribute('href', baseUrl);
+    if (isNewTag) {
+      document.head.insertBefore(baseTag, document.head.firstChild);
     }
     return () => {
-      document.title = prevTitle;
+      if (baseTag) {
+        if (isNewTag) {
+          baseTag.remove();
+        } else if (previousHref) {
+          baseTag.setAttribute('href', previousHref);
+        } else {
+          baseTag.removeAttribute('href');
+        }
+      }
     };
-  });
+  }, [location.pathname, location.search, location.hash]);
 };
 
 export const useDocumentLangModifier = (lang: string) => {

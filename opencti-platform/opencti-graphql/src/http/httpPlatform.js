@@ -243,6 +243,39 @@ const createApp = async (app, schema) => {
     }
   });
 
+  // -- embedded loader
+  const uuidPattern = '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}';
+  const embeddedFileGetPath = new RegExp(`${basePath}/(.*)/(${uuidPattern})/(.*)embedded/(.*)$`, 'i');
+  app.get(embeddedFileGetPath, async (req, res) => {
+    try {
+      const [_, id, __, filename] = Object.values(req.params);
+      const context = await createAuthenticatedContext(req, res, 'storage_view_embedded');
+      if (!context.user) {
+        res.sendStatus(403);
+        return;
+      }
+      const element = await internalLoadById(context, context.user, id);
+      const file = `embedded/${element.entity_type}/${id}/${filename}`;
+      const data = await loadFile(context, context.user, file);
+      await publishFileRead(context, context.user, data);
+      res.set('Content-disposition', contentDisposition(data.name, { type: 'inline' }));
+      res.set({ 'Content-Security-Policy': 'sandbox' });
+      res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+      res.set({ Pragma: 'no-cache' });
+      if (data.metaData.mimetype === 'text/html') {
+        res.set({ 'Content-type': 'text/html; charset=utf-8' });
+      } else {
+        res.set('Content-type', data.metaData.mimetype);
+      }
+      const stream = await downloadFile(file);
+      stream.pipe(res);
+    } catch (e) {
+      setCookieError(res, e.message);
+      logApp.error('Error getting storage view file', { cause: e });
+      res.status(503).send({ status: 'error', error: e.message });
+    }
+  });
+
   // -- Pdf view
   app.get(`${basePath}/storage/html/:file(*)`, async (req, res) => {
     try {
@@ -519,7 +552,7 @@ const createApp = async (app, schema) => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   app.use((err, req, res, next) => {
     logApp.error('Http call interceptor fail', { cause: err, referer: req.headers?.referer });
-    res.status(500).send({ status: 'error', error: err.stack });
+    res.status(500).send({ status: 'error', error: DEV_MODE ? err.stack : err.message });
   });
 
   return { sseMiddleware };

@@ -8113,6 +8113,7 @@ export type ExternalReferenceEditMutationsFieldPatchArgs = {
 
 
 export type ExternalReferenceEditMutationsImportPushArgs = {
+  embedded?: InputMaybe<Scalars['Boolean']['input']>;
   file: Scalars['Upload']['input'];
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   noTriggerImport?: InputMaybe<Scalars['Boolean']['input']>;
@@ -26504,6 +26505,7 @@ export type StixCoreObjectEditMutationsExportPushArgs = {
 
 
 export type StixCoreObjectEditMutationsImportPushArgs = {
+  embedded?: InputMaybe<Scalars['Boolean']['input']>;
   file: Scalars['Upload']['input'];
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   fromTemplate?: InputMaybe<Scalars['Boolean']['input']>;
@@ -27151,6 +27153,7 @@ export type StixCyberObservableEditMutationsFieldPatchArgs = {
 
 
 export type StixCyberObservableEditMutationsImportPushArgs = {
+  embedded?: InputMaybe<Scalars['Boolean']['input']>;
   file: Scalars['Upload']['input'];
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   noTriggerImport?: InputMaybe<Scalars['Boolean']['input']>;
@@ -27482,6 +27485,7 @@ export type StixDomainObjectEditMutationsFieldPatchArgs = {
 
 
 export type StixDomainObjectEditMutationsImportPushArgs = {
+  embedded?: InputMaybe<Scalars['Boolean']['input']>;
   file: Scalars['Upload']['input'];
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   fromTemplate?: InputMaybe<Scalars['Boolean']['input']>;

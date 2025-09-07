@@ -245,6 +245,7 @@ export default defineConfig({
       '/stream': backProxy(),
       '/storage': backProxy(),
       '/schema': backProxy(),
+      '^/.*/embedded/.*': backProxy(),
       '/taxii2': backProxy(),
       '/feeds': backProxy(),
       '/graphql': backProxy(true),

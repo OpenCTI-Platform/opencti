@@ -5,7 +5,14 @@ import { copyFile, deleteFile, deleteFiles, deleteRawFiles, loadedFilesListing, 
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreBase, BasicStoreEntity } from '../types/store';
 import { logApp } from '../config/conf';
-import { allFilesForPaths, EXPORT_STORAGE_PATH, FROM_TEMPLATE_STORAGE_PATH, IMPORT_STORAGE_PATH, SUPPORT_STORAGE_PATH } from '../modules/internal/document/document-domain';
+import {
+  allFilesForPaths,
+  EMBEDDED_STORAGE_PATH,
+  EXPORT_STORAGE_PATH,
+  FROM_TEMPLATE_STORAGE_PATH,
+  IMPORT_STORAGE_PATH,
+  SUPPORT_STORAGE_PATH
+} from '../modules/internal/document/document-domain';
 import { deleteWorkForSource } from '../domain/work';
 import { ENTITY_TYPE_SUPPORT_PACKAGE } from '../modules/support/support-types';
 import { getDraftContext } from '../utils/draftContext';
@@ -92,6 +99,10 @@ export const deleteAllObjectFiles = async (context: AuthContext, user: AuthUser,
     const importFilesPromise = allFilesForPaths(context, user, [importPath]);
     const importWorkPromise = deleteWorkForSource(importPath);
 
+    const embeddedPath = `${EMBEDDED_STORAGE_PATH}/${element.entity_type}/${element.internal_id}`;
+    const embeddedFilesPromise = allFilesForPaths(context, user, [embeddedPath]);
+    const embeddedWorkPromise = deleteWorkForSource(embeddedPath);
+
     const exportPath = `${EXPORT_STORAGE_PATH}/${element.entity_type}/${element.internal_id}`;
     const exportFilesPromise = allFilesForPaths(context, user, [exportPath]);
     const exportWorkPromise = deleteWorkForSource(exportPath);
@@ -100,15 +111,17 @@ export const deleteAllObjectFiles = async (context: AuthContext, user: AuthUser,
     const fromTemplateFilesPromise = allFilesForPaths(context, user, [fromTemplatePath]);
     const fromTemplateWorkPromise = deleteWorkForSource(fromTemplatePath);
 
-    const [importFiles, exportFiles, fromTemplateFiles, _, __, ___] = await Promise.all([
+    const [importFiles, embeddedFiles, exportFiles, fromTemplateFiles, _, __, ___, ____] = await Promise.all([
       importFilesPromise,
+      embeddedFilesPromise,
       exportFilesPromise,
       fromTemplateFilesPromise,
       importWorkPromise,
+      embeddedWorkPromise,
       exportWorkPromise,
       fromTemplateWorkPromise,
     ]);
-    ids = [...importFiles, ...exportFiles, ...fromTemplateFiles].map((file) => file.id);
+    ids = [...importFiles, ...embeddedFiles, ...exportFiles, ...fromTemplateFiles].map((file) => file.id);
   }
   logApp.debug('[FILE STORAGE] deleting all files with ids:', { ids });
   return deleteFiles(context, user, ids);

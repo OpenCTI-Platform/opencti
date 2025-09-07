@@ -16,6 +16,7 @@ import { Link } from 'react-router-dom';
 import GroupConfidenceLevel from '@components/settings/groups/GroupConfidenceLevel';
 import { uniq } from 'ramda';
 import { ListItemButton } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
@@ -28,6 +29,7 @@ import GroupHiddenTypesChipList from './GroupHiddenTypesChipList';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { checkIsMarkingAllowed } from '../../../../utils/markings/markingsFiltering';
 import type { Theme } from '../../../../components/Theme';
+import MarkingIcon from '../../../../utils/MarkingIcon';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -114,6 +116,7 @@ const groupFragment = graphql`
 const Group = ({ groupData }: { groupData: Group_group$key }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
 
   const group = useFragment<Group_group$key>(groupFragment, groupData);
 
@@ -311,10 +314,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
 
                       >
                         <ListItemIcon>
-                          <ItemIcon
-                            type="Marking-Definition"
-                            color={marking?.x_opencti_color ?? undefined}
-                          />
+                          <MarkingIcon theme={theme} color={marking?.x_opencti_color}/>
                         </ListItemIcon>
                         <ListItemText
                           primary={truncate(marking?.definition, 40)}
@@ -338,10 +338,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
 
                       >
                         <ListItemIcon>
-                          <ItemIcon
-                            type="Marking-Definition"
-                            color={marking?.x_opencti_color ?? undefined}
-                          />
+                          <MarkingIcon theme={theme} color={marking?.x_opencti_color}/>
                         </ListItemIcon>
                         <ListItemText
                           primary={truncate(marking?.definition, 40)}
@@ -377,10 +374,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                             {isMarkingAllowed
                               ? <>
                                 <ListItemIcon>
-                                  <ItemIcon
-                                    type="Marking-Definition"
-                                    color={marking.x_opencti_color ?? undefined}
-                                  />
+                                  <MarkingIcon theme={theme} color={marking?.x_opencti_color}/>
                                 </ListItemIcon>
                                 <ListItemText
                                   primary={truncate(marking.definition, 40)}

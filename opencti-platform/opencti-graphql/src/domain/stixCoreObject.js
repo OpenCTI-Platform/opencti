@@ -782,7 +782,7 @@ export const stixCoreObjectImportFile = async (context, user, id, file, args = {
 
 export const stixCoreObjectImportPush = async (context, user, id, file, args = {}) => {
   let lock;
-  const { noTriggerImport, version: fileVersion, fileMarkings: file_markings, importContextEntities, fromTemplate = false } = args;
+  const { noTriggerImport, version: fileVersion, fileMarkings: file_markings, importContextEntities, fromTemplate = false, embedded = false } = args;
   const previous = await storeLoadByIdWithRefs(context, user, id);
   if (!previous) {
     throw UnsupportedError('Cant upload a file an none existing element', { id });
@@ -799,9 +799,13 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
     const { filename } = await file;
     const entitySetting = await getEntitySettingFromCache(context, previous.entity_type);
     const isAutoExternal = !entitySetting ? false : entitySetting.platform_entity_files_ref;
-    const filePath = fromTemplate
-      ? `fromTemplate/${previous.entity_type}/${internalId}`
-      : `import/${previous.entity_type}/${internalId}`;
+    let prefix = 'import';
+    if (fromTemplate) {
+      prefix = 'fromTemplate';
+    } else if (embedded) {
+      prefix = 'embedded';
+    }
+    const filePath = `${prefix}/${previous.entity_type}/${internalId}`;
     // 01. Upload the file
     const meta = { version: fileVersion?.toISOString() };
     if (isAutoExternal) {
@@ -878,13 +882,13 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
       const message = is_upsert
         ? `adds a new version of \`${up.name}\` in \`files\` and \`external_references\``
         : `adds \`${up.name}\` in \`files\` and \`external_references\``;
-      await storeUpdateEvent(context, user, previous, instance, message);
+      await storeUpdateEvent(context, user, previous, instance, message, { noHistory: embedded ?? false });
     } else {
       const instance = { ...previous, x_opencti_files: resolvedFiles };
       const message = is_upsert
         ? `adds a new version of \`${up.name}\` in \`files\``
         : `adds \`${up.name}\` in \`files\``;
-      await storeUpdateEvent(context, user, previous, instance, message);
+      await storeUpdateEvent(context, user, previous, instance, message, { noHistory: embedded ?? false });
     }
     // Add in activity only for notifications
     const contextData = buildContextDataForFile(previous, filePath, up.name, up.metaData.file_markings, { is_upsert });
