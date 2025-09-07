@@ -1186,6 +1186,7 @@
   "Each tick value must be between min and max value": "Jeder Tick-Wert muss zwischen Min- und Max-Wert liegen",
   "Edit the selected item": "Das ausgewählte Element bearbeiten",
   "Edition": "Ausgabe",
+  "Editor view": "Editor-Ansicht",
   "Effective Max Confidence Level:": "Effektive maximale Vertrauensstufe:",
   "Elasticsearch": "Elasticsearch",
   "Element will be rescan with all compatible activated rules": "Element wird mit allen kompatiblen aktivierten Regeln neu gescannt",

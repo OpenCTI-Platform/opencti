@@ -9,6 +9,7 @@ export default class StixDomainObjectContentTabPage {
 
   async selectMainContent() {
     await this.page.getByRole('button', { name: 'Description & Main content' }).click();
+    await this.getEditorViewButton().click();
     return this.page.getByLabel('Editing area: main');
   }
 
@@ -54,5 +55,8 @@ export default class StixDomainObjectContentTabPage {
   }
   getContentViewButton() {
     return this.page.getByLabel('Content view');
+  }
+  getEditorViewButton() {
+    return this.page.getByLabel('Editor view');
   }
 }

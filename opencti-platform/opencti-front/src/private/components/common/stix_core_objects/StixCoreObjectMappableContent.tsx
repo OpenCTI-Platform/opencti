@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import Paper from '@mui/material/Paper';
 import { Field, Form, Formik } from 'formik';
 import CommitMessage from '@components/common/form/CommitMessage';
@@ -8,6 +8,9 @@ import { FormikConfig } from 'formik/dist/types';
 import { ExternalReferencesValues } from '@components/common/form/ExternalReferencesField';
 import { StixCoreObjectMappableContentFieldPatchMutation } from '@components/common/stix_core_objects/__generated__/StixCoreObjectMappableContentFieldPatchMutation.graphql';
 import { ContainerMappingContent_container$data } from '@components/common/containers/__generated__/ContainerMappingContent_container.graphql';
+import Typography from '@mui/material/Typography';
+import makeStyles from '@mui/styles/makeStyles';
+import { createStyles } from '@mui/styles';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import RichTextField from '../../../../components/fields/RichTextField';
@@ -15,6 +18,35 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference, useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import { emptyFilled } from '../../../../utils/String';
+import { isNotEmptyField } from '../../../../utils/utils';
+import HtmlDisplay from '../../../../components/HtmlDisplay';
+import type { Theme } from '../../../../components/Theme';
+import { MESSAGING$ } from '../../../../relay/environment';
+
+const useStyles = makeStyles<Theme>(() => createStyles({
+  documentContainer: {
+    margin: 0,
+    overflow: 'scroll',
+    minWidth: 'calc(100vw - 455px)',
+    minHeight: 'calc(100vh - 260px)',
+    width: 'calc(100vw - 455px)',
+    height: 'calc(100vh - 260px)',
+    maxWidth: 'calc(100vw - 455px)',
+    maxHeight: 'calc(100vh - 260px)',
+  },
+  documentContainerNavOpen: {
+    margin: 0,
+    overflow: 'scroll',
+    minWidth: 'calc(100vw - 580px)',
+    minHeight: 'calc(100vh - 260px)',
+    width: 'calc(100vw - 580px)',
+    height: 'calc(100vh - 260px)',
+    maxWidth: 'calc(100vw - 580px)',
+    maxHeight: 'calc(100vh - 260px)',
+  },
+}));
 
 export const stixCoreObjectMappableContentFieldPatchMutation = graphql`
   mutation StixCoreObjectMappableContentFieldPatchMutation(
@@ -39,6 +71,7 @@ interface StixCoreObjectMappableContentProps {
   editionMode: boolean;
   mappedStrings?: string[];
   suggestedMappedStrings?: string[];
+  currentMode: 'content' | 'editor' | 'mapping';
 }
 
 interface StixCoreObjectMappableContentValues {
@@ -55,10 +88,23 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
   editionMode,
   mappedStrings = [],
   suggestedMappedStrings = [],
+  currentMode = 'content',
 }) => {
   const { t_i18n } = useFormatter();
+  const classes = useStyles();
   let { description, contentField } = containerData;
-  const [selectedTab, setSelectedTab] = useState('preview');
+  const [navOpen, setNavOpen] = useState(
+    localStorage.getItem('navOpen') === 'true',
+  );
+  useEffect(() => {
+    const sub = MESSAGING$.toggleNav.subscribe({
+      next: () => setNavOpen(localStorage.getItem('navOpen') === 'true'),
+    });
+    return () => {
+      sub.unsubscribe();
+    };
+  });
+  const [selectedTab, setSelectedTab] = useState('write');
   const basicShape = {
     content: Yup.string().nullable(),
     description: Yup.string().nullable(),
@@ -169,6 +215,39 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
     content: contentField || '',
   };
 
+  if (currentMode === 'content') {
+    return (
+      <div
+        className={
+              navOpen
+                ? classes.documentContainerNavOpen
+                : classes.documentContainer
+            }
+      >
+        {isNotEmptyField(description) && (
+          <>
+            <Typography variant="h3" gutterBottom={true}>
+              {t_i18n('Description')}
+            </Typography>
+            <MarkdownDisplay
+              content={emptyFilled(description)}
+              remarkGfmPlugin={true}
+              commonmark={true}
+              removeLinks={false}
+            />
+          </>
+        )}
+        {isNotEmptyField(contentField) && (
+          <>
+            <Typography variant="h3" gutterBottom={true}>
+              {t_i18n('Content')}
+            </Typography>
+            <HtmlDisplay content={contentField} />
+          </>
+        )}
+      </div>
+    );
+  }
   return (
     <Paper
       sx={{
@@ -199,7 +278,7 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
               label={t_i18n('Description')}
               fullWidth
               multiline
-              rows="4"
+              rows="10"
               onSubmit={handleSubmitField}
               onSelect={handleTextSelection}
               disabled={!editionMode}
@@ -209,9 +288,10 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
                   context={containerData.editContext}
                   fieldName="description"
                 />
-              }
+                      }
               controlledSelectedTab={selectedTab}
               controlledSetSelectTab={handleChangeSelectedTab}
+              height={400}
             />
             <Field
               component={RichTextField}
@@ -225,23 +305,24 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
               style={{
                 ...fieldSpacingContainerStyle,
                 minHeight: enrichedEditorHeight,
-                height: enrichedEditorHeight }}
+                height: enrichedEditorHeight,
+              }}
               helperText={
                 <SubscriptionFocus
                   context={containerData.editContext}
                   fieldName="content"
                 />
-              }
+                      }
             />
             {editionMode && enableReferences && (
-            <CommitMessage
-              submitForm={submitForm}
-              disabled={isSubmitting || !isValid || !dirty}
-              setFieldValue={setFieldValue}
-              values={values.references}
-              id={containerData.id}
-              open={false}
-            />
+              <CommitMessage
+                submitForm={submitForm}
+                disabled={isSubmitting || !isValid || !dirty}
+                setFieldValue={setFieldValue}
+                values={values.references}
+                id={containerData.id}
+                open={false}
+              />
             )}
           </Form>
         )}

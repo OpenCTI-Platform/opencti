@@ -1186,6 +1186,7 @@
   "Each tick value must be between min and max value": "每个刻度值必须介于最小值和最大值之间",
   "Edit the selected item": "编辑选中项",
   "Edition": "版本",
+  "Editor view": "编辑视图",
   "Effective Max Confidence Level:": "最大有效信任度：",
   "Elasticsearch": "Elasticsearch",
   "Element will be rescan with all compatible activated rules": "将使用所有兼容的激活规则重新扫描元素",

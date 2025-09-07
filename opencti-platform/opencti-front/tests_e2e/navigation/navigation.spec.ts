@@ -103,6 +103,7 @@ const navigateGroupings = async (page: Page) => {
   await contentTab.getContentMappingViewButton().click();
   await expect(page.getByRole('button', { name: 'Clear mappings' })).toBeVisible();
   await contentTab.getContentViewButton().click();
+  await contentTab.getEditorViewButton().click();
   await expect(page.getByText('Description', { exact: true })).toBeVisible();
   await expect(page.getByText('Mappable content')).toBeVisible();
 

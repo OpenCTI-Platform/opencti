@@ -19,6 +19,7 @@ import { elDeleteFilesByIds } from './file-search';
 import { isAttachmentProcessorEnabled } from './engine';
 import {
   deleteDocumentIndex,
+  EMBEDDED_STORAGE_PATH,
   EXPORT_STORAGE_PATH,
   findById as documentFindById,
   FROM_TEMPLATE_STORAGE_PATH,
@@ -302,6 +303,7 @@ export const loadFile = async (context, user, fileS3Path, opts = {}) => {
     }
     // 01.1. Check if user as enough capability to load import / export / template knowledge files
     if ((fileS3Path.startsWith(IMPORT_STORAGE_PATH)
+        || fileS3Path.startsWith(EMBEDDED_STORAGE_PATH)
         || fileS3Path.startsWith(EXPORT_STORAGE_PATH)
         || fileS3Path.startsWith(FROM_TEMPLATE_STORAGE_PATH))
       && !isUserHasCapability(user, KNOWLEDGE)) {

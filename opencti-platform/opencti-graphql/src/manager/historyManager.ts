@@ -235,7 +235,8 @@ const historyStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEvent
       const isInference = event.data?.data?.extensions[STIX_EXT_OCTI].is_inferred;
       const validEvent = HISTORY_WITH_INFERENCES || !isInference;
       const eventVersion = parseInt(event.data?.version ?? '0', 10);
-      return eventVersion >= 4 && validEvent;
+      const noHistory = event.data?.noHistory === true;
+      return eventVersion >= 4 && !noHistory && validEvent;
     });
     if (compatibleEvents.length > 0) {
       // Execute the events

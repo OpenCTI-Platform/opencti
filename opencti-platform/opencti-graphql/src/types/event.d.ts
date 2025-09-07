@@ -22,6 +22,7 @@ interface UpdateEventOpts extends EventOpts {
   related_restrictions?: { markings: string[] };
   pir_ids?: string[]
   allow_only_modified?: boolean
+  noHistory?: boolean
 }
 
 interface RelationCreation {
@@ -47,6 +48,7 @@ interface StreamDataEvent extends BaseEvent {
   origin: Partial<UserOrigin>;
   message: string;
   data: StixCoreObject
+  noHistory?: boolean;
 }
 
 interface UpdateEvent extends StreamDataEvent {

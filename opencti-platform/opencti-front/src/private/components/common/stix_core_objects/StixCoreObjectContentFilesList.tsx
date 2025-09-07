@@ -149,7 +149,7 @@ const StixCoreObjectContentFilesList = ({
                             <IconButton
                               onClick={(e) => handleDisseminate(e, file)}
                               size="small"
-                              style={{ color: isEnterpriseEdition ? theme.palette.ee.main : '' }}
+                              color={isEnterpriseEdition ? 'primary' : 'ee'}
                               aria-label="disseminate"
                               disabled={!isEnterpriseEdition}
                             >
