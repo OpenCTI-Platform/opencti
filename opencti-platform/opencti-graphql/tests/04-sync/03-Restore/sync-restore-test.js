@@ -39,18 +39,44 @@ const backupFiles = async () => {
     },
   };
   const backupConf = JSON.stringify(BACKUP_CONFIG);
-  logApp.info('Starting backup...');
-  await execChildPython(
-    testContext,
-    ADMIN_USER,
-    path.resolve('../../opencti-connectors/stream/backup-files/src'),
-    'backup-files.py',
-    [backupConf],
-    (last, messages) => {
-      const eventsMessage = messages.filter((m) => m.includes('processed event'));
-      return eventsMessage.length === SYNC_LIVE_EVENTS_SIZE;
-    }
-  );
+  const scriptPath = path.resolve('../../opencti-connectors/stream/backup-files/src');
+  const scriptName = 'backup-files.py';
+  
+  logApp.info('[TEST] Starting backup', { 
+    config: BACKUP_CONFIG,
+    scriptPath,
+    scriptName
+  });
+  
+  try {
+    await execChildPython(
+      testContext,
+      ADMIN_USER,
+      scriptPath,
+      scriptName,
+      [backupConf],
+      (last, messages) => {
+        const eventsMessage = messages.filter((m) => m.includes('processed event'));
+        const progress = eventsMessage.length;
+        logApp.info(`[TEST] Backup progress: ${progress}/${SYNC_LIVE_EVENTS_SIZE}`, {
+          progress,
+          total: SYNC_LIVE_EVENTS_SIZE,
+          lastMessage: last
+        });
+        return eventsMessage.length === SYNC_LIVE_EVENTS_SIZE;
+      }
+    );
+    logApp.info('[TEST] Backup completed successfully');
+  } catch (error) {
+    logApp.error('[TEST] Backup failed', {
+      errorMessage: error.message,
+      errorStack: error.stack,
+      scriptPath,
+      scriptName,
+      config: BACKUP_CONFIG
+    });
+    throw error;
+  }
 };
 const restoreFile = async () => {
   const RESTORE_CONFIG = {
@@ -73,21 +99,52 @@ const restoreFile = async () => {
     },
   };
   const restoreConf = JSON.stringify(RESTORE_CONFIG);
-  logApp.info('Starting restore...');
-  await execChildPython(
-    testContext,
-    ADMIN_USER,
-    path.resolve('../../opencti-connectors/external-import/restore-files/src'),
-    'restore-files.py',
-    [restoreConf],
-    (message) => message.includes('restore run completed')
-  );
+  const scriptPath = path.resolve('../../opencti-connectors/external-import/restore-files/src');
+  const scriptName = 'restore-files.py';
+  
+  logApp.info('[TEST] Starting restore', {
+    config: RESTORE_CONFIG,
+    scriptPath,
+    scriptName
+  });
+  
+  try {
+    await execChildPython(
+      testContext,
+      ADMIN_USER,
+      scriptPath,
+      scriptName,
+      [restoreConf],
+      (message) => {
+        logApp.info('[TEST] Restore message', { message });
+        return message.includes('restore run completed');
+      }
+    );
+    logApp.info('[TEST] Restore completed successfully');
+  } catch (error) {
+    logApp.error('[TEST] Restore failed', {
+      errorMessage: error.message,
+      errorStack: error.stack,
+      scriptPath,
+      scriptName,
+      config: RESTORE_CONFIG
+    });
+    throw error;
+  }
 };
 
 describe('Database sync backup/restore', () => {
   it(
     'Should backup/restore sync succeed',
     async () => {
+      logApp.info('[TEST] ========== SYNC RESTORE TEST STARTED ==========', {
+        timestamp: new Date().toISOString(),
+        environment: {
+          NODE_ENV: process.env.NODE_ENV,
+          DEBUG_PYTHON: process.env.DEBUG_PYTHON,
+          PYTHON_EXECUTOR: process.env.PYTHON_EXECUTOR
+        }
+      });
       const client = createHttpClient();
       // Pre check
       const { objectMap, relMap, initStixReport } = await checkPreSyncContent();

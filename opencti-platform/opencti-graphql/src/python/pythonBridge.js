@@ -33,17 +33,36 @@ export const execChildPython = async (context, user, scriptPath, scriptName, arg
     }
     return new Promise((resolve, reject) => {
       const messages = [];
+      const errors = [];
+      const isTestMode = process.env.NODE_ENV === 'test' || process.env.VITEST === 'true';
+      const debugPython = process.env.DEBUG_PYTHON === 'true' || isTestMode;
+      
       const options = {
         mode: 'text',
         pythonPath: DEV_MODE ? 'python' : 'python3',
         scriptPath,
         args,
       };
+      
+      // Enhanced logging for debugging
+      if (debugPython) {
+        console.log('[PYTHON BRIDGE] Starting Python execution:', {
+          scriptPath,
+          scriptName,
+          args,
+          pythonPath: options.pythonPath,
+          fullPath: `${scriptPath}/${scriptName}`
+        });
+      }
+      
       logApp.info('Starting PYTHON...');
       const shell = new PythonShell(scriptName, options);
       // Messaging is used to get data out of the python process
       let jsonResult = { status: 'success', messages };
       shell.on('message', (message) => {
+        if (debugPython) {
+          console.log('[PYTHON BRIDGE] Message:', message);
+        }
         logApp.info(message);
         messages.push(message);
         /* v8 ignore next */
@@ -55,9 +74,13 @@ export const execChildPython = async (context, user, scriptPath, scriptName, arg
         }
       });
       shell.on('stderr', (stderr) => {
+        if (debugPython) {
+          console.error('[PYTHON BRIDGE] Stderr:', stderr);
+        }
         logApp.info(stderr);
         logApp.error('[PYTHON BRIDGE] Error executing python', { stderr });
         messages.push(stderr);
+        errors.push(stderr);
         //* v8 ignore if */
         if (DEV_MODE && stderr.startsWith('ERROR:')) {
           jsonResult = { status: 'error', message: stderr };
@@ -68,14 +91,67 @@ export const execChildPython = async (context, user, scriptPath, scriptName, arg
         }
       });
       shell.end((err) => {
-        logApp.info(err);
         if (err) {
-          reject(err);
+          const errorDetails = {
+            error: err.message,
+            stack: err.stack,
+            exitCode: err.exitCode,
+            signal: err.signal,
+            scriptPath,
+            scriptName,
+            fullPath: `${scriptPath}/${scriptName}`,
+            args: args ? args.slice(0, 100) : [], // Limit args size for logging
+            lastMessages: messages.slice(-10), // Last 10 messages
+            errors: errors.slice(-10) // Last 10 errors
+          };
+          
+          // Always log errors with full context
+          logApp.error('[PYTHON BRIDGE] Python execution failed', errorDetails);
+          
+          if (debugPython) {
+            console.error('[PYTHON BRIDGE] Shell ended with error:', errorDetails);
+          }
+          
+          // Create detailed error message for the rejection
+          const detailedMessage = [
+            `Python execution failed: ${err.message}`,
+            `Script: ${scriptPath}/${scriptName}`,
+            errors.length > 0 ? `Errors: ${errors.slice(-3).join('; ')}` : '',
+            messages.length > 0 ? `Last message: ${messages[messages.length - 1]}` : ''
+          ].filter(Boolean).join(' | ');
+          
+          const enhancedError = UnknownError(detailedMessage, errorDetails);
+          reject(enhancedError);
           return;
         }
+        
         if (jsonResult.status !== 'success') {
-          logApp.info(jsonResult);
-          reject(UnknownError('Error python child execution', jsonResult));
+          const errorDetails = {
+            jsonResult,
+            scriptPath,
+            scriptName,
+            fullPath: `${scriptPath}/${scriptName}`,
+            args: args ? args.slice(0, 100) : [],
+            messages: messages.slice(-10),
+            errors: errors.slice(-10)
+          };
+          
+          // Always log non-success status
+          logApp.error('[PYTHON BRIDGE] Python execution returned non-success status', errorDetails);
+          
+          if (debugPython) {
+            console.error('[PYTHON BRIDGE] Execution failed with status:', errorDetails);
+          }
+          
+          // Create detailed error message
+          const detailedMessage = [
+            'Error python child execution',
+            jsonResult.message || jsonResult.status,
+            `Script: ${scriptPath}/${scriptName}`,
+            errors.length > 0 ? `Errors: ${errors.slice(-3).join('; ')}` : ''
+          ].filter(Boolean).join(' | ');
+          
+          reject(UnknownError(detailedMessage, errorDetails));
         }
         resolve(jsonResult);
       });
