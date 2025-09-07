@@ -46,6 +46,7 @@ export const execChildPython = async (context, user, scriptPath, scriptName, arg
 
       // Enhanced logging for debugging
       if (debugPython) {
+        // eslint-disable-next-line no-console
         console.log('[PYTHON BRIDGE] Starting Python execution:', {
           scriptPath,
           scriptName,
@@ -61,6 +62,7 @@ export const execChildPython = async (context, user, scriptPath, scriptName, arg
       let jsonResult = { status: 'success', messages };
       shell.on('message', (message) => {
         if (debugPython) {
+          // eslint-disable-next-line no-console
           console.log('[PYTHON BRIDGE] Message:', message);
         }
         logApp.info(message);
@@ -75,6 +77,7 @@ export const execChildPython = async (context, user, scriptPath, scriptName, arg
       });
       shell.on('stderr', (stderr) => {
         if (debugPython) {
+          // eslint-disable-next-line no-console
           console.error('[PYTHON BRIDGE] Stderr:', stderr);
         }
         logApp.info(stderr);
@@ -109,6 +112,7 @@ export const execChildPython = async (context, user, scriptPath, scriptName, arg
           logApp.error('[PYTHON BRIDGE] Python execution failed', errorDetails);
 
           if (debugPython) {
+            // eslint-disable-next-line no-console
             console.error('[PYTHON BRIDGE] Shell ended with error:', errorDetails);
           }
 
@@ -138,8 +142,8 @@ export const execChildPython = async (context, user, scriptPath, scriptName, arg
 
           // Always log non-success status
           logApp.error('[PYTHON BRIDGE] Python execution returned non-success status', errorDetails);
-
           if (debugPython) {
+            // eslint-disable-next-line no-console
             console.error('[PYTHON BRIDGE] Execution failed with status:', errorDetails);
           }
 
