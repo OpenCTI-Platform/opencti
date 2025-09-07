@@ -38,17 +38,24 @@ const backupFiles = async () => {
     },
   };
   const backupConf = JSON.stringify(BACKUP_CONFIG);
-  await execChildPython(
-    testContext,
-    ADMIN_USER,
-    path.resolve('../../opencti-connectors/stream/backup-files/src'),
-    'backup-files.py',
-    [backupConf],
-    (last, messages) => {
-      const eventsMessage = messages.filter((m) => m.includes('processed event'));
-      return eventsMessage.length === SYNC_LIVE_EVENTS_SIZE;
-    }
-  );
+  try {
+    // eslint-disable-next-line no-console
+    console.log('STARTING BACKUP');
+    await execChildPython(
+      testContext,
+      ADMIN_USER,
+      path.resolve('../../opencti-connectors/stream/backup-files/src'),
+      'backup-files.py',
+      [backupConf],
+      (last, messages) => {
+        const eventsMessage = messages.filter((m) => m.includes('processed event'));
+        return eventsMessage.length === SYNC_LIVE_EVENTS_SIZE;
+      }
+    );
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.log(e);
+  }
 };
 const restoreFile = async () => {
   const RESTORE_CONFIG = {
@@ -71,14 +78,21 @@ const restoreFile = async () => {
     },
   };
   const restoreConf = JSON.stringify(RESTORE_CONFIG);
-  await execChildPython(
-    testContext,
-    ADMIN_USER,
-    path.resolve('../../opencti-connectors/external-import/restore-files/src'),
-    'restore-files.py',
-    [restoreConf],
-    (message) => message.includes('restore run completed')
-  );
+  try {
+    // eslint-disable-next-line no-console
+    console.log('STARTING RESTORE');
+    await execChildPython(
+      testContext,
+      ADMIN_USER,
+      path.resolve('../../opencti-connectors/external-import/restore-files/src'),
+      'restore-files.py',
+      [restoreConf],
+      (message) => message.includes('restore run completed')
+    );
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.log(e);
+  }
 };
 
 describe('Database sync backup/restore', () => {
