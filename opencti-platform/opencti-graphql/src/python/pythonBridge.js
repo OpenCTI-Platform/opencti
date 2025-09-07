@@ -44,7 +44,9 @@ export const execChildPython = async (context, user, scriptPath, scriptName, arg
       let jsonResult = { status: 'success', messages };
       shell.on('message', (message) => {
         // to uncomment for debug if counters are failing
-        // messages.push(message);
+        // eslint-disable-next-line no-console
+        console.log(message);
+        messages.push(message);
         /* v8 ignore next */
         try {
           jsonResult = JSON.parse(message);
