@@ -14436,13 +14436,6 @@ export type MultiTimeSeries = {
 
 export type Mutation = {
   __typename?: 'Mutation';
-  SecurityCoverageAdd?: Maybe<SecurityCoverage>;
-  SecurityCoverageContextClean?: Maybe<SecurityCoverage>;
-  SecurityCoverageContextPatch?: Maybe<SecurityCoverage>;
-  SecurityCoverageDelete?: Maybe<Scalars['ID']['output']>;
-  SecurityCoverageFieldPatch?: Maybe<SecurityCoverage>;
-  SecurityCoverageRelationAdd?: Maybe<StixRefRelationship>;
-  SecurityCoverageRelationDelete?: Maybe<SecurityCoverage>;
   administrativeAreaAdd?: Maybe<AdministrativeArea>;
   administrativeAreaContextClean?: Maybe<AdministrativeArea>;
   administrativeAreaContextPatch?: Maybe<AdministrativeArea>;
@@ -14753,6 +14746,13 @@ export type Mutation = {
   savedFilterFieldPatch?: Maybe<SavedFilter>;
   sectorAdd?: Maybe<Sector>;
   sectorEdit?: Maybe<SectorEditMutations>;
+  securityCoverageAdd?: Maybe<SecurityCoverage>;
+  securityCoverageContextClean?: Maybe<SecurityCoverage>;
+  securityCoverageContextPatch?: Maybe<SecurityCoverage>;
+  securityCoverageDelete?: Maybe<Scalars['ID']['output']>;
+  securityCoverageFieldPatch?: Maybe<SecurityCoverage>;
+  securityCoverageRelationAdd?: Maybe<StixRefRelationship>;
+  securityCoverageRelationDelete?: Maybe<SecurityCoverage>;
   securityPlatformAdd?: Maybe<SecurityPlatform>;
   securityPlatformContextClean?: Maybe<SecurityPlatform>;
   securityPlatformContextPatch?: Maybe<SecurityPlatform>;
@@ -14868,48 +14868,6 @@ export type Mutation = {
   workspaceEditAuthorizedMembers?: Maybe<Workspace>;
   workspaceFieldPatch?: Maybe<Workspace>;
   workspaceWidgetConfigurationImport?: Maybe<Workspace>;
-};
-
-
-export type MutationSecurityCoverageAddArgs = {
-  input: SecurityCoverageAddInput;
-};
-
-
-export type MutationSecurityCoverageContextCleanArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
-export type MutationSecurityCoverageContextPatchArgs = {
-  id: Scalars['ID']['input'];
-  input: EditContext;
-};
-
-
-export type MutationSecurityCoverageDeleteArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
-export type MutationSecurityCoverageFieldPatchArgs = {
-  commitMessage?: InputMaybe<Scalars['String']['input']>;
-  id: Scalars['ID']['input'];
-  input: Array<InputMaybe<EditInput>>;
-  references?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type MutationSecurityCoverageRelationAddArgs = {
-  id: Scalars['ID']['input'];
-  input: StixRefRelationshipAddInput;
-};
-
-
-export type MutationSecurityCoverageRelationDeleteArgs = {
-  id: Scalars['ID']['input'];
-  relationship_type: Scalars['String']['input'];
-  toId: Scalars['StixRef']['input'];
 };
 
 
@@ -16648,6 +16606,48 @@ export type MutationSectorAddArgs = {
 
 export type MutationSectorEditArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationSecurityCoverageAddArgs = {
+  input: SecurityCoverageAddInput;
+};
+
+
+export type MutationSecurityCoverageContextCleanArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationSecurityCoverageContextPatchArgs = {
+  id: Scalars['ID']['input'];
+  input: EditContext;
+};
+
+
+export type MutationSecurityCoverageDeleteArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationSecurityCoverageFieldPatchArgs = {
+  commitMessage?: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['ID']['input'];
+  input: Array<InputMaybe<EditInput>>;
+  references?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type MutationSecurityCoverageRelationAddArgs = {
+  id: Scalars['ID']['input'];
+  input: StixRefRelationshipAddInput;
+};
+
+
+export type MutationSecurityCoverageRelationDeleteArgs = {
+  id: Scalars['ID']['input'];
+  relationship_type: Scalars['String']['input'];
+  toId: Scalars['StixRef']['input'];
 };
 
 
@@ -21129,8 +21129,6 @@ export type PublicSettings = IntlSettings & ThemeSettings & {
 
 export type Query = {
   __typename?: 'Query';
-  SecurityCoverage?: Maybe<SecurityCoverage>;
-  SecurityCoverages?: Maybe<SecurityCoverageConnection>;
   about?: Maybe<AppInfo>;
   administrativeArea?: Maybe<AdministrativeArea>;
   administrativeAreas?: Maybe<AdministrativeAreaConnection>;
@@ -21392,6 +21390,8 @@ export type Query = {
   schemaRelationsTypesMapping: Array<StixRelationshipSchema>;
   sector?: Maybe<Sector>;
   sectors?: Maybe<SectorConnection>;
+  securityCoverage?: Maybe<SecurityCoverage>;
+  securityCoverages?: Maybe<SecurityCoverageConnection>;
   securityOrganizations?: Maybe<OrganizationConnection>;
   securityPlatform?: Maybe<SecurityPlatform>;
   securityPlatforms?: Maybe<SecurityPlatformConnection>;
@@ -21506,22 +21506,6 @@ export type Query = {
   works?: Maybe<WorkConnection>;
   workspace?: Maybe<Workspace>;
   workspaces?: Maybe<WorkspaceConnection>;
-};
-
-
-export type QuerySecurityCoverageArgs = {
-  id: Scalars['String']['input'];
-};
-
-
-export type QuerySecurityCoveragesArgs = {
-  after?: InputMaybe<Scalars['ID']['input']>;
-  filters?: InputMaybe<FilterGroup>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<SecurityCoverageOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  search?: InputMaybe<Scalars['String']['input']>;
-  toStix?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 
@@ -23351,6 +23335,22 @@ export type QuerySectorsArgs = {
   filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<SectorsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  toStix?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+
+export type QuerySecurityCoverageArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type QuerySecurityCoveragesArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<SecurityCoverageOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
   toStix?: InputMaybe<Scalars['Boolean']['input']>;
@@ -40984,13 +40984,6 @@ export type MultiTimeSeriesResolvers<ContextType = any, ParentType extends Resol
 }>;
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
-  SecurityCoverageAdd?: Resolver<Maybe<ResolversTypes['SecurityCoverage']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageAddArgs, 'input'>>;
-  SecurityCoverageContextClean?: Resolver<Maybe<ResolversTypes['SecurityCoverage']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageContextCleanArgs, 'id'>>;
-  SecurityCoverageContextPatch?: Resolver<Maybe<ResolversTypes['SecurityCoverage']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageContextPatchArgs, 'id' | 'input'>>;
-  SecurityCoverageDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageDeleteArgs, 'id'>>;
-  SecurityCoverageFieldPatch?: Resolver<Maybe<ResolversTypes['SecurityCoverage']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageFieldPatchArgs, 'id' | 'input'>>;
-  SecurityCoverageRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageRelationAddArgs, 'id' | 'input'>>;
-  SecurityCoverageRelationDelete?: Resolver<Maybe<ResolversTypes['SecurityCoverage']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   administrativeAreaAdd?: Resolver<Maybe<ResolversTypes['AdministrativeArea']>, ParentType, ContextType, RequireFields<MutationAdministrativeAreaAddArgs, 'input'>>;
   administrativeAreaContextClean?: Resolver<Maybe<ResolversTypes['AdministrativeArea']>, ParentType, ContextType, RequireFields<MutationAdministrativeAreaContextCleanArgs, 'id'>>;
   administrativeAreaContextPatch?: Resolver<Maybe<ResolversTypes['AdministrativeArea']>, ParentType, ContextType, RequireFields<MutationAdministrativeAreaContextPatchArgs, 'id' | 'input'>>;
@@ -41298,6 +41291,13 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   savedFilterFieldPatch?: Resolver<Maybe<ResolversTypes['SavedFilter']>, ParentType, ContextType, RequireFields<MutationSavedFilterFieldPatchArgs, 'id'>>;
   sectorAdd?: Resolver<Maybe<ResolversTypes['Sector']>, ParentType, ContextType, RequireFields<MutationSectorAddArgs, 'input'>>;
   sectorEdit?: Resolver<Maybe<ResolversTypes['SectorEditMutations']>, ParentType, ContextType, RequireFields<MutationSectorEditArgs, 'id'>>;
+  securityCoverageAdd?: Resolver<Maybe<ResolversTypes['SecurityCoverage']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageAddArgs, 'input'>>;
+  securityCoverageContextClean?: Resolver<Maybe<ResolversTypes['SecurityCoverage']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageContextCleanArgs, 'id'>>;
+  securityCoverageContextPatch?: Resolver<Maybe<ResolversTypes['SecurityCoverage']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageContextPatchArgs, 'id' | 'input'>>;
+  securityCoverageDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageDeleteArgs, 'id'>>;
+  securityCoverageFieldPatch?: Resolver<Maybe<ResolversTypes['SecurityCoverage']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageFieldPatchArgs, 'id' | 'input'>>;
+  securityCoverageRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageRelationAddArgs, 'id' | 'input'>>;
+  securityCoverageRelationDelete?: Resolver<Maybe<ResolversTypes['SecurityCoverage']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   securityPlatformAdd?: Resolver<Maybe<ResolversTypes['SecurityPlatform']>, ParentType, ContextType, RequireFields<MutationSecurityPlatformAddArgs, 'input'>>;
   securityPlatformContextClean?: Resolver<Maybe<ResolversTypes['SecurityPlatform']>, ParentType, ContextType, RequireFields<MutationSecurityPlatformContextCleanArgs, 'id'>>;
   securityPlatformContextPatch?: Resolver<Maybe<ResolversTypes['SecurityPlatform']>, ParentType, ContextType, RequireFields<MutationSecurityPlatformContextPatchArgs, 'id' | 'input'>>;
@@ -42743,8 +42743,6 @@ export type PublicSettingsResolvers<ContextType = any, ParentType extends Resolv
 }>;
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
-  SecurityCoverage?: Resolver<Maybe<ResolversTypes['SecurityCoverage']>, ParentType, ContextType, RequireFields<QuerySecurityCoverageArgs, 'id'>>;
-  SecurityCoverages?: Resolver<Maybe<ResolversTypes['SecurityCoverageConnection']>, ParentType, ContextType, Partial<QuerySecurityCoveragesArgs>>;
   about?: Resolver<Maybe<ResolversTypes['AppInfo']>, ParentType, ContextType>;
   administrativeArea?: Resolver<Maybe<ResolversTypes['AdministrativeArea']>, ParentType, ContextType, RequireFields<QueryAdministrativeAreaArgs, 'id'>>;
   administrativeAreas?: Resolver<Maybe<ResolversTypes['AdministrativeAreaConnection']>, ParentType, ContextType, Partial<QueryAdministrativeAreasArgs>>;
@@ -43005,6 +43003,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   schemaRelationsTypesMapping?: Resolver<Array<ResolversTypes['StixRelationshipSchema']>, ParentType, ContextType>;
   sector?: Resolver<Maybe<ResolversTypes['Sector']>, ParentType, ContextType, Partial<QuerySectorArgs>>;
   sectors?: Resolver<Maybe<ResolversTypes['SectorConnection']>, ParentType, ContextType, Partial<QuerySectorsArgs>>;
+  securityCoverage?: Resolver<Maybe<ResolversTypes['SecurityCoverage']>, ParentType, ContextType, RequireFields<QuerySecurityCoverageArgs, 'id'>>;
+  securityCoverages?: Resolver<Maybe<ResolversTypes['SecurityCoverageConnection']>, ParentType, ContextType, Partial<QuerySecurityCoveragesArgs>>;
   securityOrganizations?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType, Partial<QuerySecurityOrganizationsArgs>>;
   securityPlatform?: Resolver<Maybe<ResolversTypes['SecurityPlatform']>, ParentType, ContextType, RequireFields<QuerySecurityPlatformArgs, 'id'>>;
   securityPlatforms?: Resolver<Maybe<ResolversTypes['SecurityPlatformConnection']>, ParentType, ContextType, Partial<QuerySecurityPlatformsArgs>>;
