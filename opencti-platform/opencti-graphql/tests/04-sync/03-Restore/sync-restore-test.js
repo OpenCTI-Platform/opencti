@@ -39,22 +39,18 @@ const backupFiles = async () => {
     },
   };
   const backupConf = JSON.stringify(BACKUP_CONFIG);
-  try {
-    logApp.info('Starting backup...');
-    await execChildPython(
-      testContext,
-      ADMIN_USER,
-      path.resolve('../../opencti-connectors/stream/backup-files/src'),
-      'backup-files.py',
-      [backupConf],
-      (last, messages) => {
-        const eventsMessage = messages.filter((m) => m.includes('processed event'));
-        return eventsMessage.length === SYNC_LIVE_EVENTS_SIZE;
-      }
-    );
-  } catch (e) {
-    logApp.info(e);
-  }
+  logApp.info('Starting backup...');
+  await execChildPython(
+    testContext,
+    ADMIN_USER,
+    path.resolve('../../opencti-connectors/stream/backup-files/src'),
+    'backup-files.py',
+    [backupConf],
+    (last, messages) => {
+      const eventsMessage = messages.filter((m) => m.includes('processed event'));
+      return eventsMessage.length === SYNC_LIVE_EVENTS_SIZE;
+    }
+  );
 };
 const restoreFile = async () => {
   const RESTORE_CONFIG = {
@@ -77,19 +73,15 @@ const restoreFile = async () => {
     },
   };
   const restoreConf = JSON.stringify(RESTORE_CONFIG);
-  try {
-    logApp.info('Starting restore...');
-    await execChildPython(
-      testContext,
-      ADMIN_USER,
-      path.resolve('../../opencti-connectors/external-import/restore-files/src'),
-      'restore-files.py',
-      [restoreConf],
-      (message) => message.includes('restore run completed')
-    );
-  } catch (e) {
-    logApp.info(e);
-  }
+  logApp.info('Starting restore...');
+  await execChildPython(
+    testContext,
+    ADMIN_USER,
+    path.resolve('../../opencti-connectors/external-import/restore-files/src'),
+    'restore-files.py',
+    [restoreConf],
+    (message) => message.includes('restore run completed')
+  );
 };
 
 describe('Database sync backup/restore', () => {
