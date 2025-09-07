@@ -163,8 +163,8 @@ type SecurityCoverageEdge {
 
 # Queries
 type Query {
-  SecurityCoverage(id: String!): SecurityCoverage @auth(for: [KNOWLEDGE])
-  SecurityCoverages(
+  securityCoverage(id: String!): SecurityCoverage @auth(for: [KNOWLEDGE])
+  securityCoverages(
     first: Int
     after: ID
     orderBy: SecurityCoverageOrdering
@@ -196,12 +196,12 @@ input SecurityCoverageAddInput {
 }
 
 type Mutation {
-  SecurityCoverageAdd(input: SecurityCoverageAddInput!): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
-  SecurityCoverageDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  SecurityCoverageFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
-  SecurityCoverageContextPatch(id: ID!, input: EditContext!): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
-  SecurityCoverageContextClean(id: ID!): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
-  SecurityCoverageRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  SecurityCoverageRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
+  securityCoverageAdd(input: SecurityCoverageAddInput!): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
+  securityCoverageDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  securityCoverageFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
+  securityCoverageContextPatch(id: ID!, input: EditContext!): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
+  securityCoverageContextClean(id: ID!): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
+  securityCoverageRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  securityCoverageRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 
