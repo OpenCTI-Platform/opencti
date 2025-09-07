@@ -78,7 +78,7 @@ services:
   - name: rabbitmq
     image: rabbitmq:4.1-management
   - name: opencti
-    image: nikolaik/python-nodejs:python3.10-nodejs18-alpine
+    image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
     environment:
       APP__ADMIN__PASSWORD: admin
       APP__ADMIN__TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
