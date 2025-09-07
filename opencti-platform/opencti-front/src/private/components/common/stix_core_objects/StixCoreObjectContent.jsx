@@ -25,6 +25,7 @@ import { FIVE_SECONDS } from '../../../../utils/Time';
 import withRouter from '../../../../utils/compat_router/withRouter';
 import CKEditor from '../../../../components/CKEditor';
 import { htmlToPdf } from '../../../../utils/htmlToPdf/htmlToPdf';
+import HtmlDisplay from '../../../../components/HtmlDisplay';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `${APP_BASE_PATH}/static/ext/pdf.worker.mjs`;
 
@@ -39,11 +40,11 @@ const styles = (theme) => ({
     overflow: 'scroll',
     whiteSpace: 'nowrap',
     minWidth: 'calc(100vw - 455px)',
-    minHeight: 'calc(100vh - 300px)',
+    minHeight: 'calc(100vh - 310px)',
     width: 'calc(100vw - 455px)',
-    height: 'calc(100vh - 300px)',
+    height: 'calc(100vh - 310px)',
     maxWidth: 'calc(100vw - 455px)',
-    maxHeight: 'calc(100vh - 300px)',
+    maxHeight: 'calc(100vh - 310px)',
     display: 'flex',
     justifyContent: 'center',
   },
@@ -87,6 +88,26 @@ const styles = (theme) => ({
     display: 'flex',
     justifyContent: 'center',
     position: 'relative',
+  },
+  documentContainerWithoutBar: {
+    margin: 0,
+    overflow: 'scroll',
+    minWidth: 'calc(100vw - 455px)',
+    minHeight: 'calc(100vh - 260px)',
+    width: 'calc(100vw - 455px)',
+    height: 'calc(100vh - 260px)',
+    maxWidth: 'calc(100vw - 455px)',
+    maxHeight: 'calc(100vh - 260px)',
+  },
+  documentContainerWithoutBarNavOpen: {
+    margin: 0,
+    overflow: 'scroll',
+    minWidth: 'calc(100vw - 580px)',
+    minHeight: 'calc(100vh - 260px)',
+    width: 'calc(100vw - 580px)',
+    height: 'calc(100vh - 260px)',
+    maxWidth: 'calc(100vw - 580px)',
+    maxHeight: 'calc(100vh - 260px)',
   },
   editorContainer: {
     height: '100%',
@@ -217,8 +238,8 @@ class StixCoreObjectContentComponent extends Component {
       totalPdfPageNumber: null,
       currentPdfPageNumber: 1,
       pdfViewerZoom: 1.2,
-      markdownSelectedTab: 'preview',
-      readMode: true,
+      markdownSelectedTab: 'write',
+      readMode: false,
       initialContent: isContentCompatible ? stixCoreObject.contentField : props.t('Write something awesome...'),
       currentContent: isContentCompatible ? stixCoreObject.contentField : props.t('Write something awesome...'),
       navOpen: localStorage.getItem('navOpen') === 'true',
@@ -253,8 +274,11 @@ class StixCoreObjectContentComponent extends Component {
       const currentFile = files.find((f) => f.id === currentFileId);
       const currentFileType = currentFile && currentFile.metaData.mimetype;
       if (currentFileType === 'application/pdf') {
+        this.props.setEditorHeaderDisabled(true);
         return this.setState({ isLoading: false });
       }
+      this.props.setEditorHeaderDisabled(false);
+
       const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(
         currentFileId,
       )}`;
@@ -324,6 +348,7 @@ class StixCoreObjectContentComponent extends Component {
       currentContent: stixCoreObject.contentField ?? t('Write something awesome...'),
     }, () => {
       this.props.setMappingHeaderDisabled(false);
+      this.props.setEditorHeaderDisabled(false);
       this.saveView();
     });
   }
@@ -340,6 +365,8 @@ class StixCoreObjectContentComponent extends Component {
     const { t, stixCoreObject } = this.props;
     this.props.relay.refetch({ id: stixCoreObject.id });
     if (fileName && fileName === this.state.currentFileId && isDelete) {
+      this.props.setMappingHeaderDisabled(false);
+      this.props.setEditorHeaderDisabled(false);
       this.setState({
         currentFileId: null,
         contentSelected: isContainerWithContent(stixCoreObject.entity_type),
@@ -437,7 +464,7 @@ class StixCoreObjectContentComponent extends Component {
   }
 
   render() {
-    const { classes, stixCoreObject, t } = this.props;
+    const { classes, stixCoreObject, t, currentMode } = this.props;
     const {
       currentFileId,
       totalPdfPageNumber,
@@ -486,9 +513,23 @@ class StixCoreObjectContentComponent extends Component {
                 handleDownloadPdf={this.handleDownloadMappableContentInPdf.bind(this)}
                 askAi={true}
                 editionMode={true}
+                currentMode={currentMode}
               />
             )}
-            {currentFileType === 'text/plain' && (
+            {currentFileType === 'text/plain' && currentMode === 'content' && (
+              <>
+                <div
+                  className={
+                    navOpen
+                      ? classes.documentContainerWithoutBarNavOpen
+                      : classes.documentContainerWithoutBar
+                  }
+                >
+                  {currentContent}
+                </div>
+              </>
+            )}
+            {currentFileType === 'text/plain' && currentMode === 'editor' && (
               <>
                 <StixCoreObjectContentBar
                   navOpen={navOpen}
@@ -525,7 +566,18 @@ class StixCoreObjectContentComponent extends Component {
                 </div>
               </>
             )}
-            {(currentFileType === 'text/html') && (
+            {currentFileType === 'text/html' && currentMode === 'content' && (
+              <div
+                className={
+                      navOpen
+                        ? classes.documentContainerWithoutBarNavOpen
+                        : classes.documentContainerWithoutBar
+                    }
+              >
+                <HtmlDisplay content={currentContent} />
+              </div>
+            )}
+            {currentFileType === 'text/html' && currentMode === 'editor' && (
               <>
                 <StixCoreObjectContentBar
                   handleSave={() => (this.saveFile())}
@@ -557,7 +609,22 @@ class StixCoreObjectContentComponent extends Component {
                 </div>
               </>
             )}
-            {currentFileType === 'text/markdown' && (
+            {currentFileType === 'text/markdown' && currentMode === 'content' && (
+              <div
+                className={
+                      navOpen
+                        ? classes.documentContainerWithoutBarNavOpen
+                        : classes.documentContainerWithoutBar
+                    }
+              >
+                <MarkdownDisplay
+                  content={currentContent}
+                  remarkGfmPlugin={true}
+                  commonmark={true}
+                />
+              </div>
+            )}
+            {currentFileType === 'text/markdown' && currentMode === 'editor' && (
               <>
                 <StixCoreObjectContentBar
                   navOpen={navOpen}
@@ -672,9 +739,11 @@ class StixCoreObjectContentComponent extends Component {
 StixCoreObjectContentComponent.propTypes = {
   stixCoreObject: PropTypes.object,
   setMappingHeaderDisabled: PropTypes.func,
+  setEditorHeaderDisabled: PropTypes.func,
   theme: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
+  currentMode: PropTypes.string,
 };
 
 export const stixCoreObjectContentRefetchQuery = graphql`

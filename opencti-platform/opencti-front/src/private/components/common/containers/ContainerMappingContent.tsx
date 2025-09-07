@@ -176,13 +176,14 @@ interface ContainerMappingContentComponentProps {
   containerData: ContainerMappingContent_container$data;
   queryRef: PreloadedQuery<ContainerStixCoreObjectsSuggestedMappingQuery>
   loadQuery: (variables: ContainerStixCoreObjectsSuggestedMappingQuery$variables, options?: (UseQueryLoaderLoadQueryOptions | undefined)) => void
+  currentMode: 'content' | 'editor' | 'mapping'
 }
 
 export type MappedEntityType = NonNullable<NonNullable<ContainerStixCoreObjectsSuggestedMappingQuery$data['stixCoreObjectAnalysis']>['mappedEntities']>[number];
 
 const ContainerMappingContentComponent: FunctionComponent<
 ContainerMappingContentComponentProps
-> = ({ containerData, queryRef, loadQuery }) => {
+> = ({ containerData, queryRef, loadQuery, currentMode }) => {
   const { t_i18n } = useFormatter();
   const enableReferences = useIsEnforceReference(containerData.entity_type);
   const { innerHeight } = window;
@@ -447,6 +448,7 @@ ContainerMappingContentComponentProps
             editionMode={false}
             mappedStrings={mappedStrings}
             suggestedMappedStrings={inSuggestedMode ? filteredSuggestedMappedStrings : []}
+            currentMode={currentMode}
           />
         </Grid>
 
@@ -525,9 +527,10 @@ ContainerMappingContentComponentProps
 
 interface ContainerMappingContentProps {
   containerFragment: ContainerMappingContentQuery$data['container'];
+  currentMode: 'mapping' | 'editor' | 'content';
 }
 
-const ContainerMappingContent = ({ containerFragment }: ContainerMappingContentProps) => {
+const ContainerMappingContent = ({ containerFragment, currentMode }: ContainerMappingContentProps) => {
   const containerData = useFragment<ContainerMappingContent_container$key>(containerContentFragment, containerFragment);
   const [queryRef, loadQuery] = useQueryLoader<ContainerStixCoreObjectsSuggestedMappingQuery>(
     containerStixCoreObjectsSuggestedMappingQuery,
@@ -551,6 +554,7 @@ const ContainerMappingContent = ({ containerFragment }: ContainerMappingContentP
       containerData={containerData}
       queryRef={queryRef}
       loadQuery={loadQuery}
+      currentMode={currentMode}
     />
   );
 };

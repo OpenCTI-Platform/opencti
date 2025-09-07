@@ -573,6 +573,7 @@ export const buildStixUpdateEvent = (user: AuthUser, previousStix: StixCoreObjec
     origin: user.origin,
     data: stix,
     commit: opts.commit,
+    noHistory: opts.noHistory,
     context: {
       patch,
       reverse_patch: previousPatch,
