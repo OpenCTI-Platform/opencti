@@ -39,8 +39,7 @@ const backupFiles = async () => {
   };
   const backupConf = JSON.stringify(BACKUP_CONFIG);
   try {
-    // eslint-disable-next-line no-console
-    console.log('STARTING BACKUP');
+    logApp.info('Starting backup...');
     await execChildPython(
       testContext,
       ADMIN_USER,
@@ -53,8 +52,7 @@ const backupFiles = async () => {
       }
     );
   } catch (e) {
-    // eslint-disable-next-line no-console
-    console.log(e);
+    logApp.info(e);
   }
 };
 const restoreFile = async () => {
@@ -79,8 +77,7 @@ const restoreFile = async () => {
   };
   const restoreConf = JSON.stringify(RESTORE_CONFIG);
   try {
-    // eslint-disable-next-line no-console
-    console.log('STARTING RESTORE');
+    logApp.info('Starting restore...');
     await execChildPython(
       testContext,
       ADMIN_USER,
@@ -90,8 +87,7 @@ const restoreFile = async () => {
       (message) => message.includes('restore run completed')
     );
   } catch (e) {
-    // eslint-disable-next-line no-console
-    console.log(e);
+    logApp.info(e);
   }
 };
 
