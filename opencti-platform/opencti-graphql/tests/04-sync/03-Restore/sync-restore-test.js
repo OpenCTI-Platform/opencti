@@ -16,6 +16,7 @@ import {
 } from '../../utils/testQuery';
 import { execChildPython } from '../../../src/python/pythonBridge';
 import { checkPostSyncContent, checkPreSyncContent, REPORT_QUERY, UPLOADED_FILE_SIZE } from '../sync-utils';
+import { logApp } from '../../../src/config/conf';
 
 const backupFiles = async () => {
   const BACKUP_CONFIG = {
