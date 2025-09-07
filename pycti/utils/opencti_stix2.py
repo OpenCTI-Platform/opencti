@@ -758,6 +758,7 @@ class OpenCTIStix2:
                                 fileMarkings=file.get("object_marking_refs", None),
                                 mime_type=file["mime_type"],
                                 no_trigger_import=file.get("no_trigger_import", False),
+                                embedded=file.get("embedded", False),
                             )
                 if (
                     self.opencti.get_attribute_in_extension("files", external_reference)
@@ -775,6 +776,7 @@ class OpenCTIStix2:
                                 fileMarkings=file.get("object_marking_refs", None),
                                 mime_type=file["mime_type"],
                                 no_trigger_import=file.get("no_trigger_import", False),
+                                embedded=file.get("embedded", False),
                             )
                 external_references_ids.append(external_reference_id)
         # Granted refs
@@ -1042,6 +1044,7 @@ class OpenCTIStix2:
             if "x_opencti_files" in stix_object:
                 for file in stix_object["x_opencti_files"]:
                     if "data" in file:
+                        print(file)
                         self.opencti.stix_domain_object.add_file(
                             id=stix_object_result["id"],
                             file_name=file["name"],
@@ -1050,6 +1053,7 @@ class OpenCTIStix2:
                             fileMarkings=file.get("object_marking_refs", None),
                             mime_type=file["mime_type"],
                             no_trigger_import=file.get("no_trigger_import", False),
+                            embedded=file.get("embedded", False),
                         )
             if (
                 self.opencti.get_attribute_in_extension("files", stix_object)
@@ -1059,6 +1063,7 @@ class OpenCTIStix2:
                     "files", stix_object
                 ):
                     if "data" in file:
+                        print(file)
                         self.opencti.stix_domain_object.add_file(
                             id=stix_object_result["id"],
                             file_name=file["name"],
@@ -1067,6 +1072,7 @@ class OpenCTIStix2:
                             fileMarkings=file.get("object_marking_refs", None),
                             mime_type=file["mime_type"],
                             no_trigger_import=file.get("no_trigger_import", False),
+                            embedded=file.get("embedded", False),
                         )
         return stix_object_results
 
@@ -1179,6 +1185,7 @@ class OpenCTIStix2:
                             fileMarkings=file.get("object_marking_refs", None),
                             mime_type=file["mime_type"],
                             no_trigger_import=file.get("no_trigger_import", False),
+                            embedded=file.get("embedded", False),
                         )
             if (
                 self.opencti.get_attribute_in_extension("files", stix_object)
@@ -1196,6 +1203,7 @@ class OpenCTIStix2:
                             fileMarkings=file.get("object_marking_refs", None),
                             mime_type=file["mime_type"],
                             no_trigger_import=file.get("no_trigger_import", False),
+                            embedded=file.get("embedded", False),
                         )
             if "id" in stix_object:
                 self.mapping_cache[stix_object["id"]] = {
@@ -2472,6 +2480,7 @@ class OpenCTIStix2:
                         fileMarkings=file.get("object_marking_refs", None),
                         mime_type=file.get("mime_type", None),
                         no_trigger_import=file.get("no_trigger_import", False),
+                        embedded=file.get("embedded", False),
                     )
 
     def apply_patch(self, item):
