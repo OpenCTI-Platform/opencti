@@ -1186,6 +1186,7 @@
   "Each tick value must be between min and max value": "各マーカー値は最小値と最大値の間にある必要があります",
   "Edit the selected item": "選択したアイテムを編集する",
   "Edition": "エディション",
+  "Editor view": "エディタービュー",
   "Effective Max Confidence Level:": "有効な最大信頼度です：",
   "Elasticsearch": "Elasticsearch",
   "Element will be rescan with all compatible activated rules": "要素はすべての互換性のある有効なルールで再スキャンされます",

@@ -1186,6 +1186,7 @@
   "Each tick value must be between min and max value": "Каждое значение тика должно находиться между минимальным и максимальным значением",
   "Edit the selected item": "Редактирование выбранного элемента",
   "Edition": "Издание",
+  "Editor view": "Вид редактора",
   "Effective Max Confidence Level:": "Эффективный максимальный уровень доверия:",
   "Elasticsearch": "Elasticsearch",
   "Element will be rescan with all compatible activated rules": "Элемент будет повторно просканирован со всеми совместимыми активированными правилами",
