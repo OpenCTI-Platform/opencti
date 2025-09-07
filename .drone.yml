@@ -370,7 +370,9 @@ services:
       - pip install -e .[dev,doc]
       - while ! nc -z api-tests 4010 ; do sleep 1 ; done
       - cd /tmp/opencti-test-worker
-      - pip install -r src/requirements.txt
+      # Remove pycti as it is already installed and can conflict
+      - sed -i '/^pycti==/d' src/requirements.txt
+      - pip3 install -r src/requirements.txt
       - python3 src/worker.py
 
   - name: opencti-restore-start
@@ -469,7 +471,9 @@ services:
       - pip install -e .[dev,doc]
       - while ! nc -z opencti-e2e-start 4500 ; do sleep 1 ; done
       - cd /tmp/opencti-e2e-worker
-      - pip install -r src/requirements.txt
+      # Remove pycti as it is already installed and can conflict
+      - sed -i '/^pycti==/d' src/requirements.txt
+      - pip3 install -r src/requirements.txt
       - python3 src/worker.py
 
 volumes:

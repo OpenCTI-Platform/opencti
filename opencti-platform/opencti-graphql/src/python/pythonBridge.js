@@ -70,6 +70,7 @@ export const execChildPython = async (context, user, scriptPath, scriptName, arg
           return;
         }
         if (jsonResult.status !== 'success') {
+          console.log(jsonResult);
           reject(UnknownError('Error python child execution', jsonResult));
         }
         resolve(jsonResult);
