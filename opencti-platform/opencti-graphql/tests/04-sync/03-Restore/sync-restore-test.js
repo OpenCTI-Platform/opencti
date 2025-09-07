@@ -41,13 +41,13 @@ const backupFiles = async () => {
   const backupConf = JSON.stringify(BACKUP_CONFIG);
   const scriptPath = path.resolve('../../opencti-connectors/stream/backup-files/src');
   const scriptName = 'backup-files.py';
-  
-  logApp.info('[TEST] Starting backup', { 
+
+  logApp.info('[TEST] Starting backup', {
     config: BACKUP_CONFIG,
     scriptPath,
     scriptName
   });
-  
+
   try {
     await execChildPython(
       testContext,
@@ -101,13 +101,13 @@ const restoreFile = async () => {
   const restoreConf = JSON.stringify(RESTORE_CONFIG);
   const scriptPath = path.resolve('../../opencti-connectors/external-import/restore-files/src');
   const scriptName = 'restore-files.py';
-  
+
   logApp.info('[TEST] Starting restore', {
     config: RESTORE_CONFIG,
     scriptPath,
     scriptName
   });
-  
+
   try {
     await execChildPython(
       testContext,
