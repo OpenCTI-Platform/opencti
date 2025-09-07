@@ -39,6 +39,8 @@ export const execChildPython = async (context, user, scriptPath, scriptName, arg
         scriptPath,
         args,
       };
+      // eslint-disable-next-line no-console
+      console.log('STARTING PYTHON');
       const shell = new PythonShell(scriptName, options);
       // Messaging is used to get data out of the python process
       let jsonResult = { status: 'success', messages };
@@ -51,10 +53,14 @@ export const execChildPython = async (context, user, scriptPath, scriptName, arg
         try {
           jsonResult = JSON.parse(message);
         } catch (e) {
+          // eslint-disable-next-line no-console
+          console.log(e);
           jsonResult = { status: 'error', message };
         }
       });
       shell.on('stderr', (stderr) => {
+        // eslint-disable-next-line no-console
+        console.log(stderr);
         logApp.error('[PYTHON BRIDGE] Error executing python', { stderr });
         messages.push(stderr);
         //* v8 ignore if */
@@ -67,6 +73,8 @@ export const execChildPython = async (context, user, scriptPath, scriptName, arg
         }
       });
       shell.end((err) => {
+        // eslint-disable-next-line no-console
+        console.log(err);
         if (err) {
           reject(err);
           return;
