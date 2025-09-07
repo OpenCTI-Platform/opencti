@@ -7,6 +7,14 @@ import magic
 
 
 class StixDomainObject:
+    """Main StixDomainObject class for OpenCTI
+
+    Manages STIX Domain Objects in the OpenCTI platform.
+
+    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :param file: file handling configuration
+    """
+
     def __init__(self, opencti, file):
         self.opencti = opencti
         self.file = file

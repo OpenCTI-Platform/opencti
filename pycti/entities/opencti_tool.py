@@ -7,6 +7,13 @@ from stix2.canonicalization.Canonicalize import canonicalize
 
 
 class Tool:
+    """Main Tool class for OpenCTI
+
+    Manages tools used by threat actors in the OpenCTI platform.
+
+    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    """
+
     def __init__(self, opencti):
         self.opencti = opencti
         self.properties = """
@@ -136,6 +143,13 @@ class Tool:
 
     @staticmethod
     def generate_id(name):
+        """Generate a STIX ID for a Tool.
+
+        :param name: The name of the tool
+        :type name: str
+        :return: STIX ID for the tool
+        :rtype: str
+        """
         name = name.lower().strip()
         data = {"name": name}
         data = canonicalize(data, utf8=False)
@@ -144,19 +158,30 @@ class Tool:
 
     @staticmethod
     def generate_id_from_data(data):
+        """Generate a STIX ID from tool data.
+
+        :param data: Dictionary containing 'name' key
+        :type data: dict
+        :return: STIX ID for the tool
+        :rtype: str
+        """
         return Tool.generate_id(data["name"])
 
-    """
-        List Tool objects
+    def list(self, **kwargs):
+        """List Tool objects.
 
         :param filters: the filters to apply
         :param search: the search keyword
         :param first: return the first n rows from the after ID (or the beginning if not set)
         :param after: ID of the first row for pagination
-        :return List of Tool objects
-    """
-
-    def list(self, **kwargs):
+        :param orderBy: field to order results by
+        :param orderMode: ordering mode (asc/desc)
+        :param customAttributes: custom attributes to return
+        :param getAll: whether to retrieve all results
+        :param withPagination: whether to include pagination info
+        :return: List of Tool objects
+        :rtype: list
+        """
         filters = kwargs.get("filters", None)
         search = kwargs.get("search", None)
         first = kwargs.get("first", 100)
@@ -229,15 +254,15 @@ class Tool:
                 result["data"]["tools"], with_pagination
             )
 
-    """
-        Read a Tool object
+    def read(self, **kwargs):
+        """Read a Tool object.
 
         :param id: the id of the Tool
         :param filters: the filters to apply if no id provided
-        :return Tool object
-    """
-
-    def read(self, **kwargs):
+        :param customAttributes: custom attributes to return
+        :return: Tool object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
@@ -272,14 +297,23 @@ class Tool:
             )
             return None
 
-    """
-        Create a Tool object
+    def create(self, **kwargs):
+        """Create a Tool object.
 
         :param name: the name of the Tool
-        :return Tool object
-    """
-
-    def create(self, **kwargs):
+        :param description: description of the tool
+        :param aliases: list of aliases
+        :param tool_types: types of tool
+        :param tool_version: version of the tool
+        :param killChainPhases: kill chain phases
+        :param createdBy: creator identity
+        :param objectMarking: marking definitions
+        :param objectLabel: labels
+        :param externalReferences: external references
+        :param update: whether to update existing tool
+        :return: Tool object
+        :rtype: dict or None
+        """
         stix_id = kwargs.get("stix_id", None)
         created_by = kwargs.get("createdBy", None)
         object_marking = kwargs.get("objectMarking", None)

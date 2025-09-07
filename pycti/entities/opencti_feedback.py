@@ -6,6 +6,13 @@ from stix2.canonicalization.Canonicalize import canonicalize
 
 
 class Feedback:
+    """Main Feedback class for OpenCTI
+
+    Manages feedback and analyst assessments in the OpenCTI platform.
+
+    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    """
+
     def __init__(self, opencti):
         self.opencti = opencti
         self.properties = """

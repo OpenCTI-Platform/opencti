@@ -1,4 +1,11 @@
 class StixNestedRefRelationship:
+    """Main StixNestedRefRelationship class for OpenCTI
+
+    Manages nested reference relationships in the OpenCTI platform.
+
+    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    """
+
     def __init__(self, opencti):
         self.opencti = opencti
         self.properties = """

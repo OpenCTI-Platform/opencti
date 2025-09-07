@@ -17,6 +17,15 @@ from .stix_cyber_observable.opencti_stix_cyber_observable_properties import (
 
 
 class StixCyberObservable(StixCyberObservableDeprecatedMixin):
+    """Main StixCyberObservable class for OpenCTI
+
+    Manages STIX cyber observables (indicators of compromise) in the OpenCTI platform.
+    Note: Deprecated methods are available through StixCyberObservableDeprecatedMixin.
+
+    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :param file: file handling configuration
+    """
+
     def __init__(self, opencti, file):
 
         self.opencti = opencti
