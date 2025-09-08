@@ -26,6 +26,7 @@ import { CaseIncidentEditionOverview_case$key } from './__generated__/CaseIncide
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import { canUse } from '../../../../utils/authorizedMembers';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 export const caseIncidentMutationFieldPatch = graphql`
   mutation CaseIncidentEditionOverviewCaseFieldPatchMutation(
@@ -185,6 +186,8 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
   handleClose,
 }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const featureFlagAccessRestriction = isFeatureEnable('ACCESS_RESTRICTION_CAN_USE');
   const caseData = useFragment(caseIncidentEditionOverviewFragment, caseRef);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(CASE_INCIDENT_TYPE);
@@ -274,11 +277,13 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
     references: [],
   };
   let disableAuthor = false;
-  if ('currentUserAccessRight' in (caseData?.createdBy ?? {})) {
-    disableAuthor = !canUse([caseData?.createdBy?.currentUserAccessRight]);
-  }
-  if ('organizations' in (caseData?.createdBy ?? {})) {
-    disableAuthor = !canUse(caseData?.createdBy?.organizations?.edges.map((o) => o.node.currentUserAccessRight) ?? []);
+  if (featureFlagAccessRestriction) {
+    if ('currentUserAccessRight' in (caseData?.createdBy ?? {})) {
+      disableAuthor = !canUse([caseData?.createdBy?.currentUserAccessRight]);
+    }
+    if ('organizations' in (caseData?.createdBy ?? {})) {
+      disableAuthor = !canUse(caseData?.createdBy?.organizations?.edges.map((o) => o.node.currentUserAccessRight) ?? []);
+    }
   }
   return (
     <Formik

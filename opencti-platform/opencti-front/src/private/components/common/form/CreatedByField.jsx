@@ -9,6 +9,7 @@ import { identitySearchIdentitiesSearchQuery } from '../identities/IdentitySearc
 import ItemIcon from '../../../../components/ItemIcon';
 import { canUse } from '../../../../utils/authorizedMembers';
 import { useFormatter } from '../../../../components/i18n';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const useStyles = makeStyles((theme) => ({
   icon: {
@@ -41,6 +42,8 @@ const CreatedByField = (props) => {
   } = props;
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const featureFlagAccessRestriction = isFeatureEnable('ACCESS_RESTRICTION_CAN_USE');
   const [identityCreation, setIdentityCreation] = useState(false);
   const [keyword, setKeyword] = useState('');
   const [debouncedKeyword, setDebouncedKeyword] = useState(keyword); // Debounced value
@@ -76,17 +79,30 @@ const CreatedByField = (props) => {
     })
       .toPromise()
       .then((data) => {
-        const resultIdentities = pipe(
-          pathOr([], ['identities', 'edges']),
-          filter((n) => !('currentUserAccessRight' in n.node) || canUse([n.node.currentUserAccessRight, ...(n.node.organizations?.edges.map((o) => o.node.currentUserAccessRight)) ?? []])),
-          map((n) => ({
-            label: n.node.name,
-            value: n.node.id,
-            type: n.node.entity_type,
-            entity: n.node,
-          })),
-        )(data);
-        setIdentities(union(identities, resultIdentities));
+        if (featureFlagAccessRestriction) {
+          const resultIdentities = pipe(
+            pathOr([], ['identities', 'edges']),
+            filter((n) => !('currentUserAccessRight' in n.node) || canUse([n.node.currentUserAccessRight, ...(n.node.organizations?.edges.map((o) => o.node.currentUserAccessRight)) ?? []])),
+            map((n) => ({
+              label: n.node.name,
+              value: n.node.id,
+              type: n.node.entity_type,
+              entity: n.node,
+            })),
+          )(data);
+          setIdentities(union(identities, resultIdentities));
+        } else {
+          const resultIdentities = pipe(
+            pathOr([], ['identities', 'edges']),
+            map((n) => ({
+              label: n.node.name,
+              value: n.node.id,
+              type: n.node.entity_type,
+              entity: n.node,
+            })),
+          )(data);
+          setIdentities(union(identities, resultIdentities));
+        }
       });
   };
 
