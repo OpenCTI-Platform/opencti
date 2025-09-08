@@ -147,6 +147,7 @@ import {
   INSTANCE_RELATION_FILTER,
   INSTANCE_RELATION_TYPES_FILTER,
   IS_INFERRED_FILTER,
+  RELATION_DYNAMIC_FROM_FILTER, RELATION_DYNAMIC_TO_FILTER,
   RELATION_FROM_FILTER,
   RELATION_FROM_ROLE_FILTER,
   RELATION_FROM_TYPES_FILTER,
@@ -2891,6 +2892,25 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
     const newFilterGroup = await completeSpecialFilterKeys(context, user, filterGroup);
     finalFilterGroups.push(newFilterGroup);
   }
+  const dynamicFromFilters = filters.filter((f) => f.key.includes(RELATION_DYNAMIC_FROM_FILTER));
+  let fromIds = [];
+  for (let index = 0; index < dynamicFromFilters.length; index += 1) {
+    const dynamicFrom = dynamicFromFilters[index];
+    const dynamicFromValue = dynamicFrom?.values ?? [];
+    if (isNotEmptyField(dynamicFromValue)) {
+      const computedIndices = computeQueryIndices([], [ABSTRACT_STIX_OBJECT]);
+      const fromEntities = await elPaginate(context, user, computedIndices, {
+        connectionFormat: false,
+        first: ES_MAX_PAGINATION,
+        bypassSizeLimit: true, // ensure that max runtime prevent on ES_MAX_PAGINATION
+        baseData: true,
+        filters: addFilter(dynamicFromValue[0], TYPE_FILTER, [ABSTRACT_STIX_CORE_OBJECT]),
+      });
+    }
+  }
+  if (filters.filter((f) => f.key.includes(RELATION_DYNAMIC_TO_FILTER))) {
+
+  }
   for (let index = 0; index < filters.length; index += 1) {
     const filter = filters[index];
     const { key } = filter;
@@ -3013,8 +3033,13 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
           finalFilterGroups.push(newFilterGroup);
         }
       }
-      if (filterKey === RELATION_FROM_FILTER || filterKey === RELATION_TO_FILTER || filterKey === RELATION_TO_SIGHTING_FILTER) {
-        const side = filterKey === RELATION_FROM_FILTER ? 'from' : 'to';
+      if (filterKey === RELATION_FROM_FILTER || filterKey === RELATION_DYNAMIC_FROM_FILTER ||
+          filterKey === RELATION_TO_FILTER || filterKey === RELATION_DYNAMIC_TO_FILTER ||
+          filterKey === RELATION_TO_SIGHTING_FILTER) {
+
+
+
+        const side = filterKey === RELATION_FROM_FILTER || filterKey === RELATION_DYNAMIC_FROM_FILTER ? 'from' : 'to';
         const nested = [
           { key: 'internal_id', operator: filter.operator, values: filter.values },
           { key: 'role', operator: 'wildcard', values: [`*_${side}`] }
