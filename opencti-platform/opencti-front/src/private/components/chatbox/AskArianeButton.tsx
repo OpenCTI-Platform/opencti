@@ -4,8 +4,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
 import { useTheme } from '@mui/styles';
 import IconButton from '@mui/material/IconButton';
-import ValidateTermsOfUseInfoDialog from '@components/chatbox/ValidateTermsOfUseInfoDialog';
 import { CGUStatus } from '@components/settings/Experience';
+import ValidateTermsOfUseDialog from '@components/settings/ValidateTermsOfUseDialog';
+import { Tooltip } from '@mui/material';
 import GradientButton, { GradientVariant } from '../../../components/GradientButton';
 import { useFormatter } from '../../../components/i18n';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
@@ -15,6 +16,7 @@ import { DARK_BLUE } from '../../../utils/htmlToPdf/utils/constants';
 import embleme from '../../../static/images/embleme_filigran_white.png';
 import useHelper from '../../../utils/hooks/useHelper';
 import useAuth from '../../../utils/hooks/useAuth';
+import useGranted, { SETTINGS_SETPARAMETERS } from '../../../utils/hooks/useGranted';
 
 const AskArianeButton = () => {
   const { t_i18n } = useFormatter();
@@ -22,6 +24,7 @@ const AskArianeButton = () => {
   const { settings: { filigran_chatbot_ai_cgu_status } } = useAuth();
   const theme = useTheme<Theme>();
   const isEnterpriseEdition = useEnterpriseEdition();
+  const hasRightToValidateCGU = useGranted([SETTINGS_SETPARAMETERS]);
 
   const [navOpen, setNavOpen] = useState(
     localStorage.getItem('navOpen') === 'true',
@@ -35,8 +38,9 @@ const AskArianeButton = () => {
     };
   });
 
+  const isCGUStatusPending = filigran_chatbot_ai_cgu_status === CGUStatus.pending;
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
-  const [isChatbotCGUDialogOpen, setIsChatbotCGUDialogOpen] = useState(false);
+  const [openValidateTermsOfUse, setOpenValidateTermsOfUse] = useState(false);
   const chatbotRef = useRef<{ onClose:() => void }>(null);
   const EERef = useRef<HTMLDivElement>(null);
 
@@ -55,8 +59,8 @@ const AskArianeButton = () => {
       } else {
         openChatbot();
       }
-    } else {
-      setIsChatbotCGUDialogOpen(true);
+    } else if (hasRightToValidateCGU) {
+      setOpenValidateTermsOfUse(true);
     }
   };
 
@@ -147,24 +151,32 @@ const AskArianeButton = () => {
           <EEChip ref={EERef}/>
         </>
       ) : null}
-
-      {navOpen ? (
-        <GradientButton
-          size="small"
-          sx={{ width: '100%', textAlign: 'start' }}
-          gradientVariant={GradientVariant.ai}
-          title={t_i18n('Open chatbot')}
-          onClick={toggleChatbot}
-        >
-          <AutoAwesomeOutlined style={{ color: theme.palette.ai.main }}/>
-          <span style={{ marginLeft: 5 }}>{t_i18n('ASK ARIANE')}</span>
-        </GradientButton>
-      ) : (
-        <IconButton style={{ padding: 0 }} onClick={toggleChatbot}>
-          <AutoAwesomeOutlined style={{ color: theme.palette.ai.main }}/>
-        </IconButton>
+      <Tooltip
+        title={isCGUStatusPending && !hasRightToValidateCGU ? t_i18n('Ask Ariane isn\'t activated yet. Please reach out to your administrator to enable this feature.') : 'Open chatbot'}
+      >
+        {navOpen ? (
+          <GradientButton
+            size="small"
+            sx={{ width: '100%', textAlign: 'start' }}
+            gradientVariant={isCGUStatusPending ? GradientVariant.disabled : GradientVariant.ai}
+            onClick={toggleChatbot}
+          >
+            <AutoAwesomeOutlined
+              style={{ color: isCGUStatusPending ? theme.palette.action?.disabled : theme.palette.ai.main }}
+            />
+            <span style={{ marginLeft: 5 }}>{t_i18n('ASK ARIANE')}</span>
+          </GradientButton>
+        ) : (
+          <IconButton style={{ padding: 0 }} onClick={toggleChatbot}>
+            <AutoAwesomeOutlined
+              style={{ color: isCGUStatusPending ? theme.palette.action?.disabled : theme.palette.ai.main }}
+            />
+          </IconButton>
+        )}
+      </Tooltip>
+      {openValidateTermsOfUse && (
+        <ValidateTermsOfUseDialog open={openValidateTermsOfUse} onClose={() => setOpenValidateTermsOfUse(false)}/>
       )}
-      <ValidateTermsOfUseInfoDialog open={isChatbotCGUDialogOpen} onClose={() => setIsChatbotCGUDialogOpen(false)}/>
     </>
   );
 };
