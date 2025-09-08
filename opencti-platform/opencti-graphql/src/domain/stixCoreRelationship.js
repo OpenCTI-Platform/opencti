@@ -6,7 +6,7 @@ import { createRelation, deleteElementById, deleteRelationsByFromAndTo, timeSeri
 import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError } from '../config/errors';
 import { elCount } from '../database/engine';
-import { fillTimeSeries, isEmptyField, isNotEmptyField, READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS } from '../database/utils';
+import { isEmptyField, isNotEmptyField, READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS } from '../database/utils';
 import { isStixCoreRelationship, stixCoreRelationshipOptions } from '../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
 import { RELATION_CREATED_BY, } from '../schema/stixRefRelationship';
@@ -15,7 +15,7 @@ import { askListExport, exportTransformFilters } from './stix';
 import { workToExportFile } from './work';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
 import { addFilter } from '../utils/filtering/filtering-utils';
-import { buildArgsFromDynamicFilters, stixRelationshipsDistribution } from './stixRelationship';
+import { stixRelationshipsDistribution } from './stixRelationship';
 import { elRemoveElementFromDraft } from '../database/draft-engine';
 
 export const findAll = async (context, user, args) => {
@@ -46,11 +46,7 @@ export const stixCoreRelationshipsDistribution = async (context, user, args) => 
 export const stixCoreRelationshipsNumber = async (context, user, args) => {
   const { authorId } = args;
   const relationship_type = buildStixCoreRelationshipTypes(args.relationship_type);
-  const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, { ...args, relationship_type });
-  if (isEmptyDynamic) {
-    return { count: 0, total: 0 };
-  }
-  let finalArgs = dynamicArgs;
+  let finalArgs = args;
   if (isNotEmptyField(authorId)) {
     const filters = addFilter(args.filters, buildRefRelationKey(RELATION_CREATED_BY, '*'), authorId);
     finalArgs = { ...finalArgs, filters };
@@ -64,12 +60,7 @@ export const stixCoreRelationshipsNumber = async (context, user, args) => {
 };
 export const stixCoreRelationshipsMultiTimeSeries = async (context, user, args) => {
   return Promise.all(args.timeSeriesParameters.map(async (timeSeriesParameter) => {
-    const { startDate, endDate, interval } = args;
-    const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, timeSeriesParameter);
-    if (isEmptyDynamic) {
-      return { data: fillTimeSeries(startDate, endDate, interval, []) };
-    }
-    return { data: timeSeriesRelations(context, user, { ...args, ...dynamicArgs }) };
+    return { data: timeSeriesRelations(context, user, { ...args, ...timeSeriesParameter }) };
   }));
 };
 // endregion
