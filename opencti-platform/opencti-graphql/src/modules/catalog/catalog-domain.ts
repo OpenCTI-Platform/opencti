@@ -9,7 +9,7 @@ import { isEmptyField } from '../../database/utils';
 import { UnsupportedError } from '../../config/errors';
 import { idGenFromData } from '../../schema/identifier';
 import filigranCatalog from '../../__generated__/opencti-manifest.json';
-import conf from '../../config/conf';
+import conf, { isFeatureEnabled } from '../../config/conf';
 import type { ConnectorContractConfiguration, ContractConfigInput } from '../../generated/graphql';
 
 const CUSTOM_CATALOGS: string[] = conf.get('app:custom_catalogs') ?? [];
@@ -19,6 +19,74 @@ addFormats(ajv, ['password', 'uri', 'duration', 'email', 'date-time', 'date']);
 // Cache of catalog to read on disk and parse only once
 let catalogMap: Record<string, CatalogType>;
 const getCatalogs = () => {
+  // TEMPORARY HACK: Live catalog mode for local development with custom catalogs only
+  // This feature allows loading catalogs without cache for testing purposes
+  // TODO: Remove this hack when proper catalog management is implemented
+  const shouldUseLiveCatalogs = isFeatureEnabled('LIVE_CATALOGS') && CUSTOM_CATALOGS.length > 0;
+
+  if (shouldUseLiveCatalogs) {
+    // Live mode: no cache, only custom catalogs (excluding filigran catalog)
+    const liveCatalogMap: Record<string, CatalogType> = {};
+    const catalogs = CUSTOM_CATALOGS.map((custom) => fs.readFileSync(custom, { encoding: 'utf8', flag: 'r' }));
+    // Note: intentionally NOT adding filigranCatalog here
+
+    for (let index = 0; index < catalogs.length; index += 1) {
+      const catalogRaw = catalogs[index];
+      const catalog = JSON.parse(catalogRaw) as CatalogDefinition;
+      // Validate each contract
+      for (let contractIndex = 0; contractIndex < catalog.contracts.length; contractIndex += 1) {
+        const contract = catalog.contracts[contractIndex];
+        if (contract.manager_supported) {
+          if (isEmptyField(contract.container_image)) {
+            throw UnsupportedError('Contract must defined container_image field');
+          }
+          if (isEmptyField(contract.container_type)) {
+            throw UnsupportedError('Contract must defined container_type field');
+          }
+
+          if (contract.config_schema) {
+            const jsonValidation = {
+              type: contract.config_schema.type,
+              properties: contract.config_schema.properties,
+              required: contract.config_schema.required,
+              additionalProperties: contract.config_schema.additionalProperties
+            };
+            try {
+              ajv.compile(jsonValidation);
+            } catch (err) {
+              throw UnsupportedError('Contract must be a valid json schema definition', { cause: err });
+            }
+          }
+        }
+      }
+      liveCatalogMap[catalog.id] = {
+        definition: catalog,
+        graphql: {
+          id: catalog.id,
+          entity_type: 'Catalog',
+          parent_types: ['Internal'],
+          standard_id: idGenFromData('catalog', { id: catalog.id }),
+          name: catalog.name,
+          description: catalog.description,
+          contracts: catalog.contracts.map((c) => {
+            const finalContract = c;
+            if (finalContract.manager_supported) {
+              const EXCLUDED_CONFIG_VARS = ['OPENCTI_TOKEN', 'OPENCTI_URL', 'CONNECTOR_TYPE', 'CONNECTOR_RUN_AND_TERMINATE'];
+              EXCLUDED_CONFIG_VARS.forEach((property) => {
+                delete finalContract.config_schema.properties[property];
+              });
+              finalContract.config_schema.required = c.config_schema.required.filter((item) => !EXCLUDED_CONFIG_VARS.includes(item));
+            }
+            return JSON.stringify(finalContract);
+          })
+        }
+      };
+    }
+    return liveCatalogMap;
+  }
+  // END OF TEMPORARY HACK
+
+  // Original code unchanged below
   if (!catalogMap) {
     catalogMap = {};
     const catalogs = CUSTOM_CATALOGS.map((custom) => fs.readFileSync(custom, { encoding: 'utf8', flag: 'r' }));
