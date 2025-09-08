@@ -18,18 +18,21 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 async function getConnectorManifest() {
+  console.info('📝 Getting connectors manifest');
   const schemaUrl = getSchemaURL();
-  console.info(`Fetching manifest from: ${schemaUrl}`);
   try {
     // fetch file
+    console.info(`➡️ Fetching manifest from: ${schemaUrl}`);
     const res = await fetch(schemaUrl);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.text();
 
     // try to parse as json
+    console.info('➡️ Parsing manifest...');
     JSON.parse(data);
 
     // save file
+    console.info('➡️ Writing manifest file...');
     const fullDir = path.resolve(__dirname, OUTPUT_DIR);
     fs.mkdirSync(fullDir, { recursive: true });
     const fullPath = path.join(fullDir, OUTPUT_FILE);
