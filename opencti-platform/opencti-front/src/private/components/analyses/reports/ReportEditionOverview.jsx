@@ -25,6 +25,7 @@ import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { canUse } from '../../../../utils/authorizedMembers';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 export const reportMutationFieldPatch = graphql`
   mutation ReportEditionOverviewFieldPatchMutation(
@@ -91,6 +92,8 @@ const REPORT_TYPE = 'Report';
 const ReportEditionOverviewComponent = (props) => {
   const { report, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const featureFlagAccessRestriction = isFeatureEnable('ACCESS_RESTRICTION_CAN_USE');
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(REPORT_TYPE);
   const basicShape = yupShapeConditionalRequired({
@@ -201,11 +204,13 @@ const ReportEditionOverviewComponent = (props) => {
     ]),
   )(report);
   let disableAuthor = false;
-  if ('currentUserAccessRight' in (report?.createdBy ?? {})) {
-    disableAuthor = !canUse([report?.createdBy?.currentUserAccessRight]);
-  }
-  if ('organizations' in (report?.createdBy ?? {})) {
-    disableAuthor = !canUse(report?.createdBy?.organizations?.edges.map((o) => o.node.currentUserAccessRight) ?? []);
+  if (featureFlagAccessRestriction) {
+    if ('currentUserAccessRight' in (report?.createdBy ?? {})) {
+      disableAuthor = !canUse([report?.createdBy?.currentUserAccessRight]);
+    }
+    if ('organizations' in (report?.createdBy ?? {})) {
+      disableAuthor = !canUse(report?.createdBy?.organizations?.edges.map((o) => o.node.currentUserAccessRight) ?? []);
+    }
   }
   return (
     <Formik

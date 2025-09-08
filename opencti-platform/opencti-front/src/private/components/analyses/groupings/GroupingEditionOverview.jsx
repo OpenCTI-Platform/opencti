@@ -21,6 +21,7 @@ import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { canUse } from '../../../../utils/authorizedMembers';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 export const groupingMutationFieldPatch = graphql`
   mutation GroupingEditionOverviewFieldPatchMutation(
@@ -87,6 +88,8 @@ const GROUPING_TYPE = 'Grouping';
 const GroupingEditionOverviewComponent = (props) => {
   const { grouping, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const featureFlagAccessRestriction = isFeatureEnable('ACCESS_RESTRICTION_CAN_USE');
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(GROUPING_TYPE);
 
@@ -184,11 +187,13 @@ const GroupingEditionOverviewComponent = (props) => {
     ]),
   )(grouping);
   let disableAuthor = false;
-  if ('currentUserAccessRight' in (grouping?.createdBy ?? {})) {
-    disableAuthor = !canUse([grouping?.createdBy?.currentUserAccessRight]);
-  }
-  if ('organizations' in (grouping?.createdBy ?? {})) {
-    disableAuthor = !canUse(grouping?.createdBy?.organizations?.edges.map((o) => o.node.currentUserAccessRight) ?? []);
+  if (featureFlagAccessRestriction) {
+    if ('currentUserAccessRight' in (grouping?.createdBy ?? {})) {
+      disableAuthor = !canUse([grouping?.createdBy?.currentUserAccessRight]);
+    }
+    if ('organizations' in (grouping?.createdBy ?? {})) {
+      disableAuthor = !canUse(grouping?.createdBy?.organizations?.edges.map((o) => o.node.currentUserAccessRight) ?? []);
+    }
   }
   return (
     <Formik
