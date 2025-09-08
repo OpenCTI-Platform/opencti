@@ -9,9 +9,8 @@ import { elCount, MAX_RUNTIME_RESOLUTION_SIZE } from '../database/engine';
 import { STIX_SPEC_VERSION, stixCoreRelationshipsMapping } from '../database/stix';
 import { UnsupportedError } from '../config/errors';
 import { schemaTypesDefinition } from '../schema/schema-types';
-import { clearKeyFromFilterGroup, extractDynamicFilterGroupValues, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
+import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { isStixRelationship } from '../schema/stixRelationship';
-import { RELATION_DYNAMIC_FROM_FILTER, RELATION_DYNAMIC_TO_FILTER } from '../utils/filtering/filtering-constants';
 
 export const buildArgsFromDynamicFilters = async (context, user, args) => {
   const { dynamicFrom, dynamicTo } = args;
@@ -47,36 +46,7 @@ export const buildArgsFromDynamicFilters = async (context, user, args) => {
 };
 
 export const findAll = async (context, user, args) => {
-  let finalArgs = args;
-  const finalFilters = args.filters;
-  if (finalFilters) {
-    const dynamicFrom = extractDynamicFilterGroupValues(finalFilters, RELATION_DYNAMIC_FROM_FILTER);
-    if (dynamicFrom && dynamicFrom.length > 0 && isFilterGroupNotEmpty(dynamicFrom[0])) {
-      finalArgs = {
-        ...finalArgs,
-        dynamicFrom: dynamicFrom[0],
-        filters: clearKeyFromFilterGroup(finalArgs.filters, RELATION_DYNAMIC_FROM_FILTER),
-      };
-    }
-    const dynamicTo = extractDynamicFilterGroupValues(finalFilters, RELATION_DYNAMIC_TO_FILTER);
-    if (dynamicTo && dynamicTo.length > 0 && isFilterGroupNotEmpty(dynamicTo[0])) {
-      finalArgs = {
-        ...finalArgs,
-        dynamicTo: dynamicTo[0],
-        filters: clearKeyFromFilterGroup(finalArgs.filters, RELATION_DYNAMIC_TO_FILTER),
-      };
-    }
-  }
-  const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, finalArgs);
-  if (isEmptyDynamic) {
-    return { edges: [] };
-  }
-  const type = isEmptyField(dynamicArgs.relationship_type) ? ABSTRACT_STIX_RELATIONSHIP : dynamicArgs.relationship_type;
-  const types = Array.isArray(type) ? type : [type];
-  if (!types.every((t) => isStixRelationship(t))) {
-    throw UnsupportedError('This API only support Stix relationships', { type });
-  }
-  return listRelationsPaginated(context, user, type, R.dissoc('relationship_type', dynamicArgs));
+  return listRelationsPaginated(context, user, ABSTRACT_STIX_RELATIONSHIP, args);
 };
 
 export const findById = (context, user, stixRelationshipId) => {

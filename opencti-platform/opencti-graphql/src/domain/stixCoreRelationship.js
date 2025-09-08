@@ -4,7 +4,7 @@ import { ApolloServerErrorCode } from '@apollo/server/errors';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { createRelation, deleteElementById, deleteRelationsByFromAndTo, timeSeriesRelations, updateAttribute } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
-import { FunctionalError, UnsupportedError } from '../config/errors';
+import { FunctionalError } from '../config/errors';
 import { elCount } from '../database/engine';
 import { fillTimeSeries, isEmptyField, isNotEmptyField, READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS } from '../database/utils';
 import { isStixCoreRelationship, stixCoreRelationshipOptions } from '../schema/stixCoreRelationship';
@@ -14,51 +14,12 @@ import { buildRelationsFilter, listRelations, storeLoadById } from '../database/
 import { askListExport, exportTransformFilters } from './stix';
 import { workToExportFile } from './work';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
-import { addFilter, clearKeyFromFilterGroup, extractDynamicFilterGroupValues, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
+import { addFilter } from '../utils/filtering/filtering-utils';
 import { buildArgsFromDynamicFilters, stixRelationshipsDistribution } from './stixRelationship';
 import { elRemoveElementFromDraft } from '../database/draft-engine';
-import { RELATION_DYNAMIC_FROM_FILTER, RELATION_DYNAMIC_TO_FILTER } from '../utils/filtering/filtering-constants';
 
 export const findAll = async (context, user, args) => {
-  let finalArgs = args;
-  const finalFilters = args.filters;
-  if (finalFilters) {
-    const dynamicFrom = extractDynamicFilterGroupValues(finalFilters, RELATION_DYNAMIC_FROM_FILTER);
-    if (dynamicFrom && dynamicFrom.length > 0 && isFilterGroupNotEmpty(dynamicFrom[0])) {
-      finalArgs = {
-        ...finalArgs,
-        dynamicFrom: dynamicFrom[0],
-        filters: clearKeyFromFilterGroup(finalArgs.filters, RELATION_DYNAMIC_FROM_FILTER),
-      };
-    }
-    const dynamicTo = extractDynamicFilterGroupValues(finalFilters, RELATION_DYNAMIC_TO_FILTER);
-    if (dynamicTo && dynamicTo.length > 0 && isFilterGroupNotEmpty(dynamicTo[0])) {
-      finalArgs = {
-        ...finalArgs,
-        dynamicTo: dynamicTo[0],
-        filters: clearKeyFromFilterGroup(finalArgs.filters, RELATION_DYNAMIC_TO_FILTER),
-      };
-    }
-  }
-  const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, finalArgs);
-  if (isEmptyDynamic) {
-    return {
-      edges: [],
-      pageInfo: {
-        startCursor: '',
-        endCursor: '',
-        hasNextPage: false,
-        hasPreviousPage: false,
-        globalCount: 0
-      }
-    };
-  }
-  const type = isEmptyField(dynamicArgs.relationship_type) ? ABSTRACT_STIX_CORE_RELATIONSHIP : dynamicArgs.relationship_type;
-  const types = Array.isArray(type) ? type : [type];
-  if (!types.every((t) => isStixCoreRelationship(t))) {
-    throw UnsupportedError('This API only support Stix core relationships', { type });
-  }
-  return listRelations(context, user, type, R.dissoc('relationship_type', dynamicArgs));
+  return listRelations(context, user, ABSTRACT_STIX_CORE_RELATIONSHIP, args);
 };
 
 export const findById = (context, user, stixCoreRelationshipId) => {
