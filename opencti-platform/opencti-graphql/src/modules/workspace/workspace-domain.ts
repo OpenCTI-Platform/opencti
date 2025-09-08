@@ -25,7 +25,7 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
 import { elFindByIds, elRawDeleteByQuery } from '../../database/engine';
 import type { BasicStoreEntity } from '../../types/store';
-import { buildPagination, fromBase64, isEmptyField, isNotEmptyField, READ_DATA_INDICES_WITHOUT_INTERNAL, READ_INDEX_INTERNAL_OBJECTS, toBase64 } from '../../database/utils';
+import { buildPagination, isEmptyField, isNotEmptyField, READ_DATA_INDICES_WITHOUT_INTERNAL, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
@@ -336,13 +336,13 @@ export const checkConfigurationImport = (type: string, parsedData: ConfigImportD
 // Export => Dashboard filter ids must be converted to standard id
 // Import => Dashboards filter ids must be converted back to internal id
 const convertWorkspaceManifestIds = async (context: AuthContext, user: AuthUser, manifest: string, from: 'internal' | 'stix'): Promise<string> => {
-  const parsedManifest = JSON.parse(fromBase64(manifest) ?? '{}');
+  const parsedManifest = fromB64(manifest ?? '{}');
   // Regeneration for dashboards
   if (parsedManifest && isNotEmptyField(parsedManifest.widgets)) {
     const { widgets } = parsedManifest;
     const widgetDefinitions = Object.values(widgets);
     await convertWidgetsIds(context, user, widgetDefinitions, from);
-    return toBase64(JSON.stringify(parsedManifest)) as string;
+    return toB64(parsedManifest) as string;
   }
   return manifest;
 };
@@ -368,7 +368,7 @@ export const generateWidgetExportConfiguration = async (context: AuthContext, us
   if (workspace.type !== 'dashboard') {
     throw FunctionalError('WORKSPACE_EXPORT_INCOMPATIBLE_TYPE', { type: workspace.type });
   }
-  const parsedManifest = JSON.parse(fromBase64(workspace.manifest) ?? '{}');
+  const parsedManifest = fromB64(workspace.manifest ?? '{}');
   if (parsedManifest && isNotEmptyField(parsedManifest.widgets) && parsedManifest.widgets[widgetId]) {
     const widgetDefinition = parsedManifest.widgets[widgetId];
     delete widgetDefinition.id; // Remove current widget id
@@ -376,7 +376,7 @@ export const generateWidgetExportConfiguration = async (context: AuthContext, us
     const exportConfigration = {
       openCTI_version: pjson.version,
       type: 'widget',
-      configuration: toBase64(JSON.stringify(widgetDefinition)) as string
+      configuration: toB64(widgetDefinition) as string
     };
     return JSON.stringify(exportConfigration);
   }

@@ -1,11 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_USER, editorQuery, getUserIdByEmail, participantQuery, queryAsAdmin, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
-import { toBase64 } from '../../../src/database/utils';
 import { PRIVATE_DASHBOARD_MANIFEST } from './publicDashboard-data';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../../../src/modules/publicDashboard/publicDashboard-types';
 import { queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
+import { toB64 } from '../../../src/utils/base64';
 
 const LIST_QUERY = gql`
   query publicDashboards(
@@ -233,7 +233,7 @@ describe('PublicDashboard resolver', () => {
   describe('Tests with manifest', () => {
     beforeAll(async () => {
       // Add manifest to Private dashboard as empty dashboard should not be published
-      const manifest = toBase64(JSON.stringify(PRIVATE_DASHBOARD_MANIFEST));
+      const manifest = toB64(PRIVATE_DASHBOARD_MANIFEST);
       await queryAsAdmin({
         query: UPDATE_PRIVATE_DASHBOARD_QUERY,
         variables: {

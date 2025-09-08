@@ -44,7 +44,7 @@ import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfigurati
 import type { BasicStoreEntityPlaybook, ComponentDefinition } from '../modules/playbook/playbook-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { ENTITY_TYPE_DECAY_RULE } from '../modules/decayRule/decayRule-types';
-import { fromBase64, isNotEmptyField } from '../database/utils';
+import { isNotEmptyField } from '../database/utils';
 import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached } from '../modules/publicDashboard/publicDashboard-types';
 import { getAllowedMarkings } from '../modules/publicDashboard/publicDashboard-domain';
 import type { BasicStoreEntityConnector } from '../types/connector';
@@ -53,6 +53,7 @@ import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWork
 import { emptyFilterGroup } from '../utils/filtering/filtering-utils';
 import { FunctionalError } from '../config/errors';
 import { type BasicStoreEntityPir, ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
+import { fromB64 } from '../utils/base64';
 
 const ADDS_TOPIC = `${TOPIC_PREFIX}*ADDED_TOPIC`;
 const EDITS_TOPIC = `${TOPIC_PREFIX}*EDIT_TOPIC`;
@@ -281,7 +282,7 @@ const platformPublicDashboards = (context: AuthContext) => {
           internal_id: dash.internal_id,
           uri_key: dash.uri_key,
           dashboard_id: dash.dashboard_id,
-          private_manifest: JSON.parse(fromBase64(dash.private_manifest) ?? ''),
+          private_manifest: fromB64(dash.private_manifest ?? ''),
           user_id: dash.user_id,
           allowed_markings_ids: dash.allowed_markings_ids,
           allowed_markings: markings,
