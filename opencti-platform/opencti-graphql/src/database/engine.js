@@ -50,7 +50,17 @@ import {
   WRITE_PLATFORM_INDICES
 } from './utils';
 import conf, { booleanConf, extendedErrors, isFeatureEnabled, loadCert, logApp, logMigration } from '../config/conf';
-import { ComplexSearchError, ConfigurationError, DatabaseError, EngineShardsError, FunctionalError, LockTimeoutError,ResourceNotFoundError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
+import {
+  ComplexSearchError,
+  ConfigurationError,
+  DatabaseError,
+  EngineShardsError,
+  FunctionalError,
+  LockTimeoutError,
+  ResourceNotFoundError,
+  TYPE_LOCK_ERROR,
+  UnsupportedError
+} from '../config/errors';
 import {
   isStixRefRelationship,
   RELATION_BORN_IN,
