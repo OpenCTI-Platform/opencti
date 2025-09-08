@@ -49,6 +49,8 @@ jobs:
           command: yarn install
       - run:
           working_directory: ~/opencti/opencti-platform/opencti-graphql
+          environment:
+            TAG_VERSION: $CIRCLE_TAG
           command: yarn build
       - slack/notify:
           event: fail
