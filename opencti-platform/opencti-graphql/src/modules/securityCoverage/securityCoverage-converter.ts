@@ -1,8 +1,7 @@
-import type { StixSecurityCoverage, StoreEntitySecurityCoverage } from './securityCoverage-types';
+import { INPUT_ASSESS, type StixSecurityCoverage, type StoreEntitySecurityCoverage } from './securityCoverage-types';
 import { buildStixDomain } from '../../database/stix-2-1-converter';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import { cleanObject } from '../../database/stix-converter-utils';
-import { INPUT_OBJECTS } from '../../schema/general';
 
 const convertSecurityCoverageToStix = (instance: StoreEntitySecurityCoverage): StixSecurityCoverage => {
   const stixDomainObject = buildStixDomain(instance);
@@ -10,10 +9,9 @@ const convertSecurityCoverageToStix = (instance: StoreEntitySecurityCoverage): S
     ...stixDomainObject,
     name: instance.name,
     description: instance.description,
-    latest_coverage: instance.latest_coverage,
-    filters: instance.filters,
+    coverage: instance.coverage,
     periodicity: instance.periodicity,
-    object_refs: (instance[INPUT_OBJECTS] ?? []).map((m) => m.standard_id),
+    assess_ref: instance[INPUT_ASSESS].standard_id,
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixDomainObject.extensions[STIX_EXT_OCTI],

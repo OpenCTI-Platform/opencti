@@ -34,6 +34,7 @@ type BasicDefinition = {
   multiple: boolean, // If attribute can have multiple values
   mandatoryType: MandatoryType // If attribute is mandatory
   upsert: boolean // If attribute can be upsert by the integration
+  upsert_force_replace?: boolean, // For multiple, if upsert will for a replacement instead of cumulate information
   isFilterable: boolean // If attribute can be used as a filter key in the UI
   editDefault: boolean // TO CHECK ?????
   update?: boolean // If attribute can be updated (null = true)

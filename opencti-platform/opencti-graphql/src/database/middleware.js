@@ -2628,7 +2628,8 @@ const buildAttributeUpdate = (isFullSync, attribute, currentData, inputData) => 
   const inputs = [];
   const fieldKey = attribute.name;
   if (attribute.multiple) {
-    const operation = isFullSync ? UPDATE_OPERATION_REPLACE : UPDATE_OPERATION_ADD;
+    const attributeOperation = attribute.upsert_force_replace ? UPDATE_OPERATION_REPLACE : UPDATE_OPERATION_ADD;
+    const operation = isFullSync ? UPDATE_OPERATION_REPLACE : attributeOperation;
     // Only add input in case of replace or when we really need to add something
     if (operation === UPDATE_OPERATION_REPLACE || (operation === UPDATE_OPERATION_ADD && isNotEmptyField(inputData))) {
       inputs.push({ key: fieldKey, value: inputData ?? [], operation });
