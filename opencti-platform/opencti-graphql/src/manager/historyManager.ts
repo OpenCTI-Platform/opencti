@@ -3,7 +3,7 @@ import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from
 import * as jsonpatch from 'fast-json-patch';
 import { createStreamProcessor, type StreamProcessor } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
-import conf, { booleanConf, ENABLED_DEMO_MODE, isFeatureEnabled, logApp } from '../config/conf';
+import conf, { booleanConf, ENABLED_DEMO_MODE, logApp } from '../config/conf';
 import { EVENT_TYPE_UPDATE, INDEX_HISTORY, isEmptyField, isNotEmptyField } from '../database/utils';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { executionContext, REDACTED_USER, SYSTEM_USER } from '../utils/access';
@@ -202,19 +202,16 @@ export const buildHistoryElementsFromEvents = async (context:AuthContext, events
     }
     const activityDate = utcDate(eventDate).toDate();
     const standardId = generateStandardId(ENTITY_TYPE_HISTORY, { internal_id: event.id }) as StixId;
-    let entity_type = ENTITY_TYPE_HISTORY;
-    if (isFeatureEnabled('Pir')) {
-      // add Pir context data for concerned events
-      contextData = {
-        ...contextData,
-        ...generatePirContextData(event)
-      };
-      // history type is different for events concerning pir relationships
-      const eventData = event.data.data;
-      entity_type = eventData.type === 'internal-relationship' && eventData.extensions[STIX_EXT_OCTI].type === RELATION_IN_PIR
-        ? ENTITY_TYPE_PIR_HISTORY
-        : ENTITY_TYPE_HISTORY;
-    }
+    // add Pir context data for concerned events
+    contextData = {
+      ...contextData,
+      ...generatePirContextData(event)
+    };
+    // history type is different for events concerning pir relationships
+    const eventData = event.data.data;
+    const entity_type = eventData.type === 'internal-relationship' && eventData.extensions[STIX_EXT_OCTI].type === RELATION_IN_PIR
+      ? ENTITY_TYPE_PIR_HISTORY
+      : ENTITY_TYPE_HISTORY;
     // return history object
     return {
       _index: INDEX_HISTORY,

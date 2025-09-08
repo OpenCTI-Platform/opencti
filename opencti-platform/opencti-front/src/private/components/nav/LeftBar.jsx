@@ -601,7 +601,7 @@ const LeftBar = () => {
             </StyledTooltip>
           )}
           <Security needs={[PIRAPI]}>
-            {!draftContext && isFeatureEnable('Pir') && (
+            {!draftContext && (
               <StyledTooltip title={!navOpen && t_i18n('PIR')} placement="right">
                 <MenuItem
                   component={Link}

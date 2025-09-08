@@ -49,7 +49,7 @@ import {
   waitInSec,
   WRITE_PLATFORM_INDICES
 } from './utils';
-import conf, { booleanConf, extendedErrors, isFeatureEnabled, loadCert, logApp, logMigration } from '../config/conf';
+import conf, { booleanConf, extendedErrors, loadCert, logApp, logMigration } from '../config/conf';
 import {
   ComplexSearchError,
   ConfigurationError,
@@ -1649,7 +1649,6 @@ export const computeQueryIndices = (indices, typeOrTypes, withInferences = true)
 // This rel_ must be low volume
 // DO NOT ADD Anything here if you are not sure about that you doing
 const REL_DEFAULT_SUFFIX = '*.keyword';
-const REL_FETCH_PIR = isFeatureEnabled('Pir') ? [`${REL_INDEX_PREFIX}${RELATION_IN_PIR}${REL_DEFAULT_SUFFIX}`] : [];
 const REL_DEFAULT_FETCH = [
   // SECURITY
   `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}${REL_DEFAULT_SUFFIX}`,
@@ -1664,7 +1663,7 @@ const REL_DEFAULT_FETCH = [
   `${REL_INDEX_PREFIX}${RELATION_ETHNICITY}${REL_DEFAULT_SUFFIX}`,
   `${REL_INDEX_PREFIX}${RELATION_SAMPLE}${REL_DEFAULT_SUFFIX}`,
   `${REL_INDEX_PREFIX}${RELATION_PARTICIPATE_TO}${REL_DEFAULT_SUFFIX}`,
-  ...REL_FETCH_PIR,
+  `${REL_INDEX_PREFIX}${RELATION_IN_PIR}${REL_DEFAULT_SUFFIX}`,
 ];
 
 const REL_COUNT_SCRIPT_FIELD = {

@@ -30,7 +30,7 @@ import { updatePir } from '../modules/pir/pir-domain';
 import { pushToWorkerForConnector } from '../database/rabbitmq';
 import convertEntityPirToStix from '../modules/pir/pir-converter';
 import { buildStixBundle } from '../database/stix-2-1-converter';
-import conf, { booleanConf, isFeatureEnabled } from '../config/conf';
+import conf, { booleanConf } from '../config/conf';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE } from '../database/utils';
 
 const PIR_MANAGER_ID = 'PIR_MANAGER';
@@ -206,7 +206,6 @@ const PIR_MANAGER_DEFINITION: ManagerDefinition = {
     lockKey: PIR_MANAGER_LOCK_KEY,
   }
 };
+
 // Automatically register manager on start.
-if (isFeatureEnabled('Pir')) {
-  registerManager(PIR_MANAGER_DEFINITION);
-}
+registerManager(PIR_MANAGER_DEFINITION);
