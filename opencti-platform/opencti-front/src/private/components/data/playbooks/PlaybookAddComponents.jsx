@@ -169,6 +169,9 @@ const PlaybookAddComponentsContent = ({
   };
   const areStepsValid = () => {
     for (const n of actionsInputs) {
+      if (n && n.attribute === 'x_opencti_detection') {
+        return true;
+      }
       if (!n || !n.op || !n.attribute || !n.value || n.value.length === 0) {
         return false;
       }
@@ -371,7 +374,6 @@ const PlaybookAddComponentsContent = ({
             onChange={(_, value) => handleChangeActionInput(i, 'value', [
               { label: value, value, patch_value: value },
             ])}
-            initialValue={false} // to force onChange call on mount, as the switch starts with a correct value "false"
           />
         );
       case 'severity':
