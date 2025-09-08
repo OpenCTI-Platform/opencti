@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from 'uuid';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { normalizeName } from '../../schema/identifier';
@@ -13,8 +12,12 @@ import {
 } from './securityCoverage-types';
 import convertSecurityCoverageToStix from './securityCoverage-converter';
 import { objectOrganization, } from '../../schema/stixRefRelationship';
-import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_THREAT_ACTOR_GROUP } from '../../schema/stixDomainObject';
-import { SecurityCoverageStixBundle } from './securityCoverage-domain';
+import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_THREAT_ACTOR_GROUP } from '../../schema/stixDomainObject';
+import { securityCoverageStixBundle } from './securityCoverage-domain';
+import { RELATION_HAS_ASSESSED } from '../../schema/stixCoreRelationship';
+import { REL_NEW } from '../../database/stix';
+import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../securityPlatform/securityPlatform-types';
+import type { StoreEntity } from '../../types/store';
 
 const SECURITY_COVERAGE_DEFINITION: ModuleDefinition<StoreEntitySecurityCoverage, StixSecurityCoverage> = {
   type: {
@@ -25,11 +28,14 @@ const SECURITY_COVERAGE_DEFINITION: ModuleDefinition<StoreEntitySecurityCoverage
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_SECURITY_COVERAGE]: () => uuidv4()
+      [ENTITY_TYPE_SECURITY_COVERAGE]: [{ src: 'objectAssess' }],
     },
     resolvers: {
       name(data: object) {
         return normalizeName(data);
+      },
+      objectAssess(data: object) {
+        return (data as StoreEntity).standard_id;
       },
     },
   },
@@ -38,25 +44,34 @@ const SECURITY_COVERAGE_DEFINITION: ModuleDefinition<StoreEntitySecurityCoverage
     { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'periodicity', /* PT1S */ label: 'Periodicity', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     {
-      name: 'expectations',
-      label: 'Coverage expectations',
+      name: 'coverage',
+      label: 'Coverage',
       type: 'object',
       format: 'nested',
       mandatoryType: 'no',
       editDefault: false,
       multiple: true,
       upsert: true,
+      upsert_force_replace: true,
       isFilterable: false,
       mappings: [
-        { name: 'name', label: 'Expectation name', type: 'string', format: 'short', mandatoryType: 'external', upsert: true, editDefault: false, multiple: false, isFilterable: true },
-        { name: 'score', label: 'Expectation score', type: 'numeric', mandatoryType: 'external', precision: 'float', upsert: true, editDefault: false, multiple: false, isFilterable: true },
+        { name: 'name', label: 'Coverage name', type: 'string', format: 'short', mandatoryType: 'external', upsert: true, editDefault: false, multiple: false, isFilterable: true },
+        { name: 'score', label: 'Coverage score', type: 'numeric', mandatoryType: 'external', precision: 'float', upsert: true, editDefault: false, multiple: false, isFilterable: true },
       ]
     },
     creators,
     createdAt,
     updatedAt,
   ],
-  relations: [],
+  relations: [
+    {
+      name: RELATION_HAS_ASSESSED,
+      targets: [
+        { name: ENTITY_TYPE_ATTACK_PATTERN, type: REL_NEW },
+        { name: ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, type: REL_NEW },
+      ]
+    },
+  ],
   relationsRefs: [
     {
       name: INPUT_ASSESS,
@@ -80,7 +95,7 @@ const SECURITY_COVERAGE_DEFINITION: ModuleDefinition<StoreEntitySecurityCoverage
     return stix.name;
   },
   converter_2_1: convertSecurityCoverageToStix,
-  bundleResolver: SecurityCoverageStixBundle
+  bundleResolver: securityCoverageStixBundle
 };
 
 registerDefinition(SECURITY_COVERAGE_DEFINITION);

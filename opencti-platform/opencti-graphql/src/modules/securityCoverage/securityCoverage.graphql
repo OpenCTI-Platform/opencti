@@ -1,5 +1,10 @@
 union StixCoverageAssessObject = Report | Malware
 
+type CoverageResult {
+    name: String!
+    score: Int!
+}
+
 type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   id: ID! # internal_id
   standard_id: String!
@@ -136,6 +141,7 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   workflowEnabled: Boolean
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
   # SecurityCoverage
+  coverage: [CoverageResult!]!
   objectAssess: StixCoverageAssessObject
   toStixBundle: String
 }
@@ -175,6 +181,11 @@ type Query {
   ): SecurityCoverageConnection @auth(for: [KNOWLEDGE])
 }
 
+input SecurityCoverageExpectation {
+  name: String!
+  score: Int!
+}
+
 # Mutations
 input SecurityCoverageAddInput {
   name: String! @constraint(minLength: 2, format: "not-blank")
@@ -192,6 +203,7 @@ input SecurityCoverageAddInput {
   x_opencti_stix_ids: [StixId]
   x_opencti_workflow_id: String
   externalReferences: [String]
+  coverage: [SecurityCoverageExpectation!]!
   update: Boolean
 }
 
