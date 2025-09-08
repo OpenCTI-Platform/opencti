@@ -104,7 +104,7 @@
     "three-spritetext": "1.9.6",
     "use-analytics": "1.1.0",
     "uuid": "11.1.0",
-    "yup": "1.6.1"
+    "yup": "1.7.0"
   },
   "devDependencies": {
     "@playwright/test": "1.51.1",
