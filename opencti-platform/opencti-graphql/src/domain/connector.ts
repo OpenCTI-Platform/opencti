@@ -264,6 +264,7 @@ export const managedConnectorAdd = async (
     logApp.info(`[CONNECTOR] Name collision detected: connector with name '${sanitizedName}' already exists`);
     throw FunctionalError('CONNECTOR_NAME_ALREADY_EXISTS');
   }
+
   // Create connector
   const connectorToCreate: any = {
     name: sanitizedName,
@@ -289,6 +290,7 @@ export const managedConnectorAdd = async (
   // Notify configuration change for caching system
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, createdConnector, user);
   // Return the connector
+
   return completeConnector(createdConnector);
 };
 

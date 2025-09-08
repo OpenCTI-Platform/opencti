@@ -16,6 +16,7 @@ import { Validator } from '@cfworker/json-schema';
 import { IngestionConnector, IngestionTypedProperty } from '@components/data/IngestionCatalog';
 import { JsonSchema } from '@jsonforms/core';
 import AccordionDetails from '@mui/material/AccordionDetails';
+import { JsonFormArrayRenderer, jsonFormArrayTester } from '@components/data/IngestionCatalog/utils/JsonFormArrayRenderer';
 import TextField from '../../../../components/TextField';
 import { type FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -42,6 +43,11 @@ interface ManagedConnectorValues {
   name: string
   creator?: FieldOption
 }
+
+const customRenderers = [
+  ...materialRenderers,
+  { tester: jsonFormArrayTester, renderer: JsonFormArrayRenderer },
+];
 
 const ManagedConnectorEdition = ({
   connector,
@@ -195,7 +201,7 @@ const ManagedConnectorEdition = ({
                       <JsonForms
                         data={values}
                         schema={requiredProperties}
-                        renderers={materialRenderers}
+                        renderers={customRenderers}
                         validationMode={'NoValidation'}
                         onChange={async ({ data }) => {
                           await setValues(data);
@@ -213,7 +219,7 @@ const ManagedConnectorEdition = ({
                           <JsonForms
                             data={values}
                             schema={optionalProperties}
-                            renderers={materialRenderers}
+                            renderers={customRenderers}
                             validationMode={'NoValidation'}
                             onChange={async ({ data }) => {
                               await setValues(data);
