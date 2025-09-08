@@ -211,7 +211,6 @@ import { ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, isStixCyberObservable } from '../sc
 import { lockResources } from '../lock/master-lock';
 import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_UPDATE_LINKED } from '../modules/draftWorkspace/draftOperations';
 import { RELATION_SAMPLE } from '../modules/malwareAnalysis/malwareAnalysis-types';
-import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { getPirWithAccessCheck } from '../modules/pir/pir-checkPirAccess';
 import { asyncFilter, asyncMap } from '../utils/data-processing';
 
@@ -4131,7 +4130,6 @@ export const elRemoveRelationConnection = async (context, user, elementsImpact, 
           const [relationType, relationIndex, side, sideType] = typeAndIndex.split('|');
           const refField = isStixRefRelationship(relationType) && isInferredIndex(relationIndex) ? ID_INFERRED : ID_INTERNAL;
           const rel_key = buildRefRelationKey(relationType, refField);
-          let pir_information;
           let source = `if(ctx._source[params.rel_key] != null){
               for (int i=params.cleanupIds.length-1; i>=0; i--) {
                 def cleanupIndex = ctx._source[params.rel_key].indexOf(params.cleanupIds[i]);
@@ -4153,16 +4151,16 @@ export const elRemoveRelationConnection = async (context, user, elementsImpact, 
           }
           // Remove the pir information concerning the Pir in case of in-pir rel deletion
           if (relationType === RELATION_IN_PIR && entityPirInformation) {
-            pir_information = entityPirInformation.filter((pirInfo) => !cleanupIds.includes(pirInfo.pir_id));
-            if (pir_information.length === 0) {
-              pir_information = undefined;
-            }
-            source += 'ctx._source[\'pir_information\'] = params.pir_information;';
+            source += `
+              if (ctx._source.containsKey('pir_information') && ctx._source['pir_information'] != null) {
+                ctx._source['pir_information'].removeIf(item -> params.cleanupIds.contains(item.pir_id));
+              }
+            `;
           }
           // if (isStixRelationship(relationType)) {
           //   source += 'ctx._source[\'refreshed_at\'] = params.updated_at;';
           // }
-          const script = { source, params: { rel_key, cleanupIds, updated_at: now(), pir_information } };
+          const script = { source, params: { rel_key, cleanupIds, updated_at: now() } };
           updates.push([
             { update: { _index: fromIndex, _id: elId, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
             { script },
@@ -4755,26 +4753,36 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
         // if (isStixRelationship(t.relation)) {
         //   script += '; ctx._source[\'refreshed_at\'] = params.updated_at';
         // }
-        // Add Pir information concerning the Pir
+        // Add Pir information for in-pir relationships
         if (t.relation === RELATION_IN_PIR) {
-          const pirIds = t.elements.map((e) => e.id);
-          params.pir_information = [
-            ...entity.pir_information?.filter((i) => !pirIds.includes(i.pir_id)) ?? [],
-            ...t.elements.filter((e) => e.type === ENTITY_TYPE_PIR)
-              .map((e) => ({
-                pir_id: e.id,
-                pir_score: e.pir_score,
-                last_pir_score_date: params.updated_at,
-              }))
-          ];
-          script += '; ctx._source[\'pir_information\'] = params.pir_information';
+          // remove pir_information concerning the pir and add the new pir_information
+          script += `
+          ; if (ctx._source.containsKey('pir_information') && ctx._source['pir_information'] != null) {
+              ctx._source['pir_information'].removeIf(item -> params.pir_ids.contains(item.pir_id));
+              ctx._source['pir_information'].addAll(params.new_pir_information);
+            } else ctx._source['pir_information'] = params.new_pir_information
+          `;
         }
         return script;
       });
+      // Concat sources scripts by adding a ';' between each script to close each final script line
       const source = sources.length > 1 ? R.join(';', sources) : `${R.head(sources)};`;
+      // Construct params
       for (let index = 0; index < targetsElements.length; index += 1) {
         const targetElement = targetsElements[index];
         params[buildRefRelationKey(targetElement.relation, targetElement.field)] = targetElement.elements.map((e) => e.id);
+      }
+      // Add new_pir_information params
+      const pirElements = targetsElements.filter((e) => e.relation === RELATION_IN_PIR);
+      for (let index = 0; index < pirElements.length; index += 1) {
+        const pirElement = pirElements[index];
+        params.new_pir_information = pirElement.elements
+          .map((e) => ({
+            pir_id: e.id,
+            pir_score: e.pir_score,
+            last_pir_score_date: params.updated_at,
+          }));
+        params.pir_ids = pirElement.elements.map((e) => e.id);
       }
       return { ...entity, id: entityId, data: { script: { source, params } } };
     });
