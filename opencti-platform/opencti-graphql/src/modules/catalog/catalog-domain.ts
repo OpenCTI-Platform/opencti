@@ -182,7 +182,7 @@ export const computeConnectorTargetContract = (
       } else if (targetConfig.properties[propKey].default) {
         contractConfigurations.push(({ key: propKey, value: targetConfig.properties[propKey].default }));
       }
-    } else if (targetConfig.properties[propKey].type !== 'array' && currentConfig.value) {
+    } else if (currentConfig.value) {
       const isPassword = targetConfig.properties[propKey].format === 'password';
       // If value is already configured and has the same value, keep it
       // This prevents re-encrypting already encrypted values
@@ -197,10 +197,9 @@ export const computeConnectorTargetContract = (
           ...(isPassword && { encrypted: true }),
         });
       }
-    } else {
-      contractConfigurations.push(currentConfig);
     }
   }
+
   // Build the json contract
   const contractObject: any = R.mergeAll(contractConfigurations.map((config: any) => ({ [config.key]: config.value })));
   // Validate the contract
