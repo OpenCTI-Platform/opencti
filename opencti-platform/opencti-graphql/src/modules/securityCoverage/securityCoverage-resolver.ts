@@ -1,4 +1,4 @@
-import { addSecurityCoverage, findAll, findById, SecurityCoverageDelete, SecurityCoverageStixBundle, objectAssess } from './securityCoverage-domain';
+import { addSecurityCoverage, findAll, findById, securityCoverageDelete, securityCoverageStixBundle, objectAssess } from './securityCoverage-domain';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -15,7 +15,7 @@ const SecurityCoverageResolvers: Resolvers = {
   },
   SecurityCoverage: {
     objectAssess: (SecurityCoverage, _, context) => objectAssess<any>(context, context.user, SecurityCoverage.id),
-    toStixBundle: (SecurityCoverage, _, context) => SecurityCoverageStixBundle(context, context.user, SecurityCoverage.id)
+    toStixBundle: (SecurityCoverage, _, context) => securityCoverageStixBundle(context, context.user, SecurityCoverage.id)
   },
   StixCoverageAssessObject: {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -29,7 +29,7 @@ const SecurityCoverageResolvers: Resolvers = {
   },
   Mutation: {
     securityCoverageAdd: (_, { input }, context) => addSecurityCoverage(context, context.user, input),
-    securityCoverageDelete: (_, { id }, context) => SecurityCoverageDelete(context, context.user, id),
+    securityCoverageDelete: (_, { id }, context) => securityCoverageDelete(context, context.user, id),
     securityCoverageFieldPatch: (_, { id, input, commitMessage, references }, context) => {
       return stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references });
     },

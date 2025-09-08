@@ -12376,6 +12376,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | Individual
   | Organization
   | SecurityPlatform
+  | SecurityCoverage
   | Sector
   | System
   | Indicator
@@ -12816,6 +12817,7 @@ input StixCoreRelationshipAddInput {
   externalReferences: [String]
   killChainPhases: [String]
   x_opencti_workflow_id: String
+  # Technical
   clientMutationId: String
   update: Boolean
 }

@@ -22,12 +22,12 @@ export const findAll = (context: AuthContext, user: AuthUser, args: EntityOption
   return pageEntitiesConnection<BasicStoreEntitySecurityCoverage>(context, user, [ENTITY_TYPE_SECURITY_COVERAGE], args);
 };
 
-export const addSecurityCoverage = async (context: AuthContext, user: AuthUser, SecurityCoverage: SecurityCoverageAddInput) => {
-  const created = await createEntity(context, user, SecurityCoverage, ENTITY_TYPE_SECURITY_COVERAGE);
+export const addSecurityCoverage = async (context: AuthContext, user: AuthUser, securityCoverageInput: SecurityCoverageAddInput) => {
+  const created = await createEntity(context, user, securityCoverageInput, ENTITY_TYPE_SECURITY_COVERAGE);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
-export const SecurityCoverageStixBundle = async (context: AuthContext, user: AuthUser, SecurityCoverageId: string) => {
+export const securityCoverageStixBundle = async (context: AuthContext, user: AuthUser, SecurityCoverageId: string) => {
   const objects = [];
   const SecurityCoverage = await storeLoadByIdWithRefs(context, user, SecurityCoverageId);
   const stixSecurityCoverage = convertStoreToStix(SecurityCoverage);
@@ -71,7 +71,7 @@ export const objectAssess = async <T extends BasicStoreEntity>(context: AuthCont
   return loadEntityThroughRelationsPaginated<T>(context, user, SecurityCoverageId, RELATION_ASSESS, entityTypes, false);
 };
 
-export const SecurityCoverageDelete = async (context: AuthContext, user: AuthUser, SecurityCoverageId: string) => {
+export const securityCoverageDelete = async (context: AuthContext, user: AuthUser, SecurityCoverageId: string) => {
   await deleteElementById(context, user, SecurityCoverageId, ENTITY_TYPE_SECURITY_COVERAGE);
   await notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].DELETE_TOPIC, SecurityCoverageId, user);
   return SecurityCoverageId;
