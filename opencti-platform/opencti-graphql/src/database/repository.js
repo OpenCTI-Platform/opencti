@@ -58,6 +58,7 @@ export const computeManagerConnectorConfiguration = async (context, _user, cn, h
 export const computeManagerConnectorImage = (cn) => {
   const contracts = getSupportedContractsByImage();
   const contract = contracts.get(cn.manager_contract_image);
+  if (!contract) return '';
   return isNotEmptyField(cn.manager_contract_image) ? `${cn.manager_contract_image}:${contract.container_version}` : null;
 };
 
