@@ -84,7 +84,7 @@
     "ae-cvss-calculator": "1.0.8",
     "ajv": "8.17.1",
     "ajv-formats": "3.0.1",
-    "amqplib": "0.10.8",
+    "amqplib": "0.10.9",
     "antlr4": "4.13.2",
     "archiver": "7.0.1",
     "archiver-zip-encrypted": "2.0.0",
