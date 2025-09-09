@@ -13601,9 +13601,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"force-graph@npm:^1.50":
-  version: 1.50.1
-  resolution: "force-graph@npm:1.50.1"
+"force-graph@npm:^1.51":
+  version: 1.51.0
+  resolution: "force-graph@npm:1.51.0"
   dependencies:
     "@tweenjs/tween.js": "npm:18 - 25"
     accessor-fn: "npm:1"
@@ -13620,7 +13620,7 @@ __metadata:
     index-array-by: "npm:1"
     kapsule: "npm:^1.16"
     lodash-es: "npm:4"
-  checksum: 10/1b8f1941357f62676122f5b980eece870a87f3af604a4ba21fe005bd9a541c1de042c2ca5b749dded7f97e8f09abfc1a906853f8078fa0db258c8e8ff7f19111
+  checksum: 10/17400d9a7362b70d193333b458246cde5ba9306d75cfc58d80d6aec92f0243df1beb9be7e6cdb2ae9a0133421bbd5ca60b3d50e1ee1973e4c2e17e019a96e8f2
   languageName: node
   linkType: hard
 
@@ -18270,7 +18270,7 @@ __metadata:
     react-csv: "npm:2.2.2"
     react-dom: "npm:19.0.0"
     react-draggable: "npm:4.5.0"
-    react-force-graph-2d: "npm:1.28.0"
+    react-force-graph-2d: "npm:1.29.0"
     react-force-graph-3d: "npm:1.24.4"
     react-grid-layout: "npm:1.5.2"
     react-intl: "npm:7.1.11"
@@ -19164,16 +19164,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-force-graph-2d@npm:1.28.0":
-  version: 1.28.0
-  resolution: "react-force-graph-2d@npm:1.28.0"
+"react-force-graph-2d@npm:1.29.0":
+  version: 1.29.0
+  resolution: "react-force-graph-2d@npm:1.29.0"
   dependencies:
-    force-graph: "npm:^1.50"
+    force-graph: "npm:^1.51"
     prop-types: "npm:15"
     react-kapsule: "npm:^2.5"
   peerDependencies:
     react: "*"
-  checksum: 10/837051e41f821d5b6279f0c5818ea38d6fffcf42d496f0a56a81f69f532d7401172e2949287db3ff255b9c443b5bf9f444f7019f321d4294b03d53a0a11e0093
+  checksum: 10/862141a7df14e1ccdf4d5d962ecd7c4e0a3e9220a7c7d14de5c2c7d18731f69e6326d0a55b6933a6413d0cc4b0449fa4220f4242ef89ac73bd8bdccb664b04b2
   languageName: node
   linkType: hard
 
