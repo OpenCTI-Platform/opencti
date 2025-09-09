@@ -1955,6 +1955,7 @@
   "Instance trigger quick subscription": "Activation rapide du déclencheur de l’instance",
   "Instance trigger successfully created. You can click again on the bell to edit the options.": "Déclencheur d’instance créé avec succès. Vous pouvez cliquer à nouveau sur la cloche pour modifier les options.",
   "instance_trigger": "Déclencheur d’instance",
+  "instances are already deployed with the manager. If you have already deployed this connector without the manager, it will not be counted.": "instances sont déjà déployées avec le gestionnaire. Si vous avez déjà déployé ce connecteur sans le gestionnaire, il ne sera pas pris en compte.",
   "instances deployed": "instances déployées",
   "Integration documentation and code": "Documentation et code d'intégration",
   "Integrity Impact (I)": "Impact sur l'intégrité (I)",

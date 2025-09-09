@@ -1955,6 +1955,7 @@
   "Instance trigger quick subscription": "Быстрая подписка на триггер экземпляра",
   "Instance trigger successfully created. You can click again on the bell to edit the options.": "Триггер экземпляра успешно создан. Вы можете снова нажать на колокольчик, чтобы отредактировать параметры.",
   "instance_trigger": "экземпляр_триггера",
+  "instances are already deployed with the manager. If you have already deployed this connector without the manager, it will not be counted.": "экземпляры уже развернуты с менеджером. Если вы уже развернули этот коннектор без менеджера, он не будет учтен.",
   "instances deployed": "развернутые экземпляры",
   "Integration documentation and code": "Документация и код интеграции",
   "Integrity Impact (I)": "Воздействие на целостность (I)",

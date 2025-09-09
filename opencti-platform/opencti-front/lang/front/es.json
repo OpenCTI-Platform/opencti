@@ -1955,6 +1955,7 @@
   "Instance trigger quick subscription": "Activación de instancia de suscripción rápida",
   "Instance trigger successfully created. You can click again on the bell to edit the options.": "Desencadenador de instancia creado correctamente. Puede hacer clic de nuevo en la campana para editar las opciones.",
   "instance_trigger": "Desencadenador de instancia",
+  "instances are already deployed with the manager. If you have already deployed this connector without the manager, it will not be counted.": "instancias ya están desplegadas con el gestor. Si ya has desplegado este conector sin el gestor, no se tendrá en cuenta.",
   "instances deployed": "instancias desplegadas",
   "Integration documentation and code": "Documentación y código de integración",
   "Integrity Impact (I)": "Impacto en la integridad (I)",

@@ -1955,6 +1955,7 @@
   "Instance trigger quick subscription": "Instance trigger quick subscription",
   "Instance trigger successfully created. You can click again on the bell to edit the options.": "Instance trigger successfully created. You can click again on the bell to edit the options.",
   "instance_trigger": "Instance trigger",
+  "instances are already deployed with the manager. If you have already deployed this connector without the manager, it will not be counted.": "instances are already deployed with the manager. If you have already deployed this connector without the manager, it will not be counted.",
   "instances deployed": "instances deployed",
   "Integration documentation and code": "Integration documentation and code",
   "Integrity Impact (I)": "Integrity Impact (I)",

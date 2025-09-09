@@ -1955,6 +1955,7 @@
   "Instance trigger quick subscription": "ライブトリガーの属性「トリガーイベント」には、少なくとも1つのイベントが必要です。",
   "Instance trigger successfully created. You can click again on the bell to edit the options.": "インスタンス トリガーが正常に作成されました。ベルをもう一度クリックしてオプションを編集できます。",
   "instance_trigger": "インスタンストリガー",
+  "instances are already deployed with the manager. If you have already deployed this connector without the manager, it will not be counted.": "インスタンスがマネージャと共にデプロイ済みであることを示します。このコネクタをマネージャなしですでにデプロイしている場合は、カウントされません。",
   "instances deployed": "インスタンス",
   "Integration documentation and code": "統合ドキュメントとコード",
   "Integrity Impact (I)": "完全性への影響 (I)",

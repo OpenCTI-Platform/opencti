@@ -1955,6 +1955,7 @@
   "Instance trigger quick subscription": "인스턴스 트리거 빠른 구독",
   "Instance trigger successfully created. You can click again on the bell to edit the options.": "인스턴스 트리거가 성공적으로 생성되었습니다. 옵션을 수정하려면 다시 벨을 클릭하십시오.",
   "instance_trigger": "인스턴스 트리거",
+  "instances are already deployed with the manager. If you have already deployed this connector without the manager, it will not be counted.": "인스턴스가 이미 관리자와 함께 배포된 경우입니다. 매니저 없이 이 커넥터를 이미 배포한 경우에는 카운트되지 않습니다.",
   "instances deployed": "배포된 인스턴스",
   "Integration documentation and code": "통합 문서 및 코드",
   "Integrity Impact (I)": "무결성 영향(I)",

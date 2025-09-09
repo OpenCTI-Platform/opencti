@@ -1955,6 +1955,7 @@
   "Instance trigger quick subscription": "实例触发器快速订阅",
   "Instance trigger successfully created. You can click again on the bell to edit the options.": "实例触发器创建成功。您可以再次按两下铃以编辑选项。",
   "instance_trigger": "实例触发器",
+  "instances are already deployed with the manager. If you have already deployed this connector without the manager, it will not be counted.": "实例已与管理器一起部署。如果您已经部署了该连接器，但没有管理器，则不会计算在内。",
   "instances deployed": "部署的实例",
   "Integration documentation and code": "集成文档和代码",
   "Integrity Impact (I)": "完整性影响 (I)",

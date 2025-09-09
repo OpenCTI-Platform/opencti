@@ -1955,6 +1955,7 @@
   "Instance trigger quick subscription": "Instanztrigger Schnellabonnement",
   "Instance trigger successfully created. You can click again on the bell to edit the options.": "Instanz-Trigger erfolgreich erstellt. Sie können erneut auf die Glocke klicken, um die Optionen zu bearbeiten.",
   "instance_trigger": "Instanz-Trigger",
+  "instances are already deployed with the manager. If you have already deployed this connector without the manager, it will not be counted.": "instanzen bereits mit dem Manager bereitgestellt werden. Wenn Sie diesen Connector bereits ohne den Manager bereitgestellt haben, wird er nicht gezählt.",
   "instances deployed": "eingesetzte Instanzen",
   "Integration documentation and code": "Dokumentation und Code zur Integration",
   "Integrity Impact (I)": "Auswirkungen auf die Integrität (I)",

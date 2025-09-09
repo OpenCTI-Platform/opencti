@@ -181,7 +181,7 @@ const IngestionCatalogCard = ({
               marginTop: theme.spacing(0.5),
             }}
           >
-            <div>{truncate(connector.short_description, 300)}</div>
+            <div>{truncate(connector.short_description, 250)}</div>
           </CardContent>
         </div>
         <CardActions style={{ justifyContent: 'space-between', padding: 16 }}>
