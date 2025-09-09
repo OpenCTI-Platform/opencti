@@ -20,10 +20,10 @@ import {
   type EntityOptions,
   internalLoadById,
   pageEntitiesConnection,
-  topRelationsList,
   pageRelationsConnection,
   type RelationOptions,
-  storeLoadById
+  storeLoadById,
+  topRelationsList
 } from '../../database/middleware-loader';
 import { type BasicStoreEntityPir, type BasicStoreRelationPir, ENTITY_TYPE_PIR, type PirExplanation } from './pir-types';
 import {

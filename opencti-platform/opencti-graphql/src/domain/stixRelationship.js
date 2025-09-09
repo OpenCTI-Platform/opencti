@@ -2,20 +2,20 @@ import * as R from 'ramda';
 import { GraphQLError } from 'graphql/index';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
 import { deleteElementById, distributionRelations, timeSeriesRelations } from '../database/middleware';
-import { ABSTRACT_STIX_RELATIONSHIP } from '../schema/general';
-import { buildRelationsFilter, listRelationsPaginated, storeLoadById } from '../database/middleware-loader';
+import { ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP } from '../schema/general';
+import { buildRelationsFilter, pageRelationsConnection, storeLoadById, topEntitiesList } from '../database/middleware-loader';
 import { isEmptyField, READ_INDEX_INFERRED_RELATIONSHIPS, READ_RELATIONSHIPS_INDICES } from '../database/utils';
-import { elCount } from '../database/engine';
+import { elCount, MAX_RUNTIME_RESOLUTION_SIZE } from '../database/engine';
 import { STIX_SPEC_VERSION, stixCoreRelationshipsMapping } from '../database/stix';
 import { UnsupportedError } from '../config/errors';
 import { schemaTypesDefinition } from '../schema/schema-types';
 import { isStixRelationship } from '../schema/stixRelationship';
-import { addDynamicFromAndToToFilters } from '../utils/filtering/filtering-utils';
+import { addDynamicFromAndToToFilters, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 
 export const findStixRelationPaginated = async (context, user, args) => {
   const filters = addDynamicFromAndToToFilters(args);
   const fullArgs = { ...args, filters };
-  return listRelationsPaginated(context, user, ABSTRACT_STIX_RELATIONSHIP, fullArgs);
+  return pageRelationsConnection(context, user, ABSTRACT_STIX_RELATIONSHIP, fullArgs);
 };
 
 export const findById = (context, user, stixRelationshipId) => {
@@ -155,3 +155,36 @@ const mergeEntries = (entries) => entries.reduce((result, currentItem) => {
   }
   return result;
 }, []);
+
+// TODO: Maybe should be removed due to merge conflict
+export const buildArgsFromDynamicFilters = async (context, user, args) => {
+  const { dynamicFrom, dynamicTo } = args;
+  const listEntitiesWithFilters = async (filters) => topEntitiesList(context, user, [ABSTRACT_STIX_OBJECT], {
+    first: MAX_RUNTIME_RESOLUTION_SIZE,
+    bypassSizeLimit: true, // ensure that max runtime prevent on ES_MAX_PAGINATION
+    baseData: true,
+    filters
+  });
+  let finalArgs = args;
+  if (isFilterGroupNotEmpty(dynamicFrom)) {
+    const fromIds = await listEntitiesWithFilters(dynamicFrom).then((result) => result.map((n) => n.id));
+    if (fromIds.length > 0) {
+      finalArgs = { ...finalArgs, fromId: args.fromId ? [...fromIds, args.fromId] : fromIds, dynamicFrom: undefined };
+    } else {
+      return { dynamicArgs: null, isEmptyDynamic: true };
+    }
+  } else {
+    finalArgs = { ...finalArgs, dynamicFrom: undefined };
+  }
+  if (isFilterGroupNotEmpty(dynamicTo)) {
+    const toIds = await listEntitiesWithFilters(dynamicTo).then((result) => result.map((n) => n.id));
+    if (toIds.length > 0) {
+      finalArgs = { ...finalArgs, toId: args.toId ? [...toIds, args.toId] : toIds, dynamicTo: undefined };
+    } else {
+      return { dynamicArgs: null, isEmptyDynamic: true };
+    }
+  } else {
+    finalArgs = { ...finalArgs, dynamicTo: undefined };
+  }
+  return { dynamicArgs: finalArgs, isEmptyDynamic: false };
+};
