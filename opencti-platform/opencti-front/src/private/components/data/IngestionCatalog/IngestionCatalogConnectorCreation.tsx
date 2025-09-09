@@ -241,17 +241,19 @@ const IngestionCatalogConnectorCreation = ({
       onClose={onClose}
       header={
         <div style={{ position: 'absolute', right: theme.spacing(1) }}>
-          <Button
-            variant="outlined"
-            component={Link}
-            size="small"
-            to={buildConnectorsUrl()}
-            startIcon={<HubOutlined />}
-            color={'warning'}
-            disabled={deploymentCount === 0}
-          >
-            {`${deploymentCount} ${t_i18n('instances deployed')}`}
-          </Button>
+          <Tooltip title={ `${deploymentCount} ${t_i18n('instances are already deployed with the manager. If you have already deployed this connector without the manager, it will not be counted.')}`}>
+            <Button
+              variant="outlined"
+              component={Link}
+              size="small"
+              to={buildConnectorsUrl()}
+              startIcon={<HubOutlined />}
+              color={'warning'}
+              disabled={deploymentCount === 0}
+            >
+              {`${deploymentCount} ${t_i18n('instances deployed')}`}
+            </Button>
+          </Tooltip>
 
           <Tooltip title={t_i18n('Vendor contact')}>
             <span> {/** keep span so tooltip is still displayed if button is disabled * */}

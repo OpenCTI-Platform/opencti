@@ -11,7 +11,6 @@ import { useTheme } from '@mui/styles';
 import { IngestionConnector } from '@components/data/IngestionCatalog';
 import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';
 import { truncate } from 'src/utils/String';
-import Typography from '@mui/material/Typography';
 import { IngestionConnectorType, ingestionConnectorTypeMetadata } from '@components/data/IngestionCatalog/utils/ingestionConnectorTypeMetadata';
 import Box from '@mui/material/Box';
 import { useFormatter } from '../../../../components/i18n';
@@ -162,12 +161,14 @@ const IngestionCatalogCard = ({
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     fontSize: 20,
+                    lineHeight: '24px',
                     fontWeight: 600,
-                    marginBottom: theme.spacing(1),
+                    marginBottom: theme.spacing(0.5),
                   }}
                 >
                   {connector.title}
                 </div>
+
               </Tooltip>
             }
             subheader={renderLabels()}
@@ -177,13 +178,10 @@ const IngestionCatalogCard = ({
           <CardContent
             style={{
               height: '100%',
-              marginBottom: 32,
+              marginTop: theme.spacing(0.5),
             }}
           >
-            <Typography variant="h3" gutterBottom={true}>
-              {t_i18n('Description')}
-            </Typography>
-            <div>{truncate(connector.short_description, 100)}</div>
+            <div>{truncate(connector.short_description, 250)}</div>
           </CardContent>
         </div>
         <CardActions style={{ justifyContent: 'space-between', padding: 16 }}>

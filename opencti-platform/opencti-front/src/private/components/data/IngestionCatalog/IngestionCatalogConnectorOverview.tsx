@@ -60,8 +60,8 @@ const IngestionCatalogConnectorOverview = ({ connector }: { connector: Ingestion
             </Button>
           </Grid>
           <Grid item xs={12} style={{ marginTop: 20 }}>
-            <Typography variant="h3" gutterBottom={true}>{t_i18n('Last update')}</Typography>
-            {connector.last_verified_date}
+            <Typography variant="h3" gutterBottom={true}>{t_i18n('Last verified')}</Typography>
+            {connector.last_verified_date || '-' }
           </Grid>
         </Paper>
       </Grid>

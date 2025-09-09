@@ -112,7 +112,7 @@ const IngestionCatalogFilters: React.FC<IngestionCatalogFiltersProps> = ({
         }}
         isOptionEqualToValue={(option, value) => option.value === value.value}
         renderInput={(params) => (
-          <TextField {...params} label={t_i18n('Types')} placeholder={t_i18n('Types')} variant="outlined" />
+          <TextField {...params} label={t_i18n('Type')} placeholder={t_i18n('Type')} variant="outlined" />
         )}
         clearOnEscape
       />
