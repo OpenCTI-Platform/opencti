@@ -7,10 +7,10 @@ import { RedisPubSub } from 'graphql-redis-subscriptions';
 import * as R from 'ramda';
 import conf, { booleanConf, configureCA, DEV_MODE, getStoppingState, loadCert, logApp, REDIS_PREFIX } from '../config/conf';
 import { asyncListTransformation, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, isNotEmptyField, wait, waitInSec } from './utils';
-import { isStixExportableInStreamData } from '../schema/stixCoreObject';
+import { INTERNAL_EXPORTABLE_TYPES, isStixExportableInStreamData } from '../schema/stixCoreObject';
 import { DatabaseError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { mergeDeepRightAll, now, utcDate } from '../utils/format';
-import { convertStoreToStix } from './stix-2-1-converter';
+import { convertStixTypeToType, convertStoreToStix } from './stix-2-1-converter';
 import type { BasicStoreCommon, StoreObject, StoreRelation } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
 import type {
@@ -566,10 +566,12 @@ export const buildStixUpdateEvent = (user: AuthUser, previousStix: StixCoreObjec
   if (patch.length === 1 && patch[0].path === '/modified' && !opts.allow_only_modified) {
     throw UnsupportedError('Update event must contains more operation than just modified/updated_at value');
   }
+  const entityType = convertStixTypeToType(stix.type);
+  const scope = INTERNAL_EXPORTABLE_TYPES.includes(entityType) ? 'internal' : 'external';
   return {
     version: EVENT_CURRENT_VERSION,
     type: EVENT_TYPE_UPDATE,
-    scope: 'external',
+    scope,
     message,
     origin: user.origin,
     data: stix,
@@ -610,7 +612,7 @@ export const buildCreateEvent = (user: AuthUser, instance: StoreObject, message:
   return {
     version: EVENT_CURRENT_VERSION,
     type: EVENT_TYPE_CREATE,
-    scope: 'external',
+    scope: INTERNAL_EXPORTABLE_TYPES.includes(instance.entity_type) ? 'internal' : 'external',
     message,
     origin: user.origin,
     data: stix,
@@ -656,7 +658,7 @@ export const buildDeleteEvent = async (
   return {
     version: EVENT_CURRENT_VERSION,
     type: EVENT_TYPE_DELETE,
-    scope: 'external',
+    scope: INTERNAL_EXPORTABLE_TYPES.includes(instance.entity_type) ? 'internal' : 'external',
     message,
     origin: user.origin,
     data: stix

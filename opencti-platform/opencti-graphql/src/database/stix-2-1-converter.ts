@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { v4 as uuidv4, version as uuidVersion } from 'uuid';
-import { isEmptyField, isInferredIndex, isNotEmptyField } from './utils';
+import { isEmptyField, isInferredIndex, isNotEmptyField, pascalize } from './utils';
 import { extractEntityRepresentativeName } from './entity-representative';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { isBasicObject } from '../schema/stixCoreObject';
@@ -128,6 +128,25 @@ export const isTrustedStixId = (stixId: string): boolean => {
   const segments = stixId.split('--');
   const [, uuid] = segments;
   return uuidVersion(uuid) !== 1;
+};
+export const convertStixTypeToType = (stixType: string) => {
+  if (!stixType) {
+    return stixType;
+  }
+  let type = pascalize(stixType);
+  if (type.includes('Opencti')) {
+    type = type.replaceAll('Opencti', 'OpenCTI');
+  }
+  if (type.includes('Ipv')) {
+    type = type.replaceAll('Ipv', 'IPv');
+  }
+  if (type === 'File' || type === 'Stixfile') {
+    return 'StixFile';
+  }
+  if (type.startsWith('X-OpenCTI-')) {
+    type = type.replaceAll('X-OpenCTI-', '');
+  }
+  return type;
 };
 export const convertTypeToStixType = (type: string): string => {
   if (isStixDomainObjectIdentity(type)) {
