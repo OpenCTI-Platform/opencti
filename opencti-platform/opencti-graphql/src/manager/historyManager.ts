@@ -252,12 +252,15 @@ const historyStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEvent
     // Create list of events to process
     // Events must be in a compatible version and not inferences events
     // Inferences directly handle recursively by the manager
+    // Events must be of scope external or in-pir relationships
     const compatibleEvents = streamEvents.filter((event) => {
       const isInference = event.data?.data?.extensions[STIX_EXT_OCTI].is_inferred;
       const validEvent = HISTORY_WITH_INFERENCES || !isInference;
       const eventVersion = parseInt(event.data?.version ?? '0', 10);
       const noHistory = event.data?.noHistory === true;
-      return eventVersion >= 4 && !noHistory && validEvent;
+      const isExternalScopeOrInPir = event.data?.scope !== 'internal'
+        || event.data?.data?.extensions?.[STIX_EXT_OCTI]?.type === RELATION_IN_PIR; // if scope=internal, only keep in-pir relations
+      return eventVersion >= 4 && !noHistory && validEvent && isExternalScopeOrInPir;
     });
     if (compatibleEvents.length > 0) {
       // Execute the events
@@ -287,7 +290,7 @@ const initHistoryManager = () => {
       lock = await lockResources([HISTORY_ENGINE_KEY], { retryCount: 0 });
       running = true;
       logApp.info('[OPENCTI-MODULE] Running history manager');
-      streamProcessor = createStreamProcessor(SYSTEM_USER, 'History manager', historyStreamHandler, { bufferTime: 5000 });
+      streamProcessor = createStreamProcessor(SYSTEM_USER, 'History manager', historyStreamHandler, { bufferTime: 5000, withInternal: true });
       await streamProcessor.start(lastEventId);
       while (!shutdown && streamProcessor.running()) {
         lock.signal.throwIfAborted();
