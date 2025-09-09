@@ -22,6 +22,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
+import { MESSAGING$ } from '../../../../relay/environment';
 
 const updateManagedConnector = graphql`
   mutation ManagedConnectorEditionMutation($input: EditManagedConnectorInput) {
@@ -85,8 +86,12 @@ const ManagedConnectorEdition = ({
       variables: {
         input,
       },
-      onError: () => setSubmitting?.(false),
+      onError: () => {
+        MESSAGING$.notifyError(t_i18n('An error occurred while updating the connector'));
+        setSubmitting?.(false);
+      },
       onCompleted: () => {
+        MESSAGING$.notifySuccess(t_i18n('The connector instance has been modified.'));
         setSubmitting?.(false);
         resetForm?.();
         onClose();
