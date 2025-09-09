@@ -22,6 +22,7 @@ import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import { OPENCTI_ADMIN_UUID } from '../../../../utils/hooks/useGranted';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 /**
  * Returns true if the authorized member option is generic.
@@ -51,6 +52,7 @@ interface AuthorizedMembersFieldProps
   hideInfo?: boolean;
   adminDefault?: boolean;
   dynamicKeysForPlaybooks?: boolean;
+  isCanUseEnable?: boolean;
 }
 
 // Type of data for internal form, not exposed to others.
@@ -88,12 +90,15 @@ const AuthorizedMembersField = ({
   hideInfo = false,
   adminDefault = false,
   dynamicKeysForPlaybooks = false,
+  isCanUseEnable = false,
 }: AuthorizedMembersFieldProps) => {
   const { t_i18n } = useFormatter();
   const { setFieldValue } = form;
   const { name, value } = field;
   const { me } = useAuth();
   const draftContext = useDraftContext();
+  const { isFeatureEnable } = useHelper();
+  const featureFlagAccessRestriction = isFeatureEnable('ACCESS_RESTRICTION_CAN_USE');
 
   // Value in sync with internal Formik field 'applyAccesses'.
   // Require to use a state in addition to the Formik field because
@@ -121,12 +126,19 @@ const AuthorizedMembersField = ({
     accessRight: accessForCreator?.accessRight ?? 'none',
   };
 
-  const accessRights = [
+  let accessRights = [
     { label: t_i18n('can view'), value: 'view' },
-    { label: t_i18n('can use'), value: 'use' },
     { label: t_i18n('can edit'), value: 'edit' },
     { label: t_i18n('can manage'), value: 'admin' },
   ];
+  if (isCanUseEnable && featureFlagAccessRestriction) {
+    accessRights = [
+      { label: t_i18n('can view'), value: 'view' },
+      { label: t_i18n('can use'), value: 'use' },
+      { label: t_i18n('can edit'), value: 'edit' },
+      { label: t_i18n('can manage'), value: 'admin' },
+    ];
+  }
 
   /**
    * Add a new authorized member in the value of the field,

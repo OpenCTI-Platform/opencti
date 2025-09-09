@@ -25,7 +25,6 @@ import StatusField from '../../common/form/StatusField';
 import { CaseIncidentEditionOverview_case$key } from './__generated__/CaseIncidentEditionOverview_case.graphql';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-import { canUse } from '../../../../utils/authorizedMembers';
 
 export const caseIncidentMutationFieldPatch = graphql`
   mutation CaseIncidentEditionOverviewCaseFieldPatchMutation(
@@ -186,9 +185,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
 }) => {
   const { t_i18n } = useFormatter();
   const caseData = useFragment(caseIncidentEditionOverviewFragment, caseRef);
-
   const { mandatoryAttributes } = useIsMandatoryAttribute(CASE_INCIDENT_TYPE);
-
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
     severity: Yup.string().nullable(),
@@ -204,7 +201,6 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
     objectMarking: Yup.array().nullable(),
   }, mandatoryAttributes);
   const validator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
-
   const queries = {
     fieldPatch: caseIncidentMutationFieldPatch,
     relationAdd: caseIncidentMutationRelationAdd,
@@ -212,7 +208,6 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
     editionFocus: caseIncidentEditionOverviewFocus,
   };
   const editor = useFormEditor(caseData as GenericData, enableReferences, queries, validator);
-
   const onSubmit: FormikConfig<CaseIncidentEditionFormValues>['onSubmit'] = (values, { setSubmitting }) => {
     const { message, references, ...otherValues } = values;
     const commitMessage = message ?? '';
@@ -238,7 +233,6 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
       },
     });
   };
-
   const handleSubmitField = (name: string, value: FieldOption | string | string[] | number | number[] | null) => {
     if (!enableReferences) {
       let finalValue: unknown = value as string;
@@ -273,13 +267,6 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
     x_opencti_workflow_id: convertStatus(t_i18n, caseData) as FieldOption,
     references: [],
   };
-  let disableAuthor = false;
-  if ('currentUserAccessRight' in (caseData?.createdBy ?? {})) {
-    disableAuthor = !canUse([caseData?.createdBy?.currentUserAccessRight]);
-  }
-  if ('organizations' in (caseData?.createdBy ?? {})) {
-    disableAuthor = !canUse(caseData?.createdBy?.organizations?.edges.map((o) => o.node.currentUserAccessRight) ?? []);
-  }
   return (
     <Formik
       enableReinitialize={true}
@@ -430,7 +417,6 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
             helpertext={
               <SubscriptionFocus context={context} fieldName="createdBy" />
             }
-            disabled={disableAuthor}
             onChange={editor.changeCreated}
           />
           <ObjectMarkingField

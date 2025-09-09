@@ -5677,13 +5677,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"amqplib@npm:0.10.8":
-  version: 0.10.8
-  resolution: "amqplib@npm:0.10.8"
+"amqplib@npm:0.10.9":
+  version: 0.10.9
+  resolution: "amqplib@npm:0.10.9"
   dependencies:
     buffer-more-ints: "npm:~1.0.0"
     url-parse: "npm:~1.5.10"
-  checksum: 10/63f4ca383d76746746f4c2559062caa08de201fdb5d8c3263582500ae43eb07c2053ffe1c1a0bd4c615ddf67655d9e632646f7bc43e71cc99a66f76138c47202
+  checksum: 10/99f8cb123cd92903b314e2c829cee080c1d86e702c827624ff7dca4422af23d57301b193441796c0f52ad3544f177484cfe18be25f5d039f80ec7322eedcea5b
   languageName: node
   linkType: hard
 
@@ -8546,19 +8546,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"express-session@npm:1.18.1":
-  version: 1.18.1
-  resolution: "express-session@npm:1.18.1"
+"express-session@npm:1.18.2":
+  version: 1.18.2
+  resolution: "express-session@npm:1.18.2"
   dependencies:
     cookie: "npm:0.7.2"
     cookie-signature: "npm:1.0.7"
     debug: "npm:2.6.9"
     depd: "npm:~2.0.0"
-    on-headers: "npm:~1.0.2"
+    on-headers: "npm:~1.1.0"
     parseurl: "npm:~1.3.3"
     safe-buffer: "npm:5.2.1"
     uid-safe: "npm:~2.1.5"
-  checksum: 10/fec407d20e2b7c110e92c992f4a094b9603bf3e1d1040cf5a2f70fe64e23560f7f2d41e0e6dc8864dd146bbf0c07d9d5aa6848f80c403cbeac4cee4303192a53
+  checksum: 10/1a89a4d3e579e1d2a729dc604c254c3e942b24a279681371c2d8042b1080f9e6de4ca787a091ec1a9178c9f2cc5c19bcb9f3929632d44db8972263e26c2cc4b8
   languageName: node
   linkType: hard
 
@@ -12027,6 +12027,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"on-headers@npm:~1.1.0":
+  version: 1.1.0
+  resolution: "on-headers@npm:1.1.0"
+  checksum: 10/98aa64629f986fb8cc4517dd8bede73c980e31208cba97f4442c330959f60ced3dc6214b83420491f5111fc7c4f4343abe2ea62c85f505cf041d67850f238776
+  languageName: node
+  linkType: hard
+
 "once@npm:^1.3.0, once@npm:^1.4.0":
   version: 1.4.0
   resolution: "once@npm:1.4.0"
@@ -12184,7 +12191,7 @@ __metadata:
     ae-cvss-calculator: "npm:1.0.8"
     ajv: "npm:8.17.1"
     ajv-formats: "npm:3.0.1"
-    amqplib: "npm:0.10.8"
+    amqplib: "npm:0.10.9"
     antlr4: "npm:4.13.2"
     apollo-server-errors: "npm:3.3.1"
     archiver: "npm:7.0.1"
@@ -12220,7 +12227,7 @@ __metadata:
     eventsource: "npm:2.0.2"
     express: "npm:4.21.2"
     express-rate-limit: "npm:7.5.1"
-    express-session: "npm:1.18.1"
+    express-session: "npm:1.18.2"
     fast-glob: "npm:3.3.3"
     fast-json-patch: "npm:3.1.1"
     file-type: "npm:21.0.0"

@@ -12529,9 +12529,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"force-graph@npm:^1.50":
-  version: 1.50.1
-  resolution: "force-graph@npm:1.50.1"
+"force-graph@npm:^1.51":
+  version: 1.51.0
+  resolution: "force-graph@npm:1.51.0"
   dependencies:
     "@tweenjs/tween.js": "npm:18 - 25"
     accessor-fn: "npm:1"
@@ -12548,7 +12548,7 @@ __metadata:
     index-array-by: "npm:1"
     kapsule: "npm:^1.16"
     lodash-es: "npm:4"
-  checksum: 10/1b8f1941357f62676122f5b980eece870a87f3af604a4ba21fe005bd9a541c1de042c2ca5b749dded7f97e8f09abfc1a906853f8078fa0db258c8e8ff7f19111
+  checksum: 10/17400d9a7362b70d193333b458246cde5ba9306d75cfc58d80d6aec92f0243df1beb9be7e6cdb2ae9a0133421bbd5ca60b3d50e1ee1973e4c2e17e019a96e8f2
   languageName: node
   linkType: hard
 
@@ -13419,21 +13419,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"html-react-parser@npm:5.2.5":
-  version: 5.2.5
-  resolution: "html-react-parser@npm:5.2.5"
+"html-react-parser@npm:5.2.6":
+  version: 5.2.6
+  resolution: "html-react-parser@npm:5.2.6"
   dependencies:
     domhandler: "npm:5.0.3"
     html-dom-parser: "npm:5.1.1"
     react-property: "npm:2.0.2"
-    style-to-js: "npm:1.1.16"
+    style-to-js: "npm:1.1.17"
   peerDependencies:
     "@types/react": 0.14 || 15 || 16 || 17 || 18 || 19
     react: 0.14 || 15 || 16 || 17 || 18 || 19
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 10/22852dc4826d3be9506e238e37a05c23b432675aac33f22bd5741caa195a32e99de99d2b99037fda532f198afbcdeacfc0b27627d6e529143a98c8f191e99c52
+  checksum: 10/be2903fd932d44ff6cae66bd18b025d318879e16eb1e67c0ae6dc640e5c77509da41b61948c0d404a43b5362b57b7cfa3963df242b9773d4c7a16f410db7f2ac
   languageName: node
   linkType: hard
 
@@ -15289,12 +15289,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"markdown-to-jsx@npm:7.7.8":
-  version: 7.7.8
-  resolution: "markdown-to-jsx@npm:7.7.8"
+"markdown-to-jsx@npm:7.7.13":
+  version: 7.7.13
+  resolution: "markdown-to-jsx@npm:7.7.13"
   peerDependencies:
     react: ">= 0.14.0"
-  checksum: 10/e9ce6c40bd50caf475a188844298cc9a193cb0228278f958e7e5ed88a0a7a9bbde442f1de27ca044f4e4e61b0d39a937bfc9d0bcce3b727db9c5e54513dd953b
+  checksum: 10/bcb3dd279f7a915068cfb709634efbd50daa8b7011c20cdffcc829b678533dbaaa7049da5f246f4270a1e9b661d9f3bb36e0b467294ea54c490093371789a4e2
   languageName: node
   linkType: hard
 
@@ -16824,7 +16824,7 @@ __metadata:
     graphiql: "npm:4.1.1"
     graphql: "npm:16.11.0"
     graphql-ws: "npm:5.16.2"
-    html-react-parser: "npm:5.2.5"
+    html-react-parser: "npm:5.2.6"
     html-to-image: "npm:1.11.13"
     html-to-pdfmake: "npm:2.5.28"
     http-proxy-middleware: "npm:3.0.5"
@@ -16838,7 +16838,7 @@ __metadata:
     leaflet: "npm:1.9.4"
     license-checker-rseidelsohn: "npm:4.4.2"
     lodash: "npm:4.17.21"
-    markdown-to-jsx: "npm:7.7.8"
+    markdown-to-jsx: "npm:7.7.13"
     marked: "npm:16.1.1"
     mdi-material-ui: "npm:7.9.4"
     moment: "npm:2.30.1"
@@ -16856,7 +16856,7 @@ __metadata:
     react-csv: "npm:2.2.2"
     react-dom: "npm:19.1.0"
     react-draggable: "npm:4.5.0"
-    react-force-graph-2d: "npm:1.28.0"
+    react-force-graph-2d: "npm:1.29.0"
     react-force-graph-3d: "npm:1.24.4"
     react-grid-layout: "npm:1.5.2"
     react-intl: "npm:7.1.11"
@@ -16892,7 +16892,7 @@ __metadata:
     vite-plugin-relay: "npm:2.1.0"
     vite-plugin-static-copy: "npm:2.3.2"
     vitest: "npm:2.0.5"
-    yup: "npm:1.6.1"
+    yup: "npm:1.7.0"
   languageName: unknown
   linkType: soft
 
@@ -17722,16 +17722,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-force-graph-2d@npm:1.28.0":
-  version: 1.28.0
-  resolution: "react-force-graph-2d@npm:1.28.0"
+"react-force-graph-2d@npm:1.29.0":
+  version: 1.29.0
+  resolution: "react-force-graph-2d@npm:1.29.0"
   dependencies:
-    force-graph: "npm:^1.50"
+    force-graph: "npm:^1.51"
     prop-types: "npm:15"
     react-kapsule: "npm:^2.5"
   peerDependencies:
     react: "*"
-  checksum: 10/837051e41f821d5b6279f0c5818ea38d6fffcf42d496f0a56a81f69f532d7401172e2949287db3ff255b9c443b5bf9f444f7019f321d4294b03d53a0a11e0093
+  checksum: 10/862141a7df14e1ccdf4d5d962ecd7c4e0a3e9220a7c7d14de5c2c7d18731f69e6326d0a55b6933a6413d0cc4b0449fa4220f4242ef89ac73bd8bdccb664b04b2
   languageName: node
   linkType: hard
 
@@ -19785,12 +19785,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"style-to-js@npm:1.1.16":
-  version: 1.1.16
-  resolution: "style-to-js@npm:1.1.16"
+"style-to-js@npm:1.1.17":
+  version: 1.1.17
+  resolution: "style-to-js@npm:1.1.17"
   dependencies:
-    style-to-object: "npm:1.0.8"
-  checksum: 10/a876cc49a29ac90c7723b4d6f002ac6c1ac5ccc6b5bc963d9c607cfc74b15927b704c9324df6f824f576c65689fe4b4ff79caabcd44a13d8a02641f721f1b316
+    style-to-object: "npm:1.0.9"
+  checksum: 10/431f2fca8a55a61939a83ff0f58638e2996621ad93a97cf93f2be5115f411330d4e506ccf18621bd45607ec161546b763bb6961ad08238ad939b6261ff377230
   languageName: node
   linkType: hard
 
@@ -19803,12 +19803,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"style-to-object@npm:1.0.8":
-  version: 1.0.8
-  resolution: "style-to-object@npm:1.0.8"
+"style-to-object@npm:1.0.9":
+  version: 1.0.9
+  resolution: "style-to-object@npm:1.0.9"
   dependencies:
     inline-style-parser: "npm:0.2.4"
-  checksum: 10/530b067325e3119bfaf75bdbe25cc86b02b559db00d881a74b98a2d5bb10ac953d1b455ed90c825963cf3b4bdaa1bda45f406d78d987391434b8d8ab3835df4e
+  checksum: 10/fd0c131a83103fe4025afd8e0fd90c605054d485ad80f2ab402e7afa79f482f4b05fff40b6aa661cb1b835e5c56bb0644dc38cbf9b3d2982fc552435db3dae50
   languageName: node
   linkType: hard
 
@@ -21659,15 +21659,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yup@npm:1.6.1":
-  version: 1.6.1
-  resolution: "yup@npm:1.6.1"
+"yup@npm:1.7.0":
+  version: 1.7.0
+  resolution: "yup@npm:1.7.0"
   dependencies:
     property-expr: "npm:^2.0.5"
     tiny-case: "npm:^1.0.3"
     toposort: "npm:^2.0.2"
     type-fest: "npm:^2.19.0"
-  checksum: 10/19dba13403160a8739a9e57c8b816254842f3a9e01672846a980d8230cee8763783c089ded88662b30158d1479cf6bce0b51dce7f19ae7d0477be0c981024bc0
+  checksum: 10/668bf48c4730fe73db39659e843f2704ffc0bd0a10254994da8affd9fb9b391ed313dcde4d9031d858d290447996149b945c514c8aa60811bf0bd8314d6c5407
   languageName: node
   linkType: hard
 

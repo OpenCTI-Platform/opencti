@@ -20,6 +20,7 @@ interface FormAuthorizedMembersDialogProps {
   owner?: Creator;
   open?: boolean;
   handleClose?: () => void;
+  isCanUseEnable?: boolean;
 }
 
 const FormAuthorizedMembersDialog = ({
@@ -29,6 +30,7 @@ const FormAuthorizedMembersDialog = ({
   owner,
   open,
   handleClose,
+  isCanUseEnable,
 }: FormAuthorizedMembersDialogProps) => {
   const draftContext = useDraftContext();
   const disabledInDraft = !!draftContext;
@@ -99,6 +101,7 @@ const FormAuthorizedMembersDialog = ({
         owner={owner}
         canDeactivate
         showAllMembersLine={showAllMembersLine}
+        isCanUseEnable={isCanUseEnable}
       />
     </>
   );

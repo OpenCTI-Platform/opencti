@@ -9,6 +9,8 @@ export interface AuthorizedMemberOption extends FieldOption {
   groupsRestriction: FieldOption[]
 }
 
+export const CAN_USE_ENTITY_TYPES = ['Organization'];
+
 export const ALL_MEMBERS_AUTHORIZED_CONFIG = {
   id: 'ALL',
   labelKey: 'Everyone on the platform',

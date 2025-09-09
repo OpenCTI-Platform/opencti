@@ -298,6 +298,66 @@ describe('Filtering utils', () => {
     } as FilterGroup;
     expect(extractFilterGroupValues(filterGroup4, ['objectLabel', 'regardingOf'])).toStrictEqual(['label1', 'id1', 'id2']);
   });
+  it('should extract the filter values corresponding to a given array of filter keys for a dynamic filter', async () => {
+    // dynamicRegardingOf filter with option to look inside dynamic filters
+    const dynamicRegardingOfFilterGroup = {
+      mode: 'or',
+      filters: [
+        { key: ['dynamicRegardingOf'],
+          values: [
+            { key: 'id', values: ['id1'] },
+            { key: 'dynamic',
+              values: [
+                {
+                  mode: 'and',
+                  filters: [
+                    { key: 'objectLabel', values: ['label1', 'label2'] },
+                    { key: 'objectMarking', values: ['marking1'] },
+                  ]
+                }
+              ] },
+          ],
+          operator: 'eq',
+          mode: 'or' },
+        { key: ['publication_date'], values: ['YYY'] },
+        { key: 'objectLabel', values: ['label3'] },
+      ],
+      filterGroups: [],
+    } as FilterGroup;
+    expect(extractFilterGroupValues(dynamicRegardingOfFilterGroup, 'objectLabel', false, true)).toStrictEqual(['label1', 'label2', 'dynamic', 'label3']);
+    // dynamicRegardingOf filter without option to look inside dynamic filters
+    expect(extractFilterGroupValues(dynamicRegardingOfFilterGroup, 'objectLabel')).toStrictEqual(['label3']);
+    // dynamicTo filter with option to look inside dynamic filters
+    const dynamicToFilter = {
+      mode: 'or',
+      filters: [
+        { key: ['dynamicTo'],
+          values: [
+            {
+              mode: 'and',
+              filters: [
+                { key: 'objectLabel', values: ['label1', 'label2'] },
+                { key: 'objectMarking', values: ['marking1'] },
+              ],
+              filterGroups: [],
+            },
+            {
+              mode: 'and',
+              filters: [
+                { key: 'objectLabel', values: ['label3'] },
+              ],
+              filterGroups: [],
+            }
+          ],
+          operator: 'eq',
+          mode: 'or' },
+        { key: ['relationship_type'], values: ['related-to'] },
+        { key: 'objectLabel', values: ['label4'] },
+      ],
+      filterGroups: [],
+    } as FilterGroup;
+    expect(extractFilterGroupValues(dynamicToFilter, 'objectLabel', false, true)).toStrictEqual(['label1', 'label2', 'label3', 'dynamic', 'label4']);
+  });
   it('should replace ME_FILTER_VALUE values in filters compatible with @me', async () => {
     const user_id = 'user-id';
     const filterGroup = {

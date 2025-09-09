@@ -156,9 +156,18 @@ export const extractFiltersFromGroup = (inputFilters: FilterGroup, keysToKeep: s
  * extract all the values (ids) from a filter group
  * if key is specified: extract all the values corresponding to the specified keys
  * if key is specified and reverse=true: extract all the ids NOT corresponding to any key
+ * if lookInDynamicFilters = true: also extract values corresponding to the key in dynamic filters
  */
-export const extractFilterGroupValues = (inputFilters: FilterGroup, key: string | string[] | null = null, reverse = false): string[] => {
+export const extractFilterGroupValues = (
+  inputFilters: FilterGroup,
+  key: string | string[] | null = null,
+  reverse = false,
+  lookInDynamicFilters = false,
+): string[] => {
   const keysToKeep = Array.isArray(key) ? key : [key];
+  if (lookInDynamicFilters) {
+    keysToKeep.push(...[INSTANCE_DYNAMIC_REGARDING_OF, RELATION_DYNAMIC_TO_FILTER, RELATION_DYNAMIC_FROM_FILTER]);
+  }
   const { filters = [], filterGroups = [] } = inputFilters;
   let filteredFilters = [];
   if (key) {
@@ -177,7 +186,16 @@ export const extractFilterGroupValues = (inputFilters: FilterGroup, key: string 
     if (f.key.includes(INSTANCE_REGARDING_OF)) {
       const regardingIds = f.values.find((v) => v.key === 'id')?.values ?? [];
       ids.push(...regardingIds);
-    } else if (f.key.includes(INSTANCE_DYNAMIC_REGARDING_OF) || f.key.includes(RELATION_DYNAMIC_FROM_FILTER) || f.key.includes(RELATION_DYNAMIC_TO_FILTER)) {
+    } else if (f.key.includes(INSTANCE_DYNAMIC_REGARDING_OF)) {
+      // values of 'dynamic' subfilter are filters we should look for
+      const dynamicValues = f.values.find((v) => v.key === 'dynamic')?.values ?? [];
+      const dynamicIds = dynamicValues.map((v: FilterGroup) => extractFilterGroupValues(v, key, reverse)).flat();
+      ids.push(...dynamicIds);
+      ids.push('dynamic');
+    } else if (f.key.includes(RELATION_DYNAMIC_FROM_FILTER) || f.key.includes(RELATION_DYNAMIC_TO_FILTER)) {
+      // values are filters we should look for
+      const dynamicIds = f.values.map((v) => extractFilterGroupValues(v, key, reverse)).flat();
+      ids.push(...dynamicIds);
       ids.push('dynamic');
     } else {
       ids.push(...f.values);
@@ -555,4 +573,17 @@ export const filtersEntityIdsMappingResult = (inputFilters: FilterGroup, keysToR
     filters: newFilters,
     filterGroups: newFilterGroups,
   };
+};
+
+// TODO: remove when dynamicFrom & dynamicTo are removed from widgets and only handled in filters
+export const addDynamicFromAndToToFilters = (args: any): FilterGroup | undefined | null => {
+  const { filters, dynamicFrom, dynamicTo } = args;
+  let finalFilters = filters;
+  if (dynamicFrom) {
+    finalFilters = addFilter(finalFilters, RELATION_DYNAMIC_FROM_FILTER, dynamicFrom);
+  }
+  if (dynamicTo) {
+    finalFilters = addFilter(finalFilters, RELATION_DYNAMIC_TO_FILTER, dynamicTo);
+  }
+  return finalFilters;
 };

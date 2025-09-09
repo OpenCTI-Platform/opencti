@@ -30,8 +30,8 @@ export const findFiltersRepresentatives = async (context: AuthContext, user: Aut
     .concat(STIX_CORE_RELATIONSHIPS)
     .concat(schemaAttributesDefinition.getIdAttributeNames())
     .concat(SPECIAL_FILTER_KEYS_WHOSE_VALUE_TO_RESOLVE);
-  const idsToResolve = extractFilterGroupValues(inputFilters, keysToResolve);
-  const otherIds = extractFilterGroupValues(inputFilters, keysToResolve, true);
+  const idsToResolve = extractFilterGroupValues(inputFilters, keysToResolve, false, true);
+  const otherIds = extractFilterGroupValues(inputFilters, keysToResolve, true, true);
   // resolve the ids
   const resolvedEntities = await storeLoadByIds<BasicStoreEntity>(context, user, idsToResolve, ABSTRACT_BASIC_OBJECT);
   const internalUsersIds = Object.keys(INTERNAL_USERS);

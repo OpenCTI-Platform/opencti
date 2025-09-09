@@ -188,7 +188,7 @@ ContainerMappingContentComponentProps
   const enableReferences = useIsEnforceReference(containerData.entity_type);
   const { innerHeight } = window;
   const { content_mapping } = containerData;
-  const listHeight = innerHeight - 420;
+  const listHeight = innerHeight - 280;
 
   const suggestedMappingData = usePreloadedQuery<ContainerStixCoreObjectsSuggestedMappingQuery>(
     containerStixCoreObjectsSuggestedMappingQuery,
@@ -438,9 +438,10 @@ ContainerMappingContentComponentProps
     <>
       <Grid
         container
-        spacing={2}
+        alignItems="stretch"
+        columnSpacing={2}
       >
-        <Grid item xs={6}>
+        <Grid item xs={6} sx={{ display: 'flex', flexDirection: 'column' }}>
           <StixCoreObjectMappableContent
             containerData={containerData}
             handleTextSelection={handleTextSelection}
@@ -452,12 +453,15 @@ ContainerMappingContentComponentProps
           />
         </Grid>
 
-        <Grid item xs={6}>
+        <Grid item xs={6} sx={{ display: 'flex', flexDirection: 'column' }}>
           <Paper
             variant="outlined"
             style={{
               padding: '15px',
               borderRadius: 4,
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
             }}
           >
             <ContainerStixCoreObjectsMappingHeader

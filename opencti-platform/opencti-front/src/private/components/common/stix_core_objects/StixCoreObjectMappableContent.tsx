@@ -239,7 +239,7 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
         )}
         {isNotEmptyField(contentField) && (
           <>
-            <Typography variant="h3" gutterBottom={true}>
+            <Typography variant="h3" gutterBottom={true} style={{ marginTop: isNotEmptyField(description) ? 20 : 0 }}>
               {t_i18n('Content')}
             </Typography>
             <HtmlDisplay content={contentField} />

@@ -24,7 +24,6 @@ import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
-import { canUse } from '../../../../utils/authorizedMembers';
 
 export const reportMutationFieldPatch = graphql`
   mutation ReportEditionOverviewFieldPatchMutation(
@@ -91,7 +90,6 @@ const REPORT_TYPE = 'Report';
 const ReportEditionOverviewComponent = (props) => {
   const { report, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
-
   const { mandatoryAttributes } = useIsMandatoryAttribute(REPORT_TYPE);
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
@@ -155,7 +153,6 @@ const ReportEditionOverviewComponent = (props) => {
       },
     });
   };
-
   const handleSubmitField = (name, value) => {
     if (!enableReferences) {
       let finalValue = value;
@@ -175,7 +172,6 @@ const ReportEditionOverviewComponent = (props) => {
         .catch(() => false);
     }
   };
-
   const initialValues = R.pipe(
     R.assoc('published', buildDate(report.published)),
     R.assoc('report_types', report.report_types ?? []),
@@ -200,13 +196,6 @@ const ReportEditionOverviewComponent = (props) => {
       'x_opencti_workflow_id',
     ]),
   )(report);
-  let disableAuthor = false;
-  if ('currentUserAccessRight' in (report?.createdBy ?? {})) {
-    disableAuthor = !canUse([report?.createdBy?.currentUserAccessRight]);
-  }
-  if ('organizations' in (report?.createdBy ?? {})) {
-    disableAuthor = !canUse(report?.createdBy?.organizations?.edges.map((o) => o.node.currentUserAccessRight) ?? []);
-  }
   return (
     <Formik
       enableReinitialize={true}
@@ -345,7 +334,6 @@ const ReportEditionOverviewComponent = (props) => {
             onChange={editor.changeCreated}
             setFieldValue={setFieldValue}
             required={mandatoryAttributes.includes('createdBy')}
-            disabled={disableAuthor}
           />
           <ObjectMarkingField
             name="objectMarking"

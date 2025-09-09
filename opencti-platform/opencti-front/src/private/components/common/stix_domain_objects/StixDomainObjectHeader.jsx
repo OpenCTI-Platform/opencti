@@ -57,7 +57,7 @@ import Transition from '../../../../components/Transition';
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
 import PopoverMenu from '../../../../components/PopoverMenu';
 import { resolveLink } from '../../../../utils/Entity';
-import { authorizedMembersToOptions, useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
+import { authorizedMembersToOptions, CAN_USE_ENTITY_TYPES, useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 
 export const stixDomainObjectMutation = graphql`
   mutation StixDomainObjectHeaderFieldMutation(
@@ -696,6 +696,7 @@ const StixDomainObjectHeader = (props) => {
                 mutation={stixDomainObjectHeaderEditAuthorizedMembersMutation}
                 open={openAccessRestriction}
                 handleClose={handleCloseAccessRestriction}
+                isCanUseEnable={CAN_USE_ENTITY_TYPES.includes(stixDomainObject.entity_type)}
               />
             )}
             {displayPopoverMenu ? (

@@ -1,6 +1,6 @@
 {
   "name": "opencti-front",
-  "version": "6.7.17",
+  "version": "6.7.18",
   "private": true,
   "main": "src/front.tsx",
   "dependencies": {
@@ -49,7 +49,7 @@
     "graphiql": "4.1.1",
     "graphql": "16.11.0",
     "graphql-ws": "5.16.2",
-    "html-react-parser": "5.2.5",
+    "html-react-parser": "5.2.6",
     "html-to-image": "1.11.13",
     "html-to-pdfmake": "2.5.28",
     "invert-color": "2.0.0",
@@ -59,7 +59,7 @@
     "json5": "2.2.3",
     "leaflet": "1.9.4",
     "lodash": "4.17.21",
-    "markdown-to-jsx": "7.7.8",
+    "markdown-to-jsx": "7.7.13",
     "marked": "16.1.1",
     "mdi-material-ui": "7.9.4",
     "moment": "2.30.1",
@@ -76,7 +76,7 @@
     "react-csv": "2.2.2",
     "react-dom": "19.1.0",
     "react-draggable": "4.5.0",
-    "react-force-graph-2d": "1.28.0",
+    "react-force-graph-2d": "1.29.0",
     "react-force-graph-3d": "1.24.4",
     "react-grid-layout": "1.5.2",
     "react-intl": "7.1.11",
@@ -105,7 +105,7 @@
     "three-spritetext": "1.9.6",
     "use-analytics": "1.1.0",
     "uuid": "11.1.0",
-    "yup": "1.6.1"
+    "yup": "1.7.0"
   },
   "devDependencies": {
     "@playwright/test": "1.51.1",
