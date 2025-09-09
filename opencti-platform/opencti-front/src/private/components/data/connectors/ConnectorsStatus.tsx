@@ -25,13 +25,14 @@ import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/styles';
 import useConnectorsStatusFilters from '@components/data/connectors/hooks/useConnectorsStatusFilters';
 import ConnectorsStatusFilters from '@components/data/connectors/ConnectorsStatusFilters';
+import ConnectorStatusChip from '@components/data/connectors/ConnectorStatusChip';
 import Transition from '../../../../components/Transition';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import Security from '../../../../utils/Security';
 import { MODULES_MODMANAGE } from '../../../../utils/hooks/useGranted';
-import { type Connector, getConnectorTriggerStatus, useComputeConnectorStatus } from '../../../../utils/Connector';
+import { type Connector, getConnectorTriggerStatus } from '../../../../utils/Connector';
 import { connectorDeletionMutation, connectorResetStateMutation } from './Connector';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import type { Theme } from '../../../../components/Theme';
@@ -168,8 +169,6 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
   const [connectorIdToReset, setConnectorIdToReset] = useState<string>();
   const [connectorMessages, setConnectorMessages] = useState<string | number | null | undefined>();
   const [resetting, setResetting] = useState<boolean>(false);
-
-  const computeConnectorStatus = useComputeConnectorStatus();
 
   const data = usePreloadedFragment<ConnectorsStatusQuery,
   ConnectorsStatus_data$key>({
@@ -427,32 +426,36 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                           <>
                             {!isSensitive && (
                             <Tooltip title={t_i18n('Reset the connector state')}>
-                              <IconButton
-                                onClick={() => {
-                                  setConnectorIdToReset(connector.id);
-                                  setConnectorMessages(connector.messages);
-                                }}
-                                aria-haspopup="true"
-                                color="primary"
-                                size="large"
-                                disabled={!!connector.built_in}
-                              >
-                                <PlaylistRemoveOutlined />
-                              </IconButton>
+                              <span>
+                                <IconButton
+                                  onClick={() => {
+                                    setConnectorIdToReset(connector.id);
+                                    setConnectorMessages(connector.messages);
+                                  }}
+                                  aria-haspopup="true"
+                                  color="primary"
+                                  size="large"
+                                  disabled={!!connector.built_in}
+                                >
+                                  <PlaylistRemoveOutlined />
+                                </IconButton>
+                              </span>
                             </Tooltip>
                             )}
-                            <Tooltip title={t_i18n('Clear this connector')}>
-                              <IconButton
-                                onClick={() => {
-                                  if (connector.id) handleDelete(connector.id);
-                                }}
-                                aria-haspopup="true"
-                                color="primary"
-                                disabled={!!connector.active || !!connector.built_in}
-                                size="large"
-                              >
-                                <DeleteOutlined />
-                              </IconButton>
+                            <Tooltip title={t_i18n('Clear this connector')} >
+                              <span>
+                                <IconButton
+                                  onClick={() => {
+                                    if (connector.id) handleDelete(connector.id);
+                                  }}
+                                  aria-haspopup="true"
+                                  color="primary"
+                                  disabled={!!connector.active || !!connector.built_in}
+                                  size="large"
+                                >
+                                  <DeleteOutlined />
+                                </IconButton>
+                              </span>
                             </Tooltip>
                           </>
                         </Security>
@@ -492,7 +495,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                                 {n(connector.messages)}
                               </div>
                               <div className={classes.bodyItem}>
-                                {computeConnectorStatus(connector).render}
+                                <ConnectorStatusChip connector={connector} />
                               </div>
                               <div className={classes.bodyItem}>
                                 {nsdt(connector.updated_at)}

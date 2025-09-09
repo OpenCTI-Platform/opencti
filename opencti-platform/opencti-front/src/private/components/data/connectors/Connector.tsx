@@ -21,6 +21,7 @@ import UpdateIcon from '@mui/icons-material/Update';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import ConnectorPopover from '@components/data/connectors/ConnectorPopover';
+import ConnectorStatusChip from '@components/data/connectors/ConnectorStatusChip';
 import Filters from '../../common/lists/Filters';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { useFormatter } from '../../../../components/i18n';
@@ -29,7 +30,7 @@ import {
   useGetConnectorFilterEntityTypes,
   getConnectorOnlyContextualStatus,
   getConnectorTriggerStatus,
-  useComputeConnectorStatus,
+  computeConnectorStatus,
 } from '../../../../utils/Connector';
 import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
@@ -247,8 +248,6 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
   const isBuffering = () => {
     return connector.connector_info ? connector.connector_info.queue_messages_size > connector.connector_info.queue_threshold : false;
   };
-
-  const computeConnectorStatus = useComputeConnectorStatus();
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -690,7 +689,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
         >
           {connector.name}
           <div style={{ display: 'inline-block' }}>
-            {computeConnectorStatus(connector).render}
+            <ConnectorStatusChip connector={connector} />
           </div>
         </Typography>
         <div style={{
