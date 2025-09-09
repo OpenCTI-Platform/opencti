@@ -22,10 +22,29 @@ const ConnectorStatusChip: React.FC<ConnectorStatusChipProps> = ({ connector }) 
     itemBooleanStatus = false;
   }
 
+  const getTranslatedLabel = (labelValue: string) => {
+    switch (labelValue) {
+      case 'starting':
+        return t_i18n('Starting');
+      case 'stopping':
+        return t_i18n('Stopping');
+      case 'stopped':
+        return t_i18n('Stopped');
+      case 'started':
+        return t_i18n('Started');
+      case 'active':
+        return t_i18n('Active');
+      case 'inactive':
+        return t_i18n('Inactive');
+      default:
+        return t_i18n(label);
+    }
+  };
+
   return (
     <ItemBoolean
       status={itemBooleanStatus}
-      label={t_i18n(label)}
+      label={getTranslatedLabel(label)}
       variant={'inList'}
     />
   );
