@@ -67,9 +67,86 @@ const DisplayFiltersFilterGroups: FunctionComponent<DisplayFilterGroupsProps> = 
   filterMode,
 }) => {
   const { t_i18n } = useFormatter();
+
+  const displayFilterValues = (f: Filter) => {
+    const { key, values, mode } = f;
+
+    // case of filters with subfilters
+    if (key === 'regardingOf' || key === 'dynamicRegardingOf') {
+      return (
+        <>
+          {values
+            .filter((v) => v.key === 'relationship_type')
+            .flat()
+            .map((value) => {
+              return (<span key={'relationship_type'}>
+                <DisplayFiltersValues
+                  filtersRepresentativesMap={filtersRepresentativesMap}
+                  values={value.values}
+                />
+              </span>);
+            })}
+          {values.filter((v) => v.key === 'id' || v.key === 'dynamic').length > 0
+            && <Box
+              sx={{
+                paddingTop: 2,
+                textTransform: 'uppercase',
+                fontFamily: 'Consolas, monaco, monospace',
+                backgroundColor: 'rgba(255, 255, 255, .1)',
+                fontWeight: 'bold',
+                display: 'inline-block',
+                margin: '0 8px',
+                padding: '8px',
+              }}
+               >
+              {t_i18n('WITH')}
+            </Box>
+          }
+          {values.filter((v) => v.key === 'id').flat().map((value) => {
+            return (<span key={'id'}>
+              <DisplayFiltersValues
+                filtersRepresentativesMap={filtersRepresentativesMap}
+                values={value.values}
+              />
+            </span>);
+          })}
+          {values.filter((v) => v.key === 'dynamic').flat().map((value) => {
+            return (<span key={'id'}>
+              <DisplayFiltersFilterGroups
+                filterGroups={value.values}
+                filtersRepresentativesMap={filtersRepresentativesMap}
+                filterMode={'and'}
+              />
+            </span>);
+          })}
+        </>
+      );
+    }
+
+    // case of filters with filters in 'values'
+    if (key === 'dynamicTo' || key === 'dynamicFrom') {
+      return (
+        <DisplayFiltersFilterGroups
+          filterGroups={values}
+          filtersRepresentativesMap={filtersRepresentativesMap}
+          filterMode={mode ?? 'or'}
+        />
+      );
+    }
+
+    // classic filters
+    return (
+      <DisplayFiltersValues
+        filtersRepresentativesMap={filtersRepresentativesMap}
+        values={values}
+        mode={mode ?? 'or'}
+      />
+    );
+  };
+
   const displayFilterFilters = (filters: Filter[], parentMode: string) => {
     return filters.map((f, i) => {
-      const { key, operator, values, mode, id } = f;
+      const { key, operator, id } = f;
       return (
         <Box
           key={id ?? key}
@@ -122,59 +199,7 @@ const DisplayFiltersFilterGroups: FunctionComponent<DisplayFilterGroupsProps> = 
               {operator}
             </Box>
             <Box sx={{ display: 'inline-block' }}>
-              {key === 'regardingOf' || key === 'dynamicRegardingOf'
-                ? <>
-                  {values
-                    .filter((v) => v.key === 'relationship_type')
-                    .flat()
-                    .map((value) => {
-                      return (<span key={'relationship_type'}>
-                        <DisplayFiltersValues
-                          filtersRepresentativesMap={filtersRepresentativesMap}
-                          values={value.values}
-                        />
-                      </span>);
-                    })}
-                  {values.filter((v) => v.key === 'id' || v.key === 'dynamic').length > 0
-                    && <Box
-                      sx={{
-                        paddingTop: 2,
-                        textTransform: 'uppercase',
-                        fontFamily: 'Consolas, monaco, monospace',
-                        backgroundColor: 'rgba(255, 255, 255, .1)',
-                        fontWeight: 'bold',
-                        display: 'inline-block',
-                        margin: '0 8px',
-                        padding: '8px',
-                      }}
-                       >
-                      {t_i18n('WITH')}
-                    </Box>
-                  }
-                  {values.filter((v) => v.key === 'id').flat().map((value) => {
-                    return (<span key={'id'}>
-                      <DisplayFiltersValues
-                        filtersRepresentativesMap={filtersRepresentativesMap}
-                        values={value.values}
-                      />
-                    </span>);
-                  })}
-                  {values.filter((v) => v.key === 'dynamic').flat().map((value) => {
-                    return (<span key={'id'}>
-                      <DisplayFiltersFilterGroups
-                        filterGroups={value.values}
-                        filtersRepresentativesMap={filtersRepresentativesMap}
-                        filterMode={'and'}
-                      />
-                    </span>);
-                  })}
-                </>
-                : <DisplayFiltersValues
-                    filtersRepresentativesMap={filtersRepresentativesMap}
-                    values={values}
-                    mode={mode ?? 'or'}
-                  />
-              }
+              {displayFilterValues(f)}
             </Box>
           </Box>
         </Box>
