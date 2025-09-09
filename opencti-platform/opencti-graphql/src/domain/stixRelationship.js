@@ -2,81 +2,20 @@ import * as R from 'ramda';
 import { GraphQLError } from 'graphql/index';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
 import { deleteElementById, distributionRelations, timeSeriesRelations } from '../database/middleware';
-import { ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP } from '../schema/general';
-import { buildRelationsFilter, listEntities, listRelationsPaginated, storeLoadById } from '../database/middleware-loader';
-import { fillTimeSeries, isEmptyField, READ_INDEX_INFERRED_RELATIONSHIPS, READ_RELATIONSHIPS_INDICES } from '../database/utils';
-import { elCount, MAX_RUNTIME_RESOLUTION_SIZE } from '../database/engine';
+import { ABSTRACT_STIX_RELATIONSHIP } from '../schema/general';
+import { buildRelationsFilter, listRelationsPaginated, storeLoadById } from '../database/middleware-loader';
+import { isEmptyField, READ_INDEX_INFERRED_RELATIONSHIPS, READ_RELATIONSHIPS_INDICES } from '../database/utils';
+import { elCount } from '../database/engine';
 import { STIX_SPEC_VERSION, stixCoreRelationshipsMapping } from '../database/stix';
 import { UnsupportedError } from '../config/errors';
 import { schemaTypesDefinition } from '../schema/schema-types';
-import { clearKeyFromFilterGroup, extractDynamicFilterGroupValues, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { isStixRelationship } from '../schema/stixRelationship';
-import { RELATION_DYNAMIC_FROM_FILTER, RELATION_DYNAMIC_TO_FILTER } from '../utils/filtering/filtering-constants';
-
-export const buildArgsFromDynamicFilters = async (context, user, args) => {
-  const { dynamicFrom, dynamicTo } = args;
-  const listEntitiesWithFilters = async (filters) => listEntities(context, user, [ABSTRACT_STIX_OBJECT], {
-    connectionFormat: false,
-    first: MAX_RUNTIME_RESOLUTION_SIZE,
-    bypassSizeLimit: true, // ensure that max runtime prevent on ES_MAX_PAGINATION
-    baseData: true,
-    filters
-  });
-  let finalArgs = args;
-  if (isFilterGroupNotEmpty(dynamicFrom)) {
-    const fromIds = await listEntitiesWithFilters(dynamicFrom).then((result) => result.map((n) => n.id));
-    if (fromIds.length > 0) {
-      finalArgs = { ...finalArgs, fromId: args.fromId ? [...fromIds, args.fromId] : fromIds, dynamicFrom: undefined };
-    } else {
-      return { dynamicArgs: null, isEmptyDynamic: true };
-    }
-  } else {
-    finalArgs = { ...finalArgs, dynamicFrom: undefined };
-  }
-  if (isFilterGroupNotEmpty(dynamicTo)) {
-    const toIds = await listEntitiesWithFilters(dynamicTo).then((result) => result.map((n) => n.id));
-    if (toIds.length > 0) {
-      finalArgs = { ...finalArgs, toId: args.toId ? [...toIds, args.toId] : toIds, dynamicTo: undefined };
-    } else {
-      return { dynamicArgs: null, isEmptyDynamic: true };
-    }
-  } else {
-    finalArgs = { ...finalArgs, dynamicTo: undefined };
-  }
-  return { dynamicArgs: finalArgs, isEmptyDynamic: false };
-};
+import { addDynamicFromAndToToFilters } from '../utils/filtering/filtering-utils';
 
 export const findAll = async (context, user, args) => {
-  let finalArgs = args;
-  const finalFilters = args.filters;
-  if (finalFilters) {
-    const dynamicFrom = extractDynamicFilterGroupValues(finalFilters, RELATION_DYNAMIC_FROM_FILTER);
-    if (dynamicFrom && dynamicFrom.length > 0 && isFilterGroupNotEmpty(dynamicFrom[0])) {
-      finalArgs = {
-        ...finalArgs,
-        dynamicFrom: dynamicFrom[0],
-        filters: clearKeyFromFilterGroup(finalArgs.filters, RELATION_DYNAMIC_FROM_FILTER),
-      };
-    }
-    const dynamicTo = extractDynamicFilterGroupValues(finalFilters, RELATION_DYNAMIC_TO_FILTER);
-    if (dynamicTo && dynamicTo.length > 0 && isFilterGroupNotEmpty(dynamicTo[0])) {
-      finalArgs = {
-        ...finalArgs,
-        dynamicTo: dynamicTo[0],
-        filters: clearKeyFromFilterGroup(finalArgs.filters, RELATION_DYNAMIC_TO_FILTER),
-      };
-    }
-  }
-  const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, finalArgs);
-  if (isEmptyDynamic) {
-    return { edges: [] };
-  }
-  const type = isEmptyField(dynamicArgs.relationship_type) ? ABSTRACT_STIX_RELATIONSHIP : dynamicArgs.relationship_type;
-  const types = Array.isArray(type) ? type : [type];
-  if (!types.every((t) => isStixRelationship(t))) {
-    throw UnsupportedError('This API only support Stix relationships', { type });
-  }
-  return listRelationsPaginated(context, user, type, R.dissoc('relationship_type', dynamicArgs));
+  const filters = addDynamicFromAndToToFilters(args);
+  const fullArgs = { ...args, filters };
+  return listRelationsPaginated(context, user, ABSTRACT_STIX_RELATIONSHIP, fullArgs);
 };
 
 export const findById = (context, user, stixRelationshipId) => {
@@ -103,20 +42,15 @@ const buildRelationshipTypes = (relationshipTypes) => {
 
 // region stats
 export const stixRelationshipsDistribution = async (context, user, args) => {
-  const relationship_type = buildRelationshipTypes(args.relationship_type);
-  const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, { ...args, relationship_type });
-  if (isEmptyDynamic) {
-    return [];
-  }
-  return distributionRelations(context, context.user, dynamicArgs);
+  const filters = addDynamicFromAndToToFilters(args);
+  const fullArgs = { ...args, filters };
+  return distributionRelations(context, context.user, fullArgs);
 };
 export const stixRelationshipsNumber = async (context, user, args) => {
   const relationship_type = buildRelationshipTypes(args.relationship_type);
-  const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, args);
-  if (isEmptyDynamic) {
-    return { count: 0, total: 0 };
-  }
-  const numberArgs = buildRelationsFilter(relationship_type, dynamicArgs);
+  const filters = addDynamicFromAndToToFilters(args);
+  const fullArgs = { ...args, filters };
+  const numberArgs = buildRelationsFilter(relationship_type, fullArgs);
   const indices = args.onlyInferred ? [READ_INDEX_INFERRED_RELATIONSHIPS] : [READ_RELATIONSHIPS_INDICES];
   return {
     count: elCount(context, user, indices, numberArgs),
@@ -125,12 +59,9 @@ export const stixRelationshipsNumber = async (context, user, args) => {
 };
 export const stixRelationshipsMultiTimeSeries = async (context, user, args) => {
   return Promise.all(args.timeSeriesParameters.map(async (timeSeriesParameter) => {
-    const { startDate, endDate, interval } = args;
-    const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, timeSeriesParameter);
-    if (isEmptyDynamic) {
-      return { data: fillTimeSeries(startDate, endDate, interval, []) };
-    }
-    return { data: timeSeriesRelations(context, user, { ...args, ...dynamicArgs }) };
+    const filters = addDynamicFromAndToToFilters(timeSeriesParameter);
+    const fullArgs = { ...timeSeriesParameter, filters };
+    return { data: timeSeriesRelations(context, user, { ...args, ...fullArgs }) };
   }));
 };
 // endregion

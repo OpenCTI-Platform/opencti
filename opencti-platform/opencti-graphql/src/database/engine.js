@@ -147,6 +147,8 @@ import {
   INSTANCE_RELATION_FILTER,
   INSTANCE_RELATION_TYPES_FILTER,
   IS_INFERRED_FILTER,
+  RELATION_DYNAMIC_FROM_FILTER,
+  RELATION_DYNAMIC_TO_FILTER,
   RELATION_FROM_FILTER,
   RELATION_FROM_ROLE_FILTER,
   RELATION_FROM_TYPES_FILTER,
@@ -3013,10 +3015,29 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
           finalFilterGroups.push(newFilterGroup);
         }
       }
-      if (filterKey === RELATION_FROM_FILTER || filterKey === RELATION_TO_FILTER || filterKey === RELATION_TO_SIGHTING_FILTER) {
-        const side = filterKey === RELATION_FROM_FILTER ? 'from' : 'to';
+      if (filterKey === RELATION_FROM_FILTER || filterKey === RELATION_DYNAMIC_FROM_FILTER
+          || filterKey === RELATION_TO_FILTER || filterKey === RELATION_DYNAMIC_TO_FILTER
+          || filterKey === RELATION_TO_SIGHTING_FILTER) {
+        const isDynamic = filterKey === RELATION_DYNAMIC_FROM_FILTER || filterKey === RELATION_DYNAMIC_TO_FILTER;
+        const dynamicIds = [];
+        if (isDynamic) {
+          const computedIndices = computeQueryIndices([], [ABSTRACT_STIX_OBJECT]);
+          const targetEntities = await elPaginate(context, user, computedIndices, {
+            connectionFormat: false,
+            first: ES_MAX_PAGINATION,
+            bypassSizeLimit: true, // ensure that max runtime prevent on ES_MAX_PAGINATION
+            baseData: true,
+            filters: addFilter(filter.values[0], TYPE_FILTER, [ABSTRACT_STIX_CORE_OBJECT]),
+          });
+          if (targetEntities.length > 0) {
+            const relatedIds = targetEntities.map((n) => n.id);
+            dynamicIds.push(...relatedIds);
+          }
+        }
+
+        const side = filterKey === RELATION_FROM_FILTER || filterKey === RELATION_DYNAMIC_FROM_FILTER ? 'from' : 'to';
         const nested = [
-          { key: 'internal_id', operator: filter.operator, values: filter.values },
+          { key: 'internal_id', operator: filter.operator, values: isDynamic ? dynamicIds : filter.values },
           { key: 'role', operator: 'wildcard', values: [`*_${side}`] }
         ];
         finalFilters.push({ key: 'connections', nested, mode: filter.mode });
