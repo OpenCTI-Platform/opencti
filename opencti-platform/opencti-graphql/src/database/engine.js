@@ -12,6 +12,7 @@ import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION, SEMATTRS_DB_STATEMENT } from '
 import * as jsonpatch from 'fast-json-patch';
 import {
   buildPagination,
+  buildPaginationFromEdges,
   cursorToOffset,
   ES_INDEX_PREFIX,
   getIndicesToQuery,
@@ -3888,12 +3889,7 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
 };
 
 const elRepaginate = async (context, user, indexName, connectionFormat, opts = {}) => {
-  const {
-    first = ES_DEFAULT_PAGINATION,
-    maxSize = undefined,
-    logForMigration = false,
-    callback
-  } = opts;
+  const { first = ES_DEFAULT_PAGINATION, maxSize = undefined, logForMigration = false, callback } = opts;
   let batch = 0;
   let emitSize = 0;
   let globalHitsCount = 0;
@@ -3902,6 +3898,7 @@ const elRepaginate = async (context, user, indexName, connectionFormat, opts = {
   let continueProcess = true;
   let searchAfter = opts.after;
   const listing = [];
+
   const publish = async (edges, globalCount) => {
     const elements = connectionFormat ? edges : await asyncMap(edges, (edge) => edge.node);
     if (callback) {
@@ -3935,7 +3932,9 @@ const elRepaginate = async (context, user, indexName, connectionFormat, opts = {
       }
       hasNextPage = false;
     } else if (page.edges.length > 0) {
-      if (logForMigration) logMigration.info(`Migrating loading batch ${batch}...`);
+      if (logForMigration) {
+        logMigration.info(`Migrating loading batch ${batch}...`);
+      }
       searchAfter = endCursor;
       await publish(page.edges, total);
       batch += 1;
@@ -3945,7 +3944,8 @@ const elRepaginate = async (context, user, indexName, connectionFormat, opts = {
 };
 
 export const elConnection = async (context, user, indexName, opts = {}) => {
-  return elRepaginate(context, user, indexName, true, opts);
+  const { elements, totalCount } = await elRepaginate(context, user, indexName, true, opts);
+  return buildPaginationFromEdges(opts.first, opts.after, elements, totalCount);
 };
 
 export const elList = async (context, user, indexName, opts = {}) => {

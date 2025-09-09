@@ -456,8 +456,7 @@ export const pageEntitiesConnection = async <T extends BasicStoreEntity>(context
   // maxSize MUST be aligned with first in this method.
   // As using elConnection is repaginate, removing maxSize will lead to major api breaking
   const paginateArgs = { ...buildEntityFilters(entityTypes, args), first, maxSize: first };
-  const { elements, totalCount } = await elConnection(context, user, computedIndices, paginateArgs);
-  return buildPaginationFromEdges(args.first, args.after, elements, totalCount);
+  return elConnection(context, user, computedIndices, paginateArgs);
 };
 
 export const topEntitiesList = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, entityTypes: string[], args: EntityOptions<T> = {}) => {
