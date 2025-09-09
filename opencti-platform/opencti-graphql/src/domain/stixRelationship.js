@@ -10,9 +10,12 @@ import { STIX_SPEC_VERSION, stixCoreRelationshipsMapping } from '../database/sti
 import { UnsupportedError } from '../config/errors';
 import { schemaTypesDefinition } from '../schema/schema-types';
 import { isStixRelationship } from '../schema/stixRelationship';
+import { addDynamicFromAndToToFilters } from '../utils/filtering/filtering-utils';
 
 export const findAll = async (context, user, args) => {
-  return listRelationsPaginated(context, user, ABSTRACT_STIX_RELATIONSHIP, args);
+  const filters = addDynamicFromAndToToFilters(args);
+  const fullArgs = { ...args, filters };
+  return listRelationsPaginated(context, user, ABSTRACT_STIX_RELATIONSHIP, fullArgs);
 };
 
 export const findById = (context, user, stixRelationshipId) => {
@@ -39,11 +42,15 @@ const buildRelationshipTypes = (relationshipTypes) => {
 
 // region stats
 export const stixRelationshipsDistribution = async (context, user, args) => {
-  return distributionRelations(context, context.user, args);
+  const filters = addDynamicFromAndToToFilters(args);
+  const fullArgs = { ...args, filters };
+  return distributionRelations(context, context.user, fullArgs);
 };
 export const stixRelationshipsNumber = async (context, user, args) => {
   const relationship_type = buildRelationshipTypes(args.relationship_type);
-  const numberArgs = buildRelationsFilter(relationship_type, args);
+  const filters = addDynamicFromAndToToFilters(args);
+  const fullArgs = { ...args, filters };
+  const numberArgs = buildRelationsFilter(relationship_type, fullArgs);
   const indices = args.onlyInferred ? [READ_INDEX_INFERRED_RELATIONSHIPS] : [READ_RELATIONSHIPS_INDICES];
   return {
     count: elCount(context, user, indices, numberArgs),
@@ -52,7 +59,9 @@ export const stixRelationshipsNumber = async (context, user, args) => {
 };
 export const stixRelationshipsMultiTimeSeries = async (context, user, args) => {
   return Promise.all(args.timeSeriesParameters.map(async (timeSeriesParameter) => {
-    return { data: timeSeriesRelations(context, user, { ...args, ...timeSeriesParameter }) };
+    const filters = addDynamicFromAndToToFilters(timeSeriesParameter);
+    const fullArgs = { ...timeSeriesParameter, filters };
+    return { data: timeSeriesRelations(context, user, { ...args, ...fullArgs }) };
   }));
 };
 // endregion

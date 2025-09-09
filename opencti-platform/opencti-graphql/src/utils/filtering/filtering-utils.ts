@@ -540,3 +540,16 @@ export const filtersEntityIdsMappingResult = (inputFilters: FilterGroup, keysToR
     filterGroups: newFilterGroups,
   };
 };
+
+// TODO: remove when dynamicFrom & dynamicTo are removed from widgets and only handled in filters
+export const addDynamicFromAndToToFilters = (args: any): FilterGroup | undefined | null => {
+  const { filters, dynamicFrom, dynamicTo } = args;
+  let finalFilters = filters;
+  if (dynamicFrom) {
+    finalFilters = addFilter(finalFilters, RELATION_DYNAMIC_FROM_FILTER, dynamicFrom);
+  }
+  if (dynamicTo) {
+    finalFilters = addFilter(finalFilters, RELATION_DYNAMIC_TO_FILTER, dynamicTo);
+  }
+  return finalFilters;
+};
