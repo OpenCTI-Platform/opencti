@@ -116,6 +116,7 @@ WorkspaceManageAccessDialogProps
       onSubmit={onSubmitForm}
       owner={owner ?? undefined}
       showAllMembersLine={true}
+      context={'Workspace'}
     />
   );
 };

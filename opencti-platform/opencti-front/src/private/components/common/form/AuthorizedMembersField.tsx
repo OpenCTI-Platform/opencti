@@ -53,6 +53,7 @@ interface AuthorizedMembersFieldProps
   adminDefault?: boolean;
   dynamicKeysForPlaybooks?: boolean;
   isCanUseEnable?: boolean;
+  context?: string;
 }
 
 // Type of data for internal form, not exposed to others.
@@ -91,6 +92,7 @@ const AuthorizedMembersField = ({
   adminDefault = false,
   dynamicKeysForPlaybooks = false,
   isCanUseEnable = false,
+  context,
 }: AuthorizedMembersFieldProps) => {
   const { t_i18n } = useFormatter();
   const { setFieldValue } = form;
@@ -278,7 +280,10 @@ const AuthorizedMembersField = ({
   };
 
   let accessInfoMessage = t_i18n('info_authorizedmembers_workspace');
-  if (canDeactivate) {
+  if (context === 'Pir') {
+    accessInfoMessage = t_i18n('info_authorizedmembers_pir');
+  }
+  if (!context && canDeactivate) {
     accessInfoMessage = applyAccesses
       ? t_i18n('info_authorizedmembers_knowledge_off')
       : t_i18n('info_authorizedmembers_knowledge_on');

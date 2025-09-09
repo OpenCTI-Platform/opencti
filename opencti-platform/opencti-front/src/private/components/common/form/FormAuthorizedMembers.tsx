@@ -27,6 +27,7 @@ interface FormAuthorizedMembersProps {
   canDeactivate?: boolean;
   showAllMembersLine?: boolean;
   isCanUseEnable?: boolean;
+  context?: string;
 }
 
 const FormAuthorizedMembers = ({
@@ -38,6 +39,7 @@ const FormAuthorizedMembers = ({
   canDeactivate,
   showAllMembersLine,
   isCanUseEnable,
+  context,
 }: FormAuthorizedMembersProps) => {
   const { t_i18n } = useFormatter();
 
@@ -74,6 +76,7 @@ const FormAuthorizedMembers = ({
                   canDeactivate={canDeactivate}
                   addMeUserWithAdminRights
                   isCanUseEnable={isCanUseEnable}
+                  context={context}
                 />
               )}
             </Form>
