@@ -25,8 +25,6 @@ import StatusField from '../../common/form/StatusField';
 import { CaseIncidentEditionOverview_case$key } from './__generated__/CaseIncidentEditionOverview_case.graphql';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-import { canUse } from '../../../../utils/authorizedMembers';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 export const caseIncidentMutationFieldPatch = graphql`
   mutation CaseIncidentEditionOverviewCaseFieldPatchMutation(
