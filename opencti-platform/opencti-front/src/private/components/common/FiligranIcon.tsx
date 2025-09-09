@@ -4,14 +4,15 @@ import type { Theme } from '../../../components/Theme';
 
 interface FiligranIconProps {
   icon: ElementType,
-  color: 'primary' | 'secondary' | 'error' | 'success'
-  size: 'small' | 'medium' | 'large'
+  color: 'primary' | 'secondary' | 'error' | 'success' | 'ai'
+  size: 'x-small' | 'small' | 'medium' | 'large'
 }
 
 const sizeMap = {
+  'x-small': '14px',
   small: '1rem',
   medium: '1.25rem',
-  large: '1.5rem',
+  large: '35px', // mui large size
 };
 
 const FiligranIcon = ({ icon, color, size }: FiligranIconProps) => {
