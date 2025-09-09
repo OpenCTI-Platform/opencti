@@ -1,7 +1,6 @@
 import * as R from 'ramda';
 import {
   buildPagination,
-  buildPaginationFromEdges,
   isEmptyField,
   isNotEmptyField,
   READ_DATA_INDICES,
