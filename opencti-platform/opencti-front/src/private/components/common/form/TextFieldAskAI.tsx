@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import { LogoxtmoneIcon } from 'filigran-icon';
+import { LogoXtmOneIcon } from 'filigran-icon';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import MenuItem from '@mui/material/MenuItem';
@@ -251,7 +251,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
             disabled={disabled || currentValue.length < 10}
             style={{ color: theme.palette.ai.main }}
           >
-            <FiligranIcon icon={LogoxtmoneIcon} size='small' color="ai" />
+            <FiligranIcon icon={LogoXtmOneIcon} size='small' color="ai" />
           </IconButton>
         </EETooltip>
         <Menu

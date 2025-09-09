@@ -1,7 +1,7 @@
 import React, { ReactElement, useEffect, useState } from 'react';
 import Snackbar, { SnackbarCloseReason } from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
-import { LogoxtmoneIcon } from 'filigran-icon';
+import { LogoXtmOneIcon } from 'filigran-icon';
 import { useTheme } from '@mui/styles';
 import { Formik, Form } from 'formik';
 import Button from '@mui/material/Button/Button';
@@ -125,7 +125,7 @@ const Message = () => {
         </Alert>;
       case 'nlq':
         return <Alert
-          icon={<FiligranIcon icon={LogoxtmoneIcon} size='small' color="ai" />}
+          icon={<FiligranIcon icon={LogoXtmOneIcon} size='small' color="ai" />}
           style={{ backgroundColor: theme.palette.ai.background, color: theme.palette.ai.light }}
           onClose={() => handleCloseMessage()}
                >

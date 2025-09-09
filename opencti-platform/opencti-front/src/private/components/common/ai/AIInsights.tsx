@@ -10,7 +10,7 @@ import Dialog from '@mui/material/Dialog';
 import { createStyles } from '@mui/styles';
 import IconButton from '@mui/material/IconButton';
 import { Close } from '@mui/icons-material';
-import { LogoxtmoneIcon } from 'filigran-icon';
+import { LogoXtmOneIcon } from 'filigran-icon';
 import Typography from '@mui/material/Typography';
 import Drawer from '@mui/material/Drawer';
 import Tooltip from '@mui/material/Tooltip';
@@ -186,7 +186,7 @@ const AIInsights = ({
               onClick={() => setDisplayEEDialog(true)}
               className={floating ? classes.chipFloating : classes.chip}
             >
-              <FiligranIcon icon={LogoxtmoneIcon} size='x-small' color="ai" />
+              <FiligranIcon icon={LogoXtmOneIcon} size='x-small' color="ai" />
             </IconButton>
           ) : (
             <Button
@@ -194,7 +194,7 @@ const AIInsights = ({
               size="small"
               onClick={() => setDisplayEEDialog(true)}
               className={floating ? classes.chipFloating : classes.chip}
-              startIcon={<FiligranIcon icon={LogoxtmoneIcon} size='x-small' color="ai" />}
+              startIcon={<FiligranIcon icon={LogoXtmOneIcon} size='x-small' color="ai" />}
             >
               {t_i18n('AI Insights')}
             </Button>
@@ -228,7 +228,7 @@ const AIInsights = ({
               onClick={() => setDisplayAIDialog(true)}
               className={floating ? classes.chipFloating : classes.chip}
             >
-              <FiligranIcon icon={LogoxtmoneIcon} size='x-small' color="ai" />
+              <FiligranIcon icon={LogoXtmOneIcon} size='x-small' color="ai" />
             </IconButton>
           ) : (
             <Button
@@ -236,7 +236,7 @@ const AIInsights = ({
               size="small"
               onClick={() => setDisplayAIDialog(true)}
               className={floating ? classes.chipFloating : classes.chip}
-              startIcon={<FiligranIcon icon={LogoxtmoneIcon} size='x-small' color="ai" />}
+              startIcon={<FiligranIcon icon={LogoXtmOneIcon} size='x-small' color="ai" />}
             >
               {t_i18n('AI Insights')}
             </Button>
@@ -271,7 +271,7 @@ const AIInsights = ({
             onClick={() => setDisplay(true)}
             className={floating ? classes.chipFloating : classes.chip}
           >
-            <FiligranIcon icon={LogoxtmoneIcon} size='x-small' color="ai" />
+            <FiligranIcon icon={LogoXtmOneIcon} size='x-small' color="ai" />
           </IconButton>
         ) : (
           <Button
@@ -279,7 +279,7 @@ const AIInsights = ({
             size="small"
             onClick={() => setDisplay(true)}
             className={floating ? classes.chipFloating : classes.chip}
-            startIcon={<FiligranIcon icon={LogoxtmoneIcon} size='x-small' color="ai" />}
+            startIcon={<FiligranIcon icon={LogoXtmOneIcon} size='x-small' color="ai" />}
           >
             {t_i18n('AI Insights')}
           </Button>
@@ -310,7 +310,7 @@ const AIInsights = ({
             variant="outlined"
             size="small"
             className={classes.chipNoAction}
-            startIcon={<FiligranIcon icon={LogoxtmoneIcon} size='x-small' color="ai" />}
+            startIcon={<FiligranIcon icon={LogoXtmOneIcon} size='x-small' color="ai" />}
           >
             {t_i18n('XTM AI')}
           </Button>

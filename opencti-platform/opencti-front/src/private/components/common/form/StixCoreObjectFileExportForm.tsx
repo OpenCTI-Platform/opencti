@@ -4,7 +4,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import Tooltip from '@mui/material/Tooltip';
 import { AbcOutlined, DataObjectOutlined, HtmlOutlined, NumbersOutlined } from '@mui/icons-material';
-import { LogoxtmoneIcon } from 'filigran-icon';
+import { LogoXtmOneIcon } from 'filigran-icon';
 import DialogContent from '@mui/material/DialogContent';
 import MenuItem from '@mui/material/MenuItem';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
@@ -81,7 +81,7 @@ export interface StixCoreObjectFileExportFormProps {
 export const renderIcon = (key: string) => {
   switch (key) {
     case 'ai':
-      return <FiligranIcon icon={LogoxtmoneIcon} size='large' color="ai" />;
+      return <FiligranIcon icon={LogoXtmOneIcon} size='large' color="ai" />;
     case 'application/pdf':
       return <FilePdfBox fontSize="large" color="primary"/>;
     case 'application/json':

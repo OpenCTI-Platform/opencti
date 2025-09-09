@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import { BiotechOutlined, ContentPasteSearchOutlined, Search } from '@mui/icons-material';
-import { LogoxtmoneIcon } from 'filigran-icon';
+import { LogoXtmOneIcon } from 'filigran-icon';
 import IconButton from '@mui/material/IconButton';
 import { Link, useLocation } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
@@ -167,7 +167,7 @@ const SearchInput = (props) => {
           startAdornment: (
             <InputAdornment position="start" style={{ color: isNLQActivated ? theme.palette.ai.main : undefined }} >
               {isNLQActivated
-                ? <FiligranIcon icon={LogoxtmoneIcon} size='medium' color="ai" />
+                ? <FiligranIcon icon={LogoXtmOneIcon} size='medium' color="ai" />
                 : <Search fontSize="small"/>}
             </InputAdornment>
           ),
@@ -214,7 +214,7 @@ const SearchInput = (props) => {
                 style={{ color: theme.palette.ai.main }}
                 onClick={isAIEnabled ? handleChangeAskAI : null}
               >
-                <FiligranIcon icon={LogoxtmoneIcon} size='medium' color="ai" />
+                <FiligranIcon icon={LogoXtmOneIcon} size='medium' color="ai" />
               </IconButton>
             </EETooltip>
           </InputAdornment>
