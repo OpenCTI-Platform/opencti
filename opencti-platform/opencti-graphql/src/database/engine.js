@@ -55,6 +55,7 @@ import {
   ConfigurationError,
   DatabaseError,
   EngineShardsError,
+  ForbiddenAccess,
   FunctionalError,
   LockTimeoutError,
   ResourceNotFoundError,
@@ -121,7 +122,9 @@ import {
   executionContext,
   INTERNAL_USERS,
   isBypassUser,
+  isUserHasCapability,
   MEMBER_ACCESS_ALL,
+  PIRAPI,
   SYSTEM_USER,
   userFilterStoreElements
 } from '../utils/access';
@@ -212,7 +215,8 @@ import { lockResources } from '../lock/master-lock';
 import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_UPDATE_LINKED } from '../modules/draftWorkspace/draftOperations';
 import { RELATION_SAMPLE } from '../modules/malwareAnalysis/malwareAnalysis-types';
 import { getPirWithAccessCheck } from '../modules/pir/pir-checkPirAccess';
-import { asyncFilter, asyncMap } from '../utils/data-processing';
+import { asyncFilter, asyncMap, uniqAsyncMap } from '../utils/data-processing';
+import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -1164,7 +1168,16 @@ export const elUpdateIndicesMappings = async () => {
     // Replace is not possible for existing ones
     const addOperations = operations
       .filter((o) => o.op === UPDATE_OPERATION_ADD)
-      .filter((o) => R.is(Object, o.value) && (o.value.type || o.value.properties));
+      .filter((o) => {
+        // Add operation can be executed only if Value is an object and:
+        // > Properties added inside an existing object (operation ends with /properties) - isPropertiesCompletion
+        // > Is a simple new attribute - isDirectType
+        // > Is a simple mew object attribute, containing properties - isObjectType
+        const isPropertiesCompletion = o.path.endsWith('/properties');
+        const isDirectType = o.value.type;
+        const isObjectType = o.value.properties;
+        return R.is(Object, o.value) && (isPropertiesCompletion || isDirectType || isObjectType);
+      });
     if (addOperations.length > 0) {
       const properties = jsonpatch.applyPatch(indexMappingProperties, addOperations).newDocument;
       const body = { properties };
@@ -2984,6 +2997,13 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         if (typeParameter && typeParameter.operator && typeParameter.operator !== 'eq') {
           throw UnsupportedError('regardingOf only support types equality restriction');
         }
+        // Check for PIR has it required
+        if (typeParameter) {
+          const isPirRelatedType = (typeParameter.values ?? []).includes(RELATION_IN_PIR);
+          if (isPirRelatedType && !isUserHasCapability(user, PIRAPI)) {
+            throw ForbiddenAccess('You are not allowed to use PIR filtering');
+          }
+        }
         let ids = idParameter?.values ?? [];
         // Limit the number of possible ids in the regardingOf
         if (ids.length > ES_MAX_PAGINATION) {
@@ -2992,6 +3012,14 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         if (ids.length > 0) {
           // Keep ids the user has access to
           const filteredEntities = await elFindByIds(context, user, ids, { baseData: true });
+          // If no type specified, we also need to check if the user have the correct capability for Pirs
+          if (!typeParameter && !isUserHasCapability(user, PIRAPI)) {
+            const isIncludingPir = (await uniqAsyncMap(filteredEntities, (value) => value.entity_type))
+              .includes(ENTITY_TYPE_PIR);
+            if (isIncludingPir) {
+              throw ForbiddenAccess('You are not allowed to use PIR filtering');
+            }
+          }
           ids = filteredEntities.map((n) => n.id);
           if (ids.length === 0) { // If no id available, reject the query
             throw ResourceNotFoundError('Specified ids not found or restricted');
