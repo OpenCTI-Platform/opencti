@@ -1,5 +1,6 @@
 import gql from 'graphql-tag';
 import { describe, expect, it } from 'vitest';
+import { now } from 'moment';
 import { queryAsAdmin } from '../../utils/testQuery';
 import type { EditInput, EntitySettingEdge, ThreatActorIndividualAddInput } from '../../../src/generated/graphql';
 import { EditOperation } from '../../../src/generated/graphql';
@@ -16,6 +17,7 @@ const READ_QUERY = gql`
       id
       name
       description
+      updated_at
     }
   }
 `;
@@ -50,6 +52,8 @@ const isDate = (value: string) => !Number.isNaN(new Date(value).getTime());
 
 describe('Threat actor individual resolver standard behavior', () => {
   let threatActorIndividualEntitySettingId: string;
+  let threatActorIndividualCreatedAt: number;
+  let threatActorIndividualUpdatedAt: number;
   let defaultTAIOverviewLayoutCustomization: OverviewLayoutCustomization[];
 
   it('should create threat actor individual', async () => {
@@ -57,6 +61,9 @@ describe('Threat actor individual resolver standard behavior', () => {
       mutation threatActorIndividualAdd($input: ThreatActorIndividualAddInput!) {
         threatActorIndividualAdd(input: $input) {
           id
+          created_at
+          updated_at
+          refreshed_at
           name
           description
           gender
@@ -102,6 +109,11 @@ describe('Threat actor individual resolver standard behavior', () => {
     expect(actual.weight.length).toEqual(2);
     expect(actual.bornIn).toBeNull();
     expect(actual.ethnicity).toBeNull();
+    // functional dates
+    threatActorIndividualCreatedAt = threatActorIndividual.data?.threatActorIndividualAdd.created_at;
+    threatActorIndividualUpdatedAt = threatActorIndividual.data?.threatActorIndividualAdd.updated_at;
+    expect(threatActorIndividualCreatedAt).toEqual(threatActorIndividualUpdatedAt);
+    expect(threatActorIndividualCreatedAt).toEqual(threatActorIndividual.data?.threatActorIndividualAdd.refreshed_at);
   });
   it('should init entity settings', async () => {
     const LIST_QUERY = gql`
@@ -245,6 +257,9 @@ describe('Threat actor individual resolver standard behavior', () => {
     const UPDATE_QUERY = gql`
       mutation threatActorIndividualEditDetails($id: ID!, $input: [EditInput]!) {
         threatActorIndividualFieldPatch(id:$id, input:$input) {
+          created_at
+          updated_at
+          refreshed_at
           first_seen
           last_seen
           sophistication
@@ -268,6 +283,7 @@ describe('Threat actor individual resolver standard behavior', () => {
       { key: 'personal_motivations', value: ['personal-gain', 'personal-satisfaction'] },
       { key: 'goals', value: ['property', 'temerity'] },
     ];
+    const editionStartDatetime = now();
     const result = await queryAsAdmin({
       query: UPDATE_QUERY,
       variables: { id: threatActorIndividualInternalId, input: UPDATES },
@@ -287,11 +303,18 @@ describe('Threat actor individual resolver standard behavior', () => {
         expect(threatActorIndividual[key]).toEqual(value);
       }
     });
+    // should modify updated_at and refreshed_at
+    threatActorIndividualUpdatedAt = threatActorIndividual.updated_at;
+    expect(threatActorIndividual.created_at).toEqual(threatActorIndividualCreatedAt);
+    expect(threatActorIndividual.refreshed_at).toEqual(threatActorIndividualUpdatedAt);
+    expect(threatActorIndividualCreatedAt < threatActorIndividualUpdatedAt).toBeTruthy();
+    expect(editionStartDatetime < threatActorIndividualUpdatedAt).toBeTruthy();
   });
   it('should update threat actor individual demographics', async () => {
     const UPDATE_QUERY = gql`
       mutation threatActorIndividualEditDemographics($id: ID!, $input: [EditInput]!) {
         threatActorIndividualFieldPatch(id:$id, input:$input) {
+          updated_at
           bornIn {
             name
           }
@@ -326,11 +349,21 @@ describe('Threat actor individual resolver standard behavior', () => {
     expect(threatActorIndividual.marital_status).toEqual('annulled');
     expect(threatActorIndividual.gender).toEqual('male');
     expect(threatActorIndividual.job_title).toEqual('A test hacker');
+    expect(threatActorIndividualUpdatedAt < threatActorIndividual.updated_at).toBeTruthy();
+    threatActorIndividualUpdatedAt = threatActorIndividual.updated_at;
   });
   it('should update threat actor individual core relationships', async () => {
-    const getCoreRelationships = gql`
+    const queryResult = await queryAsAdmin({
+      query: READ_QUERY,
+      variables: { id: threatActorIndividualInternalId },
+    });
+    const taiBeforeUpdate = queryResult.data?.threatActorIndividual;
+    const getCoreRelationshipsAndFunctionalDates = gql`
       query threatActorIndivididualGetCoreRelationships($id: String!) {
         threatActorIndividual(id:$id) {
+          created_at
+          updated_at
+          refreshed_at
           stixCoreRelationships {
             edges {
               node {
@@ -354,6 +387,7 @@ describe('Threat actor individual resolver standard behavior', () => {
       'citizen-of',
       'national-of',
     ];
+    const coreRelationshipCreationStartDatetime = now();
     await Promise.all(relationships.map((relationship_type) => queryAsAdmin({
       query: addCoreRelationship,
       variables: { input: {
@@ -363,15 +397,22 @@ describe('Threat actor individual resolver standard behavior', () => {
       } }
     })));
     const { data } = await queryAsAdmin({
-      query: getCoreRelationships,
+      query: getCoreRelationshipsAndFunctionalDates,
       variables: { id: threatActorIndividualInternalId },
     });
-    expect(data?.threatActorIndividual?.stixCoreRelationships?.edges).toHaveLength(3);
-    const stixCoreRelationships = data?.threatActorIndividual
-      ?.stixCoreRelationships?.edges?.map((
-        { node }: { node : { relationship_type: string, toId: string } }
-      ) => ({ ...node }));
+    const threatActorIndividual = data?.threatActorIndividual;
+    expect(threatActorIndividual).not.toBeNull();
+    expect(threatActorIndividual.stixCoreRelationships?.edges).toHaveLength(3);
+    const stixCoreRelationships = threatActorIndividual.stixCoreRelationships?.edges?.map((
+      { node }: { node : { relationship_type: string, toId: string } }
+    ) => ({ ...node }));
     expect(stixCoreRelationships).toHaveLength(3);
+    // should modify refreshed_at but not updated_at
+    expect(threatActorIndividual.created_at).toEqual(threatActorIndividualCreatedAt);
+    expect(threatActorIndividual.updated_at).toEqual(taiBeforeUpdate.updated_at);
+    expect(threatActorIndividualCreatedAt < threatActorIndividual.refreshed_at).toBeTruthy();
+    expect(threatActorIndividualUpdatedAt < threatActorIndividual.refreshed_at).toBeTruthy();
+    expect(coreRelationshipCreationStartDatetime < threatActorIndividual.refreshed_at).toBeTruthy();
   });
   it('should update threat actor individual biographics', async () => {
     const UPDATE_QUERY = gql`
