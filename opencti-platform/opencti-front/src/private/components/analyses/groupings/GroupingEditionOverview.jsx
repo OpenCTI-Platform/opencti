@@ -20,8 +20,6 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
-import { canUse } from '../../../../utils/authorizedMembers';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 export const groupingMutationFieldPatch = graphql`
   mutation GroupingEditionOverviewFieldPatchMutation(
@@ -88,11 +86,7 @@ const GROUPING_TYPE = 'Grouping';
 const GroupingEditionOverviewComponent = (props) => {
   const { grouping, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const featureFlagAccessRestriction = isFeatureEnable('ACCESS_RESTRICTION_CAN_USE');
-
   const { mandatoryAttributes } = useIsMandatoryAttribute(GROUPING_TYPE);
-
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
     confidence: Yup.number().nullable(),
@@ -103,9 +97,7 @@ const GroupingEditionOverviewComponent = (props) => {
     createdBy: Yup.object().nullable(),
     objectMarking: Yup.array().nullable(),
   }, mandatoryAttributes);
-
   const groupingValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
-
   const queries = {
     fieldPatch: groupingMutationFieldPatch,
     relationAdd: groupingMutationRelationAdd,
@@ -118,7 +110,6 @@ const GroupingEditionOverviewComponent = (props) => {
     queries,
     groupingValidator,
   );
-
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
     const references = R.pluck('value', values.references || []);
@@ -169,7 +160,6 @@ const GroupingEditionOverviewComponent = (props) => {
         .catch(() => false);
     }
   };
-
   const initialValues = R.pipe(
     R.assoc('createdBy', convertCreatedBy(grouping)),
     R.assoc('objectMarking', convertMarkings(grouping)),
@@ -186,15 +176,6 @@ const GroupingEditionOverviewComponent = (props) => {
       'x_opencti_workflow_id',
     ]),
   )(grouping);
-  let disableAuthor = false;
-  if (featureFlagAccessRestriction) {
-    if ('currentUserAccessRight' in (grouping?.createdBy ?? {})) {
-      disableAuthor = !canUse([grouping?.createdBy?.currentUserAccessRight]);
-    }
-    if ('organizations' in (grouping?.createdBy ?? {})) {
-      disableAuthor = !canUse(grouping?.createdBy?.organizations?.edges.map((o) => o.node.currentUserAccessRight) ?? []);
-    }
-  }
   return (
     <Formik
       enableReinitialize={true}
@@ -287,7 +268,6 @@ const GroupingEditionOverviewComponent = (props) => {
                 <SubscriptionFocus context={context} fieldName="createdBy" />
               }
               onChange={editor.changeCreated}
-              disabled={disableAuthor}
             />
             <ObjectMarkingField
               name="objectMarking"
