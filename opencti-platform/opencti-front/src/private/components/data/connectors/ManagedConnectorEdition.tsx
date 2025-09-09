@@ -51,13 +51,16 @@ const ManagedConnectorEdition = ({
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
+
   const contract: IngestionConnector = JSON.parse(connector.manager_contract_definition ?? '{}');
   const contractValues: Record<string, string | boolean> = {};
+
   Object.keys(contract.config_schema.properties).forEach((key) => {
     const { value } = connector.manager_contract_configuration?.find((a) => a.key === key) ?? {};
     if (!value) {
       return;
     }
+
     if (['true', 'false'].includes(value)) {
       contractValues[key] = value === 'true';
     } else {
@@ -66,6 +69,7 @@ const ManagedConnectorEdition = ({
   });
 
   const [commitUpdate] = useApiMutation(updateManagedConnector);
+
   const submitConnectorManagementCreation = (values: ManagedConnectorValues, {
     setSubmitting,
     resetForm,
@@ -76,6 +80,7 @@ const ManagedConnectorEdition = ({
       connector_user_id: values.creator?.value,
       manager_contract_configuration: Object.entries(values).map(([key, value]) => ({ key, value: value.toString() })),
     };
+
     commitUpdate({
       variables: {
         input,
@@ -102,8 +107,10 @@ const ManagedConnectorEdition = ({
     const passwordDescription = `${value.description} Current value is hidden, but can still be replaced.`;
     return [key, { ...value, description: passwordDescription }];
   });
+
   const requiredPropertiesArray: Properties = [];
   const optionalPropertiesArray: Properties = [];
+
   propertiesWithPasswordDescription.forEach((property) => {
     const key = property[0];
     const isRequired = contract.config_schema.required.includes(key);
@@ -113,10 +120,9 @@ const ManagedConnectorEdition = ({
       optionalPropertiesArray.push(property);
     }
   });
+
   const requiredProperties: JsonSchema = { properties: Object.fromEntries(requiredPropertiesArray), required: contract.config_schema.required };
   const optionalProperties: JsonSchema = { properties: Object.fromEntries(optionalPropertiesArray) };
-  const defaultValuesArray = connector.manager_contract_configuration?.map(({ key, value }) => [key, value]) ?? [];
-  const defaultValues = Object.fromEntries(defaultValuesArray);
 
   return (
     <Drawer
@@ -131,7 +137,7 @@ const ManagedConnectorEdition = ({
           creator: Yup.object().required(),
         })}
         initialValues={{
-          ...defaultValues,
+          ...contractValues,
           creator: connector.connector_user ? { value: connector.connector_user.id, label: connector.connector_user.name } : undefined,
           name: connector.name,
         }}
@@ -182,11 +188,13 @@ const ManagedConnectorEdition = ({
                       }}
                     >
                       <JsonForms
-                        data={defaultValues}
+                        data={values}
                         schema={requiredProperties}
                         renderers={materialRenderers}
                         validationMode={'NoValidation'}
-                        onChange={({ data }) => setValues({ ...values, ...data })}
+                        onChange={async ({ data }) => {
+                          await setValues(data);
+                        }}
                       />
                     </Alert>
                   )}
@@ -198,11 +206,13 @@ const ManagedConnectorEdition = ({
                         </AccordionSummary>
                         <AccordionDetails>
                           <JsonForms
-                            data={defaultValues}
+                            data={values}
                             schema={optionalProperties}
                             renderers={materialRenderers}
                             validationMode={'NoValidation'}
-                            onChange={({ data }) => setValues({ ...values, ...data })}
+                            onChange={async ({ data }) => {
+                              await setValues(data);
+                            }}
                           />
                         </AccordionDetails>
                       </Accordion>
