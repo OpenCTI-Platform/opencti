@@ -696,6 +696,7 @@ const ContainerHeader = (props) => {
                 mutation={containerHeaderEditAuthorizedMembersMutation}
                 open={openAccessRestriction}
                 handleClose={displayAuthorizedMembersButton ? undefined : handleCloseAccessRestriction}
+                canDeactivate={true}
               />
             )}
             {!knowledge && (

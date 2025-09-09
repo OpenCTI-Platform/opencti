@@ -21,6 +21,7 @@ interface FormAuthorizedMembersDialogProps {
   open?: boolean;
   handleClose?: () => void;
   isCanUseEnable?: boolean;
+  canDeactivate: boolean;
 }
 
 const FormAuthorizedMembersDialog = ({
@@ -31,6 +32,7 @@ const FormAuthorizedMembersDialog = ({
   open,
   handleClose,
   isCanUseEnable,
+  canDeactivate,
 }: FormAuthorizedMembersDialogProps) => {
   const draftContext = useDraftContext();
   const disabledInDraft = !!draftContext;
@@ -99,7 +101,7 @@ const FormAuthorizedMembersDialog = ({
         handleClose={handleClose || (() => setOpenDrawer(false))}
         onSubmit={onSubmit}
         owner={owner}
-        canDeactivate
+        canDeactivate={canDeactivate}
         showAllMembersLine={showAllMembersLine}
         isCanUseEnable={isCanUseEnable}
       />

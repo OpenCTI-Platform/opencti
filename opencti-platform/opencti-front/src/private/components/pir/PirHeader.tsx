@@ -96,6 +96,7 @@ const PirHeader = ({ data, editionData }: PirHeaderProps) => {
                   owner={creators?.[0]}
                   mutation={pirHeaderEditAuthorizedMembersMutation}
                   authorizedMembers={authorizedMembersToOptions(authorizedMembers)}
+                  canDeactivate={false}
                 />
               </Security>
 

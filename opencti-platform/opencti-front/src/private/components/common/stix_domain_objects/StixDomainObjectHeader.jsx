@@ -697,6 +697,7 @@ const StixDomainObjectHeader = (props) => {
                 open={openAccessRestriction}
                 handleClose={handleCloseAccessRestriction}
                 isCanUseEnable={CAN_USE_ENTITY_TYPES.includes(stixDomainObject.entity_type)}
+                canDeactivate={true}
               />
             )}
             {displayPopoverMenu ? (
