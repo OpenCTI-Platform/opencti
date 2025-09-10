@@ -14,7 +14,7 @@ import { resetCacheForEntity } from '../../../src/database/cache';
 import { type BasicStoreRelationPir, ENTITY_TYPE_PIR } from '../../../src/modules/pir/pir-types';
 import { RELATION_IN_PIR } from '../../../src/schema/internalRelationship';
 import { connectorsForWorker } from '../../../src/database/repository';
-import { wait } from '../../../src/database/utils';
+import { retryUntilConditionOrMaxLoop } from '../../utils/testOutput';
 
 const LIST_QUERY = gql`
   query pirs(
@@ -452,13 +452,17 @@ describe('PIR resolver standard behavior', () => {
     expect(queryResult.data?.pirRelationships.edges[0].node.pir_score).toEqual(100);
     expect(queryResult.data?.pirRelationships.edges[0].node.pir_explanations.length).toEqual(2);
     // Verify the pir information has been updated at the entity level for all the PIRs concerned
-    const malwareAfterFlag = await internalLoadById<BasicStoreEntity>(
+    const fetchMalwareAfterFlag = () => internalLoadById<BasicStoreEntity>(
       testContext,
       SYSTEM_USER,
       'malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88',
       { type: ENTITY_TYPE_MALWARE },
     );
-    await wait(TEN_SECONDS); // wait for the pir_information denormalization to be added for the 2 PIRs
+    const testMalwareAfterFlag = (malware: BasicStoreEntity) => {
+      return malware.pir_information.length === 2;
+    };
+    // wait for the pir_information denormalization to be added for the 2 PIRs
+    const malwareAfterFlag = await retryUntilConditionOrMaxLoop<BasicStoreEntity>(fetchMalwareAfterFlag, testMalwareAfterFlag);
     expect(malwareAfterFlag.pir_information.length).toEqual(2);
     expect(malwareAfterFlag.pir_information.filter((s) => s.pir_id === pirInternalId1).length).toEqual(1);
     expect(malwareAfterFlag.pir_information.filter((s) => s.pir_id === pirInternalId1)[0].pir_score).toEqual(100);
