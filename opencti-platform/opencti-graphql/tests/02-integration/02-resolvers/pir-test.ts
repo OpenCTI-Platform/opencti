@@ -14,7 +14,7 @@ import { resetCacheForEntity } from '../../../src/database/cache';
 import { type BasicStoreRelationPir, ENTITY_TYPE_PIR } from '../../../src/modules/pir/pir-types';
 import { RELATION_IN_PIR } from '../../../src/schema/internalRelationship';
 import { connectorsForWorker } from '../../../src/database/repository';
-import { retryUntilConditionOrMaxLoop } from '../../utils/testOutput';
+import { retryUntilConditionOrMaxLoop } from '../../utils/retry';
 
 const LIST_QUERY = gql`
   query pirs(
