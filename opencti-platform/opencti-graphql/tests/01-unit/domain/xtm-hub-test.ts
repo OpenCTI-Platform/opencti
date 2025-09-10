@@ -22,7 +22,7 @@ describe('XTM hub', () => {
 
     beforeEach(() => {
       getEntityFromCacheSpy = vi.spyOn(cache, 'getEntityFromCache');
-      xtmHubClientSpy = vi.spyOn(xtmHubClient, 'loadRegistrationStatus');
+      xtmHubClientSpy = vi.spyOn(xtmHubClient, 'refreshRegistrationStatus');
       updateAttributeSpy = vi.spyOn(middleware, 'updateAttribute').mockResolvedValue({});
       sendAdministratorsLostConnectivityEmailSpy = vi.spyOn(xtmHubEmail, 'sendAdministratorsLostConnectivityEmail').mockResolvedValue({} as any);
       vi.spyOn(settingsModule, 'getSettings').mockResolvedValue({} as any);
