@@ -20,7 +20,7 @@ export const checkXTMHubConnectivity = async (context: AuthContext, user: AuthUs
     return { status: XtmHubRegistrationStatus.Unregistered };
   }
   const migration = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_MIGRATION_STATUS]);
-  const status = await xtmHubClient.refreshRegistrationStatus({ platformId: settings.id, token: settings.xtm_hub_token, platformVersion: migration.platformVersion });
+  const status = await xtmHubClient.refreshRegistrationStatus({ platformId: settings.id, token: settings.xtm_hub_token, platformVersion: migration ? migration.platformVersion : '' });
   const isConnectivityActive = status === 'active';
   const newRegistrationStatus: XtmHubRegistrationStatus = isConnectivityActive ? XtmHubRegistrationStatus.Registered : XtmHubRegistrationStatus.LostConnectivity;
   const attributeUpdates: { key: string, value: unknown[] }[] = [];
