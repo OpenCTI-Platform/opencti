@@ -563,10 +563,10 @@ export const filtersEntityIdsMappingResult = (inputFilters: FilterGroup, keysToR
 export const addDynamicFromAndToToFilters = (args: any): FilterGroup | undefined | null => {
   const { filters, dynamicFrom, dynamicTo } = args;
   let finalFilters = filters;
-  if (dynamicFrom) {
+  if (dynamicFrom && isFilterGroupNotEmpty(dynamicFrom)) {
     finalFilters = addFilter(finalFilters, RELATION_DYNAMIC_FROM_FILTER, dynamicFrom);
   }
-  if (dynamicTo) {
+  if (dynamicTo && isFilterGroupNotEmpty(dynamicTo)) {
     finalFilters = addFilter(finalFilters, RELATION_DYNAMIC_TO_FILTER, dynamicTo);
   }
   return finalFilters;
