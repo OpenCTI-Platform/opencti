@@ -65,7 +65,7 @@ describe('Raw streams tests', () => {
           `Updated ${key} count should be ${testUpdatedCounter[key]} but got ${updateEventsByTypes[key].length} ${JSON.stringify(updateEventsByTypes[key])}`
         ).toBe(testUpdatedCounter[key]);
       }
-      // expect(updateEvents.length).toBe(doTotal(testUpdatedCounter)); // TODO PIR uncomment
+      expect(updateEvents.length).toBe(doTotal(testUpdatedCounter));
       for (let updateIndex = 0; updateIndex < updateEvents.length; updateIndex += 1) {
         const event = updateEvents[updateIndex];
         const { data: insideData, origin, type } = event;
