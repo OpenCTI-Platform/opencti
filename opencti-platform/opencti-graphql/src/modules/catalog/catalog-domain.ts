@@ -159,6 +159,72 @@ const encryptValue = (publicKey: string, value: string) => {
   return encrypted.toString('base64');
 };
 
+const validateContractConfigurations = (
+  contractConfigurations: any[],
+  targetContract: CatalogContract
+) => {
+  const targetConfig = targetContract.config_schema;
+
+  // Build validation object with parsed values
+  const contractObject: any = {};
+
+  contractConfigurations.forEach((config) => {
+    const propSchema = targetConfig.properties[config.key];
+
+    if (propSchema && config.value !== undefined && config.value !== null) {
+      // Skip validation for encrypted passwords
+      if (config.encrypted) {
+        contractObject[config.key] = 'encrypted_placeholder';
+      } else {
+        // Get the actual string value (handle both array and string format)
+        const stringValue = Array.isArray(config.value) ? config.value[0] : config.value;
+        let parsedValue = stringValue;
+
+        // Parse value based on schema type
+        switch (propSchema.type) {
+          case 'array':
+            // Arrays are sent as comma-separated values from frontend
+            if (stringValue.trim() === '') {
+              parsedValue = [];
+            } else {
+              // Split by comma and clean up each value
+              parsedValue = stringValue.split(',').map((v: string) => v.trim()).filter((v: string) => v !== '');
+            }
+            break;
+          case 'boolean':
+            parsedValue = stringValue === 'true' || stringValue === true;
+            break;
+          case 'integer':
+            parsedValue = parseInt(stringValue, 10);
+            if (Number.isNaN(parsedValue)) {
+              parsedValue = 0;
+            }
+            break;
+          default:
+            // String type - keep as is
+            parsedValue = stringValue;
+        }
+        contractObject[config.key] = parsedValue;
+      }
+    }
+  });
+
+  // Validate with AJV
+  const jsonValidation = {
+    type: targetConfig.type,
+    properties: targetConfig.properties,
+    required: targetConfig.required,
+    additionalProperties: targetConfig.additionalProperties
+  };
+
+  const validate = ajv.compile(jsonValidation);
+  const validContractObject = validate(contractObject);
+
+  if (!validContractObject) {
+    throw UnsupportedError(`Invalid contract configuration for ${targetContract.title}`, { errors: validate.errors });
+  }
+};
+
 export const computeConnectorTargetContract = (
   configurations: ContractConfigInput[],
   targetContract: CatalogContract,
@@ -199,21 +265,9 @@ export const computeConnectorTargetContract = (
       }
     }
   }
+  // Validate the configurations
+  validateContractConfigurations(contractConfigurations, targetContract);
 
-  // Build the json contract
-  const contractObject: any = R.mergeAll(contractConfigurations.map((config: any) => ({ [config.key]: config.value })));
-  // Validate the contract
-  const jsonValidation = {
-    type: targetConfig.type,
-    properties: targetConfig.properties,
-    required: targetConfig.required,
-    additionalProperties: targetConfig.additionalProperties
-  };
-  const validate = ajv.compile(jsonValidation);
-  const validContractObject = validate(contractObject);
-  if (!validContractObject) {
-    throw UnsupportedError(`Invalid contract definition for ${targetContract.title}`, { errors: validate.errors });
-  }
   return contractConfigurations;
 };
 
