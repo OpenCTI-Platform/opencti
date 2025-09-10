@@ -2,11 +2,15 @@ import { IngestionTypedProperty } from '@components/data/IngestionCatalog';
 
 export type ManagerContractProperty = [string, IngestionTypedProperty];
 
+type ReconciledValue = string | number | boolean | string[] | null | undefined;
+
+type ReconciledData = Record<string, ReconciledValue>;
+
 const reconcileManagedConnectorContractDataWithSchema = (
   contractValues: Record<string, string | boolean>,
   managerContractProps: ManagerContractProperty[],
-): Record<string, any> => {
-  const reconciledData: Record<string, any> = {};
+): ReconciledData => {
+  const reconciledData: ReconciledData = {};
 
   const schemaMap = new Map(managerContractProps);
 
@@ -26,7 +30,7 @@ const reconcileManagedConnectorContractDataWithSchema = (
         } else if (Array.isArray(value)) {
           reconciledData[key] = value;
         } else {
-          reconciledData[key] = schema.default || [];
+          reconciledData[key] = (schema.default as string[]) || [];
         }
         break;
       }
@@ -34,9 +38,9 @@ const reconcileManagedConnectorContractDataWithSchema = (
       case 'integer': {
         if (typeof value === 'string') {
           const parsed = parseInt(value, 10);
-          reconciledData[key] = Number.isNaN(parsed) ? (schema.default || 0) : parsed;
+          reconciledData[key] = Number.isNaN(parsed) ? ((schema.default as number) || 0) : parsed;
         } else {
-          reconciledData[key] = typeof value === 'number' ? value : (schema.default || 0);
+          reconciledData[key] = typeof value === 'number' ? value : ((schema.default as number) || 0);
         }
         break;
       }
@@ -52,14 +56,14 @@ const reconcileManagedConnectorContractDataWithSchema = (
 
       case 'string':
       default:
-        reconciledData[key] = typeof value === 'string' ? value : (schema.default || '');
+        reconciledData[key] = typeof value === 'string' ? value : ((schema.default as string) || '');
         break;
     }
   });
 
   managerContractProps.forEach(([key, schema]) => {
     if (reconciledData[key] === undefined && schema.default !== undefined) {
-      reconciledData[key] = schema.default;
+      reconciledData[key] = schema.default as ReconciledValue;
     }
   });
 

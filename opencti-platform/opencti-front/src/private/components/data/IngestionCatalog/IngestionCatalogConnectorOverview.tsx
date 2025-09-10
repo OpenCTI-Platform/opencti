@@ -1,24 +1,19 @@
 import Typography from '@mui/material/Typography';
-import { isValid, parseISO } from 'date-fns';
 import Button from '@mui/material/Button';
-import { Launch } from 'mdi-material-ui';
+import {Launch} from 'mdi-material-ui';
 import React from 'react';
-import { useTheme } from '@mui/styles';
+import {useTheme} from '@mui/styles';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
-import { IngestionConnector } from '@components/data/IngestionCatalog';
-import { LibraryBooksOutlined } from '@mui/icons-material';
-import type { Theme } from '../../../../components/Theme';
-import { useFormatter } from '../../../../components/i18n';
+import {IngestionConnector} from '@components/data/IngestionCatalog';
+import {LibraryBooksOutlined} from '@mui/icons-material';
+import type {Theme} from '../../../../components/Theme';
+import {useFormatter} from '../../../../components/i18n';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
 const IngestionCatalogConnectorOverview = ({ connector }: { connector: IngestionConnector }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-
-  console.log('connector.last_verified_date', connector.last_verified_date);
-
-  const isValidDate = isValid(parseISO(connector.last_verified_date));
 
   return (
     <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
