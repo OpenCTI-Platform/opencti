@@ -1,7 +1,8 @@
-import React, { useState, useCallback } from 'react';
-import { ControlProps, isPrimitiveArrayControl, RankedTester, rankWith, schemaMatches, and } from '@jsonforms/core';
+import React, { useCallback, useState } from 'react';
+import { and, ControlProps, isPrimitiveArrayControl, RankedTester, rankWith, schemaMatches } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
-import { Autocomplete, TextField, Chip, Box, Typography } from '@mui/material';
+import { Autocomplete, Box, Chip, TextField, Typography } from '@mui/material';
+import { useFormatter } from '../../../../../components/i18n';
 
 export const JsonFormArrayRenderer = (props: ControlProps) => {
   const {
@@ -9,27 +10,27 @@ export const JsonFormArrayRenderer = (props: ControlProps) => {
     handleChange,
     path,
     label,
-    description,
-    required,
     errors,
     schema,
   } = props;
+
+  const { t_i18n } = useFormatter();
+
   // Convert null to empty array for component state
   const currentValues = data || [];
   const [inputValue, setInputValue] = useState('');
 
-  const handleValuesChange = useCallback((event: any, newValues: string[]) => {
+  const handleValuesChange = useCallback((event: React.SyntheticEvent, newValues: string[]) => {
     const cleanValues = newValues
       .filter((value) => value.trim() !== '')
       .filter((value, index, arr) => arr.indexOf(value) === index);
 
-    // Convert empty array back to null if that's the schema default
     const finalValue = cleanValues.length === 0 && schema.default === null ? null : cleanValues;
 
     handleChange(path, finalValue);
   }, [handleChange, path, schema.default]);
 
-  const handleInputChange = useCallback((event: any, newInputValue: string) => {
+  const handleInputChange = useCallback((event: React.SyntheticEvent, newInputValue: string) => {
     setInputValue(newInputValue);
   }, []);
 
@@ -49,16 +50,7 @@ export const JsonFormArrayRenderer = (props: ControlProps) => {
 
   return (
     <Box sx={{ mb: 2 }}>
-      <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'medium' }}>
-        {label}
-        {required && <span style={{ color: 'red' }}> *</span>}
-      </Typography>
-
-      {description && (
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-          {description}
-        </Typography>
-      )}
+      <Typography component={'label'} variant="subtitle2" sx={{ fontSize: '10px' }}>{label}</Typography>
 
       <Autocomplete
         multiple
@@ -82,7 +74,10 @@ export const JsonFormArrayRenderer = (props: ControlProps) => {
           <TextField
             {...params}
             variant="outlined"
-            placeholder={currentValues.length === 0 ? 'Type and press Enter to add items' : 'Add more items...'}
+            placeholder={currentValues.length === 0
+              ? t_i18n('Type and press Enter to add items')
+              : t_i18n('Add more items...')
+            }
             error={!!errors}
             onKeyDown={handleKeyDown}
             helperText={errors}
@@ -90,9 +85,7 @@ export const JsonFormArrayRenderer = (props: ControlProps) => {
         )}
         sx={{
           '& .MuiOutlinedInput-root': {
-            minHeight: '56px',
-            alignItems: 'flex-start',
-            padding: '8px',
+            alignItems: 'center',
           },
           '& .MuiAutocomplete-input': {
             minWidth: '200px',
