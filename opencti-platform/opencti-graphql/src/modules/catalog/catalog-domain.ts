@@ -1,7 +1,6 @@
 import fs from 'node:fs';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
-import * as R from 'ramda';
 import crypto from 'crypto';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type CatalogContract, type CatalogDefinition, type CatalogType } from './catalog-types';
