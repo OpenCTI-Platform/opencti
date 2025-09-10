@@ -97,7 +97,7 @@ const PirHeader = ({ data, editionData }: PirHeaderProps) => {
                   mutation={pirHeaderEditAuthorizedMembersMutation}
                   authorizedMembers={authorizedMembersToOptions(authorizedMembers)}
                   canDeactivate={false}
-                  context={'Pir'}
+                  customInfoMessage={t_i18n('info_authorizedmembers_pir')}
                 />
               </Security>
 

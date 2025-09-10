@@ -22,7 +22,7 @@ interface FormAuthorizedMembersDialogProps {
   handleClose?: () => void;
   isCanUseEnable?: boolean;
   canDeactivate: boolean;
-  context?: string;
+  customInfoMessage?: string;
 }
 
 const FormAuthorizedMembersDialog = ({
@@ -34,7 +34,7 @@ const FormAuthorizedMembersDialog = ({
   handleClose,
   isCanUseEnable,
   canDeactivate,
-  context,
+  customInfoMessage,
 }: FormAuthorizedMembersDialogProps) => {
   const draftContext = useDraftContext();
   const disabledInDraft = !!draftContext;
@@ -106,7 +106,7 @@ const FormAuthorizedMembersDialog = ({
         canDeactivate={canDeactivate}
         showAllMembersLine={showAllMembersLine}
         isCanUseEnable={isCanUseEnable}
-        context={context}
+        customInfoMessage={customInfoMessage}
       />
     </>
   );
