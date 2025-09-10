@@ -101,7 +101,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
       }
     }
     // endregion
-    if (createdTargets.length > 0 || deletedTargetRefs.length > 0) {
+    if ((createdTargets.length > 0 || deletedTargetRefs.length > 0) && !createInferredRelationOverride) {
       const updatedReport = structuredClone(report);
       const deletedTargetIds = deletedTargetRefs.map((d) => d.standard_id);
       const refsWithoutDeletion = (object_refs_inferred ?? []).filter((o) => !deletedTargetIds.includes(o));
