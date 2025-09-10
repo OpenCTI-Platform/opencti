@@ -6,7 +6,7 @@ import { createEntity, deleteElementById, listThings, paginateAllThings, updateA
 import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS } from '../../config/conf';
 import { delEditContext, notify, setEditContext } from '../../database/redis';
-import { ENTITY_TYPE_WORKSPACE, type BasicStoreEntityWorkspace } from './workspace-types';
+import { ENTITY_TYPE_WORKSPACE, type BasicStoreEntityWorkspace, type WidgetConfiguration } from './workspace-types';
 import { DatabaseError, FunctionalError } from '../../config/errors';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type {
@@ -25,20 +25,20 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
 import { elFindByIds, elRawDeleteByQuery } from '../../database/engine';
 import type { BasicStoreEntity } from '../../types/store';
-import { buildPagination, fromBase64, isEmptyField, isNotEmptyField, READ_DATA_INDICES_WITHOUT_INTERNAL, READ_INDEX_INTERNAL_OBJECTS, toBase64 } from '../../database/utils';
+import { buildPagination, isEmptyField, isNotEmptyField, READ_DATA_INDICES_WITHOUT_INTERNAL, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached } from '../publicDashboard/publicDashboard-types';
 import { convertWidgetsIds } from './workspace-utils';
+import { fromB64, toB64 } from '../../utils/base64';
 
 export const PLATFORM_DASHBOARD = 'cf093b57-713f-404b-a210-a1c5c8cb3791';
 
 export const sanitizeElementForPublishAction = (element: BasicStoreEntityWorkspace) => {
   // Because manifest can be huge we remove this data from activity logs.
-  const sanitizeElement = { ...element, manifest: undefined };
-  return sanitizeElement;
+  return { ...element, manifest: undefined };
 };
 
 export const findById = (
@@ -312,7 +312,12 @@ configurationImportTypeValidation.set(
   'Invalid type. Please import OpenCTI widget-type only',
 );
 
-export const checkConfigurationImport = (type: string, parsedData: any) => {
+interface ConfigImportData {
+  type: string
+  openCTI_version: string
+}
+
+export const checkConfigurationImport = (type: string, parsedData: ConfigImportData) => {
   if (configurationImportTypeValidation.has(type) && parsedData.type !== type) {
     throw FunctionalError(configurationImportTypeValidation.get(type), {
       reason: parsedData.type,
@@ -331,13 +336,13 @@ export const checkConfigurationImport = (type: string, parsedData: any) => {
 // Export => Dashboard filter ids must be converted to standard id
 // Import => Dashboards filter ids must be converted back to internal id
 const convertWorkspaceManifestIds = async (context: AuthContext, user: AuthUser, manifest: string, from: 'internal' | 'stix'): Promise<string> => {
-  const parsedManifest = JSON.parse(fromBase64(manifest) ?? '{}');
+  const parsedManifest = fromB64(manifest ?? '{}');
   // Regeneration for dashboards
   if (parsedManifest && isNotEmptyField(parsedManifest.widgets)) {
     const { widgets } = parsedManifest;
     const widgetDefinitions = Object.values(widgets);
     await convertWidgetsIds(context, user, widgetDefinitions, from);
-    return toBase64(JSON.stringify(parsedManifest)) as string;
+    return toB64(parsedManifest) as string;
   }
   return manifest;
 };
@@ -363,7 +368,7 @@ export const generateWidgetExportConfiguration = async (context: AuthContext, us
   if (workspace.type !== 'dashboard') {
     throw FunctionalError('WORKSPACE_EXPORT_INCOMPATIBLE_TYPE', { type: workspace.type });
   }
-  const parsedManifest = JSON.parse(fromBase64(workspace.manifest) ?? '{}');
+  const parsedManifest = fromB64(workspace.manifest ?? '{}');
   if (parsedManifest && isNotEmptyField(parsedManifest.widgets) && parsedManifest.widgets[widgetId]) {
     const widgetDefinition = parsedManifest.widgets[widgetId];
     delete widgetDefinition.id; // Remove current widget id
@@ -371,7 +376,7 @@ export const generateWidgetExportConfiguration = async (context: AuthContext, us
     const exportConfigration = {
       openCTI_version: pjson.version,
       type: 'widget',
-      configuration: toBase64(JSON.stringify(widgetDefinition)) as string
+      configuration: toB64(widgetDefinition) as string
     };
     return JSON.stringify(exportConfigration);
   }
@@ -426,31 +431,49 @@ export const duplicateWorkspace = async (context: AuthContext, user: AuthUser, i
   return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].ADDED_TOPIC, created, user);
 };
 
+interface WidgetConfigImportData extends ConfigImportData {
+  configuration?: string // widget definition in base64.
+}
+
 export const workspaceImportWidgetConfiguration = async (
   context: AuthContext,
   user: AuthUser,
   workspaceId: string,
   input: ImportWidgetInput,
 ) => {
-  const parsedData = await extractContentFrom(input.file);
+  const parsedData = await extractContentFrom<WidgetConfigImportData>(input.file);
   checkConfigurationImport('widget', parsedData);
-  const widgetDefinition = JSON.parse(fromBase64(parsedData.configuration) || '{}');
+  const widgetDefinition = fromB64(parsedData.configuration);
   await convertWidgetsIds(context, user, [widgetDefinition], 'stix');
-  const mappedData = {
-    type: parsedData.type,
-    openCTI_version: parsedData.openCTI_version,
-    widget: widgetDefinition,
-  };
   const importedWidgetId = uuidv4();
-  const dashboardManifestObjects = JSON.parse(fromBase64(input.dashboardManifest) || '{}');
+  const dashboardManifestObjects = fromB64(input.dashboardManifest ?? undefined);
+
+  // When importing a widget, change its position to not break
+  // the current layout of the dashboard.
+  // It is moved on a new line.
+  const widgetsArray = Object.values(dashboardManifestObjects.widgets ?? [])
+    .map((widget) => widget) as WidgetConfiguration[];
+  const nextRow = widgetsArray.reduce((max, { layout }) => {
+    const widgetEndRow = layout.y + layout.h;
+    return widgetEndRow > max ? widgetEndRow : max;
+  }, 0);
+
   const updatedObjects = {
     ...dashboardManifestObjects,
     widgets: {
       ...dashboardManifestObjects.widgets,
-      [`${importedWidgetId}`]: { id: importedWidgetId, ...mappedData.widget },
+      [importedWidgetId]: {
+        id: importedWidgetId,
+        ...widgetDefinition,
+        layout: {
+          ...widgetDefinition.layout,
+          x: 0,
+          y: nextRow,
+        }
+      },
     },
   };
-  const updatedManifest = toBase64(JSON.stringify(updatedObjects));
+  const updatedManifest = toB64(updatedObjects);
   const { element } = await updateAttribute(
     context,
     user,
@@ -458,6 +481,7 @@ export const workspaceImportWidgetConfiguration = async (
     ENTITY_TYPE_WORKSPACE,
     [{ key: 'manifest', value: [updatedManifest] }],
   );
+
   await publishUserAction({
     user,
     event_type: 'mutation',

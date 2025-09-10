@@ -21,7 +21,7 @@ import {
   ENTITY_TYPE_IDENTITY
 } from '../schema/general';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
-import { buildPagination, READ_ENTITIES_INDICES, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_RELATIONSHIPS_INDICES, toBase64 } from '../database/utils';
+import { buildPagination, READ_ENTITIES_INDICES, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_RELATIONSHIPS_INDICES } from '../database/utils';
 import { minutesAgo, now, truncate, utcDate } from '../utils/format';
 import { elCount, elFindByIds, ES_DEFAULT_PAGINATION, MAX_RELATED_CONTAINER_OBJECT_RESOLUTION, MAX_RELATED_CONTAINER_RESOLUTION } from '../database/engine';
 import { findById as findInvestigationById } from '../modules/workspace/workspace-domain';
@@ -38,6 +38,7 @@ import { queryAi } from '../database/ai-llm';
 import { notify } from '../database/redis';
 import { AI_BUS } from '../modules/ai/ai-types';
 import { cleanHtmlTags } from '../utils/ai/cleanHtmlTags';
+import { toB64 } from '../utils/base64';
 
 const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
 const aiResponseCache = {};
@@ -322,7 +323,7 @@ export const aiSummary = async (context, user, args) => {
   const hasTypesArgs = args.types && args.types.length > 0;
   const types = hasTypesArgs ? args.types.filter((type) => isStixDomainObjectContainer(type)) : [ENTITY_TYPE_CONTAINER];
   const finalArgs = { ...args, first: args.first && args.first <= 10 ? args.first : 10, connectionFormat: false };
-  const identifier = toBase64(JSON.stringify(R.dissoc('busId', finalArgs)));
+  const identifier = toB64(R.dissoc('busId', finalArgs));
   if (!forceRefresh && aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT))) {
     logApp.info('Response found in cache', { busId });
     await notify(BUS_TOPICS[AI_BUS].EDIT_TOPIC, { bus_id: busId, content: aiResponseCache[identifier].result }, user);
