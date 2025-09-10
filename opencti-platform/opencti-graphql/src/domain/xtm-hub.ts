@@ -1,12 +1,12 @@
 import { getEntityFromCache } from '../database/cache';
 import type { BasicStoreSettings } from '../types/settings';
 import type { AuthContext, AuthUser } from '../types/user';
-import { ENTITY_TYPE_MIGRATION_STATUS, ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
+import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { xtmHubClient } from '../modules/xtm/hub/xtm-hub-client';
 import { XtmHubRegistrationStatus } from '../generated/graphql';
-import { loadEntity, updateAttribute } from '../database/middleware';
-import { BUS_TOPICS } from '../config/conf';
-import { HUB_REGISTRATION_MANAGER_USER, SYSTEM_USER } from '../utils/access';
+import { updateAttribute } from '../database/middleware';
+import { BUS_TOPICS, PLATFORM_VERSION } from '../config/conf';
+import { HUB_REGISTRATION_MANAGER_USER } from '../utils/access';
 import { getSettings } from './settings';
 import { notify } from '../database/redis';
 import { utcDate } from '../utils/format';
@@ -19,18 +19,15 @@ export const checkXTMHubConnectivity = async (context: AuthContext, user: AuthUs
   if (!settings.xtm_hub_token) {
     return { status: XtmHubRegistrationStatus.Unregistered };
   }
-  const migration = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_MIGRATION_STATUS]);
-  const status = await xtmHubClient.refreshRegistrationStatus({ platformId: settings.id, token: settings.xtm_hub_token, platformVersion: migration ? migration.platformVersion : '' });
+  const platformInformation = { platformId: settings.id, token: settings.xtm_hub_token, platformVersion: PLATFORM_VERSION };
+  const status = await xtmHubClient.refreshRegistrationStatus(platformInformation);
   const isConnectivityActive = status === 'active';
   const newRegistrationStatus: XtmHubRegistrationStatus = isConnectivityActive ? XtmHubRegistrationStatus.Registered : XtmHubRegistrationStatus.LostConnectivity;
   const attributeUpdates: { key: string, value: unknown[] }[] = [];
 
   const shouldUpdateRegistrationStatus = newRegistrationStatus !== settings.xtm_hub_registration_status;
   if (shouldUpdateRegistrationStatus) {
-    attributeUpdates.push({
-      key: 'xtm_hub_registration_status',
-      value: [newRegistrationStatus]
-    });
+    attributeUpdates.push({ key: 'xtm_hub_registration_status', value: [newRegistrationStatus] });
   }
 
   const lastCheckDate = utcDate(settings.xtm_hub_last_connectivity_check);
