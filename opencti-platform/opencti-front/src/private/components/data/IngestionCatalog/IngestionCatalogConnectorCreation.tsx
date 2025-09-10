@@ -138,8 +138,6 @@ const IngestionCatalogConnectorCreation = ({
         });
       });
 
-    console.log('Jsss', JSON.stringify(manager_contract_configuration, null, 2));
-
     const input = {
       name: values.name,
       catalog_id: catalogId,
