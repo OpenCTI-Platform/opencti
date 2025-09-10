@@ -1175,10 +1175,10 @@ export const elUpdateIndicesMappings = async () => {
         // > Properties added inside an existing object (operation ends with /properties) - isPropertiesCompletion
         // > Is a simple new attribute - isDirectType
         // > Is a simple mew object attribute, containing properties - isObjectType
-        const isPropertiesCompletion = o.path.endsWith('/properties');
+        // const isPropertiesCompletion = o.path.endsWith('/properties');
         const isDirectType = o.value.type;
         const isObjectType = o.value.properties;
-        return R.is(Object, o.value) && (isPropertiesCompletion || isDirectType || isObjectType);
+        return R.is(Object, o.value) && (/* isPropertiesCompletion || */ isDirectType || isObjectType);
       });
     if (addOperations.length > 0) {
       const properties = jsonpatch.applyPatch(indexMappingProperties, addOperations).newDocument;
