@@ -3,7 +3,8 @@ import { Field, Form, Formik } from 'formik';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import Tooltip from '@mui/material/Tooltip';
-import { AbcOutlined, AutoAwesomeOutlined, DataObjectOutlined, HtmlOutlined, NumbersOutlined } from '@mui/icons-material';
+import { AbcOutlined, DataObjectOutlined, HtmlOutlined, NumbersOutlined } from '@mui/icons-material';
+import { LogoXtmOneIcon } from 'filigran-icon';
 import DialogContent from '@mui/material/DialogContent';
 import MenuItem from '@mui/material/MenuItem';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
@@ -24,6 +25,7 @@ import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
 import CardContent from '@mui/material/CardContent';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
+import FiligranIcon from '@components/common/FiligranIcon';
 import { useFormatter } from '../../../../components/i18n';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import SelectField from '../../../../components/fields/SelectField';
@@ -79,7 +81,7 @@ export interface StixCoreObjectFileExportFormProps {
 export const renderIcon = (key: string) => {
   switch (key) {
     case 'ai':
-      return <AutoAwesomeOutlined fontSize="large" sx={{ color: 'ai.main' }} />;
+      return <FiligranIcon icon={LogoXtmOneIcon} size='large' color="ai" />;
     case 'application/pdf':
       return <FilePdfBox fontSize="large" color="primary"/>;
     case 'application/json':

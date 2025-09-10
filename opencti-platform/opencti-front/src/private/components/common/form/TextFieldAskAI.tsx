@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import { AutoAwesomeOutlined } from '@mui/icons-material';
+import { LogoXtmOneIcon } from 'filigran-icon';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import MenuItem from '@mui/material/MenuItem';
@@ -21,6 +21,7 @@ import { TextFieldAskAIChangeToneMutation, TextFieldAskAIChangeToneMutation$data
 import { TextFieldAskAISummarizeMutation, TextFieldAskAISummarizeMutation$data } from '@components/common/form/__generated__/TextFieldAskAISummarizeMutation.graphql';
 import { TextFieldAskAIExplainMutation, TextFieldAskAIExplainMutation$data } from '@components/common/form/__generated__/TextFieldAskAIExplainMutation.graphql';
 import { useTheme } from '@mui/styles';
+import FiligranIcon from '@components/common/FiligranIcon';
 import EETooltip from '../entreprise_edition/EETooltip';
 import { useFormatter } from '../../../../components/i18n';
 // eslint-disable-next-line import/no-cycle
@@ -250,7 +251,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
             disabled={disabled || currentValue.length < 10}
             style={{ color: theme.palette.ai.main }}
           >
-            <AutoAwesomeOutlined fontSize='small' />
+            <FiligranIcon icon={LogoXtmOneIcon} size='small' color="ai" />
           </IconButton>
         </EETooltip>
         <Menu
