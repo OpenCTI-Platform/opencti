@@ -3889,7 +3889,12 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
 };
 
 const elRepaginate = async (context, user, indexName, connectionFormat, opts = {}) => {
-  const { first = ES_DEFAULT_PAGINATION, maxSize = undefined, logForMigration = false, callback } = opts;
+  const {
+    first = ES_DEFAULT_PAGINATION,
+    maxSize = undefined,
+    logForMigration = false,
+    callback
+  } = opts;
   let batch = 0;
   let emitSize = 0;
   let globalHitsCount = 0;
@@ -3898,47 +3903,36 @@ const elRepaginate = async (context, user, indexName, connectionFormat, opts = {
   let continueProcess = true;
   let searchAfter = opts.after;
   const listing = [];
-
-  const publish = async (edges, globalCount) => {
-    const elements = connectionFormat ? edges : await asyncMap(edges, (edge) => edge.node);
-    if (callback) {
-      const callbackResult = await callback(elements, globalCount);
-      continueProcess = callbackResult === true || callbackResult === undefined;
-    } else {
-      listing.push(...elements);
-    }
-  };
-  while (continueProcess && hasNextPage) {
+  while (continueProcess && (maxSize === undefined || emitSize < maxSize) && hasNextPage) {
     // Force options to get connection format and manage search after and metadata
     const paginateOpts = { ...opts, first, after: searchAfter, connectionFormat: true, withResultMeta: true };
     const { elements: page, filterCount, total, endCursor } = await elPaginate(context, user, indexName, paginateOpts);
-    totalFilteredCount += filterCount;
-    globalHitsCount = total - totalFilteredCount;
-    emitSize += page.edges.length;
+
+    // when first === maxSize only one iteration is necessary except in case of post filtering
     if (first === maxSize && batch > 10) {
       logApp.warn('[PERFORMANCE] Expensive post filtering detected', { batch, opts });
     }
-    const noMoreElements = page.edges.length === 0 || (page.edges.length + filterCount) < first;
-    const moreThanMax = maxSize ? emitSize >= maxSize : false;
-    if (noMoreElements || moreThanMax) {
-      if (page.edges.length > 0) {
-        if (moreThanMax) {
-          // New edges must be limited to the expected max
-          const missingNumber = maxSize - listing.length;
-          await publish(page.edges.slice(0, missingNumber), total);
-        } else {
-          await publish(page.edges, total);
-        }
-      }
-      hasNextPage = false;
-    } else if (page.edges.length > 0) {
-      if (logForMigration) {
-        logMigration.info(`Migrating loading batch ${batch}...`);
-      }
-      searchAfter = endCursor;
-      await publish(page.edges, total);
-      batch += 1;
+    if (logForMigration) {
+      logMigration.info('Migrating loading batch...', { batch });
     }
+
+    if (page.edges.length > 0) {
+      const edgeToPublish = maxSize !== undefined ? page.edges.slice(0, maxSize - emitSize) : page.edges;
+      const elements = connectionFormat ? edgeToPublish : await asyncMap(edgeToPublish, (edge) => edge.node);
+      if (callback) {
+        const callbackResult = await callback(elements, total);
+        continueProcess = callbackResult === true || callbackResult === undefined;
+      } else {
+        listing.push(...elements);
+      }
+      emitSize += elements.length;
+    }
+
+    batch += 1;
+    hasNextPage = page.pageInfo.hasNextPage;
+    searchAfter = endCursor;
+    totalFilteredCount += filterCount;
+    globalHitsCount = total - totalFilteredCount;
   }
   return { elements: listing, totalCount: globalHitsCount };
 };
