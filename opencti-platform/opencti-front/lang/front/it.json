@@ -241,6 +241,7 @@
   "Apply": "Applica",
   "Apply a new case template": "Applica un nuovo modello di caso",
   "Apply case templates": "Applica modelli di caso",
+  "Apply filter to managed deployments only": "Applicare il filtro solo alle distribuzioni gestite",
   "Apply marking definitions": "Applica definizioni di marking",
   "Apply on": "Applica su",
   "Apply on indicator observable types": "Applica sui tipi di osservabili dell'indicatore",

@@ -241,6 +241,7 @@
   "Apply": "적용",
   "Apply a new case template": "새 케이스 템플릿 적용",
   "Apply case templates": "케이스 템플릿 적용",
+  "Apply filter to managed deployments only": "관리형 배포에만 필터 적용",
   "Apply marking definitions": "마킹 정의 적용",
   "Apply on": "적용 대상",
   "Apply on indicator observable types": "지표 관찰 가능 항목 유형에 적용",

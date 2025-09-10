@@ -241,6 +241,7 @@
   "Apply": "申し込み",
   "Apply a new case template": "新しいケーステンプレートを適用する",
   "Apply case templates": "ケーステンプレートを適用する",
+  "Apply filter to managed deployments only": "管理下のデプロイメントのみにフィルタを適用する",
   "Apply marking definitions": "マーキング定義の適用",
   "Apply on": "適用",
   "Apply on indicator observable types": "指標の観測可能なタイプに適用する",

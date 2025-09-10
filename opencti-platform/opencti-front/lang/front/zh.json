@@ -241,6 +241,7 @@
   "Apply": "应用",
   "Apply a new case template": "应用新案例模板",
   "Apply case templates": "应用案例模板",
+  "Apply filter to managed deployments only": "仅对托管部署应用过滤器",
   "Apply marking definitions": "应用标记定义",
   "Apply on": "应用于",
   "Apply on indicator observable types": "适用于指标观测类型",

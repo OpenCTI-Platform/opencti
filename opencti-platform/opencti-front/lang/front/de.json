@@ -241,6 +241,7 @@
   "Apply": "Anwenden",
   "Apply a new case template": "Eine neue Fallvorlage anwenden",
   "Apply case templates": "Fallvorlagen anwenden",
+  "Apply filter to managed deployments only": "Filter nur auf verwaltete Bereitstellungen anwenden",
   "Apply marking definitions": "Markierungsdefinitionen anwenden",
   "Apply on": "Anwenden am",
   "Apply on indicator observable types": "Auf Indikator beobachtbare Typen anwenden",

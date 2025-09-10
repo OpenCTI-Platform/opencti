@@ -241,6 +241,7 @@
   "Apply": "Применить",
   "Apply a new case template": "Применение нового шаблона дела",
   "Apply case templates": "Применяйте шаблоны дел",
+  "Apply filter to managed deployments only": "Применяйте фильтр только к управляемым развертываниям",
   "Apply marking definitions": "Применение определений маркировки",
   "Apply on": "Применить на",
   "Apply on indicator observable types": "Применяются к наблюдаемым типам индикаторов",
