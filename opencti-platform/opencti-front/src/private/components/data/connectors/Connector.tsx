@@ -648,12 +648,15 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
   );
 
   // Component for Logs content
-  const ConnectorLogs = () => (
-    <Box sx={{ marginBottom: '20px' }}>
+  const ConnectorLogs = () => {
+    // calculating the full viewport height minus some space for elements above
+    const logsContainerHeight = 'calc(100vh - 280px)';
+    return (<Box sx={{ marginBottom: '20px', height: logsContainerHeight }}>
       <pre
         style={{
           height: '100%',
           overflowX: 'scroll',
+          overflowY: 'auto',
           paddingBottom: theme.spacing(2),
           backgroundColor: theme.palette.background.paper,
           padding: theme.spacing(2),
@@ -664,7 +667,8 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
         {connector.manager_connector_logs?.join('\n') || t_i18n('No logs available')}
       </pre>
     </Box>
-  );
+    );
+  };
 
   return (
     <>
