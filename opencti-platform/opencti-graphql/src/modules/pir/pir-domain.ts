@@ -51,14 +51,13 @@ import { createPirRelation, serializePir, updatePirExplanations } from './pir-ut
 import { getPirWithAccessCheck } from './pir-checkPirAccess';
 import { ForbiddenAccess, FunctionalError } from '../../config/errors';
 import { ABSTRACT_STIX_REF_RELATIONSHIP, ENTITY_TYPE_CONTAINER } from '../../schema/general';
-import { addFilter, extractFilterKeyValues } from '../../utils/filtering/filtering-utils';
+import { addDynamicFromAndToToFilters, addFilter, extractFilterKeyValues } from '../../utils/filtering/filtering-utils';
 import { INSTANCE_DYNAMIC_REGARDING_OF, INSTANCE_REGARDING_OF, OBJECT_CONTAINS_FILTER, RELATION_TO_FILTER, RELATION_TYPE_FILTER } from '../../utils/filtering/filtering-constants';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
 import { isBypassUser, MEMBER_ACCESS_ALL, MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_VIEW } from '../../utils/access';
 import { RELATION_IN_PIR } from '../../schema/internalRelationship';
-import { buildArgsFromDynamicFilters } from '../../domain/stixRelationship';
-import { fillTimeSeries, READ_INDEX_HISTORY } from '../../database/utils';
+import { READ_INDEX_HISTORY } from '../../database/utils';
 import { ENTITY_TYPE_HISTORY, ENTITY_TYPE_PIR_HISTORY } from '../../schema/internalObject';
 import { elPaginate } from '../../database/engine';
 import { registerConnectorQueues, unregisterConnector } from '../../database/rabbitmq';
@@ -91,34 +90,33 @@ export const pirRelationshipsDistribution = async (
   user: AuthUser,
   opts: QueryPirRelationshipsDistributionArgs,
 ) => {
+  // check for PIR
   const relationship_type = [RELATION_IN_PIR];
   const { pirId } = opts;
   if (!pirId) {
     throw FunctionalError('You should provide exactly a Pir ID since in-pir relationships distribution can only be fetch for a given PIR.', { pirId });
   }
   await getPirWithAccessCheck(context, user, pirId);
-  const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, { ...R.dissoc('pirId', opts), relationship_type, toId: [pirId] });
-  if (isEmptyDynamic) {
-    return [];
-  }
-  return distributionRelations(context, context.user, dynamicArgs);
+  // build args
+  const args = { ...R.dissoc('pirId', opts), relationship_type, toId: [pirId] };
+  const filters = addDynamicFromAndToToFilters(args);
+  const fullArgs = { ...args, filters };
+  return distributionRelations(context, context.user, fullArgs);
 };
 
 export const pirRelationshipsMultiTimeSeries = async (
   context: AuthContext,
   user: AuthUser,
-  args: QueryPirRelationshipsMultiTimeSeriesArgs,
+  opts: QueryPirRelationshipsMultiTimeSeriesArgs,
 ) => {
   const relationship_type = [RELATION_IN_PIR];
-  return Promise.all(args.timeSeriesParameters.map(async (timeSeriesParameter) => {
-    const { startDate, endDate, interval } = args;
+  return Promise.all(opts.timeSeriesParameters.map(async (timeSeriesParameter) => {
     const { pirId } = timeSeriesParameter;
     await getPirWithAccessCheck(context, user, pirId);
-    const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, { ...R.dissoc('pirId', timeSeriesParameter), toId: [pirId] });
-    if (isEmptyDynamic) {
-      return { data: fillTimeSeries(startDate, endDate, interval, []) };
-    }
-    return { data: await timeSeriesRelations(context, user, { ...args, relationship_type, ...dynamicArgs }) };
+
+    const filters = addDynamicFromAndToToFilters({ ...R.dissoc('pirId', timeSeriesParameter) });
+    const fullArgs = { ...opts, filters };
+    return { data: await timeSeriesRelations(context, user, { ...opts, relationship_type, toId: [pirId], ...fullArgs }) };
   }));
 };
 
