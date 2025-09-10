@@ -101,7 +101,7 @@ export const pirRelationshipsDistribution = async (
   const args = { ...R.dissoc('pirId', opts), relationship_type, toId: [pirId] };
   const filters = addDynamicFromAndToToFilters(args);
   const fullArgs = { ...args, filters };
-  return distributionRelations(context, context.user, fullArgs);
+  return distributionRelations(context, user, fullArgs);
 };
 
 export const pirRelationshipsMultiTimeSeries = async (
