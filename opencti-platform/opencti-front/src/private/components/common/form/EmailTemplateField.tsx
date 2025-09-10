@@ -120,7 +120,7 @@ const EmailTemplateField = ({ ...props }: EmailTemplateFieldProps) => {
             style={fieldSpacingContainerStyle}
             renderOption={() => null}
             textfieldprops={{
-              label: 'Enterprise Edition',
+              label: 'Email template',
             }}
           />
         </EETooltip>
