@@ -3929,7 +3929,7 @@ export type Connector = BasicObject & InternalObject & {
   id: Scalars['ID']['output'];
   is_managed?: Maybe<Scalars['Boolean']['output']>;
   manager_connector_logs?: Maybe<Array<Scalars['String']['output']>>;
-  manager_connector_uptime?: Maybe<Scalars['Float']['output']>;
+  manager_connector_uptime?: Maybe<Scalars['Int']['output']>;
   manager_contract_configuration?: Maybe<Array<ManagerContractConfiguration>>;
   manager_contract_definition?: Maybe<Scalars['String']['output']>;
   manager_contract_hash?: Maybe<Scalars['String']['output']>;
@@ -13841,7 +13841,7 @@ export type ManagedConnector = BasicObject & InternalObject & {
   id: Scalars['ID']['output'];
   manager?: Maybe<ConnectorManager>;
   manager_connector_logs: Array<Scalars['String']['output']>;
-  manager_connector_uptime?: Maybe<Scalars['Float']['output']>;
+  manager_connector_uptime?: Maybe<Scalars['Int']['output']>;
   manager_contract_configuration: Array<ConnectorContractConfiguration>;
   manager_contract_hash: Scalars['String']['output'];
   manager_contract_image: Scalars['String']['output'];
@@ -36567,7 +36567,7 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   is_managed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   manager_connector_logs?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
-  manager_connector_uptime?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  manager_connector_uptime?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   manager_contract_configuration?: Resolver<Maybe<Array<ResolversTypes['ManagerContractConfiguration']>>, ParentType, ContextType>;
   manager_contract_definition?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   manager_contract_hash?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -40059,7 +40059,7 @@ export type ManagedConnectorResolvers<ContextType = any, ParentType extends Reso
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   manager?: Resolver<Maybe<ResolversTypes['ConnectorManager']>, ParentType, ContextType>;
   manager_connector_logs?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
-  manager_connector_uptime?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  manager_connector_uptime?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   manager_contract_configuration?: Resolver<Array<ResolversTypes['ConnectorContractConfiguration']>, ParentType, ContextType>;
   manager_contract_hash?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   manager_contract_image?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

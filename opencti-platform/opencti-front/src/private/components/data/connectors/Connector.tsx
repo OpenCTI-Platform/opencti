@@ -34,7 +34,7 @@ import {
 } from '../../../../utils/Connector';
 import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
-import { FIVE_SECONDS } from '../../../../utils/Time';
+import { FIVE_SECONDS, formatUptime } from '../../../../utils/Time';
 import Security from '../../../../utils/Security';
 import useGranted, { MODULES_MODMANAGE, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import { MESSAGING$, QueryRenderer } from '../../../../relay/environment';
@@ -251,30 +251,6 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
-  };
-
-  // Format uptime from seconds to human-readable string
-  const formatUptime = (uptimeInSeconds: number | null | undefined): string => {
-    if (uptimeInSeconds === null || uptimeInSeconds === undefined) {
-      return t_i18n('Not available');
-    }
-
-    const days = Math.floor(uptimeInSeconds / 86400);
-    const hours = Math.floor((uptimeInSeconds % 86400) / 3600);
-    const minutes = Math.floor((uptimeInSeconds % 3600) / 60);
-    const seconds = uptimeInSeconds % 60;
-
-    const parts = [];
-    if (days > 0) parts.push(`${days} ${t_i18n(days === 1 ? 'day' : 'days')}`);
-    if (hours > 0) parts.push(`${hours} ${t_i18n(hours === 1 ? 'hour' : 'hours')}`);
-    if (minutes > 0) parts.push(`${minutes} ${t_i18n(minutes === 1 ? 'minute' : 'minutes')}`);
-
-    // If uptime is less than a minute, show seconds
-    if (parts.length === 0) {
-      parts.push(`${seconds} ${t_i18n(seconds === 1 ? 'second' : 'seconds')}`);
-    }
-
-    return parts.join(', ');
   };
 
   // Component for Overview content (without ConnectorWorks)
@@ -664,13 +640,13 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                   )
               }
               </Grid>
-              {connector.is_managed && connector.manager_current_status === 'started' && connector.manager_connector_uptime !== null && connector.manager_connector_uptime !== undefined && (
+              {connector.is_managed && connector.manager_current_status === 'started' && connector.manager_connector_uptime != null && (
                 <Grid item xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t_i18n('Uptime')}
                   </Typography>
                   <Typography variant="body1" gutterBottom={true}>
-                    {formatUptime(connector.manager_connector_uptime)}
+                    {formatUptime(connector.manager_connector_uptime, t_i18n)}
                   </Typography>
                 </Grid>
               )}
