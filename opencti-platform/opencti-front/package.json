@@ -155,7 +155,7 @@
     "relay-compiler": "20.1.1",
     "relay-test-utils": "20.1.1",
     "typescript": "5.9.2",
-    "vite": "6.3.6",
+    "vite": "7.0.7",
     "vite-plugin-relay": "2.1.0",
     "vite-plugin-static-copy": "2.3.2",
     "vitest": "2.0.5"
