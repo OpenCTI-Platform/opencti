@@ -80,7 +80,7 @@ describe('JSON mapper testing', () => {
     const externalReference = mapById.get('external-reference--42ed5840-451b-55e0-8b34-fcb2eb773bf3');
     expect(externalReference.source_name).toBe('External analysis');
     expect(externalReference.external_id).toBe('335bd77b-81c4-4720-94f6-bf672b62d092');
-    expect(externalReference.url).toBe('https://www.microsoft.com/en-us/security/blog/2024/12/04/frequent-freeloader-part-i-secret-blizzard-compromising-storm-0156-infrastructure-for-espionage/');
+    expect(externalReference.url).toBe('https://www.microsoft.com/en-us/security/blog/2024/12/04/frequent-freeloader-part-i-secret-blizzard-compromising-storm-0156-infrastructure-for-espionage');
     // Test domain binding
     const domain = mapById.get('domain-name--07f3ac51-335f-524c-918f-86f80da2bce3');
     expect(domain.value).toBe('hostelhotels.net');
