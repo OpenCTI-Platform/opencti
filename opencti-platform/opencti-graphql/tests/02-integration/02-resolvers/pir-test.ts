@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { describe, expect, it } from 'vitest';
 import { now } from 'moment';
-import { ADMIN_USER, buildStandardUser, queryAsAdmin, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, buildStandardUser, queryAsAdmin, TEN_SECONDS, testContext } from '../../utils/testQuery';
 import { FilterMode, FilterOperator, PirType } from '../../../src/generated/graphql';
 import { SYSTEM_USER } from '../../../src/utils/access';
 import { internalLoadById, pageEntitiesConnection, pageRelationsConnection } from '../../../src/database/middleware-loader';
@@ -14,6 +14,7 @@ import { resetCacheForEntity } from '../../../src/database/cache';
 import { type BasicStoreRelationPir, ENTITY_TYPE_PIR } from '../../../src/modules/pir/pir-types';
 import { RELATION_IN_PIR } from '../../../src/schema/internalRelationship';
 import { connectorsForWorker } from '../../../src/database/repository';
+import { wait } from '../../../src/database/utils';
 
 const LIST_QUERY = gql`
   query pirs(
@@ -457,6 +458,7 @@ describe('PIR resolver standard behavior', () => {
       'malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88',
       { type: ENTITY_TYPE_MALWARE },
     );
+    await wait(TEN_SECONDS); // wait for the pir_information denormalization to be added for the 2 PIRs
     expect(malwareAfterFlag.pir_information.length).toEqual(2);
     expect(malwareAfterFlag.pir_information.filter((s) => s.pir_id === pirInternalId1).length).toEqual(1);
     expect(malwareAfterFlag.pir_information.filter((s) => s.pir_id === pirInternalId1)[0].pir_score).toEqual(100);
