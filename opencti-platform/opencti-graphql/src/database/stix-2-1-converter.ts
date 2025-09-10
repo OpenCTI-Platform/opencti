@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { v4 as uuidv4, version as uuidVersion } from 'uuid';
-import { isEmptyField, isInferredIndex, isNotEmptyField, pascalize } from './utils';
+import { isEmptyField, isInferredIndex, isNotEmptyField } from './utils';
 import { extractEntityRepresentativeName } from './entity-representative';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { isBasicObject } from '../schema/stixCoreObject';
