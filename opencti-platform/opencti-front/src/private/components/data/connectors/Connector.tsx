@@ -649,11 +649,12 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
 
   // Component for Logs content
   const ConnectorLogs = () => (
-    <Box sx={{ marginBottom: '20px' }}>
+    <Box sx={{ marginBottom: '20px', height: 'calc(100vh - 280px)' }}>
       <pre
         style={{
           height: '100%',
           overflowX: 'scroll',
+          overflowY: 'auto',
           paddingBottom: theme.spacing(2),
           backgroundColor: theme.palette.background.paper,
           padding: theme.spacing(2),
