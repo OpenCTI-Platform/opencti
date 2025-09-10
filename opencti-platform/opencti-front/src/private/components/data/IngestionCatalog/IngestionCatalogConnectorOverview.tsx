@@ -1,14 +1,14 @@
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import {Launch} from 'mdi-material-ui';
+import { Launch } from 'mdi-material-ui';
 import React from 'react';
-import {useTheme} from '@mui/styles';
+import { useTheme } from '@mui/styles';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
-import {IngestionConnector} from '@components/data/IngestionCatalog';
-import {LibraryBooksOutlined} from '@mui/icons-material';
-import type {Theme} from '../../../../components/Theme';
-import {useFormatter} from '../../../../components/i18n';
+import { IngestionConnector } from '@components/data/IngestionCatalog';
+import { LibraryBooksOutlined } from '@mui/icons-material';
+import type { Theme } from '../../../../components/Theme';
+import { useFormatter } from '../../../../components/i18n';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
 const IngestionCatalogConnectorOverview = ({ connector }: { connector: IngestionConnector }) => {
