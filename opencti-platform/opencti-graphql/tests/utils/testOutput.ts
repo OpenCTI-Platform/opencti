@@ -22,9 +22,9 @@ export const writeTestDataToFile = (fileContent: string, filename: string) => {
  * try a condition several times until it's verified or the max number of loop is done
  * to avoid using wait(TIME) and save time if the condition is verified sooner
  * @param conditionPromise: the condition to verify
+ * @param testCondition: the function to test if the condition is verified
  * @param sleepTimeBetweenLoop: the time to wait between 2 loops
  * @param loopCount: the number of loops to do
- * @param expectToBeTrue: what the result of the promise should be
  */
 export const retryUntilConditionOrMaxLoop = async <T extends BasicObject>(
   conditionPromise: () => Promise<T>,
