@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { describe, expect, it } from 'vitest';
 import { now } from 'moment';
-import { ADMIN_USER, buildStandardUser, queryAsAdmin, TEN_SECONDS, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, buildStandardUser, queryAsAdmin, testContext } from '../../utils/testQuery';
 import { FilterMode, FilterOperator, PirType } from '../../../src/generated/graphql';
 import { SYSTEM_USER } from '../../../src/utils/access';
 import { internalLoadById, pageEntitiesConnection, pageRelationsConnection } from '../../../src/database/middleware-loader';
@@ -461,8 +461,8 @@ describe('PIR resolver standard behavior', () => {
     const testMalwareAfterFlag = (malware: BasicStoreEntity) => {
       return malware.pir_information.length === 2;
     };
-    // wait for the pir_information denormalization to be added for the 2 PIRs
-    const malwareAfterFlag = await retryUntilConditionOrMaxLoop<BasicStoreEntity>(fetchMalwareAfterFlag, testMalwareAfterFlag);
+    // wait for the pir_information de-normalization to be added for the 2 PIRs
+    const malwareAfterFlag = await retryUntilConditionOrMaxLoop(fetchMalwareAfterFlag, testMalwareAfterFlag);
     expect(malwareAfterFlag.pir_information.length).toEqual(2);
     expect(malwareAfterFlag.pir_information.filter((s) => s.pir_id === pirInternalId1).length).toEqual(1);
     expect(malwareAfterFlag.pir_information.filter((s) => s.pir_id === pirInternalId1)[0].pir_score).toEqual(100);
