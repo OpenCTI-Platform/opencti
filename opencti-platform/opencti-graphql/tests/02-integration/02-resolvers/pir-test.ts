@@ -462,7 +462,11 @@ describe('PIR resolver standard behavior', () => {
       return malware.pir_information.length === 2;
     };
     // wait for the pir_information de-normalization to be added for the 2 PIRs
-    const malwareAfterFlag = await retryUntilConditionOrMaxLoop(fetchMalwareAfterFlag, testMalwareAfterFlag, 1000, 20);
+    const malwareAfterFlag = await retryUntilConditionOrMaxLoop({
+      fnToExecute: fetchMalwareAfterFlag,
+      verify: testMalwareAfterFlag,
+      maxRetry: 20
+    });
     expect(malwareAfterFlag.pir_information.length).toEqual(2);
     expect(malwareAfterFlag.pir_information.filter((s) => s.pir_id === pirInternalId1).length).toEqual(1);
     expect(malwareAfterFlag.pir_information.filter((s) => s.pir_id === pirInternalId1)[0].pir_score).toEqual(100);
