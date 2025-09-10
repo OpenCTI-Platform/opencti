@@ -162,8 +162,11 @@ const ConnectorPopover = ({ connector }: ConnectorPopoverProps) => {
         <MenuItem onClick={handleOpenDelete} disabled={!!connector.active || !!connector.built_in}>{t_i18n('Delete')}</MenuItem>
       </Menu>
 
-      {editionOpen
-        && (<ManagedConnectorEdition connector={connector} onClose={() => setEditionOpen(false)} />)}
+      <ManagedConnectorEdition
+        open={editionOpen}
+        onClose={() => setEditionOpen(false)}
+        connector={connector}
+      />
 
       <Dialog
         slotProps={{ paper: { elevation: 1 } }}
