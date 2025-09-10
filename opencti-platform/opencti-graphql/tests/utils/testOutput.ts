@@ -1,7 +1,6 @@
 import fs from 'node:fs';
 import { join } from 'node:path';
 import { wait } from '../../src/database/utils';
-import type { BasicObject } from '../../src/generated/graphql';
 
 const TEST_OUTPUT_FOLDER = 'test-results';
 
