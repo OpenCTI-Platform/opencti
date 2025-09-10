@@ -6,7 +6,7 @@ type RegistrationStatus = 'active' | 'inactive';
 const HUB_BACKEND_URL = conf.get('xtm:xtmhub_api_override_url') ?? conf.get('xtm:xtmhub_url');
 
 export const xtmHubClient = {
-  refreshRegistrationStatus: async ({ platformId, token, platformVersion }: { platformId: string, token: string, platformVersion?: string }): Promise<RegistrationStatus> => {
+  refreshRegistrationStatus: async ({ platformId, token, platformVersion }: { platformId: string, token: string, platformVersion: string }): Promise<RegistrationStatus> => {
     const query = `
       mutation RefreshPlatformRegistrationConnectivityStatus($input: RefreshPlatformRegistrationConnectivityStatusInput!) {
         refreshPlatformRegistrationConnectivityStatus(input: $input) {
