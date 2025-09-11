@@ -11,7 +11,6 @@ import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../commo
 import LocationMiniMap from '../../common/location/LocationMiniMap';
 import { AdministrativeArea_administrativeArea$key } from './__generated__/AdministrativeArea_administrativeArea.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
-import { useIsHiddenEntities } from '../../../../utils/hooks/useEntitySettings';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -85,7 +84,6 @@ const AdministrativeArea = ({
     administrativeAreaFragment,
     administrativeAreaData,
   );
-  const hiddenNote = useIsHiddenEntities('Note');
 
   return (
     <>
@@ -135,12 +133,10 @@ const AdministrativeArea = ({
           />
         </Grid>
       </Grid>
-      {!hiddenNote && (
-        <StixCoreObjectOrStixCoreRelationshipNotes
-          stixCoreObjectOrStixCoreRelationshipId={administrativeArea.id}
-          defaultMarkings={administrativeArea.objectMarking ?? []}
-        />
-      )}
+      <StixCoreObjectOrStixCoreRelationshipNotes
+        stixCoreObjectOrStixCoreRelationshipId={administrativeArea.id}
+        defaultMarkings={administrativeArea.objectMarking ?? []}
+      />
     </>
   );
 };

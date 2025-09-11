@@ -10,7 +10,6 @@ import StixCoreObjectOrStixRelationshipLastContainers from '../../common/contain
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
-import { useIsHiddenEntities } from '../../../../utils/hooks/useEntitySettings';
 
 const individualFragment = graphql`
   fragment Individual_individual on Individual {
@@ -79,7 +78,6 @@ const Individual: React.FC<IndividualProps> = ({ individualData, viewAs }) => {
   const lastReportsProps = viewAs === 'knowledge'
     ? { stixCoreObjectOrStixRelationshipId: individual.id }
     : { authorId: individual.id };
-  const hiddenNote = useIsHiddenEntities('Note');
 
   return (
     <>
@@ -121,12 +119,10 @@ const Individual: React.FC<IndividualProps> = ({ individualData, viewAs }) => {
           <StixCoreObjectLatestHistory stixCoreObjectId={individual.id} />
         </Grid>
       </Grid>
-      {!hiddenNote && (
-        <StixCoreObjectOrStixCoreRelationshipNotes
-          stixCoreObjectOrStixCoreRelationshipId={individual.id}
-          defaultMarkings={individual.objectMarking ?? []}
-        />
-      )}
+      <StixCoreObjectOrStixCoreRelationshipNotes
+        stixCoreObjectOrStixCoreRelationshipId={individual.id}
+        defaultMarkings={individual.objectMarking ?? []}
+      />
     </>
   );
 };

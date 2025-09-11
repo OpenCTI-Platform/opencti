@@ -10,7 +10,6 @@ import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../commo
 import { Tool_tool$key } from './__generated__/Tool_tool.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
-import { useIsHiddenEntities } from '../../../../utils/hooks/useEntitySettings';
 
 const toolFragment = graphql`
   fragment Tool_tool on Tool {
@@ -128,7 +127,6 @@ const Tool: React.FC<ToolProps> = ({ toolData }) => {
                   </Grid>
                 );
               case 'notes':
-                if (useIsHiddenEntities('Note')) return null;
                 return (
                   <Grid key={key} item xs={width}>
                     <StixCoreObjectOrStixCoreRelationshipNotes

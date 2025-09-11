@@ -10,7 +10,6 @@ import StixCoreObjectOrStixRelationshipLastContainers from '../../common/contain
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
-import { useIsHiddenEntities } from '../../../../utils/hooks/useEntitySettings';
 
 const sectorFragment = graphql`
   fragment Sector_sector on Sector {
@@ -73,7 +72,6 @@ const Sector: React.FC<SectorProps> = ({ sectorData }) => {
     sectorFragment,
     sectorData,
   );
-  const hiddenNote = useIsHiddenEntities('Note');
 
   return (
     <>
@@ -108,12 +106,10 @@ const Sector: React.FC<SectorProps> = ({ sectorData }) => {
           <StixCoreObjectLatestHistory stixCoreObjectId={sector.id} />
         </Grid>
       </Grid>
-      {!hiddenNote && (
-        <StixCoreObjectOrStixCoreRelationshipNotes
-          stixCoreObjectOrStixCoreRelationshipId={sector.id}
-          defaultMarkings={sector.objectMarking ?? []}
-        />
-      )}
+      <StixCoreObjectOrStixCoreRelationshipNotes
+        stixCoreObjectOrStixCoreRelationshipId={sector.id}
+        defaultMarkings={sector.objectMarking ?? []}
+      />
     </>
   );
 };

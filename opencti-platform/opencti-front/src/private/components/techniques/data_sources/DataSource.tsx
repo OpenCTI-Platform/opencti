@@ -10,7 +10,6 @@ import { DataSource_dataSource$key } from './__generated__/DataSource_dataSource
 import DataSourceDetailsComponent from './DataSourceDetails';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
-import { useIsHiddenEntities } from '../../../../utils/hooks/useEntitySettings';
 
 const dataSourceFragment = graphql`
   fragment DataSource_dataSource on DataSource {
@@ -130,7 +129,6 @@ const DataSourceComponent: React.FC<DataSourceProps> = ({ dataSourceData }) => {
                   </Grid>
                 );
               case 'notes':
-                if (useIsHiddenEntities('Note')) return null;
                 return (
                   <Grid key={key} item xs={width}>
                     <StixCoreObjectOrStixCoreRelationshipNotes

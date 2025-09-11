@@ -40,7 +40,6 @@ import StixSightingRelationshipLabelsView from './StixSightingRelationshipLabels
 import Transition from '../../../../components/Transition';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { stixSightingRelationshipEditionDeleteMutation } from './StixSightingRelationshipEdition';
-import { useIsHiddenEntities } from '../../../../utils/hooks/useEntitySettings';
 
 const styles = (theme) => ({
   container: {
@@ -150,11 +149,6 @@ const styles = (theme) => ({
     borderRadius: 4,
   },
 });
-
-const IsHiddenEntities = ({ types, children }) => {
-  const isHidden = useIsHiddenEntities(...types);
-  return children(isHidden);
-};
 
 class StixSightingRelationshipContainer extends Component {
   constructor(props) {
@@ -569,16 +563,11 @@ class StixSightingRelationshipContainer extends Component {
                 />
               </Grid>
               <Grid item xs={12}>
-                <IsHiddenEntities types={['Note']}>
-                  {(isHidden) => !isHidden && (
-                  <StixCoreObjectOrStixCoreRelationshipNotes
-                    stixCoreObjectOrStixCoreRelationshipId={stixSightingRelationship.id}
-                    isRelationship
-                    defaultMarkings={stixSightingRelationship.objectMarking ?? []}
-                  />
-                  )
-                  }
-                </IsHiddenEntities>
+                <StixCoreObjectOrStixCoreRelationshipNotes
+                  stixCoreObjectOrStixCoreRelationshipId={stixSightingRelationship.id}
+                  isRelationship
+                  defaultMarkings={stixSightingRelationship.objectMarking ?? []}
+                />
               </Grid>
             </>
           )}

@@ -9,7 +9,6 @@ import StixCoreObjectOrStixRelationshipLastContainers from '../../common/contain
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
-import { useIsHiddenEntities } from '../../../../utils/hooks/useEntitySettings';
 
 const systemFragment = graphql`
   fragment System_system on System {
@@ -77,7 +76,6 @@ const System: React.FC<SystemProps> = ({ systemData, viewAs }) => {
   const lastReportsProps = viewAs === 'knowledge'
     ? { stixCoreObjectOrStixRelationshipId: system.id }
     : { authorId: system.id };
-  const hiddenNote = useIsHiddenEntities('Note');
 
   return (
     <>
@@ -117,12 +115,10 @@ const System: React.FC<SystemProps> = ({ systemData, viewAs }) => {
           <StixCoreObjectLatestHistory stixCoreObjectId={system.id} />
         </Grid>
       </Grid>
-      {!hiddenNote && (
-        <StixCoreObjectOrStixCoreRelationshipNotes
-          stixCoreObjectOrStixCoreRelationshipId={system.id}
-          defaultMarkings={system.objectMarking ?? []}
-        />
-      )}
+      <StixCoreObjectOrStixCoreRelationshipNotes
+        stixCoreObjectOrStixCoreRelationshipId={system.id}
+        defaultMarkings={system.objectMarking ?? []}
+      />
     </>
   );
 };

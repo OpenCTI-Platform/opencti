@@ -14,7 +14,6 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { PositionDetailsLocationRelationshipsLinesQueryLinesPaginationQuery } from './__generated__/PositionDetailsLocationRelationshipsLinesQueryLinesPaginationQuery.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
-import { useIsHiddenEntities } from '../../../../utils/hooks/useEntitySettings';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -40,7 +39,6 @@ const PositionComponent: FunctionComponent<PositionComponentProps> = ({
       relationship_type: ['located-at'],
     },
   );
-  const hiddenNote = useIsHiddenEntities('Note');
 
   return (
     <>
@@ -92,12 +90,10 @@ const PositionComponent: FunctionComponent<PositionComponentProps> = ({
           <StixCoreObjectLatestHistory stixCoreObjectId={position.id} />
         </Grid>
       </Grid>
-      {!hiddenNote && (
-        <StixCoreObjectOrStixCoreRelationshipNotes
-          stixCoreObjectOrStixCoreRelationshipId={position.id}
-          defaultMarkings={position.objectMarking ?? []}
-        />
-      )}
+      <StixCoreObjectOrStixCoreRelationshipNotes
+        stixCoreObjectOrStixCoreRelationshipId={position.id}
+        defaultMarkings={position.objectMarking ?? []}
+      />
     </>
   );
 };

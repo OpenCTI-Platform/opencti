@@ -10,7 +10,6 @@ import StixCoreObjectOrStixRelationshipLastContainers from '../../common/contain
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
-import { useIsHiddenEntities } from '../../../../utils/hooks/useEntitySettings';
 
 const stixCyberObservableFragment = graphql`
   fragment StixCyberObservable_stixCyberObservable on StixCyberObservable {
@@ -62,7 +61,6 @@ const StixCyberObservable: React.FC<StixCyberObservableProps> = ({
     stixCyberObservableFragment,
     stixCyberObservableData,
   );
-  const hiddenNote = useIsHiddenEntities('Note');
 
   return (
     <div data-testid='observable-details-page'>
@@ -103,12 +101,10 @@ const StixCyberObservable: React.FC<StixCyberObservableProps> = ({
           />
         </Grid>
         <Grid item xs={12}>
-          {!hiddenNote && (
-            <StixCoreObjectOrStixCoreRelationshipNotes
-              stixCoreObjectOrStixCoreRelationshipId={stixCyberObservable.id}
-              defaultMarkings={stixCyberObservable.objectMarking ?? []}
-            />
-          )}
+          <StixCoreObjectOrStixCoreRelationshipNotes
+            stixCoreObjectOrStixCoreRelationshipId={stixCyberObservable.id}
+            defaultMarkings={stixCyberObservable.objectMarking ?? []}
+          />
         </Grid>
       </Grid>
     </div>

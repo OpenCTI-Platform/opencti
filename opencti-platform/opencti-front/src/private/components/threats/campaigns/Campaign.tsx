@@ -10,7 +10,6 @@ import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../commo
 import { Campaign_campaign$key } from './__generated__/Campaign_campaign.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
-import { useIsHiddenEntities } from '../../../../utils/hooks/useEntitySettings';
 
 const campaignFragment = graphql`
   fragment Campaign_campaign on Campaign {
@@ -128,7 +127,6 @@ const CampaignComponent = ({
                   </Grid>
                 );
               case 'notes':
-                if (useIsHiddenEntities('Note')) return null;
                 return (
                   <Grid key={key} item xs={width}>
                     <StixCoreObjectOrStixCoreRelationshipNotes

@@ -11,7 +11,6 @@ import LocationMiniMap from '../../common/location/LocationMiniMap';
 import { City_city$key } from './__generated__/City_city.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import LocationDetails from '../LocationDetails';
-import { useIsHiddenEntities } from '../../../../utils/hooks/useEntitySettings';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -78,7 +77,6 @@ const cityFragment = graphql`
 const City = ({ cityData }: { cityData: City_city$key }) => {
   const classes = useStyles();
   const city = useFragment<City_city$key>(cityFragment, cityData);
-  const hiddenNote = useIsHiddenEntities('Note');
 
   return (
     <>
@@ -124,12 +122,10 @@ const City = ({ cityData }: { cityData: City_city$key }) => {
           <StixCoreObjectLatestHistory stixCoreObjectId={city.id} />
         </Grid>
       </Grid>
-      {!hiddenNote && (
-        <StixCoreObjectOrStixCoreRelationshipNotes
-          stixCoreObjectOrStixCoreRelationshipId={city.id}
-          defaultMarkings={city.objectMarking ?? []}
-        />
-      )}
+      <StixCoreObjectOrStixCoreRelationshipNotes
+        stixCoreObjectOrStixCoreRelationshipId={city.id}
+        defaultMarkings={city.objectMarking ?? []}
+      />
     </>
   );
 };
