@@ -27,6 +27,7 @@ import { HubOutlined, LibraryBooksOutlined } from '@mui/icons-material';
 import NoConnectorManagersBanner from '@components/data/connectors/NoConnectorManagersBanner';
 import Tooltip from '@mui/material/Tooltip';
 import JsonFormArrayRenderer, { jsonFormArrayTester } from '@components/data/IngestionCatalog/utils/JsonFormArrayRenderer';
+import buildContractConfiguration from '@components/data/connectors/utils/buildContractConfiguration';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { RelayError } from '../../../../relay/relayTypes';
 import type { Theme } from '../../../../components/Theme';
@@ -124,20 +125,6 @@ const IngestionCatalogConnectorCreation = ({
     setSubmitting,
     resetForm,
   }: Partial<FormikHelpers<ManagedConnectorValues>>) => {
-    const manager_contract_configuration = Object.entries(values)
-      .filter(([, value]) => value != null)
-      .map(([key, value]) => {
-        let computedValue = value;
-        if (Array.isArray(value)) {
-          computedValue = value.join(',');
-        }
-
-        return ({
-          key,
-          value: [computedValue.toString()],
-        });
-      });
-
     const input = {
       name: values.name,
       catalog_id: catalogId,
@@ -145,7 +132,7 @@ const IngestionCatalogConnectorCreation = ({
       automatic_user: values.automatic_user ?? true,
       ...((values.automatic_user !== false) && { confidence_level: values.confidence_level?.toString() }),
       manager_contract_image: connector.container_image,
-      manager_contract_configuration,
+      manager_contract_configuration: buildContractConfiguration(values),
     };
 
     commitRegister({

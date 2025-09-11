@@ -18,6 +18,7 @@ import { JsonSchema } from '@jsonforms/core';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import JsonFormArrayRenderer, { jsonFormArrayTester } from '@components/data/IngestionCatalog/utils/JsonFormArrayRenderer';
 import reconcileManagedConnectorContractDataWithSchema from '@components/data/connectors/utils/reconcileManagedConnectorContractDataWithSchema';
+import buildContractConfiguration from '@components/data/connectors/utils/buildContractConfiguration';
 import TextField from '../../../../components/TextField';
 import { type FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -85,25 +86,11 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
     setSubmitting,
     resetForm,
   }: Partial<FormikHelpers<ManagedConnectorValues>>) => {
-    const manager_contract_configuration = Object.entries(values)
-      .filter(([, value]) => value != null)
-      .map(([key, value]) => {
-        let computedValue = value;
-        if (Array.isArray(value)) {
-          computedValue = value.join(',');
-        }
-
-        return ({
-          key,
-          value: [computedValue.toString()],
-        });
-      });
-
     const input = {
       id: connector.id,
       name: values.name,
       connector_user_id: values.creator?.value,
-      manager_contract_configuration,
+      manager_contract_configuration: buildContractConfiguration(values),
     };
 
     commitUpdate({
