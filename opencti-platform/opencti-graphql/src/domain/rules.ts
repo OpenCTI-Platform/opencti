@@ -1,4 +1,4 @@
-import type { RuleDefinition, RuleRuntime } from '../types/rules';
+import type { RuleRuntime } from '../types/rules';
 import type { BasicRuleEntity } from '../types/store';
 import { ENTITY_TYPE_RULE, ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import AttributedToAttributedRule from '../rules/attributed-to-attributed/AttributedToAttributedRule';
@@ -22,7 +22,7 @@ import ReportRefsIndicatorBasedOnRule from '../rules/report-refs-indicator-based
 import ReportRefObservableBasedOnRule from '../rules/report-refs-observable-based-on/ReportRefObservableBasedOnRule';
 import ReportRefsLocationLocatedAtRule from '../rules/report-refs-location-located-at/ReportRefLocationLocatedAtRule';
 import ParentTechniqueUseRule from '../rules/parent-technique-use/ParentTechniqueUseRule';
-import { BUS_TOPICS, DEV_MODE } from '../config/conf';
+import {BUS_TOPICS, DEV_MODE, logApp} from '../config/conf';
 import type { AuthContext, AuthUser } from '../types/user';
 import { isEmptyField } from '../database/utils';
 import { UnsupportedError } from '../config/errors';
@@ -73,15 +73,19 @@ export const getActivatedRules = async (context: AuthContext, user: AuthUser): P
   return rules.filter((r) => r.activated);
 };
 
-export const getRule = async (context: AuthContext, user: AuthUser, id: string): Promise<RuleDefinition | undefined> => {
+export const getRule = async (context: AuthContext, user: AuthUser, id: string): Promise<RuleRuntime | undefined> => {
   const rules = await getRules(context, user);
   return rules.find((e) => e.id === id);
 };
 
-export const setRuleActivation = async (context: AuthContext, user: AuthUser, ruleId: string, active: boolean): Promise<RuleDefinition | undefined> => {
+export const setRuleActivation = async (context: AuthContext, user: AuthUser, ruleId: string, active: boolean): Promise<RuleRuntime | undefined> => {
   const resolvedRule = await getRule(context, user, ruleId);
   if (isEmptyField(resolvedRule)) {
     throw UnsupportedError(`Cant ${active ? 'enable' : 'disable'} undefined rule ${ruleId}`);
+  }
+  if (resolvedRule?.activated === active) {
+    logApp.info(`rule ${resolvedRule.name} is already ${active ? 'activated' : 'deactivated' }`)
+    return resolvedRule;
   }
   // Update the rule via upsert
   const rule = await createEntity(context, user, { internal_id: ruleId, active, update: true }, ENTITY_TYPE_RULE);
