@@ -4,7 +4,7 @@ import { RULE_MANAGER_USER } from '../utils/access';
 import { ForbiddenAccess } from '../config/errors';
 
 export const createInternalInferredRelation = async (context: AuthContext, user: AuthUser, jsonInput: string) => {
-  // This API should only be available to rule manager user
+  // This API should only be available to task manager user
   if (user.id !== RULE_MANAGER_USER.id) {
     throw ForbiddenAccess();
   }
@@ -14,7 +14,7 @@ export const createInternalInferredRelation = async (context: AuthContext, user:
   return createdInferredRelation.id;
 };
 export const createInternalInferredEntity = async (context: AuthContext, user: AuthUser, jsonInput: string) => {
-  // This API should only be available to rule manager user
+  // This API should only be available to task manager user
   if (user.id !== RULE_MANAGER_USER.id) {
     throw ForbiddenAccess();
   }

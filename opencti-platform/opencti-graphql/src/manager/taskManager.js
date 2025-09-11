@@ -543,7 +543,7 @@ const RULE_APPLY_MAX_BUNDLE_SIZE = 1000;
 const ruleApplyCallback = async (context, user, task, ruleId) => {
   return async (elements) => {
     for (let index = 0; index < elements.length; index += 1) {
-      const inferredObjectsBundle = [];
+      let inferredObjectsBundle = [];
       let bundlesSent = 0;
       const element = elements[index];
       const addObjectToBundle = async (input, isRel = false) => {
@@ -558,6 +558,7 @@ const ruleApplyCallback = async (context, user, task, ruleId) => {
           bundlesSent += 1;
           await sendResultToQueue(context, user, task, inferredObjectsBundle);
         }
+        inferredObjectsBundle = [];
       };
       // in case of rule apply we need to fake the apply of the rule and get the resulting inferred creations
       const createInferredEntityCallback = async (_context, input, ruleContent, type) => {
@@ -600,7 +601,7 @@ const computeOperationCallback = async (context, user, task, actionType, operati
   // Handle specific case of rule apply: we must resolve all inferred objects that result from the rule apply
   if (actionType === ACTION_TYPE_RULE_APPLY) {
     const { rule } = task;
-    return ruleApplyCallback(context, user, task, rule);
+    return ruleApplyCallback(context, RULE_MANAGER_USER, task, rule);
   }
   // If not, return standard callback
   return standardOperationCallback(context, user, task, actionType, operations);
