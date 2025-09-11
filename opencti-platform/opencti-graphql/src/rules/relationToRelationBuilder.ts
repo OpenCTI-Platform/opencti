@@ -53,7 +53,7 @@ const buildRelationToRelationRule = (ruleDefinition: RuleDefinition, relationTyp
             objectMarking: elementMarkings,
           });
           if (createInferredRelationCallback) {
-            createInferredRelationCallback(context, input, ruleContent);
+            await createInferredRelationCallback(context, input, ruleContent);
           } else {
             await createInferredRelation(context, input, ruleContent);
           }
@@ -87,7 +87,7 @@ const buildRelationToRelationRule = (ruleDefinition: RuleDefinition, relationTyp
             objectMarking: elementMarkings,
           });
           if (createInferredRelationCallback) {
-            createInferredRelationCallback(context, input, ruleContent);
+            await createInferredRelationCallback(context, input, ruleContent);
           } else {
             await createInferredRelation(context, input, ruleContent);
           }
