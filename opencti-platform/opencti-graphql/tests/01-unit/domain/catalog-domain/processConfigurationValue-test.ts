@@ -56,7 +56,7 @@ describe('processConfigurationValue', () => {
         false,
         TEST_PUBLIC_KEY
       );
-    }).toThrow('Invalid boolean value for bool_field: yes');
+    }).toThrow('Field "bool_field" must be a boolean value (true or false). Received: "yes"');
   });
 
   it('should validate and convert integer values', () => {
@@ -102,7 +102,7 @@ describe('processConfigurationValue', () => {
         false,
         TEST_PUBLIC_KEY
       );
-    }).toThrow('Invalid integer value for int_field: not_a_number');
+    }).toThrow('Field "int_field" must be a valid integer. Received: "not_a_number"');
   });
 
   it('should handle array values (already comma-separated)', () => {
