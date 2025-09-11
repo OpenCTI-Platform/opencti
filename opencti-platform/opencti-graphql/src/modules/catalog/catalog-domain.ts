@@ -199,7 +199,7 @@ export const processConfigurationValue = (
  * Convert a default value to string format for storage
  */
 export const getDefaultValueAsString = (propSchema: any): string | null => {
-  if (propSchema.default === undefined) return null;
+  if (propSchema.default === undefined || propSchema.default === null) return null;
 
   switch (propSchema.type) {
     case 'array':
@@ -326,13 +326,32 @@ export const validateContractConfigurations = (
     return acc;
   }, {});
 
+  // Build validation properties - only include:
+  // 1. Required fields (always needed for validation)
+  // 2. Optional fields that are actually present in contractObject
+  const validationProperties: Record<string, any> = {};
+  const filteredRequired = targetConfig.required.filter((v) => v !== 'CONNECTOR_ID'); // FIXME: remove filter on CONNECTOR_ID when manifest is ok
+
+  // Add required properties to the validation schema
+  filteredRequired.forEach((key) => {
+    if (targetConfig.properties[key]) {
+      validationProperties[key] = targetConfig.properties[key];
+    }
+  });
+
+  // Add optional properties ONLY if they are present in the actual configuration
+  Object.keys(contractObject).forEach((key) => {
+    if (!filteredRequired.includes(key) && targetConfig.properties[key]) {
+      validationProperties[key] = targetConfig.properties[key];
+    }
+  });
+
   // Validate with AJV - it will handle type coercion and validation
   const jsonValidation = {
     type: targetConfig.type,
-    properties: targetConfig.properties,
-    // required: targetConfig.required,
-    required: targetConfig.required.filter((v) => v !== 'CONNECTOR_ID'), // FIXME: remove filter on CONNECTOR_ID when manifest is ok
-    additionalProperties: targetConfig.additionalProperties
+    properties: validationProperties,
+    required: filteredRequired,
+    additionalProperties: false
   };
 
   const validate = ajv.compile(jsonValidation);
@@ -364,6 +383,24 @@ export const computeConnectorTargetContract = (
   Object.entries(targetConfig.properties).forEach(([propKey, propSchema]) => {
     const inputConfig = configMap.get(propKey);
     const existingConfig = currentConfigMap.get(propKey);
+
+    // Only process fields that are:
+    // 1. Required (will use default if available)
+    // 2. Have an input value provided
+    // 3. Have an existing value (for passwords)
+    const isRequired = targetConfig.required.includes(propKey);
+    const hasInput = inputConfig && !isEmptyField(inputConfig.value);
+    const hasExisting = existingConfig !== undefined;
+
+    // Skip optional fields that have no value, no default, and are not required
+    if (
+      !isRequired
+      && !hasInput
+      && !hasExisting
+      && (propSchema.default === undefined || propSchema.default === null)
+    ) {
+      return; // Skip this field entirely
+    }
 
     const finalConfig = resolveConfigurationValue(
       propKey,
