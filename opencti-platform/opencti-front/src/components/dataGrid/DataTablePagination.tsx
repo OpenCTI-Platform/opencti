@@ -1,7 +1,7 @@
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
-import React, { type Dispatch, type SetStateAction, Suspense, useCallback, useEffect } from 'react';
+import React, { type Dispatch, type SetStateAction, Suspense, useCallback, useEffect, useMemo } from 'react';
 import { ArrowLeft, ArrowRight } from '@mui/icons-material';
 import { ButtonGroup } from '@mui/material';
 import Button from '@mui/material/Button';
@@ -10,6 +10,8 @@ import { useFormatter } from '../i18n';
 import { NumberOfElements } from '../../utils/hooks/useLocalStorage';
 import NestedMenuButton from '../nested_menu/NestedMenuButton';
 import { useDataTableContext } from './components/DataTableContext';
+import Checkbox from '@mui/material/Checkbox';
+import { DataTableColumn } from './dataTableTypes';
 
 const DataTablePagination = ({
   page,
@@ -25,7 +27,13 @@ const DataTablePagination = ({
   const { t_i18n } = useFormatter();
 
   const {
+    columns,
+    actions,
+    disableNavigation,
+    setColumns,
     resetColumns,
+    startsWithAction,
+    startsWithIcon,
     useDataTablePaginationLocalStorage: {
       viewStorage: {
         pageSize,
@@ -35,6 +43,11 @@ const DataTablePagination = ({
       helpers,
     },
   } = useDataTableContext();
+
+  const columnsOffset = useMemo(
+    () => [startsWithAction, startsWithIcon].filter(Boolean).length,
+    [startsWithAction, startsWithIcon],
+  );
 
   const numberOfElements = unstoreNOE ?? storedNOE;
 
@@ -63,12 +76,80 @@ const DataTablePagination = ({
     resetColumns();
     helpers.handleAddProperty('pageSize', '25');
   };
+
+  const findLeftVisible = (c: DataTableColumn[], currentOrder: number) => c
+    .filter((col) => col.visible && col.order < currentOrder)
+    .sort((a, b) => b.order - a.order)[0]; // Closest on the left
+
+  const findRightVisible = (c: DataTableColumn[], currentOrder: number) => c
+    .filter((col) => col.visible && col.order > currentOrder)
+    .sort((a, b) => a.order - b.order)[0]; // Closest on the right
+
+  const handleToggleVisibility = (columnId: string) => {
+    const newColumns = [...columns];
+    const currentColumn = newColumns.find(({ id }) => id === columnId);
+    const firstColumn = newColumns.find(({ visible, order }) => visible && order >= 0);
+    if (!currentColumn || !firstColumn) {
+      return;
+    }
+    const currentVisibility = !currentColumn.visible;
+    const currentOrder = currentColumn.order;
+
+    let siblingColumn;
+
+    if (currentColumn.visible) {
+      // When becoming visible → take size from the column to the left (if not first)
+      siblingColumn = currentOrder === firstColumn.order
+        ? findRightVisible(newColumns, currentOrder)
+        : findLeftVisible(newColumns, currentOrder);
+    } else {
+      // When hiding → give size to the left if possible, else to the right
+      siblingColumn = findLeftVisible(newColumns, currentOrder) || findRightVisible(newColumns, currentOrder);
+    }
+
+    if (!siblingColumn) {
+      return;
+    }
+    siblingColumn.percentWidth = currentVisibility ? siblingColumn.percentWidth - currentColumn.percentWidth : siblingColumn.percentWidth + currentColumn.percentWidth;
+    currentColumn.visible = currentVisibility;
+    setColumns(newColumns);
+  };
+
   const nestedMenuOptions = [
     {
       value: 'menu-reset',
       label: t_i18n('Reset table'),
       onClick: () => resetTable(),
       menuLevel: 0,
+    },
+    {
+      value: 'menu-columns',
+      label: t_i18n('Columns'),
+      menuLevel: 0,
+      onClick: () => {
+      },
+      nestedOptions: columns.slice(columnsOffset, (actions || disableNavigation) ? undefined : -1).map((c) => ({
+        value: c.id,
+        render: () => {
+          const [visibility, setVisibility] = React.useState(c.visible);
+          return (
+            <div>
+              <Checkbox
+                size="small"
+                onClick={(e) => {
+                  handleToggleVisibility(c.id);
+                  setVisibility(!visibility);
+                  e.stopPropagation();
+                }}
+                checked={visibility}
+                disabled={columns.filter((col) => col.visible && col.order >= 0).length === 1 && visibility}
+              />
+              {c.label}
+            </div>
+          );
+        },
+        menuLevel: 1,
+      })),
     },
     {
       value: 'menu-rows-per-page',
@@ -167,7 +248,7 @@ const DataTablePagination = ({
               <strong>{`${numberOfElements.original}`}</strong>{' '}
               {t_i18n('entitie(s)')}
             </div>
-            }
+          }
         >
           <Box
             sx={{
@@ -206,7 +287,7 @@ const DataTablePagination = ({
               border: 'none',
             },
           }}
-          menuButtonChildren={<TableTuneIcon/>}
+          menuButtonChildren={<TableTuneIcon />}
           options={nestedMenuOptions}
           menuLevels={2}
         />
