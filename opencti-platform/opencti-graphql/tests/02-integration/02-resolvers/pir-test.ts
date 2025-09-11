@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
-import { describe, expect, it, beforeAll } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { now } from 'moment';
-import { ADMIN_USER, buildStandardUser, queryAsAdmin, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, buildStandardUser, ONE_MINUTE, queryAsAdmin, testContext } from '../../utils/testQuery';
 import { FilterMode, FilterOperator, PirType, StatsOperation } from '../../../src/generated/graphql';
 import { SYSTEM_USER } from '../../../src/utils/access';
 import { internalLoadById, pageEntitiesConnection, pageRelationsConnection } from '../../../src/database/middleware-loader';
@@ -14,7 +14,7 @@ import { resetCacheForEntity } from '../../../src/database/cache';
 import { type BasicStoreRelationPir, ENTITY_TYPE_PIR } from '../../../src/modules/pir/pir-types';
 import { RELATION_IN_PIR } from '../../../src/schema/internalRelationship';
 import { connectorsForWorker } from '../../../src/database/repository';
-import { pirRelationshipsDistribution } from '../../../src/modules/pir/pir-domain';
+import { pirRelationshipsDistribution, pirRelationshipsMultiTimeSeries } from '../../../src/modules/pir/pir-domain';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 
 const LIST_QUERY = gql`
@@ -383,6 +383,21 @@ describe('PIR resolver standard behavior', () => {
     expect(distribution[0].value).toEqual(1);
     expect(distribution[0].entity.entity_type).toEqual(ENTITY_TYPE_IDENTITY_ORGANIZATION);
     expect(distribution[0].entity.name).toEqual('Allied Universal');
+  });
+
+  it('should display pir relationship time series', async () => {
+    // we count the number of pir relationships created in the last minute over time with intervals of 1 day
+    const args = {
+      interval: 'day',
+      operation: StatsOperation.Count,
+      relationship_type: ['in-pir'],
+      startDate: now() - ONE_MINUTE, // the last minute
+      timeSeriesParameters: [{ field: 'created_at', pirId: pirInternalId1 }],
+    };
+    const timeSeries = await pirRelationshipsMultiTimeSeries(testContext, ADMIN_USER, args);
+    expect(timeSeries.length).toEqual(1);
+    expect(timeSeries[0].data.length).toEqual(1); // 1 interval of 1 day between now and the last minute
+    expect(timeSeries[0].data[0].value).toEqual(1); // in the last interval: 1 pir relationship created between the malware and pir1
   });
 
   it('should filter entities by a pir score', async () => {
