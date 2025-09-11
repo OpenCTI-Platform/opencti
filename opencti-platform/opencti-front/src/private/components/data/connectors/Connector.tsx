@@ -34,7 +34,7 @@ import {
 } from '../../../../utils/Connector';
 import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
-import { FIVE_SECONDS } from '../../../../utils/Time';
+import { FIVE_SECONDS, formatUptime } from '../../../../utils/Time';
 import Security from '../../../../utils/Security';
 import useGranted, { MODULES_MODMANAGE, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import { MESSAGING$, QueryRenderer } from '../../../../relay/environment';
@@ -640,6 +640,16 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                   )
               }
               </Grid>
+              {connector.is_managed && connector.manager_current_status === 'started' && connector.manager_connector_uptime != null && (
+                <Grid item xs={6}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t_i18n('Uptime')}
+                  </Typography>
+                  <Typography variant="body1" gutterBottom={true}>
+                    {formatUptime(connector.manager_connector_uptime, t_i18n)}
+                  </Typography>
+                </Grid>
+              )}
             </Grid>
           </Paper>
         </Grid>
@@ -799,6 +809,13 @@ const Connector = createRefetchContainer(
         manager_requested_status
         manager_contract_image
         manager_connector_logs
+        manager_connector_uptime
+        manager_health_metrics {
+          restart_count
+          started_at
+          last_update
+          is_in_reboot_loop
+        }
         connector_user {
           id
           name

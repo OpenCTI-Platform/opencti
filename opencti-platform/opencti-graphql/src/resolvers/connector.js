@@ -5,6 +5,9 @@ import {
   connectorsForExport,
   connectorTriggerUpdate,
   connectorUpdateLogs,
+  connectorUpdateHealth,
+  connectorGetHealth,
+  connectorGetUptime,
   connectorUser,
   fetchRemoteStreams,
   findSyncPaginated,
@@ -90,6 +93,8 @@ const connectorResolvers = {
     connector_queue_details: (cn) => queueDetails(cn.id),
     connector_user: (cn, _, context) => connectorUser(context, context.user, cn.connector_user_id),
     manager_connector_logs: (cn) => redisGetConnectorLogs(cn.id),
+    manager_health_metrics: (cn, _, context) => connectorGetHealth(context, context.user, cn.id),
+    manager_connector_uptime: (cn, _, context) => connectorGetUptime(context, context.user, cn.id),
     manager_contract_hash: (cn, _, context) => computeManagerContractHash(context, context.user, cn),
     manager_contract_definition: (cn, _, context) => computeManagerConnectorContract(context, context.user, cn),
     manager_contract_configuration: (cn, _, context) => computeManagerConnectorConfiguration(context, context.user, cn, true),
@@ -97,6 +102,8 @@ const connectorResolvers = {
   },
   ManagedConnector: {
     manager_connector_logs: (cn) => redisGetConnectorLogs(cn.id),
+    manager_health_metrics: (cn, _, context) => connectorGetHealth(context, context.user, cn.id),
+    manager_connector_uptime: (cn, _, context) => connectorGetUptime(context, context.user, cn.id),
     manager_contract_hash: (cn, _, context) => computeManagerContractHash(context, context.user, cn),
     manager_contract_configuration: (cn, _, context) => computeManagerConnectorConfiguration(context, context.user, cn),
     manager_contract_image: (cn) => computeManagerConnectorImage(cn),
@@ -149,6 +156,10 @@ const connectorResolvers = {
     updateConnectorLogs: (_, { input }, context) => {
       enforceEnableFeatureFlag(COMPOSER_FF);
       return connectorUpdateLogs(context, context.user, input);
+    },
+    updateConnectorHealth: (_, { input }, context) => {
+      enforceEnableFeatureFlag(COMPOSER_FF);
+      return connectorUpdateHealth(context, context.user, input);
     },
     // endregion
     // Work part

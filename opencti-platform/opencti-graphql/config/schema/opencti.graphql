@@ -2005,6 +2005,14 @@ input LogsConnectorStatusInput {
   logs: [String!]!
 }
 
+
+input HealthConnectorStatusInput {
+  id: ID!
+  restart_count: Int!
+  started_at: DateTime!
+  is_in_reboot_loop: Boolean!
+}
+
 type RabbitMQConnection {
   host: String!
   vhost: String!
@@ -2113,7 +2121,8 @@ type Connector implements BasicObject & InternalObject {
   manager_contract_configuration: [ManagerContractConfiguration!]
   manager_connector_logs: [String!]
   manager_contract_hash: String
-  ## Built in Connector
+  manager_health_metrics: ConnectorHealthMetrics
+  manager_connector_uptime: Int
   built_in: Boolean
   configurations: [ConnectorConfiguration!]
 }
@@ -2136,6 +2145,15 @@ type ManagedConnector implements BasicObject & InternalObject {
   manager_contract_configuration: [ConnectorContractConfiguration!]!
   manager_contract_hash: String!
   manager_connector_logs: [String!]!
+  manager_health_metrics: ConnectorHealthMetrics
+  manager_connector_uptime: Int
+}
+
+type ConnectorHealthMetrics {
+  restart_count: Int!
+  started_at: DateTime!
+  last_update: DateTime!
+  is_in_reboot_loop: Boolean!
 }
 
 type ConnectorManager implements BasicObject & InternalObject {
@@ -14803,6 +14821,7 @@ type Mutation {
   updateConnectorRequestedStatus(input: RequestConnectorStatusInput!): ManagedConnector @auth(for: [MODULES_MODMANAGE])
   updateConnectorCurrentStatus(input: CurrentConnectorStatusInput!): ManagedConnector @auth(for: [CONNECTORAPI])
   updateConnectorLogs(input: LogsConnectorStatusInput!): ID! @auth(for: [CONNECTORAPI])
+  updateConnectorHealth(input: HealthConnectorStatusInput!): ID! @auth(for: [CONNECTORAPI])
   updateConnectorTrigger(id: ID!, input: [EditInput]!): Connector @auth(for: [MODULES_MODMANAGE])
   feedAdd(input: FeedAddInput!): Feed @auth(for: [TAXIIAPI_SETCOLLECTIONS])
   feedDelete(id: ID!): ID! @auth(for: [TAXIIAPI_SETCOLLECTIONS])
