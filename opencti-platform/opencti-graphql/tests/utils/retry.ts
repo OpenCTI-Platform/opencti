@@ -27,7 +27,7 @@ export const retryUntilConditionOrMaxLoop = async <T = unknown>({
 }: RetryUntilConditionOrMaxLoopArgs<T>) => {
   let result = await fnToExecute();
   let loopCurrent = 0;
-  while (verify(result) && loopCurrent < maxRetry) {
+  while (!verify(result) && loopCurrent < maxRetry) {
     await wait(sleepTimeBetweenLoop);
     result = await fnToExecute();
     loopCurrent += 1;

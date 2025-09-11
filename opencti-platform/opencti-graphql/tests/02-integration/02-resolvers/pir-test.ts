@@ -443,7 +443,7 @@ describe('PIR resolver standard behavior', () => {
     expect(stixDomainObjects4.edges.length).toEqual(0);
   });
 
-  it('should update a pir meta rel by adding a new explanation', async () => {
+  it('should update a pir relationship by adding a new explanation', async () => {
     const FLAG_QUERY = gql`
       mutation pirFlagElement($id: ID!, $input: PirFlagElementInput!) {
         pirFlagElement(id: $id, input: $input)
@@ -505,7 +505,7 @@ describe('PIR resolver standard behavior', () => {
     expect(malwareAfterFlag.pir_information.filter((s) => s.pir_id === pirInternalId2)[0].pir_score).toEqual(50);
   });
 
-  it('should update a pir meta rel by removing an explanation', async () => {
+  it('should update a pir relationship by removing an explanation', async () => {
     const UNFLAG_QUERY = gql`
       mutation pirUnflagElement($id: ID!, $input: PirUnflagElementInput!) {
         pirUnflagElement(id: $id, input: $input)
