@@ -3536,6 +3536,7 @@
   "The connector has been cleared": "커넥터가 정리되었습니다",
   "The connector instance has been deployed": "커넥터 인스턴스가 배포되었습니다",
   "The connector instance has been deployed. You can now start it.": "커넥터 인스턴스가 배포되었습니다. 이제 시작할 수 있습니다.",
+  "The connector instance has been modified, it must be restarted for the changes to take effect.": "커넥터 인스턴스가 수정되었으므로 변경 사항을 적용하려면 커넥터 인스턴스를 다시 시작해야 합니다.",
   "The connector instance has been modified.": "커넥터 인스턴스가 수정되었습니다.",
   "The connector state has been reset": "커넥터 상태가 재설정되었습니다",
   "The CSV file has been generated with the parameters of the view and is ready for download.": "CSV 파일이 뷰의 매개변수로 생성되었으며 다운로드할 준비가 되었습니다.",

@@ -3536,6 +3536,7 @@
   "The connector has been cleared": "コネクタを削除しました",
   "The connector instance has been deployed": "コネクタインスタンスがデプロイされました",
   "The connector instance has been deployed. You can now start it.": "コネクタ・インスタンスがデプロイされました。これで起動できます。",
+  "The connector instance has been modified, it must be restarted for the changes to take effect.": "コネクタ・インスタンスが変更された場合、変更を有効にするには再起動する必要があります。",
   "The connector instance has been modified.": "コネクタのインスタンスが変更されました。",
   "The connector state has been reset": "コネクタの状態を初期化しました",
   "The CSV file has been generated with the parameters of the view and is ready for download.": "指定されたパラメータでCSVが生成され、ダウンロードできるようになりました。",

@@ -91,7 +91,7 @@ const ManagedConnectorEdition = ({
         setSubmitting?.(false);
       },
       onCompleted: () => {
-        MESSAGING$.notifySuccess(t_i18n('The connector instance has been modified.'));
+        MESSAGING$.notifySuccess(t_i18n('The connector instance has been modified, it must be restarted for the changes to take effect.'));
         setSubmitting?.(false);
         resetForm?.();
         onClose();

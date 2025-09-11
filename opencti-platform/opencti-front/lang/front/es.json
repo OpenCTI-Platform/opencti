@@ -3536,6 +3536,7 @@
   "The connector has been cleared": "El conector ha sido eliminado",
   "The connector instance has been deployed": "Se ha desplegado la instancia del conector",
   "The connector instance has been deployed. You can now start it.": "La instancia del conector se ha desplegado. Ahora puede iniciarlo.",
+  "The connector instance has been modified, it must be restarted for the changes to take effect.": "La instancia del conector ha sido modificada, debe reiniciarse para que los cambios surtan efecto.",
   "The connector instance has been modified.": "Se ha modificado la instancia del conector.",
   "The connector state has been reset": "El estado de este conector ha sido reiniciado",
   "The CSV file has been generated with the parameters of the view and is ready for download.": "El fichero CSV se ha generado con los parámetros de la vista y está preparado para ser descargado.",

@@ -3536,6 +3536,7 @@
   "The connector has been cleared": "The connector has been cleared",
   "The connector instance has been deployed": "The connector instance has been deployed",
   "The connector instance has been deployed. You can now start it.": "The connector instance has been deployed. You can now start it.",
+  "The connector instance has been modified, it must be restarted for the changes to take effect.": "The connector instance has been modified, it must be restarted for the changes to take effect.",
   "The connector instance has been modified.": "The connector instance has been modified.",
   "The connector state has been reset": "The connector state has been reset",
   "The CSV file has been generated with the parameters of the view and is ready for download.": "The CSV file has been generated with the parameters of the view and is ready for download.",
