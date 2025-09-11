@@ -101,7 +101,7 @@
     "remark-gfm": "4.0.1",
     "remark-parse": "11.0.0",
     "rxjs": "7.8.2",
-    "three-spritetext": "1.9.6",
+    "three-spritetext": "1.10.0",
     "use-analytics": "1.1.0",
     "uuid": "11.1.0",
     "yup": "1.7.0"
