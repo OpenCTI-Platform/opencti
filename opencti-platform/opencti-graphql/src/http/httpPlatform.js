@@ -449,7 +449,7 @@ const createApp = async (app) => {
 
   // -- Passport callback
   // -- Default limit is '100kb' based on https://expressjs.com/en/resources/middleware/body-parser.html
-  const urlencodedParser = bodyParser.urlencoded({ extended: true, limit: AUTH_PAYLOAD_BODY_SIZE });
+  const urlencodedParser = AUTH_PAYLOAD_BODY_SIZE ? bodyParser.urlencoded({ extended: true, limit: AUTH_PAYLOAD_BODY_SIZE }) : bodyParser.urlencoded({ extended: true });
   app.all(`${basePath}/auth/:provider/callback`, urlencodedParser, async (req, res, next) => {
     const referer = req.body.RelayState ?? req.session.referer;
     const { provider } = req.params;

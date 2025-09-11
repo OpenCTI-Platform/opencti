@@ -20,7 +20,6 @@
     "enabled": true,
     "enabled_ui": true,
     "enabled_dev_features": [],
-    "auth_payload_body_size": "100kb",
     "https_cert": {
       "ca": [],
       "key": null,
