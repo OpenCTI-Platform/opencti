@@ -19,12 +19,13 @@ interface RetryUntilConditionOrMaxLoopArgs<T> {
  * @param sleepTimeBetweenLoop Time in milliseconds between 2 executions.
  * @param maxRetry Max number of execution to do.
  */
-export const retryUntilConditionOrMaxLoop = async <T = unknown>({
-  fnToExecute,
-  verify,
-  sleepTimeBetweenLoop = 1000,
-  maxRetry = 10
-}: RetryUntilConditionOrMaxLoopArgs<T>) => {
+export const retryUntilConditionOrMaxLoop = async <T = unknown>(args: RetryUntilConditionOrMaxLoopArgs<T>) => {
+  const {
+    fnToExecute,
+    verify,
+    sleepTimeBetweenLoop = 1000,
+    maxRetry = 10
+  } = args;
   let result = await fnToExecute();
   let loopCurrent = 0;
   while (!verify(result) && loopCurrent < maxRetry) {
