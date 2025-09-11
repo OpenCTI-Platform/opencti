@@ -11,13 +11,13 @@ import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { BasicStoreRelation, StoreObject } from '../../types/store';
 import { RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { executionContext, RULE_MANAGER_USER } from '../../utils/access';
-import type { createInferredEntityOverrideFunction, createInferredRelationOverrideFunction } from '../../types/rules';
+import type { createInferredEntityCallbackFunction, createInferredRelationCallbackFunction } from '../../types/rules';
 
 const ruleRelatedObservableBuilder = () => {
   // Execution
   const applyUpsert = async (
     data: StixRelation,
-    createInferredRelationOverride?: createInferredRelationOverrideFunction | undefined
+    createInferredRelationCallback?: createInferredRelationCallbackFunction | undefined
   ): Promise<void> => {
     const context = executionContext(def.name, RULE_MANAGER_USER);
     const { extensions } = data;
@@ -50,8 +50,8 @@ const ruleRelatedObservableBuilder = () => {
           objectMarking: elementMarkings,
         });
         const input = { fromId: targetRef, toId, relationship_type: RELATION_RELATED_TO };
-        if (createInferredRelationOverride) {
-          createInferredRelationOverride(context, input, ruleContent);
+        if (createInferredRelationCallback) {
+          createInferredRelationCallback(context, input, ruleContent);
         } else {
           await createInferredRelation(context, input, ruleContent);
         }
@@ -65,8 +65,8 @@ const ruleRelatedObservableBuilder = () => {
           objectMarking: elementMarkings,
         });
         const reverseInput = { fromId: toId, toId: targetRef, relationship_type: RELATION_RELATED_TO };
-        if (createInferredRelationOverride) {
-          createInferredRelationOverride(context, reverseInput, reverseRuleContent);
+        if (createInferredRelationCallback) {
+          createInferredRelationCallback(context, reverseInput, reverseRuleContent);
         } else {
           await createInferredRelation(context, reverseInput, reverseRuleContent);
         }
@@ -81,10 +81,10 @@ const ruleRelatedObservableBuilder = () => {
   };
   const insert = async (
     element: StixRelation,
-    _createInferredEntityOverride?: createInferredEntityOverrideFunction | undefined,
-    createInferredRelationOverride?: createInferredRelationOverrideFunction | undefined
+    _createInferredEntityCallback?: createInferredEntityCallbackFunction | undefined,
+    createInferredRelationCallback?: createInferredRelationCallbackFunction | undefined
   ): Promise<void> => {
-    return applyUpsert(element, createInferredRelationOverride);
+    return applyUpsert(element, createInferredRelationCallback);
   };
   const update = async (element: StixRelation): Promise<void> => {
     return applyUpsert(element);

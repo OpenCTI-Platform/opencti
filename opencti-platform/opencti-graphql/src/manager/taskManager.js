@@ -547,13 +547,13 @@ const ruleApplyCallback = async (context, user, task, ruleId) => {
       // in case of rule apply we need to fake the apply of the rule and get the resulting inferred creations
       const inferredRelations = [];
       const inferredEntities = [];
-      const createInferredRelationOverride = (_context, input, ruleContent, opts) => {
+      const createInferredRelationCallback = (_context, input, ruleContent, opts) => {
         inferredRelations.push({ input, ruleContent, opts });
       };
-      const createInferredEntityOverride = (_context, input, ruleContent, type) => {
+      const createInferredEntityCallback = (_context, input, ruleContent, type) => {
         inferredEntities.push({ input, ruleContent, type });
       };
-      await ruleApply(context, user, element.internal_id, ruleId, createInferredEntityOverride, createInferredRelationOverride);
+      await ruleApply(context, user, element.internal_id, ruleId, createInferredEntityCallback, createInferredRelationCallback);
       // Add all created inferred entities in bundle first, so that inferred relations targeting inferred entities can be created
       for (let inferredEntitiesIndex = 0; inferredEntitiesIndex < inferredEntities.length; inferredEntitiesIndex += 1) {
         const inferredEntity = inferredEntities[inferredEntitiesIndex];
