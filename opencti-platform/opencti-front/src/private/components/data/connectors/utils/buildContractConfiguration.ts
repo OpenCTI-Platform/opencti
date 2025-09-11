@@ -19,7 +19,7 @@ const buildContractConfiguration = (values: ManagedConnectorValues) => {
 
       return ({
         key,
-        value: [computedValue.toString()],
+        value: computedValue.toString(),
       });
     });
 };

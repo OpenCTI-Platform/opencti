@@ -158,61 +158,136 @@ const encryptValue = (publicKey: string, value: string) => {
   return encrypted.toString('base64');
 };
 
-const validateContractConfigurations = (
-  contractConfigurations: any[],
+/**
+ * Process a configuration value based on its schema type
+ * Handles validation and encryption for passwords
+ */
+export const processConfigurationValue = (
+  rawValue: string,
+  propSchema: any,
+  propKey: string,
+  isPassword: boolean,
+  publicKey: string
+): string => {
+  if (isPassword) {
+    return encryptValue(publicKey, rawValue);
+  }
+
+  // Validate based on type
+  switch (propSchema.type) {
+    case 'boolean':
+      if (rawValue !== 'true' && rawValue !== 'false') {
+        throw UnsupportedError(`Invalid boolean value for ${propKey}: ${rawValue}`);
+      }
+      return rawValue;
+    case 'integer': {
+      const parsedInt = parseInt(rawValue, 10);
+      if (Number.isNaN(parsedInt)) {
+        throw UnsupportedError(`Invalid integer value for ${propKey}: ${rawValue}`);
+      }
+      return String(parsedInt);
+    }
+    case 'array':
+      // Arrays are already joined as comma-separated strings by frontend
+      return rawValue;
+    default:
+      return rawValue;
+  }
+};
+
+/**
+ * Convert a default value to string format for storage
+ */
+export const getDefaultValueAsString = (propSchema: any): string | null => {
+  if (propSchema.default === undefined) return null;
+
+  switch (propSchema.type) {
+    case 'array':
+      return Array.isArray(propSchema.default)
+        ? propSchema.default.join(',')
+        : String(propSchema.default);
+    case 'boolean':
+    case 'integer':
+      return String(propSchema.default);
+    default:
+      return typeof propSchema.default === 'string'
+        ? propSchema.default
+        : String(propSchema.default);
+  }
+};
+
+/**
+ * Resolve the final configuration value for a property
+ */
+export const resolveConfigurationValue = (
+  propKey: string,
+  propSchema: any,
+  inputConfig: ContractConfigInput | undefined,
+  existingConfig: ConnectorContractConfiguration | undefined,
+  publicKey: string
+): ConnectorContractConfiguration | null => {
+  const isPassword = propSchema.format === 'password';
+
+  // No new value provided
+  if (!inputConfig || !inputConfig.value) {
+    // Keep existing password if available
+    if (isPassword && existingConfig) {
+      return existingConfig;
+    }
+    // Use default value if available
+    const defaultValue = getDefaultValueAsString(propSchema);
+    if (defaultValue !== null) {
+      return { key: propKey, value: defaultValue };
+    }
+    return null;
+  }
+
+  // New value provided
+  const rawValue = inputConfig.value;
+
+  // Check if value unchanged (prevents re-encrypting passwords)
+  if (rawValue === existingConfig?.value) {
+    return existingConfig;
+  }
+
+  // Process new value
+  const processedValue = processConfigurationValue(
+    rawValue,
+    propSchema,
+    propKey,
+    isPassword,
+    publicKey
+  );
+
+  return {
+    key: propKey,
+    value: processedValue,
+    ...(isPassword && { encrypted: true }),
+  };
+};
+
+export const validateContractConfigurations = (
+  contractConfigurations: ConnectorContractConfiguration[],
   targetContract: CatalogContract
 ) => {
   const targetConfig = targetContract.config_schema;
 
-  // Build validation object with parsed values
-  const contractObject: any = {};
-
-  contractConfigurations.forEach((config) => {
+  // Build validation object from configurations
+  type ContractConfigurationObject = Record<string, string>;
+  const contractObject = contractConfigurations.reduce<ContractConfigurationObject>((acc, config) => {
     const propSchema = targetConfig.properties[config.key];
-
     if (propSchema && config.value !== undefined && config.value !== null) {
-      // Skip validation for encrypted passwords
-      if (config.encrypted) {
-        contractObject[config.key] = 'encrypted_placeholder';
-      } else {
-        // Get the actual string value (handle both array and string format)
-        const stringValue = Array.isArray(config.value) ? config.value[0] : config.value;
-        let parsedValue = stringValue;
-
-        // Parse value based on schema type
-        switch (propSchema.type) {
-          case 'array':
-            // Arrays are sent as comma-separated values from frontend
-            if (stringValue.trim() === '') {
-              parsedValue = [];
-            } else {
-              // Split by comma and clean up each value
-              parsedValue = stringValue.split(',').map((v: string) => v.trim()).filter((v: string) => v !== '');
-            }
-            break;
-          case 'boolean':
-            parsedValue = stringValue === 'true' || stringValue === true;
-            break;
-          case 'integer':
-            parsedValue = parseInt(stringValue, 10);
-            if (Number.isNaN(parsedValue)) {
-              parsedValue = 0;
-            }
-            break;
-          default:
-            // String type - keep as is
-            parsedValue = stringValue;
-        }
-        contractObject[config.key] = parsedValue;
-      }
+      acc[config.key] = config.value;
     }
-  });
+    return acc;
+  }, {});
 
-  // Validate with AJV
+  // Validate with AJV - it will handle type coercion and validation
   const jsonValidation = {
     type: targetConfig.type,
     properties: targetConfig.properties,
-    required: targetConfig.required,
+    // required: targetConfig.required,
+    required: targetConfig.required.filter((v) => v !== 'CONNECTOR_ID'), // FIXME: remove filter on CONNECTOR_ID when manifest is ok
     additionalProperties: targetConfig.additionalProperties
   };
 
@@ -229,41 +304,35 @@ export const computeConnectorTargetContract = (
   targetContract: CatalogContract,
   publicKey: string,
   currentManagerContractConfiguration?: ConnectorContractConfiguration[]
-) => {
+): ConnectorContractConfiguration[] => {
   const targetConfig = targetContract.config_schema;
-  // Rework configuration for default an array support
-  const contractConfigurations = [];
-  const keys = Object.keys(targetConfig.properties);
-  for (let i = 0; i < keys.length; i += 1) {
-    const propKey = keys[i];
-    const currentConfig = configurations.find((config) => config.key === propKey);
-    const currentConnectorConfig = currentManagerContractConfiguration?.find((c) => c.key === propKey);
 
-    if (!currentConfig) {
-      // If value isn't set in input but is already set in config, keep the config value
-      // Only applicable to password fields
-      if (currentConnectorConfig && targetConfig.properties[propKey].format === 'password') {
-        contractConfigurations.push(currentConnectorConfig);
-      } else if (targetConfig.properties[propKey].default) {
-        contractConfigurations.push(({ key: propKey, value: targetConfig.properties[propKey].default }));
-      }
-    } else if (currentConfig.value) {
-      const isPassword = targetConfig.properties[propKey].format === 'password';
-      // If value is already configured and has the same value, keep it
-      // This prevents re-encrypting already encrypted values
-      if (currentConfig.value[0] === currentConnectorConfig?.value) {
-        contractConfigurations.push(currentConnectorConfig);
-      } else {
-        const rawValue = currentConfig.value[0];
-        const finalValue = isPassword ? encryptValue(publicKey, rawValue) : rawValue;
-        contractConfigurations.push({
-          key: propKey,
-          value: finalValue,
-          ...(isPassword && { encrypted: true }),
-        });
-      }
+  // Create maps for efficient lookups
+  const configMap = new Map(configurations.map((c) => [c.key, c]));
+  const currentConfigMap = new Map(
+    currentManagerContractConfiguration?.map((c) => [c.key, c]) ?? []
+  );
+
+  // Process each property and build configuration array
+  const contractConfigurations: ConnectorContractConfiguration[] = [];
+
+  Object.entries(targetConfig.properties).forEach(([propKey, propSchema]) => {
+    const inputConfig = configMap.get(propKey);
+    const existingConfig = currentConfigMap.get(propKey);
+
+    const finalConfig = resolveConfigurationValue(
+      propKey,
+      propSchema,
+      inputConfig,
+      existingConfig,
+      publicKey
+    );
+
+    if (finalConfig) {
+      contractConfigurations.push(finalConfig);
     }
-  }
+  });
+
   // Validate the configurations
   validateContractConfigurations(contractConfigurations, targetContract);
 
