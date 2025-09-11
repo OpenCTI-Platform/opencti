@@ -6,7 +6,7 @@ import { constraintDirectiveDocumentation } from 'graphql-constraint-directive';
 import { GraphQLError } from 'graphql/error';
 import { createApollo4QueryValidationPlugin } from 'graphql-constraint-directive/apollo4';
 import createSchema from './schema';
-import conf, { DEV_MODE, ENABLED_METRICS, ENABLED_TRACING, GRAPHQL_ARMOR_DISABLED, PLAYGROUND_ENABLED, PLAYGROUND_INTROSPECTION_DISABLED } from '../config/conf';
+import conf, { DEV_MODE, ENABLED_METRICS, ENABLED_TRACING, GRAPHQL_ARMOR_DISABLED, logApp, PLAYGROUND_ENABLED, PLAYGROUND_INTROSPECTION_DISABLED } from '../config/conf';
 import { ForbiddenAccess } from '../config/errors';
 import loggerPlugin from './loggerPlugin';
 import telemetryPlugin from './telemetryPlugin';
@@ -87,6 +87,20 @@ const createApolloServer = () => {
   if (ENABLED_METRICS) {
     apolloPlugins.push(telemetryPlugin);
   }
+
+  apolloPlugins.push({
+    // see https://www.apollographql.com/docs/apollo-server/integrations/plugins-event-reference
+    startupDidFail: ({ error }) => {
+      logApp.error('[APOLLO] Startup failed', { cause: error });
+    },
+    contextCreationDidFail: ({ error }) => {
+      logApp.warn('[APOLLO] Context creation failed', { cause: error });
+    },
+    unexpectedErrorProcessingRequest: ({ error }) => {
+      logApp.warn('[APOLLO] Unexpected error processing request', { cause: error });
+    },
+  });
+
   const apolloServer = new ApolloServer({
     schema,
     introspection: true, // Will be disabled by plugin if needed
@@ -95,6 +109,12 @@ const createApolloServer = () => {
     csrfPrevention: false, // CSRF is handled by helmet
     tracing: DEV_MODE,
     plugins: apolloPlugins,
+    logger: {
+      debug: (msg) => logApp.debug(`[APOLLO] ${msg}`),
+      info: (msg) => logApp.info(`[APOLLO] ${msg}`),
+      warn: (msg) => logApp.warn(`[APOLLO] ${msg}`),
+      error: (msg) => logApp.error(`[APOLLO] ${msg}`),
+    },
     formatError: (error) => {
       // To maintain compatibility with client in version 3.
       const enrichedError = { ...error, name: error.extensions?.code ?? error.name };
