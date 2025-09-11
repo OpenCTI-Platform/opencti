@@ -117,7 +117,7 @@
     "@types/html-to-pdfmake": "2.4.4",
     "@types/node": "22.17.2",
     "@types/qrcode": "1.5.5",
-    "@types/ramda": "0.31.0",
+    "@types/ramda": "0.31.1",
     "@types/react": "19.0.0",
     "@types/react-csv": "1.1.10",
     "@types/react-dom": "19.0.0",
