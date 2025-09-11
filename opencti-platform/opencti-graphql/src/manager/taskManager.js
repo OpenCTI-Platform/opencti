@@ -539,47 +539,38 @@ const sharingOperationCallback = async (context, user, task, actionType, operati
   };
 };
 
+const RULE_APPLY_MAX_BUNDLE_SIZE = 1000;
 const ruleApplyCallback = async (context, user, task, ruleId) => {
   return async (elements) => {
     for (let index = 0; index < elements.length; index += 1) {
       const inferredObjectsBundle = [];
+      let bundlesSent = 0;
       const element = elements[index];
-      // in case of rule apply we need to fake the apply of the rule and get the resulting inferred creations
-      const inferredRelations = [];
-      const inferredEntities = [];
-      const createInferredRelationCallback = (_context, input, ruleContent, opts) => {
-        inferredRelations.push({ input, ruleContent, opts });
-      };
-      const createInferredEntityCallback = (_context, input, ruleContent, type) => {
-        inferredEntities.push({ input, ruleContent, type });
-      };
-      await ruleApply(context, user, element.internal_id, ruleId, createInferredEntityCallback, createInferredRelationCallback);
-      // Add all created inferred entities in bundle first, so that inferred relations targeting inferred entities can be created
-      for (let inferredEntitiesIndex = 0; inferredEntitiesIndex < inferredEntities.length; inferredEntitiesIndex += 1) {
-        const inferredEntity = inferredEntities[inferredEntitiesIndex];
-        const inferredEntityObject = buildBaseBundleElement(element, `${element.standard_id}_e_${inferredEntitiesIndex}`);
+      const addObjectToBundle = async (input, isRel = false) => {
+        const inferredEntityObject = buildBaseBundleElement(element, `${element.standard_id}_e_${inferredObjectsBundle.length}`);
         inferredEntityObject.extensions[STIX_EXT_OCTI] = {
           ...inferredEntityObject.extensions[STIX_EXT_OCTI],
-          opencti_operation: 'inferred_entity',
-          opencti_inferred_input: JSON.stringify(inferredEntity)
+          opencti_operation: isRel ? 'inferred_rel' : 'inferred_entity',
+          opencti_inferred_input: JSON.stringify(input)
         };
         inferredObjectsBundle.push(inferredEntityObject);
-      }
-      // Add all created inferred relation in bundle
-      for (let inferredRelationIndex = 0; inferredRelationIndex < inferredRelations.length; inferredRelationIndex += 1) {
-        const inferredRelation = inferredRelations[inferredRelationIndex];
-        const inferredRelationObject = buildBaseBundleElement(element, `${element.standard_id}_r_${inferredRelationIndex}`);
-        inferredRelationObject.extensions[STIX_EXT_OCTI] = {
-          ...inferredRelationObject.extensions[STIX_EXT_OCTI],
-          opencti_operation: 'inferred_rel',
-          opencti_inferred_input: JSON.stringify(inferredRelation)
-        };
-        inferredObjectsBundle.push(inferredRelationObject);
-      }
+        if (inferredObjectsBundle.length > RULE_APPLY_MAX_BUNDLE_SIZE) {
+          bundlesSent += 1;
+          await sendResultToQueue(context, user, task, inferredObjectsBundle);
+        }
+      };
+      // in case of rule apply we need to fake the apply of the rule and get the resulting inferred creations
+      const createInferredEntityCallback = async (_context, input, ruleContent, type) => {
+        await addObjectToBundle({ input, ruleContent, type });
+      };
+      const createInferredRelationCallback = async (_context, input, ruleContent, opts) => {
+        await addObjectToBundle({ input, ruleContent, opts }, true);
+      };
+      await ruleApply(context, user, element.internal_id, ruleId, createInferredEntityCallback, createInferredRelationCallback);
       // Send inferred to queue
       if (inferredObjectsBundle.length > 0) {
         await sendResultToQueue(context, user, task, inferredObjectsBundle);
-      } else if (task.task_processed_number === 0) {
+      } else if (task.task_processed_number === 0 && bundlesSent === 0) {
         // If not objects are created, we want to mark the work as processed
         await updateProcessedTime(context, user, task.work_id, 'No inferred to create');
       }
