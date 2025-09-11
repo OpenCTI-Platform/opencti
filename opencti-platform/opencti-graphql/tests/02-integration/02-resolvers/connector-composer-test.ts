@@ -985,7 +985,7 @@ describe('Connector Composer and Managed Connectors', () => {
       createdConnectorIds.add(healthTestConnectorId);
     });
 
-    it.skip('should update connector health metrics when XTM Composer deploys a connector', async () => {
+    it('should update connector health metrics when XTM Composer deploys a connector', async () => {
       // Request deployment through platform
       const deployInput = {
         id: healthTestConnectorId,
@@ -1015,7 +1015,7 @@ describe('Connector Composer and Managed Connectors', () => {
       expect(connector.manager_health_metrics.last_update).toBeDefined();
     });
 
-    it.skip('should update health metrics when XTM Composer restarts a connector', async () => {
+    it('should update health metrics when XTM Composer restarts a connector', async () => {
       // Simulate multiple restarts
       await xtmComposer.restartConnector(healthTestConnectorId);
       await wait(100);
@@ -1038,7 +1038,7 @@ describe('Connector Composer and Managed Connectors', () => {
       expect(connector.manager_health_metrics.last_update).toBeDefined();
     });
 
-    it.skip('should detect reboot loop when XTM Composer simulates it', async () => {
+    it('should detect reboot loop when XTM Composer simulates it', async () => {
       // Create a new connector for reboot loop test
       const testConnector = catalogHelper.getTestSafeConnector();
       const catalogId = catalogHelper.getCatalogId();
@@ -1079,7 +1079,7 @@ describe('Connector Composer and Managed Connectors', () => {
       expect(connector.manager_health_metrics.last_update).toBeDefined();
     });
 
-    it.skip('should handle missing health metrics gracefully', async () => {
+    it('should handle missing health metrics gracefully', async () => {
       // Create a new connector without health metrics
       const testConnector = catalogHelper.getTestSafeConnector();
       const catalogId = catalogHelper.getCatalogId();
