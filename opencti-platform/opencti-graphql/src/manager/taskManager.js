@@ -557,8 +557,8 @@ const ruleApplyCallback = async (context, user, task, ruleId) => {
         if (inferredObjectsBundle.length > RULE_APPLY_MAX_BUNDLE_SIZE) {
           bundlesSent += 1;
           await sendResultToQueue(context, user, task, inferredObjectsBundle);
+          inferredObjectsBundle = [];
         }
-        inferredObjectsBundle = [];
       };
       // in case of rule apply we need to fake the apply of the rule and get the resulting inferred creations
       const createInferredEntityCallback = async (_context, input, ruleContent, type) => {
