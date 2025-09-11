@@ -93,15 +93,6 @@ const DELETE_CONNECTOR_MUTATION = gql`
     }
 `;
 
-const REGISTER_CONNECTOR_MUTATION = gql`
-    mutation RegisterConnector($input: RegisterConnectorInput) {
-        registerConnector(input: $input) {
-            id
-            name
-        }
-    }
-`;
-
 // Queries
 const CONNECTOR_MANAGER_QUERY = gql`
     query ConnectorManager($managerId: ID!) {
@@ -141,8 +132,8 @@ const ipinfoProperties = {
 };
 
 const ipinfoListProperties = [
-  { key: 'CONNECTOR_LISTEN_PROTOCOL_API_PORT', value: ['0'] },
-  { key: 'CONNECTOR_LISTEN_PROTOCOL_API_SSL', value: ['false'] }
+  { key: 'CONNECTOR_LISTEN_PROTOCOL_API_PORT', value: '0' },
+  { key: 'CONNECTOR_LISTEN_PROTOCOL_API_SSL', value: 'false' }
 ];
 
 const CONNECTOR_WITH_HEALTH_QUERY = gql`

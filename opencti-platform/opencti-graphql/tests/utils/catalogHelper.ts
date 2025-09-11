@@ -86,8 +86,8 @@ class CatalogHelper {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  getMinimalConfig(connector: ConnectorContract, overrides: Record<string, any> = {}): Array<{ key: string; value: string[] }> {
-    const config: Array<{ key: string; value: string[] }> = [];
+  getMinimalConfig(connector: ConnectorContract, overrides: Record<string, any> = {}): Array<{ key: string; value: string }> {
+    const config: Array<{ key: string; value: string }> = [];
 
     // Start with default values
     const propertiesArray = Object.entries(connector.config_schema.properties);
@@ -103,15 +103,15 @@ class CatalogHelper {
         // Skip if this is an override
         if (key in overrides) return;
 
-        // Convert value to string array format
-        const stringValue = Array.isArray(value) ? value.map(String) : [String(value)];
+        // Convert value to string format (join arrays with comma)
+        const stringValue = Array.isArray(value) ? value.join(',') : String(value);
         config.push({ key, value: stringValue });
       });
     }
 
     // Add overrides
     Object.entries(overrides).forEach(([key, value]) => {
-      const stringValue = Array.isArray(value) ? value.map(String) : [String(value)];
+      const stringValue = Array.isArray(value) ? value.join(',') : String(value);
       config.push({ key, value: stringValue });
     });
 
