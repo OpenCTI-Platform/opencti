@@ -110,12 +110,15 @@ export const pirRelationshipsMultiTimeSeries = async (
   opts: QueryPirRelationshipsMultiTimeSeriesArgs,
 ) => {
   const relationship_type = [RELATION_IN_PIR];
+  if (!opts.timeSeriesParameters) {
+    return [];
+  }
   return Promise.all(opts.timeSeriesParameters.map(async (timeSeriesParameter) => {
     const { pirId } = timeSeriesParameter;
     await getPirWithAccessCheck(context, user, pirId);
 
-    const filters = addDynamicFromAndToToFilters({ ...R.dissoc('pirId', timeSeriesParameter) });
-    const fullArgs = { ...opts, filters };
+    const filters = addDynamicFromAndToToFilters(timeSeriesParameter);
+    const fullArgs = { ...R.dissoc('pirId', timeSeriesParameter), filters };
     return { data: await timeSeriesRelations(context, user, { ...opts, relationship_type, toId: [pirId], ...fullArgs }) };
   }));
 };
