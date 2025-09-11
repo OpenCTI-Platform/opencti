@@ -5,7 +5,7 @@ import { createInferredRelation, deleteInferredRuleElement, generateUpdateMessag
 import { RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { createRuleContent } from './rules-utils';
 import { convertStixToInternalTypes, generateInternalType } from '../schema/schemaUtils';
-import type { createInferredEntityOverrideFunction, createInferredRelationOverrideFunction, RelationTypes, RuleDefinition, RuleRuntime } from '../types/rules';
+import type { createInferredEntityCallbackFunction, createInferredRelationCallbackFunction, RelationTypes, RuleDefinition, RuleRuntime } from '../types/rules';
 import type { StixId, StixObject } from '../types/stix-2-1-common';
 import type { StixReport } from '../types/stix-2-1-sdo';
 import type { StixRelation } from '../types/stix-2-1-sro';
@@ -46,7 +46,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
     data: StixReport,
     addedTargets: ArrayRefs,
     deletedTargets: Array<BasicStoreRelation>,
-    createInferredRelationOverride?: createInferredRelationOverrideFunction | undefined
+    createInferredRelationCallback?: createInferredRelationCallbackFunction | undefined
   ): Promise<void> => {
     if (addedTargets.length === 0 && deletedTargets.length === 0) {
       return;
@@ -65,8 +65,8 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
       if (!reportObjectRefIds.includes(partOfStandardId)) {
         const ruleRelationContent = createRuleContent(id, dependencies, [reportId, partOfId], {});
         const inputForRelation = { fromId: reportId, toId: partOfId, relationship_type: RELATION_OBJECT };
-        if (createInferredRelationOverride) {
-          createInferredRelationOverride(context, inputForRelation, ruleRelationContent, opts);
+        if (createInferredRelationCallback) {
+          createInferredRelationCallback(context, inputForRelation, ruleRelationContent, opts);
         } else {
           const inferredRelation = await createInferredRelation(context, inputForRelation, ruleRelationContent, opts) as RelationCreation;
           if (inferredRelation.isCreation) {
@@ -78,8 +78,8 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
       if (!reportObjectRefIds.includes(partOfTargetStandardId)) {
         const ruleIdentityContent = createRuleContent(id, dependencies, isSource ? [reportId, partOfTargetId] : [reportId, partOfFromId], {});
         const inputForIdentity = { fromId: reportId, toId: isSource ? partOfTargetId : partOfFromId, relationship_type: RELATION_OBJECT };
-        if (createInferredRelationOverride) {
-          createInferredRelationOverride(context, inputForIdentity, ruleIdentityContent, opts);
+        if (createInferredRelationCallback) {
+          createInferredRelationCallback(context, inputForIdentity, ruleIdentityContent, opts);
         } else {
           const inferredTarget = await createInferredRelation(context, inputForIdentity, ruleIdentityContent, opts) as RelationCreation;
           if (inferredTarget.isCreation) {
@@ -101,7 +101,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
       }
     }
     // endregion
-    if ((createdTargets.length > 0 || deletedTargetRefs.length > 0) && !createInferredRelationOverride) {
+    if ((createdTargets.length > 0 || deletedTargetRefs.length > 0) && !createInferredRelationCallback) {
       const updatedReport = structuredClone(report);
       const deletedTargetIds = deletedTargetRefs.map((d) => d.standard_id);
       const refsWithoutDeletion = (object_refs_inferred ?? []).filter((o) => !deletedTargetIds.includes(o));
@@ -129,7 +129,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
     report: StixReport,
     addedRefs: Array<string>,
     removedRefs: Array<string>,
-    createInferredRelationOverride?: createInferredRelationOverrideFunction | undefined
+    createInferredRelationCallback?: createInferredRelationCallbackFunction | undefined
   ): Promise<void> => {
     if (addedRefs.length > 0) {
       const identities = await internalFindByIds(context, RULE_MANAGER_USER, addedRefs) as Array<StoreObject>;
@@ -175,7 +175,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
       const listRemovedRefsCallback = async (deletedTargets: Array<BasicStoreRelation>) => {
         if (deletedTargets.length > 0) {
           // update the report
-          await createObjectRefsInferences(context, report, [], deletedTargets, createInferredRelationOverride);
+          await createObjectRefsInferences(context, report, [], deletedTargets, createInferredRelationCallback);
         }
       };
       const args = { fromId: report.extensions[STIX_EXT_OCTI].id, filters, noFiltersChecking: true, indices: READ_DATA_INDICES, callback: listRemovedRefsCallback };
@@ -185,7 +185,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
   const handlePartOfRelationCreation = async (
     context: AuthContext,
     partOfRelation: StixRelation,
-    createInferredRelationOverride?: createInferredRelationOverrideFunction | undefined
+    createInferredRelationCallback?: createInferredRelationCallbackFunction | undefined
   ): Promise<void> => {
     let partOfTargetStandardId: StixId;
     const { id: partOfStandardId } = partOfRelation;
@@ -200,7 +200,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
         const { fromId: reportId } = relationships[objectRefIndex];
         const report = await stixLoadById(context, RULE_MANAGER_USER, reportId) as StixReport;
         const addedRefs = [{ partOfFromId, partOfId, partOfStandardId, partOfTargetId, partOfTargetStandardId }];
-        await createObjectRefsInferences(context, report, addedRefs, [], createInferredRelationOverride);
+        await createObjectRefsInferences(context, report, addedRefs, [], createInferredRelationCallback);
       }
     };
     const listReportArgs = { fromTypes: [containerType], toId: isSource ? partOfFromId : partOfTargetId, callback: listFromCallback };
@@ -208,7 +208,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
   };
   const applyInsert = async (
     data: StixObject,
-    createInferredRelationOverride?: createInferredRelationOverrideFunction | undefined
+    createInferredRelationCallback?: createInferredRelationCallbackFunction | undefined
     // eslint-disable-next-line consistent-return
   ): Promise<void> => {
     const context = executionContext(ruleDefinition.name, RULE_MANAGER_USER);
@@ -219,13 +219,13 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
       // Get all identities from the report refs
       const leftRefs = (reportObjectRefs ?? []).filter(typeRefFilter);
       if (leftRefs.length > 0) {
-        return handleReportCreation(context, report, leftRefs, [], createInferredRelationOverride);
+        return handleReportCreation(context, report, leftRefs, [], createInferredRelationCallback);
       }
     }
     const upsertRelation = data as StixRelation;
     const { relationship_type: relationType } = upsertRelation;
     if (relationType === relationTypes.creationType) {
-      return handlePartOfRelationCreation(context, upsertRelation, createInferredRelationOverride);
+      return handlePartOfRelationCreation(context, upsertRelation, createInferredRelationCallback);
     }
   };
   const applyUpdate = async (data: StixObject, event: UpdateEvent): Promise<void> => {
@@ -256,10 +256,10 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
   };
   const insert = async (
     element: StixObject,
-    _createInferredEntityOverride?: createInferredEntityOverrideFunction | undefined,
-    createInferredRelationOverride?: createInferredRelationOverrideFunction | undefined
+    _createInferredEntityCallback?: createInferredEntityCallbackFunction | undefined,
+    createInferredRelationCallback?: createInferredRelationCallbackFunction | undefined
   ): Promise<void> => {
-    return applyInsert(element, createInferredRelationOverride);
+    return applyInsert(element, createInferredRelationCallback);
   };
   const update = async (element: StixObject, event: UpdateEvent): Promise<void> => applyUpdate(element, event);
   return { ...ruleDefinition, insert, update, clean };

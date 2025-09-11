@@ -15,7 +15,7 @@ import { executionContext, RULE_MANAGER_USER } from '../../utils/access';
 import type { AuthContext } from '../../types/user';
 import type { StixIndicator } from '../../modules/indicator/indicator-types';
 import { ENTITY_TYPE_INDICATOR } from '../../modules/indicator/indicator-types';
-import type { createInferredEntityOverrideFunction, createInferredRelationOverrideFunction } from '../../types/rules';
+import type { createInferredEntityCallbackFunction, createInferredRelationCallbackFunction } from '../../types/rules';
 import { idGenFromData } from '../../schema/identifier';
 
 // 'If **indicator A** has `revoked` **false** and **indicator A** is `sighted` in ' +
@@ -38,8 +38,8 @@ const ruleSightingIncidentBuilder = () => {
   const handleIndicatorUpsert = async (
     context: AuthContext,
     indicator: StixIndicator,
-    createInferredEntityOverride?: createInferredEntityOverrideFunction | undefined,
-    createInferredRelationOverride?: createInferredRelationOverrideFunction | undefined
+    createInferredEntityCallback?: createInferredEntityCallbackFunction | undefined,
+    createInferredRelationCallback?: createInferredRelationCallbackFunction | undefined
   ): Promise<void> => {
     const { extensions } = indicator;
     const indicatorId = extensions[STIX_EXT_OCTI].id;
@@ -60,23 +60,23 @@ const ruleSightingIncidentBuilder = () => {
         const ruleContentData = { ...ruleBaseContent, first_seen, last_seen };
         const ruleContent = createRuleContent(id, dependencies, explanation, ruleContentData);
         const inferredEntityStandardId = idGenFromData(ENTITY_TYPE_INCIDENT, ruleContent.content.dependencies.sort());
-        if (createInferredEntityOverride) {
-          createInferredEntityOverride(context, input, ruleContent, ENTITY_TYPE_INCIDENT);
+        if (createInferredEntityCallback) {
+          createInferredEntityCallback(context, input, ruleContent, ENTITY_TYPE_INCIDENT);
         } else {
           await createInferredEntity(context, input, ruleContent, ENTITY_TYPE_INCIDENT);
         }
         const ruleRelContent = createRuleContent(id, dependencies, explanation, ruleBaseContent);
         // Create **Incident C** `related-to` **indicator A**
         const incidentToIndicator = { fromId: inferredEntityStandardId, toId: indicatorId, relationship_type: RELATION_RELATED_TO };
-        if (createInferredRelationOverride) {
-          createInferredRelationOverride(context, incidentToIndicator, ruleRelContent);
+        if (createInferredRelationCallback) {
+          createInferredRelationCallback(context, incidentToIndicator, ruleRelContent);
         } else {
           await createInferredRelation(context, incidentToIndicator, ruleRelContent);
         }
         // Create **Incident C** `targets` **identity B**
         const incidentToIdentity = { fromId: inferredEntityStandardId, toId: identityId, relationship_type: RELATION_TARGETS };
-        if (createInferredRelationOverride) {
-          createInferredRelationOverride(context, incidentToIdentity, ruleRelContent);
+        if (createInferredRelationCallback) {
+          createInferredRelationCallback(context, incidentToIdentity, ruleRelContent);
         } else {
           await createInferredRelation(context, incidentToIdentity, ruleRelContent);
         }
@@ -86,25 +86,25 @@ const ruleSightingIncidentBuilder = () => {
   const handleIndicatorRelationUpsert = async (
     context: AuthContext,
     sightingRelation: StixSighting,
-    createInferredEntityOverride?: createInferredEntityOverrideFunction | undefined,
-    createInferredRelationOverride?: createInferredRelationOverrideFunction | undefined
+    createInferredEntityCallback?: createInferredEntityCallbackFunction | undefined,
+    createInferredRelationCallback?: createInferredRelationCallbackFunction | undefined
   ) => {
     const indicatorId = sightingRelation.extensions[STIX_EXT_OCTI].sighting_of_ref;
     const sightingIndicator = await stixLoadById(context, RULE_MANAGER_USER, indicatorId);
-    return handleIndicatorUpsert(context, sightingIndicator as StixIndicator, createInferredEntityOverride, createInferredRelationOverride);
+    return handleIndicatorUpsert(context, sightingIndicator as StixIndicator, createInferredEntityCallback, createInferredRelationCallback);
   };
   const applyUpsert = async (
     data: StixIndicator | StixSighting,
-    createInferredEntityOverride?: createInferredEntityOverrideFunction | undefined,
-    createInferredRelationOverride?: createInferredRelationOverrideFunction | undefined
+    createInferredEntityCallback?: createInferredEntityCallbackFunction | undefined,
+    createInferredRelationCallback?: createInferredRelationCallbackFunction | undefined
   ): Promise<void> => {
     const context = executionContext(def.name, RULE_MANAGER_USER);
     const entityType = generateInternalType(data);
     if (entityType === ENTITY_TYPE_INDICATOR) {
-      await handleIndicatorUpsert(context, data as StixIndicator, createInferredEntityOverride, createInferredRelationOverride);
+      await handleIndicatorUpsert(context, data as StixIndicator, createInferredEntityCallback, createInferredRelationCallback);
     }
     if (entityType === STIX_SIGHTING_RELATIONSHIP) {
-      await handleIndicatorRelationUpsert(context, data as StixSighting, createInferredEntityOverride, createInferredRelationOverride);
+      await handleIndicatorRelationUpsert(context, data as StixSighting, createInferredEntityCallback, createInferredRelationCallback);
     }
   };
   // Contract
@@ -113,10 +113,10 @@ const ruleSightingIncidentBuilder = () => {
   };
   const insert = async (
     element: StixIndicator | StixSighting,
-    createInferredEntityOverride?: createInferredEntityOverrideFunction | undefined,
-    createInferredRelationOverride?: createInferredRelationOverrideFunction | undefined
+    createInferredEntityCallback?: createInferredEntityCallbackFunction | undefined,
+    createInferredRelationCallback?: createInferredRelationCallbackFunction | undefined
   ): Promise<void> => {
-    return applyUpsert(element, createInferredEntityOverride, createInferredRelationOverride);
+    return applyUpsert(element, createInferredEntityCallback, createInferredRelationCallback);
   };
   const update = async (element: StixIndicator | StixSighting): Promise<void> => {
     return applyUpsert(element);

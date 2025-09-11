@@ -11,13 +11,13 @@ import type { BasicStoreObject, BasicStoreRelation, StoreObject } from '../../ty
 import { RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { executionContext, RULE_MANAGER_USER } from '../../utils/access';
 import { internalLoadById } from '../../database/middleware-loader';
-import type { createInferredEntityOverrideFunction, createInferredRelationOverrideFunction } from '../../types/rules';
+import type { createInferredEntityCallbackFunction, createInferredRelationCallbackFunction } from '../../types/rules';
 
 const ruleLocalizationOfTargetsBuilder = () => {
   // Execution
   const applyUpsert = async (
     data: StixRelation,
-    createInferredRelationOverride?: createInferredRelationOverrideFunction | undefined
+    createInferredRelationCallback?: createInferredRelationCallbackFunction | undefined
   ): Promise<void> => {
     const context = executionContext(def.name, RULE_MANAGER_USER);
     const { extensions } = data;
@@ -47,8 +47,8 @@ const ruleLocalizationOfTargetsBuilder = () => {
         stop_time: range.end,
         objectMarking: elementMarkings,
       });
-      if (createInferredRelationOverride) {
-        createInferredRelationOverride(context, input, ruleContent);
+      if (createInferredRelationCallback) {
+        createInferredRelationCallback(context, input, ruleContent);
       } else {
         await createInferredRelation(context, input, ruleContent);
       }
@@ -60,10 +60,10 @@ const ruleLocalizationOfTargetsBuilder = () => {
   };
   const insert = async (
     element: StixRelation,
-    _createInferredEntityOverride?: createInferredEntityOverrideFunction | undefined,
-    createInferredRelationOverride?: createInferredRelationOverrideFunction | undefined
+    _createInferredEntityCallback?: createInferredEntityCallbackFunction | undefined,
+    createInferredRelationCallback?: createInferredRelationCallbackFunction | undefined
   ): Promise<void> => {
-    return applyUpsert(element, createInferredRelationOverride);
+    return applyUpsert(element, createInferredRelationCallback);
   };
   const update = async (element: StixRelation): Promise<void> => {
     return applyUpsert(element);

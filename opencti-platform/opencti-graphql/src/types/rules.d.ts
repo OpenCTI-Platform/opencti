@@ -53,15 +53,15 @@ interface RuleDefinition {
   scopes: Array<RuleScope>;
 }
 
-type createInferredRelationOverrideFunction = (context: AuthContext, input: any, ruleContent: any, opts?: any | undefined) => void;
-type createInferredEntityOverrideFunction = (context: AuthContext, input: any, ruleContent: any, type: string) => void;
+type createInferredRelationCallbackFunction = (context: AuthContext, input: any, ruleContent: any, opts?: any | undefined) => void;
+type createInferredEntityCallbackFunction = (context: AuthContext, input: any, ruleContent: any, type: string) => void;
 
 interface RuleRuntime extends RuleDefinition {
   activated?: boolean;
   insert: (
     element: StixEntities | StixRelation,
-    createInferredEntityOverride?: createInferredEntityOverrideFunction | undefined,
-    createInferredRelationOverride?: createInferredRelationOverrideFunction | undefined
+    createInferredEntityCallback?: createInferredEntityCallbackFunction | undefined,
+    createInferredRelationCallback?: createInferredRelationCallbackFunction | undefined
   ) => Promise<void>;
   update: (element: StixEntities | StixRelation, event: UpdateEvent) => Promise<void>;
   clean: (element: StoreObject, deletedDependencies: Array<string>) => Promise<void>;
