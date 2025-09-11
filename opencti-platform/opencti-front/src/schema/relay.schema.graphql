@@ -2038,7 +2038,7 @@ input StixCyberObservablesExportAskInput {
 
 input ContractConfigInput {
   key: String!
-  value: [String!]
+  value: String!
 }
 
 input RegisterConnectorInput {
@@ -9190,8 +9190,8 @@ type Mutation {
   roleEdit(id: ID!): RoleEditMutations
   pingConnector(id: ID!, state: String, connectorInfo: ConnectorInfoInput): Connector
   registerConnector(input: RegisterConnectorInput): Connector
-  managedConnectorEdit(input: EditManagedConnectorInput): ManagedConnector
-  managedConnectorAdd(input: AddManagedConnectorInput): ManagedConnector
+  managedConnectorEdit(input: EditManagedConnectorInput): Connector
+  managedConnectorAdd(input: AddManagedConnectorInput): Connector
   registerConnectorsManager(input: RegisterConnectorsManagerInput): ConnectorManager
   updateConnectorManagerStatus(input: UpdateConnectorManagerStatusInput): ConnectorManager
   resetStateConnector(id: ID!): Connector
