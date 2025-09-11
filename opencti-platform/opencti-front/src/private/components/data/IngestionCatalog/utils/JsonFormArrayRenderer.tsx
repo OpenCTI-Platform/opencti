@@ -3,6 +3,7 @@ import { and, ControlProps, isPrimitiveArrayControl, RankedTester, rankWith, sch
 import { withJsonFormsControlProps } from '@jsonforms/react';
 import { Autocomplete, Box, Chip, TextField, Typography } from '@mui/material';
 import { useFormatter } from '../../../../../components/i18n';
+import { isNotEmptyField } from '../../../../../utils/utils';
 
 export const JsonFormArrayRenderer = (props: ControlProps) => {
   const {
@@ -22,7 +23,7 @@ export const JsonFormArrayRenderer = (props: ControlProps) => {
 
   const handleValuesChange = useCallback((event: React.SyntheticEvent, newValues: string[]) => {
     const cleanValues = newValues
-      .filter((value) => value.trim() !== '')
+      .filter((value) => isNotEmptyField(value))
       .filter((value, index, arr) => arr.indexOf(value) === index);
 
     const finalValue = cleanValues.length === 0 && schema.default === null ? null : cleanValues;
