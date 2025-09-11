@@ -107,11 +107,7 @@ export const objects = async (
   if (isEmptyField(investigated_entities_ids)) {
     return buildPagination(1, null, [], 0);
   }
-  const filters = addFilter(
-    args.filters,
-    'internal_id',
-    investigated_entities_ids,
-  );
+  const filters = addFilter(args.filters, 'internal_id', investigated_entities_ids);
   const finalArgs = { ...args, filters };
   if (args.all) {
     return fullEntitiesOrRelationsConnection(context, user, args.types, finalArgs);
