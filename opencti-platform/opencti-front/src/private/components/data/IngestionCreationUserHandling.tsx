@@ -44,7 +44,7 @@ export interface BasicUserHandlingValues {
 const IngestionCreationUserHandlingComponent = ({ queryRef, default_confidence_level, labelTag, isSensitive }: IngestionCreationUserHandlingComponentProps) => {
   const { t_i18n } = useFormatter();
   const setAccess = useGranted([SETTINGS_SETACCESSES]);
-  const { values, setFieldValue } = useFormikContext<BasicUserHandlingValues>();
+  const { values, setFieldValue, validateField } = useFormikContext<BasicUserHandlingValues>();
   const [displayDefaultGroupWarning, setDisplayDefaultGroupWarning] = useState<boolean>(false);
   const [isConfidenceLevelEditable, setIsConfidenceLevelEditable] = React.useState(!isSensitive);
   const data = usePreloadedQuery(ingestionCreationUserHandlingDefaultGroupForIngestionUsersQuery, queryRef);
@@ -57,6 +57,7 @@ const IngestionCreationUserHandlingComponent = ({ queryRef, default_confidence_l
         : { label: `[${labelTag}] ${values.name}`, value: `[${labelTag}] ${values.name}` },
     );
   }, [values.name, values.automatic_user, labelTag]);
+
   useEffect(() => {
     setFieldValue(
       'confidence_level',
@@ -73,6 +74,11 @@ const IngestionCreationUserHandlingComponent = ({ queryRef, default_confidence_l
     setIsConfidenceLevelEditable(event.target.checked);
   };
 
+  const handleAutomaticUserChange = async (checked: boolean) => {
+    await setFieldValue('automatic_user', checked);
+    await validateField('user_id');
+  };
+
   return (
     <>
       <Box style={fieldSpacingContainerStyle}>
@@ -82,6 +88,9 @@ const IngestionCreationUserHandlingComponent = ({ queryRef, default_confidence_l
           name="automatic_user"
           checked={values.automatic_user ?? true}
           label={t_i18n('Automatically create a service account')}
+          onChange={async (name: string, value: string) => {
+            await handleAutomaticUserChange(value === 'true');
+          }}
         />
         {displayDefaultGroupWarning && values.automatic_user && (
           <Box sx={{ width: '100%', marginTop: 3 }}>
