@@ -72,9 +72,12 @@ describe('validateContractConfigurations', () => {
       validateContractConfigurations(configurations, contract);
     }).toThrow();
 
-    expect(() => {
+    try {
       validateContractConfigurations(configurations, contract);
-    }).toThrow('Invalid contract configuration for Test Contract');
+    } catch (error: any) {
+      expect(error.message).toContain('Invalid contract configuration for Test Contract');
+      expect(error.message).toContain('Missing required field: "port"');
+    }
   });
 
   it('should handle optional fields correctly', () => {
@@ -127,9 +130,15 @@ describe('validateContractConfigurations', () => {
       { key: 'port', value: 'not_a_number' }
     ];
 
-    expect(() => {
+    try {
       validateContractConfigurations(configurations, contract);
-    }).toThrow();
+      // Should not reach here
+      expect(true).toBe(false);
+    } catch (error: any) {
+      expect(error.message).toContain('Invalid contract configuration for Test Contract');
+      // AJV will report type error since string cannot be coerced to integer
+      expect(error.message).toMatch(/Field "port" must be of type (integer|number)/);
+    }
   });
 
   it('should handle array type in configuration', () => {
@@ -144,11 +153,46 @@ describe('validateContractConfigurations', () => {
       { key: 'tags', value: 'tag1,tag2,tag3' }
     ];
 
-    // Arrays passed as comma-separated strings will fail validation
-    // because AJV expects actual arrays, not strings
+    // Arrays passed as comma-separated strings should now work
+    // The validation function converts them to arrays for AJV
     expect(() => {
       validateContractConfigurations(configurations, contract);
-    }).toThrow('Invalid contract configuration for Test Contract');
+    }).not.toThrow();
+  });
+
+  it('should handle empty array from comma-separated string', () => {
+    const contract = createTestContract(
+      {
+        tags: { type: 'array', items: { type: 'string' } }
+      },
+      [] // tags is optional
+    );
+
+    const configurations: ConnectorContractConfiguration[] = [
+      { key: 'tags', value: '' } // empty string should become empty array
+    ];
+
+    expect(() => {
+      validateContractConfigurations(configurations, contract);
+    }).not.toThrow();
+  });
+
+  it('should handle array with spaces in comma-separated values', () => {
+    const contract = createTestContract(
+      {
+        scopes: { type: 'array', items: { type: 'string' } }
+      },
+      ['scopes']
+    );
+
+    const configurations: ConnectorContractConfiguration[] = [
+      { key: 'scopes', value: 'greynoisefeed, toto ,  test  ' } // with spaces
+    ];
+
+    // Should trim spaces and validate correctly
+    expect(() => {
+      validateContractConfigurations(configurations, contract);
+    }).not.toThrow();
   });
 
   it('should ignore null or undefined values in configuration', () => {

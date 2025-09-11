@@ -177,13 +177,13 @@ export const processConfigurationValue = (
   switch (propSchema.type) {
     case 'boolean':
       if (rawValue !== 'true' && rawValue !== 'false') {
-        throw UnsupportedError(`Invalid boolean value for ${propKey}: ${rawValue}`);
+        throw UnsupportedError(`Field "${propKey}" must be a boolean value (true or false). Received: "${rawValue}"`);
       }
       return rawValue;
     case 'integer': {
       const parsedInt = parseInt(rawValue, 10);
       if (Number.isNaN(parsedInt)) {
-        throw UnsupportedError(`Invalid integer value for ${propKey}: ${rawValue}`);
+        throw UnsupportedError(`Field "${propKey}" must be a valid integer. Received: "${rawValue}"`);
       }
       return String(parsedInt);
     }
@@ -229,7 +229,7 @@ export const resolveConfigurationValue = (
   const isPassword = propSchema.format === 'password';
 
   // No new value provided
-  if (!inputConfig || !inputConfig.value) {
+  if (!inputConfig || !inputConfig.value || inputConfig.value === '') {
     // Keep existing password if available
     if (isPassword && existingConfig) {
       return existingConfig;
@@ -266,6 +266,44 @@ export const resolveConfigurationValue = (
   };
 };
 
+/**
+ * Format AJV validation errors into human-readable messages
+ */
+const formatValidationErrors = (errors: any[] | null | undefined, contractTitle: string): string => {
+  if (!errors || errors.length === 0) {
+    return `Invalid contract configuration for ${contractTitle}`;
+  }
+
+  const errorMessages = errors.map((error) => {
+    const fieldPath = error.instancePath ? error.instancePath.replace(/^\//, '') : error.params?.missingProperty || 'unknown field';
+
+    switch (error.keyword) {
+      case 'required':
+        return `Missing required field: "${error.params.missingProperty}"`;
+      case 'type':
+        return `Field "${fieldPath}" must be of type ${error.params.type} (received: ${typeof error.data})`;
+      case 'enum':
+        return `Field "${fieldPath}" must be one of: ${error.params.allowedValues?.join(', ') || 'allowed values'}`;
+      case 'minLength':
+        return `Field "${fieldPath}" must be at least ${error.params.limit} characters long`;
+      case 'maxLength':
+        return `Field "${fieldPath}" must not exceed ${error.params.limit} characters`;
+      case 'minimum':
+        return `Field "${fieldPath}" must be at least ${error.params.limit}`;
+      case 'maximum':
+        return `Field "${fieldPath}" must not exceed ${error.params.limit}`;
+      case 'pattern':
+        return `Field "${fieldPath}" does not match the required format`;
+      case 'additionalProperties':
+        return `Unknown field: "${error.params.additionalProperty}"`;
+      default:
+        return `Field "${fieldPath}": ${error.message}`;
+    }
+  });
+
+  return `Invalid contract configuration for ${contractTitle}:\n${errorMessages.map((msg) => `  - ${msg}`).join('\n')}`;
+};
+
 export const validateContractConfigurations = (
   contractConfigurations: ConnectorContractConfiguration[],
   targetContract: CatalogContract
@@ -273,11 +311,17 @@ export const validateContractConfigurations = (
   const targetConfig = targetContract.config_schema;
 
   // Build validation object from configurations
-  type ContractConfigurationObject = Record<string, string>;
+  // For AJV validation, arrays need to be actual arrays, not comma-separated strings
+  type ContractConfigurationObject = Record<string, string | string[]>;
   const contractObject = contractConfigurations.reduce<ContractConfigurationObject>((acc, config) => {
     const propSchema = targetConfig.properties[config.key];
     if (propSchema && config.value !== undefined && config.value !== null) {
-      acc[config.key] = config.value;
+      // Convert comma-separated strings to arrays for AJV validation only
+      if (propSchema.type === 'array' && typeof config.value === 'string') {
+        acc[config.key] = config.value.split(',').map((v) => v.trim()).filter((v) => v !== '');
+      } else {
+        acc[config.key] = config.value;
+      }
     }
     return acc;
   }, {});
@@ -295,7 +339,8 @@ export const validateContractConfigurations = (
   const validContractObject = validate(contractObject);
 
   if (!validContractObject) {
-    throw UnsupportedError(`Invalid contract configuration for ${targetContract.title}`, { errors: validate.errors });
+    const formattedError = formatValidationErrors(validate.errors, targetContract.title);
+    throw UnsupportedError(formattedError, { errors: validate.errors });
   }
 };
 
