@@ -61,7 +61,7 @@ const ruleSightingIncidentBuilder = () => {
         const ruleContent = createRuleContent(id, dependencies, explanation, ruleContentData);
         const inferredEntityStandardId = idGenFromData(ENTITY_TYPE_INCIDENT, ruleContent.content.dependencies.sort());
         if (createInferredEntityCallback) {
-          createInferredEntityCallback(context, input, ruleContent, ENTITY_TYPE_INCIDENT);
+          await createInferredEntityCallback(context, input, ruleContent, ENTITY_TYPE_INCIDENT);
         } else {
           await createInferredEntity(context, input, ruleContent, ENTITY_TYPE_INCIDENT);
         }
@@ -69,14 +69,14 @@ const ruleSightingIncidentBuilder = () => {
         // Create **Incident C** `related-to` **indicator A**
         const incidentToIndicator = { fromId: inferredEntityStandardId, toId: indicatorId, relationship_type: RELATION_RELATED_TO };
         if (createInferredRelationCallback) {
-          createInferredRelationCallback(context, incidentToIndicator, ruleRelContent);
+          await createInferredRelationCallback(context, incidentToIndicator, ruleRelContent);
         } else {
           await createInferredRelation(context, incidentToIndicator, ruleRelContent);
         }
         // Create **Incident C** `targets` **identity B**
         const incidentToIdentity = { fromId: inferredEntityStandardId, toId: identityId, relationship_type: RELATION_TARGETS };
         if (createInferredRelationCallback) {
-          createInferredRelationCallback(context, incidentToIdentity, ruleRelContent);
+          await createInferredRelationCallback(context, incidentToIdentity, ruleRelContent);
         } else {
           await createInferredRelation(context, incidentToIdentity, ruleRelContent);
         }

@@ -51,7 +51,7 @@ const ruleRelatedObservableBuilder = () => {
         });
         const input = { fromId: targetRef, toId, relationship_type: RELATION_RELATED_TO };
         if (createInferredRelationCallback) {
-          createInferredRelationCallback(context, input, ruleContent);
+          await createInferredRelationCallback(context, input, ruleContent);
         } else {
           await createInferredRelation(context, input, ruleContent);
         }
@@ -66,7 +66,7 @@ const ruleRelatedObservableBuilder = () => {
         });
         const reverseInput = { fromId: toId, toId: targetRef, relationship_type: RELATION_RELATED_TO };
         if (createInferredRelationCallback) {
-          createInferredRelationCallback(context, reverseInput, reverseRuleContent);
+          await createInferredRelationCallback(context, reverseInput, reverseRuleContent);
         } else {
           await createInferredRelation(context, reverseInput, reverseRuleContent);
         }

@@ -48,7 +48,7 @@ const ruleLocalizationOfTargetsBuilder = () => {
         objectMarking: elementMarkings,
       });
       if (createInferredRelationCallback) {
-        createInferredRelationCallback(context, input, ruleContent);
+        await createInferredRelationCallback(context, input, ruleContent);
       } else {
         await createInferredRelation(context, input, ruleContent);
       }

@@ -66,7 +66,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
         const ruleRelationContent = createRuleContent(id, dependencies, [reportId, partOfId], {});
         const inputForRelation = { fromId: reportId, toId: partOfId, relationship_type: RELATION_OBJECT };
         if (createInferredRelationCallback) {
-          createInferredRelationCallback(context, inputForRelation, ruleRelationContent, opts);
+          await createInferredRelationCallback(context, inputForRelation, ruleRelationContent, opts);
         } else {
           const inferredRelation = await createInferredRelation(context, inputForRelation, ruleRelationContent, opts) as RelationCreation;
           if (inferredRelation.isCreation) {
@@ -79,7 +79,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
         const ruleIdentityContent = createRuleContent(id, dependencies, isSource ? [reportId, partOfTargetId] : [reportId, partOfFromId], {});
         const inputForIdentity = { fromId: reportId, toId: isSource ? partOfTargetId : partOfFromId, relationship_type: RELATION_OBJECT };
         if (createInferredRelationCallback) {
-          createInferredRelationCallback(context, inputForIdentity, ruleIdentityContent, opts);
+          await createInferredRelationCallback(context, inputForIdentity, ruleIdentityContent, opts);
         } else {
           const inferredTarget = await createInferredRelation(context, inputForIdentity, ruleIdentityContent, opts) as RelationCreation;
           if (inferredTarget.isCreation) {
