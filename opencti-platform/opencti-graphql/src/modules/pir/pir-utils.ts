@@ -15,18 +15,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { type BasicStoreEntityPir, type BasicStoreRelationPir, type ParsedPir, type PirExplanation } from './pir-types';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { pageRelationsConnection, storeLoadById } from '../../database/middleware-loader';
+import { pageRelationsConnection } from '../../database/middleware-loader';
 import { RELATION_IN_PIR } from '../../schema/internalRelationship';
 import { FunctionalError } from '../../config/errors';
 import { createRelation, patchAttribute } from '../../database/middleware';
 import { type FilterGroup, type PirAddInput, PirType } from '../../generated/graphql';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE } from '../../schema/stixDomainObject';
-import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_THREAT_ACTOR } from '../../schema/general';
+import { ENTITY_TYPE_THREAT_ACTOR } from '../../schema/general';
 import { RELATION_FROM_TYPES_FILTER } from '../../utils/filtering/filtering-constants';
 import { elUpdate } from '../../database/engine';
 import { INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
-import type { BasicStoreEntity } from '../../types/store';
 import { getPirWithAccessCheck } from './pir-checkPirAccess';
 
 /**
@@ -101,22 +100,23 @@ export const computePirScore = async (context: AuthContext, user: AuthUser, pirI
 /**
  * Update directly pir_information on a stix domain object via an elastic query
  *
- * @param context
- * @param user
  * @param entityId ID of the stix domain object
  * @param pirId ID of the PIR whose score should be updated
  * @param score The new information of the entity for the PIR
  * @return a Promise object with PIR information on an entity
  */
-export const updatePirInformationOnEntity = async (context: AuthContext, user: AuthUser, entityId: string, pirId: string, score: number) => {
-  const stixDomainObject = await storeLoadById<BasicStoreEntity>(context, user, entityId, ABSTRACT_STIX_DOMAIN_OBJECT);
-  const initialInformation = stixDomainObject.pir_information ?? [];
-  const newInformation = initialInformation.filter((s) => s.pir_id !== pirId);
+export const updatePirInformationOnEntity = (entityId: string, pirId: string, score: number) => {
+  let newInformation: { pir_id: string, pir_score: number, last_pir_score_date: Date }[] = [];
   if (score > 0) {
-    newInformation.push({ pir_id: pirId, pir_score: score, last_pir_score_date: new Date() });
+    newInformation = [{ pir_id: pirId, pir_score: score, last_pir_score_date: new Date() }];
   }
-  const params = { pir_information: newInformation };
-  const source = 'ctx._source.pir_information = params.pir_information;';
+  const params = { new_pir_information: newInformation, pir_ids: [pirId] };
+  const source = `
+    if (ctx._source.containsKey('pir_information') && ctx._source['pir_information'] != null) {
+        ctx._source['pir_information'].removeIf(item -> params.pir_ids.contains(item.pir_id));
+        ctx._source['pir_information'].addAll(params.new_pir_information);
+      } else ctx._source['pir_information'] = params.new_pir_information;
+    `;
   // call elUpdate directly to avoid generating stream events and modifying the updated_at of the entity
   return elUpdate(INDEX_STIX_DOMAIN_OBJECTS, entityId, { script: { source, lang: 'painless', params } });
 };
@@ -226,7 +226,7 @@ export const updatePirExplanations = async (
   // replace pir_explanations on in-pir rel
   await patchAttribute(context, user, inPirRel.id, RELATION_IN_PIR, { pir_explanations: explanations, pir_score });
   // update pir information on the entity
-  await updatePirInformationOnEntity(context, user, sourceId, pirId, pir_score);
+  await updatePirInformationOnEntity(sourceId, pirId, pir_score);
 };
 
 /**
