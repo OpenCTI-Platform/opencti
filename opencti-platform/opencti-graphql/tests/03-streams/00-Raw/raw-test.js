@@ -26,6 +26,8 @@ describe('Raw streams tests', () => {
       const internalEvents = events.filter((e) => e.scope === 'internal');
       writeTestDataToFile(JSON.stringify(internalEvents), 'raw-test-internal-event.json');
 
+      expect(internalEvents).toEqual('test');
+
       // group events by type
       const createEvents = internalEvents.filter((e) => e.type === EVENT_TYPE_CREATE);
       const createEventsByTypes = R.groupBy((e) => e.data.data.type, createEvents);
