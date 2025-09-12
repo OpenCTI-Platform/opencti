@@ -81,7 +81,6 @@ const Infrastructure = ({
     infrastructureFragment,
     data,
   );
-
   return (
     <>
       <Grid

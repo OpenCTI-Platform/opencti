@@ -74,7 +74,6 @@ const SecurityPlatform: React.FC<SecurityPlatformProps> = ({ securityPlatformDat
     securityPlatformFragment,
     securityPlatformData,
   );
-
   return (
     <>
       <Grid

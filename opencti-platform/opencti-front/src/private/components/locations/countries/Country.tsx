@@ -97,7 +97,6 @@ const CountryComponent = ({
     countryFragment,
     countryData,
   );
-
   return (
     <>
       <Grid

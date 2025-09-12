@@ -61,7 +61,6 @@ const StixCyberObservable: React.FC<StixCyberObservableProps> = ({
     stixCyberObservableFragment,
     stixCyberObservableData,
   );
-
   return (
     <div data-testid='observable-details-page'>
       <Grid

@@ -77,7 +77,6 @@ const Organization: React.FC<OrganizationProps> = ({ organizationData, viewAs })
   const lastReportsProps = viewAs === 'knowledge'
     ? { stixCoreObjectOrStixRelationshipId: organization.id }
     : { authorId: organization.id };
-
   return (
     <>
       <Grid

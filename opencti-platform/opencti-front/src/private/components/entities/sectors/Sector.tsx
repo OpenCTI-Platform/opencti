@@ -72,7 +72,6 @@ const Sector: React.FC<SectorProps> = ({ sectorData }) => {
     sectorFragment,
     sectorData,
   );
-
   return (
     <>
       <Grid

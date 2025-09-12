@@ -78,7 +78,6 @@ const Individual: React.FC<IndividualProps> = ({ individualData, viewAs }) => {
   const lastReportsProps = viewAs === 'knowledge'
     ? { stixCoreObjectOrStixRelationshipId: individual.id }
     : { authorId: individual.id };
-
   return (
     <>
       <Grid

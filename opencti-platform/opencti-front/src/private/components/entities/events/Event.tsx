@@ -72,7 +72,6 @@ const Event: React.FC<EventProps> = ({ eventData }) => {
     eventFragment,
     eventData,
   );
-
   return (
     <>
       <Grid

@@ -88,7 +88,6 @@ const RegionComponent = ({ regionData }: { regionData: Region_region$key }) => {
   const countries = region.countries?.edges.map(
     (countryEdge) => countryEdge.node,
   );
-
   return (
     <>
       <Grid

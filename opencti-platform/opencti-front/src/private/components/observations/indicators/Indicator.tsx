@@ -72,7 +72,6 @@ const Indicator: React.FC<IndicatorProps> = ({ indicatorData }) => {
     indicatorFragment,
     indicatorData,
   );
-
   return (
     <>
       <Grid

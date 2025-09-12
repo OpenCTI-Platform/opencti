@@ -84,7 +84,6 @@ const AdministrativeArea = ({
     administrativeAreaFragment,
     administrativeAreaData,
   );
-
   return (
     <>
       <Grid

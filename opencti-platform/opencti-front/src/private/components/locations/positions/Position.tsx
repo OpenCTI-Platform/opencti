@@ -39,7 +39,6 @@ const PositionComponent: FunctionComponent<PositionComponentProps> = ({
       relationship_type: ['located-at'],
     },
   );
-
   return (
     <>
       <Grid

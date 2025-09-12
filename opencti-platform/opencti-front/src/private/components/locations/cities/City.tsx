@@ -77,7 +77,6 @@ const cityFragment = graphql`
 const City = ({ cityData }: { cityData: City_city$key }) => {
   const classes = useStyles();
   const city = useFragment<City_city$key>(cityFragment, cityData);
-
   return (
     <>
       <Grid
