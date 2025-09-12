@@ -14,6 +14,7 @@ import GraphToolbarTimeRange from './components/GraphToolbarTimeRange';
 import { useGraphContext } from './GraphContext';
 import GraphToolbarCorrelationTools from './components/GraphToolbarCorrelationTools';
 import GraphToolbarExpandTools, { GraphToolbarExpandToolsProps } from './components/GraphToolbarExpandTools';
+import useAuth from '../../utils/hooks/useAuth';
 
 export type GraphToolbarProps = GraphToolbarContentToolsProps & GraphToolbarExpandToolsProps & GraphToolbarDisplayToolsProps;
 
@@ -24,6 +25,7 @@ const GraphToolbar = ({
   ...props
 }: GraphToolbarProps) => {
   const theme = useTheme<Theme>();
+  const { bannerSettings: { bannerHeightNumber } } = useAuth();
   const navOpen = localStorage.getItem('navOpen') === 'true';
   const { selectBySearch } = useGraphInteractions();
 
@@ -52,6 +54,7 @@ const GraphToolbar = ({
           height: showTimeRange ? 134 : 54,
           overflow: 'hidden',
           transition: 'height 0.2s ease',
+          marginBottom: bannerHeightNumber,
         },
       }}
     >
