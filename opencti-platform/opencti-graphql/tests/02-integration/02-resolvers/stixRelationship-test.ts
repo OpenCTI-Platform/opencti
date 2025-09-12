@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { stixRelationshipsNumber } from '../../../src/domain/stixRelationship';
+import { stixRelationshipsDistribution, stixRelationshipsNumber } from '../../../src/domain/stixRelationship';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../src/schema/stixSightingRelationship';
@@ -8,8 +8,17 @@ import { LABEL_FILTER } from '../../../src/utils/filtering/filtering-constants';
 import { RELATION_INDICATES, RELATION_RELATED_TO } from '../../../src/schema/stixCoreRelationship';
 import { RELATION_OBJECT } from '../../../src/schema/stixRefRelationship';
 import { UNTIL_END_STR } from '../../../src/utils/format';
+import { RELATION_PARTICIPATE_TO } from '../../../src/schema/internalRelationship';
 
 describe('StixRelationship', () => {
+  it('should limit stixRelationshipsDistribution scope to stix relationships', async () => {
+    const args = {
+      dateAttribute: 'created_at',
+      endDate: UNTIL_END_STR,
+      relationship_type: [RELATION_PARTICIPATE_TO],
+    };
+    await expect(() => stixRelationshipsDistribution(testContext, ADMIN_USER, args)).rejects.toThrowError('relationship_type is not a stix-relationship');
+  });
   it('should stixRelationship number with object ref relationship', async () => {
     const relationshipsNumberResult = await stixRelationshipsNumber(testContext, ADMIN_USER, {
       dateAttribute: 'created_at',

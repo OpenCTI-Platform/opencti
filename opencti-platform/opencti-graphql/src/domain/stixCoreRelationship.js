@@ -63,10 +63,11 @@ export const stixCoreRelationshipsNumber = async (context, user, args) => {
   };
 };
 export const stixCoreRelationshipsMultiTimeSeries = async (context, user, args) => {
+  const relationship_type = buildStixCoreRelationshipTypes(args.relationship_type);
   return Promise.all(args.timeSeriesParameters.map(async (timeSeriesParameter) => {
     const filters = addDynamicFromAndToToFilters(timeSeriesParameter);
     const fullArgs = { ...timeSeriesParameter, filters };
-    return { data: timeSeriesRelations(context, user, { ...args, ...fullArgs }) };
+    return { data: timeSeriesRelations(context, user, { ...args, relationship_type, ...fullArgs }) };
   }));
 };
 // endregion
