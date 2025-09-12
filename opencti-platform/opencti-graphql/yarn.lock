@@ -10652,12 +10652,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"json-to-plain-text@npm:1.1.4":
-  version: 1.1.4
-  resolution: "json-to-plain-text@npm:1.1.4"
-  dependencies:
-    chalk: "npm:^4.1.2"
-  checksum: 10/014ca915a0adf3b84881c44a9ebbd62a71eb2c6b5417327d1710070fa0ab94ec36edd5f29c9d1b5f38566b09688c67a69a073976cf3b230b7a242468a6aba313
+"json-to-plain-text@npm:1.2.0":
+  version: 1.2.0
+  resolution: "json-to-plain-text@npm:1.2.0"
+  checksum: 10/ddbd7cf98b3ae77b1e1c897ba511b7e467f0431ae1050af766b0884b5e402a4478982a13c3da0de296e07f2405f62c75236bb923e5c5b05ec6122a0ca490fa81
   languageName: node
   linkType: hard
 
@@ -12129,7 +12127,7 @@ __metadata:
     ipaddr.js: "npm:2.2.0"
     iterall: "npm:1.3.0"
     js-deep-equals: "npm:2.1.1"
-    json-to-plain-text: "npm:1.1.4"
+    json-to-plain-text: "npm:1.2.0"
     jsonpath-plus: "npm:10.3.0"
     jwt-decode: "npm:4.0.0"
     lru-cache: "npm:11.2.1"
