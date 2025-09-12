@@ -24,8 +24,6 @@ const reportComponentFragment = graphql`
     created_at
     updated_at
     createdBy {
-        id
-        name
       ... on Identity {
         id
         name
