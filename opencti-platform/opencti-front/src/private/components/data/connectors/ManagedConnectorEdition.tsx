@@ -20,7 +20,6 @@ import JsonFormArrayRenderer, { jsonFormArrayTester } from '@components/data/Ing
 import reconcileManagedConnectorContractDataWithSchema from '@components/data/connectors/utils/reconcileManagedConnectorContractDataWithSchema';
 import buildContractConfiguration from '@components/data/connectors/utils/buildContractConfiguration';
 import JsonFormUnsupportedType, { jsonFormUnsupportedTypeTester } from '@components/data/IngestionCatalog/utils/JsonFormUnsupportedType';
-import Box from '@mui/material/Box';
 import TextField from '../../../../components/TextField';
 import { type FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
