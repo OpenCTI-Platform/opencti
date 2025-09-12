@@ -24,13 +24,11 @@ const reconcileManagedConnectorContractDataWithSchema = (
 
     if (typeof value === 'string' && value.trim()) {
       reconciledData[key] = value.split(',').map((item) => item.trim());
-    }
-
-    if (Array.isArray(value)) {
+    } else if (Array.isArray(value)) {
       reconciledData[key] = value;
+    } else {
+      reconciledData[key] = [];
     }
-
-    reconciledData[key] = [];
   });
 
   return reconciledData;
