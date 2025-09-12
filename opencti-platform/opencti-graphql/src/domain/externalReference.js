@@ -5,7 +5,7 @@ import { internalLoadById, listEntities, storeLoadById } from '../database/middl
 import conf, { BUS_TOPICS } from '../config/conf';
 import { FunctionalError, ValidationError } from '../config/errors';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
-import { ABSTRACT_STIX_REF_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
+import { ABSTRACT_STIX_REF_RELATIONSHIP, BASE_TYPE_ENTITY, buildRefRelationKey } from '../schema/general';
 import { isStixRefRelationship, RELATION_EXTERNAL_REFERENCE } from '../schema/stixRefRelationship';
 import { isEmptyField } from '../database/utils';
 import { BYPASS, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from '../utils/access';
@@ -17,7 +17,7 @@ export const findById = (context, user, externalReferenceId) => {
 };
 
 export const findAll = (context, user, args) => {
-  const filters = addFilter(args.filters, 'base_type', 'ENTITY');
+  const filters = addFilter(args.filters, 'base_type', BASE_TYPE_ENTITY);
   return listEntities(context, user, [ENTITY_TYPE_EXTERNAL_REFERENCE], { ...args, filters });
 };
 
