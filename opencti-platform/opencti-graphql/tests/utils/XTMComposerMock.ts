@@ -578,50 +578,64 @@ export class XTMComposerMock {
           ]);
         }
       } else {
-        // Container exists, check if action needed
-        const currentStatus = XTMComposerMock.getConnectorStatus(container.state);
-        const requestedStatus = connector.requestedStatus as RequestedStatus;
+        // Container exists, check if configuration changed first (before status transitions)
+        // This is important because config changes should trigger redeploy regardless of status
+        const currentHash = container.envs.OPENCTI_CONFIG_HASH;
+        const newHash = connector.contractHash;
 
-        // Handle status transitions
-        if (requestedStatus === RequestedStatus.Stopping && currentStatus === ConnectorStatus.Started) {
-          await this.stop(connector);
-          await this.stopConnector(connector.id);
-        } else if (requestedStatus === RequestedStatus.Starting && currentStatus === ConnectorStatus.Stopped) {
-          await this.start(connector);
-
-          // Update status via GraphQL
-          await XTMComposerMock.updateConnectorLogs(connector.id, [
-            '[XTM-Composer] Starting connector...'
-          ]);
-
-          await XTMComposerMock.updateConnectorCurrentStatus(connector.id, 'started');
-
-          await XTMComposerMock.updateConnectorLogs(connector.id, [
-            '[XTM-Composer] Connector started successfully'
-          ]);
-        } else {
-          this.log('info', 'Nothing to execute', { id: connector.id });
-        }
-
-        // Check if refresh needed (version mismatch)
-        if (container.envs.OPENCTI_CONFIG_HASH !== connector.contractHash) {
-          this.log('info', 'Refreshing', {
+        if (currentHash !== newHash) {
+          // Configuration has changed, redeploy the connector
+          this.log('info', 'Configuration changed, refreshing connector', {
             id: connector.id,
-            hash: connector.contractHash
+            currentHash,
+            newHash
           });
+
+          // Update logs for configuration change
+          await XTMComposerMock.updateConnectorLogs(connector.id, [
+            '[XTM-Composer] Configuration changed, redeploying connector...'
+          ]);
+
+          // Delete old container
           await this.delete(connector);
+
+          // Deploy new container with updated configuration
           await this.deploy(connector);
 
-          // Update status via GraphQL
+          // Continue with logs
           await XTMComposerMock.updateConnectorLogs(connector.id, [
-            '[XTM-Composer] Configuration changed, redeploying connector...',
-            `[XTM-Composer] Pulling image: ${connector.image}`,
-            '[XTM-Composer] Creating container...',
-            '[XTM-Composer] Starting container...',
             '[XTM-Composer] Connector redeployed successfully'
           ]);
 
-          await XTMComposerMock.updateConnectorCurrentStatus(connector.id, 'started');
+          // Ensure status is set correctly after redeploy
+          if (connector.requestedStatus === 'starting') {
+            await XTMComposerMock.updateConnectorCurrentStatus(connector.id, 'started');
+          }
+        } else {
+          // No configuration change, handle status transitions
+          const currentStatus = XTMComposerMock.getConnectorStatus(container.state);
+          const requestedStatus = connector.requestedStatus as RequestedStatus;
+
+          // Handle status transitions
+          if (requestedStatus === RequestedStatus.Stopping && currentStatus === ConnectorStatus.Started) {
+            await this.stop(connector);
+            await this.stopConnector(connector.id);
+          } else if (requestedStatus === RequestedStatus.Starting && currentStatus === ConnectorStatus.Stopped) {
+            await this.start(connector);
+
+            // Update status via GraphQL
+            await XTMComposerMock.updateConnectorLogs(connector.id, [
+              '[XTM-Composer] Starting connector...'
+            ]);
+
+            await XTMComposerMock.updateConnectorCurrentStatus(connector.id, 'started');
+
+            await XTMComposerMock.updateConnectorLogs(connector.id, [
+              '[XTM-Composer] Connector started successfully'
+            ]);
+          } else {
+            this.log('info', 'Nothing to execute', { id: connector.id });
+          }
         }
       }
     }));
