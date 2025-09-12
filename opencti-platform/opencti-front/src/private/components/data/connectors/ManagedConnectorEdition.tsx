@@ -19,6 +19,8 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import JsonFormArrayRenderer, { jsonFormArrayTester } from '@components/data/IngestionCatalog/utils/JsonFormArrayRenderer';
 import reconcileManagedConnectorContractDataWithSchema from '@components/data/connectors/utils/reconcileManagedConnectorContractDataWithSchema';
 import buildContractConfiguration from '@components/data/connectors/utils/buildContractConfiguration';
+import JsonFormUnsupportedType, { jsonFormUnsupportedTypeTester } from '@components/data/IngestionCatalog/utils/JsonFormUnsupportedType';
+import Box from '@mui/material/Box';
 import TextField from '../../../../components/TextField';
 import { type FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -51,6 +53,7 @@ interface ManagedConnectorValues {
 const customRenderers = [
   ...materialRenderers,
   { tester: jsonFormArrayTester, renderer: JsonFormArrayRenderer },
+  { tester: jsonFormUnsupportedTypeTester, renderer: JsonFormUnsupportedType },
 ];
 
 type ManagedConnectorEditionProps = {
