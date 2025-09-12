@@ -6,6 +6,7 @@ import IconButton from '@mui/material/IconButton';
 import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 export interface ConnectorsStatusFilterState {
   search: string;
@@ -29,6 +30,8 @@ const ConnectorsStatusFilters: React.FC<ConnectorsStatusFiltersProps> = ({
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const [searchInput, setSearchInput] = useState(filters.search);
+
+  const isEnterpriseEdition = useEnterpriseEdition();
 
   const handleFilterChange = (key: keyof ConnectorsStatusFilterState, value: string) => {
     onFiltersChange({ ...filters, [key]: value });
@@ -60,8 +63,8 @@ const ConnectorsStatusFilters: React.FC<ConnectorsStatusFiltersProps> = ({
   const hasActiveFilters = filters.search || filters.managerContractImage || filters.isManaged !== null;
 
   const managedOptions = [
-    { label: t_i18n('True'), value: true },
-    { label: t_i18n('False'), value: false },
+    { label: 'True', value: true },
+    { label: 'False', value: false },
   ];
 
   return (
@@ -72,43 +75,51 @@ const ConnectorsStatusFilters: React.FC<ConnectorsStatusFiltersProps> = ({
         onChange={handleSearchInputChange}
       />
 
-      <Autocomplete
-        size="small"
-        sx={{ width: INPUT_WIDTH, backgroundColor: theme.palette.background.paper }}
-        options={typeOptions}
-        value={typeOptions.find((o) => o.value === filters.managerContractImage) || null}
-        onChange={(event, option) => handleFilterChange('managerContractImage', option?.value || '')}
-        isOptionEqualToValue={(option, value) => option.value === value.value}
-        renderInput={(params) => (
-          <TextField {...params} label={t_i18n('Connector name')} placeholder={t_i18n('Connector name')} variant="outlined" />
-        )}
-        clearOnEscape
-      />
+      {
+        isEnterpriseEdition && (
+          <>
+            <Tooltip title={t_i18n('Apply filter to managed deployments only')} placement={'top'} >
+              <Autocomplete
+                size="small"
+                sx={{ width: INPUT_WIDTH, backgroundColor: theme.palette.background.paper }}
+                options={typeOptions}
+                value={typeOptions.find((o) => o.value === filters.managerContractImage) || null}
+                onChange={(event, option) => handleFilterChange('managerContractImage', option?.value || '')}
+                isOptionEqualToValue={(option, value) => option.value === value.value}
+                renderInput={(params) => (
+                  <TextField {...params} label={t_i18n('Connector')} placeholder={t_i18n('Connector')} variant="outlined" />
+                )}
+                clearOnEscape
+              />
+            </Tooltip>
 
-      <Autocomplete
-        size="small"
-        sx={{ width: INPUT_WIDTH, backgroundColor: theme.palette.background.paper }}
-        options={managedOptions}
-        value={managedOptions.find((o) => o.value === filters.isManaged) || null} // This will show empty when isManaged is null
-        onChange={(event, option) => handleBooleanFilterChange('isManaged', option?.value ?? null)}
-        isOptionEqualToValue={(option, value) => option.value === value.value}
-        renderInput={(params) => (
-          <TextField {...params} label={t_i18n('Manager deployment')} variant="outlined" />
-        )}
-      />
-      <Tooltip title={t_i18n('Clear filters')}>
-        <span>
-          <IconButton
-            color={hasActiveFilters ? 'primary' : 'default'}
-            onClick={handleClearFilters}
-            size="small"
-            disabled={!hasActiveFilters}
-          >
-            <FilterListOffOutlined fontSize="small" />
-          </IconButton>
-        </span>
-      </Tooltip>
+            <Autocomplete
+              size="small"
+              sx={{ width: INPUT_WIDTH, backgroundColor: theme.palette.background.paper }}
+              options={managedOptions}
+              value={managedOptions.find((o) => o.value === filters.isManaged) || null} // This will show empty when isManaged is null
+              onChange={(event, option) => handleBooleanFilterChange('isManaged', option?.value ?? null)}
+              isOptionEqualToValue={(option, value) => option.value === value.value}
+              renderInput={(params) => (
+                <TextField {...params} label={t_i18n('Manager deployment')} variant="outlined" />
+              )}
+            />
 
+            <Tooltip title={t_i18n('Clear filters')}>
+              <span>
+                <IconButton
+                  color={hasActiveFilters ? 'primary' : 'default'}
+                  onClick={handleClearFilters}
+                  size="small"
+                  disabled={!hasActiveFilters}
+                >
+                  <FilterListOffOutlined fontSize="small" />
+                </IconButton>
+              </span>
+            </Tooltip>
+          </>
+        )
+      }
     </Stack>
   );
 };

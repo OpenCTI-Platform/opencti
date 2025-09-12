@@ -192,7 +192,13 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
   const { filteredConnectors, filters, setFilters } = useConnectorsStatusFilters({ connectors: data.connectors, searchParams });
 
   const contractsOptions = useMemo(() => {
-    if (!data.catalogs) return [];
+    if (!data.catalogs || !data.connectors) return [];
+
+    const existingConnectorImages = new Set(
+      data.connectors
+        .filter((connector) => connector.manager_contract_image)
+        .map((connector) => connector.manager_contract_image),
+    );
 
     const contracts = [];
     for (const catalog of data.catalogs) {
@@ -201,10 +207,14 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
           const parsedContract = JSON.parse(contract);
           const validatedContract = contractSchema.validateSync(parsedContract);
 
-          contracts.push({
-            label: validatedContract.title,
-            value: `${validatedContract.container_image}:${validatedContract.container_version}`,
-          });
+          const contractImageVersion = `${validatedContract.container_image}:${validatedContract.container_version}`;
+
+          if (existingConnectorImages.has(contractImageVersion)) {
+            contracts.push({
+              label: validatedContract.title,
+              value: contractImageVersion,
+            });
+          }
         } catch (e) {
           MESSAGING$.notifyError(t_i18n('Failed to parse a contract'));
         }
@@ -212,7 +222,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
     }
 
     return contracts;
-  }, [data.catalogs]);
+  }, [data.catalogs, data.connectors]);
 
   // eslint-disable-next-line class-methods-use-this
   const submitResetState = (connectorId: string | undefined) => {
@@ -398,7 +408,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                     <SortConnectorsHeader field="updated_at" label="Modified" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
                     {
                       isComposerEnable && (
-                        <SortConnectorsHeader field="is_managed" label="Manager Deployment" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
+                        <SortConnectorsHeader field="is_managed" label={t_i18n('Manager deployment')} isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
                       )
                     }
                   </div>
