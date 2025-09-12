@@ -101,6 +101,10 @@ if (externalConfigurationFile) {
 nconf.file(environment, configurationFile);
 nconf.file('default', resolveEnvFile('default'));
 
+// Setup SSO/SAML auth_payload_body_size
+// Default limit is '100kb' based on https://expressjs.com/en/resources/middleware/body-parser.html
+export const AUTH_PAYLOAD_BODY_SIZE = nconf.get('app:auth_payload_body_size') ?? null;
+
 // Setup application logApp
 const appLogLevel = nconf.get('app:app_logs:logs_level');
 const appLogFileTransport = booleanConf('app:app_logs:logs_files', true);
