@@ -4336,7 +4336,7 @@ export type ContextData = {
 
 export type ContractConfigInput = {
   key: Scalars['String']['input'];
-  value?: InputMaybe<Array<Scalars['String']['input']>>;
+  value: Scalars['String']['input'];
 };
 
 export enum CountriesOrdering {
@@ -14562,8 +14562,8 @@ export type Mutation = {
   malwareAnalysisRelationAdd?: Maybe<StixRefRelationship>;
   malwareAnalysisRelationDelete?: Maybe<MalwareAnalysis>;
   malwareEdit?: Maybe<MalwareEditMutations>;
-  managedConnectorAdd?: Maybe<ManagedConnector>;
-  managedConnectorEdit?: Maybe<ManagedConnector>;
+  managedConnectorAdd?: Maybe<Connector>;
+  managedConnectorEdit?: Maybe<Connector>;
   managerConfigurationFieldPatch?: Maybe<ManagerConfiguration>;
   markingDefinitionAdd?: Maybe<MarkingDefinition>;
   markingDefinitionEdit?: Maybe<MarkingDefinitionEditMutations>;
@@ -40559,8 +40559,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   malwareAnalysisRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationMalwareAnalysisRelationAddArgs, 'id' | 'input'>>;
   malwareAnalysisRelationDelete?: Resolver<Maybe<ResolversTypes['MalwareAnalysis']>, ParentType, ContextType, RequireFields<MutationMalwareAnalysisRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   malwareEdit?: Resolver<Maybe<ResolversTypes['MalwareEditMutations']>, ParentType, ContextType, RequireFields<MutationMalwareEditArgs, 'id'>>;
-  managedConnectorAdd?: Resolver<Maybe<ResolversTypes['ManagedConnector']>, ParentType, ContextType, Partial<MutationManagedConnectorAddArgs>>;
-  managedConnectorEdit?: Resolver<Maybe<ResolversTypes['ManagedConnector']>, ParentType, ContextType, Partial<MutationManagedConnectorEditArgs>>;
+  managedConnectorAdd?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, Partial<MutationManagedConnectorAddArgs>>;
+  managedConnectorEdit?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, Partial<MutationManagedConnectorEditArgs>>;
   managerConfigurationFieldPatch?: Resolver<Maybe<ResolversTypes['ManagerConfiguration']>, ParentType, ContextType, RequireFields<MutationManagerConfigurationFieldPatchArgs, 'id' | 'input'>>;
   markingDefinitionAdd?: Resolver<Maybe<ResolversTypes['MarkingDefinition']>, ParentType, ContextType, RequireFields<MutationMarkingDefinitionAddArgs, 'input'>>;
   markingDefinitionEdit?: Resolver<Maybe<ResolversTypes['MarkingDefinitionEditMutations']>, ParentType, ContextType, RequireFields<MutationMarkingDefinitionEditArgs, 'id'>>;
