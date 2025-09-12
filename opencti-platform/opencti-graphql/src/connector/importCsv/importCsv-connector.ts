@@ -89,8 +89,6 @@ export const processCSVforWorkers = async (context: AuthContext, fileId: string,
 
     const stream: SdkStream<Readable> | null | undefined = await downloadFile(fileId) as SdkStream<Readable> | null | undefined;
     if (stream) {
-      // start UI count, import of file = 1 operation.
-
       const lines: string[] = [];
       const readStream = readline.createInterface({ input: stream, crlfDelay: Infinity });
       let lineNumber = 0;
