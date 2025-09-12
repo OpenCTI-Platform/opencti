@@ -1,8 +1,8 @@
 import gql from 'graphql-tag';
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { now } from 'moment';
-import { ADMIN_USER, buildStandardUser, queryAsAdmin, testContext } from '../../utils/testQuery';
-import { FilterMode, FilterOperator, PirType } from '../../../src/generated/graphql';
+import { ADMIN_USER, buildStandardUser, ONE_MINUTE, queryAsAdmin, testContext } from '../../utils/testQuery';
+import { FilterMode, FilterOperator, PirType, StatsOperation } from '../../../src/generated/graphql';
 import { SYSTEM_USER } from '../../../src/utils/access';
 import { internalLoadById, pageEntitiesConnection, pageRelationsConnection } from '../../../src/database/middleware-loader';
 import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
@@ -14,6 +14,8 @@ import { resetCacheForEntity } from '../../../src/database/cache';
 import { type BasicStoreRelationPir, ENTITY_TYPE_PIR } from '../../../src/modules/pir/pir-types';
 import { RELATION_IN_PIR } from '../../../src/schema/internalRelationship';
 import { connectorsForWorker } from '../../../src/database/repository';
+import { pirRelationshipsDistribution, pirRelationshipsMultiTimeSeries } from '../../../src/modules/pir/pir-domain';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 
 const LIST_QUERY = gql`
   query pirs(
@@ -66,6 +68,7 @@ const LIST_RELS_QUERY = gql`
             pir_explanations {
               dependencies {
                 element_id
+                author_id
               }
               criterion {
                 filters
@@ -119,6 +122,17 @@ describe('PIR resolver standard behavior', () => {
   let pirInternalId2: string = '';
   let flaggedElementId: string = '';
   const userUpdate = buildStandardUser([], [], [{ name: 'KNOWLEDGE_KNUPDATE' }]);
+  let relationshipAuthorId: string = ''; // id of Allied Universal
+
+  beforeAll(async () => {
+    const author = await internalLoadById<BasicStoreEntity>(
+      testContext,
+      SYSTEM_USER,
+      'identity--732421a0-8471-52de-8d9f-18c8b260813c',
+      { type: ENTITY_TYPE_IDENTITY_ORGANIZATION },
+    );
+    relationshipAuthorId = author.id;
+  });
 
   it('should pir created', async () => {
     const CREATE_QUERY = gql`
@@ -316,7 +330,7 @@ describe('PIR resolver standard behavior', () => {
     };
     await queryAsAdmin({
       query: FLAG_QUERY,
-      variables: { id: pirInternalId1, input: { relationshipId, sourceId: flaggedElementId, matchingCriteria } },
+      variables: { id: pirInternalId1, input: { relationshipId, sourceId: flaggedElementId, matchingCriteria, relationshipAuthorId } },
     });
     // Verify the in-pir relation has been created
     const queryResult = await queryAsAdmin({
@@ -330,6 +344,7 @@ describe('PIR resolver standard behavior', () => {
     expect(queryResult.data?.pirRelationships.edges[0].node.pir_score).toEqual(67);
     expect(queryResult.data?.pirRelationships.edges[0].node.pir_explanations.length).toEqual(1);
     expect(queryResult.data?.pirRelationships.edges[0].node.pir_explanations[0].dependencies[0].element_id).toEqual(relationshipId);
+    expect(queryResult.data?.pirRelationships.edges[0].node.pir_explanations[0].dependencies[0].author_id).toEqual(relationshipAuthorId);
     // Verify the pir information has been updated at the entity level
     const malwareAfterFlag = await internalLoadById<BasicStoreEntity>(
       testContext,
@@ -352,6 +367,37 @@ describe('PIR resolver standard behavior', () => {
     expect(malwareQueryResult.data?.malware.pirInformation.pir_score).toEqual(67);
     expect(malwareQueryResult.data?.malware.pirInformation.pir_explanations.length).toEqual(1);
     expect(malwareQueryResult.data?.malware.pirInformation.pir_explanations[0].criterion.filters).toEqual(JSON.stringify(matchingCriteria.filters));
+  });
+
+  it('should display top sources distribution for in-pir relationships', async () => {
+    const args = {
+      dateAttribute: 'created_at',
+      field: 'pir_explanations.dependencies.author_id',
+      isTo: false,
+      relationship_type: ['in-pir'],
+      pirId: pirInternalId1,
+      operation: StatsOperation.Count,
+    };
+    const distribution = await pirRelationshipsDistribution(testContext, ADMIN_USER, args);
+    expect(distribution.length).toEqual(1);
+    expect(distribution[0].value).toEqual(1);
+    expect(distribution[0].entity.entity_type).toEqual(ENTITY_TYPE_IDENTITY_ORGANIZATION);
+    expect(distribution[0].entity.name).toEqual('Allied Universal');
+  });
+
+  it('should display pir relationship time series', async () => {
+    // we count the number of pir relationships created in the last minute over time with intervals of 1 day
+    const args = {
+      interval: 'day',
+      operation: StatsOperation.Count,
+      relationship_type: ['in-pir'],
+      startDate: now() - ONE_MINUTE, // the last minute
+      timeSeriesParameters: [{ field: 'created_at', pirId: pirInternalId1 }],
+    };
+    const timeSeries = await pirRelationshipsMultiTimeSeries(testContext, ADMIN_USER, args);
+    expect(timeSeries.length).toEqual(1);
+    expect(timeSeries[0].data.length).toEqual(1); // 1 interval of 1 day between now and the last minute
+    expect(timeSeries[0].data[0].value).toEqual(1); // in the last interval: 1 pir relationship created between the malware and pir1
   });
 
   it('should filter entities by a pir score', async () => {
@@ -411,7 +457,7 @@ describe('PIR resolver standard behavior', () => {
     expect(stixDomainObjects4.edges.length).toEqual(0);
   });
 
-  it('should update a pir meta rel by adding a new explanation', async () => {
+  it('should update a pir relationship by adding a new explanation', async () => {
     const FLAG_QUERY = gql`
       mutation pirFlagElement($id: ID!, $input: PirFlagElementInput!) {
         pirFlagElement(id: $id, input: $input)
@@ -464,7 +510,7 @@ describe('PIR resolver standard behavior', () => {
     expect(malwareAfterFlag.pir_information.filter((s) => s.pir_id === pirInternalId2)[0].pir_score).toEqual(50);
   });
 
-  it('should update a pir meta rel by removing an explanation', async () => {
+  it('should update a pir relationship by removing an explanation', async () => {
     const UNFLAG_QUERY = gql`
       mutation pirUnflagElement($id: ID!, $input: PirUnflagElementInput!) {
         pirUnflagElement(id: $id, input: $input)

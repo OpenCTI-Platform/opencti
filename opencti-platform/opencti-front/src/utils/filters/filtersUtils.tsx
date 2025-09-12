@@ -50,25 +50,25 @@ export const FiltersVariant = {
 
 const NOT_CLEANABLE_FILTER_KEYS = ['entity_type', 'authorized_members.id', 'user_id', 'internal_id', 'entity_id', 'ids'];
 
-const PIR_SCORE_FILTER_DEFINITION = {
-  filterKey: 'pir_score',
+const pirScoreFilterDefinition = (pirId: string) => ({
+  filterKey: `pir_score.${pirId}`,
   label: 'PIR Score',
   multiple: false,
   type: 'integer',
   subFilters: [],
   subEntityTypes: [],
   elementsForFilterValuesSearch: [],
-};
+});
 
-const LAST_PIR_SCORE_DATE_FILTER_DEFINITION = {
-  filterKey: 'last_pir_score_date',
+const lastPirScoreDateFilterDefinition = (pirId: string) => ({
+  filterKey: `last_pir_score_date.${pirId}`,
   label: 'Last PIR Score date',
   multiple: false,
   type: 'date',
   subFilters: [],
   subEntityTypes: [],
   elementsForFilterValuesSearch: [],
-};
+});
 
 // filters which possible values are entity types or relationship types
 export const entityTypesFilters = [
@@ -897,11 +897,13 @@ export const getFilterDefinitionFromFilterKeysMap = (
   filterKeysMap: Map<string, FilterDefinition>,
 ): FilterDefinition | undefined => {
   const filterKey = getStringFilterKey(key);
-  if (filterKey.startsWith('pir_score')) {
-    return PIR_SCORE_FILTER_DEFINITION;
+  if (filterKey.startsWith('pir_score.')) {
+    const pirId = filterKey.split('.')[1];
+    return pirScoreFilterDefinition(pirId);
   }
-  if (filterKey.startsWith('last_pir_score_date')) {
-    return LAST_PIR_SCORE_DATE_FILTER_DEFINITION;
+  if (filterKey.startsWith('last_pir_score_date.')) {
+    const pirId = filterKey.split('.')[1];
+    return lastPirScoreDateFilterDefinition(pirId);
   }
   return filterKeysMap.get(filterKey);
 };
@@ -912,11 +914,13 @@ export const useFilterDefinition = (
   subKey?: string,
 ): FilterDefinition | undefined => {
   const filterKey = getStringFilterKey(key);
-  if (filterKey.startsWith('pir_score')) {
-    return PIR_SCORE_FILTER_DEFINITION;
+  if (filterKey.startsWith('pir_score.')) {
+    const pirId = filterKey.split('.')[1];
+    return pirScoreFilterDefinition(pirId);
   }
-  if (filterKey.startsWith('last_pir_score_date')) {
-    return LAST_PIR_SCORE_DATE_FILTER_DEFINITION;
+  if (filterKey.startsWith('last_pir_score_date.')) {
+    const pirId = filterKey.split('.')[1];
+    return lastPirScoreDateFilterDefinition(pirId);
   }
   const filterDefinition = useBuildFilterKeysMapFromEntityType(entityTypes).get(filterKey);
   if (subKey) {

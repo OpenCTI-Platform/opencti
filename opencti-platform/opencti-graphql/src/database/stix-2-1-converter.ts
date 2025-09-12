@@ -129,6 +129,7 @@ export const isTrustedStixId = (stixId: string): boolean => {
   const [, uuid] = segments;
   return uuidVersion(uuid) !== 1;
 };
+
 export const convertTypeToStixType = (type: string): string => {
   if (isStixDomainObjectIdentity(type)) {
     return 'identity';

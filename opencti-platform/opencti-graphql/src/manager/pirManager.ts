@@ -41,6 +41,7 @@ const PIR_MANAGER_INTERVAL = conf.get('pir_manager:interval') ?? 10000;
 const PIR_MANAGER_TIME_RANGE = conf.get('pir_manager:time_range') ?? 60000;
 const PIR_MANAGER_LOCK_KEY = conf.get('pir_manager:lock_key');
 const PIR_MANAGER_ENABLED = booleanConf('pir_manager:enabled', false);
+const PIR_MANAGER_MAX_CONCURRENCY = conf.get('pir_manager:max_concurrency') ?? 5;
 
 const pirFlagElementToQueue = async (
   pir: BasicStoreEntityPir,
@@ -165,26 +166,28 @@ const processStreamEventsForPir = (context:AuthContext, pir: BasicStoreEntityPir
  */
 const pirManagerHandler = async () => {
   const redisClient = await createRedisClient(PIR_MANAGER_LABEL, false);
-  const context = executionContext(PIR_MANAGER_CONTEXT);
-  const allPirs = await getEntitiesListFromCache<BasicStoreEntityPir>(context, PIR_MANAGER_USER, ENTITY_TYPE_PIR);
+  try {
+    const context = executionContext(PIR_MANAGER_CONTEXT);
+    const allPirs = await getEntitiesListFromCache<BasicStoreEntityPir>(context, PIR_MANAGER_USER, ENTITY_TYPE_PIR);
 
-  // Loop through all Pir one by one.
-  await BluePromise.map(allPirs, async (pir) => {
-    // Fetch stream events since last event id caught by the Pir.
-    const { lastEventId } = await fetchStreamEventsRangeFromEventId(
-      redisClient,
-      pir.lastEventId,
-      processStreamEventsForPir(context, pir),
-      { streamBatchTime: PIR_MANAGER_TIME_RANGE }
-    );
-    // Update pir last event id.
-    if (lastEventId !== pir.lastEventId) {
-      await updatePir(context, PIR_MANAGER_USER, pir.id, [{ key: 'lastEventId', value: [lastEventId] }]);
-    }
-  }, { concurrency: 5 });
-
-  // close redis client connexion
-  await redisClient.quit();
+    // Loop through all Pirs by group
+    await BluePromise.map(allPirs, async (pir) => {
+      // Fetch stream events since last event id caught by the Pir.
+      const { lastEventId } = await fetchStreamEventsRangeFromEventId(
+        redisClient,
+        pir.lastEventId,
+        processStreamEventsForPir(context, pir),
+        { streamBatchTime: PIR_MANAGER_TIME_RANGE }
+      );
+      // Update pir last event id.
+      if (lastEventId !== pir.lastEventId) {
+        await updatePir(context, PIR_MANAGER_USER, pir.id, [{ key: 'lastEventId', value: [lastEventId] }]);
+      }
+    }, { concurrency: PIR_MANAGER_MAX_CONCURRENCY });
+  } finally {
+    // close redis client connexion
+    await redisClient.quit();
+  }
 };
 
 // Configuration of the manager.

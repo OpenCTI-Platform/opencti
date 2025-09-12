@@ -7,6 +7,7 @@ import { WorkspaceManageAccessDialog_authorizedMembers$key } from './__generated
 import { handleErrorInForm } from '../../../relay/environment';
 import { authorizedMembersToOptions } from '../../../utils/authorizedMembers';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
+import { useFormatter } from '../../../components/i18n';
 
 const workspaceManageAccessDialogEditAuthorizedMembersMutation = graphql`
   mutation WorkspaceManageAccessDialogEditAuthorizedMembersMutation(
@@ -47,6 +48,8 @@ interface WorkspaceManageAccessDialogProps {
 const WorkspaceManageAccessDialog: FunctionComponent<
 WorkspaceManageAccessDialogProps
 > = ({ workspaceId, authorizedMembersData, owner, handleClose, open }) => {
+  const { t_i18n } = useFormatter();
+
   const [commit] = useApiMutation(
     workspaceManageAccessDialogEditAuthorizedMembersMutation,
   );
@@ -116,6 +119,7 @@ WorkspaceManageAccessDialogProps
       onSubmit={onSubmitForm}
       owner={owner ?? undefined}
       showAllMembersLine={true}
+      customInfoMessage={t_i18n('info_authorizedmembers_workspace')}
     />
   );
 };
