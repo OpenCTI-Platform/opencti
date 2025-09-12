@@ -123,17 +123,19 @@ const DataTableBody = ({
       defaultComputation();
     }
 
-    return () => { observer?.disconnect(); };
+    return () => {
+      observer?.disconnect();
+    };
   }, [settingsMessagesBannerHeight, rootRef, filters]);
 
-  const rowWidth = useMemo(() => (
-    Math.floor(columns.reduce((acc, col) => {
+  const rowWidth = useMemo(() => {
+    return Math.floor(columns.filter(({ visible }) => !!visible).reduce((acc, col) => {
       if (col.percentWidth) {
         return acc + tableWidth * (col.percentWidth / 100);
       }
       return acc + (col.id === 'icon' ? ICON_COLUMN_SIZE : SELECT_COLUMN_SIZE);
     }, actions ? SELECT_COLUMN_SIZE + 9 : 9)) // 9 is for scrollbar.
-  ), [columns, tableWidth]);
+  }, [columns, tableWidth]);
 
   const containerLinesStyle: CSSProperties = {
     overflow: 'hidden auto',
