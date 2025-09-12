@@ -529,7 +529,23 @@ describe('Connector Composer and Managed Connectors', () => {
       expect(connectorResult.data?.connector.manager_current_status).toEqual('started');
     });
 
-    it.skip('should change/update the connector log level (e.g., DEBUG, INFO, WARN, ERROR)', async () => {
+    it('should change/update the connector log level (e.g., DEBUG, INFO, WARN, ERROR)', async () => {
+      // Ensure a connector manager is registered (for test isolation)
+      const managerInput = {
+        id: TEST_COMPOSER_ID,
+        name: 'Test Composer for Log Level Test',
+        public_key: TEST_COMPOSER_PUBLIC_KEY,
+      };
+
+      try {
+        await queryAsAdminWithSuccess({
+          query: REGISTER_CONNECTORS_MANAGER_MUTATION,
+          variables: { input: managerInput }
+        });
+      } catch (error) {
+        // Manager might already exist if running full test suite, that's OK
+      }
+
       // Get test connector from catalog
       const testConnector = catalogHelper.getTestSafeConnector();
       const catalogId = catalogHelper.getCatalogId();
@@ -596,8 +612,8 @@ describe('Connector Composer and Managed Connectors', () => {
         name: 'Log Level Test Connector',
         connector_user_id: TEST_USER_CONNECTOR_ID,
         manager_contract_configuration: [
-          { key: 'IPINFO_TOKEN', value: ['log-level-test-token'] },
-          { key: 'CONNECTOR_LOG_LEVEL', value: ['debug'] }, // Changed from 'info' to 'debug'
+          { key: 'IPINFO_TOKEN', value: 'log-level-test-token' },
+          { key: 'CONNECTOR_LOG_LEVEL', value: 'debug' }, // Changed from 'info' to 'debug'
           ...ipinfoListProperties
         ]
       };
@@ -649,8 +665,8 @@ describe('Connector Composer and Managed Connectors', () => {
         name: 'Log Level Test Connector',
         connector_user_id: TEST_USER_CONNECTOR_ID,
         manager_contract_configuration: [
-          { key: 'IPINFO_TOKEN', value: ['log-level-test-token'] },
-          { key: 'CONNECTOR_LOG_LEVEL', value: ['error'] }, // Changed from 'debug' to 'error'
+          { key: 'IPINFO_TOKEN', value: 'log-level-test-token' },
+          { key: 'CONNECTOR_LOG_LEVEL', value: 'error' }, // Changed from 'debug' to 'error'
           ...ipinfoListProperties
         ]
       };
@@ -686,8 +702,8 @@ describe('Connector Composer and Managed Connectors', () => {
         name: 'Log Level Test Connector - Updated Name Only',
         connector_user_id: TEST_USER_CONNECTOR_ID,
         manager_contract_configuration: [
-          { key: 'IPINFO_TOKEN', value: ['log-level-test-token'] },
-          { key: 'CONNECTOR_LOG_LEVEL', value: ['error'] }, // Same log level as before
+          { key: 'IPINFO_TOKEN', value: 'log-level-test-token' },
+          { key: 'CONNECTOR_LOG_LEVEL', value: 'error' }, // Same log level as before
           ...ipinfoListProperties
         ]
       };
@@ -1164,9 +1180,9 @@ describe('Connector Composer and Managed Connectors', () => {
         name: 'Updated IpInfo Connector',
         connector_user_id: TEST_USER_CONNECTOR_ID,
         manager_contract_configuration: [
-          { key: 'IPINFO_TOKEN', value: ['updated-token-456'] },
-          { key: 'CONNECTOR_AUTO', value: ['false'] },
-          { key: 'CONNECTOR_LOG_LEVEL', value: ['debug'] },
+          { key: 'IPINFO_TOKEN', value: 'updated-token-456' },
+          { key: 'CONNECTOR_AUTO', value: 'false' },
+          { key: 'CONNECTOR_LOG_LEVEL', value: 'debug' },
           ...ipinfoListProperties
         ]
       };
