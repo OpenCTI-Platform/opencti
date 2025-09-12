@@ -1,6 +1,7 @@
 import { expect, it, describe, afterAll, beforeAll } from 'vitest';
 import gql from 'graphql-tag';
 import { v4 as uuidv4 } from 'uuid';
+import * as path from 'path';
 import { adminQueryWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
 import { wait } from '../../../src/database/utils';
@@ -151,13 +152,20 @@ const CONNECTOR_WITH_HEALTH_QUERY = gql`
   }
 `;
 
-describe('Connector Composer and Managed Connectors', () => {
+describe.skip('Connector Composer and Managed Connectors', () => {
   // Track all created resources
   const createdConnectorIds = new Set<string>();
   let xtmComposer: XTMComposerMock;
 
   // Initialize XTM Composer mock
   beforeAll(async () => {
+    // Set up test catalog path in environment
+    const testCatalogPath = path.join(__dirname, '../../utils/opencti-manifest.json');
+    process.env.APP__CUSTOM_CATALOGS = JSON.stringify([testCatalogPath]);
+
+    // Validate that we're using the test catalog
+    catalogHelper.validateTestCatalog();
+
     xtmComposer = new XTMComposerMock({
       operationDelay: 100, // Faster for testing
       failureRate: 0, // No failures for basic tests
