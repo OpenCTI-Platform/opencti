@@ -12,6 +12,8 @@ export const buildTestConfig = (include: string[]) => defineConfig({
     teardownTimeout: 5000,
     globalSetup: ['./tests/utils/globalSetup.ts'],
     setupFiles: ['./tests/utils/testSetup.js'],
+    maxConcurrency: 2,
+    maxWorkers: 4,
     coverage: {
       provider: 'v8',
       include: ['src/**'],
