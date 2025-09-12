@@ -21,12 +21,12 @@ describe('Raw streams tests', () => {
   it(
     'Should stream withInternal (ie with scope=internal) correctly formatted',
     async () => {
-      // Read all events from the beginning.
+      // Read all events of scope internal from the beginning
       const events = await fetchStreamEvents(`http://localhost:${PORT}/stream?withInternal=true`, { from: '0' });
       const internalEvents = events.filter((e) => e.scope === 'internal');
       writeTestDataToFile(JSON.stringify(internalEvents), 'raw-test-internal-event.json');
 
-      // 00 - Check the number of events and dump information in test result files
+      // group events by type
       const createEvents = internalEvents.filter((e) => e.type === EVENT_TYPE_CREATE);
       const createEventsByTypes = R.groupBy((e) => e.data.data.type, createEvents);
 
@@ -36,6 +36,7 @@ describe('Raw streams tests', () => {
       const deleteEvents = internalEvents.filter((e) => e.type === EVENT_TYPE_DELETE);
       const deleteEventsByTypes = R.groupBy((e) => e.data.data.type, deleteEvents);
 
+      // check internal relationships events number (ie participate-to and in-pir relationships events)
       expect(createEventsByTypes['internal-relationship']).toEqual(14);
       expect(updateEventsByTypes['internal-relationship']).toEqual(2);
       expect(deleteEventsByTypes['internal-relationship']).toEqual(3);
