@@ -17,7 +17,7 @@ addFormats(ajv, ['password', 'uri', 'duration', 'email', 'date-time', 'date']);
 
 // Cache of catalog to read on disk and parse only once
 let catalogMap: Record<string, CatalogType>;
-const getCatalogs = () => {
+const getCatalogs = (): Record<string, CatalogType> => {
   // TEMPORARY HACK: Live catalog mode for local development with custom catalogs only
   // This feature allows loading catalogs without cache for testing purposes
   // TODO: Remove this hack when proper catalog management is implemented
@@ -448,11 +448,15 @@ export const findCatalog = (_context: AuthContext, _user: AuthUser) => {
 
 export const findContractBySlug = (_context: AuthContext, _user: AuthUser, contractSlug: string) => {
   const catalogDefinitions = getCatalogs();
+  if (!catalogDefinitions) {
+    return null;
+  }
   const catalogs = Object.values(catalogDefinitions).map((catalog) => catalog.graphql);
-  return catalogs
+  const foundContract = catalogs
     .map((catalog) => {
       const contract = catalog.contracts.find((contractStr) => JSON.parse(contractStr).slug === contractSlug);
       return contract ? { catalog_id: catalog.id, contract } : null;
     })
-    .find((result) => result !== null);
+    .find((contract) => contract !== null);
+  return foundContract || null;
 };

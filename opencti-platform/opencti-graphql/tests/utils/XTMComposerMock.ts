@@ -258,13 +258,13 @@ export class XTMComposerMock {
   // Workflow methods using GraphQL
   async deployConnector(connectorId: string) {
     // 1. Get connector details
+    this.log('debug', 'Attempting to deploy connector', { connectorId });
     const connectors = await XTMComposerMock.getConnectorsForManagers();
     const connector = connectors.find((c: any) => c.id === connectorId);
-
     if (!connector || connector.manager_requested_status !== 'starting') {
+      this.log('warn', 'Connector not found or not in starting state', { connectorId, connector });
       throw new Error('Connector not found or not in starting state');
     }
-
     // 2. Simulate deployment logs
     await XTMComposerMock.updateConnectorLogs(connectorId, [
       '[XTM-Composer] Deploying connector...',
