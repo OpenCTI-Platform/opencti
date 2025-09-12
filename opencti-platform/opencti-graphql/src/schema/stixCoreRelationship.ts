@@ -40,6 +40,7 @@ export const RELATION_RESOLVES_TO = 'resolves-to';
 export const RELATION_TECHNOLOGY = 'technology';
 export const RELATION_TECHNOLOGY_TO = 'technology-to';
 export const RELATION_TECHNOLOGY_FROM = 'technology-from';
+export const RELATION_TRANSFERRED_TO = 'transferred-to';
 export const RELATION_DEMONSTRATES = 'demonstrates';
 // endregion
 
@@ -108,6 +109,7 @@ export const STIX_CORE_RELATIONSHIPS = [
   RELATION_TECHNOLOGY,
   RELATION_TECHNOLOGY_TO,
   RELATION_TECHNOLOGY_FROM,
+  RELATION_TRANSFERRED_TO,
   RELATION_DEMONSTRATES,
   RELATION_DETECTS,
   RELATION_PUBLISHES,
