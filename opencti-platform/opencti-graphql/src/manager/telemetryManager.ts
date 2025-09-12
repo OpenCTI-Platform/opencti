@@ -58,6 +58,7 @@ export const TELEMETRY_GAUGE_ONBOARDING_EMAIL_SEND = 'onboardingEmailSendCount';
 export const TELEMETRY_BACKGROUND_TASK_USER = 'userBackgroundTaskCount';
 export const TELEMETRY_EMAIL_TEMPLATE_CREATED = 'emailTemplateCreatedCount';
 export const TELEMETRY_FORGOT_PASSWORD = 'forgotPasswordCount';
+export const TELEMETRY_CONNECTOR_DEPLOYED = 'connectorDeployedCount';
 
 export const addDisseminationCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_DISSEMINATION, 1);
@@ -105,6 +106,10 @@ export const addEmailTemplateCreatedCount = async () => {
 };
 export const addForgotPasswordCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_FORGOT_PASSWORD, 1);
+};
+
+export const addConnectorDeployedCount = async () => {
+  await redisSetTelemetryAdd(TELEMETRY_CONNECTOR_DEPLOYED, 1);
 };
 
 // End Region user event counters
@@ -256,6 +261,8 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setEmailTemplateCreatedCount(emailTemplateCreatedCountInRedis);
     const forgotPasswordCountInRedis = await redisGetTelemetry(TELEMETRY_FORGOT_PASSWORD);
     manager.setForgotPasswordCount(forgotPasswordCountInRedis);
+    const connectorDeployedCountInRedis = await redisGetTelemetry(TELEMETRY_CONNECTOR_DEPLOYED);
+    manager.setConnectorDeployedCount(connectorDeployedCountInRedis);
     // end region Telemetry user events
 
     logApp.debug('[TELEMETRY] Fetching telemetry data successfully');
