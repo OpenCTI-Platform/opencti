@@ -6,6 +6,7 @@
   "- a random password will be generated for your user: you will need to change it to be able to log in via email and password. Simply use the forget password workflow.": "- 사용자에게 임의의 비밀번호가 생성되며, 이메일과 비밀번호를 통해 로그인하려면 비밀번호를 변경해야 합니다. 비밀번호 잊어버리기 워크플로우를 사용하면 됩니다.",
   "- if your service account has been created originally as a service account (not transformed), please also change the email of your service account before/after transforming it to a user to ensure that the future user will be able to receive an email in the forgot password workflow.": "- 서비스 계정을 원래 서비스 계정으로 만든 경우(변환하지 않은 경우), 서비스 계정을 사용자로 변환하기 전/후에 서비스 계정의 이메일도 변경하여 향후 사용자가 비밀번호 분실 워크플로에서 이메일을 받을 수 있도록 하세요.",
   "- password will be cleaned: you will not be able to log in to ui with this service account given there will be no password in Database for this service account.": "- 비밀번호가 삭제됩니다: 이 서비스 계정의 데이터베이스에 비밀번호가 없으므로 이 서비스 계정으로 UI에 로그인할 수 없습니다.",
+  "- Unsupported": "- 지원되지 않음",
   "- you will not pertain to the main platform organisation anymore unless you have been specifically granted access to the organisation.": "- 조직에 대한 액세스 권한이 특별히 부여되지 않는 한 더 이상 기본 플랫폼 조직과 관련이 없습니다.",
   "- your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "- 사용자는 현재 사용자가 소속된 조직 외에 기본 플랫폼 조직과도 관련됩니다",
   "... successfully deleted": "{entity_type} 성공적으로 삭제되었습니다",
