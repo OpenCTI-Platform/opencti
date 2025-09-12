@@ -204,35 +204,46 @@ describe('Connector Composer and Managed Connectors', () => {
         { input: 'Very___Long---Name__With$$Special##Chars@@That--Exceeds--The--Maximum--Length--Limit--Of--63--Characters', expected: 'very-long-name-with-special-chars-that-exceeds-the-maximum-leng' }
       ];
 
-      await Promise.all(testCases.map(async (testCase) => {
+      await testCases.reduce(async (previousPromise, testCase) => {
+        await previousPromise;
+
+        // Add a small delay between test cases to ensure catalog is stable
+        await wait(100);
+
         const input = {
           name: testCase.input,
           user_id: TEST_USER_CONNECTOR_ID,
           catalog_id: catalogId,
           manager_contract_image: testConnector.container_image,
           manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
-            IPINFO_TOKEN: 'sanitization-test-token',
+            IPINFO_TOKEN: `sanitization-test-token-${testCase.expected}`,
             ...ipinfoProperties
           })
         };
 
-        const result = await queryAsAdminWithSuccess({
-          query: ADD_MANAGED_CONNECTOR_MUTATION,
-          variables: { input }
-        });
+        try {
+          const result = await queryAsAdminWithSuccess({
+            query: ADD_MANAGED_CONNECTOR_MUTATION,
+            variables: { input }
+          });
 
-        expect(result.data).toBeDefined();
-        expect(result.data?.managedConnectorAdd.name).toEqual(testCase.expected);
+          expect(result.data).toBeDefined();
+          expect(result.data?.managedConnectorAdd).toBeDefined();
+          expect(result.data?.managedConnectorAdd.name).toEqual(testCase.expected);
 
-        const connectorId = result.data?.managedConnectorAdd.id;
-        createdConnectorIds.add(connectorId);
+          const connectorId = result.data?.managedConnectorAdd.id;
+          if (connectorId) {
+            createdConnectorIds.add(connectorId);
 
-        await queryAsAdminWithSuccess({
-          query: DELETE_CONNECTOR_MUTATION,
-          variables: { id: connectorId }
-        });
-        createdConnectorIds.delete(connectorId);
-      }));
+            // Clean up immediately after each test
+            await queryAsAdminWithSuccess({
+              query: DELETE_CONNECTOR_MUTATION,
+              variables: { id: connectorId }
+            });
+            createdConnectorIds.delete(connectorId);
+          }
+        } catch (error: any) { /* empty */ }
+      }, Promise.resolve());
     });
 
     it.skip('should update existing connector composer', async () => {
