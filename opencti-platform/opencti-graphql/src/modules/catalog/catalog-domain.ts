@@ -8,7 +8,7 @@ import { isEmptyField } from '../../database/utils';
 import { UnsupportedError } from '../../config/errors';
 import { idGenFromData } from '../../schema/identifier';
 import filigranCatalog from '../../__generated__/opencti-manifest.json';
-import conf, { isFeatureEnabled } from '../../config/conf';
+import conf, { isFeatureEnabled, logApp } from '../../config/conf';
 import type { ConnectorContractConfiguration, ContractConfigInput } from '../../generated/graphql';
 
 const CUSTOM_CATALOGS: string[] = conf.get('app:custom_catalogs') ?? [];
@@ -88,6 +88,7 @@ const getCatalogs = () => {
   // Original code unchanged below
   if (!catalogMap) {
     catalogMap = {};
+
     const catalogs = CUSTOM_CATALOGS.map((custom) => fs.readFileSync(custom, { encoding: 'utf8', flag: 'r' }));
     catalogs.push(JSON.stringify(filigranCatalog));
     for (let index = 0; index < catalogs.length; index += 1) {
@@ -97,24 +98,28 @@ const getCatalogs = () => {
       for (let contractIndex = 0; contractIndex < catalog.contracts.length; contractIndex += 1) {
         const contract = catalog.contracts[contractIndex];
         if (contract.manager_supported) {
-          if (isEmptyField(contract.container_image)) {
-            throw UnsupportedError('Contract must defined container_image field');
-          }
-          if (isEmptyField(contract.container_type)) {
-            throw UnsupportedError('Contract must defined container_type field');
-          }
+          if (!contract.config_schema) {
+            logApp.warn('A contract has manager_supported=true but is missing config_schema', { contractTitle: contract.title });
+          } else {
+            if (isEmptyField(contract.container_image)) {
+              throw UnsupportedError('Contract must defined container_image field');
+            }
+            if (isEmptyField(contract.container_type)) {
+              throw UnsupportedError('Contract must defined container_type field');
+            }
 
-          if (contract.config_schema) {
-            const jsonValidation = {
-              type: contract.config_schema.type,
-              properties: contract.config_schema.properties,
-              required: contract.config_schema.required,
-              additionalProperties: contract.config_schema.additionalProperties
-            };
-            try {
-              ajv.compile(jsonValidation);
-            } catch (err) {
-              throw UnsupportedError('Contract must be a valid json schema definition', { cause: err });
+            if (contract.config_schema) {
+              const jsonValidation = {
+                type: contract.config_schema.type,
+                properties: contract.config_schema.properties,
+                required: contract.config_schema.required,
+                additionalProperties: contract.config_schema.additionalProperties
+              };
+              try {
+                ajv.compile(jsonValidation);
+              } catch (err) {
+                throw UnsupportedError('Contract must be a valid json schema definition', { cause: err });
+              }
             }
           }
         }
@@ -131,11 +136,15 @@ const getCatalogs = () => {
           contracts: catalog.contracts.map((c) => {
             const finalContract = c;
             if (finalContract.manager_supported) {
-              const EXCLUDED_CONFIG_VARS = ['OPENCTI_TOKEN', 'OPENCTI_URL', 'CONNECTOR_TYPE', 'CONNECTOR_RUN_AND_TERMINATE'];
-              EXCLUDED_CONFIG_VARS.forEach((property) => {
-                delete finalContract.config_schema.properties[property];
-              });
-              finalContract.config_schema.required = c.config_schema.required.filter((item) => !EXCLUDED_CONFIG_VARS.includes(item));
+              if (!finalContract.config_schema) {
+                logApp.warn('A contract has manager_supported=true but is missing config_schema', { contractTitle: finalContract.title });
+              } else {
+                const EXCLUDED_CONFIG_VARS = ['OPENCTI_TOKEN', 'OPENCTI_URL', 'CONNECTOR_TYPE', 'CONNECTOR_RUN_AND_TERMINATE'];
+                EXCLUDED_CONFIG_VARS.forEach((property) => {
+                  delete finalContract.config_schema.properties[property];
+                });
+                finalContract.config_schema.required = c.config_schema.required.filter((item) => !EXCLUDED_CONFIG_VARS.includes(item));
+              }
             }
             return JSON.stringify(finalContract);
           })
