@@ -42,7 +42,7 @@ import { checkScore, now, observableValue } from '../utils/format';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
-import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
+import { controlCreateInputWithUserConfidence, controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { uploadToStorage } from '../database/file-storage-helper';
 import { isNumericAttribute } from '../schema/schema-attributes';
 
@@ -178,7 +178,6 @@ export const addStixCyberObservable = async (context, user, input) => {
   const {
     internal_id,
     stix_id,
-    x_opencti_score,
     x_opencti_description,
     createdBy,
     objectMarking,
@@ -191,10 +190,23 @@ export const addStixCyberObservable = async (context, user, input) => {
     payload_bin,
     url,
   } = input;
+  // Not a constant as we may need to swap depending on value
+  let {
+    x_opencti_score
+  } = input;
   const graphQLType = type.replace(/(?:^|-|_)(\w)/g, (matches, letter) => letter.toUpperCase());
   if (!input[graphQLType]) {
     throw FunctionalError(`Expecting variable ${graphQLType} in the input, got nothing.`);
   }
+  // StixCyberObservables use x_opencti_score versus having a confidence value field. Creates will not
+  // default populate this field, unless x_opencti_score is set. Connectors cannot set this value based on
+  // default user it is running due to PR#3526 in OpenCTI Connectors removed the passing of these settings.
+  let x_opencti_score_computed = null;
+  if (x_opencti_score === undefined || x_opencti_score === null) {
+    const { confidenceLevelToApply } = controlCreateInputWithUserConfidence(user, input, type);
+    x_opencti_score_computed = Number(confidenceLevelToApply); // x_opencti_score of new entity will be capped to user's confidence
+  }
+  x_opencti_score = (x_opencti_score_computed != null && Number.isInteger(x_opencti_score_computed) && x_opencti_score_computed >= 0) ? x_opencti_score_computed : x_opencti_score;
   checkScore(x_opencti_score);
   const lowerCaseTypes = ['Domain-Name', 'Email-Addr'];
   if (lowerCaseTypes.includes(type) && input[graphQLType].value) {
