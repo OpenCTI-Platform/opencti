@@ -1,5 +1,4 @@
 import React from 'react';
-import * as PropTypes from 'prop-types';
 import {
   AccountBalanceOutlined,
   AlternateEmailOutlined,
@@ -26,6 +25,7 @@ import {
   FactCheckOutlined,
   FilterAltOutlined,
   FlagOutlined,
+  HelpOutlined,
   LayersClearOutlined,
   LinkOutlined,
   LocalOfferOutlined,
@@ -112,8 +112,14 @@ import {
 import TableViewIcon from '@mui/icons-material/TableView';
 import { itemColor } from '../utils/Colors';
 
-const iconSelector = (type, variant, fontSize, color, isReversed) => {
-  let style;
+const iconSelector = (
+  type: string | null | undefined,
+  variant: string | undefined,
+  fontSize: 'inherit' | 'large' | 'medium' | 'small',
+  color?: string | null,
+  isReversed?: boolean,
+) => {
+  let style: React.CSSProperties;
   switch (variant) {
     case 'inline':
       style = {
@@ -134,18 +140,16 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
   }
 
   switch (type?.toLowerCase()) {
+    case 'restricted':
+      return <HelpOutlined style={style} fontSize={fontSize} role="img" />;
     case 'unauthorized':
-      return (
-        <ReportProblemOutlined style={style} fontSize={fontSize} role="img" />
-      );
+      return <ReportProblemOutlined style={style} fontSize={fontSize} role="img" />;
     case 'global':
       return <PublicOutlined style={style} fontSize={fontSize} role="img" />;
     case 'trigger':
       return <CampaignOutlined style={style} fontSize={fontSize} role="img" />;
     case 'admin':
-      return (
-        <ManageAccountsOutlined style={style} fontSize={fontSize} role="img" />
-      );
+      return <ManageAccountsOutlined style={style} fontSize={fontSize} role="img" />;
     case 'search':
       return <BiotechOutlined style={style} fontSize={fontSize} role="img" />;
     case 'login':
@@ -587,18 +591,16 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
   }
 };
 
-const ItemIcon = (props) => {
-  const { type, size, variant, color = null, isReversed = false } = props;
-  const fontSize = size || 'medium';
-  return iconSelector(type, variant, fontSize, color, isReversed);
-};
+interface ItemIconProps {
+  type?: string | null,
+  size?: 'inherit' | 'large' | 'medium' | 'small',
+  variant?: string,
+  color?: string | null,
+  isReversed?: boolean,
+}
 
-ItemIcon.propTypes = {
-  type: PropTypes.string,
-  size: PropTypes.string,
-  variant: PropTypes.string,
-  color: PropTypes.string,
-  isReversed: PropTypes.bool,
+const ItemIcon = ({ type, size = 'medium', variant, color = null, isReversed = false }: ItemIconProps) => {
+  return iconSelector(type, variant, size, color, isReversed);
 };
 
 export default ItemIcon;
