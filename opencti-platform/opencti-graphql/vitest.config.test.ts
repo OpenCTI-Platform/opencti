@@ -23,6 +23,7 @@ export const buildTestConfig = (include: string[]) => defineConfig({
     poolOptions: {
       threads: {
         singleThread: true,
+      },
       forks: {
         singleFork: true,
       },
