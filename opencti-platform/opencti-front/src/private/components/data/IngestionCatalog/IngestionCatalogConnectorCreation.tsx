@@ -28,6 +28,7 @@ import NoConnectorManagersBanner from '@components/data/connectors/NoConnectorMa
 import Tooltip from '@mui/material/Tooltip';
 import JsonFormArrayRenderer, { jsonFormArrayTester } from '@components/data/IngestionCatalog/utils/JsonFormArrayRenderer';
 import buildContractConfiguration from '@components/data/connectors/utils/buildContractConfiguration';
+import JsonFormUnsupportedType, { jsonFormUnsupportedTypeTester } from '@components/data/IngestionCatalog/utils/JsonFormUnsupportedType';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { RelayError } from '../../../../relay/relayTypes';
 import type { Theme } from '../../../../components/Theme';
@@ -86,6 +87,7 @@ const k8sNameSchema = (t_i18n: (key: string) => string) => Yup.string()
 const customRenderers = [
   ...materialRenderers,
   { tester: jsonFormArrayTester, renderer: JsonFormArrayRenderer },
+  { tester: jsonFormUnsupportedTypeTester, renderer: JsonFormUnsupportedType },
 ];
 
 interface IngestionCatalogConnectorCreationProps {
