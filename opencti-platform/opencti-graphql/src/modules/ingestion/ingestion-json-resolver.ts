@@ -26,6 +26,7 @@ import {
   testJsonIngestionMapping
 } from './ingestion-json-domain';
 import { connectorIdFromIngestId } from '../../domain/connector';
+import { getIngestionLogs } from './ingestion-taxii-collection-domain';
 
 const ingestionJsonResolvers: Resolvers = {
   Query: {
@@ -36,6 +37,7 @@ const ingestionJsonResolvers: Resolvers = {
     user: (ingestionJson, _, context) => context.batch.creatorBatchLoader.load(ingestionJson.user_id),
     connector_id: (ingestionJson) => connectorIdFromIngestId(ingestionJson.id),
     jsonMapper: (ingestionJson, _, context) => findJsonMapperForIngestionById(context, context.user, ingestionJson.json_mapper_id),
+    ingestionLogs: (ingestionJson) => getIngestionLogs(ingestionJson),
   },
   Mutation: {
     ingestionJsonTester: (_, { input }, context) => {

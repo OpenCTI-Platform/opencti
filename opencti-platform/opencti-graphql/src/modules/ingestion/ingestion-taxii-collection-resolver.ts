@@ -1,4 +1,4 @@
-import { addIngestion, findTaxiiCollectionPaginated, findById, ingestionDelete, ingestionEditField, getIngestionLogs } from './ingestion-taxii-collection-domain';
+import { addIngestion, findTaxiiCollectionPaginated, findById, ingestionDelete, ingestionEditField } from './ingestion-taxii-collection-domain';
 import type { Resolvers } from '../../generated/graphql';
 import { getAuthorizedMembers } from '../../utils/authorizedMembers';
 

@@ -4,6 +4,7 @@ import { storeLoadByIds } from '../../database/middleware-loader';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import type { BasicStoreEntityMarkingDefinition } from '../../types/store';
 import { ENTITY_TYPE_IDENTITY } from '../../schema/general';
+import { getIngestionLogs } from './ingestion-taxii-collection-domain';
 
 const ingestionRssResolvers: Resolvers = {
   Query: {
@@ -15,6 +16,7 @@ const ingestionRssResolvers: Resolvers = {
     // eslint-disable-next-line max-len
     defaultMarkingDefinitions: (ingestionRss, _, context) => storeLoadByIds<BasicStoreEntityMarkingDefinition>(context, context.user, ingestionRss.object_marking_refs ?? [], ENTITY_TYPE_MARKING_DEFINITION),
     user: (ingestionRss, _, context) => context.batch.creatorBatchLoader.load(ingestionRss.user_id),
+    ingestionLogs: (ingestionRss) => getIngestionLogs(ingestionRss),
   },
   Mutation: {
     ingestionRssAdd: (_, { input }, context) => {

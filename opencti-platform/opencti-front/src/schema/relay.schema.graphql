@@ -12142,6 +12142,7 @@ type IngestionRss implements InternalObject & BasicObject {
   current_state_date: DateTime
   last_execution_date: DateTime
   ingestion_running: Boolean
+  ingestionLogs: [String!]!
 }
 
 enum IngestionRssOrdering {
@@ -12319,6 +12320,7 @@ type IngestionCsv implements InternalObject & BasicObject {
   markings: [String!]
   toConfigurationExport: String!
   duplicateCsvMapper: CsvMapper!
+  ingestionLogs: [String!]!
 }
 
 enum IngestionCsvOrdering {
@@ -12425,6 +12427,7 @@ type IngestionJson implements InternalObject & BasicObject {
   ingestion_running: Boolean
   last_execution_date: DateTime
   markings: [String!]
+  ingestionLogs: [String!]!
 }
 
 enum IngestionJsonOrdering {
