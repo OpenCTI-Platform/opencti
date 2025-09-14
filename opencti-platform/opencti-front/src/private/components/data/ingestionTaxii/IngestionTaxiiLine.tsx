@@ -9,6 +9,7 @@ import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import { IngestionTaxiiLine_node$key } from '@components/data/ingestionTaxii/__generated__/IngestionTaxiiLine_node.graphql';
 import { IngestionTaxiiLinesPaginationQuery$variables } from '@components/data/ingestionTaxii/__generated__/IngestionTaxiiLinesPaginationQuery.graphql';
+import Tooltip from '@mui/material/Tooltip';
 import IngestionTaxiiPopover from './IngestionTaxiiPopover';
 import { useFormatter } from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
@@ -64,6 +65,7 @@ const ingestionTaxiiLineFragment = graphql`
         current_state_cursor
         last_execution_date
         confidence_to_score
+        ingestionLogs
     }
 `;
 
@@ -123,7 +125,9 @@ export const IngestionTaxiiLineLineComponent : FunctionComponent<IngestionTaxiiL
               className={classes.bodyItem}
               style={{ width: dataColumns.last_execution_date.width }}
             >
-              {fldt(data.last_execution_date) || '-'}
+              <Tooltip title={data.ingestionLogs}>
+                <>{fldt(data.last_execution_date) || '-'}</>
+              </Tooltip>
             </div>
             <div
               className={classes.bodyItem}
