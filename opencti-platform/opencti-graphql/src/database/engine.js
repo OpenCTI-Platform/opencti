@@ -1166,6 +1166,23 @@ export const elUpdateIndicesMappings = async () => {
     await engine.indices.putSettings({ index, body: platformSettings }).catch((e) => {
       throw DatabaseError('Updating index settings fail', { index, cause: e });
     });
+
+    // Type collision is not supported, mappingProperties must be forced to exist mapping in this case
+    const indexMappingEntries = Object.entries(indexMappingProperties);
+    for (let indexMapping = 0; indexMapping < indexMappingEntries.length; indexMapping += 1) {
+      const [indexMappingKey, indexMappingValue] = indexMappingEntries[indexMapping];
+      const mappingToCreate = mappingProperties[indexMappingKey];
+      const currentType = indexMappingValue.type ?? 'object'; // object have no type and only properties
+      const expectedType = mappingToCreate?.type ?? 'object'; // object have no type and only properties
+      // mappingToCreate can be undefined as attributes has been removed since platform existence.
+      if (mappingToCreate && currentType !== expectedType) {
+        // Incompatible upgrade detected, override target with source to prevent any collision
+        // This situation can happen with very old schema indices
+        // Old indices will be maintained in old state as this situation is supported by the platform
+        mappingProperties[indexMappingKey] = indexMappingProperties[indexMappingKey];
+      }
+    }
+
     const operations = jsonpatch.compare(sortMappingsKeys(indexMappingProperties), sortMappingsKeys(mappingProperties));
     // We can only complete new mappings
     // Replace is not possible for existing ones
@@ -1176,10 +1193,10 @@ export const elUpdateIndicesMappings = async () => {
         // > Properties added inside an existing object (operation ends with /properties) - isPropertiesCompletion
         // > Is a simple new attribute - isDirectType
         // > Is a simple mew object attribute, containing properties - isObjectType
-        // const isPropertiesCompletion = o.path.endsWith('/properties');
+        const isPropertiesCompletion = o.path.endsWith('/properties');
         const isDirectType = o.value.type;
         const isObjectType = o.value.properties;
-        return R.is(Object, o.value) && (/* isPropertiesCompletion || */ isDirectType || isObjectType);
+        return R.is(Object, o.value) && (isPropertiesCompletion || isDirectType || isObjectType);
       });
     if (addOperations.length > 0) {
       const properties = jsonpatch.applyPatch(indexMappingProperties, addOperations).newDocument;
