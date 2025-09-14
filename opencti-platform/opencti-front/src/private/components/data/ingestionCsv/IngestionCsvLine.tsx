@@ -18,6 +18,7 @@ import type { Theme } from '../../../../components/Theme';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
+import IngestionTooltip from '../../../../components/IngestionTooltip';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -58,6 +59,7 @@ const ingestionCsvLineFragment = graphql`
     ingestion_running
     current_state_hash
     last_execution_date
+    ingestionLogs
   }
 `;
 
@@ -87,7 +89,7 @@ export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps>
   paginationOptions,
 }) => {
   const classes = useStyles();
-  const { t_i18n, fldt } = useFormatter();
+  const { t_i18n, nsdt } = useFormatter();
   const data = useFragment(ingestionCsvLineFragment, node);
   const [stateHash, setStateHash] = useState(data.current_state_hash ? data.current_state_hash : '-');
   return (
@@ -124,8 +126,10 @@ export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps>
                 status={!!data.ingestion_running}
               />
             </Cell>
-            <Cell width={dataColumns.last_execution_date.width}>
-              {fldt(data.last_execution_date) || '-'}
+            <Cell width={dataColumns.last_execution_date.width} withTooltip={false}>
+              <IngestionTooltip logs={data.ingestionLogs}>
+                {nsdt(data.last_execution_date) || '-'}
+              </IngestionTooltip>
             </Cell>
             <Cell width={dataColumns.current_state_hash.width}>
               {stateHash}

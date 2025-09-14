@@ -7,7 +7,7 @@ import expiredManager from './expiredManager';
 import syncManager from './syncManager';
 import publisherManager from './publisherManager';
 import notificationManager from './notificationManager';
-import ingestionManager from './ingestionManager';
+import ingestionManager from './ingestion/ingestionManager';
 import activityManager from './activityManager';
 import fileIndexManager from './fileIndexManager';
 import { registerClusterInstance } from '../database/redis';

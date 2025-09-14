@@ -9,7 +9,6 @@ import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import { IngestionTaxiiLine_node$key } from '@components/data/ingestionTaxii/__generated__/IngestionTaxiiLine_node.graphql';
 import { IngestionTaxiiLinesPaginationQuery$variables } from '@components/data/ingestionTaxii/__generated__/IngestionTaxiiLinesPaginationQuery.graphql';
-import Tooltip from '@mui/material/Tooltip';
 import IngestionTaxiiPopover from './IngestionTaxiiPopover';
 import { useFormatter } from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
@@ -19,6 +18,7 @@ import ItemCopy from '../../../../components/ItemCopy';
 import type { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
+import IngestionTooltip from '../../../../components/IngestionTooltip';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -70,7 +70,7 @@ export const IngestionTaxiiLineLineComponent: FunctionComponent<IngestionTaxiiLi
   node,
   paginationOptions,
 }) => {
-  const { t_i18n, fldt } = useFormatter();
+  const { t_i18n, nsdt } = useFormatter();
   const classes = useStyles();
   const data = useFragment(ingestionTaxiiLineFragment, node);
   const [stateValue, setStateValue] = useState(data.current_state_cursor ? data.current_state_cursor : '-');
@@ -121,9 +121,9 @@ export const IngestionTaxiiLineLineComponent: FunctionComponent<IngestionTaxiiLi
               className={classes.bodyItem}
               style={{ width: dataColumns.last_execution_date.width }}
             >
-              <Tooltip title={data.ingestionLogs}>
-                <>{fldt(data.last_execution_date) || '-'}</>
-              </Tooltip>
+              <IngestionTooltip logs={data.ingestionLogs}>
+                {nsdt(data.last_execution_date) || '-'}
+              </IngestionTooltip>
             </div>
             <div
               className={classes.bodyItem}
