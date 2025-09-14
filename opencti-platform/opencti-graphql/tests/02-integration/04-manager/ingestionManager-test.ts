@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { prepareTaxiiGetParam, processCsvLines, processTaxiiResponse, type TaxiiResponseData } from '../../../src/manager/ingestionManager';
+import { prepareTaxiiGetParam, processTaxiiResponse, type TaxiiResponseData } from '../../../src/manager/ingestion/ingestionTaxii';
+import { processCsvLines } from '../../../src/manager/ingestion/ingestionCsv';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { addIngestion as addTaxiiIngestion, findById as findTaxiiIngestionById, ingestionDelete, patchTaxiiIngestion } from '../../../src/modules/ingestion/ingestion-taxii-domain';
 import { type CsvMapperAddInput, IngestionAuthType, type IngestionCsvAddInput, type IngestionTaxiiAddInput, TaxiiVersion } from '../../../src/generated/graphql';
@@ -299,9 +300,7 @@ describe('Verify csv ingestion', () => {
   });
 
   it('should csv ingestion run', async () => {
-    const { isUnchangedData, objectsInBundleCount } = await processCsvLines(testContext, ingestionCsv, csvMapperParsed, [...csvLines], null);
-    expect(isUnchangedData).toBeFalsy();
-
+    const { size } = await processCsvLines(testContext, ingestionCsv, csvMapperParsed, [...csvLines], null);
     // csv-file-cities.csv content:
     // skip lines and header => 0 object
     // 1 city +1 label => 2 objects
@@ -309,14 +308,13 @@ describe('Verify csv ingestion', () => {
     // 1 city +1 label => 2 objects
     // 1 city (duplicate) +1 label => 2 objects
     // 1 city +1 label => 2 objects
-    expect(objectsInBundleCount).toBe(8);
+    expect(size).toBe(8);
   });
 
   it('should same csv file ingestion be skipped', async () => {
     // Second time hash is the same so it should not process any objects
     const ingestionEntity = await findIngestionCsvById(testContext, ADMIN_USER, ingestionCsv.id);
-    const { isUnchangedData, objectsInBundleCount } = await processCsvLines(testContext, ingestionEntity, csvMapperParsed, [...csvLines], null);
-    expect(isUnchangedData).toBeTruthy();
-    expect(objectsInBundleCount).toBe(0);
+    const { size } = await processCsvLines(testContext, ingestionEntity, csvMapperParsed, [...csvLines], null);
+    expect(size).toBe(0);
   });
 });

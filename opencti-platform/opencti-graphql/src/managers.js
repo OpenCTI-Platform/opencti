@@ -22,7 +22,7 @@ import importCsvConnector from './connector/importCsv/importCsv-connector';
 import taskManager from './manager/taskManager';
 import ruleEngine from './manager/ruleManager';
 import syncManager from './manager/syncManager';
-import ingestionManager from './manager/ingestionManager';
+import ingestionManager from './manager/ingestion/ingestionManager';
 import historyManager from './manager/historyManager';
 import notificationManager from './manager/notificationManager';
 import publisherManager from './manager/publisherManager';

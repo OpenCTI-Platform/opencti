@@ -40,6 +40,7 @@ type IngestionJson implements InternalObject & BasicObject {
     ingestion_running: Boolean
     last_execution_date: DateTime
     markings: [String!]
+    ingestionLogs: [String!]!
 }
 
 enum IngestionJsonOrdering {

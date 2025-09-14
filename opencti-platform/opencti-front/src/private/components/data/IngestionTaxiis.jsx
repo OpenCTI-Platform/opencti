@@ -44,7 +44,7 @@ const IngestionTaxii = () => {
   const dataColumns = {
     name: {
       label: 'Name',
-      width: '20%',
+      width: '25%',
       isSortable: true,
     },
     uri: {
@@ -54,12 +54,12 @@ const IngestionTaxii = () => {
     },
     ingestion_running: {
       label: 'Status',
-      width: '20%',
+      width: '10%',
       isSortable: false,
     },
     last_execution_date: {
       label: 'Last run',
-      width: '15%',
+      width: '20%',
       isSortable: false,
     },
     added_after_start: {

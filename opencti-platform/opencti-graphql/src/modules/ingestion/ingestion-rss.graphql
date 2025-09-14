@@ -16,6 +16,7 @@ type IngestionRss implements InternalObject & BasicObject {
     current_state_date: DateTime
     last_execution_date: DateTime
     ingestion_running: Boolean
+    ingestionLogs: [String!]!
 }
 enum IngestionRssOrdering {
     name

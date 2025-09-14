@@ -15,6 +15,7 @@ import {
   testCsvIngestionMapping,
 } from './ingestion-csv-domain';
 import { userAlreadyExists } from '../user/user-domain';
+import { getIngestionLogs } from './ingestion-taxii-collection-domain';
 
 const ingestionCsvResolvers: Resolvers = {
   Query: {
@@ -29,6 +30,7 @@ const ingestionCsvResolvers: Resolvers = {
     csvMapper: (ingestionCsv, _, context) => csvFeedGetCsvMapper(context, context.user, ingestionCsv),
     toConfigurationExport: (ingestionCsv, _, context) => csvFeedMapperExport(context, context.user, ingestionCsv),
     duplicateCsvMapper: (ingestionCsv, _, context) => csvFeedGetNewDuplicatedCsvMapper(context, context.user, ingestionCsv),
+    ingestionLogs: (ingestionCsv) => getIngestionLogs(ingestionCsv),
   },
   Mutation: {
     ingestionCsvTester: (_, { input }, context) => {
