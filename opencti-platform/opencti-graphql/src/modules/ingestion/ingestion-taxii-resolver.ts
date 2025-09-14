@@ -10,6 +10,7 @@ import {
   taxiiFeedExport,
 } from './ingestion-taxii-domain';
 import type { Resolvers } from '../../generated/graphql';
+import { getIngestionLogs } from './ingestion-taxii-collection-domain';
 import { loadCreator } from '../../database/members';
 
 const ingestionTaxiiResolvers: Resolvers = {
@@ -21,6 +22,7 @@ const ingestionTaxiiResolvers: Resolvers = {
   IngestionTaxii: {
     user: (ingestionTaxii, _, context) => loadCreator(context, context.user, ingestionTaxii.user_id),
     toConfigurationExport: (ingestionTaxii) => taxiiFeedExport(ingestionTaxii),
+    ingestionLogs: (ingestionTaxii) => getIngestionLogs(ingestionTaxii),
   },
   Mutation: {
     ingestionTaxiiAdd: (_, { input }, context) => {

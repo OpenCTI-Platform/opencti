@@ -3,13 +3,14 @@ import { createEntity, deleteElementById, updateAttribute } from '../../database
 import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS } from '../../config/conf';
 import { publishUserAction } from '../../listener/UserActionListener';
-import { notify } from '../../database/redis';
+import { notify, redisGetConnectorLogs } from '../../database/redis';
 import { authorizedMembers } from '../../schema/attribute-definition';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type EditInput, type IngestionTaxiiCollectionAddInput } from '../../generated/graphql';
 import { registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
 import { INGESTION_SETINGESTIONS, MEMBER_ACCESS_RIGHT_VIEW } from '../../utils/access';
+import type { BasicStoreEntity } from '../../types/store';
 
 export const findById = (context: AuthContext, user: AuthUser, ingestionId: string) => {
   return storeLoadById<BasicStoreEntityIngestionTaxiiCollection>(context, user, ingestionId, ENTITY_TYPE_INGESTION_TAXII_COLLECTION);
@@ -18,6 +19,10 @@ export const findById = (context: AuthContext, user: AuthUser, ingestionId: stri
 export const findTaxiiCollectionPaginated = async (context: AuthContext, user: AuthUser, opts = {}) => {
   const args = { ...opts, includeAuthorities: true };
   return pageEntitiesConnection<BasicStoreEntityIngestionTaxiiCollection>(context, user, [ENTITY_TYPE_INGESTION_TAXII_COLLECTION], args);
+};
+
+export const getIngestionLogs = async (collection: BasicStoreEntity) => {
+  return redisGetConnectorLogs(collection.internal_id);
 };
 
 export const addIngestion = async (context: AuthContext, user: AuthUser, input: IngestionTaxiiCollectionAddInput) => {

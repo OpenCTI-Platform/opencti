@@ -35,6 +35,7 @@ type IngestionTaxii implements InternalObject & BasicObject {
     last_execution_date: DateTime
     confidence_to_score: Boolean
     toConfigurationExport: String!
+    ingestionLogs: [String!]!
 }
 enum IngestionTaxiiOrdering {
     name
