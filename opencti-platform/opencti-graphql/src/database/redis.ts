@@ -1092,7 +1092,7 @@ export const redisClearTelemetry = async () => {
 // region connector logs
 export const redisSetConnectorLogs = async (connectorId: string, logs: string[]) => {
   const data = JSON.stringify(logs);
-  await getClientBase().set(`connector-${connectorId}-logs`, data);
+  await getClientBase().set(`connector-${connectorId}-logs`, data, 'EX', FIVE_MINUTES);
 };
 export const redisGetConnectorLogs = async (connectorId: string): Promise<string[]> => {
   const rawLogs = await getClientBase().get(`connector-${connectorId}-logs`);
