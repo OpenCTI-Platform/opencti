@@ -9190,8 +9190,8 @@ type Mutation {
   roleEdit(id: ID!): RoleEditMutations
   pingConnector(id: ID!, state: String, connectorInfo: ConnectorInfoInput): Connector
   registerConnector(input: RegisterConnectorInput): Connector
-  managedConnectorEdit(input: EditManagedConnectorInput): Connector
-  managedConnectorAdd(input: AddManagedConnectorInput): Connector
+  managedConnectorEdit(input: EditManagedConnectorInput): ManagedConnector
+  managedConnectorAdd(input: AddManagedConnectorInput): ManagedConnector
   registerConnectorsManager(input: RegisterConnectorsManagerInput): ConnectorManager
   updateConnectorManagerStatus(input: UpdateConnectorManagerStatusInput): ConnectorManager
   resetStateConnector(id: ID!): Connector

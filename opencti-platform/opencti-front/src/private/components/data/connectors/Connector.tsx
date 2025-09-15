@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import React, { FunctionComponent, useCallback, useEffect, useState } from 'react';
 import { createRefetchContainer, graphql, RelayRefetchProp } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
@@ -174,6 +174,17 @@ interface ConnectorComponentProps {
 const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connector, relay }) => {
   const { t_i18n, nsdt } = useFormatter();
   const theme = useTheme<Theme>();
+
+  const handleRefreshData = useCallback(() => {
+    // Need to force refetch with network-only to bypass cache
+    // to prevent merging data when create/edit connector and fetch connector data
+    relay.refetch(
+      { id: connector.id },
+      null,
+      null,
+      { force: true },
+    );
+  }, [connector.id, relay]);
 
   // Helper function to create connector configuration
   const getConnectorConfig = () => ({
@@ -717,6 +728,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
             <>
               <ConnectorPopover
                 connector={connector}
+                onRefreshData={handleRefreshData}
               />
               {connector.is_managed && (
                 <Button
