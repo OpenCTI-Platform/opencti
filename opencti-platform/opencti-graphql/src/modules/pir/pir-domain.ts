@@ -51,7 +51,7 @@ import { createPirRelation, serializePir, updatePirExplanations } from './pir-ut
 import { getPirWithAccessCheck } from './pir-checkPirAccess';
 import { ForbiddenAccess, FunctionalError } from '../../config/errors';
 import { ABSTRACT_STIX_REF_RELATIONSHIP, ENTITY_TYPE_CONTAINER } from '../../schema/general';
-import { addDynamicFromAndToToFilters, addFilter, extractFilterKeyValues } from '../../utils/filtering/filtering-utils';
+import { addDynamicFromAndToToFilters, addFilter, extractFilterKeyValues, isFilterGroupNotEmpty } from '../../utils/filtering/filtering-utils';
 import { INSTANCE_DYNAMIC_REGARDING_OF, INSTANCE_REGARDING_OF, OBJECT_CONTAINS_FILTER, RELATION_TO_FILTER, RELATION_TYPE_FILTER } from '../../utils/filtering/filtering-constants';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
@@ -176,7 +176,7 @@ export const findPirContainers = async (
     ],
     filterGroups: [],
   };
-  const filters = opts?.filters
+  const filters = opts?.filters && isFilterGroupNotEmpty(opts.filters)
     ? {
       mode: FilterMode.And,
       filters: [],
