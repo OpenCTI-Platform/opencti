@@ -188,9 +188,11 @@ Here are the configuration keys, for both containers (environment variables) and
 |:--------------------------------------------|:----------------------------------|:--------------|:--------------------------------------------|
 | rabbitmq:hostname                           | RABBITMQ__HOSTNAME                | localhost     | Hostname of the RabbitMQ server             |
 | rabbitmq:port                               | RABBITMQ__PORT                    | 5672          | Port of the RabbitMQ server                 |
+| rabbitmq:hostname_management                | RABBITMQ__HOSTNAME_MANAGEMENT     |               | Hostname of the RabbitMQ Management Plugin  |
 | rabbitmq:port_management                    | RABBITMQ__PORT_MANAGEMENT         | 15672         | Port of the RabbitMQ Management Plugin      |
 | rabbitmq:username                           | RABBITMQ__USERNAME                | guest         | RabbitMQ user                               |
 | rabbitmq:password                           | RABBITMQ__PASSWORD                | guest         | RabbitMQ password                           |
+| rabbitmq:vhost                              | RABBITMQ__VHOST                   | "/"           | RabbitMQ virtual host                       |
 | rabbitmq:queue_type                         | RABBITMQ__QUEUE_TYPE              | "classic"     | RabbitMQ Queue Type ("classic" or "quorum") |
 | -                                           | -                                 | -             | -                                           |
 | rabbitmq:use_ssl                            | RABBITMQ__USE_SSL                 | `false`       | Use TLS connection                          |
