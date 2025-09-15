@@ -66,6 +66,9 @@ export class TelemetryMeterManager {
   // Number of PIR
   pirCount = 0;
 
+  // Number of connectors deployed
+  connectorDeployedCount = 0;
+
   constructor(meterProvider: MeterProvider) {
     this.meterProvider = meterProvider;
   }
@@ -162,6 +165,10 @@ export class TelemetryMeterManager {
     this.pirCount = n;
   }
 
+  setConnectorDeployedCount(n: number) {
+    this.connectorDeployedCount = n;
+  }
+
   registerGauge(name: string, description: string, observer: string, opts: { unit?: string, valueType?: ValueType } = {}) {
     const meter = this.meterProvider.getMeter(TELEMETRY_SERVICE_NAME);
     const gaugeOptions = { description, unit: opts.unit ?? 'count', valueType: opts.valueType ?? ValueType.INT };
@@ -198,5 +205,6 @@ export class TelemetryMeterManager {
     this.registerGauge('email_template_created_count', 'Number of email templates created', 'emailTemplateCreatedCount');
     this.registerGauge('forgot_password_count', 'Number of clicks on Forgot Password', 'forgotPasswordCount');
     this.registerGauge('pir_count', 'number of PIRs', 'pirCount');
+    this.registerGauge('connector_deployed_count', 'Number of connectors deployed via composer', 'connectorDeployedCount');
   }
 }
