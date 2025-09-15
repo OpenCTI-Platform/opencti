@@ -53,7 +53,7 @@ import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import type { BasicStoreCommon } from '../types/store';
 import type { Connector } from '../connector/internalConnector';
-import { addWorkbenchDraftConvertionCount, addWorkbenchValidationCount } from '../manager/telemetryManager';
+import { addWorkbenchDraftConvertionCount, addWorkbenchValidationCount, addConnectorDeployedCount } from '../manager/telemetryManager';
 import { computeConnectorTargetContract, getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { removeAuthenticationCredentials } from '../modules/ingestion/ingestion-common';
@@ -278,6 +278,8 @@ export const managedConnectorAdd = async (
     built_in: false
   };
   const createdConnector: any = await createEntity(context, user, connectorToCreate, ENTITY_TYPE_CONNECTOR);
+  // Increment telemetry for connector deployed via composer
+  await addConnectorDeployedCount();
   // Publish
   await publishUserAction({
     user,
