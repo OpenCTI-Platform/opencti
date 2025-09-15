@@ -3773,34 +3773,33 @@ const buildRegardingOfFilter = async (context, user, elements, filters) => {
         const elementIds = elements.map(({ id }) => id);
         if (directionForced) {
           // If a direction is forced, build the filter in the correct direction
-          paginateArgs.filters = {
-            mode: 'and',
-            filters: [
-              { key: ['fromId'], values: directionReverse ? elementIds : ids },
-              { key: ['toId'], values: directionReverse ? ids : elementIds }
-            ],
-            filterGroups: []
-          };
+          const directedFilters = [];
+          if (directionReverse) {
+            directedFilters.push({ key: ['fromId'], values: elementIds });
+            if (ids.length > 0) { // Ids can be empty if nothing configured by the user
+              directedFilters.push({ key: ['toId'], values: ids });
+            }
+          } else {
+            directedFilters.push({ key: ['toId'], values: elementIds });
+            if (ids.length > 0) { // Ids can be empty if nothing configured by the user
+              directedFilters.push({ key: ['fromId'], values: ids });
+            }
+          }
+          paginateArgs.filters = { mode: 'and', filters: directedFilters, filterGroups: [] };
         } else {
           // If no direction is setup, create the filter group for both directions
+          const filterTo = [{ key: ['fromId'], values: elementIds }];
+          const filterFrom = [{ key: ['toId'], values: elementIds }];
+          if (ids.length > 0) { // Ids can be empty if nothing configured by the user
+            filterTo.push({ key: ['toId'], values: ids });
+            filterFrom.push({ key: ['fromId'], values: ids });
+          }
           paginateArgs.filters = {
             mode: 'or',
             filters: [],
-            filterGroups: [{
-              mode: 'and',
-              filterGroups: [],
-              filters: [
-                { key: ['fromId'], values: elementIds },
-                { key: ['toId'], values: ids }
-              ],
-            }, {
-              mode: 'and',
-              filterGroups: [],
-              filters: [
-                { key: ['fromId'], values: ids },
-                { key: ['toId'], values: elementIds }
-              ],
-            }]
+            filterGroups: [
+              { mode: 'and', filterGroups: [], filters: filterTo },
+              { mode: 'and', filterGroups: [], filters: filterFrom }]
           };
         }
         const relationships = await elList(context, user, READ_RELATIONSHIPS_INDICES, paginateArgs);
