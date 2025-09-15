@@ -1,97 +1,33 @@
 {
-  "id": "filigran-catalog-id",
-  "name": "OpenCTI Connectors contracts",
-  "description": "",
-  "version": "rolling",
+  "id": "test-catalog-id",
+  "name": "Test Connectors Catalog",
+  "description": "Dummy catalog for testing purposes",
+  "version": "test-1.0.0",
   "contracts": [
     {
-      "title": "AlienVault OTX",
-      "slug": "alienvault",
-      "description": "AlienVault OTX provides open access to a global community of threat researchers and security professionals, delivering community-generated threat data that enhances collaborative research. It automates the process of updating security infrastructure with threat data from various sources, thereby empowering the security community to discuss, research, and share the latest threat data, trends, and techniques. This collaborative approach strengthens your defenses while simultaneously aiding others in the community.\n\nThe integration of AlienVault OTX with OpenCTI enables the ingestion of threat knowledge from the Alien Labs Open Threat Exchange (OTX) platform. Utilizing the OTX DirectConnect API, the connector retrieves threat data from subscribed pulses and imports it into OpenCTI.",
-      "short_description": "AlienVault OTX provides open access to a global community of threat researchers and security professionals, delivering community-generated threat data that enhances collaborative research",
-      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
+      "title": "Test External Connector",
+      "slug": "test-external",
+      "description": "This is a dummy external connector for testing purposes. It simulates an external data import connector with various configuration options.",
+      "short_description": "A test external connector for importing dummy threat intelligence data",
+      "logo": "https://example.com/logos/test-external.png",
       "use_cases": [
-        "Open Source Threat Intel"
+        "Test Import",
+        "Dummy Data"
       ],
       "verified": true,
-      "last_verified_date": "",
-      "playbook_supported": false,
-      "max_confidence_level": 50,
-      "support_version": ">= 6.5.1",
-      "subscription_link": "https://levelblue.com/open-threat-exchange",
-      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/alienvault",
-      "manager_supported": false,
-      "container_version": "rolling",
-      "container_image": "opencti/connector-alienvault",
-      "container_type": "EXTERNAL_IMPORT"
-    },
-    {
-      "title": "CISA Known Exploited Vulnerabilities (KEV)",
-      "slug": "cisa-kev",
-      "description": "CISA KEV (Known Exploited Vulnerabilities) is a catalog maintained by the Cybersecurity and Infrastructure Security Agency that lists vulnerabilities actively exploited in the wild. It serves as an authoritative resource for organizations to prioritize vulnerability remediation and enhance their security resilience.\n\nThe integration of the CISA KEV source with OpenCTI enables the ingestion of vulnerabilities known to be actively exploited. This process involves parsing out Identity, Infrastructure, and Vulnerability STIX Objects, which are then imported into OpenCTI.",
-      "short_description": "CISA KEV (Known Exploited Vulnerabilities) is a catalog maintained by the Cybersecurity and Infrastructure Security Agency that lists vulnerabilities actively exploited in the wild",
-      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
-      "use_cases": [
-        "Open Source Threat Intel",
-        "Vulnerability Management"
-      ],
-      "verified": true,
-      "last_verified_date": "",
+      "last_verified_date": "2024-01-01",
       "playbook_supported": false,
       "max_confidence_level": 80,
       "support_version": ">= 6.5.1",
-      "subscription_link": "",
-      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/cisa-known-exploited-vulnerabilities",
-      "manager_supported": false,
-      "container_version": "rolling",
-      "container_image": "opencti/connector-cisa-known-exploited-vulnerabilities",
-      "container_type": "EXTERNAL_IMPORT"
-    },
-    {
-      "title": "CrowdStrike Falcon Intelligence",
-      "slug": "crowdstrike-falcon-intel",
-      "description": "CrowdStrike Falcon Intelligence is an integral threat intelligence module within the Falcon platform, crafted to enhance the speed and effectiveness of threat detection, investigation, and response. It equips SOC teams to work more swiftly and intelligently, leveraging automation, enrichment, and high-fidelity data to optimize their cybersecurity operations. \n\nThe OpenCTI CrowdStrike connector facilitates the import of intelligence from the CrowdStrike Falcon platform. By utilizing the Intel APIs, this connector accesses CrowdStrike\u00e2\u20ac\u2122s comprehensive intelligence, including data on threat actors, indicators, reports, and YARA rules, thus enhancing the threat intelligence capabilities within OpenCTI.",
-      "short_description": "CrowdStrike Falcon Intelligence is an integral threat intelligence module within the Falcon platform, crafted to enhance the speed and effectiveness of threat detection, investigation, and response.",
-      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
-      "use_cases": [
-        "Commercial Threat Intel"
-      ],
-      "verified": true,
-      "last_verified_date": "",
-      "playbook_supported": false,
-      "max_confidence_level": 60,
-      "support_version": ">= 6.5.1",
-      "subscription_link": "",
-      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/crowdstrike",
-      "manager_supported": false,
-      "container_version": "rolling",
-      "container_image": "opencti/connector-crowdstrike",
-      "container_type": "EXTERNAL_IMPORT"
-    },
-    {
-      "title": "CVE - Common Vulnerabilities and Exposures",
-      "slug": "cve",
-      "description": "The OpenCTI CVE connector is a software component designed to automatically import information about Common Vulnerabilities and Exposures (CVEs) into the OpenCTI platform",
-      "short_description": "Collecting and updating CVE data in OpenCTI",
-      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
-      "use_cases": [
-        "Vulnerability Management",
-        "Open Source Threat Intel"
-      ],
-      "verified": true,
-      "last_verified_date": "15-12-2023",
-      "playbook_supported": false,
-      "max_confidence_level": 80,
-      "support_version": ">= 6.5.1",
-      "subscription_link": "https://nvd.nist.gov/contact",
-      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/cve",
+      "subscription_link": "https://example.com/subscription/test-external",
+      "source_code": "https://github.com/example/connector-test-external",
       "manager_supported": true,
       "container_version": "rolling",
       "container_image": "opencti/connector-cve",
       "container_type": "EXTERNAL_IMPORT",
       "config_schema": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "https://www.filigran.io/connectors/cve_config.schema.json",
+        "$id": "https://example.com/schemas/test_external.schema.json",
         "type": "object",
         "properties": {
           "OPENCTI_URL": {
@@ -102,22 +38,22 @@
             "type": "string"
           },
           "OPENCTI_TOKEN": {
-            "description": "The token of the user who represents the connector in the OpenCTI platform.",
+            "description": "The authentication token for OpenCTI.",
             "type": "string"
           },
           "CONNECTOR_ID": {
-            "default": "cve--e0c380ad-6665-4f2e-8558-5d2610e5abcf",
-            "description": "A unique UUIDv4 identifier for this connector instance.",
+            "default": "test-external--12345678-1234-1234-1234-123456789abc",
+            "description": "A unique UUID identifier for this connector instance.",
             "type": "string"
           },
           "CONNECTOR_NAME": {
-            "default": "Common Vulnerabilities and Exposures",
+            "default": "Test External Connector",
             "description": "Name of the connector.",
             "type": "string"
           },
           "CONNECTOR_SCOPE": {
-            "default": "cve",
-            "description": "The scope or type of data the connector is importing, either a MIME type or Stix Object (for information only).",
+            "default": "test-data",
+            "description": "The scope of data the connector imports.",
             "type": "string"
           },
           "CONNECTOR_TYPE": {
@@ -127,7 +63,7 @@
           },
           "CONNECTOR_LOG_LEVEL": {
             "default": "error",
-            "description": "Determines the verbosity of the logs.",
+            "description": "Logging verbosity level.",
             "enum": [
               "debug",
               "info",
@@ -138,135 +74,71 @@
           },
           "CONNECTOR_DURATION_PERIOD": {
             "default": "PT24H",
-            "description": "Duration between two scheduled runs of the connector (ISO 8601 format).",
+            "description": "Duration between connector runs (ISO 8601 format).",
             "format": "duration",
             "type": "string"
           },
-          "CONNECTOR_QUEUE_THRESHOLD": {
-            "default": null,
-            "description": "Connector queue max size in Mbytes. Default to 500.",
-            "exclusiveMinimum": 0,
-            "type": "integer"
-          },
-          "CONNECTOR_RUN_AND_TERMINATE": {
-            "default": null,
-            "description": "Connector run-and-terminate flag.",
-            "type": "boolean"
-          },
-          "CONNECTOR_SEND_TO_QUEUE": {
-            "default": null,
-            "description": "Connector send-to-queue flag.",
-            "type": "boolean"
-          },
-          "CONNECTOR_SEND_TO_DIRECTORY": {
-            "default": null,
-            "description": "Connector send-to-directory flag.",
-            "type": "boolean"
-          },
-          "CONNECTOR_SEND_TO_DIRECTORY_PATH": {
-            "default": null,
-            "description": "Connector send-to-directory path.",
+          "TEST_API_URL": {
+            "default": "https://api.example.com/test/v1",
+            "description": "URL for the test API.",
             "type": "string"
           },
-          "CONNECTOR_SEND_TO_DIRECTORY_RETENTION": {
-            "default": null,
-            "description": "Connector send-to-directory retention in days.",
-            "exclusiveMinimum": 0,
-            "type": "integer"
-          },
-          "CVE_BASE_URL": {
-            "default": "https://services.nvd.nist.gov/rest/json/cves",
-            "description": "URL for the CVE API.",
-            "type": "string"
-          },
-          "CVE_API_KEY": {
-            "description": "API Key for the CVE API.",
+          "TEST_API_KEY": {
+            "description": "API Key for the test service.",
             "format": "password",
             "type": "string",
             "writeOnly": true
           },
-          "CVE_INTERVAL": {
+          "TEST_INTERVAL": {
             "default": 6,
-            "description": "Interval in hours to check and import new CVEs. Must be strictly greater than 1, advice from NIST minimum 2 hours.",
+            "description": "Interval in hours to check for new test data.",
             "exclusiveMinimum": 0,
             "type": "integer"
           },
-          "CVE_MAX_DATE_RANGE": {
-            "default": 120,
-            "description": "Determines how many days to collect CVE. Maximum of 120 days.",
+          "TEST_MAX_ITEMS": {
+            "default": 100,
+            "description": "Maximum number of items to import per run.",
             "exclusiveMinimum": 0,
             "type": "integer"
           },
-          "CVE_MAINTAIN_DATA": {
+          "TEST_ENABLE_FEATURE": {
             "default": true,
-            "description": "If set to `True`, import CVEs from the last run of the connector to the current time. Takes 2 values: `True` or `False`.",
+            "description": "Enable test feature flag.",
             "type": "boolean"
-          },
-          "CVE_PULL_HISTORY": {
-            "default": false,
-            "description": "If set to `True`, import all CVEs from start year define in history start year configuration and history start year is required. Takes 2 values: `True` or `False`.",
-            "type": "boolean"
-          },
-          "CVE_HISTORY_START_YEAR": {
-            "default": 2019,
-            "description": "Year in number. Required when pull_history is set to `True`.  Minimum 2019 as CVSS V3.1 was released in June 2019, thus most CVE published before 2019 do not include the cvssMetricV31 object.",
-            "exclusiveMinimum": 0,
-            "type": "integer"
           }
         },
         "required": [
           "OPENCTI_URL",
           "OPENCTI_TOKEN",
-          "CVE_API_KEY"
+          "TEST_API_KEY"
         ],
         "additionalProperties": true
       }
     },
     {
-      "title": "Dragos",
-      "slug": "dragos",
-      "description": "Dragos is a cybersecurity company specializing in industrial control systems (ICS) and operational technology (OT) security. Their platform provides threat intelligence, incident response, and vulnerability management tailored to ICS/OT environments.\n\nThe OpenCTI Dragos connector enables the ingestion of Dragos Threat Intelligence. It is designed to be straightforward to configure and supports a range of data types and formats.",
-      "short_description": "Dragos is a cybersecurity company specializing in industrial control systems (ICS) and operational technology (OT) security. Their platform provides threat intelligence, incident response, and vulnerability management tailored to ICS/OT environments.",
-      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
+      "title": "Test Email Connector",
+      "slug": "test-email",
+      "description": "A dummy email connector that simulates importing threat intelligence from email sources. This connector demonstrates complex configuration with arrays and optional fields.",
+      "short_description": "Test connector for email-based threat intelligence import",
+      "logo": "https://example.com/logos/test-email.png",
       "use_cases": [
-        "Commercial Threat Intel"
+        "Email Import",
+        "Test Processing"
       ],
       "verified": true,
-      "last_verified_date": "2025-04-22",
+      "last_verified_date": "2024-02-15",
       "playbook_supported": false,
       "max_confidence_level": 50,
       "support_version": ">= 6.5.1",
-      "subscription_link": "",
-      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/dragos",
-      "manager_supported": false,
-      "container_version": "rolling",
-      "container_image": "opencti/connector-dragos",
-      "container_type": "EXTERNAL_IMPORT"
-    },
-    {
-      "title": "Email Intel IMAP",
-      "slug": "email-intel-imap",
-      "description": "The Email Intel IMAP Connector enables the ingestion of cyber threat intelligence reports received via email into the OpenCTI platform using the IMAP protocol. This connector allows organizations to automate the collection of intelligence shared through email by regularly polling a mailbox and transforming each message into an OpenCTI report.\n\nThis connector is designed to connect to an IMAP-compatible email inbox, extract email content and attachments, and convert the data into structured CTI reports within OpenCTI. The connector is suitable for any threat intel flow that relies on email as a delivery method and is compatible with standard IMAP servers.\n\nThe connector is also compatible with Google Workspace mailboxes.",
-      "short_description": "The Email Intel IMAP Connector enables the ingestion of cyber threat intelligence reports received via email into the OpenCTI platform using the IMAP protocol.",
-      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
-      "use_cases": [
-        "Email",
-        "Threat Intelligence"
-      ],
-      "verified": true,
-      "last_verified_date": "",
-      "playbook_supported": false,
-      "max_confidence_level": 50,
-      "support_version": ">= 6.5.1",
-      "subscription_link": "",
-      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/email-intel-imap",
+      "subscription_link": null,
+      "source_code": "https://github.com/example/connector-test-email",
       "manager_supported": true,
       "container_version": "rolling",
       "container_image": "opencti/connector-email-intel-imap",
       "container_type": "EXTERNAL_IMPORT",
       "config_schema": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "https://www.filigran.io/connectors/email-intel-imap_config.schema.json",
+        "$id": "https://example.com/schemas/test_email.schema.json",
         "type": "object",
         "properties": {
           "OPENCTI_URL": {
@@ -278,19 +150,11 @@
           "OPENCTI_TOKEN": {
             "type": "string"
           },
-          "OPENCTI_JSON_LOGGING": {
-            "default": true,
-            "type": "boolean"
-          },
-          "OPENCTI_SSL_VERIFY": {
-            "default": false,
-            "type": "boolean"
-          },
           "CONNECTOR_ID": {
             "type": "string"
           },
           "CONNECTOR_NAME": {
-            "default": "Email Intel IMAP",
+            "default": "Test Email Connector",
             "type": "string"
           },
           "CONNECTOR_TYPE": {
@@ -300,7 +164,7 @@
           },
           "CONNECTOR_SCOPE": {
             "default": [
-              "email-intel-imap"
+              "test-email-scope"
             ],
             "items": {
               "type": "string"
@@ -322,56 +186,8 @@
             ],
             "type": "string"
           },
-          "CONNECTOR_AUTO": {
-            "default": false,
-            "type": "boolean"
-          },
-          "CONNECTOR_EXPOSE_METRICS": {
-            "default": false,
-            "type": "boolean"
-          },
-          "CONNECTOR_METRICS_PORT": {
-            "default": 9095,
-            "type": "integer"
-          },
-          "CONNECTOR_ONLY_CONTEXTUAL": {
-            "default": false,
-            "type": "boolean"
-          },
-          "CONNECTOR_RUN_AND_TERMINATE": {
-            "default": false,
-            "type": "boolean"
-          },
-          "CONNECTOR_VALIDATE_BEFORE_IMPORT": {
-            "default": false,
-            "type": "boolean"
-          },
-          "CONNECTOR_QUEUE_PROTOCOL": {
-            "default": "amqp",
-            "type": "string"
-          },
-          "CONNECTOR_QUEUE_THRESHOLD": {
-            "default": 500,
-            "type": "integer"
-          },
-          "CONNECTOR_SEND_TO_QUEUE": {
-            "default": true,
-            "type": "boolean"
-          },
-          "CONNECTOR_SEND_TO_DIRECTORY": {
-            "default": false,
-            "type": "boolean"
-          },
-          "CONNECTOR_SEND_TO_DIRECTORY_PATH": {
-            "default": null,
-            "type": "string"
-          },
-          "CONNECTOR_SEND_TO_DIRECTORY_RETENTION": {
-            "default": 7,
-            "type": "integer"
-          },
-          "EMAIL_INTEL_IMAP_TLP_LEVEL": {
-            "default": "amber+strict",
+          "EMAIL_TLP_LEVEL": {
+            "default": "amber",
             "enum": [
               "white",
               "clear",
@@ -382,39 +198,28 @@
             ],
             "type": "string"
           },
-          "EMAIL_INTEL_IMAP_RELATIVE_IMPORT_START_DATE": {
-            "default": "P30D",
-            "format": "duration",
+          "EMAIL_SERVER_HOST": {
+            "default": "mail.example.com",
             "type": "string"
           },
-          "EMAIL_INTEL_IMAP_HOST": {
-            "type": "string"
-          },
-          "EMAIL_INTEL_IMAP_PORT": {
+          "EMAIL_SERVER_PORT": {
             "default": 993,
             "type": "integer"
           },
-          "EMAIL_INTEL_IMAP_USERNAME": {
+          "EMAIL_USERNAME": {
             "type": "string"
           },
-          "EMAIL_INTEL_IMAP_PASSWORD": {
+          "EMAIL_PASSWORD": {
             "default": null,
             "format": "password",
             "type": "string",
             "writeOnly": true
           },
-          "EMAIL_INTEL_IMAP_GOOGLE_TOKEN_JSON": {
-            "default": null,
-            "description": "Content of the token.json file from Google API",
-            "format": "password",
-            "type": "string",
-            "writeOnly": true
-          },
-          "EMAIL_INTEL_IMAP_MAILBOX": {
+          "EMAIL_MAILBOX": {
             "default": "INBOX",
             "type": "string"
           },
-          "EMAIL_INTEL_IMAP_ATTACHMENTS_MIME_TYPES": {
+          "EMAIL_ATTACHMENTS_TYPES": {
             "default": [
               "application/pdf",
               "text/csv",
@@ -430,1392 +235,36 @@
           "OPENCTI_URL",
           "OPENCTI_TOKEN",
           "CONNECTOR_ID",
-          "EMAIL_INTEL_IMAP_HOST",
-          "EMAIL_INTEL_IMAP_USERNAME"
+          "EMAIL_SERVER_HOST",
+          "EMAIL_USERNAME"
         ],
         "additionalProperties": false
       }
     },
     {
-      "title": "Email Intel Microsoft",
-      "slug": "email-intel-microsoft",
-      "description": "The Email Intel Microsoft Connector enables the ingestion of cyber threat intelligence reports received via email into the OpenCTI platform.\n\nThis connector allows organizations to automate the collection of intelligence shared through email by regularly polling a mailbox and transforming each message into an OpenCTI report.\n\nUsing the Microsoft Graph API,the connector polls a dedicated Microsoft 365/Exchange Online mailbox, transforms every message (plus accepted attachments) into an OpenCTI Report, and tags it with the chosen TLP.",
-      "short_description": "The Email Intel Microsoft Connector allows for the ingestion of cyber threat intelligence reports received via email in a Microsoft 365/Exchange Online mailbox.",
-      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
+      "title": "Test Enrichment Connector",
+      "slug": "test-enrichment",
+      "description": "Dummy enrichment connector for testing IP address and domain enrichment functionality",
+      "short_description": "Test IP and domain enrichment service",
+      "logo": "https://example.com/logos/test-enrichment.png",
       "use_cases": [
-        "Email",
-        "Threat Intelligence"
+        "Test Enrichment",
+        "IP Analysis"
       ],
       "verified": true,
-      "last_verified_date": "2025-05-09",
-      "playbook_supported": false,
-      "max_confidence_level": 50,
-      "support_version": ">= 6.5.1",
-      "subscription_link": "",
-      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/oob/connector_manager/external-import/email-intel-microsoft",
-      "manager_supported": true,
-      "container_version": "rolling",
-      "container_image": "opencti/connector-email-intel-microsoft",
-      "container_type": "EXTERNAL_IMPORT",
-      "config_schema": {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "https://www.filigran.io/connectors/email-intel-microsoft_config.schema.json",
-        "type": "object",
-        "properties": {
-          "OPENCTI_URL": {
-            "format": "uri",
-            "maxLength": 2083,
-            "minLength": 1,
-            "type": "string"
-          },
-          "OPENCTI_TOKEN": {
-            "type": "string"
-          },
-          "OPENCTI_JSON_LOGGING": {
-            "default": true,
-            "type": "boolean"
-          },
-          "OPENCTI_SSL_VERIFY": {
-            "default": false,
-            "type": "boolean"
-          },
-          "CONNECTOR_ID": {
-            "type": "string"
-          },
-          "CONNECTOR_NAME": {
-            "default": "Email Intel Microsoft",
-            "type": "string"
-          },
-          "CONNECTOR_TYPE": {
-            "const": "EXTERNAL_IMPORT",
-            "default": "EXTERNAL_IMPORT",
-            "type": "string"
-          },
-          "CONNECTOR_SCOPE": {
-            "default": [
-              "email-intel-microsoft"
-            ],
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "CONNECTOR_DURATION_PERIOD": {
-            "default": "PT1H",
-            "format": "duration",
-            "type": "string"
-          },
-          "CONNECTOR_LOG_LEVEL": {
-            "enum": [
-              "debug",
-              "info",
-              "warning",
-              "error",
-              "critical"
-            ],
-            "type": "string"
-          },
-          "CONNECTOR_AUTO": {
-            "default": false,
-            "type": "boolean"
-          },
-          "CONNECTOR_EXPOSE_METRICS": {
-            "default": false,
-            "type": "boolean"
-          },
-          "CONNECTOR_METRICS_PORT": {
-            "default": 9095,
-            "type": "integer"
-          },
-          "CONNECTOR_ONLY_CONTEXTUAL": {
-            "default": false,
-            "type": "boolean"
-          },
-          "CONNECTOR_RUN_AND_TERMINATE": {
-            "default": false,
-            "type": "boolean"
-          },
-          "CONNECTOR_VALIDATE_BEFORE_IMPORT": {
-            "default": false,
-            "type": "boolean"
-          },
-          "CONNECTOR_QUEUE_PROTOCOL": {
-            "default": "amqp",
-            "type": "string"
-          },
-          "CONNECTOR_QUEUE_THRESHOLD": {
-            "default": 500,
-            "type": "integer"
-          },
-          "CONNECTOR_SEND_TO_QUEUE": {
-            "default": true,
-            "type": "boolean"
-          },
-          "CONNECTOR_SEND_TO_DIRECTORY": {
-            "default": false,
-            "type": "boolean"
-          },
-          "CONNECTOR_SEND_TO_DIRECTORY_PATH": {
-            "default": null,
-            "type": "string"
-          },
-          "CONNECTOR_SEND_TO_DIRECTORY_RETENTION": {
-            "default": 7,
-            "type": "integer"
-          },
-          "EMAIL_INTEL_MICROSOFT_TLP_LEVEL": {
-            "default": "amber+strict",
-            "enum": [
-              "white",
-              "clear",
-              "green",
-              "amber",
-              "amber+strict",
-              "red"
-            ],
-            "type": "string"
-          },
-          "EMAIL_INTEL_MICROSOFT_RELATIVE_IMPORT_START_DATE": {
-            "default": "P30D",
-            "format": "duration",
-            "type": "string"
-          },
-          "EMAIL_INTEL_MICROSOFT_TENANT_ID": {
-            "type": "string"
-          },
-          "EMAIL_INTEL_MICROSOFT_CLIENT_ID": {
-            "type": "string"
-          },
-          "EMAIL_INTEL_MICROSOFT_CLIENT_SECRET": {
-            "format": "password",
-            "type": "string",
-            "writeOnly": true
-          },
-          "EMAIL_INTEL_MICROSOFT_EMAIL": {
-            "format": "email",
-            "type": "string"
-          },
-          "EMAIL_INTEL_MICROSOFT_MAILBOX": {
-            "default": "INBOX",
-            "type": "string"
-          },
-          "EMAIL_INTEL_MICROSOFT_ATTACHMENTS_MIME_TYPES": {
-            "default": [
-              "application/pdf",
-              "text/csv",
-              "text/plain"
-            ],
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "OPENCTI_URL",
-          "OPENCTI_TOKEN",
-          "CONNECTOR_ID",
-          "EMAIL_INTEL_MICROSOFT_TENANT_ID",
-          "EMAIL_INTEL_MICROSOFT_CLIENT_ID",
-          "EMAIL_INTEL_MICROSOFT_CLIENT_SECRET",
-          "EMAIL_INTEL_MICROSOFT_EMAIL"
-        ],
-        "additionalProperties": false
-      }
-    },
-    {
-      "title": "Flashpoint",
-      "slug": "flashpoint-imap-connector",
-      "description": "The Email Intel IMAP Connector enables the ingestion of cyber threat intelligence reports received via email into the OpenCTI platform using the IMAP protocol. This connector allows organizations to automate the collection of intelligence shared through email by regularly polling a mailbox and transforming each message into an OpenCTI report.\n\nThis connector is designed to connect to an IMAP-compatible email inbox, extract email content and attachments, and convert the data into structured CTI reports within OpenCTI. The connector is suitable for any threat intel flow that relies on email as a delivery method and is compatible with standard IMAP servers.\n\nThe connector is also compatible with Google Workspace mailboxes.",
-      "short_description": "Flashpoint Ignite consolidates team-tailored intelligence across various groups into a single workspace, enabling security teams to connect, collaborate, and remediate risk more efficiently with timely and active intelligence. It provides visibility into intelligence landscapes, covering cyber threats, vulnerabilities, physical security, and national security. By offering a comprehensive view of risk in one place, security experts can effectively close the gap between data, intelligence, and action.\n\nThe integration with OpenCTI allows for the import of threat intelligence data from Flashpoint, mapping it to relevant entities within the OpenCTI ecosystem. This integration includes alerts, indicators, malware reports, vulnerabilities, and other intelligence, significantly enhancing threat detection and response capabilities.",
-      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
-      "use_cases": [
-        "Commercial Threat Intel"
-      ],
-      "verified": true,
-      "last_verified_date": "",
-      "playbook_supported": false,
-      "max_confidence_level": 55,
-      "support_version": ">= 6.5.1",
-      "subscription_link": "",
-      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/flashpoint",
-      "manager_supported": true,
-      "container_version": "rolling",
-      "container_image": "opencti/connector-flashpoint",
-      "container_type": "EXTERNAL_IMPORT",
-      "config_schema": {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "https://www.filigran.io/connectors/flashpoint_config.schema.json",
-        "type": "object",
-        "properties": {
-          "OPENCTI_URL": {
-            "description": "The base URL of the OpenCTI instance.",
-            "format": "uri",
-            "maxLength": 2083,
-            "minLength": 1,
-            "type": "string"
-          },
-          "OPENCTI_TOKEN": {
-            "description": "The API token to connect to OpenCTI.",
-            "type": "string"
-          },
-          "OPENCTI_JSON_LOGGING": {
-            "default": true,
-            "description": "Whether to format logs as JSON or not.",
-            "type": "boolean"
-          },
-          "OPENCTI_SSL_VERIFY": {
-            "default": false,
-            "description": "Whether to check SSL certificate or not.",
-            "type": "boolean"
-          },
-          "CONNECTOR_ID": {
-            "description": "A UUID v4 to identify the connector in OpenCTI.",
-            "type": "string"
-          },
-          "CONNECTOR_NAME": {
-            "description": "The name of the connector.",
-            "type": "string"
-          },
-          "CONNECTOR_TYPE": {
-            "const": "EXTERNAL_IMPORT",
-            "default": "EXTERNAL_IMPORT",
-            "type": "string"
-          },
-          "CONNECTOR_SCOPE": {
-            "default": [
-              "flashpoint"
-            ],
-            "description": "The scope of the connector, e.g. 'flashpoint'.",
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "CONNECTOR_DURATION_PERIOD": {
-            "default": "PT1H",
-            "description": "The period of time to await between two runs of the connector.",
-            "format": "duration",
-            "type": "string"
-          },
-          "CONNECTOR_LOG_LEVEL": {
-            "default": "error",
-            "description": "The minimum level of logs to display.",
-            "enum": [
-              "debug",
-              "info",
-              "warn",
-              "error"
-            ],
-            "type": "string"
-          },
-          "CONNECTOR_EXPOSE_METRICS": {
-            "default": false,
-            "description": "Whether to expose metrics or not.",
-            "type": "boolean"
-          },
-          "CONNECTOR_METRICS_PORT": {
-            "default": 9095,
-            "description": "The port to expose metrics.",
-            "type": "integer"
-          },
-          "CONNECTOR_ONLY_CONTEXTUAL": {
-            "default": false,
-            "description": "Whether to expose metrics or not.",
-            "type": "boolean"
-          },
-          "CONNECTOR_RUN_AND_TERMINATE": {
-            "default": false,
-            "description": "Connector run-and-terminate flag.",
-            "type": "boolean"
-          },
-          "CONNECTOR_VALIDATE_BEFORE_IMPORT": {
-            "default": false,
-            "description": "Whether to validate data before import or not.",
-            "type": "boolean"
-          },
-          "CONNECTOR_QUEUE_PROTOCOL": {
-            "default": "amqp",
-            "description": "The queue protocol to use.",
-            "type": "string"
-          },
-          "CONNECTOR_QUEUE_THRESHOLD": {
-            "default": 500,
-            "description": "Connector queue max size in Mbytes. Default to pycti value.",
-            "type": "integer"
-          },
-          "CONNECTOR_SEND_TO_QUEUE": {
-            "default": true,
-            "description": "Connector send-to-queue flag. Default to True.",
-            "type": "boolean"
-          },
-          "CONNECTOR_SEND_TO_DIRECTORY": {
-            "default": false,
-            "description": "Connector send-to-directory flag.",
-            "type": "boolean"
-          },
-          "CONNECTOR_SEND_TO_DIRECTORY_PATH": {
-            "default": null,
-            "description": "Connector send-to-directory path.",
-            "type": "string"
-          },
-          "CONNECTOR_SEND_TO_DIRECTORY_RETENTION": {
-            "default": 7,
-            "description": "Connector send-to-directory retention.",
-            "type": "integer"
-          },
-          "FLASHPOINT_API_KEY": {
-            "description": "The API key to connect to Flashpoint.",
-            "format": "password",
-            "type": "string",
-            "writeOnly": true
-          },
-          "FLASHPOINT_IMPORT_START_DATE": {
-            "description": "The date from which to start importing data.",
-            "format": "date-time",
-            "type": "string"
-          },
-          "FLASHPOINT_IMPORT_REPORTS": {
-            "default": true,
-            "description": "Whether to import reports from Flashpoint or not.",
-            "type": "boolean"
-          },
-          "FLASHPOINT_INDICATORS_IN_REPORTS": {
-            "default": false,
-            "description": "Whether to include indicators in the reports imported from MispFeed or not.",
-            "type": "boolean"
-          },
-          "FLASHPOINT_GUESS_RELATIONSHIPS_FROM_REPORTS": {
-            "default": false,
-            "description": "Whether to guess relationships between entities or not.",
-            "type": "boolean"
-          },
-          "FLASHPOINT_IMPORT_INDICATORS": {
-            "default": true,
-            "description": "WHether to import indicators of compromise (IoCs) or not.",
-            "type": "boolean"
-          },
-          "FLASHPOINT_IMPORT_ALERTS": {
-            "default": true,
-            "description": "Whether to import alert data from Flashpoint or not.",
-            "type": "boolean"
-          },
-          "FLASHPOINT_ALERT_CREATE_RELATED_ENTITIES": {
-            "default": false,
-            "description": "Whether to create alert related Channel entity and Media-Content observable or not.",
-            "type": "boolean"
-          },
-          "FLASHPOINT_IMPORT_COMMUNITIES": {
-            "default": false,
-            "description": "Whether to import community data or not.",
-            "type": "boolean"
-          },
-          "FLASHPOINT_COMMUNITIES_QUERIES": {
-            "default": [
-              "cybersecurity",
-              "cyberattack"
-            ],
-            "description": "List of community queries to execute.",
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "FLASHPOINT_IMPORT_CCM_ALERTS": {
-            "default": false,
-            "description": "Whether to import Compromised Credentials Monitoring alerts or not.",
-            "type": "boolean"
-          },
-          "FLASHPOINT_FRESH_CCM_ALERTS_ONLY": {
-            "default": true,
-            "description": "Whether to import only fresh Compromised Credentials Monitoring alerts or all of them.",
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "OPENCTI_URL",
-          "OPENCTI_TOKEN",
-          "CONNECTOR_ID",
-          "CONNECTOR_NAME",
-          "FLASHPOINT_API_KEY"
-        ],
-        "additionalProperties": false
-      }
-    },
-    {
-      "title": "Google Threat Intelligence",
-      "slug": "google-ti-feeds",
-      "description": "Google Threat Intelligence provides unparalleled visibility into threats, enabling the delivery of detailed and timely intelligence to security teams worldwide. By protecting billions of users, detecting millions of phishing attempts, and dedicating extensive resources to incident investigation, Google has a comprehensive view of the threat landscape, ensuring that critical organizations, including yours, remain secure.\n\nThe integration of Google Threat Intelligence with OpenCTI enables the ingestion of threat data from the Google Threat Intel API directly into the OpenCTI platform. The connector imports key data types such as reports, locations, sectors, malware, intrusion sets, attack patterns, vulnerabilities, and raw IOCs, providing structured intelligence in a comprehensible format within OpenCTI.",
-      "short_description": "Google Threat Intelligence provides unparalleled visibility into threats, enabling the delivery of detailed and timely intelligence to security teams worldwide.",
-      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
-      "use_cases": [
-        "Commercial Threat Intel"
-      ],
-      "verified": true,
-      "last_verified_date": "2025-06-20",
-      "playbook_supported": false,
-      "max_confidence_level": 50,
-      "support_version": ">= 6.5.1",
-      "subscription_link": "",
-      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/google-ti-feeds",
-      "manager_supported": false,
-      "container_version": "rolling",
-      "container_image": "opencti/connector-google-ti-feeds",
-      "container_type": "EXTERNAL_IMPORT"
-    },
-    {
-      "title": "GreyNoise Feed",
-      "slug": "greynoise-feed",
-      "description": "CHANGEME",
-      "short_description": "CHANGEME",
-      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
-      "use_cases": [
-        "CHANGEME"
-      ],
-      "verified": false,
-      "last_verified_date": "YYYY-MM-DD",
-      "playbook_supported": false,
-      "max_confidence_level": 50,
-      "support_version": ">= 6.5.1",
-      "subscription_link": "CHANGEME or null",
-      "source_code": "CHANGEME",
-      "manager_supported": true,
-      "container_version": "rolling",
-      "container_image": "opencti/connector-greynoise-feed",
-      "container_type": "EXTERNAL_IMPORT",
-      "config_schema": {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "https://www.filigran.io/connectors/greynoise-feed_config.schema.json",
-        "type": "object",
-        "properties": {
-          "OPENCTI_URL": {
-            "description": "The base URL of the OpenCTI instance.",
-            "format": "uri",
-            "maxLength": 2083,
-            "minLength": 1,
-            "type": "string"
-          },
-          "OPENCTI_TOKEN": {
-            "description": "The API token to connect to OpenCTI.",
-            "type": "string"
-          },
-          "OPENCTI_JSON_LOGGING": {
-            "default": true,
-            "description": "Whether to format logs as JSON or not.",
-            "type": "boolean"
-          },
-          "OPENCTI_SSL_VERIFY": {
-            "default": false,
-            "description": "Whether to check SSL certificate or not.",
-            "type": "boolean"
-          },
-          "CONNECTOR_TYPE": {
-            "const": "EXTERNAL_IMPORT",
-            "default": "EXTERNAL_IMPORT",
-            "type": "string"
-          },
-          "CONNECTOR_ID": {
-            "description": "A UUID v4 to identify the connector in OpenCTI.",
-            "type": "string"
-          },
-          "CONNECTOR_NAME": {
-            "default": "GreyNoise Feed",
-            "description": "The name of the connector.",
-            "type": "string"
-          },
-          "CONNECTOR_SCOPE": {
-            "default": [
-              "greynoisefeed"
-            ],
-            "description": "The scope of the connector, e.g. 'greynoise'.",
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "CONNECTOR_DURATION_PERIOD": {
-            "default": "P1D",
-            "description": "The period of time to await between two runs of the connector.",
-            "format": "duration",
-            "type": "string"
-          },
-          "CONNECTOR_LOG_LEVEL": {
-            "default": "error",
-            "description": "The minimum level of logs to display.",
-            "enum": [
-              "debug",
-              "info",
-              "warn",
-              "error"
-            ],
-            "type": "string"
-          },
-          "CONNECTOR_EXPOSE_METRICS": {
-            "default": false,
-            "description": "Whether to expose metrics or not.",
-            "type": "boolean"
-          },
-          "CONNECTOR_METRICS_PORT": {
-            "default": 9095,
-            "description": "The port to expose metrics.",
-            "type": "integer"
-          },
-          "CONNECTOR_ONLY_CONTEXTUAL": {
-            "default": false,
-            "description": "Whether to expose metrics or not.",
-            "type": "boolean"
-          },
-          "CONNECTOR_RUN_AND_TERMINATE": {
-            "default": false,
-            "description": "Connector run-and-terminate flag.",
-            "type": "boolean"
-          },
-          "CONNECTOR_VALIDATE_BEFORE_IMPORT": {
-            "default": false,
-            "description": "Whether to validate data before import or not.",
-            "type": "boolean"
-          },
-          "CONNECTOR_QUEUE_PROTOCOL": {
-            "default": "amqp",
-            "description": "The queue protocol to use.",
-            "type": "string"
-          },
-          "CONNECTOR_QUEUE_THRESHOLD": {
-            "default": 500,
-            "description": "Connector queue max size in Mbytes. Default to pycti value.",
-            "type": "integer"
-          },
-          "CONNECTOR_SEND_TO_QUEUE": {
-            "default": true,
-            "description": "Connector send-to-queue flag. Default to True.",
-            "type": "boolean"
-          },
-          "CONNECTOR_SEND_TO_DIRECTORY": {
-            "default": false,
-            "description": "Connector send-to-directory flag.",
-            "type": "boolean"
-          },
-          "CONNECTOR_SEND_TO_DIRECTORY_PATH": {
-            "default": null,
-            "description": "Connector send-to-directory path.",
-            "type": "string"
-          },
-          "CONNECTOR_SEND_TO_DIRECTORY_RETENTION": {
-            "default": 7,
-            "description": "Connector send-to-directory retention.",
-            "type": "integer"
-          },
-          "GREYNOISE_FEED_API_KEY": {
-            "description": "The API key to connect to Greynoise.",
-            "format": "password",
-            "type": "string",
-            "writeOnly": true
-          },
-          "GREYNOISE_FEED_FEED_TYPE": {
-            "default": "malicious",
-            "description": "Type of feed to import.",
-            "enum": [
-              "benign",
-              "malicious",
-              "suspicious",
-              "benign+malicious",
-              "malicious+suspicious",
-              "benign+suspicious+malicious",
-              "all"
-            ],
-            "type": "string"
-          },
-          "GREYNOISE_FEED_LIMIT": {
-            "default": 10000,
-            "description": "Max number of indicators to ingest.",
-            "type": "integer"
-          },
-          "GREYNOISE_FEED_IMPORT_METADATA": {
-            "default": false,
-            "description": "Import metadata (cities, sightings, etc.). \u26a0\ufe0f Can generate a lot of data.",
-            "type": "boolean"
-          },
-          "GREYNOISE_FEED_IMPORT_DESTINATION_SIGHTINGS": {
-            "default": false,
-            "description": "Import indicator's countries (from metadata) as a Sighting.",
-            "type": "boolean"
-          },
-          "GREYNOISE_FEED_INDICATOR_SCORE_MALICIOUS": {
-            "default": 75,
-            "description": "Default indicator score for malicious indicators.",
-            "maximum": 100,
-            "minimum": 0,
-            "type": "integer"
-          },
-          "GREYNOISE_FEED_INDICATOR_SCORE_SUSPICIOUS": {
-            "default": 50,
-            "description": "Default indicator score for suspicious indicators.",
-            "maximum": 100,
-            "minimum": 0,
-            "type": "integer"
-          },
-          "GREYNOISE_FEED_INDICATOR_SCORE_BENIGN": {
-            "default": 20,
-            "description": "Default indicator score for benign indicators.",
-            "maximum": 100,
-            "minimum": 0,
-            "type": "integer"
-          }
-        },
-        "required": [
-          "OPENCTI_URL",
-          "OPENCTI_TOKEN",
-          "CONNECTOR_ID",
-          "GREYNOISE_FEED_API_KEY"
-        ],
-        "additionalProperties": true
-      }
-    },
-    {
-      "title": "MITRE ATT&CK",
-      "slug": "mitre",
-      "description": "MITRE ATT&CK is a globally-accessible knowledge base of adversary tactics and techniques based on real-world observations. The ATT&CK knowledge base is used as a foundation for the development of specific threat models and methodologies in the private sector, in government, and in the cybersecurity product and service community. The integration of MITRE ATT&CK with OpenCTI allows for the ingestion of data from MITRE datasets, facilitating the pre-population of your OpenCTI instance. This includes importing information on tools, malware, campaigns, intrusion sets, attack patterns, courses of action, alongside MITRE-specific frameworks such as x-mitre-matrix, x-mitre-tactic, x-mitre-collection, x-mitre-data-source, and x-mitre-data-component. The connector supports the ingestion of data from MITRE Enterprise, MITRE Mobile, and MITRE ICS matrices.",
-      "short_description": "MITRE ATT&CK is a globally-accessible knowledge base of adversary tactics and techniques based on real-world observations. The ATT&CK knowledge base is used as a foundation for the development of specific threat models and methodologies in the private sector, in government, and in the cybersecurity product and service community.",
-      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
-      "use_cases": [
-        "Open Source Threat Intel"
-      ],
-      "verified": true,
-      "last_verified_date": "01-01-2025",
-      "playbook_supported": false,
-      "max_confidence_level": 50,
-      "support_version": ">= 6.7.0",
-      "subscription_link": "https://www.mitre.org/who-we-are/work-with-us",
-      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/mitre",
-      "manager_supported": true,
-      "container_version": "rolling",
-      "container_image": "opencti/connector-mitre",
-      "container_type": "EXTERNAL_IMPORT",
-      "config_schema": {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "https://www.filigran.io/connectors/mitre_config.schema.json",
-        "type": "object",
-        "properties": {
-          "OPENCTI_URL": {
-            "description": "The OpenCTI platform URL.",
-            "format": "uri",
-            "maxLength": 2083,
-            "minLength": 1,
-            "type": "string"
-          },
-          "OPENCTI_TOKEN": {
-            "description": "The token of the user who represents the connector in the OpenCTI platform.",
-            "type": "string"
-          },
-          "CONNECTOR_ID": {
-            "default": "mitre--c9dacf68-b0e6-476d-a24f-4269b1b9cd25",
-            "description": "A unique UUIDv4 identifier for this connector instance.",
-            "type": "string"
-          },
-          "CONNECTOR_NAME": {
-            "default": "Mitre Att&ck",
-            "description": "Name of the connector.",
-            "type": "string"
-          },
-          "CONNECTOR_SCOPE": {
-            "default": "tool,report,malware,identity,campaign,intrusion-set,attack-pattern,course-of-action,x-mitre-data-source,x-mitre-data-component,x-mitre-matrix,x-mitre-tactic,x-mitre-collection",
-            "description": "The scope or type of data the connector is importing, either a MIME type or Stix Object (for information only).",
-            "type": "string"
-          },
-          "CONNECTOR_TYPE": {
-            "default": "EXTERNAL_IMPORT",
-            "description": "Should always be set to EXTERNAL_IMPORT for this connector.",
-            "type": "string"
-          },
-          "CONNECTOR_LOG_LEVEL": {
-            "default": "error",
-            "description": "Determines the verbosity of the logs.",
-            "enum": [
-              "debug",
-              "info",
-              "warn",
-              "error"
-            ],
-            "type": "string"
-          },
-          "CONNECTOR_DURATION_PERIOD": {
-            "default": "PT24H",
-            "description": "Duration between two scheduled runs of the connector (ISO 8601 format).",
-            "format": "duration",
-            "type": "string"
-          },
-          "CONNECTOR_QUEUE_THRESHOLD": {
-            "default": null,
-            "description": "Connector queue max size in Mbytes. Default to 500.",
-            "exclusiveMinimum": 0,
-            "type": "integer"
-          },
-          "CONNECTOR_RUN_AND_TERMINATE": {
-            "default": null,
-            "description": "Connector run-and-terminate flag.",
-            "type": "boolean"
-          },
-          "CONNECTOR_SEND_TO_QUEUE": {
-            "default": null,
-            "description": "Connector send-to-queue flag.",
-            "type": "boolean"
-          },
-          "CONNECTOR_SEND_TO_DIRECTORY": {
-            "default": null,
-            "description": "Connector send-to-directory flag.",
-            "type": "boolean"
-          },
-          "CONNECTOR_SEND_TO_DIRECTORY_PATH": {
-            "default": null,
-            "description": "Connector send-to-directory path.",
-            "type": "string"
-          },
-          "CONNECTOR_SEND_TO_DIRECTORY_RETENTION": {
-            "default": null,
-            "description": "Connector send-to-directory retention in days.",
-            "exclusiveMinimum": 0,
-            "type": "integer"
-          },
-          "MITRE_REMOVE_STATEMENT_MARKING": {
-            "default": false,
-            "description": "Whether to remove statement markings from the ingested MITRE data. Useful when marking metadata is unnecessary or interferes with processing.",
-            "type": "boolean"
-          },
-          "MITRE_INTERVAL": {
-            "default": 7,
-            "description": "Polling interval in days for fetching and refreshing MITRE data. Determines how often the system checks for updates to ATT&CK datasets.",
-            "exclusiveMinimum": 0,
-            "type": "integer"
-          },
-          "MITRE_ENTERPRISE_FILE_URL": {
-            "default": "https://raw.githubusercontent.com/mitre-attack/attack-stix-data/master/enterprise-attack/enterprise-attack.json",
-            "description": "URL to the MITRE ATT&CK Enterprise JSON file. This dataset includes tactics, techniques, and procedures (TTPs) for enterprise IT environments.",
-            "type": "string"
-          },
-          "MITRE_MOBILE_ATTACK_FILE_URL": {
-            "default": "https://raw.githubusercontent.com/mitre-attack/attack-stix-data/master/mobile-attack/mobile-attack.json",
-            "description": "URL to the MITRE Mobile ATT&CK JSON file. Contains mobile-specific attack techniques and mappings.",
-            "type": "string"
-          },
-          "MITRE_ICS_ATTACK_FILE_URL": {
-            "default": "https://raw.githubusercontent.com/mitre-attack/attack-stix-data/master/ics-attack/ics-attack.json",
-            "description": "URL to the MITRE ICS ATT&CK JSON file. Pertains to attack techniques targeting industrial control systems.",
-            "type": "string"
-          },
-          "MITRE_CAPEC_FILE_URL": {
-            "default": "https://raw.githubusercontent.com/mitre/cti/master/capec/2.1/stix-capec.json",
-            "description": "URL to the CAPEC (Common Attack Pattern Enumeration and Classification) JSON file. Provides a comprehensive dictionary of known attack patterns used by adversaries.",
-            "type": "string"
-          }
-        },
-        "required": [
-          "OPENCTI_URL",
-          "OPENCTI_TOKEN"
-        ],
-        "additionalProperties": true
-      }
-    },
-    {
-      "title": "Phishunt",
-      "slug": "phishunt",
-      "description": "Phishunt is a service dedicated to tracking and analyzing phishing threats. By collecting and disseminating information on phishing attacks, Phishunt helps organizations detect and mitigate potential email-based threats, safeguarding sensitive information and preventing financial loss resulting from such attacks.\n\nThe integration of Phishunt with OpenCTI allows for the automated import of phishing-related threat intelligence into the platform, enriching it with up-to-date data on phishing campaigns and tactics. This integration empowers security teams to more effectively identify and respond to phishing threats, enhancing their email security measures and reducing the risk of falling victim to phishing scams.",
-      "short_description": "Phishunt tracks and analyzes phishing threats, helping organizations detect and mitigate email-based attacks. Integration with OpenCTI automates the import of up-to-date phishing intelligence, enhancing the ability to identify and respond to phishing threats.",
-      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
-      "use_cases": [
-        "Open Source Threat Intel",
-        "Phishing"
-      ],
-      "verified": true,
-      "last_verified_date": "",
-      "playbook_supported": false,
-      "max_confidence_level": 50,
-      "support_version": ">= 6.5.1",
-      "subscription_link": "",
-      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/phishunt",
-      "manager_supported": false,
-      "container_version": "rolling",
-      "container_image": "opencti/connector-phishunt",
-      "container_type": "EXTERNAL_IMPORT"
-    },
-    {
-      "title": "Ransomware.live",
-      "slug": "ransomware-live",
-      "description": "Ransomware.live is a specialized threat intelligence service focused on monitoring and reporting ransomware activities and incidents. By providing real-time data on ransomware campaigns, including attack vectors and ransom demands, RansomwareLive aids organizations in understanding and defending against this pervasive threat.\n\nIntegrating Ransomware.live with OpenCTI allows for the modeling of various attacks and ransomware group claims, as well as their victims, enabling tracking and alerts. This enhances the threat intelligence platform's capabilities with timely and detailed insights into the latest ransomware threats.",
-      "short_description": "Ransomware.live is a threat intelligence service focused on ransomware activities, providing real-time insights into ransomware campaigns.",
-      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
-      "use_cases": [
-        "Open Source Threat Intel"
-      ],
-      "verified": true,
-      "last_verified_date": "2025-07-25",
-      "playbook_supported": false,
-      "max_confidence_level": 55,
-      "support_version": ">= 6.7.5",
-      "subscription_link": "https://www.ransomware.live",
-      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/oob/connector_manager/external-import/ransomwarelive",
-      "manager_supported": true,
-      "container_version": "rolling",
-      "container_image": "opencti/connector-ransomwarelive",
-      "container_type": "EXTERNAL_IMPORT",
-      "config_schema": {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "https://www.filigran.io/connectors/ransomwarelive_config.schema.json",
-        "type": "object",
-        "properties": {
-          "OPENCTI_URL": {
-            "format": "uri",
-            "maxLength": 2083,
-            "minLength": 1,
-            "type": "string"
-          },
-          "OPENCTI_TOKEN": {
-            "type": "string"
-          },
-          "OPENCTI_JSON_LOGGING": {
-            "default": true,
-            "type": "boolean"
-          },
-          "OPENCTI_SSL_VERIFY": {
-            "default": false,
-            "type": "boolean"
-          },
-          "CONNECTOR_ID": {
-            "type": "string"
-          },
-          "CONNECTOR_NAME": {
-            "description": "Name of the connector",
-            "minLength": 1,
-            "type": "string"
-          },
-          "CONNECTOR_TYPE": {
-            "const": "EXTERNAL_IMPORT",
-            "default": "EXTERNAL_IMPORT",
-            "type": "string"
-          },
-          "CONNECTOR_SCOPE": {
-            "description": "The scope of the connector",
-            "items": {
-              "type": "string"
-            },
-            "minItems": 1,
-            "type": "array"
-          },
-          "CONNECTOR_DURATION_PERIOD": {
-            "default": "PT10M",
-            "description": "Duration between two scheduled runs of the connector (ISO 8601 format)",
-            "format": "duration",
-            "type": "string"
-          },
-          "CONNECTOR_LOG_LEVEL": {
-            "enum": [
-              "debug",
-              "info",
-              "warning",
-              "error",
-              "critical"
-            ],
-            "type": "string"
-          },
-          "CONNECTOR_EXPOSE_METRICS": {
-            "default": false,
-            "type": "boolean"
-          },
-          "CONNECTOR_METRICS_PORT": {
-            "default": 9095,
-            "type": "integer"
-          },
-          "CONNECTOR_ONLY_CONTEXTUAL": {
-            "default": false,
-            "type": "boolean"
-          },
-          "CONNECTOR_RUN_AND_TERMINATE": {
-            "default": false,
-            "type": "boolean"
-          },
-          "CONNECTOR_VALIDATE_BEFORE_IMPORT": {
-            "default": false,
-            "type": "boolean"
-          },
-          "CONNECTOR_QUEUE_PROTOCOL": {
-            "default": "amqp",
-            "type": "string"
-          },
-          "CONNECTOR_QUEUE_THRESHOLD": {
-            "default": 500,
-            "type": "integer"
-          },
-          "CONNECTOR_SEND_TO_QUEUE": {
-            "default": true,
-            "type": "boolean"
-          },
-          "CONNECTOR_SEND_TO_DIRECTORY": {
-            "default": false,
-            "type": "boolean"
-          },
-          "CONNECTOR_SEND_TO_DIRECTORY_PATH": {
-            "default": null,
-            "type": "string"
-          },
-          "CONNECTOR_SEND_TO_DIRECTORY_RETENTION": {
-            "default": 7,
-            "type": "integer"
-          },
-          "CONNECTOR_PULL_HISTORY": {
-            "default": false,
-            "description": "Whether to pull historic data",
-            "type": "boolean"
-          },
-          "CONNECTOR_HISTORY_START_YEAR": {
-            "default": 2023,
-            "description": "The year to start from",
-            "type": "integer"
-          },
-          "CONNECTOR_CREATE_THREAT_ACTOR": {
-            "default": false,
-            "description": "Whether to create a Threat Actor object",
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "OPENCTI_URL",
-          "OPENCTI_TOKEN",
-          "CONNECTOR_ID",
-          "CONNECTOR_NAME",
-          "CONNECTOR_SCOPE"
-        ],
-        "additionalProperties": false
-      }
-    },
-    {
-      "title": "Recorded Future",
-      "slug": "recorded-future",
-      "description": "Recorded Future is a cybersecurity company that specializes in providing real-time threat intelligence to help organizations anticipate, identify, and mitigate cyber threats. By aggregating and analyzing data from diverse sources, Recorded Future can identify patterns, trends, and indicators of compromise (IoCs) that help organizations understand and mitigate cyber threats more effectively.\n\nThis connector imports Recorded Future Analyst Notes, the Risk Lists (IP, URL, Domain Name and Hash), Malware and Threat Actors from Threats Maps, converts to STIX2 and imports them into OpenCTI at regular intervals.\n\nHave a look at this connector and its extensive configuration to precisely select the data you need to import based on your use case.",
-      "short_description": "Recorded Future is a cybersecurity company that specializes in providing real-time threat intelligence to help organizations anticipate, identify, and mitigate cyber threats.",
-      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
-      "use_cases": [
-        "Commercial Threat Intel"
-      ],
-      "verified": true,
-      "last_verified_date": "",
-      "playbook_supported": false,
-      "max_confidence_level": 55,
-      "support_version": ">= 6.5.1",
-      "subscription_link": "https://www.recordedfuture.com/get-started",
-      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/recorded-future",
-      "manager_supported": false,
-      "container_version": "rolling",
-      "container_image": "opencti/connector-recorded-future",
-      "container_type": "EXTERNAL_IMPORT"
-    },
-    {
-      "title": "Sekoia.io",
-      "slug": "sekoia",
-      "description": "Sekoia.io Cyber Threat Intelligence provides assimilable and relevant reports on the evolving threat landscape, accessible to a broader audience. Sekoia.io's threat intelligence is contextual, actionable, and precise. Sekoia.io Intelligence (CTI) consists of exclusive data produced by Sekoia.io, sourced from C2 trackers, VirusTotal trackers, honeypots, and more, as well as refined data from open sources.\n\nThe integration of Sekoia.io with OpenCTI facilitates the collection of Sekoia.io CTI data within an existing OpenCTI instance, supporting various operational purposes like CTI aggregation, dissemination, and threat hunting.",
-      "short_description": "Sekoia.io Cyber Threat Intelligence provides assimilable and relevant reports on the evolving threat landscape, accessible to a broader audience.",
-      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
-      "use_cases": [
-        "Commercial Threat Intel"
-      ],
-      "verified": true,
-      "last_verified_date": "",
-      "playbook_supported": false,
-      "max_confidence_level": 70,
-      "support_version": ">= 6.5.1",
-      "subscription_link": "https://www.sekoia.io/en/product/cti/",
-      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/sekoia",
-      "manager_supported": false,
-      "container_version": "rolling",
-      "container_image": "opencti/connector-sekoia",
-      "container_type": "EXTERNAL_IMPORT"
-    },
-    {
-      "title": "ServiceNow",
-      "slug": "servicenow",
-      "description": "ServiceNow provides Security Incident Response and Security Incident Tasks module handled by this connector which collects SIR and SIT and related entities.",
-      "short_description": "Ingestion of SIR and SIT as Case Incident and Tasks.",
-      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
-      "use_cases": [
-        "Incident Response & Ticketing"
-      ],
-      "verified": true,
-      "last_verified_date": "15-06-2025",
-      "playbook_supported": false,
-      "max_confidence_level": 50,
-      "support_version": ">= 6.5.1",
-      "subscription_link": "https://www.servicenow.com/contact-us.html",
-      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/servicenow",
-      "manager_supported": true,
-      "container_version": "rolling",
-      "container_image": "opencti/connector-servicenow",
-      "container_type": "EXTERNAL_IMPORT",
-      "config_schema": {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "https://www.filigran.io/connectors/servicenow_config.schema.json",
-        "type": "object",
-        "properties": {
-          "OPENCTI_URL": {
-            "description": "The OpenCTI platform URL.",
-            "format": "uri",
-            "maxLength": 2083,
-            "minLength": 1,
-            "type": "string"
-          },
-          "OPENCTI_TOKEN": {
-            "description": "The token of the user who represents the connector in the OpenCTI platform.",
-            "type": "string"
-          },
-          "CONNECTOR_ID": {
-            "description": "A unique UUIDv4 identifier for this connector instance.",
-            "type": "string"
-          },
-          "CONNECTOR_TYPE": {
-            "default": "EXTERNAL_IMPORT",
-            "description": "Should always be set to EXTERNAL_IMPORT for this connector.",
-            "type": "string"
-          },
-          "CONNECTOR_NAME": {
-            "default": "ServiceNow",
-            "description": "Name of the connector.",
-            "type": "string"
-          },
-          "CONNECTOR_SCOPE": {
-            "default": "ServiceNow",
-            "description": "The scope or type of data the connector is importing, either a MIME type or Stix Object (for information only).",
-            "type": "string"
-          },
-          "CONNECTOR_LOG_LEVEL": {
-            "default": "error",
-            "description": "Determines the verbosity of the logs.",
-            "enum": [
-              "debug",
-              "info",
-              "warn",
-              "error"
-            ],
-            "type": "string"
-          },
-          "CONNECTOR_DURATION_PERIOD": {
-            "default": "PT24H",
-            "description": "Duration between two scheduled runs of the connector (ISO 8601 format).",
-            "format": "duration",
-            "type": "string"
-          },
-          "CONNECTOR_QUEUE_THRESHOLD": {
-            "default": null,
-            "description": "Connector queue max size in Mbytes. Default to 500.",
-            "exclusiveMinimum": 0,
-            "type": "integer"
-          },
-          "CONNECTOR_RUN_AND_TERMINATE": {
-            "default": null,
-            "description": "Connector run-and-terminate flag.",
-            "type": "boolean"
-          },
-          "CONNECTOR_SEND_TO_QUEUE": {
-            "default": null,
-            "description": "Connector send-to-queue flag.",
-            "type": "boolean"
-          },
-          "CONNECTOR_SEND_TO_DIRECTORY": {
-            "default": null,
-            "description": "Connector send-to-directory flag.",
-            "type": "boolean"
-          },
-          "CONNECTOR_SEND_TO_DIRECTORY_PATH": {
-            "default": null,
-            "description": "Connector send-to-directory path.",
-            "type": "string"
-          },
-          "CONNECTOR_SEND_TO_DIRECTORY_RETENTION": {
-            "default": null,
-            "description": "Connector send-to-directory retention in days.",
-            "exclusiveMinimum": 0,
-            "type": "integer"
-          },
-          "SERVICENOW_INSTANCE_NAME": {
-            "description": "Corresponds to server instance name (will be used for API requests).",
-            "type": "string"
-          },
-          "SERVICENOW_API_KEY": {
-            "description": "Secure identifier used to validate access to ServiceNow APIs.",
-            "format": "password",
-            "type": "string",
-            "writeOnly": true
-          },
-          "SERVICENOW_API_VERSION": {
-            "default": "v2",
-            "description": "ServiceNow API version used for REST requests.",
-            "enum": [
-              "v1",
-              "v2"
-            ],
-            "type": "string"
-          },
-          "SERVICENOW_API_LEAKY_BUCKET_RATE": {
-            "default": 10,
-            "description": "Bucket refill rate (in tokens per second). Controls the rate at which API calls are allowed. For example, a rate of 10 means that 10 calls can be made per second, if the bucket is not empty.",
-            "exclusiveMinimum": 0,
-            "type": "integer"
-          },
-          "SERVICENOW_API_LEAKY_BUCKET_CAPACITY": {
-            "default": 10,
-            "description": "Maximum bucket capacity (in tokens). Defines the number of calls that can be made immediately in a burst. Once the bucket is empty, it refills at the rate defined by 'api_leaky_bucket_rate'.",
-            "exclusiveMinimum": 0,
-            "type": "integer"
-          },
-          "SERVICENOW_API_RETRY": {
-            "default": 5,
-            "description": "Maximum number of retry attempts in case of API failure.",
-            "exclusiveMinimum": 0,
-            "type": "integer"
-          },
-          "SERVICENOW_API_BACKOFF": {
-            "default": "PT30S",
-            "description": "Exponential backoff duration between API retries (ISO 8601 duration format).",
-            "format": "duration",
-            "type": "string"
-          },
-          "SERVICENOW_IMPORT_START_DATE": {
-            "anyOf": [
-              {
-                "format": "date",
-                "type": "string"
-              },
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "format": "duration",
-                "type": "string"
-              }
-            ],
-            "default": "P30D",
-            "description": "Start date of first import (ISO date format)."
-          },
-          "SERVICENOW_STATE_TO_EXCLUDE": {
-            "default": null,
-            "description": "List of security incident states to exclude from import.",
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "SERVICENOW_SEVERITY_TO_EXCLUDE": {
-            "default": null,
-            "description": "List of security incident severities to exclude from import.",
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "SERVICENOW_PRIORITY_TO_EXCLUDE": {
-            "default": null,
-            "description": "List of security incident priorities to exclude from import.",
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "SERVICENOW_COMMENT_TO_EXCLUDE": {
-            "default": null,
-            "description": "List of comment types to exclude: private, public, auto",
-            "items": {
-              "enum": [
-                "private",
-                "public",
-                "auto"
-              ],
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "SERVICENOW_TLP_LEVEL": {
-            "default": "red",
-            "description": "Traffic Light Protocol (TLP) level to apply on objects imported into OpenCTI.",
-            "enum": [
-              "clear",
-              "green",
-              "amber",
-              "amber+strict",
-              "red"
-            ],
-            "type": "string"
-          },
-          "SERVICENOW_OBSERVABLES_DEFAULT_SCORE": {
-            "default": 50,
-            "description": "Allows you to define a default score for observables and indicators when the 'promote_observables_as_indicators' variable is set to True.",
-            "exclusiveMinimum": 0,
-            "type": "integer"
-          },
-          "SERVICENOW_PROMOTE_OBSERVABLES_AS_INDICATORS": {
-            "default": true,
-            "description": "Boolean to promote observables into indicators.",
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "OPENCTI_URL",
-          "OPENCTI_TOKEN",
-          "CONNECTOR_ID",
-          "SERVICENOW_INSTANCE_NAME",
-          "SERVICENOW_API_KEY"
-        ],
-        "additionalProperties": true
-      }
-    },
-    {
-      "title": "Tenable Vulnerability Management",
-      "slug": "tenable-vuln-management",
-      "description": "Tenable provides comprehensive solutions for identifying and managing vulnerabilities within an organization's IT infrastructure. By offering detailed assessments and prioritization of vulnerabilities, Tenable helps organizations reduce their cyber risk exposure effectively. Using advanced analytics and continuous monitoring, it enables security teams to understand and mitigate potential threats posed by vulnerabilities in their environments.\n\nThe integration of Tenable Vulnerability Management with OpenCTI enables the seamless import of detailed vulnerability data into the OpenCTI platform, aligning it with relevant entities in the ecosystem. This encompasses vulnerabilities, CVEs, severity levels, and affected assets, which can be utilized to enhance threat intelligence, optimize vulnerability management, and improve security operation workflows within OpenCTI.",
-      "short_description": "Tenable delivers comprehensive solutions for vulnerability management within IT infrastructures, using detailed assessments and analytics to reduce cyber risk. Integration with OpenCTI allows for seamless import of vulnerability data, enhancing threat intelligence and prioritization.",
-      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
-      "use_cases": [
-        "Vulnerability Management"
-      ],
-      "verified": true,
-      "last_verified_date": "",
-      "playbook_supported": false,
-      "max_confidence_level": 80,
-      "support_version": ">= 6.5.1",
-      "subscription_link": "",
-      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/external-import/tenable-vuln-management",
-      "manager_supported": false,
-      "container_version": "rolling",
-      "container_image": "opencti/connector-tenable-vuln-management",
-      "container_type": "EXTERNAL_IMPORT"
-    },
-    {
-      "title": "ThreatFox",
-      "slug": "threatfox",
-      "description": "ThreatFox is a platform from abuse.ch and Spamhaus dedicated to sharing indicators of compromise (IOCs) associated with malware, with the infosec community, AV vendors and cyber threat intelligence providers\n\nThe integration of ThreatFox with OpenCTI facilitates the automatic import of IOCs into the threat intelligence platform. This integration incorporates data for OpenCTI observable and indicator types, including file-md5, file-sha1, file-sha256, ipv4-addr, domain-name, and url. Additionally, it adds the Malware entity, enhancing the platform's capability to manage and respond to threats effectively.",
-      "short_description": "ThreatFox is a platform from abuse.ch and Spamhaus dedicated to sharing indicators of compromise (IOCs) associated with malware, with the infosec community, AV vendors and cyber threat intelligence providers.",
-      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
-      "use_cases": [
-        "Open Source Threat Intel"
-      ],
-      "verified": true,
-      "last_verified_date": "",
-      "playbook_supported": false,
-      "max_confidence_level": 45,
-      "support_version": ">= 6.5.1",
-      "subscription_link": "",
-      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/oob/connector_manager/external-import/threatfox",
-      "manager_supported": false,
-      "container_version": "rolling",
-      "container_image": "opencti/connector-threatfox",
-      "container_type": "EXTERNAL_IMPORT"
-    },
-    {
-      "title": "URLhaus",
-      "slug": "urlhaus",
-      "description": "URLhaus is a platform from abuse.ch and Spamhaus dedicated to sharing malicious URLs that are being used for malware distribution. With this intelligence, gain insights into malware behavior, to help identify, track, and mitigate against malware and botnet-related cyber threats.\n\nThe integration of URLhaus with OpenCTI facilitates the automatic import of IOCs into the threat intelligence platform. \nThis integration imports URL observables/indicators and their related threats into OpenCTI.",
-      "short_description": "URLhaus is a platform from abuse.ch and Spamhaus dedicated to sharing malicious URLs that are being used for malware distribution.",
-      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
-      "use_cases": [
-        "Open Source Threat Intel"
-      ],
-      "verified": true,
-      "last_verified_date": "",
-      "playbook_supported": false,
-      "max_confidence_level": 50,
-      "support_version": ">= 6.5.1",
-      "subscription_link": "",
-      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/oob/connector_manager/external-import/urlhaus",
-      "manager_supported": false,
-      "container_version": "rolling",
-      "container_image": "opencti/connector-urlhaus",
-      "container_type": "EXTERNAL_IMPORT"
-    },
-    {
-      "title": "VulnCheck",
-      "slug": "vulncheck",
-      "description": "VulnCheck focuses on delivering detailed insights into software vulnerabilities, helping organizations identify and prioritize security weaknesses for remediation. By providing timely, in-depth analysis of vulnerabilities, VulnCheck assists security teams in understanding the potential impact and urgency of addressing these issues to protect their digital assets effectively.\n\nThe VulnCheck connector retrieves and translates data from VulnCheck into STIX objects. It supports feeds for Known Exploited Vulnerabilities (KEVs), NVD-2, ransomware, threat actors, exploits, botnets, initial access indicators, and IP intelligence. Each data source is processed to create structured, meaningful objects like vulnerabilities, malware, infrastructure, and relationships.The VulnCheck Connector helps organizations enrich their threat intelligence within OpenCTI by automating the ingestion of curated vulnerability and threat actor data.",
-      "short_description": "VulnCheck provides detailed insights into software vulnerabilities, helping prioritize and remediate security weaknesses. Its integration with OpenCTI brings timely vulnerability data to the platform, enhancing patching prioritization and maintaining a strong security posture.",
-      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
-      "use_cases": [
-        "Vulnerability Management",
-        "Commercial Threat Intel"
-      ],
-      "verified": true,
-      "last_verified_date": "2025-06-12",
-      "playbook_supported": false,
-      "max_confidence_level": 50,
-      "support_version": ">= 6.5.1",
-      "subscription_link": "https://www.vulncheck.com/",
-      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/oob/connector_manager/external-import/vulncheck",
-      "manager_supported": false,
-      "container_version": "rolling",
-      "container_image": "opencti/connector-vulncheck",
-      "container_type": "EXTERNAL_IMPORT"
-    },
-    {
-      "title": "FIRST EPSS",
-      "slug": "first-epss",
-      "description": "FIRST's Exploit Prediction Scoring System (EPSS) is an open model designed to predict the likelihood of a vulnerability being exploited in the wild. By providing a score for each vulnerability, EPSS helps organizations prioritize vulnerability management efforts based on the potential risk and impact. \n\nThe integration of FIRST EPSS with OpenCTI enables the automatic enrichment of vulnerabilities with EPSS information provided by FIRST (the global Forum of Incident Response and Security Teams). The integration enriches vulnerabilities with EPSS score and percentile.",
-      "short_description": "FIRST's Exploit Prediction Scoring System (EPSS) predicts the likelihood of a vulnerability being exploited, helping prioritize vulnerability management. Integration with OpenCTI adds exploit probability scores, enhancing risk-based remediation efforts.",
-      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
-      "use_cases": [
-        "Vulnerability Management",
-        "Enrichment & Analysis"
-      ],
-      "verified": true,
-      "last_verified_date": "",
-      "playbook_supported": true,
-      "max_confidence_level": 50,
-      "support_version": ">= 6.5.1",
-      "subscription_link": "https://www.first.org/epss/",
-      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/oob/connector_manager/internal-enrichment/first-epss",
-      "manager_supported": false,
-      "container_version": "rolling",
-      "container_image": "opencti/connector-first-epss",
-      "container_type": "INTERNAL_ENRICHMENT"
-    },
-    {
-      "title": "Google DNS",
-      "slug": "google-dns",
-      "description": "Google Public DNS is a Google service that provides recursive DNS servers to Internet users.\n\nIntegrating Google DNS with OpenCTI allows for the automatic enrichment of domain name observables by querying the Google Public DNS service for record types such as NS, A, CNAME, MX, and TXT. The connector uses the query results to create observables and establish relationships among them.",
-      "short_description": "Google Public DNS is a Google service that provides recursive DNS servers to Internet users used to enrich.",
-      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
-      "use_cases": [
-        "Enrichment & Analysis"
-      ],
-      "verified": true,
-      "last_verified_date": "",
-      "playbook_supported": true,
-      "max_confidence_level": 90,
-      "support_version": ">= 6.5.1",
-      "subscription_link": "https://urlscan.io",
-      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/oob/connector_manager/internal-enrichment/google-dns",
-      "manager_supported": false,
-      "container_version": "rolling",
-      "container_image": "opencti/connector-google-dns",
-      "container_type": "INTERNAL_ENRICHMENT"
-    },
-    {
-      "title": "IpInfo",
-      "slug": "ipinfo",
-      "description": "Accurate IP address data that keeps pace with secure, specific, and forward-looking use cases",
-      "short_description": "IpInfo enrichment connector",
-      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
-      "use_cases": [
-        "Incident Response & Ticketing",
-        "Enrichment"
-      ],
-      "verified": true,
-      "last_verified_date": "15-06-2025",
+      "last_verified_date": "2024-03-10",
       "playbook_supported": true,
       "max_confidence_level": 75,
       "support_version": ">= 6.5.1",
-      "subscription_link": "https://ipinfo.io/support",
-      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/master/internal-enrichment/ipinfo",
+      "subscription_link": "https://example.com/subscription/test-enrichment",
+      "source_code": "https://github.com/example/connector-test-enrichment",
       "manager_supported": true,
       "container_version": "rolling",
       "container_image": "opencti/connector-ipinfo",
       "container_type": "INTERNAL_ENRICHMENT",
       "config_schema": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "https://www.filigran.io/connectors/ipinfo_config.schema.json",
+        "$id": "https://example.com/schemas/test_enrichment.schema.json",
         "type": "object",
         "properties": {
           "OPENCTI_URL": {
@@ -1826,32 +275,32 @@
             "type": "string"
           },
           "OPENCTI_TOKEN": {
-            "description": "The token of the user who represents the connector in the OpenCTI platform.",
+            "description": "The authentication token.",
             "type": "string"
           },
           "CONNECTOR_ID": {
-            "default": "ipinfo--43cf861c-72a7-4e45-864a-b19e32e6a8bc",
-            "description": "A unique UUIDv4 identifier for this connector instance.",
+            "default": "test-enrichment--87654321-4321-4321-4321-210987654321",
+            "description": "Unique identifier for this connector.",
             "type": "string"
           },
           "CONNECTOR_NAME": {
-            "default": "IP Info",
+            "default": "Test Enrichment",
             "description": "Name of the connector.",
             "type": "string"
           },
           "CONNECTOR_SCOPE": {
-            "default": "IPv4-Addr,IPv6-Addr",
-            "description": "The scope or type of data the connector is importing, either a MIME type or Stix Object (for information only).",
+            "default": "IPv4-Addr,IPv6-Addr,Domain-Name",
+            "description": "Types of observables to enrich.",
             "type": "string"
           },
           "CONNECTOR_TYPE": {
             "default": "INTERNAL_ENRICHMENT",
-            "description": "Should always be set to INTERNAL_ENRICHMENT for this connector.",
+            "description": "Should always be INTERNAL_ENRICHMENT.",
             "type": "string"
           },
           "CONNECTOR_LOG_LEVEL": {
             "default": "error",
-            "description": "Determines the verbosity of the logs.",
+            "description": "Log verbosity.",
             "enum": [
               "debug",
               "info",
@@ -1862,53 +311,28 @@
           },
           "CONNECTOR_AUTO": {
             "default": true,
-            "description": "Enables or disables automatic enrichment of observables for OpenCTI.",
+            "description": "Enable automatic enrichment.",
             "type": "boolean"
-          },
-          "CONNECTOR_LISTEN_PROTOCOL": {
-            "default": null,
-            "description": "Protocol used for listening.",
-            "type": "string"
           },
           "CONNECTOR_LISTEN_PROTOCOL_API_PORT": {
             "default": null,
-            "description": "Port used for API listening.",
+            "description": "Port for API listening.",
             "type": "integer"
-          },
-          "CONNECTOR_LISTEN_PROTOCOL_API_PATH": {
-            "default": null,
-            "description": "API path for callback.",
-            "type": "string"
-          },
-          "CONNECTOR_LISTEN_PROTOCOL_API_URI": {
-            "default": null,
-            "description": "Full URI for API listening.",
-            "type": "string"
           },
           "CONNECTOR_LISTEN_PROTOCOL_API_SSL": {
             "default": null,
-            "description": "Enable SSL for API listening.",
+            "description": "Enable SSL for API.",
             "type": "boolean"
           },
-          "CONNECTOR_LISTEN_PROTOCOL_API_SSL_KEY": {
-            "default": null,
-            "description": "SSL key file path.",
-            "type": "string"
-          },
-          "CONNECTOR_LISTEN_PROTOCOL_API_SSL_CERT": {
-            "default": null,
-            "description": "SSL certificate file path.",
-            "type": "string"
-          },
           "IPINFO_TOKEN": {
-            "description": "API token used to authenticate requests to the IPInfo service.",
+            "description": "API token for the enrichment service.",
             "format": "password",
             "type": "string",
             "writeOnly": true
           },
-          "IPINFO_MAX_TLP": {
+          "ENRICHMENT_MAX_TLP": {
             "default": "TLP:AMBER",
-            "description": "Traffic Light Protocol (TLP) level to apply on objects imported into OpenCTI.",
+            "description": "Maximum TLP level.",
             "enum": [
               "TLP:CLEAR",
               "TLP:GREEN",
@@ -1918,9 +342,9 @@
             ],
             "type": "string"
           },
-          "IPINFO_USE_ASN_NAME": {
+          "ENRICHMENT_USE_CACHE": {
             "default": true,
-            "description": "If enabled, uses the ASN name instead of the ASN number in enrichment results.",
+            "description": "Enable caching of enrichment results.",
             "type": "boolean"
           }
         },
@@ -1933,42 +357,22 @@
       }
     },
     {
-      "title": "URLScan Enrichment",
-      "slug": "urlscan-enrichment",
-      "description": "FIRST's Exploit Prediction Scoring System (EPSS) is an open model designed to predict the likelihood of a vulnerability being exploited in the wild. By providing a score for each vulnerability, EPSS helps organizations prioritize vulnerability management efforts based on the potential risk and impact. \n\nThe integration of FIRST EPSS with OpenCTI enables the automatic enrichment of vulnerabilities with EPSS information provided by FIRST (the global Forum of Incident Response and Security Teams). The integration enriches vulnerabilities with EPSS score and percentile.",
-      "short_description": "URLScan is an online service that allows you to scan URLs to analyze and detect potential security threats. It provides a platform where users can submit links to be scanned to obtain information about the page's content, loaded external resources, potential threats, and other relevant security details.\n\nThe integration of URLScan with OpenCTI enables the automatic enrichment and analysis of IP addresses and URLs.",
-      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
+      "title": "Test Stream Connector",
+      "slug": "test-stream",
+      "description": "A dummy stream connector that simulates exporting OpenCTI data to external systems. Used for testing stream connector functionality.",
+      "short_description": "Test connector for streaming data to external systems",
+      "logo": "https://example.com/logos/test-stream.png",
       "use_cases": [
-        "Enrichment & Analysis"
+        "Data Export",
+        "Stream Testing"
       ],
       "verified": true,
-      "last_verified_date": "",
-      "playbook_supported": true,
-      "max_confidence_level": 60,
-      "support_version": ">= 6.5.1",
-      "subscription_link": "https://urlscan.io",
-      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/oob/connector_manager/internal-enrichment/urlscan-enrichment",
-      "manager_supported": false,
-      "container_version": "rolling",
-      "container_image": "opencti/connector-urlscan-enrichment",
-      "container_type": "INTERNAL_ENRICHMENT"
-    },
-    {
-      "title": "Google SecOps SIEM",
-      "slug": "google-secops-siem",
-      "description": "Google SecOps SIEM offers a cloud-based security information and event management solution that helps organizations collect, analyze, and respond to security incidents across their networks.\n\nThe integration of Google SecOps SIEM with OpenCTI enables the automatic dissemination of STIX indicators into Google SecOps SIEM. The connector consumes indicators from an OpenCTI stream, convert them as UDM entities and push them into Google SecOps SIEM using the\"entities.import\" API.",
-      "short_description": "Google SecOps SIEM offers a cloud-based security information and event management solution that helps organizations collect, analyze, and respond to security incidents across their networks.",
-      "logo": "https://res.cloudinary.com/dktzowanc/image/upload/v1752140062/Screenshot_2025-07-10_113340_hwa5wh.png",
-      "use_cases": [
-        "SIEM and Analytics"
-      ],
-      "verified": true,
-      "last_verified_date": "",
+      "last_verified_date": "2024-04-20",
       "playbook_supported": false,
       "max_confidence_level": 80,
       "support_version": ">= 6.5.1",
-      "subscription_link": "",
-      "source_code": "https://github.com/OpenCTI-Platform/connectors/tree/oob/connector_manager/stream/google-secops-siem",
+      "subscription_link": null,
+      "source_code": "https://github.com/example/connector-test-stream",
       "manager_supported": false,
       "container_version": "rolling",
       "container_image": "opencti/connector-google-secops-siem",

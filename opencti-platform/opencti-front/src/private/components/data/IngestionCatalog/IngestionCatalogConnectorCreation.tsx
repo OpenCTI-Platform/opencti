@@ -26,6 +26,9 @@ import IconButton from '@mui/material/IconButton';
 import { HubOutlined, LibraryBooksOutlined } from '@mui/icons-material';
 import NoConnectorManagersBanner from '@components/data/connectors/NoConnectorManagersBanner';
 import Tooltip from '@mui/material/Tooltip';
+import JsonFormArrayRenderer, { jsonFormArrayTester } from '@components/data/IngestionCatalog/utils/JsonFormArrayRenderer';
+import buildContractConfiguration from '@components/data/connectors/utils/buildContractConfiguration';
+import JsonFormUnsupportedType, { jsonFormUnsupportedTypeTester } from '@components/data/IngestionCatalog/utils/JsonFormUnsupportedType';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { RelayError } from '../../../../relay/relayTypes';
 import type { Theme } from '../../../../components/Theme';
@@ -81,6 +84,12 @@ const k8sNameSchema = (t_i18n: (key: string) => string) => Yup.string()
   .matches(/^[a-z0-9-]+$/, t_i18n('Only lowercase letters, numbers and hyphens are allowed'))
   .matches(/^[a-z0-9].*[a-z0-9]$/, t_i18n('Name cannot start or end with a hyphen'));
 
+const customRenderers = [
+  ...materialRenderers,
+  { tester: jsonFormArrayTester, renderer: JsonFormArrayRenderer },
+  { tester: jsonFormUnsupportedTypeTester, renderer: JsonFormUnsupportedType },
+];
+
 interface IngestionCatalogConnectorCreationProps {
   connector: IngestionConnector;
   open: boolean;
@@ -118,10 +127,6 @@ const IngestionCatalogConnectorCreation = ({
     setSubmitting,
     resetForm,
   }: Partial<FormikHelpers<ManagedConnectorValues>>) => {
-    const manager_contract_configuration = Object.entries(values)
-      .filter(([, value]) => value != null)
-      .map(([key, value]) => ({ key, value: [value.toString()] }));
-
     const input = {
       name: values.name,
       catalog_id: catalogId,
@@ -129,7 +134,7 @@ const IngestionCatalogConnectorCreation = ({
       automatic_user: values.automatic_user ?? true,
       ...((values.automatic_user !== false) && { confidence_level: values.confidence_level?.toString() }),
       manager_contract_image: connector.container_image,
-      manager_contract_configuration,
+      manager_contract_configuration: buildContractConfiguration(values),
     };
 
     commitRegister({
@@ -205,7 +210,7 @@ const IngestionCatalogConnectorCreation = ({
 
     const reqProperties: JsonSchema = {
       properties: requiredProps,
-      required: connector.config_schema.required.filter((req) => req !== 'CONNECTOR_NAME' && req !== 'name'),
+      required: connector.config_schema.required,
     };
 
     const optProperties: JsonSchema = {
@@ -362,7 +367,7 @@ const IngestionCatalogConnectorCreation = ({
                             <JsonForms
                               data={configDefaults}
                               schema={requiredProperties}
-                              renderers={materialRenderers}
+                              renderers={customRenderers}
                               validationMode={'NoValidation'}
                               onChange={async ({ data }) => {
                                 await setValues({ ...values, ...data });
@@ -382,7 +387,7 @@ const IngestionCatalogConnectorCreation = ({
                               <JsonForms
                                 data={configDefaults}
                                 schema={optionalProperties}
-                                renderers={materialRenderers}
+                                renderers={customRenderers}
                                 validationMode={'NoValidation'}
                                 onChange={({ data }) => setValues({ ...values, ...data })}
                               />

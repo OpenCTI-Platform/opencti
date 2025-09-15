@@ -30,9 +30,10 @@ import stopEvent from '../../../../utils/domEvent';
 
 interface ConnectorPopoverProps {
   connector: Connector_connector$data;
+  onRefreshData?: () => void;
 }
 
-const ConnectorPopover = ({ connector }: ConnectorPopoverProps) => {
+const ConnectorPopover = ({ connector, onRefreshData }: ConnectorPopoverProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const navigate = useNavigate();
@@ -52,6 +53,8 @@ const ConnectorPopover = ({ connector }: ConnectorPopoverProps) => {
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
     stopEvent(event);
     setAnchorEl(event.currentTarget);
+
+    onRefreshData?.();
   };
 
   const handleClose = (event: React.MouseEvent<HTMLElement>) => {
@@ -162,8 +165,11 @@ const ConnectorPopover = ({ connector }: ConnectorPopoverProps) => {
         <MenuItem onClick={handleOpenDelete} disabled={!!connector.active || !!connector.built_in}>{t_i18n('Delete')}</MenuItem>
       </Menu>
 
-      {editionOpen
-        && (<ManagedConnectorEdition connector={connector} onClose={() => setEditionOpen(false)} />)}
+      <ManagedConnectorEdition
+        open={editionOpen}
+        onClose={() => setEditionOpen(false)}
+        connector={connector}
+      />
 
       <Dialog
         slotProps={{ paper: { elevation: 1 } }}

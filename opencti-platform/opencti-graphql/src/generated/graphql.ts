@@ -4336,7 +4336,7 @@ export type ContextData = {
 
 export type ContractConfigInput = {
   key: Scalars['String']['input'];
-  value?: InputMaybe<Array<Scalars['String']['input']>>;
+  value: Scalars['String']['input'];
 };
 
 export enum CountriesOrdering {
