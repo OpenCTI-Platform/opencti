@@ -210,7 +210,7 @@ const IngestionCatalogConnectorCreation = ({
 
     const reqProperties: JsonSchema = {
       properties: requiredProps,
-      required: connector.config_schema.required.filter((req) => req !== 'CONNECTOR_NAME' && req !== 'name' && req !== 'CONNECTOR_ID'), // FIXME: remove filter on CONNECTOR_ID when manifest is ok
+      required: connector.config_schema.required,
     };
 
     const optProperties: JsonSchema = {
