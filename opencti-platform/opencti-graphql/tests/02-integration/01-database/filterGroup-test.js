@@ -2151,7 +2151,7 @@ describe('Complex filters combinations for elastic queries', () => {
       }
     });
     expect(queryResult.data.reports.edges.length).toEqual(3); // the reports published in September 2023: report1, report2, report4
-    // published within last 2 years and now
+    // published within last 3 years and now
     queryResult = await queryAsAdmin({
       query: REPORT_LIST_QUERY,
       variables: {
@@ -2160,7 +2160,7 @@ describe('Complex filters combinations for elastic queries', () => {
           mode: 'and',
           filters: [{
             key: 'published',
-            values: ['now-2y', 'now'],
+            values: ['now-3y', 'now'],
             operator: 'within',
             mode: 'or',
           }],
@@ -2168,7 +2168,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       }
     });
-    expect(queryResult.data.reports.edges.length).toEqual(3); // the reports published in the last 2 years: report1, report2, report4
+    expect(queryResult.data.reports.edges.length).toEqual(3); // the reports published in the last 3 years: report1, report2, report4
   });
 
   it('should test environment deleted', async () => {
