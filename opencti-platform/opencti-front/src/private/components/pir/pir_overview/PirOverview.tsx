@@ -23,17 +23,20 @@ import PirOverviewHistory from './PirOverviewHistory';
 import { PirQuery$data } from '../__generated__/PirQuery.graphql';
 import { PirOverviewHistoryFragment$key } from './__generated__/PirOverviewHistoryFragment.graphql';
 import { PirOverviewDetailsRedisFragment$key } from './__generated__/PirOverviewDetailsRedisFragment.graphql';
+import { PirHistoryQuery$variables } from '../__generated__/PirHistoryQuery.graphql';
 
 interface PirOverviewProps {
   dataHistory: PirOverviewHistoryFragment$key
   dataPir: NonNullable<PirQuery$data['pir']>
   dataRedis: PirOverviewDetailsRedisFragment$key
+  historyPaginationOptions: PirHistoryQuery$variables
 }
 
 const PirOverview = ({
   dataHistory,
   dataPir,
   dataRedis,
+  historyPaginationOptions,
 }: PirOverviewProps) => {
   return (
     <Grid container spacing={3}>
@@ -45,6 +48,7 @@ const PirOverview = ({
         <PirOverviewHistory
           dataHistory={dataHistory}
           dataPir={dataPir}
+          historyPaginationOptions={historyPaginationOptions}
         />
       </Grid>
       <Grid size={{ xs: 6 }} container direction='column' spacing={3}>

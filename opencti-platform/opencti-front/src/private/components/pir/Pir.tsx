@@ -21,7 +21,7 @@ import { PirQuery } from './__generated__/PirQuery.graphql';
 import PirHeader from './PirHeader';
 import PirTabs from './PirTabs';
 import PirKnowledge from './pir_knowledge/PirKnowledge';
-import { PirHistoryQuery } from './__generated__/PirHistoryQuery.graphql';
+import { PirHistoryQuery, PirHistoryQuery$variables } from './__generated__/PirHistoryQuery.graphql';
 import { PirRedisStreamQuery } from './__generated__/PirRedisStreamQuery.graphql';
 import PirOverview from './pir_overview/PirOverview';
 import ErrorNotFound from '../../../components/ErrorNotFound';
@@ -72,12 +72,14 @@ interface PirComponentProps {
   pirQueryRef: PreloadedQuery<PirQuery>
   pirHistoryQueryRef: PreloadedQuery<PirHistoryQuery>
   redisStreamQueryRef: PreloadedQuery<PirRedisStreamQuery>
+  historyPaginationOptions: PirHistoryQuery$variables
 }
 
 const PirComponent = ({
   pirQueryRef,
   pirHistoryQueryRef,
   redisStreamQueryRef,
+  historyPaginationOptions,
 }: PirComponentProps) => {
   const { pir } = usePreloadedQuery(pirQuery, pirQueryRef);
   const history = usePreloadedQuery(pirHistoryQuery, pirHistoryQueryRef);
@@ -97,6 +99,7 @@ const PirComponent = ({
               dataHistory={history}
               dataPir={pir}
               dataRedis={redisStream}
+              historyPaginationOptions={historyPaginationOptions}
             />
           )}
         />
@@ -123,13 +126,14 @@ const Pir = () => {
 
   const redisQueryRef = useQueryLoading<PirRedisStreamQuery>(redisStreamQuery);
   const pirQueryRef = useQueryLoading<PirQuery>(pirQuery, { id: pirId });
-  const pirHistoryQueryRef = useQueryLoading<PirHistoryQuery>(pirHistoryQuery, {
+  const historyPaginationOptions: PirHistoryQuery$variables = {
     first: 20,
     orderBy: 'timestamp',
     orderMode: 'desc',
     filters: pirHistoryFilterGroup,
     pirId,
-  });
+  };
+  const pirHistoryQueryRef = useQueryLoading<PirHistoryQuery>(pirHistoryQuery, historyPaginationOptions);
 
   return (
     <Suspense fallback={<Loader />}>
@@ -138,6 +142,7 @@ const Pir = () => {
           pirQueryRef={pirQueryRef}
           pirHistoryQueryRef={pirHistoryQueryRef}
           redisStreamQueryRef={redisQueryRef}
+          historyPaginationOptions={historyPaginationOptions}
         />
       )}
     </Suspense>
