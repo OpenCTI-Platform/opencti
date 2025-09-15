@@ -50,6 +50,7 @@ import type { UserReadActionContextData } from '../listener/UserActionListener';
 import { completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from './entity-representative';
 import { asyncMap } from '../utils/data-processing';
+import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 
 export interface FiltersWithNested extends Filter {
   nested?: Array<{
@@ -285,7 +286,7 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationTypes: 
     computedFilters = {
       mode: FilterMode.And,
       filters: filtersFromOptionsContent,
-      filterGroups: filters && isNotEmptyField(filters) ? [filters] : [],
+      filterGroups: filters && isFilterGroupNotEmpty(filters) ? [filters] : [],
     };
   }
   return {
@@ -482,7 +483,7 @@ export const pageRegardingEntitiesConnection = async <T extends BasicStoreEntity
         ]
       }
     ],
-    filterGroups: args.filters && isNotEmptyField(args.filters) ? [args.filters] : [],
+    filterGroups: args.filters && isFilterGroupNotEmpty(args.filters) ? [args.filters] : [],
   };
   return pageEntitiesConnection(context, user, entityTypes, { ...args, filters: connectedFilters });
 };
