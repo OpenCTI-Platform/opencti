@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import express from 'express';
 import bodyParser from 'body-parser';
-import compression from 'compression';
+import compression, { filter as compressionFilter } from 'compression';
 import helmet from 'helmet';
 import nconf from 'nconf';
 import showdown from 'showdown';
@@ -155,7 +155,9 @@ const createApp = async (app, schema) => {
     }
   });
 
-  app.use(compression({}));
+  app.use(compression({
+    filter: (req, res) => res.getHeader('Content-Type') !== 'text/event-stream' && compressionFilter(req, res),
+  }));
 
   if (ENABLED_UI) {
     // -- Serv flags resources
