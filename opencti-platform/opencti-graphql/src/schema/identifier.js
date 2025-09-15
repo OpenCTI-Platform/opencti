@@ -58,7 +58,7 @@ export const normalizeName = (name) => {
   return (name || '').toLowerCase().trim();
 };
 
-const normalizeUrl = (url) => {
+export const normalizeUrl = (url) => {
   return (url || '').replace(/\/+$/, '');
 };
 export const MARKING_TLP_CLEAR_ID = '613f2e26-407d-48c7-9eca-b8e91df99dc9';
