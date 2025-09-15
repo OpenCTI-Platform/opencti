@@ -18,7 +18,7 @@ import Box from '@mui/material/Box';
 import Tooltip from '@mui/material/Tooltip';
 import { Link } from 'react-router-dom';
 import React from 'react';
-import { graphql, useFragment, useRefetchableFragment } from 'react-relay';
+import { graphql, useFragment } from 'react-relay';
 import { useTheme } from '@mui/material/styles';
 import { pirLogRedirectUri } from '@components/pir/pir-history-utils';
 import PirHistoryMessage from '../PirHistoryMessage';
@@ -29,9 +29,6 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { PirOverviewHistoryPirFragment$key } from './__generated__/PirOverviewHistoryPirFragment.graphql';
 import { PirOverviewHistoryFragment$key } from './__generated__/PirOverviewHistoryFragment.graphql';
 import Paper from '../../../../components/Paper';
-import useInterval from '../../../../utils/hooks/useInterval';
-import { FIVE_SECONDS } from '../../../../utils/Time';
-import { PirHistoryQuery$variables } from '../__generated__/PirHistoryQuery.graphql';
 
 const pirFragment = graphql`
   fragment PirOverviewHistoryPirFragment on Pir {
@@ -41,8 +38,7 @@ const pirFragment = graphql`
 `;
 
 const pirHistoryFragment = graphql`
-  fragment PirOverviewHistoryFragment on Query
-  @refetchable(queryName: "PirOverviewHistoryRefetchQuery") {
+  fragment PirOverviewHistoryFragment on Query {
     pirLogs(
       pirId: $pirId
       first: $first
@@ -79,22 +75,14 @@ const pirHistoryFragment = graphql`
 interface PirOverviewHistoryProps {
   dataHistory: PirOverviewHistoryFragment$key
   dataPir: PirOverviewHistoryPirFragment$key
-  historyPaginationOptions: PirHistoryQuery$variables
 }
 
-const PirOverviewHistory = ({ dataHistory, dataPir, historyPaginationOptions }: PirOverviewHistoryProps) => {
+const PirOverviewHistory = ({ dataHistory, dataPir }: PirOverviewHistoryProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n, nsdt } = useFormatter();
 
   const pir = useFragment(pirFragment, dataPir);
-
-  const [pirLogsData, refetch] = useRefetchableFragment(pirHistoryFragment, dataHistory);
-  useInterval(() => {
-    // Refresh the history every interval
-    refetch(historyPaginationOptions, { fetchPolicy: 'store-and-network' });
-  }, FIVE_SECONDS);
-
-  const { pirLogs } = pirLogsData;
+  const { pirLogs } = useFragment(pirHistoryFragment, dataHistory);
   const history = (pirLogs?.edges ?? []).flatMap((e) => e?.node ?? []);
 
   return (
