@@ -58,7 +58,7 @@ export const normalizeName = (name) => {
   return (name || '').toLowerCase().trim();
 };
 
-const normalizeUrl = (url) => {
+export const normalizeUrl = (url) => {
   return (url || '').replace(/\/+$/, '');
 };
 
