@@ -94,6 +94,7 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
   const { forceUpdate } = useForceUpdate();
   const { region, connectorsForImport, connectorsForExport } = data;
   const link = `/dashboard/locations/regions/${regionId}/knowledge`;
+  const isOverview = location.pathname === `/dashboard/locations/regions/${regionId}`;
   const paddingRight = getPaddingRight(location.pathname, region?.id, '/dashboard/locations/regions');
   return (
     <>
@@ -207,9 +208,11 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
                   label={t_i18n('History')}
                 />
               </Tabs>
+              {isOverview && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
                 <AIInsights id={region.id}/>
               </div>
+              )}
             </Box>
             <Routes>
               <Route

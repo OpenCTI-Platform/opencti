@@ -98,6 +98,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
 
   const { forceUpdate } = useForceUpdate();
 
+  const isOverview = location.pathname === `/dashboard/entities/sectors/${sectorId}`;
   const paddingRight = getPaddingRight(location.pathname, sectorId, '/dashboard/entities/sectors');
   const link = `/dashboard/entities/sectors/${sectorId}/knowledge`;
   return (
@@ -208,9 +209,11 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
                   label={t_i18n('History')}
                 />
               </Tabs>
+              {isOverview && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
                 <AIInsights id={sector.id}/>
               </div>
+              )}
             </Box>
             <Routes>
               <Route

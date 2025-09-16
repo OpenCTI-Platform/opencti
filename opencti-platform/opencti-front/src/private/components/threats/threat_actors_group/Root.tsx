@@ -99,6 +99,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
     connectorsForImport,
   } = usePreloadedQuery<RootThreatActorGroupQuery>(ThreatActorGroupQuery, queryRef);
   const { forceUpdate } = useForceUpdate();
+  const isOverview = location.pathname === `/dashboard/threats/threat_actors_group/${threatActorGroupId}`;
   const paddingRight = getPaddingRight(location.pathname, threatActorGroupId, '/dashboard/threats/threat_actors_group');
   const link = `/dashboard/threats/threat_actors_group/${threatActorGroupId}/knowledge`;
   return (
@@ -208,10 +209,12 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
                   label={t_i18n('History')}
                 />
               </Tabs>
+              {isOverview && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
                 <AIInsights id={threatActorGroup.id}/>
                 <StixCoreObjectSimulationResultContainer id={threatActorGroup.id} type="threat"/>
               </div>
+              )}
             </Box>
             <Routes>
               <Route
