@@ -829,7 +829,7 @@ export const fetchStreamEventsRangeFromEventId = async (
     const streamResult = await client.call(
       'XRANGE',
       opts.streamName ?? REDIS_STREAM_NAME,
-      startTimestamp,
+      `(${startEventId}`, // ( prefix to exclude startEventId
       endTimestamp
     ) as any[];
     // Process the event results
