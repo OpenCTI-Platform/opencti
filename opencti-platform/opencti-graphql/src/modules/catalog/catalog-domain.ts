@@ -156,7 +156,7 @@ const getCatalogs = (): Record<string, CatalogType> => {
 };
 
 const aesEncrypt = (text: string, key: Buffer, aesIv: Buffer) => {
-  const cipher = crypto.createCipheriv('aes-256-cbc', key, aesIv);
+  const cipher = crypto.createCipheriv('aes-256-gcm', key, aesIv);
   let encrypted = cipher.update(text, 'utf8', 'base64');
   encrypted += cipher.final('base64');
   return encrypted;
