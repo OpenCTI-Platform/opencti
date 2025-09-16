@@ -10,22 +10,24 @@ import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 export interface ConnectorsStatusFilterState {
   search: string;
-  managerContractImage: string;
+  slug: string;
   isManaged: boolean | null
 }
 
 interface ConnectorsStatusFiltersProps {
-  typeOptions: { label: string; value: string }[];
+  managedConnectorOptions: { label: string; value: string }[];
   filters: ConnectorsStatusFilterState;
   onFiltersChange: (filters: ConnectorsStatusFilterState) => void;
+  showManagedFilters: boolean;
 }
 
 const INPUT_WIDTH = 200; // same as defined in ListFilters
 
 const ConnectorsStatusFilters: React.FC<ConnectorsStatusFiltersProps> = ({
-  typeOptions,
+  managedConnectorOptions,
   filters,
   onFiltersChange,
+  showManagedFilters = false,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
@@ -43,7 +45,7 @@ const ConnectorsStatusFilters: React.FC<ConnectorsStatusFiltersProps> = ({
 
   const handleClearFilters = () => {
     setSearchInput('');
-    onFiltersChange({ search: '', managerContractImage: '', isManaged: null });
+    onFiltersChange({ search: '', slug: '', isManaged: null });
   };
 
   const handleSearchInputSubmit = (value: string) => {
@@ -60,7 +62,7 @@ const ConnectorsStatusFilters: React.FC<ConnectorsStatusFiltersProps> = ({
     }
   };
 
-  const hasActiveFilters = filters.search || filters.managerContractImage || filters.isManaged !== null;
+  const hasActiveFilters = filters.search || filters.slug || filters.isManaged !== null;
 
   const managedOptions = [
     { label: 'True', value: true },
@@ -76,18 +78,18 @@ const ConnectorsStatusFilters: React.FC<ConnectorsStatusFiltersProps> = ({
       />
 
       {
-        isEnterpriseEdition && (
+        isEnterpriseEdition && showManagedFilters && (
           <>
             <Tooltip title={t_i18n('Apply filter to managed deployments only')} placement={'top'} >
               <Autocomplete
                 size="small"
                 sx={{ width: INPUT_WIDTH, backgroundColor: theme.palette.background.paper }}
-                options={typeOptions}
-                value={typeOptions.find((o) => o.value === filters.managerContractImage) || null}
-                onChange={(event, option) => handleFilterChange('managerContractImage', option?.value || '')}
+                options={managedConnectorOptions}
+                value={managedConnectorOptions.find((o) => o.value === filters.slug) || null}
+                onChange={(event, option) => handleFilterChange('slug', option?.value || '')}
                 isOptionEqualToValue={(option, value) => option.value === value.value}
                 renderInput={(params) => (
-                  <TextField {...params} label={t_i18n('Connector')} placeholder={t_i18n('Connector')} variant="outlined" />
+                  <TextField {...params} label={t_i18n('Managed connector')} placeholder={t_i18n('Connector')} variant="outlined" />
                 )}
                 clearOnEscape
               />

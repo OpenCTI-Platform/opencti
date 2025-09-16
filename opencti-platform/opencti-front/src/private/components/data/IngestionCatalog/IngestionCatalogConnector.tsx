@@ -1,14 +1,16 @@
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import React, { Suspense, useState } from 'react';
+import React, { Suspense } from 'react';
 import IngestionCatalogConnectorHeader from '@components/data/IngestionCatalog/IngestionCatalogConnectorHeader';
 import IngestionCatalogConnectorOverview from '@components/data/IngestionCatalog/IngestionCatalogConnectorOverview';
 import { IngestionCatalogConnectorQuery } from '@components/data/IngestionCatalog/__generated__/IngestionCatalogConnectorQuery.graphql';
 import { ConnectorManagerStatusProvider, useConnectorManagerStatus } from '@components/data/connectors/ConnectorManagerStatusContext';
-import NoConnectorManagersBanner from '@components/data/connectors/NoConnectorManagersBanner';
+import ConnectorDeploymentBanner from '@components/data/connectors/ConnectorDeploymentBanner';
 import { Stack } from '@mui/material';
 import IngestionCatalogConnectorCreation from '@components/data/IngestionCatalog/IngestionCatalogConnectorCreation';
 import { IngestionConnector } from '@components/data/IngestionCatalog';
+import createDeploymentCountMap from '@components/data/IngestionCatalog/utils/createDeploymentCountMap';
+import useConnectorDeployDialog from '@components/data/IngestionCatalog/hooks/useConnectorDeployDialog';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -16,7 +18,6 @@ import { useFormatter } from '../../../../components/i18n';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import { resolveLink } from '../../../../utils/Entity';
 
 const ingestionCatalogConnectorQuery = graphql`
   query IngestionCatalogConnectorQuery($slug: String!) {
@@ -24,12 +25,15 @@ const ingestionCatalogConnectorQuery = graphql`
       catalog_id
       contract
     }
+    connectors {
+      manager_contract_image
+    }
   }
 `;
 
 interface IngestionCatalogConnectorComponentProps {
   queryRef: PreloadedQuery<IngestionCatalogConnectorQuery>;
-  onClickDeploy: (connector: IngestionConnector, catalogId: string, hasRegisteredManagers: boolean) => void;
+  onClickDeploy: (connector: IngestionConnector, catalogId: string, hasRegisteredManagers: boolean, deploymentCount: number) => void;
 }
 
 const IngestionCatalogConnectorComponent = ({
@@ -42,7 +46,7 @@ const IngestionCatalogConnectorComponent = ({
 
   const { hasRegisteredManagers } = useConnectorManagerStatus();
 
-  const { contract } = usePreloadedQuery(
+  const { contract, connectors } = usePreloadedQuery(
     ingestionCatalogConnectorQuery,
     queryRef,
   );
@@ -52,6 +56,9 @@ const IngestionCatalogConnectorComponent = ({
   if (!contract) return <ErrorNotFound />;
 
   const connector = JSON.parse(contract.contract);
+
+  const deploymentCounts = createDeploymentCountMap(connectors);
+  const deploymentCount = deploymentCounts.get(connector.container_image) ?? 0;
 
   return (
     <>
@@ -65,12 +72,12 @@ const IngestionCatalogConnectorComponent = ({
       />
 
       <Stack gap={2}>
-        { !hasRegisteredManagers && <NoConnectorManagersBanner />}
+        <ConnectorDeploymentBanner hasRegisteredManagers={hasRegisteredManagers} />
 
         <IngestionCatalogConnectorHeader
           connector={connector}
           isEnterpriseEdition={isEnterpriseEdition}
-          onClickDeploy={() => onClickDeploy(connector, contract?.catalog_id, hasRegisteredManagers)}
+          onClickDeploy={() => onClickDeploy(connector, contract?.catalog_id, hasRegisteredManagers, deploymentCount)}
         />
 
         <IngestionCatalogConnectorOverview connector={connector} />
@@ -79,15 +86,7 @@ const IngestionCatalogConnectorComponent = ({
   );
 };
 
-interface CatalogState {
-  selectedConnector: IngestionConnector | null;
-  selectedCatalogId: string;
-  hasRegisteredManagers: boolean;
-}
-
 const IngestionCatalogConnector = () => {
-  const navigate = useNavigate();
-
   const { connectorSlug } = useParams();
 
   const queryRef = useQueryLoading<IngestionCatalogConnectorQuery>(
@@ -95,28 +94,7 @@ const IngestionCatalogConnector = () => {
     { slug: connectorSlug ?? '' },
   );
 
-  const [catalogState, setCatalogState] = useState<CatalogState>({
-    selectedConnector: null,
-    selectedCatalogId: '',
-    hasRegisteredManagers: false,
-  });
-
-  const handleOpenDeployDialog = (connector: IngestionConnector, catalogId: string, registeredManagers: boolean) => {
-    setCatalogState((prev) => ({
-      ...prev,
-      selectedConnector: connector,
-      selectedCatalogId: catalogId,
-      hasRegisteredManagers: registeredManagers,
-    }));
-  };
-
-  const handleCloseDeployDialog = () => {
-    setCatalogState((prev) => ({
-      ...prev,
-      selectedConnector: null,
-      selectedCatalogId: '',
-    }));
-  };
+  const { catalogState, handleOpenDeployDialog, handleCloseDeployDialog, handleCreate } = useConnectorDeployDialog();
 
   return (
     <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
@@ -137,9 +115,8 @@ const IngestionCatalogConnector = () => {
             onClose={handleCloseDeployDialog}
             catalogId={catalogState.selectedCatalogId}
             hasRegisteredManagers={catalogState.hasRegisteredManagers}
-            onCreate={(connectorId) => {
-              navigate(`${resolveLink('Connectors')}/${connectorId}`);
-            }}
+            onCreate={handleCreate}
+            deploymentCount={catalogState.deploymentCount}
           />
         )
       }

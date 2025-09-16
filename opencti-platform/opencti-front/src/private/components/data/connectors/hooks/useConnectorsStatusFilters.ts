@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ConnectorsStatusFilterState } from '@components/data/connectors/ConnectorsStatusFilters';
 import { ConnectorsStatus_data$data } from '@components/data/connectors/__generated__/ConnectorsStatus_data.graphql';
+import { ManagerContractDefinition } from '@components/data/connectors/utils/managerContractDefinitionType';
 
 type Connector = NonNullable<ConnectorsStatus_data$data['connectors']>[number];
 
 type UseConnectorsStatusFiltersProps = {
   connectors: readonly Connector[]
+  managerContractDefinitionMap: Map<string, ManagerContractDefinition>
   searchParams: URLSearchParams;
 };
 
@@ -15,17 +17,17 @@ const parseBooleanParam = (value: string | null): boolean | null => {
   return null;
 };
 
-const useConnectorsStatusFilters = ({ connectors, searchParams }: UseConnectorsStatusFiltersProps) => {
+const useConnectorsStatusFilters = ({ connectors, managerContractDefinitionMap, searchParams }: UseConnectorsStatusFiltersProps) => {
   const [filters, setFilters] = useState<ConnectorsStatusFilterState>({
     search: searchParams.get('search') || '',
-    managerContractImage: searchParams.get('manager_contract_image') || '',
+    slug: searchParams.get('slug') || '',
     isManaged: parseBooleanParam(searchParams.get('is_managed')),
   });
 
   useEffect(() => {
     const params = new URLSearchParams();
     if (filters.search) params.set('search', filters.search);
-    if (filters.managerContractImage) params.set('manager_contract_image', filters.managerContractImage);
+    if (filters.slug) params.set('slug', filters.slug);
     if (filters.isManaged !== null) params.set('is_managed', String(filters.isManaged));
 
     const queryString = params.toString();
@@ -42,10 +44,14 @@ const useConnectorsStatusFilters = ({ connectors, searchParams }: UseConnectorsS
       if (!nameMatch) return false;
     }
 
-    if (filters.managerContractImage) {
-      if (!connector.manager_contract_image) return false;
-      const imageMatch = connector.manager_contract_image.includes(filters.managerContractImage);
-      if (!imageMatch) return false;
+    if (filters.slug) {
+      const parsedDefinition = managerContractDefinitionMap.get(connector.id);
+      if (!parsedDefinition?.slug) return false;
+
+      const slugMatch = parsedDefinition.slug
+        .toLowerCase()
+        .includes(filters.slug.toLowerCase());
+      if (!slugMatch) return false;
     }
 
     if (filters.isManaged !== null) {
@@ -57,7 +63,7 @@ const useConnectorsStatusFilters = ({ connectors, searchParams }: UseConnectorsS
 
   const filteredConnectors = useMemo(() => {
     return connectors.filter(matchesFilterCriteria);
-  }, [connectors, filters.search, filters.managerContractImage, filters.isManaged]);
+  }, [connectors, filters.search, filters.slug, filters.isManaged]);
 
   return {
     filteredConnectors,

@@ -1,6 +1,5 @@
 import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { interval } from 'rxjs';
-import * as Yup from 'yup';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
@@ -26,6 +25,7 @@ import { useTheme } from '@mui/styles';
 import useConnectorsStatusFilters from '@components/data/connectors/hooks/useConnectorsStatusFilters';
 import ConnectorsStatusFilters from '@components/data/connectors/ConnectorsStatusFilters';
 import ConnectorStatusChip from '@components/data/connectors/ConnectorStatusChip';
+import { ManagerContractDefinition, managerContractDefinitionSchema } from '@components/data/connectors/utils/managerContractDefinitionType';
 import Transition from '../../../../components/Transition';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
@@ -75,12 +75,6 @@ export const connectorsStatusQuery = graphql`
     ...ConnectorsStatus_data
   }
 `;
-
-const contractSchema = Yup.object({
-  container_image: Yup.string().required(),
-  container_version: Yup.string().required(),
-  title: Yup.string().required(),
-});
 
 const connectorsStatusFragment = graphql`
   fragment ConnectorsStatus_data on Query {
@@ -189,40 +183,52 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
 
   const [searchParams] = useSearchParams();
 
-  const { filteredConnectors, filters, setFilters } = useConnectorsStatusFilters({ connectors: data.connectors, searchParams });
+  const managerContractDefinitionMap = useMemo(() => {
+    const definitionMap = new Map<string, ManagerContractDefinition>();
 
-  const contractsOptions = useMemo(() => {
-    if (!data.catalogs || !data.connectors) return [];
+    data.connectors.forEach((c) => {
+      const parsedDefinition = typeof c.manager_contract_definition === 'string'
+        ? JSON.parse(c.manager_contract_definition)
+        : c.manager_contract_definition;
 
-    const existingConnectorImages = new Set(
-      data.connectors
-        .filter((connector) => connector.manager_contract_image)
-        .map((connector) => connector.manager_contract_image),
-    );
-
-    const contracts = [];
-    for (const catalog of data.catalogs) {
-      for (const contract of catalog.contracts) {
+      if (parsedDefinition) {
         try {
-          const parsedContract = JSON.parse(contract);
-          const validatedContract = contractSchema.validateSync(parsedContract);
-
-          const contractImageVersion = `${validatedContract.container_image}:${validatedContract.container_version}`;
-
-          if (existingConnectorImages.has(contractImageVersion)) {
-            contracts.push({
-              label: validatedContract.title,
-              value: contractImageVersion,
-            });
-          }
-        } catch (e) {
-          MESSAGING$.notifyError(t_i18n('Failed to parse a contract'));
+          const validated = managerContractDefinitionSchema.validateSync(parsedDefinition);
+          definitionMap.set(c.id, validated);
+        } catch (error) {
+          MESSAGING$.notifyError(t_i18n('Failed to parse a connector manager contract definition'));
         }
       }
-    }
+    });
 
-    return contracts;
-  }, [data.catalogs, data.connectors]);
+    return definitionMap;
+  }, [data.connectors]);
+
+  const { filteredConnectors, filters, setFilters } = useConnectorsStatusFilters({
+    connectors: data.connectors,
+    managerContractDefinitionMap,
+    searchParams,
+  });
+
+  const managedConnectorOptions = useMemo(() => {
+    if (!data.connectors) return [];
+
+    const uniqueContracts = new Map();
+
+    data.connectors.forEach((connector) => {
+      const definition = managerContractDefinitionMap.get(connector.id);
+      if (definition) {
+        uniqueContracts.set(definition.slug, definition.title);
+      }
+    });
+
+    return Array.from(uniqueContracts.entries())
+      .map(([slug, title]) => ({
+        label: title,
+        value: slug,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [data.connectors, managerContractDefinitionMap]);
 
   // eslint-disable-next-line class-methods-use-this
   const submitResetState = (connectorId: string | undefined) => {
@@ -321,6 +327,8 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
     ? '20% 10% 15% 10% 15% 15% 15%'
     : '24% 12% 18% 12% 17% 17%';
 
+  const hasManagedConnectors = data.connectors.some((c) => c.is_managed);
+
   return (
     <>
       <Dialog
@@ -364,9 +372,10 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
         <Typography variant="h4">{t_i18n('Registered connectors')}</Typography>
 
         <ConnectorsStatusFilters
-          typeOptions={contractsOptions}
+          managedConnectorOptions={managedConnectorOptions}
           filters={filters}
           onFiltersChange={setFilters}
+          showManagedFilters={hasManagedConnectors}
         />
 
         <div className="clearfix" />
