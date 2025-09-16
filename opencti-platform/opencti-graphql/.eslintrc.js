@@ -1,24 +1,22 @@
 module.exports = {
-  plugins: [
-    '@typescript-eslint/eslint-plugin',
-    'import-newlines'
-  ],
+  root: true,
+  plugins: ['@typescript-eslint/eslint-plugin', 'import-newlines'],
   extends: [
     'airbnb-base',
     'airbnb-typescript/base',
     'plugin:import/recommended',
     'plugin:import/typescript',
     'plugin:@typescript-eslint/eslint-recommended',
-    'plugin:@typescript-eslint/recommended'
+    'plugin:@typescript-eslint/recommended',
   ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaVersion: 2020,
     project: './tsconfig.json',
-    tsconfigRootDir: __dirname
+    tsconfigRootDir: __dirname,
   },
   env: {
-    jest: true
+    jest: true,
   },
   ignorePatterns: [
     '**/build/**',
@@ -33,7 +31,7 @@ module.exports = {
     'jest.config.js',
     'jest.setup.js',
     'jest.file.transform.js',
-    'jest.relay.transform.js'
+    'jest.relay.transform.js',
   ],
   rules: {
     'import/extensions': [
@@ -41,8 +39,8 @@ module.exports = {
       'ignorePackages',
       {
         js: 'never',
-        ts: 'never'
-      }
+        ts: 'never',
+      },
     ],
     'max-len': [
       'error',
@@ -53,8 +51,8 @@ module.exports = {
         ignoreComments: false,
         ignoreRegExpLiterals: true,
         ignoreStrings: true,
-        ignoreTemplateLiterals: true
-      }
+        ignoreTemplateLiterals: true,
+      },
     ],
     camelcase: 'off',
     'no-underscore-dangle': 'off',
@@ -72,22 +70,20 @@ module.exports = {
       {
         argsIgnorePattern: '^_',
         varsIgnorePattern: '^_',
-        caughtErrorsIgnorePattern: '^_'
-      }
+        caughtErrorsIgnorePattern: '^_',
+      },
     ],
     'import-newlines/enforce': ['error', { items: 20, 'max-len': 180 }],
     '@typescript-eslint/no-floating-promises': ['error'],
   },
   overrides: [
     {
-      files: [
-        '*.js'
-      ],
+      files: ['*.js'],
       rules: {
         '@typescript-eslint/no-this-alias': 'off',
         '@typescript-eslint/return-await': 'off',
         '@typescript-eslint/no-use-before-define': 'off'
-      }
-    }
-  ]
+      },
+    },
+  ],
 };

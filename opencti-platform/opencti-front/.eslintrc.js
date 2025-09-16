@@ -1,4 +1,5 @@
 module.exports = {
+  root: true,
   extends: [
     'airbnb-base',
     'airbnb-typescript/base',
@@ -48,10 +49,7 @@ module.exports = {
     'vitest.config.ts',
     'setup-vitest.ts',
   ],
-  plugins: [
-    'import-newlines',
-    'custom-rules',
-  ],
+  plugins: ['import-newlines', 'custom-rules'],
   rules: {
     'custom-rules/classes-rule': 1,
     'no-restricted-syntax': 0,
@@ -61,7 +59,10 @@ module.exports = {
     'object-curly-newline': 'off',
     'arrow-body-style': 'off',
     'max-len': [
-      'error', 180, 2, {
+      'error',
+      180,
+      2,
+      {
         ignoreUrls: true,
         ignoreComments: false,
         ignoreRegExpLiterals: true,
@@ -70,16 +71,19 @@ module.exports = {
       },
     ],
     '@typescript-eslint/lines-between-class-members': 'off',
-    '@typescript-eslint/naming-convention': ['error', {
-      selector: 'variable',
-      format: ['camelCase', 'UPPER_CASE'],
-      leadingUnderscore: 'allow',
-      trailingUnderscore: 'allow',
-      filter: {
-        regex: '/([^_]*)/',
-        match: true,
+    '@typescript-eslint/naming-convention': [
+      'error',
+      {
+        selector: 'variable',
+        format: ['camelCase', 'UPPER_CASE'],
+        leadingUnderscore: 'allow',
+        trailingUnderscore: 'allow',
+        filter: {
+          regex: '/([^_]*)/',
+          match: true,
+        },
       },
-    }],
+    ],
     'no-unused-vars': 'off',
     '@typescript-eslint/no-unused-vars': [
       'error',
