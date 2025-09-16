@@ -157,14 +157,18 @@ const getCatalogs = (): Record<string, CatalogType> => {
 
 const aesEncrypt = (text: string, key: Buffer, aesIv: Buffer) => {
   const cipher = crypto.createCipheriv('aes-256-gcm', key, aesIv);
-  let encrypted = cipher.update(text, 'utf8', 'base64');
-  encrypted += cipher.final('base64');
-  return encrypted;
+  const ciphertext = Buffer.concat([
+    cipher.update(Buffer.from(text, 'utf8')),
+    cipher.final(),
+  ]);
+  const tag = cipher.getAuthTag();
+
+  return Buffer.concat([ciphertext, tag]).toString('base64');
 };
 
 const encryptValue = (rsaPublicKey: string, value: string) => {
   const aesKey = crypto.randomBytes(32);
-  const aesIv = crypto.randomBytes(16);
+  const aesIv = crypto.randomBytes(12);
   const aesEncryptedValue = aesEncrypt(value, aesKey, aesIv);
 
   const rsaEncryptedAesKeyBuffer = crypto.publicEncrypt(
