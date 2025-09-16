@@ -155,16 +155,48 @@ const getCatalogs = (): Record<string, CatalogType> => {
   return catalogMap;
 };
 
-const encryptValue = (publicKey: string, value: string) => {
-  const buffer = Buffer.from(value, 'utf8');
-  const encrypted = crypto.publicEncrypt(
+const aesEncrypt = (text: string, key: Buffer, aesIv: Buffer) => {
+  const cipher = crypto.createCipheriv('aes-256-gcm', key, aesIv);
+  const ciphertext = Buffer.concat([
+    cipher.update(Buffer.from(text, 'utf8')),
+    cipher.final(),
+  ]);
+  const tag = cipher.getAuthTag();
+
+  return Buffer.concat([ciphertext, tag]).toString('base64');
+};
+
+const encryptValue = (rsaPublicKey: string, value: string) => {
+  const aesKey = crypto.randomBytes(32);
+  const aesIv = crypto.randomBytes(12);
+  const aesEncryptedValue = aesEncrypt(value, aesKey, aesIv);
+
+  const rsaEncryptedAesKeyBuffer = crypto.publicEncrypt(
     {
-      key: publicKey,
+      key: rsaPublicKey,
       padding: crypto.constants.RSA_PKCS1_PADDING,
     },
-    buffer
+    aesKey
   );
-  return encrypted.toString('base64');
+  const rsaEncryptedAesKey = rsaEncryptedAesKeyBuffer.toString('base64');
+
+  const rsaEncryptedAesIvBuffer = crypto.publicEncrypt(
+    {
+      key: rsaPublicKey,
+      padding: crypto.constants.RSA_PKCS1_PADDING,
+    },
+    aesIv
+  );
+  const rsaEncryptedAesIv = rsaEncryptedAesIvBuffer.toString('base64');
+
+  return { value: aesEncryptedValue, key: rsaEncryptedAesKey, iv: rsaEncryptedAesIv };
+};
+
+export const processPasswordConfigurationValue = (
+  rawValue: string,
+  publicKey: string
+) => {
+  return encryptValue(publicKey, rawValue);
 };
 
 /**
@@ -175,13 +207,7 @@ export const processConfigurationValue = (
   rawValue: string,
   propSchema: any,
   propKey: string,
-  isPassword: boolean,
-  publicKey: string
 ): string => {
-  if (isPassword) {
-    return encryptValue(publicKey, rawValue);
-  }
-
   // Validate based on type
   switch (propSchema.type) {
     case 'boolean':
@@ -260,18 +286,25 @@ export const resolveConfigurationValue = (
   }
 
   // Process new value
+  if (isPassword) {
+    const processedPasswordValue = processPasswordConfigurationValue(rawValue, publicKey);
+    return {
+      key: propKey,
+      value: processedPasswordValue.value,
+      encrypted: true,
+      encryptionKey: processedPasswordValue.key,
+      encryptionIv: processedPasswordValue.iv
+    };
+  }
   const processedValue = processConfigurationValue(
     rawValue,
     propSchema,
     propKey,
-    isPassword,
-    publicKey
   );
 
   return {
     key: propKey,
     value: processedValue,
-    ...(isPassword && { encrypted: true }),
   };
 };
 
