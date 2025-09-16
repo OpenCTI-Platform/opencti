@@ -112,9 +112,9 @@ const PirOverviewDetails = ({ data, dataStream }: PirOverviewDetailsProps) => {
                 {t_i18n('Processing delay')}
               </Typography>
               <Typography variant="body2" gutterBottom style={{ display: 'flex' }}>
-                <div>
+                <span>
                   {diffInMinutes > 1 ? `${stringFormatMinutes(diffInMinutes, t_i18n)} ${t_i18n('behind live stream')}` : t_i18n('ON TIME')}
-                </div>
+                </span>
                 <Tooltip title={`${t_i18n('Last event processed')}: ${fldt(lastEventDate)}`}>
                   <InformationOutline
                     fontSize="small"
