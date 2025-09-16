@@ -21,6 +21,7 @@ const StyledDrawer = styled(Drawer)(() => ({
     position: 'fixed',
     overflow: 'auto',
     padding: 0,
+    zIndex: 998,
   },
 }));
 
