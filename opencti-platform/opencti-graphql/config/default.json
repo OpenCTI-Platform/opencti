@@ -225,12 +225,7 @@
     "timeout": 60000
   },
   "xtm": {
-    "one": {
-      "ai": {
-        "enabled": false,
-        "url": "https://common.xtm1.filigran.io/chatbot"
-      }
-    },
+    "xtm_one_url": "https://common.xtm1.filigran.io",
     "openbas_url": "",
     "openbas_token": "",
     "openbas_reject_unauthorized": false,
