@@ -1,6 +1,6 @@
 import { AutoAwesomeOutlined } from '@mui/icons-material';
 import EEChip from '@components/common/entreprise_edition/EEChip';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
 import { useTheme } from '@mui/styles';
 import IconButton from '@mui/material/IconButton';
@@ -18,7 +18,7 @@ import useHelper from '../../../utils/hooks/useHelper';
 import useAuth from '../../../utils/hooks/useAuth';
 import useGranted, { SETTINGS_SETPARAMETERS } from '../../../utils/hooks/useGranted';
 
-const AskArianeButton = () => {
+const AskArianeButton = React.forwardRef((props, ref) => {
   const { t_i18n } = useFormatter();
   const { isChatbotAiEnabled } = useHelper();
   const { settings: { filigran_chatbot_ai_cgu_status } } = useAuth();
@@ -63,6 +63,10 @@ const AskArianeButton = () => {
       setOpenValidateTermsOfUse(true);
     }
   };
+
+  useImperativeHandle(ref, () => ({
+    toggleChatbot,
+  }));
 
   // Handle the close event from the chatbot component
   useEffect(() => {
@@ -179,6 +183,6 @@ const AskArianeButton = () => {
       )}
     </>
   );
-};
+});
 
 export default AskArianeButton;
