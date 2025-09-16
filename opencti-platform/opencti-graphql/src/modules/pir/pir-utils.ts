@@ -192,6 +192,7 @@ export const updatePirExplanationsArray = (
  * @param sourceId ID of the source entity matching the Pir.
  * @param pirId The if of the Pir matched by the entity.
  * @param pirExplanations The new explanations
+ * @param lockIds Already locked ids
  * @param operation The edit operation (add, replace, ...).
  */
 export const updatePirExplanations = async (
@@ -200,6 +201,7 @@ export const updatePirExplanations = async (
   sourceId: string,
   pirId: string,
   pirExplanations: PirExplanation[],
+  lockIds: string[],
   operation?: string, // 'add' to add a new dependency, 'replace' by default
 ) => {
   const inPirRels = await pageRelationsConnection<BasicStoreRelationPir>(context, user, RELATION_IN_PIR, { fromId: sourceId, toId: pirId, });
@@ -226,7 +228,7 @@ export const updatePirExplanations = async (
   // compute score
   const pir_score = await computePirScore(context, user, pirId, explanations);
   // replace pir_explanations on in-pir rel
-  await patchAttribute(context, user, inPirRel.id, RELATION_IN_PIR, { pir_explanations: explanations, pir_score });
+  await patchAttribute(context, user, inPirRel.id, RELATION_IN_PIR, { pir_explanations: explanations, pir_score }, { locks: lockIds });
   // update pir information on the entity
   await updatePirInformationOnEntity(context, user, sourceId, pirId, pir_score);
 };
@@ -240,6 +242,7 @@ export const updatePirExplanations = async (
  * @param sourceId ID of the source of the rel.
  * @param pirId The ID of the PIR.
  * @param pirDependencies Criteria matched by the relationship.
+ * @param lockIds Already locked ids
  */
 export const createPirRelation = async (
   context: AuthContext,
@@ -247,9 +250,10 @@ export const createPirRelation = async (
   sourceId: string,
   pirId: string,
   pirDependencies: PirExplanation[],
+  lockIds: string[],
 ) => {
   // compute score
-  const pir_score = await computePirScore(context, user, pirId, pirDependencies);
+  const pir_score = await computePirScore(context, user, pirId, pirDependencies); // TODO PIR low level
   // create the in-pir relationship
   const addRelationshipInput = {
     relationship_type: RELATION_IN_PIR,
@@ -258,5 +262,5 @@ export const createPirRelation = async (
     pir_explanations: pirDependencies,
     pir_score,
   };
-  await createRelation(context, user, addRelationshipInput);
+  await createRelation(context, user, addRelationshipInput, { locks: lockIds });
 };
