@@ -295,7 +295,7 @@ export const pirFlagElement = async (
 /**
  * Called when a relationship delete event matches a PIR criteria.
  * The in-pir relationship between the source and the PIR should be either deleted
- * either updated (remove the corresponding dependency)
+ * or updated (remove the corresponding dependency)
  *
  * @param context To be able to call engine.
  * @param user User making the request.
