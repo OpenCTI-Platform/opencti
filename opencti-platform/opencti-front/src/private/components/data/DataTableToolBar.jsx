@@ -61,7 +61,7 @@ import Alert from '@mui/material/Alert';
 import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid';
 import Avatar from '@mui/material/Avatar';
-import { Switch, FormControlLabel } from '@mui/material';
+import { FormControlLabel, Switch } from '@mui/material';
 import Checkbox from '@mui/material/Checkbox';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import UserEmailSend from '../settings/users/UserEmailSend';
@@ -2929,7 +2929,7 @@ class DataTableToolBar extends Component {
                           )}
                         />
                         <div style={{ marginRight: 50 }}>
-                          {R.pathOr('', ['createdBy', 'name'], element)}
+                          {element.createdBy?.name ?? '-'}
                         </div>
                         <div style={{ marginRight: 50 }}>
                           <ItemMarkings
@@ -2982,7 +2982,7 @@ class DataTableToolBar extends Component {
                       >
                         {t('Author')}
                       </Typography>
-                      {R.pathOr('', ['createdBy', 'name'], keptElement)}
+                      {keptElement?.createdBy?.name ?? '-'}
                     </>
                   )}
                   {noMarking !== true && (

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { compose, propOr } from 'ramda';
+import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
@@ -151,7 +151,7 @@ class StixCyberObservableOverview extends Component {
                 {t('Author')}
               </Typography>
               <ItemAuthor
-                createdBy={propOr(null, 'createdBy', stixCyberObservable)}
+                createdBy={stixCyberObservable.createdBy}
               />
               <StixCoreObjectLabelsView
                 labels={stixCyberObservable.objectLabel}

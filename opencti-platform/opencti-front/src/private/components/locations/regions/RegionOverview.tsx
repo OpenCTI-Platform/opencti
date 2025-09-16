@@ -2,7 +2,6 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { FunctionComponent } from 'react';
-import { propOr } from 'ramda';
 import { graphql, useFragment } from 'react-relay';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
@@ -66,7 +65,7 @@ const RegionOverview: FunctionComponent<RegionOverviewProps> = ({
         <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}>
           {t_i18n('Author')}
         </Typography>
-        <ItemAuthor createdBy={propOr(null, 'createdBy', region)} />
+        <ItemAuthor createdBy={region.createdBy} />
         <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}>
           {t_i18n('Description')}
         </Typography>
