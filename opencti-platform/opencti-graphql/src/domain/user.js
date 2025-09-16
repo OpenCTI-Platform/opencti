@@ -807,6 +807,12 @@ export const userEditField = async (context, user, userId, rawInputs) => {
   }
   for (let index = 0; index < rawInputs.length; index += 1) {
     const input = rawInputs[index];
+    if (userToUpdate.external && input.key === 'name') {
+      throw FunctionalError('Name cannot be updated for external user');
+    }
+    if (userToUpdate.external && input.key === 'user_email') {
+      throw FunctionalError('Email cannot be updated for external user');
+    }
     if (input.key === 'password') {
       const userPassword = R.head(input.value).toString();
       await checkPasswordFromPolicy(context, userPassword);

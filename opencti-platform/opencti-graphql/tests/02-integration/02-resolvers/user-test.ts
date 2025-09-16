@@ -342,6 +342,46 @@ describe('User resolver standard behavior', () => {
     });
     expect(invalidQueryResult.errors?.[0].message).toEqual('The language you have provided is not valid');
   });
+  it('should not update Name field for internal user', async () => {
+    const UPDATE_QUERY = gql`
+      mutation UserEdit($id: ID!, $input: [EditInput]!) {
+        userEdit(id: $id) {
+          fieldPatch(input: $input) {
+            id
+          }
+        }
+      }
+    `;
+    const result = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: ADMIN_USER.id, input: { key: 'name', value: ['new name'] } },
+    });
+    expect(result.errors).toBeDefined();
+    expect(result.errors?.length).toBe(1);
+    if (result.errors) {
+      expect(result.errors[0].message).toBe('Name cannot be updated for external user');
+    }
+  });
+  it('should not update Email field for internal user', async () => {
+    const UPDATE_QUERY = gql`
+      mutation UserEdit($id: ID!, $input: [EditInput]!) {
+        userEdit(id: $id) {
+          fieldPatch(input: $input) {
+            id
+          }
+        }
+      }
+    `;
+    const result = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: ADMIN_USER.id, input: { key: 'user_email', value: ['mail@mail.com'] } },
+    });
+    expect(result.errors).toBeDefined();
+    expect(result.errors?.length).toBe(1);
+    if (result.errors) {
+      expect(result.errors[0].message).toBe('Email cannot be updated for external user');
+    }
+  });
   it('should Admin be able renew a user token', async () => {
     const queryUserBeforeRenew = await queryAsAdminWithSuccess({ query: READ_QUERY, variables: { id: userInternalId } });
     const tokenBeforeRenew = queryUserBeforeRenew.data?.user.api_token;
