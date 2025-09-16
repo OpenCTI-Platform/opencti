@@ -12,6 +12,7 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
+import ItemCopy from '../../../components/ItemCopy';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -123,13 +124,21 @@ const Labels = () => {
   const dataColumns = {
     value: {
       label: 'Value',
-      percentWidth: 50,
+      percentWidth: 40,
       isSortable: true,
     },
-    color: {},
+    color: {
+      percentWidth: 20,
+    },
+    id: {
+      label: 'ID',
+      percentWidth: 25,
+      isSortable: true,
+      render: (node) => <ItemCopy content={node.id} variant="inLine" />,
+    },
     created_at: {
       label: 'Platform creation date',
-      percentWidth: 25,
+      percentWidth: 15,
       isSortable: true,
     },
   };

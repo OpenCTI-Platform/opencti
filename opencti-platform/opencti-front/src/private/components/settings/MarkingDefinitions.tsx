@@ -22,6 +22,7 @@ import { Truncate } from '../../../components/dataGrid/dataTableUtils';
 import type { DataTableColumn } from '../../../components/dataGrid/dataTableTypes';
 import type { Theme } from '../../../components/Theme';
 import MarkingIcon from '../../../utils/MarkingIcon';
+import ItemCopy from '../../../components/ItemCopy';
 
 const LOCAL_STORAGE_KEY = 'MarkingDefinitions';
 
@@ -136,13 +137,19 @@ const MarkingDefinitions = () => {
 
   const dataColumns = {
     definition_type: {
-      percentWidth: 25,
+      percentWidth: 15,
       render: definitionTypeRender,
     },
-    definition: { percentWidth: 25 },
+    definition: { percentWidth: 20 },
+    id: {
+      label: 'ID',
+      percentWidth: 25,
+      isSortable: true,
+      render: (node: { id: string; }) => <ItemCopy content={node.id} variant="inLine" />,
+    },
     x_opencti_color: { percentWidth: 15 },
-    x_opencti_order: { percentWidth: 15 },
-    created: { percentWidth: 20 },
+    x_opencti_order: { percentWidth: 10 },
+    created: { percentWidth: 15 },
   };
 
   const queryRef = useQueryLoading(

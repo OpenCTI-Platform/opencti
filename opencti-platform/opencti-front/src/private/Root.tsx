@@ -356,6 +356,7 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
     schemaRelationsTypesMapping,
     schemaRelationsRefTypesMapping,
     filterKeysSchema,
+    about,
   } = queryData;
   const settings = useFragment<RootSettings$key>(rootSettingsFragment, settingsFragment);
   const me = useFragment<RootMe_data$key>(meUserFragment, meFragment);
@@ -399,6 +400,7 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
         platformModuleHelpers,
         schema,
         isXTMHubAccessible: isReachable,
+        about,
       }}
     >
       <StyledEngineProvider injectFirst={true}>

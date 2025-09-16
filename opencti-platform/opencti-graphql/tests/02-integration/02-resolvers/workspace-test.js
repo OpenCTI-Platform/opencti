@@ -3,8 +3,8 @@ import gql from 'graphql-tag';
 import { ADMIN_USER, editorQuery, getUserIdByEmail, queryAsAdmin, testContext, USER_EDITOR } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
 import { MEMBER_ACCESS_ALL } from '../../../src/utils/access';
-import { toBase64 } from '../../../src/database/utils';
 import { createUploadFromTestDataFile, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
+import { toB64 } from '../../../src/utils/base64';
 
 const LIST_QUERY = gql`
   query workspaces(
@@ -308,7 +308,7 @@ describe('Workspace resolver standard behavior', () => {
     expect(workspaceWidget.data.workspaceAdd.name).toEqual(workspaceWidgetName);
     const workspaceId = workspaceWidget.data.workspaceAdd.id;
     const upload = await createUploadFromTestDataFile('20231123_octi_widget_list.json', 'valid.json', 'application/json');
-    const emptyDashboardManifest = toBase64(JSON.stringify({ widgets: {}, config: {} }));
+    const emptyDashboardManifest = toB64({ widgets: {}, config: {} });
 
     const queryResult = await queryAsAdmin({
       query: gql`
@@ -340,7 +340,7 @@ describe('Workspace resolver standard behavior', () => {
 
   it('can not import widget, given invalid widget type import', async () => {
     const upload = await createUploadFromTestDataFile('20231123_invalid_type_octi_widget_list.json', 'invalid-type.json', 'application/json');
-    const emptyDashboardManifest = toBase64(JSON.stringify({ widgets: {}, config: {} }));
+    const emptyDashboardManifest = toB64({ widgets: {}, config: {} });
 
     const queryResult = await queryAsAdmin({
       query: gql`
@@ -367,7 +367,7 @@ describe('Workspace resolver standard behavior', () => {
 
   it('can not import widget, given invalid widget version import', async () => {
     const upload = await createUploadFromTestDataFile('20231123_invalid_version_octi_widget_list.json', 'invalid-version.json', 'application/json', 'utf8');
-    const emptyDashboardManifest = toBase64(JSON.stringify({ widgets: {}, config: {} }));
+    const emptyDashboardManifest = toB64({ widgets: {}, config: {} });
 
     const queryResult = await queryAsAdmin({
       query: gql`

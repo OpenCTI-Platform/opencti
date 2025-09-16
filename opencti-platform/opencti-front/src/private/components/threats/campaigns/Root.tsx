@@ -96,6 +96,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
   } = usePreloadedQuery<RootCampaignQuery>(campaignQuery, queryRef);
   const { forceUpdate } = useForceUpdate();
   const link = `/dashboard/threats/campaigns/${campaignId}/knowledge`;
+  const isOverview = location.pathname === `/dashboard/threats/campaigns/${campaignId}`;
   const paddingRight = getPaddingRight(location.pathname, campaignId, '/dashboard/threats/campaigns');
   return (
     <>
@@ -202,10 +203,12 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
                   label={t_i18n('History')}
                 />
               </Tabs>
+              {isOverview && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
                 <AIInsights id={campaign.id}/>
                 <StixCoreObjectSimulationResultContainer id={campaign.id} type="threat"/>
               </div>
+              )}
             </Box>
             <Routes>
               <Route

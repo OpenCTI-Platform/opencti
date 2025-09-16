@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
-import { AutoAwesomeOutlined, BiotechOutlined, ContentPasteSearchOutlined, Search } from '@mui/icons-material';
+import { BiotechOutlined, ContentPasteSearchOutlined, Search } from '@mui/icons-material';
+import { LogoXtmOneIcon } from 'filigran-icon';
 import IconButton from '@mui/material/IconButton';
 import { Link, useLocation } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
@@ -12,6 +13,7 @@ import EETooltip from '../private/components/common/entreprise_edition/EETooltip
 import { useFormatter } from './i18n';
 import useGranted, { SETTINGS_SETPARAMETERS } from '../utils/hooks/useGranted';
 import useAuth from '../utils/hooks/useAuth';
+import FiligranIcon from '../private/components/common/FiligranIcon';
 import EnterpriseEditionAgreement from '../private/components/common/entreprise_edition/EnterpriseEditionAgreement';
 import FeedbackCreation from '../private/components/cases/feedbacks/FeedbackCreation';
 import Loader from './Loader';
@@ -165,7 +167,7 @@ const SearchInput = (props) => {
           startAdornment: (
             <InputAdornment position="start" style={{ color: isNLQActivated ? theme.palette.ai.main : undefined }} >
               {isNLQActivated
-                ? <AutoAwesomeOutlined fontSize="small" />
+                ? <FiligranIcon icon={LogoXtmOneIcon} size='medium' color="ai" />
                 : <Search fontSize="small"/>}
             </InputAdornment>
           ),
@@ -213,7 +215,7 @@ const SearchInput = (props) => {
                 style={{ color: theme.palette.ai.main }}
                 onClick={isAIEnabled ? handleChangeAskAI : null}
               >
-                <AutoAwesomeOutlined fontSize='medium'/>
+                <FiligranIcon icon={LogoXtmOneIcon} size='medium' color="ai" />
               </IconButton>
             </EETooltip>
             )}

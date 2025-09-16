@@ -22,6 +22,7 @@ const UserEditionFragment = graphql`
   @argumentDefinitions(
     groupsOrderBy: { type: "GroupsOrdering", defaultValue: name }
     groupsOrderMode: { type: "OrderingMode", defaultValue: asc }
+    organizationsCount: { type: "Int", defaultValue: 500 }
     organizationsOrderBy: { type: "OrganizationsOrdering", defaultValue: name }
     organizationsOrderMode: { type: "OrderingMode", defaultValue: asc }
   ) {
@@ -53,6 +54,14 @@ const UserEditionFragment = graphql`
         object {
           ... on User { entity_type id name }
           ... on Group { entity_type id name }
+        }
+      }
+    }
+    objectAssignedOrganization(first: $organizationsCount, orderBy: $organizationsOrderBy, orderMode: $organizationsOrderMode) {
+      edges {
+        node {
+          id
+          name
         }
       }
     }
@@ -117,7 +126,6 @@ const UserEditionDrawer: FunctionComponent<UserEditionDrawerProps> = ({
   const handleChangeTab = (value: number) => {
     setCurrentTab(value);
   };
-
   return (
     <Drawer
       title={isServiceAccount ? t_i18n('Update Service account') : t_i18n('Update User') }
@@ -136,7 +144,7 @@ const UserEditionDrawer: FunctionComponent<UserEditionDrawerProps> = ({
             <Tab disabled={!!user.external || isServiceAccount === true} label={t_i18n('Password')} />
             <Tab label={t_i18n('Groups')} />
             {hasSetAccess
-              && <Tab label={
+              && <Tab disabled={user.objectAssignedOrganization?.edges.length === 0 } label={
                 <div style={{ alignItems: 'center', display: 'flex' }}>
                   {t_i18n('Organizations admin')}<EEChip />
                 </div>}

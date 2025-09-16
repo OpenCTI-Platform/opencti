@@ -11,18 +11,30 @@ import DashboardAuditsViz from './DashboardAuditsViz';
 import DashboardEntitiesViz from './DashboardEntitiesViz';
 import DashboardTimeFilters from './DashboardTimeFilters';
 import WorkspaceHeader from '../workspaceHeader/WorkspaceHeader';
-import { commitMutation } from '../../../../relay/environment';
+import { commitMutation, handleError } from '../../../../relay/environment';
 import { workspaceMutationFieldPatch } from '../WorkspaceEditionOverview';
 import useGranted, { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';
 import WorkspaceWidgetPopover from './WorkspaceWidgetPopover';
 import { fromB64, toB64 } from '../../../../utils/String';
 import { ErrorBoundary } from '../../Error';
 import { deserializeDashboardManifestForFrontend, serializeDashboardManifestForBackend } from '../../../../utils/filters/filtersUtils';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const dashboardLayoutMutation = graphql`
   mutation DashboardLayoutMutation($id: ID!, $input: [EditInput!]!) {
     workspaceFieldPatch(id: $id, input: $input) {
       id
+    }
+  }
+`;
+
+const dashboardImportWidgetMutation = graphql`
+  mutation DashboardWidgetImportMutation(
+    $id: ID!
+    $input: ImportConfigurationInput!
+  ) {
+    workspaceWidgetConfigurationImport(id: $id, input: $input) {
+      ...Dashboard_workspace
     }
   }
 `;
@@ -43,11 +55,12 @@ const dashboardFragment = graphql`
     currentUserAccessRight
     ...WorkspaceEditionContainer_workspace
     ...WorkspaceHeaderFragment
-    ...WorkspaceWidgetConfigFragment
   }
 `;
 
 const DashboardComponent = ({ data, noToolbar }) => {
+  const [commitWidgetImportMutation] = useApiMutation(dashboardImportWidgetMutation);
+
   const workspace = useFragment(dashboardFragment, data);
   const ReactGridLayout = useMemo(() => WidthProvider(RGL), []);
   const theme = useTheme();
@@ -96,8 +109,14 @@ const DashboardComponent = ({ data, noToolbar }) => {
     return widgets;
   }, [manifest]);
 
-  const saveManifest = (newManifest, opts = { layouts: widgetsLayouts, noRefresh: false }) => {
-    const { layouts, noRefresh } = opts;
+  /**
+   * Merge a manifest with some layouts and transform it in base64.
+   *
+   * @param newManifest Manifest to merge with local changes and stringify.
+   * @param layouts Local layout changes.
+   * @returns {string} Manifest in B64.
+   */
+  const prepareManifest = (newManifest, layouts) => {
     // Need to sync manifest with local layouts before sending for update.
     // A desync occurs when resizing or moving a widget because in those cases
     // we skip a complete reload to avoid performance issue.
@@ -115,7 +134,12 @@ const DashboardComponent = ({ data, noToolbar }) => {
     };
 
     const strManifest = serializeDashboardManifestForBackend(manifestToSave);
-    const newManifestEncoded = toB64(strManifest);
+    return toB64(strManifest);
+  };
+
+  const saveManifest = (newManifest, opts = { layouts: widgetsLayouts, noRefresh: false }) => {
+    const { layouts, noRefresh } = opts;
+    const newManifestEncoded = prepareManifest(newManifest, layouts);
     // Sometimes (in case of layout adjustment) we do not want to re-fetch
     // all the manifest because widgets data is still the same, and it's costly
     // in performance.
@@ -159,10 +183,27 @@ const DashboardComponent = ({ data, noToolbar }) => {
   };
 
   const getNextRow = () => {
-    return Object.values(widgetsArray).reduce((max, { layout }) => {
+    return widgetsArray.reduce((max, { layout }) => {
       const widgetEndRow = layout.y + layout.h;
       return widgetEndRow > max ? widgetEndRow : max;
     }, 0);
+  };
+
+  const importWidget = (widgetConfig) => {
+    const manifestEncoded = prepareManifest(manifest, widgetsLayouts);
+    commitWidgetImportMutation({
+      variables: {
+        id: workspace.id,
+        input: {
+          importType: 'widget',
+          file: widgetConfig,
+          dashboardManifest: manifestEncoded,
+        },
+      },
+      onError: (error) => {
+        handleError(error);
+      },
+    });
   };
 
   const handleAddWidget = (widgetConfig) => {
@@ -244,6 +285,7 @@ const DashboardComponent = ({ data, noToolbar }) => {
         <>
           <WorkspaceHeader
             handleAddWidget={handleAddWidget}
+            handleImportWidget={importWidget}
             data={workspace}
             variant="dashboard"
           />

@@ -32,6 +32,11 @@ export const stringToColour = (str, reversed = false) => {
 
 export const itemColor = (type, dark = false, reversed = false) => {
   switch (type) {
+    case 'Restricted':
+      if (dark) {
+        return '#424242';
+      }
+      return '#B0B0B0';
     case 'Attack-Pattern':
       if (dark) {
         return '#d4e157';

@@ -4,7 +4,7 @@ import { internalLoadById, pageEntitiesConnection, storeLoadById } from '../../d
 import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached } from './publicDashboard-types';
 import { createEntity, deleteElementById, loadEntity, updateAttribute } from '../../database/middleware';
 import { type BasicStoreEntityWorkspace } from '../workspace/workspace-types';
-import { fromBase64, isNotEmptyField, toBase64 } from '../../database/utils';
+import { isNotEmptyField } from '../../database/utils';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS, logApp } from '../../config/conf';
 import {
@@ -47,6 +47,7 @@ import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { ES_MAX_CONCURRENCY } from '../../database/engine';
 import { findById as findMarkingDefinitionById } from '../../domain/markingDefinition';
 import { addFilter } from '../../utils/filtering/filtering-utils';
+import { fromB64, toB64 } from '../../utils/base64';
 
 export const findById = (
   context: AuthContext,
@@ -179,7 +180,7 @@ export const addPublicDashboard = async (
     throw FunctionalError(`Cannot publish this dashboard, uri key ${uriKey} already used.`);
   }
 
-  const parsedManifest = JSON.parse(fromBase64(dashboard.manifest) ?? '{}');
+  const parsedManifest = fromB64(dashboard.manifest ?? '{}');
   if (parsedManifest && isNotEmptyField(parsedManifest.widgets)) {
     Object.keys(parsedManifest.widgets).forEach((widgetId) => {
       parsedManifest.widgets[widgetId].dataSelection = parsedManifest
@@ -200,7 +201,7 @@ export const addPublicDashboard = async (
   }
 
   // Create public manifest
-  const publicManifest = toBase64(JSON.stringify(parsedManifest) ?? '{}');
+  const publicManifest = toB64(parsedManifest ?? '{}');
 
   // Create publicDashboard
   const publicDashboardToCreate = {

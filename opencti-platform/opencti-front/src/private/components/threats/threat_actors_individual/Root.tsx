@@ -110,6 +110,7 @@ const RootThreatActorIndividualComponent = ({
     queryRef,
   );
   const { forceUpdate } = useForceUpdate();
+  const isOverview = location.pathname === `/dashboard/threats/threat_actors_individual/${threatActorIndividualId}`;
   const paddingRight = getPaddingRight(location.pathname, threatActorIndividualId, '/dashboard/threats/threat_actors_individual');
   const link = `/dashboard/threats/threat_actors_individual/${threatActorIndividualId}/knowledge`;
   return (
@@ -222,10 +223,12 @@ const RootThreatActorIndividualComponent = ({
                   label={t_i18n('History')}
                 />
               </Tabs>
+              {isOverview && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
                 <AIInsights id={threatActorIndividual.id}/>
                 <StixCoreObjectSimulationResultContainer id={threatActorIndividual.id} type="threat"/>
               </div>
+              )}
             </Box>
             <Routes>
               <Route

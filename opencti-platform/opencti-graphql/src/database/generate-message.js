@@ -120,7 +120,7 @@ export const generateUpdatePatchMessage = (patchElements, entityType, data = {})
             } else if (attributeDefinition.type === 'date') {
               message = values.map((v) => ((v === FROM_START_STR || v === UNTIL_END_STR) ? 'nothing' : v));
             } else if (attributeDefinition.type === 'object') {
-              message = jsonToPlainText(values, { color: false, spacing: false });
+              message = jsonToPlainText(values, { spacing: false });
             } else {
               // If standard primitive data, just join the values
               message = values.join(', ');

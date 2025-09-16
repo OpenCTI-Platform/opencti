@@ -6,10 +6,10 @@ type RegistrationStatus = 'active' | 'inactive';
 const HUB_BACKEND_URL = conf.get('xtm:xtmhub_api_override_url') ?? conf.get('xtm:xtmhub_url');
 
 export const xtmHubClient = {
-  loadRegistrationStatus: async ({ platformId, token }: { platformId: string, token: string }): Promise<RegistrationStatus> => {
+  refreshRegistrationStatus: async ({ platformId, token, platformVersion }: { platformId: string, token: string, platformVersion: string }): Promise<RegistrationStatus> => {
     const query = `
-      query OpenCTIPlatformRegistrationStatus($input: OpenCTIPlatformRegistrationStatusInput!) {
-        openCTIPlatformRegistrationStatus(input: $input) {
+      mutation RefreshPlatformRegistrationConnectivityStatus($input: RefreshPlatformRegistrationConnectivityStatusInput!) {
+        refreshPlatformRegistrationConnectivityStatus(input: $input) {
           status
         }
       }
@@ -18,7 +18,8 @@ export const xtmHubClient = {
     const variables = {
       input: {
         platformId,
-        token
+        token,
+        platformVersion
       }
     };
     const httpClient = getHttpClient({
@@ -28,7 +29,7 @@ export const xtmHubClient = {
 
     try {
       const response = await httpClient.post('/graphql-api', { query, variables });
-      return response.data.data.openCTIPlatformRegistrationStatus.status;
+      return response.data.data.refreshPlatformRegistrationConnectivityStatus.status;
     } catch (error) {
       logApp.warn('XTM Hub is unreachable', { reason: error });
       return 'inactive';

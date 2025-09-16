@@ -1,4 +1,4 @@
-import { createLogger, defineConfig, transformWithEsbuild } from 'vite';
+import { createLogger, defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import * as path from 'node:path';
 import relay from 'vite-plugin-relay';

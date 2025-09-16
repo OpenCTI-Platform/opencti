@@ -51,7 +51,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
   const theme = useTheme<Theme>();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const { settings } = useContext(UserContext);
+  const { settings, about } = useContext(UserContext);
   const isEnterpriseEdition = useEnterpriseEdition();
   const registrationHubUrl = settings?.platform_xtmhub_url ?? 'https://hub.filigran.io/app';
   const [processStep, setProcessStep] = useState<ProcessSteps>(
@@ -85,6 +85,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
     platform_title: settings?.platform_title ?? 'OpenCTI Platform',
     platform_id: settings?.id ?? '',
     platform_contract: isEnterpriseEdition ? 'EE' : 'CE',
+    platform_version: about?.version ?? '',
   };
   const queryParamsOCTIInformations = new URLSearchParams(
     OCTIInformations,
@@ -201,15 +202,30 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
 
   const config = useMemo(() => {
     const isUnregister = operationType === OperationType.UNREGISTER;
-    return {
-      dialogTitle: t_i18n(isUnregister ? 'Unregistering your platform...' : 'Registering your platform...'),
-      errorMessage: t_i18n('Sorry, we have an issue, please retry'),
-      canceledMessage: t_i18n(isUnregister ? 'You have canceled the unregistration process' : 'You have canceled the registration process'),
-      loaderButtonText: t_i18n(isUnregister ? 'Continue to unregister' : 'Continue to register'),
-      confirmationTitle: t_i18n(isUnregister ? 'Close unregistration process?' : 'Close registration process?'),
-      confirmationMessage: t_i18n(isUnregister ? 'unregistration_confirmation_dialog' : 'registration_confirmation_dialog'),
-      continueButtonText: t_i18n(isUnregister ? 'Continue unregistration' : 'Continue registration'),
-      instructionKey: isUnregister ? 'unregistration_instruction_paragraph' : 'registration_instruction_paragraph' };
+    const messages = {
+      register: {
+        dialogTitle: t_i18n('Registering your platform...'),
+        errorMessage: t_i18n('Sorry, we have an issue, please retry'),
+        canceledMessage: t_i18n('You have canceled the registration process'),
+        loaderButtonText: t_i18n('Continue to register'),
+        confirmationTitle: t_i18n('Close registration process?'),
+        confirmationMessage: t_i18n('registration_confirmation_dialog'),
+        continueButtonText: t_i18n('Continue registration'),
+        instructionKey: 'registration_instruction_paragraph',
+      },
+      unregister: {
+        dialogTitle: t_i18n('Unregistering your platform...'),
+        errorMessage: t_i18n('Sorry, we have an issue, please retry'),
+        canceledMessage: t_i18n('You have canceled the unregistration process'),
+        loaderButtonText: t_i18n('Continue to unregister'),
+        confirmationTitle: t_i18n('Close unregistration process?'),
+        confirmationMessage: t_i18n('unregistration_confirmation_dialog'),
+        continueButtonText: t_i18n('Continue unregistration'),
+        instructionKey: 'unregistration_instruction_paragraph',
+      },
+    };
+
+    return isUnregister ? messages.unregister : messages.register;
   }, [operationType, t_i18n]);
 
   const renderDialogContent = () => {

@@ -152,6 +152,7 @@ const RootIncidentComponent = ({ queryRef }) => {
               )}
               enableQuickSubscription={true}
               redirectToContent={true}
+              enableEnricher={true}
             />
             <Box
               sx={{

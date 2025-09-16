@@ -7,7 +7,8 @@ import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import { createStyles } from '@mui/styles';
 import IconButton from '@mui/material/IconButton';
-import { AutoAwesomeOutlined, Close } from '@mui/icons-material';
+import { Close } from '@mui/icons-material';
+import { LogoXtmOneIcon } from 'filigran-icon';
 import Typography from '@mui/material/Typography';
 import Drawer from '@mui/material/Drawer';
 import Tooltip from '@mui/material/Tooltip';
@@ -19,6 +20,7 @@ import AISummaryContainers from '@components/common/ai/AISummaryContainers';
 import AISummaryHistory from '@components/common/ai/AISummaryHistory';
 import AISummaryForecast from '@components/common/ai/AISummaryForecast';
 import { v4 as uuid } from 'uuid';
+import FiligranIcon from '@components/common/FiligranIcon';
 import FeedbackCreation from '@components/cases/feedbacks/FeedbackCreation';
 import EnterpriseEditionAgreement from '@components/common/entreprise_edition/EnterpriseEditionAgreement';
 import { useFormatter } from '../../../../components/i18n';
@@ -185,7 +187,7 @@ const AIInsights = ({
               onClick={() => setDisplayEEDialog(true)}
               className={floating ? classes.chipFloating : classes.chip}
             >
-              <AutoAwesomeOutlined style={{ fontSize: 14 }} />
+              <FiligranIcon icon={LogoXtmOneIcon} size='x-small' color="ai" />
             </IconButton>
           ) : (
             <Button
@@ -193,7 +195,7 @@ const AIInsights = ({
               size="small"
               onClick={() => setDisplayEEDialog(true)}
               className={floating ? classes.chipFloating : classes.chip}
-              startIcon={<AutoAwesomeOutlined style={{ fontSize: 14 }} />}
+              startIcon={<FiligranIcon icon={LogoXtmOneIcon} size='x-small' color="ai" />}
             >
               {t_i18n('AI Insights')}
             </Button>
@@ -227,7 +229,7 @@ const AIInsights = ({
               onClick={() => setDisplayAIDialog(true)}
               className={floating ? classes.chipFloating : classes.chip}
             >
-              <AutoAwesomeOutlined style={{ fontSize: 14 }} />
+              <FiligranIcon icon={LogoXtmOneIcon} size='x-small' color="ai" />
             </IconButton>
           ) : (
             <Button
@@ -235,7 +237,7 @@ const AIInsights = ({
               size="small"
               onClick={() => setDisplayAIDialog(true)}
               className={floating ? classes.chipFloating : classes.chip}
-              startIcon={<AutoAwesomeOutlined style={{ fontSize: 14 }} />}
+              startIcon={<FiligranIcon icon={LogoXtmOneIcon} size='x-small' color="ai" />}
             >
               {t_i18n('AI Insights')}
             </Button>
@@ -270,7 +272,7 @@ const AIInsights = ({
             onClick={() => setDisplay(true)}
             className={floating ? classes.chipFloating : classes.chip}
           >
-            <AutoAwesomeOutlined style={{ fontSize: 14 }}/>
+            <FiligranIcon icon={LogoXtmOneIcon} size='x-small' color="ai"/>
           </IconButton>
         ) : (
           <Button
@@ -278,7 +280,7 @@ const AIInsights = ({
             size="small"
             onClick={() => setDisplay(true)}
             className={floating ? classes.chipFloating : classes.chip}
-            startIcon={<AutoAwesomeOutlined style={{ fontSize: 14 }}/>}
+            startIcon={<FiligranIcon icon={LogoXtmOneIcon} size='x-small' color="ai"/>}
           >
             {t_i18n('AI Insights')}
           </Button>
@@ -309,7 +311,7 @@ const AIInsights = ({
             variant="outlined"
             size="small"
             className={classes.chipNoAction}
-            startIcon={<AutoAwesomeOutlined style={{ fontSize: 14 }}/>}
+            startIcon={<FiligranIcon icon={LogoXtmOneIcon} size='x-small' color="ai"/>}
           >
             {t_i18n('XTM AI')}
           </Button>

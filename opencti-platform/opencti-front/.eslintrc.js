@@ -44,6 +44,9 @@ module.exports = {
     'jest.relay.transform.js',
     'extract-i18n-keyword.js',
     'playwright.config.ts',
+    'vite.config.mts',
+    'vitest.config.ts',
+    'setup-vitest.ts',
   ],
   plugins: [
     'import-newlines',

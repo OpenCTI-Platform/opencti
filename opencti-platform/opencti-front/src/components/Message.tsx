@@ -1,10 +1,11 @@
 import React, { ReactElement, useEffect, useState } from 'react';
 import Snackbar, { SnackbarCloseReason } from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
-import { AutoAwesomeOutlined } from '@mui/icons-material';
+import { LogoXtmOneIcon } from 'filigran-icon';
 import { useTheme } from '@mui/styles';
 import { Formik, Form } from 'formik';
 import Button from '@mui/material/Button/Button';
+import FiligranIcon from '@components/common/FiligranIcon';
 import { MESSAGING$ } from '../relay/environment';
 import { useFormatter } from './i18n';
 import type { Theme } from './Theme';
@@ -124,7 +125,7 @@ const Message = () => {
         </Alert>;
       case 'nlq':
         return <Alert
-          icon={<AutoAwesomeOutlined fontSize="small" style={{ color: theme.palette.ai.main }} />}
+          icon={<FiligranIcon icon={LogoXtmOneIcon} size='small' color="ai" />}
           style={{ backgroundColor: theme.palette.ai.background, color: theme.palette.ai.light }}
           onClose={() => handleCloseMessage()}
                >
