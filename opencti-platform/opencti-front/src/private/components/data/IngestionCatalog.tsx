@@ -1,7 +1,7 @@
 import React, { Suspense, useState } from 'react';
 import IngestionMenu from '@components/data/IngestionMenu';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { IngestionCatalogQuery, IngestionCatalogQuery$data } from '@components/data/__generated__/IngestionCatalogQuery.graphql';
+import { IngestionCatalogQuery } from '@components/data/__generated__/IngestionCatalogQuery.graphql';
 import IngestionCatalogCard from '@components/data/IngestionCatalog/IngestionCatalogCard';
 import useIngestionCatalogFilters from '@components/data/IngestionCatalog/hooks/useIngestionCatalogFilters';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -12,6 +12,8 @@ import { ConnectorManagerStatusProvider, useConnectorManagerStatus } from '@comp
 import NoConnectorManagersBanner from '@components/data/connectors/NoConnectorManagersBanner';
 import IngestionCatalogConnectorCreation from '@components/data/IngestionCatalog/IngestionCatalogConnectorCreation';
 import { IngestionConnectorType } from '@components/data/IngestionCatalog/utils/ingestionConnectorTypeMetadata';
+import createDeploymentCountMap from '@components/data/IngestionCatalog/utils/createDeploymentCountMap';
+import useConnectorDeployDialog from '@components/data/IngestionCatalog/hooks/useConnectorDeployDialog';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
@@ -89,26 +91,6 @@ export interface IngestionConnector {
     additionalProperties: boolean,
   }
 }
-
-type Connector = NonNullable<IngestionCatalogQuery$data['connectors']>[number];
-
-const createDeploymentCountMap = (connectors: readonly Connector[]) => {
-  const deploymentCountMap = new Map<string, number>();
-
-  const hasManagerContractImage = (connector: Connector): connector is Connector & { manager_contract_image: string } => {
-    return connector.manager_contract_image != null;
-  };
-
-  const connectorsWithManagerContract = connectors.filter(hasManagerContractImage);
-
-  for (const connector of connectorsWithManagerContract) {
-    const containerType = connector.manager_contract_image.split(':')[0];
-    const counter = deploymentCountMap.get(containerType) ?? 0;
-    deploymentCountMap.set(containerType, counter + 1);
-  }
-
-  return deploymentCountMap;
-};
 
 const BrowseMoreButton = () => {
   const { t_i18n } = useFormatter();
@@ -242,40 +224,10 @@ const IngestionCatalogComponent = ({
   );
 };
 
-interface CatalogState {
-  selectedConnector: IngestionConnector | null;
-  selectedCatalogId: string;
-  hasRegisteredManagers: boolean;
-  deploymentCount: number
-}
-
 const IngestionCatalog = () => {
   const navigate = useNavigate();
 
-  const [catalogState, setCatalogState] = useState<CatalogState>({
-    selectedConnector: null,
-    selectedCatalogId: '',
-    hasRegisteredManagers: false,
-    deploymentCount: 0,
-  });
-
-  const handleOpenDeployDialog = (connector: IngestionConnector, catalogId: string, registeredManagers: boolean, deploymentCount: number) => {
-    setCatalogState((prev) => ({
-      ...prev,
-      selectedConnector: connector,
-      selectedCatalogId: catalogId,
-      hasRegisteredManagers: registeredManagers,
-      deploymentCount,
-    }));
-  };
-
-  const handleCloseDeployDialog = () => {
-    setCatalogState((prev) => ({
-      ...prev,
-      selectedConnector: null,
-      selectedCatalogId: '',
-    }));
-  };
+  const { catalogState, handleOpenDeployDialog, handleCloseDeployDialog, handleCreate } = useConnectorDeployDialog();
 
   const queryRef = useQueryLoading<IngestionCatalogQuery>(
     ingestionCatalogQuery,
@@ -301,9 +253,7 @@ const IngestionCatalog = () => {
           onClose={handleCloseDeployDialog}
           catalogId={catalogState.selectedCatalogId}
           hasRegisteredManagers={catalogState.hasRegisteredManagers}
-          onCreate={(connectorId) => {
-            navigate(`${resolveLink('Connectors')}/${connectorId}`);
-          }}
+          onCreate={handleCreate}
           deploymentCount={catalogState.deploymentCount}
         />
       )}
