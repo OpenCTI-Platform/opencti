@@ -1,17 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { processConfigurationValue } from '../../../../src/modules/catalog/catalog-domain';
 
-// Create a valid test RSA public key
-const TEST_PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAu1SU1LfVLPHCozMxH2Mo
-4lgOEePzNm0tRgeLezV6ffAt0gunVTLw7onLRnrq0/IzW7yWR7QkrmBL7jTKEn5u
-+qKhbwKfBstIs+bMY2Zkp18gnTxKLxoS2tFczGkPLPgizskuemMghRniWaoLcyeh
-kd3qqGElvW/VDL5AaWTg0nLVkjRo9z+40RQzuVaE8AkAFmxZzow3x+VJYKdjykkJ
-0iT9wCS0DRTXu269V264Vf/3jvredZiKRkgwlL9xNAwxXFg0x/XFw005UWVRIkdg
-cKWTjpBP2dPwVZ4WWC+9aGVd+Gyn1o0CLelf4rEjGoXbAAEgAqeGUxrcIlbjXfbc
-mwIDAQAB
------END PUBLIC KEY-----`;
-
 describe('processConfigurationValue', () => {
   it('should validate and return boolean as string', () => {
     const propSchema = { type: 'boolean' };
@@ -20,8 +9,6 @@ describe('processConfigurationValue', () => {
       'true',
       propSchema,
       'bool_field',
-      false,
-      TEST_PUBLIC_KEY
     );
     expect(resultTrue).toBe('true');
 
@@ -29,8 +16,6 @@ describe('processConfigurationValue', () => {
       'false',
       propSchema,
       'bool_field',
-      false,
-      TEST_PUBLIC_KEY
     );
     expect(resultFalse).toBe('false');
   });
@@ -43,8 +28,6 @@ describe('processConfigurationValue', () => {
         'yes',
         propSchema,
         'bool_field',
-        false,
-        TEST_PUBLIC_KEY
       );
     }).toThrow();
 
@@ -53,8 +36,6 @@ describe('processConfigurationValue', () => {
         'yes',
         propSchema,
         'bool_field',
-        false,
-        TEST_PUBLIC_KEY
       );
     }).toThrow('Field "bool_field" must be a boolean value (true or false). Received: "yes"');
   });
@@ -66,8 +47,6 @@ describe('processConfigurationValue', () => {
       '42',
       propSchema,
       'int_field',
-      false,
-      TEST_PUBLIC_KEY
     );
     expect(result).toBe('42');
 
@@ -75,8 +54,6 @@ describe('processConfigurationValue', () => {
       '-10',
       propSchema,
       'int_field',
-      false,
-      TEST_PUBLIC_KEY
     );
     expect(resultNegative).toBe('-10');
   });
@@ -89,8 +66,6 @@ describe('processConfigurationValue', () => {
         'not_a_number',
         propSchema,
         'int_field',
-        false,
-        TEST_PUBLIC_KEY
       );
     }).toThrow();
 
@@ -99,8 +74,6 @@ describe('processConfigurationValue', () => {
         'not_a_number',
         propSchema,
         'int_field',
-        false,
-        TEST_PUBLIC_KEY
       );
     }).toThrow('Field "int_field" must be a valid integer. Received: "not_a_number"');
   });
@@ -112,8 +85,6 @@ describe('processConfigurationValue', () => {
       'value1,value2,value3',
       propSchema,
       'array_field',
-      false,
-      TEST_PUBLIC_KEY
     );
     expect(result).toBe('value1,value2,value3');
   });
@@ -125,8 +96,6 @@ describe('processConfigurationValue', () => {
       'simple string value',
       propSchema,
       'string_field',
-      false,
-      TEST_PUBLIC_KEY
     );
     expect(result).toBe('simple string value');
   });
@@ -138,8 +107,6 @@ describe('processConfigurationValue', () => {
       'some value',
       propSchema,
       'unknown_field',
-      false,
-      TEST_PUBLIC_KEY
     );
     expect(result).toBe('some value');
   });
