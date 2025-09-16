@@ -229,11 +229,10 @@ const IngestionCatalogConnectorCreation = ({
   const hasOptionalProperties = Object.keys(optionalProperties.properties || {}).length > 0;
 
   const buildConnectorsUrl = () => {
-    const { container_image, container_version } = connector;
-    const value = `${container_image}:${container_version}`;
+    const { slug } = connector;
 
     const params = new URLSearchParams({
-      manager_contract_image: value,
+      slug,
     });
 
     return `${resolveLink('Connectors')}?${params.toString()}`;

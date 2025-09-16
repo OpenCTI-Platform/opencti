@@ -1,6 +1,6 @@
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import React, { Suspense, useState } from 'react';
+import React, { Suspense } from 'react';
 import IngestionCatalogConnectorHeader from '@components/data/IngestionCatalog/IngestionCatalogConnectorHeader';
 import IngestionCatalogConnectorOverview from '@components/data/IngestionCatalog/IngestionCatalogConnectorOverview';
 import { IngestionCatalogConnectorQuery } from '@components/data/IngestionCatalog/__generated__/IngestionCatalogConnectorQuery.graphql';
@@ -18,7 +18,6 @@ import { useFormatter } from '../../../../components/i18n';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import { resolveLink } from '../../../../utils/Entity';
 
 const ingestionCatalogConnectorQuery = graphql`
   query IngestionCatalogConnectorQuery($slug: String!) {
