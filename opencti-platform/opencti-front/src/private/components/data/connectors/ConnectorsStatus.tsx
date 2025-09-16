@@ -327,6 +327,8 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
     ? '20% 10% 15% 10% 15% 15% 15%'
     : '24% 12% 18% 12% 17% 17%';
 
+  const hasManagedConnectors = data.connectors.some((c) => c.is_managed);
+
   return (
     <>
       <Dialog
@@ -373,7 +375,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
           managedConnectorOptions={managedConnectorOptions}
           filters={filters}
           onFiltersChange={setFilters}
-          showManagedFilters={data.connectors.length > 0}
+          showManagedFilters={hasManagedConnectors}
         />
 
         <div className="clearfix" />
