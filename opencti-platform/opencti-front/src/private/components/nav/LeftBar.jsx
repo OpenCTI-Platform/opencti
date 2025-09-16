@@ -223,8 +223,6 @@ const LeftBar = () => {
     settings: { filigran_chatbot_ai_cgu_status },
   } = useAuth();
   const navigate = useNavigate();
-  const { isFeatureEnable } = useHelper();
-  const isChatbotFeatureFlag = isFeatureEnable('CHATBOT_AI');
   const isEnterpriseEdition = useEnterpriseEdition();
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
   const isGrantedToImport = useGranted([KNOWLEDGE_KNASKIMPORT]);
@@ -1067,7 +1065,7 @@ const LeftBar = () => {
       >
         <Divider />
         <MenuList>
-          {isChatbotFeatureFlag && filigran_chatbot_ai_cgu_status !== CGUStatus.disabled && (
+          {filigran_chatbot_ai_cgu_status !== CGUStatus.disabled && (
             <MenuItem
               style={{
                 color: theme.palette.ai.main,
