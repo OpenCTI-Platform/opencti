@@ -7,7 +7,6 @@ import ListItemText from '@mui/material/ListItemText';
 import { MoreVert } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
-import * as R from 'ramda';
 import IconButton from '@mui/material/IconButton';
 import { ListItemButton } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
@@ -115,7 +114,7 @@ const ContainerStixObjectOrStixRelationshipLineComponent = ({
                 className={classes.bodyItem}
                 style={{ width: dataColumns.createdBy.width }}
               >
-                {R.pathOr('', ['createdBy', 'name'], node)}
+                {node.createdBy?.name ?? '-'}
               </div>
               <div
                 className={classes.bodyItem}

@@ -373,7 +373,7 @@ const StixCoreObjectOrStixRelationshipLastContainers = (props) => {
                                     </div>
                                   </Tooltip>
                                   <div className={classes.bodyItem} style={{ width: '20%' }}>
-                                    {container.createdBy?.name ?? ''}
+                                    {container.createdBy?.name ?? '-'}
                                   </div>
                                   <div className={classes.bodyItem} style={{ width: '12%' }}>
                                     {fsd(container.created)}

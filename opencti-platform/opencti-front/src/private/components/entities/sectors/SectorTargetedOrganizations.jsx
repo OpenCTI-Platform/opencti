@@ -150,7 +150,7 @@ class SectorTargetedOrganizations extends Component {
                                 }
                               />
                               <div style={inlineStyles.itemAuthor}>
-                                {R.pathOr('', ['createdBy', 'name'], relation)}
+                                {relation.createdBy?.name ?? '-'}
                               </div>
                               <div style={inlineStyles.itemDate}>
                                 {fsd(relation.start_time)}

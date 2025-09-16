@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, propOr } from 'ramda';
+import { compose } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
@@ -45,7 +45,7 @@ class PositionOverviewComponent extends Component {
           >
             {t('Author')}
           </Typography>
-          <ItemAuthor createdBy={propOr(null, 'createdBy', position)} />
+          <ItemAuthor createdBy={position.createdBy} />
           <Typography
             variant="h3"
             gutterBottom={true}
