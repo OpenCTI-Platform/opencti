@@ -498,7 +498,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                                   type="Organization"
                                   color={
                                   ((organizationEdge.node as OrganizationNodeWithAuthorities).authorized_authorities ?? []).includes(connector.connector_user?.id ?? '')
-                                    ? theme.palette.dangerZone
+                                    ? theme.palette.dangerZone.main
                                     : theme.palette.primary.main
                                 }
                                 />
