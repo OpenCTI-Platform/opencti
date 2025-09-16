@@ -222,10 +222,12 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
       }
     });
 
-    return Array.from(uniqueContracts.entries()).map(([slug, title]) => ({
-      label: title,
-      value: slug,
-    }));
+    return Array.from(uniqueContracts.entries())
+      .map(([slug, title]) => ({
+        label: title,
+        value: slug,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
   }, [data.connectors, managerContractDefinitionMap]);
 
   // eslint-disable-next-line class-methods-use-this

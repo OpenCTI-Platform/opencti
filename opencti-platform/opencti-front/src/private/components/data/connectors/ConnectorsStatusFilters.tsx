@@ -87,7 +87,7 @@ const ConnectorsStatusFilters: React.FC<ConnectorsStatusFiltersProps> = ({
                 onChange={(event, option) => handleFilterChange('slug', option?.value || '')}
                 isOptionEqualToValue={(option, value) => option.value === value.value}
                 renderInput={(params) => (
-                  <TextField {...params} label={t_i18n('Connector')} placeholder={t_i18n('Connector')} variant="outlined" />
+                  <TextField {...params} label={t_i18n('Managed connector')} placeholder={t_i18n('Connector')} variant="outlined" />
                 )}
                 clearOnEscape
               />
