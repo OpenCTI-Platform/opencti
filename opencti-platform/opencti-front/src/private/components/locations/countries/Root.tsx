@@ -93,6 +93,7 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
   const { forceUpdate } = useForceUpdate();
   const { country, connectorsForImport, connectorsForExport } = data;
   const link = `/dashboard/locations/countries/${countryId}/knowledge`;
+  const isOverview = location.pathname === `/dashboard/locations/countries/${countryId}`;
   const paddingRight = getPaddingRight(location.pathname, country?.id, '/dashboard/locations/countries');
   return (
     <>
@@ -205,9 +206,11 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
                   label={t_i18n('History')}
                 />
               </Tabs>
+              {isOverview && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
                 <AIInsights id={country.id}/>
               </div>
+              )}
             </Box>
             <Routes>
               <Route

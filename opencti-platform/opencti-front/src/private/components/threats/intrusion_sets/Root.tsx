@@ -100,6 +100,7 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
     connectorsForImport,
   } = usePreloadedQuery<RootIntrusionSetQuery>(intrusionSetQuery, queryRef);
   const { forceUpdate } = useForceUpdate();
+  const isOverview = location.pathname === `/dashboard/threats/intrusion_sets/${intrusionSetId}`;
   const paddingRight = getPaddingRight(location.pathname, intrusionSetId, '/dashboard/threats/intrusion_sets');
   const link = `/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge`;
   return (
@@ -208,10 +209,12 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
                   label={t_i18n('History')}
                 />
               </Tabs>
+              {isOverview && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
                 <AIInsights id={intrusionSet.id} />
                 <StixCoreObjectSimulationResultContainer id={intrusionSet.id} type="threat" />
               </div>
+              )}
             </Box>
             <Routes>
               <Route
