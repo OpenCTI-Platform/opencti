@@ -9,7 +9,7 @@ import { Stack } from '@mui/material';
 import { Search } from '@mui/icons-material';
 import Grid from '@mui/material/Grid2';
 import { ConnectorManagerStatusProvider, useConnectorManagerStatus } from '@components/data/connectors/ConnectorManagerStatusContext';
-import NoConnectorManagersBanner from '@components/data/connectors/NoConnectorManagersBanner';
+import ConnectorDeploymentBanner from '@components/data/connectors/ConnectorDeploymentBanner';
 import IngestionCatalogConnectorCreation from '@components/data/IngestionCatalog/IngestionCatalogConnectorCreation';
 import { IngestionConnectorType } from '@components/data/IngestionCatalog/utils/ingestionConnectorTypeMetadata';
 import createDeploymentCountMap from '@components/data/IngestionCatalog/utils/createDeploymentCountMap';
@@ -182,9 +182,7 @@ const IngestionCatalogComponent = ({
       <PageContainer withRightMenu withGap>
         <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('Connector catalog'), current: true }]} />
 
-        {
-          !hasRegisteredManagers && <NoConnectorManagersBanner />
-        }
+        <ConnectorDeploymentBanner hasRegisteredManagers={hasRegisteredManagers} />
 
         <Stack flexDirection="row">
           <IngestionCatalogFilters

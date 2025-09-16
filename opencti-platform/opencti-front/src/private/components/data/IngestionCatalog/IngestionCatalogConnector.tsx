@@ -5,7 +5,7 @@ import IngestionCatalogConnectorHeader from '@components/data/IngestionCatalog/I
 import IngestionCatalogConnectorOverview from '@components/data/IngestionCatalog/IngestionCatalogConnectorOverview';
 import { IngestionCatalogConnectorQuery } from '@components/data/IngestionCatalog/__generated__/IngestionCatalogConnectorQuery.graphql';
 import { ConnectorManagerStatusProvider, useConnectorManagerStatus } from '@components/data/connectors/ConnectorManagerStatusContext';
-import NoConnectorManagersBanner from '@components/data/connectors/NoConnectorManagersBanner';
+import ConnectorDeploymentBanner from '@components/data/connectors/ConnectorDeploymentBanner';
 import { Stack } from '@mui/material';
 import IngestionCatalogConnectorCreation from '@components/data/IngestionCatalog/IngestionCatalogConnectorCreation';
 import { IngestionConnector } from '@components/data/IngestionCatalog';
@@ -72,7 +72,7 @@ const IngestionCatalogConnectorComponent = ({
       />
 
       <Stack gap={2}>
-        { !hasRegisteredManagers && <NoConnectorManagersBanner />}
+        <ConnectorDeploymentBanner hasRegisteredManagers={hasRegisteredManagers} />
 
         <IngestionCatalogConnectorHeader
           connector={connector}

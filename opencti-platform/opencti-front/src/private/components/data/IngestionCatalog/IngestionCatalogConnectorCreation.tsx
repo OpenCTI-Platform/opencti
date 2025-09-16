@@ -24,7 +24,7 @@ import { IngestionConnector, IngestionTypedProperty } from '@components/data/Ing
 import { Launch } from 'mdi-material-ui';
 import IconButton from '@mui/material/IconButton';
 import { HubOutlined, LibraryBooksOutlined } from '@mui/icons-material';
-import NoConnectorManagersBanner from '@components/data/connectors/NoConnectorManagersBanner';
+import ConnectorDeploymentBanner from '@components/data/connectors/ConnectorDeploymentBanner';
 import Tooltip from '@mui/material/Tooltip';
 import JsonFormArrayRenderer, { jsonFormArrayTester } from '@components/data/IngestionCatalog/utils/JsonFormArrayRenderer';
 import buildContractConfiguration from '@components/data/connectors/utils/buildContractConfiguration';
@@ -291,9 +291,8 @@ const IngestionCatalogConnectorCreation = ({
       }
     >
       <Stack gap={1}>
-        {
-          !hasRegisteredManagers && <NoConnectorManagersBanner />
-        }
+        <ConnectorDeploymentBanner hasRegisteredManagers={hasRegisteredManagers} />
+
         <Formik<ManagedConnectorValues>
           onReset={onClose}
           validationSchema={Yup.object().shape({
