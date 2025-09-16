@@ -8,6 +8,7 @@ import { wait } from '../../../src/database/utils';
 import { XTMComposerMock } from '../../utils/XTMComposerMock';
 import type { ApiConnector } from '../../utils/XTMComposerMock';
 import { catalogHelper } from '../../utils/catalogHelper';
+import { resetCatalogCache } from '../../../src/modules/catalog/catalog-domain';
 
 const TEST_COMPOSER_ID = uuidv4();
 const TEST_USER_CONNECTOR_ID: string = USER_CONNECTOR.id; // Initialize with default value
@@ -152,7 +153,7 @@ const CONNECTOR_WITH_HEALTH_QUERY = gql`
   }
 `;
 
-describe.skip('Connector Composer and Managed Connectors', () => {
+describe('Connector Composer and Managed Connectors', () => {
   // Track all created resources
   const createdConnectorIds = new Set<string>();
   let xtmComposer: XTMComposerMock;
@@ -162,6 +163,9 @@ describe.skip('Connector Composer and Managed Connectors', () => {
     // Set up test catalog path in environment
     const testCatalogPath = path.join(__dirname, '../../utils/opencti-manifest.json');
     process.env.APP__CUSTOM_CATALOGS = JSON.stringify([testCatalogPath]);
+
+    // Reset catalog cache to ensure test catalog is loaded
+    resetCatalogCache();
 
     // Validate that we're using the test catalog
     catalogHelper.validateTestCatalog();
@@ -179,7 +183,7 @@ describe.skip('Connector Composer and Managed Connectors', () => {
   });
 
   describe('Connector Composer operations', () => {
-    it.skip('should register a new connector composer', async () => {
+    it('should register a new connector composer', async () => {
       const input = {
         id: TEST_COMPOSER_ID,
         name: 'Test Composer',
@@ -199,10 +203,7 @@ describe.skip('Connector Composer and Managed Connectors', () => {
       expect(result.data?.registerConnectorsManager.last_sync_execution).not.toBeNull();
     });
 
-    // Disabled on 2025-01-09 due to flaky behavior
-    // Test was experiencing race conditions with parallel Promise.all() execution
-    // and potential timing issues with catalog helper operations
-    it.skip('should sanitize connector names for Kubernetes/Docker compatibility', async () => {
+    it('should sanitize connector names for Kubernetes/Docker compatibility', async () => {
       const testConnector = catalogHelper.getTestSafeConnector();
       const catalogId = catalogHelper.getCatalogId();
 
@@ -254,7 +255,7 @@ describe.skip('Connector Composer and Managed Connectors', () => {
       }, Promise.resolve());
     });
 
-    it.skip('should update existing connector composer', async () => {
+    it('should update existing connector composer', async () => {
       const input = {
         id: TEST_COMPOSER_ID,
         name: 'Test Composer Updated',
@@ -271,7 +272,7 @@ describe.skip('Connector Composer and Managed Connectors', () => {
       expect(result.data?.registerConnectorsManager.public_key).toEqual(TEST_COMPOSER_PUBLIC_KEY);
     });
 
-    it.skip('should update connector composer status', async () => {
+    it('should update connector composer status', async () => {
       const previousResult = await queryAsAdminWithSuccess({
         query: CONNECTOR_MANAGER_QUERY,
         variables: { managerId: TEST_COMPOSER_ID }
@@ -292,7 +293,7 @@ describe.skip('Connector Composer and Managed Connectors', () => {
       expect(result.data?.updateConnectorManagerStatus.last_sync_execution).not.toEqual(previousSync);
     });
 
-    it.skip('should get connector composer by id', async () => {
+    it('should get connector composer by id', async () => {
       const result = await queryAsAdminWithSuccess({
         query: CONNECTOR_MANAGER_QUERY,
         variables: { managerId: TEST_COMPOSER_ID }
@@ -305,7 +306,7 @@ describe.skip('Connector Composer and Managed Connectors', () => {
       expect(result.data?.connectorManager.active).toBeDefined();
     });
 
-    it.skip('should list all connector composers', async () => {
+    it('should list all connector composers', async () => {
       const result = await queryAsAdminWithSuccess({
         query: CONNECTOR_MANAGERS_QUERY,
         variables: {}
@@ -322,7 +323,7 @@ describe.skip('Connector Composer and Managed Connectors', () => {
   describe('Managed Connector operations with XTM Composer', () => {
     let deploymentConnectorId: string;
 
-    it.skip('should deploy a managed connector', async () => {
+    it('should deploy a managed connector', async () => {
       // Get test connector from catalog
       const testConnector = catalogHelper.getTestSafeConnector();
       const catalogId = catalogHelper.getCatalogId();
@@ -387,7 +388,7 @@ describe.skip('Connector Composer and Managed Connectors', () => {
       expect(connectorResult.data?.connector.manager_current_status).toEqual('started');
     });
 
-    it.skip('should start a deployed connector', async () => {
+    it('should start a deployed connector', async () => {
       // First ensure connector is stopped
       const stopInput = {
         id: deploymentConnectorId,
@@ -445,7 +446,7 @@ describe.skip('Connector Composer and Managed Connectors', () => {
       expect(connectorResult.data?.connector.manager_current_status).toEqual('started');
     });
 
-    it.skip('should stop a running connector', async () => {
+    it('should stop a running connector', async () => {
       // Request stop through platform
       const stopRequestInput = {
         id: deploymentConnectorId,
@@ -485,7 +486,7 @@ describe.skip('Connector Composer and Managed Connectors', () => {
       expect(connectorResult.data?.connector.manager_current_status).toEqual('stopped');
     });
 
-    it.skip('should restart a connector', async () => {
+    it('should restart a connector', async () => {
       // Request stop through platform
       const stopRequestInput = {
         id: deploymentConnectorId,
@@ -756,7 +757,7 @@ describe.skip('Connector Composer and Managed Connectors', () => {
       expect(redeployCount).toBe(2); // Only the two previous configuration changes
     });
 
-    it.skip('should delete a managed connector deployment', async () => {
+    it('should delete a managed connector deployment', async () => {
       // First ensure connector is stopped
       const stopRequestInput = {
         id: deploymentConnectorId,
@@ -834,7 +835,7 @@ describe.skip('Connector Composer and Managed Connectors', () => {
       createdConnectorIds.add(testConnectorId);
     });
 
-    it.skip('should test updateConnectorLogs GraphQL call', async () => {
+    it('should test updateConnectorLogs GraphQL call', async () => {
       // Create a mock connector object for the logs method
       const mockConnector: ApiConnector = {
         id: testConnectorId,
@@ -874,7 +875,7 @@ describe.skip('Connector Composer and Managed Connectors', () => {
       expect(retrievedLogs).toEqual(expect.arrayContaining(generatedLogs));
     });
 
-    it.skip('should test updateConnectorCurrentStatus GraphQL call', async () => {
+    it('should test updateConnectorCurrentStatus GraphQL call', async () => {
       // Test various status transitions
       const statuses = ['started', 'stopped'];
 
@@ -888,7 +889,7 @@ describe.skip('Connector Composer and Managed Connectors', () => {
       );
     });
 
-    it.skip('should test connectorsForManagers GraphQL call', async () => {
+    it('should test connectorsForManagers GraphQL call', async () => {
       const connectors = await xtmComposer.getConnectorsForManagers();
 
       expect(connectors).toBeDefined();
@@ -905,7 +906,7 @@ describe.skip('Connector Composer and Managed Connectors', () => {
       expect(testConnector.manager_current_status).toBeDefined();
     });
 
-    it.skip('should handle concurrent XTM Composer operations', async () => {
+    it('should handle concurrent XTM Composer operations', async () => {
       // Get test connector from catalog
       const testConnector = catalogHelper.getTestSafeConnector();
       const catalogId = catalogHelper.getCatalogId();
@@ -1138,7 +1139,7 @@ describe.skip('Connector Composer and Managed Connectors', () => {
   describe('Managed Connector operations', () => {
     let managedConnectorId: string;
 
-    it.skip('should fail to add managed connector with invalid image', async () => {
+    it('should fail to add managed connector with invalid image', async () => {
       const catalogId = catalogHelper.getCatalogId();
 
       const input = {
@@ -1160,7 +1161,7 @@ describe.skip('Connector Composer and Managed Connectors', () => {
       }
     });
 
-    it.skip('should add a new managed connector using IpInfo catalog', async () => {
+    it('should add a new managed connector using IpInfo catalog', async () => {
       // Get test connector from catalog
       const testConnector = catalogHelper.getTestSafeConnector();
       const catalogId = catalogHelper.getCatalogId();
@@ -1193,7 +1194,7 @@ describe.skip('Connector Composer and Managed Connectors', () => {
       expect(result.data?.managedConnectorAdd.manager_contract_configuration.length).toBeGreaterThan(0);
     });
 
-    it.skip('should edit managed connector', async () => {
+    it('should edit managed connector', async () => {
       const input = {
         id: managedConnectorId,
         name: 'Updated IpInfo Connector',
@@ -1219,7 +1220,7 @@ describe.skip('Connector Composer and Managed Connectors', () => {
       expect(autoConfig.value).toEqual('false');
     });
 
-    it.skip('should prevent creating managed connector with duplicate name', async () => {
+    it('should prevent creating managed connector with duplicate name', async () => {
       // Get test connector from catalog
       const testConnector = catalogHelper.getTestSafeConnector();
       const catalogId = catalogHelper.getCatalogId();
@@ -1287,7 +1288,7 @@ describe.skip('Connector Composer and Managed Connectors', () => {
   });
 
   describe('Permission checks', () => {
-    it.skip('should deny non-admin users from registering connector composer', async () => {
+    it('should deny non-admin users from registering connector composer', async () => {
       const input = {
         id: uuidv4(),
         name: 'Unauthorized Composer',
@@ -1300,7 +1301,7 @@ describe.skip('Connector Composer and Managed Connectors', () => {
       });
     });
 
-    it.skip('should deny non-admin users from adding managed connector', async () => {
+    it('should deny non-admin users from adding managed connector', async () => {
       const input = {
         name: 'Unauthorized Connector',
         user_id: TEST_USER_CONNECTOR_ID,
@@ -1315,7 +1316,7 @@ describe.skip('Connector Composer and Managed Connectors', () => {
       });
     });
 
-    it.skip('should allow connector user to update connector logs via XTM Composer', async () => {
+    it('should allow connector user to update connector logs via XTM Composer', async () => {
       // Get test connector from catalog
       const testConnector = catalogHelper.getTestSafeConnector();
       const catalogId = catalogHelper.getCatalogId();
@@ -1360,7 +1361,7 @@ describe.skip('Connector Composer and Managed Connectors', () => {
       });
     });
 
-    it.skip('should deny non-admin users from deleting a connector', async () => {
+    it('should deny non-admin users from deleting a connector', async () => {
       // Get test connector from catalog
       const testConnector = catalogHelper.getTestSafeConnector();
       const catalogId = catalogHelper.getCatalogId();
@@ -1401,7 +1402,7 @@ describe.skip('Connector Composer and Managed Connectors', () => {
   });
 
   describe('Complete lifecycle test', () => {
-    it.skip('should handle complete lifecycle of a managed connector', async () => {
+    it('should handle complete lifecycle of a managed connector', async () => {
       // Get test connector from catalog
       const testConnector = catalogHelper.getTestSafeConnector();
       const catalogId = catalogHelper.getCatalogId();
@@ -1462,7 +1463,7 @@ describe.skip('Connector Composer and Managed Connectors', () => {
   });
 
   describe('Error handling', () => {
-    it.skip('should handle XTM Composer errors gracefully', async () => {
+    it('should handle XTM Composer errors gracefully', async () => {
       // Get test connector from catalog
       const testConnector = catalogHelper.getTestSafeConnector();
       const catalogId = catalogHelper.getCatalogId();
@@ -1501,7 +1502,7 @@ describe.skip('Connector Composer and Managed Connectors', () => {
       });
     });
 
-    it.skip('should handle missing required configuration', async () => {
+    it('should handle missing required configuration', async () => {
       // Get test connector from catalog
       const testConnector = catalogHelper.getTestSafeConnector();
       const catalogId = catalogHelper.getCatalogId();
