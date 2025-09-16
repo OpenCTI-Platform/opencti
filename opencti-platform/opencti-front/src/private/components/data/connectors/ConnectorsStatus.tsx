@@ -82,6 +82,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
   const { t_i18n, nsdt, n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const isComposerEnable = isFeatureEnable('COMPOSER');
+
   const classes = useStyles(); // TODO remove as deprecated
   const theme = useTheme<Theme>();
   const { isSensitive } = useSensitiveModifications('connector_reset');
@@ -325,11 +326,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                     <SortConnectorsHeader field="messages" label="Messages" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
                     <SortConnectorsHeader field="active" label="Status" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
                     <SortConnectorsHeader field="updated_at" label="Modified" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
-                    {
-                      isComposerEnable && (
-                        <SortConnectorsHeader field="is_managed" label={t_i18n('Manager deployment')} isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
-                      )
-                    }
+                    <SortConnectorsHeader field="is_managed" label={t_i18n('Manager deployment')} isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
                   </div>
                 }
               />
@@ -429,17 +426,13 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                               <div className={classes.bodyItem}>
                                 {nsdt(connector.updated_at)}
                               </div>
-                              {
-                                isComposerEnable && (
-                                  <div className={classes.bodyItem}>
-                                    <ItemBoolean
-                                      label={connector.is_managed ? 'TRUE' : 'FALSE'}
-                                      status={connector.is_managed}
-                                      variant="inList"
-                                    />
-                                  </div>
-                                )
-                              }
+                              <div className={classes.bodyItem}>
+                                <ItemBoolean
+                                  label={connector.is_managed ? 'TRUE' : 'FALSE'}
+                                  status={connector.is_managed}
+                                  variant="inList"
+                                />
+                              </div>
                             </div>
                           }
                         />
