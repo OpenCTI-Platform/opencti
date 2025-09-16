@@ -448,7 +448,7 @@ export const parseCvssVector = (
     result = [
       ...parsedVector,
       ...nulls,
-      { key: config.baseScoreKey, value: [scores.overall] }
+      { key: config.baseScoreKey, value: [scores.base] }
     ];
     if (config.severityKey) result.push({ key: config.severityKey, value: [getCvssCriticity(scores.overall)] });
     if (config.temporalScoreKey && isNotEmptyField(scores.temporal)) result.push({ key: config.temporalScoreKey, value: [scores.temporal] });
@@ -521,7 +521,7 @@ export const updateCvssVector = (
   } else if (isEmptyField(initialScore)) {
     result = [
       { key: baseVectorKey, value: [updatedVector] },
-      { key: baseScoreKey, value: [scores.overall] }
+      { key: baseScoreKey, value: [scores.base] }
     ];
     if (severityKey) result.push({ key: severityKey, value: [getCvssCriticity(scores.overall)] });
     if (temporalScoreKey && isNotEmptyField(scores.temporal)) result.push({ key: temporalScoreKey, value: [scores.temporal] });
