@@ -3973,6 +3973,8 @@ export type ConnectorConfiguration = {
 export type ConnectorContractConfiguration = {
   __typename?: 'ConnectorContractConfiguration';
   encrypted?: Maybe<Scalars['Boolean']['output']>;
+  encryptionIv?: Maybe<Scalars['String']['output']>;
+  encryptionKey?: Maybe<Scalars['String']['output']>;
   key: Scalars['String']['output'];
   value?: Maybe<Scalars['String']['output']>;
 };
@@ -36606,6 +36608,8 @@ export type ConnectorConfigurationResolvers<ContextType = any, ParentType extend
 
 export type ConnectorContractConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectorContractConfiguration'] = ResolversParentTypes['ConnectorContractConfiguration']> = ResolversObject<{
   encrypted?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  encryptionIv?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  encryptionKey?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
