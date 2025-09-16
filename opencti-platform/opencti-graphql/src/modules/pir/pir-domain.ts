@@ -49,7 +49,7 @@ import type { BasicStoreCommon, BasicStoreObject } from '../../types/store';
 import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
 import { createPirRelation, serializePir, updatePirExplanations } from './pir-utils';
 import { getPirWithAccessCheck } from './pir-checkPirAccess';
-import { ForbiddenAccess, FunctionalError } from '../../config/errors';
+import { ForbiddenAccess, FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR } from '../../config/errors';
 import { ABSTRACT_STIX_REF_RELATIONSHIP, ENTITY_TYPE_CONTAINER } from '../../schema/general';
 import { addDynamicFromAndToToFilters, addFilter, extractFilterKeyValues, isFilterGroupNotEmpty } from '../../utils/filtering/filtering-utils';
 import { INSTANCE_DYNAMIC_REGARDING_OF, INSTANCE_REGARDING_OF, OBJECT_CONTAINS_FILTER, RELATION_TO_FILTER, RELATION_TYPE_FILTER } from '../../utils/filtering/filtering-constants';
@@ -61,6 +61,7 @@ import { READ_INDEX_HISTORY } from '../../database/utils';
 import { ENTITY_TYPE_HISTORY, ENTITY_TYPE_PIR_HISTORY } from '../../schema/internalObject';
 import { elPaginate } from '../../database/engine';
 import { registerConnectorQueues, unregisterConnector } from '../../database/rabbitmq';
+import { lockResources } from '../../lock/master-lock';
 
 export const findById = async (context: AuthContext, user: AuthUser, id: string) => {
   await checkEnterpriseEdition(context);
@@ -266,29 +267,49 @@ export const pirFlagElement = async (
   pirStandardId: string,
   input: PirFlagElementInput,
 ) => {
+  // check rights
   if (!isBypassUser(user)) {
     throw ForbiddenAccess();
   }
   const pir = await getPirWithAccessCheck(context, user, pirStandardId);
 
   const { relationshipId, sourceId, matchingCriteria, relationshipAuthorId } = input;
-  const source = await internalLoadById<BasicStoreCommon>(context, user, sourceId);
 
-  if (source) { // if element still exist
-    const sourceFlagged = (source[RELATION_IN_PIR] ?? []).includes(pir.id);
-    const pirDependencies = matchingCriteria.map((criterion) => ({
-      dependencies: [{ element_id: relationshipId, author_id: relationshipAuthorId }],
-      criterion: {
-        ...criterion,
-        filters: JSON.stringify(criterion.filters)
-      },
-    }));
-    if (sourceFlagged) {
-      await updatePirExplanations(context, user, sourceId, pir.id, pirDependencies, EditOperation.Add);
-    } else {
-      await createPirRelation(context, user, sourceId, pir.id, pirDependencies);
+  // lock resources
+  let lock;
+  const lockIds = [sourceId, pir.id];
+  try {
+    // Try to get the lock in redis
+    lock = await lockResources(lockIds);
+
+    const source = await internalLoadById<BasicStoreCommon>(context, user, sourceId);
+    if (source) { // if element still exist
+      const sourceFlagged = (source[RELATION_IN_PIR] ?? []).includes(pir.id);
+      // build dependencies
+      const pirDependencies = matchingCriteria.map((criterion) => ({
+        dependencies: [{ element_id: relationshipId, author_id: relationshipAuthorId }],
+        criterion: {
+          ...criterion,
+          filters: JSON.stringify(criterion.filters)
+        },
+      }));
+
+      // create or update the pir relation
+      if (sourceFlagged) {
+        await updatePirExplanations(context, user, sourceId, pir.id, pirDependencies, lockIds, EditOperation.Add);
+      } else {
+        await createPirRelation(context, user, sourceId, pir.id, pirDependencies, lockIds);
+      }
     }
+  } catch (err: any) {
+    if (err.name === TYPE_LOCK_ERROR) {
+      throw LockTimeoutError({ inputIds: lockIds });
+    }
+    throw err;
+  } finally {
+    if (lock) await lock.unlock();
   }
+
   return pir.id;
 };
 
@@ -314,23 +335,40 @@ export const pirUnflagElement = async (
   const pir = await getPirWithAccessCheck(context, user, pirStandardId);
 
   const { relationshipId, sourceId } = input;
-  // fetch in-pir rels between the entity and the pir
-  const rels = await topRelationsList(context, user, RELATION_IN_PIR, { fromId: sourceId, toId: pir.id });
-  // eslint-disable-next-line no-restricted-syntax
-  for (const rel of rels) {
-    const relDependencies = (rel as any).pir_explanations as PirExplanation[];
-    // fetch dependencies not concerning the relationship
-    const newRelDependencies = relDependencies.filter((dep) => !dep.dependencies
-      .map((d) => d.element_id)
-      .includes(relationshipId));
-    if (newRelDependencies.length === 0) {
-      // delete the in-pir relationship between source and PIR
-      await deleteRelationsByFromAndTo(context, user, sourceId, pir.id, RELATION_IN_PIR, ABSTRACT_STIX_REF_RELATIONSHIP);
-    } else if (newRelDependencies.length < relDependencies.length) {
-      // update dependencies
-      await updatePirExplanations(context, user, sourceId, pir.id, newRelDependencies);
+
+  // lock resources
+  let lock;
+  const lockIds = [sourceId, pir.id];
+  try {
+    // Try to get the lock in redis
+    lock = await lockResources(lockIds);
+
+    // fetch in-pir rels between the entity and the pir
+    const rels = await topRelationsList(context, user, RELATION_IN_PIR, { fromId: sourceId, toId: pir.id });
+    // eslint-disable-next-line no-restricted-syntax
+    for (const rel of rels) {
+      const relDependencies = (rel as any).pir_explanations as PirExplanation[];
+      // fetch dependencies not concerning the relationship
+      const newRelDependencies = relDependencies.filter((dep) => !dep.dependencies
+        .map((d) => d.element_id)
+        .includes(relationshipId));
+      if (newRelDependencies.length === 0) {
+        // delete the in-pir relationship between source and PIR
+        await deleteRelationsByFromAndTo(context, user, sourceId, pir.id, RELATION_IN_PIR, ABSTRACT_STIX_REF_RELATIONSHIP);
+      } else if (newRelDependencies.length < relDependencies.length) {
+        // update dependencies
+        await updatePirExplanations(context, user, sourceId, pir.id, newRelDependencies, lockIds);
+      }
     }
+  } catch (err: any) {
+    if (err.name === TYPE_LOCK_ERROR) {
+      throw LockTimeoutError({ inputIds: lockIds });
+    }
+    throw err;
+  } finally {
+    if (lock) await lock.unlock();
   }
+
   return pir.id;
 };
 
