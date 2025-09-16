@@ -373,6 +373,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
           managedConnectorOptions={managedConnectorOptions}
           filters={filters}
           onFiltersChange={setFilters}
+          showManagedFilters={data.connectors.length > 0}
         />
 
         <div className="clearfix" />

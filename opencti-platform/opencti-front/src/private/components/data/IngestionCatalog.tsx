@@ -1,10 +1,10 @@
-import React, { Suspense, useState } from 'react';
+import React, { Suspense } from 'react';
 import IngestionMenu from '@components/data/IngestionMenu';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { IngestionCatalogQuery } from '@components/data/__generated__/IngestionCatalogQuery.graphql';
 import IngestionCatalogCard from '@components/data/IngestionCatalog/IngestionCatalogCard';
 import useIngestionCatalogFilters from '@components/data/IngestionCatalog/hooks/useIngestionCatalogFilters';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { Stack } from '@mui/material';
 import { Search } from '@mui/icons-material';
 import Grid from '@mui/material/Grid2';
@@ -25,7 +25,6 @@ import IngestionCatalogFilters from './IngestionCatalog/IngestionCatalogFilters'
 import GradientCard from '../../../components/GradientCard';
 import { MESSAGING$ } from '../../../relay/environment';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
-import { resolveLink } from '../../../utils/Entity';
 
 export const ingestionCatalogQuery = graphql`
   query IngestionCatalogQuery {
@@ -225,8 +224,6 @@ const IngestionCatalogComponent = ({
 };
 
 const IngestionCatalog = () => {
-  const navigate = useNavigate();
-
   const { catalogState, handleOpenDeployDialog, handleCloseDeployDialog, handleCreate } = useConnectorDeployDialog();
 
   const queryRef = useQueryLoading<IngestionCatalogQuery>(

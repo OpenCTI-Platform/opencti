@@ -18,6 +18,7 @@ interface ConnectorsStatusFiltersProps {
   managedConnectorOptions: { label: string; value: string }[];
   filters: ConnectorsStatusFilterState;
   onFiltersChange: (filters: ConnectorsStatusFilterState) => void;
+  showManagedFilters: boolean;
 }
 
 const INPUT_WIDTH = 200; // same as defined in ListFilters
@@ -26,6 +27,7 @@ const ConnectorsStatusFilters: React.FC<ConnectorsStatusFiltersProps> = ({
   managedConnectorOptions,
   filters,
   onFiltersChange,
+  showManagedFilters = false,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
@@ -76,7 +78,7 @@ const ConnectorsStatusFilters: React.FC<ConnectorsStatusFiltersProps> = ({
       />
 
       {
-        isEnterpriseEdition && (
+        isEnterpriseEdition && showManagedFilters && (
           <>
             <Tooltip title={t_i18n('Apply filter to managed deployments only')} placement={'top'} >
               <Autocomplete
