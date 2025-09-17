@@ -3543,7 +3543,7 @@
   "The connector has been cleared": "Коннектор был очищен",
   "The connector instance has been deployed": "Экземпляр коннектора был развернут",
   "The connector instance has been deployed. You can now start it.": "Экземпляр коннектора развернут. Теперь вы можете запустить его.",
-  "The connector instance has been modified, it must be restarted for the changes to take effect.": "Экземпляр коннектора был изменен, его необходимо перезапустить, чтобы изменения вступили в силу.",
+  "The connector instance has been modified, changes could take few minutes to take effect.": "Экземпляр коннектора был изменен, его необходимо перезапустить, чтобы изменения вступили в силу.",
   "The connector instance has been modified.": "Экземпляр коннектора был изменен.",
   "The connector state has been reset": "Состояние коннектора было сброшено",
   "The CSV file has been generated with the parameters of the view and is ready for download.": "CSV-файл был создан с параметрами представления и готов к загрузке.",
