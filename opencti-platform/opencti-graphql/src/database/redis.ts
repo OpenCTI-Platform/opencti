@@ -823,7 +823,7 @@ export const fetchStreamEventsRangeFromEventId = async (
 ) => {
   let effectiveStartEventId = startEventId;
   const [startTimestamp] = startEventId.split('-');
-  const endTimestamp = startTimestamp + (opts.streamBatchTime ?? STREAM_BATCH_TIME);
+  const endTimestamp = (Number(startTimestamp) + (opts.streamBatchTime ?? STREAM_BATCH_TIME)).toString();
   try {
     // Consume the data stream
     const streamResult = await client.call(
