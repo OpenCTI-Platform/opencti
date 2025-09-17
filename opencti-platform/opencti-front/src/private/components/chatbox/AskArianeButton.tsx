@@ -139,6 +139,7 @@ const AskArianeButton = React.forwardRef((props, ref) => {
 
   const chatIconStyle: React.CSSProperties = {
     color: isCGUStatusPending ? theme.palette.action?.disabled : undefined,
+    marginLeft: 2,
   };
 
   return (
@@ -170,12 +171,12 @@ const AskArianeButton = React.forwardRef((props, ref) => {
             gradientVariant={isCGUStatusPending ? GradientVariant.disabled : GradientVariant.ai}
             onClick={toggleChatbot}
           >
-            <FiligranIcon icon={LogoXtmOneIcon} size='x-small' color="ai" style={chatIconStyle} />
-            <span style={{ marginLeft: 5, paddingTop: 1 }}>{t_i18n('ASK ARIANE')}</span>
+            <FiligranIcon icon={LogoXtmOneIcon} size='small' color="ai" style={chatIconStyle} />
+            <span style={{ marginLeft: 5 }}>{t_i18n('ASK ARIANE')}</span>
           </GradientButton>
         ) : (
           <IconButton style={{ padding: 0 }} onClick={toggleChatbot}>
-            <FiligranIcon icon={LogoXtmOneIcon} size='x-small' color="ai" style={chatIconStyle} />
+            <FiligranIcon icon={LogoXtmOneIcon} size='small' color="ai" style={chatIconStyle} />
           </IconButton>
         )}
       </Tooltip>
