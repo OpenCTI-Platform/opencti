@@ -1,5 +1,3 @@
-export const COMPOSER_FF = 'COMPOSER';
-
 export type IngestionConnectorType = 'INTERNAL_ENRICHMENT' | 'EXTERNAL_IMPORT' | 'INTERNAL_EXPORT_FILE' | 'INTERNAL_IMPORT_FILE';
 
 type TypeMap = {
