@@ -38,7 +38,7 @@ const PIR_MANAGER_LABEL = 'Pir Manager';
 const PIR_MANAGER_CONTEXT = 'pir_manager';
 
 const PIR_MANAGER_INTERVAL = conf.get('pir_manager:interval') ?? 10000;
-const PIR_MANAGER_STREAM_BATCH_SIZE = conf.get('pir_manager:stream_batch_size') ?? 200;
+const PIR_MANAGER_STREAM_BATCH_SIZE = conf.get('pir_manager:stream_batch_size') ?? 1000;
 const PIR_MANAGER_LOCK_KEY = conf.get('pir_manager:lock_key');
 const PIR_MANAGER_ENABLED = booleanConf('pir_manager:enabled', false);
 const PIR_MANAGER_MAX_CONCURRENCY = conf.get('pir_manager:max_concurrency') ?? 5;
