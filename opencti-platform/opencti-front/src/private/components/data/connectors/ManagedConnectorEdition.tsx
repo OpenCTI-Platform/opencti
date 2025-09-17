@@ -66,6 +66,10 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
 
   const theme = useTheme<Theme>();
 
+  if (!connector.manager_contract_definition) {
+    return null;
+  }
+
   const contract: IngestionConnector = JSON.parse(connector.manager_contract_definition ?? '{}');
   const contractValues: Record<string, string | boolean> = {};
 
