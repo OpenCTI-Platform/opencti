@@ -2069,8 +2069,6 @@ type ConnectorContractConfiguration {
   key: String!
   value: String
   encrypted: Boolean
-  encryptionKey: String
-  encryptionIv: String
 }
 
 enum ConnectorRequestStatus {
