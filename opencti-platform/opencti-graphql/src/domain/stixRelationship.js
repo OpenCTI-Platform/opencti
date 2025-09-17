@@ -42,14 +42,15 @@ const buildRelationshipTypes = (relationshipTypes) => {
 
 // region stats
 export const stixRelationshipsDistribution = async (context, user, args) => {
+  const relationship_type = buildRelationshipTypes(args.relationship_type);
   const filters = addDynamicFromAndToToFilters(args);
-  const fullArgs = { ...args, filters };
+  const fullArgs = { ...args, relationship_type, filters };
   return distributionRelations(context, context.user, fullArgs);
 };
 export const stixRelationshipsNumber = async (context, user, args) => {
   const relationship_type = buildRelationshipTypes(args.relationship_type);
   const filters = addDynamicFromAndToToFilters(args);
-  const fullArgs = { ...args, filters };
+  const fullArgs = { ...args, relationship_type, filters };
   const numberArgs = buildRelationsFilter(relationship_type, fullArgs);
   const indices = args.onlyInferred ? [READ_INDEX_INFERRED_RELATIONSHIPS] : [READ_RELATIONSHIPS_INDICES];
   return {
@@ -57,11 +58,17 @@ export const stixRelationshipsNumber = async (context, user, args) => {
     total: elCount(context, user, indices, R.dissoc('endDate', numberArgs)),
   };
 };
+export const stixRelationshipsTimeSeries = async (context, user, args) => {
+  const relationship_type = buildRelationshipTypes(args.relationship_type);
+  const finalArgs = { ...args, relationship_type };
+  return timeSeriesRelations(context, context.user, finalArgs);
+};
 export const stixRelationshipsMultiTimeSeries = async (context, user, args) => {
+  const relationship_type = buildRelationshipTypes(args.relationship_type);
   return Promise.all(args.timeSeriesParameters.map(async (timeSeriesParameter) => {
     const filters = addDynamicFromAndToToFilters(timeSeriesParameter);
     const fullArgs = { ...timeSeriesParameter, filters };
-    return { data: timeSeriesRelations(context, user, { ...args, ...fullArgs }) };
+    return { data: timeSeriesRelations(context, user, { ...args, relationship_type, ...fullArgs }) };
   }));
 };
 // endregion

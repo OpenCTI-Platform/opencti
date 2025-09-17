@@ -1,7 +1,10 @@
-import { expect, it, describe } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, testContext, queryAsAdmin } from '../../utils/testQuery';
+import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
+import { UNTIL_END_STR } from '../../../src/utils/format';
+import { RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
+import { stixCoreRelationshipsDistribution } from '../../../src/domain/stixCoreRelationship';
 
 const READ_QUERY = gql`
     query StixCoreRelationship($id: String!) {
@@ -216,6 +219,14 @@ describe('StixCoreRelationship resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.stixCoreRelationshipEdit.relationsAdd.objectMarking.length).toEqual(1);
+  });
+  it('should limit stixCoreRelationshipsDistribution scope to stix core relationships', async () => {
+    const args = {
+      dateAttribute: 'created_at',
+      endDate: UNTIL_END_STR,
+      relationship_type: [RELATION_OBJECT_MARKING],
+    };
+    await expect(() => stixCoreRelationshipsDistribution(testContext, ADMIN_USER, args)).rejects.toThrowError('relationship_type is not a stix-core-relationship');
   });
   it('should stixCoreRelationship deleted', async () => {
     const DELETE_QUERY = gql`
