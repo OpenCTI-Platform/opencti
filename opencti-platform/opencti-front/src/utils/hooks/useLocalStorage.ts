@@ -154,15 +154,15 @@ const setStoredValueToHistory = (
   const urlParams = buildParamsFromHistory(valueToStore);
   if (!R.equals(urlParams, buildParamsFromHistory(finalParams))) {
     const effectiveParams = new URLSearchParams(urlParams);
+    let newUrl = window.location.pathname;
     if (
       Object.entries(urlParams).some(
         ([k, v]) => initialValue?.[k as keyof LocalStorage] !== v,
       )
     ) {
-      window.history.replaceState(null, '', `?${effectiveParams.toString()}`);
-    } else {
-      window.history.replaceState(null, '', window.location.pathname);
+      newUrl += `?${effectiveParams.toString()}`;
     }
+    window.history.replaceState(null, '', newUrl);
   }
 };
 
