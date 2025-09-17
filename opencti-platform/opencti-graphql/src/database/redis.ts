@@ -721,7 +721,7 @@ interface StreamOption {
   bufferTime?: number;
   autoReconnect?: boolean;
   streamName?: string;
-  streamBatchTime?: number
+  streamBatchSize?: number
 }
 
 export const createStreamProcessor = <T extends BaseEvent> (
@@ -821,22 +821,24 @@ export const fetchStreamEventsRangeFromEventId = async (
   callback: (events: Array<SseEvent<DataEvent>>, lastEventId: string) => void,
   opts: StreamOption = {},
 ) => {
+  const { streamBatchSize = MAX_RANGE_MESSAGES } = opts;
   let effectiveStartEventId = startEventId;
-  const [startTimestamp] = startEventId.split('-');
-  const endTimestamp = (Number(startTimestamp) + (opts.streamBatchTime ?? STREAM_BATCH_TIME)).toString();
   try {
-    // Consume the data stream
+    // Consume streamBatchSize number of stream events from startEventId (excluded)
     const streamResult = await client.call(
       'XRANGE',
       opts.streamName ?? REDIS_STREAM_NAME,
       `(${startEventId}`, // ( prefix to exclude startEventId
-      endTimestamp
+      '+',
+      'COUNT',
+      streamBatchSize,
     ) as any[];
     // Process the event results
     if (streamResult && streamResult.length > 0) {
-      const lastElementId = await processStreamResult(streamResult, callback, opts.withInternal);
-      if (lastElementId) {
-        effectiveStartEventId = lastElementId;
+      const lastStreamResultId = R.last(streamResult)[0]; // id of last event fetched (internal or external)
+      await processStreamResult(streamResult, callback, opts.withInternal); // process the stream events of the range
+      if (lastStreamResultId) {
+        effectiveStartEventId = lastStreamResultId;
       }
     } else {
       await processStreamResult([], callback, opts.withInternal);
