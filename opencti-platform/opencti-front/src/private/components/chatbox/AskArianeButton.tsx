@@ -17,6 +17,8 @@ import embleme from '../../../static/images/embleme_filigran_white.png';
 import useHelper from '../../../utils/hooks/useHelper';
 import useAuth from '../../../utils/hooks/useAuth';
 import useGranted, { SETTINGS_SETPARAMETERS } from '../../../utils/hooks/useGranted';
+import { LogoXtmOneIcon } from 'filigran-icon';
+import FiligranIcon from '@components/common/FiligranIcon';
 
 const AskArianeButton = React.forwardRef((props, ref) => {
   const { t_i18n } = useFormatter();
@@ -165,16 +167,12 @@ const AskArianeButton = React.forwardRef((props, ref) => {
             gradientVariant={isCGUStatusPending ? GradientVariant.disabled : GradientVariant.ai}
             onClick={toggleChatbot}
           >
-            <AutoAwesomeOutlined
-              style={{ color: isCGUStatusPending ? theme.palette.action?.disabled : theme.palette.ai.main }}
-            />
+            <FiligranIcon icon={LogoXtmOneIcon} size='x-small' color={isCGUStatusPending ? theme.palette.action?.disabled : theme.palette.ai.main} />
             <span style={{ marginLeft: 5 }}>{t_i18n('ASK ARIANE')}</span>
           </GradientButton>
         ) : (
           <IconButton style={{ padding: 0 }} onClick={toggleChatbot}>
-            <AutoAwesomeOutlined
-              style={{ color: isCGUStatusPending ? theme.palette.action?.disabled : theme.palette.ai.main }}
-            />
+            <FiligranIcon icon={LogoXtmOneIcon} size='x-small' color={isCGUStatusPending ? theme.palette.action?.disabled : theme.palette.ai.main} />
           </IconButton>
         )}
       </Tooltip>
@@ -184,5 +182,7 @@ const AskArianeButton = React.forwardRef((props, ref) => {
     </>
   );
 });
+
+AskArianeButton.displayName = 'AskArianeButton';
 
 export default AskArianeButton;
