@@ -86,7 +86,7 @@ const AskArianeButton = () => {
     chatWindow: {
       showTitle: true,
       showAgentMessages: false,
-      title: `[Preview] ${t_i18n('Ask Ariane')}`,
+      title: t_i18n('[Preview] Ask Ariane'),
       titleAvatarSrc: fileUri(embleme),
       titleBackgroundColor: theme.palette.ai.dark,
       welcomeMessage: t_i18n('Hi there 👋 You\'re speaking with an AI Agent. I\'m here to answer your questions, so what brings you here today?'),

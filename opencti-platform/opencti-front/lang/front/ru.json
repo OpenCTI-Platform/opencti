@@ -11,6 +11,7 @@
   "- your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "- ваш пользователь будет относиться к основной организации платформы в дополнение к любой организации, к которой принадлежит текущий пользователь",
   "... successfully deleted": "... успешно удалены",
   "... successfully duplicated": "{entity_type} успешно продублирован",
+  "[Preview] Ask Ariane": "[Предпросмотр] Спросите Ариану",
   "{count} days": "{count} дней",
   "{count} email address(es) extracted from pasted text": "{count} адреса электронной почты, извлеченные из вставленного текста",
   "{entityType} `{entityName}` added to `{pirName}`": "{entityType} `{entityName}` добавлено к `{pirName}",
