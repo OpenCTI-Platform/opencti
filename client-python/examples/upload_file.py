@@ -16,6 +16,6 @@ TLP_GREEN_CTI = opencti_api_client.marking_definition.read(id=TLP_GREEN["id"])
 
 # Upload the file (note that markings are optional)
 file = opencti_api_client.upload_file(
-    file_name="./upload_file_example.pdf", file_markings=[TLP_GREEN["id"]]
+    file_name="upload_file_example.pdf", file_markings=[TLP_GREEN["id"]]
 )
 print(file)

@@ -9,7 +9,7 @@ Pipfile*
 .DS_Store
 
 # IntelliJ Platform) | JetBrains
-.idea
+../.idea
 *.iml
 
 # VScode

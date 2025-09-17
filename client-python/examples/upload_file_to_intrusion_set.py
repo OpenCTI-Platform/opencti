@@ -26,6 +26,6 @@ print(intrusion_set)
 # Upload the file
 file = opencti_api_client.stix_domain_object.add_file(
     id=intrusion_set["id"],
-    file_name="./upload_file_example.pdf",
+    file_name="upload_file_example.pdf",
 )
 print(file)
