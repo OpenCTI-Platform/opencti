@@ -380,6 +380,8 @@ const LeftBar = () => {
 
   const isMobile = dimension.width < 768;
 
+  const askArianeButtonRef = useRef();
+
   const generateSubMenu = (menu, entries) => {
     return navOpen ? (
       <Collapse in={selectedMenu.includes(menu)} timeout="auto" unmountOnExit={true}>
@@ -1078,7 +1080,18 @@ const LeftBar = () => {
               }
             }}
           >
-            <AskArianeButton />
+            <div
+              style={{
+                width: '100%',
+                height: '100%',
+                position: 'absolute',
+                left: 0,
+              }}
+              onClick={() => {
+                askArianeButtonRef.current?.toggleChatbot();
+              }}
+            />
+            <AskArianeButton ref={askArianeButtonRef} />
           </MenuItem>
           )}
           <MenuItem

@@ -6,6 +6,7 @@ interface FiligranIconProps {
   icon: ElementType,
   color: 'primary' | 'secondary' | 'error' | 'success' | 'ai'
   size: 'x-small' | 'small' | 'medium' | 'large'
+  style?: React.CSSProperties
 }
 
 const sizeMap = {
@@ -15,7 +16,7 @@ const sizeMap = {
   large: '35px', // mui large size
 };
 
-const FiligranIcon = ({ icon, color, size }: FiligranIconProps) => {
+const FiligranIcon = ({ icon, color, size, style }: FiligranIconProps) => {
   const theme = useTheme<Theme>();
   const Component = icon;
 
@@ -24,6 +25,7 @@ const FiligranIcon = ({ icon, color, size }: FiligranIconProps) => {
       color={theme.palette[color].main}
       width={sizeMap[size]}
       height={sizeMap[size]}
+      style={style}
     />
   );
 };
