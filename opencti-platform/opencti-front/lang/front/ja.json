@@ -11,6 +11,7 @@
   "- your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "- 現在のユーザーが所属している組織に加えて、メインプラットフォームの組織にも所属することになります。",
   "... successfully deleted": "{entity_type} 正常に削除されました",
   "... successfully duplicated": "{entity_type}}の複製に成功",
+  "[Preview] Ask Ariane": "[プレビュー】アリアンに訊く",
   "{count} days": "{count}}日",
   "{count} email address(es) extracted from pasted text": "貼り付けられたテキストから抽出された{count}メールアドレス",
   "{entityType} `{entityName}` added to `{pirName}`": "{entityType}2}}` に `{entityName}` が追加されました。",

@@ -11,6 +11,7 @@
   "- your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "- votre utilisateur appartiendra à l'organisation principale de la plate-forme en plus de toute organisation à laquelle l'utilisateur actuel appartient",
   "... successfully deleted": "{entity_type} supprimé(e) avec succès",
   "... successfully duplicated": "{entity_type} dupliqué avec succès",
+  "[Preview] Ask Ariane": "[Avant-première] Ariane IA",
   "{count} days": "{count} jours",
   "{count} email address(es) extracted from pasted text": "{count} adresse(s) électronique(s) extraite(s) du texte collé",
   "{entityType} `{entityName}` added to `{pirName}`": "{entityType} `{entityName}` ajouté à `{pirName}`",

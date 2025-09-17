@@ -11,6 +11,7 @@
   "- your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "- ihr Benutzer gehört zur Hauptplattform-Organisation, zusätzlich zu jeder Organisation, der der aktuelle Benutzer angehört",
   "... successfully deleted": "{entity_type} erfolgreich gelöscht",
   "... successfully duplicated": "{entity_type} erfolgreich dupliziert",
+  "[Preview] Ask Ariane": "[Vorschau] Fragen Sie Ariane",
   "{count} days": "{count} Tage",
   "{count} email address(es) extracted from pasted text": "{count} E-Mail Adresse(n) aus eingefügtem Text extrahiert",
   "{entityType} `{entityName}` added to `{pirName}`": "{entityType} `{entityName}` hinzugefügt zu `{pirName}`",

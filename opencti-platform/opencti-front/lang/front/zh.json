@@ -11,6 +11,7 @@
   "- your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "- 除了当前用户所属的任何组织外，您的用户还将与主平台组织有关",
   "... successfully deleted": "{entity_type} 成功删除",
   "... successfully duplicated": "{entity_type}成功复制",
+  "[Preview] Ask Ariane": "[预览] 向阿丽亚娜提问",
   "{count} days": "{count}天",
   "{count} email address(es) extracted from pasted text": "{count} 从粘贴的文本中提取的电子邮件地址",
   "{entityType} `{entityName}` added to `{pirName}`": "{entityType}{entityName}`添加到`{pirName}`中",
