@@ -1,4 +1,3 @@
-import { AutoAwesomeOutlined } from '@mui/icons-material';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import React, { useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
@@ -7,6 +6,8 @@ import IconButton from '@mui/material/IconButton';
 import { CGUStatus } from '@components/settings/Experience';
 import ValidateTermsOfUseDialog from '@components/settings/ValidateTermsOfUseDialog';
 import { Tooltip } from '@mui/material';
+import { LogoXtmOneIcon } from 'filigran-icon';
+import FiligranIcon from '@components/common/FiligranIcon';
 import GradientButton, { GradientVariant } from '../../../components/GradientButton';
 import { useFormatter } from '../../../components/i18n';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
@@ -17,8 +18,6 @@ import embleme from '../../../static/images/embleme_filigran_white.png';
 import useHelper from '../../../utils/hooks/useHelper';
 import useAuth from '../../../utils/hooks/useAuth';
 import useGranted, { SETTINGS_SETPARAMETERS } from '../../../utils/hooks/useGranted';
-import { LogoXtmOneIcon } from 'filigran-icon';
-import FiligranIcon from '@components/common/FiligranIcon';
 
 const AskArianeButton = React.forwardRef((props, ref) => {
   const { t_i18n } = useFormatter();
@@ -138,6 +137,10 @@ const AskArianeButton = React.forwardRef((props, ref) => {
   };
   const chatbotProxyUrl = `${APP_BASE_PATH}/chatbot`;
 
+  const chatIconStyle: React.CSSProperties = {
+    color: isCGUStatusPending ? theme.palette.action?.disabled : undefined,
+  };
+
   return (
     <>
       {isEnterpriseEdition && isChatbotAiEnabled() ? (
@@ -163,16 +166,16 @@ const AskArianeButton = React.forwardRef((props, ref) => {
         {navOpen ? (
           <GradientButton
             size="small"
-            sx={{ width: '100%', textAlign: 'start' }}
+            sx={{ width: '100%' }}
             gradientVariant={isCGUStatusPending ? GradientVariant.disabled : GradientVariant.ai}
             onClick={toggleChatbot}
           >
-            <FiligranIcon icon={LogoXtmOneIcon} size='x-small' color={isCGUStatusPending ? theme.palette.action?.disabled : theme.palette.ai.main} />
-            <span style={{ marginLeft: 5 }}>{t_i18n('ASK ARIANE')}</span>
+            <FiligranIcon icon={LogoXtmOneIcon} size='x-small' color="ai" style={chatIconStyle} />
+            <span style={{ marginLeft: 5, paddingTop: 1 }}>{t_i18n('ASK ARIANE')}</span>
           </GradientButton>
         ) : (
           <IconButton style={{ padding: 0 }} onClick={toggleChatbot}>
-            <FiligranIcon icon={LogoXtmOneIcon} size='x-small' color={isCGUStatusPending ? theme.palette.action?.disabled : theme.palette.ai.main} />
+            <FiligranIcon icon={LogoXtmOneIcon} size='x-small' color="ai" style={chatIconStyle} />
           </IconButton>
         )}
       </Tooltip>
