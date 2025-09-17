@@ -1,11 +1,11 @@
-import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
+import React, { FunctionComponent, useCallback, useEffect, useMemo, useState } from 'react';
 import { interval } from 'rxjs';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-import { graphql, PreloadedQuery, useQueryLoader } from 'react-relay';
+import { useQueryLoader } from 'react-relay';
 import { DeleteOutlined, DeveloperBoardOutlined, ExtensionOutlined, HubOutlined, PlaylistRemoveOutlined } from '@mui/icons-material';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -14,8 +14,6 @@ import List from '@mui/material/List';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { ConnectorsStatusQuery } from '@components/data/connectors/__generated__/ConnectorsStatusQuery.graphql';
-import { ConnectorsStatus_data$key } from '@components/data/connectors/__generated__/ConnectorsStatus_data.graphql';
 import makeStyles from '@mui/styles/makeStyles';
 import DialogTitle from '@mui/material/DialogTitle';
 import { ListItemButton, Stack } from '@mui/material';
@@ -25,7 +23,11 @@ import { useTheme } from '@mui/styles';
 import useConnectorsStatusFilters from '@components/data/connectors/hooks/useConnectorsStatusFilters';
 import ConnectorsStatusFilters from '@components/data/connectors/ConnectorsStatusFilters';
 import ConnectorStatusChip from '@components/data/connectors/ConnectorStatusChip';
-import { ManagerContractDefinition, managerContractDefinitionSchema } from '@components/data/connectors/utils/managerContractDefinitionType';
+import { managerContractDefinitionSchema } from '@components/data/connectors/utils/managerContractDefinitionType';
+import ConnectorsList, { connectorsListQuery } from '@components/data/connectors/ConnectorsList';
+import ConnectorsState, { connectorsStateQuery } from '@components/data/connectors/ConnectorsState';
+import { ConnectorsListQuery } from '@components/data/connectors/__generated__/ConnectorsListQuery.graphql';
+import { ConnectorsStateQuery } from '@components/data/connectors/__generated__/ConnectorsStateQuery.graphql';
 import Transition from '../../../../components/Transition';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
@@ -37,7 +39,6 @@ import { connectorDeletionMutation, connectorResetStateMutation } from './Connec
 import ItemBoolean from '../../../../components/ItemBoolean';
 import type { Theme } from '../../../../components/Theme';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import SortConnectorsHeader from './SortConnectorsHeader';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 import useHelper from '../../../../utils/hooks/useHelper';
@@ -70,93 +71,23 @@ const useStyles = makeStyles<Theme>({
   },
 });
 
-export const connectorsStatusQuery = graphql`
-  query ConnectorsStatusQuery($enableComposerFeatureFlag: Boolean!) {
-    ...ConnectorsStatus_data
-  }
-`;
-
-const connectorsStatusFragment = graphql`
-  fragment ConnectorsStatus_data on Query {
-    connectorManagers @include(if: $enableComposerFeatureFlag) {
-      id
-      name
-      active
-      last_sync_execution
-    }
-    catalogs @include(if: $enableComposerFeatureFlag) {
-      id
-      name
-      description
-      contracts
-    }
-    connectors {
-      id
-      name
-      active
-      auto
-      connector_trigger_filters
-      connector_type
-      connector_scope
-      is_managed @include(if: $enableComposerFeatureFlag)
-      manager_current_status @include(if: $enableComposerFeatureFlag)
-      manager_requested_status @include(if: $enableComposerFeatureFlag)
-      manager_contract_image @include(if: $enableComposerFeatureFlag)
-      manager_contract_definition  @include(if: $enableComposerFeatureFlag)
-      manager_contract_configuration  @include(if: $enableComposerFeatureFlag) {
-        key
-        value
-      }
-      connector_user {
-        id
-        name
-      }
-      updated_at
-      config {
-        listen
-        listen_exchange
-        push
-        push_exchange
-      }
-      built_in
-    }
-    rabbitMQMetrics {
-      queues {
-        name
-        messages
-        messages_ready
-        messages_unacknowledged
-        consumers
-        idle_since
-        message_stats {
-          ack
-          ack_details {
-            rate
-          }
-        }
-      }
-    }
-  }
-`;
-
-interface ConnectorsStatusComponentProps {
-  queryRef: PreloadedQuery<ConnectorsStatusQuery>;
-  refetch: () => void;
+interface ConnectorsStatusContentProps {
+  connectorsListData: ConnectorsListQuery['response'];
+  connectorsStateData: ConnectorsStateQuery['response'];
 }
 
-const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProps> = ({
-  queryRef,
-  refetch,
+const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> = ({
+  connectorsListData,
+  connectorsStateData,
 }) => {
   const { t_i18n, nsdt, n } = useFormatter();
-
   const { isFeatureEnable } = useHelper();
   const isComposerEnable = isFeatureEnable('COMPOSER');
-
   const classes = useStyles(); // TODO remove as deprecated
   const theme = useTheme<Theme>();
-  const navigate = useNavigate();
   const { isSensitive } = useSensitiveModifications('connector_reset');
+
+  const navigate = useNavigate();
 
   const [sortBy, setSortBy] = useState<string>('name');
   const [orderAsc, setOrderAsc] = useState<boolean>(true);
@@ -164,29 +95,22 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
   const [connectorMessages, setConnectorMessages] = useState<string | number | null | undefined>();
   const [resetting, setResetting] = useState<boolean>(false);
 
-  const data = usePreloadedFragment<ConnectorsStatusQuery,
-  ConnectorsStatus_data$key>({
-    queryDef: connectorsStatusQuery,
-    fragmentDef: connectorsStatusFragment,
-    queryRef,
-  });
+  const connectors = useMemo(() => {
+    if (!connectorsListData?.connectors || !connectorsStateData?.connectors) return [];
 
-  useEffect(() => {
-    // Refresh
-    const subscription = interval$.subscribe(() => {
-      refetch();
+    return connectorsListData.connectors.map((connector) => {
+      const stateConnector = connectorsStateData.connectors.find((s) => s.id === connector.id);
+      return {
+        ...connector,
+        ...stateConnector,
+      };
     });
-    return function cleanup() {
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  const [searchParams] = useSearchParams();
+  }, [connectorsListData.connectors, connectorsStateData.connectors]);
 
   const managerContractDefinitionMap = useMemo(() => {
-    const definitionMap = new Map<string, ManagerContractDefinition>();
+    const definitionMap = new Map();
 
-    data.connectors.forEach((c) => {
+    connectors.forEach((c) => {
       const parsedDefinition = typeof c.manager_contract_definition === 'string'
         ? JSON.parse(c.manager_contract_definition)
         : c.manager_contract_definition;
@@ -202,80 +126,35 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
     });
 
     return definitionMap;
-  }, [data.connectors]);
+  }, [connectors, t_i18n]);
+
+  const [searchParams] = useSearchParams();
 
   const { filteredConnectors, filters, setFilters } = useConnectorsStatusFilters({
-    connectors: data.connectors,
+    connectors,
     managerContractDefinitionMap,
     searchParams,
   });
 
   const managedConnectorOptions = useMemo(() => {
-    if (!data.connectors) return [];
+    if (!connectors) return [];
 
     const uniqueContracts = new Map();
 
-    data.connectors.forEach((connector) => {
+    connectors.forEach((connector) => {
       const definition = managerContractDefinitionMap.get(connector.id);
       if (definition) {
         uniqueContracts.set(definition.slug, definition.title);
       }
     });
 
-    return Array.from(uniqueContracts.entries())
-      .map(([slug, title]) => ({
-        label: title,
-        value: slug,
-      }))
-      .sort((a, b) => a.label.localeCompare(b.label));
-  }, [data.connectors, managerContractDefinitionMap]);
+    return Array.from(uniqueContracts, ([slug, title]) => ({
+      label: title,
+      value: slug,
+    })).sort((a, b) => a.label.localeCompare(b.label));
+  }, [connectors, managerContractDefinitionMap]);
 
-  // eslint-disable-next-line class-methods-use-this
-  const submitResetState = (connectorId: string | undefined) => {
-    if (connectorId === undefined) return;
-    setResetting(true);
-    commitMutation({
-      mutation: connectorResetStateMutation,
-      variables: {
-        id: connectorId,
-      },
-      onCompleted: () => {
-        MESSAGING$.notifySuccess('The connector state has been reset');
-        setResetting(false);
-        setConnectorIdToReset(undefined);
-      },
-      updater: undefined,
-      optimisticResponse: undefined,
-      optimisticUpdater: undefined,
-      onError: undefined,
-      setSubmitting: undefined,
-    });
-  };
-
-  const handleDelete = (connectorId: string) => {
-    commitMutation({
-      mutation: connectorDeletionMutation,
-      variables: {
-        id: connectorId,
-      },
-      onCompleted: () => {
-        MESSAGING$.notifySuccess('The connector has been cleared');
-        navigate('/dashboard/data/ingestion/connectors');
-      },
-      updater: undefined,
-      optimisticResponse: undefined,
-      optimisticUpdater: undefined,
-      onError: undefined,
-      setSubmitting: undefined,
-    });
-  };
-
-  const reverseBy = (field: string) => {
-    setSortBy(field);
-    setOrderAsc(!orderAsc);
-  };
-
-  const queues = data.rabbitMQMetrics?.queues ?? [];
+  const queues = connectorsStateData.rabbitMQMetrics?.queues ?? [];
 
   const connectorsWithMessages = filteredConnectors?.map((connector) => {
     const queueName = connector.connector_type === 'INTERNAL_ENRICHMENT'
@@ -323,11 +202,55 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
     return valueA > valueB ? -1 : 1;
   });
 
+  const submitResetState = (connectorId: string | undefined) => {
+    if (connectorId === undefined) return;
+    setResetting(true);
+    commitMutation({
+      mutation: connectorResetStateMutation,
+      variables: {
+        id: connectorId,
+      },
+      onCompleted: () => {
+        MESSAGING$.notifySuccess('The connector state has been reset');
+        setResetting(false);
+        setConnectorIdToReset(undefined);
+      },
+      updater: undefined,
+      optimisticResponse: undefined,
+      optimisticUpdater: undefined,
+      onError: undefined,
+      setSubmitting: undefined,
+    });
+  };
+
+  const handleDelete = (connectorId: string) => {
+    commitMutation({
+      mutation: connectorDeletionMutation,
+      variables: {
+        id: connectorId,
+      },
+      onCompleted: () => {
+        MESSAGING$.notifySuccess('The connector has been cleared');
+        navigate('/dashboard/data/ingestion/connectors');
+      },
+      updater: undefined,
+      optimisticResponse: undefined,
+      optimisticUpdater: undefined,
+      onError: undefined,
+      setSubmitting: undefined,
+    });
+  };
+
+  const reverseBy = (field: string) => {
+    setSortBy(field);
+    setOrderAsc(!orderAsc);
+  };
+
   const gridColumns = isComposerEnable
     ? '20% 10% 15% 10% 15% 15% 15%'
     : '24% 12% 18% 12% 17% 17%';
 
-  const hasManagedConnectors = data.connectors.some((c) => c.is_managed);
+  const hasManagedConnectors = connectors.some((c) => c.is_managed);
 
   return (
     <>
@@ -545,31 +468,48 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
   );
 };
 
-const ConnectorsStatus = () => {
+const ConnectorsStatus: React.FC = () => {
   const { isFeatureEnable } = useHelper();
   const enableComposerFeatureFlag = isFeatureEnable('COMPOSER');
-  const [queryRef, loadQuery] = useQueryLoader<ConnectorsStatusQuery>(connectorsStatusQuery);
-  useEffect(() => {
-    loadQuery({ enableComposerFeatureFlag }, { fetchPolicy: 'store-and-network' });
-  }, []);
 
-  const refetch = React.useCallback(() => {
-    loadQuery({ enableComposerFeatureFlag }, { fetchPolicy: 'store-and-network' });
-  }, [queryRef]);
+  const [connectorsListRef, loadConnectorsList] = useQueryLoader<ConnectorsListQuery>(connectorsListQuery);
+  const [connectorsStateRef, loadConnectorsState] = useQueryLoader<ConnectorsStateQuery>(connectorsStateQuery);
+
+  useEffect(() => {
+    loadConnectorsList({ enableComposerFeatureFlag }, { fetchPolicy: 'store-and-network' });
+    loadConnectorsState({ enableComposerFeatureFlag }, { fetchPolicy: 'store-and-network' });
+  }, [enableComposerFeatureFlag]);
+
+  const refetchConnectorsState = useCallback(() => {
+    loadConnectorsState({ enableComposerFeatureFlag }, { fetchPolicy: 'store-and-network' });
+  }, [enableComposerFeatureFlag]);
+
+  useEffect(() => {
+    const subscription = interval$.subscribe(() => {
+      refetchConnectorsState();
+    });
+    return () => subscription.unsubscribe();
+  }, [refetchConnectorsState]);
+
+  if (!connectorsListRef || !connectorsStateRef) {
+    return <Loader variant={LoaderVariant.container} />;
+  }
 
   return (
-    <>
-      {queryRef ? (
-        <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-          <ConnectorsStatusComponent
-            queryRef={queryRef}
-            refetch={refetch}
-          />
-        </React.Suspense>
-      ) : (
-        <Loader variant={LoaderVariant.container} />
-      )}
-    </>
+    <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+      <ConnectorsList queryRef={connectorsListRef}>
+        {({ data: connectorsListData }) => (
+          <ConnectorsState queryRef={connectorsStateRef}>
+            {({ data: connectorsStateData }) => (
+              <ConnectorsStatusContent
+                connectorsListData={connectorsListData}
+                connectorsStateData={connectorsStateData}
+              />
+            )}
+          </ConnectorsState>
+        )}
+      </ConnectorsList>
+    </React.Suspense>
   );
 };
 
