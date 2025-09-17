@@ -49,9 +49,205 @@ const createMitreContract = (): CatalogContract => ({
 });
 
 describe('CONNECTOR_QUEUE_THRESHOLD bug fix', () => {
+  // Use a valid 2048-bit RSA public key for testing
   const publicKey = `-----BEGIN PUBLIC KEY-----
-MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC8zJkDUlRZBBrRsFlHF3pow0BH
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAu1SU1LfVLPHCozMxH2Mo
+4lgOEePzNm0tRgeLezV6ffAt0gunVTLw7onLRnrq0/IzW7yWR7QkrmBL7jTKEn5u
++qKhbwKfBstIs+bMY2Zkp18gnTxKLxoS2tFczGkPLPgizskuemMghRniWaoLcyeh
+kd3qqGElvW/VDL5AaWTg0nLVkjRo9z+40RQzuVaE8AkAFmxZzow3x+VJYKdjykkJ
+0iT9wCS0DRTXu269V264Vf/3jvredZiKRkgwlL9xNAwxXFg0x/XFw005UWVRIkdg
+cKWTjpBP2dPwVZ4WWC+9aGVd+Gyn1o0CLelf4rEjGoXbAAEgAqeGUxrcIlbjXfbc
+mwIDAQAB
 -----END PUBLIC KEY-----`;
+
+  describe('Password field encryption', () => {
+    it('should encrypt password fields in connector configuration', () => {
+      const contractWithPassword: CatalogContract = {
+        ...createMitreContract(),
+        config_schema: {
+          ...createMitreContract().config_schema,
+          properties: {
+            ...createMitreContract().config_schema.properties,
+            API_KEY: {
+              type: 'string',
+              format: 'password',
+              description: 'API key for authentication'
+            } as any // Use any to bypass TypeScript constraint for testing
+          },
+          required: ['MITRE_URL', 'API_KEY']
+        }
+      };
+
+      const configurations: ContractConfigInput[] = [
+        { key: 'MITRE_URL', value: 'https://attack.mitre.org' },
+        { key: 'API_KEY', value: 'my-secret-api-key' }
+      ];
+
+      const result = computeConnectorTargetContract(configurations, contractWithPassword, publicKey);
+
+      // API_KEY should be encrypted
+      const apiKeyConfig = result.find((c) => c.key === 'API_KEY');
+      expect(apiKeyConfig).toBeDefined();
+      expect(apiKeyConfig?.value).not.toBe('my-secret-api-key'); // Should be encrypted
+      expect(apiKeyConfig?.encrypted).toBe(true);
+
+      // Other fields should not be encrypted
+      const urlConfig = result.find((c) => c.key === 'MITRE_URL');
+      expect(urlConfig?.value).toBe('https://attack.mitre.org');
+      expect(urlConfig?.encrypted).toBeUndefined();
+    });
+
+    it('should handle optional password fields', () => {
+      const contractWithOptionalPassword: CatalogContract = {
+        ...createMitreContract(),
+        config_schema: {
+          ...createMitreContract().config_schema,
+          properties: {
+            ...createMitreContract().config_schema.properties,
+            PROXY_PASSWORD: {
+              type: 'string',
+              format: 'password',
+              description: 'Optional proxy password'
+            } as any // Use any to bypass TypeScript constraint for testing
+          }
+          // PROXY_PASSWORD is not in required array
+        }
+      };
+
+      // Configuration without the optional password
+      const configurations: ContractConfigInput[] = [
+        { key: 'MITRE_URL', value: 'https://attack.mitre.org' }
+        // PROXY_PASSWORD not provided
+      ];
+
+      const result = computeConnectorTargetContract(configurations, contractWithOptionalPassword, publicKey);
+
+      // Should not include the optional password field
+      expect(result.find((c) => c.key === 'PROXY_PASSWORD')).toBeUndefined();
+      expect(result.find((c) => c.key === 'MITRE_URL')).toBeDefined();
+    });
+
+    it('should handle multiple password fields', () => {
+      const contractWithMultiplePasswords: CatalogContract = {
+        ...createMitreContract(),
+        config_schema: {
+          ...createMitreContract().config_schema,
+          properties: {
+            USERNAME: {
+              type: 'string',
+              description: 'Username'
+            } as any, // Use any to bypass TypeScript constraint for testing
+            PASSWORD: {
+              type: 'string',
+              format: 'password',
+              description: 'User password'
+            } as any, // Use any to bypass TypeScript constraint for testing
+            API_KEY: {
+              type: 'string',
+              format: 'password',
+              description: 'API key'
+            } as any, // Use any to bypass TypeScript constraint for testing
+            PROXY_PASSWORD: {
+              type: 'string',
+              format: 'password',
+              description: 'Proxy password'
+            } as any // Use any to bypass TypeScript constraint for testing
+          },
+          required: ['USERNAME', 'PASSWORD', 'API_KEY']
+        }
+      };
+
+      const configurations: ContractConfigInput[] = [
+        { key: 'USERNAME', value: 'admin' },
+        { key: 'PASSWORD', value: 'user-password' },
+        { key: 'API_KEY', value: 'api-key-value' },
+        { key: 'PROXY_PASSWORD', value: 'proxy-pass' }
+      ];
+
+      const result = computeConnectorTargetContract(configurations, contractWithMultiplePasswords, publicKey);
+
+      // All password fields should be encrypted
+      const passwordConfig = result.find((c) => c.key === 'PASSWORD');
+      expect(passwordConfig?.encrypted).toBe(true);
+      expect(passwordConfig?.value).not.toBe('user-password');
+
+      const apiKeyConfig = result.find((c) => c.key === 'API_KEY');
+      expect(apiKeyConfig?.encrypted).toBe(true);
+      expect(apiKeyConfig?.value).not.toBe('api-key-value');
+
+      const proxyPasswordConfig = result.find((c) => c.key === 'PROXY_PASSWORD');
+      expect(proxyPasswordConfig?.encrypted).toBe(true);
+      expect(proxyPasswordConfig?.value).not.toBe('proxy-pass');
+
+      // Non-password field should not be encrypted
+      const usernameConfig = result.find((c) => c.key === 'USERNAME');
+      expect(usernameConfig?.encrypted).toBeUndefined();
+      expect(usernameConfig?.value).toBe('admin');
+    });
+
+    it('should validate configurations with encrypted passwords', () => {
+      const contractWithPassword: CatalogContract = {
+        ...createMitreContract(),
+        config_schema: {
+          ...createMitreContract().config_schema,
+          properties: {
+            ...createMitreContract().config_schema.properties,
+            SECRET: {
+              type: 'string',
+              format: 'password',
+              description: 'Secret key'
+            } as any // Use any to bypass TypeScript constraint for testing
+          },
+          required: ['MITRE_URL', 'SECRET']
+        }
+      };
+
+      // Configuration with encrypted password
+      const configurations: ConnectorContractConfiguration[] = [
+        { key: 'MITRE_URL', value: 'https://attack.mitre.org' },
+        {
+          key: 'SECRET',
+          value: 'AQEAAf8AAABAwOL5+encrypted_value', // Already encrypted
+          encrypted: true
+        }
+      ];
+
+      // Should validate without throwing
+      expect(() => {
+        validateContractConfigurations(configurations, contractWithPassword);
+      }).not.toThrow();
+    });
+
+    it('should handle empty password value', () => {
+      const contractWithPassword: CatalogContract = {
+        ...createMitreContract(),
+        config_schema: {
+          ...createMitreContract().config_schema,
+          properties: {
+            ...createMitreContract().config_schema.properties,
+            PASSWORD: {
+              type: 'string',
+              format: 'password',
+              description: 'Optional password'
+            } as any // Use any to bypass TypeScript constraint for testing
+          }
+          // PASSWORD is NOT in required array, making it optional
+        }
+      };
+
+      const configurations: ContractConfigInput[] = [
+        { key: 'MITRE_URL', value: 'https://attack.mitre.org' },
+        { key: 'PASSWORD', value: '' } // Empty password
+      ];
+
+      // Empty password should be handled (returns null)
+      const result = computeConnectorTargetContract(configurations, contractWithPassword, publicKey);
+
+      // Should not include empty password in result
+      expect(result.find((c) => c.key === 'PASSWORD')).toBeUndefined();
+      expect(result.find((c) => c.key === 'MITRE_URL')).toBeDefined();
+    });
+  });
 
   it('should handle optional CONNECTOR_QUEUE_THRESHOLD when not provided', () => {
     const contract = createMitreContract();

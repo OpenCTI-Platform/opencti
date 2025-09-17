@@ -253,4 +253,169 @@ describe('validateContractConfigurations', () => {
       validateContractConfigurations(configurations, contract);
     }).not.toThrow();
   });
+
+  describe('Encrypted field validation', () => {
+    it('should validate encrypted password fields', () => {
+      const contract = createTestContract(
+        {
+          username: { type: 'string' },
+          password: { type: 'string', format: 'password' }
+        },
+        ['username', 'password']
+      );
+
+      const configurations: ConnectorContractConfiguration[] = [
+        { key: 'username', value: 'admin' },
+        {
+          key: 'password',
+          value: 'AQEAAf8AAABAwOL5+encrypted_base64_value', // Encrypted value
+          encrypted: true
+        }
+      ];
+
+      // Should validate encrypted passwords successfully
+      expect(() => {
+        validateContractConfigurations(configurations, contract);
+      }).not.toThrow();
+    });
+
+    it('should validate unencrypted password fields', () => {
+      const contract = createTestContract(
+        {
+          api_key: { type: 'string', format: 'password' }
+        },
+        ['api_key']
+      );
+
+      const configurations: ConnectorContractConfiguration[] = [
+        {
+          key: 'api_key',
+          value: 'plain_text_api_key' // Unencrypted password (not tagged as encrypted)
+        }
+      ];
+
+      // Should still validate unencrypted passwords
+      expect(() => {
+        validateContractConfigurations(configurations, contract);
+      }).not.toThrow();
+    });
+
+    it('should handle multiple password fields', () => {
+      const contract = createTestContract(
+        {
+          primary_password: { type: 'string', format: 'password' },
+          secondary_password: { type: 'string', format: 'password' },
+          api_token: { type: 'string', format: 'password' }
+        },
+        ['primary_password', 'secondary_password']
+      );
+
+      const configurations: ConnectorContractConfiguration[] = [
+        {
+          key: 'primary_password',
+          value: 'encrypted_primary',
+          encrypted: true
+        },
+        {
+          key: 'secondary_password',
+          value: 'encrypted_secondary',
+          encrypted: true
+        },
+        {
+          key: 'api_token',
+          value: 'optional_encrypted_token',
+          encrypted: true
+        }
+      ];
+
+      expect(() => {
+        validateContractConfigurations(configurations, contract);
+      }).not.toThrow();
+    });
+
+    it('should validate mixed encrypted and non-encrypted fields', () => {
+      const contract = createTestContract(
+        {
+          host: { type: 'string' },
+          port: { type: 'integer' },
+          password: { type: 'string', format: 'password' },
+          ssl_enabled: { type: 'boolean' }
+        },
+        ['host', 'port', 'password']
+      );
+
+      const configurations: ConnectorContractConfiguration[] = [
+        { key: 'host', value: 'example.com' },
+        { key: 'port', value: '443' },
+        {
+          key: 'password',
+          value: 'encrypted_password_value',
+          encrypted: true
+        },
+        { key: 'ssl_enabled', value: 'true' }
+      ];
+
+      expect(() => {
+        validateContractConfigurations(configurations, contract);
+      }).not.toThrow();
+    });
+
+    it('should ignore encrypted flag on non-password fields', () => {
+      const contract = createTestContract(
+        {
+          username: { type: 'string' },
+          count: { type: 'integer' }
+        },
+        ['username', 'count']
+      );
+
+      const configurations: ConnectorContractConfiguration[] = [
+        {
+          key: 'username',
+          value: 'john_doe',
+          encrypted: true // Incorrectly marked as encrypted
+        },
+        { key: 'count', value: '42' }
+      ];
+
+      // Should validate even with incorrect encrypted flag
+      expect(() => {
+        validateContractConfigurations(configurations, contract);
+      }).not.toThrow();
+    });
+
+    it('should validate empty password field', () => {
+      const contract = createTestContract(
+        {
+          optional_password: { type: 'string', format: 'password' }
+        },
+        [] // Password is optional
+      );
+
+      const configurations: ConnectorContractConfiguration[] = [
+        // No password provided
+      ];
+
+      expect(() => {
+        validateContractConfigurations(configurations, contract);
+      }).not.toThrow();
+    });
+
+    it('should fail validation for missing required password', () => {
+      const contract = createTestContract(
+        {
+          auth_token: { type: 'string', format: 'password' }
+        },
+        ['auth_token'] // Password is required
+      );
+
+      const configurations: ConnectorContractConfiguration[] = [
+        // Password not provided
+      ];
+
+      expect(() => {
+        validateContractConfigurations(configurations, contract);
+      }).toThrow('Missing required field: "auth_token"');
+    });
+  });
 });
