@@ -3543,7 +3543,7 @@
   "The connector has been cleared": "连接器已清理",
   "The connector instance has been deployed": "已部署连接器实例",
   "The connector instance has been deployed. You can now start it.": "连接器实例已部署。现在可以启动它了。",
-  "The connector instance has been modified, it must be restarted for the changes to take effect.": "连接器实例已被修改，必须重新启动才能生效。",
+  "The connector instance has been modified, changes could take few minutes to take effect.": "连接器实例已被修改，必须重新启动才能生效。",
   "The connector instance has been modified.": "连接器实例已被修改。",
   "The connector state has been reset": "连接器状态已重置",
   "The CSV file has been generated with the parameters of the view and is ready for download.": "CSV文件已使用视图的参数生成，并已准备好下载。",
