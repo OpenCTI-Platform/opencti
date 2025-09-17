@@ -177,33 +177,27 @@ const aesEncrypt = (text: string, key: Buffer, aesIv: Buffer) => {
   ]);
   const tag = cipher.getAuthTag();
 
-  return Buffer.concat([ciphertext, tag]).toString('base64');
+  return Buffer.concat([ciphertext, tag]);
 };
 
 const encryptValue = (rsaPublicKey: string, value: string) => {
   const aesKey = crypto.randomBytes(32);
   const aesIv = crypto.randomBytes(12);
-  const aesEncryptedValue = aesEncrypt(value, aesKey, aesIv);
+  const aesEncryptedValueBuffer = aesEncrypt(value, aesKey, aesIv);
 
-  const rsaEncryptedAesKeyBuffer = crypto.publicEncrypt(
+  const aesKeyAndIv = Buffer.concat([aesKey, aesIv]);
+  const rsaEncryptedAesKeyAndIvBuffer = crypto.publicEncrypt(
     {
       key: rsaPublicKey,
       padding: crypto.constants.RSA_PKCS1_PADDING,
     },
-    aesKey
+    aesKeyAndIv
   );
-  const rsaEncryptedAesKey = rsaEncryptedAesKeyBuffer.toString('base64');
 
-  const rsaEncryptedAesIvBuffer = crypto.publicEncrypt(
-    {
-      key: rsaPublicKey,
-      padding: crypto.constants.RSA_PKCS1_PADDING,
-    },
-    aesIv
-  );
-  const rsaEncryptedAesIv = rsaEncryptedAesIvBuffer.toString('base64');
+  const version = Buffer.from([0x01]);
 
-  return { value: aesEncryptedValue, key: rsaEncryptedAesKey, iv: rsaEncryptedAesIv };
+  const concatenatedEncryptionBuffer = Buffer.concat([version, rsaEncryptedAesKeyAndIvBuffer, aesEncryptedValueBuffer]);
+  return concatenatedEncryptionBuffer.toString('base64');
 };
 
 export const processPasswordConfigurationValue = (
@@ -304,10 +298,8 @@ export const resolveConfigurationValue = (
     const processedPasswordValue = processPasswordConfigurationValue(rawValue, publicKey);
     return {
       key: propKey,
-      value: processedPasswordValue.value,
+      value: processedPasswordValue,
       encrypted: true,
-      encryptionKey: processedPasswordValue.key,
-      encryptionIv: processedPasswordValue.iv
     };
   }
   const processedValue = processConfigurationValue(
