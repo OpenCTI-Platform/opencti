@@ -13,6 +13,7 @@ import { PositionDetailsLocationRelationshipsLinesQueryLinesPaginationQuery } fr
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import { PositionDetails_positionRelationships$key } from './__generated__/PositionDetails_positionRelationships.graphql';
 import { isNotEmptyField } from '../../../../utils/utils';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -172,94 +173,98 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Latitude')}
             </Typography>
-            {position.latitude && (
+            <FieldOrEmpty source={position.latitude}>
               <ExpandableMarkdown
-                source={position.latitude.toString()}
+                source={position.latitude?.toString()}
                 limit={300}
               />
-            )}
+            </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Longitude')}
             </Typography>
-            {position.longitude && (
+            <FieldOrEmpty source={position.longitude}>
               <ExpandableMarkdown
-                source={position.longitude.toString()}
+                source={position.longitude?.toString()}
                 limit={300}
               />
-            )}
+            </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Street address')}
             </Typography>
-            {position.street_address && (
+            <FieldOrEmpty source={position.street_address}>
               <ExpandableMarkdown
                 source={position.street_address}
                 limit={300}
               />
-            )}
+            </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Postal code')}
             </Typography>
-            {position.postal_code && (
+            <FieldOrEmpty source={position.postal_code}>
               <ExpandableMarkdown source={position.postal_code} limit={300} />
-            )}
+            </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('City')}
             </Typography>
-            {cities
-              && cities.map((name) => (
+            <FieldOrEmpty source={cities}>
+              {cities?.map((name) => (
                 <Chip
                   key={name}
                   classes={{ root: classes.chip }}
                   label={name}
                 />
               ))}
+            </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Country')}
             </Typography>
-            {countries
-              && countries.map((name) => (
+            <FieldOrEmpty source={countries}>
+              {countries?.map((name) => (
                 <Chip
                   key={name}
                   classes={{ root: classes.chip }}
                   label={name}
                 />
               ))}
+            </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Region')}
             </Typography>
-            {regions
-              && regions.map((name) => (
+            <FieldOrEmpty source={regions}>
+              {regions?.map((name) => (
                 <Chip
                   key={name}
                   classes={{ root: classes.chip }}
                   label={name}
                 />
               ))}
+            </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('entity_Administrative-Area')}
             </Typography>
-            {areas
-              && areas.map((name) => (
+            <FieldOrEmpty source={areas}>
+              {areas?.map((name) => (
                 <Chip
                   key={name}
                   classes={{ root: classes.chip }}
                   label={name}
                 />
               ))}
+            </FieldOrEmpty>
           </Grid>
         </Grid>
       </Paper>
