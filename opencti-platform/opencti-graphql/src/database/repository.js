@@ -1,5 +1,5 @@
 import { filter, includes, map, pipe } from 'ramda';
-import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER, ENTITY_TYPE_SYNC, ENTITY_TYPE_USER } from '../schema/internalObject';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER, ENTITY_TYPE_SYNC } from '../schema/internalObject';
 import { BACKGROUND_TASK_QUEUES, connectorConfig } from './rabbitmq';
 import { sinceNowInMinutes } from '../utils/format';
 import { CONNECTOR_INTERNAL_ANALYSIS, CONNECTOR_INTERNAL_ENRICHMENT, CONNECTOR_INTERNAL_IMPORT_FILE, CONNECTOR_INTERNAL_NOTIFICATION } from '../schema/general';
@@ -9,8 +9,6 @@ import { BUILTIN_NOTIFIERS_CONNECTORS } from '../modules/notifier/notifier-stati
 import { builtInConnector, builtInConnectorsRuntime } from '../connector/connector-domain';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { shortHash } from '../schema/schemaUtils';
-import { getEntitiesMapFromCache } from './cache';
-import { SYSTEM_USER } from '../utils/access';
 import { getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
 
 export const completeConnector = (connector) => {
@@ -45,11 +43,6 @@ export const computeManagerConnectorContract = async (_context, _user, cn) => {
 
 export const computeManagerConnectorConfiguration = async (context, _user, cn) => {
   const config = [...cn.manager_contract_configuration ?? []];
-  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  config.push({ key: 'CONNECTOR_ID', value: cn.internal_id });
-  config.push({ key: 'CONNECTOR_NAME', value: cn.name });
-  config.push({ key: 'CONNECTOR_TYPE', value: cn.connector_type });
-  config.push({ key: 'OPENCTI_TOKEN', value: platformUsers.get(cn.connector_user_id)?.api_token });
   return config.sort();
 };
 
