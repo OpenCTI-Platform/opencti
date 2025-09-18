@@ -1,15 +1,15 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
-import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 const styles = (theme) => ({
   paper: {
@@ -41,11 +41,13 @@ class EventDetailsComponent extends Component {
               >
                 {t('Event types')}
               </Typography>
-              {R.propOr(['-'], 'event_types', event).map((eventType) => (
-                <div key={`event_type_ov_${eventType}`} style={{ marginBottom: 10 }}>
-                  <ItemOpenVocab key="type" small={true} type="event_type_ov" value={eventType}/>
-                </div>
-              ))}
+              <FieldOrEmpty source={event.event_types}>
+                {event.event_types?.map((eventType) => (
+                  <div key={`event_type_ov_${eventType}`} style={{ marginBottom: 10 }}>
+                    <ItemOpenVocab key="type" small={true} type="event_type_ov" value={eventType}/>
+                  </div>
+                ))}
+              </FieldOrEmpty>
             </Grid>
             <Grid item xs={6}>
               <Typography variant="h3" gutterBottom={true}>
