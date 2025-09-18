@@ -187,7 +187,7 @@ const AIInsights = ({
               onClick={() => setDisplayEEDialog(true)}
               className={floating ? classes.chipFloating : classes.chip}
             >
-              <FiligranIcon icon={LogoXtmOneIcon} size='x-small' color="ai" />
+              <FiligranIcon icon={LogoXtmOneIcon} size='small' color="ai" />
             </IconButton>
           ) : (
             <Button
@@ -195,7 +195,7 @@ const AIInsights = ({
               size="small"
               onClick={() => setDisplayEEDialog(true)}
               className={floating ? classes.chipFloating : classes.chip}
-              startIcon={<FiligranIcon icon={LogoXtmOneIcon} size='x-small' color="ai" />}
+              startIcon={<FiligranIcon icon={LogoXtmOneIcon} size='small' color="ai" />}
             >
               {t_i18n('AI Insights')}
             </Button>
@@ -229,7 +229,7 @@ const AIInsights = ({
               onClick={() => setDisplayAIDialog(true)}
               className={floating ? classes.chipFloating : classes.chip}
             >
-              <FiligranIcon icon={LogoXtmOneIcon} size='x-small' color="ai" />
+              <FiligranIcon icon={LogoXtmOneIcon} size='small' color="ai" />
             </IconButton>
           ) : (
             <Button
@@ -237,7 +237,7 @@ const AIInsights = ({
               size="small"
               onClick={() => setDisplayAIDialog(true)}
               className={floating ? classes.chipFloating : classes.chip}
-              startIcon={<FiligranIcon icon={LogoXtmOneIcon} size='x-small' color="ai" />}
+              startIcon={<FiligranIcon icon={LogoXtmOneIcon} size='small' color="ai" />}
             >
               {t_i18n('AI Insights')}
             </Button>
@@ -272,7 +272,7 @@ const AIInsights = ({
             onClick={() => setDisplay(true)}
             className={floating ? classes.chipFloating : classes.chip}
           >
-            <FiligranIcon icon={LogoXtmOneIcon} size='x-small' color="ai"/>
+            <FiligranIcon icon={LogoXtmOneIcon} size='small' color="ai"/>
           </IconButton>
         ) : (
           <Button
@@ -280,7 +280,7 @@ const AIInsights = ({
             size="small"
             onClick={() => setDisplay(true)}
             className={floating ? classes.chipFloating : classes.chip}
-            startIcon={<FiligranIcon icon={LogoXtmOneIcon} size='x-small' color="ai"/>}
+            startIcon={<FiligranIcon icon={LogoXtmOneIcon} size='small' color="ai"/>}
           >
             {t_i18n('AI Insights')}
           </Button>
@@ -311,7 +311,7 @@ const AIInsights = ({
             variant="outlined"
             size="small"
             className={classes.chipNoAction}
-            startIcon={<FiligranIcon icon={LogoXtmOneIcon} size='x-small' color="ai"/>}
+            startIcon={<FiligranIcon icon={LogoXtmOneIcon} size='small' color="ai"/>}
           >
             {t_i18n('XTM AI')}
           </Button>
