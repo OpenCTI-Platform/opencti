@@ -139,7 +139,6 @@ const AskArianeButton = React.forwardRef((props, ref) => {
 
   const chatIconStyle: React.CSSProperties = {
     color: isCGUStatusPending ? theme.palette.action?.disabled : undefined,
-    marginLeft: 2,
   };
 
   return (
