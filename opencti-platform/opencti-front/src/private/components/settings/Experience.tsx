@@ -310,14 +310,16 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                 </ListItem>
                 {isChatbotFeatureFlag && isGrantedToParameters && (
                   <ListItem divider={true}>
-                    <ListItemText primary={t_i18n('XTMOne Agentic (Ariane Assistant)')}/>
+                    <ListItemText primary={t_i18n('Agentic AI (Ariane Assistant)')}/>
                     {filigran_chatbot_ai_cgu_status === CGUStatus.pending ? (
                       <Button
                         size="small"
                         variant="outlined"
                         onClick={() => setOpenValidateTermsOfUse(true)}
                         style={{ marginRight: 7, lineHeight: '12px', width: 250 }}
-                      >{t_i18n('Validate Terms of Services')}</Button>
+                      >
+                        {t_i18n('Validate the Filigran AI Terms')}
+                      </Button>
                     ) : (
                       <Box sx={{ marginBlock: -6 }}>
                         <Switch

@@ -8,6 +8,7 @@ import ValidateTermsOfUseDialog from '@components/settings/ValidateTermsOfUseDia
 import { Tooltip } from '@mui/material';
 import { LogoXtmOneIcon } from 'filigran-icon';
 import FiligranIcon from '@components/common/FiligranIcon';
+import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import GradientButton, { GradientVariant } from '../../../components/GradientButton';
 import { useFormatter } from '../../../components/i18n';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
@@ -143,7 +144,8 @@ const AskArianeButton = React.forwardRef((props, ref) => {
 
   return (
     <>
-      <Tooltip
+      <EETooltip
+        forAi={true}
         title={isCGUStatusPending && !hasRightToValidateCGU ? t_i18n('Ask Ariane isn\'t activated yet. Please reach out to your administrator to enable this feature.') : 'Open chatbot'}
       >
         {navOpen ? (
@@ -155,13 +157,14 @@ const AskArianeButton = React.forwardRef((props, ref) => {
             startIcon={ <FiligranIcon icon={LogoXtmOneIcon} size='small' color="ai" style={chatIconStyle} />}
           >
             {t_i18n('ASK ARIANE')}
+            <EEChip ref={EERef}/>
           </GradientButton>
         ) : (
           <IconButton style={{ padding: 0 }} onClick={toggleChatbot}>
             <FiligranIcon icon={LogoXtmOneIcon} size='small' color="ai" style={chatIconStyle} />
           </IconButton>
         )}
-      </Tooltip>
+      </EETooltip>
       {isEnterpriseEdition && isChatbotAiEnabled() ? (
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
@@ -173,11 +176,7 @@ const AskArianeButton = React.forwardRef((props, ref) => {
           theme={JSON.stringify(chatBotTheme)}
         />
       ) : null}
-      {(!isEnterpriseEdition && navOpen) && (
-        <>
-          <EEChip ref={EERef}/>
-        </>
-      )}
+
       {openValidateTermsOfUse && (
         <ValidateTermsOfUseDialog open={openValidateTermsOfUse} onClose={() => setOpenValidateTermsOfUse(false)}/>
       )}
