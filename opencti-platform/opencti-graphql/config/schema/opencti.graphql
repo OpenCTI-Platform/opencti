@@ -14362,7 +14362,7 @@ type SynchronizerEditMutations {
 ######## STIX OBJECT
 type StixEditMutations {
   delete(forceDelete: Boolean): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  merge(stixObjectsIds: [String]!): StixObject
+  merge(stixObjectsIds: [String]!): StixObject @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
 }
 
 ######## STIX OBJECT ENTITIES
