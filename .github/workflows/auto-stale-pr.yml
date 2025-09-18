@@ -1,0 +1,28 @@
+name: Mark stale pull requests
+
+on: pull_request
+
+jobs:
+  stale:
+
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+
+    steps:
+      - uses: actions/stale@v5
+        with:
+          days-before-stale: 90
+          days-before-close: 30
+          stale-pr-message: |
+            Hello, this pull request has been inactive for 3 months.
+            It has been marked as stale with the "no-pr-activity" label and will be automatically closed in 1 month if no activity is detected.
+
+            To keep it open, you can:
+
+            * add a comment explaining the status or next steps
+            * push new commits
+            * apply an exemption label (e.g., "keep-open"), if available
+            * Any recent activity will reset the stale status.
+            * If this PR is no longer relevant, please close it.
+          stale-pr-label: 'no-pr-activity'
