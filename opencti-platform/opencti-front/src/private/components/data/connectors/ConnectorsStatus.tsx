@@ -159,8 +159,8 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
 
     // messages are number in string, we shall parse before sorting
     if (sortBy === 'messages') {
-      valueA = Number.parseInt(valueA as string, 10);
-      valueB = Number.parseInt(valueB as string, 10);
+      valueA = Number.parseInt(valueA, 10);
+      valueB = Number.parseInt(valueB, 10);
     }
 
     // auto is a boolean but in the UI there are 3 values possibly displayed

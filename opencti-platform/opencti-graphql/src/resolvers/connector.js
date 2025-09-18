@@ -50,7 +50,6 @@ import {
   computeManagerConnectorContract,
   computeManagerConnectorExcerpt,
   computeManagerConnectorImage,
-  computeManagerConnectorInfo,
   computeManagerContractHash,
   connector,
   connectorManager,
