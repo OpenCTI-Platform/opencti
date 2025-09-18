@@ -11,9 +11,8 @@ import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { shortHash } from '../schema/schemaUtils';
 import { getEntitiesMapFromCache } from './cache';
 import { SYSTEM_USER } from '../utils/access';
-import { getSupportedContractsByImage, processPasswordConfigurationValue } from '../modules/catalog/catalog-domain';
+import { getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
-import { FunctionalError } from '../config/errors';
 
 export const completeConnector = (connector) => {
   if (connector) {
@@ -49,21 +48,14 @@ export const computeManagerConnectorConfiguration = async (context, user, cn, hi
   if (!cn.is_managed) {
     return [];
   }
-  const currentContractConfig = cn.manager_contract_configuration ?? [];
+  const currentContractConfig = structuredClone(cn.manager_contract_configuration) ?? [];
   const fullContractConfig = hideEncryptedConfigs ? currentContractConfig.filter((c) => !c.encrypted) : currentContractConfig;
   const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
   fullContractConfig.push({ key: 'CONNECTOR_ID', value: cn.internal_id });
   fullContractConfig.push({ key: 'CONNECTOR_NAME', value: cn.name });
   fullContractConfig.push({ key: 'CONNECTOR_TYPE', value: cn.connector_type });
   if (!hideEncryptedConfigs) {
-    const connectorManagers = await fullEntitiesList(context, user, [ENTITY_TYPE_CONNECTOR_MANAGER]);
-    if (connectorManagers?.length < 1) {
-      throw FunctionalError('There is no connector manager configured');
-    }
-    const currentManager = connectorManagers[0];
-    const userToken = platformUsers.get(cn.connector_user_id)?.api_token;
-    const encryptedApiToken = processPasswordConfigurationValue(userToken, currentManager.public_key);
-    fullContractConfig.push({ key: 'OPENCTI_TOKEN', value: encryptedApiToken, encrypted: true });
+    fullContractConfig.push({ key: 'OPENCTI_TOKEN', value: platformUsers.get(cn.connector_user_id)?.api_token });
   }
   return fullContractConfig.sort();
 };
