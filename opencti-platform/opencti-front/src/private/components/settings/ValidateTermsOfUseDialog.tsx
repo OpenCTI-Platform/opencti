@@ -77,7 +77,7 @@ const ValidateTermsOfUseDialog = ({ open, onClose }: ValidateTermsOfUseDialogPro
         }}
       >
         <Button
-          href="https://filigran.io/terms-of-services/"
+          href="https://filigran.io/app/uploads/2025/09/filigran-ai-terms-september-2025.pdf"
           target="_blank"
           rel="noreferrer"
           variant="outlined"
