@@ -152,9 +152,9 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
     let valueB = b[sortBy as keyof typeof connectorsWithMessages[number]];
 
     // Handle manager_contract_info sorting by title
-    if (sortBy === 'manager_contract_info') {
-      valueA = a.manager_contract_info?.title || '';
-      valueB = b.manager_contract_info?.title || '';
+    if (sortBy === 'manager_contract_excerpt') {
+      valueA = a.manager_contract_excerpt?.title || '';
+      valueB = b.manager_contract_excerpt?.title || '';
     }
 
     // messages are number in string, we shall parse before sorting
