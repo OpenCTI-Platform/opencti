@@ -167,10 +167,7 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
                   rows="4"
                   style={{ marginTop: 20 }}
                 />
-                <div style={{
-                  marginTop: 20,
-                  textAlign: 'right',
-                }}>
+                <div style={{ marginTop: 20, textAlign: 'right' }}>
                   <Button
                     variant="contained"
                     onClick={handleReset}
