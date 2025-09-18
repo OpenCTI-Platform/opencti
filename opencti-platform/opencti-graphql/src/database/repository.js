@@ -44,7 +44,7 @@ export const computeManagerConnectorContract = async (_context, _user, cn) => {
   return contract ? JSON.stringify(contract) : contract;
 };
 
-export const computeManagerConnectorConfiguration = async (context, user, cn, hideEncryptedConfigs = false) => {
+export const computeManagerConnectorConfiguration = async (context, _user, cn, hideEncryptedConfigs = false) => {
   if (!cn.connector.catalog_id) {
     return [];
   }
