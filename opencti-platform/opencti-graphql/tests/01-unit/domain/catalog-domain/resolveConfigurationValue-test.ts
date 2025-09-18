@@ -162,4 +162,193 @@ describe('resolveConfigurationValue', () => {
       value: '123'
     });
   });
+
+  describe('Password encryption', () => {
+    it('should encrypt new password value', () => {
+      const propSchema = {
+        type: 'string',
+        format: 'password'
+      };
+      const inputConfig: ContractConfigInput = {
+        key: 'password_field',
+        value: 'newPassword123'
+      };
+
+      const result = resolveConfigurationValue(
+        'password_field',
+        propSchema,
+        inputConfig,
+        undefined,
+        TEST_PUBLIC_KEY
+      );
+
+      expect(result).toBeDefined();
+      expect(result?.key).toBe('password_field');
+      expect(result?.value).not.toBe('newPassword123'); // Should be encrypted
+      expect(result?.encrypted).toBe(true); // Should have encrypted flag
+
+      // Verify it's base64 encoded
+      if (result && result.value) {
+        const encryptedValue = result.value;
+        expect(() => Buffer.from(encryptedValue, 'base64')).not.toThrow();
+      }
+    });
+
+    it('should replace existing password with new encrypted value', () => {
+      const propSchema = {
+        type: 'string',
+        format: 'password'
+      };
+      const existingConfig: ConnectorContractConfiguration = {
+        key: 'password_field',
+        value: 'old_encrypted_value',
+        encrypted: true
+      };
+      const inputConfig: ContractConfigInput = {
+        key: 'password_field',
+        value: 'brandNewPassword456'
+      };
+
+      const result = resolveConfigurationValue(
+        'password_field',
+        propSchema,
+        inputConfig,
+        existingConfig,
+        TEST_PUBLIC_KEY
+      );
+
+      expect(result).toBeDefined();
+      expect(result?.key).toBe('password_field');
+      expect(result?.value).not.toBe('brandNewPassword456'); // Should be encrypted
+      expect(result?.value).not.toBe('old_encrypted_value'); // Should be different from old
+      expect(result?.encrypted).toBe(true);
+    });
+
+    it('should handle empty password encryption', () => {
+      const propSchema = {
+        type: 'string',
+        format: 'password'
+      };
+      const inputConfig: ContractConfigInput = {
+        key: 'password_field',
+        value: '' // Empty password
+      };
+
+      const result = resolveConfigurationValue(
+        'password_field',
+        propSchema,
+        inputConfig,
+        undefined,
+        TEST_PUBLIC_KEY
+      );
+
+      // Empty string should return null (no value)
+      expect(result).toBeNull();
+    });
+
+    it('should not re-encrypt when password value unchanged', () => {
+      const propSchema = {
+        type: 'string',
+        format: 'password'
+      };
+      const existingConfig: ConnectorContractConfiguration = {
+        key: 'password_field',
+        value: 'existing_encrypted_value',
+        encrypted: true
+      };
+      const inputConfig: ContractConfigInput = {
+        key: 'password_field',
+        value: 'existing_encrypted_value' // Same value
+      };
+
+      const result = resolveConfigurationValue(
+        'password_field',
+        propSchema,
+        inputConfig,
+        existingConfig,
+        TEST_PUBLIC_KEY
+      );
+
+      // Should return the existing config unchanged
+      expect(result).toEqual(existingConfig);
+    });
+
+    it('should encrypt password with special characters', () => {
+      const propSchema = {
+        type: 'string',
+        format: 'password'
+      };
+      const inputConfig: ContractConfigInput = {
+        key: 'password_field',
+        value: '!@#$%^&*()_+-=[]{}|;\':",./<>?'
+      };
+
+      const result = resolveConfigurationValue(
+        'password_field',
+        propSchema,
+        inputConfig,
+        undefined,
+        TEST_PUBLIC_KEY
+      );
+
+      expect(result).toBeDefined();
+      expect(result?.encrypted).toBe(true);
+      expect(result?.value).not.toContain('!@#$%'); // Should be encrypted
+    });
+
+    it('should use default password value when not provided', () => {
+      const propSchema = {
+        type: 'string',
+        format: 'password',
+        default: 'defaultPassword'
+      };
+
+      const result = resolveConfigurationValue(
+        'password_field',
+        propSchema,
+        undefined,
+        undefined,
+        TEST_PUBLIC_KEY
+      );
+
+      // Default passwords should not be encrypted automatically
+      // They should be treated as regular defaults
+      expect(result).toEqual({
+        key: 'password_field',
+        value: 'defaultPassword'
+      });
+    });
+
+    it('should validate password encryption produces different values each time', () => {
+      const propSchema = {
+        type: 'string',
+        format: 'password'
+      };
+      const inputConfig: ContractConfigInput = {
+        key: 'password_field',
+        value: 'samePassword'
+      };
+
+      const result1 = resolveConfigurationValue(
+        'password_field',
+        propSchema,
+        inputConfig,
+        undefined,
+        TEST_PUBLIC_KEY
+      );
+
+      const result2 = resolveConfigurationValue(
+        'password_field',
+        propSchema,
+        inputConfig,
+        undefined,
+        TEST_PUBLIC_KEY
+      );
+
+      // Same password should produce different encrypted values (due to random AES key)
+      expect(result1?.value).not.toBe(result2?.value);
+      expect(result1?.encrypted).toBe(true);
+      expect(result2?.encrypted).toBe(true);
+    });
+  });
 });

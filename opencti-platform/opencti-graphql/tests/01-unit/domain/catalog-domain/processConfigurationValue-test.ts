@@ -2,6 +2,22 @@ import { describe, expect, it } from 'vitest';
 import { processConfigurationValue } from '../../../../src/modules/catalog/catalog-domain';
 
 describe('processConfigurationValue', () => {
+  it('should not process password fields (passwords use separate encryption)', () => {
+    // Password fields should be handled by processPasswordConfigurationValue, not processConfigurationValue
+    const propSchema = { type: 'string', format: 'password' };
+
+    // processConfigurationValue should just return the raw value for passwords
+    // The actual encryption happens in resolveConfigurationValue
+    const result = processConfigurationValue(
+      'myPassword123',
+      propSchema,
+      'password_field',
+    );
+
+    // Should return the raw value unchanged (encryption happens elsewhere)
+    expect(result).toBe('myPassword123');
+  });
+
   it('should validate and return boolean as string', () => {
     const propSchema = { type: 'boolean' };
 
