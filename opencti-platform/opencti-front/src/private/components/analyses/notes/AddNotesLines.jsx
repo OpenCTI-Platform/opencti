@@ -152,7 +152,7 @@ class AddNotesLinesContainer extends Component {
               <div style={{ marginRight: 50 }}>
                 <ItemMarkings
                   variant="inList"
-                  markingDefinitions={data.objectMarking ?? []}
+                  markingDefinitions={note.objectMarking ?? []}
                 />
               </div>
             </ListItemButton>
@@ -204,6 +204,10 @@ const AddNotesLines = createPaginationContainer(
                 definition
                 x_opencti_order
                 x_opencti_color
+              }
+              createdBy {
+                name
+                id
               }
             }
           }
