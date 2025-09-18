@@ -4,7 +4,6 @@ import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { FileUploadOutlined } from '@mui/icons-material';
-import makeStyles from '@mui/styles/makeStyles';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/styles';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -21,18 +20,8 @@ import CreateEntityControlledDial from '../../../components/CreateEntityControll
 import { isNotEmptyField } from '../../../utils/utils';
 import GradientButton from '../../../components/GradientButton';
 import { UserContext } from '../../../utils/hooks/useAuth';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-}));
+import Security from '../../../utils/Security';
+import { EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from '../../../utils/hooks/useGranted';
 
 const workspaceMutation = graphql`
   mutation WorkspaceCreationMutation($input: WorkspaceAddInput!) {
@@ -55,7 +44,6 @@ const workspaceValidation = (t_i18n) => Yup.object().shape({
 });
 
 const WorkspaceCreation = ({ paginationOptions, type }) => {
-  const classes = useStyles();
   const theme = useTheme();
   const { t_i18n } = useFormatter();
   const inputRef = useRef();
@@ -110,11 +98,13 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
   };
 
   const createInvestigationButton = (props) => (
-    <CreateEntityControlledDial entityType='Investigation' {...props} />
+    <Security needs={[INVESTIGATION_INUPDATE]}>
+      <CreateEntityControlledDial entityType='Investigation' {...props} />
+    </Security>
   );
 
   const createDashboardButton = (props) => (
-    <>
+    <Security needs={[EXPLORE_EXUPDATE]}>
       <ToggleButton
         value="import"
         size="small"
@@ -137,7 +127,7 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
         </GradientButton>
       )}
       <CreateEntityControlledDial entityType='Dashboard' {...props} />
-    </>
+    </Security>
   );
 
   return (
@@ -177,12 +167,15 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
                   rows="4"
                   style={{ marginTop: 20 }}
                 />
-                <div className={classes.buttons}>
+                <div style={{
+                  marginTop: 20,
+                  textAlign: 'right',
+                }}>
                   <Button
                     variant="contained"
                     onClick={handleReset}
                     disabled={isSubmitting}
-                    classes={{ root: classes.button }}
+                    style={{ marginLeft: theme.spacing(2) }}
                   >
                     {t_i18n('Cancel')}
                   </Button>
@@ -191,7 +184,7 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
                     color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
-                    classes={{ root: classes.button }}
+                    style={{ marginLeft: theme.spacing(2) }}
                   >
                     {t_i18n('Create')}
                   </Button>
