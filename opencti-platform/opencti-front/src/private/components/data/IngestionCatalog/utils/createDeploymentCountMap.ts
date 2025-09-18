@@ -1,6 +1,6 @@
-import { IngestionCatalogQuery$data } from '@components/data/__generated__/IngestionCatalogQuery.graphql';
+import { IngestionConnectorsQuery$data } from '@components/data/IngestionCatalog/__generated__/IngestionConnectorsQuery.graphql';
 
-type Connector = NonNullable<IngestionCatalogQuery$data['connectors']>[number];
+type Connector = NonNullable<IngestionConnectorsQuery$data['connectors']>[number];
 
 const createDeploymentCountMap = (connectors: readonly Connector[]) => {
   const deploymentCountMap = new Map<string, number>();
