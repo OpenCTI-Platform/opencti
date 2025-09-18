@@ -793,8 +793,12 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
           R.uniq(id.map((label) => idLabel(label)))
             .forEach((labelId) => {
               const labelElement = { id: labelId, destKey, multiple: true };
+              if (fetchingIdsMap.has(labelId)) {
+                fetchingIdsMap.get(labelId).push(labelElement);
+              } else {
+                fetchingIdsMap.set(labelId, [labelElement]);
+              }
               expectedIds.push(labelId);
-              fetchingIdsMap.set(labelId, [labelElement]);
             });
         } else if (hasOpenVocab) {
           const ids = isListing ? id : [id];
