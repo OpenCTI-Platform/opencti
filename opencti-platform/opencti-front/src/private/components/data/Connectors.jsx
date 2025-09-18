@@ -34,16 +34,6 @@ const Connectors = () => {
           }}
         />
         <ConnectorsStatus />
-        {/* <QueryRenderer */}
-        {/*  query={connectorsStatusQuery} */}
-        {/*  variables={{ enableComposerFeatureFlag }} */}
-        {/*  render={({ props }) => { */}
-        {/*    if (props) { */}
-        {/*      return <ConnectorsStatus data={props} />; */}
-        {/*    } */}
-        {/*    return <Loader variant={LoaderVariant.container} />; */}
-        {/*  }} */}
-        {/* /> */}
       </PageContainer>
     </div>
   );
