@@ -1,4 +1,4 @@
-import { ConnectorsStatus_data$data } from '@components/data/connectors/__generated__/ConnectorsStatus_data.graphql';
+import { ConnectorsStateQuery$data } from '@components/data/connectors/__generated__/ConnectorsStateQuery.graphql';
 import { stixFilters, useAvailableFilterKeysForEntityTypes } from './filters/filtersUtils';
 import useSchema from './hooks/useSchema';
 
@@ -67,7 +67,7 @@ export const computeConnectorStatus = ({
   manager_current_status,
   manager_requested_status,
   active,
-}: Partial<ConnectorsStatus_data$data['connectors'][0]>) => {
+}: Partial<ConnectorsStateQuery$data['connectors'][0]>) => {
   if (manager_requested_status) {
     // On connector created, manager_current_status is null
     const isTransitioning = (manager_current_status ?? '').slice(0, 5) !== manager_requested_status.slice(0, 5);

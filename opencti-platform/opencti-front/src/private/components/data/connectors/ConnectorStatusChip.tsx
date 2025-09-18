@@ -1,11 +1,11 @@
 import React from 'react';
-import { ConnectorsStatus_data$data } from '@components/data/connectors/__generated__/ConnectorsStatus_data.graphql';
+import { ConnectorsStateQuery$data } from '@components/data/connectors/__generated__/ConnectorsStateQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { computeConnectorStatus } from '../../../../utils/Connector';
 
 type ConnectorStatusChipProps = {
-  connector: Partial<ConnectorsStatus_data$data['connectors'][0]>
+  connector: Partial<ConnectorsStateQuery$data['connectors'][0]>
 };
 
 const ConnectorStatusChip: React.FC<ConnectorStatusChipProps> = ({ connector }) => {
