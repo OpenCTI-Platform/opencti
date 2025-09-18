@@ -143,23 +143,6 @@ const AskArianeButton = React.forwardRef((props, ref) => {
 
   return (
     <>
-      {isEnterpriseEdition && isChatbotAiEnabled() ? (
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        <filigran-chatbot
-          ref={chatbotRef}
-          open={isChatbotOpen}
-          left={navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH}
-          agentic-url={chatbotProxyUrl}
-          theme={JSON.stringify(chatBotTheme)}
-        />
-      ) : null}
-      {!isEnterpriseEdition && navOpen ? (
-        <>
-          {t_i18n('Ask Ariane')}
-          <EEChip ref={EERef}/>
-        </>
-      ) : null}
       <Tooltip
         title={isCGUStatusPending && !hasRightToValidateCGU ? t_i18n('Ask Ariane isn\'t activated yet. Please reach out to your administrator to enable this feature.') : 'Open chatbot'}
       >
@@ -179,6 +162,22 @@ const AskArianeButton = React.forwardRef((props, ref) => {
           </IconButton>
         )}
       </Tooltip>
+      {isEnterpriseEdition && isChatbotAiEnabled() ? (
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        <filigran-chatbot
+          ref={chatbotRef}
+          open={isChatbotOpen}
+          left={navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH}
+          agentic-url={chatbotProxyUrl}
+          theme={JSON.stringify(chatBotTheme)}
+        />
+      ) : null}
+      {(!isEnterpriseEdition && navOpen) && (
+        <>
+          <EEChip ref={EERef}/>
+        </>
+      )}
       {openValidateTermsOfUse && (
         <ValidateTermsOfUseDialog open={openValidateTermsOfUse} onClose={() => setOpenValidateTermsOfUse(false)}/>
       )}
