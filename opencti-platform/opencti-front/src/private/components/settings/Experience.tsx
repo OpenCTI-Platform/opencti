@@ -22,6 +22,7 @@ import DialogActions from '@mui/material/DialogActions';
 import * as Yup from 'yup';
 import Box from '@mui/material/Box';
 import { Switch } from '@mui/material';
+import Chip from '@mui/material/Chip';
 import { ExperienceQuery } from './__generated__/ExperienceQuery.graphql';
 import Transition from '../../../components/Transition';
 import useSensitiveModifications from '../../../utils/hooks/useSensitiveModifications';
@@ -310,7 +311,20 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                 </ListItem>
                 {isChatbotFeatureFlag && isGrantedToParameters && (
                   <ListItem divider={true}>
-                    <ListItemText primary={t_i18n('Agentic AI (Ariane Assistant)')}/>
+                    <ListItemText
+                      primary={<div style={{ display: 'flex', alignItems: 'center' }}>
+                        <span>{t_i18n('Agentic AI (Ariane Assistant)')}</span>
+                        <Chip
+                          label={t_i18n('Preview')}
+                          color="primary"
+                          variant="outlined"
+                          size="small"
+                          style={{
+                            marginLeft: theme.spacing(1),
+                          }}
+                        />
+                      </div>}
+                    />
                     {filigran_chatbot_ai_cgu_status === CGUStatus.pending ? (
                       <Button
                         size="small"

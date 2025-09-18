@@ -5,7 +5,6 @@ import { useTheme } from '@mui/styles';
 import IconButton from '@mui/material/IconButton';
 import { CGUStatus } from '@components/settings/Experience';
 import ValidateTermsOfUseDialog from '@components/settings/ValidateTermsOfUseDialog';
-import { Tooltip } from '@mui/material';
 import { LogoXtmOneIcon } from 'filigran-icon';
 import FiligranIcon from '@components/common/FiligranIcon';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
@@ -44,7 +43,6 @@ const AskArianeButton = React.forwardRef((props, ref) => {
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
   const [openValidateTermsOfUse, setOpenValidateTermsOfUse] = useState(false);
   const chatbotRef = useRef<{ onClose:() => void }>(null);
-  const EERef = useRef<HTMLDivElement>(null);
 
   const openChatbot = () => {
     setIsChatbotOpen(true);
@@ -157,7 +155,7 @@ const AskArianeButton = React.forwardRef((props, ref) => {
             startIcon={ <FiligranIcon icon={LogoXtmOneIcon} size='small' color="ai" style={chatIconStyle} />}
           >
             {t_i18n('ASK ARIANE')}
-            <EEChip ref={EERef}/>
+            <EEChip />
           </GradientButton>
         ) : (
           <IconButton style={{ padding: 0 }} onClick={toggleChatbot}>
