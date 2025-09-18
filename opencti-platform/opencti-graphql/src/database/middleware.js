@@ -803,7 +803,7 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
             const vocabularyId = idVocabulary(i, category);
             const vocabularyElement = { id: vocabularyId, destKey, multiple: isListing };
             if (fetchingIdsMap.has(vocabularyId)) {
-              fetchingIdsMap[vocabularyId].push(vocabularyElement);
+              fetchingIdsMap.get(vocabularyId).push(vocabularyElement);
             } else {
               fetchingIdsMap.set(vocabularyId, [vocabularyElement]);
             }
@@ -812,7 +812,7 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
           R.uniq(id).forEach((i) => {
             const listingElement = { id: i, destKey, multiple: true };
             if (fetchingIdsMap.has(i)) {
-              fetchingIdsMap[i].push(listingElement);
+              fetchingIdsMap.get(i).push(listingElement);
             } else {
               fetchingIdsMap.set(i, [listingElement]);
             }
@@ -826,7 +826,7 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
           } else {
             const singleElement = { id, destKey, multiple: false };
             if (fetchingIdsMap.has(id)) {
-              fetchingIdsMap[id].push(singleElement);
+              fetchingIdsMap.get(id).push(singleElement);
             } else {
               fetchingIdsMap.set(id, [singleElement]);
             }
@@ -861,7 +861,7 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
       instanceIds.forEach((instanceId) => {
         resolvedIds.add(instanceId);
         if (fetchingIdsMap.has(instanceId)) {
-          matchingConfigs.push(...fetchingIdsMap[instanceId]);
+          matchingConfigs.push(...fetchingIdsMap.get(instanceId));
         }
       });
       for (let configIndex = 0; configIndex < matchingConfigs.length; configIndex += 1) {
