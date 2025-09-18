@@ -3631,6 +3631,7 @@
   "This entity has several key fields, which is incompatible with bulk creation": "Esta entidad tiene varios campos clave, lo que es incompatible con la creación masiva",
   "This exclusion list is too large to be displayed": "Esta lista de exclusión es demasiado grande para mostrarse",
   "This external reference is linked to a file. If you delete it, the file will be deleted as well.": "Esta referencia externa está vinculada a un fichero. Si la borra, el fichero también se borrará.",
+  "This feature is in preview and will improve over time with user's feedback.": "Esta función está en fase de previsualización y mejorará con el tiempo gracias a los comentarios de los usuarios.",
   "This feature is not available yet.": "Está funcionalidad todavía no está disponible.",
   "This feature is only available in OpenCTI Enterprise Edition.": "Esta función sólo está disponible en OpenCTI Enterprise Edition.",
   "This field cannot contain spaces": "Este campo no puede contener espacios",

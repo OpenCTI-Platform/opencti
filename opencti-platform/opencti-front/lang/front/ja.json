@@ -3631,6 +3631,7 @@
   "This entity has several key fields, which is incompatible with bulk creation": "このエンティティは複数のキーフィールドを持つため、一括作成とは互換性がありません。",
   "This exclusion list is too large to be displayed": "この除外リストは大きすぎて表示できません",
   "This external reference is linked to a file. If you delete it, the file will be deleted as well.": "この外部参照はファイルにリンクされています。これを削除すると、ファイルも削除されます。",
+  "This feature is in preview and will improve over time with user's feedback.": "この機能はプレビューであり、ユーザーからのフィードバックにより改善される予定です。",
   "This feature is not available yet.": "この機能はまだ利用できません。",
   "This feature is only available in OpenCTI Enterprise Edition.": "この機能は OpenCTI Enterprise Edition でのみ利用可能です。",
   "This field cannot contain spaces": "このフィールドにスペースを含めることはできない",

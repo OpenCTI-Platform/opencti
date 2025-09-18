@@ -3631,6 +3631,7 @@
   "This entity has several key fields, which is incompatible with bulk creation": "该实体有几个关键字段，与批量创建不兼容",
   "This exclusion list is too large to be displayed": "该排除列表太大，无法显示",
   "This external reference is linked to a file. If you delete it, the file will be deleted as well.": "此外部引用链接到一个文件。如果删除它，文件也将被删除。",
+  "This feature is in preview and will improve over time with user's feedback.": "该功能目前处于预览阶段，将根据用户反馈不断改进。",
   "This feature is not available yet.": "此功能尚不可用。",
   "This feature is only available in OpenCTI Enterprise Edition.": "此功能仅适用于 OpenCTI 企业版。",
   "This field cannot contain spaces": "该字段不能包含空格",

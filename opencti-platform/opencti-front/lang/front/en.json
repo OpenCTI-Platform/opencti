@@ -3631,6 +3631,7 @@
   "This entity has several key fields, which is incompatible with bulk creation": "This entity has several key fields, which is incompatible with bulk creation",
   "This exclusion list is too large to be displayed": "This exclusion list is too large to be displayed",
   "This external reference is linked to a file. If you delete it, the file will be deleted as well.": "This external reference is linked to a file. If you delete it, the file will be deleted as well.",
+  "This feature is in preview and will improve over time with user's feedback.": "This feature is in preview and will improve over time with user's feedback.",
   "This feature is not available yet.": "This feature is not available yet.",
   "This feature is only available in OpenCTI Enterprise Edition.": "This feature is only available in OpenCTI Enterprise Edition.",
   "This field cannot contain spaces": "This field cannot contain spaces",

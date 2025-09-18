@@ -3631,6 +3631,7 @@
   "This entity has several key fields, which is incompatible with bulk creation": "Эта сущность имеет несколько ключевых полей, что несовместимо с массовым созданием",
   "This exclusion list is too large to be displayed": "Этот список исключений слишком велик для отображения",
   "This external reference is linked to a file. If you delete it, the file will be deleted as well.": "Эта внешняя ссылка связана с файлом. Если вы удалите ее, файл также будет удален.",
+  "This feature is in preview and will improve over time with user's feedback.": "Эта функция находится на стадии предварительного просмотра и со временем будет улучшена благодаря обратной связи с пользователями'.",
   "This feature is not available yet.": "Эта функция пока недоступна.",
   "This feature is only available in OpenCTI Enterprise Edition.": "Эта функция доступна только в OpenCTI Enterprise Edition.",
   "This field cannot contain spaces": "Это поле не может содержать пробелы",
