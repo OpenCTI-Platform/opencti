@@ -2086,6 +2086,11 @@ type ManagerContractConfiguration {
   value: String
 }
 
+type ManagerContractExcerpt {
+  title: String!
+  slug: String!
+}
+
 type Connector implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
@@ -2118,6 +2123,7 @@ type Connector implements BasicObject & InternalObject {
   manager_requested_status: String
   manager_contract_image: String
   manager_contract_definition: String
+  manager_contract_excerpt: ManagerContractExcerpt
   manager_contract_configuration: [ManagerContractConfiguration!]
   manager_connector_logs: [String!]
   manager_contract_hash: String

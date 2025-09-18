@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ConnectorsStatusFilterState } from '@components/data/connectors/ConnectorsStatusFilters';
-import { ManagerContractDefinition } from '@components/data/connectors/utils/managerContractDefinitionType';
 import { ConnectorsListQuery } from '@components/data/connectors/__generated__/ConnectorsListQuery.graphql';
 import { ConnectorsStateQuery } from '@components/data/connectors/__generated__/ConnectorsStateQuery.graphql';
 
@@ -10,7 +9,6 @@ type Connector =
 
 type UseConnectorsStatusFiltersProps = {
   connectors: Connector[]
-  managerContractDefinitionMap: Map<string, ManagerContractDefinition>
   searchParams: URLSearchParams;
 };
 
@@ -20,7 +18,7 @@ const parseBooleanParam = (value: string | null): boolean | null => {
   return null;
 };
 
-const useConnectorsStatusFilters = ({ connectors, managerContractDefinitionMap, searchParams }: UseConnectorsStatusFiltersProps) => {
+const useConnectorsStatusFilters = ({ connectors, searchParams }: UseConnectorsStatusFiltersProps) => {
   const [filters, setFilters] = useState<ConnectorsStatusFilterState>({
     search: searchParams.get('search') || '',
     slug: searchParams.get('slug') || '',
@@ -48,13 +46,7 @@ const useConnectorsStatusFilters = ({ connectors, managerContractDefinitionMap, 
     }
 
     if (filters.slug) {
-      const parsedDefinition = managerContractDefinitionMap.get(connector.id);
-      if (!parsedDefinition?.slug) return false;
-
-      const slugMatch = parsedDefinition.slug
-        .toLowerCase()
-        .includes(filters.slug.toLowerCase());
-      if (!slugMatch) return false;
+      if (connector.manager_contract_excerpt?.slug !== filters.slug) return false;
     }
 
     if (filters.isManaged !== null) {

@@ -30,7 +30,7 @@ const Connectors = () => {
             if (props) {
               return <WorkersStatus data={props} />;
             }
-            return <Loader variant={LoaderVariant.container} />;
+            return <Loader variant={LoaderVariant.inElement} />;
           }}
         />
         <ConnectorsStatus />

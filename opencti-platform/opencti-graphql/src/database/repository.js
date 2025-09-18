@@ -44,6 +44,20 @@ export const computeManagerConnectorContract = async (_context, _user, cn) => {
   return contract ? JSON.stringify(contract) : contract;
 };
 
+export const computeManagerConnectorExcerpt = async (_context, _user, cn) => {
+  const contracts = getSupportedContractsByImage();
+  const contract = contracts.get(cn.manager_contract_image);
+
+  if (!contract) {
+    return null;
+  }
+
+  return {
+    title: contract.title,
+    slug: contract.slug
+  };
+};
+
 export const computeManagerConnectorConfiguration = async (context, _user, cn, hideEncryptedConfigs = false) => {
   const currentContractConfig = cn.manager_contract_configuration ?? [];
   const fullContractConfig = hideEncryptedConfigs ? currentContractConfig.filter((c) => !c.encrypted) : currentContractConfig;
