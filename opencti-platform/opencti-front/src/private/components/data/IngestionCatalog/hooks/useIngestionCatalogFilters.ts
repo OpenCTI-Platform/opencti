@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { FilterState } from '@components/data/IngestionCatalog/IngestionCatalogFilters';
 import { IngestionConnector } from '@components/data/IngestionCatalog';
-import { IngestionCatalogQuery$data } from '@components/data/__generated__/IngestionCatalogQuery.graphql';
+import { IngestionConnectorsCatalogsQuery } from '@components/data/IngestionCatalog/__generated__/IngestionConnectorsCatalogsQuery.graphql';
 import { MESSAGING$ } from '../../../../../relay/environment';
 import { useFormatter } from '../../../../../components/i18n';
 
 type UseIngestionCatalogFiltersProps = {
-  catalogs: IngestionCatalogQuery$data['catalogs'];
+  catalogs: NonNullable<IngestionConnectorsCatalogsQuery['response']['catalogs']>;
   searchParams: URLSearchParams;
 };
 
