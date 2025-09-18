@@ -7,7 +7,7 @@ import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../d
 import { BUS_TOPICS } from '../../config/conf';
 import { delEditContext, notify, setEditContext } from '../../database/redis';
 import { type BasicStoreEntityWorkspace, ENTITY_TYPE_WORKSPACE, type StoreEntityWorkspace, type WidgetConfiguration } from './workspace-types';
-import { DatabaseError, FunctionalError } from '../../config/errors';
+import { DatabaseError, ForbiddenAccess, FunctionalError } from '../../config/errors';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type {
   EditContext,
@@ -20,7 +20,7 @@ import type {
   WorkspaceDuplicateInput,
   WorkspaceObjectsArgs
 } from '../../generated/graphql';
-import { getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../utils/access';
+import { getUserAccessRight, isUserHasCapabilities, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
 import { elFindByIds, elRawDeleteByQuery } from '../../database/engine';
@@ -162,6 +162,17 @@ export const addWorkspace = async (
   user: AuthUser,
   input: WorkspaceAddInput,
 ) => {
+  // check capabilities according to workspace type
+  let hasCapa;
+  if (input.type === 'investigation') {
+    hasCapa = isUserHasCapabilities(user, ['INVESTIGATION_INUPDATE']);
+  } else if (input.type === 'dashboard') {
+    hasCapa = isUserHasCapabilities(user, ['EXPLORE_EXUPDATE']);
+  }
+  if (!hasCapa) {
+    throw ForbiddenAccess();
+  }
+  // construct final creation input
   const authorizedMembers = initializeAuthorizedMembers(
     input.authorized_members,
     user,
