@@ -45,7 +45,7 @@ export const computeManagerConnectorContract = async (_context, _user, cn) => {
 };
 
 export const computeManagerConnectorConfiguration = async (context, _user, cn, hideEncryptedConfigs = false) => {
-  if (!cn.connector.catalog_id) {
+  if (!cn.catalog_id) {
     return [];
   }
   const currentContractConfig = structuredClone(cn.manager_contract_configuration) ?? [];
