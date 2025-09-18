@@ -17,6 +17,8 @@ addFormats(ajv, ['password', 'uri', 'duration', 'email', 'date-time', 'date']);
 
 // Cache of catalog to read on disk and parse only once
 let catalogMap: Record<string, CatalogType>;
+// cache for contracts by image map
+let contractsByImageCache: Map<string, CatalogContract> | undefined;
 
 // Build catalog map from files
 const buildCatalogMap = (): Record<string, CatalogType> => {
@@ -470,9 +472,13 @@ export const computeConnectorTargetContract = (
 };
 
 export const getSupportedContractsByImage = () => {
-  const catalogDefinitions = getCatalogs();
-  const contracts = Object.values(catalogDefinitions).map((catalog) => catalog.definition.contracts).flat();
-  return new Map(contracts.map((contract) => [contract.container_image, contract]));
+  if (!contractsByImageCache) {
+    const catalogDefinitions = getCatalogs();
+    const contracts = Object.values(catalogDefinitions).map((catalog) => catalog.definition.contracts).flat();
+    contractsByImageCache = new Map(contracts.map((contract) => [contract.container_image, contract]));
+  }
+
+  return contractsByImageCache;
 };
 
 export const findById = (_context: AuthContext, _user: AuthUser, catalogId: string) => {
