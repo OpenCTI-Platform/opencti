@@ -54,6 +54,23 @@ const extractRefererPathFromReq = (req) => {
   return undefined;
 };
 
+// Helper function to validate redirect paths to prevent Open Redirect vulnerabilities
+const isValidRedirectPath = (redirectPath) => {
+  if (!redirectPath || typeof redirectPath !== 'string') return false;
+  // Only accept relative paths that start with / but not //
+  // This prevents redirects to external domains
+  return redirectPath.startsWith('/') && !redirectPath.startsWith('//');
+};
+
+// Sanitize redirect path to ensure it's safe
+const sanitizeRedirectPath = (redirectPath) => {
+  if (isValidRedirectPath(redirectPath)) {
+    return redirectPath;
+  }
+  // If path is invalid, return null
+  return null;
+};
+
 const publishFileDownload = async (executeContext, auth, file) => {
   const { filename, entity_id } = file.metaData;
   const entity = entity_id ? await internalLoadById(executeContext, auth, entity_id) : undefined;
@@ -327,7 +344,7 @@ const createApp = async (app) => {
   app.get(`${basePath}/auth/cert`, (req, res) => {
     try {
       const context = executionContext('cert_strategy');
-      const redirect = extractRefererPathFromReq(req) ?? '/';
+      const redirect = extractRefererPathFromReq(req) ?? (basePath || '/');
       const isActivated = isStrategyActivated(STRATEGY_CERT);
       if (!isActivated) {
         setCookieError(res, 'Cert authentication is not available');
@@ -366,7 +383,7 @@ const createApp = async (app) => {
   // Logout
   app.get(`${basePath}/logout`, async (req, res) => {
     try {
-      const referer = extractRefererPathFromReq(req) ?? '/';
+      const referer = extractRefererPathFromReq(req) ?? (basePath || '/');
       const provider = req.session.session_provider;
       const { user } = req.session;
       if (user) {
@@ -415,6 +432,9 @@ const createApp = async (app) => {
             }
           }
         });
+      } else {
+        // If no user in session, redirect to base path
+        res.redirect(basePath || '/');
       }
     } catch (e) {
       setCookieError(res, e.message);
@@ -470,7 +490,9 @@ const createApp = async (app) => {
       logApp.error('Error auth provider callback', { cause: e, provider });
       setCookieError(res, 'Invalid authentication, please ask your administrator');
     } finally {
-      res.redirect(referer ?? '/');
+      // Sanitize the referer to prevent Open Redirect vulnerabilities
+      const safeRedirect = sanitizeRedirectPath(referer) ?? (basePath || '/');
+      res.redirect(safeRedirect);
     }
   });
 

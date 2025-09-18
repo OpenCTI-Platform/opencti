@@ -49,7 +49,13 @@ const isEmptyPath = R.isNil(window.BASE_PATH) || R.isEmpty(window.BASE_PATH);
 const contextPath = isEmptyPath || window.BASE_PATH === '/' ? '' : window.BASE_PATH;
 export const APP_BASE_PATH = isEmptyPath || contextPath.startsWith('/') ? contextPath : `/${contextPath}`;
 
-export const fileUri = (fileImport) => `${APP_BASE_PATH}${fileImport}`; // No slash here, will be replace by the builder
+export const fileUri = (fileImport) => {
+  // If the import already starts with the base path (from Vite), don't add it again
+  if (APP_BASE_PATH && fileImport.startsWith(APP_BASE_PATH)) {
+    return fileImport;
+  }
+  return `${APP_BASE_PATH}${fileImport}`;
+};
 
 // Create Network
 let subscriptionClient;
