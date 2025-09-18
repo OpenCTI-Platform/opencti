@@ -7,7 +7,6 @@ import React, { useMemo } from 'react';
 import { useTheme } from '@mui/styles';
 import { graphql } from 'react-relay';
 import { FormikHelpers } from 'formik/dist/types';
-import { ConnectorsStatus_data$data } from '@components/data/connectors/__generated__/ConnectorsStatus_data.graphql';
 import Alert from '@mui/material/Alert';
 import Typography from '@mui/material/Typography';
 import { JsonForms } from '@jsonforms/react';
@@ -20,6 +19,7 @@ import JsonFormArrayRenderer, { jsonFormArrayTester } from '@components/data/Ing
 import reconcileManagedConnectorContractDataWithSchema from '@components/data/connectors/utils/reconcileManagedConnectorContractDataWithSchema';
 import buildContractConfiguration from '@components/data/connectors/utils/buildContractConfiguration';
 import JsonFormUnsupportedType, { jsonFormUnsupportedTypeTester } from '@components/data/IngestionCatalog/utils/JsonFormUnsupportedType';
+import { ConnectorsListQuery$data } from '@components/data/connectors/__generated__/ConnectorsListQuery.graphql';
 import TextField from '../../../../components/TextField';
 import { type FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -56,7 +56,7 @@ const customRenderers = [
 ];
 
 type ManagedConnectorEditionProps = {
-  connector: ConnectorsStatus_data$data['connectors'][0]
+  connector: ConnectorsListQuery$data['connectors'][0]
   open: boolean;
   onClose: () => void
 };

@@ -1,7 +1,6 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import IngestionMenu from '@components/data/IngestionMenu';
-import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { IngestionCatalogQuery } from '@components/data/__generated__/IngestionCatalogQuery.graphql';
+import { useQueryLoader } from 'react-relay';
 import IngestionCatalogCard from '@components/data/IngestionCatalog/IngestionCatalogCard';
 import useIngestionCatalogFilters from '@components/data/IngestionCatalog/hooks/useIngestionCatalogFilters';
 import { useSearchParams } from 'react-router-dom';
@@ -14,35 +13,25 @@ import IngestionCatalogConnectorCreation from '@components/data/IngestionCatalog
 import { IngestionConnectorType } from '@components/data/IngestionCatalog/utils/ingestionConnectorTypeMetadata';
 import createDeploymentCountMap from '@components/data/IngestionCatalog/utils/createDeploymentCountMap';
 import useConnectorDeployDialog from '@components/data/IngestionCatalog/hooks/useConnectorDeployDialog';
+import { IngestionConnectorsCatalogsQuery } from '@components/data/IngestionCatalog/__generated__/IngestionConnectorsCatalogsQuery.graphql';
+import IngestionConnectorsCatalogs, { ingestionConnectorsCatalogsQuery } from '@components/data/IngestionCatalog/IngestionConnectorsCatalog';
+import { IngestionConnectorsQuery } from '@components/data/IngestionCatalog/__generated__/IngestionConnectorsQuery.graphql';
+import IngestionConnectors, { ingestionConnectorsQuery } from '@components/data/IngestionCatalog/IngestionConnectors';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import PageContainer from '../../../components/PageContainer';
 import Loader, { LoaderVariant } from '../../../components/Loader';
-import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import GradientButton from '../../../components/GradientButton';
 import IngestionCatalogFilters from './IngestionCatalog/IngestionCatalogFilters';
 import GradientCard from '../../../components/GradientCard';
 import { MESSAGING$ } from '../../../relay/environment';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
-
-export const ingestionCatalogQuery = graphql`
-  query IngestionCatalogQuery {
-    catalogs {
-      id
-      name
-      description
-      entity_type
-      contracts
-    }
-    connectors {
-      manager_contract_image
-    }
-  }
-`;
+import useHelper from '../../../utils/hooks/useHelper';
 
 interface IngestionCatalogComponentProps {
-  queryRef: PreloadedQuery<IngestionCatalogQuery>;
+  catalogsData: IngestionConnectorsCatalogsQuery['response'];
+  deploymentData: IngestionConnectorsQuery['response'];
   onClickDeploy: (connector: IngestionConnector, catalogId: string, hasRegisteredManagers: boolean, deploymentCount: number) => void;
 }
 
@@ -139,7 +128,8 @@ const CatalogsEmptyState = () => {
 };
 
 const IngestionCatalogComponent = ({
-  queryRef,
+  catalogsData,
+  deploymentData,
   onClickDeploy,
 }: IngestionCatalogComponentProps) => {
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -151,10 +141,8 @@ const IngestionCatalogComponent = ({
 
   setTitle(t_i18n('Connector catalog | Ingestion | Data'));
 
-  const { catalogs, connectors } = usePreloadedQuery(
-    ingestionCatalogQuery,
-    queryRef,
-  );
+  const catalogs = catalogsData.catalogs || [];
+  const { connectors } = deploymentData;
 
   const { filteredCatalogs, filters, setFilters } = useIngestionCatalogFilters({
     catalogs,
@@ -224,21 +212,46 @@ const IngestionCatalogComponent = ({
 const IngestionCatalog = () => {
   const { catalogState, handleOpenDeployDialog, handleCloseDeployDialog, handleCreate } = useConnectorDeployDialog();
 
-  const queryRef = useQueryLoading<IngestionCatalogQuery>(
-    ingestionCatalogQuery,
-  );
+  const { isFeatureEnable } = useHelper();
+  const enableComposerFeatureFlag = isFeatureEnable('COMPOSER');
+
+  const [catalogsRef, loadCatalogs] = useQueryLoader<IngestionConnectorsCatalogsQuery>(ingestionConnectorsCatalogsQuery);
+  const [deploymentRef, loadDeployment] = useQueryLoader<IngestionConnectorsQuery>(ingestionConnectorsQuery);
+
+  useEffect(() => {
+    // fetch once the catalogs and use the cache during runtime
+    loadCatalogs({ enableComposerFeatureFlag }, { fetchPolicy: 'store-or-network' });
+    loadDeployment({}, { fetchPolicy: 'store-and-network' });
+  }, [enableComposerFeatureFlag]);
+
+  if (!enableComposerFeatureFlag) {
+    return null;
+  }
+
+  if (!deploymentRef || !catalogsRef) {
+    return <Loader variant={LoaderVariant.container} />;
+  }
 
   return (
     <>
       <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-        {queryRef && (
-          <ConnectorManagerStatusProvider>
-            <IngestionCatalogComponent
-              queryRef={queryRef}
-              onClickDeploy={handleOpenDeployDialog}
-            />
-          </ConnectorManagerStatusProvider>
-        )}
+        <ConnectorManagerStatusProvider>
+          {catalogsRef && (
+            <IngestionConnectorsCatalogs queryRef={catalogsRef}>
+              {({ data: catalogsData }) => (
+                <IngestionConnectors queryRef={deploymentRef}>
+                  {({ data: deploymentData }) => (
+                    <IngestionCatalogComponent
+                      catalogsData={catalogsData}
+                      deploymentData={deploymentData}
+                      onClickDeploy={handleOpenDeployDialog}
+                    />
+                  )}
+                </IngestionConnectors>
+              )}
+            </IngestionConnectorsCatalogs>
+          )}
+        </ConnectorManagerStatusProvider>
       </Suspense>
 
       {catalogState.selectedConnector && (
