@@ -773,7 +773,7 @@ export const validateCreatedBy = async (context, user, createdById) => {
 
 const inputResolveRefs = async (context, user, input, type, entitySetting) => {
   const inputResolveRefsFn = async () => {
-    const fetchingIds = [];
+    const fetchingIdsMap = new Map();
     const expectedIds = [];
     const cleanedInput = { _index: inferIndexFromConceptType(type), ...input };
     let embeddedFromResolution;
@@ -790,26 +790,46 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
         const hasOpenVocab = isEntityFieldAnOpenVocabulary(destKey, type);
         // Handle specific case of object label that can be directly the value instead of the key.
         if (src === INPUT_LABELS) {
-          const elements = R.uniq(id.map((label) => idLabel(label)))
-            .map((lid) => ({ id: lid, destKey, multiple: true }));
-          fetchingIds.push(...elements);
-          expectedIds.push(...elements.map((e) => e.id));
+          R.uniq(id.map((label) => idLabel(label)))
+            .forEach((labelId) => {
+              const labelElement = { id: labelId, destKey, multiple: true };
+              expectedIds.push(labelId);
+              fetchingIdsMap.set(labelId, [labelElement]);
+            });
         } else if (hasOpenVocab) {
           const ids = isListing ? id : [id];
           const category = getVocabularyCategoryForField(destKey, type);
-          const elements = ids.map((i) => ({ id: idVocabulary(i, category), destKey, multiple: isListing }));
-          fetchingIds.push(...elements);
+          ids.forEach((i) => {
+            const vocabularyId = idVocabulary(i, category);
+            const vocabularyElement = { id: vocabularyId, destKey, multiple: isListing };
+            if (fetchingIdsMap.has(vocabularyId)) {
+              fetchingIdsMap[vocabularyId].push(vocabularyElement);
+            } else {
+              fetchingIdsMap.set(vocabularyId, [vocabularyElement]);
+            }
+          });
         } else if (isListing) {
-          const elements = R.uniq(id).map((i) => ({ id: i, destKey, multiple: true }));
-          fetchingIds.push(...elements);
-          expectedIds.push(...elements.map((e) => e.id));
+          R.uniq(id).forEach((i) => {
+            const listingElement = { id: i, destKey, multiple: true };
+            if (fetchingIdsMap.has(i)) {
+              fetchingIdsMap[i].push(listingElement);
+            } else {
+              fetchingIdsMap.set(i, [listingElement]);
+            }
+            expectedIds.push(i);
+          });
         } else { // Single
           if (dst === 'from' && isStixRefRelationship(type)) {
             // If resolution is due to embedded ref, the from must be fully resolved
             // This will be used to generated a correct stream message
             embeddedFromResolution = id;
           } else {
-            fetchingIds.push({ id, destKey, multiple: false });
+            const singleElement = { id, destKey, multiple: false };
+            if (fetchingIdsMap.has(id)) {
+              fetchingIdsMap[id].push(singleElement);
+            } else {
+              fetchingIdsMap.set(id, [singleElement]);
+            }
           }
           if (!expectedIds.includes(id)) {
             expectedIds.push(id);
@@ -820,10 +840,11 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
     }
     // TODO Improve type restriction from targeted ref inferred types
     // This information must be added in the model
-    const simpleResolutionsPromise = internalFindByIds(context, user, fetchingIds.map((i) => i.id));
+    const idsToFetch = Array.from(fetchingIdsMap.keys());
+    const simpleResolutionsPromise = internalFindByIds(context, user, idsToFetch);
     let embeddedFromPromise = Promise.resolve();
     if (embeddedFromResolution) {
-      fetchingIds.push({ id: embeddedFromResolution, destKey: 'from', multiple: false });
+      fetchingIdsMap.set(embeddedFromResolution, [{ id: embeddedFromResolution, destKey: 'from', multiple: false }]);
       embeddedFromPromise = storeLoadByIdWithRefs(context, user, embeddedFromResolution);
     }
     const [resolvedElements, embeddedFrom] = await Promise.all([simpleResolutionsPromise, embeddedFromPromise]);
@@ -836,8 +857,13 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
     for (let i = 0; i < resolvedElements.length; i += 1) {
       const resolvedElement = resolvedElements[i];
       const instanceIds = getInstanceIds(resolvedElement);
-      instanceIds.forEach((instanceId) => resolvedIds.add(instanceId));
-      const matchingConfigs = R.filter((a) => instanceIds.includes(a.id), fetchingIds);
+      const matchingConfigs = [];
+      instanceIds.forEach((instanceId) => {
+        resolvedIds.add(instanceId);
+        if (fetchingIdsMap.has(instanceId)) {
+          matchingConfigs.push(...fetchingIdsMap[instanceId]);
+        }
+      });
       for (let configIndex = 0; configIndex < matchingConfigs.length; configIndex += 1) {
         const c = matchingConfigs[configIndex];
         const data = { ...resolvedElement, i_group: c };
