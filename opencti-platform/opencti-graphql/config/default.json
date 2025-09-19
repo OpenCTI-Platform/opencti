@@ -352,7 +352,7 @@
     "enabled": true,
     "lock_key": "pir_manager_lock",
     "interval": 30000,
-    "stream_batch_size": 1000,
+    "stream_batch_size": 7500,
     "max_concurrency": 5
   },
   "exclusion_list_cache_build_manager": {
