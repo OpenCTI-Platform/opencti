@@ -35,7 +35,8 @@ const buildRelationshipTypes = (relationshipTypes) => {
   const isValidRelationshipTypes = relationshipTypes.every((type) => isStixRelationship(type));
 
   if (!isValidRelationshipTypes) {
-    throw new GraphQLError(`Invalid argument: relationship_type ${relationshipTypes} is not a stix-relationship`, { extensions: { code: ApolloServerErrorCode.BAD_USER_INPUT } });
+    const options = { types: relationshipTypes, extensions: { code: ApolloServerErrorCode.BAD_USER_INPUT } };
+    throw new GraphQLError('Invalid argument: relationship_type is not a stix-relationship', options);
   }
   return relationshipTypes;
 };
