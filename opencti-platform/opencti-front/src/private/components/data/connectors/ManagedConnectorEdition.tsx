@@ -19,7 +19,7 @@ import JsonFormArrayRenderer, { jsonFormArrayTester } from '@components/data/Ing
 import reconcileManagedConnectorContractDataWithSchema from '@components/data/connectors/utils/reconcileManagedConnectorContractDataWithSchema';
 import buildContractConfiguration from '@components/data/connectors/utils/buildContractConfiguration';
 import JsonFormUnsupportedType, { jsonFormUnsupportedTypeTester } from '@components/data/IngestionCatalog/utils/JsonFormUnsupportedType';
-import { ConnectorsListQuery$data } from '@components/data/connectors/__generated__/ConnectorsListQuery.graphql';
+import { Connector_connector$data } from '@components/data/connectors/__generated__/Connector_connector.graphql';
 import TextField from '../../../../components/TextField';
 import { type FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -56,7 +56,7 @@ const customRenderers = [
 ];
 
 type ManagedConnectorEditionProps = {
-  connector: ConnectorsListQuery$data['connectors'][0]
+  connector: Connector_connector$data
   open: boolean;
   onClose: () => void
 };

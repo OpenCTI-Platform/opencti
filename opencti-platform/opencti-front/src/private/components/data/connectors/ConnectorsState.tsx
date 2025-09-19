@@ -9,15 +9,8 @@ export const connectorsStateQuery = graphql`
       id
       active
       auto
-      connector_trigger_filters
       manager_current_status @include(if: $enableComposerFeatureFlag)
       manager_requested_status @include(if: $enableComposerFeatureFlag)
-      updated_at
-    }
-    connectorManagers @include(if: $enableComposerFeatureFlag) {
-      id
-      active
-      last_sync_execution
     }
     rabbitMQMetrics {
       queues {

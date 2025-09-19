@@ -3932,6 +3932,7 @@ export type Connector = BasicObject & InternalObject & {
   manager_connector_uptime?: Maybe<Scalars['Int']['output']>;
   manager_contract_configuration?: Maybe<Array<ManagerContractConfiguration>>;
   manager_contract_definition?: Maybe<Scalars['String']['output']>;
+  manager_contract_excerpt?: Maybe<ManagerContractExcerpt>;
   manager_contract_hash?: Maybe<Scalars['String']['output']>;
   manager_contract_image?: Maybe<Scalars['String']['output']>;
   manager_current_status?: Maybe<Scalars['String']['output']>;
@@ -13871,6 +13872,12 @@ export type ManagerContractConfiguration = {
   __typename?: 'ManagerContractConfiguration';
   key?: Maybe<Scalars['String']['output']>;
   value?: Maybe<Scalars['String']['output']>;
+};
+
+export type ManagerContractExcerpt = {
+  __typename?: 'ManagerContractExcerpt';
+  slug: Scalars['String']['output'];
+  title: Scalars['String']['output'];
 };
 
 export type MappedEntity = {
@@ -33933,6 +33940,7 @@ export type ResolversTypes = ResolversObject<{
   ManagedConnector: ResolverTypeWrapper<Omit<ManagedConnector, 'connector_user'> & { connector_user?: Maybe<ResolversTypes['User']> }>;
   ManagerConfiguration: ResolverTypeWrapper<BasicStoreEntityManagerConfiguration>;
   ManagerContractConfiguration: ResolverTypeWrapper<ManagerContractConfiguration>;
+  ManagerContractExcerpt: ResolverTypeWrapper<ManagerContractExcerpt>;
   MappedEntity: ResolverTypeWrapper<Omit<MappedEntity, 'matchedEntity'> & { matchedEntity: ResolversTypes['StixCoreObject'] }>;
   MappedEntityInput: MappedEntityInput;
   MappingAnalysis: ResolverTypeWrapper<Omit<MappingAnalysis, 'mappedEntities'> & { mappedEntities?: Maybe<Array<ResolversTypes['MappedEntity']>> }>;
@@ -34852,6 +34860,7 @@ export type ResolversParentTypes = ResolversObject<{
   ManagedConnector: Omit<ManagedConnector, 'connector_user'> & { connector_user?: Maybe<ResolversParentTypes['User']> };
   ManagerConfiguration: BasicStoreEntityManagerConfiguration;
   ManagerContractConfiguration: ManagerContractConfiguration;
+  ManagerContractExcerpt: ManagerContractExcerpt;
   MappedEntity: Omit<MappedEntity, 'matchedEntity'> & { matchedEntity: ResolversParentTypes['StixCoreObject'] };
   MappedEntityInput: MappedEntityInput;
   MappingAnalysis: Omit<MappingAnalysis, 'mappedEntities'> & { mappedEntities?: Maybe<Array<ResolversParentTypes['MappedEntity']>> };
@@ -36574,6 +36583,7 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   manager_connector_uptime?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   manager_contract_configuration?: Resolver<Maybe<Array<ResolversTypes['ManagerContractConfiguration']>>, ParentType, ContextType>;
   manager_contract_definition?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  manager_contract_excerpt?: Resolver<Maybe<ResolversTypes['ManagerContractExcerpt']>, ParentType, ContextType>;
   manager_contract_hash?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   manager_contract_image?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   manager_current_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -40092,6 +40102,12 @@ export type ManagerConfigurationResolvers<ContextType = any, ParentType extends 
 export type ManagerContractConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['ManagerContractConfiguration'] = ResolversParentTypes['ManagerContractConfiguration']> = ResolversObject<{
   key?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ManagerContractExcerptResolvers<ContextType = any, ParentType extends ResolversParentTypes['ManagerContractExcerpt'] = ResolversParentTypes['ManagerContractExcerpt']> = ResolversObject<{
+  slug?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -45906,6 +45922,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ManagedConnector?: ManagedConnectorResolvers<ContextType>;
   ManagerConfiguration?: ManagerConfigurationResolvers<ContextType>;
   ManagerContractConfiguration?: ManagerContractConfigurationResolvers<ContextType>;
+  ManagerContractExcerpt?: ManagerContractExcerptResolvers<ContextType>;
   MappedEntity?: MappedEntityResolvers<ContextType>;
   MappingAnalysis?: MappingAnalysisResolvers<ContextType>;
   MarkingDefinition?: MarkingDefinitionResolvers<ContextType>;

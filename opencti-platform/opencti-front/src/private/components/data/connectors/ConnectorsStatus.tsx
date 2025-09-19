@@ -23,7 +23,6 @@ import { useTheme } from '@mui/styles';
 import useConnectorsStatusFilters from '@components/data/connectors/hooks/useConnectorsStatusFilters';
 import ConnectorsStatusFilters from '@components/data/connectors/ConnectorsStatusFilters';
 import ConnectorStatusChip from '@components/data/connectors/ConnectorStatusChip';
-import { managerContractDefinitionSchema } from '@components/data/connectors/utils/managerContractDefinitionType';
 import ConnectorsList, { connectorsListQuery } from '@components/data/connectors/ConnectorsList';
 import ConnectorsState, { connectorsStateQuery } from '@components/data/connectors/ConnectorsState';
 import { ConnectorsListQuery } from '@components/data/connectors/__generated__/ConnectorsListQuery.graphql';
@@ -107,32 +106,10 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
     });
   }, [connectorsListData.connectors, connectorsStateData.connectors]);
 
-  const managerContractDefinitionMap = useMemo(() => {
-    const definitionMap = new Map();
-
-    connectors.forEach((c) => {
-      const parsedDefinition = typeof c.manager_contract_definition === 'string'
-        ? JSON.parse(c.manager_contract_definition)
-        : c.manager_contract_definition;
-
-      if (parsedDefinition) {
-        try {
-          const validated = managerContractDefinitionSchema.validateSync(parsedDefinition);
-          definitionMap.set(c.id, validated);
-        } catch (error) {
-          MESSAGING$.notifyError(t_i18n('Failed to parse a connector manager contract definition'));
-        }
-      }
-    });
-
-    return definitionMap;
-  }, [connectors, t_i18n]);
-
   const [searchParams] = useSearchParams();
 
   const { filteredConnectors, filters, setFilters } = useConnectorsStatusFilters({
     connectors,
-    managerContractDefinitionMap,
     searchParams,
   });
 
@@ -142,9 +119,9 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
     const uniqueContracts = new Map();
 
     connectors.forEach((connector) => {
-      const definition = managerContractDefinitionMap.get(connector.id);
-      if (definition) {
-        uniqueContracts.set(definition.slug, definition.title);
+      if (connector.manager_contract_excerpt) {
+        const { slug, title } = connector.manager_contract_excerpt;
+        uniqueContracts.set(slug, title);
       }
     });
 
@@ -152,7 +129,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
       label: title,
       value: slug,
     })).sort((a, b) => a.label.localeCompare(b.label));
-  }, [connectors, managerContractDefinitionMap]);
+  }, [connectors]);
 
   const queues = connectorsStateData.rabbitMQMetrics?.queues ?? [];
 
@@ -173,11 +150,19 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
   const sortedConnectors = connectorsWithMessages.sort((a, b) => {
     let valueA = a[sortBy as keyof typeof connectorsWithMessages[number]];
     let valueB = b[sortBy as keyof typeof connectorsWithMessages[number]];
+
+    // Handle manager_contract_info sorting by title
+    if (sortBy === 'manager_contract_excerpt') {
+      valueA = a.manager_contract_excerpt?.title || '';
+      valueB = b.manager_contract_excerpt?.title || '';
+    }
+
     // messages are number in string, we shall parse before sorting
     if (sortBy === 'messages') {
       valueA = Number.parseInt(valueA, 10);
       valueB = Number.parseInt(valueB, 10);
     }
+
     // auto is a boolean but in the UI there are 3 values possibly displayed
     if (sortBy === 'auto') {
       if (a.connector_type === 'INTERNAL_ENRICHMENT' || a.connector_type === 'INTERNAL_IMPORT_FILE') {
@@ -191,11 +176,13 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
         valueB = -1;
       }
     }
+
     // is_managed is a boolean, convert to number for sorting
     if (sortBy === 'is_managed') {
       valueA = valueA ? 1 : 0;
       valueB = valueB ? 1 : 0;
     }
+
     if (orderAsc) {
       return valueA < valueB ? -1 : 1;
     }

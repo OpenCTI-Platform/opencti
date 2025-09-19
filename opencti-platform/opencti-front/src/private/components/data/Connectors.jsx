@@ -4,7 +4,6 @@ import { useFormatter } from '../../../components/i18n';
 import { QueryRenderer } from '../../../relay/environment';
 import WorkersStatus, { workersStatusQuery } from './connectors/WorkersStatus';
 import ConnectorsStatus from './connectors/ConnectorsStatus';
-import Loader, { LoaderVariant } from '../../../components/Loader';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import PageContainer from '../../../components/PageContainer';
@@ -24,15 +23,14 @@ const Connectors = () => {
           elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('Ingestion monitoring'), current: true }]}
           noMargin
         />
+
         <QueryRenderer
           query={workersStatusQuery}
           render={({ props }) => {
-            if (props) {
-              return <WorkersStatus data={props} />;
-            }
-            return <Loader variant={LoaderVariant.container} />;
+            return <WorkersStatus data={props} />;
           }}
         />
+
         <ConnectorsStatus />
       </PageContainer>
     </div>
