@@ -4,8 +4,8 @@ import React from 'react';
 import { IngestionConnectorsCatalogsQuery } from '@components/data/IngestionCatalog/__generated__/IngestionConnectorsCatalogsQuery.graphql';
 
 export const ingestionConnectorsCatalogsQuery = graphql`
-  query IngestionConnectorsCatalogsQuery($enableComposerFeatureFlag: Boolean!) {
-    catalogs @include(if: $enableComposerFeatureFlag) {
+  query IngestionConnectorsCatalogsQuery {
+    catalogs {
       id
       name
       description
