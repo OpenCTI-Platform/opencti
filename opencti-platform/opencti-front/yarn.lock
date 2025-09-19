@@ -1885,7 +1885,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime@npm:^7.12.5, @babel/runtime@npm:^7.13.10, @babel/runtime@npm:^7.16.3, @babel/runtime@npm:^7.17.8, @babel/runtime@npm:^7.18.3, @babel/runtime@npm:^7.21.0, @babel/runtime@npm:^7.23.9, @babel/runtime@npm:^7.24.1, @babel/runtime@npm:^7.25.7, @babel/runtime@npm:^7.26.0, @babel/runtime@npm:^7.26.7, @babel/runtime@npm:^7.3.1, @babel/runtime@npm:^7.5.5, @babel/runtime@npm:^7.7.2, @babel/runtime@npm:^7.8.3, @babel/runtime@npm:^7.8.4, @babel/runtime@npm:^7.8.7":
+"@babel/runtime@npm:^7.12.5, @babel/runtime@npm:^7.13.10, @babel/runtime@npm:^7.16.3, @babel/runtime@npm:^7.17.8, @babel/runtime@npm:^7.18.3, @babel/runtime@npm:^7.23.9, @babel/runtime@npm:^7.24.1, @babel/runtime@npm:^7.25.7, @babel/runtime@npm:^7.26.0, @babel/runtime@npm:^7.26.7, @babel/runtime@npm:^7.3.1, @babel/runtime@npm:^7.5.5, @babel/runtime@npm:^7.7.2, @babel/runtime@npm:^7.8.3, @babel/runtime@npm:^7.8.4, @babel/runtime@npm:^7.8.7":
   version: 7.27.0
   resolution: "@babel/runtime@npm:7.27.0"
   dependencies:
@@ -2841,15 +2841,6 @@ __metadata:
   version: 3.0.3
   resolution: "@csstools/css-tokenizer@npm:3.0.3"
   checksum: 10/6baa3160e426e1f177b8f10d54ec7a4a596090f65a05f16d7e9e4da049962a404eabc5f885f4867093702c259cd4080ac92a438326e22dea015201b3e71f5bbb
-  languageName: node
-  linkType: hard
-
-"@date-fns/upgrade@npm:1.0.3":
-  version: 1.0.3
-  resolution: "@date-fns/upgrade@npm:1.0.3"
-  dependencies:
-    date-fns: "npm:^2.1"
-  checksum: 10/e4db940537e96651ab0394201022477b2ee318b847da6bea8337e9bf0d93cfd729549e5e291ffe6c0e838aca398c655f8403e7cb3e7ce4ba55e5c06afa74d22a
   languageName: node
   linkType: hard
 
@@ -11179,15 +11170,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"date-fns@npm:^2.1":
-  version: 2.30.0
-  resolution: "date-fns@npm:2.30.0"
-  dependencies:
-    "@babel/runtime": "npm:^7.21.0"
-  checksum: 10/70b3e8ea7aaaaeaa2cd80bd889622a4bcb5d8028b4de9162cbcda359db06e16ff6e9309e54eead5341e71031818497f19aaf9839c87d1aba1e27bb4796e758a9
-  languageName: node
-  linkType: hard
-
 "dayjs@npm:1.10.7":
   version: 1.10.7
   resolution: "dayjs@npm:1.10.7"
@@ -18002,7 +17984,6 @@ __metadata:
     "@analytics/google-analytics": "npm:1.1.0"
     "@cfworker/json-schema": "npm:4.1.1"
     "@ckeditor/ckeditor5-react": "npm:9.5.0"
-    "@date-fns/upgrade": "npm:1.0.3"
     "@date-io/date-fns": "npm:3.2.1"
     "@fontsource/geologica": "npm:5.2.6"
     "@fontsource/ibm-plex-sans": "npm:5.2.6"
