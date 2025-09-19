@@ -13,6 +13,7 @@ import { getEntitiesMapFromCache } from './cache';
 import { SYSTEM_USER } from '../utils/access';
 import { getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
+import { logApp } from '../config/conf';
 
 export const completeConnector = (connector) => {
   if (connector) {
@@ -45,12 +46,13 @@ export const computeManagerConnectorContract = async (_context, _user, cn) => {
 };
 
 export const computeManagerConnectorExcerpt = async (_context, _user, cn) => {
-  const contracts = getSupportedContractsByImage();
-  const contract = contracts.get(cn.manager_contract_image);
-
-  if (!contract) {
+  if (!cn.manager_contract_image) {
+    logApp.warn('No manager_contract_image found for', { connectorName: cn.name });
     return null;
   }
+
+  const contracts = getSupportedContractsByImage();
+  const contract = contracts.get(cn.manager_contract_image);
 
   return {
     title: contract.title,

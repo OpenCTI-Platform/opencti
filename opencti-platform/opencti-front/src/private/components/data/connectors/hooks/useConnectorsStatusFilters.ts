@@ -46,7 +46,9 @@ const useConnectorsStatusFilters = ({ connectors, searchParams }: UseConnectorsS
     }
 
     if (filters.slug) {
-      if (connector.manager_contract_excerpt?.slug !== filters.slug) return false;
+      const connectorSlug = connector.manager_contract_excerpt?.slug?.toLowerCase();
+      const filterSlug = filters.slug.toLowerCase();
+      if (connectorSlug !== filterSlug) return false;
     }
 
     if (filters.isManaged !== null) {
