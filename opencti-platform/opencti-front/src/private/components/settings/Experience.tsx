@@ -39,7 +39,6 @@ import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useGranted, { SETTINGS_SETPARAMETERS, SETTINGS_SUPPORT } from '../../../utils/hooks/useGranted';
 import ValidateTermsOfUseDialog from './ValidateTermsOfUseDialog';
 import useAuth from '../../../utils/hooks/useAuth';
-import useHelper from '../../../utils/hooks/useHelper';
 
 export enum CGUStatus {
   pending = 'pending',
@@ -118,8 +117,6 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
   const isEnterpriseEditionActivated = settings.platform_enterprise_edition.license_enterprise;
   const isEnterpriseEditionByConfig = settings.platform_enterprise_edition.license_by_configuration;
   const { isAllowed } = useSensitiveModifications('ce_ee_toggle');
-  const { isFeatureEnable } = useHelper();
-  const isChatbotFeatureFlag = isFeatureEnable('CHATBOT_AI');
   const [openEEChanges, setOpenEEChanges] = useState(false);
   const [openValidateTermsOfUse, setOpenValidateTermsOfUse] = useState(false);
   const experienceValidation = () => Yup.object().shape({
@@ -310,7 +307,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                     status={null}
                   />
                 </ListItem>
-                {isChatbotFeatureFlag && isGrantedToParameters && (
+                {isGrantedToParameters && (
                   <ListItem divider={true}>
                     <ListItemText
                       primary={<div style={{ display: 'flex', alignItems: 'center' }}>
