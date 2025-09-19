@@ -1,6 +1,7 @@
 import React, { ChangeEvent, FunctionComponent, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import Grid from '@mui/material/Grid';
+import Tooltip from '@mui/material/Tooltip';
 import XtmHubSettings from '@components/settings/xtm-hub/XtmHubSettings';
 import SupportPackages from '@components/settings/support/SupportPackages';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
@@ -22,6 +23,7 @@ import DialogActions from '@mui/material/DialogActions';
 import * as Yup from 'yup';
 import Box from '@mui/material/Box';
 import { Switch } from '@mui/material';
+import Chip from '@mui/material/Chip';
 import { ExperienceQuery } from './__generated__/ExperienceQuery.graphql';
 import Transition from '../../../components/Transition';
 import useSensitiveModifications from '../../../utils/hooks/useSensitiveModifications';
@@ -310,14 +312,31 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                 </ListItem>
                 {isChatbotFeatureFlag && isGrantedToParameters && (
                   <ListItem divider={true}>
-                    <ListItemText primary={t_i18n('XTMOne Agentic (Ariane Assistant)')}/>
+                    <ListItemText
+                      primary={<div style={{ display: 'flex', alignItems: 'center' }}>
+                        <span>{t_i18n('Agentic AI (Ariane Assistant)')}</span>
+                        <Tooltip title={t_i18n('This feature is in preview and will improve over time with user\'s feedback.')}>
+                          <Chip
+                            label={t_i18n('Preview')}
+                            color="primary"
+                            variant="outlined"
+                            size="small"
+                            style={{
+                              marginLeft: theme.spacing(1),
+                            }}
+                          />
+                        </Tooltip>
+                      </div>}
+                    />
                     {filigran_chatbot_ai_cgu_status === CGUStatus.pending ? (
                       <Button
                         size="small"
                         variant="outlined"
                         onClick={() => setOpenValidateTermsOfUse(true)}
                         style={{ marginRight: 7, lineHeight: '12px', width: 250 }}
-                      >{t_i18n('Validate Terms of Services')}</Button>
+                      >
+                        {t_i18n('Validate the Filigran AI Terms')}
+                      </Button>
                     ) : (
                       <Box sx={{ marginBlock: -6 }}>
                         <Switch

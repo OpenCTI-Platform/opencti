@@ -5,9 +5,9 @@ import { useTheme } from '@mui/styles';
 import IconButton from '@mui/material/IconButton';
 import { CGUStatus } from '@components/settings/Experience';
 import ValidateTermsOfUseDialog from '@components/settings/ValidateTermsOfUseDialog';
-import { Tooltip } from '@mui/material';
 import { LogoXtmOneIcon } from 'filigran-icon';
 import FiligranIcon from '@components/common/FiligranIcon';
+import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import GradientButton, { GradientVariant } from '../../../components/GradientButton';
 import { useFormatter } from '../../../components/i18n';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
@@ -43,7 +43,6 @@ const AskArianeButton = React.forwardRef((props, ref) => {
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
   const [openValidateTermsOfUse, setOpenValidateTermsOfUse] = useState(false);
   const chatbotRef = useRef<{ onClose:() => void }>(null);
-  const EERef = useRef<HTMLDivElement>(null);
 
   const openChatbot = () => {
     setIsChatbotOpen(true);
@@ -143,24 +142,7 @@ const AskArianeButton = React.forwardRef((props, ref) => {
 
   return (
     <>
-      {isEnterpriseEdition && isChatbotAiEnabled() ? (
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        <filigran-chatbot
-          ref={chatbotRef}
-          open={isChatbotOpen}
-          left={navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH}
-          agentic-url={chatbotProxyUrl}
-          theme={JSON.stringify(chatBotTheme)}
-        />
-      ) : null}
-      {!isEnterpriseEdition && navOpen ? (
-        <>
-          {t_i18n('Ask Ariane')}
-          <EEChip ref={EERef}/>
-        </>
-      ) : null}
-      <Tooltip
+      <EETooltip
         title={isCGUStatusPending && !hasRightToValidateCGU ? t_i18n('Ask Ariane isn\'t activated yet. Please reach out to your administrator to enable this feature.') : 'Open chatbot'}
       >
         {navOpen ? (
@@ -172,13 +154,26 @@ const AskArianeButton = React.forwardRef((props, ref) => {
             startIcon={ <FiligranIcon icon={LogoXtmOneIcon} size='small' color="ai" style={chatIconStyle} />}
           >
             {t_i18n('ASK ARIANE')}
+            <EEChip />
           </GradientButton>
         ) : (
           <IconButton style={{ padding: 0 }} onClick={toggleChatbot}>
             <FiligranIcon icon={LogoXtmOneIcon} size='small' color="ai" style={chatIconStyle} />
           </IconButton>
         )}
-      </Tooltip>
+      </EETooltip>
+      {isEnterpriseEdition && isChatbotAiEnabled() ? (
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        <filigran-chatbot
+          ref={chatbotRef}
+          open={isChatbotOpen}
+          left={navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH}
+          agentic-url={chatbotProxyUrl}
+          theme={JSON.stringify(chatBotTheme)}
+        />
+      ) : null}
+
       {openValidateTermsOfUse && (
         <ValidateTermsOfUseDialog open={openValidateTermsOfUse} onClose={() => setOpenValidateTermsOfUse(false)}/>
       )}

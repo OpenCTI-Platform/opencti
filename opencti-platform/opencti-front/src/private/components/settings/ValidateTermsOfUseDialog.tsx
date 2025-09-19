@@ -9,6 +9,7 @@ import IconButton from '@mui/material/IconButton';
 import { Close } from '@mui/icons-material';
 import Checkbox from '@mui/material/Checkbox';
 import { FormControlLabel } from '@mui/material';
+import Typography from '@mui/material/Typography';
 import { useFormatter } from '../../../components/i18n';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { FieldOption } from '../../../utils/field';
@@ -55,7 +56,7 @@ const ValidateTermsOfUseDialog = ({ open, onClose }: ValidateTermsOfUseDialogPro
       maxWidth="sm"
     >
       <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>{t_i18n('Validate the Terms of Services')}</div>
+        {t_i18n('Validate the Filigran AI Terms')}
         <IconButton
           aria-label="Close"
           onClick={() => onClose()}
@@ -65,30 +66,32 @@ const ValidateTermsOfUseDialog = ({ open, onClose }: ValidateTermsOfUseDialogPro
           <Close fontSize="small" color="primary"/>
         </IconButton>
       </DialogTitle>
-      <DialogTitle>
-      </DialogTitle>
       <DialogContent
         style={{
           display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
           flexDirection: 'column',
           gap: 20,
         }}
       >
-        <Button
-          href="https://filigran.io/app/uploads/2025/09/filigran-ai-terms-september-2025.pdf"
-          target="_blank"
-          rel="noreferrer"
-          variant="outlined"
-        >
-          {t_i18n('Read the Terms of Services')}
-        </Button>
+        <Typography>
+          {t_i18n('Please take a moment to review our "Filigran AI Terms". Our chatbot is here to assist you, but it\'s important to understand how it works and what to expect. Please read the full terms to know how we protect your data and ensure service quality.')}
+        </Typography>
+        <div style={{ textAlign: 'center' }}>
+          <Button
+            href="https://filigran.io/app/uploads/2025/09/filigran-ai-terms-september-2025.pdf"
+            target="_blank"
+            rel="noreferrer"
+            variant="outlined"
+            style={{ width: 'fit-content' }}
+          >
+            {t_i18n('Read the Filigran AI Terms')}
+          </Button>
+        </div>
         <FormControlLabel
           checked={isChecked}
           required
           control={<Checkbox/>}
-          label={t_i18n('I have read, understand and accept the terms and conditions')}
+          label={t_i18n('I have read, I understand and I accept the Filigran AI terms')}
           labelPlacement="end"
           onChange={(_, checked) => setIsChecked(checked)}
         />
@@ -100,7 +103,7 @@ const ValidateTermsOfUseDialog = ({ open, onClose }: ValidateTermsOfUseDialogPro
           onClick={() => updateStatus(CGUStatus.enabled)}
           disabled={!isChecked}
         >
-          {t_i18n('I Agree to terms of services')}
+          {t_i18n('I Agree to Filigran AI Terms')}
         </Button>
       </DialogActions>
     </Dialog>
