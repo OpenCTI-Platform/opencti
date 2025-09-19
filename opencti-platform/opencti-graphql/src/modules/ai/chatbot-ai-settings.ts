@@ -8,7 +8,7 @@ export const getFiligranChatbotAiEndpoint = () => {
 
 export const isFiligranChatbotAiActivated = async (settings: BasicStoreSettings) => {
   const isChatbotCGUAccepted: boolean = settings.filigran_chatbot_ai_cgu_status === CguStatus.Enabled;
-  const isChatbotAiConfigured: boolean = nconf.get('xtm:one:ai:url') !== undefined;
+  const isChatbotAiConfigured: boolean = nconf.get('xtm:xtm_one_url') !== undefined;
 
   return isChatbotCGUAccepted && isChatbotAiConfigured;
 };
