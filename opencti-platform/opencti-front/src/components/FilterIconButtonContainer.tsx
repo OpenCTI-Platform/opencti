@@ -325,9 +325,9 @@ FilterIconButtonContainerProps
             >
               <Box
                 sx={{
-                  padding: styleNumber === 3 ? '0 4px' : '0',
+                  padding: '0',
                   display: 'flex',
-                  marginLeft: '-4px' }}
+                }}
               >
                 <Chip
                   color={chipColor}
