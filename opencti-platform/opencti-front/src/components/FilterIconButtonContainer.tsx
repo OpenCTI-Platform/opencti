@@ -252,7 +252,6 @@ FilterIconButtonContainerProps
     flexWrap: 'wrap',
     gap: 1,
     overflow: 'auto',
-    padding: hasSavedFilters ? '4px' : ' 4px 0px',
     backgroundColor: hasSavedFilters ? 'rgba(37, 150, 190, 0.3)' : 'transparent',
     borderRadius: hasSavedFilters ? '4px' : '0px',
   };
@@ -265,7 +264,6 @@ FilterIconButtonContainerProps
         flexWrap: 'no-wrap',
         gap: 0,
         overflow: 'hidden',
-        padding: '4px 0px',
         backgroundColor: 'none',
         borderRadius: '0px',
       };
@@ -327,7 +325,7 @@ FilterIconButtonContainerProps
             >
               <Box
                 sx={{
-                  padding: styleNumber === 3 ? '0 4px' : '0',
+                  padding: '0',
                   display: 'flex',
                 }}
               >
