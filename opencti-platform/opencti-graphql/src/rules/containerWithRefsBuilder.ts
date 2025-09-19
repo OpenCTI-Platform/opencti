@@ -101,7 +101,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
       }
     }
     // endregion
-    if ((createdTargets.length > 0 || deletedTargetRefs.length > 0) && !createInferredRelationCallback) {
+    if (createdTargets.length > 0 || deletedTargetRefs.length > 0) {
       const updatedReport = structuredClone(report);
       const deletedTargetIds = deletedTargetRefs.map((d) => d.standard_id);
       const refsWithoutDeletion = (object_refs_inferred ?? []).filter((o) => !deletedTargetIds.includes(o));
@@ -121,7 +121,12 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
       }
       const message = await generateUpdateMessage(context, RULE_MANAGER_USER, report.extensions[STIX_EXT_OCTI].type, inputs);
       const updateEvent = buildStixUpdateEvent(RULE_MANAGER_USER, report, updatedReport, message);
-      await publishStixToStream(context, RULE_MANAGER_USER, updateEvent);
+      if (createInferredRelationCallback) {
+        // Fake a relation creation to push event to stream
+        await createInferredRelationCallback(context, {}, {}, { isPublishStixToStream: true, publishStixEvent: updateEvent });
+      } else {
+        await publishStixToStream(context, RULE_MANAGER_USER, updateEvent);
+      }
     }
   };
   const handleReportCreation = async (
