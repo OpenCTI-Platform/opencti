@@ -143,7 +143,6 @@ const AskArianeButton = React.forwardRef((props, ref) => {
   return (
     <>
       <EETooltip
-        forAi={true}
         title={isCGUStatusPending && !hasRightToValidateCGU ? t_i18n('Ask Ariane isn\'t activated yet. Please reach out to your administrator to enable this feature.') : 'Open chatbot'}
       >
         {navOpen ? (

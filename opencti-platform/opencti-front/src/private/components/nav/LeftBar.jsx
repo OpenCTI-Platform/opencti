@@ -1068,31 +1068,31 @@ const LeftBar = () => {
         <Divider />
         <MenuList>
           {isChatbotFeatureFlag && filigran_chatbot_ai_cgu_status !== CGUStatus.disabled && (
-          <MenuItem
-            style={{
-              color: theme.palette.ai.main,
-              paddingBlock: navOpen ? undefined : '10px',
-              paddingInline: navOpen ? theme.spacing(1.25) : undefined,
-            }}
-            onKeyDown={(e) => {
-              if (['a', 'A', 'c', 'C'].includes(e.key)) {
-                e.stopPropagation();
-              }
-            }}
-          >
-            <div
+            <MenuItem
               style={{
-                width: '100%',
-                height: '100%',
-                position: 'absolute',
-                left: 0,
+                color: theme.palette.ai.main,
+                paddingBlock: navOpen ? undefined : '10px',
+                paddingInline: navOpen ? theme.spacing(1.25) : undefined,
               }}
-              onClick={() => {
-                askArianeButtonRef.current?.toggleChatbot();
+              onKeyDown={(e) => {
+                if (['a', 'A', 'c', 'C'].includes(e.key)) {
+                  e.stopPropagation();
+                }
               }}
-            />
-            <AskArianeButton ref={askArianeButtonRef} />
-          </MenuItem>
+            >
+              <div
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  position: 'absolute',
+                  left: 0,
+                }}
+                onClick={() => {
+                  askArianeButtonRef.current?.toggleChatbot();
+                }}
+              />
+              <AskArianeButton ref={askArianeButtonRef} />
+            </MenuItem>
           )}
           <MenuItem
             dense={true}
