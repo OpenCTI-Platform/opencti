@@ -224,7 +224,7 @@ export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAdd
   });
   // create rabbit queue for pir
   await registerConnectorQueues(pirId, `Pir ${pirId} queue`, 'internal', 'pir');
-  // -- notify the Pir creation --
+  // notify the Pir creation
   return notify(BUS_TOPICS[ENTITY_TYPE_PIR].ADDED_TOPIC, created, user);
 };
 
