@@ -716,13 +716,18 @@ export const fetchStreamInfo = async (streamName = REDIS_STREAM_NAME) => {
 const processStreamData = async ([id, data]: any) => {
   if (data.includes(streamMaxEventFileKey)) {
     const filePath = data[1];
-    const fileContent = await getFileContent(filePath);
-    if (!fileContent) {
-      logApp.warn('Stream event file could not be found', { id, filePath });
+    try {
+      const fileContent = await getFileContent(filePath);
+      if (!fileContent) {
+        logApp.warn('Stream event file could not be found', { id, filePath });
+        return null;
+      }
+      const fileResult = JSON.parse(fileContent);
+      return mapStreamToJS([id, fileResult]);
+    } catch (error) {
+      logApp.warn('Error fetching file stream event, skipping event', { id, filePath, error });
       return null;
     }
-    const fileResult = JSON.parse(fileContent);
-    return mapStreamToJS([id, fileResult]);
   }
   return mapStreamToJS([id, data]);
 };
