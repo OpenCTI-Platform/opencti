@@ -4656,7 +4656,7 @@ input IdentityAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   type: IdentityType!
-  name: String! @constraint(minLength: 2, format: "not-blank")
+  name: String! @constraint(minLength: 1 format: "not-blank")
   description: String
   contact_information: String
   roles: [String]
