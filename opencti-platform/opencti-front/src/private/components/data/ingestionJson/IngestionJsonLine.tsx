@@ -17,6 +17,7 @@ import { DataColumns } from '../../../../components/list_lines';
 import type { Theme } from '../../../../components/Theme';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
+import IngestionTooltip from '../../../../components/IngestionTooltip';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -62,6 +63,7 @@ const ingestionJsonLineFragment = graphql`
     connector_id
     ingestion_running
     last_execution_date
+    ingestionLogs
   }
 `;
 
@@ -71,7 +73,7 @@ export const IngestionJsonLineComponent: FunctionComponent<IngestionJsonLineProp
   paginationOptions,
 }) => {
   const classes = useStyles();
-  const { t_i18n, fldt } = useFormatter();
+  const { t_i18n, nsdt } = useFormatter();
   const data = useFragment(ingestionJsonLineFragment, node);
   return (
     <ListItem
@@ -119,7 +121,9 @@ export const IngestionJsonLineComponent: FunctionComponent<IngestionJsonLineProp
               className={classes.bodyItem}
               style={{ width: dataColumns.connector.width }}
             >
-              {fldt(data.last_execution_date) || '-'}
+              <IngestionTooltip logs={data.ingestionLogs}>
+                {nsdt(data.last_execution_date) || '-'}
+              </IngestionTooltip>
             </div>
             <div
               className={classes.bodyItem}
