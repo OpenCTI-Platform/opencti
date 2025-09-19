@@ -43,7 +43,6 @@ const Management = lazy(() => import('./Management'));
 const Root = () => {
   const { isFeatureEnable } = useHelper();
   const isRightMenuManagementEnable = isFeatureEnable('DATA_MANAGEMENT_RIGHT_MENU');
-  const isComposerEnable = isFeatureEnable('COMPOSER');
 
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
   const isGrantedToIngestion = useGranted([MODULES, INGESTION, INGESTION_SETINGESTIONS]);
@@ -116,18 +115,14 @@ const Root = () => {
           path="/ingestion/taxii"
           element={boundaryWrapper(IngestionTaxiis)}
         />
-        {isComposerEnable && (
-          <Route
-            path="/ingestion/catalog"
-            element={boundaryWrapper(IngestionCatalog)}
-          />
-        )}
-        {isComposerEnable && (
-          <Route
-            path="/ingestion/catalog/:connectorSlug"
-            element={boundaryWrapper(IngestionCatalogConnector)}
-          />
-        )}
+        <Route
+          path="/ingestion/catalog"
+          element={boundaryWrapper(IngestionCatalog)}
+        />
+        <Route
+          path="/ingestion/catalog/:connectorSlug"
+          element={boundaryWrapper(IngestionCatalogConnector)}
+        />
         <Route
           path="/ingestion/collection"
           element={boundaryWrapper(IngestionTaxiiCollections)}

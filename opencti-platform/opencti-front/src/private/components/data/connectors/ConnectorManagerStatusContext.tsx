@@ -2,12 +2,11 @@ import React, { createContext, ReactNode, useContext, useEffect } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { interval } from 'rxjs';
 import { ConnectorManagerStatusContextQuery } from '@components/data/connectors/__generated__/ConnectorManagerStatusContextQuery.graphql';
-import useHelper from '../../../../utils/hooks/useHelper';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 
 export const connectorManagerStatusQuery = graphql`
-  query ConnectorManagerStatusContextQuery($enableComposerFeatureFlag: Boolean!) {
-    connectorManagers @include(if: $enableComposerFeatureFlag) {
+  query ConnectorManagerStatusContextQuery {
+    connectorManagers {
       id
       active
       last_sync_execution
@@ -29,8 +28,6 @@ interface ConnectorManagerStatusProviderProps {
 export const ConnectorManagerStatusProvider: React.FC<ConnectorManagerStatusProviderProps> = ({
   children,
 }) => {
-  const { isFeatureEnable } = useHelper();
-  const enableComposerFeatureFlag = isFeatureEnable('COMPOSER');
   const [fetchKey, setFetchKey] = React.useState(0);
 
   useEffect(() => {
@@ -43,7 +40,7 @@ export const ConnectorManagerStatusProvider: React.FC<ConnectorManagerStatusProv
 
   const data = useLazyLoadQuery<ConnectorManagerStatusContextQuery>(
     connectorManagerStatusQuery,
-    { enableComposerFeatureFlag },
+    {},
     {
       fetchPolicy: 'store-and-network',
       fetchKey,

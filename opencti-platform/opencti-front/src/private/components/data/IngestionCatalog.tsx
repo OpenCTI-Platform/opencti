@@ -27,7 +27,6 @@ import IngestionCatalogFilters from './IngestionCatalog/IngestionCatalogFilters'
 import GradientCard from '../../../components/GradientCard';
 import { MESSAGING$ } from '../../../relay/environment';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
-import useHelper from '../../../utils/hooks/useHelper';
 
 interface IngestionCatalogComponentProps {
   catalogsData: IngestionConnectorsCatalogsQuery['response'];
@@ -212,21 +211,14 @@ const IngestionCatalogComponent = ({
 const IngestionCatalog = () => {
   const { catalogState, handleOpenDeployDialog, handleCloseDeployDialog, handleCreate } = useConnectorDeployDialog();
 
-  const { isFeatureEnable } = useHelper();
-  const enableComposerFeatureFlag = isFeatureEnable('COMPOSER');
-
   const [catalogsRef, loadCatalogs] = useQueryLoader<IngestionConnectorsCatalogsQuery>(ingestionConnectorsCatalogsQuery);
   const [deploymentRef, loadDeployment] = useQueryLoader<IngestionConnectorsQuery>(ingestionConnectorsQuery);
 
   useEffect(() => {
     // fetch once the catalogs and use the cache during runtime
-    loadCatalogs({ enableComposerFeatureFlag }, { fetchPolicy: 'store-or-network' });
+    loadCatalogs({}, { fetchPolicy: 'store-or-network' });
     loadDeployment({}, { fetchPolicy: 'store-and-network' });
-  }, [enableComposerFeatureFlag]);
-
-  if (!enableComposerFeatureFlag) {
-    return null;
-  }
+  }, []);
 
   if (!deploymentRef || !catalogsRef) {
     return <Loader variant={LoaderVariant.container} />;

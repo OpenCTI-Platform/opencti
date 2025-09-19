@@ -4,12 +4,12 @@ import React from 'react';
 import type { ConnectorsListQuery } from './__generated__/ConnectorsListQuery.graphql';
 
 export const connectorsListQuery = graphql`
-  query ConnectorsListQuery($enableComposerFeatureFlag: Boolean!) {
+  query ConnectorsListQuery {
     connectors {
       id
       name
       connector_type
-      is_managed @include(if: $enableComposerFeatureFlag)
+      is_managed
       built_in
       updated_at
       manager_contract_excerpt {

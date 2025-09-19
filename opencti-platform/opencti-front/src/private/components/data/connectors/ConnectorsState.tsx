@@ -4,13 +4,13 @@ import React from 'react';
 import type { ConnectorsStateQuery } from './__generated__/ConnectorsStateQuery.graphql';
 
 export const connectorsStateQuery = graphql`
-  query ConnectorsStateQuery($enableComposerFeatureFlag: Boolean!) {
+  query ConnectorsStateQuery {
     connectors {
       id
       active
       auto
-      manager_current_status @include(if: $enableComposerFeatureFlag)
-      manager_requested_status @include(if: $enableComposerFeatureFlag)
+      manager_current_status
+      manager_requested_status
     }
     rabbitMQMetrics {
       queues {

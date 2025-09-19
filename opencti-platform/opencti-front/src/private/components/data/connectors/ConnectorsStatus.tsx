@@ -40,7 +40,6 @@ import type { Theme } from '../../../../components/Theme';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import SortConnectorsHeader from './SortConnectorsHeader';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -80,8 +79,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
   connectorsStateData,
 }) => {
   const { t_i18n, nsdt, n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isComposerEnable = isFeatureEnable('COMPOSER');
+
   const classes = useStyles(); // TODO remove as deprecated
   const theme = useTheme<Theme>();
   const { isSensitive } = useSensitiveModifications('connector_reset');
@@ -233,9 +231,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
     setOrderAsc(!orderAsc);
   };
 
-  const gridColumns = isComposerEnable
-    ? '20% 10% 15% 10% 15% 15% 15%'
-    : '24% 12% 18% 12% 17% 17%';
+  const gridColumns = '20% 10% 15% 10% 15% 15% 15%';
 
   const hasManagedConnectors = connectors.some((c) => c.is_managed);
 
@@ -325,11 +321,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                     <SortConnectorsHeader field="messages" label="Messages" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
                     <SortConnectorsHeader field="active" label="Status" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
                     <SortConnectorsHeader field="updated_at" label="Modified" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
-                    {
-                      isComposerEnable && (
-                        <SortConnectorsHeader field="is_managed" label={t_i18n('Manager deployment')} isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
-                      )
-                    }
+                    <SortConnectorsHeader field="is_managed" label={t_i18n('Manager deployment')} isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
                   </div>
                 }
               />
@@ -388,7 +380,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                             </Tooltip>
                           </>
                         </Security>
-                            }
+                      }
                     >
                       <ListItemButton
                         component={Link}
@@ -429,17 +421,13 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                               <div className={classes.bodyItem}>
                                 {nsdt(connector.updated_at)}
                               </div>
-                              {
-                                isComposerEnable && (
-                                  <div className={classes.bodyItem}>
-                                    <ItemBoolean
-                                      label={connector.is_managed ? 'TRUE' : 'FALSE'}
-                                      status={connector.is_managed}
-                                      variant="inList"
-                                    />
-                                  </div>
-                                )
-                              }
+                              <div className={classes.bodyItem}>
+                                <ItemBoolean
+                                  label={connector.is_managed ? 'TRUE' : 'FALSE'}
+                                  status={connector.is_managed}
+                                  variant="inList"
+                                />
+                              </div>
                             </div>
                           }
                         />
@@ -456,20 +444,17 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
 };
 
 const ConnectorsStatus: React.FC = () => {
-  const { isFeatureEnable } = useHelper();
-  const enableComposerFeatureFlag = isFeatureEnable('COMPOSER');
-
   const [connectorsListRef, loadConnectorsList] = useQueryLoader<ConnectorsListQuery>(connectorsListQuery);
   const [connectorsStateRef, loadConnectorsState] = useQueryLoader<ConnectorsStateQuery>(connectorsStateQuery);
 
   useEffect(() => {
-    loadConnectorsList({ enableComposerFeatureFlag }, { fetchPolicy: 'store-and-network' });
-    loadConnectorsState({ enableComposerFeatureFlag }, { fetchPolicy: 'store-and-network' });
-  }, [enableComposerFeatureFlag]);
+    loadConnectorsList({}, { fetchPolicy: 'store-and-network' });
+    loadConnectorsState({}, { fetchPolicy: 'store-and-network' });
+  }, []);
 
   const refetchConnectorsState = useCallback(() => {
-    loadConnectorsState({ enableComposerFeatureFlag }, { fetchPolicy: 'store-and-network' });
-  }, [enableComposerFeatureFlag]);
+    loadConnectorsState({}, { fetchPolicy: 'store-and-network' });
+  }, []);
 
   useEffect(() => {
     const subscription = interval$.subscribe(() => {

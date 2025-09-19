@@ -64,8 +64,6 @@ import {
 import { getConnectorQueueSize } from '../database/rabbitmq';
 import { redisGetConnectorLogs } from '../database/redis';
 import pjson from '../../package.json';
-import { COMPOSER_FF } from '../modules/catalog/catalog-types';
-import { enforceEnableFeatureFlag } from '../utils/access';
 
 export const PLATFORM_VERSION = pjson.version;
 
@@ -132,35 +130,27 @@ const connectorResolvers = {
     updateConnectorTrigger: (_, { id, input }, context) => connectorTriggerUpdate(context, context.user, id, input),
     // region new managed connectors
     managedConnectorAdd: (_, { input }, context) => {
-      enforceEnableFeatureFlag(COMPOSER_FF);
       return managedConnectorAdd(context, context.user, input);
     },
     managedConnectorEdit: (_, { input }, context) => {
-      enforceEnableFeatureFlag(COMPOSER_FF);
       return managedConnectorEdit(context, context.user, input);
     },
     updateConnectorManagerStatus: (_, { input }, context) => {
-      enforceEnableFeatureFlag(COMPOSER_FF);
       return updateConnectorManagerStatus(context, context.user, input);
     },
     registerConnectorsManager: (_, { input }, context) => {
-      enforceEnableFeatureFlag(COMPOSER_FF);
       return registerConnectorsManager(context, context.user, input);
     },
     updateConnectorRequestedStatus: (_, { input }, context) => {
-      enforceEnableFeatureFlag(COMPOSER_FF);
       return updateConnectorRequestedStatus(context, context.user, input);
     },
     updateConnectorCurrentStatus: (_, { input }, context) => {
-      enforceEnableFeatureFlag(COMPOSER_FF);
       return updateConnectorCurrentStatus(context, context.user, input);
     },
     updateConnectorLogs: (_, { input }, context) => {
-      enforceEnableFeatureFlag(COMPOSER_FF);
       return connectorUpdateLogs(context, context.user, input);
     },
     updateConnectorHealth: (_, { input }, context) => {
-      enforceEnableFeatureFlag(COMPOSER_FF);
       return connectorUpdateHealth(context, context.user, input);
     },
     // endregion
