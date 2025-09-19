@@ -9,7 +9,7 @@ import conf, { booleanConf, configureCA, DEV_MODE, getStoppingState, loadCert, l
 import { asyncListTransformation, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, isNotEmptyField, wait, waitInSec } from './utils';
 import { INTERNAL_EXPORTABLE_TYPES, isStixExportableInStreamData } from '../schema/stixCoreObject';
 import { DatabaseError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
-import { mergeDeepRightAll, now, utcDate } from '../utils/format';
+import { mergeDeepRightAll, now, streamEventId, utcDate } from '../utils/format';
 import { convertStoreToStix } from './stix-2-1-converter';
 import type { BasicStoreCommon, StoreObject, StoreRelation } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -40,6 +40,7 @@ import type { ExclusionListCacheItem } from './exclusionListCache';
 import { refreshLocalCacheForEntity } from './cache';
 import { asyncMap } from '../utils/data-processing';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
+import { getFileContent, rawUpload } from './file-storage';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => loadCert(path));
@@ -494,6 +495,8 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
 
 // region opencti data stream
 const streamTrimming = conf.get('redis:trimming') || 0;
+const streamMaxEventSize = conf.get('redis:max_event_length') || 0;
+const streamMaxEventFileKey = 'event_file_id';
 const mapJSToStream = (event: any) => {
   const cmdArgs: Array<string> = [];
   Object.keys(event).forEach((key) => {
@@ -510,10 +513,22 @@ const pushToStream = async (context: AuthContext, user: AuthUser, client: Cluste
   const eventToPush = { ...event, event_id: context.eventId };
   if (!draftContext && isStreamPublishable(opts)) {
     const pushToStreamFn = async () => {
+      let mapJsToStream = mapJSToStream(eventToPush);
+      const mapJsToStreamBlob = new Blob(mapJsToStream);
+      const totalStreamEventSize = mapJsToStreamBlob.size;
+      if (streamMaxEventSize > 0 && totalStreamEventSize > streamMaxEventSize) {
+        // Add salt to prevent time collision
+        const randomSalt = Math.floor(Math.random() * 1000);
+        const eventId = streamEventId(null, randomSalt);
+        const filePath = `streams/${REDIS_STREAM_NAME}/${eventId}`;
+        const fileContent = JSON.stringify(mapJsToStream);
+        await rawUpload(filePath, fileContent);
+        mapJsToStream = [streamMaxEventFileKey, filePath];
+      }
       if (streamTrimming) {
-        await client.call('XADD', REDIS_STREAM_NAME, 'MAXLEN', '~', streamTrimming, '*', ...mapJSToStream(eventToPush));
+        await client.call('XADD', REDIS_STREAM_NAME, 'MAXLEN', '~', streamTrimming, '*', ...mapJsToStream);
       } else {
-        await client.call('XADD', REDIS_STREAM_NAME, '*', ...mapJSToStream(eventToPush));
+        await client.call('XADD', REDIS_STREAM_NAME, '*', ...mapJsToStream);
       }
     };
     telemetry(context, user, 'INSERT STREAM', {
@@ -698,8 +713,21 @@ export const fetchStreamInfo = async (streamName = REDIS_STREAM_NAME) => {
   return { lastEventId: lastId, firstEventId: firstId, firstEventDate, lastEventDate, streamSize: info.length };
 };
 
+const processStreamData = async ([id, data]: any) => {
+  if (data.includes(streamMaxEventFileKey)) {
+    const filePath = data[1];
+    const fileContent = await getFileContent(filePath);
+    if (!fileContent) {
+      logApp.warn('Stream event file could not be found', { id, filePath });
+      return null;
+    }
+    const fileResult = JSON.parse(fileContent);
+    return mapStreamToJS([id, fileResult]);
+  }
+  return mapStreamToJS([id, data]);
+};
 const processStreamResult = async (results: Array<any>, callback: any, withInternal: boolean | undefined) => {
-  const transform = (r: any) => mapStreamToJS(r);
+  const transform = (r: any) => processStreamData(r);
   const filter = (s: any) => (withInternal ? true : (s.data.scope ?? 'external') === 'external');
   const events = await asyncMap(results, transform, filter);
   const lastEventId = events.length > 0 ? R.last(events)?.id : `${new Date().valueOf()}-0`;

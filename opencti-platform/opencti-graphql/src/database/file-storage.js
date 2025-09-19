@@ -492,6 +492,18 @@ export const uploadJobImport = async (context, user, file, entityId, opts = {}) 
   return connectors;
 };
 
+export const rawUpload = async (key, body) => {
+  const s3Upload = new Upload({
+    client: s3Client,
+    params: {
+      Bucket: bucketName,
+      Key: key,
+      Body: body
+    }
+  });
+  await s3Upload.done();
+};
+
 // Please consider using file-storage-helper#uploadToStorage() instead.
 export const upload = async (context, user, filePath, fileUpload, opts) => {
   const { entity, meta = {}, noTriggerImport = false, errorOnExisting = false, file_markings = [], importContextEntities = [] } = opts;
@@ -539,15 +551,7 @@ export const upload = async (context, user, filePath, fileUpload, opts) => {
     creator_id: creatorId,
     entity_id: entity?.internal_id,
   };
-  const s3Upload = new Upload({
-    client: s3Client,
-    params: {
-      Bucket: bucketName,
-      Key: key,
-      Body: readStream
-    }
-  });
-  await s3Upload.done();
+  await rawUpload(key, readStream);
   const fileSize = await getFileSize(user, key);
 
   // Register in elastic
