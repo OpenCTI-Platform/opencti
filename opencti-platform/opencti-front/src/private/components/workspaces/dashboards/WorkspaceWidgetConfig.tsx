@@ -61,6 +61,7 @@ const WorkspaceWidgetConfig = ({ widget, onComplete, closeMenu, handleImportWidg
                 disableElevation
                 sx={{ marginLeft: 1 }}
                 onClick={handleOpenWidgetConfig}
+                data-testid="create-widget-button"
               >
                 {t_i18n('Create Widget')}
               </Button>
