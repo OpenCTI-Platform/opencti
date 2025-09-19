@@ -685,6 +685,9 @@ enum StreamCollectionOrdering {
 type RedisStreamInfo {
   lastEventId: String!
   firstEventId: String!
+  firstEventDate: String!
+  lastEventDate: String!
+  streamSize: Int!
 }
 
 ############## SubTypes

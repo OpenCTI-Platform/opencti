@@ -24282,8 +24282,11 @@ export type RabbitMqMetrics = {
 
 export type RedisStreamInfo = {
   __typename?: 'RedisStreamInfo';
+  firstEventDate: Scalars['String']['output'];
   firstEventId: Scalars['String']['output'];
+  lastEventDate: Scalars['String']['output'];
   lastEventId: Scalars['String']['output'];
+  streamSize: Scalars['Int']['output'];
 };
 
 export type Region = BasicObject & Location & StixCoreObject & StixDomainObject & StixObject & {
@@ -42490,8 +42493,11 @@ export type RabbitMqMetricsResolvers<ContextType = any, ParentType extends Resol
 }>;
 
 export type RedisStreamInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['RedisStreamInfo'] = ResolversParentTypes['RedisStreamInfo']> = ResolversObject<{
+  firstEventDate?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   firstEventId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  lastEventDate?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   lastEventId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  streamSize?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

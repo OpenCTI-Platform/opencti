@@ -13,15 +13,18 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import { DialogTitle, DialogContent, Button, DialogActions } from '@mui/material';
+import { Button, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import React, { useState } from 'react';
 import { Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { PirCreationFormData } from './pir-form-utils';
-import PirCreationFormGeneralSettings from './PirCreationFormGeneralSettings';
+import PirCreationFormGeneralSettings, { redisStreamQuery } from './PirCreationFormGeneralSettings';
 import PirCreationFormStepper from './PirCreationFormStepper';
 import { useFormatter } from '../../../../components/i18n';
 import PirCreationFormCriteria from './PirCreationFormCriteria';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import { PirCreationFormGeneralSettingsRedisStreamQuery } from './__generated__/PirCreationFormGeneralSettingsRedisStreamQuery.graphql';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 interface PirCreationFormProps {
   onCancel: () => void
@@ -31,6 +34,8 @@ interface PirCreationFormProps {
 const PirCreationForm = ({ onCancel, onSubmit }: PirCreationFormProps) => {
   const { t_i18n } = useFormatter();
   const [step, setStep] = useState(0);
+
+  const redisQueryRef = useQueryLoading<PirCreationFormGeneralSettingsRedisStreamQuery>(redisStreamQuery);
 
   const validation = Yup.object().shape({
     pir_type: Yup.string().trim().required(t_i18n('This field is required')),
@@ -90,7 +95,13 @@ const PirCreationForm = ({ onCancel, onSubmit }: PirCreationFormProps) => {
               />
 
               <Form>
-                {step === 0 && <PirCreationFormGeneralSettings />}
+                {step === 0 && <>
+                  {redisQueryRef && (
+                    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+                      <PirCreationFormGeneralSettings redisQueryRef={redisQueryRef} />
+                    </React.Suspense>
+                  )}
+                </>}
                 {step === 1 && <PirCreationFormCriteria />}
               </Form>
             </DialogContent>
