@@ -19,7 +19,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { getEnterpriseEditionInfo, getEnterpriseEditionInfoFromPem, LICENSE_OPTION_TRIAL } from '../modules/settings/licensing';
 import { getClusterInformation } from '../database/cluster-module';
 import { completeXTMHubDataForRegistration } from '../utils/settings.helper';
-import { getFiligranChatbotAiEndpoint } from '../modules/ai/chatbot-ai-settings';
+import { XTM_ONE_CHATBOT_URL } from '../http/httpChatbotProxy';
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
@@ -128,7 +128,7 @@ export const getSettings = async (context) => {
     platform_ai_has_token: !!isNotEmptyField(nconf.get('ai:token')),
     platform_trash_enabled: nconf.get('app:trash:enabled') ?? true,
     platform_translations: nconf.get('app:translations') ?? '{}',
-    filigran_chatbot_ai_url: getFiligranChatbotAiEndpoint(),
+    filigran_chatbot_ai_url: XTM_ONE_CHATBOT_URL,
     platform_feature_flags: [
       { id: 'RUNTIME_SORTING', enable: isRuntimeSortEnable() },
       ...(ENABLED_FEATURE_FLAGS.map((feature) => ({ id: feature, enable: true })))
