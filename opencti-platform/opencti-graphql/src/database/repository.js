@@ -47,12 +47,16 @@ export const computeManagerConnectorContract = async (_context, _user, cn) => {
 
 export const computeManagerConnectorExcerpt = async (_context, _user, cn) => {
   if (!cn.manager_contract_image) {
-    logApp.warn('No manager_contract_image found for', { connectorName: cn.name });
     return null;
   }
 
   const contracts = getSupportedContractsByImage();
   const contract = contracts.get(cn.manager_contract_image);
+
+  if (!contract) {
+    logApp.warn('No contract found for', { connectorName: cn.name });
+    return null;
+  }
 
   return {
     title: contract.title,
