@@ -56,7 +56,7 @@ const ValidateTermsOfUseDialog = ({ open, onClose }: ValidateTermsOfUseDialogPro
       maxWidth="sm"
     >
       <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>{t_i18n('Validate the Filigran AI Terms')}</div>
+        {t_i18n('Validate the Filigran AI Terms')}
         <IconButton
           aria-label="Close"
           onClick={() => onClose()}
