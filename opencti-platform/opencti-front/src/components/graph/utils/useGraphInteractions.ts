@@ -79,8 +79,17 @@ const useGraphInteractions = () => {
   const zoomToFit = () => {
     const nbOfNodes = graphData?.nodes.length ?? 0;
     let padding = 50;
-    if (nbOfNodes === 1) padding = 300;
-    else if (nbOfNodes < 4) padding = 200;
+    if (nbOfNodes === 1) {
+      if (window.innerHeight < 600) {
+        padding = 50;
+      } else if (window.innerHeight < 900) {
+        padding = 150;
+      } else if (window.innerHeight < 1100) {
+        padding = 300;
+      } else {
+        padding = 400;
+      }
+    } else if (nbOfNodes < 4) padding = 200;
     else if (nbOfNodes < 8) padding = 100;
     // Different padding depending on the number of nodes in the graph.
     graphRef2D.current?.zoomToFit(400, padding);

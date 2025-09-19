@@ -3,32 +3,14 @@ import { useLocation } from 'react-router-dom';
 import { isNotEmptyField } from '../utils';
 
 export const useBaseHrefAbsolute = () => {
-  const location = useLocation();
+  const { origin } = window.location;
+  const { pathname } = useLocation();
+
   useEffect(() => {
-    const fullUrl = window.location.href;
+    const fullUrl = `${origin}${pathname}`;
     const baseUrl = fullUrl.endsWith('/') ? fullUrl : `${fullUrl}/`;
-    let baseTag = document.querySelector('base');
-    const isNewTag = !baseTag;
-    if (!baseTag) {
-      baseTag = document.createElement('base');
-    }
-    const previousHref = baseTag.getAttribute('href');
-    baseTag.setAttribute('href', baseUrl);
-    if (isNewTag) {
-      document.head.insertBefore(baseTag, document.head.firstChild);
-    }
-    return () => {
-      if (baseTag) {
-        if (isNewTag) {
-          baseTag.remove();
-        } else if (previousHref) {
-          baseTag.setAttribute('href', previousHref);
-        } else {
-          baseTag.removeAttribute('href');
-        }
-      }
-    };
-  }, [location.pathname, location.search, location.hash]);
+    document.querySelector('base')?.setAttribute('href', baseUrl);
+  }, [pathname]);
 };
 
 export const useDocumentLangModifier = (lang: string) => {

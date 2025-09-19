@@ -227,22 +227,31 @@ describe('Vulnerabilities Utils', () => {
   describe('parseCvssVector', () => {
     it('should parse CVSS2 vector correctly', () => {
       const result = parseCvssVector('cvss2', 'AV:N/AC:L/Au:N/C:P/I:P/A:P') as any[];
-      const vectorField = result.find(f => f.key === 'x_opencti_cvss_v2_access_vector');
+      const vectorField = result.find((f) => f.key === 'x_opencti_cvss_v2_access_vector');
       expect(vectorField).toBeDefined();
       expect(vectorField.value[0]).toBe('Network');
     });
 
     it('should parse CVSS3 vector correctly', () => {
-      const result = parseCvssVector('cvss3', 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H') as any[];
-      const vectorField = result.find(f => f.key === 'x_opencti_cvss_attack_vector');
+      const result = parseCvssVector('cvss3', 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H/E:U/RL:O/RC:C') as any[];
+
+      const vectorField = result.find((f) => f.key === 'x_opencti_cvss_attack_vector');
       expect(vectorField).toBeDefined();
       expect(vectorField.value[0]).toBe('Network');
+
+      const baseScoreField = result.find((f) => f.key === 'x_opencti_cvss_base_score');
+      expect(baseScoreField).toBeDefined();
+      expect(baseScoreField.value[0]).toBe(9.8);
+
+      const temporalScoreField = result.find((f) => f.key === 'x_opencti_cvss_temporal_score');
+      expect(temporalScoreField).toBeDefined();
+      expect(temporalScoreField.value[0]).toBe(8.5);
     });
 
     it('should handle empty vector', () => {
       const result = parseCvssVector('cvss2', null) as any[];
       expect(result).toBeDefined();
-      expect(result.every(f => f.value[0] === null)).toBe(true);
+      expect(result.every((f) => f.value[0] === null)).toBe(true);
     });
 
     it('should return object when asObject is true', () => {
@@ -258,7 +267,7 @@ describe('Vulnerabilities Utils', () => {
         { key: 'x_opencti_cvss_v2_access_vector', value: ['Local'] }
       ];
       const result = updateCvssVector('cvss2', 'AV:N/AC:L/Au:N/C:P/I:P/A:P', updates, null) as any[];
-      const vectorField = result.find(f => f.key === 'x_opencti_cvss_v2_vector_string');
+      const vectorField = result.find((f) => f.key === 'x_opencti_cvss_v2_vector_string');
       expect(vectorField).toBeDefined();
       expect(vectorField.value[0]).toContain('AV:L');
     });
@@ -268,7 +277,7 @@ describe('Vulnerabilities Utils', () => {
         { key: 'x_opencti_cvss_attack_vector', value: ['ADJACENT_NETWORK'] }
       ];
       const result = updateCvssVector('cvss3', 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H', updates, null) as any[];
-      const vectorField = result.find(f => f.key === 'x_opencti_cvss_vector_string');
+      const vectorField = result.find((f) => f.key === 'x_opencti_cvss_vector_string');
       expect(vectorField).toBeDefined();
       expect(vectorField.value[0]).toContain('AV:A');
     });

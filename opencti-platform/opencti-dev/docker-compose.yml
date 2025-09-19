@@ -96,7 +96,7 @@ services:
 
   opencti-dev-minio:
     container_name: opencti-dev-minio
-    image: minio/minio:latest
+    image: minio/minio:RELEASE.2025-06-13T11-33-47Z
     ports:
       - "9000:9000"
       - "9001:9001"
@@ -113,7 +113,7 @@ services:
     restart: unless-stopped
   opencti-dev-rabbitmq:
     container_name: opencti-dev-rabbitmq
-    image: rabbitmq:4.1-management
+    image: rabbitmq:4.1.4-management
     restart: unless-stopped
     volumes:
       - ./rabbitmq.config:/etc/rabbitmq/conf.d/90-userdefined.conf

@@ -29,7 +29,11 @@ const stixSightingRelationshipResolvers = {
   Query: {
     stixSightingRelationship: (_, { id }, context) => findById(context, context.user, id),
     stixSightingRelationships: (_, args, context) => findStixSightingsPaginated(context, context.user, args),
-    stixSightingRelationshipsTimeSeries: (_, args, context) => timeSeriesRelations(context, context.user, args),
+    stixSightingRelationshipsTimeSeries: (_, args, context) => timeSeriesRelations(
+      context,
+      context.user,
+      { ...args, relationship_type: [STIX_SIGHTING_RELATIONSHIP] },
+    ),
     stixSightingRelationshipsDistribution: (_, args, context) => distributionRelations(
       context,
       context.user,

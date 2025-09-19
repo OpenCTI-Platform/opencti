@@ -9,10 +9,10 @@ import { BUILTIN_NOTIFIERS_CONNECTORS } from '../modules/notifier/notifier-stati
 import { builtInConnector, builtInConnectorsRuntime } from '../connector/connector-domain';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { shortHash } from '../schema/schemaUtils';
-import { getEntitiesMapFromCache } from './cache';
-import { SYSTEM_USER } from '../utils/access';
 import { getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
+import { getEntitiesMapFromCache } from './cache';
+import { SYSTEM_USER } from '../utils/access';
 import { logApp } from '../config/conf';
 
 export const completeConnector = (connector) => {
