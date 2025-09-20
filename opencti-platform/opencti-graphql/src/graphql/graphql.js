@@ -70,7 +70,7 @@ const createApolloServer = () => {
     requestDidStart: (requestContext) => {
       const { contextValue, request } = requestContext;
       // Is schema have introspection request
-      if (['__schema'].some((pattern) => request.query.includes(pattern))) {
+      if (request.query && ['__schema'].some((pattern) => request.query.includes(pattern))) {
         // If introspection explicitly disabled or user is not authenticated
         if (!PLAYGROUND_ENABLED || PLAYGROUND_INTROSPECTION_DISABLED || !contextValue?.user) {
           throw ForbiddenAccess('GraphQL introspection not authorized!');

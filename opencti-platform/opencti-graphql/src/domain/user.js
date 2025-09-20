@@ -1757,7 +1757,7 @@ export const authenticateUserFromRequest = async (context, req) => {
     try {
       return await authenticateUserByTokenOrUserId(context, req, tokenUUID);
     } catch (err) {
-      logApp.error('Error resolving user by token', { cause: err });
+      logApp.warn('Error resolving user by token', { cause: err });
     }
   }
   // endregion

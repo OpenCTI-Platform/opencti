@@ -133,7 +133,9 @@ const ruleObserveSightingBuilder = (): RuleRuntime => {
   const handleObservableRelationUpsert = async (context: AuthContext, baseOnRelation: StixRelation) => {
     const { source_ref: indicatorId } = baseOnRelation.extensions[STIX_EXT_OCTI];
     const baseOnIndicator = (await stixLoadById(context, RULE_MANAGER_USER, indicatorId)) as unknown as StixIndicator;
-    return handleIndicatorUpsert(context, baseOnIndicator);
+    if (baseOnIndicator) {
+      await handleIndicatorUpsert(context, baseOnIndicator);
+    }
   };
   const applyUpsert = async (data: StixObject): Promise<void> => {
     const context = executionContext(def.name, RULE_MANAGER_USER);
