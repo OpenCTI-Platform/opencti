@@ -51,10 +51,10 @@ describe('Verify taxii ingestion', () => {
       addedLastHeader: undefined
     };
 
-    await processTaxiiResponse(testContext, ingestionNotPagination, taxiResponse);
-    const result = await findTaxiiIngestionById(testContext, ADMIN_USER, ingestionNotPagination.id);
-    expect(result.current_state_cursor).toBeUndefined();
-    expect(result.added_after_start).toBeDefined();
+    const { connectorInfo } = await processTaxiiResponse(testContext, ingestionNotPagination, taxiResponse);
+    // const result = await findTaxiiIngestionById(testContext, ADMIN_USER, ingestionNotPagination.id);
+    expect(connectorInfo.state?.current_state_cursor).toBeUndefined();
+    expect(connectorInfo.state?.added_after_start).toBeDefined();
 
     // Delete the ingest
     await ingestionDelete(testContext, ADMIN_USER, ingestionNotPagination.internal_id);
