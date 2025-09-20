@@ -153,7 +153,7 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
                   className={classes.bodyItem}
                   style={{ width: dataColumns.createdBy.width }}
                 >
-                  {R.pathOr('', ['createdBy', 'name'], node)}
+                  {node.createdBy?.name ?? '-'}
                 </div>
                 <div
                   className={classes.bodyItem}

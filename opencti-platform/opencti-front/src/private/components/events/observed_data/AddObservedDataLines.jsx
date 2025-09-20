@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createPaginationContainer } from 'react-relay';
-import { map, filter, head, compose, pathOr } from 'ramda';
+import { createPaginationContainer, graphql } from 'react-relay';
+import { compose, filter, head, map } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -144,7 +144,7 @@ class AddObservedDataLinesContainer extends Component {
                 secondary={truncate(observedData.explanation, 120)}
               />
               <div style={{ marginRight: 50 }}>
-                {pathOr('', ['createdBy', 'name'], observedData)}
+                {observedData.createdBy?.name ?? '-'}
               </div>
               <div style={{ marginRight: 50 }}>
                 <ItemMarkings

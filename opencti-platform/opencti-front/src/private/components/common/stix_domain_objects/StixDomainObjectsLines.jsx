@@ -430,8 +430,6 @@ const StixDomainObjectsLines = createPaginationContainer(
             node {
               id
               entity_type
-              id
-              entity_type
               ... on AttackPattern {
                 name
                 description

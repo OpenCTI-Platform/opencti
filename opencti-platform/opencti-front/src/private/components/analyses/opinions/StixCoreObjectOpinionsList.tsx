@@ -7,7 +7,6 @@ import DialogContent from '@mui/material/DialogContent';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import * as R from 'ramda';
 import { Link } from 'react-router-dom';
 import Tooltip from '@mui/material/Tooltip';
 import { ListItemButton } from '@mui/material';
@@ -115,7 +114,7 @@ const StixCoreObjectOpinionsList: FunctionComponent<StixCoreObjectOpinionsListPr
                       textOverflow: 'ellipsis',
                     }}
                   />
-                  <Tooltip title={R.pathOr('', ['createdBy', 'name'], opinion)}>
+                  <Tooltip title={opinion?.createdBy?.name ?? '-'}>
                     <div style={{
                       marginRight: 50,
                       width: '200px',
@@ -124,7 +123,7 @@ const StixCoreObjectOpinionsList: FunctionComponent<StixCoreObjectOpinionsListPr
                       textOverflow: 'ellipsis',
                     }}
                     >
-                      {R.pathOr('', ['createdBy', 'name'], opinion)}
+                      {opinion?.createdBy?.name ?? '-'}
                     </div>
                   </Tooltip>
                   <div style={{ marginRight: 50 }}>

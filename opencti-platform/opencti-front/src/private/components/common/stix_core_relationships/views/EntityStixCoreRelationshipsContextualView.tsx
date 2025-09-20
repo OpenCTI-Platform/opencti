@@ -1,7 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
-import * as R from 'ramda';
 import { graphql, PreloadedQuery } from 'react-relay';
 import { Link } from 'react-router-dom';
 import ListLines from '../../../../../components/list_lines/ListLines';
@@ -146,7 +145,7 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
       label: 'Author',
       width: '10%',
       isSortable: isRuntimeSort ?? false,
-      render: (stixCoreObject: EntityStixCoreRelationshipsContextualViewLine_node$data) => R.pathOr('', ['createdBy', 'name'], stixCoreObject),
+      render: (stixCoreObject: EntityStixCoreRelationshipsContextualViewLine_node$data) => stixCoreObject.createdBy?.name ?? '-',
     },
     creator: {
       label: 'Creators',

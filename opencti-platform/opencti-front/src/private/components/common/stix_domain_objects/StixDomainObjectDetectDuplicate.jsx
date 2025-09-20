@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, pathOr } from 'ramda';
+import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -57,11 +57,7 @@ class StixDomainObjectDetectDuplicate extends Component {
         })
           .toPromise()
           .then((data) => {
-            const potentialDuplicates = pathOr(
-              [],
-              ['stixDomainObjects', 'edges'],
-              data,
-            );
+            const potentialDuplicates = data.stixDomainObjects?.edges ?? [];
             this.setState({ potentialDuplicates });
           });
       } else {
@@ -152,11 +148,7 @@ class StixDomainObjectDetectDuplicate extends Component {
                         secondary={truncate(element.node.description, 60)}
                       />
                       <div style={{ marginRight: 50 }}>
-                        {pathOr(
-                          '',
-                          ['node', 'createdBy', 'node', 'name'],
-                          element,
-                        )}
+                        {element.node.createdBy?.name ?? '-'}
                       </div>
                       <div style={{ marginRight: 50 }}>
                         <ItemMarkings

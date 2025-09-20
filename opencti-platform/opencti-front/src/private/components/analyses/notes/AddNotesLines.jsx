@@ -147,12 +147,12 @@ class AddNotesLinesContainer extends Component {
                 secondary={truncate(note.content, 120)}
               />
               <div style={{ marginRight: 50 }}>
-                {R.pathOr('', ['createdBy', 'name'], note)}
+                {note.createdBy?.name ?? '-'}
               </div>
               <div style={{ marginRight: 50 }}>
                 <ItemMarkings
                   variant="inList"
-                  markingDefinitions={data.objectMarking ?? []}
+                  markingDefinitions={note.objectMarking ?? []}
                 />
               </div>
             </ListItemButton>
@@ -204,6 +204,10 @@ const AddNotesLines = createPaginationContainer(
                 definition
                 x_opencti_order
                 x_opencti_color
+              }
+              createdBy {
+                name
+                id
               }
             }
           }

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { graphql, createPaginationContainer } from 'react-relay';
+import { createPaginationContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -140,7 +140,7 @@ class AddOpinionsLinesContainer extends Component {
                 secondary={truncate(opinion.explanation, 120)}
               />
               <div style={{ marginRight: 50 }}>
-                {R.pathOr('', ['createdBy', 'name'], opinion)}
+                {opinion.createdBy?.name ?? '-'}
               </div>
               <div style={{ marginRight: 50 }}>
                 <ItemMarkings

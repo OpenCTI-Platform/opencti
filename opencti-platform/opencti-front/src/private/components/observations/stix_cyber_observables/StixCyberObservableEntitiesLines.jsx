@@ -1,15 +1,15 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { interval } from 'rxjs';
-import { graphql, createPaginationContainer } from 'react-relay';
+import { createPaginationContainer, graphql } from 'react-relay';
 import { Link } from 'react-router-dom';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
+import * as R from 'ramda';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Tooltip from '@mui/material/Tooltip';
-import * as R from 'ramda';
 import { AutoFix } from 'mdi-material-ui';
 import { ListItemButton } from '@mui/material';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -191,7 +191,7 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
                           className={classes.bodyItem}
                           style={{ width: '12%' }}
                         >
-                          {R.pathOr('', ['createdBy', 'name'], node)}
+                          {node.createdBy?.name ?? '-'}
                         </div>
                         <div
                           className={classes.bodyItem}
