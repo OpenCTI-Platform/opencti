@@ -60,6 +60,7 @@ const LIST_QUERY = gql`
             edges {
                 node {
                     id
+                    standard_id
                     entity_type
                 }
             }
