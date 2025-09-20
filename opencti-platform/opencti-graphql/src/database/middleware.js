@@ -1824,7 +1824,7 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
         const aliasIdsInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
         preparedElements.push(aliasIdsInput);
         // Purge removed alias IDs from other stix IDS
-        const currentStixIds = instance[IDS_STIX];
+        const currentStixIds = instance[IDS_STIX] ?? [];
         const removedAliasesIds = instance[INTERNAL_IDS_ALIASES].filter((aid) => !aliasesId.includes(aid));
         const stixIdsInput = R.find((e) => e.key === IDS_STIX, preparedElements);
         if (stixIdsInput) {

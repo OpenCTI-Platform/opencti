@@ -48,6 +48,9 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
     const opts = { publishStreamEvent: false };
     const createdTargets: Array<BasicStoreObject> = [];
     const report = await stixLoadById(context, RULE_MANAGER_USER, data.id) as StixReport;
+    if (!report) {
+      return;
+    }
     const { id: reportId, object_refs_inferred } = report.extensions[STIX_EXT_OCTI];
     const reportObjectRefIds = [...(report.object_refs ?? []), ...(object_refs_inferred ?? [])];
     // region handle creation
@@ -175,8 +178,10 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
       for (let objectRefIndex = 0; objectRefIndex < relationships.length; objectRefIndex += 1) {
         const { fromId: reportId } = relationships[objectRefIndex];
         const report = await stixLoadById(context, RULE_MANAGER_USER, reportId) as StixReport;
-        const addedRefs = [{ partOfFromId, partOfId, partOfStandardId, partOfTargetId, partOfTargetStandardId }];
-        await createObjectRefsInferences(context, report, addedRefs, []);
+        if (report) {
+          const addedRefs = [{ partOfFromId, partOfId, partOfStandardId, partOfTargetId, partOfTargetStandardId }];
+          await createObjectRefsInferences(context, report, addedRefs, []);
+        }
       }
     };
     const listReportArgs = { fromTypes: [containerType], toId: isSource ? partOfFromId : partOfTargetId, callback: listFromCallback };

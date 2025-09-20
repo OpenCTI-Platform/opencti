@@ -251,7 +251,7 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
         // Execute only of definition is available
         if (playbook.playbook_definition) {
           // Execute only if event coming from different playbook
-          if (origin.playbook_id !== playbook.internal_id) {
+          if (origin?.playbook_id !== playbook.internal_id) {
             const def = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
             // 01. Find the starting point of the playbook
             const instance = def.nodes.find((n) => n.id === playbook.playbook_start);
