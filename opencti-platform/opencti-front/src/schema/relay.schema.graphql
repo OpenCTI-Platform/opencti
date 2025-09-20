@@ -3891,7 +3891,7 @@ input IdentityAddInput {
   x_opencti_stix_ids: [StixId]
   type: IdentityType!
 
-  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  "*Constraints:*\n* Minimal length: `1`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   contact_information: String

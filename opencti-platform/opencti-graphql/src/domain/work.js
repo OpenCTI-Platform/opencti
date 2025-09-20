@@ -271,7 +271,7 @@ export const reportExpectation = async (context, user, workId, errorData) => {
  */
 export const updateExpectationsNumber = async (context, user, workId, expectations) => {
   const currentWork = await loadWorkById(context, user, workId);
-  if (currentWork) { // work is no longer exists
+  if (!currentWork) { // work is no longer exists
     logApp.warn('The work cannot be found in database, expectation cannot be updated.', { workId, expectations });
     return workId;
   }
@@ -292,7 +292,7 @@ export const updateExpectationsNumber = async (context, user, workId, expectatio
  */
 export const addDraftContext = async (context, user, workId, draftContext) => {
   const currentWork = await loadWorkById(context, user, workId);
-  if (currentWork) { // work is no longer exists
+  if (!currentWork) { // work is no longer exists
     logApp.warn('The work cannot be found in database, draft context cannot be updated.', { workId, draftContext });
     return workId;
   }
@@ -305,7 +305,7 @@ export const addDraftContext = async (context, user, workId, draftContext) => {
 
 export const updateReceivedTime = async (context, user, workId, message) => {
   const currentWork = await loadWorkById(context, user, workId);
-  if (currentWork) { // work is no longer exists
+  if (!currentWork) { // work is no longer exists
     logApp.warn('The work cannot be found in database, received time cannot be updated.', { workId });
     return workId;
   }
@@ -322,7 +322,7 @@ export const updateReceivedTime = async (context, user, workId, message) => {
 
 export const updateProcessedTime = async (context, user, workId, message, inError = false) => {
   const currentWork = await loadWorkById(context, user, workId);
-  if (currentWork) { // work is no longer exists
+  if (!currentWork) { // work is no longer exists
     logApp.warn('The work cannot be found in database, processed time cannot be updated.', { workId });
     return workId;
   }
