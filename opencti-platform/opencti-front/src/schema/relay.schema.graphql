@@ -8725,6 +8725,8 @@ type Query {
   securityPlatforms(first: Int, after: ID, orderBy: SecurityPlatformOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): SecurityPlatformConnection
   emailTemplate(id: ID!): EmailTemplate
   emailTemplates(first: Int, after: ID, orderBy: EmailTemplateOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): EmailTemplateConnection
+  form(id: ID!): Form
+  forms(search: String, first: Int, after: ID, orderBy: FormsOrdering, orderMode: OrderingMode, filters: FilterGroup): FormConnection
 }
 
 type Subscription {
@@ -9634,6 +9636,10 @@ type Mutation {
   emailTemplateDelete(id: ID!): ID
   emailTemplateFieldPatch(id: ID!, input: [EditInput!]!): EmailTemplate
   emailTemplateTestSend(id: ID!): Boolean
+  formAdd(input: FormAddInput!): Form
+  formFieldPatch(id: ID!, input: [EditInput!]!): Form
+  formDelete(id: ID!): ID
+  formSubmit(input: FormSubmissionInput!): FormSubmissionResponse
   checkXTMHubConnectivity: CheckXTMHubConnectivityResponse!
 }
 
@@ -14081,6 +14087,56 @@ input EmailTemplateAddInput {
   email_object: String!
   sender_email: String!
   template_body: String!
+}
+
+type Form implements BasicObject & InternalObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  name: String!
+  description: String!
+  form_schema: String!
+  active: Boolean!
+}
+
+type FormEdge {
+  cursor: String!
+  node: Form!
+}
+
+type FormConnection {
+  pageInfo: PageInfo!
+  edges: [FormEdge!]!
+}
+
+enum FormsOrdering {
+  name
+  created_at
+  updated_at
+  active
+}
+
+input FormAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+  description: String!
+  form_schema: String!
+  active: Boolean
+}
+
+input FormSubmissionInput {
+  formId: String!
+  values: String!
+}
+
+type FormSubmissionResponse {
+  success: Boolean!
+  bundleId: String
+  message: String
 }
 
 type CheckXTMHubConnectivityResponse {

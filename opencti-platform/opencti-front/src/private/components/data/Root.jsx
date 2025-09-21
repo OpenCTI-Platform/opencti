@@ -22,6 +22,7 @@ const Security = lazy(() => import('../../../utils/Security'));
 const Connectors = lazy(() => import('./Connectors'));
 const IngestionCsv = lazy(() => import('./IngestionCsv'));
 const IngestionJson = lazy(() => import('./IngestionJson'));
+const Forms = lazy(() => import('./Forms'));
 const Entities = lazy(() => import('./Entities'));
 const Relationships = lazy(() => import('./Relationships'));
 const Tasks = lazy(() => import('./Tasks'));
@@ -134,6 +135,10 @@ const Root = () => {
         <Route
           path="/ingestion/json"
           element={boundaryWrapper(IngestionJson)}
+        />
+        <Route
+          path="/ingestion/forms"
+          element={boundaryWrapper(Forms)}
         />
         <Route
           path="/ingestion/connectors"

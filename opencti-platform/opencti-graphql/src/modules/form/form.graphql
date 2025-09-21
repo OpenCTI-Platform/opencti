@@ -1,0 +1,72 @@
+type Form implements BasicObject & InternalObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # Form specific
+  name: String!
+  description: String!
+  form_schema: String!
+  active: Boolean!
+}
+
+# Relay connections
+type FormEdge {
+  cursor: String!
+  node: Form!
+}
+
+type FormConnection {
+  pageInfo: PageInfo!
+  edges: [FormEdge!]!
+}
+
+enum FormsOrdering {
+  name
+  created_at
+  updated_at
+  active
+}
+
+# Input
+input FormAddInput {
+  name: String! @constraint(minLength: 2, format: "not-blank")
+  description: String!
+  form_schema: String!
+  active: Boolean
+}
+
+input FormSubmissionInput {
+  formId: String!
+  values: String! # JSON string of the submitted values
+}
+
+type FormSubmissionResponse {
+  success: Boolean!
+  bundleId: String
+  message: String
+}
+
+# Queries
+type Query {
+  form(id: ID!): Form @auth(for: [INGESTION])
+  forms(
+    search: String
+    first: Int
+    after: ID
+    orderBy: FormsOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+  ): FormConnection @auth(for: [INGESTION])
+}
+
+# Mutations
+type Mutation {
+  formAdd(input: FormAddInput!): Form @auth(for: [INGESTION_SETINGESTIONS])
+  formFieldPatch(id: ID!, input: [EditInput!]!): Form @auth(for: [INGESTION_SETINGESTIONS])
+  formDelete(id: ID!): ID @auth(for: [INGESTION_SETINGESTIONS])
+  formSubmit(input: FormSubmissionInput!): FormSubmissionResponse @auth(for: [KNOWLEDGE_KNASKIMPORT])
+}

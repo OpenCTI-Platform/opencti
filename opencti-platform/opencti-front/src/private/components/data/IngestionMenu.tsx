@@ -35,6 +35,10 @@ const IngestionMenu = () => {
       path: '/dashboard/data/ingestion/json',
       label: 'JSON Feeds',
     },
+    {
+      path: '/dashboard/data/ingestion/forms',
+      label: 'Form intakes',
+    },
   ];
   const entries: MenuEntry[] = isGrantedIngestion ? [...settingsEntries] : [];
   if (isConnectorReader) {
