@@ -486,11 +486,27 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           <Select
             value={entity.entityType}
             onChange={(e) => {
-              handleFieldChange(`additionalEntities.${entityIndex}.entityType`, e.target.value);
-              updateFormData((prev) => ({
-                ...prev,
-                fields: prev.fields.filter((f) => f.attributeMapping.entity !== entity.id),
-              }));
+              const newEntityType = e.target.value;
+              handleFieldChange(`additionalEntities.${entityIndex}.entityType`, newEntityType);
+              updateFormData((prev) => {
+                // Get mandatory fields for the new entity type
+                const newMandatoryFields = getInitialMandatoryFields(newEntityType, entityTypes, t_i18n)
+                  .map((field) => ({
+                    ...field,
+                    attributeMapping: {
+                      ...field.attributeMapping,
+                      entity: entity.id,
+                      mappingType: 'nested' as const,
+                    },
+                  }));
+
+                // Remove old fields for this entity and add new mandatory fields
+                const fieldsWithoutEntity = prev.fields.filter((f) => f.attributeMapping.entity !== entity.id);
+                return {
+                  ...prev,
+                  fields: [...fieldsWithoutEntity, ...newMandatoryFields],
+                };
+              });
             }}
             label={t_i18n('Entity Type')}
           >

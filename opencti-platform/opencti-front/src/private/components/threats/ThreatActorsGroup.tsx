@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
 import { GenericAttackCardDummy } from '@components/common/cards/GenericAttackCard';
@@ -11,6 +11,7 @@ import { ThreatActorsGroupCards_data$data } from '@components/threats/threat_act
 import Tooltip from '@mui/material/Tooltip';
 import { ViewListOutlined, ViewModuleOutlined, Assignment } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
+import { graphql, fetchQuery } from 'react-relay';
 import ListCards from '../../../components/list_cards/ListCards';
 import ThreatActorsGroupCards, { ThreatActorsGroupCardsFragment, threatActorsGroupCardsQuery } from './threat_actors_group/ThreatActorsGroupCards';
 import ThreatActorGroupCreation from './threat_actors_group/ThreatActorGroupCreation';
@@ -25,12 +26,48 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import StixDomainObjectFormSelector from '../common/stix_domain_objects/StixDomainObjectFormSelector';
+import { environment } from '../../../relay/environment';
 
 const LOCAL_STORAGE_KEY = 'threatActorsGroups';
+
+const checkFormsQuery = graphql`
+  query ThreatActorsGroupCheckFormsQuery {
+    forms(first: 50, orderBy: name, orderMode: asc) {
+      edges {
+        node {
+          id
+          active
+          form_schema
+        }
+      }
+    }
+  }
+`;
 
 const ThreatActorsGroup = () => {
   const { t_i18n } = useFormatter();
   const [isFormSelectorOpen, setIsFormSelectorOpen] = useState(false);
+  const [hasAvailableForms, setHasAvailableForms] = useState(false);
+
+  useEffect(() => {
+    fetchQuery(environment, checkFormsQuery, {}).toPromise()
+      .then((data: any) => {
+        if (data?.forms?.edges) {
+          const hasForms = data.forms.edges.some(({ node }: any) => {
+            if (!node.active) return false;
+            try {
+              const schema = JSON.parse(node.form_schema);
+              const formEntityType = schema.mainEntityType || '';
+              return formEntityType.toLowerCase() === 'threat-actor-group' || formEntityType.toLowerCase() === 'threat_actor_group';
+            } catch {
+              return false;
+            }
+          });
+          setHasAvailableForms(hasForms);
+        }
+      })
+      .catch(() => setHasAvailableForms(false));
+  }, []);
   const initialValues = {
     filters: emptyFilterGroup,
     searchTerm: '',
@@ -100,20 +137,22 @@ const ThreatActorsGroup = () => {
         createButton={(
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <div style={{ display: 'flex', marginLeft: 8 }}>
-              <Tooltip title={t_i18n('Use a form to create a threat actor group')}>
-                <IconButton
-                  onClick={() => setIsFormSelectorOpen(true)}
-                  color="primary"
-                  size="medium"
-                  style={{
-                    border: '1px solid',
-                    borderRadius: '4px',
-                    padding: '6px',
-                  }}
-                >
-                  <Assignment />
-                </IconButton>
-              </Tooltip>
+              {hasAvailableForms && (
+                <Tooltip title={t_i18n('Use a form to create a threat actor group')}>
+                  <IconButton
+                    onClick={() => setIsFormSelectorOpen(true)}
+                    color="primary"
+                    size="medium"
+                    style={{
+                      border: '1px solid',
+                      borderRadius: '4px',
+                      padding: '6px',
+                    }}
+                  >
+                    <Assignment />
+                  </IconButton>
+                </Tooltip>
+              )}
               <ThreatActorGroupCreation paginationOptions={queryPaginationOptions} />
             </div>
           </Security>
@@ -200,20 +239,22 @@ const ThreatActorsGroup = () => {
             createButton={(
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <div style={{ display: 'flex', marginLeft: 8 }}>
-                  <Tooltip title={t_i18n('Use a form to create a threat actor group')}>
-                    <IconButton
-                      onClick={() => setIsFormSelectorOpen(true)}
-                      color="primary"
-                      size="medium"
-                      style={{
-                        border: '1px solid',
-                        borderRadius: '4px',
-                        padding: '6px',
-                      }}
-                    >
-                      <Assignment />
-                    </IconButton>
-                  </Tooltip>
+                  {hasAvailableForms && (
+                    <Tooltip title={t_i18n('Use a form to create a threat actor group')}>
+                      <IconButton
+                        onClick={() => setIsFormSelectorOpen(true)}
+                        color="primary"
+                        size="medium"
+                        style={{
+                          border: '1px solid',
+                          borderRadius: '4px',
+                          padding: '6px',
+                        }}
+                      >
+                        <Assignment />
+                      </IconButton>
+                    </Tooltip>
+                  )}
                   <ThreatActorGroupCreation paginationOptions={queryPaginationOptions} />
                 </div>
               </Security>

@@ -1,11 +1,11 @@
 import React, { FunctionComponent, useState, useEffect } from 'react';
 import { graphql, fetchQuery } from 'react-relay';
-import { environment } from '../../../relay/environment';
 import { ReportsLinesPaginationQuery, ReportsLinesPaginationQuery$variables } from '@components/analyses/__generated__/ReportsLinesPaginationQuery.graphql';
 import { ReportsLines_data$data } from '@components/analyses/__generated__/ReportsLines_data.graphql';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import { Assignment } from '@mui/icons-material';
+import { environment } from '../../../relay/environment';
 import ReportCreation from './reports/ReportCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
