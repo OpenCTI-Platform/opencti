@@ -102,7 +102,7 @@ const FormCreation: FunctionComponent<FormCreationProps> = ({
         name: formData.name,
         description: formData.description || '',
         form_schema: formData.form_schema,
-        active: formData.active,
+        active: formData.active ?? true,
       };
     }
 
@@ -181,7 +181,7 @@ const FormCreation: FunctionComponent<FormCreationProps> = ({
           additionalEntities: schema.additionalEntities || [],
           fields: schema.fields || [],
           relationships: schema.relationships || [],
-          active: formData.active,
+          active: formData.active ?? true,
         };
       } catch {
         // Fall through to undefined
