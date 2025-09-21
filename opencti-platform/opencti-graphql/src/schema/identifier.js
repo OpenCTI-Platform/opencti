@@ -382,7 +382,6 @@ const filteredIdContributions = (contrib, way, data) => {
     } else {
       objectData[destKey] = value;
     }
-    console.log(objectData[destKey], entry);
   }
   return R.filter((keyValue) => !R.isEmpty(keyValue) && !R.isNil(keyValue), objectData);
 };
