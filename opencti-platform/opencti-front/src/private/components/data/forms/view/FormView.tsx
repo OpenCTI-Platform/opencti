@@ -203,9 +203,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
     const interval = setInterval(checkEntity, 2000); // Check every 2 seconds
 
     // Cleanup
-    return () => {
-      clearInterval(interval);
-    };
+    return () => clearInterval(interval);
   }, [pollingEntityId, pollingEntityType, navigate]);
 
   const handleSubmit = async (values: Record<string, unknown>, { setSubmitting }: FormikHelpers<Record<string, unknown>>) => {

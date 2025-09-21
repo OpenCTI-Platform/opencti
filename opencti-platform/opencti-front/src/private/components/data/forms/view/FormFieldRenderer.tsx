@@ -330,7 +330,11 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
             name={fieldName}
             label={displayLabel}
             style={{ width: '100%' }}
-            onChange={(_: string, value: string) => setFieldValue(field.name, value)}
+            onChange={(_: string, value: any) => {
+              // Extract standard_id and send as string
+              const standardId = value?.entity?.standard_id || value?.value || value;
+              setFieldValue(field.name, standardId);
+            }}
             helpertext={field.description}
           />
         </div>
@@ -343,7 +347,13 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
             name={fieldName}
             label={displayLabel}
             style={{ width: '100%' }}
-            onChange={(_: string, markingValues: any) => setFieldValue(field.name, markingValues)}
+            onChange={(_: string, markingValues: any) => {
+              // Extract standard_id from each marking and send as array of strings
+              const standardIds = markingValues
+                .filter((m: any) => m)
+                .map((m: any) => m.entity?.standard_id || m.value);
+              setFieldValue(field.name, standardIds);
+            }}
             helpertext={field.description}
           />
         </div>
@@ -355,8 +365,20 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
           <ObjectLabelField
             name={fieldName}
             style={{ width: '100%' }}
-            onChange={(_: string, labelValues: any) => setFieldValue(field.name, labelValues)}
-            setFieldValue={(_: string, value: any) => setFieldValue(field.name, value)}
+            onChange={(_: string, labelValues: any) => {
+              // Extract label values (not IDs) and send as array of strings
+              const labelStrings = labelValues
+                .filter((l: any) => l)
+                .map((l: any) => l.label || l.value);
+              setFieldValue(field.name, labelStrings);
+            }}
+            setFieldValue={(_: string, value: any) => {
+              // Extract label values (not IDs) for setFieldValue too
+              const labelStrings = value
+                .filter((l: any) => l)
+                .map((l: any) => l.label || l.value);
+              setFieldValue(field.name, labelStrings);
+            }}
             values={values as any}
             helpertext={field.description}
           />

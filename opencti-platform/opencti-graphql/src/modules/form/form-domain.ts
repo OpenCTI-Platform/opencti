@@ -246,9 +246,9 @@ export const submitForm = async (
   }
 
   // Get STIX ID from submission or generate one
-  const mainEntityStixId = submission.values.x_opencti_stix_ids?.[0] || 
-    generateStandardId(schema.mainEntityType || 'report', {});
-  
+  const mainEntityStixId = submission.values.x_opencti_stix_ids?.[0]
+    || generateStandardId(schema.mainEntityType || 'report', {});
+
   // Create the bundle structure
   const bundle: any = {
     type: 'bundle',
@@ -265,7 +265,7 @@ export const submitForm = async (
     spec_version: '2.1',
     created: new Date().toISOString(),
     modified: new Date().toISOString(),
-    x_opencti_is_inferred: isDraft  // Mark entity as draft if requested
+    x_opencti_is_inferred: isDraft // Mark entity as draft if requested
   };
 
   // Map fields to main entity based on schema
@@ -276,58 +276,18 @@ export const submitForm = async (
       // Map to the correct STIX property with special handling for reference fields
       const stixProperty = field.attributeMapping.attributeName || field.name;
 
-      // Special handling for reference fields based on field type (not stixProperty)
+      // Special handling for reference fields based on field type
       if (field.type === 'objectMarking') {
-        // Convert to object_marking_refs array with standard_id values
-        const markings = Array.isArray(value) ? value : [value];
-        mainEntity.object_marking_refs = markings
-          .filter((m: any) => m)
-          .map((m: any) => {
-            // Handle both string IDs and objects with standard_id
-            if (typeof m === 'string') {
-              // If it's just a string ID, use it directly as the marking ref
-              return m;
-            } else if (m?.standard_id) {
-              return m.standard_id;
-            } else if (m?.id) {
-              // Fallback to id if standard_id is not available
-              return m.id;
-            }
-            return null;
-          })
-          .filter((id: any) => id !== null);
+        // Frontend sends array of standard_id strings
+        mainEntity.object_marking_refs = Array.isArray(value) ? value : [value];
       } else if (field.type === 'createdBy') {
-        // Convert to created_by_ref with standard_id
+        // Frontend sends the standard_id string
         if (value) {
-          if (typeof value === 'string') {
-            mainEntity.created_by_ref = value;
-          } else if (value.standard_id) {
-            mainEntity.created_by_ref = value.standard_id;
-          } else if (value.id) {
-            mainEntity.created_by_ref = value.id;
-          }
+          mainEntity.created_by_ref = value;
         }
       } else if (field.type === 'objectLabel') {
-        // Convert to labels array with label values (not IDs)
-        const labels = Array.isArray(value) ? value : [value];
-        mainEntity.labels = labels
-          .filter((l: any) => l)
-          .map((l: any) => {
-            // Handle both string values and objects
-            if (typeof l === 'string') {
-              return l;
-            } else if (l?.value) {
-              return l.value;
-            } else if (l?.label) {
-              // Some label objects might use 'label' instead of 'value'
-              return l.label;
-            } else if (l?.name) {
-              // Some label objects might use 'name'
-              return l.name;
-            }
-            return null;
-          })
-          .filter((label: any) => label !== null);
+        // Frontend sends array of label value strings
+        mainEntity.labels = Array.isArray(value) ? value : [value];
       } else {
         // Default mapping for other fields
         mainEntity[stixProperty] = value;
@@ -357,58 +317,18 @@ export const submitForm = async (
         if (value !== undefined && value !== null && value !== '') {
           const stixProperty = field.attributeMapping.attributeName || field.name;
 
-          // Special handling for reference fields based on field type (not stixProperty)
+          // Special handling for reference fields based on field type
           if (field.type === 'objectMarking') {
-            // Convert to object_marking_refs array with standard_id values
-            const markings = Array.isArray(value) ? value : [value];
-            entity.object_marking_refs = markings
-              .filter((m: any) => m)
-              .map((m: any) => {
-                // Handle both string IDs and objects with standard_id
-                if (typeof m === 'string') {
-                  // If it's just a string ID, use it directly as the marking ref
-                  return m;
-                } else if (m?.standard_id) {
-                  return m.standard_id;
-                } else if (m?.id) {
-                  // Fallback to id if standard_id is not available
-                  return m.id;
-                }
-                return null;
-              })
-              .filter((id: any) => id !== null);
+            // Frontend sends array of standard_id strings
+            entity.object_marking_refs = Array.isArray(value) ? value : [value];
           } else if (field.type === 'createdBy') {
-            // Convert to created_by_ref with standard_id
+            // Frontend sends the standard_id string
             if (value) {
-              if (typeof value === 'string') {
-                entity.created_by_ref = value;
-              } else if (value.standard_id) {
-                entity.created_by_ref = value.standard_id;
-              } else if (value.id) {
-                entity.created_by_ref = value.id;
-              }
+              entity.created_by_ref = value;
             }
           } else if (field.type === 'objectLabel') {
-            // Convert to labels array with label values (not IDs)
-            const labels = Array.isArray(value) ? value : [value];
-            entity.labels = labels
-              .filter((l: any) => l)
-              .map((l: any) => {
-                // Handle both string values and objects
-                if (typeof l === 'string') {
-                  return l;
-                } else if (l?.value) {
-                  return l.value;
-                } else if (l?.label) {
-                  // Some label objects might use 'label' instead of 'value'
-                  return l.label;
-                } else if (l?.name) {
-                  // Some label objects might use 'name'
-                  return l.name;
-                }
-                return null;
-              })
-              .filter((label: any) => label !== null);
+            // Frontend sends array of label value strings
+            entity.labels = Array.isArray(value) ? value : [value];
           } else {
             // Default mapping for other fields
             entity[stixProperty] = value;
