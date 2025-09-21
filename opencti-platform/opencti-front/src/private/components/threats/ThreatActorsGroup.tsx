@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Grid from '@mui/material/Grid';
+import IconButton from '@mui/material/IconButton';
 import { GenericAttackCardDummy } from '@components/common/cards/GenericAttackCard';
 import {
   ThreatActorsGroupCardsPaginationQuery,
@@ -8,7 +9,7 @@ import {
 import { ThreatActorGroupCardFragment } from '@components/threats/threat_actors_group/ThreatActorGroupCard';
 import { ThreatActorsGroupCards_data$data } from '@components/threats/threat_actors_group/__generated__/ThreatActorsGroupCards_data.graphql';
 import Tooltip from '@mui/material/Tooltip';
-import { ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
+import { ViewListOutlined, ViewModuleOutlined, Assignment } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
 import ListCards from '../../../components/list_cards/ListCards';
 import ThreatActorsGroupCards, { ThreatActorsGroupCardsFragment, threatActorsGroupCardsQuery } from './threat_actors_group/ThreatActorsGroupCards';
@@ -23,11 +24,13 @@ import { useFormatter } from '../../../components/i18n';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import StixDomainObjectFormSelector from '../common/stix_domain_objects/StixDomainObjectFormSelector';
 
 const LOCAL_STORAGE_KEY = 'threatActorsGroups';
 
 const ThreatActorsGroup = () => {
   const { t_i18n } = useFormatter();
+  const [isFormSelectorOpen, setIsFormSelectorOpen] = useState(false);
   const initialValues = {
     filters: emptyFilterGroup,
     searchTerm: '',
@@ -96,7 +99,23 @@ const ThreatActorsGroup = () => {
         handleChangeView={helpers.handleChangeView}
         createButton={(
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <ThreatActorGroupCreation paginationOptions={queryPaginationOptions} />
+            <div style={{ display: 'flex', marginLeft: 8 }}>
+              <Tooltip title={t_i18n('Use a form to create a threat actor group')}>
+                <IconButton
+                  onClick={() => setIsFormSelectorOpen(true)}
+                  color="primary"
+                  size="medium"
+                  style={{
+                    border: '1px solid',
+                    borderRadius: '4px',
+                    padding: '6px',
+                  }}
+                >
+                  <Assignment />
+                </IconButton>
+              </Tooltip>
+              <ThreatActorGroupCreation paginationOptions={queryPaginationOptions} />
+            </div>
           </Security>
         )}
       >
@@ -180,7 +199,23 @@ const ThreatActorsGroup = () => {
             ]}
             createButton={(
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <ThreatActorGroupCreation paginationOptions={queryPaginationOptions} />
+                <div style={{ display: 'flex', marginLeft: 8 }}>
+                  <Tooltip title={t_i18n('Use a form to create a threat actor group')}>
+                    <IconButton
+                      onClick={() => setIsFormSelectorOpen(true)}
+                      color="primary"
+                      size="medium"
+                      style={{
+                        border: '1px solid',
+                        borderRadius: '4px',
+                        padding: '6px',
+                      }}
+                    >
+                      <Assignment />
+                    </IconButton>
+                  </Tooltip>
+                  <ThreatActorGroupCreation paginationOptions={queryPaginationOptions} />
+                </div>
               </Security>
             )}
           />
@@ -193,6 +228,11 @@ const ThreatActorsGroup = () => {
     <div data-testid="threat-actor-group-page">
       <Breadcrumbs elements={[{ label: t_i18n('Threats') }, { label: t_i18n('Threat actors (group)'), current: true }]} />
       {viewStorage.view !== 'lines' ? renderCards() : renderList()}
+      <StixDomainObjectFormSelector
+        open={isFormSelectorOpen}
+        handleClose={() => setIsFormSelectorOpen(false)}
+        entityType="Threat-Actor-Group"
+      />
     </div>
   );
 };

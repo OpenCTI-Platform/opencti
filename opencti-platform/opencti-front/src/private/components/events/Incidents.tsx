@@ -1,4 +1,7 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import { Assignment } from '@mui/icons-material';
 import { IncidentsLinesQuery, IncidentsLinesQuery$variables } from './incidents/__generated__/IncidentsLinesQuery.graphql';
 import { IncidentsLines_data$data } from './incidents/__generated__/IncidentsLines_data.graphql';
 import { incidentLineFragment } from './incidents/IncidentLine';
@@ -16,11 +19,13 @@ import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import StixDomainObjectFormSelector from '../common/stix_domain_objects/StixDomainObjectFormSelector';
 
 export const LOCAL_STORAGE_KEY = 'incidents';
 
 const Incidents: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
+  const [isFormSelectorOpen, setIsFormSelectorOpen] = useState(false);
 
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Incidents | Events'));
@@ -90,11 +95,32 @@ const Incidents: FunctionComponent = () => {
           availableEntityTypes={['Incident']}
           createButton={(
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <IncidentCreation paginationOptions={queryPaginationOptions} />
+              <div style={{ display: 'flex', marginLeft: 8 }}>
+                <Tooltip title={t_i18n('Use a form to create an incident')}>
+                  <IconButton
+                    onClick={() => setIsFormSelectorOpen(true)}
+                    color="primary"
+                    size="medium"
+                    style={{
+                      border: '1px solid',
+                      borderRadius: '4px',
+                      padding: '6px',
+                    }}
+                  >
+                    <Assignment />
+                  </IconButton>
+                </Tooltip>
+                <IncidentCreation paginationOptions={queryPaginationOptions} />
+              </div>
             </Security>
           )}
         />
       )}
+      <StixDomainObjectFormSelector
+        open={isFormSelectorOpen}
+        handleClose={() => setIsFormSelectorOpen(false)}
+        entityType="Incident"
+      />
     </div>
   );
 };

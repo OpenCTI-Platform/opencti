@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Grid from '@mui/material/Grid';
+import IconButton from '@mui/material/IconButton';
 import { GenericAttackCardDummy } from '@components/common/cards/GenericAttackCard';
 import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
-import { ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
+import { ViewListOutlined, ViewModuleOutlined, Assignment } from '@mui/icons-material';
 import { IntrusionSetCardFragment } from '@components/threats/intrusion_sets/IntrusionSetCard';
 import { IntrusionSetsCards_data$data } from '@components/threats/intrusion_sets/__generated__/IntrusionSetsCards_data.graphql';
 import { IntrusionSetsCardsPaginationQuery, IntrusionSetsCardsPaginationQuery$variables } from './intrusion_sets/__generated__/IntrusionSetsCardsPaginationQuery.graphql';
@@ -20,11 +21,13 @@ import { useFormatter } from '../../../components/i18n';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import StixDomainObjectFormSelector from '../common/stix_domain_objects/StixDomainObjectFormSelector';
 
 const LOCAL_STORAGE_KEY = 'intrusionSets';
 
 const IntrusionSets = () => {
   const { t_i18n } = useFormatter();
+  const [isFormSelectorOpen, setIsFormSelectorOpen] = useState(false);
   const initialValues = {
     searchTerm: '',
     sortBy: 'name',
@@ -94,7 +97,23 @@ const IntrusionSets = () => {
         handleChangeView={helpers.handleChangeView}
         createButton={(
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <IntrusionSetCreation paginationOptions={queryPaginationOptions} />
+            <div style={{ display: 'flex', marginLeft: 8 }}>
+              <Tooltip title={t_i18n('Use a form to create an intrusion set')}>
+                <IconButton
+                  onClick={() => setIsFormSelectorOpen(true)}
+                  color="primary"
+                  size="medium"
+                  style={{
+                    border: '1px solid',
+                    borderRadius: '4px',
+                    padding: '6px',
+                  }}
+                >
+                  <Assignment />
+                </IconButton>
+              </Tooltip>
+              <IntrusionSetCreation paginationOptions={queryPaginationOptions} />
+            </div>
           </Security>
         )}
       >
@@ -175,7 +194,23 @@ const IntrusionSets = () => {
             ]}
             createButton={(
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <IntrusionSetCreation paginationOptions={queryPaginationOptions} />
+                <div style={{ display: 'flex', marginLeft: 8 }}>
+                  <Tooltip title={t_i18n('Use a form to create an intrusion set')}>
+                    <IconButton
+                      onClick={() => setIsFormSelectorOpen(true)}
+                      color="primary"
+                      size="medium"
+                      style={{
+                        border: '1px solid',
+                        borderRadius: '4px',
+                        padding: '6px',
+                      }}
+                    >
+                      <Assignment />
+                    </IconButton>
+                  </Tooltip>
+                  <IntrusionSetCreation paginationOptions={queryPaginationOptions} />
+                </div>
               </Security>
             )}
           />
@@ -188,6 +223,11 @@ const IntrusionSets = () => {
     <div data-testid="instrusion-set-page">
       <Breadcrumbs elements={[{ label: t_i18n('Threats') }, { label: t_i18n('Intrusion sets'), current: true }]} />
       {viewStorage.view !== 'lines' ? renderCards() : renderList()}
+      <StixDomainObjectFormSelector
+        open={isFormSelectorOpen}
+        handleClose={() => setIsFormSelectorOpen(false)}
+        entityType="Intrusion-Set"
+      />
     </div>
   );
 };

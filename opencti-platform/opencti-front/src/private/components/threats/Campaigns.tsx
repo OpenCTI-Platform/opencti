@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Grid from '@mui/material/Grid';
+import IconButton from '@mui/material/IconButton';
 import { GenericAttackCardDummy } from '@components/common/cards/GenericAttackCard';
 import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
-import { ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
+import { ViewListOutlined, ViewModuleOutlined, Assignment } from '@mui/icons-material';
 import { CampaignsCards_data$data } from '@components/threats/campaigns/__generated__/CampaignsCards_data.graphql';
 import { CampaignCardFragment } from '@components/threats/campaigns/CampaignCard';
 import { CampaignsCardsPaginationQuery, CampaignsCardsPaginationQuery$variables } from './campaigns/__generated__/CampaignsCardsPaginationQuery.graphql';
@@ -20,11 +21,13 @@ import { useFormatter } from '../../../components/i18n';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import StixDomainObjectFormSelector from '../common/stix_domain_objects/StixDomainObjectFormSelector';
 
 const LOCAL_STORAGE_KEY = 'campaigns';
 
 const Campaigns = () => {
   const { t_i18n } = useFormatter();
+  const [isFormSelectorOpen, setIsFormSelectorOpen] = useState(false);
   const initialValues = {
     filters: emptyFilterGroup,
     searchTerm: '',
@@ -93,7 +96,23 @@ const Campaigns = () => {
         handleChangeView={helpers.handleChangeView}
         createButton={(
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <CampaignCreation paginationOptions={queryPaginationOptions} />
+            <div style={{ display: 'flex', marginLeft: 8 }}>
+              <Tooltip title={t_i18n('Use a form to create a campaign')}>
+                <IconButton
+                  onClick={() => setIsFormSelectorOpen(true)}
+                  color="primary"
+                  size="medium"
+                  style={{
+                    border: '1px solid',
+                    borderRadius: '4px',
+                    padding: '6px',
+                  }}
+                >
+                  <Assignment />
+                </IconButton>
+              </Tooltip>
+              <CampaignCreation paginationOptions={queryPaginationOptions} />
+            </div>
           </Security>
         )}
       >
@@ -179,7 +198,23 @@ const Campaigns = () => {
             ]}
             createButton={(
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <CampaignCreation paginationOptions={queryPaginationOptions} />
+                <div style={{ display: 'flex', marginLeft: 8 }}>
+                  <Tooltip title={t_i18n('Use a form to create a campaign')}>
+                    <IconButton
+                      onClick={() => setIsFormSelectorOpen(true)}
+                      color="primary"
+                      size="medium"
+                      style={{
+                        border: '1px solid',
+                        borderRadius: '4px',
+                        padding: '6px',
+                      }}
+                    >
+                      <Assignment />
+                    </IconButton>
+                  </Tooltip>
+                  <CampaignCreation paginationOptions={queryPaginationOptions} />
+                </div>
               </Security>
             )}
           />
@@ -192,6 +227,11 @@ const Campaigns = () => {
     <div data-testid="campaign-page">
       <Breadcrumbs elements={[{ label: t_i18n('Threats') }, { label: t_i18n('Campaigns'), current: true }]} />
       {viewStorage.view !== 'lines' ? renderCards() : renderList()}
+      <StixDomainObjectFormSelector
+        open={isFormSelectorOpen}
+        handleClose={() => setIsFormSelectorOpen(false)}
+        entityType="Campaign"
+      />
     </div>
   );
 };

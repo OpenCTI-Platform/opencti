@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Grid from '@mui/material/Grid';
+import IconButton from '@mui/material/IconButton';
 import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
-import { ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
+import { ViewListOutlined, ViewModuleOutlined, Assignment } from '@mui/icons-material';
 import { ThreatActorIndividualCardFragment } from '@components/threats/threat_actors_individual/ThreatActorIndividualCard';
 import { ThreatActorsIndividualCards_data$data } from '@components/threats/threat_actors_individual/__generated__/ThreatActorsIndividualCards_data.graphql';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -26,11 +27,13 @@ import { useFormatter } from '../../../components/i18n';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import StixDomainObjectFormSelector from '../common/stix_domain_objects/StixDomainObjectFormSelector';
 
 const LOCAL_STORAGE_KEY_THREAT_ACTORS_INDIVIDUAL = 'threatActorsIndividuals';
 
 const ThreatActorsIndividual = () => {
   const { t_i18n } = useFormatter();
+  const [isFormSelectorOpen, setIsFormSelectorOpen] = useState(false);
   const initialValues = {
     filters: emptyFilterGroup,
     searchTerm: '',
@@ -99,7 +102,23 @@ const ThreatActorsIndividual = () => {
         handleChangeView={helpers.handleChangeView}
         createButton={(
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <ThreatActorIndividualCreation paginationOptions={queryPaginationOptions} />
+            <div style={{ display: 'flex', marginLeft: 8 }}>
+              <Tooltip title={t_i18n('Use a form to create a threat actor individual')}>
+                <IconButton
+                  onClick={() => setIsFormSelectorOpen(true)}
+                  color="primary"
+                  size="medium"
+                  style={{
+                    border: '1px solid',
+                    borderRadius: '4px',
+                    padding: '6px',
+                  }}
+                >
+                  <Assignment />
+                </IconButton>
+              </Tooltip>
+              <ThreatActorIndividualCreation paginationOptions={queryPaginationOptions} />
+            </div>
           </Security>
         )}
       >
@@ -183,7 +202,23 @@ const ThreatActorsIndividual = () => {
             ]}
             createButton={(
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <ThreatActorIndividualCreation paginationOptions={queryPaginationOptions} />
+                <div style={{ display: 'flex', marginLeft: 8 }}>
+                  <Tooltip title={t_i18n('Use a form to create a threat actor individual')}>
+                    <IconButton
+                      onClick={() => setIsFormSelectorOpen(true)}
+                      color="primary"
+                      size="medium"
+                      style={{
+                        border: '1px solid',
+                        borderRadius: '4px',
+                        padding: '6px',
+                      }}
+                    >
+                      <Assignment />
+                    </IconButton>
+                  </Tooltip>
+                  <ThreatActorIndividualCreation paginationOptions={queryPaginationOptions} />
+                </div>
               </Security>
             )}
           />
@@ -196,6 +231,11 @@ const ThreatActorsIndividual = () => {
     <div data-testid="threat-actors-individual-page">
       <Breadcrumbs elements={[{ label: t_i18n('Threats') }, { label: t_i18n('Threat actors (individual)'), current: true }]} />
       {viewStorage.view !== 'lines' ? renderCards() : renderList()}
+      <StixDomainObjectFormSelector
+        open={isFormSelectorOpen}
+        handleClose={() => setIsFormSelectorOpen(false)}
+        entityType="Threat-Actor-Individual"
+      />
     </div>
   );
 };
