@@ -1,7 +1,14 @@
 /**
  * Utility functions and constants for Form components
  */
-import type { FormFieldAttribute, EntityTypeOption, AttributeOption, RelationshipTypeOption, FormBuilderData, FormSchemaDefinition } from './Form.d';
+import type {
+  FormFieldAttribute,
+  EntityTypeOption,
+  AttributeOption,
+  RelationshipTypeOption,
+  FormBuilderData,
+  FormSchemaDefinition,
+} from './Form.d';
 
 // Field type options for the UI
 export const FIELD_TYPES = [
@@ -11,7 +18,12 @@ export const FIELD_TYPES = [
   { value: 'select', label: 'Select' },
   { value: 'multiselect', label: 'Multi-Select' },
   { value: 'checkbox', label: 'Checkbox' },
+  { value: 'toggle', label: 'Toggle' },
   { value: 'datetime', label: 'Date & Time' },
+  { value: 'createdBy', label: 'Created By' },
+  { value: 'objectMarking', label: 'Object Marking' },
+  { value: 'objectLabel', label: 'Object Label' },
+  { value: 'files', label: 'Files' },
 ];
 
 // Field type to attribute type mapping
@@ -22,7 +34,12 @@ export const FIELD_TYPE_TO_ATTRIBUTE_TYPE: Record<string, string[]> = {
   select: ['string', 'enum'],
   multiselect: ['string[]', 'enum[]', 'string'], // string fields with multiple=true
   checkbox: ['boolean'],
+  toggle: ['boolean'],
   datetime: ['date'],
+  createdBy: ['ref'], // Special reference field
+  objectMarking: ['refs'], // Multiple references
+  objectLabel: ['refs'], // Multiple references
+  files: ['files'], // File uploads
 };
 
 // Container types (backend constants)
@@ -55,6 +72,57 @@ export const generateEntityId = () => `entity-${Date.now()}-${Math.random().toSt
 export const generateRelationshipId = () => `rel-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
 /**
+ * Get available field types based on entity attributes
+ * @param entityType The entity type to check
+ * @param entityTypes The list of available entity types
+ * @returns List of field types that have matching attributes
+ */
+export const getAvailableFieldTypes = (
+  entityType: string,
+  entityTypes: EntityTypeOption[],
+): typeof FIELD_TYPES => {
+  const entity = entityTypes.find((e) => e.value === entityType);
+  if (!entity || !entity.attributes) return FIELD_TYPES;
+
+  const { attributes } = entity;
+
+  // Special field types that are always available
+  const specialFieldTypes = ['createdBy', 'objectMarking', 'objectLabel', 'files'];
+
+  // Check which field types have matching attributes
+  return FIELD_TYPES.filter((fieldType) => {
+    // Special field types are always available
+    if (specialFieldTypes.includes(fieldType.value)) {
+      return true;
+    }
+
+    const allowedAttributeTypes = FIELD_TYPE_TO_ATTRIBUTE_TYPE[fieldType.value] || [];
+
+    return attributes.some((attr: any) => {
+      // Skip 'ref', 'refs', and 'object' type attributes
+      const attrType = attr.type || 'string';
+      if (attrType === 'ref' || attrType === 'refs' || attrType === 'object') {
+        return false;
+      }
+
+      // Check if this attribute matches any of the allowed types for this field
+      return allowedAttributeTypes.some((allowedType) => {
+        // For multiselect, check if string attributes support multiple
+        if (fieldType.value === 'multiselect' && attrType === 'string' && attr.multiple) {
+          return true;
+        }
+        // For select, check if string attributes don't support multiple
+        if (fieldType.value === 'select' && attrType === 'string' && !attr.multiple) {
+          return true;
+        }
+        // Regular type matching
+        return attrType === allowedType || attrType.includes(allowedType);
+      });
+    });
+  });
+};
+
+/**
  * Get attributes for a specific entity type that match field type
  * @param entityType The entity type to get attributes for
  * @param fieldType The field type to filter attributes by
@@ -68,6 +136,39 @@ export const getAttributesForEntityType = (
   entityTypes: EntityTypeOption[],
   t_i18n: (key: string) => string,
 ): AttributeOption[] => {
+  // Handle special reference field types that map to exact attributes
+  if (fieldType === 'createdBy') {
+    return [{
+      value: 'createdBy',
+      label: t_i18n('Created By'),
+      mandatory: false,
+    }];
+  }
+
+  if (fieldType === 'objectMarking') {
+    return [{
+      value: 'objectMarking',
+      label: t_i18n('Marking Definitions'),
+      mandatory: false,
+    }];
+  }
+
+  if (fieldType === 'objectLabel') {
+    return [{
+      value: 'objectLabel',
+      label: t_i18n('Labels'),
+      mandatory: false,
+    }];
+  }
+
+  if (fieldType === 'files') {
+    return [{
+      value: 'x_opencti_files',
+      label: t_i18n('Files'),
+      mandatory: false,
+    }];
+  }
+
   const entity = entityTypes.find((e) => e.value === entityType);
   if (!entity || !entity.attributes) return [];
 
@@ -81,7 +182,7 @@ export const getAttributesForEntityType = (
       if (attrType === 'ref' || attrType === 'refs' || attrType === 'object') {
         return false;
       }
-      
+
       // Check if attribute type matches field type
       return allowedAttributeTypes.some((allowedType) => {
         // For multiselect, include string attributes that support multiple
@@ -106,39 +207,54 @@ export const getAttributesForEntityType = (
 
 /**
  * Get relationship types available for specific entity combinations
- * @param fromType The source entity type
- * @param toType The target entity type
+ * @param mainEntityType The main entity type
+ * @param additionalEntityTypes The additional entity types
  * @param schema The schema object from useAuth
  * @param t_i18n Translation function
  * @returns List of relationship type options
  */
 export const getAvailableRelationships = (
-  fromType: string,
-  toType: string,
+  mainEntityType: string,
+  additionalEntityTypes: string[],
   schema: any,
   t_i18n: (key: string) => string,
 ): RelationshipTypeOption[] => {
-  if (!fromType || !toType) return [];
+  if (!mainEntityType || !schema) return [];
 
   const { scrs, schemaRelationsTypesMapping } = schema;
+  if (!scrs || !schemaRelationsTypesMapping) return [];
+
   const allRelationshipTypes = scrs.map((s: any) => ({
     value: s.id,
     label: t_i18n(`relationship_${s.id}`),
   }));
 
-  // Get mappings for both entity types
-  const fromMappings = schemaRelationsTypesMapping?.get(fromType) || [];
-  const toMappings = schemaRelationsTypesMapping?.get(toType) || [];
+  // Get all entity types involved (main + additional)
+  const allEntityTypes = [mainEntityType, ...additionalEntityTypes];
 
-  // Only return relationships that are valid for BOTH entity types
-  const validRelationships = allRelationshipTypes.filter((rel: RelationshipTypeOption) => {
-    // A relationship is valid if it's in the mapping for either entity
-    // (relationships are bidirectional)
-    return fromMappings.includes(rel.value) || toMappings.includes(rel.value);
+  // Collect all possible relationships for all entity types
+  const allMappings = new Set<string>();
+  allEntityTypes.forEach((entityType) => {
+    const mappings = schemaRelationsTypesMapping.get(entityType) || [];
+    mappings.forEach((mapping: string) => allMappings.add(mapping));
   });
 
-  // If no specific mappings found, return empty (more restrictive)
-  return validRelationships.length > 0 ? validRelationships : [];
+  // Return relationships that are valid for at least one entity type
+  const validRelationships = allRelationshipTypes.filter((rel: RelationshipTypeOption) => {
+    return allMappings.has(rel.value);
+  });
+
+  return validRelationships;
+};
+
+// Helper to convert attribute type to field type for forms
+const mapAttributeTypeToFieldType = (attrType: string): string => {
+  if (attrType === 'date') return 'datetime';
+  if (attrType === 'boolean') return 'checkbox';
+  if (attrType === 'numeric' || attrType === 'integer' || attrType === 'float') return 'number';
+  if (attrType === 'markdown' || attrType === 'text') return 'textarea';
+  // Default to text for string and other types
+  return 'text';
 };
 
 /**
@@ -154,15 +270,13 @@ export const getInitialMandatoryFields = (
   t_i18n: (key: string) => string,
 ): FormFieldAttribute[] => {
   const entity = entityTypes.find((e) => e.value === entityType);
-  
+
   if (!entity || !entity.attributes) {
     return [];
   }
 
   // Filter mandatory attributes (mandatoryType === 'external' means truly mandatory)
-  const mandatoryAttributes = entity.attributes.filter((attr: any) => 
-    attr.mandatory || attr.mandatoryType === 'external'
-  );
+  const mandatoryAttributes = entity.attributes.filter((attr: any) => attr.mandatory || attr.mandatoryType === 'external');
 
   // Pre-populate fields for mandatory attributes with default values if available
   return mandatoryAttributes.map((attr: any) => {
@@ -173,60 +287,22 @@ export const getInitialMandatoryFields = (
 
     return {
       id: generateFieldId(),
-      name: attr.label || t_i18n(attr.name),
+      name: attr.name,
+      label: attr.label || t_i18n(attr.name),
       description: '',
       type: fieldType,
       required: true,
       isMandatory: true, // Mark as mandatory attribute field
+      entityType, // Add entityType for field type filtering
       attributeMapping: {
         entity: 'main_entity',
-        attribute: attr.name,
+        attributeName: attr.name,
+        mappingType: 'direct',
       },
       fieldMode: 'multi',
       ...(defaultValue ? { defaultValue: defaultValue.id || defaultValue.name } : {}),
     };
   });
-};
-
-/**
- * Convert FormBuilderData to backend FormSchemaDefinition format
- * @param values The form builder data
- * @returns The form schema definition for backend
- */
-export const convertFormBuilderToSchema = (values: FormBuilderData): FormSchemaDefinition => {
-  // Check if main entity is a container
-  const isMainEntityContainer = CONTAINER_TYPES.includes(values.mainEntityType);
-
-  return {
-    version: '2.0',
-    mainEntityType: values.mainEntityType,
-    isContainer: isMainEntityContainer,
-    mainEntityMultiple: values.mainEntityMultiple,
-    mainEntityLookup: values.mainEntityLookup,
-    additionalEntities: values.additionalEntities,
-    fields: values.fields.map((field) => ({
-      id: field.id,
-      name: field.name,
-      description: field.description,
-      type: field.type,
-      required: field.required,
-      parseMode: field.parseMode,
-      attributeMapping: field.attributeMapping,
-      fieldMode: field.fieldMode,
-      ...(field.defaultValue ? { defaultValue: field.defaultValue } : {}),
-    })),
-    relationships: values.relationships,
-  };
-};
-
-// Helper to convert attribute type to field type for forms
-const mapAttributeTypeToFieldType = (attrType: string): string => {
-  if (attrType === 'date') return 'datetime';
-  if (attrType === 'boolean') return 'checkbox';
-  if (attrType === 'numeric' || attrType === 'integer' || attrType === 'float') return 'number';
-  if (attrType === 'markdown' || attrType === 'text') return 'textarea';
-  // Default to text for string and other types
-  return 'text';
 };
 
 /**
@@ -257,7 +333,7 @@ export const buildEntityTypes = (
     // Use attributesDefinitions from the query which contains full attribute info
     const attributesDefinitions = settings?.attributesDefinitions || [];
     const mandatoryAttrs = settings?.mandatoryAttributes || [];
-    
+
     // Map attributesDefinitions to the format expected by the form
     const attributes = attributesDefinitions.map((attr: any) => ({
       name: attr.name,
@@ -287,4 +363,44 @@ export const buildEntityTypes = (
   ].sort((a, b) => a.label.localeCompare(b.label));
 
   return types;
+};
+
+/**
+ * Convert FormBuilderData to FormSchemaDefinition for backend
+ * @param values The form builder data from UI
+ * @returns The schema definition for backend
+ */
+export const convertFormBuilderDataToSchema = (
+  values: FormBuilderData,
+): FormSchemaDefinition => {
+  // Check if main entity is a container
+  const isMainEntityContainer = CONTAINER_TYPES.includes(values.mainEntityType);
+
+  return {
+    version: '2.0',
+    mainEntityType: values.mainEntityType,
+    isContainer: isMainEntityContainer,
+    mainEntityMultiple: values.mainEntityMultiple,
+    mainEntityLookup: values.mainEntityLookup,
+    additionalEntities: values.additionalEntities,
+    fields: values.fields.map((field) => ({
+      id: field.id,
+      name: field.name,
+      label: field.label,
+      description: field.description,
+      type: field.type,
+      required: field.required,
+      isMandatory: field.isMandatory, // Preserve mandatory flag
+      parseMode: field.parseMode,
+      options: field.options,
+      // Map attribute to stixPath based on entity
+      stixPath: field.attributeMapping.entity === 'main_entity'
+        ? field.attributeMapping.attributeName
+        : undefined,
+      attributeMapping: field.attributeMapping,
+      fieldMode: field.fieldMode,
+      defaultValue: field.defaultValue,
+    })),
+    relationships: values.relationships,
+  };
 };

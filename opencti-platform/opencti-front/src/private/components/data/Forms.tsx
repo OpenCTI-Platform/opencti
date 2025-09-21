@@ -4,7 +4,7 @@ import Alert from '@mui/material/Alert';
 import IngestionMenu from '@components/data/IngestionMenu';
 import { FormLinesPaginationQuery, FormLinesPaginationQuery$variables } from '@components/data/forms/__generated__/FormLinesPaginationQuery.graphql';
 import FormLines, { formLinesQuery } from '@components/data/forms/FormLines';
-import { FormCreationContainer } from '@components/data/forms/FormCreation';
+import FormCreationContainer from '@components/data/forms/FormCreationContainer';
 import { FormLineDummy } from '@components/data/forms/FormLine';
 import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
@@ -100,6 +100,7 @@ const Forms = () => {
           <Security needs={[INGESTION_SETINGESTIONS]}>
             <FormCreationContainer
               paginationOptions={paginationOptions}
+              triggerButton={true}
             />
           </Security>
         }
@@ -143,7 +144,8 @@ const Forms = () => {
       <IngestionMenu />
       <Breadcrumbs elements={[
         { label: t_i18n('Data') },
-        { label: t_i18n('Ingestion'), current: true },
+        { label: t_i18n('Ingestion') },
+        { label: t_i18n('Form intakes'), current: true },
       ]}
       />
       {renderLines()}

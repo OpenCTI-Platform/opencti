@@ -8,11 +8,17 @@ export const ENTITY_TYPE_FORM = 'Form';
 export enum FormFieldType {
   Text = 'text',
   Textarea = 'textarea',
+  Number = 'number',
   Select = 'select',
   MultiSelect = 'multiselect',
   Checkbox = 'checkbox',
+  Toggle = 'toggle',
   Date = 'date',
   DateTime = 'datetime',
+  CreatedBy = 'createdBy',
+  ObjectMarking = 'objectMarking',
+  ObjectLabel = 'objectLabel',
+  Files = 'files',
 }
 
 // Additional entity configuration

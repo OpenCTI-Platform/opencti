@@ -1,10 +1,10 @@
 import type { Resolvers } from '../../generated/graphql';
-import { addForm, findAll, findById, formDelete, formEdit, submitForm } from './form-domain';
+import { addForm, findFormPaginated, findById, formDelete, formEditField, submitForm } from './form-domain';
 
 const formResolvers: Resolvers = {
   Query: {
     form: (_, { id }, context) => findById(context, context.user, id),
-    forms: (_, args, context) => findAll(context, context.user, args),
+    forms: (_, args, context) => findFormPaginated(context, context.user, args),
   },
   Form: {},
   Mutation: {
@@ -12,7 +12,7 @@ const formResolvers: Resolvers = {
       return addForm(context, context.user, input);
     },
     formFieldPatch: (_, { id, input }, context) => {
-      return formEdit(context, context.user, id, input);
+      return formEditField(context, context.user, id, input);
     },
     formDelete: async (_, { id }, context) => {
       await formDelete(context, context.user, id);

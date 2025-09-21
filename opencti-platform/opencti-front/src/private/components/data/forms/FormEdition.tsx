@@ -1,45 +1,39 @@
-import React, { FunctionComponent, useState } from 'react';
-import { Field, Form, Formik } from 'formik';
-import Button from '@mui/material/Button';
-import * as Yup from 'yup';
-import { graphql, useFragment } from 'react-relay';
+import React, { FunctionComponent, useState, useMemo } from 'react';
+import { graphql, useFragment, useQueryLoader, usePreloadedQuery, PreloadedQuery } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
-import { Close } from '@mui/icons-material';
-import { FormikHelpers } from 'formik/dist/types';
+import Button from '@mui/material/Button';
 import { FormEditionFragment_form$key } from '@components/data/forms/__generated__/FormEditionFragment_form.graphql';
-import TextField from '../../../../components/TextField';
+import { FormCreationQuery } from '@components/data/forms/__generated__/FormCreationQuery.graphql';
+import TextField from '@mui/material/TextField';
+import Switch from '@mui/material/Switch';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, handleError } from '../../../../relay/environment';
-import SwitchField from '../../../../components/fields/SwitchField';
 import type { Theme } from '../../../../components/Theme';
 import FormSchemaEditor from './FormSchemaEditor';
+import { formCreationQuery } from './FormCreation';
+import type { FormBuilderData } from './Form.d';
+import { convertFormBuilderDataToSchema } from './FormUtils';
+import Loader from '../../../../components/Loader';
 
-const useStyles = makeStyles<Theme>((theme) => ({
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
+const useStyles = makeStyles<Theme>(() => ({
   container: {
-    padding: 20,
+    // No padding here, the drawer already provides it
+  },
+  topFields: {
+    marginBottom: 20,
   },
   buttons: {
     marginTop: 20,
     textAlign: 'right',
   },
   button: {
-    marginLeft: theme.spacing(2),
+    marginLeft: 10,
   },
 }));
 
-const formEditionFragment = graphql`
+export const formEditionFragment = graphql`
   fragment FormEditionFragment_form on Form {
     id
     name
@@ -63,12 +57,176 @@ const formEditionMutation = graphql`
   }
 `;
 
-interface FormEditInput {
-  name: string;
-  description?: string;
-  form_schema: string;
-  active?: boolean;
+interface FormEditionInnerProps {
+  form: any;  // The resolved form fragment
+  handleClose: () => void;
+  queryRef: PreloadedQuery<FormCreationQuery>;
 }
+
+const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
+  form,
+  handleClose,
+  queryRef,
+}) => {
+  const classes = useStyles();
+  const { t_i18n } = useFormatter();
+  const [isSaving, setIsSaving] = useState(false);
+  const [formName, setFormName] = useState(form.name);
+  const [formDescription, setFormDescription] = useState(form.description || '');
+  const [formActive, setFormActive] = useState(form.active);
+  const [formBuilderData, setFormBuilderData] = useState<FormBuilderData | null>(null);
+
+  // Use the preloaded query
+  const data = usePreloadedQuery(formCreationQuery, queryRef);
+  const entitySettings = data?.entitySettings;
+
+  // Parse the initial form schema to FormBuilderData
+  const initialFormData: FormBuilderData | null = useMemo(() => {
+    try {
+      const schema = JSON.parse(form.form_schema);
+      // Ensure isMandatory flag is preserved for mandatory fields
+      const fields = (schema.fields || []).map((field: any) => ({
+        ...field,
+        // Preserve isMandatory from the schema if it exists
+        isMandatory: field.isMandatory || false,
+      }));
+      const data = {
+        name: form.name,
+        description: form.description || '',
+        mainEntityType: schema.mainEntityType,
+        mainEntityMultiple: schema.mainEntityMultiple || false,
+        mainEntityLookup: schema.mainEntityLookup || false,
+        mainEntityFieldMode: schema.mainEntityFieldMode || 'multiple',
+        mainEntityParseField: schema.mainEntityParseField || 'text',
+        mainEntityParseMode: schema.mainEntityParseMode || 'comma',
+        additionalEntities: schema.additionalEntities || [],
+        fields,
+        relationships: schema.relationships || [],
+        active: form.active,
+      };
+      // Set the initial form builder data
+      if (!formBuilderData) {
+        setFormBuilderData(data);
+      }
+      return data;
+    } catch {
+      return null;
+    }
+  }, [form, formBuilderData]);
+
+  // Handle form submission
+  const handleSubmit = () => {
+    if (!formBuilderData) return;
+
+    setIsSaving(true);
+
+    // Convert the FormBuilderData to FormSchemaDefinition
+    const schema = convertFormBuilderDataToSchema(formBuilderData);
+    
+    // Build the update input
+    const input = [
+      { key: 'name', value: [formName] },
+      { key: 'description', value: [formDescription] },
+      { key: 'active', value: [String(formActive)] },
+      { key: 'form_schema', value: [JSON.stringify(schema, null, 2)] },
+    ];
+
+    commitMutation({
+      mutation: formEditionMutation,
+      variables: {
+        id: form.id,
+        input,
+      },
+      onCompleted: () => {
+        setIsSaving(false);
+        handleClose();
+      },
+      onError: (error: Error) => {
+        handleError(error);
+        setIsSaving(false);
+      },
+    } as any);
+  };
+
+  const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setFormName(event.target.value);
+  };
+
+  const handleDescriptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setFormDescription(event.target.value);
+  };
+
+  const handleActiveChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setFormActive(event.target.checked);
+  };
+
+  // Check conditions for early return
+  if (!initialFormData || !entitySettings) {
+    return <Loader />;
+  }
+
+  return (
+    <div className={classes.container}>
+      <div className={classes.topFields}>
+        <TextField
+          variant="standard"
+          label={t_i18n('Name')}
+          fullWidth={true}
+          value={formName}
+          onChange={handleNameChange}
+        />
+        <TextField
+          variant="standard"
+          label={t_i18n('Description')}
+          fullWidth={true}
+          style={{ marginTop: 20 }}
+          multiline={true}
+          rows={2}
+          value={formDescription}
+          onChange={handleDescriptionChange}
+        />
+        <FormControlLabel
+          control={
+            <Switch
+              checked={formActive}
+              onChange={handleActiveChange}
+            />
+          }
+          label={t_i18n('Active')}
+          style={{ marginTop: 20 }}
+        />
+      </div>
+
+      <React.Suspense fallback={<Loader />}>
+        <FormSchemaEditor
+          initialValues={initialFormData}
+          entitySettings={entitySettings}
+          onChange={setFormBuilderData}
+        />
+      </React.Suspense>
+
+      <div className={classes.buttons}>
+        <Button
+          variant="contained"
+          onClick={handleClose}
+          disabled={isSaving}
+          classes={{ root: classes.button }}
+        >
+          {t_i18n('Cancel')}
+        </Button>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={handleSubmit}
+          disabled={isSaving || !formBuilderData}
+          classes={{ root: classes.button }}
+        >
+          {t_i18n('Update')}
+        </Button>
+      </div>
+    </div>
+  );
+};
 
 interface FormEditionProps {
   form: FormEditionFragment_form$key;
@@ -79,175 +237,25 @@ const FormEdition: FunctionComponent<FormEditionProps> = ({
   form: formRef,
   handleClose,
 }) => {
-  const classes = useStyles();
-  const { t_i18n } = useFormatter();
   const form = useFragment(formEditionFragment, formRef);
-  const [schemaError, setSchemaError] = useState<string | null>(null);
+  const [queryRef, loadQuery] = useQueryLoader<FormCreationQuery>(formCreationQuery);
 
-  const formValidation = Yup.object().shape({
-    name: Yup.string().required(t_i18n('This field is required')),
-    description: Yup.string().nullable(),
-    form_schema: Yup.string()
-      .required(t_i18n('This field is required'))
-      .test('valid-json', t_i18n('Invalid JSON'), (value) => {
-        if (!value) return false;
-        try {
-          JSON.parse(value);
-          return true;
-        } catch {
-          return false;
-        }
-      }),
-    active: Yup.boolean(),
-  });
+  React.useEffect(() => {
+    loadQuery({}, { fetchPolicy: 'store-and-network' });
+  }, [loadQuery]);
 
-  const onSubmit = (
-    values: FormEditInput,
-    { setSubmitting, setFieldError }: FormikHelpers<FormEditInput>,
-  ) => {
-    // Validate the form schema
-    try {
-      const schema = JSON.parse(values.form_schema);
-      if (!schema.version || !schema.mainEntityType || !schema.fields) {
-        setFieldError('form_schema', 'Schema must have version, mainEntityType, and fields');
-        setSubmitting(false);
-        return;
-      }
-    } catch (e) {
-      setFieldError('form_schema', 'Invalid JSON schema');
-      setSubmitting(false);
-      return;
-    }
-
-    // Build the edit inputs
-    const input = [];
-    if (values.name !== form.name) {
-      input.push({ key: 'name', value: [values.name] });
-    }
-    if (values.description !== form.description) {
-      input.push({ key: 'description', value: [values.description || ''] });
-    }
-    if (values.form_schema !== form.form_schema) {
-      input.push({ key: 'form_schema', value: [values.form_schema] });
-    }
-    if (values.active !== form.active) {
-      input.push({ key: 'active', value: [String(values.active)] });
-    }
-
-    if (input.length === 0) {
-      setSubmitting(false);
-      handleClose();
-      return;
-    }
-
-    commitMutation({
-      mutation: formEditionMutation,
-      variables: { id: form.id, input },
-      updater: undefined,
-      optimisticUpdater: undefined,
-      optimisticResponse: undefined,
-      onCompleted: () => {
-        setSubmitting(false);
-        handleClose();
-      },
-      onError: (error: Error) => {
-        handleError(error);
-        setSubmitting(false);
-      },
-      setSubmitting,
-    } as any);
-  };
-
-  const initialValues: FormEditInput = {
-    name: form.name,
-    description: form.description || '',
-    form_schema: form.form_schema,
-    active: form.active,
-  };
+  if (!queryRef) {
+    return <Loader />;
+  }
 
   return (
-    <div>
-      <div className={classes.header}>
-        <IconButton
-          aria-label="Close"
-          className={classes.closeButton}
-          onClick={handleClose}
-          size="large"
-        >
-          <Close fontSize="small" color="primary" />
-        </IconButton>
-        <Typography variant="h6">{t_i18n('Update a form')}</Typography>
-      </div>
-      <div className={classes.container}>
-        <Formik
-          initialValues={initialValues}
-          validationSchema={formValidation}
-          onSubmit={onSubmit}
-        >
-          {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
-            <Form>
-              <Field
-                component={TextField}
-                variant="standard"
-                name="name"
-                label={t_i18n('Name')}
-                fullWidth={true}
-              />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="description"
-                label={t_i18n('Description')}
-                fullWidth={true}
-                style={{ marginTop: 20 }}
-                multiline={true}
-                rows={2}
-              />
-              <Field
-                component={SwitchField}
-                type="checkbox"
-                name="active"
-                label={t_i18n('Active')}
-                containerstyle={{ marginTop: 20 }}
-              />
-              <FormSchemaEditor
-                value={values.form_schema}
-                onChange={(value: string) => {
-                  setFieldValue('form_schema', value);
-                  setSchemaError(null);
-                  try {
-                    JSON.parse(value);
-                  } catch {
-                    setSchemaError('Invalid JSON syntax');
-                  }
-                }}
-                error={schemaError}
-                helperText={t_i18n('Form schema in JSON format')}
-              />
-              <div className={classes.buttons}>
-                <Button
-                  variant="contained"
-                  onClick={handleReset}
-                  disabled={isSubmitting}
-                  classes={{ root: classes.button }}
-                >
-                  {t_i18n('Cancel')}
-                </Button>
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  onClick={submitForm}
-                  disabled={isSubmitting}
-                  classes={{ root: classes.button }}
-                >
-                  {t_i18n('Update')}
-                </Button>
-              </div>
-            </Form>
-          )}
-        </Formik>
-      </div>
-    </div>
+    <React.Suspense fallback={<Loader />}>
+      <FormEditionInner
+        form={form}
+        handleClose={handleClose}
+        queryRef={queryRef}
+      />
+    </React.Suspense>
   );
 };
 

@@ -12,7 +12,7 @@ const Connectors = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
 
-  setTitle(t_i18n('Ingestion monitoring | Ingestion | Data'));
+  setTitle(t_i18n('Monitoring | Ingestion | Data'));
 
   return (
     <div data-testid="connectors-page">
@@ -20,17 +20,15 @@ const Connectors = () => {
       <PageContainer withRightMenu withGap>
         <Breadcrumbs
           variant="list"
-          elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('Ingestion monitoring'), current: true }]}
+          elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('Monitoring'), current: true }]}
           noMargin
         />
-
         <QueryRenderer
           query={workersStatusQuery}
           render={({ props }) => {
             return <WorkersStatus data={props} />;
           }}
         />
-
         <ConnectorsStatus />
       </PageContainer>
     </div>

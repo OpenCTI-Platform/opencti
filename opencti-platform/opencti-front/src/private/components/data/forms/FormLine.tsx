@@ -1,12 +1,11 @@
 import React, { FunctionComponent } from 'react';
 import { Link } from 'react-router-dom';
 import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import { KeyboardArrowRightOutlined, AssignmentOutlined } from '@mui/icons-material';
+import { MoreVert } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
-import Chip from '@mui/material/Chip';
 import { graphql, useFragment } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { DataColumns } from '../../../../components/list_lines';
@@ -14,6 +13,8 @@ import type { Theme } from '../../../../components/Theme';
 import { FormLine_node$key } from './__generated__/FormLine_node.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import FormPopover from './FormPopover';
+import ItemBoolean from '../../../../components/ItemBoolean';
+import ItemIcon from '../../../../components/ItemIcon';
 
 // Styles
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -33,12 +34,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
     textOverflow: 'ellipsis',
     paddingRight: 10,
   },
-  goIcon: {
-    position: 'absolute',
-    right: -10,
-  },
   itemIconDisabled: {
-    color: theme.palette.grey?.[700] ?? '',
+    color: theme.palette.grey?.[700],
   },
 }));
 
@@ -66,7 +63,7 @@ export const FormLineComponent: FunctionComponent<FormLineComponentProps> = ({
   paginationOptions,
 }) => {
   const classes = useStyles();
-  const { fd } = useFormatter();
+  const { t_i18n, fd } = useFormatter();
   const data = useFragment(formLineFragment, node);
 
   let mainEntityType = 'Unknown';
@@ -79,63 +76,49 @@ export const FormLineComponent: FunctionComponent<FormLineComponentProps> = ({
 
   return (
     <ListItem
-      classes={{ root: classes.item }}
       divider={true}
-      component={Link}
-      to={`/dashboard/data/forms/${data.id}`}
-    >
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <AssignmentOutlined />
-      </ListItemIcon>
-      <ListItemText
-        primary={
-          <div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.name.width }}
-            >
-              {data.name}
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.description.width }}
-            >
-              {data.description || '-'}
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.mainEntityType.width }}
-            >
-              {mainEntityType}
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.active.width }}
-            >
-              <Chip
-                label={data.active ? 'Active' : 'Inactive'}
-                color={data.active ? 'success' : 'default'}
-                size="small"
-              />
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.updated_at.width }}
-            >
-              {fd(data.updated_at)}
-            </div>
-          </div>
-        }
-      />
-      <ListItemSecondaryAction>
+      disablePadding
+      secondaryAction={
         <FormPopover
           formId={data.id}
           paginationOptions={paginationOptions}
         />
-      </ListItemSecondaryAction>
-      <ListItemIcon classes={{ root: classes.goIcon }}>
-        <KeyboardArrowRightOutlined />
-      </ListItemIcon>
+      }
+    >
+      <ListItemButton
+        classes={{ root: classes.item }}
+        component={Link}
+        to={`/dashboard/data/forms/${data.id}`}
+      >
+        <ListItemIcon classes={{ root: classes.itemIcon }}>
+          <ItemIcon type={mainEntityType} />
+        </ListItemIcon>
+        <ListItemText
+          primary={
+            <div>
+              <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
+                {data.name}
+              </div>
+              <div className={classes.bodyItem} style={{ width: dataColumns.description.width }}>
+                {data.description || '-'}
+              </div>
+              <div className={classes.bodyItem} style={{ width: dataColumns.mainEntityType.width }}>
+                {mainEntityType}
+              </div>
+              <div className={classes.bodyItem} style={{ width: dataColumns.active.width }}>
+                <ItemBoolean
+                  variant="inList"
+                  label={data.active ? t_i18n('Active') : t_i18n('Inactive')}
+                  status={!!data.active}
+                />
+              </div>
+              <div className={classes.bodyItem} style={{ width: dataColumns.updated_at.width }}>
+                {fd(data.updated_at)}
+              </div>
+            </div>
+          }
+        />
+      </ListItemButton>
     </ListItem>
   );
 };
@@ -146,9 +129,18 @@ export const FormLineDummy: FunctionComponent<{ dataColumns: DataColumns }> = ({
   const classes = useStyles();
 
   return (
-    <ListItem classes={{ root: classes.item }} divider={true}>
-      <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-        <Skeleton animation="wave" variant="circular" width={30} height={30} />
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      secondaryAction={<MoreVert className={classes.itemIconDisabled}/>}
+    >
+      <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <Skeleton
+          animation="wave"
+          variant="circular"
+          width={30}
+          height={30}
+        />
       </ListItemIcon>
       <ListItemText
         primary={
@@ -159,15 +151,17 @@ export const FormLineDummy: FunctionComponent<{ dataColumns: DataColumns }> = ({
                 className={classes.bodyItem}
                 style={{ width: column.width }}
               >
-                <Skeleton animation="wave" variant="rectangular" width="80%" height={20} />
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height="100%"
+                />
               </div>
             ))}
           </div>
         }
       />
-      <ListItemSecondaryAction>
-        <Skeleton animation="wave" variant="circular" width={30} height={30} />
-      </ListItemSecondaryAction>
     </ListItem>
   );
 };

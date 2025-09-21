@@ -1,8 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import Ajv from 'ajv';
-import { FilterMode } from '../../generated/graphql';
-import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
-import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
+import { createEntity, deleteElementById, updateAttribute, patchAttribute } from '../../database/middleware';
+import { pageEntitiesConnection, storeLoadById, fullEntitiesList } from '../../database/middleware-loader';
 import type { BasicStoreEntityForm, StoreEntityForm, FormSchemaDefinition, FormSubmissionData } from './form-types';
 import { ENTITY_TYPE_FORM, FormSchemaDefinitionSchema } from './form-types';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -11,6 +10,8 @@ import { FunctionalError } from '../../config/errors';
 import { convertStoreToStix } from '../../database/stix-2-1-converter';
 import { generateStandardId } from '../../schema/identifier';
 import { pushToConnector } from '../../database/rabbitmq';
+import { registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
+import { publishUserAction } from '../../listener/UserActionListener';
 
 const ajv = new Ajv();
 const validateSchema = ajv.compile(FormSchemaDefinitionSchema);
@@ -60,27 +61,75 @@ export const addForm = async (
     active: input.active ?? true,
   };
 
-  return createEntity(context, user, formToCreate, ENTITY_TYPE_FORM) as Promise<BasicStoreEntityForm>;
+  // Create entity following the ingestion pattern
+  const { element, isCreation } = await createEntity(
+    context,
+    user,
+    formToCreate,
+    ENTITY_TYPE_FORM,
+    { complete: true }
+  );
+
+  if (isCreation) {
+    // Register connector for this form ingestion
+    await registerConnectorForIngestion(context, {
+      id: element.id,
+      type: 'FORM',
+      name: element.name,
+      is_running: element.active ?? false,
+      connector_user_id: user.id
+    });
+
+    // Publish user action
+    await publishUserAction({
+      user,
+      event_type: 'mutation',
+      event_scope: 'create',
+      event_access: 'administration',
+      message: `creates form intake \`${input.name}\``,
+      context_data: { id: element.id, entity_type: ENTITY_TYPE_FORM, input }
+    });
+  }
+
+  return element;
 };
 
 export const findById = async (
   context: AuthContext,
   user: AuthUser,
   formId: string
-): Promise<StoreEntityForm | null> => {
-  return storeLoadById<StoreEntityForm>(context, user, formId, ENTITY_TYPE_FORM);
+): Promise<StoreEntityForm> => {
+  const form = await storeLoadById<StoreEntityForm>(context, user, formId, ENTITY_TYPE_FORM);
+  return form;
 };
 
-export const findAll = async (
+export const findFormPaginated = async (
   context: AuthContext,
   user: AuthUser,
-  args: any
-): Promise<any> => {
-  const filters = args.filters || { mode: FilterMode.And, filters: [], filterGroups: [] };
-  return pageEntitiesConnection(context, user, [ENTITY_TYPE_FORM], { ...args, filters });
+  opts = {}
+) => {
+  return pageEntitiesConnection<BasicStoreEntityForm>(context, user, [ENTITY_TYPE_FORM], opts);
 };
 
-export const formEdit = async (
+export const findAllForms = async (
+  context: AuthContext,
+  user: AuthUser,
+  opts = {}
+) => {
+  return fullEntitiesList<BasicStoreEntityForm>(context, user, [ENTITY_TYPE_FORM], opts);
+};
+
+export const patchForm = async (
+  context: AuthContext,
+  user: AuthUser,
+  id: string,
+  patch: object
+) => {
+  const patched = await patchAttribute(context, user, id, ENTITY_TYPE_FORM, patch);
+  return patched.element;
+};
+
+export const formEditField = async (
   context: AuthContext,
   user: AuthUser,
   formId: string,
@@ -104,8 +153,32 @@ export const formEdit = async (
     return { key, value: Array.isArray(value) ? value : [value] };
   });
 
-  const result = await updateAttribute(context, user, formId, ENTITY_TYPE_FORM, updates);
-  return result as StoreEntityForm;
+  const { element } = await updateAttribute(context, user, formId, ENTITY_TYPE_FORM, updates);
+
+  // Update connector registration
+  const activeUpdate = input.find(({ key }) => key === 'active');
+  if (activeUpdate) {
+    const isActive = activeUpdate.value === 'true'
+                     || (Array.isArray(activeUpdate.value) && activeUpdate.value[0] === 'true');
+    await registerConnectorForIngestion(context, {
+      id: element.id,
+      type: 'FORM',
+      name: element.name,
+      is_running: isActive,
+      connector_user_id: user.id
+    });
+  }
+
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: `updates form intake \`${element.name}\``,
+    context_data: { id: formId, entity_type: ENTITY_TYPE_FORM, input }
+  });
+
+  return element;
 };
 
 export const formDelete = async (
@@ -113,7 +186,27 @@ export const formDelete = async (
   user: AuthUser,
   formId: string
 ): Promise<boolean> => {
+  // Get form details before deletion for the user action message
+  const form = await findById(context, user, formId);
+
+  // Unregister connector before deletion
+  await unregisterConnectorForIngestion(context, formId);
+
+  // Delete the form entity
   await deleteElementById(context, user, formId, ENTITY_TYPE_FORM);
+
+  // Publish user action
+  if (form) {
+    await publishUserAction({
+      user,
+      event_type: 'mutation',
+      event_scope: 'delete',
+      event_access: 'administration',
+      message: `deletes form intake \`${form.name}\``,
+      context_data: { id: formId, entity_type: ENTITY_TYPE_FORM, input: { name: form.name } }
+    });
+  }
+
   return true;
 };
 

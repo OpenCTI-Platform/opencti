@@ -8,7 +8,7 @@ const IngestionMenu = () => {
   const settingsEntries: MenuEntry[] = [
     {
       path: '/dashboard/data/ingestion/catalog',
-      label: 'Connector catalog',
+      label: 'Connectors catalog',
       isEE: true,
     },
     {
@@ -44,7 +44,7 @@ const IngestionMenu = () => {
   if (isConnectorReader) {
     entries.unshift({
       path: '/dashboard/data/ingestion/connectors',
-      label: 'Ingestion monitoring',
+      label: 'Monitoring',
     });
   }
   return <NavToolbarMenu entries={entries} />;

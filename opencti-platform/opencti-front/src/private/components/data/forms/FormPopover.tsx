@@ -1,21 +1,21 @@
 import React, { FunctionComponent, useState } from 'react';
-import { graphql } from 'react-relay';
+import { graphql, useQueryLoader } from 'react-relay';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
 import MoreVert from '@mui/icons-material/MoreVert';
 import makeStyles from '@mui/styles/makeStyles';
-import { useNavigate } from 'react-router-dom';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
 import { FormLinesPaginationQuery$variables } from '@components/data/forms/__generated__/FormLinesPaginationQuery.graphql';
+import { FormEditionContainerQuery } from './__generated__/FormEditionContainerQuery.graphql';
+import FormEditionContainer, { formEditionContainerQuery } from './FormEditionContainer';
+import { FormCreationContainer } from './FormCreationContainer';
 import { useFormatter } from '../../../../components/i18n';
-import { commitMutation } from '../../../../relay/environment';
+import { ConnectionHandler } from 'relay-runtime';
 import { deleteNode } from '../../../../utils/store';
-import Transition from '../../../../components/Transition';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import DeleteDialog from '../../../../components/DeleteDialog';
+import useDeletion from '../../../../utils/hooks/useDeletion';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -40,10 +40,7 @@ const FormPopover: FunctionComponent<FormPopoverProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-  const [displayDelete, setDisplayDelete] = useState<boolean>(false);
-  const [deleting, setDeleting] = useState<boolean>(false);
 
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -53,52 +50,62 @@ const FormPopover: FunctionComponent<FormPopoverProps> = ({
     setAnchorEl(null);
   };
 
-  const handleEdit = () => {
-    navigate(`/dashboard/data/forms/${formId}/edit`);
+  // -- Edition --
+  const [queryRef, loadQuery] = useQueryLoader<FormEditionContainerQuery>(formEditionContainerQuery);
+  const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
+  const handleOpenUpdate = () => {
+    setDisplayUpdate(true);
+    loadQuery({ id: formId });
     handleClose();
   };
 
-  const handleDuplicate = () => {
-    navigate(`/dashboard/data/forms/${formId}/duplicate`);
+  // -- Duplicate --
+  const [displayDuplicate, setDisplayDuplicate] = useState<boolean>(false);
+  const handleOpenDuplicate = () => {
+    setDisplayDuplicate(true);
+    loadQuery({ id: formId });
     handleClose();
   };
 
-  const handleOpenDelete = () => {
-    setDisplayDelete(true);
-    handleClose();
-  };
-
-  const handleCloseDelete = () => {
-    setDisplayDelete(false);
-  };
+  // -- Deletion --
+  const [commitDelete] = useApiMutation(formPopoverDeletionMutation);
+  const deletion = useDeletion({ handleClose });
+  const { setDeleting, handleOpenDelete, handleCloseDelete } = deletion;
 
   const submitDelete = () => {
     setDeleting(true);
-    commitMutation({
-      mutation: formPopoverDeletionMutation,
+    commitDelete({
       variables: {
         id: formId,
       },
-      updater: (store: any) => {
-        deleteNode(
-          store,
+      updater: (store) => {
+        deleteNode(store, 'Pagination_forms', paginationOptions, formId);
+        
+        // Manual update of the globalCount in pageInfo
+        const root = store.getRoot();
+        const paginationParams = { ...paginationOptions };
+        delete paginationParams.count;
+        delete paginationParams.id;
+        const conn = ConnectionHandler.getConnection(
+          root,
           'Pagination_forms',
-          paginationOptions,
-          formId,
+          paginationParams,
         );
+        if (conn) {
+          const pageInfo = conn.getLinkedRecord('pageInfo');
+          if (pageInfo) {
+            const currentCount = pageInfo.getValue('globalCount');
+            if (typeof currentCount === 'number' && currentCount > 0) {
+              pageInfo.setValue(currentCount - 1, 'globalCount');
+            }
+          }
+        }
       },
-      optimisticUpdater: undefined,
-      optimisticResponse: undefined,
       onCompleted: () => {
         setDeleting(false);
         handleCloseDelete();
       },
-      onError: () => {
-        setDeleting(false);
-        handleCloseDelete();
-      },
-      setSubmitting: setDeleting,
-    } as any);
+    });
   };
 
   return (
@@ -116,36 +123,44 @@ const FormPopover: FunctionComponent<FormPopoverProps> = ({
         open={Boolean(anchorEl)}
         onClose={handleClose}
       >
-        <MenuItem onClick={handleEdit}>
-          {t_i18n('Edit')}
+        <MenuItem onClick={handleOpenUpdate}>
+          {t_i18n('Update')}
         </MenuItem>
-        <MenuItem onClick={handleDuplicate}>
+        <MenuItem onClick={handleOpenDuplicate}>
           {t_i18n('Duplicate')}
         </MenuItem>
         <MenuItem onClick={handleOpenDelete}>
           {t_i18n('Delete')}
         </MenuItem>
       </Menu>
-      <Dialog
-        open={displayDelete}
-        PaperProps={{ elevation: 1 }}
-        TransitionComponent={Transition}
-        onClose={handleCloseDelete}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to delete this form?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDelete} disabled={deleting}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {queryRef && (
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <>
+            <FormEditionContainer
+              queryRef={queryRef}
+              handleClose={() => setDisplayUpdate(false)}
+              open={displayUpdate}
+            />
+            <FormCreationContainer
+              queryRef={queryRef}
+              handleClose={() => setDisplayDuplicate(false)}
+              open={displayDuplicate}
+              onOpen={() => {}} // Not needed for inline duplication
+              triggerButton={false}
+              paginationOptions={paginationOptions}
+              drawerSettings={{
+                title: t_i18n('Duplicate a form'),
+                button: t_i18n('Duplicate'),
+              }}
+            />
+          </>
+        </React.Suspense>
+      )}
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={submitDelete}
+        message={t_i18n('Do you want to delete this form?')}
+      />
     </div>
   );
 };
