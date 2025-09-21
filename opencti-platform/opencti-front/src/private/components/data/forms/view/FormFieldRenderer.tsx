@@ -343,7 +343,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
             name={fieldName}
             label={displayLabel}
             style={{ width: '100%' }}
-            onChange={(_: string, markingValues: string[]) => setFieldValue(field.name, markingValues)}
+            onChange={(_: string, markingValues: any) => setFieldValue(field.name, markingValues)}
             helpertext={field.description}
           />
         </div>
@@ -355,9 +355,9 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
           <ObjectLabelField
             name={fieldName}
             style={{ width: '100%' }}
-            onChange={(_: string, labelValues: string[]) => setFieldValue(field.name, labelValues)}
-            setFieldValue={setFieldValue}
-            values={values}
+            onChange={(_: string, labelValues: any) => setFieldValue(field.name, labelValues)}
+            setFieldValue={(_: string, value: any) => setFieldValue(field.name, value)}
+            values={values as any}
             helpertext={field.description}
           />
         </div>
@@ -383,7 +383,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
             </label>
             <span>{t_i18n('Upload files')}</span>
           </div>
-          {fieldValue && fieldValue.length > 0 && (
+          {fieldValue && Array.isArray(fieldValue) && fieldValue.length > 0 && (
             <div className={classes.fileList}>
               {(fieldValue as Array<{ name?: string; url?: string }>).map((file, index: number) => (
                 <Chip

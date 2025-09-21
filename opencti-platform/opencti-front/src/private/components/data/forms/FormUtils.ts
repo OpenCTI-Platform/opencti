@@ -365,8 +365,8 @@ export const buildEntityTypes = (
       type: attr.type,
       mandatory: attr.mandatory,
       mandatoryType: attr.mandatoryType,
-      multiple: attr.multiple,
-      defaultValues: attr.defaultValues,
+      multiple: attr.multiple === null ? undefined : attr.multiple,
+      defaultValues: attr.defaultValues as { id: string; name: string }[] | null | undefined,
     }));
 
     return {

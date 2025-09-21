@@ -101,7 +101,7 @@ const FormCreation: FunctionComponent<FormCreationProps> = ({
       return {
         name: formData.name,
         description: formData.description || '',
-        form_schema: formData.form_schema,
+        form_schema: formData.form_schema || '',
         active: formData.active ?? true,
       };
     }
