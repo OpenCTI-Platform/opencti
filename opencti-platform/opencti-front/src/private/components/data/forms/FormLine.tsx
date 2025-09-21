@@ -88,7 +88,7 @@ export const FormLineComponent: FunctionComponent<FormLineComponentProps> = ({
       <ListItemButton
         classes={{ root: classes.item }}
         component={Link}
-        to={`/dashboard/data/forms/${data.id}`}
+        to={`/dashboard/data/ingestion/forms/${data.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <ItemIcon type={mainEntityType} />

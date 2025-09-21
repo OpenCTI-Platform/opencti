@@ -1,7 +1,6 @@
 import React, { FunctionComponent, useState, useMemo } from 'react';
 import { graphql, useFragment, useQueryLoader, usePreloadedQuery, PreloadedQuery } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
-import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import { FormEditionFragment_form$key } from '@components/data/forms/__generated__/FormEditionFragment_form.graphql';
 import { FormCreationQuery } from '@components/data/forms/__generated__/FormCreationQuery.graphql';
@@ -58,7 +57,7 @@ const formEditionMutation = graphql`
 `;
 
 interface FormEditionInnerProps {
-  form: any;  // The resolved form fragment
+  form: any; // The resolved form fragment
   handleClose: () => void;
   queryRef: PreloadedQuery<FormCreationQuery>;
 }
@@ -90,7 +89,7 @@ const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
         // Preserve isMandatory from the schema if it exists
         isMandatory: field.isMandatory || false,
       }));
-      const data = {
+      const initialFormData = {
         name: form.name,
         description: form.description || '',
         mainEntityType: schema.mainEntityType,
@@ -106,9 +105,9 @@ const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
       };
       // Set the initial form builder data
       if (!formBuilderData) {
-        setFormBuilderData(data);
+        setFormBuilderData(initialFormData);
       }
-      return data;
+      return initialFormData;
     } catch {
       return null;
     }
@@ -122,7 +121,7 @@ const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
 
     // Convert the FormBuilderData to FormSchemaDefinition
     const schema = convertFormBuilderDataToSchema(formBuilderData);
-    
+
     // Build the update input
     const input = [
       { key: 'name', value: [formName] },

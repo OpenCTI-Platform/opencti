@@ -1,4 +1,4 @@
-import { graphql, PreloadedQuery, useFragment, usePreloadedQuery, useQueryLoader } from 'react-relay';
+import { PreloadedQuery, useFragment, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import React, { FunctionComponent } from 'react';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { FormEditionContainerQuery } from './__generated__/FormEditionContainerQuery.graphql';
@@ -9,16 +9,7 @@ import FormCreation, { formCreationQuery } from './FormCreation';
 import { FormCreationQuery } from './__generated__/FormCreationQuery.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-
-export const formEditionFragment = graphql`
-  fragment FormEditionFragment_form on Form {
-    id
-    name
-    description
-    form_schema
-    active
-  }
-`;
+import { formEditionFragment } from './FormEdition';
 
 interface FormCreationContainerProps {
   queryRef?: PreloadedQuery<FormEditionContainerQuery>;

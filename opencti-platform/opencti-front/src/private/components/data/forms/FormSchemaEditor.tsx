@@ -203,15 +203,15 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
       const newData = { ...prev };
       let current: any = newData;
 
-    for (let i = 0; i < keys.length - 1; i += 1) {
-      const key = keys[i];
-      if (Array.isArray(current[key])) {
-        current[key] = [...current[key]];
-      } else if (typeof current[key] === 'object' && current[key] !== null) {
-        current[key] = { ...current[key] };
+      for (let i = 0; i < keys.length - 1; i += 1) {
+        const key = keys[i];
+        if (Array.isArray(current[key])) {
+          current[key] = [...current[key]];
+        } else if (typeof current[key] === 'object' && current[key] !== null) {
+          current[key] = { ...current[key] };
+        }
+        current = current[key];
       }
-      current = current[key];
-    }
 
       current[keys[keys.length - 1]] = value;
       return newData;

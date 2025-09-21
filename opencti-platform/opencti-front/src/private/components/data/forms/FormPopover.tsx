@@ -6,11 +6,11 @@ import IconButton from '@mui/material/IconButton';
 import MoreVert from '@mui/icons-material/MoreVert';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormLinesPaginationQuery$variables } from '@components/data/forms/__generated__/FormLinesPaginationQuery.graphql';
+import { ConnectionHandler } from 'relay-runtime';
 import { FormEditionContainerQuery } from './__generated__/FormEditionContainerQuery.graphql';
 import FormEditionContainer, { formEditionContainerQuery } from './FormEditionContainer';
 import { FormCreationContainer } from './FormCreationContainer';
 import { useFormatter } from '../../../../components/i18n';
-import { ConnectionHandler } from 'relay-runtime';
 import { deleteNode } from '../../../../utils/store';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -80,12 +80,11 @@ const FormPopover: FunctionComponent<FormPopoverProps> = ({
       },
       updater: (store) => {
         deleteNode(store, 'Pagination_forms', paginationOptions, formId);
-        
+
         // Manual update of the globalCount in pageInfo
         const root = store.getRoot();
         const paginationParams = { ...paginationOptions };
         delete paginationParams.count;
-        delete paginationParams.id;
         const conn = ConnectionHandler.getConnection(
           root,
           'Pagination_forms',

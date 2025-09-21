@@ -1,14 +1,7 @@
 /**
  * Utility functions and constants for Form components
  */
-import type {
-  FormFieldAttribute,
-  EntityTypeOption,
-  AttributeOption,
-  RelationshipTypeOption,
-  FormBuilderData,
-  FormSchemaDefinition,
-} from './Form.d';
+import type { FormFieldAttribute, EntityTypeOption, AttributeOption, RelationshipTypeOption, FormBuilderData, FormSchemaDefinition } from './Form.d';
 
 // Field type options for the UI
 export const FIELD_TYPES = [
