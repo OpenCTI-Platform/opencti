@@ -12,7 +12,7 @@ import { commitMutation, handleError } from '../../../../relay/environment';
 import type { Theme } from '../../../../components/Theme';
 import FormSchemaEditor from './FormSchemaEditor';
 import { formCreationQuery } from './FormCreation';
-import type { FormBuilderData } from './Form.d';
+import type { FormBuilderData, FormFieldAttribute } from './Form.d';
 import { convertFormBuilderDataToSchema } from './FormUtils';
 import Loader from '../../../../components/Loader';
 
@@ -57,7 +57,13 @@ const formEditionMutation = graphql`
 `;
 
 interface FormEditionInnerProps {
-  form: any; // The resolved form fragment
+  form: {
+    id: string;
+    name: string;
+    description?: string | null;
+    form_schema: string;
+    active: boolean;
+  };
   handleClose: () => void;
   queryRef: PreloadedQuery<FormCreationQuery>;
 }
@@ -84,7 +90,7 @@ const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
     try {
       const schema = JSON.parse(form.form_schema);
       // Ensure isMandatory flag is preserved for mandatory fields
-      const fields = (schema.fields || []).map((field: any) => ({
+      const fields = (schema.fields || []).map((field: FormFieldAttribute) => ({
         ...field,
         // Preserve isMandatory from the schema if it exists
         isMandatory: field.isMandatory || false,
@@ -136,6 +142,9 @@ const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
         id: form.id,
         input,
       },
+      updater: undefined,
+      optimisticUpdater: undefined,
+      optimisticResponse: undefined,
       onCompleted: () => {
         setIsSaving(false);
         handleClose();
@@ -144,7 +153,8 @@ const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
         handleError(error);
         setIsSaving(false);
       },
-    } as any);
+      setSubmitting: undefined,
+    });
   };
 
   const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {

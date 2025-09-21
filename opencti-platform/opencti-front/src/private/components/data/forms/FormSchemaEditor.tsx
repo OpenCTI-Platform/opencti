@@ -30,7 +30,7 @@ import {
   getAvailableRelationships,
   getInitialMandatoryFields,
 } from './FormUtils';
-import type { FormFieldAttribute, AdditionalEntity, EntityRelationship, FormBuilderData } from './Form.d';
+import type { FormFieldAttribute, AdditionalEntity, EntityRelationship, FormBuilderData, RelationshipTypeOption } from './Form.d';
 import useAuth from '../../../../utils/hooks/useAuth';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -84,7 +84,23 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 interface FormSchemaEditorProps {
   initialValues?: FormBuilderData;
-  entitySettings: any;
+  entitySettings: {
+    edges: ReadonlyArray<{
+      node: {
+        id: string;
+        target_type: string;
+        mandatoryAttributes: ReadonlyArray<string>;
+        attributesDefinitions: ReadonlyArray<{
+          type: string;
+          name: string;
+          label?: string | null;
+          mandatory: boolean;
+          multiple?: boolean | null;
+          defaultValues?: ReadonlyArray<{ id: string; name: string }> | null;
+        }>;
+      };
+    }>;
+  };
   onChange?: (values: FormBuilderData) => void;
   onSchemaChange?: (schema: string) => void;
 }
@@ -197,11 +213,17 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
     });
   };
 
-  const handleFieldChange = (path: string, value: any) => {
+  const handleFieldChange = (path: string, value: string | number | boolean | string[] | Date | null | Array<{ label: string; value: string }>) => {
     updateFormData((prev) => {
       const keys = path.split('.');
+      // Prevent prototype pollution by blocking dangerous property names
+      const forbiddenProps = ['__proto__', 'constructor', 'prototype'];
+      if (keys.some((k) => forbiddenProps.includes(k))) {
+        // Blocked prototype-polluting key in handleFieldChange
+        return prev;
+      }
       const newData = { ...prev };
-      let current: any = newData;
+      let current: Record<string, unknown> = newData as Record<string, unknown>;
 
       for (let i = 0; i < keys.length - 1; i += 1) {
         const key = keys[i];
@@ -210,7 +232,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
         } else if (typeof current[key] === 'object' && current[key] !== null) {
           current[key] = { ...current[key] };
         }
-        current = current[key];
+        current = current[key] as Record<string, unknown>;
       }
 
       current[keys[keys.length - 1]] = value;
@@ -590,7 +612,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
       : formData.additionalEntities.find((e) => e.id === relationship.toEntity)?.entityType;
 
     // Only get available relationships if both entities are selected
-    let availableRelationships: any[] = [];
+    let availableRelationships: RelationshipTypeOption[] = [];
     if (fromEntityType && toEntityType) {
       availableRelationships = getAvailableRelationships(
         formData.mainEntityType,

@@ -45,11 +45,25 @@ const useStyles = makeStyles<Theme>(() => ({
 
 interface FormFieldRendererProps {
   field: FormFieldDefinition;
-  values: any;
-  errors: any;
-  touched: any;
-  setFieldValue: (field: string, value: any) => void;
-  entitySettings?: any;
+  values: Record<string, unknown>;
+  errors: Record<string, string>;
+  touched: Record<string, boolean>;
+  setFieldValue: (field: string, value: string | number | boolean | string[] | Date | null) => void;
+  entitySettings?: {
+    edges: ReadonlyArray<{
+      node: {
+        id: string;
+        target_type: string;
+        mandatoryAttributes: ReadonlyArray<string>;
+        attributesDefinitions: ReadonlyArray<{
+          type: string;
+          name: string;
+          label?: string | null;
+          mandatory: boolean;
+        }>;
+      };
+    }>;
+  };
   fieldPrefix?: string;
 }
 
@@ -104,7 +118,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
 
   const handleFileRemove = (index: number) => {
     const currentFiles = fieldValue || [];
-    const newFiles = currentFiles.filter((_: any, i: number) => i !== index);
+    const newFiles = currentFiles.filter((_: { name?: string; url?: string }, i: number) => i !== index);
     setFieldValue(field.name, newFiles);
   };
 
@@ -112,16 +126,24 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
   switch (field.type) {
     case 'text':
       return (
-        <Field
-          component={TextField}
-          variant="standard"
-          name={fieldName}
-          label={displayLabel}
-          fullWidth={true}
-          error={hasError}
-          helperText={hasError ? fieldError : field.description}
-          className={classes.field}
-        />
+        <Field name={fieldName}>
+          {({ field: formikField }: { field: { value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void } }) => {
+            return (
+              <TextField
+                {...formikField}
+                variant="standard"
+                label={displayLabel}
+                fullWidth={true}
+                error={hasError}
+                helperText={hasError ? fieldError : field.description}
+                className={classes.field}
+                onChange={(e) => {
+                  formikField.onChange(e);
+                }}
+              />
+            );
+          }}
+        </Field>
       );
 
     case 'textarea':
@@ -254,7 +276,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
         <DatePicker
           label={displayLabel}
           value={fieldValue ? new Date(fieldValue) : null}
-          onChange={(value: any) => {
+          onChange={(value: Date | null) => {
             // Handle both Date objects and dayjs/moment objects
             if (value) {
               const dateValue = value instanceof Date ? value : new Date(String(value));
@@ -280,7 +302,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
         <DateTimePicker
           label={displayLabel}
           value={fieldValue ? new Date(fieldValue) : null}
-          onChange={(value: any) => {
+          onChange={(value: Date | null) => {
             // Handle both Date objects and dayjs/moment objects
             if (value) {
               const dateValue = value instanceof Date ? value : new Date(String(value));
@@ -308,7 +330,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
             name={fieldName}
             label={displayLabel}
             style={{ width: '100%' }}
-            onChange={(_: string, value: any) => setFieldValue(field.name, value)}
+            onChange={(_: string, value: string) => setFieldValue(field.name, value)}
             helpertext={field.description}
           />
         </div>
@@ -321,7 +343,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
             name={fieldName}
             label={displayLabel}
             style={{ width: '100%' }}
-            onChange={(_: string, markingValues: any) => setFieldValue(field.name, markingValues)}
+            onChange={(_: string, markingValues: string[]) => setFieldValue(field.name, markingValues)}
             helpertext={field.description}
           />
         </div>
@@ -333,7 +355,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
           <ObjectLabelField
             name={fieldName}
             style={{ width: '100%' }}
-            onChange={(_: string, labelValues: any) => setFieldValue(field.name, labelValues)}
+            onChange={(_: string, labelValues: string[]) => setFieldValue(field.name, labelValues)}
             setFieldValue={setFieldValue}
             values={values}
             helpertext={field.description}
@@ -363,7 +385,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
           </div>
           {fieldValue && fieldValue.length > 0 && (
             <div className={classes.fileList}>
-              {fieldValue.map((file: any, index: number) => (
+              {(fieldValue as Array<{ name?: string; url?: string }>).map((file, index: number) => (
                 <Chip
                   key={index}
                   label={file.name}

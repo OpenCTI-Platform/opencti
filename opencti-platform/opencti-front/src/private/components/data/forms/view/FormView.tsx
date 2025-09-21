@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
@@ -57,12 +57,12 @@ export const formViewQuery = graphql`
   }
 `;
 
-// TODO: Add formSubmit mutation to backend
 const formSubmitMutation = graphql`
-  mutation FormViewMutation($id: ID!, $input: [EditInput!]!) {
-    formFieldPatch(id: $id, input: $input) {
-      id
-      form_schema
+  mutation FormViewMutation($input: FormSubmissionInput!) {
+    formSubmit(input: $input) {
+      success
+      bundleId
+      message
     }
   }
 `;
@@ -74,7 +74,7 @@ interface FormViewInnerProps {
 const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  // const navigate = useNavigate(); // For future use
+  // For future use: navigate
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -102,10 +102,11 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
 
   const schema: FormSchemaDefinition = JSON.parse(form.form_schema);
   const validationSchema = convertFormSchemaToYupSchema(schema, t_i18n);
-  const initialValues: Record<string, any> = {};
+  const initialValues: Record<string, unknown> = {};
 
   // Initialize values for main entity fields
   const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
+  
   mainEntityFields.forEach((field) => {
     if (field.type === 'checkbox' || field.type === 'toggle') {
       initialValues[field.name] = false;
@@ -124,6 +125,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
       initialValues[`additional_${entity.id}`] = {};
       // Find fields for this additional entity
       const entityFields = schema.fields.filter((field) => field.attributeMapping.entity === entity.id);
+      
       entityFields.forEach((field) => {
         if (field.type === 'checkbox' || field.type === 'toggle') {
           initialValues[`additional_${entity.id}`][field.name] = false;
@@ -138,32 +140,34 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
     });
   }
 
-  const handleSubmit = async (values: any, { setSubmitting }: any) => {
+  const handleSubmit = async (values: Record<string, unknown>, { setSubmitting }: FormikHelpers<Record<string, unknown>>) => {
     setSubmitError(null);
     try {
       const formattedData = formatFormDataForSubmission(values, schema);
-      // TODO: Replace with actual form submission mutation when backend is ready
       await commitMutation({
+        mutation: formSubmitMutation,
         variables: {
-          id: form.id,
-          input: [
-            {
-              key: 'form_submissions',
-              value: [JSON.stringify(formattedData)],
-            },
-          ],
+          input: {
+            formId: form.id,
+            values: JSON.stringify(formattedData),
+          },
         },
-        onCompleted: () => {
-          setSubmitted(true);
-          setSubmitting(false);
+        onCompleted: (response: { formSubmit?: { success?: boolean; message?: string } }) => {
+          if (response?.formSubmit?.success) {
+            setSubmitted(true);
+            setSubmitting(false);
+          } else {
+            setSubmitError(response?.formSubmit?.message || 'Submission failed');
+            setSubmitting(false);
+          }
         },
         onError: (error: Error) => {
           setSubmitError(error.message);
           setSubmitting(false);
         },
       });
-    } catch (error: any) {
-      setSubmitError(error.message || 'An error occurred');
+    } catch (error) {
+      setSubmitError((error as Error).message || 'An error occurred');
       setSubmitting(false);
     }
   };
@@ -222,7 +226,8 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
           validateOnChange={true}
           validateOnBlur={true}
         >
-          {({ isSubmitting, isValid, values, errors, touched, setFieldValue }) => (
+          {({ isSubmitting, isValid, values, errors, touched, setFieldValue }) => {  
+            return (
             <Form>
               {/* Main Entity Fields */}
               <div className={classes.section}>
@@ -237,7 +242,6 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
                     errors={errors}
                     touched={touched}
                     setFieldValue={setFieldValue}
-                    entitySettings={entitySettings}
                   />
                 ))}
               </div>
@@ -260,7 +264,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
                             values={values[`additional_${additionalEntity.id}`] || {}}
                             errors={errors[`additional_${additionalEntity.id}`] || {}}
                             touched={touched[`additional_${additionalEntity.id}`] || {}}
-                            setFieldValue={(fieldName: string, value: any) => setFieldValue(`additional_${additionalEntity.id}.${fieldName}`, value)
+                            setFieldValue={(fieldName: string, value: string | number | boolean | string[] | Date | null) => setFieldValue(`additional_${additionalEntity.id}.${fieldName}`, value)
                             }
                             entitySettings={entitySettings}
                             fieldPrefix={`additional_${additionalEntity.id}`}
@@ -283,7 +287,8 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
               </Button>
               <div style={{ clear: 'both' }} />
             </Form>
-          )}
+            );
+          }}
         </Formik>
       </Paper>
     </div>

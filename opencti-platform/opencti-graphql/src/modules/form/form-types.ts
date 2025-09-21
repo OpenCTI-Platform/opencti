@@ -24,10 +24,13 @@ export enum FormFieldType {
 // Additional entity configuration
 export interface AdditionalEntity {
   id: string;
-  type: string; // Entity type
-  name: string; // Display name for this entity in the form
-  multiple?: boolean; // Whether this entity allows multiple instances
-  entityLookup?: boolean; // Whether this is an entity lookup (select existing entities)
+  entityType: string; // Entity type
+  label: string; // Display label for this entity in the form
+  multiple: boolean; // Whether this entity allows multiple instances
+  lookup?: boolean; // Whether this is an entity lookup (select existing entities)
+  fieldMode?: 'multiple' | 'parsed'; // Whether to have multiple fields or parse a single field
+  parseField?: 'text' | 'textarea'; // Type of field when using parsed mode
+  parseMode?: 'comma' | 'line'; // How to parse the field (comma-separated or line-by-line)
 }
 
 // Relationship configuration
@@ -42,9 +45,16 @@ export interface FormFieldRelationship {
 export interface FormFieldDefinition {
   id: string;
   name: string;
+  label: string; // Display label for the field
   description?: string;
   type: FormFieldType;
   required: boolean;
+  isMandatory?: boolean; // Whether this field is for a mandatory attribute
+  attributeMapping: {
+    entity: string; // Entity ID this field maps to (main_entity or additional entity ID)
+    attributeName: string; // The attribute name on that entity
+    mappingType?: 'direct' | 'nested'; // How the field maps to the entity
+  };
   multiple?: boolean; // Allow multiple values (for text fields)
   parseMode?: 'comma' | 'line'; // For text/textarea fields that create entities
   stixPath?: string; // Path to STIX property (e.g., 'name', 'description', 'x_opencti_report_types')
@@ -64,9 +74,10 @@ export interface FormFieldDefinition {
 // Form relationship definition
 export interface FormRelationshipDefinition {
   id: string;
-  from: string; // Entity ID (main_entity or additional entity ID)
-  to: string; // Entity ID (main_entity or additional entity ID)
-  type: string; // Relationship type
+  fromEntity: string; // Entity ID (main_entity or additional entity ID)
+  toEntity: string; // Entity ID (main_entity or additional entity ID)
+  relationshipType: string; // Relationship type
+  required?: boolean; // Whether this relationship is required
 }
 
 // Form schema definition
@@ -76,6 +87,9 @@ export interface FormSchemaDefinition {
   isContainer?: boolean; // Whether the main entity is a container
   mainEntityMultiple?: boolean; // Whether main entity allows multiple instances
   mainEntityLookup?: boolean; // Whether main entity is an entity lookup (select existing)
+  mainEntityFieldMode?: 'multiple' | 'parsed'; // Whether to have multiple fields or parse a single field
+  mainEntityParseField?: 'text' | 'textarea'; // Type of field when using parsed mode for main entity
+  mainEntityParseMode?: 'comma' | 'line'; // How to parse the field for main entity
   additionalEntities?: AdditionalEntity[]; // Additional entities to include in the form
   fields: FormFieldDefinition[];
   relationships?: FormRelationshipDefinition[]; // Relationships between entities

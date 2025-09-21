@@ -4,8 +4,8 @@ import { FormSchemaDefinition, FormFieldDefinition } from '../Form.d';
 const getYupValidationForField = (
   field: FormFieldDefinition,
   t_i18n: (key: string) => string,
-): any => {
-  let validation: any;
+): Yup.Schema<unknown> => {
+  let validation: Yup.Schema<unknown>;
 
   switch (field.type) {
     case 'text':
@@ -56,11 +56,12 @@ const getYupValidationForField = (
 export const convertFormSchemaToYupSchema = (
   schema: FormSchemaDefinition,
   t_i18n: (key: string) => string,
-): Yup.ObjectSchema<any> => {
-  const shape: Record<string, any> = {};
+): Yup.ObjectSchema<Record<string, unknown>> => {
+  const shape: Record<string, Yup.Schema<unknown>> = {};
 
   // Process main entity fields
   const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
+  
   mainEntityFields.forEach((field) => {
     shape[field.name] = getYupValidationForField(field, t_i18n);
   });
@@ -68,7 +69,7 @@ export const convertFormSchemaToYupSchema = (
   // Process additional entities
   if (schema.additionalEntities) {
     schema.additionalEntities.forEach((entity) => {
-      const entityShape: Record<string, any> = {};
+      const entityShape: Record<string, Yup.Schema<unknown>> = {};
       // Find fields for this additional entity
       const entityFields = schema.fields.filter((field) => field.attributeMapping.entity === entity.id);
       entityFields.forEach((field) => {
@@ -82,56 +83,35 @@ export const convertFormSchemaToYupSchema = (
 };
 
 export const formatFormDataForSubmission = (
-  values: any,
+  values: Record<string, unknown>,
   schema: FormSchemaDefinition,
-): any => {
-  const formattedData: any = {
-    mainEntity: {
-      type: schema.mainEntityType,
-      fields: {},
-    },
-  };
+): Record<string, string | number | boolean | string[] | Date | null> => {
+  const formattedData: Record<string, string | number | boolean | string[] | Date | null> = {};
 
   // Process main entity fields
   const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
   mainEntityFields.forEach((field) => {
-    if (values[field.name] !== undefined && values[field.name] !== null && values[field.name] !== '') {
-      formattedData.mainEntity.fields[field.name] = values[field.name];
+    const value = values[field.name];
+    if (value !== undefined && value !== null && value !== '') {
+      // Use the field's name as the key for submission
+      formattedData[field.name] = value;
     }
   });
 
   // Process additional entities
   if (schema.additionalEntities && schema.additionalEntities.length > 0) {
-    formattedData.additionalEntities = [];
     schema.additionalEntities.forEach((entity) => {
-      const entityData: any = {
-        type: entity.entityType,
-        label: entity.label,
-        fields: {},
-      };
-
       const entityValues = values[`additional_${entity.id}`] || {};
       // Find fields for this additional entity
       const entityFields = schema.fields.filter((field) => field.attributeMapping.entity === entity.id);
       entityFields.forEach((field) => {
-        if (entityValues[field.name] !== undefined
-            && entityValues[field.name] !== null
-            && entityValues[field.name] !== '') {
-          entityData.fields[field.name] = entityValues[field.name];
+        const value = entityValues[field.name];
+        if (value !== undefined && value !== null && value !== '') {
+          // Use the field's name as the key for submission
+          formattedData[field.name] = value;
         }
       });
-
-      formattedData.additionalEntities.push(entityData);
     });
-  }
-
-  // Process relationships if any
-  if (schema.relationships && schema.relationships.length > 0) {
-    formattedData.relationships = schema.relationships.map((rel) => ({
-      fromEntity: rel.fromEntity,
-      toEntity: rel.toEntity,
-      relationshipType: rel.relationshipType,
-    }));
   }
 
   return formattedData;

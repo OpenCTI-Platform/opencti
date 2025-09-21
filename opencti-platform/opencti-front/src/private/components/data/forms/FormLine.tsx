@@ -11,6 +11,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { DataColumns } from '../../../../components/list_lines';
 import type { Theme } from '../../../../components/Theme';
 import { FormLine_node$key } from './__generated__/FormLine_node.graphql';
+import { FormLinesPaginationQuery$variables } from './__generated__/FormLinesPaginationQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import FormPopover from './FormPopover';
 import ItemBoolean from '../../../../components/ItemBoolean';
@@ -54,7 +55,7 @@ const formLineFragment = graphql`
 interface FormLineComponentProps {
   dataColumns: DataColumns;
   node: FormLine_node$key;
-  paginationOptions: any;
+  paginationOptions: FormLinesPaginationQuery$variables;
 }
 
 export const FormLineComponent: FunctionComponent<FormLineComponentProps> = ({

@@ -3,6 +3,7 @@ import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikHelpers } from 'formik/dist/types';
 import { FormLinesPaginationQuery$variables } from '@components/data/forms/__generated__/FormLinesPaginationQuery.graphql';
@@ -45,7 +46,7 @@ interface FormCreationProps {
   queryRef: PreloadedQuery<FormCreationQuery>
   handleClose: () => void;
   paginationOptions: FormLinesPaginationQuery$variables;
-  formData?: any; // For duplication
+  formData?: { id: string; name: string; description?: string; form_schema?: string; active?: boolean }; // For duplication
 }
 
 export const formCreationQuery = graphql`
@@ -141,7 +142,7 @@ const FormCreation: FunctionComponent<FormCreationProps> = ({
     commitMutation({
       mutation: formCreationMutation,
       variables: { input: finalValues },
-      updater: (store: any) => {
+      updater: (store: RecordSourceSelectorProxy) => {
         insertNode(
           store,
           'Pagination_forms',
@@ -160,7 +161,7 @@ const FormCreation: FunctionComponent<FormCreationProps> = ({
         setSubmitting(false);
       },
       setSubmitting,
-    } as any);
+    });
   };
 
   // Parse initial form data if duplicating

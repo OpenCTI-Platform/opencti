@@ -91,7 +91,7 @@ export const getAvailableFieldTypes = (
 
     const allowedAttributeTypes = FIELD_TYPE_TO_ATTRIBUTE_TYPE[fieldType.value] || [];
 
-    return attributes.some((attr: any) => {
+    return attributes.some((attr: AttributeOption) => {
       // Skip 'ref', 'refs', and 'object' type attributes
       const attrType = attr.type || 'string';
       if (attrType === 'ref' || attrType === 'refs' || attrType === 'object') {
@@ -209,7 +209,7 @@ export const getAttributesForEntityType = (
 export const getAvailableRelationships = (
   mainEntityType: string,
   additionalEntityTypes: string[],
-  schema: any,
+  schema: { scrs?: Array<{ id: string; label?: string }>; schemaRelationsTypesMapping?: Map<string, readonly string[]> },
   t_i18n: (key: string) => string,
 ): RelationshipTypeOption[] => {
   if (!mainEntityType || !schema) return [];
@@ -217,7 +217,7 @@ export const getAvailableRelationships = (
   const { scrs, schemaRelationsTypesMapping } = schema;
   if (!scrs || !schemaRelationsTypesMapping) return [];
 
-  const allRelationshipTypes = scrs.map((s: any) => ({
+  const allRelationshipTypes = scrs.map((s: { id: string; label?: string }) => ({
     value: s.id,
     label: t_i18n(`relationship_${s.id}`),
   }));
@@ -269,10 +269,10 @@ export const getInitialMandatoryFields = (
   }
 
   // Filter mandatory attributes (mandatoryType === 'external' means truly mandatory)
-  const mandatoryAttributes = entity.attributes.filter((attr: any) => attr.mandatory || attr.mandatoryType === 'external');
+  const mandatoryAttributes = entity.attributes.filter((attr: AttributeOption & { mandatoryType?: string }) => attr.mandatory || attr.mandatoryType === 'external');
 
   // Pre-populate fields for mandatory attributes with default values if available
-  return mandatoryAttributes.map((attr: any) => {
+  return mandatoryAttributes.map((attr: AttributeOption & { defaultValues?: Array<{ id: string; name: string }> | null; mandatoryType?: string; type?: string }) => {
     const defaultValue = attr.defaultValues?.length > 0 ? attr.defaultValues[0] : null;
 
     // Convert attribute type to appropriate field type
@@ -305,22 +305,47 @@ export const getInitialMandatoryFields = (
  * @param t_i18n Translation function
  * @returns List of entity type options
  */
+type EntitySettingNode = {
+  target_type: string;
+  mandatoryAttributes: ReadonlyArray<string>;
+  attributesDefinitions: ReadonlyArray<{
+    type: string;
+    name: string;
+    label?: string | null;
+    mandatory: boolean;
+    mandatoryType?: string;
+    multiple?: boolean | null;
+    defaultValues?: ReadonlyArray<{ id: string; name: string }> | null;
+  }>;
+};
+
 export const buildEntityTypes = (
-  schema: any,
-  entitySettings: any,
+  schema: { scos?: Array<{ id: string; label?: string }>; sdos?: Array<{ id: string; label?: string }>; smos?: Array<{ id: string; label?: string }> },
+  entitySettings: { edges: ReadonlyArray<{ node: EntitySettingNode }> },
   t_i18n: (key: string) => string,
 ): EntityTypeOption[] => {
   const { sdos, scos, smos } = schema;
 
   // Create a map of entity settings for quick lookup
-  const settingsMap = new Map<string, any>();
-  entitySettings?.edges?.forEach(({ node }: any) => {
+  const settingsMap = new Map<string, {
+    mandatoryAttributes: ReadonlyArray<string>;
+    attributesDefinitions: ReadonlyArray<{
+      type: string;
+      name: string;
+      label?: string | null;
+      mandatory: boolean;
+      mandatoryType?: string;
+      multiple?: boolean | null;
+      defaultValues?: ReadonlyArray<{ id: string; name: string }> | null;
+    }>;
+  }>();
+  entitySettings?.edges?.forEach(({ node }) => {
     if (node && 'target_type' in node) {
-      settingsMap.set((node as any).target_type, node);
+      settingsMap.set(node.target_type, node);
     }
   });
 
-  const processEntityType = (s: any) => {
+  const processEntityType = (s: { id: string; label?: string }) => {
     const settings = settingsMap.get(s.id);
 
     // Use attributesDefinitions from the query which contains full attribute info
@@ -328,7 +353,7 @@ export const buildEntityTypes = (
     const mandatoryAttrs = settings?.mandatoryAttributes || [];
 
     // Map attributesDefinitions to the format expected by the form
-    const attributes = attributesDefinitions.map((attr: any) => ({
+    const attributes = attributesDefinitions.map((attr) => ({
       name: attr.name,
       label: attr.label || attr.name,
       type: attr.type,

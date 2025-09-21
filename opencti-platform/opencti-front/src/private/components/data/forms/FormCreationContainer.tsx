@@ -55,7 +55,7 @@ export const FormCreationContainer: FunctionComponent<FormCreationContainerProps
   const duplicateFormData = formDataRef ? {
     ...formDataRef,
     name: `${formDataRef.name} - copy`,
-  } as FormEditionFragment_form$data : null;
+  } as FormEditionFragment_form$data : undefined;
 
   return (
     <Drawer

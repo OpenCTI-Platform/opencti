@@ -20,7 +20,7 @@ export interface FormFieldAttribute {
   fieldMode?: 'parsed' | 'multi'; // For fields in multiple entities
   parseMode?: 'comma' | 'line'; // For text/textarea with fieldMode='parsed'
   options?: Array<{ label: string; value: string }>; // For select/multiselect fields
-  defaultValue?: any; // Default value for the field
+  defaultValue?: string | number | boolean | string[] | Date | null; // Default value for the field
 }
 
 export interface AdditionalEntity {
@@ -107,7 +107,7 @@ export interface FormFieldDefinition {
   };
   fieldMode?: 'parsed' | 'multi';
   options?: Array<{ label: string; value: string }>; // For select/multiselect fields
-  defaultValue?: any;
+  defaultValue?: string | number | boolean | string[] | Date | null;
 }
 
 export interface FormRelationshipDefinition {
@@ -123,8 +123,8 @@ export interface EntityTypeOption {
   value: string;
   label: string;
   isContainer?: boolean;
-  attributes?: any[];
-  defaultValuesAttributes?: any[];
+  attributes?: AttributeOption[];
+  defaultValuesAttributes?: AttributeOption[];
 }
 
 // Field type option for UI display
@@ -137,7 +137,11 @@ export interface FieldTypeOption {
 export interface AttributeOption {
   value: string;
   label: string;
+  name: string;
+  type?: string;
   mandatory?: boolean;
+  multiple?: boolean;
+  defaultValues?: { id: string; name: string; }[] | null;
 }
 
 // Relationship type option for UI display
