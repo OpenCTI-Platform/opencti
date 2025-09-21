@@ -102,7 +102,7 @@ export const formatFormDataForSubmission = (
       }
       return value;
     }
-    
+
     if (field.type === 'objectMarking') {
       // Extract internal IDs from the array of marking objects
       if (Array.isArray(value)) {
@@ -110,7 +110,7 @@ export const formatFormDataForSubmission = (
       }
       return value;
     }
-    
+
     if (field.type === 'objectLabel') {
       // Extract label values from the array of label objects
       if (Array.isArray(value)) {

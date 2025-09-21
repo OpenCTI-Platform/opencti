@@ -271,7 +271,7 @@ export const submitForm = async (
 
   // Map fields to main entity based on schema
   const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
-  for (const field of mainEntityFields) {
+  await Promise.all(mainEntityFields.map(async (field) => {
     const value = submission.values[field.name];
     if (value !== undefined && value !== null && value !== '') {
       // Map to the correct STIX property with special handling for reference fields
@@ -315,7 +315,7 @@ export const submitForm = async (
         mainEntity[stixProperty] = value;
       }
     }
-  }
+  }));
 
   // Main entity ID is already set above
   bundle.objects.push(mainEntity);
@@ -323,7 +323,7 @@ export const submitForm = async (
   // Process additional entities if any
   const additionalEntityIds: Record<string, string> = {};
   if (schema.additionalEntities && schema.additionalEntities.length > 0) {
-    for (const additionalEntity of schema.additionalEntities) {
+    await Promise.all(schema.additionalEntities.map(async (additionalEntity) => {
       const entityType = additionalEntity.entityType || 'Threat-Actor';
       const entity: any = {
         type: entityType.toLowerCase().replace(/_/g, '-'),
@@ -334,7 +334,7 @@ export const submitForm = async (
 
       // Map fields for this additional entity
       const entityFields = schema.fields.filter((field) => field.attributeMapping.entity === additionalEntity.id);
-      for (const field of entityFields) {
+      await Promise.all(entityFields.map(async (field) => {
         const value = submission.values[field.name];
         if (value !== undefined && value !== null && value !== '') {
           const stixProperty = field.attributeMapping.attributeName || field.name;
@@ -377,7 +377,7 @@ export const submitForm = async (
             entity[stixProperty] = value;
           }
         }
-      }
+      }));
 
       // Generate proper STIX ID for additional entity
       const entityId = generateStandardId(entityType, entity);
@@ -400,7 +400,7 @@ export const submitForm = async (
         relationshipData.id = relationshipId;
         bundle.objects.push(relationshipData);
       }
-    }
+    }));
   }
 
   // Process explicit relationships if any
