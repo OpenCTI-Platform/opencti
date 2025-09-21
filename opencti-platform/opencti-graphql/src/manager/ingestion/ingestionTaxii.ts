@@ -22,7 +22,7 @@ export interface TaxiiResponseData {
 }
 interface TaxiiGetParams {
   next: string | undefined,
-  added_after: Date | undefined,
+  added_after: string | undefined,
   limit?: string | undefined
 }
 type TaxiiConnectorState = { current_state_cursor?: string, added_after_start?: string };
@@ -105,8 +105,8 @@ export const processTaxiiResponse: TaxiiHandlerFn = async (context: AuthContext,
     // Update the state
     if (more && isNotEmptyField(data.next)) {
       // Do not touch to added_after_start
-      const ingestionPatch = { current_state_cursor: data.next, last_execution_date: now() };
-      const connectorState = { current_state_cursor: data.next, added_after_start: ingestion.added_after_start?.toISOString() };
+      const connectorState = { current_state_cursor: data.next, added_after_start: ingestion.added_after_start };
+      const ingestionPatch = { ...connectorState, last_execution_date: now() };
       return { size: data.objects.length, ingestionPatch, connectorInfo: { state: connectorState } };
     }
     // Reset the pagination cursor, and update date
