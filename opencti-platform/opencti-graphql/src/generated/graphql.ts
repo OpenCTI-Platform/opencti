@@ -8793,6 +8793,7 @@ export type FormSubmissionInput = {
 export type FormSubmissionResponse = {
   __typename?: 'FormSubmissionResponse';
   bundleId?: Maybe<Scalars['String']['output']>;
+  entityId?: Maybe<Scalars['String']['output']>;
   message?: Maybe<Scalars['String']['output']>;
   success: Scalars['Boolean']['output'];
 };
@@ -15606,6 +15607,7 @@ export type MutationFormFieldPatchArgs = {
 
 export type MutationFormSubmitArgs = {
   input: FormSubmissionInput;
+  isDraft?: Scalars['Boolean']['input'];
 };
 
 
@@ -38562,6 +38564,7 @@ export type FormEdgeResolvers<ContextType = any, ParentType extends ResolversPar
 
 export type FormSubmissionResponseResolvers<ContextType = any, ParentType extends ResolversParentTypes['FormSubmissionResponse'] = ResolversParentTypes['FormSubmissionResponse']> = ResolversObject<{
   bundleId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  entityId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -40737,7 +40740,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   formAdd?: Resolver<Maybe<ResolversTypes['Form']>, ParentType, ContextType, RequireFields<MutationFormAddArgs, 'input'>>;
   formDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationFormDeleteArgs, 'id'>>;
   formFieldPatch?: Resolver<Maybe<ResolversTypes['Form']>, ParentType, ContextType, RequireFields<MutationFormFieldPatchArgs, 'id' | 'input'>>;
-  formSubmit?: Resolver<Maybe<ResolversTypes['FormSubmissionResponse']>, ParentType, ContextType, RequireFields<MutationFormSubmitArgs, 'input'>>;
+  formSubmit?: Resolver<Maybe<ResolversTypes['FormSubmissionResponse']>, ParentType, ContextType, RequireFields<MutationFormSubmitArgs, 'input' | 'isDraft'>>;
   frontendErrorLog?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationFrontendErrorLogArgs, 'message'>>;
   groupAdd?: Resolver<Maybe<ResolversTypes['Group']>, ParentType, ContextType, RequireFields<MutationGroupAddArgs, 'input'>>;
   groupEdit?: Resolver<Maybe<ResolversTypes['GroupEditMutations']>, ParentType, ContextType, RequireFields<MutationGroupEditArgs, 'id'>>;

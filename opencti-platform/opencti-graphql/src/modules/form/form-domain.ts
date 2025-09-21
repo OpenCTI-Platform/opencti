@@ -205,7 +205,8 @@ export interface FormParsed extends Omit<StoreEntityForm, 'form_schema'> {
 export const submitForm = async (
   context: AuthContext,
   user: AuthUser,
-  submission: FormSubmissionData
+  submission: FormSubmissionData,
+  isDraft: boolean = false
 ): Promise<any> => {
   // Load the form
   const form = await findById(context, user, submission.formId);
@@ -244,6 +245,10 @@ export const submitForm = async (
     throw FunctionalError(errors.join(', '));
   }
 
+  // Get STIX ID from submission or generate one
+  const mainEntityStixId = submission.values.x_opencti_stix_ids?.[0] || 
+    generateStandardId(schema.mainEntityType || 'report', {});
+  
   // Create the bundle structure
   const bundle: any = {
     type: 'bundle',
@@ -255,10 +260,12 @@ export const submitForm = async (
   // Create main entity
   const mainEntityType = schema.mainEntityType || 'Report';
   const mainEntity: any = {
+    id: mainEntityStixId,
     type: mainEntityType.toLowerCase().replace(/_/g, '-'),
     spec_version: '2.1',
     created: new Date().toISOString(),
-    modified: new Date().toISOString()
+    modified: new Date().toISOString(),
+    x_opencti_is_inferred: isDraft  // Mark entity as draft if requested
   };
 
   // Map fields to main entity based on schema
@@ -328,9 +335,7 @@ export const submitForm = async (
     }
   });
 
-  // Generate proper STIX ID for main entity
-  const mainEntityId = generateStandardId(mainEntityType, mainEntity);
-  mainEntity.id = mainEntityId;
+  // Main entity ID is already set above
   bundle.objects.push(mainEntity);
 
   // Process additional entities if any
@@ -489,7 +494,8 @@ export const submitForm = async (
     return {
       success: true,
       bundleId: bundle.id,
-      message: 'Form submitted successfully and sent for processing'
+      message: 'Form submitted successfully and sent for processing',
+      entityId: mainEntityStixId
     };
   } catch (error) {
     logApp.error('[FORM] Error sending bundle to connector queue', { error });

@@ -1,13 +1,17 @@
-import React, { FunctionComponent, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
+import React, { FunctionComponent, useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader, fetchQuery } from 'react-relay';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
+import CircularProgress from '@mui/material/CircularProgress';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
 import makeStyles from '@mui/styles/makeStyles';
 import { Formik, Form, FormikHelpers } from 'formik';
+import { v4 as uuid } from 'uuid';
 import { useFormatter } from '../../../../../components/i18n';
 import { FormViewQuery } from './__generated__/FormViewQuery.graphql';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
@@ -18,6 +22,8 @@ import Breadcrumbs from '../../../../../components/Breadcrumbs';
 import type { Theme } from '../../../../../components/Theme';
 import useEntitySettings from '../../../../../utils/hooks/useEntitySettings';
 import { convertFormSchemaToYupSchema, formatFormDataForSubmission } from './FormViewUtils';
+import { resolveLink } from '../../../../../utils/Entity';
+import { commitMutation, MESSAGING$ } from '../../../../../relay/environment';
 
 // Styles
 const useStyles = makeStyles<Theme>(() => ({
@@ -43,6 +49,19 @@ const useStyles = makeStyles<Theme>(() => ({
     marginTop: 20,
     float: 'right',
   },
+  pollingContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100vh',
+  },
+  pollingLoader: {
+    marginBottom: 20,
+  },
+  draftCheckbox: {
+    marginTop: 20,
+  },
 }));
 
 export const formViewQuery = graphql`
@@ -58,11 +77,21 @@ export const formViewQuery = graphql`
 `;
 
 const formSubmitMutation = graphql`
-  mutation FormViewMutation($input: FormSubmissionInput!) {
-    formSubmit(input: $input) {
+  mutation FormViewMutation($input: FormSubmissionInput!, $isDraft: Boolean!) {
+    formSubmit(input: $input, isDraft: $isDraft) {
       success
       bundleId
       message
+      entityId
+    }
+  }
+`;
+
+const entityCheckQuery = graphql`
+  query FormViewEntityCheckQuery($id: String!) {
+    stixDomainObject(id: $id) {
+      id
+      entity_type
     }
   }
 `;
@@ -74,9 +103,12 @@ interface FormViewInnerProps {
 const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  // For future use: navigate
+  const navigate = useNavigate();
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isDraft, setIsDraft] = useState(false);
+  const [pollingEntityId, setPollingEntityId] = useState<string | null>(null);
+  const [pollingEntityType, setPollingEntityType] = useState<string | null>(null);
 
   const data = usePreloadedQuery(formViewQuery, queryRef);
   const { form } = data;
@@ -140,21 +172,73 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
     });
   }
 
+  // Poll for entity existence
+  useEffect(() => {
+    if (!pollingEntityId || !pollingEntityType) return;
+
+    const checkEntity = async () => {
+      try {
+        const result = await fetchQuery(
+          commitMutation.environment,
+          entityCheckQuery,
+          { id: pollingEntityId },
+        ).toPromise();
+        
+        if (result?.stixDomainObject?.id) {
+          // Entity exists, navigate to it
+          const link = resolveLink(pollingEntityType);
+          if (link) {
+            navigate(`${link}/${pollingEntityId}`);
+          } else {
+            // Fallback to generic entity view
+            navigate(`/dashboard/entities/${pollingEntityType.toLowerCase()}s/${pollingEntityId}`);
+          }
+        }
+      } catch {
+        // Entity doesn't exist yet, continue polling
+      }
+    };
+
+    // Start polling
+    checkEntity();
+    const interval = setInterval(checkEntity, 2000); // Check every 2 seconds
+
+    // Cleanup
+    return () => clearInterval(interval);
+  }, [pollingEntityId, pollingEntityType, navigate]);
+
   const handleSubmit = async (values: Record<string, unknown>, { setSubmitting }: FormikHelpers<Record<string, unknown>>) => {
     setSubmitError(null);
     try {
+      // Generate a random STIX ID for the main entity
+      const stixId = `${schema.mainEntityType?.toLowerCase().replace(/_/g, '-')}--${uuid()}`;
+      
+      // Add the STIX ID to the formatted data
       const formattedData = formatFormDataForSubmission(values, schema);
+      formattedData.x_opencti_stix_ids = [stixId];
+      
       commitMutation({
         variables: {
           input: {
             formId: form.id,
             values: JSON.stringify(formattedData),
           },
+          isDraft,
         },
-        onCompleted: (response: { formSubmit?: { success?: boolean; message?: string } }) => {
+        onCompleted: (response: { formSubmit?: { success?: boolean; message?: string; entityId?: string } }) => {
           if (response?.formSubmit?.success) {
             setSubmitted(true);
             setSubmitting(false);
+            
+            // If an entity ID is returned, start polling
+            if (response.formSubmit.entityId) {
+              setPollingEntityId(response.formSubmit.entityId);
+              setPollingEntityType(schema.mainEntityType || 'StixDomainObject');
+            } else {
+              // Generate entity ID from STIX ID
+              setPollingEntityId(stixId);
+              setPollingEntityType(schema.mainEntityType || 'StixDomainObject');
+            }
           } else {
             setSubmitError(response?.formSubmit?.message || 'Submission failed');
             setSubmitting(false);
@@ -171,23 +255,16 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
     }
   };
 
-  if (submitted) {
+  if (submitted && (pollingEntityId || pollingEntityType)) {
     return (
-      <div className={classes.container}>
-        <Alert severity="success">
-          {t_i18n('Form submitted successfully!')}
-          <Box sx={{ mt: 2 }}>
-            <Button
-              variant="contained"
-              onClick={() => {
-                setSubmitted(false);
-                setSubmitError(null);
-              }}
-            >
-              {t_i18n('Submit another response')}
-            </Button>
-          </Box>
-        </Alert>
+      <div className={classes.pollingContainer}>
+        <CircularProgress size={60} className={classes.pollingLoader} />
+        <Typography variant="h6" gutterBottom>
+          {t_i18n('Creating entities...')}
+        </Typography>
+        <Typography variant="body2" color="textSecondary">
+          {t_i18n('Please wait while we process your submission.')}
+        </Typography>
       </div>
     );
   }
@@ -276,16 +353,27 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
                 </>
                 )}
 
-                <Button
-                  className={classes.submitButton}
-                  variant="contained"
-                  color="primary"
-                  type="submit"
-                  disabled={isSubmitting || !isValid}
-                >
-                  {isSubmitting ? t_i18n('Submitting...') : t_i18n('Submit')}
-                </Button>
-                <div style={{ clear: 'both' }} />
+              <FormControlLabel
+                className={classes.draftCheckbox}
+                control={
+                  <Checkbox
+                    checked={isDraft}
+                    onChange={(e) => setIsDraft(e.target.checked)}
+                    disabled={isSubmitting}
+                  />
+                }
+                label={t_i18n('Create as draft')}
+              />
+              <Button
+                className={classes.submitButton}
+                variant="contained"
+                color="primary"
+                type="submit"
+                disabled={isSubmitting || !isValid}
+              >
+                {isSubmitting ? t_i18n('Submitting...') : t_i18n('Submit')}
+              </Button>
+              <div style={{ clear: 'both' }} />
               </Form>
             );
           }}

@@ -48,6 +48,7 @@ type FormSubmissionResponse {
   success: Boolean!
   bundleId: String
   message: String
+  entityId: String
 }
 
 # Queries
@@ -68,5 +69,5 @@ type Mutation {
   formAdd(input: FormAddInput!): Form @auth(for: [INGESTION_SETINGESTIONS])
   formFieldPatch(id: ID!, input: [EditInput!]!): Form @auth(for: [INGESTION_SETINGESTIONS])
   formDelete(id: ID!): ID @auth(for: [INGESTION_SETINGESTIONS])
-  formSubmit(input: FormSubmissionInput!): FormSubmissionResponse @auth(for: [KNOWLEDGE_KNASKIMPORT])
+  formSubmit(input: FormSubmissionInput!, isDraft: Boolean! = false): FormSubmissionResponse @auth(for: [KNOWLEDGE_KNASKIMPORT])
 }
