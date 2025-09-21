@@ -173,7 +173,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
 
   // Poll for entity existence
   useEffect(() => {
-    if (!pollingEntityId || !pollingEntityType) return;
+    if (!pollingEntityId || !pollingEntityType) return undefined;
 
     const checkEntity = async () => {
       try {

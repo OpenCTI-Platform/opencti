@@ -15,7 +15,8 @@ import { createWork, updateExpectationsNumber } from '../../domain/work';
 import { ConnectorType } from '../../generated/graphql';
 import { now } from '../../utils/format';
 import { SYSTEM_USER } from '../../utils/access';
-import { OPENCTI_SYSTEM_UUID } from '../../schema/general';
+import { ENTITY_TYPE_IDENTITY, OPENCTI_SYSTEM_UUID } from '../../schema/general';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 
 const ajv = new Ajv();
 const validateSchema = ajv.compile(FormSchemaDefinitionSchema);
@@ -270,7 +271,7 @@ export const submitForm = async (
 
   // Map fields to main entity based on schema
   const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
-  mainEntityFields.forEach((field) => {
+  for (const field of mainEntityFields) {
     const value = submission.values[field.name];
     if (value !== undefined && value !== null && value !== '') {
       // Map to the correct STIX property with special handling for reference fields
@@ -278,22 +279,43 @@ export const submitForm = async (
 
       // Special handling for reference fields based on field type
       if (field.type === 'objectMarking') {
-        // Frontend sends array of standard_id strings
-        mainEntity.object_marking_refs = Array.isArray(value) ? value : [value];
+        // Frontend sends array of internal IDs, need to resolve to standard_ids
+        const markingIds = Array.isArray(value) ? value : [value];
+        const markings = await Promise.all(
+          markingIds.filter((id: any) => id).map(async (id: string) => {
+            // If it's already a standard_id format, use it directly
+            if (id.startsWith('marking-definition--')) {
+              return id;
+            }
+            // Otherwise resolve internal ID to standard_id
+            const marking = await storeLoadById(context, user, id, ENTITY_TYPE_MARKING_DEFINITION);
+            return marking ? marking.standard_id : null;
+          })
+        );
+        mainEntity.object_marking_refs = markings.filter((id: any) => id !== null);
       } else if (field.type === 'createdBy') {
-        // Frontend sends the standard_id string
+        // Frontend sends internal ID, need to resolve to standard_id
         if (value) {
-          mainEntity.created_by_ref = value;
+          // If it's already a standard_id format, use it directly
+          if (typeof value === 'string' && value.includes('--')) {
+            mainEntity.created_by_ref = value;
+          } else {
+            // Resolve internal ID to standard_id
+            const identity = await storeLoadById(context, user, value, ENTITY_TYPE_IDENTITY);
+            if (identity) {
+              mainEntity.created_by_ref = identity.standard_id;
+            }
+          }
         }
       } else if (field.type === 'objectLabel') {
-        // Frontend sends array of label value strings
+        // Frontend sends array of label value strings (not IDs)
         mainEntity.labels = Array.isArray(value) ? value : [value];
       } else {
         // Default mapping for other fields
         mainEntity[stixProperty] = value;
       }
     }
-  });
+  }
 
   // Main entity ID is already set above
   bundle.objects.push(mainEntity);
@@ -301,7 +323,7 @@ export const submitForm = async (
   // Process additional entities if any
   const additionalEntityIds: Record<string, string> = {};
   if (schema.additionalEntities && schema.additionalEntities.length > 0) {
-    schema.additionalEntities.forEach((additionalEntity) => {
+    for (const additionalEntity of schema.additionalEntities) {
       const entityType = additionalEntity.entityType || 'Threat-Actor';
       const entity: any = {
         type: entityType.toLowerCase().replace(/_/g, '-'),
@@ -312,29 +334,50 @@ export const submitForm = async (
 
       // Map fields for this additional entity
       const entityFields = schema.fields.filter((field) => field.attributeMapping.entity === additionalEntity.id);
-      entityFields.forEach((field) => {
+      for (const field of entityFields) {
         const value = submission.values[field.name];
         if (value !== undefined && value !== null && value !== '') {
           const stixProperty = field.attributeMapping.attributeName || field.name;
 
           // Special handling for reference fields based on field type
           if (field.type === 'objectMarking') {
-            // Frontend sends array of standard_id strings
-            entity.object_marking_refs = Array.isArray(value) ? value : [value];
+            // Frontend sends array of internal IDs, need to resolve to standard_ids
+            const markingIds = Array.isArray(value) ? value : [value];
+            const markings = await Promise.all(
+              markingIds.filter((id: any) => id).map(async (id: string) => {
+                // If it's already a standard_id format, use it directly
+                if (id.startsWith('marking-definition--')) {
+                  return id;
+                }
+                // Otherwise resolve internal ID to standard_id
+                const marking = await storeLoadById(context, user, id, ENTITY_TYPE_MARKING_DEFINITION);
+                return marking ? marking.standard_id : null;
+              })
+            );
+            entity.object_marking_refs = markings.filter((id: any) => id !== null);
           } else if (field.type === 'createdBy') {
-            // Frontend sends the standard_id string
+            // Frontend sends internal ID, need to resolve to standard_id
             if (value) {
-              entity.created_by_ref = value;
+              // If it's already a standard_id format, use it directly
+              if (typeof value === 'string' && value.includes('--')) {
+                entity.created_by_ref = value;
+              } else {
+                // Resolve internal ID to standard_id
+                const identity = await storeLoadById(context, user, value, ENTITY_TYPE_IDENTITY);
+                if (identity) {
+                  entity.created_by_ref = identity.standard_id;
+                }
+              }
             }
           } else if (field.type === 'objectLabel') {
-            // Frontend sends array of label value strings
+            // Frontend sends array of label value strings (not IDs)
             entity.labels = Array.isArray(value) ? value : [value];
           } else {
             // Default mapping for other fields
             entity[stixProperty] = value;
           }
         }
-      });
+      }
 
       // Generate proper STIX ID for additional entity
       const entityId = generateStandardId(entityType, entity);
@@ -357,7 +400,7 @@ export const submitForm = async (
         relationshipData.id = relationshipId;
         bundle.objects.push(relationshipData);
       }
-    });
+    }
   }
 
   // Process explicit relationships if any

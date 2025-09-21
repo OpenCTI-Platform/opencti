@@ -88,13 +88,46 @@ export const formatFormDataForSubmission = (
 ): Record<string, any> => {
   const formattedData: Record<string, any> = {};
 
+  // Helper function to extract proper values for special field types
+  const extractFieldValue = (field: any, value: any) => {
+    if (value === undefined || value === null || value === '') {
+      return undefined;
+    }
+
+    // Handle special reference fields
+    if (field.type === 'createdBy') {
+      // Extract the internal ID from the object
+      if (typeof value === 'object' && value !== null) {
+        return value.value || value.id;
+      }
+      return value;
+    }
+    
+    if (field.type === 'objectMarking') {
+      // Extract internal IDs from the array of marking objects
+      if (Array.isArray(value)) {
+        return value.map((m: any) => m?.value || m?.id || m).filter((id: any) => id);
+      }
+      return value;
+    }
+    
+    if (field.type === 'objectLabel') {
+      // Extract label values from the array of label objects
+      if (Array.isArray(value)) {
+        return value.map((l: any) => l?.label || l?.value || l).filter((label: any) => label);
+      }
+      return value;
+    }
+
+    return value;
+  };
+
   // Process main entity fields
   const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
   mainEntityFields.forEach((field) => {
-    const value = values[field.name];
-    if (value !== undefined && value !== null && value !== '') {
-      // Use the field's name as the key for submission
-      formattedData[field.name] = value;
+    const extractedValue = extractFieldValue(field, values[field.name]);
+    if (extractedValue !== undefined) {
+      formattedData[field.name] = extractedValue;
     }
   });
 
@@ -106,9 +139,9 @@ export const formatFormDataForSubmission = (
       const entityFields = schema.fields.filter((field) => field.attributeMapping.entity === entity.id);
       entityFields.forEach((field) => {
         const value = (entityValues as any)[field.name];
-        if (value !== undefined && value !== null && value !== '') {
-          // Use the field's name as the key for submission
-          formattedData[field.name] = value;
+        const extractedValue = extractFieldValue(field, value);
+        if (extractedValue !== undefined) {
+          formattedData[field.name] = extractedValue;
         }
       });
     });
