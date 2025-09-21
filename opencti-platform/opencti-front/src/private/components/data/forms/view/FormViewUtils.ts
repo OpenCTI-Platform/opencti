@@ -40,7 +40,7 @@ const getYupValidationForField = (
   if (field.isMandatory) {
     if (field.type === 'multiselect' || field.type === 'objectMarking'
         || field.type === 'objectLabel' || field.type === 'files') {
-      validation = validation.min(1, t_i18n('This field is required'));
+      validation = (validation as any).min(1, t_i18n('This field is required'));
     } else if (field.type === 'checkbox' || field.type === 'toggle') {
       // For boolean fields, we might want to ensure they're checked
       // But usually mandatory booleans means they must be explicitly set, not necessarily true
@@ -85,8 +85,8 @@ export const convertFormSchemaToYupSchema = (
 export const formatFormDataForSubmission = (
   values: Record<string, unknown>,
   schema: FormSchemaDefinition,
-): Record<string, string | number | boolean | string[] | Date | null> => {
-  const formattedData: Record<string, string | number | boolean | string[] | Date | null> = {};
+): Record<string, any> => {
+  const formattedData: Record<string, any> = {};
 
   // Process main entity fields
   const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
@@ -105,7 +105,7 @@ export const formatFormDataForSubmission = (
       // Find fields for this additional entity
       const entityFields = schema.fields.filter((field) => field.attributeMapping.entity === entity.id);
       entityFields.forEach((field) => {
-        const value = entityValues[field.name];
+        const value = (entityValues as any)[field.name];
         if (value !== undefined && value !== null && value !== '') {
           // Use the field's name as the key for submission
           formattedData[field.name] = value;

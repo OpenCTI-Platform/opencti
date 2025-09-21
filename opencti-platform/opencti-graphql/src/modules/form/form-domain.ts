@@ -266,9 +266,31 @@ export const submitForm = async (
   mainEntityFields.forEach((field) => {
     const value = submission.values[field.name];
     if (value !== undefined && value !== null && value !== '') {
-      // Map to the correct STIX property
+      // Map to the correct STIX property with special handling for reference fields
       const stixProperty = field.attributeMapping.attributeName || field.name;
-      mainEntity[stixProperty] = value;
+
+      // Special handling for reference fields
+      if (field.type === 'objectMarking' && stixProperty === 'objectMarking') {
+        // Convert to object_marking_refs array with standard_id values
+        const markings = Array.isArray(value) ? value : [value];
+        mainEntity.object_marking_refs = markings
+          .filter((m: any) => m?.standard_id)
+          .map((m: any) => m.standard_id);
+      } else if (field.type === 'createdBy' && stixProperty === 'createdBy') {
+        // Convert to created_by_ref with standard_id
+        if (value && typeof value === 'object' && value.standard_id) {
+          mainEntity.created_by_ref = value.standard_id;
+        }
+      } else if (field.type === 'objectLabel' && stixProperty === 'objectLabel') {
+        // Convert to labels array with label values
+        const labels = Array.isArray(value) ? value : [value];
+        mainEntity.labels = labels
+          .filter((l: any) => l?.value)
+          .map((l: any) => l.value);
+      } else {
+        // Default mapping for other fields
+        mainEntity[stixProperty] = value;
+      }
     }
   });
 
@@ -295,7 +317,29 @@ export const submitForm = async (
         const value = submission.values[field.name];
         if (value !== undefined && value !== null && value !== '') {
           const stixProperty = field.attributeMapping.attributeName || field.name;
-          entity[stixProperty] = value;
+
+          // Special handling for reference fields
+          if (field.type === 'objectMarking' && stixProperty === 'objectMarking') {
+            // Convert to object_marking_refs array with standard_id values
+            const markings = Array.isArray(value) ? value : [value];
+            entity.object_marking_refs = markings
+              .filter((m: any) => m?.standard_id)
+              .map((m: any) => m.standard_id);
+          } else if (field.type === 'createdBy' && stixProperty === 'createdBy') {
+            // Convert to created_by_ref with standard_id
+            if (value && typeof value === 'object' && value.standard_id) {
+              entity.created_by_ref = value.standard_id;
+            }
+          } else if (field.type === 'objectLabel' && stixProperty === 'objectLabel') {
+            // Convert to labels array with label values
+            const labels = Array.isArray(value) ? value : [value];
+            entity.labels = labels
+              .filter((l: any) => l?.value)
+              .map((l: any) => l.value);
+          } else {
+            // Default mapping for other fields
+            entity[stixProperty] = value;
+          }
         }
       });
 

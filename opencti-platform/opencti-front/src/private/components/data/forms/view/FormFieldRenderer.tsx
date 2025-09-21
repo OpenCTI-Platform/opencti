@@ -111,7 +111,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
 
       Promise.all(filePromises).then((fileData) => {
         const currentFiles = (fieldValue || []) as Array<{ name?: string; data?: string }>;
-        setFieldValue(field.name, [...currentFiles, ...fileData]);
+        setFieldValue(field.name, [...currentFiles, ...fileData] as any);
       });
     }
   };
@@ -119,7 +119,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
   const handleFileRemove = (index: number) => {
     const currentFiles = (fieldValue || []) as Array<{ name?: string; data?: string }>;
     const newFiles = currentFiles.filter((_: { name?: string; data?: string }, i: number) => i !== index);
-    setFieldValue(field.name, newFiles);
+    setFieldValue(field.name, newFiles as any);
   };
 
   // Render based on field type
@@ -275,7 +275,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
       return (
         <DatePicker
           label={displayLabel}
-          value={fieldValue ? new Date(fieldValue) : null}
+          value={fieldValue ? new Date(fieldValue as string) : null}
           onChange={(value: Date | null) => {
             // Handle both Date objects and dayjs/moment objects
             if (value) {
@@ -301,7 +301,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
       return (
         <DateTimePicker
           label={displayLabel}
-          value={fieldValue ? new Date(fieldValue) : null}
+          value={fieldValue ? new Date(fieldValue as string) : null}
           onChange={(value: Date | null) => {
             // Handle both Date objects and dayjs/moment objects
             if (value) {

@@ -128,13 +128,13 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
       
       entityFields.forEach((field) => {
         if (field.type === 'checkbox' || field.type === 'toggle') {
-          initialValues[`additional_${entity.id}`][field.name] = false;
+          (initialValues[`additional_${entity.id}`] as any)[field.name] = false;
         } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'files') {
-          initialValues[`additional_${entity.id}`][field.name] = [];
+          (initialValues[`additional_${entity.id}`] as any)[field.name] = [];
         } else if (field.type === 'datetime') {
-          initialValues[`additional_${entity.id}`][field.name] = field.defaultValue || new Date().toISOString();
+          (initialValues[`additional_${entity.id}`] as any)[field.name] = field.defaultValue || new Date().toISOString();
         } else {
-          initialValues[`additional_${entity.id}`][field.name] = field.defaultValue || '';
+          (initialValues[`additional_${entity.id}`] as any)[field.name] = field.defaultValue || '';
         }
       });
     });
@@ -145,7 +145,6 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
     try {
       const formattedData = formatFormDataForSubmission(values, schema);
       await commitMutation({
-        mutation: formSubmitMutation,
         variables: {
           input: {
             formId: form.id,
@@ -239,8 +238,8 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
                     key={field.name}
                     field={field}
                     values={values}
-                    errors={errors}
-                    touched={touched}
+                    errors={errors as Record<string, string>}
+                    touched={touched as Record<string, boolean>}
                     setFieldValue={setFieldValue}
                   />
                 ))}
@@ -261,12 +260,12 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
                           <FormFieldRenderer
                             key={`${additionalEntity.id}_${field.name}`}
                             field={field}
-                            values={values[`additional_${additionalEntity.id}`] || {}}
-                            errors={errors[`additional_${additionalEntity.id}`] || {}}
-                            touched={touched[`additional_${additionalEntity.id}`] || {}}
+                            values={values[`additional_${additionalEntity.id}`] as Record<string, unknown> || {}}
+                            errors={errors[`additional_${additionalEntity.id}`] as Record<string, string> || {}}
+                            touched={touched[`additional_${additionalEntity.id}`] as Record<string, boolean> || {}}
                             setFieldValue={(fieldName: string, value: string | number | boolean | string[] | Date | null) => setFieldValue(`additional_${additionalEntity.id}.${fieldName}`, value)
                             }
-                            entitySettings={entitySettings}
+                            entitySettings={entitySettings as any}
                             fieldPrefix={`additional_${additionalEntity.id}`}
                           />
                         ))}
