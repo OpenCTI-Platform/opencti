@@ -102,7 +102,7 @@ const rssDataFilter = (items: DataItem[], current_state_date: Date | undefined):
     .sort((a, b) => a.pubDate.diff(b.pubDate));
 };
 
-const rssDataParser = async (data: convertableToString, current_state_date: Date | undefined): Promise<DataItem[]> => {
+export const rssDataParser = async (data: convertableToString, current_state_date: Date | undefined): Promise<DataItem[]> => {
   const xmlData = await xmlParse(data, { explicitArray: false, trim: true, explicitCharkey: true, mergeAttrs: true });
   if (xmlData?.feed) { // Atom V1
     const entries = asArray(xmlData.feed.entry);
