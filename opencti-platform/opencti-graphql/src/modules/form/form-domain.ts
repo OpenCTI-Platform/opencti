@@ -276,8 +276,8 @@ export const submitForm = async (
       // Map to the correct STIX property with special handling for reference fields
       const stixProperty = field.attributeMapping.attributeName || field.name;
 
-      // Special handling for reference fields
-      if (field.type === 'objectMarking' && stixProperty === 'objectMarking') {
+      // Special handling for reference fields based on field type (not stixProperty)
+      if (field.type === 'objectMarking') {
         // Convert to object_marking_refs array with standard_id values
         const markings = Array.isArray(value) ? value : [value];
         mainEntity.object_marking_refs = markings
@@ -296,7 +296,7 @@ export const submitForm = async (
             return null;
           })
           .filter((id: any) => id !== null);
-      } else if (field.type === 'createdBy' && stixProperty === 'createdBy') {
+      } else if (field.type === 'createdBy') {
         // Convert to created_by_ref with standard_id
         if (value) {
           if (typeof value === 'string') {
@@ -307,7 +307,7 @@ export const submitForm = async (
             mainEntity.created_by_ref = value.id;
           }
         }
-      } else if (field.type === 'objectLabel' && stixProperty === 'objectLabel') {
+      } else if (field.type === 'objectLabel') {
         // Convert to labels array with label values (not IDs)
         const labels = Array.isArray(value) ? value : [value];
         mainEntity.labels = labels
@@ -357,8 +357,8 @@ export const submitForm = async (
         if (value !== undefined && value !== null && value !== '') {
           const stixProperty = field.attributeMapping.attributeName || field.name;
 
-          // Special handling for reference fields
-          if (field.type === 'objectMarking' && stixProperty === 'objectMarking') {
+          // Special handling for reference fields based on field type (not stixProperty)
+          if (field.type === 'objectMarking') {
             // Convert to object_marking_refs array with standard_id values
             const markings = Array.isArray(value) ? value : [value];
             entity.object_marking_refs = markings
@@ -377,7 +377,7 @@ export const submitForm = async (
                 return null;
               })
               .filter((id: any) => id !== null);
-          } else if (field.type === 'createdBy' && stixProperty === 'createdBy') {
+          } else if (field.type === 'createdBy') {
             // Convert to created_by_ref with standard_id
             if (value) {
               if (typeof value === 'string') {
@@ -388,7 +388,7 @@ export const submitForm = async (
                 entity.created_by_ref = value.id;
               }
             }
-          } else if (field.type === 'objectLabel' && stixProperty === 'objectLabel') {
+          } else if (field.type === 'objectLabel') {
             // Convert to labels array with label values (not IDs)
             const labels = Array.isArray(value) ? value : [value];
             entity.labels = labels
@@ -430,7 +430,7 @@ export const submitForm = async (
           created: new Date().toISOString(),
           modified: new Date().toISOString(),
           relationship_type: 'object',
-          source_ref: mainEntityId,
+          source_ref: mainEntityStixId,
           target_ref: entityId
         };
         const relationshipId = generateStandardId('stix-core-relationship', relationshipData);
@@ -443,8 +443,8 @@ export const submitForm = async (
   // Process explicit relationships if any
   if (schema.relationships && schema.relationships.length > 0) {
     schema.relationships.forEach((rel) => {
-      const sourceRef = rel.fromEntity === 'main_entity' ? mainEntityId : additionalEntityIds[rel.fromEntity];
-      const targetRef = rel.toEntity === 'main_entity' ? mainEntityId : additionalEntityIds[rel.toEntity];
+      const sourceRef = rel.fromEntity === 'main_entity' ? mainEntityStixId : additionalEntityIds[rel.fromEntity];
+      const targetRef = rel.toEntity === 'main_entity' ? mainEntityStixId : additionalEntityIds[rel.toEntity];
 
       if (sourceRef && targetRef) {
         const relationshipData: any = {

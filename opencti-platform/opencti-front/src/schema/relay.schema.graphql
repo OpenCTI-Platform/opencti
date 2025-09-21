@@ -9639,7 +9639,7 @@ type Mutation {
   formAdd(input: FormAddInput!): Form
   formFieldPatch(id: ID!, input: [EditInput!]!): Form
   formDelete(id: ID!): ID
-  formSubmit(input: FormSubmissionInput!): FormSubmissionResponse
+  formSubmit(input: FormSubmissionInput!, isDraft: Boolean! = false): FormSubmissionResponse
   checkXTMHubConnectivity: CheckXTMHubConnectivityResponse!
 }
 
@@ -14137,6 +14137,7 @@ type FormSubmissionResponse {
   success: Boolean!
   bundleId: String
   message: String
+  entityId: String
 }
 
 type CheckXTMHubConnectivityResponse {

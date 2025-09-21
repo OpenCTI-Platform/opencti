@@ -4,7 +4,6 @@ import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader, fetchQuery 
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -23,7 +22,7 @@ import type { Theme } from '../../../../../components/Theme';
 import useEntitySettings from '../../../../../utils/hooks/useEntitySettings';
 import { convertFormSchemaToYupSchema, formatFormDataForSubmission } from './FormViewUtils';
 import { resolveLink } from '../../../../../utils/Entity';
-import { commitMutation, MESSAGING$ } from '../../../../../relay/environment';
+import { environment } from '../../../../../relay/environment';
 
 // Styles
 const useStyles = makeStyles<Theme>(() => ({
@@ -113,7 +112,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
   const data = usePreloadedQuery(formViewQuery, queryRef);
   const { form } = data;
 
-  const [commitMutation] = useApiMutation(formSubmitMutation);
+  const [commitFormMutation] = useApiMutation(formSubmitMutation);
   const entitySettings = useEntitySettings();
 
   if (!form) {
@@ -178,12 +177,12 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
 
     const checkEntity = async () => {
       try {
-        const result = await fetchQuery(
-          commitMutation.environment,
+        const result: any = await fetchQuery(
+          environment,
           entityCheckQuery,
           { id: pollingEntityId },
         ).toPromise();
-        
+
         if (result?.stixDomainObject?.id) {
           // Entity exists, navigate to it
           const link = resolveLink(pollingEntityType);
@@ -204,7 +203,9 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
     const interval = setInterval(checkEntity, 2000); // Check every 2 seconds
 
     // Cleanup
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+    };
   }, [pollingEntityId, pollingEntityType, navigate]);
 
   const handleSubmit = async (values: Record<string, unknown>, { setSubmitting }: FormikHelpers<Record<string, unknown>>) => {
@@ -212,12 +213,11 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
     try {
       // Generate a random STIX ID for the main entity
       const stixId = `${schema.mainEntityType?.toLowerCase().replace(/_/g, '-')}--${uuid()}`;
-      
+
       // Add the STIX ID to the formatted data
       const formattedData = formatFormDataForSubmission(values, schema);
       formattedData.x_opencti_stix_ids = [stixId];
-      
-      commitMutation({
+      commitFormMutation({
         variables: {
           input: {
             formId: form.id,
@@ -229,7 +229,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
           if (response?.formSubmit?.success) {
             setSubmitted(true);
             setSubmitting(false);
-            
+
             // If an entity ID is returned, start polling
             if (response.formSubmit.entityId) {
               setPollingEntityId(response.formSubmit.entityId);
@@ -318,7 +318,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
                       errors={errors as Record<string, string>}
                       touched={touched as Record<string, boolean>}
                       setFieldValue={setFieldValue}
-                      entitySettings={entitySettings as FormFieldRendererProps['entitySettings']}
+                      entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
                     />
                   ))}
                 </div>
@@ -353,27 +353,27 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
                 </>
                 )}
 
-              <FormControlLabel
-                className={classes.draftCheckbox}
-                control={
-                  <Checkbox
-                    checked={isDraft}
-                    onChange={(e) => setIsDraft(e.target.checked)}
-                    disabled={isSubmitting}
-                  />
-                }
-                label={t_i18n('Create as draft')}
-              />
-              <Button
-                className={classes.submitButton}
-                variant="contained"
-                color="primary"
-                type="submit"
-                disabled={isSubmitting || !isValid}
-              >
-                {isSubmitting ? t_i18n('Submitting...') : t_i18n('Submit')}
-              </Button>
-              <div style={{ clear: 'both' }} />
+                <FormControlLabel
+                  className={classes.draftCheckbox}
+                  control={
+                    <Checkbox
+                      checked={isDraft}
+                      onChange={(e) => setIsDraft(e.target.checked)}
+                      disabled={isSubmitting}
+                    />
+                  }
+                  label={t_i18n('Create as draft')}
+                />
+                <Button
+                  className={classes.submitButton}
+                  variant="contained"
+                  color="primary"
+                  type="submit"
+                  disabled={isSubmitting || !isValid}
+                >
+                  {isSubmitting ? t_i18n('Submitting...') : t_i18n('Submit')}
+                </Button>
+                <div style={{ clear: 'both' }} />
               </Form>
             );
           }}
