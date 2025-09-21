@@ -218,15 +218,16 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
       const keys = path.split('.');
       // Prevent prototype pollution by blocking dangerous property names
       const forbiddenProps = ['__proto__', 'constructor', 'prototype'];
-      if (keys.some((k) => forbiddenProps.includes(k))) {
-        // Blocked prototype-polluting key in handleFieldChange
-        return prev;
-      }
+      // Defensive: check each key in the path at moment of access, not just at start
       const newData = { ...prev };
       let current: Record<string, unknown> = newData as Record<string, unknown>;
 
       for (let i = 0; i < keys.length - 1; i += 1) {
         const key = keys[i];
+        if (forbiddenProps.includes(key)) {
+          // Blocked prototype-polluting key in handleFieldChange (at traversal)
+          return prev;
+        }
         if (Array.isArray(current[key])) {
           current[key] = [...current[key]];
         } else if (typeof current[key] === 'object' && current[key] !== null) {
@@ -234,8 +235,12 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
         }
         current = current[key] as Record<string, unknown>;
       }
-
-      current[keys[keys.length - 1]] = value;
+      const lastKey = keys[keys.length - 1];
+      if (forbiddenProps.includes(lastKey)) {
+        // Blocked prototype-polluting key in handleFieldChange (at leaf)
+        return prev;
+      }
+      current[lastKey] = value;
       return newData;
     });
   };
