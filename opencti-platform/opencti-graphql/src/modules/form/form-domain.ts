@@ -274,19 +274,53 @@ export const submitForm = async (
         // Convert to object_marking_refs array with standard_id values
         const markings = Array.isArray(value) ? value : [value];
         mainEntity.object_marking_refs = markings
-          .filter((m: any) => m?.standard_id)
-          .map((m: any) => m.standard_id);
+          .filter((m: any) => m)
+          .map((m: any) => {
+            // Handle both string IDs and objects with standard_id
+            if (typeof m === 'string') {
+              // If it's just a string ID, use it directly as the marking ref
+              return m;
+            } else if (m?.standard_id) {
+              return m.standard_id;
+            } else if (m?.id) {
+              // Fallback to id if standard_id is not available
+              return m.id;
+            }
+            return null;
+          })
+          .filter((id: any) => id !== null);
       } else if (field.type === 'createdBy' && stixProperty === 'createdBy') {
         // Convert to created_by_ref with standard_id
-        if (value && typeof value === 'object' && value.standard_id) {
-          mainEntity.created_by_ref = value.standard_id;
+        if (value) {
+          if (typeof value === 'string') {
+            mainEntity.created_by_ref = value;
+          } else if (value.standard_id) {
+            mainEntity.created_by_ref = value.standard_id;
+          } else if (value.id) {
+            mainEntity.created_by_ref = value.id;
+          }
         }
       } else if (field.type === 'objectLabel' && stixProperty === 'objectLabel') {
-        // Convert to labels array with label values
+        // Convert to labels array with label values (not IDs)
         const labels = Array.isArray(value) ? value : [value];
         mainEntity.labels = labels
-          .filter((l: any) => l?.value)
-          .map((l: any) => l.value);
+          .filter((l: any) => l)
+          .map((l: any) => {
+            // Handle both string values and objects
+            if (typeof l === 'string') {
+              return l;
+            } else if (l?.value) {
+              return l.value;
+            } else if (l?.label) {
+              // Some label objects might use 'label' instead of 'value'
+              return l.label;
+            } else if (l?.name) {
+              // Some label objects might use 'name'
+              return l.name;
+            }
+            return null;
+          })
+          .filter((label: any) => label !== null);
       } else {
         // Default mapping for other fields
         mainEntity[stixProperty] = value;
@@ -323,19 +357,53 @@ export const submitForm = async (
             // Convert to object_marking_refs array with standard_id values
             const markings = Array.isArray(value) ? value : [value];
             entity.object_marking_refs = markings
-              .filter((m: any) => m?.standard_id)
-              .map((m: any) => m.standard_id);
+              .filter((m: any) => m)
+              .map((m: any) => {
+                // Handle both string IDs and objects with standard_id
+                if (typeof m === 'string') {
+                  // If it's just a string ID, use it directly as the marking ref
+                  return m;
+                } else if (m?.standard_id) {
+                  return m.standard_id;
+                } else if (m?.id) {
+                  // Fallback to id if standard_id is not available
+                  return m.id;
+                }
+                return null;
+              })
+              .filter((id: any) => id !== null);
           } else if (field.type === 'createdBy' && stixProperty === 'createdBy') {
             // Convert to created_by_ref with standard_id
-            if (value && typeof value === 'object' && value.standard_id) {
-              entity.created_by_ref = value.standard_id;
+            if (value) {
+              if (typeof value === 'string') {
+                entity.created_by_ref = value;
+              } else if (value.standard_id) {
+                entity.created_by_ref = value.standard_id;
+              } else if (value.id) {
+                entity.created_by_ref = value.id;
+              }
             }
           } else if (field.type === 'objectLabel' && stixProperty === 'objectLabel') {
-            // Convert to labels array with label values
+            // Convert to labels array with label values (not IDs)
             const labels = Array.isArray(value) ? value : [value];
             entity.labels = labels
-              .filter((l: any) => l?.value)
-              .map((l: any) => l.value);
+              .filter((l: any) => l)
+              .map((l: any) => {
+                // Handle both string values and objects
+                if (typeof l === 'string') {
+                  return l;
+                } else if (l?.value) {
+                  return l.value;
+                } else if (l?.label) {
+                  // Some label objects might use 'label' instead of 'value'
+                  return l.label;
+                } else if (l?.name) {
+                  // Some label objects might use 'name'
+                  return l.name;
+                }
+                return null;
+              })
+              .filter((label: any) => label !== null);
           } else {
             // Default mapping for other fields
             entity[stixProperty] = value;

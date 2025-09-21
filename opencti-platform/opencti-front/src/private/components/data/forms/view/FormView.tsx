@@ -11,7 +11,7 @@ import { Formik, Form, FormikHelpers } from 'formik';
 import { useFormatter } from '../../../../../components/i18n';
 import { FormViewQuery } from './__generated__/FormViewQuery.graphql';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
-import FormFieldRenderer from './FormFieldRenderer';
+import FormFieldRenderer, { FormFieldRendererProps } from './FormFieldRenderer';
 import { FormSchemaDefinition } from '../Form.d';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
@@ -106,7 +106,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
 
   // Initialize values for main entity fields
   const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
-  
+
   mainEntityFields.forEach((field) => {
     if (field.type === 'checkbox' || field.type === 'toggle') {
       initialValues[field.name] = false;
@@ -125,16 +125,16 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
       initialValues[`additional_${entity.id}`] = {};
       // Find fields for this additional entity
       const entityFields = schema.fields.filter((field) => field.attributeMapping.entity === entity.id);
-      
+
       entityFields.forEach((field) => {
         if (field.type === 'checkbox' || field.type === 'toggle') {
-          (initialValues[`additional_${entity.id}`] as any)[field.name] = false;
+          (initialValues as any)[`additional_${entity.id}`][field.name] = false;
         } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'files') {
-          (initialValues[`additional_${entity.id}`] as any)[field.name] = [];
+          (initialValues as any)[`additional_${entity.id}`][field.name] = [];
         } else if (field.type === 'datetime') {
-          (initialValues[`additional_${entity.id}`] as any)[field.name] = field.defaultValue || new Date().toISOString();
+          (initialValues as any)[`additional_${entity.id}`][field.name] = field.defaultValue || new Date().toISOString();
         } else {
-          (initialValues[`additional_${entity.id}`] as any)[field.name] = field.defaultValue || '';
+          (initialValues as any)[`additional_${entity.id}`][field.name] = field.defaultValue || '';
         }
       });
     });
@@ -144,7 +144,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
     setSubmitError(null);
     try {
       const formattedData = formatFormDataForSubmission(values, schema);
-      await commitMutation({
+      commitMutation({
         variables: {
           input: {
             formId: form.id,
@@ -225,28 +225,29 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
           validateOnChange={true}
           validateOnBlur={true}
         >
-          {({ isSubmitting, isValid, values, errors, touched, setFieldValue }) => {  
+          {({ isSubmitting, isValid, values, errors, touched, setFieldValue }) => {
             return (
-            <Form>
-              {/* Main Entity Fields */}
-              <div className={classes.section}>
-                <Typography variant="h6" className={classes.sectionTitle}>
-                  {t_i18n(schema.mainEntityType || 'Main Entity')}
-                </Typography>
-                {mainEntityFields.map((field) => (
-                  <FormFieldRenderer
-                    key={field.name}
-                    field={field}
-                    values={values}
-                    errors={errors as Record<string, string>}
-                    touched={touched as Record<string, boolean>}
-                    setFieldValue={setFieldValue}
-                  />
-                ))}
-              </div>
+              <Form>
+                {/* Main Entity Fields */}
+                <div className={classes.section}>
+                  <Typography variant="h6" className={classes.sectionTitle}>
+                    {t_i18n(schema.mainEntityType || 'Main Entity')}
+                  </Typography>
+                  {mainEntityFields.map((field) => (
+                    <FormFieldRenderer
+                      key={field.name}
+                      field={field}
+                      values={values}
+                      errors={errors as Record<string, string>}
+                      touched={touched as Record<string, boolean>}
+                      setFieldValue={setFieldValue}
+                      entitySettings={entitySettings as FormFieldRendererProps['entitySettings']}
+                    />
+                  ))}
+                </div>
 
-              {/* Additional Entities */}
-              {schema.additionalEntities && schema.additionalEntities.length > 0 && (
+                {/* Additional Entities */}
+                {schema.additionalEntities && schema.additionalEntities.length > 0 && (
                 <>
                   {schema.additionalEntities.map((additionalEntity) => {
                     // Find fields for this additional entity
@@ -273,19 +274,19 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
                     );
                   })}
                 </>
-              )}
+                )}
 
-              <Button
-                className={classes.submitButton}
-                variant="contained"
-                color="primary"
-                type="submit"
-                disabled={isSubmitting || !isValid}
-              >
-                {isSubmitting ? t_i18n('Submitting...') : t_i18n('Submit')}
-              </Button>
-              <div style={{ clear: 'both' }} />
-            </Form>
+                <Button
+                  className={classes.submitButton}
+                  variant="contained"
+                  color="primary"
+                  type="submit"
+                  disabled={isSubmitting || !isValid}
+                >
+                  {isSubmitting ? t_i18n('Submitting...') : t_i18n('Submit')}
+                </Button>
+                <div style={{ clear: 'both' }} />
+              </Form>
             );
           }}
         </Formik>

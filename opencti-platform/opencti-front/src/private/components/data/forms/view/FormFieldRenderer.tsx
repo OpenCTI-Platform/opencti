@@ -43,7 +43,7 @@ const useStyles = makeStyles<Theme>(() => ({
   },
 }));
 
-interface FormFieldRendererProps {
+export interface FormFieldRendererProps {
   field: FormFieldDefinition;
   values: Record<string, unknown>;
   errors: Record<string, string>;

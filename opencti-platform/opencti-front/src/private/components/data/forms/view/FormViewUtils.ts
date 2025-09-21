@@ -61,7 +61,7 @@ export const convertFormSchemaToYupSchema = (
 
   // Process main entity fields
   const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
-  
+
   mainEntityFields.forEach((field) => {
     shape[field.name] = getYupValidationForField(field, t_i18n);
   });
