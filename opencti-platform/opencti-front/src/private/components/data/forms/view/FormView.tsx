@@ -261,8 +261,8 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
                             key={`${additionalEntity.id}_${field.name}`}
                             field={field}
                             values={values[`additional_${additionalEntity.id}`] as Record<string, unknown> || {}}
-                            errors={errors[`additional_${additionalEntity.id}`] as Record<string, string> || {}}
-                            touched={touched[`additional_${additionalEntity.id}`] as Record<string, boolean> || {}}
+                            errors={(errors as unknown as Record<string, Record<string, string>>)[`additional_${additionalEntity.id}`] || {}}
+                            touched={(touched as unknown as Record<string, Record<string, boolean>>)[`additional_${additionalEntity.id}`] || {}}
                             setFieldValue={(fieldName: string, value: string | number | boolean | string[] | Date | null) => setFieldValue(`additional_${additionalEntity.id}.${fieldName}`, value)
                             }
                             entitySettings={entitySettings as any}
