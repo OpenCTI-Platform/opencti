@@ -1,4 +1,4 @@
-import type {BasicStoreEntity, StoreEntity} from '../../types/store';
+import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { StixDomainObject, StixOpenctiExtensionSDO } from '../../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 
@@ -8,6 +8,11 @@ export const ATTRIBUTE_ASSESS = 'assess_ref';
 export const INPUT_ASSESS = 'objectAssess';
 
 // region Database types
+export interface BasicStoreEntitySecurityCoverage extends BasicStoreEntity {
+  periodicity: string
+  coverage: { name: string, score: number }[]
+}
+
 export interface StoreEntitySecurityCoverage extends StoreEntity {
   periodicity: string
   [INPUT_ASSESS]: BasicStoreEntity
