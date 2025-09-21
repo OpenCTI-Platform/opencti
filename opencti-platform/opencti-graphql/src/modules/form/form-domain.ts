@@ -10,7 +10,12 @@ import { connectorIdFromIngestId, registerConnectorForIngestion, unregisterConne
 import { publishUserAction } from '../../listener/UserActionListener';
 import { generateStandardId } from '../../schema/identifier';
 import { logApp } from '../../config/conf';
-import { pushBundleToConnectorQueue } from '../../manager/ingestionManager';
+import { pushToWorkerForConnector } from '../../database/rabbitmq';
+import { createWork, updateExpectationsNumber } from '../../domain/work';
+import { ConnectorType } from '../../generated/graphql';
+import { now } from '../../utils/format';
+import { SYSTEM_USER } from '../../utils/access';
+import { OPENCTI_SYSTEM_UUID } from '../../schema/general';
 
 const ajv = new Ajv();
 const validateSchema = ajv.compile(FormSchemaDefinitionSchema);
@@ -346,9 +351,28 @@ export const submitForm = async (
 
   try {
     // Send the bundle to the connector queue for ingestion
-    const workId = await pushBundleToConnectorQueue(context, form, bundle);
+    const connectorId = connectorIdFromIngestId(form.id);
+    const connector = { internal_id: connectorId, connector_type: ConnectorType.ExternalImport };
+    const workName = `Form submission @ ${now()}`;
+    const work: any = await createWork(context, SYSTEM_USER, connector, workName, connector.internal_id, { receivedTime: now() });
 
-    logApp.info('[FORM] Bundle sent to connector queue', { formId: form.id, workId, bundleId: bundle.id });
+    const stixBundle = JSON.stringify(bundle);
+    const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
+
+    if (bundle.objects.length === 1) {
+      // Only add explicit expectation if the worker will not split anything
+      await updateExpectationsNumber(context, SYSTEM_USER, work.id, bundle.objects.length);
+    }
+
+    await pushToWorkerForConnector(connectorId, {
+      type: 'bundle',
+      applicant_id: user.id ?? OPENCTI_SYSTEM_UUID,
+      content,
+      work_id: work.id,
+      update: true
+    });
+
+    logApp.info('[FORM] Bundle sent to connector queue', { formId: form.id, workId: work.id, bundleId: bundle.id });
 
     return {
       success: true,
