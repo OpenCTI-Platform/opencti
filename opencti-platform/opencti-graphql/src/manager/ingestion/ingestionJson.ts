@@ -7,6 +7,14 @@ import { SYSTEM_USER } from '../../utils/access';
 import { pushBundleToConnectorQueue } from './ingestionUtils';
 import { ingestionQueueExecution } from './ingestionExecutor';
 
+// region Types
+type JsonConnectorState = { ingestion_json_state?: object };
+type JsonIngestionPatch = JsonConnectorState & { last_execution_date: string };
+type JsonConnectorInfo = { state?: JsonConnectorState };
+type HandlerResponse = { size: number, ingestionPatch: JsonIngestionPatch, connectorInfo: JsonConnectorInfo };
+type JsonHandlerFn = (context: AuthContext, ingestion: BasicStoreEntityIngestionJson) => Promise<HandlerResponse>;
+// endregion Types
+
 const mergeQueryState = (queryParamsAttributes: Array<DataParam> | undefined, previousState: Record<string, any>, newState: Record<string, any>) => {
   const state: Record<string, any> = {};
   const queryParams = queryParamsAttributes ?? [];
@@ -21,7 +29,7 @@ const mergeQueryState = (queryParamsAttributes: Array<DataParam> | undefined, pr
   return state;
 };
 
-const jsonDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityIngestionJson) => {
+const jsonDataHandler: JsonHandlerFn = async (context: AuthContext, ingestion: BasicStoreEntityIngestionJson) => {
   const { bundle, variables, nextExecutionState } = await executeJsonQuery(context, ingestion);
   // Push the bundle to absorption queue if required
   if (bundle.objects.length > 0) {
@@ -29,8 +37,8 @@ const jsonDataHandler = async (context: AuthContext, ingestion: BasicStoreEntity
   }
   // Save new state for next execution
   const ingestionState = mergeQueryState(ingestion.query_attributes, variables, nextExecutionState);
-  const state = { ingestion_json_state: ingestionState, last_execution_date: now() };
-  return { size: bundle.objects.length, ingestionPatch: state, connectorInfo: { state: ingestionState } };
+  const state: JsonConnectorState = { ingestion_json_state: ingestionState };
+  return { size: bundle.objects.length, ingestionPatch: { ...state, last_execution_date: now() }, connectorInfo: { state: ingestionState } };
 };
 
 export const jsonExecutor = async (context: AuthContext) => {

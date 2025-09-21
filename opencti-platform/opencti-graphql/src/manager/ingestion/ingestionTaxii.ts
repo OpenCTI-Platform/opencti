@@ -15,16 +15,22 @@ import { ingestionQueueExecution } from './ingestionExecutor';
 
 const INGESTION_MANAGER_TAXII_FEED_LIMIT_PER_REQUEST = conf.get('ingestion_manager:taxii_feed:limit_per_request') || 0;
 
+// region Types
 export interface TaxiiResponseData {
   data: { more: boolean | undefined, next: string | undefined, objects: StixObject[] },
   addedLastHeader: string | undefined | null
 }
-
 interface TaxiiGetParams {
   next: string | undefined,
   added_after: Date | undefined,
   limit?: string | undefined
 }
+type TaxiiConnectorState = { current_state_cursor?: string, added_after_start?: string };
+type TaxiiIngestionPatch = TaxiiConnectorState & { last_execution_date: string };
+type TaxiiConnectorInfo = { state?: TaxiiConnectorState };
+type HandlerResponse = { size: number, ingestionPatch: TaxiiIngestionPatch, connectorInfo: TaxiiConnectorInfo };
+type TaxiiHandlerFn = (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii, taxiResponse:TaxiiResponseData) => Promise<HandlerResponse>;
+// endregion Types
 
 /**
  *  Compute HTTP GET parameters to send to taxii server.
@@ -66,7 +72,6 @@ const taxiiHttpGet = async (ingestion: BasicStoreEntityIngestionTaxii): Promise<
   const preparedUri = ingestion.uri.endsWith('/') ? ingestion.uri : `${ingestion.uri}/`;
   const url = `${preparedUri}collections/${ingestion.collection}/objects/`;
   const params = prepareTaxiiGetParam(ingestion);
-
   logApp.info('[OPENCTI-MODULE] Taxii HTTP sending', {
     ingestion: ingestion.name,
     request: {
@@ -88,9 +93,7 @@ const taxiiHttpGet = async (ingestion: BasicStoreEntityIngestionTaxii): Promise<
   return { data, addedLastHeader: headers['x-taxii-date-added-last'] };
 };
 
-type TaxiiHandlerFn = (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii) => Promise<{ size: number, ingestionPatch: object, connectorInfo: object }>;
-
-export const processTaxiiResponse = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii, taxiResponse:TaxiiResponseData) => {
+export const processTaxiiResponse: TaxiiHandlerFn = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii, taxiResponse:TaxiiResponseData) => {
   const { data, addedLastHeader } = taxiResponse;
   if (data.objects && data.objects.length > 0) {
     logApp.info(`[OPENCTI-MODULE] Taxii ingestion execution for ${data.objects.length} items, sending stix bundle to workers.`, { ingestionId: ingestion.id });
@@ -103,7 +106,7 @@ export const processTaxiiResponse = async (context: AuthContext, ingestion: Basi
     if (more && isNotEmptyField(data.next)) {
       // Do not touch to added_after_start
       const ingestionPatch = { current_state_cursor: data.next, last_execution_date: now() };
-      const connectorState = { current_state_cursor: data.next, added_after_start: ingestion.added_after_start };
+      const connectorState = { current_state_cursor: data.next, added_after_start: ingestion.added_after_start?.toISOString() };
       return { size: data.objects.length, ingestionPatch, connectorInfo: { state: connectorState } };
     }
     // Reset the pagination cursor, and update date
@@ -121,14 +124,14 @@ export const processTaxiiResponse = async (context: AuthContext, ingestion: Basi
     ingestionId: ingestion.id,
     ingestionName: ingestion.name
   });
-  return { size: 0, ingestionPatch: {}, connectorInfo: {} };
+  return { size: 0, ingestionPatch: { last_execution_date: now() }, connectorInfo: {} };
 };
 
-const taxiiV21DataHandler: TaxiiHandlerFn = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii) => {
+const taxiiV21DataHandler = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii) => {
   const taxiResponse = await taxiiHttpGet(ingestion);
   return processTaxiiResponse(context, ingestion, taxiResponse);
 };
-const TAXII_HANDLERS: { [k: string]: TaxiiHandlerFn } = {
+const TAXII_HANDLERS: { [k: string]: (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii) => Promise<HandlerResponse> } = {
   [TaxiiVersion.V21]: taxiiV21DataHandler
 };
 

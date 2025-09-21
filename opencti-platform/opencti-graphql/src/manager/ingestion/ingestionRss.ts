@@ -22,14 +22,12 @@ const RSS_FEED_USER_AGENT = conf.get('ingestion_manager:rss_feed:user_agent')
 
 const turndownService = new TurndownService();
 
-type Getter = (uri: string) => Promise<object>;
-
+// region Types
 interface RssElement {
   pubDate: { _: string }
   lastBuildDate: { _: string }
   updated: { _: string }
 }
-
 interface RssItem {
   title: { _: string }
   summary: { _: string }
@@ -42,7 +40,6 @@ interface RssItem {
   lastBuildDate: { _: string }
   updated: { _: string }
 }
-
 interface DataItem {
   title: string
   description: string
@@ -51,6 +48,14 @@ interface DataItem {
   labels: string[]
   pubDate: Moment
 }
+
+type Getter = (uri: string) => Promise<object>;
+type RssConnectorState = { current_state_date?: string };
+type RssIngestionPatch = RssConnectorState & { last_execution_date: string };
+type RssConnectorInfo = { state?: RssConnectorState };
+type HandlerResponse = { size: number, ingestionPatch: RssIngestionPatch, connectorInfo: RssConnectorInfo };
+type RssHandlerFn = (context: AuthContext, httpRssGet: Getter, ingestion: BasicStoreEntityIngestionRss) => Promise<HandlerResponse>;
+// endregion Types
 
 const rssItemV1Convert = (feed: RssElement, entry: RssItem): DataItem => {
   const { updated } = feed;
@@ -112,7 +117,7 @@ const rssDataParser = async (data: convertableToString, current_state_date: Date
   return [];
 };
 
-const rssDataHandler = async (context: AuthContext, httpRssGet: Getter, ingestion: BasicStoreEntityIngestionRss) => {
+const rssDataHandler: RssHandlerFn = async (context: AuthContext, httpRssGet: Getter, ingestion: BasicStoreEntityIngestionRss) => {
   const data = await httpRssGet(ingestion.uri);
   const items = await rssDataParser(data, ingestion.current_state_date);
   // Build Stix bundle from items
@@ -144,7 +149,7 @@ const rssDataHandler = async (context: AuthContext, httpRssGet: Getter, ingestio
     await pushBundleToConnectorQueue(context, ingestion, bundle); // Push the bundle to absorption queue
     lastPubDate = R.last(items)?.pubDate.toISOString();
     const ingestionPatch = { current_state_date: lastPubDate, last_execution_date: now() };
-    const connectorInfo = { current_state_date: lastPubDate };
+    const connectorInfo = { state: { current_state_date: lastPubDate } };
     return { size: items.length, ingestionPatch, connectorInfo };
   }
   logApp.info('[OPENCTI-MODULE] Rss ingestion execution done, but no new item to ingest.');

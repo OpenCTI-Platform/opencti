@@ -16,19 +16,27 @@ import { connectorIdFromIngestId } from '../../domain/connector';
 import { createWorkForIngestion } from './ingestionUtils';
 import { ingestionQueueExecution } from './ingestionExecutor';
 
+// region Types
+type CsvConnectorState = { current_state_cursor?: string, added_after_start?: string };
+type CsvIngestionPatch = CsvConnectorState & { last_execution_date: string };
+type CsvConnectorInfo = { state?: CsvConnectorState };
+type HandlerResponse = { size: number, ingestionPatch: CsvIngestionPatch, connectorInfo: CsvConnectorInfo };
+type CsvHandlerFn = (context: AuthContext, ingestion: BasicStoreEntityIngestionCsv) => Promise<HandlerResponse>;
+// endregion Types
+
 export const processCsvLines = async (
   context: AuthContext,
   ingestion: BasicStoreEntityIngestionCsv,
   csvMapperParsed: CsvMapperParsed,
   csvLines: string[],
   addedLast: string | undefined | null
-) => {
+): Promise<HandlerResponse> => {
   const linesContent = csvLines.join('');
   const hashedIncomingData = hashSHA256(linesContent);
   const isUnchangedData = compareHashSHA256(linesContent, ingestion.current_state_hash ?? '');
   if (isUnchangedData) {
     logApp.info(`[OPENCTI-MODULE] INGESTION - Unchanged data for csv ingest: ${ingestion.name}`);
-    return { size: 0, ingestionPatch: {}, connectorInfo: {} };
+    return { size: 0, ingestionPatch: { last_execution_date: now() }, connectorInfo: {} };
   }
   const ingestionUser = await findUserById(context, context.user ?? SYSTEM_USER, ingestion.user_id) ?? SYSTEM_USER;
   if (csvMapperParsed.has_header) {
@@ -52,7 +60,7 @@ export const processCsvLines = async (
   return { size: objectCount, ingestionPatch: state, connectorInfo: { state } };
 };
 
-const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityIngestionCsv) => {
+const csvDataHandler: CsvHandlerFn = async (context: AuthContext, ingestion: BasicStoreEntityIngestionCsv) => {
   const user = context.user ?? SYSTEM_USER;
   const csvMapper = ingestion.csv_mapper_type === IngestionCsvMapperType.Inline
     ? JSON.parse(ingestion.csv_mapper!) : await findCsvMapperById(context, user, ingestion.csv_mapper_id!);

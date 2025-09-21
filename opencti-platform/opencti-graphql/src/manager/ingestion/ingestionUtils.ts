@@ -24,8 +24,16 @@ import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 
 export const SCHEDULE_TIME = conf.get('ingestion_manager:interval') || 30000;
 
+// region Types
+interface UpdateInfo {
+  state?: any
+  buffering?: boolean
+  messages_size?: number
+}
+
 export type IngestionTypes = BasicStoreEntityIngestionTaxii
 | BasicStoreEntityIngestionRss | BasicStoreEntityIngestionCsv | BasicStoreEntityIngestionTaxiiCollection | BasicStoreEntityIngestionJson;
+// endregion Types
 
 export const asArray = (data: unknown) => {
   if (data) {
@@ -46,11 +54,6 @@ export const isMustExecuteIteration = (last_execution_date: Date | undefined, sc
   return true;
 };
 
-interface UpdateInfo {
-  state?: any
-  buffering?: boolean
-  messages_size?: number
-}
 export const updateBuiltInConnectorInfo = async (context: AuthContext, user_id: string | undefined, id: string, opts: UpdateInfo = {}) => {
   // Patch the related connector
   const csvNow = utcDate();
