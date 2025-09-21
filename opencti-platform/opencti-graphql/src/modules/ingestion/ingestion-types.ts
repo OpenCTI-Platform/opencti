@@ -57,11 +57,11 @@ export interface BasicStoreEntityIngestionTaxii extends BasicStoreEntity {
   authentication_type: IngestionAuthType.None | IngestionAuthType.Basic | IngestionAuthType.Bearer | IngestionAuthType.Certificate
   authentication_value: string
   user_id: string | undefined
-  added_after_start: Date | undefined
+  added_after_start: string | undefined
   current_state_cursor: string | undefined
   ingestion_running: boolean
   taxii_more: boolean
-  last_execution_date: Date | undefined
+  last_execution_date: string | undefined
 }
 
 export interface StoreEntityIngestionTaxii extends StoreEntity {

@@ -51,7 +51,7 @@ export const processCsvLines = async (
     csvMapper: csvMapperParsed,
     connectorId: connectorIdFromIngestId(ingestion.id),
   };
-    // start UI count, import of file = 1 operation.
+  // start UI count, import of file = 1 operation.
   await updateExpectationsNumber(context, ingestionUser, work.id, 1);
   const { bundleCount, objectCount } = await generateAndSendBundleProcess(context, csvLines, bundlerOpts);
   await reportExpectation(context, ingestionUser, work.id);// csv file ends = 1 operation done.

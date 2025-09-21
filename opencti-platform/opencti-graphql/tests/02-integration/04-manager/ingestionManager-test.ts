@@ -14,6 +14,9 @@ import { createCsvMapper } from '../../../src/modules/internal/csvMapper/csvMapp
 import { parseCsvMapper } from '../../../src/modules/internal/csvMapper/csvMapper-utils';
 import { readCsvFromFileStream } from '../../utils/testQueryHelper';
 import { wait } from '../../../src/database/utils';
+import { patchAttribute } from '../../../src/database/middleware';
+import { SYSTEM_USER } from '../../../src/utils/access';
+import { updateBuiltInConnectorInfo } from '../../../src/manager/ingestion/ingestionUtils';
 
 describe('Verify taxii ingestion', () => {
   it('should Taxii server response with no pagination (no next, no more, no x-taxii-date-added-last)', async () => {
@@ -57,24 +60,23 @@ describe('Verify taxii ingestion', () => {
     // Delete the ingest
     await ingestionDelete(testContext, ADMIN_USER, ingestionNotPagination.internal_id);
   });
-
   it('should taxii server response with data and next page and start date', async () => {
     // 1. Create ingestion in opencti
-    const input2 : IngestionTaxiiAddInput = {
+    const ingestionCreation : IngestionTaxiiAddInput = {
+      name: 'taxii ingestion with pagination and start date',
       authentication_type: IngestionAuthType.None,
       collection: 'testcollection',
       ingestion_running: true,
-      name: 'taxii ingestion with pagination and start date',
       uri: 'http://test.invalid',
       version: TaxiiVersion.V21,
       added_after_start: '2024-01-01T20:35:44.000Z'
     };
-    const ingestionPaginatedWithStartDate = await addTaxiiIngestion(testContext, ADMIN_USER, input2);
-    expect(ingestionPaginatedWithStartDate.id).toBeDefined();
-    expect(ingestionPaginatedWithStartDate.internal_id).toBeDefined();
+    const ingestion = await addTaxiiIngestion(testContext, ADMIN_USER, ingestionCreation);
+    expect(ingestion.id).toBeDefined();
+    expect(ingestion.internal_id).toBeDefined();
 
     // 2. Check parameter send to taxii server for the first call
-    const expectedParams1 = prepareTaxiiGetParam(ingestionPaginatedWithStartDate);
+    const expectedParams1 = prepareTaxiiGetParam(ingestion);
     expect(expectedParams1.next).toBeUndefined();
     expect(expectedParams1.added_after).toBe('2024-01-01T20:35:44.000Z');
 
@@ -95,12 +97,14 @@ describe('Verify taxii ingestion', () => {
       addedLastHeader: '2024-02-01T20:35:44.000Z'
     };
 
-    await processTaxiiResponse(testContext, ingestionPaginatedWithStartDate, taxiResponse1);
-    const taxiiEntityAfterFirstRequest = await findTaxiiIngestionById(testContext, ADMIN_USER, ingestionPaginatedWithStartDate.id);
-    expect(taxiiEntityAfterFirstRequest.current_state_cursor).toBe('1234');
-    expect(taxiiEntityAfterFirstRequest.added_after_start, 'should keep the start date set at ingestion creation').toBe('2024-01-01T20:35:44.000Z');
+    const { ingestionPatch: firstPatch, connectorInfo: firstInfo } = await processTaxiiResponse(testContext, ingestion, taxiResponse1);
+    await patchAttribute(testContext, SYSTEM_USER, ingestion.internal_id, ingestion.entity_type, firstPatch);
+    await updateBuiltInConnectorInfo(testContext, ingestion.user_id, ingestion.id, firstInfo);
+    expect(firstPatch.current_state_cursor).toBe('1234');
+    expect(firstPatch.added_after_start, 'should keep the start date set at ingestion creation').toBe('2024-01-01T20:35:44.000Z');
 
     // 4. Check parameter send to taxii server for the next call
+    const taxiiEntityAfterFirstRequest = await findTaxiiIngestionById(testContext, ADMIN_USER, ingestion.id);
     const expectedParams2 = prepareTaxiiGetParam(taxiiEntityAfterFirstRequest);
     expect(expectedParams2.next).toBe('1234');
     expect(expectedParams2.added_after).toBe('2024-01-01T20:35:44.000Z');
@@ -122,15 +126,13 @@ describe('Verify taxii ingestion', () => {
       addedLastHeader: '2024-03-01T20:35:44.000Z'
     };
 
-    await processTaxiiResponse(testContext, taxiiEntityAfterFirstRequest, taxiResponse);
-    const result = await findTaxiiIngestionById(testContext, ADMIN_USER, taxiiEntityAfterFirstRequest.id);
-    expect(result.current_state_cursor, 'Since more is false, next value should be reset').toBeUndefined();
-    expect(result.added_after_start).toBe('2024-03-01T20:35:44.000Z');
+    const { ingestionPatch: secondPatch } = await processTaxiiResponse(testContext, taxiiEntityAfterFirstRequest, taxiResponse);
+    expect(secondPatch.current_state_cursor, 'Since more is false, next value should be reset').toBeUndefined();
+    expect(secondPatch.added_after_start).toBe('2024-03-01T20:35:44.000Z');
 
     // Delete the ingest
-    await ingestionDelete(testContext, ADMIN_USER, ingestionPaginatedWithStartDate.internal_id);
+    await ingestionDelete(testContext, ADMIN_USER, ingestion.internal_id);
   });
-
   it('should taxii server response with no start date, and next page', async () => {
     // 1. Create ingestion in opencti
     const input3 : IngestionTaxiiAddInput = {
@@ -167,7 +169,10 @@ describe('Verify taxii ingestion', () => {
       addedLastHeader: '2024-02-01T20:35:44.000Z'
     };
 
-    await processTaxiiResponse(testContext, ingestionPaginatedWithNoStartDate, taxiResponse);
+    const { ingestionPatch: firstPatch, connectorInfo: firstInfo } = await processTaxiiResponse(testContext, ingestionPaginatedWithNoStartDate, taxiResponse);
+    await patchAttribute(testContext, SYSTEM_USER, ingestionPaginatedWithNoStartDate.internal_id, ingestionPaginatedWithNoStartDate.entity_type, firstPatch);
+    await updateBuiltInConnectorInfo(testContext, ingestionPaginatedWithNoStartDate.user_id, ingestionPaginatedWithNoStartDate.id, firstInfo);
+
     const taxiiEntityAfterFirstCall = await findTaxiiIngestionById(testContext, ADMIN_USER, ingestionPaginatedWithNoStartDate.id);
     expect(taxiiEntityAfterFirstCall.current_state_cursor).toBe('4321');
     expect(taxiiEntityAfterFirstCall.added_after_start).toBeUndefined();
@@ -194,15 +199,13 @@ describe('Verify taxii ingestion', () => {
       addedLastHeader: '2024-03-01T20:44:44.000Z'
     };
 
-    await processTaxiiResponse(testContext, taxiiEntityAfterFirstCall, taxiResponse2);
-    const result = await findTaxiiIngestionById(testContext, ADMIN_USER, taxiiEntityAfterFirstCall.id);
-    expect(result.current_state_cursor, 'Since more is false, next value should be reset').toBeUndefined();
-    expect(result.added_after_start).toBe('2024-03-01T20:44:44.000Z');
+    const { ingestionPatch: secondPatch } = await processTaxiiResponse(testContext, taxiiEntityAfterFirstCall, taxiResponse2);
+    expect(secondPatch.current_state_cursor, 'Since more is false, next value should be reset').toBeUndefined();
+    expect(secondPatch.added_after_start).toBe('2024-03-01T20:44:44.000Z');
 
     // Delete the ingest
     await ingestionDelete(testContext, ADMIN_USER, ingestionPaginatedWithNoStartDate.internal_id);
   });
-
   it('should store nothing when no data', async () => {
     // 1. Create ingestion in opencti
     const input2 : IngestionTaxiiAddInput = {
@@ -296,9 +299,8 @@ describe('Verify csv ingestion', () => {
 
     csvLines = await readCsvFromFileStream('./tests/02-integration/04-manager/ingestionManager', 'csv-file-cities.csv');
   });
-
   it('should csv ingestion run', async () => {
-    const { size } = await processCsvLines(testContext, ingestionCsv, csvMapperParsed, [...csvLines], null);
+    const { size, ingestionPatch } = await processCsvLines(testContext, ingestionCsv, csvMapperParsed, [...csvLines], null);
     // csv-file-cities.csv content:
     // skip lines and header => 0 object
     // 1 city +1 label => 2 objects
@@ -307,8 +309,8 @@ describe('Verify csv ingestion', () => {
     // 1 city (duplicate) +1 label => 2 objects
     // 1 city +1 label => 2 objects
     expect(size).toBe(8);
+    await patchAttribute(testContext, SYSTEM_USER, ingestionCsv.internal_id, ingestionCsv.entity_type, ingestionPatch);
   });
-
   it('should same csv file ingestion be skipped', async () => {
     // Second time hash is the same so it should not process any objects
     const ingestionEntity = await findIngestionCsvById(testContext, ADMIN_USER, ingestionCsv.id);
