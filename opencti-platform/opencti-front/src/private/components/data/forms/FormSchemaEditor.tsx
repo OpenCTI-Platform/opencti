@@ -148,7 +148,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
     if (onChange && !initialValues) {
       onChange(formData);
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   const updateFormData = useCallback((updater: (prev: FormBuilderData) => FormBuilderData) => {
     setFormData((prev) => {

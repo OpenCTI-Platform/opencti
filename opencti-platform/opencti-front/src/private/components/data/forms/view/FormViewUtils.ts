@@ -1,33 +1,5 @@
 import * as Yup from 'yup';
-import { FormSchemaDefinition, FormFieldDefinition } from '../Form';
-
-export const convertFormSchemaToYupSchema = (
-  schema: FormSchemaDefinition,
-  t_i18n: (key: string) => string,
-): Yup.ObjectSchema<any> => {
-  const shape: Record<string, any> = {};
-
-  // Process main entity fields
-  const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
-  mainEntityFields.forEach((field) => {
-    shape[field.name] = getYupValidationForField(field, t_i18n);
-  });
-
-  // Process additional entities
-  if (schema.additionalEntities) {
-    schema.additionalEntities.forEach((entity) => {
-      const entityShape: Record<string, any> = {};
-      // Find fields for this additional entity
-      const entityFields = schema.fields.filter((field) => field.attributeMapping.entity === entity.id);
-      entityFields.forEach((field) => {
-        entityShape[field.name] = getYupValidationForField(field, t_i18n);
-      });
-      shape[`additional_${entity.id}`] = Yup.object().shape(entityShape);
-    });
-  }
-
-  return Yup.object().shape(shape);
-};
+import { FormSchemaDefinition, FormFieldDefinition } from '../Form.d';
 
 const getYupValidationForField = (
   field: FormFieldDefinition,
@@ -79,6 +51,34 @@ const getYupValidationForField = (
   }
 
   return validation;
+};
+
+export const convertFormSchemaToYupSchema = (
+  schema: FormSchemaDefinition,
+  t_i18n: (key: string) => string,
+): Yup.ObjectSchema<any> => {
+  const shape: Record<string, any> = {};
+
+  // Process main entity fields
+  const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
+  mainEntityFields.forEach((field) => {
+    shape[field.name] = getYupValidationForField(field, t_i18n);
+  });
+
+  // Process additional entities
+  if (schema.additionalEntities) {
+    schema.additionalEntities.forEach((entity) => {
+      const entityShape: Record<string, any> = {};
+      // Find fields for this additional entity
+      const entityFields = schema.fields.filter((field) => field.attributeMapping.entity === entity.id);
+      entityFields.forEach((field) => {
+        entityShape[field.name] = getYupValidationForField(field, t_i18n);
+      });
+      shape[`additional_${entity.id}`] = Yup.object().shape(entityShape);
+    });
+  }
+
+  return Yup.object().shape(shape);
 };
 
 export const formatFormDataForSubmission = (

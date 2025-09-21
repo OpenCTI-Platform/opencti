@@ -12,7 +12,7 @@ import { useFormatter } from '../../../../../components/i18n';
 import { FormViewQuery } from './__generated__/FormViewQuery.graphql';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import FormFieldRenderer from './FormFieldRenderer';
-import { FormSchemaDefinition } from '../Form';
+import { FormSchemaDefinition } from '../Form.d';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
 import type { Theme } from '../../../../../components/Theme';
@@ -53,7 +53,6 @@ export const formViewQuery = graphql`
       description
       active
       form_schema
-      ...FormView_form
     }
   }
 `;
@@ -75,7 +74,7 @@ interface FormViewInnerProps {
 const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const navigate = useNavigate();
+  // const navigate = useNavigate(); // For future use
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 

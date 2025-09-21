@@ -89,7 +89,7 @@ const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
         // Preserve isMandatory from the schema if it exists
         isMandatory: field.isMandatory || false,
       }));
-      const initialFormData = {
+      const formData = {
         name: form.name,
         description: form.description || '',
         mainEntityType: schema.mainEntityType,
@@ -105,9 +105,9 @@ const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
       };
       // Set the initial form builder data
       if (!formBuilderData) {
-        setFormBuilderData(initialFormData);
+        setFormBuilderData(formData);
       }
-      return initialFormData;
+      return formData;
     } catch {
       return null;
     }
