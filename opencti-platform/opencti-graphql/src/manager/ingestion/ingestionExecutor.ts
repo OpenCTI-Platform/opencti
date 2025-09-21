@@ -14,7 +14,10 @@ import {
   updateBuiltInConnectorInfo
 } from './ingestionUtils';
 
-type DataHandlerFn = () => Promise<{ size: number, ingestionPatch: object, connectorInfo: object }>;
+// region Types
+type DataHandlerFn = () => Promise<{ size: number, ingestionPatch: Record<string, any>, connectorInfo: Record<string, any> }>;
+// endregion Types
+
 export const ingestionQueueExecution = async (context: AuthContext, ingestion: IngestionTypes, dataHandlerFn: DataHandlerFn) => {
   const { messages_number, messages_size } = await queueDetails(connectorIdFromIngestId(ingestion.id));
   // Some ingestion scheduling period can be adapted
