@@ -84,7 +84,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
   const fieldValue = values[field.name] || '';
   const fieldError = errors?.[field.name];
   const fieldTouched = touched?.[field.name];
-  const hasError = fieldTouched && fieldError;
+  const hasError = !!(fieldTouched && fieldError);
 
   // Use label if available, otherwise use the mapped attribute name
   const displayLabel = field.label || field.attributeMapping.attributeName;
@@ -110,15 +110,15 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
       });
 
       Promise.all(filePromises).then((fileData) => {
-        const currentFiles = fieldValue || [];
+        const currentFiles = (fieldValue || []) as Array<{ name?: string; data?: string }>;
         setFieldValue(field.name, [...currentFiles, ...fileData]);
       });
     }
   };
 
   const handleFileRemove = (index: number) => {
-    const currentFiles = fieldValue || [];
-    const newFiles = currentFiles.filter((_: { name?: string; url?: string }, i: number) => i !== index);
+    const currentFiles = (fieldValue || []) as Array<{ name?: string; data?: string }>;
+    const newFiles = currentFiles.filter((_: { name?: string; data?: string }, i: number) => i !== index);
     setFieldValue(field.name, newFiles);
   };
 
@@ -137,7 +137,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
                 error={hasError}
                 helperText={hasError ? fieldError : field.description}
                 className={classes.field}
-                onChange={(e) => {
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                   formikField.onChange(e);
                 }}
               />

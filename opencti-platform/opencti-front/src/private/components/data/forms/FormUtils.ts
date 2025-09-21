@@ -133,6 +133,7 @@ export const getAttributesForEntityType = (
   if (fieldType === 'createdBy') {
     return [{
       value: 'createdBy',
+      name: 'createdBy',
       label: t_i18n('Created By'),
       mandatory: false,
     }];
@@ -141,6 +142,7 @@ export const getAttributesForEntityType = (
   if (fieldType === 'objectMarking') {
     return [{
       value: 'objectMarking',
+      name: 'objectMarking',
       label: t_i18n('Marking Definitions'),
       mandatory: false,
     }];
@@ -149,6 +151,7 @@ export const getAttributesForEntityType = (
   if (fieldType === 'objectLabel') {
     return [{
       value: 'objectLabel',
+      name: 'objectLabel',
       label: t_i18n('Labels'),
       mandatory: false,
     }];
@@ -157,6 +160,7 @@ export const getAttributesForEntityType = (
   if (fieldType === 'files') {
     return [{
       value: 'x_opencti_files',
+      name: 'x_opencti_files',
       label: t_i18n('Files'),
       mandatory: false,
     }];
@@ -190,8 +194,9 @@ export const getAttributesForEntityType = (
         return attrType === allowedType || attrType.includes(allowedType);
       });
     })
-    .map((attr: { name: string; label?: string; mandatory?: boolean }) => ({
+    .map((attr: AttributeOption) => ({
       value: attr.name,
+      name: attr.name,
       label: attr.label || t_i18n(attr.name),
       mandatory: attr.mandatory || false,
     }))
@@ -273,10 +278,10 @@ export const getInitialMandatoryFields = (
 
   // Pre-populate fields for mandatory attributes with default values if available
   return mandatoryAttributes.map((attr: AttributeOption & { defaultValues?: Array<{ id: string; name: string }> | null; mandatoryType?: string; type?: string }) => {
-    const defaultValue = attr.defaultValues?.length > 0 ? attr.defaultValues[0] : null;
+    const defaultValue = (attr.defaultValues && attr.defaultValues.length && attr.defaultValues.length > 0) ? attr.defaultValues[0] : null;
 
     // Convert attribute type to appropriate field type
-    const fieldType = mapAttributeTypeToFieldType(attr.type);
+    const fieldType = mapAttributeTypeToFieldType(attr.type || 'string');
 
     return {
       id: generateFieldId(),
@@ -354,30 +359,29 @@ export const buildEntityTypes = (
 
     // Map attributesDefinitions to the format expected by the form
     const attributes = attributesDefinitions.map((attr) => ({
+      value: attr.name,
       name: attr.name,
       label: attr.label || attr.name,
       type: attr.type,
       mandatory: attr.mandatory,
       mandatoryType: attr.mandatoryType,
       multiple: attr.multiple,
-      scale: attr.scale,
       defaultValues: attr.defaultValues,
     }));
 
     return {
       value: s.id,
       label: t_i18n(`entity_${s.id}`),
-      isContainer: s.isContainer || CONTAINER_TYPES.includes(s.id),
+      isContainer: CONTAINER_TYPES.includes(s.id),
       attributes,
       mandatoryAttributes: mandatoryAttrs,
-      defaultValuesAttributes: settings?.defaultValuesAttributes || [],
     };
   };
 
   const types = [
-    ...sdos.map(processEntityType),
-    ...scos.map(processEntityType),
-    ...smos.map(processEntityType),
+    ...(sdos || []).map(processEntityType),
+    ...(scos || []).map(processEntityType),
+    ...(smos || []).map(processEntityType),
   ].sort((a, b) => a.label.localeCompare(b.label));
 
   return types;
