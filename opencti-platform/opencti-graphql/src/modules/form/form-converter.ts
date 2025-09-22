@@ -10,6 +10,7 @@ export const convertFormToStix = (instance: StoreEntityForm): StixForm => {
     name: instance.name,
     description: instance.description,
     form_schema: instance.form_schema,
+    main_entity_type: instance.main_entity_type,
     active: instance.active,
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({

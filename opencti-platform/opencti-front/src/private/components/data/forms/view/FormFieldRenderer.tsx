@@ -1,28 +1,28 @@
 import React, { FunctionComponent } from 'react';
 import { Field } from 'formik';
-import TextField from '@mui/material/TextField';
-import Checkbox from '@mui/material/Checkbox';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Switch from '@mui/material/Switch';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import FormHelperText from '@mui/material/FormHelperText';
 import Chip from '@mui/material/Chip';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import { CloudUpload } from '@mui/icons-material';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import MenuItem from '@mui/material/MenuItem';
+import InputLabel from '@mui/material/InputLabel';
+import FormHelperText from '@mui/material/FormHelperText';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
 import makeStyles from '@mui/styles/makeStyles';
+// Custom field components
+import TextField from '../../../../../components/TextField';
+import SelectField from '../../../../../components/fields/SelectField';
+import SwitchField from '../../../../../components/fields/SwitchField';
+import DateTimePickerField from '../../../../../components/DateTimePickerField';
+import MarkdownField from '../../../../../components/fields/MarkdownField';
 import CreatedByField from '../../../common/form/CreatedByField';
 import ObjectMarkingField from '../../../common/form/ObjectMarkingField';
 import ObjectLabelField from '../../../common/form/ObjectLabelField';
 import { FormFieldDefinition } from '../Form.d';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
-import { FieldOption } from '../../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../../utils/field';
 
 // Styles
 const useStyles = makeStyles<Theme>(() => ({
@@ -71,8 +71,6 @@ export interface FormFieldRendererProps {
 const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
   field,
   values,
-  errors,
-  touched,
   setFieldValue,
   fieldPrefix,
 }) => {
@@ -80,12 +78,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
   const { t_i18n } = useFormatter();
 
   const fieldName = fieldPrefix ? `${fieldPrefix}.${field.name}` : field.name;
-
   const fieldValue = values[field.name] || '';
-  const fieldError = errors?.[field.name];
-  const fieldTouched = touched?.[field.name];
-  const hasError = !!(fieldTouched && fieldError);
-
   const displayLabel = field.label || field.attributeMapping.attributeName;
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -125,39 +118,26 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
   switch (field.type) {
     case 'text':
       return (
-        <Field name={fieldName}>
-          {({ field: formikField }: { field: { value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void } }) => {
-            return (
-              <TextField
-                {...formikField}
-                variant="standard"
-                label={displayLabel}
-                fullWidth={true}
-                error={hasError}
-                helperText={hasError ? fieldError : field.description}
-                className={classes.field}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  formikField.onChange(e);
-                }}
-              />
-            );
-          }}
-        </Field>
+        <Field
+          component={TextField}
+          name={fieldName}
+          label={displayLabel}
+          fullWidth={true}
+          required={field.isMandatory}
+          helperText={field.description}
+          style={fieldSpacingContainerStyle}
+        />
       );
 
     case 'textarea':
       return (
         <Field
-          component={TextField}
-          variant="standard"
+          component={MarkdownField}
           name={fieldName}
           label={displayLabel}
           fullWidth={true}
-          multiline={true}
-          rows={4}
-          error={hasError}
-          helperText={hasError ? fieldError : field.description}
-          className={classes.field}
+          required={field.isMandatory}
+          style={fieldSpacingContainerStyle}
         />
       );
 
@@ -165,14 +145,13 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
       return (
         <Field
           component={TextField}
-          variant="standard"
           name={fieldName}
           label={displayLabel}
           type="number"
           fullWidth={true}
-          error={hasError}
-          helperText={hasError ? fieldError : field.description}
-          className={classes.field}
+          required={field.isMandatory}
+          helperText={field.description}
+          style={fieldSpacingContainerStyle}
         />
       );
 
@@ -187,183 +166,138 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
             />
           }
           label={displayLabel}
-          className={classes.field}
+          style={fieldSpacingContainerStyle}
         />
       );
 
     case 'toggle':
       return (
-        <FormControlLabel
-          control={
-            <Field
-              component={Switch}
-              type="checkbox"
-              name={fieldName}
-            />
-          }
+        <Field
+          component={SwitchField}
+          name={fieldName}
           label={displayLabel}
-          className={classes.field}
+          containerstyle={fieldSpacingContainerStyle}
+          helpertext={field.description}
         />
       );
 
     case 'select':
       return (
-        <FormControl
+        <Field
+          component={SelectField}
+          name={fieldName}
+          label={displayLabel}
           fullWidth={true}
-          error={hasError}
-          className={classes.field}
+          required={field.isMandatory}
+          containerstyle={fieldSpacingContainerStyle}
           variant="standard"
+          helpertext={field.description}
         >
-          <InputLabel>{displayLabel}</InputLabel>
-          <Field
-            component={Select}
-            name={fieldName}
-            label={displayLabel}
-          >
-            <MenuItem value="">
-              <em>{t_i18n('None')}</em>
+          <MenuItem value="">
+            <em>{t_i18n('None')}</em>
+          </MenuItem>
+          {field.options?.map((option) => (
+            <MenuItem key={option.value} value={option.value}>
+              {option.label}
             </MenuItem>
-            {field.options?.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
-                {option.label}
-              </MenuItem>
-            ))}
-          </Field>
-          {(hasError || field.description) && (
-            <FormHelperText>{hasError ? fieldError : field.description}</FormHelperText>
-          )}
-        </FormControl>
+          ))}
+        </Field>
       );
 
     case 'multiselect':
       return (
-        <FormControl
+        <Field
+          component={SelectField}
+          name={fieldName}
+          label={displayLabel}
           fullWidth={true}
-          error={hasError}
-          className={classes.field}
+          multiple={true}
+          required={field.isMandatory}
+          containerstyle={fieldSpacingContainerStyle}
           variant="standard"
-        >
-          <InputLabel>{displayLabel}</InputLabel>
-          <Field
-            component={Select}
-            name={fieldName}
-            label={displayLabel}
-            multiple={true}
-            renderValue={(selected: string[]) => (
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                {selected.map((value) => {
-                  const option = field.options?.find((o) => o.value === value);
-                  return <Chip key={value} label={option?.label || value} />;
-                })}
-              </Box>
-            )}
-          >
-            {field.options?.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
-                {option.label}
-              </MenuItem>
-            ))}
-          </Field>
-          {(hasError || field.description) && (
-            <FormHelperText>{hasError ? fieldError : field.description}</FormHelperText>
+          helpertext={field.description}
+          renderValue={(selected: string[]) => (
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+              {selected.map((value) => {
+                const option = field.options?.find((o) => o.value === value);
+                return <Chip key={value} label={option?.label || value} />;
+              })}
+            </Box>
           )}
-        </FormControl>
+        >
+          {field.options?.map((option) => (
+            <MenuItem key={option.value} value={option.value}>
+              {option.label}
+            </MenuItem>
+          ))}
+        </Field>
       );
 
     case 'date':
       return (
-        <DatePicker
-          label={displayLabel}
-          value={fieldValue ? new Date(fieldValue as string) : null}
-          onChange={(value: Date | null) => {
-            // Handle both Date objects and dayjs/moment objects
-            if (value) {
-              const dateValue = value instanceof Date ? value : new Date(String(value));
-              setFieldValue(field.name, dateValue.toISOString());
-            } else {
-              setFieldValue(field.name, null);
-            }
-          }}
-          slotProps={{
-            textField: {
-              variant: 'standard',
-              fullWidth: true,
-              error: hasError,
-              helperText: hasError ? fieldError : field.description,
-              className: classes.field,
-            },
+        <Field
+          component={DateTimePickerField}
+          name={fieldName}
+          withSeconds={false}
+          textFieldProps={{
+            label: displayLabel,
+            required: field.isMandatory,
+            variant: 'standard',
+            fullWidth: true,
+            style: fieldSpacingContainerStyle,
+            helperText: field.description,
           }}
         />
       );
 
     case 'datetime':
       return (
-        <DateTimePicker
-          label={displayLabel}
-          value={fieldValue ? new Date(fieldValue as string) : null}
-          onChange={(value: Date | null) => {
-            // Handle both Date objects and dayjs/moment objects
-            if (value) {
-              const dateValue = value instanceof Date ? value : new Date(String(value));
-              setFieldValue(field.name, dateValue.toISOString());
-            } else {
-              setFieldValue(field.name, null);
-            }
-          }}
-          slotProps={{
-            textField: {
-              variant: 'standard',
-              fullWidth: true,
-              error: hasError,
-              helperText: hasError ? fieldError : field.description,
-              className: classes.field,
-            },
+        <Field
+          component={DateTimePickerField}
+          name={fieldName}
+          withSeconds={true}
+          textFieldProps={{
+            label: displayLabel,
+            required: field.isMandatory,
+            variant: 'standard',
+            fullWidth: true,
+            style: fieldSpacingContainerStyle,
+            helperText: field.description,
           }}
         />
       );
 
     case 'createdBy':
       return (
-        <div className={classes.field}>
-          <CreatedByField
-            name={fieldName}
-            label={displayLabel}
-            style={{ width: '100%' }}
-            onChange={(_: string, value: string) => {
-              setFieldValue(field.name, value);
-            }}
-            helpertext={field.description}
-          />
-        </div>
+        <CreatedByField
+          name={fieldName}
+          label={displayLabel}
+          style={fieldSpacingContainerStyle}
+          required={field.isMandatory}
+          setFieldValue={setFieldValue}
+        />
       );
 
     case 'objectMarking':
       return (
-        <div className={classes.field}>
-          <ObjectMarkingField
-            name={fieldName}
-            label={displayLabel}
-            style={{ width: '100%' }}
-            onChange={(_: string, markingValues: FieldOption[]) => {
-              setFieldValue(field.name, markingValues);
-            }}
-            helpertext={field.description}
-          />
-        </div>
+        <ObjectMarkingField
+          name={fieldName}
+          label={displayLabel}
+          style={fieldSpacingContainerStyle}
+          required={field.isMandatory}
+          setFieldValue={setFieldValue}
+        />
       );
 
     case 'objectLabel':
       return (
-        <div className={classes.field}>
-          <ObjectLabelField
-            name={fieldName}
-            style={{ width: '100%' }}
-            onChange={(_: string, labelValues: FieldOption[]) => {
-              setFieldValue(field.name, labelValues);
-            }}
-            helpertext={field.description}
-          />
-        </div>
+        <ObjectLabelField
+          name={fieldName}
+          style={fieldSpacingContainerStyle}
+          required={field.isMandatory}
+          setFieldValue={setFieldValue}
+          values={fieldValue as FieldOption[]}
+        />
       );
 
     case 'files':
@@ -408,14 +342,12 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
       return (
         <Field
           component={TextField}
-          variant="standard"
           name={fieldName}
           label={displayLabel}
           fullWidth={true}
           required={field.isMandatory}
-          error={hasError}
-          helperText={hasError ? fieldError : field.description}
-          className={classes.field}
+          helperText={field.description}
+          style={fieldSpacingContainerStyle}
         />
       );
   }

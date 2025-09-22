@@ -25,14 +25,8 @@ const formResolvers: Resolvers = {
           values: JSON.parse(input.values),
           userId: context.user?.id,
         };
-
-        const bundle = await submitForm(context, context.user, submission);
-
-        return {
-          success: true,
-          bundleId: bundle.id,
-          message: 'Form submitted successfully',
-        };
+        const result = await submitForm(context, context.user, submission);
+        return result;
       } catch (error: any) {
         return {
           success: false,

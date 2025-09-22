@@ -54,10 +54,6 @@ export interface FormFieldDefinition {
     attributeName: string; // The attribute name on that entity
     mappingType?: 'direct' | 'nested'; // How the field maps to the entity
   };
-  multiple?: boolean; // Allow multiple values (for text fields)
-  parseMode?: 'comma' | 'line'; // For text/textarea fields that create entities
-  stixPath?: string; // Path to STIX property (e.g., 'name', 'description', 'x_opencti_report_types')
-  stixType?: string; // Entity type for entity fields (text/textarea with entity creation)
   defaultValue?: any;
   options?: Array<{ label: string; value: string }>; // For select fields
   relationship?: FormFieldRelationship; // Relationship configuration
@@ -148,6 +144,18 @@ export const FormSchemaDefinitionSchema: Record<string, any> = {
     mainEntityType: { type: 'string' },
     mainEntityMultiple: { type: 'boolean' },
     mainEntityLookup: { type: 'boolean' },
+    mainEntityFieldMode: {
+      type: 'string',
+      enum: ['multiple', 'parsed']
+    },
+    mainEntityParseField: {
+      type: 'string',
+      enum: ['text', 'textarea']
+    },
+    mainEntityParseMode: {
+      type: 'string',
+      enum: ['comma', 'line']
+    },
     isContainer: { type: 'boolean' },
     additionalEntities: {
       type: 'array',
@@ -155,12 +163,24 @@ export const FormSchemaDefinitionSchema: Record<string, any> = {
         type: 'object',
         properties: {
           id: { type: 'string' },
-          type: { type: 'string' },
-          name: { type: 'string' },
+          entityType: { type: 'string' },
+          label: { type: 'string' },
           multiple: { type: 'boolean' },
-          entityLookup: { type: 'boolean' },
+          lookup: { type: 'boolean' },
+          fieldMode: {
+            type: 'string',
+            enum: ['multiple', 'parsed']
+          },
+          parseField: {
+            type: 'string',
+            enum: ['text', 'textarea']
+          },
+          parseMode: {
+            type: 'string',
+            enum: ['comma', 'line']
+          },
         },
-        required: ['id', 'type', 'name'],
+        required: ['id', 'entityType', 'label'],
       },
     },
     relationships: {
@@ -189,12 +209,6 @@ export const FormSchemaDefinitionSchema: Record<string, any> = {
             enum: Object.values(FormFieldType),
           },
           required: { type: 'boolean' },
-          multiple: { type: 'boolean' },
-          parseMode: {
-            type: 'string',
-            enum: ['comma', 'line']
-          },
-          stixPath: { type: 'string' },
           defaultValue: {
             oneOf: [
               { type: 'string' },
@@ -216,7 +230,6 @@ export const FormSchemaDefinitionSchema: Record<string, any> = {
               required: ['label', 'value'],
             },
           },
-          stixType: { type: 'string' },
           relationship: {
             type: 'object',
             properties: {

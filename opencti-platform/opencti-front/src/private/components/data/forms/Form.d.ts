@@ -17,8 +17,7 @@ export interface FormFieldAttribute {
     attributeName: string; // The attribute name on that entity
     mappingType?: 'direct' | 'nested'; // How the field maps to the entity
   };
-  fieldMode?: 'parsed' | 'multi'; // For fields in multiple entities
-  parseMode?: 'comma' | 'line'; // For text/textarea with fieldMode='parsed'
+  parseMode?: 'comma' | 'line'; // For text/textarea fields
   options?: Array<{ label: string; value: string }>; // For select/multiselect fields
   defaultValue?: string | number | boolean | string[] | Date | null; // Default value for the field
 }
@@ -78,6 +77,9 @@ export interface FormSchemaDefinition {
   isContainer?: boolean;
   mainEntityMultiple?: boolean;
   mainEntityLookup?: boolean;
+  mainEntityFieldMode?: 'multiple' | 'parsed';
+  mainEntityParseField?: 'text' | 'textarea';
+  mainEntityParseMode?: 'comma' | 'line';
   additionalEntities: AdditionalEntity[];
   fields: FormFieldDefinition[];
   relationships: FormRelationshipDefinition[];
@@ -91,10 +93,6 @@ export interface FormFieldDefinition {
   type: string;
   required: boolean;
   isMandatory?: boolean;
-  parseMode?: 'comma' | 'line';
-  stixPath?: string;
-  stixType?: string;
-  multiple?: boolean;
   relationship?: {
     type: string;
     target: string;
@@ -105,7 +103,6 @@ export interface FormFieldDefinition {
     entity: string;
     attributeName: string;
   };
-  fieldMode?: 'parsed' | 'multi';
   options?: Array<{ label: string; value: string }>; // For select/multiselect fields
   defaultValue?: string | number | boolean | string[] | Date | null;
 }

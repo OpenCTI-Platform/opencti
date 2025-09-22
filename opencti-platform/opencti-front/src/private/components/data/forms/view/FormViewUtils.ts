@@ -60,22 +60,65 @@ export const convertFormSchemaToYupSchema = (
   const shape: Record<string, Yup.Schema<unknown>> = {};
 
   // Process main entity fields
-  const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
-
-  mainEntityFields.forEach((field) => {
-    shape[field.name] = getYupValidationForField(field, t_i18n);
-  });
+  if (schema.mainEntityLookup) {
+    // For lookup mode, validate the lookup field
+    if (schema.mainEntityMultiple) {
+      shape.mainEntityLookup = Yup.array().min(1, t_i18n('Please select at least one entity'));
+    } else {
+      shape.mainEntityLookup = Yup.object().nonNullable(t_i18n('Please select an entity'));
+    }
+  } else if (schema.mainEntityMultiple && schema.mainEntityFieldMode === 'parsed') {
+    // For parsed mode, validate the text field
+    shape.mainEntityParsed = Yup.string().required(t_i18n('This field is required'));
+  } else if (schema.mainEntityMultiple && schema.mainEntityFieldMode === 'multiple') {
+    // For multi mode, validate the field groups
+    const fieldShape: Record<string, Yup.Schema<unknown>> = {};
+    const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
+    mainEntityFields.forEach((field) => {
+      fieldShape[field.name] = getYupValidationForField(field, t_i18n);
+    });
+    shape.mainEntityGroups = Yup.array()
+      .of(Yup.object().shape(fieldShape))
+      .min(1, t_i18n('At least one entity is required'));
+  } else {
+    const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
+    mainEntityFields.forEach((field) => {
+      shape[field.name] = getYupValidationForField(field, t_i18n);
+    });
+  }
 
   // Process additional entities
   if (schema.additionalEntities) {
     schema.additionalEntities.forEach((entity) => {
-      const entityShape: Record<string, Yup.Schema<unknown>> = {};
-      // Find fields for this additional entity
       const entityFields = schema.fields.filter((field) => field.attributeMapping.entity === entity.id);
-      entityFields.forEach((field) => {
-        entityShape[field.name] = getYupValidationForField(field, t_i18n);
-      });
-      shape[`additional_${entity.id}`] = Yup.object().shape(entityShape);
+
+      if (entity.lookup) {
+        // Lookup mode
+        if (entity.multiple) {
+          shape[`additional_${entity.id}_lookup`] = Yup.array().min(1, t_i18n('Please select at least one entity'));
+        } else {
+          shape[`additional_${entity.id}_lookup`] = Yup.object().nonNullable(t_i18n('Please select an entity'));
+        }
+      } else if (entity.multiple && entity.fieldMode === 'parsed') {
+        // Parsed mode
+        shape[`additional_${entity.id}_parsed`] = Yup.string().required(t_i18n('This field is required'));
+      } else if (entity.multiple && entity.fieldMode === 'multiple') {
+        // Multi mode
+        const fieldShape: Record<string, Yup.Schema<unknown>> = {};
+        entityFields.forEach((field) => {
+          fieldShape[field.name] = getYupValidationForField(field, t_i18n);
+        });
+        shape[`additional_${entity.id}_groups`] = Yup.array()
+          .of(Yup.object().shape(fieldShape))
+          .min(1, t_i18n('At least one entity is required'));
+      } else {
+        // Single entity mode
+        const entityShape: Record<string, Yup.Schema<unknown>> = {};
+        entityFields.forEach((field) => {
+          entityShape[field.name] = getYupValidationForField(field, t_i18n);
+        });
+        shape[`additional_${entity.id}`] = Yup.object().shape(entityShape);
+      }
     });
   }
 
@@ -83,7 +126,7 @@ export const convertFormSchemaToYupSchema = (
 };
 
 export const formatFormDataForSubmission = (
-  values: Record<string, unknown>,
+  values: Record<string, string | string[] | { value: string } | { value: string }[] | Record<string, unknown> | Record<string, unknown>[]>,
   schema: FormSchemaDefinition,
 ): Record<string, unknown> => {
   const formattedData: Record<string, unknown> = {};
@@ -123,28 +166,105 @@ export const formatFormDataForSubmission = (
     return value;
   };
 
-  // Process main entity fields
-  const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
-  mainEntityFields.forEach((field) => {
-    const extractedValue = extractFieldValue(field, values[field.name]);
-    if (extractedValue !== undefined) {
-      formattedData[field.name] = extractedValue;
+  // If main entity lookup is enabled, include the selected entities
+  if (schema.mainEntityLookup && values.mainEntityLookup) {
+    if (schema.mainEntityMultiple) {
+      formattedData.mainEntityLookup = (values.mainEntityLookup as { value: string }[]).map((n) => n.value);
+    } else {
+      formattedData.mainEntityLookup = (values.mainEntityLookup as { value: string }).value;
     }
-  });
+  }
+
+  // Handle main entity with field modes
+  if (schema.mainEntityMultiple && schema.mainEntityFieldMode === 'parsed') {
+    // Parse the text field
+    const parsedValues = values.mainEntityParsed as string;
+    if (parsedValues) {
+      const delimiter = schema.mainEntityParseMode === 'line' ? '\n' : ',';
+      formattedData.mainEntityParsed = parsedValues
+        .split(delimiter)
+        .map((v) => v.trim())
+        .filter((v) => v);
+    }
+  } else if (schema.mainEntityMultiple && schema.mainEntityFieldMode === 'multiple') {
+    // Handle field groups
+    const groups = values.mainEntityGroups as Record<string, unknown>[];
+    formattedData.mainEntityGroups = groups?.map((group) => {
+      const processedGroup: Record<string, unknown> = {};
+      Object.entries(group).forEach(([fieldName, value]) => {
+        const field = schema.fields.find((f) => f.name === fieldName);
+        if (field) {
+          const extractedValue = extractFieldValue(field, value);
+          if (extractedValue !== undefined) {
+            processedGroup[fieldName] = extractedValue;
+          }
+        }
+      });
+      return processedGroup;
+    });
+  } else if (!schema.mainEntityLookup) {
+    // Process main entity fields (only if not in lookup mode)
+    const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
+    mainEntityFields.forEach((field) => {
+      const extractedValue = extractFieldValue(field, values[field.name]);
+      if (extractedValue !== undefined) {
+        formattedData[field.name] = extractedValue;
+      }
+    });
+  }
 
   // Process additional entities
   if (schema.additionalEntities && schema.additionalEntities.length > 0) {
     schema.additionalEntities.forEach((entity) => {
-      const entityValues = values[`additional_${entity.id}`] || {};
-      // Find fields for this additional entity
       const entityFields = schema.fields.filter((field) => field.attributeMapping.entity === entity.id);
-      entityFields.forEach((field) => {
-        const value = (entityValues as Record<string, unknown>)[field.name];
-        const extractedValue = extractFieldValue(field, value);
-        if (extractedValue !== undefined) {
-          formattedData[field.name] = extractedValue;
+
+      if (entity.lookup) {
+        // Handle lookup mode
+        const lookupValue = values[`additional_${entity.id}_lookup`];
+        if (lookupValue) {
+          if (entity.multiple) {
+            formattedData[`additional_${entity.id}_lookup`] = (lookupValue as { value: string }[]).map((n) => n.value);
+          } else {
+            formattedData[`additional_${entity.id}_lookup`] = (lookupValue as { value: string }).value;
+          }
         }
-      });
+      } else if (entity.multiple && entity.fieldMode === 'parsed') {
+        // Handle parsed mode
+        const parsedValues = values[`additional_${entity.id}_parsed`] as string;
+        if (parsedValues) {
+          const delimiter = entity.parseMode === 'line' ? '\n' : ',';
+          formattedData[`additional_${entity.id}_parsed`] = parsedValues
+            .split(delimiter)
+            .map((v) => v.trim())
+            .filter((v) => v);
+        }
+      } else if (entity.multiple && entity.fieldMode === 'multiple') {
+        // Handle field groups
+        const groups = values[`additional_${entity.id}_groups`] as Record<string, unknown>[];
+        formattedData[`additional_${entity.id}_groups`] = groups?.map((group) => {
+          const processedGroup: Record<string, unknown> = {};
+          Object.entries(group).forEach(([fieldName, value]) => {
+            const field = entityFields.find((f) => f.name === fieldName);
+            if (field) {
+              const extractedValue = extractFieldValue(field, value);
+              if (extractedValue !== undefined) {
+                processedGroup[fieldName] = extractedValue;
+              }
+            }
+          });
+          return processedGroup;
+        });
+      } else {
+        // Single entity mode
+        const entityValues = values[`additional_${entity.id}`] || {};
+        entityFields.forEach((field) => {
+          const value = (entityValues as Record<string, unknown>)[field.name];
+          const extractedValue = extractFieldValue(field, value);
+          if (extractedValue !== undefined) {
+            formattedData[field.name] = extractedValue;
+          }
+        });
+      }
     });
   }
 

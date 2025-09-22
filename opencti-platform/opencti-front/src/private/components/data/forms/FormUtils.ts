@@ -297,7 +297,6 @@ export const getInitialMandatoryFields = (
         attributeName: attr.name,
         mappingType: 'direct',
       },
-      fieldMode: 'multi',
       ...(defaultValue ? { defaultValue: defaultValue.id || defaultValue.name } : {}),
     };
   });
@@ -404,6 +403,9 @@ export const convertFormBuilderDataToSchema = (
     isContainer: isMainEntityContainer,
     mainEntityMultiple: values.mainEntityMultiple,
     mainEntityLookup: values.mainEntityLookup,
+    mainEntityFieldMode: values.mainEntityFieldMode,
+    mainEntityParseField: values.mainEntityParseField,
+    mainEntityParseMode: values.mainEntityParseMode,
     additionalEntities: values.additionalEntities,
     fields: values.fields.map((field) => ({
       id: field.id,
@@ -413,14 +415,8 @@ export const convertFormBuilderDataToSchema = (
       type: field.type,
       required: field.required,
       isMandatory: field.isMandatory, // Preserve mandatory flag
-      parseMode: field.parseMode,
       options: field.options,
-      // Map attribute to stixPath based on entity
-      stixPath: field.attributeMapping.entity === 'main_entity'
-        ? field.attributeMapping.attributeName
-        : undefined,
       attributeMapping: field.attributeMapping,
-      fieldMode: field.fieldMode,
       defaultValue: field.defaultValue,
     })),
     relationships: values.relationships,
