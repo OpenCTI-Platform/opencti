@@ -163,7 +163,7 @@ export const groupEditField = async (context, user, groupId, input) => {
     context_data: { id: groupId, entity_type: ENTITY_TYPE_GROUP, input }
   });
   // on editing the group confidence level, all members might have changed their effective level
-  if (input.find((i) => ['group_confidence_level', 'max_shareable_markings'].includes(i.key))) {
+  if (input.find((i) => ['group_confidence_level', 'max_shareable_markings', 'restrict_delete'].includes(i.key))) {
     await groupUsersCacheRefresh(context, user, groupId);
   }
   return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, element, user);
