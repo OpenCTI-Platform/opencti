@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import Box from '@mui/material/Box';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
@@ -326,12 +326,14 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
   };
 
   return (
-    <div
-      className={view === 'lines' ? classes.container : classes.containerGraph}
-    >
-      {view === 'lines' ? renderLines() : ''}
-      {view === 'graph' ? renderGraph() : ''}
-    </div>
+    <Suspense>
+      <div
+        className={view === 'lines' ? classes.container : classes.containerGraph}
+      >
+        {view === 'lines' ? renderLines() : ''}
+        {view === 'graph' ? renderGraph() : ''}
+      </div>
+    </Suspense>
   );
 };
 
