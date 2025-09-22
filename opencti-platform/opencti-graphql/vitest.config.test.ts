@@ -18,11 +18,6 @@ export const buildTestConfig = (include: string[]) => defineConfig({
       exclude: ['src/generated/**', 'src/migrations/**', 'src/stixpattern/**', 'src/python/**'],
       reporter: ['text', 'json', 'html'],
     },
-    poolOptions: {
-      forks: {
-        singleFork: true,
-      },
-    },
     sequence: {
       shuffle: false,
       sequencer: class Sequencer implements TestSequencer {
