@@ -3557,6 +3557,11 @@ export const deleteElementById = async (context, user, id, type, opts = {}) => {
     /* v8 ignore next */
     throw FunctionalError('You need to specify a type when deleting an entity');
   }
+  const elementToDelete = await internalLoadById(context, user, id, opts);
+  if (elementToDelete.entity_type !== type) {
+    throw FunctionalError('Cant find element for deletion', { id, type });
+  }
+
   const { element: deleted } = await internalDeleteElementById(context, user, id, opts);
   return deleted;
 };
