@@ -122,7 +122,7 @@ import {
   RELATION_OBJECT_MARKING,
   STIX_REF_RELATIONSHIP_TYPES
 } from '../schema/stixRefRelationship';
-import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER } from '../schema/internalObject';
+import { ENTITY_TYPE_RULE, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { isStixCoreObject } from '../schema/stixCoreObject';
 import { isBasicRelationship } from '../schema/stixRelationship';
 import {
@@ -3445,10 +3445,15 @@ const draftInternalDeleteElement = async (context, user, draftElement) => {
   return { element: draftElement, event: {} };
 };
 
-export const internalDeleteElementById = async (context, user, id, opts = {}) => {
+export const internalDeleteElementById = async (context, user, id, type, opts = {}) => {
   let lock;
   let event;
   const element = await storeLoadByIdWithRefs(context, user, id, { ...opts, includeDeletedInDraft: true });
+
+  if (!(element.entity_type === type || element.relationship_type === type)) {
+    throw FunctionalError('Cant find element for deletion', { id, type });
+  }
+
   if (!element) {
     throw AlreadyDeletedError({ id });
   }
@@ -3557,12 +3562,7 @@ export const deleteElementById = async (context, user, id, type, opts = {}) => {
     /* v8 ignore next */
     throw FunctionalError('You need to specify a type when deleting an entity');
   }
-  const elementToDelete = await internalLoadById(context, user, id, opts);
-  if (elementToDelete.entity_type !== type) {
-    throw FunctionalError('Cant find element for deletion', { id, type });
-  }
-
-  const { element: deleted } = await internalDeleteElementById(context, user, id, opts);
+  const { element: deleted } = await internalDeleteElementById(context, user, id, type, opts);
   return deleted;
 };
 export const deleteInferredRuleElement = async (rule, instance, deletedDependencies, opts = {}) => {
@@ -3596,7 +3596,7 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
     if (rebuildRuleContent.length === 0) {
       // If current inference is only base on one rule, we can safely delete it.
       if (monoRule) {
-        await internalDeleteElementById(context, RULE_MANAGER_USER, instance.id, opts);
+        await internalDeleteElementById(context, RULE_MANAGER_USER, instance.id, ENTITY_TYPE_RULE, opts);
         return true;
       }
       // If not we need to clean the rule and keep the element for other rules.

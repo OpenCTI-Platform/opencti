@@ -104,7 +104,7 @@ describe('Located at located rule', () => {
       expect(parisToEuropeMarkings.includes(TLP_CLEAR_INSTANCE.internal_id)).toBeFalsy();
       expect(parisToEuropeMarkings.includes(TLP_TEST_INSTANCE.internal_id)).toBeTruthy();
       // Remove the relation must remove the inferences
-      await internalDeleteElementById(testContext, SYSTEM_USER, parisLocatedToFrance.internal_id);
+      await internalDeleteElementById(testContext, SYSTEM_USER, parisLocatedToFrance.internal_id, RELATION_LOCATED_AT);
       await wait(TEN_SECONDS); // let some time to rule manager to delete the elements
       const afterRelDeletionRelations = await getInferences(RELATION_LOCATED_AT);
       expect(afterRelDeletionRelations.length).toBe(5);
@@ -115,7 +115,7 @@ describe('Located at located rule', () => {
       expect(afterRecreationRelations.length).toBe(7);
       // Remove the city
       logApp.info('[TEST LOCATED_AT] REMOVING PARIS');
-      await internalDeleteElementById(testContext, SYSTEM_USER, paris.internal_id);
+      await internalDeleteElementById(testContext, SYSTEM_USER, paris.internal_id, RELATION_LOCATED_AT);
       await wait(TEN_SECONDS); // let some time to rule manager to delete the elements
       const afterParisDeletionRelations = await getInferences(RELATION_LOCATED_AT);
       expect(afterParisDeletionRelations.length).toBe(5);

@@ -362,7 +362,7 @@ export const registerConnector = async (
 export const connectorDelete = async (context: AuthContext, user:AuthUser, connectorId: string) => {
   await deleteWorkForConnector(context, user, connectorId);
   await unregisterConnector(connectorId);
-  const { element } = await internalDeleteElementById(context, user, connectorId);
+  const { element } = await internalDeleteElementById(context, user, connectorId, ENTITY_TYPE_CONNECTOR);
   await publishUserAction({
     user,
     event_type: 'mutation',

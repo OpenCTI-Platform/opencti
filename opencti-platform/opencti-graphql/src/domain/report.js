@@ -146,7 +146,7 @@ export const reportDeleteWithElements = async (context, user, reportId) => {
   const objectsToDelete = reportOrphanObjects.filter((fo) => !reportOrphanObjects.some((o) => fo.fromId === o.internal_id || fo.toId === o.internal_id));
   for (let i = 0; i < objectsToDelete.length; i += 1) {
     const object = objectsToDelete[i];
-    await internalDeleteElementById(context, context.user, object.id);
+    await internalDeleteElementById(context, context.user, object.id, ENTITY_TYPE_CONTAINER_REPORT);
   }
   // Delete the report
   await stixDomainObjectDelete(context, user, reportId);
