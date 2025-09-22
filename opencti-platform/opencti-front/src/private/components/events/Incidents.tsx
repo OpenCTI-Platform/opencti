@@ -1,15 +1,10 @@
-import React, { FunctionComponent, useState, useEffect } from 'react';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
-import { Assignment } from '@mui/icons-material';
-import { graphql, fetchQuery } from 'react-relay';
+import React, { FunctionComponent } from 'react';
+import StixCoreObjectForms from '@components/common/stix_core_objects/StixCoreObjectForms';
 import { IncidentsLinesQuery, IncidentsLinesQuery$variables } from './incidents/__generated__/IncidentsLinesQuery.graphql';
 import { IncidentsLines_data$data } from './incidents/__generated__/IncidentsLines_data.graphql';
 import { incidentLineFragment } from './incidents/IncidentLine';
 import { incidentsLinesFragment, incidentsLinesQuery } from './incidents/IncidentsLines';
 import IncidentCreation from './incidents/IncidentCreation';
-import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import useAuth from '../../../utils/hooks/useAuth';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -20,50 +15,11 @@ import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import StixDomainObjectFormSelector from '../common/stix_domain_objects/StixDomainObjectFormSelector';
-import { environment } from '../../../relay/environment';
 
 export const LOCAL_STORAGE_KEY = 'incidents';
 
-const checkFormsQuery = graphql`
-  query IncidentsCheckFormsQuery {
-    forms(first: 50, orderBy: name, orderMode: asc) {
-      edges {
-        node {
-          id
-          active
-          form_schema
-        }
-      }
-    }
-  }
-`;
-
 const Incidents: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
-  const [isFormSelectorOpen, setIsFormSelectorOpen] = useState(false);
-  const [hasAvailableForms, setHasAvailableForms] = useState(false);
-
-  useEffect(() => {
-    fetchQuery(environment, checkFormsQuery, {}).toPromise()
-      .then((data: any) => {
-        if (data?.forms?.edges) {
-          const hasForms = data.forms.edges.some(({ node }: any) => {
-            if (!node.active) return false;
-            try {
-              const schema = JSON.parse(node.form_schema);
-              const formEntityType = schema.mainEntityType || '';
-              return formEntityType.toLowerCase() === 'incident';
-            } catch {
-              return false;
-            }
-          });
-          setHasAvailableForms(hasForms);
-        }
-      })
-      .catch(() => setHasAvailableForms(false));
-  }, []);
-
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Incidents | Events'));
   const {
@@ -131,35 +87,13 @@ const Incidents: FunctionComponent = () => {
           exportContext={{ entity_type: 'Incident' }}
           availableEntityTypes={['Incident']}
           createButton={(
-            <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <div style={{ display: 'flex', marginLeft: 8 }}>
-                {hasAvailableForms && (
-                  <Tooltip title={t_i18n('Use a form to create an incident')}>
-                    <IconButton
-                      onClick={() => setIsFormSelectorOpen(true)}
-                      color="primary"
-                      size="medium"
-                      style={{
-                        border: '1px solid',
-                        borderRadius: '4px',
-                        padding: '6px',
-                      }}
-                    >
-                      <Assignment />
-                    </IconButton>
-                  </Tooltip>
-                )}
-                <IncidentCreation paginationOptions={queryPaginationOptions} />
-              </div>
-            </Security>
+            <div style={{ display: 'flex' }}>
+              <StixCoreObjectForms entityType='Incident' />
+              <IncidentCreation paginationOptions={queryPaginationOptions} />
+            </div>
           )}
         />
       )}
-      <StixDomainObjectFormSelector
-        open={isFormSelectorOpen}
-        handleClose={() => setIsFormSelectorOpen(false)}
-        entityType="Incident"
-      />
     </div>
   );
 };

@@ -45,6 +45,7 @@ export const addForm = async (
   const formToCreate: Partial<BasicStoreEntityForm> = {
     name: input.name,
     description: input.description,
+    main_entity_type: parsedSchema.mainEntityType,
     form_schema: input.form_schema, // Store as JSON string
     active: input.active ?? true,
   };
@@ -75,7 +76,7 @@ export const addForm = async (
       event_scope: 'create',
       event_access: 'administration',
       message: `creates form intake \`${input.name}\``,
-      context_data: { id: element.id, entity_type: ENTITY_TYPE_FORM, input }
+      context_data: { id: element.id, entity_type: ENTITY_TYPE_FORM, input: { name: input.name, mainEntityType: parsedSchema.mainEntityType } },
     });
   }
 
@@ -146,8 +147,7 @@ export const formEditField = async (
   // Update connector registration
   const activeUpdate = input.find(({ key }) => key === 'active');
   if (activeUpdate) {
-    const isActive = activeUpdate.value === 'true'
-                     || (Array.isArray(activeUpdate.value) && activeUpdate.value[0] === 'true');
+    const isActive = activeUpdate.value === 'true' || (Array.isArray(activeUpdate.value) && activeUpdate.value[0] === 'true');
     await registerConnectorForIngestion(context, {
       id: element.id,
       type: 'FORM',
@@ -163,7 +163,7 @@ export const formEditField = async (
     event_scope: 'update',
     event_access: 'administration',
     message: `updates form intake \`${element.name}\``,
-    context_data: { id: formId, entity_type: ENTITY_TYPE_FORM, input }
+    context_data: { id: formId, entity_type: ENTITY_TYPE_FORM, input: { name: element.name } }
   });
 
   return element;
@@ -427,7 +427,7 @@ export const submitForm = async (
   }
 
   // Log the full STIX bundle before sending
-  logApp.info('[FORM] STIX Bundle generated', { bundleId: bundle.id, objectCount: bundle.objects.length });
+  logApp.info('[FORM] STIX Bundle generated', { bundleId: bundle.id, objectCount: bundle.objects.length, bundle });
 
   try {
     // Send the bundle to the connector queue for ingestion

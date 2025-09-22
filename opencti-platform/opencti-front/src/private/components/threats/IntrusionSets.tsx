@@ -1,19 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Grid from '@mui/material/Grid';
-import IconButton from '@mui/material/IconButton';
 import { GenericAttackCardDummy } from '@components/common/cards/GenericAttackCard';
 import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
-import { ViewListOutlined, ViewModuleOutlined, Assignment } from '@mui/icons-material';
+import { ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
 import { IntrusionSetCardFragment } from '@components/threats/intrusion_sets/IntrusionSetCard';
 import { IntrusionSetsCards_data$data } from '@components/threats/intrusion_sets/__generated__/IntrusionSetsCards_data.graphql';
-import { graphql, fetchQuery } from 'react-relay';
+import StixCoreObjectForms from '@components/common/stix_core_objects/StixCoreObjectForms';
 import { IntrusionSetsCardsPaginationQuery, IntrusionSetsCardsPaginationQuery$variables } from './intrusion_sets/__generated__/IntrusionSetsCardsPaginationQuery.graphql';
 import ListCards from '../../../components/list_cards/ListCards';
 import IntrusionSetsCards, { intrusionSetsCardsFragment, intrusionSetsCardsQuery } from './intrusion_sets/IntrusionSetsCards';
 import IntrusionSetCreation from './intrusion_sets/IntrusionSetCreation';
-import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
@@ -22,49 +19,11 @@ import { useFormatter } from '../../../components/i18n';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import StixDomainObjectFormSelector from '../common/stix_domain_objects/StixDomainObjectFormSelector';
-import { environment } from '../../../relay/environment';
 
 const LOCAL_STORAGE_KEY = 'intrusionSets';
 
-const checkFormsQuery = graphql`
-  query IntrusionSetsCheckFormsQuery {
-    forms(first: 50, orderBy: name, orderMode: asc) {
-      edges {
-        node {
-          id
-          active
-          form_schema
-        }
-      }
-    }
-  }
-`;
-
 const IntrusionSets = () => {
   const { t_i18n } = useFormatter();
-  const [isFormSelectorOpen, setIsFormSelectorOpen] = useState(false);
-  const [hasAvailableForms, setHasAvailableForms] = useState(false);
-
-  useEffect(() => {
-    fetchQuery(environment, checkFormsQuery, {}).toPromise()
-      .then((data: any) => {
-        if (data?.forms?.edges) {
-          const hasForms = data.forms.edges.some(({ node }: any) => {
-            if (!node.active) return false;
-            try {
-              const schema = JSON.parse(node.form_schema);
-              const formEntityType = schema.mainEntityType || '';
-              return formEntityType.toLowerCase() === 'intrusion-set' || formEntityType.toLowerCase() === 'intrusion_set';
-            } catch {
-              return false;
-            }
-          });
-          setHasAvailableForms(hasForms);
-        }
-      })
-      .catch(() => setHasAvailableForms(false));
-  }, []);
   const initialValues = {
     searchTerm: '',
     sortBy: 'name',
@@ -133,27 +92,10 @@ const IntrusionSets = () => {
         numberOfElements={numberOfElements}
         handleChangeView={helpers.handleChangeView}
         createButton={(
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <div style={{ display: 'flex', marginLeft: 8 }}>
-              {hasAvailableForms && (
-                <Tooltip title={t_i18n('Use a form to create an intrusion set')}>
-                  <IconButton
-                    onClick={() => setIsFormSelectorOpen(true)}
-                    color="primary"
-                    size="medium"
-                    style={{
-                      border: '1px solid',
-                      borderRadius: '4px',
-                      padding: '6px',
-                    }}
-                  >
-                    <Assignment />
-                  </IconButton>
-                </Tooltip>
-              )}
-              <IntrusionSetCreation paginationOptions={queryPaginationOptions} />
-            </div>
-          </Security>
+          <div style={{ display: 'flex' }}>
+            <StixCoreObjectForms entityType='Intrusion-Set' />
+            <IntrusionSetCreation paginationOptions={queryPaginationOptions} />
+          </div>
         )}
       >
         {queryRef && (
@@ -232,27 +174,10 @@ const IntrusionSets = () => {
               </ToggleButton>),
             ]}
             createButton={(
-              <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <div style={{ display: 'flex', marginLeft: 8 }}>
-                  {hasAvailableForms && (
-                    <Tooltip title={t_i18n('Use a form to create an intrusion set')}>
-                      <IconButton
-                        onClick={() => setIsFormSelectorOpen(true)}
-                        color="primary"
-                        size="medium"
-                        style={{
-                          border: '1px solid',
-                          borderRadius: '4px',
-                          padding: '6px',
-                        }}
-                      >
-                        <Assignment />
-                      </IconButton>
-                    </Tooltip>
-                  )}
-                  <IntrusionSetCreation paginationOptions={queryPaginationOptions} />
-                </div>
-              </Security>
+              <div style={{ display: 'flex' }}>
+                <StixCoreObjectForms entityType='Intrusion-Set' />
+                <IntrusionSetCreation paginationOptions={queryPaginationOptions} />
+              </div>
             )}
           />
         )}
@@ -264,11 +189,6 @@ const IntrusionSets = () => {
     <div data-testid="instrusion-set-page">
       <Breadcrumbs elements={[{ label: t_i18n('Threats') }, { label: t_i18n('Intrusion sets'), current: true }]} />
       {viewStorage.view !== 'lines' ? renderCards() : renderList()}
-      <StixDomainObjectFormSelector
-        open={isFormSelectorOpen}
-        handleClose={() => setIsFormSelectorOpen(false)}
-        entityType="Intrusion-Set"
-      />
     </div>
   );
 };

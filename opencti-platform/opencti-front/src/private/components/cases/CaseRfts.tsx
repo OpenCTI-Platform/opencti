@@ -1,16 +1,11 @@
-import React, { FunctionComponent, useState, useEffect } from 'react';
-import { graphql, fetchQuery } from 'react-relay';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
-import { Assignment } from '@mui/icons-material';
+import React, { FunctionComponent } from 'react';
+import { graphql } from 'react-relay';
 import { CaseRftsLinesCasesPaginationQuery, CaseRftsLinesCasesPaginationQuery$variables } from '@components/cases/__generated__/CaseRftsLinesCasesPaginationQuery.graphql';
 import { CaseRftsLinesCases_data$data } from '@components/cases/__generated__/CaseRftsLinesCases_data.graphql';
-import { environment } from '../../../relay/environment';
+import StixCoreObjectForms from '@components/common/stix_core_objects/StixCoreObjectForms';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import useAuth from '../../../utils/hooks/useAuth';
-import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import CaseRftCreation from './case_rfts/CaseRftCreation';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
@@ -19,7 +14,6 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import StixDomainObjectFormSelector from '../common/stix_domain_objects/StixDomainObjectFormSelector';
 
 interface CaseRftsProps {
   inputValue?: string;
@@ -129,49 +123,11 @@ const caseRftsLinesFragment = graphql`
 
 export const LOCAL_STORAGE_KEY = 'caseRfts';
 
-const checkFormsQuery = graphql`
-  query CaseRftsCheckFormsQuery {
-    forms(first: 50, orderBy: name, orderMode: asc) {
-      edges {
-        node {
-          id
-          active
-          form_schema
-        }
-      }
-    }
-  }
-`;
-
 const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Requests for Takedown | Cases'));
-  const [isFormSelectorOpen, setIsFormSelectorOpen] = useState(false);
-  const [hasAvailableForms, setHasAvailableForms] = useState(false);
-  const {
-    platformModuleHelpers: { isRuntimeFieldEnable },
-  } = useAuth();
-
-  useEffect(() => {
-    fetchQuery(environment, checkFormsQuery, {}).toPromise()
-      .then((data: any) => {
-        if (data?.forms?.edges) {
-          const hasForms = data.forms.edges.some(({ node }: any) => {
-            if (!node.active) return false;
-            try {
-              const schema = JSON.parse(node.form_schema);
-              const formEntityType = schema.mainEntityType || '';
-              return formEntityType.toLowerCase() === 'case-rft' || formEntityType.toLowerCase() === 'case_rft';
-            } catch {
-              return false;
-            }
-          });
-          setHasAvailableForms(hasForms);
-        }
-      })
-      .catch(() => setHasAvailableForms(false));
-  }, []);
+  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
 
   const initialValues = {
     searchTerm: '',
@@ -250,35 +206,13 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
           lineFragment={caseFragment}
           exportContext={{ entity_type: 'Case-Rft' }}
           createButton={(
-            <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <div style={{ display: 'flex', marginLeft: 8 }}>
-                {hasAvailableForms && (
-                  <Tooltip title={t_i18n('Use a form to create a request for takedown')}>
-                    <IconButton
-                      onClick={() => setIsFormSelectorOpen(true)}
-                      color="primary"
-                      size="medium"
-                      style={{
-                        border: '1px solid',
-                        borderRadius: '4px',
-                        padding: '6px',
-                      }}
-                    >
-                      <Assignment />
-                    </IconButton>
-                  </Tooltip>
-                )}
-                <CaseRftCreation paginationOptions={queryPaginationOptions} />
-              </div>
-            </Security>
+            <div style={{ display: 'flex' }}>
+              <StixCoreObjectForms entityType='Case-Rft' />
+              <CaseRftCreation paginationOptions={queryPaginationOptions} />
+            </div>
           )}
         />
       )}
-      <StixDomainObjectFormSelector
-        open={isFormSelectorOpen}
-        handleClose={() => setIsFormSelectorOpen(false)}
-        entityType="Case-Rft"
-      />
     </div>
   );
 };

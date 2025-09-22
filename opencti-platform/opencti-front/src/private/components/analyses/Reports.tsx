@@ -5,6 +5,7 @@ import { ReportsLines_data$data } from '@components/analyses/__generated__/Repor
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import { Assignment } from '@mui/icons-material';
+import StixCoreObjectForms from '@components/common/stix_core_objects/StixCoreObjectForms';
 import { environment } from '../../../relay/environment';
 import ReportCreation from './reports/ReportCreation';
 import Security from '../../../utils/Security';
@@ -19,7 +20,7 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import StixDomainObjectFormSelector from '../common/stix_domain_objects/StixDomainObjectFormSelector';
+import StixCoreObjectFormSelector from '../common/stix_core_objects/StixCoreObjectFormSelector';
 
 const reportLineFragment = graphql`
   fragment ReportsLine_node on Report {
@@ -143,49 +144,12 @@ const reportsLineFragment = graphql`
 
 const LOCAL_STORAGE_KEY = 'reports';
 
-const checkFormsQuery = graphql`
-  query ReportsCheckFormsQuery {
-    forms(first: 50, orderBy: name, orderMode: asc) {
-      edges {
-        node {
-          id
-          active
-          form_schema
-        }
-      }
-    }
-  }
-`;
-
 const Reports: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Reports | Analyses'));
-  const [isFormSelectorOpen, setIsFormSelectorOpen] = useState(false);
-  const [hasAvailableForms, setHasAvailableForms] = useState(false);
-  const {
-    platformModuleHelpers: { isRuntimeFieldEnable },
-  } = useAuth();
+  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
 
-  useEffect(() => {
-    fetchQuery(environment, checkFormsQuery, {}).toPromise()
-      .then((data: any) => {
-        if (data?.forms?.edges) {
-          const hasForms = data.forms.edges.some(({ node }: any) => {
-            if (!node.active) return false;
-            try {
-              const schema = JSON.parse(node.form_schema);
-              const formEntityType = schema.mainEntityType || '';
-              return formEntityType.toLowerCase() === 'report';
-            } catch {
-              return false;
-            }
-          });
-          setHasAvailableForms(hasForms);
-        }
-      })
-      .catch(() => setHasAvailableForms(false));
-  }, []);
   const initialValues = {
     filters: emptyFilterGroup,
     searchTerm: '',
@@ -259,35 +223,13 @@ const Reports: FunctionComponent = () => {
           exportContext={{ entity_type: 'Report' }}
           redirectionModeEnabled
           createButton={(
-            <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <div style={{ display: 'flex', marginLeft: 8 }}>
-                {hasAvailableForms && (
-                  <Tooltip title={t_i18n('Use a form to create a report')}>
-                    <IconButton
-                      onClick={() => setIsFormSelectorOpen(true)}
-                      color="primary"
-                      size="medium"
-                      style={{
-                        border: '1px solid',
-                        borderRadius: '4px',
-                        padding: '6px',
-                      }}
-                    >
-                      <Assignment />
-                    </IconButton>
-                  </Tooltip>
-                )}
-                <ReportCreation paginationOptions={queryPaginationOptions} />
-              </div>
-            </Security>
+            <div style={{ display: 'flex' }}>
+              <StixCoreObjectForms entityType='Report' />
+              <ReportCreation paginationOptions={queryPaginationOptions} />
+            </div>
           )}
         />
       )}
-      <StixDomainObjectFormSelector
-        open={isFormSelectorOpen}
-        handleClose={() => setIsFormSelectorOpen(false)}
-        entityType="Report"
-      />
     </span>
   );
 };

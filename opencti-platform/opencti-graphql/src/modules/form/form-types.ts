@@ -13,7 +13,6 @@ export enum FormFieldType {
   MultiSelect = 'multiselect',
   Checkbox = 'checkbox',
   Toggle = 'toggle',
-  Date = 'date',
   DateTime = 'datetime',
   CreatedBy = 'createdBy',
   ObjectMarking = 'objectMarking',
@@ -103,6 +102,7 @@ export interface FormSchemaDefinition {
 export interface BasicStoreEntityForm extends BasicStoreEntity {
   name: string;
   description: string;
+  main_entity_type: string;
   form_schema: string; // JSON string of FormSchemaDefinition
   active: boolean;
 }
@@ -110,6 +110,7 @@ export interface BasicStoreEntityForm extends BasicStoreEntity {
 export interface StoreEntityForm extends StoreEntity {
   name: string;
   description: string;
+  main_entity_type: string;
   form_schema: string;
   active: boolean;
 }
@@ -118,6 +119,7 @@ export interface StoreEntityForm extends StoreEntity {
 export interface StixForm extends StixObject {
   name: string;
   description: string;
+  main_entity_type: string;
   form_schema: string;
   active: boolean;
   extensions: {

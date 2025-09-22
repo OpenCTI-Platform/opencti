@@ -1,16 +1,11 @@
-import React, { FunctionComponent, useState, useEffect } from 'react';
-import { graphql, fetchQuery } from 'react-relay';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
-import { Assignment } from '@mui/icons-material';
+import React, { FunctionComponent } from 'react';
+import { graphql } from 'react-relay';
 import { CaseRfisLinesCasesPaginationQuery, CaseRfisLinesCasesPaginationQuery$variables } from '@components/cases/__generated__/CaseRfisLinesCasesPaginationQuery.graphql';
 import { CaseRfisLinesCases_data$data } from '@components/cases/__generated__/CaseRfisLinesCases_data.graphql';
-import { environment } from '../../../relay/environment';
+import StixCoreObjectForms from '@components/common/stix_core_objects/StixCoreObjectForms';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import useAuth from '../../../utils/hooks/useAuth';
-import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import CaseRfiCreation from './case_rfis/CaseRfiCreation';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
@@ -18,7 +13,6 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import StixDomainObjectFormSelector from '../common/stix_domain_objects/StixDomainObjectFormSelector';
 
 interface CaseRfisProps {
   inputValue?: string;
@@ -128,49 +122,11 @@ const caseRfisLinesFragment = graphql`
 
 export const LOCAL_STORAGE_KEY = 'caseRfis';
 
-const checkFormsQuery = graphql`
-  query CaseRfisCheckFormsQuery {
-    forms(first: 50, orderBy: name, orderMode: asc) {
-      edges {
-        node {
-          id
-          active
-          form_schema
-        }
-      }
-    }
-  }
-`;
-
 const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Requests for Information | Cases'));
-  const [isFormSelectorOpen, setIsFormSelectorOpen] = useState(false);
-  const [hasAvailableForms, setHasAvailableForms] = useState(false);
-  const {
-    platformModuleHelpers: { isRuntimeFieldEnable },
-  } = useAuth();
-
-  useEffect(() => {
-    fetchQuery(environment, checkFormsQuery, {}).toPromise()
-      .then((data: any) => {
-        if (data?.forms?.edges) {
-          const hasForms = data.forms.edges.some(({ node }: any) => {
-            if (!node.active) return false;
-            try {
-              const schema = JSON.parse(node.form_schema);
-              const formEntityType = schema.mainEntityType || '';
-              return formEntityType.toLowerCase() === 'case-rfi' || formEntityType.toLowerCase() === 'case_rfi';
-            } catch {
-              return false;
-            }
-          });
-          setHasAvailableForms(hasForms);
-        }
-      })
-      .catch(() => setHasAvailableForms(false));
-  }, []);
+  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
 
   const initialValues = {
     searchTerm: '',
@@ -243,35 +199,13 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
           lineFragment={caseFragment}
           exportContext={{ entity_type: 'Case-Rfi' }}
           createButton={(
-            <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <div style={{ display: 'flex', marginLeft: 8 }}>
-                {hasAvailableForms && (
-                  <Tooltip title={t_i18n('Use a form to create a request for information')}>
-                    <IconButton
-                      onClick={() => setIsFormSelectorOpen(true)}
-                      color="primary"
-                      size="medium"
-                      style={{
-                        border: '1px solid',
-                        borderRadius: '4px',
-                        padding: '6px',
-                      }}
-                    >
-                      <Assignment />
-                    </IconButton>
-                  </Tooltip>
-                )}
-                <CaseRfiCreation paginationOptions={queryPaginationOptions} />
-              </div>
-            </Security>
+            <div style={{ display: 'flex' }}>
+              <StixCoreObjectForms entityType='Case-Rfi' />
+              <CaseRfiCreation paginationOptions={queryPaginationOptions} />
+            </div>
           )}
         />
       )}
-      <StixDomainObjectFormSelector
-        open={isFormSelectorOpen}
-        handleClose={() => setIsFormSelectorOpen(false)}
-        entityType="Case-Rfi"
-      />
     </div>
   );
 };

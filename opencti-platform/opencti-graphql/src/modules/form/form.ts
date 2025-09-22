@@ -30,6 +30,17 @@ const FORM_DEFINITION: ModuleDefinition<StoreEntityForm, StixForm> = {
       isFilterable: true,
     },
     {
+      name: 'main_entity_type',
+      label: 'Main entity type',
+      type: 'string',
+      format: 'short',
+      mandatoryType: 'external',
+      editDefault: true,
+      multiple: false,
+      upsert: false,
+      isFilterable: true,
+    },
+    {
       name: 'description',
       label: 'Description',
       type: 'string',
