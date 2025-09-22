@@ -12,7 +12,7 @@ export const createInternalInferredRelation = async (context: AuthContext, user:
   // TODO: JSON input validation? Maybe we don't need it since it's only coming from task manager?
   const { input, ruleContent, opts } = JSON.parse(jsonInput);
   // Handle special case of inferred rel creation used to push event to stream
-  if (opts.isPublishStixToStream) {
+  if (opts?.isPublishStixToStream) {
     const event = opts.publishStixEvent;
     await publishStixToStream(context, RULE_MANAGER_USER, event);
     return null;
