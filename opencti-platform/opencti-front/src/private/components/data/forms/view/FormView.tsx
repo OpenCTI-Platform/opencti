@@ -99,6 +99,16 @@ interface FormViewInnerProps {
   queryRef: PreloadedQuery<FormViewQuery>;
 }
 
+interface EntityCheckResult {
+  stixDomainObject?: {
+    id: string;
+  } | null;
+}
+
+interface FormInitialValues {
+  [key: string]: string | boolean | string[] | Date | Record<string, unknown> | number;
+}
+
 const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -133,7 +143,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
 
   const schema: FormSchemaDefinition = JSON.parse(form.form_schema);
   const validationSchema = convertFormSchemaToYupSchema(schema, t_i18n);
-  const initialValues: Record<string, unknown> = {};
+  const initialValues: FormInitialValues = {};
 
   // Initialize values for main entity fields
   const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
@@ -153,21 +163,23 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
   // Initialize values for additional entities if any
   if (schema.additionalEntities) {
     schema.additionalEntities.forEach((entity) => {
-      initialValues[`additional_${entity.id}`] = {};
+      const entityValues: Record<string, unknown> = {};
       // Find fields for this additional entity
       const entityFields = schema.fields.filter((field) => field.attributeMapping.entity === entity.id);
 
       entityFields.forEach((field) => {
         if (field.type === 'checkbox' || field.type === 'toggle') {
-          (initialValues as any)[`additional_${entity.id}`][field.name] = false;
+          entityValues[field.name] = false;
         } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'files') {
-          (initialValues as any)[`additional_${entity.id}`][field.name] = [];
+          entityValues[field.name] = [];
         } else if (field.type === 'datetime') {
-          (initialValues as any)[`additional_${entity.id}`][field.name] = field.defaultValue || new Date().toISOString();
+          entityValues[field.name] = field.defaultValue || new Date().toISOString();
         } else {
-          (initialValues as any)[`additional_${entity.id}`][field.name] = field.defaultValue || '';
+          entityValues[field.name] = field.defaultValue || '';
         }
       });
+
+      initialValues[`additional_${entity.id}`] = entityValues;
     });
   }
 
@@ -177,11 +189,11 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
 
     const checkEntity = async () => {
       try {
-        const result: any = await fetchQuery(
+        const result = await fetchQuery(
           environment,
           entityCheckQuery,
           { id: pollingEntityId },
-        ).toPromise();
+        ).toPromise() as EntityCheckResult | null;
 
         if (result?.stixDomainObject?.id) {
           // Entity exists, navigate to it
@@ -296,7 +308,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}
-          onSubmit={handleSubmit}
+          onSubmit={handleSubmit as (values: FormInitialValues, formikHelpers: FormikHelpers<FormInitialValues>) => void | Promise<unknown>}
           validateOnChange={true}
           validateOnBlur={true}
         >
@@ -339,9 +351,9 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
                             values={values[`additional_${additionalEntity.id}`] as Record<string, unknown> || {}}
                             errors={(errors as unknown as Record<string, Record<string, string>>)[`additional_${additionalEntity.id}`] || {}}
                             touched={(touched as unknown as Record<string, Record<string, boolean>>)[`additional_${additionalEntity.id}`] || {}}
-                            setFieldValue={(fieldName: string, value: string | number | boolean | string[] | Date | null) => setFieldValue(`additional_${additionalEntity.id}.${fieldName}`, value)
+                            setFieldValue={(fieldName: string, value: unknown) => setFieldValue(`additional_${additionalEntity.id}.${fieldName}`, value)
                             }
-                            entitySettings={entitySettings as any}
+                            entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
                             fieldPrefix={`additional_${additionalEntity.id}`}
                           />
                         ))}

@@ -40,7 +40,7 @@ const getYupValidationForField = (
   if (field.isMandatory) {
     if (field.type === 'multiselect' || field.type === 'objectMarking'
         || field.type === 'objectLabel' || field.type === 'files') {
-      validation = (validation as any).min(1, t_i18n('This field is required'));
+      validation = (validation as Yup.ArraySchema<unknown[], Yup.AnyObject>).min(1, t_i18n('This field is required'));
     } else if (field.type === 'checkbox' || field.type === 'toggle') {
       // For boolean fields, we might want to ensure they're checked
       // But usually mandatory booleans means they must be explicitly set, not necessarily true
@@ -85,11 +85,11 @@ export const convertFormSchemaToYupSchema = (
 export const formatFormDataForSubmission = (
   values: Record<string, unknown>,
   schema: FormSchemaDefinition,
-): Record<string, any> => {
-  const formattedData: Record<string, any> = {};
+): Record<string, unknown> => {
+  const formattedData: Record<string, unknown> = {};
 
   // Helper function to extract proper values for special field types
-  const extractFieldValue = (field: any, value: any) => {
+  const extractFieldValue = (field: FormFieldDefinition, value: unknown): unknown => {
     if (value === undefined || value === null || value === '') {
       return undefined;
     }
@@ -98,7 +98,8 @@ export const formatFormDataForSubmission = (
     if (field.type === 'createdBy') {
       // Extract the internal ID from the object
       if (typeof value === 'object' && value !== null) {
-        return value.value || value.id;
+        const obj = value as Record<string, unknown>;
+        return obj.value || obj.id;
       }
       return value;
     }
@@ -106,7 +107,7 @@ export const formatFormDataForSubmission = (
     if (field.type === 'objectMarking') {
       // Extract internal IDs from the array of marking objects
       if (Array.isArray(value)) {
-        return value.map((m: any) => m?.value || m?.id || m).filter((id: any) => id);
+        return value.map((m: Record<string, unknown>) => m?.value || m?.id || m).filter((id: unknown) => id);
       }
       return value;
     }
@@ -114,7 +115,7 @@ export const formatFormDataForSubmission = (
     if (field.type === 'objectLabel') {
       // Extract label values from the array of label objects
       if (Array.isArray(value)) {
-        return value.map((l: any) => l?.label || l?.value || l).filter((label: any) => label);
+        return value.map((l: Record<string, unknown>) => l?.label || l?.value || l).filter((label: unknown) => label);
       }
       return value;
     }
@@ -138,7 +139,7 @@ export const formatFormDataForSubmission = (
       // Find fields for this additional entity
       const entityFields = schema.fields.filter((field) => field.attributeMapping.entity === entity.id);
       entityFields.forEach((field) => {
-        const value = (entityValues as any)[field.name];
+        const value = (entityValues as Record<string, unknown>)[field.name];
         const extractedValue = extractFieldValue(field, value);
         if (extractedValue !== undefined) {
           formattedData[field.name] = extractedValue;

@@ -19,6 +19,8 @@ import { useFormatter } from '../../../components/i18n';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import Security from '../../../utils/Security';
 
 const LOCAL_STORAGE_KEY = 'intrusionSets';
 
@@ -92,10 +94,12 @@ const IntrusionSets = () => {
         numberOfElements={numberOfElements}
         handleChangeView={helpers.handleChangeView}
         createButton={(
-          <div style={{ display: 'flex' }}>
-            <StixCoreObjectForms entityType='Intrusion-Set' />
-            <IntrusionSetCreation paginationOptions={queryPaginationOptions} />
-          </div>
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <div style={{ display: 'flex' }}>
+              <StixCoreObjectForms entityType='Intrusion-Set' />
+              <IntrusionSetCreation paginationOptions={queryPaginationOptions} />
+            </div>
+          </Security>
         )}
       >
         {queryRef && (
@@ -174,10 +178,12 @@ const IntrusionSets = () => {
               </ToggleButton>),
             ]}
             createButton={(
-              <div style={{ display: 'flex' }}>
-                <StixCoreObjectForms entityType='Intrusion-Set' />
-                <IntrusionSetCreation paginationOptions={queryPaginationOptions} />
-              </div>
+              <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <div style={{ display: 'flex' }}>
+                  <StixCoreObjectForms entityType='Intrusion-Set' />
+                  <IntrusionSetCreation paginationOptions={queryPaginationOptions} />
+                </div>
+              </Security>
             )}
           />
         )}

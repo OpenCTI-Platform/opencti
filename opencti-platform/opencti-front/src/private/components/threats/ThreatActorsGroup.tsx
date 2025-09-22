@@ -22,6 +22,8 @@ import { useFormatter } from '../../../components/i18n';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import Security from '../../../utils/Security';
 
 const LOCAL_STORAGE_KEY = 'threatActorsGroups';
 
@@ -94,10 +96,12 @@ const ThreatActorsGroup = () => {
         numberOfElements={numberOfElements}
         handleChangeView={helpers.handleChangeView}
         createButton={(
-          <div style={{ display: 'flex' }}>
-            <StixCoreObjectForms entityType='Threat-Actor-Group' />
-            <ThreatActorGroupCreation paginationOptions={queryPaginationOptions} />
-          </div>
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <div style={{ display: 'flex' }}>
+              <StixCoreObjectForms entityType='Threat-Actor-Group' />
+              <ThreatActorGroupCreation paginationOptions={queryPaginationOptions} />
+            </div>
+          </Security>
         )}
       >
         {queryRef && (
@@ -179,10 +183,12 @@ const ThreatActorsGroup = () => {
               </ToggleButton>),
             ]}
             createButton={(
-              <div style={{ display: 'flex' }}>
-                <StixCoreObjectForms entityType='Threat-Actor-Group' />
-                <ThreatActorGroupCreation paginationOptions={queryPaginationOptions} />
-              </div>
+              <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <div style={{ display: 'flex' }}>
+                  <StixCoreObjectForms entityType='Threat-Actor-Group' />
+                  <ThreatActorGroupCreation paginationOptions={queryPaginationOptions} />
+                </div>
+              </Security>
             )}
           />
         )}

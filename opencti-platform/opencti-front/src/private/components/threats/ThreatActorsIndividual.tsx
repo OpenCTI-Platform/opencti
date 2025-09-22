@@ -25,6 +25,8 @@ import { useFormatter } from '../../../components/i18n';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import Security from '../../../utils/Security';
 
 const LOCAL_STORAGE_KEY_THREAT_ACTORS_INDIVIDUAL = 'threatActorsIndividuals';
 
@@ -97,10 +99,12 @@ const ThreatActorsIndividual = () => {
         numberOfElements={numberOfElements}
         handleChangeView={helpers.handleChangeView}
         createButton={(
-          <div style={{ display: 'flex' }}>
-            <StixCoreObjectForms entityType='Threat-Actor-Individual' />
-            <ThreatActorIndividualCreation paginationOptions={queryPaginationOptions} />
-          </div>
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <div style={{ display: 'flex' }}>
+              <StixCoreObjectForms entityType='Threat-Actor-Individual' />
+              <ThreatActorIndividualCreation paginationOptions={queryPaginationOptions} />
+            </div>
+          </Security>
         )}
       >
         {queryRef && (
@@ -182,10 +186,12 @@ const ThreatActorsIndividual = () => {
               </ToggleButton>),
             ]}
             createButton={(
-              <div style={{ display: 'flex' }}>
-                <StixCoreObjectForms entityType='Threat-Actor-Individual' />
-                <ThreatActorIndividualCreation paginationOptions={queryPaginationOptions} />
-              </div>
+              <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <div style={{ display: 'flex' }}>
+                  <StixCoreObjectForms entityType='Threat-Actor-Individual' />
+                  <ThreatActorIndividualCreation paginationOptions={queryPaginationOptions} />
+                </div>
+              </Security>
             )}
           />
         )}

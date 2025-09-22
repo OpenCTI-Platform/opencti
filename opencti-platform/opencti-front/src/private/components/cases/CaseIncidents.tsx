@@ -17,6 +17,8 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import Security from '../../../utils/Security';
 
 interface CaseIncidentsProps {
   inputValue?: string;
@@ -203,10 +205,12 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
           lineFragment={caseIncidentFragment}
           exportContext={{ entity_type: 'Case-Incident' }}
           createButton={(
-            <div style={{ display: 'flex' }}>
-              <StixCoreObjectForms entityType='Case-Incident' />
-              <CaseIncidentCreation paginationOptions={queryPaginationOptions} />
-            </div>
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <div style={{ display: 'flex' }}>
+                <StixCoreObjectForms entityType='Case-Incident' />
+                <CaseIncidentCreation paginationOptions={queryPaginationOptions} />
+              </div>
+            </Security>
           )}
         />
       )}

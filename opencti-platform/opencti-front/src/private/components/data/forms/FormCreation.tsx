@@ -96,7 +96,6 @@ const FormCreation: FunctionComponent<FormCreationProps> = ({
   }
 
   const initialValues: FormAddInput = useMemo(() => {
-    // If formData is provided (duplication mode), use it
     if (formData) {
       return {
         name: formData.name,
@@ -105,8 +104,6 @@ const FormCreation: FunctionComponent<FormCreationProps> = ({
         active: formData.active ?? true,
       };
     }
-
-    // Default values for new form creation
     return {
       name: '',
       description: '',

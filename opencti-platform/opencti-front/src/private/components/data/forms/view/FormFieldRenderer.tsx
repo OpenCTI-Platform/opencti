@@ -22,6 +22,7 @@ import ObjectLabelField from '../../../common/form/ObjectLabelField';
 import { FormFieldDefinition } from '../Form.d';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
+import { FieldOption } from '../../../../../utils/field';
 
 // Styles
 const useStyles = makeStyles<Theme>(() => ({
@@ -48,7 +49,7 @@ export interface FormFieldRendererProps {
   values: Record<string, unknown>;
   errors: Record<string, string>;
   touched: Record<string, boolean>;
-  setFieldValue: (field: string, value: string | number | boolean | string[] | Date | null) => void;
+  setFieldValue: (field: string, value: string | number | boolean | string[] | Date | null | FieldOption[] | { name?: string; data?: string }[]) => void;
   entitySettings?: {
     edges: ReadonlyArray<{
       node: {
@@ -78,18 +79,15 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
   const classes = useStyles();
   const { t_i18n } = useFormatter();
 
-  // For Formik Field component, we need the full path
   const fieldName = fieldPrefix ? `${fieldPrefix}.${field.name}` : field.name;
-  // For reading values/errors/touched, they're already scoped when fieldPrefix is provided
+
   const fieldValue = values[field.name] || '';
   const fieldError = errors?.[field.name];
   const fieldTouched = touched?.[field.name];
   const hasError = !!(fieldTouched && fieldError);
 
-  // Use label if available, otherwise use the mapped attribute name
   const displayLabel = field.label || field.attributeMapping.attributeName;
 
-  // Handle file upload
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { files } = event.target;
     if (files && files.length > 0) {
@@ -108,18 +106,19 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
           reader.readAsDataURL(file);
         });
       });
-
-      Promise.all(filePromises).then((fileData) => {
-        const currentFiles = (fieldValue || []) as Array<{ name?: string; data?: string }>;
-        setFieldValue(field.name, [...currentFiles, ...fileData] as any);
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      Promise.all(filePromises).then((fileData: { name?: string; data?: string }[]) => {
+        const currentFiles = (fieldValue || []) as { name?: string; data?: string }[];
+        setFieldValue(field.name, [...currentFiles, ...fileData]);
       });
     }
   };
 
   const handleFileRemove = (index: number) => {
-    const currentFiles = (fieldValue || []) as Array<{ name?: string; data?: string }>;
+    const currentFiles = (fieldValue || []) as { name?: string; data?: string }[];
     const newFiles = currentFiles.filter((_: { name?: string; data?: string }, i: number) => i !== index);
-    setFieldValue(field.name, newFiles as any);
+    setFieldValue(field.name, newFiles);
   };
 
   // Render based on field type
@@ -330,8 +329,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
             name={fieldName}
             label={displayLabel}
             style={{ width: '100%' }}
-            onChange={(_: string, value: any) => {
-              // Store the full object for display
+            onChange={(_: string, value: string) => {
               setFieldValue(field.name, value);
             }}
             helpertext={field.description}
@@ -346,8 +344,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
             name={fieldName}
             label={displayLabel}
             style={{ width: '100%' }}
-            onChange={(_: string, markingValues: any) => {
-              // Store the full objects for display
+            onChange={(_: string, markingValues: FieldOption[]) => {
               setFieldValue(field.name, markingValues);
             }}
             helpertext={field.description}
@@ -361,15 +358,9 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
           <ObjectLabelField
             name={fieldName}
             style={{ width: '100%' }}
-            onChange={(_: string, labelValues: any) => {
-              // Store the full objects for display
+            onChange={(_: string, labelValues: FieldOption[]) => {
               setFieldValue(field.name, labelValues);
             }}
-            setFieldValue={(_: string, value: any) => {
-              // Store the full objects for display
-              setFieldValue(field.name, value);
-            }}
-            values={values as any}
             helpertext={field.description}
           />
         </div>

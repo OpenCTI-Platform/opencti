@@ -15,6 +15,8 @@ import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import Security from '../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 
 export const LOCAL_STORAGE_KEY = 'incidents';
 
@@ -87,10 +89,12 @@ const Incidents: FunctionComponent = () => {
           exportContext={{ entity_type: 'Incident' }}
           availableEntityTypes={['Incident']}
           createButton={(
-            <div style={{ display: 'flex' }}>
-              <StixCoreObjectForms entityType='Incident' />
-              <IncidentCreation paginationOptions={queryPaginationOptions} />
-            </div>
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <div style={{ display: 'flex' }}>
+                <StixCoreObjectForms entityType='Incident' />
+                <IncidentCreation paginationOptions={queryPaginationOptions} />
+              </div>
+            </Security>
           )}
         />
       )}

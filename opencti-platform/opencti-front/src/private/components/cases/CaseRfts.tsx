@@ -14,6 +14,8 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import Security from '../../../utils/Security';
 
 interface CaseRftsProps {
   inputValue?: string;
@@ -206,10 +208,12 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
           lineFragment={caseFragment}
           exportContext={{ entity_type: 'Case-Rft' }}
           createButton={(
-            <div style={{ display: 'flex' }}>
-              <StixCoreObjectForms entityType='Case-Rft' />
-              <CaseRftCreation paginationOptions={queryPaginationOptions} />
-            </div>
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <div style={{ display: 'flex' }}>
+                <StixCoreObjectForms entityType='Case-Rft' />
+                <CaseRftCreation paginationOptions={queryPaginationOptions} />
+              </div>
+            </Security>
           )}
         />
       )}

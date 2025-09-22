@@ -19,6 +19,8 @@ import { useFormatter } from '../../../components/i18n';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import Security from '../../../utils/Security';
 
 const LOCAL_STORAGE_KEY = 'campaigns';
 
@@ -91,10 +93,12 @@ const Campaigns = () => {
         numberOfElements={numberOfElements}
         handleChangeView={helpers.handleChangeView}
         createButton={(
-          <div style={{ display: 'flex' }}>
-            <StixCoreObjectForms entityType='Campaign' />
-            <CampaignCreation paginationOptions={queryPaginationOptions} />
-          </div>
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <div style={{ display: 'flex' }}>
+              <StixCoreObjectForms entityType='Campaign' />
+              <CampaignCreation paginationOptions={queryPaginationOptions} />
+            </div>
+          </Security>
         )}
       >
         {queryRef && (
@@ -178,10 +182,12 @@ const Campaigns = () => {
               </ToggleButton>),
             ]}
             createButton={(
-              <div style={{ display: 'flex' }}>
-                <StixCoreObjectForms entityType='Campaign' />
-                <CampaignCreation paginationOptions={queryPaginationOptions} />
-              </div>
+              <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <div style={{ display: 'flex' }}>
+                  <StixCoreObjectForms entityType='Campaign' />
+                  <CampaignCreation paginationOptions={queryPaginationOptions} />
+                </div>
+              </Security>
             )}
           />
         )}

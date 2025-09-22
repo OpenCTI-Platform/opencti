@@ -1,12 +1,8 @@
-import React, { FunctionComponent, useState, useEffect } from 'react';
-import { graphql, fetchQuery } from 'react-relay';
+import React, { FunctionComponent } from 'react';
+import { graphql } from 'react-relay';
 import { ReportsLinesPaginationQuery, ReportsLinesPaginationQuery$variables } from '@components/analyses/__generated__/ReportsLinesPaginationQuery.graphql';
 import { ReportsLines_data$data } from '@components/analyses/__generated__/ReportsLines_data.graphql';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
-import { Assignment } from '@mui/icons-material';
 import StixCoreObjectForms from '@components/common/stix_core_objects/StixCoreObjectForms';
-import { environment } from '../../../relay/environment';
 import ReportCreation from './reports/ReportCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
@@ -20,7 +16,6 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import StixCoreObjectFormSelector from '../common/stix_core_objects/StixCoreObjectFormSelector';
 
 const reportLineFragment = graphql`
   fragment ReportsLine_node on Report {
@@ -223,10 +218,12 @@ const Reports: FunctionComponent = () => {
           exportContext={{ entity_type: 'Report' }}
           redirectionModeEnabled
           createButton={(
-            <div style={{ display: 'flex' }}>
-              <StixCoreObjectForms entityType='Report' />
-              <ReportCreation paginationOptions={queryPaginationOptions} />
-            </div>
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <div style={{ display: 'flex' }}>
+                <StixCoreObjectForms entityType='Report' />
+                <ReportCreation paginationOptions={queryPaginationOptions} />
+              </div>
+            </Security>
           )}
         />
       )}

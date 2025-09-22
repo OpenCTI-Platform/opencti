@@ -6,8 +6,6 @@ import IconButton from '@mui/material/IconButton';
 import { Assignment } from '@mui/icons-material';
 import StixCoreObjectFormSelector from '@components/common/stix_core_objects/StixCoreObjectFormSelector';
 import { useFormatter } from '../../../../components/i18n';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 // region types
 interface StixCoreObjectFormsProps {
@@ -79,9 +77,7 @@ const StixCoreObjectForms: FunctionComponent<StixCoreObjectFormsProps> = ({ enti
     <>
       {queryRef && (
         <Suspense>
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <StixCoreObjectFormsComponent queryRef={queryRef} />
-          </Security>
+          <StixCoreObjectFormsComponent queryRef={queryRef} />
         </Suspense>
       )}
     </>

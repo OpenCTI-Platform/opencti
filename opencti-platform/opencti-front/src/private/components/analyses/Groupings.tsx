@@ -14,6 +14,8 @@ import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocum
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
+import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import Security from '../../../utils/Security';
 
 const LOCAL_STORAGE_KEY = 'groupings';
 
@@ -212,10 +214,12 @@ const Groupings: FunctionComponent<GroupingsProps> = () => {
           lineFragment={groupingLineFragment}
           exportContext={{ entity_type: 'Grouping' }}
           createButton={(
-            <div style={{ display: 'flex' }}>
-              <StixCoreObjectForms entityType='Grouping' />
-              <GroupingCreation paginationOptions={queryPaginationOptions} />
-            </div>
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <div style={{ display: 'flex' }}>
+                <StixCoreObjectForms entityType='Grouping' />
+                <GroupingCreation paginationOptions={queryPaginationOptions} />
+              </div>
+            </Security>
           )}
         />
       )}
