@@ -1301,6 +1301,7 @@ const convertInPirRelToStix = (instance: StoreRelationPir): SRO.StixRelation => 
         target_ref_pir_refs: instance.to[RELATION_IN_PIR] ?? [],
         kill_chain_phases: [],
         pir_score: instance.pir_score,
+        pir_explanations: instance.pir_explanations,
       })
     }
   };
