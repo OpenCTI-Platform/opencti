@@ -170,6 +170,7 @@ const FormCreation: FunctionComponent<FormCreationProps> = ({
           name: formData.name,
           description: formData.description || '',
           mainEntityType: schema.mainEntityType,
+          includeInContainer: schema.includeInContainer || false,
           mainEntityMultiple: schema.mainEntityMultiple || false,
           mainEntityLookup: schema.mainEntityLookup || false,
           mainEntityFieldMode: schema.mainEntityFieldMode || 'multiple',
@@ -203,7 +204,6 @@ const FormCreation: FunctionComponent<FormCreationProps> = ({
               name="name"
               label={t_i18n('Name')}
               fullWidth={true}
-              detectDuplicate={['Form']}
             />
             <Field
               component={TextField}

@@ -27,6 +27,8 @@ export interface AdditionalEntity {
   entityType: string; // Entity type
   label: string; // Display label for this entity in the form
   multiple: boolean; // Whether this entity allows multiple instances
+  minAmount?: number; // For multiple entities, minimum required instances
+  required?: boolean; // For non-multiple entities, whether it's required
   lookup?: boolean; // Whether this is an entity lookup (select existing entities)
   fieldMode?: 'multiple' | 'parsed'; // Whether to have multiple fields or parse a single field
   parseField?: 'text' | 'textarea'; // Type of field when using parsed mode
@@ -45,6 +47,7 @@ export interface FormBuilderData {
   name: string;
   description?: string;
   mainEntityType: string;
+  includeInContainer: boolean; // Whether to include entities in container (only for container types)
   mainEntityMultiple: boolean; // Whether main entity allows multiple
   mainEntityLookup?: boolean; // Whether main entity is an entity lookup (select existing entities)
   mainEntityFieldMode?: 'multiple' | 'parsed'; // Whether to have multiple fields or parse a single field
@@ -74,7 +77,7 @@ export interface FormEditInput {
 export interface FormSchemaDefinition {
   version: string;
   mainEntityType: string;
-  isContainer?: boolean;
+  includeInContainer?: boolean;
   mainEntityMultiple?: boolean;
   mainEntityLookup?: boolean;
   mainEntityFieldMode?: 'multiple' | 'parsed';
@@ -112,7 +115,6 @@ export interface FormRelationshipDefinition {
   fromEntity: string;
   toEntity: string;
   relationshipType: string;
-  required?: boolean;
 }
 
 // Entity type definition for UI display

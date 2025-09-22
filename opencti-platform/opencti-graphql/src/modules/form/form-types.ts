@@ -79,7 +79,7 @@ export interface FormRelationshipDefinition {
 export interface FormSchemaDefinition {
   version: string; // Schema version for future compatibility
   mainEntityType: string; // Main entity type this form creates (e.g., 'Report', 'Incident')
-  isContainer?: boolean; // Whether the main entity is a container
+  includeInContainer?: boolean; // Whether to include entities in container (only for container types)
   mainEntityMultiple?: boolean; // Whether main entity allows multiple instances
   mainEntityLookup?: boolean; // Whether main entity is an entity lookup (select existing)
   mainEntityFieldMode?: 'multiple' | 'parsed'; // Whether to have multiple fields or parse a single field
@@ -156,7 +156,7 @@ export const FormSchemaDefinitionSchema: Record<string, any> = {
       type: 'string',
       enum: ['comma', 'line']
     },
-    isContainer: { type: 'boolean' },
+    includeInContainer: { type: 'boolean' },
     additionalEntities: {
       type: 'array',
       items: {
@@ -166,6 +166,8 @@ export const FormSchemaDefinitionSchema: Record<string, any> = {
           entityType: { type: 'string' },
           label: { type: 'string' },
           multiple: { type: 'boolean' },
+          minAmount: { type: 'number', minimum: 0 },
+          required: { type: 'boolean' },
           lookup: { type: 'boolean' },
           fieldMode: {
             type: 'string',
@@ -189,11 +191,11 @@ export const FormSchemaDefinitionSchema: Record<string, any> = {
         type: 'object',
         properties: {
           id: { type: 'string' },
-          from: { type: 'string' },
-          to: { type: 'string' },
-          type: { type: 'string' },
+          fromEntity: { type: 'string' },
+          toEntity: { type: 'string' },
+          relationshipType: { type: 'string' },
         },
-        required: ['id', 'from', 'to', 'type'],
+        required: ['id', 'fromEntity', 'toEntity', 'relationshipType'],
       },
     },
     fields: {

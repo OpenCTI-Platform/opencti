@@ -95,29 +95,60 @@ export const convertFormSchemaToYupSchema = (
       if (entity.lookup) {
         // Lookup mode
         if (entity.multiple) {
-          shape[`additional_${entity.id}_lookup`] = Yup.array().min(1, t_i18n('Please select at least one entity'));
+          const minAmount = entity.minAmount || 0;
+          let validation = Yup.array();
+          if (minAmount > 0) {
+            validation = validation.min(minAmount, t_i18n(`Please select at least ${minAmount} entity(ies)`));
+          }
+          shape[`additional_${entity.id}_lookup`] = validation;
         } else {
-          shape[`additional_${entity.id}_lookup`] = Yup.object().nonNullable(t_i18n('Please select an entity'));
+          let validation = Yup.object().nullable();
+          if (entity.required) {
+            validation = Yup.object().nonNullable(t_i18n('Please select an entity'));
+          }
+          shape[`additional_${entity.id}_lookup`] = validation;
         }
       } else if (entity.multiple && entity.fieldMode === 'parsed') {
         // Parsed mode
-        shape[`additional_${entity.id}_parsed`] = Yup.string().required(t_i18n('This field is required'));
+        const minAmount = entity.minAmount || 0;
+        let validation = Yup.string();
+        if (minAmount > 0) {
+          validation = validation.required(t_i18n('This field is required'));
+        }
+        shape[`additional_${entity.id}_parsed`] = validation;
       } else if (entity.multiple && entity.fieldMode === 'multiple') {
         // Multi mode
         const fieldShape: Record<string, Yup.Schema<unknown>> = {};
         entityFields.forEach((field) => {
           fieldShape[field.name] = getYupValidationForField(field, t_i18n);
         });
-        shape[`additional_${entity.id}_groups`] = Yup.array()
-          .of(Yup.object().shape(fieldShape))
-          .min(1, t_i18n('At least one entity is required'));
+        const minAmount = entity.minAmount || 0;
+        let validation = Yup.array().of(Yup.object().shape(fieldShape));
+        if (minAmount > 0) {
+          validation = validation.min(minAmount, t_i18n(`At least ${minAmount} entity(ies) required`));
+        }
+        shape[`additional_${entity.id}_groups`] = validation;
       } else {
         // Single entity mode
         const entityShape: Record<string, Yup.Schema<unknown>> = {};
         entityFields.forEach((field) => {
           entityShape[field.name] = getYupValidationForField(field, t_i18n);
         });
-        shape[`additional_${entity.id}`] = Yup.object().shape(entityShape);
+
+        // If entity is required, use regular object validation, otherwise make fields optional
+        if (entity.required) {
+          shape[`additional_${entity.id}`] = Yup.object().shape(entityShape);
+        } else {
+          // For optional entities, we don't add validation - fields are optional
+          const optionalEntityShape: Record<string, Yup.Schema<unknown>> = {};
+          entityFields.forEach((field) => {
+            // Only validate if field is mandatory regardless of entity requirement
+            if (field.isMandatory) {
+              optionalEntityShape[field.name] = getYupValidationForField(field, t_i18n);
+            }
+          });
+          shape[`additional_${entity.id}`] = Yup.object().shape(optionalEntityShape);
+        }
       }
     });
   }

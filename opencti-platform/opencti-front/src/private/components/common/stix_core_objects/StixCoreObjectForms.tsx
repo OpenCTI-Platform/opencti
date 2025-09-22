@@ -66,7 +66,7 @@ const StixCoreObjectForms: FunctionComponent<StixCoreObjectFormsProps> = ({ enti
   const formsPaginationOptions: StixCoreObjectFormsFormsQuery$variables = {
     filters: {
       mode: 'and',
-      filters: [{ key: ['main_entity_type'], values: [entityType] }],
+      filters: [{ key: ['main_entity_type'], values: [entityType] }, { key: ['active'], values: [true] }],
       filterGroups: [],
     },
   };

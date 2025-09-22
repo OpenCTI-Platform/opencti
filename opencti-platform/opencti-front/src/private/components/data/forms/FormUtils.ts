@@ -394,13 +394,10 @@ export const buildEntityTypes = (
 export const convertFormBuilderDataToSchema = (
   values: FormBuilderData,
 ): FormSchemaDefinition => {
-  // Check if main entity is a container
-  const isMainEntityContainer = CONTAINER_TYPES.includes(values.mainEntityType);
-
   return {
     version: '2.0',
     mainEntityType: values.mainEntityType,
-    isContainer: isMainEntityContainer,
+    includeInContainer: values.includeInContainer,
     mainEntityMultiple: values.mainEntityMultiple,
     mainEntityLookup: values.mainEntityLookup,
     mainEntityFieldMode: values.mainEntityFieldMode,

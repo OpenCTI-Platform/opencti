@@ -9,13 +9,12 @@ import CircularProgress from '@mui/material/CircularProgress';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import makeStyles from '@mui/styles/makeStyles';
-import { FieldArray, Form, Formik, FormikHelpers } from 'formik';
+import { Field, FieldArray, Form, Formik, FormikHelpers } from 'formik';
 import IconButton from '@mui/material/IconButton';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
-import TextField from '@mui/material/TextField';
-import TextareaAutosize from '@mui/material/TextareaAutosize';
 import Divider from '@mui/material/Divider';
+import TextField from '../../../../../components/TextField';
 import { useFormatter } from '../../../../../components/i18n';
 import { FormViewQuery } from './__generated__/FormViewQuery.graphql';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
@@ -395,23 +394,24 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
                     if (schema.mainEntityMultiple && schema.mainEntityFieldMode === 'parsed') {
                       // Parsed mode - single text field to parse
                       return schema.mainEntityParseField === 'textarea' ? (
-                        <TextareaAutosize
+                        <Field
+                          component={TextField}
                           className={classes.parsedField}
                           name="mainEntityParsed"
-                          value={values.mainEntityParsed as string || ''}
-                          onChange={(e) => setFieldValue('mainEntityParsed', e.target.value)}
                           placeholder={t_i18n(schema.mainEntityParseMode === 'line'
                             ? 'Enter values separated by new lines'
                             : 'Enter values separated by commas')}
-                          minRows={3}
-                          style={{ width: '100%', marginTop: 20 }}
+                          rows={10}
+                          multiline={true}
+                          fullWidth={true}
+                          variant="standard"
+                          style={{ marginTop: 20 }}
                         />
                       ) : (
-                        <TextField
+                        <Field
+                          component={TextField}
                           className={classes.parsedField}
                           name="mainEntityParsed"
-                          value={values.mainEntityParsed as string || ''}
-                          onChange={(e) => setFieldValue('mainEntityParsed', e.target.value)}
                           placeholder={t_i18n(schema.mainEntityParseMode === 'line'
                             ? 'Enter values separated by new lines'
                             : 'Enter values separated by commas')}
@@ -532,23 +532,24 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
                             // Parsed mode - single text field to parse
                             const fieldName = `additional_${additionalEntity.id}_parsed`;
                             return additionalEntity.parseField === 'textarea' ? (
-                              <TextareaAutosize
+                              <Field
+                                component={TextField}
                                 className={classes.parsedField}
                                 name={fieldName}
-                                value={values[fieldName] as string || ''}
-                                onChange={(e) => setFieldValue(fieldName, e.target.value)}
                                 placeholder={t_i18n(additionalEntity.parseMode === 'line'
                                   ? 'Enter values separated by new lines'
                                   : 'Enter values separated by commas')}
-                                minRows={3}
-                                style={{ width: '100%', marginTop: 20 }}
+                                rows={10}
+                                multiline={true}
+                                fullWidth={true}
+                                variant="standard"
+                                style={{ marginTop: 20 }}
                               />
                             ) : (
-                              <TextField
+                              <Field
+                                component={TextField}
                                 className={classes.parsedField}
                                 name={fieldName}
-                                value={values[fieldName] as string || ''}
-                                onChange={(e) => setFieldValue(fieldName, e.target.value)}
                                 placeholder={t_i18n(additionalEntity.parseMode === 'line'
                                   ? 'Enter values separated by new lines'
                                   : 'Enter values separated by commas')}

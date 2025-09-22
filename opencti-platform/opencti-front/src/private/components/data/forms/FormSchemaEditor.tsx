@@ -27,9 +27,10 @@ import {
   generateRelationshipId,
   getAttributesForEntityType as getAttributesUtil,
   getAvailableFieldTypes,
-  getAvailableRelationships,
   getInitialMandatoryFields,
+  CONTAINER_TYPES,
 } from './FormUtils';
+import { resolveRelationsTypes } from '../../../../utils/Relation';
 import type { FormFieldAttribute, AdditionalEntity, EntityRelationship, FormBuilderData, RelationshipTypeOption } from './Form.d';
 import useAuth from '../../../../utils/hooks/useAuth';
 
@@ -133,10 +134,12 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
       ? getInitialMandatoryFields(defaultEntityType, entityTypes, t_i18n)
       : [];
 
+    const isDefaultContainer = CONTAINER_TYPES.includes(defaultEntityType);
     return {
       name: '',
       description: '',
       mainEntityType: defaultEntityType,
+      includeInContainer: isDefaultContainer, // Default to true for containers
       mainEntityMultiple: false,
       mainEntityLookup: false,
       mainEntityFieldMode: 'multiple',
@@ -183,7 +186,6 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
   const mainEntityInfo = entityTypes.find((e) => e.value === formData.mainEntityType);
   const isContainer = mainEntityInfo?.isContainer || false;
   const hasAdditionalEntities = formData.additionalEntities.length > 0;
-  const showRelationships = isContainer && hasAdditionalEntities;
 
   const fieldsByEntity = formData.fields.reduce((acc, field) => {
     const entityId = field.attributeMapping.entity;
@@ -205,9 +207,13 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
         (f) => !f.isMandatory || f.attributeMapping.entity !== 'main_entity',
       );
 
+      // Check if new type is a container and update includeInContainer
+      const isNewContainer = CONTAINER_TYPES.includes(value);
+
       return {
         ...prev,
         mainEntityType: value,
+        includeInContainer: isNewContainer, // Update includeInContainer based on new type
         fields: [...nonMandatoryFields, ...newMandatoryFields],
       };
     });
@@ -253,6 +259,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
       label: '',
       type: 'text',
       required: false,
+      defaultValue: null, // Initialize default value
       attributeMapping: {
         entity: entityId,
         attributeName: '',
@@ -273,6 +280,8 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
       id: generateEntityId(),
       entityType: 'Attack-Pattern',
       multiple: false,
+      minAmount: 0,
+      required: false,
       lookup: false,
       label: '',
       fieldMode: 'multiple',
@@ -357,10 +366,10 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             handleFieldChange(`fields.${fieldIndex}.label`, label);
             handleFieldChange(`fields.${fieldIndex}.name`, name || field.id); // Use field.id as fallback
           }}
-          style={{ marginBottom: 20 }}
+          style={{ marginTop: 20 }}
         />
 
-        <FormControl fullWidth variant="standard" style={{ marginBottom: 20 }} disabled={field.isMandatory}>
+        <FormControl fullWidth variant="standard" style={{ marginTop: 20 }} disabled={field.isMandatory}>
           <InputLabel>{t_i18n('Field Type')}</InputLabel>
           <Select
             value={field.type}
@@ -378,7 +387,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           </Select>
         </FormControl>
 
-        <FormControl fullWidth variant="standard" style={{ marginBottom: 20 }} disabled={field.isMandatory}>
+        <FormControl fullWidth variant="standard" style={{ marginTop: 20 }} disabled={field.isMandatory}>
           <InputLabel>{t_i18n('Map to attribute')}</InputLabel>
           <Select
             value={field.attributeMapping.attributeName}
@@ -394,7 +403,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
         </FormControl>
 
         {(field.type === 'select' || field.type === 'multiselect') && (
-          <div style={{ marginBottom: 20 }}>
+          <div style={{ marginTop: 20 }}>
             <Typography variant="caption">{t_i18n('Options')}</Typography>
             {field.options?.map((option, optIndex) => (
               <Box key={optIndex} display="flex" alignItems="center" style={{ marginTop: 10 }}>
@@ -446,6 +455,49 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           </div>
         )}
 
+        {/* Default value field for text, number, textarea, select, and date fields */}
+        {(field.type === 'text' || field.type === 'textarea' || field.type === 'number' || field.type === 'date' || field.type === 'datetime' || field.type === 'select') && (
+          <MuiTextField
+            variant="standard"
+            label={t_i18n('Default value')}
+            fullWidth
+            value={field.defaultValue || ''}
+            onChange={(e) => {
+              const { value: targetValue } = e.target;
+              let value: string | number | null = targetValue;
+              if (field.type === 'number') {
+                value = targetValue === '' ? null : Number(targetValue);
+              }
+              handleFieldChange(`fields.${fieldIndex}.defaultValue`, value);
+            }}
+            type={field.type === 'number' ? 'number' : 'text'}
+            style={{ marginTop: 20 }}
+            helperText={(() => {
+              if (field.type === 'datetime' || field.type === 'date') {
+                return t_i18n('Enter date in ISO format (e.g., 2024-01-01 or 2024-01-01T10:00:00.000Z)');
+              }
+              if (field.type === 'select' && field.options) {
+                return t_i18n('Enter a value from the options');
+              }
+              return '';
+            })()}
+          />
+        )}
+
+        {/* Default value for checkbox/toggle */}
+        {(field.type === 'checkbox' || field.type === 'toggle') && (
+          <FormControlLabel
+            control={
+              <Switch
+                checked={!!field.defaultValue}
+                onChange={(e) => handleFieldChange(`fields.${fieldIndex}.defaultValue`, e.target.checked)}
+              />
+            }
+            label={t_i18n('Default checked')}
+            style={{ marginTop: 20 }}
+          />
+        )}
+
         <FormControlLabel
           control={
             <Switch
@@ -455,6 +507,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             />
           }
           label={t_i18n('Required')}
+          style={{ marginTop: 20 }}
         />
       </Box>
     );
@@ -481,7 +534,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           </IconButton>
         </div>
 
-        <FormControl fullWidth variant="standard" style={{ marginBottom: 20 }}>
+        <FormControl fullWidth variant="standard" style={{ marginTop: 20 }}>
           <InputLabel>{t_i18n('Entity Type')}</InputLabel>
           <Select
             value={entity.entityType}
@@ -524,18 +577,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           fullWidth
           value={entity.label}
           onChange={(e) => handleFieldChange(`additionalEntities.${entityIndex}.label`, e.target.value)}
-          style={{ marginBottom: 20 }}
-        />
-
-        <FormControlLabel
-          control={
-            <Switch
-              checked={entity.multiple}
-              onChange={(e) => handleFieldChange(`additionalEntities.${entityIndex}.multiple`, e.target.checked)}
-            />
-          }
-          label={t_i18n('Allow multiple instances')}
-          style={{ marginBottom: 20, display: 'block' }}
+          style={{ marginTop: 20 }}
         />
 
         <FormControlLabel
@@ -546,11 +588,50 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             />
           }
           label={t_i18n('Entity lookup (select existing entities)')}
-          style={{ marginBottom: 20, display: 'block' }}
+          style={{ marginTop: 20, display: 'block' }}
         />
 
+        <FormControlLabel
+          control={
+            <Switch
+              checked={entity.multiple}
+              onChange={(e) => handleFieldChange(`additionalEntities.${entityIndex}.multiple`, e.target.checked)}
+            />
+          }
+          label={t_i18n('Allow multiple instances')}
+          style={{ marginTop: 20, display: 'block' }}
+        />
+
+        {entity.multiple ? (
+          <MuiTextField
+            variant="standard"
+            label={t_i18n('Minimum amount (0 for optional)')}
+            type="number"
+            fullWidth
+            value={entity.minAmount || 0}
+            onChange={(e) => {
+              const value = parseInt(e.target.value, 10) || 0;
+              handleFieldChange(`additionalEntities.${entityIndex}.minAmount`, value);
+            }}
+            inputProps={{ min: 0 }}
+            helperText={t_i18n('Minimum number of instances required (0 means optional)')}
+            style={{ marginTop: 20 }}
+          />
+        ) : (
+          <FormControlLabel
+            control={
+              <Switch
+                checked={entity.required || false}
+                onChange={(e) => handleFieldChange(`additionalEntities.${entityIndex}.required`, e.target.checked)}
+              />
+            }
+            label={t_i18n('Required')}
+            style={{ marginTop: 20, display: 'block' }}
+          />
+        )}
+
         {entity.multiple && !entity.lookup && (
-          <FormControl fullWidth variant="standard" style={{ marginBottom: 20 }}>
+          <FormControl fullWidth variant="standard" style={{ marginTop: 20 }}>
             <InputLabel>{t_i18n('Multiple Mode')}</InputLabel>
             <Select
               value={entity.fieldMode}
@@ -565,7 +646,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
 
         {entity.multiple && entity.fieldMode === 'parsed' && !entity.lookup && (
           <>
-            <FormControl fullWidth variant="standard" style={{ marginBottom: 20 }}>
+            <FormControl fullWidth variant="standard" style={{ marginTop: 20 }}>
               <InputLabel>{t_i18n('Parse Field Type')}</InputLabel>
               <Select
                 value={entity.parseField}
@@ -576,7 +657,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                 <MenuItem value="textarea">{t_i18n('Text Area')}</MenuItem>
               </Select>
             </FormControl>
-            <FormControl fullWidth variant="standard" style={{ marginBottom: 20 }}>
+            <FormControl fullWidth variant="standard" style={{ marginTop: 20 }}>
               <InputLabel>{t_i18n('Parse Mode')}</InputLabel>
               <Select
                 value={entity.parseMode}
@@ -634,21 +715,20 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
 
     // Only get available relationships if both entities are selected
     let availableRelationships: RelationshipTypeOption[] = [];
-    if (fromEntityType && toEntityType) {
-      availableRelationships = getAvailableRelationships(
-        formData.mainEntityType,
-        formData.additionalEntities.map((e) => e.entityType),
-        schema,
-        t_i18n,
+    if (fromEntityType && toEntityType && schema.schemaRelationsTypesMapping) {
+      // Use the existing resolveRelationsTypes function to get valid relationships
+      const validRelationshipTypes = resolveRelationsTypes(
+        fromEntityType,
+        toEntityType,
+        schema.schemaRelationsTypesMapping,
+        true, // Include 'related-to'
       );
 
-      // Always add "related-to" if not already present
-      if (!availableRelationships.find((r) => r.value === 'related-to')) {
-        availableRelationships.push({
-          value: 'related-to',
-          label: t_i18n('related-to'),
-        });
-      }
+      // Convert to options format
+      availableRelationships = validRelationshipTypes.map((relType: string) => ({
+        value: relType,
+        label: t_i18n(`relationship_${relType}`),
+      }));
     }
 
     return (
@@ -661,12 +741,12 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             size="small"
             onClick={() => handleRemoveRelationship(relationship.id)}
           >
-            <DeleteOutlined fontSize="small" />
+            <DeleteOutlined color="primary" />
           </IconButton>
         </div>
 
-        <FormControl fullWidth variant="standard" style={{ marginBottom: 20 }}>
-          <InputLabel>{t_i18n('From Entity')}</InputLabel>
+        <FormControl fullWidth variant="standard" style={{ marginTop: 20 }}>
+          <InputLabel>{t_i18n('Source Entity')}</InputLabel>
           <Select
             value={relationship.fromEntity}
             onChange={(e) => {
@@ -676,7 +756,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                 handleFieldChange(`relationships.${relationshipIndex}.relationshipType`, '');
               }
             }}
-            label={t_i18n('From Entity')}
+            label={t_i18n('Source Entity')}
           >
             {entityOptions.map((opt) => (
               <MenuItem key={opt.value} value={opt.value}>
@@ -686,8 +766,8 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           </Select>
         </FormControl>
 
-        <FormControl fullWidth variant="standard" style={{ marginBottom: 20 }}>
-          <InputLabel>{t_i18n('To Entity')}</InputLabel>
+        <FormControl fullWidth variant="standard" style={{ marginTop: 20 }}>
+          <InputLabel>{t_i18n('Target Entity')}</InputLabel>
           <Select
             value={relationship.toEntity}
             onChange={(e) => {
@@ -697,7 +777,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                 handleFieldChange(`relationships.${relationshipIndex}.relationshipType`, '');
               }
             }}
-            label={t_i18n('To Entity')}
+            label={t_i18n('Target Entity')}
           >
             {entityOptions.map((opt) => (
               <MenuItem key={opt.value} value={opt.value}>
@@ -710,7 +790,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
         <FormControl
           fullWidth
           variant="standard"
-          style={{ marginBottom: 20 }}
+          style={{ marginTop: 20 }}
           disabled={!relationship.fromEntity || !relationship.toEntity}
         >
           <InputLabel>{t_i18n('Relationship Type')}</InputLabel>
@@ -728,15 +808,6 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           </Select>
         </FormControl>
 
-        <FormControlLabel
-          control={
-            <Switch
-              checked={relationship.required}
-              onChange={(e) => handleFieldChange(`relationships.${relationshipIndex}.required`, e.target.checked)}
-            />
-          }
-          label={t_i18n('Required')}
-        />
       </Box>
     );
   };
@@ -746,7 +817,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
       <Tabs value={currentTab} onChange={(_, value) => setCurrentTab(value)}>
         <Tab label={t_i18n('Main Entity')} />
         <Tab label={t_i18n('Additional Entities')} />
-        {showRelationships && <Tab label={t_i18n('Relationships')} />}
+        {hasAdditionalEntities && <Tab label={t_i18n('Relationships')} />}
       </Tabs>
 
       {currentTab === 0 && (
@@ -785,11 +856,24 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
               />
             }
             label={t_i18n('Entity lookup (select existing entities)')}
-            style={{ marginBottom: 20, display: 'block' }}
+            style={{ marginTop: 20, display: 'block' }}
           />
 
+          {isContainer && (
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={formData.includeInContainer}
+                  onChange={(e) => handleFieldChange('includeInContainer', e.target.checked)}
+                />
+              }
+              label={t_i18n('Include entities in container')}
+              style={{ marginTop: 20, display: 'block' }}
+            />
+          )}
+
           {formData.mainEntityMultiple && !formData.mainEntityLookup && (
-            <FormControl fullWidth variant="standard" style={{ marginBottom: 20 }}>
+            <FormControl fullWidth variant="standard" style={{ marginTop: 20 }}>
               <InputLabel>{t_i18n('Multiple Mode')}</InputLabel>
               <Select
                 value={formData.mainEntityFieldMode}
@@ -804,7 +888,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
 
           {formData.mainEntityMultiple && formData.mainEntityFieldMode === 'parsed' && !formData.mainEntityLookup && (
             <>
-              <FormControl fullWidth variant="standard" style={{ marginBottom: 20 }}>
+              <FormControl fullWidth variant="standard" style={{ marginTop: 20 }}>
                 <InputLabel>{t_i18n('Parse Field Type')}</InputLabel>
                 <Select
                   value={formData.mainEntityParseField}
@@ -815,7 +899,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                   <MenuItem value="textarea">{t_i18n('Text Area')}</MenuItem>
                 </Select>
               </FormControl>
-              <FormControl fullWidth variant="standard" style={{ marginBottom: 20 }}>
+              <FormControl fullWidth variant="standard" style={{ marginTop: 20 }}>
                 <InputLabel>{t_i18n('Parse Mode')}</InputLabel>
                 <Select
                   value={formData.mainEntityParseMode}
@@ -868,9 +952,6 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
 
       {currentTab === 1 && (
         <div className={classes.tabPanel}>
-          <Typography variant="h6" gutterBottom>
-            {t_i18n('Additional Entities')}
-          </Typography>
           {formData.additionalEntities.map((entity, idx) => renderAdditionalEntity(entity, idx))}
           <Button
             variant="outlined"
@@ -883,7 +964,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
         </div>
       )}
 
-      {currentTab === 2 && showRelationships && (
+      {currentTab === 2 && hasAdditionalEntities && (
         <div className={classes.tabPanel}>
           <Typography variant="h6" gutterBottom>
             {t_i18n('Relationships')}

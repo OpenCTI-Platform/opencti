@@ -1,5 +1,6 @@
 import type { Resolvers } from '../../generated/graphql';
 import { addForm, findFormPaginated, findById, formDelete, formEditField, submitForm } from './form-domain';
+import { logApp } from '../../config/conf';
 
 const formResolvers: Resolvers = {
   Query: {
@@ -28,6 +29,7 @@ const formResolvers: Resolvers = {
         const result = await submitForm(context, context.user, submission);
         return result;
       } catch (error: any) {
+        logApp.error('[FORM] Failed to submit', { error });
         return {
           success: false,
           bundleId: null,
