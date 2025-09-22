@@ -3635,7 +3635,6 @@ export const elAggregationRelationsCount = async (context, user, indexName, opti
   const query = { index: getIndicesToQuery(context, user, indexName), body };
   logApp.debug('[SEARCH] aggregationRelationsCount', { query });
   const isIdFields = field?.endsWith('internal_id');
-  console.log(JSON.stringify(query));
   return elRawSearch(context, user, types, query)
     .then(async (data) => {
       if (isAggregationConnection) {
