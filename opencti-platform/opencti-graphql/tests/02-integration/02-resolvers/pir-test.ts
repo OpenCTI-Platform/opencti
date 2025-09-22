@@ -65,7 +65,7 @@ const LIST_RELS_QUERY = gql`
             id
           }
           ... on PirRelationship {
-            pir_explanations {
+            pir_explanation {
               dependencies {
                 element_id
                 author_id
@@ -107,7 +107,7 @@ const MALWARE_QUERY = gql`
       pirInformation(pirId: $pirId) {
         pir_score
         last_pir_score_date
-        pir_explanations {
+        pir_explanation {
           criterion {
             filters
           }
@@ -342,9 +342,9 @@ describe('PIR resolver standard behavior', () => {
     expect(queryResult.data?.pirRelationships.edges[0].node.from.id).toEqual(flaggedElementId);
     expect(queryResult.data?.pirRelationships.edges[0].node.to.id).toEqual(pirInternalId1);
     expect(queryResult.data?.pirRelationships.edges[0].node.pir_score).toEqual(67);
-    expect(queryResult.data?.pirRelationships.edges[0].node.pir_explanations.length).toEqual(1);
-    expect(queryResult.data?.pirRelationships.edges[0].node.pir_explanations[0].dependencies[0].element_id).toEqual(relationshipId);
-    expect(queryResult.data?.pirRelationships.edges[0].node.pir_explanations[0].dependencies[0].author_id).toEqual(relationshipAuthorId);
+    expect(queryResult.data?.pirRelationships.edges[0].node.pir_explanation.length).toEqual(1);
+    expect(queryResult.data?.pirRelationships.edges[0].node.pir_explanation[0].dependencies[0].element_id).toEqual(relationshipId);
+    expect(queryResult.data?.pirRelationships.edges[0].node.pir_explanation[0].dependencies[0].author_id).toEqual(relationshipAuthorId);
     // Verify the pir information has been updated at the entity level
     const malwareAfterFlag = await internalLoadById<BasicStoreEntity>(
       testContext,
@@ -365,14 +365,14 @@ describe('PIR resolver standard behavior', () => {
     });
     expect(malwareQueryResult.data?.malware).not.toBeNull();
     expect(malwareQueryResult.data?.malware.pirInformation.pir_score).toEqual(67);
-    expect(malwareQueryResult.data?.malware.pirInformation.pir_explanations.length).toEqual(1);
-    expect(malwareQueryResult.data?.malware.pirInformation.pir_explanations[0].criterion.filters).toEqual(JSON.stringify(matchingCriteria.filters));
+    expect(malwareQueryResult.data?.malware.pirInformation.pir_explanation.length).toEqual(1);
+    expect(malwareQueryResult.data?.malware.pirInformation.pir_explanation[0].criterion.filters).toEqual(JSON.stringify(matchingCriteria.filters));
   });
 
   it('should display top sources distribution for in-pir relationships', async () => {
     const args = {
       dateAttribute: 'created_at',
-      field: 'pir_explanations.dependencies.author_id',
+      field: 'pir_explanation.dependencies.author_id',
       isTo: false,
       relationship_type: ['in-pir'],
       pirId: pirInternalId1,
@@ -495,7 +495,7 @@ describe('PIR resolver standard behavior', () => {
     expect(queryResult.data?.pirRelationships.edges[0].node.from.id).toEqual(flaggedElementId);
     expect(queryResult.data?.pirRelationships.edges[0].node.to.id).toEqual(pirInternalId1);
     expect(queryResult.data?.pirRelationships.edges[0].node.pir_score).toEqual(100);
-    expect(queryResult.data?.pirRelationships.edges[0].node.pir_explanations.length).toEqual(2);
+    expect(queryResult.data?.pirRelationships.edges[0].node.pir_explanation.length).toEqual(2);
     // Verify the pir information has been updated at the entity level for all the PIRs concerned
     const malwareAfterFlag = await internalLoadById<BasicStoreEntity>(
       testContext,
@@ -531,7 +531,7 @@ describe('PIR resolver standard behavior', () => {
     expect(queryResult.data?.pirRelationships.edges[0].node.from.id).toEqual(flaggedElementId);
     expect(queryResult.data?.pirRelationships.edges[0].node.to.id).toEqual(pirInternalId1);
     expect(queryResult.data?.pirRelationships.edges[0].node.pir_score).toEqual(67);
-    expect(queryResult.data?.pirRelationships.edges[0].node.pir_explanations.length).toEqual(1);
+    expect(queryResult.data?.pirRelationships.edges[0].node.pir_explanation.length).toEqual(1);
   });
 
   it('should unflag an element', async () => {
