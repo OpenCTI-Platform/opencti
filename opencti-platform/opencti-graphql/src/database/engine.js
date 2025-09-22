@@ -3616,7 +3616,7 @@ export const elAggregationRelationsCount = async (context, user, indexName, opti
     body.aggs = {
       genres: {
         terms: {
-          field: isBooleanAttribute(field) || field.includes('pir_explanations')
+          field: isBooleanAttribute(field)
             ? field
             : `${field}.keyword`,
           size: MAX_AGGREGATION_SIZE,
@@ -3635,6 +3635,7 @@ export const elAggregationRelationsCount = async (context, user, indexName, opti
   const query = { index: getIndicesToQuery(context, user, indexName), body };
   logApp.debug('[SEARCH] aggregationRelationsCount', { query });
   const isIdFields = field?.endsWith('internal_id');
+  console.log({ query });
   return elRawSearch(context, user, types, query)
     .then(async (data) => {
       if (isAggregationConnection) {

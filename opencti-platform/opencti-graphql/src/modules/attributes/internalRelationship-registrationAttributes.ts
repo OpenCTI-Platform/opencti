@@ -2,6 +2,7 @@ import * as R from 'ramda';
 import { type AttributeDefinition, authorizedAuthorities } from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { RELATION_ALLOWED_BY, RELATION_IN_PIR, RELATION_PARTICIPATE_TO } from '../../schema/internalRelationship';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, ENTITY_TYPE_IDENTITY } from '../../schema/general';
 
 export const internalRelationshipsAttributes: { [k: string]: Array<AttributeDefinition> } = {
   [RELATION_PARTICIPATE_TO]: [
@@ -28,12 +29,62 @@ export const internalRelationshipsAttributes: { [k: string]: Array<AttributeDefi
       name: 'pir_explanations',
       label: 'PIR Explanations',
       type: 'object',
-      format: 'flat',
+      format: 'nested',
       mandatoryType: 'no',
       editDefault: false,
       multiple: true,
       upsert: true,
-      isFilterable: true,
+      isFilterable: false,
+      mappings: [
+        {
+          name: 'criterion',
+          label: 'PIR explanations criterion',
+          type: 'object',
+          format: 'flat',
+          editDefault: false,
+          mandatoryType: 'no',
+          multiple: false,
+          upsert: true,
+          isFilterable: false,
+        },
+        {
+          name: 'dependencies',
+          label: 'PIR explanations dependencies',
+          type: 'object',
+          format: 'nested',
+          editDefault: false,
+          mandatoryType: 'no',
+          multiple: true,
+          upsert: true,
+          isFilterable: false,
+          mappings: [
+            {
+              name: 'element_id',
+              label: 'PIR explanations dependencies element ID',
+              type: 'string',
+              format: 'id',
+              entityTypes: [ABSTRACT_STIX_CORE_RELATIONSHIP],
+              editDefault: false,
+              mandatoryType: 'no',
+              multiple: false,
+              upsert: true,
+              isFilterable: false,
+            },
+            {
+              name: 'author_id',
+              label: 'PIR explanations dependencies author ID',
+              type: 'string',
+              format: 'id',
+              entityTypes: [ENTITY_TYPE_IDENTITY],
+              editDefault: false,
+              mandatoryType: 'no',
+              multiple: false,
+              upsert: true,
+              isFilterable: false,
+            }
+          ]
+        },
+      ]
     },
     authorizedAuthorities,
   ],
