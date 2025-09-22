@@ -11875,7 +11875,6 @@ export type InternalRelationship = BasicRelationship & {
 
 export type InternalRelationshipAddInput = {
   fromId?: InputMaybe<Scalars['ID']['input']>;
-  pir_explanations?: InputMaybe<Array<PirExplanationInput>>;
   relationship_type: Scalars['String']['input'];
   toId?: InputMaybe<Scalars['ID']['input']>;
 };
