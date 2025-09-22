@@ -12316,8 +12316,6 @@ input InternalRelationshipAddInput {
   relationship_type: String! # Will be checked by code
   fromId: ID
   toId: ID
-  # in-pir rel
-  pir_explanations: [PirExplanationInput!]
 }
 
 ######## STIX RELATIONSHIPS

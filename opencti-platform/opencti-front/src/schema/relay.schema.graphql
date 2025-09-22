@@ -7848,7 +7848,6 @@ input InternalRelationshipAddInput {
   relationship_type: String!
   fromId: ID
   toId: ID
-  pir_explanations: [PirExplanationInput!]
 }
 
 enum StixObjectOrStixRelationshipsOrdering {
@@ -13680,7 +13679,7 @@ type PirExplanation {
 type PirInformation {
   pir_score: Int!
   last_pir_score_date: DateTime!
-  pir_explanations: [PirExplanation!]!
+  pir_explanation: [PirExplanation!]!
 }
 
 type Pir implements InternalObject & BasicObject {
@@ -13720,7 +13719,7 @@ type PirRelationship implements BasicRelationship {
   from: StixDomainObject
   to: Pir
   creators: [Creator!]
-  pir_explanations: [PirExplanation!]
+  pir_explanation: [PirExplanation!]
   pir_score: Int
 }
 

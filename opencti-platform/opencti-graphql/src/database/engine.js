@@ -3568,7 +3568,7 @@ export const elAggregationRelationsCount = async (context, user, indexName, opti
     'relationship_type',
     'x_opencti_workflow_id',
     'rel_created-by.internal_id',
-    'pir_explanations.dependencies.author_id',
+    'pir_explanation.dependencies.author_id',
     null
   ];
   if (!aggregationFields.includes(field)) {
@@ -3616,7 +3616,7 @@ export const elAggregationRelationsCount = async (context, user, indexName, opti
     body.aggs = {
       genres: {
         terms: {
-          field: isBooleanAttribute(field) || field.includes('pir_explanations')
+          field: isBooleanAttribute(field)
             ? field
             : `${field}.keyword`,
           size: MAX_AGGREGATION_SIZE,
