@@ -3593,6 +3593,7 @@ export const elAggregationCount = async (
       terms: {
         field: buildFieldForQuery(field),
         size: MAX_AGGREGATION_SIZE,
+        missing: 'unknown',
       },
       aggs: {
         weight: {
