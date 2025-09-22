@@ -20088,7 +20088,7 @@ export type PirFlagElementInput = {
 export type PirInformation = {
   __typename?: 'PirInformation';
   last_pir_score_date: Scalars['DateTime']['output'];
-  pir_explanations: Array<PirExplanation>;
+  pir_explanation: Array<PirExplanation>;
   pir_score: Scalars['Int']['output'];
 };
 
@@ -20110,7 +20110,7 @@ export type PirRelationship = BasicRelationship & {
   fromType: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   parent_types: Array<Maybe<Scalars['String']['output']>>;
-  pir_explanations?: Maybe<Array<PirExplanation>>;
+  pir_explanation?: Maybe<Array<PirExplanation>>;
   pir_score?: Maybe<Scalars['Int']['output']>;
   standard_id: Scalars['String']['output'];
   to?: Maybe<Pir>;
@@ -41706,7 +41706,7 @@ export type PirExplanationResolvers<ContextType = any, ParentType extends Resolv
 
 export type PirInformationResolvers<ContextType = any, ParentType extends ResolversParentTypes['PirInformation'] = ResolversParentTypes['PirInformation']> = ResolversObject<{
   last_pir_score_date?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  pir_explanations?: Resolver<Array<ResolversTypes['PirExplanation']>, ParentType, ContextType>;
+  pir_explanation?: Resolver<Array<ResolversTypes['PirExplanation']>, ParentType, ContextType>;
   pir_score?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -41721,7 +41721,7 @@ export type PirRelationshipResolvers<ContextType = any, ParentType extends Resol
   fromType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
-  pir_explanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType>;
+  pir_explanation?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType>;
   pir_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   to?: Resolver<Maybe<ResolversTypes['Pir']>, ParentType, ContextType>;

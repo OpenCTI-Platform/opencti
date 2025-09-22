@@ -82,7 +82,7 @@ export interface PirExplanation {
 }
 
 export interface BasicStoreRelationPir extends BasicStoreRelation {
-  pir_explanations: PirExplanation[],
+  pir_explanation: PirExplanation[],
   pir_score: number,
   authorized_authorities: string[],
 }

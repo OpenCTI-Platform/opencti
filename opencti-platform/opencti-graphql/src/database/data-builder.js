@@ -288,7 +288,7 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
   }
   if (relationshipType === RELATION_IN_PIR) {
     data.pir_score = input.pir_score;
-    data.pir_explanations = input.pir_explanations;
+    data.pir_explanation = input.pir_explanation;
   }
   // 05. Prepare the final data
   const created = R.pipe(

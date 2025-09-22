@@ -347,7 +347,7 @@ export const pirUnflagElement = async (
     const rels = await topRelationsList(context, user, RELATION_IN_PIR, { fromId: sourceId, toId: pir.id });
     // eslint-disable-next-line no-restricted-syntax
     for (const rel of rels) {
-      const relDependencies = (rel as any).pir_explanations as PirExplanation[];
+      const relDependencies = (rel as any).pir_explanation as PirExplanation[];
       // fetch dependencies not concerning the relationship
       const newRelDependencies = relDependencies.filter((dep) => !dep.dependencies
         .map((d) => d.element_id)

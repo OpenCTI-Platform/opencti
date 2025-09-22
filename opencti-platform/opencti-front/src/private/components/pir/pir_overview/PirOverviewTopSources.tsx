@@ -58,7 +58,7 @@ const PirOverviewTopSources = ({ data }: PirOverviewTopSourcesProps) => {
 
   const relationshipsTopSourcesDataSelection = [
     {
-      attribute: 'pir_explanations.dependencies.author_id',
+      attribute: 'pir_explanation.dependencies.author_id',
       isTo: false,
       relationship_type: 'in-pir',
       pirId: id,

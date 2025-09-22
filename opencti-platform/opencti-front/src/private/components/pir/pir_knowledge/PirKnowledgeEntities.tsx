@@ -70,7 +70,7 @@ const sourceFlaggedFragment = graphql`
     pirInformation(pirId: $pirId) {
       pir_score
       last_pir_score_date
-      pir_explanations {
+      pir_explanation {
         criterion {
           filters
         }
@@ -201,7 +201,7 @@ const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHe
       percentWidth: 6,
       isSortable: true,
       render: ({ pirInformation }: { pirInformation: PirInformation }) => {
-        const criteria: FilterGroup[] = pirInformation.pir_explanations.map(
+        const criteria: FilterGroup[] = pirInformation.pir_explanation.map(
           (e) => JSON.parse(e.criterion.filters),
         );
         return (

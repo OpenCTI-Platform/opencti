@@ -10,6 +10,7 @@ import { FROM_START_STR, truncate, UNTIL_END_STR } from '../utils/format';
 import { authorizedMembers, creators as creatorsAttribute } from '../schema/attribute-definition';
 import { X_WORKFLOW_ID } from '../schema/identifier';
 import { isStoreRelationPir } from '../schema/internalRelationship';
+import {pirExplanation} from "../modules/attributes/internalRelationship-registrationAttributes";
 
 export const generateMergeMessage = (instance, sources) => {
   const name = extractEntityRepresentativeName(instance);
@@ -61,7 +62,7 @@ export const generateRestoreMessage = (instance) => {
   return generateCreateDeleteMessage('restore', instance);
 };
 
-const ACTION_KEYS = ['x_opencti_request_access', 'pir_explanations'];
+const ACTION_KEYS = ['x_opencti_request_access', pirExplanation.name];
 export const MAX_PATCH_ELEMENTS_FOR_MESSAGE = 3;
 export const MAX_OPERATIONS_FOR_MESSAGE = 3;
 export const generateUpdatePatchMessage = (patchElements, entityType, data = {}) => {
@@ -70,7 +71,7 @@ export const generateUpdatePatchMessage = (patchElements, entityType, data = {})
   const generatedMessage = patchElements
     .slice(0, MAX_PATCH_ELEMENTS_FOR_MESSAGE).map(([type, operations]) => {
       const actionRequestAccess = operations.find((op) => op.key === 'x_opencti_request_access');
-      const pirExplanations = operations.find((op) => op.key === 'pir_explanations');
+      const pirExplanations = operations.find((op) => op.key === pirExplanation.name);
       return `${type}s ${operations
         .filter((op) => !ACTION_KEYS.includes(op.key))
         .slice(0, MAX_OPERATIONS_FOR_MESSAGE).map(({ key, value, object_path, previous }) => {

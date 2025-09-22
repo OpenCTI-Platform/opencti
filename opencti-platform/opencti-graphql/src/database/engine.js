@@ -3568,7 +3568,7 @@ export const elAggregationRelationsCount = async (context, user, indexName, opti
     'relationship_type',
     'x_opencti_workflow_id',
     'rel_created-by.internal_id',
-    'pir_explanations.dependencies.author_id',
+    'pir_explanation.dependencies.author_id',
     null
   ];
   if (!aggregationFields.includes(field)) {
@@ -3635,7 +3635,7 @@ export const elAggregationRelationsCount = async (context, user, indexName, opti
   const query = { index: getIndicesToQuery(context, user, indexName), body };
   logApp.debug('[SEARCH] aggregationRelationsCount', { query });
   const isIdFields = field?.endsWith('internal_id');
-  console.log({ query });
+  console.log(JSON.stringify(query));
   return elRawSearch(context, user, types, query)
     .then(async (data) => {
       if (isAggregationConnection) {

@@ -217,18 +217,18 @@ export const updatePirExplanations = async (
   const inPirRel = inPirRels.edges[0].node;
   let explanations = pirExplanations; // Default case : replace the entire array.
   if (operation === 'add') { // Add case: add the new information contained in pirExplanations
-    const newExplanations = diffPirExplanations(pirExplanations, inPirRel.pir_explanations);
+    const newExplanations = diffPirExplanations(pirExplanations, inPirRel.pir_explanation);
     if (newExplanations.length === 0) {
       // In this case there is nothing to add so skip.
       return;
     }
-    explanations = updatePirExplanationsArray(inPirRel.pir_explanations, newExplanations);
+    explanations = updatePirExplanationsArray(inPirRel.pir_explanation, newExplanations);
   }
 
   // compute score
   const pir_score = await computePirScore(context, user, pirId, explanations);
-  // replace pir_explanations on in-pir rel
-  await patchAttribute(context, user, inPirRel.id, RELATION_IN_PIR, { pir_explanations: explanations, pir_score }, { locks: lockIds });
+  // replace pir_explanation on in-pir rel
+  await patchAttribute(context, user, inPirRel.id, RELATION_IN_PIR, { pir_explanation: explanations, pir_score }, { locks: lockIds });
   // update pir information on the entity
   await updatePirInformationOnEntity(context, user, sourceId, pirId, pir_score);
 };
@@ -259,7 +259,7 @@ export const createPirRelation = async (
     relationship_type: RELATION_IN_PIR,
     fromId: sourceId,
     toId: pirId,
-    pir_explanations: pirDependencies,
+    pir_explanation: pirDependencies,
     pir_score,
   };
   await createRelation(context, user, addRelationshipInput, { locks: lockIds });
