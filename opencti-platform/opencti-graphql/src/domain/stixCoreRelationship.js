@@ -4,13 +4,13 @@ import { ApolloServerErrorCode } from '@apollo/server/errors';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { createRelation, deleteElementById, deleteRelationsByFromAndTo, timeSeriesRelations, updateAttribute } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
-import { FunctionalError } from '../config/errors';
+import { FunctionalError, UnsupportedError } from '../config/errors';
 import { elCount } from '../database/engine';
 import { isEmptyField, isNotEmptyField, READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS } from '../database/utils';
 import { isStixCoreRelationship, stixCoreRelationshipOptions } from '../schema/stixCoreRelationship';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
 import { RELATION_CREATED_BY, } from '../schema/stixRefRelationship';
-import { buildRelationsFilter, listRelations, storeLoadById } from '../database/middleware-loader';
+import { buildRelationsFilter, listRelationsPaginated, storeLoadById } from '../database/middleware-loader';
 import { askListExport, exportTransformFilters } from './stix';
 import { workToExportFile } from './work';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
@@ -18,10 +18,18 @@ import { addDynamicFromAndToToFilters, addFilter } from '../utils/filtering/filt
 import { stixRelationshipsDistribution } from './stixRelationship';
 import { elRemoveElementFromDraft } from '../database/draft-engine';
 
-export const findAll = async (context, user, args) => {
+export const findAll = async (context, user, args, coreOnly = false) => {
   const filters = addDynamicFromAndToToFilters(args);
   const fullArgs = { ...args, filters };
-  return listRelations(context, user, ABSTRACT_STIX_CORE_RELATIONSHIP, fullArgs);
+  const abstractType = coreOnly ? ABSTRACT_STIX_CORE_RELATIONSHIP : ABSTRACT_STIX_RELATIONSHIP;
+  const type = isEmptyField(fullArgs.relationship_type) ? abstractType : fullArgs.relationship_type;
+  const types = Array.isArray(type) ? type : [type];
+  if (coreOnly && !types.every((t) => isStixCoreRelationship(t))) {
+    throw UnsupportedError('This API only support Stix core relationships', { type });
+  }
+  const argsWithoutRelationshipType = { ...fullArgs };
+  delete argsWithoutRelationshipType.relationship_type;
+  return listRelationsPaginated(context, user, type, argsWithoutRelationshipType);
 };
 
 export const findById = (context, user, stixCoreRelationshipId) => {

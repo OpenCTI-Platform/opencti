@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { GraphQLError } from 'graphql/index';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
 import { deleteElementById, distributionRelations, timeSeriesRelations } from '../database/middleware';
-import { ABSTRACT_STIX_RELATIONSHIP } from '../schema/general';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_RELATIONSHIP } from '../schema/general';
 import { buildRelationsFilter, listRelationsPaginated, storeLoadById } from '../database/middleware-loader';
 import { isEmptyField, READ_INDEX_INFERRED_RELATIONSHIPS, READ_RELATIONSHIPS_INDICES } from '../database/utils';
 import { elCount } from '../database/engine';
@@ -11,11 +11,20 @@ import { UnsupportedError } from '../config/errors';
 import { schemaTypesDefinition } from '../schema/schema-types';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { addDynamicFromAndToToFilters } from '../utils/filtering/filtering-utils';
+import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 
-export const findAll = async (context, user, args) => {
+export const findAll = async (context, user, args, coreOnly = false) => {
   const filters = addDynamicFromAndToToFilters(args);
   const fullArgs = { ...args, filters };
-  return listRelationsPaginated(context, user, ABSTRACT_STIX_RELATIONSHIP, fullArgs);
+  const abstractType = coreOnly ? ABSTRACT_STIX_CORE_RELATIONSHIP : ABSTRACT_STIX_RELATIONSHIP;
+  const type = isEmptyField(fullArgs.relationship_type) ? abstractType : fullArgs.relationship_type;
+  const types = Array.isArray(type) ? type : [type];
+  if (coreOnly && !types.every((t) => isStixCoreRelationship(t))) {
+    throw UnsupportedError('This API only support Stix core relationships', { type });
+  }
+  const argsWithoutRelationshipType = { ...fullArgs };
+  delete argsWithoutRelationshipType.relationship_type;
+  return listRelationsPaginated(context, user, type, argsWithoutRelationshipType);
 };
 
 export const findById = (context, user, stixRelationshipId) => {
