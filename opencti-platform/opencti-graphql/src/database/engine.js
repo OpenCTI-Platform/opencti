@@ -3482,6 +3482,9 @@ export const elHistogramCount = async (context, user, indexName, options = {}) =
 export const elAggregationCount = async (context, user, indexName, options = {}) => {
   const { field, types = null, weightField = 'i_inference_weight', normalizeLabel = true, convertEntityTypeLabel = false } = options;
   const isIdFields = field.endsWith('internal_id') || field.endsWith('.id');
+  const isNumericField = ['confidence', 'x_opencti_score', 'x_opencti_detection'].includes(field)
+    || field.includes('_count')
+    || field.includes('level');
   const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
   body.size = 0;
   body.aggs = {
@@ -3489,7 +3492,6 @@ export const elAggregationCount = async (context, user, indexName, options = {})
       terms: {
         field: buildFieldForQuery(field),
         size: MAX_AGGREGATION_SIZE,
-        missing: 'unknown',
       },
       aggs: {
         weight: {
@@ -3501,6 +3503,9 @@ export const elAggregationCount = async (context, user, indexName, options = {})
       },
     },
   };
+  if (!isNumericField) {
+    body.aggs.genres.terms.missing = 'unknown';
+  }
   const query = {
     index: getIndicesToQuery(context, user, indexName),
     body,
