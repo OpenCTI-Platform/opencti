@@ -130,7 +130,7 @@ export const ROLE_SECURITY: Role = {
   id: generateStandardId(ENTITY_TYPE_ROLE, { name: 'Access knowledge/exploration/settings and edit/delete' }),
   name: 'Access knowledge/exploration/settings and edit/delete',
   description: 'Knowledge/exploration/settings edit/delete',
-  capabilities: ['KNOWLEDGE_KNUPDATE_KNDELETE', 'EXPLORE_EXUPDATE_EXDELETE', 'SETTINGS_SETACCESSES', 'SETTINGS_SECURITYACTIVITY']
+  capabilities: ['KNOWLEDGE_KNUPDATE_KNDELETE', 'EXPLORE_EXUPDATE_EXDELETE', 'INVESTIGATION_INUPDATE_INDELETE', 'SETTINGS_SETACCESSES', 'SETTINGS_SECURITYACTIVITY']
 };
 TESTING_ROLES.push(ROLE_SECURITY);
 
